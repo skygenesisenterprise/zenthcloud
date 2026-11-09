@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/dns_zone_transfers_acl"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/test_helpers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/dns_zone_transfers_acl"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 func TestDNSZoneTransfersACLDataSourceModelSchemaParity(t *testing.T) {

@@ -48,7 +48,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf images keys list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/images/v1/keys`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/images/v1/keys`,
 						pathParams: {},
 						bodyKind: "none",
 					});

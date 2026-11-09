@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Felix Hanau <felix@cloudflare.com>
+From: Felix Hanau <felix@zenthcloud.com>
 Date: Fri, 8 Aug 2025 16:48:06 -0400
 Subject: Export icudata file to facilitate embedding it
 

@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/cloudflare/pint/internal/diags"
-	"github.com/cloudflare/pint/internal/parser"
+	"github.com/zenthcloud/pint/internal/diags"
+	"github.com/zenthcloud/pint/internal/parser"
 )
 
 func newMustRule(content string) parser.Rule {

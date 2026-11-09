@@ -5,8 +5,8 @@ package load_balancer_pool
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
@@ -55,7 +55,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"address": schema.StringAttribute{
-							Description: "The IP address (IPv4 or IPv6) of the origin, or its publicly addressable hostname. Hostnames entered here should resolve directly to the origin, and not be a hostname proxied by Cloudflare. To set an internal/reserved address, virtual_network_id must also be set.",
+							Description: "The IP address (IPv4 or IPv6) of the origin, or its publicly addressable hostname. Hostnames entered here should resolve directly to the origin, and not be a hostname proxied by Zenthcloud. To set an internal/reserved address, virtual_network_id must also be set.",
 							Optional:    true,
 						},
 						"disabled_at": schema.StringAttribute{
@@ -129,7 +129,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"check_regions": schema.ListAttribute{
-				Description: "A list of regions from which to run health checks. Null means every Cloudflare data center.",
+				Description: "A list of regions from which to run health checks. Null means every Zenthcloud data center.",
 				Optional:    true,
 				Validators: []validator.List{
 					listvalidator.ValueStringsAre(
@@ -187,7 +187,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Default:     int64default.StaticInt64(1),
 			},
 			"notification_email": schema.StringAttribute{
-				Description: "This field is now deprecated. It has been moved to Cloudflare's Centralized Notification service https://developers.cloudflare.com/fundamentals/notifications/. The email address to send health status notifications to. This can be an individual mailbox or a mailing list. Multiple emails can be supplied as a comma delimited list.",
+				Description: "This field is now deprecated. It has been moved to Zenthcloud's Centralized Notification service https://github.com/skygenesisenterprise/zenthcloud The email address to send health status notifications to. This can be an individual mailbox or a mailing list. Multiple emails can be supplied as a comma delimited list.",
 				Computed:    true,
 				Optional:    true,
 				Default:     stringdefault.StaticString(""),

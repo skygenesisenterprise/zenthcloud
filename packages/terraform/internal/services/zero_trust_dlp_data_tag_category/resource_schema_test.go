@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_dlp_data_tag_category"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/test_helpers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_dlp_data_tag_category"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 func TestZeroTrustDLPDataTagCategoryModelSchemaParity(t *testing.T) {

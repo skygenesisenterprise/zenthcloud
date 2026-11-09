@@ -10,7 +10,7 @@ export const iam_scim_group_create_request: JSONObject = {
   "description": "Request body for creating a SCIM Group. The `displayName` must not be empty and must not begin with `CF` (reserved for system groups).",
   "properties": {
     "displayName": {
-      "description": "A human-readable name for the Group. REQUIRED. Must not start with `CF` (reserved prefix for Cloudflare-managed virtual groups).",
+      "description": "A human-readable name for the Group. REQUIRED. Must not start with `CF` (reserved prefix for Zenthcloud-managed virtual groups).",
       "type": "string"
     },
     "externalId": {

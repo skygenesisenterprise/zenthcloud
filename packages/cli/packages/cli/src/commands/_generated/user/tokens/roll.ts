@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf user tokens roll",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/user/tokens/${argv["token-id"] == null ? "<token-id>" : encodeURIComponent(String(argv["token-id"]))}/value`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["token-id"] == null ? "<token-id>" : encodeURIComponent(String(argv["token-id"]))}/value`,
 						pathParams: { "token-id": String(argv["token-id"] ?? "") },
 						bodyKind: "none",
 					});

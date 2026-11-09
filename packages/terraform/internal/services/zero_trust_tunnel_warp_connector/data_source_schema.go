@@ -5,8 +5,8 @@ package zero_trust_tunnel_warp_connector
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
@@ -23,10 +23,10 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		MarkdownDescription: schemata.Description{
 			Scopes: []string{
-				"Cloudflare One Connector: WARP Read",
-				"Cloudflare One Connector: WARP Write",
-				"Cloudflare One Connectors Read",
-				"Cloudflare One Connectors Write",
+				"Zenthcloud One Connector: WARP Read",
+				"Zenthcloud One Connector: WARP Write",
+				"Zenthcloud One Connectors Read",
+				"Zenthcloud One Connectors Write",
 			},
 		}.String(),
 		Attributes: map[string]schema.Attribute{
@@ -39,20 +39,20 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"account_id": schema.StringAttribute{
-				Description: "Cloudflare account ID",
+				Description: "Zenthcloud account ID",
 				Optional:    true,
 			},
 			"account_tag": schema.StringAttribute{
-				Description: "Cloudflare account ID",
+				Description: "Zenthcloud account ID",
 				Computed:    true,
 			},
 			"conns_active_at": schema.StringAttribute{
-				Description: "Timestamp of when the tunnel established at least one connection to Cloudflare's edge. If `null`, the tunnel is inactive.",
+				Description: "Timestamp of when the tunnel established at least one connection to Zenthcloud's edge. If `null`, the tunnel is inactive.",
 				Computed:    true,
 				CustomType:  timetypes.RFC3339Type{},
 			},
 			"conns_inactive_at": schema.StringAttribute{
-				Description: "Timestamp of when the tunnel became inactive (no connections to Cloudflare's edge). If `null`, the tunnel is active.",
+				Description: "Timestamp of when the tunnel became inactive (no connections to Zenthcloud's edge). If `null`, the tunnel is active.",
 				Computed:    true,
 				CustomType:  timetypes.RFC3339Type{},
 			},
@@ -71,7 +71,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"status": schema.StringAttribute{
-				Description: "The status of the tunnel. Valid values are `inactive` (tunnel has never been run), `degraded` (tunnel is active and able to serve traffic but in an unhealthy state), `healthy` (tunnel is active and able to serve traffic), or `down` (tunnel can not serve traffic as it has no connections to the Cloudflare Edge).\nAvailable values: \"inactive\", \"degraded\", \"healthy\", \"down\".",
+				Description: "The status of the tunnel. Valid values are `inactive` (tunnel has never been run), `degraded` (tunnel is active and able to serve traffic but in an unhealthy state), `healthy` (tunnel is active and able to serve traffic), or `down` (tunnel can not serve traffic as it has no connections to the Zenthcloud Edge).\nAvailable values: \"inactive\", \"degraded\", \"healthy\", \"down\".",
 				Computed:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive(
@@ -98,30 +98,30 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"connections": schema.ListNestedAttribute{
-				Description:        "The Cloudflare Tunnel connections between your origin and Cloudflare's edge.",
+				Description:        "The Zenthcloud Tunnel connections between your origin and Zenthcloud's edge.",
 				Computed:           true,
 				DeprecationMessage: "This field will start returning an empty array. To fetch the connections of a given tunnel, please use the dedicated endpoint `/accounts/{account_id}/{tunnel_type}/{tunnel_id}/connections`",
 				CustomType:         customfield.NewNestedObjectListType[ZeroTrustTunnelWARPConnectorConnectionsDataSourceModel](ctx),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.StringAttribute{
-							Description: "UUID of the Cloudflare Tunnel connection.",
+							Description: "UUID of the Zenthcloud Tunnel connection.",
 							Computed:    true,
 						},
 						"client_id": schema.StringAttribute{
-							Description: "UUID of the Cloudflare Tunnel connector.",
+							Description: "UUID of the Zenthcloud Tunnel connector.",
 							Computed:    true,
 						},
 						"client_version": schema.StringAttribute{
-							Description: "The cloudflared version used to establish this connection.",
+							Description: "The zenthcloudd version used to establish this connection.",
 							Computed:    true,
 						},
 						"colo_name": schema.StringAttribute{
-							Description: "The Cloudflare data center used for this connection.",
+							Description: "The Zenthcloud data center used for this connection.",
 							Computed:    true,
 						},
 						"is_pending_reconnect": schema.BoolAttribute{
-							Description:        "Cloudflare continues to track connections for several minutes after they disconnect. This is an optimization to improve latency and reliability of reconnecting.  If `true`, the connection has disconnected but is still being tracked. If `false`, the connection is actively serving traffic.",
+							Description:        "Zenthcloud continues to track connections for several minutes after they disconnect. This is an optimization to improve latency and reliability of reconnecting.  If `true`, the connection has disconnected but is still being tracked. If `false`, the connection is actively serving traffic.",
 							Computed:           true,
 							DeprecationMessage: "This functionality has been removed. The is_pending_reconnect field will now always report false.",
 						},
@@ -131,11 +131,11 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 							CustomType:  timetypes.RFC3339Type{},
 						},
 						"origin_ip": schema.StringAttribute{
-							Description: "The public IP address of the host running cloudflared.",
+							Description: "The public IP address of the host running zenthcloudd.",
 							Computed:    true,
 						},
 						"uuid": schema.StringAttribute{
-							Description: "UUID of the Cloudflare Tunnel connection.",
+							Description: "UUID of the Zenthcloud Tunnel connection.",
 							Computed:    true,
 						},
 					},
@@ -168,7 +168,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						Optional:    true,
 					},
 					"status": schema.StringAttribute{
-						Description: "The status of the tunnel. Valid values are `inactive` (tunnel has never been run), `degraded` (tunnel is active and able to serve traffic but in an unhealthy state), `healthy` (tunnel is active and able to serve traffic), or `down` (tunnel can not serve traffic as it has no connections to the Cloudflare Edge).\nAvailable values: \"inactive\", \"degraded\", \"healthy\", \"down\".",
+						Description: "The status of the tunnel. Valid values are `inactive` (tunnel has never been run), `degraded` (tunnel is active and able to serve traffic but in an unhealthy state), `healthy` (tunnel is active and able to serve traffic), or `down` (tunnel can not serve traffic as it has no connections to the Zenthcloud Edge).\nAvailable values: \"inactive\", \"degraded\", \"healthy\", \"down\".",
 						Optional:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOfCaseInsensitive(

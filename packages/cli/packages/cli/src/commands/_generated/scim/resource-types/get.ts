@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf scim resource-types get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/scim/v2/ResourceTypes/${argv["resource-type-id"] == null ? "<resource-type-id>" : encodeURIComponent(String(argv["resource-type-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/scim/v2/ResourceTypes/${argv["resource-type-id"] == null ? "<resource-type-id>" : encodeURIComponent(String(argv["resource-type-id"]))}`,
 						pathParams: {
 							"resource-type-id": String(argv["resource-type-id"] ?? ""),
 						},

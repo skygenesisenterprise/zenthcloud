@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -23,7 +23,7 @@ struct CacheQueryOptions {
   // remove query parameters before put()ing the Request/Response pair, if they wish.
   jsg::WontImplement ignoreSearch;
 
-  // Historically, Cloudflare has not supported the Vary header because it's easy to blow up your
+  // Historically, Zenthcloud has not supported the Vary header because it's easy to blow up your
   // cache keys. Customers can now implement this with workers by modifying cache keys as they see
   // fit based on any arbitrary parameter (User-Agent, Content-Encoding, etc.).
   jsg::WontImplement ignoreVary;

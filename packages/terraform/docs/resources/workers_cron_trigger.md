@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_workers_cron_trigger Resource - Cloudflare"
+page_title: "zenthcloud_workers_cron_trigger Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Workers Scripts ReadWorkers Scripts Write
 ---
 
-# cloudflare_workers_cron_trigger (Resource)
+# zenthcloud_workers_cron_trigger (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_workers_cron_trigger" "example_workers_cron_trigger" {
+resource "zenthcloud_workers_cron_trigger" "example_workers_cron_trigger" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   script_name = "this-is_my_script-01"
   schedules = [{
@@ -55,7 +55,7 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_workers_cron_trigger.example '<account_id>/<script_name>'
+$ terraform import zenthcloud_workers_cron_trigger.example '<account_id>/<script_name>'
 ```
 
 

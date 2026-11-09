@@ -63,7 +63,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf containers registries delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/containers/registries/${argv["domain"] == null ? "<domain>" : encodeURIComponent(String(argv["domain"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/containers/registries/${argv["domain"] == null ? "<domain>" : encodeURIComponent(String(argv["domain"]))}`,
 						pathParams: { domain: String(argv["domain"] ?? "") },
 						bodyKind: "none",
 					});

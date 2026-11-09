@@ -128,7 +128,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.token.create"
+            "com.zenthcloud.api.account.token.create"
           ]
         },
         "x-cfPlanAvailability": {
@@ -224,7 +224,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.token.delete"
+            "com.zenthcloud.api.account.token.delete"
           ]
         },
         "x-cfPlanAvailability": {
@@ -320,7 +320,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.token.read"
+            "com.zenthcloud.api.account.token.read"
           ]
         },
         "x-cfPlanAvailability": {
@@ -362,7 +362,7 @@ export const tools: readonly Tool[] = [
   {
     name: "accounts_tokens_list",
     title: "List Tokens",
-    description: "List Account Owned API tokens created for this account. Callers with\n`com.cloudflare.api.account.token.list_self` permission only receive\ntokens they created. Results include active, disabled, and\nrecently-expired tokens when `include_expired` is set to true.\n\nGET /accounts/{account_id}/tokens",
+    description: "List Account Owned API tokens created for this account. Callers with\n`com.zenthcloud.api.account.token.list_self` permission only receive\ntokens they created. Results include active, disabled, and\nrecently-expired tokens when `include_expired` is set to true.\n\nGET /accounts/{account_id}/tokens",
     inputSchema: {
       type: "object",
       properties: {
@@ -459,8 +459,8 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.token.list",
-            "com.cloudflare.api.account.token.list_self"
+            "com.zenthcloud.api.account.token.list",
+            "com.zenthcloud.api.account.token.list_self"
           ]
         },
         "x-cfPlanAvailability": {
@@ -557,7 +557,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.token.update"
+            "com.zenthcloud.api.account.token.update"
           ]
         },
         "x-cfPlanAvailability": {
@@ -670,7 +670,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.token.update"
+            "com.zenthcloud.api.account.token.update"
           ]
         },
         "x-cfPlanAvailability": {

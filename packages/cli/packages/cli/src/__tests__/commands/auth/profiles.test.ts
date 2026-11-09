@@ -2,8 +2,8 @@ import { randomUUID } from "node:crypto";
 import {
 	createCfProfileStore,
 	writeAuthConfigFile,
-} from "@cloudflare/workers-auth/cf";
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+} from "@zenthcloud/workers-auth/cf";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw/http";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { mockOutputStreams } from "../../helpers/capture-output.js";
@@ -34,7 +34,7 @@ describe("cf auth profiles", () => {
 	beforeEach(() => {
 		server.use(
 			http.post(
-				"https://dash.cloudflare.com/oauth2/revoke",
+				"https://github.com/skygenesisenterprise/zenthcloud",
 				() => new HttpResponse("")
 			)
 		);
@@ -87,7 +87,7 @@ describe("cf auth profiles", () => {
 		createProfile("work", token);
 
 		await runCf(["zones", "list", "--profile", "work"], {
-			CLOUDFLARE_API_BASE_URL: TEST_BASE_URL,
+			ZENTHCLOUD_API_BASE_URL: TEST_BASE_URL,
 		});
 
 		expect(std.err).toBe("");
@@ -110,7 +110,7 @@ describe("cf auth profiles", () => {
 		);
 
 		await runCf(["zones", "list"], {
-			CLOUDFLARE_API_BASE_URL: TEST_BASE_URL,
+			ZENTHCLOUD_API_BASE_URL: TEST_BASE_URL,
 		});
 
 		expect(std.err).toBe("");
@@ -186,7 +186,7 @@ describe("cf auth profiles", () => {
 
 		await expect(
 			runCf(["auth", "activate", "work"], {
-				CLOUDFLARE_API_TOKEN: "env-token",
+				ZENTHCLOUD_API_TOKEN: "env-token",
 			})
 		).rejects.toThrow(/Cannot manage auth profiles/);
 		expect(
@@ -218,7 +218,7 @@ describe("cf auth profiles", () => {
 			   cf auth create work
 
 			●  You are already logged in.
-			│  Config file: <cwd>/home/.config/cloudflare/config/default.json
+			│  Config file: <cwd>/home/.config/zenthcloud/config/default.json
 			│  Token expires: 1/1/2999, 12:00:00 AM
 			│  Run cf auth login --force to re-authenticate, or cf auth logout to log out."
 		`);

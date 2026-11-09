@@ -4,8 +4,8 @@
 declare namespace Rpc {
   // Branded types for identifying `WorkerEntrypoint`/`DurableObject`/`Target`s.
   // TypeScript uses *structural* typing meaning anything with the same shape as type `T` is a `T`.
-  // For the classes exported by `cloudflare:workers` we want *nominal* typing (i.e. we only want to
-  // accept `WorkerEntrypoint` from `cloudflare:workers`, not any other class with the same shape)
+  // For the classes exported by `zenthcloud:workers` we want *nominal* typing (i.e. we only want to
+  // accept `WorkerEntrypoint` from `zenthcloud:workers`, not any other class with the same shape)
   export const __RPC_STUB_BRAND: '__RPC_STUB_BRAND';
   export const __RPC_TARGET_BRAND: '__RPC_TARGET_BRAND';
   export const __WORKER_ENTRYPOINT_BRAND: '__WORKER_ENTRYPOINT_BRAND';
@@ -168,7 +168,7 @@ declare namespace Rpc {
   >
 }
 
-declare namespace Cloudflare {
+declare namespace Zenthcloud {
   // Type of `env`.
   //
   // The specific project can extend `Env` by redeclaring it in project-specific files. Typescript
@@ -185,7 +185,7 @@ declare namespace Cloudflare {
   // A project should have a declaration like this:
   //
   //     interface GlobalProps {
-  //       // Declares the main module's exports. Used to populate Cloudflare.Exports aka the type
+  //       // Declares the main module's exports. Used to populate Zenthcloud.Exports aka the type
   //       // of `ctx.exports`.
   //       mainModule: typeof import("my-main-module");
   //
@@ -223,7 +223,7 @@ declare namespace Cloudflare {
   };
 }
 
-declare namespace CloudflareWorkersModule {
+declare namespace ZenthcloudWorkersModule {
   export type RpcStub<T extends Rpc.Stubable> = Rpc.Stub<T>;
   export const RpcStub: {
     new <T extends Rpc.Stubable>(value: T): Rpc.Stub<T>;
@@ -236,7 +236,7 @@ declare namespace CloudflareWorkersModule {
   // `protected` fields don't appear in `keyof`s, so can't be accessed over RPC
 
   export abstract class WorkerEntrypoint<
-    Env = Cloudflare.Env,
+    Env = Zenthcloud.Env,
     Props = {},
   > implements Rpc.WorkerEntrypointBranded
   {
@@ -258,7 +258,7 @@ declare namespace CloudflareWorkersModule {
   }
 
   export abstract class DurableObject<
-    Env = Cloudflare.Env,
+    Env = Zenthcloud.Env,
     Props = {},
   > implements Rpc.DurableObjectBranded
   {
@@ -513,12 +513,12 @@ declare namespace CloudflareWorkersModule {
     fn: () => unknown
   ): unknown;
 
-  export const env: Cloudflare.Env;
-  export const exports: Cloudflare.Exports;
+  export const env: Zenthcloud.Env;
+  export const exports: Zenthcloud.Exports;
   export const cache: CacheContext;
   export const tracing: Tracing;
 }
 
-declare module 'cloudflare:workers' {
-  export = CloudflareWorkersModule;
+declare module 'zenthcloud:workers' {
+  export = ZenthcloudWorkersModule;
 }

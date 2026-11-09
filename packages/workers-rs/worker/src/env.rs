@@ -50,7 +50,7 @@ impl Env {
     }
 
     /// Access Secret value bindings added to your Worker via the UI or `wrangler`:
-    /// <https://developers.cloudflare.com/workers/cli-wrangler/commands#secret>
+    /// <https://github.com/skygenesisenterprise/zenthcloud>
     pub fn secret(&self, binding: &str) -> Result<Secret> {
         self.get_binding::<Secret>(binding)
     }
@@ -58,7 +58,7 @@ impl Env {
     /// Get an environment variable defined in the [vars] section of your wrangler.toml or a secret
     /// defined using `wrangler secret` as a plaintext value.
     ///
-    /// See: <https://developers.cloudflare.com/workers/configuration/environment-variables/>
+    /// See: <https://github.com/skygenesisenterprise/zenthcloud>
     pub fn var(&self, binding: &str) -> Result<Var> {
         self.get_binding::<Var>(binding)
     }
@@ -66,7 +66,7 @@ impl Env {
     /// Get an environment variable defined in the [vars] section of your wrangler.toml that is
     /// defined as an object.
     ///
-    /// See: <https://developers.cloudflare.com/workers/configuration/environment-variables/>
+    /// See: <https://github.com/skygenesisenterprise/zenthcloud>
     pub fn object_var<T: DeserializeOwned>(&self, binding: &str) -> Result<T> {
         Ok(serde_wasm_bindgen::from_value(
             self.get_binding::<JsValueWrapper>(binding)?.0,
@@ -88,7 +88,7 @@ impl Env {
         self.get_binding(binding)
     }
 
-    /// Get a [Service Binding](https://developers.cloudflare.com/workers/runtime-apis/service-bindings/)
+    /// Get a [Service Binding](https://github.com/skygenesisenterprise/zenthcloud)
     /// for Worker-to-Worker communication.
     pub fn service(&self, binding: &str) -> Result<Fetcher> {
         self.get_binding(binding)
@@ -130,7 +130,7 @@ impl Env {
         self.get_binding(binding)
     }
 
-    /// Access a [send_email binding](https://developers.cloudflare.com/email-service/api/send-emails/workers-api/)
+    /// Access a [send_email binding](https://github.com/skygenesisenterprise/zenthcloud)
     /// configured under `[[send_email]]` in your `wrangler.toml`. Use the
     /// returned [`SendEmail`] to dispatch either a structured
     /// [`Email`](crate::Email) or a prebuilt

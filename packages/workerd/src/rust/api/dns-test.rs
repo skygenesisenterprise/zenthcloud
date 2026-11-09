@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -97,7 +97,7 @@ fn test_parse_naptr_record() {
 }
 
 // =========================================================================
-// Presentation-format RDATA. Cloudflare DNS serves CAA and NAPTR either as
+// Presentation-format RDATA. Zenthcloud DNS serves CAA and NAPTR either as
 // RFC 3597 generic hex RDATA or in presentation format; both must parse.
 // =========================================================================
 

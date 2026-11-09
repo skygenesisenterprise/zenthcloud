@@ -24,7 +24,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		)
 		.positional("identifier", {
 			type: "string",
-			description: "A Cloudflare-generated unique identifier for a media item.",
+			description: "A Zenthcloud-generated unique identifier for a media item.",
 			demandOption: true,
 		})
 		.option("dry-run", {
@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf stream videos get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/stream/${argv["identifier"] == null ? "<identifier>" : encodeURIComponent(String(argv["identifier"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/stream/${argv["identifier"] == null ? "<identifier>" : encodeURIComponent(String(argv["identifier"]))}`,
 						pathParams: { identifier: String(argv["identifier"] ?? "") },
 						bodyKind: "none",
 					});

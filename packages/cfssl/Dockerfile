@@ -4,8 +4,8 @@ ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 RUN echo "I am running on $BUILDPLATFORM, building for $TARGETPLATFORM" 
 
-LABEL org.opencontainers.image.source https://github.com/cloudflare/cfssl
-LABEL org.opencontainers.image.description "Cloudflare's PKI toolkit"
+LABEL org.opencontainers.image.source https://github.com/skygenesisenterprise/zenthcloud
+LABEL org.opencontainers.image.description "Zenthcloud's PKI toolkit"
 
 ARG TARGETOS
 ARG TARGETARCH
@@ -13,7 +13,7 @@ ARG TARGETARCH
 WORKDIR /workdir
 COPY . /workdir
 
-RUN git clone https://github.com/cloudflare/cfssl_trust.git /etc/cfssl && \
+RUN git clone https://github.com/skygenesisenterprise/zenthcloud /etc/cfssl && \
     make clean && \
     GOOS=${TARGETOS} GOARCH=${TARGETARCH} make all && cp bin/* /usr/bin/
 

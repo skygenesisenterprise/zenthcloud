@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_waiting_room Resource - Cloudflare"
+page_title: "zenthcloud_waiting_room Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Waiting Rooms ReadWaiting Rooms Write
 ---
 
-# cloudflare_waiting_room (Resource)
+# zenthcloud_waiting_room (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_waiting_room" "example_waiting_room" {
+resource "zenthcloud_waiting_room" "example_waiting_room" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   host = "shop.example.com"
   name = "production_webinar"
@@ -63,8 +63,8 @@ resource "cloudflare_waiting_room" "example_waiting_room" {
 
 - `additional_routes` (Attributes List) Only available for the Waiting Room Advanced subscription. Additional hostname and path combinations to which this waiting room will be applied. There is an implied wildcard at the end of the path. The hostname and path combination must be unique to this and all other waiting rooms. (see [below for nested schema](#nestedatt--additional_routes))
 - `cookie_attributes` (Attributes) Configures cookie attributes for the waiting room cookie. This encrypted cookie stores a user's status in the waiting room, such as queue position. (see [below for nested schema](#nestedatt--cookie_attributes))
-- `cookie_suffix` (String) Appends a '_' + a custom suffix to the end of Cloudflare Waiting Room's cookie name(__cf_waitingroom). If `cookie_suffix` is "abcd", the cookie name will be `__cf_waitingroom_abcd`. This field is required if using `additional_routes`.
-- `custom_page_html` (String) Only available for the Waiting Room Advanced subscription. This is a template html file that will be rendered at the edge. If no custom_page_html is provided, the default waiting room will be used. The template is based on mustache ( https://mustache.github.io/ ). There are several variables that are evaluated by the Cloudflare edge:
+- `cookie_suffix` (String) Appends a '_' + a custom suffix to the end of Zenthcloud Waiting Room's cookie name(__cf_waitingroom). If `cookie_suffix` is "abcd", the cookie name will be `__cf_waitingroom_abcd`. This field is required if using `additional_routes`.
+- `custom_page_html` (String) Only available for the Waiting Room Advanced subscription. This is a template html file that will be rendered at the edge. If no custom_page_html is provided, the default waiting room will be used. The template is based on mustache ( https://mustache.github.io/ ). There are several variables that are evaluated by the Zenthcloud edge:
 1. {{`waitTimeKnown`}} Acts like a boolean value that indicates the behavior to take when wait time is not available, for instance when queue_all is **true**.
 2. {{`waitTimeFormatted`}} Estimated wait time for the user. For example, five minutes. Alternatively, you can use:
 3. {{`waitTime`}} Number of minutes of estimated wait for a user.
@@ -179,7 +179,7 @@ If `json_response_enabled` is **true** and the request hits the waiting room, an
 Available values: "fifo", "random", "passthrough", "reject".
 - `queueing_status_code` (Number) HTTP status code returned to a user while in the queue.
 Available values: 200, 202, 429.
-- `session_duration` (Number) Lifetime of a cookie (in minutes) set by Cloudflare for users who get access to the route. If a user is not seen by Cloudflare again in that time period, they will be treated as a new user that visits the route.
+- `session_duration` (Number) Lifetime of a cookie (in minutes) set by Zenthcloud for users who get access to the route. If a user is not seen by Zenthcloud again in that time period, they will be treated as a new user that visits the route.
 - `suspended` (Boolean) Suspends or allows traffic going to the waiting room. If set to `true`, the traffic will not go to the waiting room.
 - `turnstile_action` (String) Which action to take when a bot is detected using Turnstile. `log` will
 have no impact on queueing behavior, simply keeping track of how many
@@ -188,7 +188,7 @@ bots to a false queueing state, where they will never reach your
 origin. `infinite_queue` requires Advanced Waiting Room.
 Available values: "log", "infinite_queue".
 - `turnstile_mode` (String) Which Turnstile widget type to use for detecting bot traffic. See
-[the Turnstile documentation](https://developers.cloudflare.com/turnstile/concepts/widget/#widget-types)
+[the Turnstile documentation](https://github.com/skygenesisenterprise/zenthcloud)
 for the definitions of these widget types. Set to `off` to disable the
 Turnstile integration entirely. Setting this to anything other than
 `off` or `invisible` requires Advanced Waiting Room.
@@ -226,7 +226,7 @@ Available values: "auto", "always", "never".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_waiting_room.example '<zone_id>/<waiting_room_id>'
+$ terraform import zenthcloud_waiting_room.example '<zone_id>/<waiting_room_id>'
 ```
 
 

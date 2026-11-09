@@ -97,7 +97,7 @@ export const mconn$$telemetry_event: JSONObject = {
         "BlessSlotPending",
         "BlessSlotFailure",
         "Reconcile",
-        "ConfigureCloudflaredTunnel",
+        "ConfigureZenthclouddTunnel",
         "RekeyInstallBoth",
         "RekeyStart",
         "RekeyRestart",

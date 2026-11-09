@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/pages_domain/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/pages_domain/migration/v500"
 )
 
 var _ resource.ResourceWithUpgradeState = (*PagesDomainResource)(nil)

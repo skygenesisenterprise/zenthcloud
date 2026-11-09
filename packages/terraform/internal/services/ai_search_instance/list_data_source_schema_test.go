@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/ai_search_instance"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/test_helpers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/ai_search_instance"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 func TestAISearchInstancesDataSourceModelSchemaParity(t *testing.T) {

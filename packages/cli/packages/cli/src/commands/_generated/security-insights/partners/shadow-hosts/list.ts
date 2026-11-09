@@ -63,7 +63,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf security-insights partners shadow-hosts list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/security-center/partners/${argv["partner"] == null ? "<partner>" : encodeURIComponent(String(argv["partner"]))}/shadow-hosts`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/security-center/partners/${argv["partner"] == null ? "<partner>" : encodeURIComponent(String(argv["partner"]))}/shadow-hosts`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 							partner: String(argv["partner"] ?? ""),

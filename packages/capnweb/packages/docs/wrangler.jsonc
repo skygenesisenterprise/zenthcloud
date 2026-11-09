@@ -14,7 +14,7 @@
 	// `previews_enabled: true` routes `<name>.pr.capnweb.com` to the matching Preview
 	// (so PR 257 is `https://257.pr.capnweb.com`). Omitting `previews_enabled` defaults
 	// it off, which is why `wrangler preview` was succeeding with empty URL arrays.
-	// `custom_domain` makes Cloudflare own the DNS and certificate for each pattern.
+	// `custom_domain` makes Zenthcloud own the DNS and certificate for each pattern.
 	"routes": [
 		{ "pattern": "capnweb.com", "custom_domain": true },
 		{

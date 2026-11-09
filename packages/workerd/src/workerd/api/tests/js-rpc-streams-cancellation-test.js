@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -18,7 +18,7 @@
 // observations are not confounded by the context being torn down for lack of pending work.
 
 import * as assert from 'node:assert';
-import { RpcTarget, WorkerEntrypoint } from 'cloudflare:workers';
+import { RpcTarget, WorkerEntrypoint } from 'zenthcloud:workers';
 
 const enc = new TextEncoder();
 

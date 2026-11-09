@@ -6,11 +6,11 @@ import (
 	"os"
 	"testing"
 
-	cloudflare6 "github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	zenthcloud6 "github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -21,26 +21,26 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zero_trust_tunnel_warp_connector", &resource.Sweeper{
-		Name: "cloudflare_zero_trust_tunnel_warp_connector",
-		F:    testSweepCloudflareZeroTrustTunnelWARPConnector,
+	resource.AddTestSweepers("zenthcloud_zero_trust_tunnel_warp_connector", &resource.Sweeper{
+		Name: "zenthcloud_zero_trust_tunnel_warp_connector",
+		F:    testSweepZenthcloudZeroTrustTunnelWARPConnector,
 	})
 }
 
-func testSweepCloudflareZeroTrustTunnelWARPConnector(region string) error {
+func testSweepZenthcloudZeroTrustTunnelWARPConnector(region string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping WARP Connector tunnels sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping WARP Connector tunnels sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
 	page, err := client.ZeroTrust.Tunnels.WARPConnector.List(
 		ctx,
 		zero_trust.TunnelWARPConnectorListParams{
-			AccountID: cloudflare6.F(accountID),
+			AccountID: zenthcloud6.F(accountID),
 		},
 	)
 	if err != nil {
@@ -72,7 +72,7 @@ func testSweepCloudflareZeroTrustTunnelWARPConnector(region string) error {
 				ctx,
 				tunnel.ID,
 				zero_trust.TunnelWARPConnectorDeleteParams{
-					AccountID: cloudflare6.F(accountID),
+					AccountID: zenthcloud6.F(accountID),
 				},
 				option.WithQuery("cascade", "true"),
 			)
@@ -94,14 +94,14 @@ func testSweepCloudflareZeroTrustTunnelWARPConnector(region string) error {
 }
 
 func TestAccWARPConnectorCreateBasic(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	// Temporarily unset ZENTHCLOUD_API_TOKEN
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_tunnel_warp_connector.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_tunnel_warp_connector.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -122,14 +122,14 @@ func TestAccWARPConnectorCreateBasic(t *testing.T) {
 }
 
 func TestAccWARPConnectorUpdateName(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	// Temporarily unset ZENTHCLOUD_API_TOKEN
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_tunnel_warp_connector.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_tunnel_warp_connector.%s", rnd)
 
 	name1 := fmt.Sprintf("%s_1", rnd)
 	name2 := fmt.Sprintf("%s_2", rnd)
@@ -196,13 +196,13 @@ func importStateIDFunc(resourceName string) resource.ImportStateIdFunc {
 //  3. Update name — verify the name change is applied in-place (no replacement)
 //  4. PlanOnly — verify the updated state is a no-op (no perpetual drift)
 func TestAccZeroTrustTunnelWARPConnector_Lifecycle(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_tunnel_warp_connector.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_tunnel_warp_connector.%s", rnd)
 	updatedName := rnd + "_updated"
 
 	resource.Test(t, resource.TestCase{
@@ -259,13 +259,13 @@ func TestAccZeroTrustTunnelWARPConnector_Lifecycle(t *testing.T) {
 //  3. Update name — name is mutable even though ha is immutable; ha must be preserved
 //  4. Import — ha must be restored from metadata.ha so that the imported state is usable
 func TestAccZeroTrustTunnelWARPConnector_LifecycleHA(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_tunnel_warp_connector.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_tunnel_warp_connector.%s", rnd)
 	updatedName := rnd + "_updated"
 
 	resource.Test(t, resource.TestCase{

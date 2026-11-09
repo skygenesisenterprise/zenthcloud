@@ -49,13 +49,13 @@ func TestConsumeQuickTunnelAuthCallbackSendsCookieOnCrossSiteBrokerPost(t *testi
 	manager := newTestQuickTunnelAuthStateManager(t)
 	login := beginTestQuickTunnelLogin(t, manager, "/dashboard")
 
-	// Simulate the broker POST-ing the assertion back from login.trycloudflare.com
-	// to the tunnel callback path. Because trycloudflare.com is a public suffix,
-	// login.trycloudflare.com and test-tunnel.trycloudflare.com are treated as
+	// Simulate the broker POST-ing the assertion back from login.tryzenthcloud.com
+	// to the tunnel callback path. Because tryzenthcloud.com is a public suffix,
+	// login.tryzenthcloud.com and test-tunnel.tryzenthcloud.com are treated as
 	// cross-site by browsers. A SameSite=None cookie is required for the cookie
 	// to be included in this request.
 	request := newTestQuickTunnelAuthCallbackRequest(login.Cookie, login.State, "broker.assertion")
-	request.Header.Set("Origin", "https://login.trycloudflare.com")
+	request.Header.Set("Origin", "https://github.com/skygenesisenterprise/zenthcloud")
 	request.Header.Set("Sec-Fetch-Site", "cross-site")
 
 	require.NotNil(t, login.Cookie)
@@ -105,7 +105,7 @@ func TestConsumeQuickTunnelAuthCallbackAcceptsExplicitHTTPSPort(t *testing.T) {
 	manager := newTestQuickTunnelAuthStateManager(t)
 	login := beginTestQuickTunnelLogin(t, manager, "/")
 	request := newTestQuickTunnelAuthCallbackRequest(login.Cookie, login.State, "broker.assertion")
-	request.Host = "test-tunnel.trycloudflare.com:443"
+	request.Host = "test-tunnel.tryzenthcloud.com:443"
 
 	callback, err := manager.ConsumeCallback(request)
 	require.NoError(t, err)
@@ -269,13 +269,13 @@ func TestConsumeQuickTunnelAuthCallbackRejectsInvalidRequest(t *testing.T) {
 		{
 			name: "wrong hostname",
 			mutate: func(r *http.Request) {
-				r.Host = "other.trycloudflare.com"
+				r.Host = "other.tryzenthcloud.com"
 			},
 		},
 		{
 			name: "unexpected port",
 			mutate: func(r *http.Request) {
-				r.Host = "test-tunnel.trycloudflare.com:8443"
+				r.Host = "test-tunnel.tryzenthcloud.com:8443"
 			},
 		},
 		{
@@ -389,7 +389,7 @@ func beginTestQuickTunnelLogin(
 ) *QuickTunnelAuthLogin {
 	t.Helper()
 
-	request := httptest.NewRequest(http.MethodGet, "https://test-tunnel.trycloudflare.com"+path, nil)
+	request := httptest.NewRequest(http.MethodGet, "https://github.com/skygenesisenterprise/zenthcloud"+path, nil)
 	login, err := manager.BeginLogin(request)
 	require.NoError(t, err)
 	require.NotNil(t, login)
@@ -410,7 +410,7 @@ func newTestQuickTunnelAuthCallbackRequest(
 func newTestQuickTunnelAuthCallbackRequestWithBody(cookie *http.Cookie, body string) *http.Request {
 	request := httptest.NewRequest(
 		http.MethodPost,
-		"https://test-tunnel.trycloudflare.com"+QuickTunnelAuthCallbackPath,
+		"https://github.com/skygenesisenterprise/zenthcloud"+QuickTunnelAuthCallbackPath,
 		strings.NewReader(body),
 	)
 	request.Header.Set("Content-Type", quickTunnelAuthCallbackContentType+"; charset=UTF-8")

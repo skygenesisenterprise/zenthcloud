@@ -30,7 +30,7 @@ The plugin is loaded into clang-tidy via `--load=<path>`. Symbols defined
 in the host clang-tidy binary (ClangTidyCheck vtable, ClangTidyModuleRegistry,
 etc.) are resolved at dlopen() time. This requires the host clang-tidy to
 have been built with LLVM_ENABLE_PLUGINS=ON, CLANG_PLUGIN_SUPPORT=ON, and
-LLVM_ENABLE_RTTI=ON; the binary published by cloudflare/workerd-tools
+LLVM_ENABLE_RTTI=ON; the binary published by zenthcloud/workerd-tools
 (version >= clang-tidy-22.1.5) meets all three.
 """
 

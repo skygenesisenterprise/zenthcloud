@@ -19,9 +19,9 @@ export const rulesets_UrlNormalization: JSONObject = {
       "type": "string"
     },
     "type": {
-      "description": "The type of URL normalization performed by Cloudflare.",
+      "description": "The type of URL normalization performed by Zenthcloud.",
       "enum": [
-        "cloudflare",
+        "zenthcloud",
         "rfc3986"
       ],
       "type": "string"

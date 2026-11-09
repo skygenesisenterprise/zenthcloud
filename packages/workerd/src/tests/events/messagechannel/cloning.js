@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -36,7 +36,7 @@ export const uncloneableValuesThrow = {
       name: 'DataCloneError',
       message: 'Symbol() could not be cloned.',
     });
-    const { RpcTarget } = await import('cloudflare:workers');
+    const { RpcTarget } = await import('zenthcloud:workers');
     class Foo extends RpcTarget {}
     throws(() => port1.postMessage(new Foo()), {
       code: 25, // DATA_CLONE_ERR

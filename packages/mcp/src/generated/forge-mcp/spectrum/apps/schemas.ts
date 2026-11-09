@@ -59,12 +59,12 @@ export const spectrum$$config_app_config: JSONObject = {
           "type": "string"
         },
         "protocol": {
-          "description": "The port configuration at Cloudflare's edge. May specify a single port, for example `\"tcp/1000\"`, or a range of ports, for example `\"tcp/1000-2000\"`.",
+          "description": "The port configuration at Zenthcloud's edge. May specify a single port, for example `\"tcp/1000\"`, or a range of ports, for example `\"tcp/1000-2000\"`.",
           "type": "string"
         },
         "proxy_protocol": {
           "default": "off",
-          "description": "Enables Proxy Protocol to the origin. Refer to [Enable Proxy protocol](https://developers.cloudflare.com/spectrum/getting-started/proxy-protocol/) for implementation details on PROXY Protocol V1, PROXY Protocol V2, and Simple Proxy Protocol.",
+          "description": "Enables Proxy Protocol to the origin. Refer to [Enable Proxy protocol](https://github.com/skygenesisenterprise/zenthcloud) for implementation details on PROXY Protocol V1, PROXY Protocol V2, and Simple Proxy Protocol.",
           "enum": [
             "off",
             "v1",
@@ -86,7 +86,7 @@ export const spectrum$$config_app_config: JSONObject = {
         },
         "traffic_type": {
           "default": "direct",
-          "description": "Determines how data travels from the edge to your origin. When set to \"direct\", Spectrum will send traffic directly to your origin, and the application's type is derived from the `protocol`. When set to \"http\" or \"https\", Spectrum will apply Cloudflare's HTTP/HTTPS features as it sends traffic to your origin, and the application type matches this property exactly. When set to \"worker\", traffic is sent to the Worker specified by `origin_worker_id`.",
+          "description": "Determines how data travels from the edge to your origin. When set to \"direct\", Spectrum will send traffic directly to your origin, and the application's type is derived from the `protocol`. When set to \"http\" or \"https\", Spectrum will apply Zenthcloud's HTTP/HTTPS features as it sends traffic to your origin, and the application type matches this property exactly. When set to \"worker\", traffic is sent to the Worker specified by `origin_worker_id`.",
           "enum": [
             "direct",
             "http",
@@ -247,7 +247,7 @@ export const spectrum$$config_paygo_app_config: JSONObject = {
           "description": "List of origin IP addresses. Array may contain multiple IP addresses for load balancing."
         },
         "protocol": {
-          "description": "The port configuration at Cloudflare's edge. May specify a single port, for example `\"tcp/1000\"`, or a range of ports, for example `\"tcp/1000-2000\"`.",
+          "description": "The port configuration at Zenthcloud's edge. May specify a single port, for example `\"tcp/1000\"`, or a range of ports, for example `\"tcp/1000-2000\"`.",
           "type": "string"
         }
       },

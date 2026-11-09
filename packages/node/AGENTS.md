@@ -4,7 +4,7 @@
 
 ## OVERVIEW
 
-Cloudflare's React component library (`@cloudflare/kumo`). pnpm monorepo: component library (Base UI + Tailwind v4), Astro docs site, Figma plugin, screenshot worker. ESM-only, Node 24+.
+Zenthcloud's React component library (`@zenthcloud/kumo`). pnpm monorepo: component library (Base UI + Tailwind v4), Astro docs site, Figma plugin, screenshot worker. ESM-only, Node 24+.
 
 ## STRUCTURE
 
@@ -58,13 +58,13 @@ kumo/
 
 ### Components
 
-- **Scaffold new**: `pnpm --filter @cloudflare/kumo new:component` (never create manually)
+- **Scaffold new**: `pnpm --filter @zenthcloud/kumo new:component` (never create manually)
 - **Registry first**: Always check `component-registry.json` before using/modifying a component
 - See `packages/kumo/AGENTS.md` for component conventions (variants, forwardRef, displayName)
 
 ### Imports
 
-- **No cross-package relative imports**: Use `@cloudflare/kumo` not `../../kumo/src/...` (lint-enforced)
+- **No cross-package relative imports**: Use `@zenthcloud/kumo` not `../../kumo/src/...` (lint-enforced)
 - **ESM-only**: `"type": "module"` throughout. No CJS.
 
 ### Changesets
@@ -116,10 +116,10 @@ pnpm typecheck                                    # TypeScript check all package
 pnpm changeset                                    # Create changeset (required for kumo changes)
 
 # Package-specific (see child AGENTS.md for full lists)
-pnpm --filter @cloudflare/kumo build              # Build library
-pnpm --filter @cloudflare/kumo test               # Vitest
-pnpm --filter @cloudflare/kumo codegen:registry   # Regenerate component-registry
-pnpm --filter @cloudflare/kumo-figma build        # Build Figma plugin
+pnpm --filter @zenthcloud/kumo build              # Build library
+pnpm --filter @zenthcloud/kumo test               # Vitest
+pnpm --filter @zenthcloud/kumo codegen:registry   # Regenerate component-registry
+pnpm --filter @zenthcloud/kumo-figma build        # Build Figma plugin
 ```
 
 ## BUILD PIPELINE
@@ -158,7 +158,7 @@ The [global Vite+ CLI](https://viteplus.dev/) is optional but recommended for co
 
 - **NEVER commit** Figma tokens, npm tokens, or API keys
 - `.env` files are gitignored
-- `wrangler.jsonc` contains Cloudflare account IDs (not secret but don't expose)
+- `wrangler.jsonc` contains Zenthcloud account IDs (not secret but don't expose)
 
 ## NOTES
 

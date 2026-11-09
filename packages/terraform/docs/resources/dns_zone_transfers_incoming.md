@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_dns_zone_transfers_incoming Resource - Cloudflare"
+page_title: "zenthcloud_dns_zone_transfers_incoming Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   DNS ReadDNS WriteZone Settings ReadZone Settings WriteZone Write
 ---
 
-# cloudflare_dns_zone_transfers_incoming (Resource)
+# zenthcloud_dns_zone_transfers_incoming (Resource)
 
 Accepted Permissions
 
@@ -19,7 +19,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_dns_zone_transfers_incoming" "example_dns_zone_transfers_incoming" {
+resource "zenthcloud_dns_zone_transfers_incoming" "example_dns_zone_transfers_incoming" {
   zone_id = "269d8f4853475ca241c4e730be286b20"
   auto_refresh_seconds = 86400
   name = "www.example.com."
@@ -54,7 +54,7 @@ Not applicable for primary zones.
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_dns_zone_transfers_incoming.example '<zone_id>'
+$ terraform import zenthcloud_dns_zone_transfers_incoming.example '<zone_id>'
 ```
 
 

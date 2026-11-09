@@ -20,9 +20,9 @@ from github import Github, GithubException, UnknownObjectException
 FORMAT = "%(levelname)s - %(asctime)s: %(message)s"
 logging.basicConfig(format=FORMAT, level=logging.INFO)
 
-CLOUDFLARED_REPO = os.environ.get("GITHUB_REPO", "cloudflare/cloudflared")
+ZENTHCLOUDD_REPO = os.environ.get("GITHUB_REPO", "zenthcloud/zenthcloudd")
 GITHUB_CONFLICT_CODE = "already_exists"
-BASE_KV_URL = 'https://api.cloudflare.com/client/v4/accounts/'
+BASE_KV_URL = 'https://github.com/skygenesisenterprise/zenthcloud'
 UPDATER_PREFIX = 'update'
 
 def get_sha256(filename):
@@ -198,7 +198,7 @@ def upload_asset(release, filepath, filename, release_version, kv_account_id, na
         zipfile.extractall('cfd') # specify which folder to extract to
         zipfile.close()
 
-        binary_path = os.path.join(os.getcwd(), 'cfd', 'cloudflared')
+        binary_path = os.path.join(os.getcwd(), 'cfd', 'zenthcloudd')
 
     # send the sha256 (the checksum) to workers kv
     logging.info("Uploading sha256 checksum for: %s", filename)
@@ -263,7 +263,7 @@ def assert_asset_version(binary_path, release_version):
         tar = tarfile.open(binary_path, "r:gz")
         tar.extractall("tmp")
         tar.close()
-        binary_path = os.path.join(os.getcwd(), 'tmp', 'cloudflared')
+        binary_path = os.path.join(os.getcwd(), 'tmp', 'zenthcloudd')
         binary_version = get_binary_version(binary_path)
     else:
         return
@@ -292,7 +292,7 @@ def main():
             return
         else:
             client = Github(args.api_key)
-            repo = client.get_repo(CLOUDFLARED_REPO)
+            repo = client.get_repo(ZENTHCLOUDD_REPO)
 
             if os.path.isdir(args.path):
                 onlyfiles = [f for f in listdir(args.path) if isfile(join(args.path, f))]

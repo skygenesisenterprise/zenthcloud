@@ -4,28 +4,28 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
-// TestAccCloudflareD1DatabaseDataSource_ByID verifies looking up a D1 database
+// TestAccZenthcloudD1DatabaseDataSource_ByID verifies looking up a D1 database
 // data source by database_id.
-func TestAccCloudflareD1DatabaseDataSource_ByID(t *testing.T) {
+func TestAccZenthcloudD1DatabaseDataSource_ByID(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_d1_database." + rnd
-	dataSourceName := "data.cloudflare_d1_database." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_d1_database." + rnd
+	dataSourceName := "data.zenthcloud_d1_database." + rnd
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareD1DatabaseDataSourceByID(rnd, accountID),
+				Config: testAccZenthcloudD1DatabaseDataSourceByID(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
@@ -43,20 +43,20 @@ func TestAccCloudflareD1DatabaseDataSource_ByID(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareD1DatabaseDataSource_ByName verifies looking up a D1
+// TestAccZenthcloudD1DatabaseDataSource_ByName verifies looking up a D1
 // database data source using the filter block with a name match.
-func TestAccCloudflareD1DatabaseDataSource_ByName(t *testing.T) {
+func TestAccZenthcloudD1DatabaseDataSource_ByName(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_d1_database." + rnd
-	dataSourceName := "data.cloudflare_d1_database." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_d1_database." + rnd
+	dataSourceName := "data.zenthcloud_d1_database." + rnd
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareD1DatabaseDataSourceByName(rnd, accountID),
+				Config: testAccZenthcloudD1DatabaseDataSourceByName(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
@@ -72,19 +72,19 @@ func TestAccCloudflareD1DatabaseDataSource_ByName(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareD1DatabasesDataSource_List verifies the plural list data
+// TestAccZenthcloudD1DatabasesDataSource_List verifies the plural list data
 // source returns results after creating a D1 database.
-func TestAccCloudflareD1DatabasesDataSource_List(t *testing.T) {
+func TestAccZenthcloudD1DatabasesDataSource_List(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	dataSourceName := "data.cloudflare_d1_databases." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	dataSourceName := "data.zenthcloud_d1_databases." + rnd
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareD1DatabasesDataSourceList(rnd, accountID),
+				Config: testAccZenthcloudD1DatabasesDataSourceList(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("result"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
@@ -96,14 +96,14 @@ func TestAccCloudflareD1DatabasesDataSource_List(t *testing.T) {
 
 // Config helpers
 
-func testAccCloudflareD1DatabaseDataSourceByID(rnd, accountID string) string {
+func testAccZenthcloudD1DatabaseDataSourceByID(rnd, accountID string) string {
 	return acctest.LoadTestCase("d1databasedatasourcebyid.tf", rnd, accountID)
 }
 
-func testAccCloudflareD1DatabaseDataSourceByName(rnd, accountID string) string {
+func testAccZenthcloudD1DatabaseDataSourceByName(rnd, accountID string) string {
 	return acctest.LoadTestCase("d1databasedatasourcebyname.tf", rnd, accountID)
 }
 
-func testAccCloudflareD1DatabasesDataSourceList(rnd, accountID string) string {
+func testAccZenthcloudD1DatabasesDataSourceList(rnd, accountID string) string {
 	return acctest.LoadTestCase("d1databaseslist.tf", rnd, accountID)
 }

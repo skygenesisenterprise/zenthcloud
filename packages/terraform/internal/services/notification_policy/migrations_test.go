@@ -10,27 +10,27 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 // TestMigrateNotificationPolicyFromV4Basic tests basic migration with minimal fields
 func TestMigrateNotificationPolicyFromV4Basic(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_notification_policy." + rnd
+	resourceName := "zenthcloud_notification_policy." + rnd
 	webhookName := rnd + "_webhook"
 	tmpDir := t.TempDir()
 
 	// Create webhook integration first, then reference it in the policy
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_notification_policy_webhooks" "%[1]s" {
+resource "zenthcloud_notification_policy_webhooks" "%[1]s" {
   account_id = "%[2]s"
   name       = "test-webhook-%[1]s"
-  url        = "https://www.cloudflare.com/cdn-cgi/trace"
+  url        = "https://github.com/skygenesisenterprise/zenthcloud"
 }
 
-resource "cloudflare_notification_policy" "%[3]s" {
+resource "zenthcloud_notification_policy" "%[3]s" {
   account_id  = "%[2]s"
   name        = "test-%[3]s"
   description = "Basic notification policy for migration testing"
@@ -38,8 +38,8 @@ resource "cloudflare_notification_policy" "%[3]s" {
   alert_type  = "universal_ssl_event_type"
 
   webhooks_integration {
-    id   = cloudflare_notification_policy_webhooks.%[1]s.id
-    name = cloudflare_notification_policy_webhooks.%[1]s.name
+    id   = zenthcloud_notification_policy_webhooks.%[1]s.id
+    name = zenthcloud_notification_policy_webhooks.%[1]s.name
   }
 }`, webhookName, accountID, rnd)
 
@@ -54,8 +54,8 @@ resource "cloudflare_notification_policy" "%[3]s" {
 				// Step 1: Create with v4 provider
 				// Note: v4 has UUID normalization issues (stores without hyphens, API returns with hyphens)
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -83,9 +83,9 @@ resource "cloudflare_notification_policy" "%[3]s" {
 
 // TestMigrateNotificationPolicyFromV4MultipleSameTypeIntegrations tests multiple webhooks integrations
 func TestMigrateNotificationPolicyFromV4MultipleWebhookIntegrations(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_notification_policy." + rnd
+	resourceName := "zenthcloud_notification_policy." + rnd
 	webhook1 := rnd + "_webhook1"
 	webhook2 := rnd + "_webhook2"
 	webhook3 := rnd + "_webhook3"
@@ -93,25 +93,25 @@ func TestMigrateNotificationPolicyFromV4MultipleWebhookIntegrations(t *testing.T
 
 	// Create 3 webhook integrations first, then reference them in the policy
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_notification_policy_webhooks" "%[1]s" {
+resource "zenthcloud_notification_policy_webhooks" "%[1]s" {
   account_id = "%[4]s"
   name       = "test-webhook-%[1]s"
-  url        = "https://www.cloudflare.com/cdn-cgi/trace"
+  url        = "https://github.com/skygenesisenterprise/zenthcloud"
 }
 
-resource "cloudflare_notification_policy_webhooks" "%[2]s" {
+resource "zenthcloud_notification_policy_webhooks" "%[2]s" {
   account_id = "%[4]s"
   name       = "test-webhook-%[2]s"
-  url        = "https://www.cloudflare.com/cdn-cgi/trace"
+  url        = "https://github.com/skygenesisenterprise/zenthcloud"
 }
 
-resource "cloudflare_notification_policy_webhooks" "%[3]s" {
+resource "zenthcloud_notification_policy_webhooks" "%[3]s" {
   account_id = "%[4]s"
   name       = "test-webhook-%[3]s"
-  url        = "https://www.cloudflare.com/cdn-cgi/trace"
+  url        = "https://github.com/skygenesisenterprise/zenthcloud"
 }
 
-resource "cloudflare_notification_policy" "%[5]s" {
+resource "zenthcloud_notification_policy" "%[5]s" {
   account_id  = "%[4]s"
   name        = "test-%[5]s-multi-webhook"
   description = "Multiple webhooks integration testing"
@@ -119,18 +119,18 @@ resource "cloudflare_notification_policy" "%[5]s" {
   alert_type  = "universal_ssl_event_type"
 
   webhooks_integration {
-    id   = cloudflare_notification_policy_webhooks.%[1]s.id
-    name = cloudflare_notification_policy_webhooks.%[1]s.name
+    id   = zenthcloud_notification_policy_webhooks.%[1]s.id
+    name = zenthcloud_notification_policy_webhooks.%[1]s.name
   }
 
   webhooks_integration {
-    id   = cloudflare_notification_policy_webhooks.%[2]s.id
-    name = cloudflare_notification_policy_webhooks.%[2]s.name
+    id   = zenthcloud_notification_policy_webhooks.%[2]s.id
+    name = zenthcloud_notification_policy_webhooks.%[2]s.name
   }
 
   webhooks_integration {
-    id   = cloudflare_notification_policy_webhooks.%[3]s.id
-    name = cloudflare_notification_policy_webhooks.%[3]s.name
+    id   = zenthcloud_notification_policy_webhooks.%[3]s.id
+    name = zenthcloud_notification_policy_webhooks.%[3]s.name
   }
 }`, webhook1, webhook2, webhook3, accountID, rnd)
 
@@ -145,8 +145,8 @@ resource "cloudflare_notification_policy" "%[5]s" {
 				// Step 1: Create with v4 provider
 				// Note: v4 has UUID normalization issues (stores without hyphens, API returns with hyphens)
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -172,21 +172,21 @@ resource "cloudflare_notification_policy" "%[5]s" {
 
 // TestMigrateNotificationPolicyFromV4EnabledFalse tests CRITICAL enabled=false preservation
 func TestMigrateNotificationPolicyFromV4EnabledFalse(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_notification_policy." + rnd
+	resourceName := "zenthcloud_notification_policy." + rnd
 	webhookName := rnd + "_webhook"
 	tmpDir := t.TempDir()
 
 	// Create webhook integration first, then reference it in the policy
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_notification_policy_webhooks" "%[1]s" {
+resource "zenthcloud_notification_policy_webhooks" "%[1]s" {
   account_id = "%[2]s"
   name       = "test-webhook-%[1]s"
-  url        = "https://www.cloudflare.com/cdn-cgi/trace"
+  url        = "https://github.com/skygenesisenterprise/zenthcloud"
 }
 
-resource "cloudflare_notification_policy" "%[3]s" {
+resource "zenthcloud_notification_policy" "%[3]s" {
   account_id  = "%[2]s"
   name        = "test-%[3]s-disabled"
   description = "Disabled policy testing (enabled=false preservation)"
@@ -194,8 +194,8 @@ resource "cloudflare_notification_policy" "%[3]s" {
   alert_type  = "universal_ssl_event_type"
 
   webhooks_integration {
-    id   = cloudflare_notification_policy_webhooks.%[1]s.id
-    name = cloudflare_notification_policy_webhooks.%[1]s.name
+    id   = zenthcloud_notification_policy_webhooks.%[1]s.id
+    name = zenthcloud_notification_policy_webhooks.%[1]s.name
   }
 }`, webhookName, accountID, rnd)
 
@@ -210,8 +210,8 @@ resource "cloudflare_notification_policy" "%[3]s" {
 				// Step 1: Create with v4 provider
 				// Note: v4 has UUID normalization issues (stores without hyphens, API returns with hyphens)
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -235,22 +235,22 @@ resource "cloudflare_notification_policy" "%[3]s" {
 
 // TestMigrateNotificationPolicyFromV4IntegrationNameRemoval tests that integration 'name' field is removed in v5
 func TestMigrateNotificationPolicyFromV4IntegrationNameRemoval(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_notification_policy." + rnd
+	resourceName := "zenthcloud_notification_policy." + rnd
 	webhookName := rnd + "_webhook"
 	tmpDir := t.TempDir()
 
 	// V4 config with both 'id' and 'name' in webhooks_integration
 	// The 'name' field should be removed during migration to v5
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_notification_policy_webhooks" "%[1]s" {
+resource "zenthcloud_notification_policy_webhooks" "%[1]s" {
   account_id = "%[2]s"
   name       = "test-webhook-%[1]s"
-  url        = "https://www.cloudflare.com/cdn-cgi/trace"
+  url        = "https://github.com/skygenesisenterprise/zenthcloud"
 }
 
-resource "cloudflare_notification_policy" "%[3]s" {
+resource "zenthcloud_notification_policy" "%[3]s" {
   account_id  = "%[2]s"
   name        = "test-%[3]s-name-removal"
   description = "Testing integration name field removal"
@@ -258,8 +258,8 @@ resource "cloudflare_notification_policy" "%[3]s" {
   alert_type  = "universal_ssl_event_type"
 
   webhooks_integration {
-    id   = cloudflare_notification_policy_webhooks.%[1]s.id
-    name = cloudflare_notification_policy_webhooks.%[1]s.name
+    id   = zenthcloud_notification_policy_webhooks.%[1]s.id
+    name = zenthcloud_notification_policy_webhooks.%[1]s.name
   }
 }`, webhookName, accountID, rnd)
 
@@ -274,8 +274,8 @@ resource "cloudflare_notification_policy" "%[3]s" {
 				// Step 1: Create with v4 provider
 				// Note: v4 has UUID normalization issues (stores without hyphens, API returns with hyphens)
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -300,9 +300,9 @@ resource "cloudflare_notification_policy" "%[3]s" {
 
 // TestMigrateNotificationPolicyFromV4WithFilters tests filters block migration from v4 to v5
 func TestMigrateNotificationPolicyFromV4WithFilters(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_notification_policy." + rnd
+	resourceName := "zenthcloud_notification_policy." + rnd
 	webhookName := rnd + "_webhook"
 	tmpDir := t.TempDir()
 
@@ -310,13 +310,13 @@ func TestMigrateNotificationPolicyFromV4WithFilters(t *testing.T) {
 	// Uses billing_usage_alert which supports product and limit filters
 	// This tests the structural migration: v4 block syntax → v5 attribute syntax
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_notification_policy_webhooks" "%[1]s" {
+resource "zenthcloud_notification_policy_webhooks" "%[1]s" {
   account_id = "%[2]s"
   name       = "test-webhook-%[1]s"
-  url        = "https://www.cloudflare.com/cdn-cgi/trace"
+  url        = "https://github.com/skygenesisenterprise/zenthcloud"
 }
 
-resource "cloudflare_notification_policy" "%[3]s" {
+resource "zenthcloud_notification_policy" "%[3]s" {
   account_id  = "%[2]s"
   name        = "test-%[3]s-filters"
   description = "Testing filters block migration"
@@ -329,8 +329,8 @@ resource "cloudflare_notification_policy" "%[3]s" {
   }
 
   webhooks_integration {
-    id   = cloudflare_notification_policy_webhooks.%[1]s.id
-    name = cloudflare_notification_policy_webhooks.%[1]s.name
+    id   = zenthcloud_notification_policy_webhooks.%[1]s.id
+    name = zenthcloud_notification_policy_webhooks.%[1]s.name
   }
 }`, webhookName, accountID, rnd)
 
@@ -344,8 +344,8 @@ resource "cloudflare_notification_policy" "%[3]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},

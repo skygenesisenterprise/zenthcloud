@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_dlp_sensitivity_groups Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_dlp_sensitivity_groups Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust ReadZero Trust Write
 ---
 
-# cloudflare_zero_trust_dlp_sensitivity_groups (Data Source)
+# zenthcloud_zero_trust_dlp_sensitivity_groups (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_dlp_sensitivity_groups" "example_zero_trust_dlp_sensitivity_groups" {
+data "zenthcloud_zero_trust_dlp_sensitivity_groups" "example_zero_trust_dlp_sensitivity_groups" {
   account_id = "account_id"
 }
 ```

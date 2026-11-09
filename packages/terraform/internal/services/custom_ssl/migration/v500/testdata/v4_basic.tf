@@ -1,4 +1,4 @@
-resource "cloudflare_custom_ssl" "%[1]s" {
+resource "zenthcloud_custom_ssl" "%[1]s" {
   zone_id = "%[2]s"
   custom_ssl_options {
     certificate   = <<EOT

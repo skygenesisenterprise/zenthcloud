@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_page_shield_policies Data Source - Cloudflare"
+page_title: "zenthcloud_page_shield_policies Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Domain Page ShieldDomain Page Shield ReadPage ShieldPage Shield ReadZone Settings ReadZone Settings Write
 ---
 
-# cloudflare_page_shield_policies (Data Source)
+# zenthcloud_page_shield_policies (Data Source)
 
 Accepted Permissions
 
@@ -20,7 +20,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_page_shield_policies" "example_page_shield_policies" {
+data "zenthcloud_page_shield_policies" "example_page_shield_policies" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```
@@ -46,7 +46,7 @@ Read-Only:
 Available values: "allow", "log", "add_reporting_directives".
 - `description` (String) A description for the policy
 - `enabled` (Boolean) Whether the policy is enabled
-- `expression` (String) The expression which must match for the policy to be applied, using the Cloudflare Firewall rule expression syntax
+- `expression` (String) The expression which must match for the policy to be applied, using the Zenthcloud Firewall rule expression syntax
 - `id` (String) Identifier
 - `value` (String) The policy which will be applied
 

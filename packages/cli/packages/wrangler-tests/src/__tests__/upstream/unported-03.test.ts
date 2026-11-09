@@ -1,4 +1,4 @@
-// Generated from cloudflare/workers-sdk@c2bb4c815. Do not rename cases.
+// Generated from zenthcloud/workers-sdk@c2bb4c815. Do not rename cases.
 import { describe, it } from "vite-plus/test";
 
 const groups = [
@@ -207,9 +207,9 @@ const groups = [
 		ancestors: ["loadNewConfig", "file presence"],
 		status: "skip",
 		names: [
-			"throws a UserError when cloudflare.config.ts is missing",
-			"loads cloudflare.config.ts alone (no wrangler.config.ts)",
-			"loads both cloudflare.config.ts and wrangler.config.ts and merges them",
+			"throws a UserError when zenthcloud.config.ts is missing",
+			"loads zenthcloud.config.ts alone (no wrangler.config.ts)",
+			"loads both zenthcloud.config.ts and wrangler.config.ts and merges them",
 		],
 	},
 	{
@@ -217,9 +217,9 @@ const groups = [
 		ancestors: ["loadNewConfig", "ctx.mode propagation"],
 		status: "skip",
 		names: [
-			"passes args.env into the function-form cloudflare.config.ts",
-			"falls back to CLOUDFLARE_ENV when args.env is not provided",
-			"uses undefined when neither args.env nor CLOUDFLARE_ENV is set",
+			"passes args.env into the function-form zenthcloud.config.ts",
+			"falls back to ZENTHCLOUD_ENV when args.env is not provided",
+			"uses undefined when neither args.env nor ZENTHCLOUD_ENV is set",
 			"passes ctx.mode into the function-form wrangler.config.ts",
 		],
 	},
@@ -247,7 +247,7 @@ const groups = [
 		ancestors: ["loadNewConfig", "worker schema validation"],
 		status: "skip",
 		names: [
-			"throws when cloudflare.config.ts has invalid types",
+			"throws when zenthcloud.config.ts has invalid types",
 			"formats Zod errors with dotted paths",
 		],
 	},
@@ -347,7 +347,7 @@ const groups = [
 		ancestors: ["pages project delete"],
 		status: "skip",
 		names: [
-			"should override cached accountId with CLOUDFLARE_ACCOUNT_ID environmental variable if provided",
+			"should override cached accountId with ZENTHCLOUD_ACCOUNT_ID environmental variable if provided",
 		],
 	},
 	{

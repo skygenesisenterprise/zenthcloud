@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_ai_gateway_dynamic_routing Resource - Cloudflare"
+page_title: "zenthcloud_ai_gateway_dynamic_routing Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   AI Gateway ReadAI Gateway Write
 ---
 
-# cloudflare_ai_gateway_dynamic_routing (Resource)
+# zenthcloud_ai_gateway_dynamic_routing (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_ai_gateway_dynamic_routing" "example_ai_gateway_dynamic_routing" {
+resource "zenthcloud_ai_gateway_dynamic_routing" "example_ai_gateway_dynamic_routing" {
   account_id = "0d37909e38d3e99c29fa2cd343ac421a"
   gateway_id = "54442216"
   elements = [{
@@ -279,7 +279,7 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_ai_gateway_dynamic_routing.example '<account_id>/<gateway_id>/<id>'
+$ terraform import zenthcloud_ai_gateway_dynamic_routing.example '<account_id>/<gateway_id>/<id>'
 ```
 
 

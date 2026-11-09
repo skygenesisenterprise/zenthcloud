@@ -50,7 +50,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf magic-transit bgp-filter-profiles list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/magic/bgp/filter_profiles`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/magic/bgp/filter_profiles`,
 						pathParams: {},
 						bodyKind: "none",
 					});

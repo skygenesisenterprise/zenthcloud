@@ -1,5 +1,5 @@
 # Basic A record
-resource "cloudflare_dns_record" "%[1]s_basic_a" {
+resource "zenthcloud_dns_record" "%[1]s_basic_a" {
   zone_id = "%[2]s"
   name    = "tf-acctest-basic.%[1]s.%[3]s"
   type    = "A"
@@ -9,7 +9,7 @@ resource "cloudflare_dns_record" "%[1]s_basic_a" {
 }
 
 # CAA record with data field
-resource "cloudflare_dns_record" "%[1]s_caa" {
+resource "zenthcloud_dns_record" "%[1]s_caa" {
   zone_id = "%[2]s"
   name    = "tf-acctest-caa.%[1]s.%[3]s"
   type    = "CAA"
@@ -23,7 +23,7 @@ resource "cloudflare_dns_record" "%[1]s_caa" {
 }
 
 # CNAME record (case-sensitive test)
-resource "cloudflare_dns_record" "%[1]s_cname" {
+resource "zenthcloud_dns_record" "%[1]s_cname" {
   zone_id = "%[2]s"
   name    = "tf-acctest-cname.%[1]s.%[3]s"
   type    = "CNAME"
@@ -33,7 +33,7 @@ resource "cloudflare_dns_record" "%[1]s_cname" {
 }
 
 # Record with tags
-resource "cloudflare_dns_record" "%[1]s_with_tags" {
+resource "zenthcloud_dns_record" "%[1]s_with_tags" {
   zone_id = "%[2]s"
   name    = "tf-acctest-tags.%[1]s.%[3]s"
   type    = "A"
@@ -44,7 +44,7 @@ resource "cloudflare_dns_record" "%[1]s_with_tags" {
 }
 
 # Record with settings
-resource "cloudflare_dns_record" "%[1]s_with_settings" {
+resource "zenthcloud_dns_record" "%[1]s_with_settings" {
   zone_id = "%[2]s"
   name    = "tf-acctest-settings.%[1]s.%[3]s"
   type    = "CNAME"

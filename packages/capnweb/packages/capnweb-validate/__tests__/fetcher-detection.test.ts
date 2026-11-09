@@ -15,7 +15,7 @@ const SHIM = `declare module "capnweb" {
   type Provider<T> = { readonly [K in keyof T]: T[K] };
   export type RpcStub<T> = T extends object ? Provider<T> & StubBase<T> : StubBase<T>;
 }
-declare module "cloudflare:workers" {
+declare module "zenthcloud:workers" {
   export class RpcTarget { readonly __RPC_TARGET_BRAND: never; }
   type Fetcher<T = undefined, Reserved extends string = never> =
     (T extends object ? Pick<T, Exclude<keyof T, Reserved | "fetch" | "connect">> : unknown) & {
@@ -30,7 +30,7 @@ declare module "capnweb-validate/capnweb" {
 
 const IMPORTS = `import { newWorkersRpcResponse } from "capnweb-validate/capnweb";
 import { RpcTarget } from "capnweb";
-import { Fetcher } from "cloudflare:workers";
+import { Fetcher } from "zenthcloud:workers";
 `;
 
 function returnValidator(returnType: string, extra = "") {

@@ -4,33 +4,33 @@ import (
 	"context"
 	"strings"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/migrations"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/migrations"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-// MoveState handles state moves from cloudflare_access_group (v0) to cloudflare_zero_trust_access_group (v500).
+// MoveState handles state moves from zenthcloud_access_group (v0) to zenthcloud_zero_trust_access_group (v500).
 // This is triggered when users use the `moved` block (Terraform 1.8+):
 //
 //	moved {
-//	    from = cloudflare_access_group.example
-//	    to   = cloudflare_zero_trust_access_group.example
+//	    from = zenthcloud_access_group.example
+//	    to   = zenthcloud_zero_trust_access_group.example
 //	}
 func MoveState(
 	ctx context.Context,
 	req resource.MoveStateRequest,
 	resp *resource.MoveStateResponse,
 ) {
-	// Verify source is cloudflare_access_group from cloudflare provider
-	if req.SourceTypeName != "cloudflare_access_group" {
+	// Verify source is zenthcloud_access_group from zenthcloud provider
+	if req.SourceTypeName != "zenthcloud_access_group" {
 		return
 	}
 
-	if !isCloudflareProvider(req.SourceProviderAddress) {
+	if !isZenthcloudProvider(req.SourceProviderAddress) {
 		return
 	}
 
-	tflog.Info(ctx, "Starting state move from cloudflare_access_group to cloudflare_zero_trust_access_group",
+	tflog.Info(ctx, "Starting state move from zenthcloud_access_group to zenthcloud_zero_trust_access_group",
 		map[string]interface{}{
 			"source_type":           req.SourceTypeName,
 			"source_schema_version": req.SourceSchemaVersion,
@@ -57,10 +57,10 @@ func MoveState(
 	// Set the target state
 	resp.Diagnostics.Append(resp.TargetState.Set(ctx, targetState)...)
 
-	tflog.Info(ctx, "State move from cloudflare_access_group to cloudflare_zero_trust_access_group completed successfully")
+	tflog.Info(ctx, "State move from zenthcloud_access_group to zenthcloud_zero_trust_access_group completed successfully")
 }
 
-func isCloudflareProvider(addr string) bool {
-	return strings.Contains(addr, "cloudflare/cloudflare") ||
-		strings.Contains(addr, "registry.terraform.io/cloudflare")
+func isZenthcloudProvider(addr string) bool {
+	return strings.Contains(addr, "zenthcloud/zenthcloud") ||
+		strings.Contains(addr, "registry.terraform.io/zenthcloud")
 }

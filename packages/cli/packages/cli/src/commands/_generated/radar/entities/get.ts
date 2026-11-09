@@ -56,7 +56,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar entities get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/entities/ip`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

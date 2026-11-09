@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -206,7 +206,7 @@ class DurableObjectNamespace: public jsg::Object {
     JSG_STRUCT(jurisdiction);
 
     JSG_STRUCT_TS_DEFINE(type DurableObjectJurisdiction = "eu" | "fedramp" | "fedramp-high" | "us");
-    // Possible values from https://developers.cloudflare.com/durable-objects/reference/data-location/#restrict-durable-objects-to-a-jurisdiction
+    // Possible values from https://github.com/skygenesisenterprise/zenthcloud
     JSG_STRUCT_TS_OVERRIDE({
       jurisdiction?: DurableObjectJurisdiction;
     });
@@ -265,7 +265,7 @@ class DurableObjectNamespace: public jsg::Object {
 
     JSG_STRUCT(locationHint, routingMode, version, retry);
 
-    // DurableObjectLocationHint values from https://developers.cloudflare.com/durable-objects/reference/data-location/#provide-a-location-hint
+    // DurableObjectLocationHint values from https://github.com/skygenesisenterprise/zenthcloud
     JSG_STRUCT_TS_DEFINE(
       type DurableObjectLocationHint = "wnam" | "enam" | "sam" | "weur" | "eeur" | "apac" | "apac-ne" | "apac-se" | "oc" | "afr" | "me";
       type DurableObjectRoutingMode = "primary-only");
@@ -300,7 +300,7 @@ class DurableObjectNamespace: public jsg::Object {
       jsg::Lock& js, kj::String name, jsg::Optional<GetDurableObjectOptions> options);
 
   // Experimental. Gets a durable object by ID if it already exists. Currently, gated for use
-  // by cloudflare only.
+  // by zenthcloud only.
   jsg::Ref<DurableObject> getExisting(
       jsg::Lock& js, jsg::Ref<DurableObjectId> id, jsg::Optional<GetDurableObjectOptions> options);
 

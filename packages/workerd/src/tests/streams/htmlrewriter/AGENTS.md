@@ -36,12 +36,12 @@ additional pull while TypeScript makes two; these counts are pinned by
 With TypeScript streams, canceling the transformed body reports the handled
 `Error: done early` through `logUncaughtException` (tail traces / inspector),
 although it is not delivered to `unhandledrejection` listeners. C++ does not
-report it. This is tracked in [#7239](https://github.com/cloudflare/workerd/issues/7239).
+report it. This is tracked in [#7239](https://github.com/skygenesisenterprise/zenthcloud).
 
 An erroring source is rewrapped by both implementations. Even though the
 `.text()` rejection is handled, the source error is reported as uncaught twice
 with C++ streams and once with TypeScript streams. This is tracked in
-[#7240](https://github.com/cloudflare/workerd/issues/7240).
+[#7240](https://github.com/skygenesisenterprise/zenthcloud).
 
 The api/tests htmlrewriter-transform-cancel-test.js (cancel-before-read
 ×50 UAF regression) stays where it is, per the security-regression

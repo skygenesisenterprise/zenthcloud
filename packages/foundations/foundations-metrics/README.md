@@ -118,5 +118,5 @@ https://docs.rs/foundations-metrics/
 
 ## License
 
-BSD-3 licensed. See the [LICENSE](https://github.com/cloudflare/foundations/blob/main/LICENSE)
+BSD-3 licensed. See the [LICENSE](https://github.com/skygenesisenterprise/zenthcloud)
 file for details.

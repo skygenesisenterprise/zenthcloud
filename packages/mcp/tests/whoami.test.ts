@@ -1,10 +1,10 @@
-import { env, exports } from 'cloudflare:workers'
+import { env, exports } from 'zenthcloud:workers'
 import { Client } from '@modelcontextprotocol/client'
 import { InMemoryTransport, McpServer } from '@modelcontextprotocol/server'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { AUTH_PROPS_VERSION, type AuthProps } from '../src/auth/types'
 import { runWhoamiTool, registerWhoamiTool, WHOAMI_TOOL } from '../src/tools/whoami'
-import { mockIdentityProbe } from './helpers/cloudflare-api'
+import { mockIdentityProbe } from './helpers/zenthcloud-api'
 import { clearKv } from './helpers/kv'
 import { MCP_URL, modernMcpRequest, parseMcpResult } from './helpers/mcp'
 import { clearSpec, seedSpec } from './helpers/spec'
@@ -58,7 +58,7 @@ describe('whoami tool definition', () => {
 })
 
 describe('whoami result', () => {
-  it('identifies a user credential as the Cloudflare user', () => {
+  it('identifies a user credential as the Zenthcloud user', () => {
     const profile = { id: `user:${USER_ID}`, email: 'alice@example.com' }
     expect(runWhoamiTool(user)).toEqual({
       content: [{ type: 'text', text: JSON.stringify(profile) }],

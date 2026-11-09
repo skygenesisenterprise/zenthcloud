@@ -57,7 +57,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf spectrum apps delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/spectrum/apps/${argv["app-id"] == null ? "<app-id>" : encodeURIComponent(String(argv["app-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/spectrum/apps/${argv["app-id"] == null ? "<app-id>" : encodeURIComponent(String(argv["app-id"]))}`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 							"app-id": String(argv["app-id"] ?? ""),

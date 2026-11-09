@@ -5,9 +5,9 @@ package magic_wan_static_route
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/magic_transit"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/magic_transit"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -26,7 +26,7 @@ type MagicWANStaticRouteDataSourceModel struct {
 
 func (m *MagicWANStaticRouteDataSourceModel) toReadParams(_ context.Context) (params magic_transit.RouteGetParams, diags diag.Diagnostics) {
 	params = magic_transit.RouteGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return

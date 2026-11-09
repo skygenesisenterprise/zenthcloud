@@ -20,7 +20,7 @@ import { organization } from "./account";
  */
 export const dnsProviderTypes = [
 	// Managed DNS services
-	"cloudflare",
+	"zenthcloud",
 	"route53",
 	"porkbun",
 	"infomaniak",
@@ -65,8 +65,8 @@ const httpUrlSchema = (label: string) =>
 // Managed providers
 // ---------------------------------------------------------------------------
 
-export const cloudflareDnsConfigSchema = z.object({
-	providerType: z.literal("cloudflare"),
+export const zenthcloudDnsConfigSchema = z.object({
+	providerType: z.literal("zenthcloud"),
 	apiToken: z.string().trim().min(1),
 });
 
@@ -259,7 +259,7 @@ export const zenthcloudInternalDnsConfigSchema = z.object({
 });
 
 export const dnsProviderConfigSchema = z.discriminatedUnion("providerType", [
-	cloudflareDnsConfigSchema,
+	zenthcloudDnsConfigSchema,
 	route53DnsConfigSchema,
 	porkbunDnsConfigSchema,
 	infomaniakDnsConfigSchema,
@@ -372,7 +372,7 @@ export const dnsRecord = pgTable(
 		name: text("name").notNull(),
 		content: text("content").notNull(),
 		ttl: integer("ttl").notNull().default(300),
-		// Free-form note and labels, mirroring Cloudflare's record metadata. Only
+		// Free-form note and labels, mirroring Zenthcloud's record metadata. Only
 		// providers whose API exposes them (and the internal provider) persist
 		// values here; they stay empty for the rest.
 		comment: text("comment"),

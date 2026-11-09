@@ -5,7 +5,7 @@ package calls_turn_app
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -32,7 +32,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"key_id": schema.StringAttribute{
-				Description:   "A Cloudflare-generated unique identifier for a item.",
+				Description:   "A Zenthcloud-generated unique identifier for a item.",
 				Optional:      true,
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplaceIfConfigured(), stringplanmodifier.UseNonNullStateForUnknown()},
@@ -60,7 +60,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  timetypes.RFC3339Type{},
 			},
 			"uid": schema.StringAttribute{
-				Description: "A Cloudflare-generated unique identifier for a item.",
+				Description: "A Zenthcloud-generated unique identifier for a item.",
 				Computed:    true,
 			},
 		},

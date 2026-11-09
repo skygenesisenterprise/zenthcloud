@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_web3_hostname Resource - Cloudflare"
+page_title: "zenthcloud_web3_hostname Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Web3 Hostnames ReadWeb3 Hostnames Write
 ---
 
-# cloudflare_web3_hostname (Resource)
+# zenthcloud_web3_hostname (Resource)
 
 Accepted Permissions
 
@@ -16,12 +16,12 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_web3_hostname" "example_web3_hostname" {
+resource "zenthcloud_web3_hostname" "example_web3_hostname" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name = "gateway.example.com"
   target = "ipfs"
   description = "This is my IPFS gateway."
-  dnslink = "/ipns/onboarding.ipfs.cloudflare.com"
+  dnslink = "/ipns/onboarding.ipfs.zenthcloud.com"
 }
 ```
 
@@ -53,7 +53,7 @@ Available values: "active", "pending", "deleting", "error".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_web3_hostname.example '<zone_id>/<identifier>'
+$ terraform import zenthcloud_web3_hostname.example '<zone_id>/<identifier>'
 ```
 
 

@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -22,10 +22,10 @@ var (
 
 // Embed migration test configuration files.
 //
-// v4 configs use cloudflare_zone_settings_override (the v4 resource).
+// v4 configs use zenthcloud_zone_settings_override (the v4 resource).
 //
 // v5 configs come in two variants:
-//   - plain (e.g. v5_on_off_plain.tf): just the cloudflare_zone_setting resource,
+//   - plain (e.g. v5_on_off_plain.tf): just the zenthcloud_zone_setting resource,
 //     used as the first step in from_v5 tests to create the resource fresh.
 //   - with import+removed blocks (e.g. v5_on_off.tf): the full tf-migrate output,
 //     used as the v4Config argument to MigrationV2TestStep so tf-migrate can
@@ -69,8 +69,8 @@ var v5MultiplePlainConfig string
 
 // TestMigrateZoneSetting_OnOff tests migration of a simple on/off string setting (http3).
 //
-// v4: cloudflare_zone_settings_override with settings { http3 = "on" }
-// v5: cloudflare_zone_setting with setting_id = "http3", value = "on"
+// v4: zenthcloud_zone_settings_override with settings { http3 = "on" }
+// v5: zenthcloud_zone_setting with setting_id = "http3", value = "on"
 //
 // The v5 config includes import + removed blocks so Terraform adopts the
 // existing API resource rather than creating a new one.
@@ -97,7 +97,7 @@ func TestMigrateZoneSetting_OnOff(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			firstConfig := tc.configFn(rnd, zoneID)
@@ -113,8 +113,8 @@ func TestMigrateZoneSetting_OnOff(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -132,17 +132,17 @@ func TestMigrateZoneSetting_OnOff(t *testing.T) {
 					firstStep,
 					acctest.MigrationV2TestStepForZoneSetting(t, migrateConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(
-							"cloudflare_zone_setting."+rnd+"_http3",
+							"zenthcloud_zone_setting."+rnd+"_http3",
 							tfjsonpath.New("zone_id"),
 							knownvalue.StringExact(zoneID),
 						),
 						statecheck.ExpectKnownValue(
-							"cloudflare_zone_setting."+rnd+"_http3",
+							"zenthcloud_zone_setting."+rnd+"_http3",
 							tfjsonpath.New("setting_id"),
 							knownvalue.StringExact("http3"),
 						),
 						statecheck.ExpectKnownValue(
-							"cloudflare_zone_setting."+rnd+"_http3",
+							"zenthcloud_zone_setting."+rnd+"_http3",
 							tfjsonpath.New("value"),
 							knownvalue.StringExact("on"),
 						),
@@ -155,8 +155,8 @@ func TestMigrateZoneSetting_OnOff(t *testing.T) {
 
 // TestMigrateZoneSetting_Number tests migration of an integer setting (browser_cache_ttl).
 //
-// v4: cloudflare_zone_settings_override with settings { browser_cache_ttl = 14400 }
-// v5: cloudflare_zone_setting with setting_id = "browser_cache_ttl", value = 14400
+// v4: zenthcloud_zone_settings_override with settings { browser_cache_ttl = 14400 }
+// v5: zenthcloud_zone_setting with setting_id = "browser_cache_ttl", value = 14400
 func TestMigrateZoneSetting_Number(t *testing.T) {
 	testCases := []struct {
 		name       string
@@ -180,7 +180,7 @@ func TestMigrateZoneSetting_Number(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			firstConfig := tc.configFn(rnd, zoneID)
@@ -196,8 +196,8 @@ func TestMigrateZoneSetting_Number(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -215,17 +215,17 @@ func TestMigrateZoneSetting_Number(t *testing.T) {
 					firstStep,
 					acctest.MigrationV2TestStepForZoneSetting(t, migrateConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(
-							"cloudflare_zone_setting."+rnd+"_browser_cache_ttl",
+							"zenthcloud_zone_setting."+rnd+"_browser_cache_ttl",
 							tfjsonpath.New("zone_id"),
 							knownvalue.StringExact(zoneID),
 						),
 						statecheck.ExpectKnownValue(
-							"cloudflare_zone_setting."+rnd+"_browser_cache_ttl",
+							"zenthcloud_zone_setting."+rnd+"_browser_cache_ttl",
 							tfjsonpath.New("setting_id"),
 							knownvalue.StringExact("browser_cache_ttl"),
 						),
 						statecheck.ExpectKnownValue(
-							"cloudflare_zone_setting."+rnd+"_browser_cache_ttl",
+							"zenthcloud_zone_setting."+rnd+"_browser_cache_ttl",
 							tfjsonpath.New("value"),
 							knownvalue.Float64Exact(14400),
 						),
@@ -238,8 +238,8 @@ func TestMigrateZoneSetting_Number(t *testing.T) {
 
 // TestMigrateZoneSetting_SecurityHeader tests migration of the security_header nested block.
 //
-// v4: cloudflare_zone_settings_override with a security_header { ... } nested block
-// v5: cloudflare_zone_setting with setting_id = "security_header" and a nested
+// v4: zenthcloud_zone_settings_override with a security_header { ... } nested block
+// v5: zenthcloud_zone_setting with setting_id = "security_header" and a nested
 //
 //	value.strict_transport_security object (tf-migrate wraps the attributes)
 func TestMigrateZoneSetting_SecurityHeader(t *testing.T) {
@@ -265,7 +265,7 @@ func TestMigrateZoneSetting_SecurityHeader(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			firstConfig := tc.configFn(rnd, zoneID)
@@ -281,8 +281,8 @@ func TestMigrateZoneSetting_SecurityHeader(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -300,28 +300,28 @@ func TestMigrateZoneSetting_SecurityHeader(t *testing.T) {
 					firstStep,
 					acctest.MigrationV2TestStepForZoneSetting(t, migrateConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(
-							"cloudflare_zone_setting."+rnd+"_security_header",
+							"zenthcloud_zone_setting."+rnd+"_security_header",
 							tfjsonpath.New("zone_id"),
 							knownvalue.StringExact(zoneID),
 						),
 						statecheck.ExpectKnownValue(
-							"cloudflare_zone_setting."+rnd+"_security_header",
+							"zenthcloud_zone_setting."+rnd+"_security_header",
 							tfjsonpath.New("setting_id"),
 							knownvalue.StringExact("security_header"),
 						),
 						// Nested block becomes value.strict_transport_security object
 						statecheck.ExpectKnownValue(
-							"cloudflare_zone_setting."+rnd+"_security_header",
+							"zenthcloud_zone_setting."+rnd+"_security_header",
 							tfjsonpath.New("value").AtMapKey("strict_transport_security").AtMapKey("enabled"),
 							knownvalue.Bool(true),
 						),
 						statecheck.ExpectKnownValue(
-							"cloudflare_zone_setting."+rnd+"_security_header",
+							"zenthcloud_zone_setting."+rnd+"_security_header",
 							tfjsonpath.New("value").AtMapKey("strict_transport_security").AtMapKey("max_age"),
 							knownvalue.Float64Exact(86400),
 						),
 						statecheck.ExpectKnownValue(
-							"cloudflare_zone_setting."+rnd+"_security_header",
+							"zenthcloud_zone_setting."+rnd+"_security_header",
 							tfjsonpath.New("value").AtMapKey("strict_transport_security").AtMapKey("include_subdomains"),
 							knownvalue.Bool(true),
 						),
@@ -332,14 +332,14 @@ func TestMigrateZoneSetting_SecurityHeader(t *testing.T) {
 	}
 }
 
-// TestMigrateZoneSetting_Multiple tests the 1-to-N split: one cloudflare_zone_settings_override
-// with multiple settings becomes multiple cloudflare_zone_setting resources.
+// TestMigrateZoneSetting_Multiple tests the 1-to-N split: one zenthcloud_zone_settings_override
+// with multiple settings becomes multiple zenthcloud_zone_setting resources.
 //
 // This is the core migration scenario. With import blocks generated by tf-migrate,
 // Terraform adopts the existing API resources rather than creating new ones, so
 // MigrationV2TestStep (empty plan) is correct — no AllowCreate needed.
 func TestMigrateZoneSetting_Multiple(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
 	version := acctest.GetLastV4Version()
@@ -356,8 +356,8 @@ func TestMigrateZoneSetting_Multiple(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
@@ -366,39 +366,39 @@ func TestMigrateZoneSetting_Multiple(t *testing.T) {
 			acctest.MigrationV2TestStepForZoneSetting(t, v4Config, tmpDir, version, sourceVer, targetVer, []statecheck.StateCheck{
 				// http3 setting
 				statecheck.ExpectKnownValue(
-					"cloudflare_zone_setting."+rnd+"_http3",
+					"zenthcloud_zone_setting."+rnd+"_http3",
 					tfjsonpath.New("zone_id"),
 					knownvalue.StringExact(zoneID),
 				),
 				statecheck.ExpectKnownValue(
-					"cloudflare_zone_setting."+rnd+"_http3",
+					"zenthcloud_zone_setting."+rnd+"_http3",
 					tfjsonpath.New("setting_id"),
 					knownvalue.StringExact("http3"),
 				),
 				statecheck.ExpectKnownValue(
-					"cloudflare_zone_setting."+rnd+"_http3",
+					"zenthcloud_zone_setting."+rnd+"_http3",
 					tfjsonpath.New("value"),
 					knownvalue.StringExact("on"),
 				),
 				// browser_cache_ttl setting (integer)
 				statecheck.ExpectKnownValue(
-					"cloudflare_zone_setting."+rnd+"_browser_cache_ttl",
+					"zenthcloud_zone_setting."+rnd+"_browser_cache_ttl",
 					tfjsonpath.New("setting_id"),
 					knownvalue.StringExact("browser_cache_ttl"),
 				),
 				statecheck.ExpectKnownValue(
-					"cloudflare_zone_setting."+rnd+"_browser_cache_ttl",
+					"zenthcloud_zone_setting."+rnd+"_browser_cache_ttl",
 					tfjsonpath.New("value"),
 					knownvalue.Float64Exact(14400),
 				),
 				// min_tls_version setting
 				statecheck.ExpectKnownValue(
-					"cloudflare_zone_setting."+rnd+"_min_tls_version",
+					"zenthcloud_zone_setting."+rnd+"_min_tls_version",
 					tfjsonpath.New("setting_id"),
 					knownvalue.StringExact("min_tls_version"),
 				),
 				statecheck.ExpectKnownValue(
-					"cloudflare_zone_setting."+rnd+"_min_tls_version",
+					"zenthcloud_zone_setting."+rnd+"_min_tls_version",
 					tfjsonpath.New("value"),
 					knownvalue.StringExact("1.2"),
 				),

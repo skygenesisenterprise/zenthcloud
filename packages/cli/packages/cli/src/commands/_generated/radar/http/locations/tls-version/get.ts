@@ -77,7 +77,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 			type: "string",
 			array: true,
 			description:
-				"Filters results by bot class. Refer to [Bot classes](https://developers.cloudflare.com/radar/concepts/bot-classes/).",
+				"Filters results by bot class. Refer to [Bot classes](https://github.com/skygenesisenterprise/zenthcloud).",
 		})
 		.option("device-type", {
 			type: "string",
@@ -160,7 +160,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar http locations tls-version get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/http/top/locations/tls_version/${argv["tls-version"] == null ? "<tls-version>" : encodeURIComponent(String(argv["tls-version"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["tls-version"] == null ? "<tls-version>" : encodeURIComponent(String(argv["tls-version"]))}`,
 						pathParams: { "tls-version": String(argv["tls-version"] ?? "") },
 						query: queryParams,
 						bodyKind: "none",

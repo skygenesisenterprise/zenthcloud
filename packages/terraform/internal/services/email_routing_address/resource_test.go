@@ -6,10 +6,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/email_routing"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/email_routing"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -20,20 +20,20 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_email_routing_address", &resource.Sweeper{
-		Name: "cloudflare_email_routing_address",
+	resource.AddTestSweepers("zenthcloud_email_routing_address", &resource.Sweeper{
+		Name: "zenthcloud_email_routing_address",
 		F: func(region string) error {
 			client := acctest.SharedClient()
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			ctx := context.Background()
 
 			if accountID == "" {
-				tflog.Info(ctx, "Skipping email routing addresses sweep: CLOUDFLARE_ACCOUNT_ID not set")
+				tflog.Info(ctx, "Skipping email routing addresses sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 				return nil
 			}
 
 			addresses, err := client.EmailRouting.Addresses.List(ctx, email_routing.AddressListParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			})
 			if err != nil {
 				tflog.Error(ctx, fmt.Sprintf("Failed to fetch email routing addresses: %s", err))
@@ -52,7 +52,7 @@ func init() {
 				}
 				tflog.Info(ctx, fmt.Sprintf("Deleting email routing address: %s (%s) (account: %s)", address.Email, address.Tag, accountID))
 				_, err := client.EmailRouting.Addresses.Delete(ctx, address.Tag, email_routing.AddressDeleteParams{
-					AccountID: cloudflare.F(accountID),
+					AccountID: zenthcloud.F(accountID),
 				})
 				if err != nil {
 					tflog.Error(ctx, fmt.Sprintf("Failed to delete email routing address %s: %s", address.Email, err))
@@ -72,17 +72,17 @@ func init() {
 // isn't possible with the current service that doesn't allow immediate
 // deletions.
 //
-// func TestAccCloudflareEmailRoutingAddress_Basic(t *testing.T) {
+// func TestAccZenthcloudEmailRoutingAddress_Basic(t *testing.T) {
 // 	rnd := utils.GenerateRandomResourceName()
-// 	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-// 	resourceName := "cloudflare_email_routing_address." + rnd
+// 	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+// 	resourceName := "zenthcloud_email_routing_address." + rnd
 
 // 	resource.ParallelTest(t, resource.TestCase{
 // 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 // 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 // 		Steps: []resource.TestStep{
 // 			{
-// 				Config: testAccCheckCloudflareEmailRoutingAddress(rnd, accountID),
+// 				Config: testAccCheckZenthcloudEmailRoutingAddress(rnd, accountID),
 // 				Check: resource.ComposeTestCheckFunc(
 // 					resource.TestCheckResourceAttrSet(resourceName, "tag"),
 // 					resource.TestCheckResourceAttr(resourceName, "email", rnd+"@example.com"),
@@ -98,23 +98,23 @@ func init() {
 // 	})
 // }
 
-func testAccCheckCloudflareEmailRoutingAddress(rnd, accountID string) string {
+func testAccCheckZenthcloudEmailRoutingAddress(rnd, accountID string) string {
 	return acctest.LoadTestCase("emailroutingaddress.tf", rnd, accountID)
 }
 
 func TestAccUpgradeEmailRoutingAddress_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
-	config := testAccCheckCloudflareEmailRoutingAddress(rnd, accountID)
+	config := testAccCheckZenthcloudEmailRoutingAddress(rnd, accountID)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

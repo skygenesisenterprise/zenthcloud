@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_mtls_certificate Data Source - Cloudflare"
+page_title: "zenthcloud_mtls_certificate Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_mtls_certificate (Data Source)
+# zenthcloud_mtls_certificate (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_mtls_certificate" "example_mtls_certificate" {
+data "zenthcloud_mtls_certificate" "example_mtls_certificate" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   mtls_certificate_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }

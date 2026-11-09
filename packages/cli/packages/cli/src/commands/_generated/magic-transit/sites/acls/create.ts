@@ -37,7 +37,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("forward-locally", {
 			type: "boolean",
 			description:
-				'The desired forwarding action for this ACL policy. If set to "false", the policy will forward traffic to Cloudflare. If set to "true", the policy will forward traffic locally on the Magic Connector. If not included in request, will default to false.',
+				'The desired forwarding action for this ACL policy. If set to "false", the policy will forward traffic to Zenthcloud. If set to "true", the policy will forward traffic locally on the Magic Connector. If not included in request, will default to false.',
 		})
 		.option("lan-1-lan-id", {
 			type: "string",
@@ -125,7 +125,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf magic-transit sites acls create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/magic/sites/${argv["site-id"] == null ? "<site-id>" : encodeURIComponent(String(argv["site-id"]))}/acls`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/magic/sites/${argv["site-id"] == null ? "<site-id>" : encodeURIComponent(String(argv["site-id"]))}/acls`,
 						pathParams: { "site-id": String(argv["site-id"] ?? "") },
 						bodyKind: "json",
 						body:

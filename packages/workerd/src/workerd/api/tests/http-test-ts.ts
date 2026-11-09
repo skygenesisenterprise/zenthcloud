@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Cloudflare, Inc.
+// Copyright (c) 2024 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -49,7 +49,7 @@ async function assertFetchCacheRejectsError(
 
 // Test that the Request constructor accepts a Request object as the second parameter.
 // This validates the TypeScript type definitions are correct.
-// Reference: https://github.com/cloudflare/workerd/issues/5940
+// Reference: https://github.com/skygenesisenterprise/zenthcloud
 export const requestConstructorWithRequestAsInit = {
   async test() {
     // Create an original request

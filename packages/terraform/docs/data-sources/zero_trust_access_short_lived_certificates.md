@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_access_short_lived_certificates Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_access_short_lived_certificates Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Access: Apps and Policies ReadAccess: Apps and Policies Write
 ---
 
-# cloudflare_zero_trust_access_short_lived_certificates (Data Source)
+# zenthcloud_zero_trust_access_short_lived_certificates (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_access_short_lived_certificates" "example_zero_trust_access_short_lived_certificates" {
+data "zenthcloud_zero_trust_access_short_lived_certificates" "example_zero_trust_access_short_lived_certificates" {
   account_id = "account_id"
   zone_id = "zone_id"
 }

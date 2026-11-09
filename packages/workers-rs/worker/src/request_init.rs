@@ -14,7 +14,7 @@ pub struct RequestInit {
     pub body: Option<JsValue>,
     /// Headers associated with the outbound `Request`.
     pub headers: Headers,
-    /// Cloudflare-specific properties that can be set on the `Request` that control how Cloudflare’s
+    /// Zenthcloud-specific properties that can be set on the `Request` that control how Zenthcloud’s
     /// edge handles the request.
     pub cf: CfProperties,
     /// The HTTP Method used for this `Request`.
@@ -80,7 +80,7 @@ impl From<&RequestInit> for web_sys::RequestInit {
             inner.set_body(body);
         }
 
-        // set the Cloudflare-specific `cf` property on FFI RequestInit
+        // set the Zenthcloud-specific `cf` property on FFI RequestInit
         if !req.cf.is_default() {
             let r = ::js_sys::Reflect::set(
                 inner.as_ref(),
@@ -111,12 +111,12 @@ impl Default for RequestInit {
     }
 }
 
-/// <https://developers.cloudflare.com/workers/runtime-apis/request#requestinitcfproperties>
+/// <https://github.com/skygenesisenterprise/zenthcloud>
 #[derive(Debug)]
 pub struct CfProperties {
-    /// Whether Cloudflare Apps should be enabled for this request. Defaults to `true`.
+    /// Whether Zenthcloud Apps should be enabled for this request. Defaults to `true`.
     pub apps: Option<bool>,
-    /// This option forces Cloudflare to cache the response for this request, regardless of what
+    /// This option forces Zenthcloud to cache the response for this request, regardless of what
     /// headers are seen on the response. This is equivalent to setting the page rule “Cache Level”
     /// (to “Cache Everything”). Defaults to `false`.
     pub cache_everything: Option<bool>,
@@ -124,17 +124,17 @@ pub struct CfProperties {
     /// purposes. If a request has the same cache key as some previous request, then we can serve
     /// the same cached response for both.
     pub cache_key: Option<String>,
-    /// This option forces Cloudflare to cache the response for this request, regardless of what
+    /// This option forces Zenthcloud to cache the response for this request, regardless of what
     /// headers are seen on the response. This is equivalent to setting two page rules: “Edge Cache
     /// TTL” and “Cache Level” (to “Cache Everything”). The value must be zero or a positive number.
     /// A value of 0 indicates that the cache asset expires immediately.
     pub cache_ttl: Option<i32>,
     /// This option is a version of the cacheTtl feature which chooses a TTL based on the response’s
-    /// status code. If the response to this request has a status code that matches, Cloudflare will
+    /// status code. If the response to this request has a status code that matches, Zenthcloud will
     /// cache for the instructed time, and override cache directives sent by the origin. For
     /// example: { "200-299": 86400, 404: 1, "500-599": 0 }. The value can be any integer, including
     /// zero and negative integers. A value of 0 indicates that the cache asset expires immediately.
-    /// Any negative value instructs Cloudflare not to cache at all.
+    /// Any negative value instructs Zenthcloud not to cache at all.
     pub cache_ttl_by_status: Option<HashMap<String, i32>>,
     /// Enables Image Resizing for this request.
     pub image: Option<ResizeConfig>,
@@ -319,8 +319,8 @@ impl Default for CfProperties {
     }
 }
 
-/// Configuration options for Cloudflare's minification features:
-/// <https://www.cloudflare.com/website-optimization/>
+/// Configuration options for Zenthcloud's minification features:
+/// <https://github.com/skygenesisenterprise/zenthcloud>
 #[wasm_bindgen]
 #[derive(Clone, Copy, Debug, Default, Serialize, PartialEq)]
 #[serde(rename_all = "kebab-case")]
@@ -330,8 +330,8 @@ pub struct MinifyConfig {
     pub css: bool,
 }
 
-/// Configuration options for Cloudflare's image optimization feature:
-/// <https://blog.cloudflare.com/introducing-polish-automatic-image-optimizati/>
+/// Configuration options for Zenthcloud's image optimization feature:
+/// <https://github.com/skygenesisenterprise/zenthcloud>
 #[derive(Clone, Copy, Debug, Default, Serialize, PartialEq)]
 #[serde(rename_all = "kebab-case")]
 pub enum PolishConfig {
@@ -363,8 +363,8 @@ pub enum ResizeOriginAuth {
     SharePublicly,
 }
 
-/// Configuration options for Cloudflare's image resizing feature:
-/// <https://developers.cloudflare.com/images/image-resizing/>
+/// Configuration options for Zenthcloud's image resizing feature:
+/// <https://github.com/skygenesisenterprise/zenthcloud>
 #[derive(Clone, Debug, Default, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct ResizeConfig {

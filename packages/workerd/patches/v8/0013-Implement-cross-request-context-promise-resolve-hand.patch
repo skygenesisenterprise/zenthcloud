@@ -3,7 +3,7 @@ From: James M Snell <jasnell@gmail.com>
 Date: Fri, 5 Jun 2026 20:44:30 +0000
 Subject: Implement cross-request context promise resolve handling
 
-Signed-off-by: James M Snell <jsnell@cloudflare.com>
+Signed-off-by: James M Snell <jsnell@zenthcloud.com>
 
 diff --git a/include/v8-callbacks.h b/include/v8-callbacks.h
 index 61e2d8f212af5096ec2c9359766331309777071a..f4247e8c8b4ff6e04e7b377fdaf1b274f9ff2801 100644

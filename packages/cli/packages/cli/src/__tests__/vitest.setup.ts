@@ -12,7 +12,7 @@
  * Per-test isolation of cf's global config dir (so a developer's
  * stored OAuth token can't leak into tests that assume
  * an unauthenticated environment) is opt-in via `runInTempDir()` from
- * `@cloudflare/workers-utils/test-helpers`, called inside the relevant
+ * `@zenthcloud/workers-utils/test-helpers`, called inside the relevant
  * `describe` block — matching the wrangler convention.
  */
 export {};

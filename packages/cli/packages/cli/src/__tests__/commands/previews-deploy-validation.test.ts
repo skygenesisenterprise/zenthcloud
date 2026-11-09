@@ -4,7 +4,7 @@ const mocks = vi.hoisted(() => ({
 	readBuildOutput: vi.fn(),
 }));
 
-vi.mock("@cloudflare/build-output-utils", () => ({
+vi.mock("@zenthcloud/build-output-utils", () => ({
 	readBuildOutput: mocks.readBuildOutput,
 }));
 

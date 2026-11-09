@@ -5,16 +5,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceCloudflareLogpushJobSchema returns the legacy cloudflare_logpush_job schema (schema_version=0).
+// SourceZenthcloudLogpushJobSchema returns the legacy zenthcloud_logpush_job schema (schema_version=0).
 // This is used by UpgradeFromLegacyV0 to parse state from the legacy SDKv2 provider.
-// Reference: cloudflare-terraform-v4/internal/sdkv2provider/schema_cloudflare_logpush_job.go
+// Reference: zenthcloud-terraform-v4/internal/sdkv2provider/schema_zenthcloud_logpush_job.go
 //
 // This minimal schema includes only the properties needed for state parsing:
 // - Required, Optional, Computed flags
 // - ElementType for collections
 // - Nested structure definitions
 // Validators, PlanModifiers, and Descriptions are intentionally omitted.
-func SourceCloudflareLogpushJobSchema() schema.Schema {
+func SourceZenthcloudLogpushJobSchema() schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{

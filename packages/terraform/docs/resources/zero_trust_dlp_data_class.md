@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_dlp_data_class Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_dlp_data_class Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust ReadZero Trust Write
 ---
 
-# cloudflare_zero_trust_dlp_data_class (Resource)
+# zenthcloud_zero_trust_dlp_data_class (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_dlp_data_class" "example_zero_trust_dlp_data_class" {
+resource "zenthcloud_zero_trust_dlp_data_class" "example_zero_trust_dlp_data_class" {
   account_id = "account_id"
   data_tags = ["182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e"]
   expression = "expression"
@@ -63,7 +63,7 @@ Required:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_dlp_data_class.example '<account_id>/<data_class_id>'
+$ terraform import zenthcloud_zero_trust_dlp_data_class.example '<account_id>/<data_class_id>'
 ```
 
 

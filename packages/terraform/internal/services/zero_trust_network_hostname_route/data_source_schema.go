@@ -5,7 +5,7 @@ package zero_trust_network_hostname_route
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -21,10 +21,10 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		MarkdownDescription: schemata.Description{
 			Scopes: []string{
-				"Cloudflare One Networks Read",
-				"Cloudflare One Networks Write",
-				"Cloudflare Tunnel Read",
-				"Cloudflare Tunnel Write",
+				"Zenthcloud One Networks Read",
+				"Zenthcloud One Networks Write",
+				"Zenthcloud Tunnel Read",
+				"Zenthcloud Tunnel Write",
 			},
 		}.String(),
 		Attributes: map[string]schema.Attribute{
@@ -37,7 +37,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"account_id": schema.StringAttribute{
-				Description: "Cloudflare account ID",
+				Description: "Zenthcloud account ID",
 				Optional:    true,
 			},
 			"comment": schema.StringAttribute{

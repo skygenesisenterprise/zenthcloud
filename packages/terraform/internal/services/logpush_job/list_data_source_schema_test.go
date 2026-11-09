@@ -6,8 +6,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/logpush_job"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/test_helpers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/logpush_job"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 func TestLogpushJobsDataSourceModelSchemaParity(t *testing.T) {

@@ -50,7 +50,7 @@ export const posture$$api_create$$finding$$type$$request: JSONObject = {
       "type": "string"
     },
     "expression": {
-      "description": "Rego expression body for the policy. `package cloudflare.casb.custom` and `import rego.v1` are added automatically. Do not include package or import declarations. This field cannot be changed after creation. Maximum 4096 characters.",
+      "description": "Rego expression body for the policy. `package zenthcloud.casb.custom` and `import rego.v1` are added automatically. Do not include package or import declarations. This field cannot be changed after creation. Maximum 4096 characters.",
       "type": "string"
     },
     "integration_ids": {

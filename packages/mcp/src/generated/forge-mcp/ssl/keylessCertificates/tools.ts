@@ -28,7 +28,7 @@ export const tools: readonly Tool[] = [
   {
     name: "ssl_keylessCertificates_create",
     title: "Create Keyless SSL Configuration",
-    description: "Creates a Keyless SSL configuration that allows SSL/TLS termination without exposing private keys to Cloudflare. Keys remain on your infrastructure.\n\nPOST /zones/{zone_id}/keyless_certificates",
+    description: "Creates a Keyless SSL configuration that allows SSL/TLS termination without exposing private keys to Zenthcloud. Keys remain on your infrastructure.\n\nPOST /zones/{zone_id}/keyless_certificates",
     inputSchema: {
       type: "object",
       properties: {
@@ -58,12 +58,12 @@ export const tools: readonly Tool[] = [
             },
             "port": {
               "default": 24008,
-              "description": "The keyless SSL port used to communicate between Cloudflare and the client's Keyless SSL server.",
+              "description": "The keyless SSL port used to communicate between Zenthcloud and the client's Keyless SSL server.",
               "type": "number"
             },
             "tunnel": {
               "$ref": "#/$defs/tls-certificates-and-hostnames_keyless_tunnel",
-              "description": "Configuration for using Keyless SSL through a Cloudflare Tunnel."
+              "description": "Configuration for using Keyless SSL through a Zenthcloud Tunnel."
             }
           },
           "required": [
@@ -276,12 +276,12 @@ export const tools: readonly Tool[] = [
             },
             "port": {
               "default": 24008,
-              "description": "The keyless SSL port used to communicate between Cloudflare and the client's Keyless SSL server.",
+              "description": "The keyless SSL port used to communicate between Zenthcloud and the client's Keyless SSL server.",
               "type": "number"
             },
             "tunnel": {
               "$ref": "#/$defs/tls-certificates-and-hostnames_keyless_tunnel",
-              "description": "Configuration for using Keyless SSL through a Cloudflare Tunnel."
+              "description": "Configuration for using Keyless SSL through a Zenthcloud Tunnel."
             }
           },
           "type": "object"

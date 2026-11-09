@@ -6,10 +6,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -23,21 +23,21 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zero_trust_dlp_custom_entry", &resource.Sweeper{
-		Name: "cloudflare_zero_trust_dlp_custom_entry",
-		F:    testSweepCloudflareZeroTrustDLPCustomEntry,
+	resource.AddTestSweepers("zenthcloud_zero_trust_dlp_custom_entry", &resource.Sweeper{
+		Name: "zenthcloud_zero_trust_dlp_custom_entry",
+		F:    testSweepZenthcloudZeroTrustDLPCustomEntry,
 	})
 }
 
-func testSweepCloudflareZeroTrustDLPCustomEntry(r string) error {
+func testSweepZenthcloudZeroTrustDLPCustomEntry(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	entriesResp, err := client.ZeroTrust.DLP.Entries.Custom.List(
 		ctx,
 		zero_trust.DLPEntryCustomListParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		},
 	)
 	if err != nil {
@@ -55,7 +55,7 @@ func testSweepCloudflareZeroTrustDLPCustomEntry(r string) error {
 			ctx,
 			entry.ID,
 			zero_trust.DLPEntryCustomDeleteParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			},
 		)
 		if err != nil {
@@ -66,10 +66,10 @@ func testSweepCloudflareZeroTrustDLPCustomEntry(r string) error {
 	return nil
 }
 
-func TestAccCloudflareZeroTrustDlpCustomEntry_Basic(t *testing.T) {
+func TestAccZenthcloudZeroTrustDlpCustomEntry_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_dlp_custom_entry." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_zero_trust_dlp_custom_entry." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -111,10 +111,10 @@ func TestAccCloudflareZeroTrustDlpCustomEntry_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareZeroTrustDlpCustomEntry_WithValidation(t *testing.T) {
+func TestAccZenthcloudZeroTrustDlpCustomEntry_WithValidation(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_dlp_custom_entry." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_zero_trust_dlp_custom_entry." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -139,11 +139,11 @@ func TestAccCloudflareZeroTrustDlpCustomEntry_WithValidation(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareZeroTrustDlpCustomEntry_UpdatePattern(t *testing.T) {
+func TestAccZenthcloudZeroTrustDlpCustomEntry_UpdatePattern(t *testing.T) {
 	// Test updating the pattern regex between different formats
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_dlp_custom_entry." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_zero_trust_dlp_custom_entry." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -177,10 +177,10 @@ func TestAccCloudflareZeroTrustDlpCustomEntry_UpdatePattern(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareZeroTrustDlpCustomEntry_CompleteWorkflow(t *testing.T) {
+func TestAccZenthcloudZeroTrustDlpCustomEntry_CompleteWorkflow(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_dlp_custom_entry." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_zero_trust_dlp_custom_entry." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -224,15 +224,15 @@ func TestAccCloudflareZeroTrustDlpCustomEntry_CompleteWorkflow(t *testing.T) {
 
 func testAccZeroTrustDlpCustomEntryConfig_Basic(rnd, accountID, enabled, name, regex string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_zero_trust_dlp_custom_profile" "custom_profile" {
+resource "zenthcloud_zero_trust_dlp_custom_profile" "custom_profile" {
   name       = "%[1]s"
   account_id = "%[2]s"
 }
 
-resource "cloudflare_zero_trust_dlp_custom_entry" "%[1]s" {
+resource "zenthcloud_zero_trust_dlp_custom_entry" "%[1]s" {
   name       = "%[4]s"
   account_id = "%[2]s"
-  profile_id = cloudflare_zero_trust_dlp_custom_profile.custom_profile.id
+  profile_id = zenthcloud_zero_trust_dlp_custom_profile.custom_profile.id
   enabled    = %[3]s
 
   pattern = {
@@ -244,15 +244,15 @@ resource "cloudflare_zero_trust_dlp_custom_entry" "%[1]s" {
 
 func testAccZeroTrustDlpCustomEntryConfig_WithValidation(rnd, accountID, name, validation string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_zero_trust_dlp_custom_profile" "custom_profile" {
+resource "zenthcloud_zero_trust_dlp_custom_profile" "custom_profile" {
   name       = "%[1]s"
   account_id = "%[2]s"
 }
 
-resource "cloudflare_zero_trust_dlp_custom_entry" "%[1]s" {
+resource "zenthcloud_zero_trust_dlp_custom_entry" "%[1]s" {
   name       = "%[3]s"
   account_id = "%[2]s"
-  profile_id = cloudflare_zero_trust_dlp_custom_profile.custom_profile.id
+  profile_id = zenthcloud_zero_trust_dlp_custom_profile.custom_profile.id
   enabled    = true
 
   pattern = {
@@ -271,15 +271,15 @@ func testAccZeroTrustDlpCustomEntryConfig_Complete(rnd, accountID, enabled, name
 	}
 
 	return fmt.Sprintf(`
-resource "cloudflare_zero_trust_dlp_custom_profile" "custom_profile" {
+resource "zenthcloud_zero_trust_dlp_custom_profile" "custom_profile" {
   name       = "%[1]s"
   account_id = "%[2]s"
 }
 
-resource "cloudflare_zero_trust_dlp_custom_entry" "%[1]s" {
+resource "zenthcloud_zero_trust_dlp_custom_entry" "%[1]s" {
   name       = "%[4]s"
   account_id = "%[2]s"
-  profile_id = cloudflare_zero_trust_dlp_custom_profile.custom_profile.id
+  profile_id = zenthcloud_zero_trust_dlp_custom_profile.custom_profile.id
   enabled    = %[3]s
 
   pattern = {

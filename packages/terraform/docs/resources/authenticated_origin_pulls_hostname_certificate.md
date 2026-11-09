@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_authenticated_origin_pulls_hostname_certificate Resource - Cloudflare"
+page_title: "zenthcloud_authenticated_origin_pulls_hostname_certificate Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_authenticated_origin_pulls_hostname_certificate (Resource)
+# zenthcloud_authenticated_origin_pulls_hostname_certificate (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_authenticated_origin_pulls_hostname_certificate" "example_authenticated_origin_pulls_hostname_certificate" {
+resource "zenthcloud_authenticated_origin_pulls_hostname_certificate" "example_authenticated_origin_pulls_hostname_certificate" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   certificate = <<EOT
   -----BEGIN CERTIFICATE-----
@@ -97,7 +97,7 @@ Available values: "initializing", "pending_deployment", "pending_deletion", "act
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_authenticated_origin_pulls_hostname_certificate.example '<zone_id>/<certificate_id>'
+$ terraform import zenthcloud_authenticated_origin_pulls_hostname_certificate.example '<zone_id>/<certificate_id>'
 ```
 
 

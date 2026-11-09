@@ -5,8 +5,8 @@ package worker
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -143,7 +143,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 								},
 							},
 							"invocation_logs": schema.BoolAttribute{
-								Description: "Whether [invocation logs](https://developers.cloudflare.com/workers/observability/logs/workers-logs/#invocation-logs) are enabled for the Worker.",
+								Description: "Whether [invocation logs](https://github.com/skygenesisenterprise/zenthcloud) are enabled for the Worker.",
 								Computed:    true,
 								Optional:    true,
 								Default:     booldefault.StaticBool(true),
@@ -352,7 +352,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 										Default:     float64default.StaticFloat64(1),
 									},
 									"invocation_logs": schema.BoolAttribute{
-										Description: "Whether [invocation logs](https://developers.cloudflare.com/workers/observability/logs/workers-logs/#invocation-logs) are enabled for the Worker.",
+										Description: "Whether [invocation logs](https://github.com/skygenesisenterprise/zenthcloud) are enabled for the Worker.",
 										Computed:    true,
 										Optional:    true,
 										Default:     booldefault.StaticBool(true),
@@ -422,7 +422,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"mode": schema.StringAttribute{
-								Description: "Enables [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).\nAvailable values: \"smart\", \"targeted\".",
+								Description: "Enables [Smart Placement](https://github.com/skygenesisenterprise/zenthcloud).\nAvailable values: \"smart\", \"targeted\".",
 								Optional:    true,
 								Validators: []validator.String{
 									stringvalidator.OneOfCaseInsensitive("smart", "targeted"),
@@ -491,11 +491,11 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						Default:     booldefault.StaticBool(false),
 					},
 					"preview_url_suffix": schema.StringAttribute{
-						Description: "Prepend a version or preview prefix to this host suffix to form the *.workers.dev [preview URL](https://developers.cloudflare.com/workers/configuration/previews/) the Worker would serve on once previews are enabled, e.g. `https://<prefix>-my-worker.my-subdomain.workers.dev`. Present whenever the account owns a workers.dev subdomain, regardless of whether `previews_enabled` is true, so presence does not imply preview URLs are currently live. Absent only when the account owns no workers.dev subdomain.",
+						Description: "Prepend a version or preview prefix to this host suffix to form the *.workers.dev [preview URL](https://github.com/skygenesisenterprise/zenthcloud) the Worker would serve on once previews are enabled, e.g. `https://<prefix>-my-worker.my-subdomain.workers.dev`. Present whenever the account owns a workers.dev subdomain, regardless of whether `previews_enabled` is true, so presence does not imply preview URLs are currently live. Absent only when the account owns no workers.dev subdomain.",
 						Computed:    true,
 					},
 					"previews_enabled": schema.BoolAttribute{
-						Description: "Whether [preview URLs](https://developers.cloudflare.com/workers/configuration/previews/) are enabled for the Worker.",
+						Description: "Whether [preview URLs](https://github.com/skygenesisenterprise/zenthcloud) are enabled for the Worker.",
 						Computed:    true,
 						Optional:    true,
 						PlanModifiers: []planmodifier.Bool{
@@ -657,7 +657,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"workers": schema.ListNestedAttribute{
-						Description: "Other Workers that reference the Worker using [service bindings](https://developers.cloudflare.com/workers/runtime-apis/bindings/service-bindings/).",
+						Description: "Other Workers that reference the Worker using [service bindings](https://github.com/skygenesisenterprise/zenthcloud).",
 						Computed:    true,
 						CustomType:  customfield.NewNestedObjectListType[WorkerReferencesWorkersModel](ctx),
 						NestedObject: schema.NestedAttributeObject{

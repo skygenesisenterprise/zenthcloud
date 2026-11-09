@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 #include "module.h"
@@ -97,7 +97,7 @@ jsg::JsValue ModuleUtil::createRequire(jsg::Lock& js, kj::String path) {
       // If the specifier begins with one of our known prefixes, let's not resolve
       // it against the referrer.
       try {
-        if (spec.startsWith("node:") || spec.startsWith("cloudflare:") ||
+        if (spec.startsWith("node:") || spec.startsWith("zenthcloud:") ||
             spec.startsWith("workerd:")) {
           return kj::Path::parse(spec);
         }

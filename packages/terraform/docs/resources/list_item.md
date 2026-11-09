@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_list_item Resource - Cloudflare"
+page_title: "zenthcloud_list_item Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Filter Lists EditAccount Filter Lists Read
 ---
 
-# cloudflare_list_item (Resource)
+# zenthcloud_list_item (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_list_item" "example_list_item" {
+resource "zenthcloud_list_item" "example_list_item" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   list_id = "2c0fc9fa937b11eaa1b71c4d701ab86e"
   ip = "10.0.0.1"
@@ -79,7 +79,7 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_list_item.example '<account_id>/<list_id>/<item_id>'
+$ terraform import zenthcloud_list_item.example '<account_id>/<list_id>/<item_id>'
 ```
 
 

@@ -6,17 +6,17 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-func TestAccCloudflareOAuthClient_Basic(t *testing.T) {
+func TestAccZenthcloudOAuthClient_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_oauth_client.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_oauth_client.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -26,7 +26,7 @@ func TestAccCloudflareOAuthClient_Basic(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareOAuthClientConfig(rnd, accountID, rnd, "https://example.com/callback"),
+				Config: testAccZenthcloudOAuthClientConfig(rnd, accountID, rnd, "https://example.com/callback"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(name, "client_name", rnd),
@@ -40,7 +40,7 @@ func TestAccCloudflareOAuthClient_Basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCloudflareOAuthClientConfig(rnd, accountID, rnd+"-updated", "https://example.com/updated-callback"),
+				Config: testAccZenthcloudOAuthClientConfig(rnd, accountID, rnd+"-updated", "https://example.com/updated-callback"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(name, "client_name", rnd+"-updated"),
@@ -52,12 +52,12 @@ func TestAccCloudflareOAuthClient_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareOAuthClient_Datasource(t *testing.T) {
+func TestAccZenthcloudOAuthClient_Datasource(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_oauth_client.%s", rnd)
-	dataSourceName := fmt.Sprintf("data.cloudflare_oauth_client.%s", rnd)
-	listDataSourceName := fmt.Sprintf("data.cloudflare_oauth_clients.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := fmt.Sprintf("zenthcloud_oauth_client.%s", rnd)
+	dataSourceName := fmt.Sprintf("data.zenthcloud_oauth_client.%s", rnd)
+	listDataSourceName := fmt.Sprintf("data.zenthcloud_oauth_clients.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -67,7 +67,7 @@ func TestAccCloudflareOAuthClient_Datasource(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareOAuthClientDataSourceConfig(rnd, accountID),
+				Config: testAccZenthcloudOAuthClientDataSourceConfig(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(dataSourceName, "client_id", resourceName, "client_id"),
 					resource.TestCheckResourceAttr(dataSourceName, consts.AccountIDSchemaKey, accountID),
@@ -123,10 +123,10 @@ func testAccCheckListAttrContains(resourceName, attrName, want string) resource.
 	}
 }
 
-func testAccCloudflareOAuthClientConfig(resourceID, accountID, clientName, redirectURI string) string {
+func testAccZenthcloudOAuthClientConfig(resourceID, accountID, clientName, redirectURI string) string {
 	return acctest.LoadTestCase("basic.tf", resourceID, accountID, clientName, redirectURI)
 }
 
-func testAccCloudflareOAuthClientDataSourceConfig(resourceID, accountID string) string {
+func testAccZenthcloudOAuthClientDataSourceConfig(resourceID, accountID string) string {
 	return acctest.LoadTestCase("data_source.tf", resourceID, accountID)
 }

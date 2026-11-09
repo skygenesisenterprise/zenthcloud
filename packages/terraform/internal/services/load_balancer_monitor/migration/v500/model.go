@@ -1,8 +1,8 @@
 // Package v500 implements state migration from legacy provider (v4) to current provider (v5)
-// for the cloudflare_load_balancer_monitor resource.
+// for the zenthcloud_load_balancer_monitor resource.
 //
 // Schema version: 0 (v4) → 500 (v5)
-// Resource name: cloudflare_load_balancer_monitor (unchanged)
+// Resource name: zenthcloud_load_balancer_monitor (unchanged)
 package v500
 
 import (
@@ -15,7 +15,7 @@ import (
 
 // SourceLoadBalancerMonitorModel represents the legacy resource state from v4.x provider.
 // Schema version: 0 (implicit in SDKv2)
-// Resource type: cloudflare_load_balancer_monitor
+// Resource type: zenthcloud_load_balancer_monitor
 //
 // This model matches the v4 schema structure with SDKv2 types.
 type SourceLoadBalancerMonitorModel struct {
@@ -76,7 +76,7 @@ type SourceHeaderItem struct {
 
 // TargetLoadBalancerMonitorModel represents the current resource state from v5.x+ provider.
 // Schema version: 500 (controlled by migrations.schema version)
-// Resource type: cloudflare_load_balancer_monitor
+// Resource type: zenthcloud_load_balancer_monitor
 //
 // This model matches the model in the parent package's model.go file.
 // We duplicate it here to keep the migration package self-contained.

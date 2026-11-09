@@ -5,8 +5,8 @@ package rate_limit
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -26,7 +26,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				"Firewall Services Write",
 			},
 		}.String(),
-		DeprecationMessage: "Rate limiting API is deprecated in favour of using the Ruleset Engine. See https://developers.cloudflare.com/fundamentals/api/reference/deprecations/#rate-limiting-api-previous-version for full details.",
+		DeprecationMessage: "Rate limiting API is deprecated in favour of using the Ruleset Engine. See https://github.com/skygenesisenterprise/zenthcloud for full details.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Defines the unique identifier of the rate limit.",
@@ -49,7 +49,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"period": schema.Float64Attribute{
-				Description: "The time in seconds (an integer value) to count matching traffic. If the count exceeds the configured threshold within this period, Cloudflare will perform the configured action.",
+				Description: "The time in seconds (an integer value) to count matching traffic. If the count exceeds the configured threshold within this period, Zenthcloud will perform the configured action.",
 				Computed:    true,
 				Validators: []validator.Float64{
 					float64validator.Between(10, 86400),
@@ -81,7 +81,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"response": schema.SingleNestedAttribute{
-						Description: "A custom content type and reponse to return when the threshold is exceeded. The custom response configured in this object will override the custom error for the zone. This object is optional.\nNotes: If you omit this object, Cloudflare will use the default HTML error page. If \"mode\" is \"challenge\", \"managed_challenge\", or \"js_challenge\", Cloudflare will use the zone challenge pages and you should not provide the \"response\" object.",
+						Description: "A custom content type and reponse to return when the threshold is exceeded. The custom response configured in this object will override the custom error for the zone. This object is optional.\nNotes: If you omit this object, Zenthcloud will use the default HTML error page. If \"mode\" is \"challenge\", \"managed_challenge\", or \"js_challenge\", Zenthcloud will use the zone challenge pages and you should not provide the \"response\" object.",
 						Computed:    true,
 						CustomType:  customfield.NewNestedObjectType[RateLimitActionResponseDataSourceModel](ctx),
 						Attributes: map[string]schema.Attribute{
@@ -96,7 +96,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"timeout": schema.Float64Attribute{
-						Description: "The time in seconds during which Cloudflare will perform the mitigation action. Must be an integer value greater than or equal to the period.\nNotes: If \"mode\" is \"challenge\", \"managed_challenge\", or \"js_challenge\", Cloudflare will use the zone's Challenge Passage time and you should not provide this value.",
+						Description: "The time in seconds during which Zenthcloud will perform the mitigation action. Must be an integer value greater than or equal to the period.\nNotes: If \"mode\" is \"challenge\", \"managed_challenge\", or \"js_challenge\", Zenthcloud will use the zone's Challenge Passage time and you should not provide this value.",
 						Computed:    true,
 						Validators: []validator.Float64{
 							float64validator.Between(1, 86400),
@@ -192,7 +192,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						CustomType: customfield.NewNestedObjectType[RateLimitMatchResponseDataSourceModel](ctx),
 						Attributes: map[string]schema.Attribute{
 							"origin_traffic": schema.BoolAttribute{
-								Description: "When true, only the uncached traffic served from your origin servers will count towards rate limiting. In this case, any cached traffic served by Cloudflare will not count towards rate limiting. This field is optional.\nNotes: This field is deprecated. Instead, use response headers and set \"origin_traffic\" to \"false\" to avoid legacy behaviour interacting with the \"response_headers\" property.",
+								Description: "When true, only the uncached traffic served from your origin servers will count towards rate limiting. In this case, any cached traffic served by Zenthcloud will not count towards rate limiting. This field is optional.\nNotes: This field is deprecated. Instead, use response headers and set \"origin_traffic\" to \"false\" to avoid legacy behaviour interacting with the \"response_headers\" property.",
 								Computed:    true,
 							},
 						},

@@ -8,12 +8,12 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/managed_transforms"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/managed_transforms"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -30,7 +30,7 @@ func NewResource() resource.Resource {
 
 // ManagedTransformsResource defines the resource implementation.
 type ManagedTransformsResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *ManagedTransformsResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -42,12 +42,12 @@ func (r *ManagedTransformsResource) Configure(ctx context.Context, req resource.
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -62,7 +62,7 @@ func (r *ManagedTransformsResource) checkAllDisabledBeforeCreation(ctx context.C
 	res, err := r.client.ManagedTransforms.List(
 		ctx,
 		managed_transforms.ManagedTransformListParams{
-			ZoneID: cloudflare.F(zoneId),
+			ZoneID: zenthcloud.F(zoneId),
 		},
 	)
 
@@ -118,7 +118,7 @@ func (r *ManagedTransformsResource) Create(ctx context.Context, req resource.Cre
 	_, err = r.client.ManagedTransforms.Edit(
 		ctx,
 		managed_transforms.ManagedTransformEditParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -181,7 +181,7 @@ func (r *ManagedTransformsResource) Update(ctx context.Context, req resource.Upd
 	_, err = r.client.ManagedTransforms.Edit(
 		ctx,
 		managed_transforms.ManagedTransformEditParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -215,7 +215,7 @@ func (r *ManagedTransformsResource) disableMissingTransformations(
 	res, err := r.client.ManagedTransforms.List(
 		ctx,
 		managed_transforms.ManagedTransformListParams{
-			ZoneID: cloudflare.F(plan.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(plan.ZoneID.ValueString()),
 		},
 	)
 
@@ -300,7 +300,7 @@ func (r *ManagedTransformsResource) Read(ctx context.Context, req resource.ReadR
 	_, err := r.client.ManagedTransforms.List(
 		ctx,
 		managed_transforms.ManagedTransformListParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -418,7 +418,7 @@ func (r *ManagedTransformsResource) Delete(ctx context.Context, req resource.Del
 	err := r.client.ManagedTransforms.Delete(
 		ctx,
 		managed_transforms.ManagedTransformDeleteParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
@@ -454,7 +454,7 @@ func (r *ManagedTransformsResource) ImportState(ctx context.Context, req resourc
 	_, err := r.client.ManagedTransforms.List(
 		ctx,
 		managed_transforms.ManagedTransformListParams{
-			ZoneID: cloudflare.F(path),
+			ZoneID: zenthcloud.F(path),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),

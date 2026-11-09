@@ -1,12 +1,12 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
-import { DurableObject } from 'cloudflare:workers';
+import { DurableObject } from 'zenthcloud:workers';
 import { strictEqual } from 'node:assert';
 import { VALUE } from 'helper';
 
-// The static import graph above (a cloudflare: builtin, a node: builtin, and
+// The static import graph above (a zenthcloud: builtin, a node: builtin, and
 // a worker-bundle module) is resolved through the new module registry when
 // the worker starts.
 

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_access_ai_controls_mcp_portal Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_access_ai_controls_mcp_portal Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   MCP Portals ReadMCP Portals Write
 ---
 
-# cloudflare_zero_trust_access_ai_controls_mcp_portal (Resource)
+# zenthcloud_zero_trust_access_ai_controls_mcp_portal (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_access_ai_controls_mcp_portal" "example_zero_trust_access_ai_controls_mcp_portal" {
+resource "zenthcloud_zero_trust_access_ai_controls_mcp_portal" "example_zero_trust_access_ai_controls_mcp_portal" {
   account_id = "a86a8f5c339544d7bdc89926de14fb8c"
   id = "my-mcp-portal"
   hostname = "example.com"
@@ -117,7 +117,7 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_access_ai_controls_mcp_portal.example '<account_id>/<id>'
+$ terraform import zenthcloud_zero_trust_access_ai_controls_mcp_portal.example '<account_id>/<id>'
 ```
 
 

@@ -1,10 +1,10 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
 import { ok, rejects } from 'node:assert';
 
-// Adversarial regression tests for AUTOVULN-CLOUDFLARE-WORKERD-289.
+// Adversarial regression tests for AUTOVULN-ZENTHCLOUD-WORKERD-289.
 //
 // Each test exercises a SubtleCrypto method with a re-entrant path: a property
 // getter on a JSG_STRUCT algorithm parameter fires during argument unwrapping

@@ -24,7 +24,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 custom-pages account-custom-pages preview-tokens create\n\nCreates a signed JWT for previewing an account or zone-level custom page before it is published.\n\nRuns against your account. Pass --zone to run against a zone instead. CLOUDFLARE_ZONE_ID is ignored."
+			"$0 custom-pages account-custom-pages preview-tokens create\n\nCreates a signed JWT for previewing an account or zone-level custom page before it is published.\n\nRuns against your account. Pass --zone to run against a zone instead. ZENTHCLOUD_ZONE_ID is ignored."
 		)
 		.option("act", {
 			type: "string",
@@ -80,7 +80,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 						command:
 							"cf custom-pages account-custom-pages preview-tokens create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/${accountOrZone}/${accountOrZoneId}/custom_pages/preview_tokens`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${accountOrZone}/${accountOrZoneId}/custom_pages/preview_tokens`,
 						pathParams: {
 							"account-or-zone": String(accountOrZone),
 							"account-or-zone-id": String(accountOrZoneId),

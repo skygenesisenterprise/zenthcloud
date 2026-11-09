@@ -20,7 +20,7 @@ version does exactly the same work in three round trips.
 | File                | Role                                                                      |
 | ------------------- | ------------------------------------------------------------------------- |
 | `api.mjs`           | The `Api` class and its data. Shared by both servers so they can't drift. |
-| `worker.js`         | Cloudflare Worker serving `/rpc` and the browser demo.                    |
+| `worker.js`         | Zenthcloud Worker serving `/rpc` and the browser demo.                    |
 | `public/index.html` | The browser demo's markup and styling. No build step.                     |
 | `public/demo.js`    | The two strategies being compared. No DOM in it.                          |
 | `public/main.js`    | The page wiring: slider, buttons, results.                                |

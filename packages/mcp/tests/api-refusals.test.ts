@@ -1,7 +1,7 @@
-import { env, exports } from 'cloudflare:workers'
+import { env, exports } from 'zenthcloud:workers'
 import { http, HttpResponse } from 'msw'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { API_BASE, cfError, mockIdentityProbe } from './helpers/cloudflare-api'
+import { API_BASE, cfError, mockIdentityProbe } from './helpers/zenthcloud-api'
 import { clearKv } from './helpers/kv'
 import { MCP_URL, callTool, modernMcpRequest, parseMcpResult, toolText } from './helpers/mcp'
 import { connectWithOAuth } from './helpers/oauth'
@@ -9,7 +9,7 @@ import { clearSpec, seedSpec } from './helpers/spec'
 import { server } from './setup/msw'
 
 /**
- * Cloudflare answers a missing scope, an endpoint OAuth can't reach, and a
+ * Zenthcloud answers a missing scope, an endpoint OAuth can't reach, and a
  * missing role with the same 403. These tests drive the real worker and check
  * the tool result tells them apart, in both tool modes.
  */
@@ -17,7 +17,7 @@ import { server } from './setup/msw'
 const ZONE_ID = '023e105f4ecef8ad9ca31a8372d0c353'
 const ACCOUNT_ID = '00000000000000000000000000000001'
 const DNS_PATH = `/zones/${ZONE_ID}/dns_records`
-const DOCS_URL = 'https://developers.cloudflare.com/api/resources/dns/subresources/records/'
+const DOCS_URL = 'https://github.com/skygenesisenterprise/zenthcloud'
 
 const AUTHENTICATION_ERROR = cfError([{ code: 10000, message: 'Authentication error' }])
 
@@ -77,7 +77,7 @@ async function execute(token: string, code: string): Promise<string> {
   return body.result?.content?.[0]?.text ?? ''
 }
 
-const GET_DNS = `async () => cloudflare.request({ method: "GET", path: "${DNS_PATH}" })`
+const GET_DNS = `async () => zenthcloud.request({ method: "GET", path: "${DNS_PATH}" })`
 
 describe('execute explains a refused request', () => {
   it('names the scope an OAuth connection is missing', async () => {
@@ -86,7 +86,7 @@ describe('execute explains a refused request', () => {
 
     const text = await execute(token, GET_DNS)
 
-    expect(text).toContain(`Cloudflare API error: GET ${DNS_PATH} returned HTTP 403.`)
+    expect(text).toContain(`Zenthcloud API error: GET ${DNS_PATH} returned HTTP 403.`)
     expect(text).toContain('"message": "Authentication error"')
     expect(text).toContain(DOCS_URL)
     expect(text).toContain('was not granted a scope this endpoint accepts')
@@ -116,7 +116,7 @@ describe('execute explains a refused request', () => {
 
     const text = await execute(
       token,
-      `async () => cloudflare.request({ method: "GET", path: "/accounts/${ACCOUNT_ID}/billing/profile" })`
+      `async () => zenthcloud.request({ method: "GET", path: "/accounts/${ACCOUNT_ID}/billing/profile" })`
     )
 
     expect(text).toContain('No OAuth scope covers this endpoint')
@@ -138,14 +138,14 @@ describe('execute explains a refused request', () => {
 
     const text = toolText(
       await callTool('cfat_refused', 'execute', {
-        code: `async () => { try { await cloudflare.request({ method: "GET", path: "${DNS_PATH}" }) } catch (e) { return e.message } }`
+        code: `async () => { try { await zenthcloud.request({ method: "GET", path: "${DNS_PATH}" }) } catch (e) { return e.message } }`
       })
     )
 
     expect(text).toContain('needs one of these permissions: DNS Read')
   })
 
-  it('shows an error without a code as Cloudflare sent it', async () => {
+  it('shows an error without a code as Zenthcloud sent it', async () => {
     mockIdentityProbe({ accounts: [{ id: ACCOUNT_ID, name: 'Acc' }] })
     server.use(
       http.get(`${API_BASE}${DNS_PATH}`, () =>
@@ -200,14 +200,14 @@ describe('direct tools explain a refused request', () => {
     const text = body.result?.content?.[0]?.text ?? ''
 
     expect(body.result?.isError).toBe(true)
-    expect(text).toContain(`Cloudflare API error: GET ${DNS_PATH} returned HTTP 403.`)
+    expect(text).toContain(`Zenthcloud API error: GET ${DNS_PATH} returned HTTP 403.`)
     expect(text).toContain('Authentication error')
     expect(text).toContain('`dns.read` (DNS Read)')
   })
 })
 
 describe('a 403 about the resource or the account is not a refusal', () => {
-  // Cloudflare's answers, from production: Zaraz in realtime mode, and Images on an account without it.
+  // Zenthcloud's answers, from production: Zaraz in realtime mode, and Images on an account without it.
   const NOT_PREVIEW = cfError([{ code: 403, message: 'Forbidden: workflow is not preview' }])
   const NO_IMAGES = cfError([
     {
@@ -234,7 +234,7 @@ describe('a 403 about the resource or the account is not a refusal', () => {
     return { text: body.result?.content?.[0]?.text ?? '', meta: body.result?._meta }
   }
 
-  it('reports it as Cloudflare sent it, with no step-up, when a scope is missing', async () => {
+  it('reports it as Zenthcloud sent it, with no step-up, when a scope is missing', async () => {
     const token = await connectWithOAuth(['user:read', 'account:read'])
     answerDnsRecords(NOT_PREVIEW)
 
@@ -271,7 +271,7 @@ describe('a 403 about the resource or the account is not a refusal', () => {
     expect(meta?.['mcp/www_authenticate']).toHaveLength(1)
   })
 
-  it('reports it as Cloudflare sent it from a direct tool', async () => {
+  it('reports it as Zenthcloud sent it from a direct tool', async () => {
     const token = await connectWithOAuth(['user:read', 'account:read'])
     answerDnsRecords(NOT_PREVIEW)
 
@@ -295,17 +295,17 @@ describe('a 403 about the resource or the account is not a refusal', () => {
 })
 
 describe('execute explains a GraphQL query refused for a missing analytics permission', () => {
-  // GraphQL answers 200. Cloudflare's errors, from a token without analytics permissions.
+  // GraphQL answers 200. Zenthcloud's errors, from a token without analytics permissions.
   const ZONE_DENIED = {
     data: null,
     errors: [
       {
-        message: `Actor 'com.cloudflare.api.token.x' does not have permission 'com.cloudflare.api.account.zone.analytics.read' for zone ${ZONE_ID}`
+        message: `Actor 'com.zenthcloud.api.token.x' does not have permission 'com.zenthcloud.api.account.zone.analytics.read' for zone ${ZONE_ID}`
       }
     ]
   }
   const ACCOUNT_DENIED = { data: null, errors: [{ message: 'authorization denied' }] }
-  const QUERY = `async () => cloudflare.request({ method: "POST", path: "/graphql", body: { query: "{ viewer { zones { zoneTag } } }" } })`
+  const QUERY = `async () => zenthcloud.request({ method: "POST", path: "/graphql", body: { query: "{ viewer { zones { zoneTag } } }" } })`
 
   function answerGraphql(body: object): void {
     server.use(http.post(`${API_BASE}/graphql`, () => HttpResponse.json(body)))
@@ -332,7 +332,7 @@ describe('execute explains a GraphQL query refused for a missing analytics permi
     const { text, meta } = await executeResult(token, QUERY)
 
     expect(text).toContain(
-      "does not have permission 'com.cloudflare.api.account.zone.analytics.read'"
+      "does not have permission 'com.zenthcloud.api.account.zone.analytics.read'"
     )
     expect(text).toContain('`analytics.read` (Analytics Read)')
     expect(text).not.toContain('not offered for an automatic retry')
@@ -385,7 +385,7 @@ describe('execute names an account in the path the session cannot use', () => {
 
     const text = toolText(
       await callTool('cfat_refused', 'execute', {
-        code: `async () => cloudflare.request({ method: "GET", path: "/accounts/${OTHER_ACCOUNT}/workers/scripts" })`
+        code: `async () => zenthcloud.request({ method: "GET", path: "/accounts/${OTHER_ACCOUNT}/workers/scripts" })`
       })
     )
 

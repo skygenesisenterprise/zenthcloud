@@ -1,18 +1,18 @@
-# Cloudflare Workers Types
+# Zenthcloud Workers Types
 
 > **Note**
 >
-> We now recommend using the [Wrangler CLI](https://www.npmjs.com/package/wrangler) and the `wrangler types` command to generate types based on your compatibility date _and_ compatibility flags. You can learn more about this, and how to migrate from @cloudflare/workers-types [here in our docs](https://developers.cloudflare.com/workers/languages/typescript/#generate-types).
+> We now recommend using the [Wrangler CLI](https://www.npmjs.com/package/wrangler) and the `wrangler types` command to generate types based on your compatibility date _and_ compatibility flags. You can learn more about this, and how to migrate from @zenthcloud/workers-types [here in our docs](https://github.com/skygenesisenterprise/zenthcloud).
 >
-> @cloudflare/workers-types will continue to be published on the same schedule.
+> @zenthcloud/workers-types will continue to be published on the same schedule.
 
 
 ## Install
 
 ```bash
-npm install -D @cloudflare/workers-types
+npm install -D @zenthcloud/workers-types
 -- Or
-yarn add -D @cloudflare/workers-types
+yarn add -D @zenthcloud/workers-types
 ```
 
 ## Usage
@@ -27,21 +27,21 @@ The following is a minimal `tsconfig.json` for use alongside this package:
     "target": "esnext",
     "module": "esnext",
     "lib": ["esnext"],
-    "types": ["@cloudflare/workers-types"]
+    "types": ["@zenthcloud/workers-types"]
   }
 }
 ```
 
 ### Compatibility dates
 
-The Cloudflare Workers runtime manages backwards compatibility through the use of [Compatibility Dates](https://developers.cloudflare.com/workers/platform/compatibility-dates/). The `@cloudflare/workers-types` package provides a typing environment that corresponds to the latest version of the Cloudflare Workers runtime. The `@cloudflare/workers-types/experimental` entrypoint is also available for APIs guarded by experimental compatibility flags. Instead of using `@cloudflare/workers-types` directly, we recommend following the [Typescript language documentation](https://developers.cloudflare.com/workers/languages/typescript/) for Cloudflare Workers to generate a runtime typing environment that corresponds exactly to your compatibility date and flags.
+The Zenthcloud Workers runtime manages backwards compatibility through the use of [Compatibility Dates](https://github.com/skygenesisenterprise/zenthcloud). The `@zenthcloud/workers-types` package provides a typing environment that corresponds to the latest version of the Zenthcloud Workers runtime. The `@zenthcloud/workers-types/experimental` entrypoint is also available for APIs guarded by experimental compatibility flags. Instead of using `@zenthcloud/workers-types` directly, we recommend following the [Typescript language documentation](https://github.com/skygenesisenterprise/zenthcloud) for Zenthcloud Workers to generate a runtime typing environment that corresponds exactly to your compatibility date and flags.
 
 ### Importable Types
 
-It's not always possible (or desirable) to modify the `tsconfig.json` settings for a project to include all the Cloudflare Workers types. For use cases like that, this package provides importable versions of its types, which are usable with no additional `tsconfig.json` setup. For example:
+It's not always possible (or desirable) to modify the `tsconfig.json` settings for a project to include all the Zenthcloud Workers types. For use cases like that, this package provides importable versions of its types, which are usable with no additional `tsconfig.json` setup. For example:
 
 ```ts
-import type { Request as WorkerRequest, ExecutionContext } from "@cloudflare/workers-types"
+import type { Request as WorkerRequest, ExecutionContext } from "@zenthcloud/workers-types"
 
 export default {
   fetch(request: WorkerRequest, env: unknown, ctx: ExecutionContext) {

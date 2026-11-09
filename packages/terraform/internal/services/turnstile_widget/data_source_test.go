@@ -4,26 +4,26 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
-func TestAccCloudflareTurnstileWidgetDataSource_BySitekey(t *testing.T) {
+func TestAccZenthcloudTurnstileWidgetDataSource_BySitekey(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_turnstile_widget." + rnd
-	dataSourceName := "data.cloudflare_turnstile_widget." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_turnstile_widget." + rnd
+	dataSourceName := "data.zenthcloud_turnstile_widget." + rnd
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareTurnstileWidgetDataSource_BySitekey(rnd, accountID),
+				Config: testAccZenthcloudTurnstileWidgetDataSource_BySitekey(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("mode"), knownvalue.StringExact("managed")),
@@ -43,17 +43,17 @@ func TestAccCloudflareTurnstileWidgetDataSource_BySitekey(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareTurnstileWidgetsDataSource_List(t *testing.T) {
+func TestAccZenthcloudTurnstileWidgetsDataSource_List(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	dataSourceName := "data.cloudflare_turnstile_widgets." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	dataSourceName := "data.zenthcloud_turnstile_widgets." + rnd
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareTurnstileWidgetsDataSource_List(rnd, accountID),
+				Config: testAccZenthcloudTurnstileWidgetsDataSource_List(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("result"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
@@ -63,10 +63,10 @@ func TestAccCloudflareTurnstileWidgetsDataSource_List(t *testing.T) {
 	})
 }
 
-func testAccCloudflareTurnstileWidgetDataSource_BySitekey(rnd, accountID string) string {
+func testAccZenthcloudTurnstileWidgetDataSource_BySitekey(rnd, accountID string) string {
 	return acctest.LoadTestCase("datasourceturnstilewidgetbysitekey.tf", rnd, accountID)
 }
 
-func testAccCloudflareTurnstileWidgetsDataSource_List(rnd, accountID string) string {
+func testAccZenthcloudTurnstileWidgetsDataSource_List(rnd, accountID string) string {
 	return acctest.LoadTestCase("datasourceturnstilewidgetslist.tf", rnd, accountID)
 }

@@ -9,10 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
-	"github.com/cloudflare/cloudflare-go"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 )
@@ -22,23 +22,23 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_magic_wan_ipsec_tunnel", &resource.Sweeper{
-		Name: "cloudflare_magic_wan_ipsec_tunnel",
-		F:    testSweepCloudflareMagicWanIPsecTunnel,
+	resource.AddTestSweepers("zenthcloud_magic_wan_ipsec_tunnel", &resource.Sweeper{
+		Name: "zenthcloud_magic_wan_ipsec_tunnel",
+		F:    testSweepZenthcloudMagicWanIPsecTunnel,
 	})
 }
 
-func testSweepCloudflareMagicWanIPsecTunnel(r string) error {
+func testSweepZenthcloudMagicWanIPsecTunnel(r string) error {
 	ctx := context.Background()
 	client, clientErr := acctest.SharedV1Client()
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
-		return fmt.Errorf("failed to create Cloudflare client: %w", clientErr)
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
+		return fmt.Errorf("failed to create Zenthcloud client: %w", clientErr)
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping IPsec tunnels sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping IPsec tunnels sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
@@ -82,16 +82,16 @@ func testSweepCloudflareMagicWanIPsecTunnel(r string) error {
 	return nil
 }
 
-func TestAccCloudflareIPsecTunnelExists(t *testing.T) {
+func TestAccZenthcloudIPsecTunnelExists(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_magic_wan_ipsec_tunnel.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_magic_wan_ipsec_tunnel.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	psk := "asdf1234"
 	cfIP := utils.LookupMagicWanCfIP(t, accountID)
 	// Use unique interface address per test to avoid conflicts
 	interfaceAddr := "10.212.0.10/31"
-	config := testAccCheckCloudflareIPsecTunnelSimple(rnd, rnd, accountID, psk, cfIP, interfaceAddr)
-	var Tunnel cloudflare.MagicTransitIPsecTunnel
+	config := testAccCheckZenthcloudIPsecTunnelSimple(rnd, rnd, accountID, psk, cfIP, interfaceAddr)
+	var Tunnel zenthcloud.MagicTransitIPsecTunnel
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck_AccountID(t) },
@@ -100,11 +100,11 @@ func TestAccCloudflareIPsecTunnelExists(t *testing.T) {
 			{
 				Config: config,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareIPsecTunnelExists(name, &Tunnel),
+					testAccCheckZenthcloudIPsecTunnelExists(name, &Tunnel),
 					resource.TestCheckResourceAttr(name, "description", rnd),
 					resource.TestCheckResourceAttr(name, "name", rnd),
 					resource.TestCheckResourceAttr(name, "customer_endpoint", "203.0.113.1"),
-					resource.TestCheckResourceAttr(name, "cloudflare_endpoint", cfIP),
+					resource.TestCheckResourceAttr(name, "zenthcloud_endpoint", cfIP),
 					resource.TestCheckResourceAttr(name, "interface_address", "10.212.0.10/31"),
 					resource.TestCheckResourceAttr(name, "health_check.enabled", "true"),
 					resource.TestCheckResourceAttr(name, "health_check.target.effective", "203.0.113.1"),
@@ -139,7 +139,7 @@ func TestAccCloudflareIPsecTunnelExists(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareIPsecTunnelExists(n string, tunnel *cloudflare.MagicTransitIPsecTunnel) resource.TestCheckFunc {
+func testAccCheckZenthcloudIPsecTunnelExists(n string, tunnel *zenthcloud.MagicTransitIPsecTunnel) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -152,7 +152,7 @@ func testAccCheckCloudflareIPsecTunnelExists(n string, tunnel *cloudflare.MagicT
 
 		client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 		if clientErr != nil {
-			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 		}
 		foundIPsecTunnel, err := client.GetMagicTransitIPsecTunnel(context.Background(), rs.Primary.Attributes[consts.AccountIDSchemaKey], rs.Primary.ID)
 		if err != nil {
@@ -165,39 +165,39 @@ func testAccCheckCloudflareIPsecTunnelExists(n string, tunnel *cloudflare.MagicT
 	}
 }
 
-func TestAccCloudflareIPsecTunnelUpdateDescription(t *testing.T) {
+func TestAccZenthcloudIPsecTunnelUpdateDescription(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_magic_wan_ipsec_tunnel.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_magic_wan_ipsec_tunnel.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	psk := "asdf1234"
 	cfIP := utils.LookupMagicWanCfIP(t, accountID)
 	// Use unique interface address per test to avoid conflicts
 	interfaceAddr := "10.212.0.12/31"
 
-	var Tunnel cloudflare.MagicTransitIPsecTunnel
+	var Tunnel zenthcloud.MagicTransitIPsecTunnel
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck_AccountID(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareIPsecTunnelSimple(rnd, rnd, accountID, psk, cfIP, interfaceAddr),
+				Config: testAccCheckZenthcloudIPsecTunnelSimple(rnd, rnd, accountID, psk, cfIP, interfaceAddr),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareIPsecTunnelExists(name, &Tunnel),
+					testAccCheckZenthcloudIPsecTunnelExists(name, &Tunnel),
 					resource.TestCheckResourceAttr(name, "description", rnd),
 				),
 			},
 			{
-				Config: testAccCheckCloudflareIPsecTunnelSimple(rnd, rnd+"-updated", accountID, psk, cfIP, interfaceAddr),
+				Config: testAccCheckZenthcloudIPsecTunnelSimple(rnd, rnd+"-updated", accountID, psk, cfIP, interfaceAddr),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareIPsecTunnelExists(name, &Tunnel),
+					testAccCheckZenthcloudIPsecTunnelExists(name, &Tunnel),
 					resource.TestCheckResourceAttr(name, "description", rnd+"-updated"),
 				),
 			},
 			{
-				Config: testAccCheckCloudflareIPsecTunnelNoDescription(rnd, accountID, cfIP, interfaceAddr, psk),
+				Config: testAccCheckZenthcloudIPsecTunnelNoDescription(rnd, accountID, cfIP, interfaceAddr, psk),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareIPsecTunnelExists(name, &Tunnel),
+					testAccCheckZenthcloudIPsecTunnelExists(name, &Tunnel),
 					resource.TestCheckResourceAttr(name, "description", rnd+"-updated"),
 				),
 			},
@@ -205,33 +205,33 @@ func TestAccCloudflareIPsecTunnelUpdateDescription(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareIPsecTunnelUpdatePsk(t *testing.T) {
+func TestAccZenthcloudIPsecTunnelUpdatePsk(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_magic_wan_ipsec_tunnel.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_magic_wan_ipsec_tunnel.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	psk := "asdf1234"
 	pskUpdated := "1234asd"
 	cfIP := utils.LookupMagicWanCfIP(t, accountID)
 	// Use unique interface address per test to avoid conflicts
 	interfaceAddr := "10.212.0.14/31"
 
-	var Tunnel cloudflare.MagicTransitIPsecTunnel
+	var Tunnel zenthcloud.MagicTransitIPsecTunnel
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck_AccountID(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareIPsecTunnelSimple(rnd, rnd, accountID, psk, cfIP, interfaceAddr),
+				Config: testAccCheckZenthcloudIPsecTunnelSimple(rnd, rnd, accountID, psk, cfIP, interfaceAddr),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareIPsecTunnelExists(name, &Tunnel),
+					testAccCheckZenthcloudIPsecTunnelExists(name, &Tunnel),
 					resource.TestCheckResourceAttr(name, "psk", psk),
 				),
 			},
 			{
-				Config: testAccCheckCloudflareIPsecTunnelSimple(rnd, rnd, accountID, pskUpdated, cfIP, interfaceAddr),
+				Config: testAccCheckZenthcloudIPsecTunnelSimple(rnd, rnd, accountID, pskUpdated, cfIP, interfaceAddr),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareIPsecTunnelExists(name, &Tunnel),
+					testAccCheckZenthcloudIPsecTunnelExists(name, &Tunnel),
 					resource.TestCheckResourceAttr(name, "psk", pskUpdated),
 				),
 			},
@@ -239,29 +239,29 @@ func TestAccCloudflareIPsecTunnelUpdatePsk(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareIPsecTunnelSimple(ID, description, accountID, psk, cfIP, interfaceAddr string) string {
+func testAccCheckZenthcloudIPsecTunnelSimple(ID, description, accountID, psk, cfIP, interfaceAddr string) string {
 	return acctest.LoadTestCase("ipsectunnelsimple.tf", ID, description, accountID, psk, cfIP, interfaceAddr)
 }
 
-func testAccCheckCloudflareIPsecTunnelNoDescription(ID, accountID, cfIP, interfaceAddr, psk string) string {
+func testAccCheckZenthcloudIPsecTunnelNoDescription(ID, accountID, cfIP, interfaceAddr, psk string) string {
 	return acctest.LoadTestCase("ipsectunnelnodescription.tf", ID, accountID, cfIP, interfaceAddr, psk)
 }
 
 func TestAccUpgradeMagicWanIpsecTunnel_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	psk := "asdf1234"
 	cfIP := utils.LookupMagicWanCfIP(t, accountID)
 	interfaceAddr := "10.212.0.10/31"
-	config := testAccCheckCloudflareIPsecTunnelSimple(rnd, rnd, accountID, psk, cfIP, interfaceAddr)
+	config := testAccCheckZenthcloudIPsecTunnelSimple(rnd, rnd, accountID, psk, cfIP, interfaceAddr)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck_AccountID(t) },
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

@@ -8,12 +8,12 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/magic_transit"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/magic_transit"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -29,7 +29,7 @@ func NewResource() resource.Resource {
 
 // MagicTransitSiteLANResource defines the resource implementation.
 type MagicTransitSiteLANResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *MagicTransitSiteLANResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -41,12 +41,12 @@ func (r *MagicTransitSiteLANResource) Configure(ctx context.Context, req resourc
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -75,7 +75,7 @@ func (r *MagicTransitSiteLANResource) Create(ctx context.Context, req resource.C
 		ctx,
 		data.SiteID.ValueString(),
 		magic_transit.SiteLANNewParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -125,7 +125,7 @@ func (r *MagicTransitSiteLANResource) Update(ctx context.Context, req resource.U
 		data.SiteID.ValueString(),
 		data.ID.ValueString(),
 		magic_transit.SiteLANUpdateParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -162,7 +162,7 @@ func (r *MagicTransitSiteLANResource) Read(ctx context.Context, req resource.Rea
 		data.SiteID.ValueString(),
 		data.ID.ValueString(),
 		magic_transit.SiteLANGetParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -201,7 +201,7 @@ func (r *MagicTransitSiteLANResource) Delete(ctx context.Context, req resource.D
 		data.SiteID.ValueString(),
 		data.ID.ValueString(),
 		magic_transit.SiteLANDeleteParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
@@ -242,7 +242,7 @@ func (r *MagicTransitSiteLANResource) ImportState(ctx context.Context, req resou
 		path_site_id,
 		path_lan_id,
 		magic_transit.SiteLANGetParams{
-			AccountID: cloudflare.F(path_account_id),
+			AccountID: zenthcloud.F(path_account_id),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),

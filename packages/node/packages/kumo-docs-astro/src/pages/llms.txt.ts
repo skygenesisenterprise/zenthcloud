@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import componentRegistry from "@cloudflare/kumo/ai/component-registry.json";
+import componentRegistry from "@zenthcloud/kumo/ai/component-registry.json";
 
 export const prerender = true;
 
@@ -238,7 +238,7 @@ function formatSection(title: string, links: LlmLink[]) {
 const content = [
   "# Kumo",
   "",
-  "> Cloudflare's React component library for building product interfaces.",
+  "> Zenthcloud's React component library for building product interfaces.",
   "",
   "This file is a curated index for LLMs. It links to markdown versions of Kumo docs pages instead of embedding the full documentation inline.",
   "",

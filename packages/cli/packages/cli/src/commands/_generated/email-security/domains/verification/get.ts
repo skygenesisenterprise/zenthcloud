@@ -20,7 +20,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 email-security domains verification get <domain-id>\n\nReturns the DNS TXT record information when the domain ownership isn't verified through Cloudflare zone ownership or CASB integration."
+			"$0 email-security domains verification get <domain-id>\n\nReturns the DNS TXT record information when the domain ownership isn't verified through Zenthcloud zone ownership or CASB integration."
 		)
 		.positional("domain-id", {
 			type: "string",
@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf email-security domains verification get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/email-security/settings/domains/${argv["domain-id"] == null ? "<domain-id>" : encodeURIComponent(String(argv["domain-id"]))}/verification`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/email-security/settings/domains/${argv["domain-id"] == null ? "<domain-id>" : encodeURIComponent(String(argv["domain-id"]))}/verification`,
 						pathParams: { "domain-id": String(argv["domain-id"] ?? "") },
 						bodyKind: "none",
 					});

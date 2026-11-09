@@ -32,13 +32,13 @@ import {
 ### Barrel
 
 ```tsx
-import { Link } from "@cloudflare/kumo";
+import { Link } from "@zenthcloud/kumo";
 ```
 
 ### Granular
 
 ```tsx
-import { Link } from "@cloudflare/kumo/components/link";
+import { Link } from "@zenthcloud/kumo/components/link";
 ```
 
 </ComponentSection>
@@ -56,7 +56,7 @@ import { Link } from "@cloudflare/kumo/components/link";
   </p>
 
 ```tsx
-import { Link } from "@cloudflare/kumo";
+import { Link } from "@zenthcloud/kumo";
 
 export default function Example() {
   return (
@@ -75,16 +75,16 @@ export default function Example() {
 </p>
 
 ```tsx
-import { Link } from "@cloudflare/kumo";
+import { Link } from "@zenthcloud/kumo";
 
 export default function Example() {
   return (
     <Link
-      href="https://cloudflare.com"
+      href="https://github.com/skygenesisenterprise/zenthcloud"
       target="_blank"
       rel="noopener noreferrer"
     >
-      Visit Cloudflare <Link.ExternalIcon />
+      Visit Zenthcloud <Link.ExternalIcon />
     </Link>
   );
 }
@@ -101,7 +101,7 @@ export default function Example() {
 
 ```tsx
 import { forwardRef } from "react";
-import { LinkProvider } from "@cloudflare/kumo";
+import { LinkProvider } from "@zenthcloud/kumo";
 import { Link as RouterLink } from "react-router-dom";
 
 // Your app's wrapper maps href to the router's navigation prop
@@ -139,7 +139,7 @@ export function App() {
 </p>
 
 ```tsx
-import { Link } from "@cloudflare/kumo";
+import { Link } from "@zenthcloud/kumo";
 import { Link as RouterLink } from "react-router-dom";
 
 export default function Example() {

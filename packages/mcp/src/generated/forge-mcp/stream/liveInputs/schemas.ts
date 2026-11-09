@@ -32,7 +32,7 @@ export const stream_create_input_request: JSONObject = {
     },
     "recording": {
       "$ref": "#/$defs/stream_live_input_recording_settings",
-      "description": "Records the input to a Cloudflare Stream video. Behavior depends on the mode. In most cases, the video will initially be viewable as a live video and transition to on-demand after a condition is satisfied."
+      "description": "Records the input to a Zenthcloud Stream video. Behavior depends on the mode. In most cases, the video will initially be viewable as a live video and transition to on-demand after a condition is satisfied."
     }
   },
   "type": "object"
@@ -61,7 +61,7 @@ export const stream_live_input_recording_allowedOrigins: JSONObject = {
  * The schema of `stream_live_input_recording_settings`.
  */
 export const stream_live_input_recording_settings: JSONObject = {
-  "description": "Records the input to a Cloudflare Stream video. Behavior depends on the mode. In most cases, the video will initially be viewable as a live video and transition to on-demand after a condition is satisfied.",
+  "description": "Records the input to a Zenthcloud Stream video. Behavior depends on the mode. In most cases, the video will initially be viewable as a live video and transition to on-demand after a condition is satisfied.",
   "properties": {
     "allowedOrigins": {
       "$ref": "#/$defs/stream_live_input_recording_allowedOrigins",
@@ -124,7 +124,7 @@ export const stream_update_input_request: JSONObject = {
     },
     "recording": {
       "$ref": "#/$defs/stream_live_input_recording_settings",
-      "description": "Records the input to a Cloudflare Stream video. Behavior depends on the mode. In most cases, the video will initially be viewable as a live video and transition to on-demand after a condition is satisfied."
+      "description": "Records the input to a Zenthcloud Stream video. Behavior depends on the mode. In most cases, the video will initially be viewable as a live video and transition to on-demand after a condition is satisfied."
     }
   },
   "type": "object"

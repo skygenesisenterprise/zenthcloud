@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -18,13 +18,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_api_shield_operation_schema_validation_settings", &resource.Sweeper{
-		Name: "cloudflare_api_shield_operation_schema_validation_settings",
-		F:    testSweepCloudflareAPIShieldOperationSchemaValidationSettings,
+	resource.AddTestSweepers("zenthcloud_api_shield_operation_schema_validation_settings", &resource.Sweeper{
+		Name: "zenthcloud_api_shield_operation_schema_validation_settings",
+		F:    testSweepZenthcloudAPIShieldOperationSchemaValidationSettings,
 	})
 }
 
-func testSweepCloudflareAPIShieldOperationSchemaValidationSettings(r string) error {
+func testSweepZenthcloudAPIShieldOperationSchemaValidationSettings(r string) error {
 	ctx := context.Background()
 	// This resource configures schema validation settings for API Shield operations.
 	// The settings are tied to operations, so when operations are swept, these settings
@@ -33,16 +33,16 @@ func testSweepCloudflareAPIShieldOperationSchemaValidationSettings(r string) err
 	return nil
 }
 
-func TestAccCloudflareAPIShieldOperationSchemaValidationSettings_Create(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the API token
+func TestAccZenthcloudAPIShieldOperationSchemaValidationSettings_Create(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the API token
 	// endpoint does not yet support the API tokens without an explicit scope.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceID := "cloudflare_api_shield_operation_schema_validation_settings." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceID := "zenthcloud_api_shield_operation_schema_validation_settings." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	block := "block"
 	none := "none"
@@ -51,28 +51,28 @@ func TestAccCloudflareAPIShieldOperationSchemaValidationSettings_Create(t *testi
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAPIShieldOperationSchemaValidationSettingsMitigation(rnd, zoneID, &block),
+				Config: testAccZenthcloudAPIShieldOperationSchemaValidationSettingsMitigation(rnd, zoneID, &block),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceID, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(resourceID, "mitigation_action", "block"),
 				),
 			},
 			{
-				Config: testAccCloudflareAPIShieldOperationSchemaValidationSettingsMitigation(rnd, zoneID, nil),
+				Config: testAccZenthcloudAPIShieldOperationSchemaValidationSettingsMitigation(rnd, zoneID, nil),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceID, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(resourceID, "mitigation_action", ""),
 				),
 			},
 			{
-				Config: testAccCloudflareAPIShieldOperationSchemaValidationSettingsMitigation(rnd, zoneID, &none),
+				Config: testAccZenthcloudAPIShieldOperationSchemaValidationSettingsMitigation(rnd, zoneID, &none),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceID, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(resourceID, "mitigation_action", "none"),
 				),
 			},
 			{
-				Config: testAccCloudflareAPIShieldOperationSchemaValidationSettingsNoMitigation(rnd, zoneID),
+				Config: testAccZenthcloudAPIShieldOperationSchemaValidationSettingsNoMitigation(rnd, zoneID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceID, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(resourceID, "mitigation_action", ""),
@@ -82,7 +82,7 @@ func TestAccCloudflareAPIShieldOperationSchemaValidationSettings_Create(t *testi
 	})
 }
 
-func testAccCloudflareAPIShieldOperationSchemaValidationSettingsMitigation(resourceName, zone string, mitigation *string) string {
+func testAccZenthcloudAPIShieldOperationSchemaValidationSettingsMitigation(resourceName, zone string, mitigation *string) string {
 	action := "null"
 	if mitigation != nil {
 		action = fmt.Sprintf("\"%s\"", *mitigation)
@@ -91,6 +91,6 @@ func testAccCloudflareAPIShieldOperationSchemaValidationSettingsMitigation(resou
 	return acctest.LoadTestCase("apishieldoperationschemavalidationsettingsmitigation.tf", resourceName, zone, action)
 }
 
-func testAccCloudflareAPIShieldOperationSchemaValidationSettingsNoMitigation(resourceName, zone string) string {
+func testAccZenthcloudAPIShieldOperationSchemaValidationSettingsNoMitigation(resourceName, zone string) string {
 	return acctest.LoadTestCase("apishieldoperationschemavalidationsettingsnomitigation.tf", resourceName, zone)
 }

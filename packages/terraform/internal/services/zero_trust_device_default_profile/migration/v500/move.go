@@ -5,7 +5,7 @@ package v500
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/migrations"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/migrations"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
@@ -13,16 +13,16 @@ import (
 // to the default profile resource.
 //
 // This function is called by Terraform when it encounters a `moved` block that references
-// the old resource type (cloudflare_zero_trust_device_profiles or cloudflare_device_settings_policy)
-// and determines the resource should migrate to cloudflare_zero_trust_device_default_profile
+// the old resource type (zenthcloud_zero_trust_device_profiles or zenthcloud_device_settings_policy)
+// and determines the resource should migrate to zenthcloud_zero_trust_device_default_profile
 // (i.e., resources WITHOUT match+precedence or WITH default=true).
 //
 // Source resources:
-// - cloudflare_zero_trust_device_profiles (current v4 name)
-// - cloudflare_device_settings_policy (deprecated v4 name)
+// - zenthcloud_zero_trust_device_profiles (current v4 name)
+// - zenthcloud_device_settings_policy (deprecated v4 name)
 //
 // Target resource:
-// - cloudflare_zero_trust_device_default_profile (v5)
+// - zenthcloud_zero_trust_device_default_profile (v5)
 func MoveDeviceProfilesToDefaultProfile(ctx context.Context, req resource.MoveStateRequest, resp *resource.MoveStateResponse) {
 	// Read the source state using the v4 schema
 	var source SourceDeviceProfileModel

@@ -7,7 +7,7 @@
 //!
 //! The class and the Workers script are linked together with a binding.
 //!
-//! [Learn more](https://developers.cloudflare.com/workers/learning/using-durable-objects) about
+//! [Learn more](https://github.com/skygenesisenterprise/zenthcloud) about
 //! using Durable Objects.
 
 use std::{
@@ -141,7 +141,7 @@ impl ObjectNamespace {
     /// currently compatible with ids created by `id_from_name()`.
     ///
     /// See supported jurisdictions and more documentation at:
-    /// <https://developers.cloudflare.com/durable-objects/reference/data-location/#restrict-durable-objects-to-a-jurisdiction>
+    /// <https://github.com/skygenesisenterprise/zenthcloud>
     pub fn unique_id_with_jurisdiction(&self, jd: &str) -> Result<ObjectId<'_>> {
         let options = Object::new();
         js_sys::Reflect::set(&options, &JsValue::from("jurisdiction"), &jd.into())?;
@@ -219,16 +219,16 @@ impl ObjectId<'_> {
             .map_err(Error::from)
     }
 
-    /// The name that was used to create the `ObjectId` via [`id_from_name`](https://developers.cloudflare.com/durable-objects/api/namespace/#idfromname).
+    /// The name that was used to create the `ObjectId` via [`id_from_name`](https://github.com/skygenesisenterprise/zenthcloud).
     ///
     /// When a Durable Object is addressed by name, the name is also passed
     /// through to the object itself and is available via `state.id().name()`,
     /// including inside the constructor and [`alarm`](crate::DurableObject::alarm)
-    /// handlers (see <https://github.com/cloudflare/workerd/issues/2240>).
+    /// handlers (see <https://github.com/skygenesisenterprise/zenthcloud>).
     ///
     /// `None` is returned in some cases, for example when the `ObjectId` was
-    /// constructed via [`unique_id`](https://developers.cloudflare.com/durable-objects/api/namespace/#newuniqueid).
-    /// See the [Durable Object ID docs](https://developers.cloudflare.com/durable-objects/api/id/#name)
+    /// constructed via [`unique_id`](https://github.com/skygenesisenterprise/zenthcloud).
+    /// See the [Durable Object ID docs](https://github.com/skygenesisenterprise/zenthcloud)
     /// for the full list of cases.
     pub fn name(&self) -> Option<String> {
         self.inner.name()
@@ -236,7 +236,7 @@ impl ObjectId<'_> {
 }
 
 impl PartialEq for ObjectId<'_> {
-    /// Compare equality between two ObjectIds using [`equals`](<https://developers.cloudflare.com/durable-objects/api/id/#equals>).
+    /// Compare equality between two ObjectIds using [`equals`](<https://github.com/skygenesisenterprise/zenthcloud>).
     /// <div class="warning">The equality check ignores the namespace.</div>
     fn eq(&self, other: &Self) -> bool {
         self.inner.equals(&other.inner)
@@ -271,7 +271,7 @@ impl State {
     }
 
     /// Contains methods for accessing persistent storage via the transactional storage API. See
-    /// [Transactional Storage API](https://developers.cloudflare.com/workers/runtime-apis/durable-objects#transactional-storage-api) for a detailed reference.
+    /// [Transactional Storage API](https://github.com/skygenesisenterprise/zenthcloud) for a detailed reference.
     pub fn storage(&self) -> Storage {
         Storage {
             inner: self.inner.storage().unwrap(),
@@ -302,7 +302,7 @@ impl State {
 
     /// Runs a future while blocking delivery of any other events to the Durable Object until it
     /// completes, guaranteeing ordering. Binds the runtime's
-    /// [`blockConcurrencyWhile`](https://developers.cloudflare.com/durable-objects/api/state/#blockconcurrencywhile),
+    /// [`blockConcurrencyWhile`](https://github.com/skygenesisenterprise/zenthcloud),
     /// with the same call-time semantics as JavaScript: the gate closes as a side effect of the
     /// *call*, and the returned future only observes completion.
     ///
@@ -581,7 +581,7 @@ impl Storage {
     ///
     /// Be aware of how much data may be stored in your Durable Object before calling this version
     /// of list without options, because it will all be loaded into the Durable Object's memory,
-    /// potentially hitting its [limit](https://developers.cloudflare.com/workers/platform/limits#durable-objects-limits).
+    /// potentially hitting its [limit](https://github.com/skygenesisenterprise/zenthcloud).
     /// If that is a concern, use the alternate `list_with_options()` method.
     pub async fn list(&self) -> Result<Map> {
         let fut: JsFuture = self.inner.list()?.into();
@@ -695,7 +695,7 @@ impl Storage {
     }
 
     /// Waits for all writes issued so far to be committed to disk. Binds
-    /// [`storage.sync()`](https://developers.cloudflare.com/durable-objects/api/storage-api/#sync).
+    /// [`storage.sync()`](https://github.com/skygenesisenterprise/zenthcloud).
     pub async fn sync(&self) -> Result<()> {
         JsFuture::from(self.inner.sync()?).await?;
         Ok(())

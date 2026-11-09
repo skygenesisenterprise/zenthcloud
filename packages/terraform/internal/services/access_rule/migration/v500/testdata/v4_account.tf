@@ -1,4 +1,4 @@
-resource "cloudflare_access_rule" "%s" {
+resource "zenthcloud_access_rule" "%s" {
   account_id = "%s"
   mode       = "challenge"
 

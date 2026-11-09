@@ -21,7 +21,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 custom-pages account-custom-pages get <identifier>\n\nReturns the configuration for a custom page type.\n\nRuns against your account. Pass --zone to run against a zone instead. CLOUDFLARE_ZONE_ID is ignored."
+			"$0 custom-pages account-custom-pages get <identifier>\n\nReturns the configuration for a custom page type.\n\nRuns against your account. Pass --zone to run against a zone instead. ZENTHCLOUD_ZONE_ID is ignored."
 		)
 		.positional("identifier", {
 			type: "string",
@@ -62,7 +62,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf custom-pages account-custom-pages get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/${accountOrZone}/${accountOrZoneId}/custom_pages/${argv["identifier"] == null ? "<identifier>" : encodeURIComponent(String(argv["identifier"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${accountOrZone}/${accountOrZoneId}/custom_pages/${argv["identifier"] == null ? "<identifier>" : encodeURIComponent(String(argv["identifier"]))}`,
 						pathParams: {
 							"account-or-zone": String(accountOrZone),
 							"account-or-zone-id": String(accountOrZoneId),

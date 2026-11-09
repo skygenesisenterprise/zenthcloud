@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -68,7 +68,7 @@ func TestMigrateLogpushJobBasic(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := fmt.Sprintf("tf-test-logpush-%s", rnd)
 			tmpDir := t.TempDir()
@@ -84,8 +84,8 @@ func TestMigrateLogpushJobBasic(t *testing.T) {
 			} else {
 				step1 = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -106,22 +106,22 @@ func TestMigrateLogpushJobBasic(t *testing.T) {
 						[]statecheck.StateCheck{
 							// Verify identity fields
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_job."+rnd,
+								"zenthcloud_logpush_job."+rnd,
 								tfjsonpath.New("account_id"),
 								knownvalue.StringExact(accountID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_job."+rnd,
+								"zenthcloud_logpush_job."+rnd,
 								tfjsonpath.New("dataset"),
 								knownvalue.StringExact("audit_logs"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_job."+rnd,
+								"zenthcloud_logpush_job."+rnd,
 								tfjsonpath.New("enabled"),
 								knownvalue.Bool(true),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_job."+rnd,
+								"zenthcloud_logpush_job."+rnd,
 								tfjsonpath.New("name"),
 								knownvalue.StringExact(name),
 							),
@@ -161,7 +161,7 @@ func TestMigrateLogpushJobOutputOptions(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := fmt.Sprintf("tf-test-logpush-options-%s", rnd)
 			tmpDir := t.TempDir()
@@ -177,8 +177,8 @@ func TestMigrateLogpushJobOutputOptions(t *testing.T) {
 			} else {
 				step1 = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -199,84 +199,84 @@ func TestMigrateLogpushJobOutputOptions(t *testing.T) {
 						[]statecheck.StateCheck{
 							// Verify identity fields
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_job."+rnd,
+								"zenthcloud_logpush_job."+rnd,
 								tfjsonpath.New("account_id"),
 								knownvalue.StringExact(accountID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_job."+rnd,
+								"zenthcloud_logpush_job."+rnd,
 								tfjsonpath.New("dataset"),
 								knownvalue.StringExact("audit_logs"),
 							),
 							// Verify ALL output_options fields are preserved
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_job."+rnd,
+								"zenthcloud_logpush_job."+rnd,
 								tfjsonpath.New("output_options").AtMapKey("batch_prefix"),
 								knownvalue.StringExact("batch-start-"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_job."+rnd,
+								"zenthcloud_logpush_job."+rnd,
 								tfjsonpath.New("output_options").AtMapKey("batch_suffix"),
 								knownvalue.StringExact("-batch-end"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_job."+rnd,
+								"zenthcloud_logpush_job."+rnd,
 								tfjsonpath.New("output_options").AtMapKey("cve_2021_44228"),
 								knownvalue.Bool(true),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_job."+rnd,
+								"zenthcloud_logpush_job."+rnd,
 								tfjsonpath.New("output_options").AtMapKey("field_delimiter"),
 								knownvalue.StringExact("|"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_job."+rnd,
+								"zenthcloud_logpush_job."+rnd,
 								tfjsonpath.New("output_options").AtMapKey("output_type"),
 								knownvalue.StringExact("ndjson"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_job."+rnd,
+								"zenthcloud_logpush_job."+rnd,
 								tfjsonpath.New("output_options").AtMapKey("record_delimiter"),
 								knownvalue.StringExact("\\n"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_job."+rnd,
+								"zenthcloud_logpush_job."+rnd,
 								tfjsonpath.New("output_options").AtMapKey("record_prefix"),
 								knownvalue.StringExact("["),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_job."+rnd,
+								"zenthcloud_logpush_job."+rnd,
 								tfjsonpath.New("output_options").AtMapKey("record_suffix"),
 								knownvalue.StringExact("]\\n"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_job."+rnd,
+								"zenthcloud_logpush_job."+rnd,
 								tfjsonpath.New("output_options").AtMapKey("record_template"),
 								knownvalue.StringExact("{{.ClientIP}}"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_job."+rnd,
+								"zenthcloud_logpush_job."+rnd,
 								tfjsonpath.New("output_options").AtMapKey("sample_rate"),
 								knownvalue.Float64Exact(0.5),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_job."+rnd,
+								"zenthcloud_logpush_job."+rnd,
 								tfjsonpath.New("output_options").AtMapKey("timestamp_format"),
 								knownvalue.StringExact("rfc3339"),
 							),
 							// Verify field_names list is preserved (all 3 elements)
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_job."+rnd,
+								"zenthcloud_logpush_job."+rnd,
 								tfjsonpath.New("output_options").AtMapKey("field_names").AtSliceIndex(0),
 								knownvalue.StringExact("ClientIP"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_job."+rnd,
+								"zenthcloud_logpush_job."+rnd,
 								tfjsonpath.New("output_options").AtMapKey("field_names").AtSliceIndex(1),
 								knownvalue.StringExact("EdgeStartTimestamp"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_job."+rnd,
+								"zenthcloud_logpush_job."+rnd,
 								tfjsonpath.New("output_options").AtMapKey("field_names").AtSliceIndex(2),
 								knownvalue.StringExact("ClientRequestMethod"),
 							),
@@ -314,7 +314,7 @@ func TestMigrateLogpushJobInstantLogs(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
@@ -329,8 +329,8 @@ func TestMigrateLogpushJobInstantLogs(t *testing.T) {
 			} else {
 				step1 = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -351,23 +351,23 @@ func TestMigrateLogpushJobInstantLogs(t *testing.T) {
 						[]statecheck.StateCheck{
 							// Verify identity fields
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_job."+rnd,
+								"zenthcloud_logpush_job."+rnd,
 								tfjsonpath.New("zone_id"),
 								knownvalue.StringExact(zoneID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_job."+rnd,
+								"zenthcloud_logpush_job."+rnd,
 								tfjsonpath.New("dataset"),
 								knownvalue.StringExact("http_requests"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_job."+rnd,
+								"zenthcloud_logpush_job."+rnd,
 								tfjsonpath.New("enabled"),
 								knownvalue.Bool(true),
 							),
 							// Verify kind is converted to empty string
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_job."+rnd,
+								"zenthcloud_logpush_job."+rnd,
 								tfjsonpath.New("kind"),
 								knownvalue.StringExact(""),
 							),

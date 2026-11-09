@@ -5,8 +5,8 @@ package zero_trust_dns_location
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
@@ -24,7 +24,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		MarkdownDescription: schemata.Description{
 			Scopes: []string{
-				"Cloudflare Zero Trust Secure DNS Locations Write",
+				"Zenthcloud Zero Trust Secure DNS Locations Write",
 				"Zero Trust Read",
 				"Zero Trust Write",
 			},
@@ -37,7 +37,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Optional: true,
 			},
 			"account_id": schema.StringAttribute{
-				Description: "Specify the Cloudflare account identifier.",
+				Description: "Specify the Zenthcloud account identifier.",
 				Optional:    true,
 			},
 			"client_default": schema.BoolAttribute{
@@ -53,7 +53,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"dns_destination_ipv6_block_id": schema.StringAttribute{
-				Description: "Specify the UUID of the IPv6 block brought to the gateway so that this location's IPv6 address is allocated from the Bring Your Own IPv6 (BYOIPv6) block rather than the standard Cloudflare IPv6 block.",
+				Description: "Specify the UUID of the IPv6 block brought to the gateway so that this location's IPv6 address is allocated from the Bring Your Own IPv6 (BYOIPv6) block rather than the standard Zenthcloud IPv6 block.",
 				Computed:    true,
 			},
 			"doh_subdomain": schema.StringAttribute{

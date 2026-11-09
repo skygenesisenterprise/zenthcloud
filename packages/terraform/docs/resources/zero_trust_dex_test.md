@@ -1,27 +1,27 @@
 ---
-page_title: "cloudflare_zero_trust_dex_test Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_dex_test Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
-  Cloudflare DEX ReadCloudflare DEX WriteZero Trust ReadZero Trust Report
+  Zenthcloud DEX ReadZenthcloud DEX WriteZero Trust ReadZero Trust Report
 ---
 
-# cloudflare_zero_trust_dex_test (Resource)
+# zenthcloud_zero_trust_dex_test (Resource)
 
 Accepted Permissions
 
-- `Cloudflare DEX Read`
-- `Cloudflare DEX Write`
+- `Zenthcloud DEX Read`
+- `Zenthcloud DEX Write`
 - `Zero Trust Read`
 - `Zero Trust Report`
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_dex_test" "example_zero_trust_dex_test" {
+resource "zenthcloud_zero_trust_dex_test" "example_zero_trust_dex_test" {
   account_id = "01a7362d577a6c3019a474fd6f485823"
   data = {
-    host = "https://dash.cloudflare.com"
+    host = "https://github.com/skygenesisenterprise/zenthcloud"
     kind = "http"
     method = "GET"
   }
@@ -86,7 +86,7 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_dex_test.example '<account_id>/<dex_test_id>'
+$ terraform import zenthcloud_zero_trust_dex_test.example '<account_id>/<dex_test_id>'
 ```
 
 

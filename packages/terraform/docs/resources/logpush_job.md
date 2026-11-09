@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_logpush_job Resource - Cloudflare"
+page_title: "zenthcloud_logpush_job Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Logs Write
 ---
 
-# cloudflare_logpush_job (Resource)
+# zenthcloud_logpush_job (Resource)
 
 Accepted Permissions
 
@@ -15,7 +15,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_logpush_job" "example_logpush_job" {
+resource "zenthcloud_logpush_job" "example_logpush_job" {
   destination_conf = "s3://mybucket/logs?region=us-west-2"
   zone_id = "zone_id"
   dataset = "http_requests"
@@ -58,12 +58,12 @@ resource "cloudflare_logpush_job" "example_logpush_job" {
 ### Optional
 
 - `account_id` (String) The Account ID to use for this endpoint. Mutually exclusive with the Zone ID.
-- `dataset` (String) Name of the dataset. A list of supported datasets can be found on the [Developer Docs](https://developers.cloudflare.com/logs/reference/log-fields/).
+- `dataset` (String) Name of the dataset. A list of supported datasets can be found on the [Developer Docs](https://github.com/skygenesisenterprise/zenthcloud).
 Available values: "access_requests", "account_abuse_protection_events", "audit_logs", "audit_logs_v2", "biso_user_actions", "casb_findings", "device_posture_results", "dex_application_tests", "dex_device_state_events", "dlp_forensic_copies", "dns_firewall_logs", "dns_logs", "email_security_alerts", "email_security_post_delivery_events", "firewall_events", "gateway_dns", "gateway_http", "gateway_network", "http_requests", "ipsec_logs", "magic_bgp_logs", "magic_ids_detections", "mcp_portal_logs", "mnm_flow_logs", "nel_reports", "network_analytics_logs", "page_shield_events", "sinkhole_http_logs", "spectrum_events", "ssh_logs", "turnstile_events", "warp_config_changes", "warp_toggle_changes", "websocket_analytics", "workers_trace_events", "zaraz_events", "zero_trust_network_sessions".
 - `enabled` (Boolean) Flag that indicates if the job is enabled.
-- `filter` (String) The filters to select the events to include and/or remove from your logs. For more information, refer to [Filters](https://developers.cloudflare.com/logs/reference/filters/).
+- `filter` (String) The filters to select the events to include and/or remove from your logs. For more information, refer to [Filters](https://github.com/skygenesisenterprise/zenthcloud).
 - `filter_attack_traffic` (Boolean) When true, excludes DDoS attack traffic from logs. This option is supported for the `http_requests`, `firewall_events`, and `network_analytics_logs` datasets.
-- `frequency` (String, Deprecated) This field is deprecated. Please use `max_upload_*` parameters instead. . The frequency at which Cloudflare sends batches of logs to your destination. Setting frequency to high sends your logs in larger quantities of smaller files. Setting frequency to low sends logs in smaller quantities of larger files.
+- `frequency` (String, Deprecated) This field is deprecated. Please use `max_upload_*` parameters instead. . The frequency at which Zenthcloud sends batches of logs to your destination. Setting frequency to high sends your logs in larger quantities of smaller files. Setting frequency to low sends logs in smaller quantities of larger files.
 Available values: "high", "low".
 - `kind` (String) The kind parameter (optional) is used to differentiate between Logpush and Edge Log Delivery jobs (when supported by the dataset).
 Available values: "", "edge".
@@ -71,7 +71,7 @@ Available values: "", "edge".
 - `max_upload_bytes` (Number) The maximum uncompressed file size of a batch of logs. This setting value must be between `5 MB` and `1 GB`, or `0` to disable it. Note that you cannot set a minimum file size; this means that log files may be much smaller than this batch size.
 - `max_upload_interval_seconds` (Number) The maximum interval in seconds for log batches. This setting must be between 30 and 300 seconds (5 minutes), or `0` to disable it. Note that you cannot specify a minimum interval for log batches; this means that log files may be sent in shorter intervals than this.
 - `max_upload_records` (Number) The maximum number of log lines per batch. This setting must be between 1000 and 1,000,000 lines, or `0` to disable it. Note that you cannot specify a minimum number of log lines per batch; this means that log files may contain many fewer lines than this.
-- `name` (String) Optional human readable job name. Not unique. Cloudflare suggests. that you set this to a meaningful string, like the domain name, to make it easier to identify your job.
+- `name` (String) Optional human readable job name. Not unique. Zenthcloud suggests. that you set this to a meaningful string, like the domain name, to make it easier to identify your job.
 - `output_options` (Attributes) The structured replacement for `logpull_options`. When including this field, the `logpull_option` field will be ignored. (see [below for nested schema](#nestedatt--output_options))
 - `ownership_challenge` (String, Sensitive) Ownership challenge token to prove destination ownership.
 - `zone_id` (String) The Zone ID to use for this endpoint. Mutually exclusive with the Account ID.
@@ -109,7 +109,7 @@ Available values: "unixnano", "unix", "rfc3339", "rfc3339ms", "rfc3339ns".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_logpush_job.example '<{accounts|zones}/{account_id|zone_id}>/<job_id>'
+$ terraform import zenthcloud_logpush_job.example '<{accounts|zones}/{account_id|zone_id}>/<job_id>'
 ```
 
 

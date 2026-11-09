@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2026 Cloudflare, Inc.
+// Copyright (c) 2017-2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -22,7 +22,7 @@ jsg::Ref<WrappedBinding> instantiateWrapper(jsg::Lock& js,
   auto result = KJ_REQUIRE_NONNULL(fn.callNoReceiver(js, env).tryCast<jsg::JsObject>(),
       "wrapped binding entrypoint did not return an object");
   auto binding = KJ_REQUIRE_NONNULL(selfHandler.tryUnwrap(js, result),
-      "wrapped binding must inherit from cloudflare-internal:wrapped-binding");
+      "wrapped binding must inherit from zenthcloud-internal:wrapped-binding");
   binding->setWrapperModule(kj::mv(moduleName));
   return binding;
 }

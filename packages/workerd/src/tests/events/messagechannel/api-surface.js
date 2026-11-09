@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -127,7 +127,7 @@ export const runtimeClassMarks = {
     for (const proto of [MessagePort.prototype, MessageChannel.prototype]) {
       // The same marks, with the same attributes, as EventTarget's.
       for (const description of [
-        'cloudflare:internal-class',
+        'zenthcloud:internal-class',
         'kResourceTypeInspect',
       ]) {
         const find = (obj) =>
@@ -147,8 +147,8 @@ export const runtimeClassMarks = {
         );
       }
       strictEqual(
-        proto[Symbol.for('cloudflare:internal-class')],
-        Symbol.for('cloudflare:internal-class')
+        proto[Symbol.for('zenthcloud:internal-class')],
+        Symbol.for('zenthcloud:internal-class')
       );
     }
   },

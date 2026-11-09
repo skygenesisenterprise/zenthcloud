@@ -1,4 +1,4 @@
-resource "cloudflare_zero_trust_device_profiles" "%s" {
+resource "zenthcloud_zero_trust_device_profiles" "%s" {
   account_id  = "%s"
   name        = "Test Profile"
   description = "Test device profile for migration"

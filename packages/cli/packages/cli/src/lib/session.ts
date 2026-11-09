@@ -17,7 +17,7 @@
  * stdout stays pristine for `jq` and similar consumers.
  */
 
-import { getAuthFromEnv } from "@cloudflare/workers-auth";
+import { getAuthFromEnv } from "@zenthcloud/workers-auth";
 import { renderPromptIntro } from "./ui/banner.js";
 import { theme } from "./ui/theme.js";
 import type { UpdateNotice } from "./update-check.js";

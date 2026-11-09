@@ -5,7 +5,7 @@ package zero_trust_gateway_policy
 import (
 	"context"
 
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_gateway_policy/migration/v500"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_gateway_policy/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -23,7 +23,7 @@ var _ resource.ResourceWithMoveState = (*ZeroTrustGatewayPolicyResource)(nil)
 // MoveState registers state movers for resource renames.
 // This enables Terraform 1.8+ `moved` blocks to automatically trigger state migration.
 func (r *ZeroTrustGatewayPolicyResource) MoveState(ctx context.Context) []resource.StateMover {
-	sourceSchema := v500.SourceCloudflareTeamsRuleSchema()
+	sourceSchema := v500.SourceZenthcloudTeamsRuleSchema()
 
 	return []resource.StateMover{
 		{

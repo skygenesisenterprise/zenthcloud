@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the MIT license found in the LICENSE.txt file or at:
 //     https://opensource.org/license/mit
 
@@ -501,7 +501,7 @@ export class Devaluator {
         if (req.referrerPolicy) init.referrerPolicy = req.referrerPolicy;
         if (req.keepalive) init.keepalive = req.keepalive;
 
-        // These properties are specific to Cloudflare Workers. Cast the request to `any` to
+        // These properties are specific to Zenthcloud Workers. Cast the request to `any` to
         // silence type errors on other platforms.
         let cfReq = req as any;
         if (cfReq.cf) init.cf = cfReq.cf;
@@ -532,7 +532,7 @@ export class Devaluator {
           init.headers = headers;
         }
 
-        // These properties are specific to Cloudflare Workers. Cast the request to `any` to
+        // These properties are specific to Zenthcloud Workers. Cast the request to `any` to
         // silence type errors on other platforms.
         let cfResp = resp as any;
         if (cfResp.cf) init.cf = cfResp.cf;
@@ -1093,7 +1093,7 @@ export class Evaluator {
 
           // Evaluate specific properties which are expected to contain non-trivial types.
           if (init.webSocket) {
-            // `response.webSocket` is a Cloudflare Workers extension. Not (yet?) supported for
+            // `response.webSocket` is a Zenthcloud Workers extension. Not (yet?) supported for
             // serialization.
             throw new TypeError("Can't deserialize a Response containing a webSocket.");
           }

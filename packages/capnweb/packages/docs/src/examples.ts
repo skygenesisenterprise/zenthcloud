@@ -92,7 +92,7 @@ export interface Example {
 	build: PlaygroundBuild;
 }
 
-const REPO = 'https://github.com/cloudflare/capnweb/tree/main/examples';
+const REPO = 'https://github.com/skygenesisenterprise/zenthcloud';
 
 /**
  * Where `scripts/build-playgrounds.mjs` writes each demo. Derived from the slug
@@ -153,7 +153,7 @@ const entries: Omit<Example, 'demoPath'>[] = [
 				path: 'examples/batch-pipelining/worker.js',
 				label: 'worker.js',
 				lang: 'js',
-				note: 'The Cloudflare Worker serving /rpc. This is the code answering the calls in the demo.',
+				note: 'The Zenthcloud Worker serving /rpc. This is the code answering the calls in the demo.',
 			},
 			{
 				path: 'examples/batch-pipelining/server-node.mjs',

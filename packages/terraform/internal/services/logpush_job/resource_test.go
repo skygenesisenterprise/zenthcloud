@@ -9,9 +9,9 @@ import (
 	"strconv"
 	"testing"
 
-	cfold "github.com/cloudflare/cloudflare-go"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	cfold "github.com/zenthcloud/zenthcloud-go"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -27,28 +27,28 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_logpush_job", &resource.Sweeper{
-		Name: "cloudflare_logpush_job",
-		F:    testSweepCloudflareLogpushJob,
+	resource.AddTestSweepers("zenthcloud_logpush_job", &resource.Sweeper{
+		Name: "zenthcloud_logpush_job",
+		F:    testSweepZenthcloudLogpushJob,
 	})
 }
 
-func testSweepCloudflareLogpushJob(r string) error {
+func testSweepZenthcloudLogpushJob(r string) error {
 	ctx := context.Background()
 	client, clientErr := acctest.SharedV1Client()
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 		return clientErr
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		return errors.New("CLOUDFLARE_ACCOUNT_ID must be set")
+		return errors.New("ZENTHCLOUD_ACCOUNT_ID must be set")
 	}
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		return errors.New("CLOUDFLARE_ZONE_ID must be set")
+		return errors.New("ZENTHCLOUD_ZONE_ID must be set")
 	}
 
 	err := cleanLogpushJobs(ctx, client, cfold.AccountIdentifier(accountID))
@@ -71,16 +71,16 @@ func cleanLogpushJobs(ctx context.Context, client *cfold.API, resourceID *cfold.
 	tflog.Debug(ctx, fmt.Sprintf("Checking %s level jobs...", resourceType))
 	jobs, err := client.ListLogpushJobs(ctx, resourceID, cfold.ListLogpushJobsParams{})
 	if err != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Cloudflare Logpush Jobs for %s: %s", resourceID.Identifier, err))
+		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Zenthcloud Logpush Jobs for %s: %s", resourceID.Identifier, err))
 		return err
 	}
 
 	if len(jobs) == 0 {
-		tflog.Debug(ctx, fmt.Sprintf("[DEBUG] No Cloudflare Logpush Jobs to sweep for %s", resourceType))
+		tflog.Debug(ctx, fmt.Sprintf("[DEBUG] No Zenthcloud Logpush Jobs to sweep for %s", resourceType))
 		return nil
 	}
 
-	tflog.Debug(ctx, fmt.Sprintf("[DEBUG] Found %d Cloudflare %s-level Logpush Jobs to sweep.", len(jobs), resourceType))
+	tflog.Debug(ctx, fmt.Sprintf("[DEBUG] Found %d Zenthcloud %s-level Logpush Jobs to sweep.", len(jobs), resourceType))
 
 	// Track deletion results
 	deleted := 0
@@ -91,7 +91,7 @@ func cleanLogpushJobs(ctx context.Context, client *cfold.API, resourceID *cfold.
 			continue
 		}
 
-		tflog.Info(ctx, fmt.Sprintf("Deleting Cloudflare Logpush Job: %s (%d)", job.Name, job.ID))
+		tflog.Info(ctx, fmt.Sprintf("Deleting Zenthcloud Logpush Job: %s (%d)", job.Name, job.ID))
 
 		err := client.DeleteLogpushJob(ctx, resourceID, job.ID)
 		if err != nil {
@@ -155,10 +155,10 @@ type logpushJobConfigOutputOptions struct {
 }
 
 // This tests with basic fields to create / update a Logpush job.
-func TestAccCloudflareLogpushJob_Basic(t *testing.T) {
+func TestAccZenthcloudLogpushJob_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_logpush_job." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_logpush_job." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	// Logpush job config to create, with minimal fields.
 	logpushJobConfigCreate := &logpushJobConfig{
@@ -181,7 +181,7 @@ func TestAccCloudflareLogpushJob_Basic(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareLogpushJobBasic(rnd, logpushJobConfigCreate),
+				Config: testZenthcloudLogpushJobBasic(rnd, logpushJobConfigCreate),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionCreate),
@@ -194,7 +194,7 @@ func TestAccCloudflareLogpushJob_Basic(t *testing.T) {
 				},
 			},
 			{
-				Config: testCloudflareLogpushJobBasic(rnd, logpushJobConfigUpdate),
+				Config: testZenthcloudLogpushJobBasic(rnd, logpushJobConfigUpdate),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -218,7 +218,7 @@ func TestAccCloudflareLogpushJob_Basic(t *testing.T) {
 	})
 }
 
-func testCloudflareLogpushJobBasic(resourceID string, logpushJobConfig *logpushJobConfig) string {
+func testZenthcloudLogpushJobBasic(resourceID string, logpushJobConfig *logpushJobConfig) string {
 	// Values must be ordered to match the .tf file exactly.
 	params := []any{
 		resourceID,
@@ -231,10 +231,10 @@ func testCloudflareLogpushJobBasic(resourceID string, logpushJobConfig *logpushJ
 }
 
 // This tests with basic output_options fields to create / update a Logpush job.
-func TestAccCloudflareLogpushJob_BasicOutputOptions(t *testing.T) {
+func TestAccZenthcloudLogpushJob_BasicOutputOptions(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_logpush_job." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_logpush_job." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	// Logpush job config to create, with minimal fields.
 	logpushJobConfigCreate := &logpushJobConfig{
@@ -267,7 +267,7 @@ func TestAccCloudflareLogpushJob_BasicOutputOptions(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareLogpushJobBasicOutputOptions(rnd, logpushJobConfigCreate),
+				Config: testZenthcloudLogpushJobBasicOutputOptions(rnd, logpushJobConfigCreate),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionCreate),
@@ -283,7 +283,7 @@ func TestAccCloudflareLogpushJob_BasicOutputOptions(t *testing.T) {
 				},
 			},
 			{
-				Config: testCloudflareLogpushJobBasicOutputOptions(rnd, logpushJobConfigUpdate),
+				Config: testZenthcloudLogpushJobBasicOutputOptions(rnd, logpushJobConfigUpdate),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -310,7 +310,7 @@ func TestAccCloudflareLogpushJob_BasicOutputOptions(t *testing.T) {
 	})
 }
 
-func testCloudflareLogpushJobBasicOutputOptions(resourceID string, logpushJobConfig *logpushJobConfig) string {
+func testZenthcloudLogpushJobBasicOutputOptions(resourceID string, logpushJobConfig *logpushJobConfig) string {
 	// Values must be ordered to match the .tf file exactly.
 	params := []any{
 		resourceID,
@@ -329,10 +329,10 @@ func testCloudflareLogpushJobBasicOutputOptions(resourceID string, logpushJobCon
 // ownership_challenge (tested in logpush_ownership_challenge).
 // Some field values or their combination is not realistic, but it is just for
 // testing the schema and Logpush API behavior here.
-func TestAccCloudflareLogpushJob_Full(t *testing.T) {
+func TestAccZenthcloudLogpushJob_Full(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_logpush_job." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_logpush_job." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	// Logpush job config to create, with minimal fields.
 	logpushJobConfigCreate := &logpushJobConfig{
@@ -383,7 +383,7 @@ func TestAccCloudflareLogpushJob_Full(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareLogpushJobFull(rnd, logpushJobConfigCreate),
+				Config: testZenthcloudLogpushJobFull(rnd, logpushJobConfigCreate),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionCreate),
@@ -393,7 +393,7 @@ func TestAccCloudflareLogpushJob_Full(t *testing.T) {
 				ConfigStateChecks: getStateChecks(resourceName, logpushJobConfigCreate),
 			},
 			{
-				Config: testCloudflareLogpushJobFull(rnd, logpushJobConfigUpdate),
+				Config: testZenthcloudLogpushJobFull(rnd, logpushJobConfigUpdate),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -453,7 +453,7 @@ func getStateChecks(resourceName string, logpushJobConfig *logpushJobConfig) []s
 	return stateChecks
 }
 
-func testCloudflareLogpushJobFull(resourceID string, logpushJobConfig *logpushJobConfig) string {
+func testZenthcloudLogpushJobFull(resourceID string, logpushJobConfig *logpushJobConfig) string {
 	// Values must be ordered to match the .tf file exactly.
 	params := []any{
 		resourceID,
@@ -489,10 +489,10 @@ func testCloudflareLogpushJobFull(resourceID string, logpushJobConfig *logpushJo
 // ownership_challenge (tested in logpush_ownership_challenge).
 // Some field values or their combination is not realistic, but it is just for
 // testing the schema and Logpush API behavior here.
-func TestAccCloudflareLogpushJob_BasicToFull(t *testing.T) {
+func TestAccZenthcloudLogpushJob_BasicToFull(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_logpush_job." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_logpush_job." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	// Logpush job config to create, with minimal fields.
 	logpushJobConfigCreate := &logpushJobConfig{
@@ -537,7 +537,7 @@ func TestAccCloudflareLogpushJob_BasicToFull(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareLogpushJobBasic(rnd, logpushJobConfigCreate),
+				Config: testZenthcloudLogpushJobBasic(rnd, logpushJobConfigCreate),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionCreate),
@@ -550,7 +550,7 @@ func TestAccCloudflareLogpushJob_BasicToFull(t *testing.T) {
 				},
 			},
 			{
-				Config: testCloudflareLogpushJobFull(rnd, logpushJobConfigUpdate),
+				Config: testZenthcloudLogpushJobFull(rnd, logpushJobConfigUpdate),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -563,10 +563,10 @@ func TestAccCloudflareLogpushJob_BasicToFull(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareLogpushJob_Update(t *testing.T) {
+func TestAccZenthcloudLogpushJob_Update(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_logpush_job." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_logpush_job." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	// Logpush job config to create, with filter.
 	logpushJobConfigCreate := &logpushJobConfig{
@@ -590,7 +590,7 @@ func TestAccCloudflareLogpushJob_Update(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareLogpushJobUpdate(rnd, logpushJobConfigCreate),
+				Config: testZenthcloudLogpushJobUpdate(rnd, logpushJobConfigCreate),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionCreate),
@@ -604,7 +604,7 @@ func TestAccCloudflareLogpushJob_Update(t *testing.T) {
 				},
 			},
 			{
-				Config: testCloudflareLogpushJobUpdate(rnd, logpushJobConfigUpdate),
+				Config: testZenthcloudLogpushJobUpdate(rnd, logpushJobConfigUpdate),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("dataset"), knownvalue.StringExact(toString(logpushJobConfigCreate.dataset))),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("destination_conf"), knownvalue.StringExact(toString(logpushJobConfigCreate.destinationConf))),
@@ -624,7 +624,7 @@ func TestAccCloudflareLogpushJob_Update(t *testing.T) {
 	})
 }
 
-func testCloudflareLogpushJobUpdate(resourceID string, logpushJobConfig *logpushJobConfig) string {
+func testZenthcloudLogpushJobUpdate(resourceID string, logpushJobConfig *logpushJobConfig) string {
 	// Values must be ordered to match the .tf file exactly.
 	params := []any{
 		resourceID,
@@ -641,10 +641,10 @@ func testCloudflareLogpushJobUpdate(resourceID string, logpushJobConfig *logpush
 // This tests with immutable fields to create / update a Logpush job.
 // dataset cannot be tested, as it has PlanModifiers in schema.go to replace.
 // This needs to bes tested on a zone, to test both kinds with http_requests.
-func TestAccCloudflareLogpushJob_ImmutableFields(t *testing.T) {
+func TestAccZenthcloudLogpushJob_ImmutableFields(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_logpush_job." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_logpush_job." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	// Logpush job config to create, with minimal fields.
 	logpushJobConfigCreate := &logpushJobConfig{
@@ -669,7 +669,7 @@ func TestAccCloudflareLogpushJob_ImmutableFields(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareLogpushJobImmutableFields(rnd, logpushJobConfigCreate),
+				Config: testZenthcloudLogpushJobImmutableFields(rnd, logpushJobConfigCreate),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionCreate),
@@ -683,7 +683,7 @@ func TestAccCloudflareLogpushJob_ImmutableFields(t *testing.T) {
 				},
 			},
 			{
-				Config:      testCloudflareLogpushJobImmutableFields(rnd, logpushJobConfigUpdate),
+				Config:      testZenthcloudLogpushJobImmutableFields(rnd, logpushJobConfigUpdate),
 				ExpectError: regexp.MustCompile(regexp.QuoteMeta("400 Bad Request")),
 			},
 			{
@@ -698,7 +698,7 @@ func TestAccCloudflareLogpushJob_ImmutableFields(t *testing.T) {
 	})
 }
 
-func testCloudflareLogpushJobImmutableFields(resourceID string, logpushJobConfig *logpushJobConfig) string {
+func testZenthcloudLogpushJobImmutableFields(resourceID string, logpushJobConfig *logpushJobConfig) string {
 	// Values must be ordered to match the .tf file exactly.
 	params := []any{
 		resourceID,
@@ -711,10 +711,10 @@ func testCloudflareLogpushJobImmutableFields(resourceID string, logpushJobConfig
 	return acctest.LoadTestCase("immutable_fields.tf", params...)
 }
 
-func TestAccCloudflareLogpushJob_OmitemptyField(t *testing.T) {
+func TestAccZenthcloudLogpushJob_OmitemptyField(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_logpush_job." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_logpush_job." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	// Logpush job config to create, with minimal fields, and omit value.
 	logpushJobConfigOmit := &logpushJobConfig{
@@ -740,7 +740,7 @@ func TestAccCloudflareLogpushJob_OmitemptyField(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create a Logpush job with omit value.
 			{
-				Config: testCloudflareLogpushJobOmitemptyField(rnd, logpushJobConfigOmit),
+				Config: testZenthcloudLogpushJobOmitemptyField(rnd, logpushJobConfigOmit),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionCreate),
@@ -755,7 +755,7 @@ func TestAccCloudflareLogpushJob_OmitemptyField(t *testing.T) {
 			},
 			// Update the Logpush job with non-omit value.
 			{
-				Config: testCloudflareLogpushJobOmitemptyField(rnd, logpushJobConfigNonOmit),
+				Config: testZenthcloudLogpushJobOmitemptyField(rnd, logpushJobConfigNonOmit),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -770,7 +770,7 @@ func TestAccCloudflareLogpushJob_OmitemptyField(t *testing.T) {
 			},
 			// Update the Logpush job with omit value.
 			{
-				Config: testCloudflareLogpushJobOmitemptyField(rnd, logpushJobConfigOmit),
+				Config: testZenthcloudLogpushJobOmitemptyField(rnd, logpushJobConfigOmit),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -787,7 +787,7 @@ func TestAccCloudflareLogpushJob_OmitemptyField(t *testing.T) {
 	})
 }
 
-func testCloudflareLogpushJobOmitemptyField(resourceID string, logpushJobConfig *logpushJobConfig) string {
+func testZenthcloudLogpushJobOmitemptyField(resourceID string, logpushJobConfig *logpushJobConfig) string {
 	// Values must be ordered to match the .tf file exactly.
 	params := []any{
 		resourceID,
@@ -802,7 +802,7 @@ func testCloudflareLogpushJobOmitemptyField(resourceID string, logpushJobConfig 
 
 func TestAccUpgradeLogpushJob_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	logpushJobConfigCreate := &logpushJobConfig{
 		accountID:       accountID,
 		dataset:         "gateway_dns", // cannot be changed
@@ -810,15 +810,15 @@ func TestAccUpgradeLogpushJob_FromPublishedV5(t *testing.T) {
 		name:            rnd,
 	}
 
-	config := testCloudflareLogpushJobBasic(rnd, logpushJobConfigCreate)
+	config := testZenthcloudLogpushJobBasic(rnd, logpushJobConfigCreate)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

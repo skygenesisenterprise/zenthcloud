@@ -1,4 +1,4 @@
-resource "cloudflare_healthcheck" "%[3]s" {
+resource "zenthcloud_healthcheck" "%[3]s" {
   zone_id               = "%[1]s"
   name                  = "%[2]s"
   address               = "example.com"

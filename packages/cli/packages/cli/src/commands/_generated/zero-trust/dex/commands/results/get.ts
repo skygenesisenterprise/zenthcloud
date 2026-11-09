@@ -67,7 +67,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust dex commands results get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/dex/commands/${argv["command-id"] == null ? "<command-id>" : encodeURIComponent(String(argv["command-id"]))}/downloads/${argv["filename"] == null ? "<filename>" : encodeURIComponent(String(argv["filename"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/dex/commands/${argv["command-id"] == null ? "<command-id>" : encodeURIComponent(String(argv["command-id"]))}/downloads/${argv["filename"] == null ? "<filename>" : encodeURIComponent(String(argv["filename"]))}`,
 						pathParams: {
 							"command-id": String(argv["command-id"] ?? ""),
 							filename: String(argv["filename"] ?? ""),

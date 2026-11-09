@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -38,7 +38,7 @@ var v4MinimalConfig string
 // impractical:
 //
 // 1. Resources represent real IP addresses owned by users
-// 2. Cloudflare API prevents deletion/recreation (returns: prefix_exists_for_cidr)
+// 2. Zenthcloud API prevents deletion/recreation (returns: prefix_exists_for_cidr)
 // 3. Critical fields (asn, cidr, loa_document_id) are immutable after creation
 // 4. State upgrade approach fails (sets new required fields to null → plans replacement)
 //
@@ -46,10 +46,10 @@ var v4MinimalConfig string
 // -------------------------
 // Users must follow an IMPORT-BASED migration path (not state upgrade):
 //
-// 1. Query Cloudflare API for actual values (asn, cidr, loa_document_id)
+// 1. Query Zenthcloud API for actual values (asn, cidr, loa_document_id)
 // 2. Update config to v5 format with exact API values
-// 3. Remove from v4 state: terraform state rm cloudflare_byo_ip_prefix.X
-// 4. Import with v5: terraform import cloudflare_byo_ip_prefix.X account/prefix
+// 3. Remove from v4 state: terraform state rm zenthcloud_byo_ip_prefix.X
+// 4. Import with v5: terraform import zenthcloud_byo_ip_prefix.X account/prefix
 // 5. Verify: terraform plan (should show no replacement if values match)
 //
 // See MIGRATION_GUIDE.md for detailed step-by-step instructions.
@@ -64,13 +64,13 @@ func TestMigrateBYOIPPrefix_Basic(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	// Test data from environment variables
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	prefixID := os.Getenv("CLOUDFLARE_BYO_IP_PREFIX_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	prefixID := os.Getenv("ZENTHCLOUD_BYO_IP_PREFIX_ID")
 	rnd := "test"
 
 	// Skip if required environment variables are not set
 	if accountID == "" || prefixID == "" {
-		t.Skip("CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_BYO_IP_PREFIX_ID must be set for this test")
+		t.Skip("ZENTHCLOUD_ACCOUNT_ID and ZENTHCLOUD_BYO_IP_PREFIX_ID must be set for this test")
 	}
 
 	// Prepare v4 config
@@ -95,13 +95,13 @@ func TestMigrateBYOIPPrefix_Basic(t *testing.T) {
 func TestMigrateBYOIPPrefix_WithAdvertisement(t *testing.T) {
 	tmpDir := t.TempDir()
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	prefixID := os.Getenv("CLOUDFLARE_BYO_IP_PREFIX_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	prefixID := os.Getenv("ZENTHCLOUD_BYO_IP_PREFIX_ID")
 	rnd := "test"
 
 	// Skip if required environment variables are not set
 	if accountID == "" || prefixID == "" {
-		t.Skip("CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_BYO_IP_PREFIX_ID must be set for this test")
+		t.Skip("ZENTHCLOUD_ACCOUNT_ID and ZENTHCLOUD_BYO_IP_PREFIX_ID must be set for this test")
 	}
 
 	testConfig := fmt.Sprintf(v4WithAdvertisementConfig, rnd, accountID, prefixID, "on")
@@ -122,13 +122,13 @@ func TestMigrateBYOIPPrefix_WithAdvertisement(t *testing.T) {
 func TestMigrateBYOIPPrefix_Minimal(t *testing.T) {
 	tmpDir := t.TempDir()
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	prefixID := os.Getenv("CLOUDFLARE_BYO_IP_PREFIX_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	prefixID := os.Getenv("ZENTHCLOUD_BYO_IP_PREFIX_ID")
 	rnd := "test"
 
 	// Skip if required environment variables are not set
 	if accountID == "" || prefixID == "" {
-		t.Skip("CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_BYO_IP_PREFIX_ID must be set for this test")
+		t.Skip("ZENTHCLOUD_ACCOUNT_ID and ZENTHCLOUD_BYO_IP_PREFIX_ID must be set for this test")
 	}
 
 	testConfig := fmt.Sprintf(v4MinimalConfig, rnd, accountID, prefixID)
@@ -157,13 +157,13 @@ func verifyBYOIPPrefixMigration(t *testing.T, tmpDir, accountID string, expectDe
 		content, err := os.ReadFile(file)
 		require.NoError(t, err, "Failed to read %s", file)
 
-		if strings.Contains(string(content), "cloudflare_byo_ip_prefix") {
+		if strings.Contains(string(content), "zenthcloud_byo_ip_prefix") {
 			migratedContent = string(content)
 			break
 		}
 	}
 
-	require.NotEmpty(t, migratedContent, "No file containing cloudflare_byo_ip_prefix found")
+	require.NotEmpty(t, migratedContent, "No file containing zenthcloud_byo_ip_prefix found")
 
 	// Verify v4-only fields are removed
 	assert.NotContains(t, migratedContent, "prefix_id",
@@ -180,7 +180,7 @@ func verifyBYOIPPrefixMigration(t *testing.T, tmpDir, accountID string, expectDe
 		"Warning should mention asn field")
 	assert.Contains(t, migratedContent, "cidr",
 		"Warning should mention cidr field")
-	assert.Contains(t, migratedContent, "Cloudflare Dashboard",
+	assert.Contains(t, migratedContent, "Zenthcloud Dashboard",
 		"Warning should mention where to find values")
 
 	// Verify core fields are preserved

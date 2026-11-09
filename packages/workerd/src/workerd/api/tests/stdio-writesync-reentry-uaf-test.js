@@ -1,8 +1,8 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-395: heap use-after-free in
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-395: heap use-after-free in
 // writeStdio() via re-entrant console.log getter.
 //
 // writeStdio() used to capture a kj::ArrayPtr aliasing StdioFile::lineBuffer's

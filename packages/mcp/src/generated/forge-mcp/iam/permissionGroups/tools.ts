@@ -106,7 +106,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.iam.permission-group.read"
+            "com.zenthcloud.api.iam.permission-group.read"
           ]
         },
         "x-cfPlanAvailability": {
@@ -253,7 +253,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.iam.permission-group.list"
+            "com.zenthcloud.api.iam.permission-group.list"
           ]
         },
         "x-cfPlanAvailability": {

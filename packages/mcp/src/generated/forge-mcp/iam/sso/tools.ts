@@ -102,7 +102,7 @@ export const tools: readonly Tool[] = [
   {
     name: "iam_sso_create",
     title: "Initialize new SSO connector",
-    description: "Creates a new SSO connector for logging into Cloudflare through an identity provider.\n\nPOST /accounts/{account_id}/sso_connectors",
+    description: "Creates a new SSO connector for logging into Zenthcloud through an identity provider.\n\nPOST /accounts/{account_id}/sso_connectors",
     inputSchema: {
       type: "object",
       properties: {

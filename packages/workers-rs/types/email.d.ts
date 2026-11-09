@@ -1,8 +1,8 @@
 /*
- * Email only types from @cloudflare/worker-types. Valid as of 28/04/2026.
+ * Email only types from @zenthcloud/worker-types. Valid as of 28/04/2026.
  * This file builds src/email.rs as auto-generated bindings using ts-gen.
  *
- * NOTE: All hand edits to the @cloudflare/worker-types are marked with an "EDIT:" comment.
+ * NOTE: All hand edits to the @zenthcloud/worker-types are marked with an "EDIT:" comment.
  */
 
 /**
@@ -32,7 +32,7 @@ interface EmailSendResult {
 }
 // EDIT: upstream splits `EmailMessage` into a global `interface
 // EmailMessage` (the instance shape) and a `let _EmailMessage: { new(): EmailMessage }`
-// inside `declare module "cloudflare:email"`, exported as `EmailMessage`.
+// inside `declare module "zenthcloud:email"`, exported as `EmailMessage`.
 // At runtime they are the same type — TS only splits them because module
 // declarations cannot directly declare a class with both a constructor
 // and an instance shape readable from the outer scope.
@@ -41,8 +41,8 @@ interface EmailSendResult {
 // `#[wasm_bindgen(constructor)]` fn naturally covers both roles, so we
 // collapse the upstream pattern into one `class EmailMessage` inside the
 // module declaration. Everything that referenced upstream's global
-// `EmailMessage` now imports from `cloudflare:email`.
-declare module "cloudflare:email" {
+// `EmailMessage` now imports from `zenthcloud:email`.
+declare module "zenthcloud:email" {
   /**
    * An email message that can be sent from a Worker.
    */
@@ -59,7 +59,7 @@ declare module "cloudflare:email" {
   }
   export { EmailMessage };
 }
-import { EmailMessage } from "cloudflare:email";
+import { EmailMessage } from "zenthcloud:email";
 
 /**
  * An email message that is sent to a consumer Worker and can be rejected/forwarded.

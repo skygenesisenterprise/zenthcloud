@@ -15,7 +15,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 cache origin-cloud-regions list\n\nReturns all IP-to-cloud-region mappings configured for the zone with pagination support. Each mapping tells Cloudflare which cloud vendor and region hosts the origin at that IP, enabling the edge to route via the nearest Tiered Cache upper-tier co-located with that cloud provider. Returns an empty array when no mappings exist."
+			"$0 cache origin-cloud-regions list\n\nReturns all IP-to-cloud-region mappings configured for the zone with pagination support. Each mapping tells Zenthcloud which cloud vendor and region hosts the origin at that IP, enabling the edge to route via the nearest Tiered Cache upper-tier co-located with that cloud provider. Returns an empty array when no mappings exist."
 		)
 		.option("page", {
 			type: "number",
@@ -56,7 +56,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf cache origin-cloud-regions list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/origin/cloud_regions`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/origin/cloud_regions`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 						},

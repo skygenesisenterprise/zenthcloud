@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -8,12 +8,12 @@
 // constructs received streams with its own implementation, so received streams are always
 // instanceof the receiver's own globals.
 
-import { WorkerEntrypoint } from 'cloudflare:workers';
+import { WorkerEntrypoint } from 'zenthcloud:workers';
 import * as assert from 'node:assert';
 
 const enc = new TextEncoder();
 const usingTsImpl =
-  globalThis.Cloudflare.compatibilityFlags['typescript_implemented_streams'] ===
+  globalThis.Zenthcloud.compatibilityFlags['typescript_implemented_streams'] ===
   true;
 
 function makeConstructorBackedEchoPair() {

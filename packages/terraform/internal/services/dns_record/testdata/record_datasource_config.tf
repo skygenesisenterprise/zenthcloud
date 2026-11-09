@@ -1,9 +1,9 @@
 
-data "cloudflare_dns_record" "%[1]s" {
+data "zenthcloud_dns_record" "%[1]s" {
   zone_id = "%[2]s"
-  hostname = cloudflare_dns_record.%[1]s.hostname
+  hostname = zenthcloud_dns_record.%[1]s.hostname
 }
-resource "cloudflare_dns_record" "%[1]s" {
+resource "zenthcloud_dns_record" "%[1]s" {
 	zone_id = "%[2]s"
 	type = "A"
 	name = "%[1]s.%[3]s"

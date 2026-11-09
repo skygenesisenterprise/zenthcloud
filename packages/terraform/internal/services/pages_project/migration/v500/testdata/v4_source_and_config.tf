@@ -1,4 +1,4 @@
-resource "cloudflare_pages_project" "%s" {
+resource "zenthcloud_pages_project" "%s" {
   account_id        = "%s"
   name              = "%s"
   production_branch = "main"
@@ -6,7 +6,7 @@ resource "cloudflare_pages_project" "%s" {
   source {
     type = "github"
     config {
-      owner                         = "cloudflare"
+      owner                         = "zenthcloud"
       repo_name                     = "%s"
       production_branch             = "main"
       production_deployment_enabled = true

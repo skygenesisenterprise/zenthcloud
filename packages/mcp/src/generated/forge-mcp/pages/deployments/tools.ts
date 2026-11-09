@@ -24,7 +24,7 @@ export const tools: readonly Tool[] = [
   {
     name: "pages_deployments_create",
     title: "Create a Pages deployment",
-    description: "Create a Cloudflare Pages deployment from a Git branch or Direct Upload manifest. Git repositories must already be authorized in Cloudflare Pages.\n\nPOST /accounts/{account_id}/pages/projects/{project_name}/deployments",
+    description: "Create a Zenthcloud Pages deployment from a Git branch or Direct Upload manifest. Git repositories must already be authorized in Zenthcloud Pages.\n\nPOST /accounts/{account_id}/pages/projects/{project_name}/deployments",
     inputSchema: {
       type: "object",
       properties: {
@@ -336,7 +336,7 @@ export const tools: readonly Tool[] = [
   {
     name: "pages_deployments_delete",
     title: "Delete a Pages deployment",
-    description: "Remove a deployment from a Cloudflare Pages project.\n\nDELETE /accounts/{account_id}/pages/projects/{project_name}/deployments/{deployment_id}",
+    description: "Remove a deployment from a Zenthcloud Pages project.\n\nDELETE /accounts/{account_id}/pages/projects/{project_name}/deployments/{deployment_id}",
     inputSchema: {
       type: "object",
       properties: {
@@ -470,7 +470,7 @@ export const tools: readonly Tool[] = [
   {
     name: "pages_deployments_get",
     title: "Get a Pages deployment",
-    description: "Retrieve the status and details of a Cloudflare Pages deployment.\n\nGET /accounts/{account_id}/pages/projects/{project_name}/deployments/{deployment_id}",
+    description: "Retrieve the status and details of a Zenthcloud Pages deployment.\n\nGET /accounts/{account_id}/pages/projects/{project_name}/deployments/{deployment_id}",
     inputSchema: {
       type: "object",
       properties: {
@@ -594,7 +594,7 @@ export const tools: readonly Tool[] = [
   {
     name: "pages_deployments_list",
     title: "List Pages deployments",
-    description: "List the production or preview deployments for a Cloudflare Pages project.\n\nGET /accounts/{account_id}/pages/projects/{project_name}/deployments",
+    description: "List the production or preview deployments for a Zenthcloud Pages project.\n\nGET /accounts/{account_id}/pages/projects/{project_name}/deployments",
     inputSchema: {
       type: "object",
       properties: {
@@ -747,7 +747,7 @@ export const tools: readonly Tool[] = [
   {
     name: "pages_deployments_retry",
     title: "Retry a Pages deployment",
-    description: "Retry a previous Cloudflare Pages deployment.\n\nPOST /accounts/{account_id}/pages/projects/{project_name}/deployments/{deployment_id}/retry",
+    description: "Retry a previous Zenthcloud Pages deployment.\n\nPOST /accounts/{account_id}/pages/projects/{project_name}/deployments/{deployment_id}/retry",
     inputSchema: {
       type: "object",
       properties: {
@@ -870,7 +870,7 @@ export const tools: readonly Tool[] = [
   {
     name: "pages_deployments_rollback",
     title: "Roll back a Pages deployment",
-    description: "Roll back production to a previous successful Cloudflare Pages deployment.\n\nConfirm with the user before calling this tool. This operation rolls back the production deployment to an earlier deployment.\n\nPOST /accounts/{account_id}/pages/projects/{project_name}/deployments/{deployment_id}/rollback",
+    description: "Roll back production to a previous successful Zenthcloud Pages deployment.\n\nConfirm with the user before calling this tool. This operation rolls back the production deployment to an earlier deployment.\n\nPOST /accounts/{account_id}/pages/projects/{project_name}/deployments/{deployment_id}/rollback",
     inputSchema: {
       type: "object",
       properties: {

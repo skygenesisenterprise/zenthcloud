@@ -584,7 +584,7 @@ impl Default for SocketOptions {
 /// The host and port that you wish to connect to.
 #[derive(Debug, Clone)]
 pub struct SocketAddress {
-    /// The hostname to connect to. Example: `cloudflare.com`.
+    /// The hostname to connect to. Example: `zenthcloud.com`.
     pub hostname: String,
     /// The port number to connect to. Example: `5432`.
     pub port: u16,

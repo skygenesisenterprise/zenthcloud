@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_waiting_room_settings Resource - Cloudflare"
+page_title: "zenthcloud_waiting_room_settings Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Waiting Rooms ReadWaiting Rooms Write
 ---
 
-# cloudflare_waiting_room_settings (Resource)
+# zenthcloud_waiting_room_settings (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_waiting_room_settings" "example_waiting_room_settings" {
+resource "zenthcloud_waiting_room_settings" "example_waiting_room_settings" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   search_engine_crawler_bypass = true
 }
@@ -44,7 +44,7 @@ and will not appear in waiting room analytics.
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_waiting_room_settings.example '<zone_id>'
+$ terraform import zenthcloud_waiting_room_settings.example '<zone_id>'
 ```
 
 

@@ -8,12 +8,12 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/custom_csrs"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/custom_csrs"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -29,7 +29,7 @@ func NewResource() resource.Resource {
 
 // CustomCsrResource defines the resource implementation.
 type CustomCsrResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *CustomCsrResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -41,12 +41,12 @@ func (r *CustomCsrResource) Configure(ctx context.Context, req resource.Configur
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -74,9 +74,9 @@ func (r *CustomCsrResource) Create(ctx context.Context, req resource.CreateReque
 	params := custom_csrs.CustomCsrNewParams{}
 
 	if !data.AccountID.IsNull() {
-		params.AccountID = cloudflare.F(data.AccountID.ValueString())
+		params.AccountID = zenthcloud.F(data.AccountID.ValueString())
 	} else {
-		params.ZoneID = cloudflare.F(data.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(data.ZoneID.ValueString())
 	}
 
 	_, err = r.client.CustomCsrs.New(
@@ -119,9 +119,9 @@ func (r *CustomCsrResource) Read(ctx context.Context, req resource.ReadRequest, 
 	params := custom_csrs.CustomCsrGetParams{}
 
 	if !data.AccountID.IsNull() {
-		params.AccountID = cloudflare.F(data.AccountID.ValueString())
+		params.AccountID = zenthcloud.F(data.AccountID.ValueString())
 	} else {
-		params.ZoneID = cloudflare.F(data.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(data.ZoneID.ValueString())
 	}
 
 	_, err := r.client.CustomCsrs.Get(
@@ -163,9 +163,9 @@ func (r *CustomCsrResource) Delete(ctx context.Context, req resource.DeleteReque
 	params := custom_csrs.CustomCsrDeleteParams{}
 
 	if !data.AccountID.IsNull() {
-		params.AccountID = cloudflare.F(data.AccountID.ValueString())
+		params.AccountID = zenthcloud.F(data.AccountID.ValueString())
 	} else {
-		params.ZoneID = cloudflare.F(data.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(data.ZoneID.ValueString())
 	}
 
 	_, err := r.client.CustomCsrs.Delete(
@@ -198,10 +198,10 @@ func (r *CustomCsrResource) ImportState(ctx context.Context, req resource.Import
 	resp.Diagnostics.Append(diags...)
 	switch path_accounts_or_zones {
 	case "accounts":
-		params.AccountID = cloudflare.F(path_account_id_or_zone_id)
+		params.AccountID = zenthcloud.F(path_account_id_or_zone_id)
 		data.AccountID = types.StringValue(path_account_id_or_zone_id)
 	case "zones":
-		params.ZoneID = cloudflare.F(path_account_id_or_zone_id)
+		params.ZoneID = zenthcloud.F(path_account_id_or_zone_id)
 		data.ZoneID = types.StringValue(path_account_id_or_zone_id)
 	default:
 		resp.Diagnostics.AddError("invalid discriminator segment - <{accounts|zones}/{account_id|zone_id}>", "expected discriminator to be one of {accounts|zones}")

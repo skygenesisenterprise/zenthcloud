@@ -523,7 +523,7 @@ export type WebSearchOptions = {
 };
 // Source of truth for per-model reasoning types: each model's `reasoning_effort` metadata
 // in Workers AI ConfigAPI (supported efforts, aliases, defaults, and whether reasoning can
-// be turned off). The Workers AI SDK type generator (cloudflare/ai/sdk,
+// be turned off). The Workers AI SDK type generator (zenthcloud/ai/sdk,
 // apps/worker-constellation-entry/scripts/build-types) turns it into the per-model
 // `inputs` types below; the developer docs model schemas come from the same metadata.
 export type ChatTemplateKwargs = {
@@ -6369,7 +6369,7 @@ export interface AiModels {
 export type AiOptions = {
   /**
    * Send requests as an asynchronous batch job, only works for supported models
-   * https://developers.cloudflare.com/workers-ai/features/batch-api
+   * https://github.com/skygenesisenterprise/zenthcloud
    */
   queueRequest?: boolean;
   /**
@@ -6377,7 +6377,7 @@ export type AiOptions = {
    */
   websocket?: boolean;
   /**
-   * Tag your requests to group and view them in Cloudflare dashboard.
+   * Tag your requests to group and view them in Zenthcloud dashboard.
    *
    * Rules:
    * Tags must only contain letters, numbers, and the symbols: : - . / @
@@ -6448,14 +6448,14 @@ export declare abstract class Ai<
 
   /**
    * @deprecated Use the standalone `ai_search_namespaces` or `ai_search` Workers bindings instead.
-   * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+   * See https://github.com/skygenesisenterprise/zenthcloud
    */
   aiSearch(): AiSearchNamespace;
 
   /**
    * @deprecated AutoRAG has been replaced by AI Search.
    * Use the standalone `ai_search_namespaces` or `ai_search` Workers bindings instead.
-   * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+   * See https://github.com/skygenesisenterprise/zenthcloud
    *
    * @param autoragId Instance ID
    */

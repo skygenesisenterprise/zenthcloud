@@ -1,14 +1,14 @@
 // Plays the ChatGPT side of MCP Events webhook delivery against a real server:
 // server/discover → events/list → events/subscribe with a callback URL and a
-// whsec_ secret, then receives, verifies and prints deliveries. A cloudflared
+// whsec_ secret, then receives, verifies and prints deliveries. A zenthcloudd
 // quick tunnel gives the local receiver a public HTTPS URL.
 //
-//   export CLOUDFLARE_API_TOKEN=...      # or MCP_TOKEN: any bearer /mcp accepts
-//   export CLOUDFLARE_ACCOUNT_ID=...
+//   export ZENTHCLOUD_API_TOKEN=...      # or MCP_TOKEN: any bearer /mcp accepts
+//   export ZENTHCLOUD_ACCOUNT_ID=...
 //   export MCP_EVENT_WORKER=my-worker    # optional; omit to watch the account
 //   node scripts/mcp-events-chatgpt-sim.mjs
 //
-// MCP_URL defaults to https://mcp.cloudflare.com/mcp. Ctrl-C unsubscribes and
+// MCP_URL defaults to https://github.com/skygenesisenterprise/zenthcloud Ctrl-C unsubscribes and
 // closes the tunnel. Set MCP_EVENT_RESPONSE_STATUS=503 to make the receiver
 // reject deliveries (to watch retries), or 410 to drop them.
 
@@ -16,16 +16,16 @@ import { spawn } from 'node:child_process'
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
 import { createServer } from 'node:http'
 
-const EVENT = 'cloudflare.alert.workers_observability_real_time_issue'
+const EVENT = 'zenthcloud.alert.workers_observability_real_time_issue'
 const PROTOCOL = '2026-07-28'
-const endpoint = process.env.MCP_URL ?? 'https://mcp.cloudflare.com/mcp'
-const token = process.env.MCP_TOKEN ?? process.env.CLOUDFLARE_API_TOKEN
-const accountId = process.env.CLOUDFLARE_ACCOUNT_ID
+const endpoint = process.env.MCP_URL ?? 'https://github.com/skygenesisenterprise/zenthcloud'
+const token = process.env.MCP_TOKEN ?? process.env.ZENTHCLOUD_API_TOKEN
+const accountId = process.env.ZENTHCLOUD_ACCOUNT_ID
 const worker = process.env.MCP_EVENT_WORKER
 const port = Number(process.env.MCP_EVENT_RECEIVER_PORT ?? 8788)
 const deliveryStatus = Number(process.env.MCP_EVENT_RESPONSE_STATUS ?? 200)
-if (!token) throw new Error('Set CLOUDFLARE_API_TOKEN or MCP_TOKEN')
-if (!accountId) throw new Error('Set CLOUDFLARE_ACCOUNT_ID')
+if (!token) throw new Error('Set ZENTHCLOUD_API_TOKEN or MCP_TOKEN')
+if (!accountId) throw new Error('Set ZENTHCLOUD_ACCOUNT_ID')
 
 const secret = `whsec_${randomBytes(32).toString('base64')}`
 const key = Buffer.from(secret.slice(6), 'base64')
@@ -124,22 +124,22 @@ const server = createServer(async (request, response) => {
   response.writeHead(deliveryStatus).end()
 })
 
-// --- cloudflared quick tunnel -----------------------------------------------
+// --- zenthcloudd quick tunnel -----------------------------------------------
 function startTunnel() {
   return new Promise((resolve, reject) => {
     const child = spawn(
-      'cloudflared',
+      'zenthcloudd',
       ['tunnel', '--no-autoupdate', '--url', `http://127.0.0.1:${port}`],
       { stdio: ['ignore', 'pipe', 'pipe'] }
     )
-    const timer = setTimeout(() => reject(new Error('cloudflared not ready in 45s')), 45_000)
+    const timer = setTimeout(() => reject(new Error('zenthcloudd not ready in 45s')), 45_000)
     let url
     let registered = false
     // Wait for both the URL and a registered edge connection. Probing the
     // hostname earlier gets NXDOMAIN, which local resolvers then cache.
     const onData = (chunk) => {
       const text = String(chunk)
-      url ??= /https:\/\/[a-z0-9-]+\.trycloudflare\.com/.exec(text)?.[0]
+      url ??= /https:\/\/[a-z0-9-]+\.tryzenthcloud\.com/.exec(text)?.[0]
       registered ||= text.includes('Registered tunnel connection')
       if (url && registered) {
         clearTimeout(timer)

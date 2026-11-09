@@ -59,7 +59,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf cloudforce-one threat-intel events attackers list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/cloudforce-one/events/attackers`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/cloudforce-one/events/attackers`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

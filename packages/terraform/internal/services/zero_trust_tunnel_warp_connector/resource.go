@@ -8,12 +8,12 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -29,7 +29,7 @@ func NewResource() resource.Resource {
 
 // ZeroTrustTunnelWARPConnectorResource defines the resource implementation.
 type ZeroTrustTunnelWARPConnectorResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *ZeroTrustTunnelWARPConnectorResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -41,12 +41,12 @@ func (r *ZeroTrustTunnelWARPConnectorResource) Configure(ctx context.Context, re
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -76,7 +76,7 @@ func (r *ZeroTrustTunnelWARPConnectorResource) Create(ctx context.Context, req r
 	_, err = r.client.ZeroTrust.Tunnels.WARPConnector.New(
 		ctx,
 		zero_trust.TunnelWARPConnectorNewParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -130,7 +130,7 @@ func (r *ZeroTrustTunnelWARPConnectorResource) Update(ctx context.Context, req r
 		ctx,
 		data.ID.ValueString(),
 		zero_trust.TunnelWARPConnectorEditParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -166,7 +166,7 @@ func (r *ZeroTrustTunnelWARPConnectorResource) Read(ctx context.Context, req res
 		ctx,
 		data.ID.ValueString(),
 		zero_trust.TunnelWARPConnectorGetParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -206,7 +206,7 @@ func (r *ZeroTrustTunnelWARPConnectorResource) Delete(ctx context.Context, req r
 		ctx,
 		data.ID.ValueString(),
 		zero_trust.TunnelWARPConnectorDeleteParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
@@ -243,7 +243,7 @@ func (r *ZeroTrustTunnelWARPConnectorResource) ImportState(ctx context.Context, 
 		ctx,
 		path_tunnel_id,
 		zero_trust.TunnelWARPConnectorGetParams{
-			AccountID: cloudflare.F(path_account_id),
+			AccountID: zenthcloud.F(path_account_id),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),

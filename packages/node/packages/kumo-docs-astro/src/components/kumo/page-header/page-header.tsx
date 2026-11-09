@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
-import { Tabs } from "@cloudflare/kumo";
-import type { TabsItem } from "@cloudflare/kumo";
-import { cn } from "@cloudflare/kumo";
+import { Tabs } from "@zenthcloud/kumo";
+import type { TabsItem } from "@zenthcloud/kumo";
+import { cn } from "@zenthcloud/kumo";
 
 export const KUMO_PAGE_HEADER_VARIANTS = {
   spacing: {

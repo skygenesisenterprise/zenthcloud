@@ -78,7 +78,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf mcp portals account-tool-call-analytics",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/access/ai-controls/mcp/analytics/tool-calls/timeseries`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/access/ai-controls/mcp/analytics/tool-calls/timeseries`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zone_lockdown Resource - Cloudflare"
+page_title: "zenthcloud_zone_lockdown Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Firewall Services ReadFirewall Services Write
 ---
 
-# cloudflare_zone_lockdown (Resource)
+# zenthcloud_zone_lockdown (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zone_lockdown" "example_zone_lockdown" {
+resource "zenthcloud_zone_lockdown" "example_zone_lockdown" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   configurations = [{
     target = "ip"
@@ -64,7 +64,7 @@ Available values: "ip", "ip_range".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zone_lockdown.example '<zone_id>/<lock_downs_id>'
+$ terraform import zenthcloud_zone_lockdown.example '<zone_id>/<lock_downs_id>'
 ```
 
 

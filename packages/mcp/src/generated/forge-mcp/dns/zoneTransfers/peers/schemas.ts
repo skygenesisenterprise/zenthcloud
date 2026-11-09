@@ -9,7 +9,7 @@ import type { JSONObject } from "@modelcontextprotocol/server";
 export const secondary$$dns_peer: JSONObject = {
   "properties": {
     "ip": {
-      "description": "IPv4/IPv6 address of primary or secondary nameserver, depending on what zone this peer is linked to. For primary zones this IP defines the IP of the secondary nameserver Cloudflare will NOTIFY upon zone changes. For secondary zones this IP defines the IP of the primary nameserver Cloudflare will send AXFR/IXFR requests to.",
+      "description": "IPv4/IPv6 address of primary or secondary nameserver, depending on what zone this peer is linked to. For primary zones this IP defines the IP of the secondary nameserver Zenthcloud will NOTIFY upon zone changes. For secondary zones this IP defines the IP of the primary nameserver Zenthcloud will send AXFR/IXFR requests to.",
       "type": "string"
     },
     "ixfr_enable": {

@@ -1,4 +1,4 @@
-resource "cloudflare_dns_firewall" "%[1]s" {
+resource "zenthcloud_dns_firewall" "%[1]s" {
   account_id = "%[2]s"
   name = "%[3]s"
   upstream_ips = ["%[4]s"]

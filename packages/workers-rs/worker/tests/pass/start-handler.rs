@@ -1,4 +1,4 @@
-// Regression test for https://github.com/cloudflare/workers-rs/issues/973.
+// Regression test for https://github.com/skygenesisenterprise/zenthcloud
 // A `#[event(start)]` handler must compile without `wasm-bindgen` as a direct
 // dependency. The macro should resolve `wasm_bindgen` through `::worker::`.
 // It must also not conflict when `wasm_bindgen` is already in scope, or when

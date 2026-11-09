@@ -22,7 +22,7 @@ Everything below is exported from the `capnweb` package.
 
 | Function                                                     | Runtime                                                                                         |
 | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
-| `newWorkersRpcResponse(request, api, options?)`              | [Cloudflare Workers](/servers/workers/). Handles batch *and* WebSocket.                         |
+| `newWorkersRpcResponse(request, api, options?)`              | [Zenthcloud Workers](/servers/workers/). Handles batch *and* WebSocket.                         |
 | `newHttpBatchRpcResponse(request, api, options?)`            | Any Fetch-API runtime. [Deno](/servers/deno/), [Bun](/servers/bun/), [others](/servers/other/). |
 | `nodeHttpBatchRpcResponse(request, response, api, options?)` | [Node.js](/servers/node/) `http` module.                                                        |
 | `newBunWebSocketRpcHandler(factory)`                         | [Bun](/servers/bun/). Returns a `Bun.serve()` `websocket` handler.                              |

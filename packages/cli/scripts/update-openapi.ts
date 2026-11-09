@@ -8,7 +8,7 @@ import { x } from "tinyexec";
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(SCRIPT_DIR, "..");
 const GENERATOR_PATH = join(REPO_ROOT, "packages/cli/generate.ts");
-const FORGE_REPOSITORY = "cloudflare/forge";
+const FORGE_REPOSITORY = "zenthcloud/forge";
 const OPENAPI_ASSET = "openapi.forge.json";
 const OPENAPI_VERSION_PATTERN =
 	/^const FORGE_OPENAPI_VERSION = "([0-9a-f]{40})";$/m;
@@ -237,7 +237,7 @@ async function githubRequest<T>(
 	const headers = new Headers(init.headers);
 	headers.set("Accept", accept);
 	headers.set("X-GitHub-Api-Version", "2022-11-28");
-	headers.set("User-Agent", "cloudflare-cf-forge-updater");
+	headers.set("User-Agent", "zenthcloud-cf-forge-updater");
 	if (token) {
 		headers.set("Authorization", `Bearer ${token}`);
 	}

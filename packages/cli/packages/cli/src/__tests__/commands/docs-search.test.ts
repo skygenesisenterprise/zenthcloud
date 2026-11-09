@@ -1,4 +1,4 @@
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw";
 import {
 	afterEach,
@@ -14,7 +14,7 @@ import { server, setupMsw } from "../helpers/msw.js";
 import { runCf } from "../helpers/run-cf.js";
 
 const SEARCH_URL =
-	"https://ai-search.developers.cloudflare.com/api/ai-search/search";
+	"https://github.com/skygenesisenterprise/zenthcloud";
 const RESULTS = [
 	{
 		item: {
@@ -28,7 +28,7 @@ const RESULTS = [
 	},
 	{
 		item: {
-			key: "https://developers.cloudflare.com/workers/runtime-apis/handlers/scheduled/#handle-multiple-cron-triggers",
+			key: "https://github.com/skygenesisenterprise/zenthcloud",
 			metadata: {
 				title: "Handle multiple cron triggers",
 				description: "Use controller.cron to distinguish which schedule fired.",
@@ -57,8 +57,8 @@ describe("cf docs search", () => {
 	beforeEach(() => {
 		output = captureOutput();
 		vi.stubEnv("CI", "true");
-		vi.stubEnv("CLOUDFLARE_API_TOKEN", undefined);
-		vi.stubEnv("CLOUDFLARE_ACCOUNT_ID", undefined);
+		vi.stubEnv("ZENTHCLOUD_API_TOKEN", undefined);
+		vi.stubEnv("ZENTHCLOUD_ACCOUNT_ID", undefined);
 	});
 	afterEach(() => vi.restoreAllMocks());
 
@@ -92,12 +92,12 @@ describe("cf docs search", () => {
 			{
 				title: "Cron Triggers",
 				description: "Enable your Worker to be executed on a schedule.",
-				url: "https://developers.cloudflare.com/workers/configuration/cron-triggers/",
+				url: "https://github.com/skygenesisenterprise/zenthcloud",
 			},
 			{
 				title: "Handle multiple cron triggers",
 				description: "Use controller.cron to distinguish which schedule fired.",
-				url: "https://developers.cloudflare.com/workers/runtime-apis/handlers/scheduled/#handle-multiple-cron-triggers",
+				url: "https://github.com/skygenesisenterprise/zenthcloud",
 			},
 		]);
 	});
@@ -118,7 +118,7 @@ describe("cf docs search", () => {
 			{
 				title: "Untitled",
 				description: "",
-				url: "https://developers.cloudflare.com/workers/",
+				url: "https://github.com/skygenesisenterprise/zenthcloud",
 			},
 		]);
 	});
@@ -130,7 +130,7 @@ describe("cf docs search", () => {
 				http.post(SEARCH_URL, () => new HttpResponse(null, { status }))
 			);
 			await expect(runCf(["docs", "search", "workers"])).rejects.toThrow(
-				`Cloudflare docs search failed (HTTP ${status}).`
+				`Zenthcloud docs search failed (HTTP ${status}).`
 			);
 			expect(output.stdout()).toBe("");
 		}
@@ -139,7 +139,7 @@ describe("cf docs search", () => {
 	it("reports an unsuccessful search envelope", async () => {
 		respondWith({ success: false, error: "invalid search request" });
 		await expect(runCf(["docs", "search", "workers"])).rejects.toThrow(
-			"Cloudflare docs search failed: invalid search request"
+			"Zenthcloud docs search failed: invalid search request"
 		);
 		expect(output.stdout()).toBe("");
 	});
@@ -170,7 +170,7 @@ describe("cf docs search", () => {
 	])("rejects malformed search results: %j", async (data) => {
 		respondWith(data);
 		await expect(runCf(["docs", "search", "workers"])).rejects.toThrow(
-			"Cloudflare docs search returned an invalid response."
+			"Zenthcloud docs search returned an invalid response."
 		);
 		expect(output.stdout()).toBe("");
 	});
@@ -178,7 +178,7 @@ describe("cf docs search", () => {
 	it("reports non-JSON responses", async () => {
 		server.use(http.post(SEARCH_URL, () => HttpResponse.text("not JSON")));
 		await expect(runCf(["docs", "search", "workers"])).rejects.toThrow(
-			"Cloudflare docs search returned an invalid JSON response."
+			"Zenthcloud docs search returned an invalid JSON response."
 		);
 		expect(output.stdout()).toBe("");
 	});
@@ -187,12 +187,12 @@ describe("cf docs search", () => {
 		"https://example.com/workers/",
 		"//example.com/workers/",
 		"javascript:alert(1)",
-		"https://user:password@developers.cloudflare.com/workers/",
+		"https://github.com/skygenesisenterprise/zenthcloud",
 		"http://[invalid",
 	])("rejects invalid documentation URLs: %s", async (key) => {
 		respondWith({ success: true, result: { chunks: [{ item: { key } }] } });
 		await expect(runCf(["docs", "search", "workers"])).rejects.toThrow(
-			"Cloudflare docs search returned an invalid URL."
+			"Zenthcloud docs search returned an invalid URL."
 		);
 		expect(output.stdout()).toBe("");
 	});
@@ -200,7 +200,7 @@ describe("cf docs search", () => {
 	it("reports a network failure", async () => {
 		server.use(http.post(SEARCH_URL, () => HttpResponse.error()));
 		await expect(runCf(["docs", "search", "workers"])).rejects.toThrow(
-			"Unable to reach Cloudflare docs search."
+			"Unable to reach Zenthcloud docs search."
 		);
 		expect(output.stdout()).toBe("");
 	});
@@ -210,7 +210,7 @@ describe("cf docs search", () => {
 			AbortSignal.abort(new DOMException("Timed out", "TimeoutError"))
 		);
 		await expect(runCf(["docs", "search", "workers"])).rejects.toThrow(
-			"Cloudflare docs search timed out. Try again."
+			"Zenthcloud docs search timed out. Try again."
 		);
 		expect(output.stdout()).toBe("");
 	});

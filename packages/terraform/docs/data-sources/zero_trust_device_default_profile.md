@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zero_trust_device_default_profile Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_device_default_profile Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zero_trust_device_default_profile (Data Source)
+# zenthcloud_zero_trust_device_default_profile (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_device_default_profile" "example_zero_trust_device_default_profile" {
+data "zenthcloud_zero_trust_device_default_profile" "example_zero_trust_device_default_profile" {
   account_id = "699d98642c564d2e855e9661899b7252"
 }
 ```

@@ -5,9 +5,9 @@ package firewall_rule
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/firewall"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/firewall"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -28,20 +28,20 @@ type FirewallRulesDataSourceModel struct {
 
 func (m *FirewallRulesDataSourceModel) toListParams(_ context.Context) (params firewall.RuleListParams, diags diag.Diagnostics) {
 	params = firewall.RuleListParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	if !m.ID.IsNull() {
-		params.ID = cloudflare.F(m.ID.ValueString())
+		params.ID = zenthcloud.F(m.ID.ValueString())
 	}
 	if !m.Action.IsNull() {
-		params.Action = cloudflare.F(m.Action.ValueString())
+		params.Action = zenthcloud.F(m.Action.ValueString())
 	}
 	if !m.Description.IsNull() {
-		params.Description = cloudflare.F(m.Description.ValueString())
+		params.Description = zenthcloud.F(m.Description.ValueString())
 	}
 	if !m.Paused.IsNull() {
-		params.Paused = cloudflare.F(m.Paused.ValueBool())
+		params.Paused = zenthcloud.F(m.Paused.ValueBool())
 	}
 
 	return

@@ -3,8 +3,8 @@
 package ruleset
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijsoncustom"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijsoncustom"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -352,18 +352,18 @@ type RulesetRulesRatelimitModel struct {
 type RulesetRulesActionParametersSetCacheControlValueModel struct {
 	Operation      types.String `tfsdk:"operation" json:"operation,required"`
 	Value          types.Int64  `tfsdk:"value" json:"value,optional"`
-	CloudflareOnly types.Bool   `tfsdk:"cloudflare_only" json:"cloudflare_only,computed_optional,decode_null_to_zero"`
+	ZenthcloudOnly types.Bool   `tfsdk:"zenthcloud_only" json:"zenthcloud_only,computed_optional,decode_null_to_zero"`
 }
 
 type RulesetRulesActionParametersSetCacheControlQualifiersModel struct {
 	Operation      types.String                   `tfsdk:"operation" json:"operation,required"`
 	Qualifiers     customfield.List[types.String] `tfsdk:"qualifiers" json:"qualifiers,optional"`
-	CloudflareOnly types.Bool                     `tfsdk:"cloudflare_only" json:"cloudflare_only,computed_optional,decode_null_to_zero"`
+	ZenthcloudOnly types.Bool                     `tfsdk:"zenthcloud_only" json:"zenthcloud_only,computed_optional,decode_null_to_zero"`
 }
 
 type RulesetRulesActionParametersSetCacheControlSimpleModel struct {
 	Operation      types.String `tfsdk:"operation" json:"operation,required"`
-	CloudflareOnly types.Bool   `tfsdk:"cloudflare_only" json:"cloudflare_only,computed_optional,decode_null_to_zero"`
+	ZenthcloudOnly types.Bool   `tfsdk:"zenthcloud_only" json:"zenthcloud_only,computed_optional,decode_null_to_zero"`
 }
 
 type RulesetRulesActionParametersVaryModel struct {

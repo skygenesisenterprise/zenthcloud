@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import { runInTempDir, seed } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir, seed } from "@zenthcloud/workers-utils/test-helpers";
 import { describe, expect, it } from "vite-plus/test";
 import { discoverImpls } from "../../../commands/dev/discover.js";
 
@@ -11,7 +11,7 @@ import { discoverImpls } from "../../../commands/dev/discover.js";
  *
  * `runInTempDir()` chdirs to a fresh tmp dir per test and restores
  * after; `seed({...})` writes a tree of files relative to cwd. Both
- * come from `@cloudflare/workers-utils/test-helpers` so cf's tests
+ * come from `@zenthcloud/workers-utils/test-helpers` so cf's tests
  * use the same idioms as `wrangler-tests`.
  *
  * What we cover:
@@ -42,28 +42,28 @@ describe("discoverImpls", () => {
 		it("returns the declared impl when installed", async () => {
 			await seed({
 				"package.json": JSON.stringify({
-					devDependencies: { "@cloudflare/vite-plugin": "beta" },
+					devDependencies: { "@zenthcloud/vite-plugin": "beta" },
 				}),
-				"node_modules/@cloudflare/vite-plugin/package.json": JSON.stringify({
-					name: "@cloudflare/vite-plugin",
+				"node_modules/@zenthcloud/vite-plugin/package.json": JSON.stringify({
+					name: "@zenthcloud/vite-plugin",
 					version: "2.0.0-beta.sha-805ec1ff3",
 				}),
-				"node_modules/@cloudflare/vite-plugin/bin/cf-vite":
+				"node_modules/@zenthcloud/vite-plugin/bin/cf-vite":
 					"#!/usr/bin/env node\n",
 			});
 
 			const results = discoverImpls(process.cwd());
 			expect(results).toHaveLength(1);
-			expect(results[0]?.impl.pkg).toBe("@cloudflare/vite-plugin");
+			expect(results[0]?.impl.pkg).toBe("@zenthcloud/vite-plugin");
 			expect(results[0]?.binary).toBe(
-				resolve("node_modules/@cloudflare/vite-plugin/bin/cf-vite")
+				resolve("node_modules/@zenthcloud/vite-plugin/bin/cf-vite")
 			);
 		});
 
 		it("returns binary=null when declared but not installed", async () => {
 			await seed({
 				"package.json": JSON.stringify({
-					devDependencies: { "@cloudflare/vite-plugin": "beta" },
+					devDependencies: { "@zenthcloud/vite-plugin": "beta" },
 				}),
 			});
 
@@ -76,10 +76,10 @@ describe("discoverImpls", () => {
 		it("tracks installed packages with missing delegate binaries", async () => {
 			await seed({
 				"package.json": JSON.stringify({
-					devDependencies: { "@cloudflare/vite-plugin": "beta" },
+					devDependencies: { "@zenthcloud/vite-plugin": "beta" },
 				}),
-				"node_modules/@cloudflare/vite-plugin/package.json": JSON.stringify({
-					name: "@cloudflare/vite-plugin",
+				"node_modules/@zenthcloud/vite-plugin/package.json": JSON.stringify({
+					name: "@zenthcloud/vite-plugin",
 					version: "2.0.0-beta.sha-805ec1ff3",
 				}),
 			});
@@ -107,9 +107,9 @@ describe("discoverImpls", () => {
 			// about workspaces.
 			await seed({
 				"package.json": JSON.stringify({
-					devDependencies: { "@cloudflare/vite-plugin": "beta" },
+					devDependencies: { "@zenthcloud/vite-plugin": "beta" },
 				}),
-				// Note: NO node_modules/@cloudflare/vite-plugin/ entry here.
+				// Note: NO node_modules/@zenthcloud/vite-plugin/ entry here.
 			});
 
 			const results = discoverImpls(process.cwd());
@@ -142,7 +142,7 @@ describe("discoverImpls", () => {
 			await seed({
 				"package.json": JSON.stringify({
 					devDependencies: {
-						"@cloudflare/vite-plugin": "beta",
+						"@zenthcloud/vite-plugin": "beta",
 						wrangler: "^4.0.0",
 					},
 				}),
@@ -150,7 +150,7 @@ describe("discoverImpls", () => {
 
 			const results = discoverImpls(process.cwd());
 			expect(results).toHaveLength(1);
-			expect(results[0]?.impl.pkg).toBe("@cloudflare/vite-plugin");
+			expect(results[0]?.impl.pkg).toBe("@zenthcloud/vite-plugin");
 		});
 	});
 
@@ -160,14 +160,14 @@ describe("discoverImpls", () => {
 				"pyproject.toml": [
 					"[project]",
 					'name = "my-worker"',
-					'dependencies = ["cloudflare-py-dev-server>=0.1.0"]',
+					'dependencies = ["zenthcloud-py-dev-server>=0.1.0"]',
 					"",
 				].join("\n"),
 			});
 
 			const results = discoverImpls(process.cwd());
 			expect(results).toHaveLength(1);
-			expect(results[0]?.impl.pkg).toBe("cloudflare-py-dev-server");
+			expect(results[0]?.impl.pkg).toBe("zenthcloud-py-dev-server");
 		});
 
 		it("detects declaration with version pin and extras", async () => {
@@ -178,7 +178,7 @@ describe("discoverImpls", () => {
 				"pyproject.toml": [
 					"[project]",
 					'name = "my-worker"',
-					'dependencies = ["cloudflare-py-dev-server[full]==0.2.0"]',
+					'dependencies = ["zenthcloud-py-dev-server[full]==0.2.0"]',
 					"",
 				].join("\n"),
 			});
@@ -194,7 +194,7 @@ describe("discoverImpls", () => {
 				"pyproject.toml": [
 					"[project]",
 					'name = "my-worker"',
-					"# cloudflare-py-dev-server is great, but we don't use it here",
+					"# zenthcloud-py-dev-server is great, but we don't use it here",
 					"dependencies = []",
 					"",
 				].join("\n"),
@@ -213,14 +213,14 @@ describe("discoverImpls", () => {
 					'version = "0.1.0"',
 					"",
 					"[dependencies]",
-					'cloudflare-rs-dev-server = "0.1"',
+					'zenthcloud-rs-dev-server = "0.1"',
 					"",
 				].join("\n"),
 			});
 
 			const results = discoverImpls(process.cwd());
 			expect(results).toHaveLength(1);
-			expect(results[0]?.impl.pkg).toBe("cloudflare-rs-dev-server");
+			expect(results[0]?.impl.pkg).toBe("zenthcloud-rs-dev-server");
 		});
 
 		it("detects declaration via [dependencies.pkg] table header", async () => {
@@ -229,7 +229,7 @@ describe("discoverImpls", () => {
 					"[package]",
 					'name = "my-worker"',
 					"",
-					"[dependencies.cloudflare-rs-dev-server]",
+					"[dependencies.zenthcloud-rs-dev-server]",
 					'version = "0.1"',
 					"features = []",
 					"",
@@ -259,12 +259,12 @@ describe("discoverImpls", () => {
 		it("returns one entry per declared impl across ecosystems", async () => {
 			await seed({
 				"package.json": JSON.stringify({
-					devDependencies: { "@cloudflare/vite-plugin": "beta" },
+					devDependencies: { "@zenthcloud/vite-plugin": "beta" },
 				}),
 				"pyproject.toml": [
 					"[project]",
 					'name = "x"',
-					'dependencies = ["cloudflare-py-dev-server"]',
+					'dependencies = ["zenthcloud-py-dev-server"]',
 					"",
 				].join("\n"),
 			});
@@ -273,8 +273,8 @@ describe("discoverImpls", () => {
 			expect(results).toHaveLength(2);
 			const names = results.map((r) => r.impl.pkg).sort();
 			expect(names).toEqual([
-				"@cloudflare/vite-plugin",
-				"cloudflare-py-dev-server",
+				"@zenthcloud/vite-plugin",
+				"zenthcloud-py-dev-server",
 			]);
 		});
 	});

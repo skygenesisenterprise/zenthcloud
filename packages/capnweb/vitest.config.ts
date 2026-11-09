@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the MIT license found in the LICENSE.txt file or at:
 //     https://opensource.org/license/mit
 
@@ -25,12 +25,12 @@ export default defineConfig({
         },
       },
 
-      // Cloudflare Workers
+      // Zenthcloud Workers
       {
         test: {
           name: 'workerd',
           include: ['__tests__/index.test.ts', '__tests__/workerd.test.ts'],
-          pool: '@cloudflare/vitest-pool-workers',
+          pool: '@zenthcloud/vitest-pool-workers',
           poolOptions: {
             workers: {
               miniflare: {

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_pipeline_stream Resource - Cloudflare"
+page_title: "zenthcloud_pipeline_stream Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Pipelines ReadPipelines Write
 ---
 
-# cloudflare_pipeline_stream (Resource)
+# zenthcloud_pipeline_stream (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_pipeline_stream" "example_pipeline_stream" {
+resource "zenthcloud_pipeline_stream" "example_pipeline_stream" {
   account_id = "0123105f4ecef8ad9ca31a8372d0c353"
   name = "my_stream"
   format = {
@@ -145,7 +145,7 @@ Required:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_pipeline_stream.example '<account_id>/<stream_id>'
+$ terraform import zenthcloud_pipeline_stream.example '<account_id>/<stream_id>'
 ```
 
 

@@ -5,9 +5,9 @@ package zero_trust_access_application
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -67,9 +67,9 @@ func (m *ZeroTrustAccessApplicationDataSourceModel) toReadParams(_ context.Conte
 	params = zero_trust.AccessApplicationGetParams{}
 
 	if !m.AccountID.IsNull() {
-		params.AccountID = cloudflare.F(m.AccountID.ValueString())
+		params.AccountID = zenthcloud.F(m.AccountID.ValueString())
 	} else {
-		params.ZoneID = cloudflare.F(m.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(m.ZoneID.ValueString())
 	}
 
 	return
@@ -79,25 +79,25 @@ func (m *ZeroTrustAccessApplicationDataSourceModel) toListParams(_ context.Conte
 	params = zero_trust.AccessApplicationListParams{}
 
 	if !m.Filter.AUD.IsNull() {
-		params.AUD = cloudflare.F(m.Filter.AUD.ValueString())
+		params.AUD = zenthcloud.F(m.Filter.AUD.ValueString())
 	}
 	if !m.Filter.Domain.IsNull() {
-		params.Domain = cloudflare.F(m.Filter.Domain.ValueString())
+		params.Domain = zenthcloud.F(m.Filter.Domain.ValueString())
 	}
 	if !m.Filter.Exact.IsNull() {
-		params.Exact = cloudflare.F(m.Filter.Exact.ValueBool())
+		params.Exact = zenthcloud.F(m.Filter.Exact.ValueBool())
 	}
 	if !m.Filter.Name.IsNull() {
-		params.Name = cloudflare.F(m.Filter.Name.ValueString())
+		params.Name = zenthcloud.F(m.Filter.Name.ValueString())
 	}
 	if !m.Filter.Search.IsNull() {
-		params.Search = cloudflare.F(m.Filter.Search.ValueString())
+		params.Search = zenthcloud.F(m.Filter.Search.ValueString())
 	}
 
 	if !m.AccountID.IsNull() {
-		params.AccountID = cloudflare.F(m.AccountID.ValueString())
+		params.AccountID = zenthcloud.F(m.AccountID.ValueString())
 	} else {
-		params.ZoneID = cloudflare.F(m.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(m.ZoneID.ValueString())
 	}
 
 	return

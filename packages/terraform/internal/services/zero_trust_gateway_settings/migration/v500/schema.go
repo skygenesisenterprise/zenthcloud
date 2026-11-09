@@ -5,7 +5,7 @@ import (
 )
 
 // SourceV4ZeroTrustGatewaySettingsSchema returns the schema for the v4
-// cloudflare_teams_account resource (SDKv2 format, schema_version=0).
+// zenthcloud_teams_account resource (SDKv2 format, schema_version=0).
 //
 // This schema is used as PriorSchema in the state upgrader to parse v4 state.
 // All TypeList MaxItems:1 blocks from v4 are represented as ListNestedAttribute.

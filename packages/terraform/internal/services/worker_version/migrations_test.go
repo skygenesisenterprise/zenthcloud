@@ -7,9 +7,9 @@ import (
 	"path"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/worker_version"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/worker_version"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -19,11 +19,11 @@ import (
 )
 
 // TestMigrateWorkerVersionFromV5_14 tests migration from v5.14.0 to latest.
-// See: https://github.com/cloudflare/terraform-provider-cloudflare/issues/6567
+// See: https://github.com/skygenesisenterprise/zenthcloud
 func TestMigrateWorkerVersionFromV5_14(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_worker_version." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_worker_version." + rnd
 	tmpDir := t.TempDir()
 	contentFile := path.Join(tmpDir, "index.js")
 
@@ -44,14 +44,14 @@ func TestMigrateWorkerVersionFromV5_14(t *testing.T) {
 	defer cleanup(t)
 
 	v5_14Config := fmt.Sprintf(`
-resource "cloudflare_worker" "%[1]s" {
+resource "zenthcloud_worker" "%[1]s" {
   account_id = "%[2]s"
   name = "%[1]s"
 }
 
-resource "cloudflare_worker_version" "%[1]s" {
+resource "zenthcloud_worker_version" "%[1]s" {
   account_id = "%[2]s"
-  worker_id = cloudflare_worker.%[1]s.id
+  worker_id = zenthcloud_worker.%[1]s.id
   modules = [
     {
       name         = "index.js"
@@ -63,14 +63,14 @@ resource "cloudflare_worker_version" "%[1]s" {
 }`, rnd, accountID, contentFile)
 
 	latestConfig := fmt.Sprintf(`
-resource "cloudflare_worker" "%[1]s" {
+resource "zenthcloud_worker" "%[1]s" {
   account_id = "%[2]s"
   name = "%[1]s"
 }
 
-resource "cloudflare_worker_version" "%[1]s" {
+resource "zenthcloud_worker_version" "%[1]s" {
   account_id = "%[2]s"
-  worker_id = cloudflare_worker.%[1]s.id
+  worker_id = zenthcloud_worker.%[1]s.id
   modules = [
     {
       name         = "index.js"
@@ -92,8 +92,8 @@ resource "cloudflare_worker_version" "%[1]s" {
 					writeContentFile(t, `export default {fetch() {return new Response()}}`)
 				},
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.14.0",
 					},
 				},
@@ -116,8 +116,8 @@ resource "cloudflare_worker_version" "%[1]s" {
 // TestMigrateWorkerVersionFromV5_14_WithBindings tests migration with bindings.
 func TestMigrateWorkerVersionFromV5_14_WithBindings(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_worker_version." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_worker_version." + rnd
 	tmpDir := t.TempDir()
 	contentFile := path.Join(tmpDir, "index.js")
 
@@ -138,14 +138,14 @@ func TestMigrateWorkerVersionFromV5_14_WithBindings(t *testing.T) {
 	defer cleanup(t)
 
 	v5_14Config := fmt.Sprintf(`
-resource "cloudflare_worker" "%[1]s" {
+resource "zenthcloud_worker" "%[1]s" {
   account_id = "%[2]s"
   name = "%[1]s"
 }
 
-resource "cloudflare_worker_version" "%[1]s" {
+resource "zenthcloud_worker_version" "%[1]s" {
   account_id = "%[2]s"
-  worker_id = cloudflare_worker.%[1]s.id
+  worker_id = zenthcloud_worker.%[1]s.id
   modules = [
     {
       name         = "index.js"
@@ -165,14 +165,14 @@ resource "cloudflare_worker_version" "%[1]s" {
 }`, rnd, accountID, contentFile)
 
 	latestConfig := fmt.Sprintf(`
-resource "cloudflare_worker" "%[1]s" {
+resource "zenthcloud_worker" "%[1]s" {
   account_id = "%[2]s"
   name = "%[1]s"
 }
 
-resource "cloudflare_worker_version" "%[1]s" {
+resource "zenthcloud_worker_version" "%[1]s" {
   account_id = "%[2]s"
-  worker_id = cloudflare_worker.%[1]s.id
+  worker_id = zenthcloud_worker.%[1]s.id
   modules = [
     {
       name         = "index.js"
@@ -202,8 +202,8 @@ resource "cloudflare_worker_version" "%[1]s" {
 					writeContentFile(t, `export default {fetch() {return new Response()}}`)
 				},
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.14.0",
 					},
 				},
@@ -230,7 +230,7 @@ resource "cloudflare_worker_version" "%[1]s" {
 }
 
 // TestMigrateWorkerVersionFromV0_WithStartupTimeMs tests state upgrade with startup_time_ms.
-// See: https://github.com/cloudflare/terraform-provider-cloudflare/issues/6567
+// See: https://github.com/skygenesisenterprise/zenthcloud
 func TestMigrateWorkerVersionFromV0_WithStartupTimeMs(t *testing.T) {
 	ctx := context.Background()
 

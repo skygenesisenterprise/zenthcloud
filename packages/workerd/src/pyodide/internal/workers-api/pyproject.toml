@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "python-workers-runtime-types"
 version = "0.1.0"
-description = "Python runtime types for Cloudflare Workers"
+description = "Python runtime types for Zenthcloud Workers"
 requires-python = ">=3.12"
 
 [tool.hatch.build.targets.wheel]

@@ -5,9 +5,9 @@ package zero_trust_access_policy
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -42,7 +42,7 @@ type ZeroTrustAccessPolicyDataSourceModel struct {
 
 func (m *ZeroTrustAccessPolicyDataSourceModel) toReadParams(_ context.Context) (params zero_trust.AccessPolicyGetParams, diags diag.Diagnostics) {
 	params = zero_trust.AccessPolicyGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -89,7 +89,7 @@ type ZeroTrustAccessPolicyExcludeDataSourceModel struct {
 	ServiceToken            customfield.NestedObject[ZeroTrustAccessPolicyExcludeServiceTokenDataSourceModel]            `tfsdk:"service_token" json:"service_token,computed"`
 	LinkedAppToken          customfield.NestedObject[ZeroTrustAccessPolicyExcludeLinkedAppTokenDataSourceModel]          `tfsdk:"linked_app_token" json:"linked_app_token,computed"`
 	UserRiskScore           customfield.NestedObject[ZeroTrustAccessPolicyExcludeUserRiskScoreDataSourceModel]           `tfsdk:"user_risk_score" json:"user_risk_score,computed"`
-	CloudflareAccountMember customfield.NestedObject[ZeroTrustAccessPolicyExcludeCloudflareAccountMemberDataSourceModel] `tfsdk:"cloudflare_account_member" json:"cloudflare_account_member,computed"`
+	ZenthcloudAccountMember customfield.NestedObject[ZeroTrustAccessPolicyExcludeZenthcloudAccountMemberDataSourceModel] `tfsdk:"zenthcloud_account_member" json:"zenthcloud_account_member,computed"`
 }
 
 type ZeroTrustAccessPolicyExcludeGroupDataSourceModel struct {
@@ -202,7 +202,7 @@ type ZeroTrustAccessPolicyExcludeUserRiskScoreDataSourceModel struct {
 	UserRiskScore customfield.List[types.String] `tfsdk:"user_risk_score" json:"user_risk_score,computed"`
 }
 
-type ZeroTrustAccessPolicyExcludeCloudflareAccountMemberDataSourceModel struct {
+type ZeroTrustAccessPolicyExcludeZenthcloudAccountMemberDataSourceModel struct {
 	AccountID types.String `tfsdk:"account_id" json:"account_id,computed"`
 }
 
@@ -232,7 +232,7 @@ type ZeroTrustAccessPolicyIncludeDataSourceModel struct {
 	ServiceToken            customfield.NestedObject[ZeroTrustAccessPolicyIncludeServiceTokenDataSourceModel]            `tfsdk:"service_token" json:"service_token,computed"`
 	LinkedAppToken          customfield.NestedObject[ZeroTrustAccessPolicyIncludeLinkedAppTokenDataSourceModel]          `tfsdk:"linked_app_token" json:"linked_app_token,computed"`
 	UserRiskScore           customfield.NestedObject[ZeroTrustAccessPolicyIncludeUserRiskScoreDataSourceModel]           `tfsdk:"user_risk_score" json:"user_risk_score,computed"`
-	CloudflareAccountMember customfield.NestedObject[ZeroTrustAccessPolicyIncludeCloudflareAccountMemberDataSourceModel] `tfsdk:"cloudflare_account_member" json:"cloudflare_account_member,computed"`
+	ZenthcloudAccountMember customfield.NestedObject[ZeroTrustAccessPolicyIncludeZenthcloudAccountMemberDataSourceModel] `tfsdk:"zenthcloud_account_member" json:"zenthcloud_account_member,computed"`
 }
 
 type ZeroTrustAccessPolicyIncludeGroupDataSourceModel struct {
@@ -345,7 +345,7 @@ type ZeroTrustAccessPolicyIncludeUserRiskScoreDataSourceModel struct {
 	UserRiskScore customfield.List[types.String] `tfsdk:"user_risk_score" json:"user_risk_score,computed"`
 }
 
-type ZeroTrustAccessPolicyIncludeCloudflareAccountMemberDataSourceModel struct {
+type ZeroTrustAccessPolicyIncludeZenthcloudAccountMemberDataSourceModel struct {
 	AccountID types.String `tfsdk:"account_id" json:"account_id,computed"`
 }
 
@@ -381,7 +381,7 @@ type ZeroTrustAccessPolicyRequireDataSourceModel struct {
 	ServiceToken            customfield.NestedObject[ZeroTrustAccessPolicyRequireServiceTokenDataSourceModel]            `tfsdk:"service_token" json:"service_token,computed"`
 	LinkedAppToken          customfield.NestedObject[ZeroTrustAccessPolicyRequireLinkedAppTokenDataSourceModel]          `tfsdk:"linked_app_token" json:"linked_app_token,computed"`
 	UserRiskScore           customfield.NestedObject[ZeroTrustAccessPolicyRequireUserRiskScoreDataSourceModel]           `tfsdk:"user_risk_score" json:"user_risk_score,computed"`
-	CloudflareAccountMember customfield.NestedObject[ZeroTrustAccessPolicyRequireCloudflareAccountMemberDataSourceModel] `tfsdk:"cloudflare_account_member" json:"cloudflare_account_member,computed"`
+	ZenthcloudAccountMember customfield.NestedObject[ZeroTrustAccessPolicyRequireZenthcloudAccountMemberDataSourceModel] `tfsdk:"zenthcloud_account_member" json:"zenthcloud_account_member,computed"`
 }
 
 type ZeroTrustAccessPolicyRequireGroupDataSourceModel struct {
@@ -494,6 +494,6 @@ type ZeroTrustAccessPolicyRequireUserRiskScoreDataSourceModel struct {
 	UserRiskScore customfield.List[types.String] `tfsdk:"user_risk_score" json:"user_risk_score,computed"`
 }
 
-type ZeroTrustAccessPolicyRequireCloudflareAccountMemberDataSourceModel struct {
+type ZeroTrustAccessPolicyRequireZenthcloudAccountMemberDataSourceModel struct {
 	AccountID types.String `tfsdk:"account_id" json:"account_id,computed"`
 }

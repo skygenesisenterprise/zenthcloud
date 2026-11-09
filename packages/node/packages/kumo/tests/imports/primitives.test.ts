@@ -113,7 +113,7 @@ describe("Primitives Export", () => {
 
       if (missingExports.length > 0) {
         console.error(
-          "\n❌ Base-ui primitives missing from @cloudflare/kumo/primitives:",
+          "\n❌ Base-ui primitives missing from @zenthcloud/kumo/primitives:",
         );
         missingExports.forEach((name) => {
           console.error(`   - ${name}`);

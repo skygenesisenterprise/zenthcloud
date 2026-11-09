@@ -1,4 +1,4 @@
-resource "cloudflare_load_balancer_pool" "%[1]s" {
+resource "zenthcloud_load_balancer_pool" "%[1]s" {
   account_id = "%[2]s"
   name = "my-tf-pool-patched-%[1]s"
   description = "Patched load balancer pool"

@@ -24,7 +24,7 @@ export const tools: readonly Tool[] = [
   {
     name: "networkInterconnects_interconnects_create",
     title: "Create a new interconnect",
-    description: "Creates a new network interconnect for connecting Cloudflare's network to external networks.\nInterconnects provide dedicated bandwidth and reduced latency for traffic exchange.\n\nPOST /accounts/{account_id}/cni/interconnects",
+    description: "Creates a new network interconnect for connecting Zenthcloud's network to external networks.\nInterconnects provide dedicated bandwidth and reduced latency for traffic exchange.\n\nPOST /accounts/{account_id}/cni/interconnects",
     inputSchema: {
       type: "object",
       properties: {

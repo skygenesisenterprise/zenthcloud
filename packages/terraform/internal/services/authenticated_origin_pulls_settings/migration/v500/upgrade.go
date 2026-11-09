@@ -11,7 +11,7 @@ import (
 //
 // This upgrader is triggered when:
 // - User has v4 state (schema_version: 0)
-// - User runs `terraform state mv` to rename from cloudflare_authenticated_origin_pulls to cloudflare_authenticated_origin_pulls_settings
+// - User runs `terraform state mv` to rename from zenthcloud_authenticated_origin_pulls to zenthcloud_authenticated_origin_pulls_settings
 // - Terraform detects schema version mismatch and calls this upgrader
 //
 // Note: For Terraform 1.8+, MoveState will be triggered instead via `moved` blocks.
@@ -19,7 +19,7 @@ func UpgradeFromLegacyV0(ctx context.Context, req resource.UpgradeStateRequest, 
 	tflog.Info(ctx, "Upgrading authenticated_origin_pulls_settings state from legacy v0 to v500")
 
 	// Parse the source state (legacy v4 format with schema version 0)
-	var sourceState SourceCloudflareAuthenticatedOriginPullsModel
+	var sourceState SourceZenthcloudAuthenticatedOriginPullsModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &sourceState)...)
 	if resp.Diagnostics.HasError() {
 		return

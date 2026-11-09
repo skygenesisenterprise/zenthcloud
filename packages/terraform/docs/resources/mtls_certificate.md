@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_mtls_certificate Resource - Cloudflare"
+page_title: "zenthcloud_mtls_certificate Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_mtls_certificate (Resource)
+# zenthcloud_mtls_certificate (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_mtls_certificate" "example_mtls_certificate" {
+resource "zenthcloud_mtls_certificate" "example_mtls_certificate" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   ca = true
   certificates = <<EOT
@@ -58,7 +58,7 @@ resource "cloudflare_mtls_certificate" "example_mtls_certificate" {
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_mtls_certificate.example '<account_id>/<mtls_certificate_id>'
+$ terraform import zenthcloud_mtls_certificate.example '<account_id>/<mtls_certificate_id>'
 ```
 
 

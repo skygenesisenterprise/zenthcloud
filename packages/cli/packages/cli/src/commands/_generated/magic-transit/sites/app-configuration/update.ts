@@ -90,7 +90,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf magic-transit sites app-configuration update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/magic/sites/${argv["site-id"] == null ? "<site-id>" : encodeURIComponent(String(argv["site-id"]))}/app_configs/${argv["app-config-id"] == null ? "<app-config-id>" : encodeURIComponent(String(argv["app-config-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/magic/sites/${argv["site-id"] == null ? "<site-id>" : encodeURIComponent(String(argv["site-id"]))}/app_configs/${argv["app-config-id"] == null ? "<app-config-id>" : encodeURIComponent(String(argv["app-config-id"]))}`,
 						pathParams: {
 							"site-id": String(argv["site-id"] ?? ""),
 							"app-config-id": String(argv["app-config-id"] ?? ""),

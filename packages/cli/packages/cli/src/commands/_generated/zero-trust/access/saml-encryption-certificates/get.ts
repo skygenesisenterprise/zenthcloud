@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust access saml-encryption-certificates get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/access/saml_certificates/${argv["saml-cert-set-id"] == null ? "<saml-cert-set-id>" : encodeURIComponent(String(argv["saml-cert-set-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/access/saml_certificates/${argv["saml-cert-set-id"] == null ? "<saml-cert-set-id>" : encodeURIComponent(String(argv["saml-cert-set-id"]))}`,
 						pathParams: {
 							"saml-cert-set-id": String(argv["saml-cert-set-id"] ?? ""),
 						},

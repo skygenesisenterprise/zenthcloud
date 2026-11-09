@@ -6,10 +6,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -59,7 +59,7 @@ func TestMigrateRegionalTieredCache_V4ToV5_On(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Test setup
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
@@ -75,8 +75,8 @@ func TestMigrateRegionalTieredCache_V4ToV5_On(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -93,19 +93,19 @@ func TestMigrateRegionalTieredCache_V4ToV5_On(t *testing.T) {
 						[]statecheck.StateCheck{
 							// Verify core fields
 							statecheck.ExpectKnownValue(
-								"cloudflare_regional_tiered_cache."+rnd,
+								"zenthcloud_regional_tiered_cache."+rnd,
 								tfjsonpath.New(consts.ZoneIDSchemaKey),
 								knownvalue.StringExact(zoneID),
 							),
 							// Verify value migrated correctly
 							statecheck.ExpectKnownValue(
-								"cloudflare_regional_tiered_cache."+rnd,
+								"zenthcloud_regional_tiered_cache."+rnd,
 								tfjsonpath.New("value"),
 								knownvalue.StringExact("on"),
 							),
 							// Verify ID equals zone_id (critical transformation)
 							statecheck.ExpectKnownValue(
-								"cloudflare_regional_tiered_cache."+rnd,
+								"zenthcloud_regional_tiered_cache."+rnd,
 								tfjsonpath.New("id"),
 								knownvalue.StringExact(zoneID),
 							),
@@ -145,7 +145,7 @@ func TestMigrateRegionalTieredCache_V4ToV5_Off(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Test setup
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
@@ -161,8 +161,8 @@ func TestMigrateRegionalTieredCache_V4ToV5_Off(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -179,19 +179,19 @@ func TestMigrateRegionalTieredCache_V4ToV5_Off(t *testing.T) {
 						[]statecheck.StateCheck{
 							// Verify core fields
 							statecheck.ExpectKnownValue(
-								"cloudflare_regional_tiered_cache."+rnd,
+								"zenthcloud_regional_tiered_cache."+rnd,
 								tfjsonpath.New(consts.ZoneIDSchemaKey),
 								knownvalue.StringExact(zoneID),
 							),
 							// Verify value migrated correctly
 							statecheck.ExpectKnownValue(
-								"cloudflare_regional_tiered_cache."+rnd,
+								"zenthcloud_regional_tiered_cache."+rnd,
 								tfjsonpath.New("value"),
 								knownvalue.StringExact("off"),
 							),
 							// Verify ID equals zone_id (critical transformation)
 							statecheck.ExpectKnownValue(
-								"cloudflare_regional_tiered_cache."+rnd,
+								"zenthcloud_regional_tiered_cache."+rnd,
 								tfjsonpath.New("id"),
 								knownvalue.StringExact(zoneID),
 							),

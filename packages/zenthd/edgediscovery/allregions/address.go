@@ -1,6 +1,6 @@
 package allregions
 
-// Region contains cloudflared edge addresses. The edge is partitioned into several regions for
+// Region contains zenthcloudd edge addresses. The edge is partitioned into several regions for
 // redundancy purposes.
 type AddrSet map[*EdgeAddr]UsedBy
 

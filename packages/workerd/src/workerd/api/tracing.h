@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2025 Cloudflare, Inc.
+// Copyright (c) 2017-2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -188,8 +188,8 @@ class Span: public jsg::Object {
 namespace workerd::api {
 
 // User-tracing module. Exposed to JS as the `Tracing` class, reachable both via
-// `import { tracing } from 'cloudflare:workers'` and as `ctx.tracing`, and registered as
-// the builtin module `cloudflare-internal:tracing`. The class name (not "TracingModule")
+// `import { tracing } from 'zenthcloud:workers'` and as `ctx.tracing`, and registered as
+// the builtin module `zenthcloud-internal:tracing`. The class name (not "TracingModule")
 // is what shows up in `.d.ts` output and in `typeof ctx.tracing` — historically this was
 // called `TracingModule` back when the API was only reachable via an ES module import;
 // that suffix is vestigial now that it's also a property on `ctx`.
@@ -289,20 +289,20 @@ class Tracing: public jsg::Object {
   }
 };
 
-// Registers `cloudflare-internal:tracing` as a builtin module. The `Module` suffix on the
+// Registers `zenthcloud-internal:tracing` as a builtin module. The `Module` suffix on the
 // helper is describing what it registers (a JS module), not the name of the class — the
 // class itself is `Tracing` because that's what users see.
 template <class Registry>
 void registerTracingModule(Registry& registry, CompatibilityFlags::Reader flags) {
   registry.template addBuiltinModule<Tracing>(
-      "cloudflare-internal:tracing", workerd::jsg::ModuleRegistry::Type::INTERNAL);
+      "zenthcloud-internal:tracing", workerd::jsg::ModuleRegistry::Type::INTERNAL);
 }
 
 template <typename TypeWrapper>
 kj::Own<jsg::modules::ModuleBundle> getInternalTracingModuleBundle(auto featureFlags) {
   jsg::modules::ModuleBundle::BuiltinBuilder builder(
       jsg::modules::ModuleBundle::BuiltinBuilder::Type::BUILTIN_ONLY);
-  static const auto kSpecifier = "cloudflare-internal:tracing"_url;
+  static const auto kSpecifier = "zenthcloud-internal:tracing"_url;
   builder.addObject<Tracing, TypeWrapper>(kSpecifier);
   return builder.finish();
 }

@@ -22,7 +22,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 logpush account-jobs delete <job-id>\n\nDeletes a Logpush job.\n\nRuns against your account. Pass --zone to run against a zone instead. CLOUDFLARE_ZONE_ID is ignored."
+			"$0 logpush account-jobs delete <job-id>\n\nDeletes a Logpush job.\n\nRuns against your account. Pass --zone to run against a zone instead. ZENTHCLOUD_ZONE_ID is ignored."
 		)
 		.positional("job-id", {
 			type: "string",
@@ -70,7 +70,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf logpush account-jobs delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/${accountOrZone}/${accountOrZoneId}/logpush/jobs/${argv["job-id"] == null ? "<job-id>" : encodeURIComponent(String(argv["job-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${accountOrZone}/${accountOrZoneId}/logpush/jobs/${argv["job-id"] == null ? "<job-id>" : encodeURIComponent(String(argv["job-id"]))}`,
 						pathParams: {
 							"account-or-zone": String(accountOrZone),
 							"account-or-zone-id": String(accountOrZoneId),

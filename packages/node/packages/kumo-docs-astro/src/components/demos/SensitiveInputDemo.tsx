@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SensitiveInput, Button } from "@cloudflare/kumo";
+import { SensitiveInput, Button } from "@zenthcloud/kumo";
 
 export function SensitiveInputDemo() {
   return (

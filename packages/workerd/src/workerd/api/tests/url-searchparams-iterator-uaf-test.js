@@ -1,8 +1,8 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-386:
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-386:
 // URLSearchParams key/value iterators must return owning copies of strings,
 // not borrowed pointers into the query vector. A re-entrant mutation via
 // Object.prototype setter during JSG_STRUCT slow-path wrapping must not

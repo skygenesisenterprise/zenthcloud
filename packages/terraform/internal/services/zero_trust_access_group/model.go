@@ -3,7 +3,7 @@
 package zero_trust_access_group
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -56,7 +56,7 @@ type ZeroTrustAccessGroupIncludeModel struct {
 	ServiceToken            *ZeroTrustAccessGroupIncludeServiceTokenModel            `tfsdk:"service_token" json:"service_token,optional"`
 	LinkedAppToken          *ZeroTrustAccessGroupIncludeLinkedAppTokenModel          `tfsdk:"linked_app_token" json:"linked_app_token,optional"`
 	UserRiskScore           *ZeroTrustAccessGroupIncludeUserRiskScoreModel           `tfsdk:"user_risk_score" json:"user_risk_score,optional"`
-	CloudflareAccountMember *ZeroTrustAccessGroupIncludeCloudflareAccountMemberModel `tfsdk:"cloudflare_account_member" json:"cloudflare_account_member,optional"`
+	ZenthcloudAccountMember *ZeroTrustAccessGroupIncludeZenthcloudAccountMemberModel `tfsdk:"zenthcloud_account_member" json:"zenthcloud_account_member,optional"`
 }
 
 type ZeroTrustAccessGroupIncludeGroupModel struct {
@@ -169,7 +169,7 @@ type ZeroTrustAccessGroupIncludeUserRiskScoreModel struct {
 	UserRiskScore *[]types.String `tfsdk:"user_risk_score" json:"user_risk_score,required"`
 }
 
-type ZeroTrustAccessGroupIncludeCloudflareAccountMemberModel struct {
+type ZeroTrustAccessGroupIncludeZenthcloudAccountMemberModel struct {
 	AccountID types.String `tfsdk:"account_id" json:"account_id,optional"`
 }
 
@@ -199,7 +199,7 @@ type ZeroTrustAccessGroupExcludeModel struct {
 	ServiceToken            *ZeroTrustAccessGroupExcludeServiceTokenModel            `tfsdk:"service_token" json:"service_token,optional"`
 	LinkedAppToken          *ZeroTrustAccessGroupExcludeLinkedAppTokenModel          `tfsdk:"linked_app_token" json:"linked_app_token,optional"`
 	UserRiskScore           *ZeroTrustAccessGroupExcludeUserRiskScoreModel           `tfsdk:"user_risk_score" json:"user_risk_score,optional"`
-	CloudflareAccountMember *ZeroTrustAccessGroupExcludeCloudflareAccountMemberModel `tfsdk:"cloudflare_account_member" json:"cloudflare_account_member,optional"`
+	ZenthcloudAccountMember *ZeroTrustAccessGroupExcludeZenthcloudAccountMemberModel `tfsdk:"zenthcloud_account_member" json:"zenthcloud_account_member,optional"`
 }
 
 type ZeroTrustAccessGroupExcludeGroupModel struct {
@@ -312,7 +312,7 @@ type ZeroTrustAccessGroupExcludeUserRiskScoreModel struct {
 	UserRiskScore *[]types.String `tfsdk:"user_risk_score" json:"user_risk_score,required"`
 }
 
-type ZeroTrustAccessGroupExcludeCloudflareAccountMemberModel struct {
+type ZeroTrustAccessGroupExcludeZenthcloudAccountMemberModel struct {
 	AccountID types.String `tfsdk:"account_id" json:"account_id,optional"`
 }
 
@@ -342,7 +342,7 @@ type ZeroTrustAccessGroupRequireModel struct {
 	ServiceToken            *ZeroTrustAccessGroupRequireServiceTokenModel            `tfsdk:"service_token" json:"service_token,optional"`
 	LinkedAppToken          *ZeroTrustAccessGroupRequireLinkedAppTokenModel          `tfsdk:"linked_app_token" json:"linked_app_token,optional"`
 	UserRiskScore           *ZeroTrustAccessGroupRequireUserRiskScoreModel           `tfsdk:"user_risk_score" json:"user_risk_score,optional"`
-	CloudflareAccountMember *ZeroTrustAccessGroupRequireCloudflareAccountMemberModel `tfsdk:"cloudflare_account_member" json:"cloudflare_account_member,optional"`
+	ZenthcloudAccountMember *ZeroTrustAccessGroupRequireZenthcloudAccountMemberModel `tfsdk:"zenthcloud_account_member" json:"zenthcloud_account_member,optional"`
 }
 
 type ZeroTrustAccessGroupRequireGroupModel struct {
@@ -455,6 +455,6 @@ type ZeroTrustAccessGroupRequireUserRiskScoreModel struct {
 	UserRiskScore *[]types.String `tfsdk:"user_risk_score" json:"user_risk_score,required"`
 }
 
-type ZeroTrustAccessGroupRequireCloudflareAccountMemberModel struct {
+type ZeroTrustAccessGroupRequireZenthcloudAccountMemberModel struct {
 	AccountID types.String `tfsdk:"account_id" json:"account_id,optional"`
 }

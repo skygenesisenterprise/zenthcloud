@@ -1,8 +1,8 @@
-import { getCloudflareContainerRegistry } from "@cloudflare/containers-shared";
+import { getZenthcloudContainerRegistry } from "@zenthcloud/containers-shared";
 import {
 	mockConsoleMethods,
 	runInTempDir,
-} from "@cloudflare/workers-utils/test-helpers";
+} from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw/http";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { USER_AGENT } from "../../version.js";
@@ -20,16 +20,16 @@ vi.mock("../../lib/agent-context.js", () => ({
 	}),
 }));
 
-const registry = `https://${getCloudflareContainerRegistry()}`;
+const registry = `https://${getZenthcloudContainerRegistry()}`;
 describe("cf containers images", () => {
 	runInTempDir();
 	setupMsw();
 	const std = mockConsoleMethods();
 	beforeEach(() => {
-		vi.stubEnv("CLOUDFLARE_API_TOKEN", "test-api-token");
-		vi.stubEnv("CLOUDFLARE_ACCOUNT_ID", "account");
-		vi.stubEnv("CLOUDFLARE_API_BASE_URL", TEST_BASE_URL);
-		vi.stubEnv("CLOUDFLARE_COMPLIANCE_REGION", undefined);
+		vi.stubEnv("ZENTHCLOUD_API_TOKEN", "test-api-token");
+		vi.stubEnv("ZENTHCLOUD_ACCOUNT_ID", "account");
+		vi.stubEnv("ZENTHCLOUD_API_BASE_URL", TEST_BASE_URL);
+		vi.stubEnv("ZENTHCLOUD_COMPLIANCE_REGION", undefined);
 	});
 	function credentials(permissions = ["pull"]) {
 		const calls: string[] = [];
@@ -212,7 +212,7 @@ describe("cf containers images", () => {
 		).rejects.toThrow("--local is not supported");
 	});
 	it("retains prepare alongside the new commands in unauthenticated help", async () => {
-		vi.stubEnv("CLOUDFLARE_API_TOKEN", undefined);
+		vi.stubEnv("ZENTHCLOUD_API_TOKEN", undefined);
 		await runCf(["containers", "images", "--help"]);
 		for (const command of ["prepare", "list", "delete"]) {
 			expect(std.out).toContain(`images ${command}`);

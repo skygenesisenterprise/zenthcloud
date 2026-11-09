@@ -18,7 +18,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 cache settings regional-tiered-cache edit\n\nInstructs Cloudflare to check a regional hub data center on the way to your upper tier. This can help improve performance for smart and custom tiered cache topologies."
+			"$0 cache settings regional-tiered-cache edit\n\nInstructs Zenthcloud to check a regional hub data center on the way to your upper tier. This can help improve performance for smart and custom tiered cache topologies."
 		)
 		.option("value", {
 			type: "string",
@@ -57,7 +57,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf cache settings regional-tiered-cache edit",
 						method: "PATCH",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/cache/regional_tiered_cache`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/cache/regional_tiered_cache`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 						},

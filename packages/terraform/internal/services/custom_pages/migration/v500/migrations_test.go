@@ -6,10 +6,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -72,8 +72,8 @@ func TestMigrateCustomPages_AccountLevel_Basic(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_custom_pages." + rnd
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			resourceName := "zenthcloud_custom_pages." + rnd
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			tmpDir := t.TempDir()
 
 			identifier := "500_errors"
@@ -96,8 +96,8 @@ func TestMigrateCustomPages_AccountLevel_Basic(t *testing.T) {
 					{
 						// Step 1: Create with specific provider version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -143,8 +143,8 @@ func TestMigrateCustomPages_ZoneLevel_Basic(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_custom_pages." + rnd
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			resourceName := "zenthcloud_custom_pages." + rnd
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			tmpDir := t.TempDir()
 
 			identifier := "500_errors"
@@ -167,8 +167,8 @@ func TestMigrateCustomPages_ZoneLevel_Basic(t *testing.T) {
 					{
 						// Step 1: Create with specific provider version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},

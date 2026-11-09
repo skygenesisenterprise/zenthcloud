@@ -1,10 +1,10 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
 import { ok } from 'node:assert';
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-60.
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-60.
 // ByteReadable::cancel() / ValueReadable::cancel() invoke the user's
 // cancel callback synchronously. If the callback calls stream.tee(),
 // tee() transitions the controller state to Closed (destroying the

@@ -252,7 +252,7 @@ export const magic_nat: JSONObject = {
  * The schema of `magic_remote_subnet`.
  */
 export const magic_remote_subnet: JSONObject = {
-  "description": "A remote subnet reachable through Cloudflare that is addressed from this LAN by a local alias prefix of the same size. The local alias prefix must not overlap other subnets on the LAN, and the remote prefix must not overlap other remote prefixes on the LAN.",
+  "description": "A remote subnet reachable through Zenthcloud that is addressed from this LAN by a local alias prefix of the same size. The local alias prefix must not overlap other subnets on the LAN, and the remote prefix must not overlap other remote prefixes on the LAN.",
   "properties": {
     "local_alias_prefix": {
       "description": "A valid CIDR notation representing an IP range.",

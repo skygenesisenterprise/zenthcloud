@@ -14,8 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 //go:embed testdata/v4_basic.tf
@@ -35,9 +35,9 @@ var v5WithCachingConfig string
 // caching = { disabled = false } to match the API default.
 func TestMigrateHyperdriveConfig_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	tmpDir := t.TempDir()
-	resourceName := "cloudflare_hyperdrive_config." + rnd
+	resourceName := "zenthcloud_hyperdrive_config." + rnd
 	dbHost, dbName, dbPort, dbUser, dbPassword := hyperdriveEnv(t)
 
 	v4Config := fmt.Sprintf(v4BasicConfig, rnd, accountID, dbName, dbHost, dbPort, dbUser, dbPassword)
@@ -54,8 +54,8 @@ func TestMigrateHyperdriveConfig_Basic(t *testing.T) {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: acctest.GetLastV4Version(),
 					},
 				},
@@ -92,9 +92,9 @@ func TestMigrateHyperdriveConfig_Basic(t *testing.T) {
 // struct pointer conversion in the state upgrader.
 func TestMigrateHyperdriveConfig_WithCaching(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	tmpDir := t.TempDir()
-	resourceName := "cloudflare_hyperdrive_config." + rnd
+	resourceName := "zenthcloud_hyperdrive_config." + rnd
 	dbHost, dbName, dbPort, dbUser, dbPassword := hyperdriveEnv(t)
 
 	v4Config := fmt.Sprintf(v4WithCachingConfig, rnd, accountID, dbName, dbHost, dbPort, dbUser, dbPassword)
@@ -110,8 +110,8 @@ func TestMigrateHyperdriveConfig_WithCaching(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: acctest.GetLastV4Version(),
 					},
 				},
@@ -150,8 +150,8 @@ func TestMigrateHyperdriveConfig_WithCaching(t *testing.T) {
 // UpgradeFromV0 is tested in handler_test.go (TestUpgradeFromV0_V5RawState).
 func TestMigrateHyperdriveConfig_V5Idempotent(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_hyperdrive_config." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_hyperdrive_config." + rnd
 	dbHost, dbName, dbPort, dbUser, dbPassword := hyperdriveEnv(t)
 
 	v5Config := fmt.Sprintf(v5BasicConfig, rnd, accountID, dbName, dbHost, dbPort, dbUser, dbPassword)
@@ -192,9 +192,9 @@ func hyperdriveEnv(t *testing.T) (host, name, port, user, password string) {
 		t.Skip("acceptance tests skipped unless TF_ACC is set")
 	}
 	acctest.TestAccPreCheck_Hyperdrive(t)
-	return os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_HOSTNAME"),
-		os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_NAME"),
-		os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_PORT"),
-		os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_USER"),
-		os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_PASSWORD")
+	return os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_HOSTNAME"),
+		os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_NAME"),
+		os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_PORT"),
+		os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_USER"),
+		os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_PASSWORD")
 }

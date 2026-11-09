@@ -5,7 +5,7 @@ package filter
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
@@ -24,7 +24,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 			},
 		}.String(),
 		Version: 500,
-		DeprecationMessage: "The Filters API is deprecated in favour of using the Ruleset Engine. See https://developers.cloudflare.com/fundamentals/api/reference/deprecations/#firewall-rules-api-and-filters-api for full details.",
+		DeprecationMessage: "The Filters API is deprecated in favour of using the Ruleset Engine. See https://github.com/skygenesisenterprise/zenthcloud for full details.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description:   "The unique identifier of the filter.",
@@ -49,7 +49,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 							Optional:    true,
 						},
 						"expression": schema.StringAttribute{
-							Description: "The filter expression. For more information, refer to [Expressions](https://developers.cloudflare.com/ruleset-engine/rules-language/expressions/).",
+							Description: "The filter expression. For more information, refer to [Expressions](https://github.com/skygenesisenterprise/zenthcloud).",
 							Optional:    true,
 						},
 						"paused": schema.BoolAttribute{
@@ -69,7 +69,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"expression": schema.StringAttribute{
-				Description: "The filter expression. For more information, refer to [Expressions](https://developers.cloudflare.com/ruleset-engine/rules-language/expressions/).",
+				Description: "The filter expression. For more information, refer to [Expressions](https://github.com/skygenesisenterprise/zenthcloud).",
 				Optional:    true,
 			},
 			"paused": schema.BoolAttribute{

@@ -10,25 +10,25 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 // TestMigrateAPIShield_V4ToV5_SingleHeader tests migration of a single header-based auth characteristic
 func TestMigrateAPIShield_V4ToV5_SingleHeader(t *testing.T) {
 	// API Shield doesn't support API tokens yet
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_api_shield." + rnd
+	resourceName := "zenthcloud_api_shield." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config using block syntax for auth_id_characteristics
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_api_shield" "%[1]s" {
+resource "zenthcloud_api_shield" "%[1]s" {
   zone_id = "%[2]s"
 
   auth_id_characteristics {
@@ -48,8 +48,8 @@ resource "cloudflare_api_shield" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -72,18 +72,18 @@ resource "cloudflare_api_shield" "%[1]s" {
 // TestMigrateAPIShield_V4ToV5_SingleCookie tests migration of a single cookie-based auth characteristic
 func TestMigrateAPIShield_V4ToV5_SingleCookie(t *testing.T) {
 	// API Shield doesn't support API tokens yet
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_api_shield." + rnd
+	resourceName := "zenthcloud_api_shield." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config using block syntax with cookie type
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_api_shield" "%[1]s" {
+resource "zenthcloud_api_shield" "%[1]s" {
   zone_id = "%[2]s"
 
   auth_id_characteristics {
@@ -103,8 +103,8 @@ resource "cloudflare_api_shield" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -124,18 +124,18 @@ resource "cloudflare_api_shield" "%[1]s" {
 // TestMigrateAPIShield_V4ToV5_MultipleCharacteristics tests migration with multiple auth characteristics
 func TestMigrateAPIShield_V4ToV5_MultipleCharacteristics(t *testing.T) {
 	// API Shield doesn't support API tokens yet
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_api_shield." + rnd
+	resourceName := "zenthcloud_api_shield." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config with multiple blocks (mixed types)
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_api_shield" "%[1]s" {
+resource "zenthcloud_api_shield" "%[1]s" {
   zone_id = "%[2]s"
 
   auth_id_characteristics {
@@ -165,8 +165,8 @@ resource "cloudflare_api_shield" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -193,18 +193,18 @@ resource "cloudflare_api_shield" "%[1]s" {
 // TestMigrateAPIShield_V4ToV5_ComplexRealWorld tests migration with real-world OAuth scenario
 func TestMigrateAPIShield_V4ToV5_ComplexRealWorld(t *testing.T) {
 	// API Shield doesn't support API tokens yet
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_api_shield." + rnd
+	resourceName := "zenthcloud_api_shield." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config simulating OAuth flow with multiple characteristics
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_api_shield" "%[1]s" {
+resource "zenthcloud_api_shield" "%[1]s" {
   zone_id = "%[2]s"
 
   auth_id_characteristics {
@@ -239,8 +239,8 @@ resource "cloudflare_api_shield" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -270,18 +270,18 @@ resource "cloudflare_api_shield" "%[1]s" {
 // TestMigrateAPIShield_V4ToV5_SpecialCharacters tests migration with various naming patterns
 func TestMigrateAPIShield_V4ToV5_SpecialCharacters(t *testing.T) {
 	// API Shield doesn't support API tokens yet
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_api_shield." + rnd
+	resourceName := "zenthcloud_api_shield." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config with special characters in names
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_api_shield" "%[1]s" {
+resource "zenthcloud_api_shield" "%[1]s" {
   zone_id = "%[2]s"
 
   auth_id_characteristics {
@@ -316,8 +316,8 @@ resource "cloudflare_api_shield" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},

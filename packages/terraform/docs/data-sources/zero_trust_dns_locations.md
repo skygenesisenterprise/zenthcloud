@@ -1,23 +1,23 @@
 ---
-page_title: "cloudflare_zero_trust_dns_locations Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_dns_locations Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
-  Cloudflare Zero Trust Secure DNS Locations WriteZero Trust ReadZero Trust Write
+  Zenthcloud Zero Trust Secure DNS Locations WriteZero Trust ReadZero Trust Write
 ---
 
-# cloudflare_zero_trust_dns_locations (Data Source)
+# zenthcloud_zero_trust_dns_locations (Data Source)
 
 Accepted Permissions
 
-- `Cloudflare Zero Trust Secure DNS Locations Write`
+- `Zenthcloud Zero Trust Secure DNS Locations Write`
 - `Zero Trust Read`
 - `Zero Trust Write`
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_dns_locations" "example_zero_trust_dns_locations" {
+data "zenthcloud_zero_trust_dns_locations" "example_zero_trust_dns_locations" {
   account_id = "699d98642c564d2e855e9661899b7252"
   direction = "asc"
   filter = ["string"]
@@ -31,7 +31,7 @@ data "cloudflare_zero_trust_dns_locations" "example_zero_trust_dns_locations" {
 
 ### Optional
 
-- `account_id` (String) Specify the Cloudflare account identifier.
+- `account_id` (String) Specify the Zenthcloud account identifier.
 - `direction` (String) Sort direction. Only takes effect when `order_by` is also provided; it
 is ignored otherwise. When `direction` is omitted the effective
 direction is field-specific: `created_at` and `updated_at` default to
@@ -74,7 +74,7 @@ Read-Only:
 - `client_default` (Boolean) Indicate whether this location is the default location.
 - `created_at` (String)
 - `dns_destination_ips_id` (String) Indicate the identifier of the pair of IPv4 addresses assigned to this location.
-- `dns_destination_ipv6_block_id` (String) Specify the UUID of the IPv6 block brought to the gateway so that this location's IPv6 address is allocated from the Bring Your Own IPv6 (BYOIPv6) block rather than the standard Cloudflare IPv6 block.
+- `dns_destination_ipv6_block_id` (String) Specify the UUID of the IPv6 block brought to the gateway so that this location's IPv6 address is allocated from the Bring Your Own IPv6 (BYOIPv6) block rather than the standard Zenthcloud IPv6 block.
 - `doh_subdomain` (String) Specify the DNS over HTTPS domain that receives DNS requests. Gateway automatically generates this value.
 - `ecs_support` (Boolean) Indicate whether the location must resolve EDNS queries.
 - `endpoints` (Attributes) Configure the destination endpoints for this location. (see [below for nested schema](#nestedatt--result--endpoints))

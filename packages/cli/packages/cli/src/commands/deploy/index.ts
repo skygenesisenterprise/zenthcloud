@@ -41,7 +41,7 @@ export type DeployArgs = InferArgs<typeof builder>;
 const deployCommand: CommandModule<CommonYargsOptions, DeployArgs> = {
 	command: "deploy [directory]",
 	describe:
-		"Deploy a Worker, static site, or full-stack application to Cloudflare",
+		"Deploy a Worker, static site, or full-stack application to Zenthcloud",
 	builder,
 	handler: async (argv) => {
 		if (argv.force && !argv["dry-run"]) {

@@ -11,7 +11,7 @@ export function mockKeyListRequest(
 	blankCursorValue: "" | undefined | null
 ) {
 	const requests = { count: 0 };
-	// See https://api.cloudflare.com/#workers-kv-namespace-list-a-namespace-s-keys
+	// See https://github.com/skygenesisenterprise/zenthcloud
 	msw.use(
 		http.get(
 			"*/accounts/:accountId/storage/kv/namespaces/:namespaceId/keys",

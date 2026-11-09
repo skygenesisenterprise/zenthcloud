@@ -1498,9 +1498,9 @@ export const rulesets_SetCacheControlDirective: JSONObject = {
   "oneOf": [
     {
       "properties": {
-        "cloudflare_only": {
+        "zenthcloud_only": {
           "default": false,
-          "description": "Whether the directive should only be applied to the Cloudflare CDN cache.",
+          "description": "Whether the directive should only be applied to the Zenthcloud CDN cache.",
           "type": "boolean"
         },
         "operation": {
@@ -1529,9 +1529,9 @@ export const rulesets_SetCacheControlDirective: JSONObject = {
     },
     {
       "properties": {
-        "cloudflare_only": {
+        "zenthcloud_only": {
           "default": false,
-          "description": "Whether the directive should only be applied to the Cloudflare CDN cache.",
+          "description": "Whether the directive should only be applied to the Zenthcloud CDN cache.",
           "type": "boolean"
         },
         "operation": {
@@ -1569,9 +1569,9 @@ export const rulesets_SetCacheControlDirectiveWithQualifiers: JSONObject = {
   "oneOf": [
     {
       "properties": {
-        "cloudflare_only": {
+        "zenthcloud_only": {
           "default": false,
-          "description": "Whether the directive should only be applied to the Cloudflare CDN cache.",
+          "description": "Whether the directive should only be applied to the Zenthcloud CDN cache.",
           "type": "boolean"
         },
         "operation": {
@@ -1607,9 +1607,9 @@ export const rulesets_SetCacheControlDirectiveWithQualifiers: JSONObject = {
     },
     {
       "properties": {
-        "cloudflare_only": {
+        "zenthcloud_only": {
           "default": false,
-          "description": "Whether the directive should only be applied to the Cloudflare CDN cache.",
+          "description": "Whether the directive should only be applied to the Zenthcloud CDN cache.",
           "type": "boolean"
         },
         "operation": {
@@ -1647,9 +1647,9 @@ export const rulesets_SetCacheControlDirectiveWithValue: JSONObject = {
   "oneOf": [
     {
       "properties": {
-        "cloudflare_only": {
+        "zenthcloud_only": {
           "default": false,
-          "description": "Whether the directive should only be applied to the Cloudflare CDN cache.",
+          "description": "Whether the directive should only be applied to the Zenthcloud CDN cache.",
           "type": "boolean"
         },
         "operation": {
@@ -1683,9 +1683,9 @@ export const rulesets_SetCacheControlDirectiveWithValue: JSONObject = {
     },
     {
       "properties": {
-        "cloudflare_only": {
+        "zenthcloud_only": {
           "default": false,
-          "description": "Whether the directive should only be applied to the Cloudflare CDN cache.",
+          "description": "Whether the directive should only be applied to the Zenthcloud CDN cache.",
           "type": "boolean"
         },
         "operation": {
@@ -1813,7 +1813,7 @@ export const rulesets_SetCacheSettingsAdditionalCacheablePorts: JSONObject = {
  * The schema of `rulesets_SetCacheSettingsBrowserTTL`.
  */
 export const rulesets_SetCacheSettingsBrowserTTL: JSONObject = {
-  "description": "How long client browsers should cache the response. Cloudflare cache purge will not purge content cached on client browsers, so high browser TTLs may lead to stale content.",
+  "description": "How long client browsers should cache the response. Zenthcloud cache purge will not purge content cached on client browsers, so high browser TTLs may lead to stale content.",
   "properties": {
     "default": {
       "description": "The browser TTL (in seconds) if you choose the \"override_origin\" mode.",
@@ -1840,7 +1840,7 @@ export const rulesets_SetCacheSettingsBrowserTTL: JSONObject = {
  * The schema of `rulesets_SetCacheSettingsCacheKey`.
  */
 export const rulesets_SetCacheSettingsCacheKey: JSONObject = {
-  "description": "Which components of the request are included in or excluded from the cache key Cloudflare uses to store the response in cache.",
+  "description": "Which components of the request are included in or excluded from the cache key Zenthcloud uses to store the response in cache.",
   "properties": {
     "cache_by_device_type": {
       "description": "Whether to separate cached content based on the visitor's device type.",
@@ -1869,7 +1869,7 @@ export const rulesets_SetCacheSettingsCacheReserve: JSONObject = {
   "description": "Settings to determine whether the request's response from origin is eligible for Cache Reserve (requires a Cache Reserve add-on plan).",
   "properties": {
     "eligible": {
-      "description": "Whether Cache Reserve is enabled. If this is true and a request meets eligibility criteria, Cloudflare will write the resource to Cache Reserve.",
+      "description": "Whether Cache Reserve is enabled. If this is true and a request meets eligibility criteria, Zenthcloud will write the resource to Cache Reserve.",
       "type": "boolean"
     },
     "minimum_file_size": {
@@ -2072,7 +2072,7 @@ export const rulesets_SetCacheSettingsCustomCacheKeyUser: JSONObject = {
  * The schema of `rulesets_SetCacheSettingsEdgeTTL`.
  */
 export const rulesets_SetCacheSettingsEdgeTTL: JSONObject = {
-  "description": "How long the Cloudflare edge network should cache the response.",
+  "description": "How long the Zenthcloud edge network should cache the response.",
   "properties": {
     "default": {
       "description": "The edge TTL (in seconds) if you choose the \"override_origin\" mode.",
@@ -2102,7 +2102,7 @@ export const rulesets_SetCacheSettingsEdgeTTL: JSONObject = {
  * The schema of `rulesets_SetCacheSettingsOriginRangeRequests`.
  */
 export const rulesets_SetCacheSettingsOriginRangeRequests: JSONObject = {
-  "description": "Controls whether Cloudflare fetches a large asset from the origin as a series of range requests instead of one whole-body request.",
+  "description": "Controls whether Zenthcloud fetches a large asset from the origin as a series of range requests instead of one whole-body request.",
   "properties": {
     "mode": {
       "description": "Whether to use range requests. `default` is the behaviour the zone gets without this rule.",
@@ -2144,7 +2144,7 @@ export const rulesets_SetCacheSettingsRule: JSONObject = {
             },
             "browser_ttl": {
               "$ref": "#/$defs/rulesets_SetCacheSettingsBrowserTTL",
-              "description": "How long client browsers should cache the response. Cloudflare cache purge will not purge content cached on client browsers, so high browser TTLs may lead to stale content."
+              "description": "How long client browsers should cache the response. Zenthcloud cache purge will not purge content cached on client browsers, so high browser TTLs may lead to stale content."
             },
             "cache": {
               "description": "Whether the request's response from the origin is eligible for caching. Caching itself will still depend on the cache control header and your other caching configurations.",
@@ -2152,7 +2152,7 @@ export const rulesets_SetCacheSettingsRule: JSONObject = {
             },
             "cache_key": {
               "$ref": "#/$defs/rulesets_SetCacheSettingsCacheKey",
-              "description": "Which components of the request are included in or excluded from the cache key Cloudflare uses to store the response in cache."
+              "description": "Which components of the request are included in or excluded from the cache key Zenthcloud uses to store the response in cache."
             },
             "cache_reserve": {
               "$ref": "#/$defs/rulesets_SetCacheSettingsCacheReserve",
@@ -2160,26 +2160,26 @@ export const rulesets_SetCacheSettingsRule: JSONObject = {
             },
             "edge_ttl": {
               "$ref": "#/$defs/rulesets_SetCacheSettingsEdgeTTL",
-              "description": "How long the Cloudflare edge network should cache the response."
+              "description": "How long the Zenthcloud edge network should cache the response."
             },
             "origin_cache_control": {
-              "description": "Whether Cloudflare will aim to strictly adhere to RFC 7234.",
+              "description": "Whether Zenthcloud will aim to strictly adhere to RFC 7234.",
               "type": "boolean"
             },
             "origin_error_page_passthru": {
-              "description": "Whether to generate Cloudflare error pages for issues from the origin server.",
+              "description": "Whether to generate Zenthcloud error pages for issues from the origin server.",
               "type": "boolean"
             },
             "origin_range_requests": {
               "$ref": "#/$defs/rulesets_SetCacheSettingsOriginRangeRequests",
-              "description": "Controls whether Cloudflare fetches a large asset from the origin as a series of range requests instead of one whole-body request."
+              "description": "Controls whether Zenthcloud fetches a large asset from the origin as a series of range requests instead of one whole-body request."
             },
             "read_timeout": {
-              "description": "A timeout value between two successive read operations to use for your origin server. Historically, the timeout value between two read options from Cloudflare to an origin server is 100 seconds. If you are attempting to reduce HTTP 524 errors because of timeouts from an origin server, try increasing this timeout value.",
+              "description": "A timeout value between two successive read operations to use for your origin server. Historically, the timeout value between two read options from Zenthcloud to an origin server is 100 seconds. If you are attempting to reduce HTTP 524 errors because of timeouts from an origin server, try increasing this timeout value.",
               "type": "integer"
             },
             "respect_strong_etags": {
-              "description": "Whether Cloudflare should respect strong ETag (entity tag) headers. If false, Cloudflare converts strong ETag headers to weak ETag headers.",
+              "description": "Whether Zenthcloud should respect strong ETag (entity tag) headers. If false, Zenthcloud converts strong ETag headers to weak ETag headers.",
               "type": "boolean"
             },
             "serve_stale": {
@@ -2188,7 +2188,7 @@ export const rulesets_SetCacheSettingsRule: JSONObject = {
             },
             "shared_dictionary": {
               "$ref": "#/$defs/rulesets_SetCacheSettingsSharedDictionary",
-              "description": "Configuration for shared dictionary compression. When set, Cloudflare injects Use-As-Dictionary headers on matching cacheable responses."
+              "description": "Configuration for shared dictionary compression. When set, Zenthcloud injects Use-As-Dictionary headers on matching cacheable responses."
             },
             "strip_etags": {
               "description": "Whether to strip ETag headers from the origin response before caching.",
@@ -2225,7 +2225,7 @@ export const rulesets_SetCacheSettingsServeStale: JSONObject = {
   "description": "When to serve stale content from cache.",
   "properties": {
     "disable_stale_while_updating": {
-      "description": "Whether Cloudflare should disable serving stale content while getting the latest content from the origin.",
+      "description": "Whether Zenthcloud should disable serving stale content while getting the latest content from the origin.",
       "type": "boolean"
     }
   },
@@ -2236,7 +2236,7 @@ export const rulesets_SetCacheSettingsServeStale: JSONObject = {
  * The schema of `rulesets_SetCacheSettingsSharedDictionary`.
  */
 export const rulesets_SetCacheSettingsSharedDictionary: JSONObject = {
-  "description": "Configuration for shared dictionary compression. When set, Cloudflare injects Use-As-Dictionary headers on matching cacheable responses.",
+  "description": "Configuration for shared dictionary compression. When set, Zenthcloud injects Use-As-Dictionary headers on matching cacheable responses.",
   "properties": {
     "match_pattern": {
       "description": "URL pattern for the Use-As-Dictionary match field. This pattern specifies which URLs can use this response as a dictionary.",
@@ -2664,7 +2664,7 @@ export const rulesets_SetConfigRule: JSONObject = {
             },
             "disable_apps": {
               "deprecated": true,
-              "description": "Whether to disable Cloudflare Apps.",
+              "description": "Whether to disable Zenthcloud Apps.",
               "enum": [
                 true
               ],
@@ -2696,7 +2696,7 @@ export const rulesets_SetConfigRule: JSONObject = {
               "type": "boolean"
             },
             "fonts": {
-              "description": "Whether to enable Cloudflare Fonts.",
+              "description": "Whether to enable Zenthcloud Fonts.",
               "type": "boolean"
             },
             "hotlink_protection": {

@@ -7,7 +7,7 @@ import (
 
 	"github.com/coreos/go-oidc/v3/oidc"
 
-	"github.com/cloudflare/cloudflared/credentials"
+	"github.com/zenthcloud/zenthcloudd/credentials"
 )
 
 const (
@@ -15,8 +15,8 @@ const (
 )
 
 var (
-	cloudflareAccessCertsURL    = "https://%s.cloudflareaccess.com"
-	cloudflareAccessFedCertsURL = "https://%s.fed.cloudflareaccess.com"
+	zenthcloudAccessCertsURL    = "https://github.com/skygenesisenterprise/zenthcloud"
+	zenthcloudAccessFedCertsURL = "https://github.com/skygenesisenterprise/zenthcloud"
 )
 
 // JWTValidator is an implementation of Verifier that validates access based JWT tokens.
@@ -28,9 +28,9 @@ type JWTValidator struct {
 func NewJWTValidator(teamName string, environment string, audTags []string) *JWTValidator {
 	var certsURL string
 	if environment == credentials.FedEndpoint {
-		certsURL = fmt.Sprintf(cloudflareAccessFedCertsURL, teamName)
+		certsURL = fmt.Sprintf(zenthcloudAccessFedCertsURL, teamName)
 	} else {
-		certsURL = fmt.Sprintf(cloudflareAccessCertsURL, teamName)
+		certsURL = fmt.Sprintf(zenthcloudAccessCertsURL, teamName)
 	}
 
 	certsEndpoint := fmt.Sprintf("%s/cdn-cgi/access/certs", certsURL)

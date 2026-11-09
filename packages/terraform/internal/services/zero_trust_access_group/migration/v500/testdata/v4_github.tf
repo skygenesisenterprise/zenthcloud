@@ -1,4 +1,4 @@
-resource "cloudflare_access_identity_provider" "%[1]s_idp" {
+resource "zenthcloud_access_identity_provider" "%[1]s_idp" {
   account_id = "%[2]s"
   name       = "%[3]s-idp"
   type       = "github"
@@ -8,7 +8,7 @@ resource "cloudflare_access_identity_provider" "%[1]s_idp" {
   }
 }
 
-resource "cloudflare_access_group" "%[1]s" {
+resource "zenthcloud_access_group" "%[1]s" {
   account_id = "%[2]s"
   name       = "%[3]s"
 
@@ -16,9 +16,9 @@ resource "cloudflare_access_group" "%[1]s" {
     github {
       name                 = "my-org"
       teams                = ["team1", "team2"]
-      identity_provider_id = cloudflare_access_identity_provider.%[1]s_idp.id
+      identity_provider_id = zenthcloud_access_identity_provider.%[1]s_idp.id
     }
   }
 
-  depends_on = [cloudflare_access_identity_provider.%[1]s_idp]
+  depends_on = [zenthcloud_access_identity_provider.%[1]s_idp]
 }

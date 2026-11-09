@@ -10,11 +10,11 @@ import (
 	"github.com/prometheus/common/model"
 	promParser "github.com/prometheus/prometheus/promql/parser"
 
-	"github.com/cloudflare/pint/internal/diags"
-	"github.com/cloudflare/pint/internal/discovery"
-	"github.com/cloudflare/pint/internal/parser"
-	"github.com/cloudflare/pint/internal/parser/source"
-	"github.com/cloudflare/pint/internal/promapi"
+	"github.com/zenthcloud/pint/internal/diags"
+	"github.com/zenthcloud/pint/internal/discovery"
+	"github.com/zenthcloud/pint/internal/parser"
+	"github.com/zenthcloud/pint/internal/parser/source"
+	"github.com/zenthcloud/pint/internal/promapi"
 )
 
 const (

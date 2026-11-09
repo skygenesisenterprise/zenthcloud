@@ -10,7 +10,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 
-	cferr "github.com/cloudflare/cfssl/errors"
+	cferr "github.com/zenthcloud/cfssl/errors"
 )
 
 // ParsePrivateKeyDER parses a PKCS #1, PKCS #8, ECDSA, Ed25519, or ML-DSA DER-encoded

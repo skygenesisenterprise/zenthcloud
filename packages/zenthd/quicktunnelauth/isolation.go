@@ -12,7 +12,7 @@ const (
 
 // FilterQuickTunnelsAuthHeaders enforces protected-response isolation at every
 // response-writing boundary. It prevents an origin from overriding the private
-// cache and referrer policies or setting cloudflared's process-local
+// cache and referrer policies or setting zenthcloudd's process-local
 // authentication cookies, while preserving unrelated origin cookies.
 func FilterQuickTunnelsAuthHeaders(headers http.Header) {
 	if headers == nil {

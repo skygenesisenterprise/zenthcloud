@@ -23,13 +23,13 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 tunnels create\n\nCreates a remotely or locally managed Cloudflare Tunnel in an account. After creation, retrieve its token and run cloudflared to establish the connector connection."
+			"$0 tunnels create\n\nCreates a remotely or locally managed Zenthcloud Tunnel in an account. After creation, retrieve its token and run zenthcloudd to establish the connector connection."
 		)
 		.option("config-source", {
 			type: "string",
 			description:
-				"Indicates if this is a locally or remotely configured tunnel. If `local`, manage the tunnel using a YAML file on the origin machine. If `cloudflare`, manage the tunnel on the Zero Trust dashboard.",
-			choices: ["local", "cloudflare"],
+				"Indicates if this is a locally or remotely configured tunnel. If `local`, manage the tunnel using a YAML file on the origin machine. If `zenthcloud`, manage the tunnel on the Zero Trust dashboard.",
+			choices: ["local", "zenthcloud"],
 		})
 		.coerce("config-source", (value) =>
 			resolveFileToken(value, "config-source", "text")
@@ -58,7 +58,7 @@ type Args = InferArgs<typeof builder>;
 
 const command: CommandModule<CommonYargsOptions, Args> = {
 	command: "create",
-	describe: "Create a Cloudflare Tunnel",
+	describe: "Create a Zenthcloud Tunnel",
 	builder,
 	handler: async (argv): Promise<void> =>
 		runWithTelemetry(
@@ -75,7 +75,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf tunnels create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/cfd_tunnel`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/cfd_tunnel`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

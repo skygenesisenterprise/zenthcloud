@@ -1,5 +1,5 @@
-import { mount } from "@cloudflare/nimbus-docs/client";
-import type { SearchProvider, SearchResult } from "@cloudflare/nimbus-docs/types";
+import { mount } from "@zenthcloud/nimbus-docs/client";
+import type { SearchProvider, SearchResult } from "@zenthcloud/nimbus-docs/types";
 import { provider } from "./providers/pagefind";
 
 export interface SearchConfig {

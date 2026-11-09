@@ -5,7 +5,7 @@ const VALID_CLASSIFICATIONS = ['bad', 'poor', 'average', 'good', 'great'];
 
 // AIM logging endpoint used by this test. The request is intercepted (see the
 // fetch stub below) so the assertion does not depend on a live endpoint.
-const AIM_LOG_URL = 'https://speed.cloudflare.com/__results';
+const AIM_LOG_URL = 'https://github.com/skygenesisenterprise/zenthcloud';
 const STUB_REQUEST_ID = '11111111-2222-3333-4444-555555555555';
 
 // Marks failures caused by library bugs, which retries would hide.

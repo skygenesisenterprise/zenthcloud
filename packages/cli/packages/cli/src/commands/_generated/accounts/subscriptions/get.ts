@@ -21,7 +21,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 accounts subscriptions get\n\nLists all of an account or zone's subscriptions.\n\nRuns against your account. Pass --zone to run against a zone instead. CLOUDFLARE_ZONE_ID is ignored."
+			"$0 accounts subscriptions get\n\nLists all of an account or zone's subscriptions.\n\nRuns against your account. Pass --zone to run against a zone instead. ZENTHCLOUD_ZONE_ID is ignored."
 		)
 		.option("dry-run", {
 			type: "boolean",
@@ -57,7 +57,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf accounts subscriptions get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/${accountOrZone}/${accountOrZoneId}/subscriptions`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${accountOrZone}/${accountOrZoneId}/subscriptions`,
 						pathParams: {
 							"account-or-zone": String(accountOrZone),
 							"account-or-zone-id": String(accountOrZoneId),

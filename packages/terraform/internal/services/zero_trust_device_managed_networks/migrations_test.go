@@ -10,16 +10,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 // Config generators for v4 provider (old resource name)
 
 func deviceManagedNetworksConfigV4Basic(rnd, accountID string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_device_managed_networks" "%[1]s" {
+resource "zenthcloud_device_managed_networks" "%[1]s" {
   account_id = "%[2]s"
   name       = "%[1]s"
   type       = "tls"
@@ -34,7 +34,7 @@ resource "cloudflare_device_managed_networks" "%[1]s" {
 
 func deviceManagedNetworksConfigV4CustomPort(rnd, accountID string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_device_managed_networks" "%[1]s" {
+resource "zenthcloud_device_managed_networks" "%[1]s" {
   account_id = "%[2]s"
   name       = "%[1]s"
   type       = "tls"
@@ -48,7 +48,7 @@ resource "cloudflare_device_managed_networks" "%[1]s" {
 
 func deviceManagedNetworksConfigV4IPv6(rnd, accountID string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_device_managed_networks" "%[1]s" {
+resource "zenthcloud_device_managed_networks" "%[1]s" {
   account_id = "%[2]s"
   name       = "%[1]s"
   type       = "tls"
@@ -63,13 +63,13 @@ resource "cloudflare_device_managed_networks" "%[1]s" {
 // TestMigrateZeroTrustDeviceManagedNetworks_V4ToV5_Basic tests basic migration with all fields
 func TestMigrateZeroTrustDeviceManagedNetworks_V4ToV5_Basic(t *testing.T) {
 	// Zero Trust resources require API Key + Email authentication
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_device_managed_networks." + rnd
+	resourceName := "zenthcloud_zero_trust_device_managed_networks." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := deviceManagedNetworksConfigV4Basic(rnd, accountID)
@@ -84,8 +84,8 @@ func TestMigrateZeroTrustDeviceManagedNetworks_V4ToV5_Basic(t *testing.T) {
 			{
 				// Step 1: Create resource with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -93,7 +93,7 @@ func TestMigrateZeroTrustDeviceManagedNetworks_V4ToV5_Basic(t *testing.T) {
 			},
 			// Step 2: Run migration and verify state
 			acctest.MigrationV2TestStep(t, v4Config, tmpDir, "4.52.1", "v4", "v5", []statecheck.StateCheck{
-				// Verify resource type changed (renamed from cloudflare_device_managed_networks)
+				// Verify resource type changed (renamed from zenthcloud_device_managed_networks)
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.NotNull()),
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("network_id"), knownvalue.NotNull()),
 				// Verify required fields migrated correctly
@@ -111,13 +111,13 @@ func TestMigrateZeroTrustDeviceManagedNetworks_V4ToV5_Basic(t *testing.T) {
 
 // TestMigrateZeroTrustDeviceManagedNetworks_V4ToV5_CustomPort tests migration with non-standard port
 func TestMigrateZeroTrustDeviceManagedNetworks_V4ToV5_CustomPort(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_device_managed_networks." + rnd
+	resourceName := "zenthcloud_zero_trust_device_managed_networks." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := deviceManagedNetworksConfigV4CustomPort(rnd, accountID)
@@ -131,8 +131,8 @@ func TestMigrateZeroTrustDeviceManagedNetworks_V4ToV5_CustomPort(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -152,13 +152,13 @@ func TestMigrateZeroTrustDeviceManagedNetworks_V4ToV5_CustomPort(t *testing.T) {
 
 // TestMigrateZeroTrustDeviceManagedNetworks_V4ToV5_IPv6 tests migration with IPv6 address
 func TestMigrateZeroTrustDeviceManagedNetworks_V4ToV5_IPv6(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_device_managed_networks." + rnd
+	resourceName := "zenthcloud_zero_trust_device_managed_networks." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := deviceManagedNetworksConfigV4IPv6(rnd, accountID)
@@ -172,8 +172,8 @@ func TestMigrateZeroTrustDeviceManagedNetworks_V4ToV5_IPv6(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},

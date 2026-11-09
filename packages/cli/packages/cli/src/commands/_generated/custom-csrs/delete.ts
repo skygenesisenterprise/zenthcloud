@@ -22,7 +22,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 custom-csrs delete <custom-csr-id>\n\nDelete a custom Certificate Signing Request (CSR) and its associated private key.\n\nRuns against your account. Pass --zone to run against a zone instead. CLOUDFLARE_ZONE_ID is ignored."
+			"$0 custom-csrs delete <custom-csr-id>\n\nDelete a custom Certificate Signing Request (CSR) and its associated private key.\n\nRuns against your account. Pass --zone to run against a zone instead. ZENTHCLOUD_ZONE_ID is ignored."
 		)
 		.positional("custom-csr-id", {
 			type: "string",
@@ -70,7 +70,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf custom-csrs delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/${accountOrZone}/${accountOrZoneId}/custom_csrs/${argv["custom-csr-id"] == null ? "<custom-csr-id>" : encodeURIComponent(String(argv["custom-csr-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${accountOrZone}/${accountOrZoneId}/custom_csrs/${argv["custom-csr-id"] == null ? "<custom-csr-id>" : encodeURIComponent(String(argv["custom-csr-id"]))}`,
 						pathParams: {
 							"account-or-zone": String(accountOrZone),
 							"account-or-zone-id": String(accountOrZoneId),

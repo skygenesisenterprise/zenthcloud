@@ -93,7 +93,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf sql query",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/analytics/sql`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						bodyKind: argv.file !== undefined ? "octet-stream" : "json",
 						body:

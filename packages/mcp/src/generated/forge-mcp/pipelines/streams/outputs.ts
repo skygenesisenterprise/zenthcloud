@@ -4,14 +4,14 @@
 import type { JSONObject } from "@modelcontextprotocol/server";
 
 /**
- * The schema of `cloudflare-pipelines_Format` in responses.
+ * The schema of `zenthcloud-pipelines_Format` in responses.
  */
-export const cloudflare$$pipelines_Format: JSONObject = {
+export const zenthcloud$$pipelines_Format: JSONObject = {
   "oneOf": [
     {
       "allOf": [
         {
-          "$ref": "#/$defs/cloudflare-pipelines_JsonFormat"
+          "$ref": "#/$defs/zenthcloud-pipelines_JsonFormat"
         },
         {
           "properties": {
@@ -32,7 +32,7 @@ export const cloudflare$$pipelines_Format: JSONObject = {
     {
       "allOf": [
         {
-          "$ref": "#/$defs/cloudflare-pipelines_ParquetFormat"
+          "$ref": "#/$defs/zenthcloud-pipelines_ParquetFormat"
         },
         {
           "properties": {

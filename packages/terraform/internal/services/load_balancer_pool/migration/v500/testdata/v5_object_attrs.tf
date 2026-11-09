@@ -1,4 +1,4 @@
-resource "cloudflare_load_balancer_pool" "%s" {
+resource "zenthcloud_load_balancer_pool" "%s" {
   account_id = "%s"
   name       = "my-tf-pool-objattrs-%s"
 

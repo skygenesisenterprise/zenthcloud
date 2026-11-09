@@ -153,9 +153,9 @@ export const dns$$settings_dns$$settings$$account$$response: JSONObject = {
           "properties": {
             "type": {
               "enum": [
-                "cloudflare.standard",
-                "cloudflare.advanced",
-                "cloudflare.standard.random",
+                "zenthcloud.standard",
+                "zenthcloud.advanced",
+                "zenthcloud.standard.random",
                 "custom.account",
                 "custom.tenant"
               ],

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_cloudforce_one_request_priority Resource - Cloudflare"
+page_title: "zenthcloud_cloudforce_one_request_priority Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Cloudforce One ReadCloudforce One Write
 ---
 
-# cloudflare_cloudforce_one_request_priority (Resource)
+# zenthcloud_cloudforce_one_request_priority (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_cloudforce_one_request_priority" "example_cloudforce_one_request_priority" {
+resource "zenthcloud_cloudforce_one_request_priority" "example_cloudforce_one_request_priority" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   labels = ["DoS", "CVE"]
   priority = 1
@@ -57,7 +57,7 @@ Available values: "open", "accepted", "reported", "approved", "completed", "decl
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_cloudforce_one_request_priority.example '<account_id>/<priority_id>'
+$ terraform import zenthcloud_cloudforce_one_request_priority.example '<account_id>/<priority_id>'
 ```
 
 

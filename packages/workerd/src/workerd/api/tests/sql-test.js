@@ -1,9 +1,9 @@
-// Copyright (c) 2023 Cloudflare, Inc.
+// Copyright (c) 2023 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
 import * as assert from 'node:assert';
-import { DurableObject } from 'cloudflare:workers';
+import { DurableObject } from 'zenthcloud:workers';
 
 // A collection of functions that can be triggered by name from the DO, to make
 // it easier to keep the DO and test functions together in the test file:

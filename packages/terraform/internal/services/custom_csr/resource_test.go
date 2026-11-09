@@ -6,11 +6,11 @@ import (
 	"os"
 	"testing"
 
-	cloudflare "github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/custom_csrs"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	zenthcloud "github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/custom_csrs"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -25,8 +25,8 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_custom_csr", &resource.Sweeper{
-		Name: "cloudflare_custom_csr",
+	resource.AddTestSweepers("zenthcloud_custom_csr", &resource.Sweeper{
+		Name: "zenthcloud_custom_csr",
 		F:    testSweepCustomCsrs,
 	})
 }
@@ -35,14 +35,14 @@ func testSweepCustomCsrs(_ string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping custom CSR sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping custom CSR sweep: ZENTHCLOUD_ZONE_ID not set")
 		return nil
 	}
 
 	csrs, err := client.CustomCsrs.List(ctx, custom_csrs.CustomCsrListParams{
-		ZoneID: cloudflare.F(zoneID),
+		ZoneID: zenthcloud.F(zoneID),
 	})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to list custom CSRs: %s", err))
@@ -55,7 +55,7 @@ func testSweepCustomCsrs(_ string) error {
 		}
 		tflog.Info(ctx, fmt.Sprintf("Deleting custom CSR: %s", csr.ID))
 		_, err := client.CustomCsrs.Delete(ctx, csr.ID, custom_csrs.CustomCsrDeleteParams{
-			ZoneID: cloudflare.F(zoneID),
+			ZoneID: zenthcloud.F(zoneID),
 		})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete custom CSR %s: %s", csr.ID, err))
@@ -65,11 +65,11 @@ func testSweepCustomCsrs(_ string) error {
 	return nil
 }
 
-func TestAccCloudflareCustomCsr_ZoneWorkflow(t *testing.T) {
+func TestAccZenthcloudCustomCsr_ZoneWorkflow(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	resourceName := "cloudflare_custom_csr." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	resourceName := "zenthcloud_custom_csr." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -128,11 +128,11 @@ func TestAccCloudflareCustomCsr_ZoneWorkflow(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareCustomCsr_ZoneP256(t *testing.T) {
+func TestAccZenthcloudCustomCsr_ZoneP256(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	resourceName := "cloudflare_custom_csr." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	resourceName := "zenthcloud_custom_csr." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -160,11 +160,11 @@ func TestAccCloudflareCustomCsr_ZoneP256(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareCustomCsr_AccountWorkflow(t *testing.T) {
+func TestAccZenthcloudCustomCsr_AccountWorkflow(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	resourceName := "cloudflare_custom_csr." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	resourceName := "zenthcloud_custom_csr." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -224,7 +224,7 @@ func testAccCheckCustomCsrDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_custom_csr" {
+		if rs.Type != "zenthcloud_custom_csr" {
 			continue
 		}
 
@@ -233,9 +233,9 @@ func testAccCheckCustomCsrDestroy(s *terraform.State) error {
 
 		params := custom_csrs.CustomCsrGetParams{}
 		if accountID != "" {
-			params.AccountID = cloudflare.F(accountID)
+			params.AccountID = zenthcloud.F(accountID)
 		} else {
-			params.ZoneID = cloudflare.F(zoneID)
+			params.ZoneID = zenthcloud.F(zoneID)
 		}
 
 		_, err := client.CustomCsrs.Get(

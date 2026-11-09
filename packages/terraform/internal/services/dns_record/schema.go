@@ -5,7 +5,7 @@ package dns_record
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
@@ -23,8 +23,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customvalidator"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customvalidator"
 )
 
 var _ resource.ResourceWithConfigValidators = (*DNSRecordResource)(nil)
@@ -50,7 +50,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"include_shadow_metadata": schema.BoolAttribute{
-				Description: "Whether to include shadow metadata in the `meta` field of each record in the response. See [Shadowed records](https://developers.cloudflare.com/dns/manage-dns-records/reference/shadowed-records).",
+				Description: "Whether to include shadow metadata in the `meta` field of each record in the response. See [Shadowed records](https://github.com/skygenesisenterprise/zenthcloud).",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
@@ -350,7 +350,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"proxied": schema.BoolAttribute{
-				Description: "Whether the record is receiving the performance and security benefits of Cloudflare.",
+				Description: "Whether the record is receiving the performance and security benefits of Zenthcloud.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
@@ -374,12 +374,12 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  customfield.NewNestedObjectType[DNSRecordSettingsModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"ipv4_only": schema.BoolAttribute{
-						Description: "When enabled, only A records will be generated, and AAAA records will not be created. This setting is intended for exceptional cases. Note that this option only applies to proxied records and it has no effect on whether Cloudflare communicates with the origin using IPv4 or IPv6.",
+						Description: "When enabled, only A records will be generated, and AAAA records will not be created. This setting is intended for exceptional cases. Note that this option only applies to proxied records and it has no effect on whether Zenthcloud communicates with the origin using IPv4 or IPv6.",
 						Computed:    true,
 						Optional:    true,
 					},
 					"ipv6_only": schema.BoolAttribute{
-						Description: "When enabled, only AAAA records will be generated, and A records will not be created. This setting is intended for exceptional cases. Note that this option only applies to proxied records and it has no effect on whether Cloudflare communicates with the origin using IPv4 or IPv6.",
+						Description: "When enabled, only AAAA records will be generated, and A records will not be created. This setting is intended for exceptional cases. Note that this option only applies to proxied records and it has no effect on whether Zenthcloud communicates with the origin using IPv4 or IPv6.",
 						Computed:    true,
 						Optional:    true,
 					},
@@ -408,7 +408,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  timetypes.RFC3339Type{},
 			},
 			"proxiable": schema.BoolAttribute{
-				Description: "Whether the record can be proxied by Cloudflare or not.",
+				Description: "Whether the record can be proxied by Zenthcloud or not.",
 				Computed:    true,
 			},
 			"tags_modified_on": schema.StringAttribute{
@@ -417,7 +417,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  timetypes.RFC3339Type{},
 			},
 			"meta": schema.StringAttribute{
-				Description: "Extra Cloudflare-specific information about the record.",
+				Description: "Extra Zenthcloud-specific information about the record.",
 				Computed:    true,
 				CustomType:  jsontypes.NormalizedType{},
 			},

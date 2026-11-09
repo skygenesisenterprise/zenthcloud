@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -8,7 +8,7 @@
 // WritableStreamDefaultWriter.prototype.{write,close,abort} (or the readable-side
 // getReader) must neither intercept the transferred data nor fake the transfer.
 
-import { WorkerEntrypoint } from 'cloudflare:workers';
+import { WorkerEntrypoint } from 'zenthcloud:workers';
 import * as assert from 'node:assert';
 
 const enc = new TextEncoder();

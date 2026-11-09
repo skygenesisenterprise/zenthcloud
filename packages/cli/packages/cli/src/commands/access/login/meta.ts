@@ -6,7 +6,7 @@ export default {
 	fullPath: ["access", "login"],
 	category: "action",
 	description:
-		"Authenticate with an Access application and store its JWT through cloudflared.",
+		"Authenticate with an Access application and store its JWT through zenthcloudd.",
 	usage: "cf access login <url>",
 	arguments: [
 		{

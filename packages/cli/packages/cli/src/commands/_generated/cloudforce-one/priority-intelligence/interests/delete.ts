@@ -63,7 +63,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf cloudforce-one priority-intelligence interests delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/cloudforce-one/v2/priority-intelligence/interests/${argv["interest-id"] == null ? "<interest-id>" : encodeURIComponent(String(argv["interest-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/cloudforce-one/v2/priority-intelligence/interests/${argv["interest-id"] == null ? "<interest-id>" : encodeURIComponent(String(argv["interest-id"]))}`,
 						pathParams: { "interest-id": String(argv["interest-id"] ?? "") },
 						bodyKind: "none",
 					});

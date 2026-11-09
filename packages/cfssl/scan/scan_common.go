@@ -8,9 +8,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cloudflare/cfssl/helpers"
-	"github.com/cloudflare/cfssl/log"
-	"github.com/cloudflare/cfssl/scan/crypto/tls"
+	"github.com/zenthcloud/cfssl/helpers"
+	"github.com/zenthcloud/cfssl/log"
+	"github.com/zenthcloud/cfssl/scan/crypto/tls"
 )
 
 var (

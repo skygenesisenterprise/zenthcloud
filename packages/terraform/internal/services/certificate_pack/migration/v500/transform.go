@@ -3,7 +3,7 @@ package v500
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -11,7 +11,7 @@ import (
 
 // Transform converts source (legacy v4) state to target (current v5) state.
 // This function handles the complete transformation from v4 SDKv2 format to v5 Plugin Framework format.
-func Transform(ctx context.Context, source SourceCloudflareCertificatePackModel) (*TargetCertificatePackModel, diag.Diagnostics) {
+func Transform(ctx context.Context, source SourceZenthcloudCertificatePackModel) (*TargetCertificatePackModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Step 1: Validate required fields
@@ -38,7 +38,7 @@ func Transform(ctx context.Context, source SourceCloudflareCertificatePackModel)
 		ValidationMethod:     source.ValidationMethod,
 		ValidityDays:         source.ValidityDays,
 		CertificateAuthority: source.CertificateAuthority,
-		CloudflareBranding:   source.CloudflareBranding,
+		ZenthcloudBranding:   source.ZenthcloudBranding,
 	}
 
 	// Step 3: Convert Hosts from types.Set to customfield.Set

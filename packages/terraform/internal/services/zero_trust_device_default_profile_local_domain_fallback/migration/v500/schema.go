@@ -5,8 +5,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceCloudflareFallbackDomainSchema returns the v4 schema for cloudflare_zero_trust_local_fallback_domain
-// (or cloudflare_fallback_domain) from the SDKv2 provider.
+// SourceZenthcloudFallbackDomainSchema returns the v4 schema for zenthcloud_zero_trust_local_fallback_domain
+// (or zenthcloud_fallback_domain) from the SDKv2 provider.
 //
 // This schema is used by the Plugin Framework provider to correctly parse v4 state files
 // during migration. It represents the state structure, not the full resource schema.
@@ -17,7 +17,7 @@ import (
 // - Only structure and types matter for state parsing
 //
 // This is the source schema for resources WITHOUT policy_id (default profile path).
-func SourceCloudflareFallbackDomainSchema() schema.Schema {
+func SourceZenthcloudFallbackDomainSchema() schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{},

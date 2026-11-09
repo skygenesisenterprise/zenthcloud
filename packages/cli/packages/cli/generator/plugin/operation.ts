@@ -3,7 +3,7 @@
  * parameters, the flags its body flattens into, its content types and its
  * responses.
  *
- * These are the facts cf's generator read from `@cloudflare/forge`'s
+ * These are the facts cf's generator read from `@zenthcloud/forge`'s
  * `openapi-resolver.ts`, which read the OpenAPI document itself. They are
  * read from forge's model, by the rules the resolver followed, so that
  * every flag stays what it was. The body's flags are flattened in
@@ -28,7 +28,7 @@ import type {
 	ObjectType,
 	Type,
 	UnionType,
-} from "@cloudflare/forge/plugin";
+} from "@zenthcloud/forge/plugin";
 
 /** A parameter of an operation. */
 export interface ParameterInfo {

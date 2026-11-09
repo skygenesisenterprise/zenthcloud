@@ -50,7 +50,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf argo smart-routing count-zones-enabled-for-account",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/argo/count_zones_enabled`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/argo/count_zones_enabled`,
 						pathParams: {},
 						bodyKind: "none",
 					});

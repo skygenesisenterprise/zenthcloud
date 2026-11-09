@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_ct_alerting Resource - Cloudflare"
+page_title: "zenthcloud_ct_alerting Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   SSL and Certificates ReadSSL and Certificates Write
 ---
 
-# cloudflare_ct_alerting (Resource)
+# zenthcloud_ct_alerting (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_ct_alerting" "example_ct_alerting" {
+resource "zenthcloud_ct_alerting" "example_ct_alerting" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   enabled = true
   emails = ["security@example.com", "admin@example.com"]
@@ -44,7 +44,7 @@ resource "cloudflare_ct_alerting" "example_ct_alerting" {
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_ct_alerting.example '<zone_id>'
+$ terraform import zenthcloud_ct_alerting.example '<zone_id>'
 ```
 
 

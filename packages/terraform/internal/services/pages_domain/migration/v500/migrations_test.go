@@ -7,17 +7,17 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zones"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zones"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -65,8 +65,8 @@ var v5MultipleConfig string
 func getTestZoneDomain(t *testing.T, accountID string) string {
 	client := acctest.SharedClient()
 	zonePage, err := client.Zones.List(context.Background(), zones.ZoneListParams{
-		Account: cloudflare.F(zones.ZoneListParamsAccount{
-			ID: cloudflare.F(accountID),
+		Account: zenthcloud.F(zones.ZoneListParamsAccount{
+			ID: zenthcloud.F(accountID),
 		}),
 	})
 	if err != nil || zonePage == nil || len(zonePage.Result) == 0 {
@@ -104,7 +104,7 @@ func TestMigratePagesDomain_Basic(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			projectName := fmt.Sprintf("tf-acc-test-pages-project-%s", rnd)
 			zoneDomain := getTestZoneDomain(t, accountID)
@@ -113,7 +113,7 @@ func TestMigratePagesDomain_Basic(t *testing.T) {
 			testConfig := tc.configFn(rnd, accountID, projectName, domainName, tc.projectResourceName)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
 
-			resourceName := fmt.Sprintf("cloudflare_pages_domain.%s", rnd)
+			resourceName := fmt.Sprintf("zenthcloud_pages_domain.%s", rnd)
 
 			var firstStep resource.TestStep
 			if tc.version == currentProviderVersion {
@@ -124,8 +124,8 @@ func TestMigratePagesDomain_Basic(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -182,7 +182,7 @@ func TestMigratePagesDomain_WithVariables(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			projectName := fmt.Sprintf("tf-acc-test-pages-project-%s", rnd)
 			zoneDomain := getTestZoneDomain(t, accountID)
@@ -191,7 +191,7 @@ func TestMigratePagesDomain_WithVariables(t *testing.T) {
 			testConfig := tc.configFn(rnd, accountID, projectName, domainName, tc.projectResourceName)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
 
-			resourceName := fmt.Sprintf("cloudflare_pages_domain.%s", rnd)
+			resourceName := fmt.Sprintf("zenthcloud_pages_domain.%s", rnd)
 
 			var firstStep resource.TestStep
 			if tc.version == currentProviderVersion {
@@ -202,8 +202,8 @@ func TestMigratePagesDomain_WithVariables(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -259,7 +259,7 @@ func TestMigratePagesDomain_Subdomain(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			projectName := fmt.Sprintf("tf-acc-test-pages-project-%s", rnd)
 			zoneDomain := getTestZoneDomain(t, accountID)
@@ -268,7 +268,7 @@ func TestMigratePagesDomain_Subdomain(t *testing.T) {
 			testConfig := tc.configFn(rnd, accountID, projectName, domainName, tc.projectResourceName)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
 
-			resourceName := fmt.Sprintf("cloudflare_pages_domain.%s", rnd)
+			resourceName := fmt.Sprintf("zenthcloud_pages_domain.%s", rnd)
 
 			var firstStep resource.TestStep
 			if tc.version == currentProviderVersion {
@@ -279,8 +279,8 @@ func TestMigratePagesDomain_Subdomain(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -336,7 +336,7 @@ func TestMigratePagesDomain_MultipleResources(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			projectName := fmt.Sprintf("tf-acc-test-pages-project-%s", rnd)
 			zoneDomain := getTestZoneDomain(t, accountID)
@@ -346,8 +346,8 @@ func TestMigratePagesDomain_MultipleResources(t *testing.T) {
 			testConfig := tc.configFn(rnd, accountID, projectName, domain1, domain2, tc.projectResourceName)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
 
-			resource1Name := fmt.Sprintf("cloudflare_pages_domain.%s_domain1", rnd)
-			resource2Name := fmt.Sprintf("cloudflare_pages_domain.%s_domain2", rnd)
+			resource1Name := fmt.Sprintf("zenthcloud_pages_domain.%s_domain1", rnd)
+			resource2Name := fmt.Sprintf("zenthcloud_pages_domain.%s_domain2", rnd)
 
 			var firstStep resource.TestStep
 			if tc.version == currentProviderVersion {
@@ -358,8 +358,8 @@ func TestMigratePagesDomain_MultipleResources(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},

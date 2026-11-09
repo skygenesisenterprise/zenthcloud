@@ -121,7 +121,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf builds create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/builds/triggers/${argv["trigger-uuid"] == null ? "<trigger-uuid>" : encodeURIComponent(String(argv["trigger-uuid"]))}/builds`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/builds/triggers/${argv["trigger-uuid"] == null ? "<trigger-uuid>" : encodeURIComponent(String(argv["trigger-uuid"]))}/builds`,
 						pathParams: { "trigger-uuid": String(argv["trigger-uuid"] ?? "") },
 						bodyKind: "json",
 						body:

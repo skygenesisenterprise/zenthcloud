@@ -18,7 +18,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID used for this AI model request.",
+              "description": "Zenthcloud account ID used for this AI model request.",
               "type": "string"
             }
           },
@@ -127,7 +127,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.ai"
+            "com.zenthcloud.api.account.ai"
           ]
         },
         "x-cfPlanAvailability": {
@@ -243,7 +243,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID used for this AI model request.",
+              "description": "Zenthcloud account ID used for this AI model request.",
               "type": "string"
             }
           },
@@ -306,7 +306,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.ai"
+            "com.zenthcloud.api.account.ai"
           ]
         },
         "x-cfPlanAvailability": {
@@ -385,7 +385,7 @@ export const tools: readonly Tool[] = [
   {
     name: "ai_run",
     title: "Run an AI model with request options",
-    description: "Runs an AI model using a JSON body containing model, input, and optional options fields. Unlike the model-specific URL endpoint, this endpoint takes the model identifier in the body and nests the model's inputs under input.\n\nUse options.extraHeaders to pass additional provider headers. Accepts Workers AI model identifiers and AI Gateway provider model identifiers.\n\nSee the [Workers AI model catalog](https://developers.cloudflare.com/workers-ai/models/) for Workers AI model inputs, or the provider's documentation for models accessed through AI Gateway.\n\nPOST /accounts/{account_id}/ai/run",
+    description: "Runs an AI model using a JSON body containing model, input, and optional options fields. Unlike the model-specific URL endpoint, this endpoint takes the model identifier in the body and nests the model's inputs under input.\n\nUse options.extraHeaders to pass additional provider headers. Accepts Workers AI model identifiers and AI Gateway provider model identifiers.\n\nSee the [Workers AI model catalog](https://github.com/skygenesisenterprise/zenthcloud) for Workers AI model inputs, or the provider's documentation for models accessed through AI Gateway.\n\nPOST /accounts/{account_id}/ai/run",
     inputSchema: {
       type: "object",
       properties: {
@@ -439,7 +439,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID used for this AI model request.",
+              "description": "Zenthcloud account ID used for this AI model request.",
               "type": "string"
             }
           },
@@ -502,7 +502,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.ai"
+            "com.zenthcloud.api.account.ai"
           ]
         },
         "x-cfPlanAvailability": {
@@ -580,7 +580,7 @@ export const tools: readonly Tool[] = [
   {
     name: "ai_runModel",
     title: "Run a Workers AI model",
-    description: "Runs the Workers AI model specified in the URL path. Send the model's inputs directly in the request body, without a model/input/options wrapper.\n\nAccepts model-specific JSON or binary input. The response format depends on the model and the requested output.\n\nSee the [model catalog](https://developers.cloudflare.com/workers-ai/models/) for supported models and their input formats.\n\nPOST /accounts/{account_id}/ai/run/{model_name}",
+    description: "Runs the Workers AI model specified in the URL path. Send the model's inputs directly in the request body, without a model/input/options wrapper.\n\nAccepts model-specific JSON or binary input. The response format depends on the model and the requested output.\n\nSee the [model catalog](https://github.com/skygenesisenterprise/zenthcloud) for supported models and their input formats.\n\nPOST /accounts/{account_id}/ai/run/{model_name}",
     inputSchema: {
       type: "object",
       properties: {
@@ -1420,7 +1420,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID used for this AI model request.",
+              "description": "Zenthcloud account ID used for this AI model request.",
               "type": "string"
             },
             "model_name": {
@@ -1684,7 +1684,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.ai"
+            "com.zenthcloud.api.account.ai"
           ]
         },
         "x-cfPlanAvailability": {
@@ -2006,7 +2006,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID used for this AI model request.",
+              "description": "Zenthcloud account ID used for this AI model request.",
               "type": "string"
             }
           },
@@ -2082,7 +2082,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.ai"
+            "com.zenthcloud.api.account.ai"
           ]
         },
         "x-cfPlanAvailability": {
@@ -2309,7 +2309,7 @@ export const tools: readonly Tool[] = [
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.ai"
+            "com.zenthcloud.api.account.ai"
           ]
         },
         "x-cfPlanAvailability": {

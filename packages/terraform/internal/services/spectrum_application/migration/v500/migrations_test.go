@@ -7,8 +7,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -37,9 +37,9 @@ var v5ComplexConfig string
 // TestMigrateSpectrumApplication_Basic tests v4→v5 migration with dns block and origin_direct
 func TestMigrateSpectrumApplication_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_spectrum_application." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	resourceName := "zenthcloud_spectrum_application." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	tmpDir := t.TempDir()
 	testConfig := fmt.Sprintf(v4BasicConfig, rnd, zoneID, rnd, domain)
 	version := acctest.GetLastV4Version()
@@ -53,8 +53,8 @@ func TestMigrateSpectrumApplication_Basic(t *testing.T) {
 		Steps: append([]resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
@@ -74,9 +74,9 @@ func TestMigrateSpectrumApplication_Basic(t *testing.T) {
 // TestMigrateSpectrumApplication_OriginPortRange tests origin_port_range block → origin_port string conversion
 func TestMigrateSpectrumApplication_OriginPortRange(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_spectrum_application." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	resourceName := "zenthcloud_spectrum_application." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	tmpDir := t.TempDir()
 	testConfig := fmt.Sprintf(v4OriginPortRangeConfig, rnd, zoneID, rnd, domain)
 	version := acctest.GetLastV4Version()
@@ -90,8 +90,8 @@ func TestMigrateSpectrumApplication_OriginPortRange(t *testing.T) {
 		Steps: append([]resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
@@ -112,9 +112,9 @@ func TestMigrateSpectrumApplication_OriginPortRange(t *testing.T) {
 // TestMigrateSpectrumApplication_EdgeIPs tests edge_ips block handling
 func TestMigrateSpectrumApplication_EdgeIPs(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_spectrum_application." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	resourceName := "zenthcloud_spectrum_application." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	tmpDir := t.TempDir()
 	testConfig := fmt.Sprintf(v4EdgeIPsConfig, rnd, zoneID, rnd, domain)
 	version := acctest.GetLastV4Version()
@@ -128,8 +128,8 @@ func TestMigrateSpectrumApplication_EdgeIPs(t *testing.T) {
 		Steps: append([]resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
@@ -151,9 +151,9 @@ func TestMigrateSpectrumApplication_EdgeIPs(t *testing.T) {
 // TestMigrateSpectrumApplication_OriginDirect tests origin_port as integer (DynamicAttribute number)
 func TestMigrateSpectrumApplication_OriginDirect(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_spectrum_application." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	resourceName := "zenthcloud_spectrum_application." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	tmpDir := t.TempDir()
 	testConfig := fmt.Sprintf(v4OriginDirectConfig, rnd, zoneID, rnd, domain)
 	version := acctest.GetLastV4Version()
@@ -167,8 +167,8 @@ func TestMigrateSpectrumApplication_OriginDirect(t *testing.T) {
 		Steps: append([]resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
@@ -189,9 +189,9 @@ func TestMigrateSpectrumApplication_OriginDirect(t *testing.T) {
 // TestMigrateSpectrumApplication_Complex tests v4→v5 migration with all optional fields
 func TestMigrateSpectrumApplication_Complex(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_spectrum_application." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	resourceName := "zenthcloud_spectrum_application." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	tmpDir := t.TempDir()
 	testConfig := fmt.Sprintf(v4ComplexConfig, rnd, zoneID, rnd, domain)
 	version := acctest.GetLastV4Version()
@@ -205,8 +205,8 @@ func TestMigrateSpectrumApplication_Complex(t *testing.T) {
 		Steps: append([]resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
@@ -245,9 +245,9 @@ func TestMigrateSpectrumApplication_Complex(t *testing.T) {
 //     accept the object shape and produce an empty plan.
 func TestMigrateSpectrumApplication_FromEarlyV5_Complex(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_spectrum_application." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	resourceName := "zenthcloud_spectrum_application." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	tmpDir := t.TempDir()
 	testConfig := fmt.Sprintf(v5ComplexConfig, rnd, zoneID, rnd, domain)
 
@@ -262,8 +262,8 @@ func TestMigrateSpectrumApplication_FromEarlyV5_Complex(t *testing.T) {
 			// State written at schema_version=0 with v5 object shape for dns / edge_ips.
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.18.0",
 					},
 				},

@@ -1,12 +1,12 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: cloudflared
-  description: Client for Cloudflare Tunnels
+  name: zenthcloudd
+  description: Client for Zenthcloud Tunnels
   annotations:
-    cloudflare.com/software-excellence-opt-in: "true"
-    cloudflare.com/jira-project-key: "TUN"
-    cloudflare.com/jira-project-component: "Cloudflare Tunnel"
+    zenthcloud.com/software-excellence-opt-in: "true"
+    zenthcloud.com/jira-project-key: "TUN"
+    zenthcloud.com/jira-project-component: "Zenthcloud Tunnel"
   tags:
     - internal
 spec:

@@ -1,4 +1,4 @@
-resource "cloudflare_hyperdrive_config" "%[1]s" {
+resource "zenthcloud_hyperdrive_config" "%[1]s" {
 	account_id = "%[2]s"
 	name       = "%[3]s"
 	origin     = {
@@ -14,7 +14,7 @@ resource "cloudflare_hyperdrive_config" "%[1]s" {
 	}
 }
 
-data "cloudflare_hyperdrive_config" "%[1]s" {
+data "zenthcloud_hyperdrive_config" "%[1]s" {
 	account_id   = "%[2]s"
-	hyperdrive_id = cloudflare_hyperdrive_config.%[1]s.id
+	hyperdrive_id = zenthcloud_hyperdrive_config.%[1]s.id
 }

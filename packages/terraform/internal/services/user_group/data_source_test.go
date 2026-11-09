@@ -4,30 +4,30 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
-// TestAccCloudflareUserGroup_DataSource verifies both list and single data sources.
-func TestAccCloudflareUserGroup_DataSource(t *testing.T) {
+// TestAccZenthcloudUserGroup_DataSource verifies both list and single data sources.
+func TestAccZenthcloudUserGroup_DataSource(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
-	listDataName := "data.cloudflare_user_groups." + rnd
-	singleDataName := "data.cloudflare_user_group." + rnd
-	resourceName := "cloudflare_user_group." + rnd
+	listDataName := "data.zenthcloud_user_groups." + rnd
+	singleDataName := "data.zenthcloud_user_group." + rnd
+	resourceName := "zenthcloud_user_group." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck_AccountID(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareUserGroupDataSourceConfig(rnd, accountID),
+				Config: testAccZenthcloudUserGroupDataSourceConfig(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					// LIST data source verification
 					statecheck.ExpectKnownValue(listDataName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
@@ -51,6 +51,6 @@ func TestAccCloudflareUserGroup_DataSource(t *testing.T) {
 	})
 }
 
-func testAccCloudflareUserGroupDataSourceConfig(rnd, accountID string) string {
+func testAccZenthcloudUserGroupDataSourceConfig(rnd, accountID string) string {
 	return acctest.LoadTestCase("usergroupdatasource.tf", rnd, accountID)
 }

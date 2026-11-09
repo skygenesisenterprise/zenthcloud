@@ -1,7 +1,7 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -10,13 +10,13 @@ import (
 // Source Models (Legacy Provider - v4.x - SDKv2)
 // ============================================================================
 
-// SourceCloudflareTeamsRuleModel represents the legacy cloudflare_teams_rule state from v4.x provider.
+// SourceZenthcloudTeamsRuleModel represents the legacy zenthcloud_teams_rule state from v4.x provider.
 // Schema version: 0 (implicit in v4 SDKv2)
-// Resource type: cloudflare_teams_rule
+// Resource type: zenthcloud_teams_rule
 //
 // IMPORTANT: v4 SDKv2 stores all TypeList MaxItems:1 blocks as ARRAYS in state.
 // All nested structures within rule_settings are arrays that need to be converted to objects.
-type SourceCloudflareTeamsRuleModel struct {
+type SourceZenthcloudTeamsRuleModel struct {
 	// Core fields
 	ID            types.String `tfsdk:"id"`
 	AccountID     types.String `tfsdk:"account_id"`
@@ -49,7 +49,7 @@ type SourceRuleSettingsModel struct {
 	AllowChildBypass                types.Bool               `tfsdk:"allow_child_bypass"`
 	BypassParentRule                types.Bool               `tfsdk:"bypass_parent_rule"`
 	InsecureDisableDNSSECValidation types.Bool               `tfsdk:"insecure_disable_dnssec_validation"`
-	ResolveDNSThroughCloudflare     types.Bool               `tfsdk:"resolve_dns_through_cloudflare"`
+	ResolveDNSThroughZenthcloud     types.Bool               `tfsdk:"resolve_dns_through_zenthcloud"`
 	AddHeaders                      *map[string]types.String `tfsdk:"add_headers"` // v4: Map[string]string
 
 	// All nested structures as arrays (TypeList MaxItems:1 in SDKv2)
@@ -239,7 +239,7 @@ type TargetRuleSettingsModel struct {
 	Quarantine                      *TargetQuarantineModel           `tfsdk:"quarantine"` // New in v5
 	Redirect                        *TargetRedirectModel             `tfsdk:"redirect"`   // New in v5
 	ResolveDNSInternally            *TargetResolveDNSInternallyModel `tfsdk:"resolve_dns_internally"`
-	ResolveDNSThroughCloudflare     types.Bool                       `tfsdk:"resolve_dns_through_cloudflare"`
+	ResolveDNSThroughZenthcloud     types.Bool                       `tfsdk:"resolve_dns_through_zenthcloud"`
 	SetHeaders                      *map[string]*[]types.String      `tfsdk:"set_headers"`
 	UntrustedCERT                   *TargetUntrustedCERTModel        `tfsdk:"untrusted_cert"`
 }

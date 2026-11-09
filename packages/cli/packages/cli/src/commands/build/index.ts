@@ -1,4 +1,4 @@
-import { readBuildOutput } from "@cloudflare/build-output-utils";
+import { readBuildOutput } from "@zenthcloud/build-output-utils";
 import { prepareProject, runProjectCommand } from "../../lib/autoconfig.js";
 import {
 	parseWorkerConfig,
@@ -45,7 +45,7 @@ export async function runBuild(
 	const buildCommand = configuration?.buildCommand ?? details?.buildCommand;
 	const env: Record<string, string> = {
 		...details?.env,
-		...(ctx.isPreview ? { CLOUDFLARE_PREVIEW_BUILD: "true" } : {}),
+		...(ctx.isPreview ? { ZENTHCLOUD_PREVIEW_BUILD: "true" } : {}),
 	};
 
 	if (buildCommand && mode && !details?.framework?.supportsMode) {
@@ -94,13 +94,13 @@ export async function runBuild(
 
 function formatImplName(discovered: DiscoveredImpl): string {
 	switch (discovered.impl.pkg) {
-		case "@cloudflare/vite-plugin":
+		case "@zenthcloud/vite-plugin":
 			return "Vite";
 		case "wrangler":
 			return "Wrangler";
-		case "cloudflare-py-dev-server":
+		case "zenthcloud-py-dev-server":
 			return "the Python dev server";
-		case "cloudflare-rs-dev-server":
+		case "zenthcloud-rs-dev-server":
 			return "the Rust dev server";
 		default:
 			return discovered.impl.pkg;
@@ -109,7 +109,7 @@ function formatImplName(discovered: DiscoveredImpl): string {
 
 const buildCommand: CommandModule<CommonYargsOptions, BuildArgs> = {
 	command: "build",
-	describe: "Build a project for Cloudflare",
+	describe: "Build a project for Zenthcloud",
 
 	builder,
 

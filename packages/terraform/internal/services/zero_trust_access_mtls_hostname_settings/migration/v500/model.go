@@ -8,7 +8,7 @@ import (
 // Source Models (Legacy v4 SDKv2 Provider)
 // ============================================================================
 
-// SourceMTLSHostnameSettingsModel represents the v4 cloudflare_zero_trust_access_mtls_hostname_settings state.
+// SourceMTLSHostnameSettingsModel represents the v4 zenthcloud_zero_trust_access_mtls_hostname_settings state.
 // Schema version: 0 (SDKv2 default)
 type SourceMTLSHostnameSettingsModel struct {
 	AccountID                   types.String          `tfsdk:"account_id"`
@@ -31,7 +31,7 @@ type SourceSettingsModel struct {
 // Target Models (Current v5 Provider)
 // ============================================================================
 
-// TargetMTLSHostnameSettingsModel represents the v5 cloudflare_zero_trust_access_mtls_hostname_settings state.
+// TargetMTLSHostnameSettingsModel represents the v5 zenthcloud_zero_trust_access_mtls_hostname_settings state.
 // Schema version: 500
 type TargetMTLSHostnameSettingsModel struct {
 	AccountID                   types.String           `tfsdk:"account_id"`

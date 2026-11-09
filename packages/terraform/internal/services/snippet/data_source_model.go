@@ -5,8 +5,8 @@ package snippet
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/snippets"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/snippets"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -26,7 +26,7 @@ type SnippetDataSourceModel struct {
 
 func (m *SnippetDataSourceModel) toReadParams(_ context.Context) (params snippets.SnippetGetParams, diags diag.Diagnostics) {
 	params = snippets.SnippetGetParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	return

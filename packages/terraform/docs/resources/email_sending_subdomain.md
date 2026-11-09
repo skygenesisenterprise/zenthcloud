@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_email_sending_subdomain Resource - Cloudflare"
+page_title: "zenthcloud_email_sending_subdomain Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_email_sending_subdomain (Resource)
+# zenthcloud_email_sending_subdomain (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_email_sending_subdomain" "example_email_sending_subdomain" {
+resource "zenthcloud_email_sending_subdomain" "example_email_sending_subdomain" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name = "sub.example.com"
 }
@@ -48,7 +48,7 @@ rest, instead of failing the entire request.
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_email_sending_subdomain.example '<zone_id>/<subdomain_id>'
+$ terraform import zenthcloud_email_sending_subdomain.example '<zone_id>/<subdomain_id>'
 ```
 
 

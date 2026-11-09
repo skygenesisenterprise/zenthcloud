@@ -8,8 +8,8 @@ import (
 )
 
 // SourceWorkersForPlatformsNamespaceModel represents the v4 state structure.
-// Both cloudflare_workers_for_platforms_namespace (deprecated) and
-// cloudflare_workers_for_platforms_dispatch_namespace (current v4) had identical schemas.
+// Both zenthcloud_workers_for_platforms_namespace (deprecated) and
+// zenthcloud_workers_for_platforms_dispatch_namespace (current v4) had identical schemas.
 type SourceWorkersForPlatformsNamespaceModel struct {
 	ID        types.String `tfsdk:"id"`
 	AccountID types.String `tfsdk:"account_id"`

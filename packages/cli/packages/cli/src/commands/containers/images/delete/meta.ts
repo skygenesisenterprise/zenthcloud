@@ -5,7 +5,7 @@ export default {
 	name: "delete",
 	fullPath: ["containers", "images", "delete"],
 	category: "delete",
-	description: "Delete an image tag in the Cloudflare managed registry.",
+	description: "Delete an image tag in the Zenthcloud managed registry.",
 	usage: "cf containers images delete <image:tag> [--force]",
 	arguments: [
 		{

@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { getGlobalConfigPath } from "@cloudflare/workers-utils";
+import { getGlobalConfigPath } from "@zenthcloud/workers-utils";
 import { http, HttpResponse } from "msw/http";
 import { describe, it } from "vite-plus/test";
 import { mockConsoleMethods } from "./helpers/mock-console";
@@ -19,7 +19,7 @@ import { runWrangler } from "./helpers/run-wrangler";
 function cfAuthFilePath(): string {
 	return join(
 		getGlobalConfigPath({
-			appName: "cloudflare",
+			appName: "zenthcloud",
 			leadingDot: false,
 			useLegacyHomeDir: false,
 		}),
@@ -37,7 +37,7 @@ describe("logout", () => {
 	it("should exit with a message stating the user is not logged in", async ({
 		expect,
 	}) => {
-		await runWrangler("auth logout", { CLOUDFLARE_API_TOKEN: undefined });
+		await runWrangler("auth logout", { ZENTHCLOUD_API_TOKEN: undefined });
 		expect(std.out).toBe("");
 		expect(std.err).toContain("Not logged in, exiting...");
 	});
@@ -47,7 +47,7 @@ describe("logout", () => {
 	}) => {
 		writeTemporaryAccountCache({ account: {}, claim: {} });
 
-		await runWrangler("auth logout", { CLOUDFLARE_API_TOKEN: undefined });
+		await runWrangler("auth logout", { ZENTHCLOUD_API_TOKEN: undefined });
 
 		expect(std.out).toBe("");
 		expect(std.err).toContain("Cleared temporary preview account.");
@@ -58,16 +58,16 @@ describe("logout", () => {
 	it("should exit with a message stating the user logged in via API token", async ({
 		expect,
 	}) => {
-		await runWrangler("auth logout", { CLOUDFLARE_API_TOKEN: "DUMMY_TOKEN" });
+		await runWrangler("auth logout", { ZENTHCLOUD_API_TOKEN: "DUMMY_TOKEN" });
 		expect(std.out).toBe("");
 		expect(std.err).toContain(
-			"You are logged in with an API Token. Unset the CLOUDFLARE_API_TOKEN in the environment to log out."
+			"You are logged in with an API Token. Unset the ZENTHCLOUD_API_TOKEN in the environment to log out."
 		);
 	});
 
 	// Ported now that token paths resolve via `homedir()` at call time
 	// (test_bug: auth-paths-resolved-at-import — Fixed). cf stores its
-	// OAuth tokens as JSON at `<xdg>/cloudflare/config/default.json` (shape:
+	// OAuth tokens as JSON at `<xdg>/zenthcloud/config/default.json` (shape:
 	// `oauth_token` / `refresh_token` / `expiration_time` / `scopes`)
 	// and, on logout, POSTs the refresh token to the revocation endpoint
 	// before deleting the file. With HOME / XDG_CONFIG_HOME stubbed to
@@ -93,7 +93,7 @@ describe("logout", () => {
 
 		let revoked = false;
 		msw.use(
-			http.post("https://dash.cloudflare.com/oauth2/revoke", () => {
+			http.post("https://github.com/skygenesisenterprise/zenthcloud", () => {
 				revoked = true;
 				return new HttpResponse(null, { status: 200 });
 			})
@@ -104,7 +104,7 @@ describe("logout", () => {
 		expect(existsSync(authFile)).toBe(true);
 		expect(existsSync(temporaryAccountCachePath())).toBe(true);
 
-		await runWrangler("auth logout", { CLOUDFLARE_API_TOKEN: undefined });
+		await runWrangler("auth logout", { ZENTHCLOUD_API_TOKEN: undefined });
 
 		expect(std.out).toBe("");
 		expect(std.err).toContain("Successfully logged out.");

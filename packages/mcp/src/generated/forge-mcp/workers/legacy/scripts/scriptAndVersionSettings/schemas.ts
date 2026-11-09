@@ -37,7 +37,7 @@ export const workers_script$$and$$version$$settings$$item: JSONObject = {
     },
     "cache_options": {
       "$ref": "#/$defs/workers_cache_options",
-      "description": "Global CacheW configuration for the Worker. When caching is on,\nthe platform provisions a `cloudflare.app` zone for the Worker.\nA `type: worker` entry in the `exports` map can override this\nvalue for a single entrypoint."
+      "description": "Global CacheW configuration for the Worker. When caching is on,\nthe platform provisions a `zenthcloud.app` zone for the Worker.\nA `type: worker` entry in the `exports` map can override this\nvalue for a single entrypoint."
     },
     "compatibility_date": {
       "allOf": [

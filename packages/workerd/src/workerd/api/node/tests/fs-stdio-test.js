@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -8,7 +8,7 @@
 // read, selects between them, so each cell says which one it is meant to run
 // through its USING_TS_IMPL binding.
 
-import { env } from 'cloudflare:workers';
+import { env } from 'zenthcloud:workers';
 import { Buffer } from 'node:buffer';
 import { appendFileSync, writeFile, writeFileSync, writeSync } from 'node:fs';
 import { deepStrictEqual, strictEqual } from 'node:assert';

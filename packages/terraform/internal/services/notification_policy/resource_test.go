@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -19,23 +19,23 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_notification_policy", &resource.Sweeper{
-		Name: "cloudflare_notification_policy",
-		F:    testSweepCloudflareNotificationPolicies,
+	resource.AddTestSweepers("zenthcloud_notification_policy", &resource.Sweeper{
+		Name: "zenthcloud_notification_policy",
+		F:    testSweepZenthcloudNotificationPolicies,
 	})
 }
 
-func testSweepCloudflareNotificationPolicies(r string) error {
+func testSweepZenthcloudNotificationPolicies(r string) error {
 	ctx := context.Background()
 	client, clientErr := acctest.SharedV1Client()
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 		return clientErr
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping notification policies sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping notification policies sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
@@ -68,18 +68,18 @@ func testSweepCloudflareNotificationPolicies(r string) error {
 	return nil
 }
 
-func TestAccCloudflareNotificationPolicy_Basic(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the IP List
+func TestAccZenthcloudNotificationPolicy_Basic(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the IP List
 	// endpoint does not yet support the API tokens.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_notification_policy." + rnd
+	resourceName := "zenthcloud_notification_policy." + rnd
 	updatedPolicyName := "updated test SSL policy from terraform provider"
 	updatedPolicyDesc := "updated description"
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -88,7 +88,7 @@ func TestAccCloudflareNotificationPolicy_Basic(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testCheckCloudflareNotificationPolicy(rnd, accountID),
+				Config: testCheckZenthcloudNotificationPolicy(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", "test SSL policy from terraform provider"),
 					resource.TestCheckResourceAttr(resourceName, "description", "test description"),
@@ -103,7 +103,7 @@ func TestAccCloudflareNotificationPolicy_Basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testCheckCloudflareNotificationPolicyUpdated(rnd, updatedPolicyName, updatedPolicyDesc, accountID),
+				Config: testCheckZenthcloudNotificationPolicyUpdated(rnd, updatedPolicyName, updatedPolicyDesc, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", updatedPolicyName),
 					resource.TestCheckResourceAttr(resourceName, "description", updatedPolicyDesc),
@@ -120,26 +120,26 @@ func TestAccCloudflareNotificationPolicy_Basic(t *testing.T) {
 	})
 }
 
-func testCheckCloudflareNotificationPolicy(name, accountID string) string {
-	return acctest.LoadTestCase("checkcloudflarenotificationpolicy.tf", name, accountID)
+func testCheckZenthcloudNotificationPolicy(name, accountID string) string {
+	return acctest.LoadTestCase("checkzenthcloudnotificationpolicy.tf", name, accountID)
 }
 
-func testCheckCloudflareNotificationPolicyUpdated(resName, policyName, policyDesc, accountID string) string {
-	return acctest.LoadTestCase("checkcloudflarenotificationpolicyupdated.tf", resName, policyName, policyDesc, accountID)
+func testCheckZenthcloudNotificationPolicyUpdated(resName, policyName, policyDesc, accountID string) string {
+	return acctest.LoadTestCase("checkzenthcloudnotificationpolicyupdated.tf", resName, policyName, policyDesc, accountID)
 }
 
-func TestAccCloudflareNotificationPolicy_WithFiltersAttribute(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the IP List
+func TestAccZenthcloudNotificationPolicy_WithFiltersAttribute(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the IP List
 	// endpoint does not yet support the API tokens.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_notification_policy." + rnd
+	resourceName := "zenthcloud_notification_policy." + rnd
 	updatedPolicyName := "updated workers usage notification"
 	updatedPolicyDesc := "updated description"
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -148,7 +148,7 @@ func TestAccCloudflareNotificationPolicy_WithFiltersAttribute(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testCheckCloudflareNotificationPolicyWithFiltersAttribute(rnd, accountID),
+				Config: testCheckZenthcloudNotificationPolicyWithFiltersAttribute(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", "workers usage notification"),
 					resource.TestCheckResourceAttr(resourceName, "description", "test description"),
@@ -160,7 +160,7 @@ func TestAccCloudflareNotificationPolicy_WithFiltersAttribute(t *testing.T) {
 				),
 			},
 			{
-				Config: testCheckCloudflareNotificationPolicyWithFiltersAttributeUpdated(rnd, updatedPolicyName, updatedPolicyDesc, accountID),
+				Config: testCheckZenthcloudNotificationPolicyWithFiltersAttributeUpdated(rnd, updatedPolicyName, updatedPolicyDesc, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", updatedPolicyName),
 					resource.TestCheckResourceAttr(resourceName, "description", updatedPolicyDesc),
@@ -175,11 +175,11 @@ func TestAccCloudflareNotificationPolicy_WithFiltersAttribute(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareNotificationPolicy_WithSelectorsAttribute(t *testing.T) {
+func TestAccZenthcloudNotificationPolicy_WithSelectorsAttribute(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_notification_policy." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_notification_policy." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -188,7 +188,7 @@ func TestAccCloudflareNotificationPolicy_WithSelectorsAttribute(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testCheckCloudflareNotificationPolicyWithSelectors(rnd, accountID, zoneID),
+				Config: testCheckZenthcloudNotificationPolicyWithSelectors(rnd, accountID, zoneID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", "traffic anomalies alert"),
 					resource.TestCheckResourceAttr(resourceName, "description", "test description"),
@@ -207,12 +207,12 @@ func TestAccCloudflareNotificationPolicy_WithSelectorsAttribute(t *testing.T) {
 	})
 }
 
-func testCheckCloudflareNotificationPolicyWithFiltersAttribute(name, accountID string) string {
-	return acctest.LoadTestCase("checkcloudflarenotificationpolicywithfiltersattribute.tf", name, accountID)
+func testCheckZenthcloudNotificationPolicyWithFiltersAttribute(name, accountID string) string {
+	return acctest.LoadTestCase("checkzenthcloudnotificationpolicywithfiltersattribute.tf", name, accountID)
 }
 
-func testCheckCloudflareNotificationPolicyWithFiltersAttributeUpdated(name, policyName, policyDesc, accountID string) string {
-	return acctest.LoadTestCase("checkcloudflarenotificationpolicywithfiltersattributeupdated.tf", name, policyName, policyDesc, accountID)
+func testCheckZenthcloudNotificationPolicyWithFiltersAttributeUpdated(name, policyName, policyDesc, accountID string) string {
+	return acctest.LoadTestCase("checkzenthcloudnotificationpolicywithfiltersattributeupdated.tf", name, policyName, policyDesc, accountID)
 }
 
 // func TestFlattenExpandFilters(t *testing.T) {
@@ -229,15 +229,15 @@ func testCheckCloudflareNotificationPolicyWithFiltersAttributeUpdated(name, poli
 // 	}
 // }
 
-func testCheckCloudflareNotificationPolicyWithSelectors(name, accountID, zoneID string) string {
-	return acctest.LoadTestCase("checkcloudflarenotificationpolicywithselectors.tf", name, accountID, zoneID)
+func testCheckZenthcloudNotificationPolicyWithSelectors(name, accountID, zoneID string) string {
+	return acctest.LoadTestCase("checkzenthcloudnotificationpolicywithselectors.tf", name, accountID, zoneID)
 }
 
-func TestAccCloudflareNotificationPolicy_RemappingAffectedComponents(t *testing.T) {
+func TestAccZenthcloudNotificationPolicy_RemappingAffectedComponents(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_notification_policy." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_notification_policy." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -246,7 +246,7 @@ func TestAccCloudflareNotificationPolicy_RemappingAffectedComponents(t *testing.
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testCheckCloudflareNotificationPolicyWithComponents(rnd, accountID, zoneID),
+				Config: testCheckZenthcloudNotificationPolicyWithComponents(rnd, accountID, zoneID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", "traffic anomalies alert"),
 					resource.TestCheckResourceAttr(resourceName, "description", "test description"),
@@ -260,15 +260,15 @@ func TestAccCloudflareNotificationPolicy_RemappingAffectedComponents(t *testing.
 	})
 }
 
-func testCheckCloudflareNotificationPolicyWithComponents(name, accountID, zoneID string) string {
-	return acctest.LoadTestCase("checkcloudflarenotificationpolicywithcomponents.tf", name, accountID, zoneID)
+func testCheckZenthcloudNotificationPolicyWithComponents(name, accountID, zoneID string) string {
+	return acctest.LoadTestCase("checkzenthcloudnotificationpolicywithcomponents.tf", name, accountID, zoneID)
 }
 
 func TestAccUpgradeNotificationPolicy_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
-	config := testCheckCloudflareNotificationPolicy(rnd, accountID)
+	config := testCheckZenthcloudNotificationPolicy(rnd, accountID)
 
 	// Stepping-stone upgrade: 5.16.0 → 5.18.0 → latest.
 	//
@@ -284,8 +284,8 @@ func TestAccUpgradeNotificationPolicy_FromPublishedV5(t *testing.T) {
 			// Step 1: create with v5.16.0 (schema_version=0, includes alert_interval)
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},
@@ -294,8 +294,8 @@ func TestAccUpgradeNotificationPolicy_FromPublishedV5(t *testing.T) {
 			// Step 2: upgrade to v5.18.0 (bumps schema_version 0→1, no-op transform)
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.18.0",
 					},
 				},

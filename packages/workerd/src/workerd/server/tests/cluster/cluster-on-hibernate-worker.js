@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -8,8 +8,8 @@
 //   /on-hibernate/evict    Evicts the object, which runs its handler.
 //   /on-hibernate/started  Whether the handler has started.
 
-import { DurableObject } from 'cloudflare:workers';
-import { onHibernate } from 'cloudflare:durable-objects';
+import { DurableObject } from 'zenthcloud:workers';
+import { onHibernate } from 'zenthcloud:durable-objects';
 import unsafe from 'workerd:unsafe';
 
 let handlerStarted = false;

@@ -1,0 +1,22 @@
+variable "zone_id" {}
+
+resource "zenthcloud_ruleset" "my_ruleset" {
+  zone_id = var.zone_id
+  name    = "My ruleset"
+  phase   = "http_request_cache_settings"
+  kind    = "zone"
+  rules = [
+    {
+      expression = "ip.src eq 1.1.1.1"
+      action     = "set_cache_settings"
+      action_parameters = {
+        cache = false
+      }
+    }
+  ]
+}
+
+data "zenthcloud_ruleset" "my_ruleset" {
+  zone_id = var.zone_id
+  id      = zenthcloud_ruleset.my_ruleset.id
+}

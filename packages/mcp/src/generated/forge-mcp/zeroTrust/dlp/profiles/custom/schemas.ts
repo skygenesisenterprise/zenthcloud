@@ -275,7 +275,7 @@ export const dlp_NewCustomProfile: JSONObject = {
       "type": "array"
     },
     "shared_entries": {
-      "description": "Entries from other profiles (e.g. pre-defined Cloudflare profiles, or your Microsoft Information Protection profiles).",
+      "description": "Entries from other profiles (e.g. pre-defined Zenthcloud profiles, or your Microsoft Information Protection profiles).",
       "items": {
         "$ref": "#/$defs/dlp_NewSharedEntry"
       },

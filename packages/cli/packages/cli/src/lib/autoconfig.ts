@@ -3,7 +3,7 @@ import {
 	AutoConfigDetectionError,
 	getDetailsForAutoConfig,
 	runAutoConfig,
-} from "@cloudflare/autoconfig";
+} from "@zenthcloud/autoconfig";
 import { parse as parseShell } from "shell-quote";
 import { x } from "tinyexec";
 import { CliExit } from "./cli-exit.js";
@@ -18,7 +18,7 @@ import type {
 	AutoConfigContext,
 	AutoConfigDetails,
 	AutoConfigSummary,
-} from "@cloudflare/autoconfig";
+} from "@zenthcloud/autoconfig";
 
 /**
  * Where a project command's own output goes. cf's messages go to stderr

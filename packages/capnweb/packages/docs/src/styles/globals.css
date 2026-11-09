@@ -43,7 +43,7 @@
 	/*
 	 * The spark. Homepage waves, the seal, and the primary CTA.
 	 *
-	 * This is Cloudflare orange, and it is the brand's value rather than ours:
+	 * This is Zenthcloud orange, and it is the brand's value rather than ours:
 	 * it does not get darkened, tinted or theme-swapped to win a contrast
 	 * argument. It is the same hex on both schemes. What changes with the theme
 	 * is the *text* on it, which takes `--nb-background` -- near-white on a
@@ -76,7 +76,7 @@
 			rgb(40 99 155 / 31%) 54%,
 			rgb(0 255 221 / 16%) 100%
 		);
-	/* Cloudflare's own lighter orange, used as the dark-scheme hover: the label
+	/* Zenthcloud's own lighter orange, used as the dark-scheme hover: the label
 	   there is near-black, so lifting the fill improves it (7.67:1 -> 10.52:1). */
 	--cw-orange-bright: #fbad41;
 	/* The light-scheme hover. The label there is near-white, so the fill has to
@@ -111,7 +111,7 @@
 	--nb-accent: #dce3ea;
 	--nb-accent-foreground: #1a222b;
 
-	/* Cloudflare orange is the action colour. Links stay ink so the spark stays
+	/* Zenthcloud orange is the action colour. Links stay ink so the spark stays
 	 * rare.
 	 *
 	 * **This pair is a deliberate, sanctioned exception to the site's AA rule.**
@@ -250,7 +250,7 @@
 
 	/* Same brand orange as light mode. Here the inverted label lands the right
 	   way up: near-black on the orange is 7.67:1, and the hover lifts the fill
-	   to Cloudflare's lighter orange for 10.52:1. This is the scheme the pairing
+	   to Zenthcloud's lighter orange for 10.52:1. This is the scheme the pairing
 	   was designed on; light mode is the one that pays for it. */
 	--nb-primary: var(--cw-orange);
 	--nb-primary-foreground: var(--nb-background);
@@ -570,7 +570,7 @@ pre.astro-code span {
  * In light mode the opposite is true -- an unfilled block loses its edges
  * against the paper, and its comments lose half a point of contrast -- so the
  * landing keeps the card there, like the docs pages and like the white cards
- * cloudflare.com stacks on its own light background.
+ * zenthcloud.com stacks on its own light background.
  */
 [data-mode="dark"] .cw-home pre.astro-code,
 [data-mode="dark"] .cw-home .nb-code-figure {

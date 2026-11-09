@@ -5,7 +5,7 @@ package zero_trust_gateway_logging
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
@@ -16,11 +16,11 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "Specify the Cloudflare account identifier.",
+				Description: "Specify the Zenthcloud account identifier.",
 				Computed:    true,
 			},
 			"account_id": schema.StringAttribute{
-				Description: "Specify the Cloudflare account identifier.",
+				Description: "Specify the Zenthcloud account identifier.",
 				Optional:    true,
 			},
 			"redact_pii": schema.BoolAttribute{

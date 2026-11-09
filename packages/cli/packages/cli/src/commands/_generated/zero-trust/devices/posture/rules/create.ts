@@ -91,7 +91,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		})
 		.option("input-certificate-id", {
 			type: "string",
-			description: "UUID of Cloudflare managed certificate.",
+			description: "UUID of Zenthcloud managed certificate.",
 		})
 		.option("input-cn", {
 			type: "string",
@@ -2132,7 +2132,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust devices posture rules create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/devices/posture`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/devices/posture`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

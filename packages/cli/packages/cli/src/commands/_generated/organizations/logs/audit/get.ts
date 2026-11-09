@@ -36,7 +36,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 			type: "string",
 			array: true,
 			description:
-				"Filters by the actor context.\n- `api`: The action was performed through the API. The specific credential type was not recorded.\n- `api_key`: The action was authenticated with a Cloudflare Global API Key.\n- `api_token`: The action was authenticated with an API token.\n- `dash`: The action was performed through the Cloudflare dashboard.\n- `oauth`: The action was authenticated with an OAuth token.\n- `origin_ca_key`: The action was authenticated with an Origin CA key.",
+				"Filters by the actor context.\n- `api`: The action was performed through the API. The specific credential type was not recorded.\n- `api_key`: The action was authenticated with a Zenthcloud Global API Key.\n- `api_token`: The action was authenticated with an API token.\n- `dash`: The action was performed through the Zenthcloud dashboard.\n- `oauth`: The action was authenticated with an OAuth token.\n- `origin_ca_key`: The action was authenticated with an Origin CA key.",
 		})
 		.option("actor-email", {
 			type: "string",
@@ -104,7 +104,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 			type: "string",
 			array: true,
 			description:
-				"Filters audit logs by the Cloudflare product associated with the changed resource.",
+				"Filters audit logs by the Zenthcloud product associated with the changed resource.",
 		})
 		.option("resource-type", {
 			type: "string",
@@ -133,7 +133,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 			type: "string",
 			array: true,
 			description:
-				"Filters out audit logs by the actor context.\n- `api`: The action was performed through the API. The specific credential type was not recorded.\n- `api_key`: The action was authenticated with a Cloudflare Global API Key.\n- `api_token`: The action was authenticated with an API token.\n- `dash`: The action was performed through the Cloudflare dashboard.\n- `oauth`: The action was authenticated with an OAuth token.\n- `origin_ca_key`: The action was authenticated with an Origin CA key.",
+				"Filters out audit logs by the actor context.\n- `api`: The action was performed through the API. The specific credential type was not recorded.\n- `api_key`: The action was authenticated with a Zenthcloud Global API Key.\n- `api_token`: The action was authenticated with an API token.\n- `dash`: The action was performed through the Zenthcloud dashboard.\n- `oauth`: The action was authenticated with an OAuth token.\n- `origin_ca_key`: The action was authenticated with an Origin CA key.",
 		})
 		.option("actor-email-not", {
 			type: "string",
@@ -204,7 +204,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 			type: "string",
 			array: true,
 			description:
-				"Filters out audit logs by the Cloudflare product associated with the changed resource.",
+				"Filters out audit logs by the Zenthcloud product associated with the changed resource.",
 		})
 		.option("resource-type-not", {
 			type: "string",
@@ -315,7 +315,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf organizations logs audit get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/organizations/${argv["organization-id"] == null ? "<organization-id>" : encodeURIComponent(String(argv["organization-id"]))}/logs/audit`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["organization-id"] == null ? "<organization-id>" : encodeURIComponent(String(argv["organization-id"]))}/logs/audit`,
 						pathParams: {
 							"organization-id": String(argv["organization-id"] ?? ""),
 						},

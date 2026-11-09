@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zero_trust_access_infrastructure_target Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_access_infrastructure_target Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zero_trust_access_infrastructure_target (Resource)
+# zenthcloud_zero_trust_access_infrastructure_target (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_access_infrastructure_target" "example_zero_trust_access_infrastructure_target" {
+resource "zenthcloud_zero_trust_access_infrastructure_target" "example_zero_trust_access_infrastructure_target" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   hostname = "infra-access-target"
   ip = {
@@ -84,7 +84,7 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_access_infrastructure_target.example '<account_id>/<target_id>'
+$ terraform import zenthcloud_zero_trust_access_infrastructure_target.example '<account_id>/<target_id>'
 ```
 
 

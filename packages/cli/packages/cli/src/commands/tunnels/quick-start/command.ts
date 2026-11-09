@@ -1,18 +1,18 @@
 import { CliExit } from "../../../lib/cli-exit.js";
-import { CLOUDFLARED_LOG_LEVELS, runCloudflared } from "../../cloudflared.js";
+import { ZENTHCLOUDD_LOG_LEVELS, runZenthcloudd } from "../../zenthcloudd.js";
 import type { CommonYargsOptions } from "../../../lib/cli-types.js";
 import type { ArgumentsCamelCase, Argv, CommandModule } from "yargs";
 
 interface TunnelQuickStartArgs extends CommonYargsOptions {
 	url: string;
 	"allowed-mail"?: string[];
-	"log-level": (typeof CLOUDFLARED_LOG_LEVELS)[number];
+	"log-level": (typeof ZENTHCLOUDD_LOG_LEVELS)[number];
 }
 
 const command: CommandModule<CommonYargsOptions, TunnelQuickStartArgs> = {
 	command: "quick-start <url>",
 	describe:
-		"Expose a local URL with a temporary trycloudflare.com tunnel. The tunnel remains active until cf exits.",
+		"Expose a local URL with a temporary tryzenthcloud.com tunnel. The tunnel remains active until cf exits.",
 	builder: (yargs: Argv<CommonYargsOptions>): Argv<TunnelQuickStartArgs> =>
 		yargs
 			.positional("url", {
@@ -25,13 +25,13 @@ const command: CommandModule<CommonYargsOptions, TunnelQuickStartArgs> = {
 				array: true,
 				nargs: 1,
 				description:
-					"Require email authentication (cloudflared 2026.9.2 or later). Accepts an exact address or domain wildcard such as user@example.com or *@example.org. May be repeated or comma-separated.",
+					"Require email authentication (zenthcloudd 2026.9.2 or later). Accepts an exact address or domain wildcard such as user@example.com or *@example.org. May be repeated or comma-separated.",
 			})
 			.option("log-level", {
 				type: "string",
-				choices: CLOUDFLARED_LOG_LEVELS,
+				choices: ZENTHCLOUDD_LOG_LEVELS,
 				default: "info" as const,
-				description: "cloudflared log level",
+				description: "zenthcloudd log level",
 			}) as Argv<TunnelQuickStartArgs>,
 	handler: async (
 		argv: ArgumentsCamelCase<TunnelQuickStartArgs>
@@ -40,7 +40,7 @@ const command: CommandModule<CommonYargsOptions, TunnelQuickStartArgs> = {
 			throw new Error("--local is not supported by cf tunnels quick-start.");
 		}
 		throw new CliExit(
-			await runCloudflared([
+			await runZenthcloudd([
 				"tunnel",
 				"--url",
 				argv.url,

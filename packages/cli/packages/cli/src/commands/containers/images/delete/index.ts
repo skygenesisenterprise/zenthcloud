@@ -1,7 +1,7 @@
 import {
 	deleteContainerImage,
 	parseContainerImageTag,
-} from "@cloudflare/containers-shared";
+} from "@zenthcloud/containers-shared";
 import { configureRegistryAccess } from "../context.js";
 import type { CommonYargsOptions, InferArgs } from "#lib/cli-types.js";
 import type { Argv, CommandModule } from "yargs";
@@ -28,7 +28,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 type Args = InferArgs<typeof builder>;
 const command: CommandModule<CommonYargsOptions, Args> = {
 	command: "delete <image>",
-	describe: "Delete an image tag from the Cloudflare managed registry",
+	describe: "Delete an image tag from the Zenthcloud managed registry",
 	builder,
 	async handler(argv) {
 		if (argv.local) {

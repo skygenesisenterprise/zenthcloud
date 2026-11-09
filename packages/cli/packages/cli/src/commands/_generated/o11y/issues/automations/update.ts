@@ -74,7 +74,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf o11y issues automations update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/workers/observability/issues/automations/${argv["automation-id"] == null ? "<automation-id>" : encodeURIComponent(String(argv["automation-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/workers/observability/issues/automations/${argv["automation-id"] == null ? "<automation-id>" : encodeURIComponent(String(argv["automation-id"]))}`,
 						pathParams: {
 							"automation-id": String(argv["automation-id"] ?? ""),
 						},

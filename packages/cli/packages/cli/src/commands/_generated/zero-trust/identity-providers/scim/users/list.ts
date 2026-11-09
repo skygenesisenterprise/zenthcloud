@@ -20,7 +20,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 zero-trust identity-providers scim users list\n\nLists SCIM User resources synced to Cloudflare via the System for Cross-domain Identity Management (SCIM)."
+			"$0 zero-trust identity-providers scim users list\n\nLists SCIM User resources synced to Zenthcloud via the System for Cross-domain Identity Management (SCIM)."
 		)
 		.option("identity-provider-id", {
 			type: "string",
@@ -31,7 +31,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 			type: "string",
 			array: true,
 			description:
-				'The unique Cloudflare-generated Id of the SCIM User resource; also known as the "Id".\nPass once for a single lookup (`?cf_resource_id=A`) or repeat the parameter\n(`?cf_resource_id=A&cf_resource_id=B`) to look up multiple users in one request,\nup to 50 values. Mutually exclusive with `idp_resource_id`, `username`, `email`,\n`name`, `search_contains`, and `search_starts_with`.',
+				'The unique Zenthcloud-generated Id of the SCIM User resource; also known as the "Id".\nPass once for a single lookup (`?cf_resource_id=A`) or repeat the parameter\n(`?cf_resource_id=A&cf_resource_id=B`) to look up multiple users in one request,\nup to 50 values. Mutually exclusive with `idp_resource_id`, `username`, `email`,\n`name`, `search_contains`, and `search_starts_with`.',
 		})
 		.option("idp-resource-id", {
 			type: "string",
@@ -93,7 +93,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust identity-providers scim users list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/access/identity_providers/${argv["identity-provider-id"] == null ? "<identity-provider-id>" : encodeURIComponent(String(argv["identity-provider-id"]))}/scim/users`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/access/identity_providers/${argv["identity-provider-id"] == null ? "<identity-provider-id>" : encodeURIComponent(String(argv["identity-provider-id"]))}/scim/users`,
 						pathParams: {
 							"identity-provider-id": String(
 								argv["identity-provider-id"] ?? ""

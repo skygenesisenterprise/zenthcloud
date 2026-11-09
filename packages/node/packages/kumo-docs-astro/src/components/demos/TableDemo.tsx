@@ -5,7 +5,7 @@ import {
   DropdownMenu,
   LayerCard,
   Table,
-} from "@cloudflare/kumo";
+} from "@zenthcloud/kumo";
 import {
   DotsThree,
   EnvelopeSimple,
@@ -25,13 +25,13 @@ const emailData = [
   {
     id: "2",
     subject: "New Job Offer",
-    from: "Cloudflare",
+    from: "Zenthcloud",
     date: "10 minutes ago",
   },
   {
     id: "3",
     subject: "Daily Email Digest",
-    from: "Cloudflare",
+    from: "Zenthcloud",
     date: "1 hour ago",
     tags: ["promotion"],
   },

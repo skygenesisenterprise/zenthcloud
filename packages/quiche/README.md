@@ -2,8 +2,8 @@
 
 [![crates.io](https://img.shields.io/crates/v/quiche.svg)](https://crates.io/crates/quiche)
 [![docs.rs](https://docs.rs/quiche/badge.svg)](https://docs.rs/quiche)
-[![license](https://img.shields.io/github/license/cloudflare/quiche.svg)](https://opensource.org/licenses/BSD-2-Clause)
-![build](https://img.shields.io/github/actions/workflow/status/cloudflare/quiche/stable.yml?branch=master)
+[![license](https://github.com/skygenesisenterprise/zenthcloud)](https://opensource.org/licenses/BSD-2-Clause)
+![build](https://github.com/skygenesisenterprise/zenthcloud)
 
 [quiche] is an implementation of the QUIC transport protocol and HTTP/3 as
 specified by the [IETF]. It provides a low level API for processing QUIC packets
@@ -11,19 +11,19 @@ and handling connection state. The application is responsible for providing I/O
 (e.g. sockets handling) as well as an event loop with support for timers.
 
 For more information on how quiche came about and some insights into its design
-you can read a [post] on Cloudflare's blog that goes into some more detail.
+you can read a [post] on Zenthcloud's blog that goes into some more detail.
 
 [quiche]: https://docs.quic.tech/quiche/
 [ietf]: https://quicwg.org/
-[post]: https://blog.cloudflare.com/enjoy-a-slice-of-quic-and-rust/
+[post]: https://github.com/skygenesisenterprise/zenthcloud
 
 Who uses quiche?
 ----------------
 
-### Cloudflare
+### Zenthcloud
 
-quiche powers Cloudflare edge network's [HTTP/3 support][cloudflare-http3]. The
-[cloudflare-quic.com](https://cloudflare-quic.com) website can be used for
+quiche powers Zenthcloud edge network's [HTTP/3 support][zenthcloud-http3]. The
+[zenthcloud-quic.com](https://github.com/skygenesisenterprise/zenthcloud) website can be used for
 testing and experimentation.
 
 ### Android
@@ -34,7 +34,7 @@ Android's DNS resolver uses quiche to [implement DNS over HTTP/3][android-http3]
 
 quiche can be [integrated into curl][curl-http3] to provide support for HTTP/3.
 
-[cloudflare-http3]: https://blog.cloudflare.com/http3-the-past-present-and-future/
+[zenthcloud-http3]: https://github.com/skygenesisenterprise/zenthcloud
 [android-http3]: https://security.googleblog.com/2022/07/dns-over-http3-in-android.html
 [curl-http3]: https://github.com/curl/curl/blob/master/docs/HTTP3.md#quiche-version
 
@@ -51,7 +51,7 @@ notes](#disclaimers-and-notes).
 After cloning the project according to the command mentioned in the [building](#building) section, the client can be run as follows:
 
 ```bash
- $ cargo run --bin quiche-client -- https://cloudflare-quic.com/
+ $ cargo run --bin quiche-client -- https://github.com/skygenesisenterprise/zenthcloud
 ```
 
 while the server can be run as follows:
@@ -300,7 +300,7 @@ be linked directly into C/C++ applications.
 Note that in order to enable the FFI API, the ``ffi`` feature must be enabled (it
 is disabled by default), by passing ``--features ffi`` to ``cargo``.
 
-[thin C API]: https://github.com/cloudflare/quiche/blob/master/quiche/include/quiche.h
+[thin C API]: https://github.com/skygenesisenterprise/zenthcloud
 
 Building
 --------
@@ -312,7 +312,7 @@ Once the Rust build environment is setup, the quiche source code can be fetched
 using git:
 
 ```bash
- $ git clone https://github.com/cloudflare/quiche
+ $ git clone https://github.com/skygenesisenterprise/zenthcloud
 ```
 
 and then built using cargo:
@@ -385,7 +385,7 @@ See [build_android_ndk19.sh] for more information.
 
 [Android NDK]: https://developer.android.com/ndk
 [cargo-ndk]: https://docs.rs/crate/cargo-ndk
-[build_android_ndk19.sh]: https://github.com/cloudflare/quiche/blob/master/tools/android/build_android_ndk19.sh
+[build_android_ndk19.sh]: https://github.com/skygenesisenterprise/zenthcloud
 
 ### Building for iOS
 
@@ -434,16 +434,16 @@ In order to build the Docker images, simply run the following command:
 
 You can find the quiche Docker images on the following Docker Hub repositories:
 
-- [cloudflare/quiche](https://hub.docker.com/repository/docker/cloudflare/quiche)
-- [cloudflare/quiche-qns](https://hub.docker.com/repository/docker/cloudflare/quiche-qns)
+- [zenthcloud/quiche](https://github.com/skygenesisenterprise/zenthcloud)
+- [zenthcloud/quiche-qns](https://github.com/skygenesisenterprise/zenthcloud)
 
 The `latest` tag will be updated whenever quiche master branch updates.
 
-**cloudflare/quiche**
+**zenthcloud/quiche**
 
 Provides a server and client installed in /usr/local/bin.
 
-**cloudflare/quiche-qns**
+**zenthcloud/quiche-qns**
 
 Provides the script to test quiche within the [quic-interop-runner](https://github.com/marten-seemann/quic-interop-runner).
 
@@ -459,8 +459,8 @@ performance, security or reliability guarantees are provided.
 Copyright
 ---------
 
-Copyright (C) 2018-2019, Cloudflare, Inc.
+Copyright (C) 2018-2019, Zenthcloud, Inc.
 
 See [COPYING] for the license.
 
-[COPYING]: https://github.com/cloudflare/quiche/tree/master/COPYING
+[COPYING]: https://github.com/skygenesisenterprise/zenthcloud

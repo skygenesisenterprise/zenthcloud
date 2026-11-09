@@ -3,7 +3,7 @@
  *
  * cf does not run a dev server itself. It first uses autoconfig to route to a
  * detected framework command. Otherwise it discovers an allowlisted
- * Cloudflare implementation from the project's npm, PyPI, or Cargo manifest
+ * Zenthcloud implementation from the project's npm, PyPI, or Cargo manifest
  * and spawns its delegate with inherited stdio and forwarded signals.
  */
 import { prepareProject, runProjectCommand } from "../../lib/autoconfig.js";
@@ -27,7 +27,7 @@ interface DevArgs extends CommonYargsOptions {
 
 const devCommand: CommandModule<CommonYargsOptions, DevArgs> = {
 	command: "dev [implArgs..]",
-	describe: "Run the project's Cloudflare dev server",
+	describe: "Run the project's Zenthcloud dev server",
 
 	builder: (yargs: Argv): Argv<DevArgs> => {
 		return (
@@ -49,9 +49,9 @@ const devCommand: CommandModule<CommonYargsOptions, DevArgs> = {
 				})
 				.epilogue(
 					`cf dev starts the appropriate development server for your project. ` +
-						`It runs your framework's dev command when available, falling back to an installed Cloudflare dev server.\n\n` +
+						`It runs your framework's dev command when available, falling back to an installed Zenthcloud dev server.\n\n` +
 						`Only ${theme.brand("--mode")} is forwarded to supported framework development servers. ` +
-						`Other arguments are forwarded only to Cloudflare dev-server implementations.`
+						`Other arguments are forwarded only to Zenthcloud dev-server implementations.`
 				) as Argv<DevArgs>
 		);
 	},

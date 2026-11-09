@@ -4,20 +4,20 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
-func TestAccCloudflareGoogleTagGatewayDataSource_Basic(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudGoogleTagGatewayDataSource_Basic(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_google_tag_gateway." + rnd
-	dataSourceName := "data.cloudflare_google_tag_gateway." + rnd
+	resourceName := "zenthcloud_google_tag_gateway." + rnd
+	dataSourceName := "data.zenthcloud_google_tag_gateway." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {

@@ -86,7 +86,7 @@ test-asan *args="//...":
 check-io-backend-graph *args:
   bash build/rust_io_graph_check.sh {{args}}
 
-# e.g. just stream-test //src/cloudflare:cloudflare.capnp@eslint
+# e.g. just stream-test //src/zenthcloud:zenthcloud.capnp@eslint
 stream-test *args:
   bazel test {{args}} --test_output=streamed --nocache_test_results --test_tag_filters= --test_size_filters=
 
@@ -186,7 +186,7 @@ lint: eslint
 
 eslint:
   just stream-test \
-    //src/cloudflare:cloudflare@eslint \
+    //src/zenthcloud:zenthcloud@eslint \
     //src/node:node@eslint \
     //src/pyodide:pyodide_static@eslint \
     //src/pyodide/tools:patch_pyodide_asm_lib@eslint \

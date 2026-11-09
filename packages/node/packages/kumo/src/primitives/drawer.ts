@@ -6,7 +6,7 @@
  *
  * @example
  * ```tsx
- * import { Drawer } from '@cloudflare/kumo/primitives/drawer';
+ * import { Drawer } from '@zenthcloud/kumo/primitives/drawer';
  * ```
  */
 

@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Mike Aizatsky <maizatskyi@cloudflare.com>
+From: Mike Aizatsky <maizatskyi@zenthcloud.com>
 Date: Fri, 4 Sep 2026 12:18:53 -0700
 Subject: [PATCH] Teach TSan about fcntl file descriptor duplication
 

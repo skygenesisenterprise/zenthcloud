@@ -9,7 +9,7 @@ import (
 
 // Transform converts source (legacy v4) state to target (current v5) state.
 // This function handles the key → key_name field rename and adds the new metadata field.
-func Transform(ctx context.Context, source SourceCloudflareWorkersKVModel) (*TargetWorkersKVModel, diag.Diagnostics) {
+func Transform(ctx context.Context, source SourceZenthcloudWorkersKVModel) (*TargetWorkersKVModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Validate required fields

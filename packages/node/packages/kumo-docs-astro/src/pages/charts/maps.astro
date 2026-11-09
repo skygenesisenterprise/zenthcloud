@@ -7,11 +7,11 @@ import CodeBlock from "../../components/docs/CodeBlock.astro";
 import PropsTable from "../../components/docs/PropsTable.astro";
 import {
   BubbleMapBasicDemo,
-  BubbleMapCloudflareLocationsDemo,
+  BubbleMapZenthcloudLocationsDemo,
 } from "~/components/demos/Chart/BubbleMapDemo";
 import { ChoroplethMapBasicDemo } from "~/components/demos/Chart/ChoroplethMapDemo";
 import { GlobeMapAvailabilityZonesDemo } from "~/components/demos/Chart/GlobeMapDemo";
-import type { MapGeoJson } from "@cloudflare/kumo";
+import type { MapGeoJson } from "@zenthcloud/kumo";
 
 const WORLD_GEO_JSON_URL =
   "https://cdn.jsdelivr.net/gh/johan/world.geo.json@master/countries.geo.json";
@@ -39,7 +39,7 @@ try {
   sourceFile="components/chart"
 >
   <ComponentSection>
-    <ComponentExample code={`const cloudflareLocations = [
+    <ComponentExample code={`const zenthcloudLocations = [
   { city: "San Francisco", iata: "SFO", lat: 37.77, lon: -122.42 },
   { city: "London", iata: "LHR", lat: 51.51, lon: -0.13 },
   { city: "Singapore", iata: "SIN", lat: 1.35, lon: 103.82 },
@@ -49,7 +49,7 @@ try {
 <BubbleMap
   echarts={echarts}
   geoJson={geoJson}
-  data={cloudflareLocations}
+  data={zenthcloudLocations}
   lng="lon"
   lat="lat"
   name="city"
@@ -61,7 +61,7 @@ try {
     "<strong>" + row.city + "</strong> " + row.iata
   }
 />`}>
-      <BubbleMapCloudflareLocationsDemo geoJson={geoJson} client:visible />
+      <BubbleMapZenthcloudLocationsDemo geoJson={geoJson} client:visible />
     </ComponentExample>
   </ComponentSection>
 
@@ -73,10 +73,10 @@ try {
     <CodeBlock code={`npm install echarts`} lang="bash" />
 
     <Heading level={3} class="mb-2 mt-6 text-lg">Barrel</Heading>
-    <CodeBlock code={`import { BubbleMap, ChoroplethMap, GlobeMap } from "@cloudflare/kumo";`} lang="tsx" />
+    <CodeBlock code={`import { BubbleMap, ChoroplethMap, GlobeMap } from "@zenthcloud/kumo";`} lang="tsx" />
     <Heading level={3} class="mb-2 mt-4 text-lg">Granular</Heading>
     <CodeBlock
-      code={`import { BubbleMap, ChoroplethMap, GlobeMap } from "@cloudflare/kumo/components/chart";`}
+      code={`import { BubbleMap, ChoroplethMap, GlobeMap } from "@zenthcloud/kumo/components/chart";`}
       lang="tsx"
     />
   </ComponentSection>
@@ -84,7 +84,7 @@ try {
   <ComponentSection>
     <Heading level={2}>Usage</Heading>
     <CodeBlock
-      code={`import { BubbleMap, ChoroplethMap, type MapGeoJson } from "@cloudflare/kumo";
+      code={`import { BubbleMap, ChoroplethMap, type MapGeoJson } from "@zenthcloud/kumo";
 import * as echarts from "echarts/core";
 import { MapChart, ScatterChart } from "echarts/charts";
 import { TooltipComponent, VisualMapComponent } from "echarts/components";
@@ -178,12 +178,12 @@ export default function Example() {
       </div>
 
       <div>
-        <Heading level={3}>Cloudflare Availability Locations</Heading>
+        <Heading level={3}>Zenthcloud Availability Locations</Heading>
         <p class="mb-4 text-kumo-subtle">
-          Plot geographic markers without WebGL. Hatched neutral land, a transparent ocean, horizon-faded markers, and dense geographic guides echo the globe styling on Cloudflare’s marketing homepage while keeping the blue locations prominent. These illustrative locations use major network metros and IATA identifiers; drag the globe or focus it and use the arrow keys to reveal points on the hidden hemisphere.
+          Plot geographic markers without WebGL. Hatched neutral land, a transparent ocean, horizon-faded markers, and dense geographic guides echo the globe styling on Zenthcloud’s marketing homepage while keeping the blue locations prominent. These illustrative locations use major network metros and IATA identifiers; drag the globe or focus it and use the arrow keys to reveal points on the hidden hemisphere.
         </p>
         <ComponentExample code={`<GlobeMap
-  markers={cloudflareAvailabilityLocations}
+  markers={zenthcloudAvailabilityLocations}
   landColor="var(--text-color-kumo-inactive)"
   landHatchSpacing={8}
   oceanColor="transparent"

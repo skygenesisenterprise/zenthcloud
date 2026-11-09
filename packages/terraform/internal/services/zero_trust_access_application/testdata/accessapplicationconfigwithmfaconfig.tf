@@ -1,4 +1,4 @@
-resource "cloudflare_zero_trust_organization" "%[1]s" {
+resource "zenthcloud_zero_trust_organization" "%[1]s" {
   account_id  = "%[3]s"
   name        = "%[4]s"
   auth_domain = "%[1]s-%[4]s"
@@ -9,7 +9,7 @@ resource "cloudflare_zero_trust_organization" "%[1]s" {
   }
 }
 
-resource "cloudflare_zero_trust_access_application" "%[1]s" {
+resource "zenthcloud_zero_trust_access_application" "%[1]s" {
   account_id       = "%[3]s"
   name             = "%[1]s"
   type             = "self_hosted"
@@ -22,5 +22,5 @@ resource "cloudflare_zero_trust_access_application" "%[1]s" {
     session_duration       = "12h"
   }
 
-  depends_on = [cloudflare_zero_trust_organization.%[1]s]
+  depends_on = [zenthcloud_zero_trust_organization.%[1]s]
 }

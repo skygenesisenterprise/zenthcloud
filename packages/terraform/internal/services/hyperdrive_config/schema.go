@@ -5,7 +5,7 @@ package hyperdrive_config
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
@@ -44,11 +44,11 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				CustomType: jsontypes.NormalizedType{},
 			},
 			"name": schema.StringAttribute{
-				Description: "The name of the Hyperdrive configuration. Used to identify the configuration in the Cloudflare dashboard and API.",
+				Description: "The name of the Hyperdrive configuration. Used to identify the configuration in the Zenthcloud dashboard and API.",
 				Required:    true,
 			},
 			"origin_connection_limit": schema.Int64Attribute{
-				Description: "The (soft) maximum number of connections the Hyperdrive is allowed to make to the origin database.\n\nMaximum allowed: 20 for free tier accounts, 100 for paid tier accounts.\nIf not specified, defaults to 20 for free tier and 60 for paid tier.\nCertain Cloudflare-managed origins may be permitted a higher limit.\nContact Cloudflare if you need a higher limit.",
+				Description: "The (soft) maximum number of connections the Hyperdrive is allowed to make to the origin database.\n\nMaximum allowed: 20 for free tier accounts, 100 for paid tier accounts.\nIf not specified, defaults to 20 for free tier and 60 for paid tier.\nCertain Zenthcloud-managed origins may be permitted a higher limit.\nContact Zenthcloud if you need a higher limit.",
 				Optional:    true,
 				Validators: []validator.Int64{
 					int64validator.AtLeast(5),

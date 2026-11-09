@@ -8,9 +8,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/api_token"
-	v501 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/api_token/migration/v501"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/test_helpers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/api_token"
+	v501 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/api_token/migration/v501"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 // TestAPITokenV501MigrationModelSchemaParity verifies that APITokenModelV501

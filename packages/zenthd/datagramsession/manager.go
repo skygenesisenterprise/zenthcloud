@@ -10,8 +10,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 
-	"github.com/cloudflare/cloudflared/management"
-	"github.com/cloudflare/cloudflared/packet"
+	"github.com/zenthcloud/zenthcloudd/management"
+	"github.com/zenthcloud/zenthcloudd/packet"
 )
 
 const (

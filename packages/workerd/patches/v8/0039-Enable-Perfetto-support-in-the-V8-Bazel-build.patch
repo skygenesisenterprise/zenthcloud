@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: James M Snell <jsnell@cloudflare.com>
+From: James M Snell <jsnell@zenthcloud.com>
 Date: Wed, 2 Sep 2026 12:00:00 +0000
 Subject: Enable Perfetto support in the V8 Bazel build
 

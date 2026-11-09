@@ -5,8 +5,8 @@ package custom_hostname
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -76,8 +76,8 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 							),
 						},
 					},
-					"cloudflare_branding": schema.BoolAttribute{
-						Description: "Whether or not to add Cloudflare Branding for the order.  This will add a subdomain of sni.cloudflaressl.com as the Common Name if set to true.",
+					"zenthcloud_branding": schema.BoolAttribute{
+						Description: "Whether or not to add Zenthcloud Branding for the order.  This will add a subdomain of sni.zenthcloudssl.com as the Common Name if set to true.",
 						Optional:    true,
 					},
 					"custom_cert_bundle": schema.ListNestedAttribute{

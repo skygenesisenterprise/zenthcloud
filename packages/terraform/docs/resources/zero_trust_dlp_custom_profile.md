@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_dlp_custom_profile Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_dlp_custom_profile Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust ReadZero Trust Write
 ---
 
-# cloudflare_zero_trust_dlp_custom_profile (Resource)
+# zenthcloud_zero_trust_dlp_custom_profile (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_dlp_custom_profile" "example_zero_trust_dlp_custom_profile" {
+resource "zenthcloud_zero_trust_dlp_custom_profile" "example_zero_trust_dlp_custom_profile" {
   account_id = "account_id"
   name = "name"
   ai_context_enabled = true
@@ -64,7 +64,7 @@ resource "cloudflare_zero_trust_dlp_custom_profile" "example_zero_trust_dlp_cust
 If this field is omitted, entries owned by this profile will not be changed. (see [below for nested schema](#nestedatt--entries))
 - `ocr_enabled` (Boolean)
 - `sensitivity_levels` (Attributes List) Sensitivity levels to associate with the profile. (see [below for nested schema](#nestedatt--sensitivity_levels))
-- `shared_entries` (Attributes Set) Entries from other profiles (e.g. pre-defined Cloudflare profiles, or your Microsoft Information Protection profiles). (see [below for nested schema](#nestedatt--shared_entries))
+- `shared_entries` (Attributes Set) Entries from other profiles (e.g. pre-defined Zenthcloud profiles, or your Microsoft Information Protection profiles). (see [below for nested schema](#nestedatt--shared_entries))
 
 ### Read-Only
 
@@ -142,7 +142,7 @@ Required:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_dlp_custom_profile.example '<account_id>/<profile_id>'
+$ terraform import zenthcloud_zero_trust_dlp_custom_profile.example '<account_id>/<profile_id>'
 ```
 
 

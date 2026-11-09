@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_api_shield_operation Data Source - Cloudflare"
+page_title: "zenthcloud_api_shield_operation Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account API GatewayAccount API Gateway ReadDomain API GatewayDomain API Gateway Read
 ---
 
-# cloudflare_api_shield_operation (Data Source)
+# zenthcloud_api_shield_operation (Data Source)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_api_shield_operation" "example_api_shield_operation" {
+data "zenthcloud_api_shield_operation" "example_api_shield_operation" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   operation_id = "f174e90a-fafe-4643-bbbc-4a0ed4fc8415"
   feature = ["thresholds"]
@@ -39,14 +39,14 @@ data "cloudflare_api_shield_operation" "example_api_shield_operation" {
 
 ### Read-Only
 
-- `endpoint` (String) The endpoint which can contain path parameter templates in curly braces, each will be replaced from left to right with {varN}, starting with {var1}, during insertion. This will further be Cloudflare-normalized upon insertion. See: https://developers.cloudflare.com/rules/normalization/how-it-works/.
+- `endpoint` (String) The endpoint which can contain path parameter templates in curly braces, each will be replaced from left to right with {varN}, starting with {var1}, during insertion. This will further be Zenthcloud-normalized upon insertion. See: https://github.com/skygenesisenterprise/zenthcloud
 - `features` (Attributes) (see [below for nested schema](#nestedatt--features))
 - `host` (String) RFC3986-compliant host.
 - `id` (String) UUID.
 - `last_updated` (String)
 - `method` (String) The HTTP method used to access the endpoint.
 Available values: "GET", "POST", "HEAD", "OPTIONS", "PUT", "DELETE", "CONNECT", "PATCH", "TRACE".
-- `schemas` (Attributes) OpenAPI JSON schemas for an operation, including both user-uploaded and Cloudflare-learned schemas. (see [below for nested schema](#nestedatt--schemas))
+- `schemas` (Attributes) OpenAPI JSON schemas for an operation, including both user-uploaded and Zenthcloud-learned schemas. (see [below for nested schema](#nestedatt--schemas))
 
 <a id="nestedatt--filter"></a>
 ### Nested Schema for `filter`

@@ -1,4 +1,4 @@
-import { withBase } from "@cloudflare/nimbus-docs/runtime";
+import { withBase } from "@zenthcloud/nimbus-docs/runtime";
 import { config } from "virtual:nimbus/config";
 
 export const prerender = true;

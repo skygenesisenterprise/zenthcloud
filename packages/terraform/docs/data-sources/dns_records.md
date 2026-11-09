@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_dns_records Data Source - Cloudflare"
+page_title: "zenthcloud_dns_records Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   DNS ReadDNS Write
 ---
 
-# cloudflare_dns_records (Data Source)
+# zenthcloud_dns_records (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_dns_records" "example_dns_records" {
+data "zenthcloud_dns_records" "example_dns_records" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   comment = {
     absent = "absent"
@@ -38,7 +38,7 @@ data "cloudflare_dns_records" "example_dns_records" {
     exact = "www.example.com"
     startswith = "www.example"
   }
-  search = "www.cloudflare.com"
+  search = "www.zenthcloud.com"
   shadowed_by_name = "sub.example.com"
   shadowing_name = "www.sub.example.com"
   tag = {
@@ -62,17 +62,17 @@ data "cloudflare_dns_records" "example_dns_records" {
 - `content` (Attributes) (see [below for nested schema](#nestedatt--content))
 - `direction` (String) Direction to order DNS records in.
 Available values: "asc", "desc".
-- `include_shadow_metadata` (Boolean) Whether to include shadow metadata in the `meta` field of each record in the response. See [Shadowed records](https://developers.cloudflare.com/dns/manage-dns-records/reference/shadowed-records).
+- `include_shadow_metadata` (Boolean) Whether to include shadow metadata in the `meta` field of each record in the response. See [Shadowed records](https://github.com/skygenesisenterprise/zenthcloud).
 - `match` (String) Whether to match all search requirements or at least one (any). If set to `all`, acts like a logical AND between filters. If set to `any`, acts like a logical OR instead. Note that the interaction between tag filters is controlled by the `tag-match` parameter instead.
 Available values: "any", "all".
 - `max_items` (Number) Max items to fetch, default: 1000
 - `name` (Attributes) (see [below for nested schema](#nestedatt--name))
 - `order` (String) Field to order DNS records by.
 Available values: "type", "name", "content", "ttl", "proxied".
-- `proxied` (Boolean) Whether the record is receiving the performance and security benefits of Cloudflare.
+- `proxied` (Boolean) Whether the record is receiving the performance and security benefits of Zenthcloud.
 - `search` (String) Allows searching in multiple properties of a DNS record simultaneously. This parameter is intended for human users, not automation. Its exact behavior is intentionally left unspecified and is subject to change in the future. This parameter works independently of the `match` setting. For automated searches, please use the other available parameters.
-- `shadowed_by_name` (String) Filters the response to records at or below the specified NS delegation name. NS, DS, and NSEC records at the delegation name are excluded because they are not shadowed by that delegation. Those record types are included only when they exist below the delegation. The value must be a non-apex subdomain of the zone. Requires `include_shadow_metadata=true`. See [Shadowed records](https://developers.cloudflare.com/dns/manage-dns-records/reference/shadowed-records).
-- `shadowing_name` (String) Returns NS records that shadow the given name, searching at the name itself and each of its ancestor names within the zone, excluding the zone apex. The value must be a subdomain of the zone; the zone apex is not accepted. See [Shadowed records](https://developers.cloudflare.com/dns/manage-dns-records/reference/shadowed-records).
+- `shadowed_by_name` (String) Filters the response to records at or below the specified NS delegation name. NS, DS, and NSEC records at the delegation name are excluded because they are not shadowed by that delegation. Those record types are included only when they exist below the delegation. The value must be a non-apex subdomain of the zone. Requires `include_shadow_metadata=true`. See [Shadowed records](https://github.com/skygenesisenterprise/zenthcloud).
+- `shadowing_name` (String) Returns NS records that shadow the given name, searching at the name itself and each of its ancestor names within the zone, excluding the zone apex. The value must be a subdomain of the zone; the zone apex is not accepted. See [Shadowed records](https://github.com/skygenesisenterprise/zenthcloud).
 - `tag` (Attributes) (see [below for nested schema](#nestedatt--tag))
 - `tag_match` (String) Whether to match all tag search requirements or at least one (any). If set to `all`, acts like a logical AND between tag filters. If set to `any`, acts like a logical OR instead. Note that the regular `match` parameter is still used to combine the resulting condition with other filters that aren't related to tags.
 Available values: "any", "all".
@@ -143,13 +143,13 @@ Read-Only:
 - `created_on` (String) When the record was created.
 - `data` (Attributes) Components of a CAA record. (see [below for nested schema](#nestedatt--result--data))
 - `id` (String) Identifier.
-- `meta` (String) Extra Cloudflare-specific information about the record.
+- `meta` (String) Extra Zenthcloud-specific information about the record.
 - `modified_on` (String) When the record was last modified.
 - `name` (String) Complete DNS record name, including the zone name, in Punycode.
 - `priority` (Number) Required for MX and URI records; ignored for other record types (but may still be returned by the API). Records with lower priorities are preferred. This field is to be deprecated in favor of the priority field within the data map.
 - `private_routing` (Boolean) Enables private network routing to the origin.
-- `proxiable` (Boolean) Whether the record can be proxied by Cloudflare or not.
-- `proxied` (Boolean) Whether the record is receiving the performance and security benefits of Cloudflare.
+- `proxiable` (Boolean) Whether the record can be proxied by Zenthcloud or not.
+- `proxied` (Boolean) Whether the record is receiving the performance and security benefits of Zenthcloud.
 - `settings` (Attributes) Settings for the DNS record. (see [below for nested schema](#nestedatt--result--settings))
 - `tags` (Set of String) Custom tags for the DNS record. This field has no effect on DNS responses.
 - `tags_modified_on` (String) When the record tags were last modified. Omitted if there are no tags.
@@ -208,7 +208,7 @@ Available values: "E", "W".
 Read-Only:
 
 - `flatten_cname` (Boolean) If enabled, causes the CNAME record to be resolved externally and the resulting address records (e.g., A and AAAA) to be returned instead of the CNAME record itself. This setting is unavailable for proxied records, since they are always flattened.
-- `ipv4_only` (Boolean) When enabled, only A records will be generated, and AAAA records will not be created. This setting is intended for exceptional cases. Note that this option only applies to proxied records and it has no effect on whether Cloudflare communicates with the origin using IPv4 or IPv6.
-- `ipv6_only` (Boolean) When enabled, only AAAA records will be generated, and A records will not be created. This setting is intended for exceptional cases. Note that this option only applies to proxied records and it has no effect on whether Cloudflare communicates with the origin using IPv4 or IPv6.
+- `ipv4_only` (Boolean) When enabled, only A records will be generated, and AAAA records will not be created. This setting is intended for exceptional cases. Note that this option only applies to proxied records and it has no effect on whether Zenthcloud communicates with the origin using IPv4 or IPv6.
+- `ipv6_only` (Boolean) When enabled, only AAAA records will be generated, and A records will not be created. This setting is intended for exceptional cases. Note that this option only applies to proxied records and it has no effect on whether Zenthcloud communicates with the origin using IPv4 or IPv6.
 
 

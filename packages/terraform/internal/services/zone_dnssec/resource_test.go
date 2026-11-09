@@ -7,11 +7,11 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/dns"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/dns"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -26,13 +26,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zone_dnssec", &resource.Sweeper{
-		Name: "cloudflare_zone_dnssec",
-		F:    testSweepCloudflareZoneDNSSEC,
+	resource.AddTestSweepers("zenthcloud_zone_dnssec", &resource.Sweeper{
+		Name: "zenthcloud_zone_dnssec",
+		F:    testSweepZenthcloudZoneDNSSEC,
 	})
 }
 
-func testSweepCloudflareZoneDNSSEC(r string) error {
+func testSweepZenthcloudZoneDNSSEC(r string) error {
 	ctx := context.Background()
 	// Zone DNSSEC is a zone-level DNSSEC configuration setting.
 	// It's a singleton setting per zone, not something that accumulates.
@@ -41,18 +41,18 @@ func testSweepCloudflareZoneDNSSEC(r string) error {
 	return nil
 }
 
-func TestAccCloudflareZoneDNSSECFull(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudZoneDNSSECFull(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zone_dnssec.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zone_dnssec.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZoneDNSSECDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZoneDNSSECDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareZoneDNSSECResourceConfig(zoneID, rnd),
+				Config: testAccZenthcloudZoneDNSSECResourceConfig(zoneID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("status"), knownvalue.StringRegexp(regexp.MustCompile("active|pending"))),
@@ -83,18 +83,18 @@ func TestAccCloudflareZoneDNSSECFull(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareZoneDNSSEC_Basic(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudZoneDNSSEC_Basic(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zone_dnssec.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zone_dnssec.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZoneDNSSECDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZoneDNSSECDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareZoneDNSSECBasicConfig(zoneID, rnd),
+				Config: testAccZenthcloudZoneDNSSECBasicConfig(zoneID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					// Basic test: only status is specified, other optional attributes are null
@@ -120,19 +120,19 @@ func TestAccCloudflareZoneDNSSEC_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareZoneDNSSEC_StatusDisabled(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudZoneDNSSEC_StatusDisabled(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zone_dnssec.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zone_dnssec.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZoneDNSSECDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZoneDNSSECDestroy,
 		Steps: []resource.TestStep{
 			// First activate DNSSEC
 			{
-				Config: testAccCloudflareZoneDNSSECBasicConfig(zoneID, rnd),
+				Config: testAccZenthcloudZoneDNSSECBasicConfig(zoneID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("status"), knownvalue.StringRegexp(regexp.MustCompile("active|pending"))),
@@ -141,7 +141,7 @@ func TestAccCloudflareZoneDNSSEC_StatusDisabled(t *testing.T) {
 			},
 			// Then disable it
 			{
-				Config: testAccCloudflareZoneDNSSECDisabledConfig(zoneID, rnd),
+				Config: testAccZenthcloudZoneDNSSECDisabledConfig(zoneID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("status"), knownvalue.StringRegexp(regexp.MustCompile("disabled|pending-disabled"))),
@@ -166,18 +166,18 @@ func TestAccCloudflareZoneDNSSEC_StatusDisabled(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareZoneDNSSEC_MultiSigner(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudZoneDNSSEC_MultiSigner(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zone_dnssec.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zone_dnssec.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZoneDNSSECDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZoneDNSSECDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareZoneDNSSECMultiSignerConfig(zoneID, rnd),
+				Config: testAccZenthcloudZoneDNSSECMultiSignerConfig(zoneID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("status"), knownvalue.StringRegexp(regexp.MustCompile("active|pending"))),
@@ -202,10 +202,10 @@ func TestAccCloudflareZoneDNSSEC_MultiSigner(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareZoneDNSSEC_Presigned(t *testing.T) {
+func TestAccZenthcloudZoneDNSSEC_Presigned(t *testing.T) {
 	t.Skip(`Skipping due to auth error:  {"success":false,"errors":[{"code":10000,"message":"Authentication error"}]}`)
 	// Presigned DNSSEC requires a secondary zone
-	secondaryZoneID := os.Getenv("CLOUDFLARE_SECONDARY_ZONE_ID")
+	secondaryZoneID := os.Getenv("ZENTHCLOUD_SECONDARY_ZONE_ID")
 	if secondaryZoneID == "" {
 		// Use dedicated secondary zone created specifically for presigned DNSSEC testing
 		// Zone: secondary.terraform.cfapi.net (type: secondary)
@@ -213,15 +213,15 @@ func TestAccCloudflareZoneDNSSEC_Presigned(t *testing.T) {
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zone_dnssec.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zone_dnssec.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZoneDNSSECDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZoneDNSSECDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareZoneDNSSECPresignedConfig(secondaryZoneID, rnd),
+				Config: testAccZenthcloudZoneDNSSECPresignedConfig(secondaryZoneID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(secondaryZoneID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("status"), knownvalue.StringRegexp(regexp.MustCompile("active|pending"))),
@@ -246,9 +246,9 @@ func TestAccCloudflareZoneDNSSEC_Presigned(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareZoneDNSSEC_PresignedWithNsec3(t *testing.T) {
+func TestAccZenthcloudZoneDNSSEC_PresignedWithNsec3(t *testing.T) {
 	// Presigned DNSSEC with NSEC3 requires a secondary zone and higher-tier plan
-	secondaryZoneID := os.Getenv("CLOUDFLARE_SECONDARY_ZONE_ID")
+	secondaryZoneID := os.Getenv("ZENTHCLOUD_SECONDARY_ZONE_ID")
 	if secondaryZoneID == "" {
 		// Use dedicated secondary zone created specifically for presigned DNSSEC testing
 		// Zone: secondary.terraform.cfapi.net (type: secondary)
@@ -263,25 +263,25 @@ func TestAccCloudflareZoneDNSSEC_PresignedWithNsec3(t *testing.T) {
 		// No CheckDestroy - test expects error, no resource created
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCloudflareZoneDNSSECPresignedWithNsec3Config(secondaryZoneID, rnd),
+				Config:      testAccZenthcloudZoneDNSSECPresignedWithNsec3Config(secondaryZoneID, rnd),
 				ExpectError: regexp.MustCompile("Invalid zone plan for action|failed to make http request"),
 			},
 		},
 	})
 }
 
-func TestAccCloudflareZoneDNSSEC_UseNsec3(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudZoneDNSSEC_UseNsec3(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zone_dnssec.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zone_dnssec.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZoneDNSSECDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZoneDNSSECDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareZoneDNSSECUseNsec3Config(zoneID, rnd),
+				Config: testAccZenthcloudZoneDNSSECUseNsec3Config(zoneID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("status"), knownvalue.StringRegexp(regexp.MustCompile("active|pending"))),
@@ -306,18 +306,18 @@ func TestAccCloudflareZoneDNSSEC_UseNsec3(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareZoneDNSSEC_Comprehensive(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudZoneDNSSEC_Comprehensive(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zone_dnssec.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zone_dnssec.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZoneDNSSECDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZoneDNSSECDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareZoneDNSSECComprehensiveConfig(zoneID, rnd),
+				Config: testAccZenthcloudZoneDNSSECComprehensiveConfig(zoneID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("status"), knownvalue.StringRegexp(regexp.MustCompile("active|pending"))),
@@ -343,19 +343,19 @@ func TestAccCloudflareZoneDNSSEC_Comprehensive(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareZoneDNSSEC_Update(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudZoneDNSSEC_Update(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zone_dnssec.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zone_dnssec.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZoneDNSSECDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZoneDNSSECDestroy,
 		Steps: []resource.TestStep{
 			// Start with basic configuration (status active, no optional attributes)
 			{
-				Config: testAccCloudflareZoneDNSSECBasicConfig(zoneID, rnd),
+				Config: testAccZenthcloudZoneDNSSECBasicConfig(zoneID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("status"), knownvalue.StringRegexp(regexp.MustCompile("active|pending"))),
@@ -367,7 +367,7 @@ func TestAccCloudflareZoneDNSSEC_Update(t *testing.T) {
 			},
 			// Update to multi-signer configuration (safer transition)
 			{
-				Config: testAccCloudflareZoneDNSSECMultiSignerConfig(zoneID, rnd),
+				Config: testAccZenthcloudZoneDNSSECMultiSignerConfig(zoneID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("status"), knownvalue.StringRegexp(regexp.MustCompile("active|pending"))),
@@ -379,7 +379,7 @@ func TestAccCloudflareZoneDNSSEC_Update(t *testing.T) {
 			},
 			// Update back to basic configuration (status active, optional attributes removed)
 			{
-				Config: testAccCloudflareZoneDNSSECBasicConfig(zoneID, rnd),
+				Config: testAccZenthcloudZoneDNSSECBasicConfig(zoneID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("status"), knownvalue.StringRegexp(regexp.MustCompile("active|pending"))),
@@ -404,17 +404,17 @@ func TestAccCloudflareZoneDNSSEC_Update(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareZoneDNSSECDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudZoneDNSSECDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_zone_dnssec" {
+		if rs.Type != "zenthcloud_zone_dnssec" {
 			continue
 		}
 
 		zoneID := rs.Primary.Attributes[consts.ZoneIDSchemaKey]
 		dnssec, err := client.DNS.DNSSEC.Get(context.Background(), dns.DNSSECGetParams{
-			ZoneID: cloudflare.F(zoneID),
+			ZoneID: zenthcloud.F(zoneID),
 		})
 		if err != nil {
 			// DNSSEC API can return errors when checking status, which is acceptable for destroy check
@@ -430,47 +430,47 @@ func testAccCheckCloudflareZoneDNSSECDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCloudflareZoneDNSSECBasicConfig(zoneID string, name string) string {
+func testAccZenthcloudZoneDNSSECBasicConfig(zoneID string, name string) string {
 	return acctest.LoadTestCase("zonednssecresourcebasic.tf", name, zoneID)
 }
 
-func testAccCloudflareZoneDNSSECDisabledConfig(zoneID string, name string) string {
+func testAccZenthcloudZoneDNSSECDisabledConfig(zoneID string, name string) string {
 	return acctest.LoadTestCase("zonednssecresourcedisabled.tf", name, zoneID)
 }
 
-func testAccCloudflareZoneDNSSECMultiSignerConfig(zoneID string, name string) string {
+func testAccZenthcloudZoneDNSSECMultiSignerConfig(zoneID string, name string) string {
 	return acctest.LoadTestCase("zonednssecresourcemultisigner.tf", name, zoneID)
 }
 
-func testAccCloudflareZoneDNSSECPresignedConfig(zoneID string, name string) string {
+func testAccZenthcloudZoneDNSSECPresignedConfig(zoneID string, name string) string {
 	return acctest.LoadTestCase("zonednssecresourcepresigned.tf", name, zoneID)
 }
 
-func testAccCloudflareZoneDNSSECUseNsec3Config(zoneID string, name string) string {
+func testAccZenthcloudZoneDNSSECUseNsec3Config(zoneID string, name string) string {
 	return acctest.LoadTestCase("zonednssecresourcensec3.tf", name, zoneID)
 }
 
-func testAccCloudflareZoneDNSSECComprehensiveConfig(zoneID string, name string) string {
+func testAccZenthcloudZoneDNSSECComprehensiveConfig(zoneID string, name string) string {
 	return acctest.LoadTestCase("zonednssecresourcecomprehensive.tf", name, zoneID)
 }
 
-func testAccCloudflareZoneDNSSECPresignedWithNsec3Config(zoneID string, name string) string {
+func testAccZenthcloudZoneDNSSECPresignedWithNsec3Config(zoneID string, name string) string {
 	return acctest.LoadTestCase("zonednssecresourcepresignednsec3.tf", name, zoneID)
 }
 
 func TestAccUpgradeZoneDnssec_FromPublishedV5(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 
-	config := testAccCloudflareZoneDNSSECResourceConfig(zoneID, rnd)
+	config := testAccZenthcloudZoneDNSSECResourceConfig(zoneID, rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

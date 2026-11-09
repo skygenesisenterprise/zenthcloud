@@ -4,7 +4,7 @@
 # Test 1: CNAME with proxied=true and flatten_cname setting
 # This reproduces the issue reported by ricohomewood where settings block
 # causes drift when proxied=true
-resource "cloudflare_dns_record" "%[1]s_proxied_cname_with_settings" {
+resource "zenthcloud_dns_record" "%[1]s_proxied_cname_with_settings" {
   zone_id = "%[2]s"
   name    = "api-gateway.%[1]s.%[3]s"  # Using FQDN as recommended
   content = "target.%[3]s"
@@ -21,7 +21,7 @@ resource "cloudflare_dns_record" "%[1]s_proxied_cname_with_settings" {
 
 # Test 2: CNAME with mixed case content
 # This reproduces the case sensitivity issue reported by RafPe
-resource "cloudflare_dns_record" "%[1]s_cname_mixed_case" {
+resource "zenthcloud_dns_record" "%[1]s_cname_mixed_case" {
   zone_id = "%[2]s"
   name    = "selector2._domainkey.%[1]s.%[3]s"
   content = "selector2-test._domainkey.MixedCase.onmicrosoft.com"  # Mixed case
@@ -32,7 +32,7 @@ resource "cloudflare_dns_record" "%[1]s_cname_mixed_case" {
 
 # Test 3: Record with partial settings
 # Based on perlboy's report
-resource "cloudflare_dns_record" "%[1]s_cname_partial_settings" {
+resource "zenthcloud_dns_record" "%[1]s_cname_partial_settings" {
   zone_id = "%[2]s"
   name    = "_abcd1234.%[1]s.%[3]s"
   content = "example.%[3]s"
@@ -48,7 +48,7 @@ resource "cloudflare_dns_record" "%[1]s_cname_partial_settings" {
 
 # Test 4: A record with empty tags
 # Testing if empty tags array causes drift
-resource "cloudflare_dns_record" "%[1]s_a_record_empty_tags" {
+resource "zenthcloud_dns_record" "%[1]s_a_record_empty_tags" {
   zone_id = "%[2]s"
   name    = "test-empty-tags.%[1]s.%[3]s"
   content = "192.168.0.30"
@@ -60,7 +60,7 @@ resource "cloudflare_dns_record" "%[1]s_a_record_empty_tags" {
 
 # Test 5: Record without any optional fields
 # Testing if computed fields cause drift when not specified
-resource "cloudflare_dns_record" "%[1]s_minimal_a_record" {
+resource "zenthcloud_dns_record" "%[1]s_minimal_a_record" {
   zone_id = "%[2]s"
   name    = "minimal.%[1]s.%[3]s"
   content = "192.168.0.31"

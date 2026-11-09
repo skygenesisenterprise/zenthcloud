@@ -7,12 +7,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go"
-	cfv3 "github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/api_gateway"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go"
+	cfv3 "github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/api_gateway"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -26,19 +26,19 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_api_shield_operation", &resource.Sweeper{
-		Name: "cloudflare_api_shield_operation",
-		F:    testSweepCloudflareAPIShieldOperations,
+	resource.AddTestSweepers("zenthcloud_api_shield_operation", &resource.Sweeper{
+		Name: "zenthcloud_api_shield_operation",
+		F:    testSweepZenthcloudAPIShieldOperations,
 	})
 }
 
-func testSweepCloudflareAPIShieldOperations(r string) error {
+func testSweepZenthcloudAPIShieldOperations(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping API Shield operations sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping API Shield operations sweep: ZENTHCLOUD_ZONE_ID not set")
 		return nil
 	}
 
@@ -75,11 +75,11 @@ func testSweepCloudflareAPIShieldOperations(r string) error {
 	return nil
 }
 
-func TestAccCloudflareAPIShieldOperation_Create(t *testing.T) {
+func TestAccZenthcloudAPIShieldOperation_Create(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceID := "cloudflare_api_shield_operation." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	resourceID := "zenthcloud_api_shield_operation." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -91,7 +91,7 @@ func TestAccCloudflareAPIShieldOperation_Create(t *testing.T) {
 		CheckDestroy:             testAccCheckAPIShieldOperationDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAPIShieldOperation(rnd, zoneID, cloudflare.APIShieldBasicOperation{Method: "GET", Host: domain, Endpoint: "/example/path"}),
+				Config: testAccZenthcloudAPIShieldOperation(rnd, zoneID, zenthcloud.APIShieldBasicOperation{Method: "GET", Host: domain, Endpoint: "/example/path"}),
 				ConfigStateChecks: []statecheck.StateCheck{
 					// Required attributes
 					statecheck.ExpectKnownValue(resourceID, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
@@ -114,11 +114,11 @@ func TestAccCloudflareAPIShieldOperation_Create(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareAPIShieldOperation_RequiresReplace(t *testing.T) {
+func TestAccZenthcloudAPIShieldOperation_RequiresReplace(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceID := "cloudflare_api_shield_operation." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	resourceID := "zenthcloud_api_shield_operation." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	var operationID1, operationID2 string
 
@@ -132,7 +132,7 @@ func TestAccCloudflareAPIShieldOperation_RequiresReplace(t *testing.T) {
 		CheckDestroy:             testAccCheckAPIShieldOperationDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAPIShieldOperation(rnd, zoneID, cloudflare.APIShieldBasicOperation{Method: "GET", Host: domain, Endpoint: "/example/path"}),
+				Config: testAccZenthcloudAPIShieldOperation(rnd, zoneID, zenthcloud.APIShieldBasicOperation{Method: "GET", Host: domain, Endpoint: "/example/path"}),
 				ConfigStateChecks: []statecheck.StateCheck{
 					// Required attributes
 					statecheck.ExpectKnownValue(resourceID, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
@@ -149,7 +149,7 @@ func TestAccCloudflareAPIShieldOperation_RequiresReplace(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCloudflareAPIShieldOperation(rnd, zoneID, cloudflare.APIShieldBasicOperation{Method: "POST", Host: domain, Endpoint: "/example/path"}),
+				Config: testAccZenthcloudAPIShieldOperation(rnd, zoneID, zenthcloud.APIShieldBasicOperation{Method: "POST", Host: domain, Endpoint: "/example/path"}),
 				ConfigStateChecks: []statecheck.StateCheck{
 					// Required attributes
 					statecheck.ExpectKnownValue(resourceID, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
@@ -176,17 +176,17 @@ func TestAccCloudflareAPIShieldOperation_RequiresReplace(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareAPIShieldOperation_AllMethods(t *testing.T) {
+func TestAccZenthcloudAPIShieldOperation_AllMethods(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	// Test all HTTP methods supported by the API
 	methods := []string{"GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS", "CONNECT", "TRACE"}
 
 	for _, method := range methods {
 		t.Run(method, func(t *testing.T) {
-			resourceID := "cloudflare_api_shield_operation." + rnd
+			resourceID := "zenthcloud_api_shield_operation." + rnd
 
 			resource.Test(t, resource.TestCase{
 				PreCheck: func() {
@@ -198,7 +198,7 @@ func TestAccCloudflareAPIShieldOperation_AllMethods(t *testing.T) {
 				CheckDestroy:             testAccCheckAPIShieldOperationDelete,
 				Steps: []resource.TestStep{
 					{
-						Config: testAccCloudflareAPIShieldOperation(rnd, zoneID, cloudflare.APIShieldBasicOperation{
+						Config: testAccZenthcloudAPIShieldOperation(rnd, zoneID, zenthcloud.APIShieldBasicOperation{
 							Method:   method,
 							Host:     domain,
 							Endpoint: fmt.Sprintf("/api/%s/test", method),
@@ -227,10 +227,10 @@ func TestAccCloudflareAPIShieldOperation_AllMethods(t *testing.T) {
 	}
 }
 
-func TestAccCloudflareAPIShieldOperation_DifferentEndpoints(t *testing.T) {
+func TestAccZenthcloudAPIShieldOperation_DifferentEndpoints(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	testCases := []struct {
 		name     string
@@ -261,7 +261,7 @@ func TestAccCloudflareAPIShieldOperation_DifferentEndpoints(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			resourceName := rnd + "_" + tc.name
-			resourceID := "cloudflare_api_shield_operation." + resourceName
+			resourceID := "zenthcloud_api_shield_operation." + resourceName
 
 			resource.Test(t, resource.TestCase{
 				PreCheck: func() {
@@ -273,7 +273,7 @@ func TestAccCloudflareAPIShieldOperation_DifferentEndpoints(t *testing.T) {
 				CheckDestroy:             testAccCheckAPIShieldOperationDelete,
 				Steps: []resource.TestStep{
 					{
-						Config: testAccCloudflareAPIShieldOperation(resourceName, zoneID, cloudflare.APIShieldBasicOperation{
+						Config: testAccZenthcloudAPIShieldOperation(resourceName, zoneID, zenthcloud.APIShieldBasicOperation{
 							Method:   "GET",
 							Host:     domain,
 							Endpoint: tc.endpoint,
@@ -283,7 +283,7 @@ func TestAccCloudflareAPIShieldOperation_DifferentEndpoints(t *testing.T) {
 							statecheck.ExpectKnownValue(resourceID, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 							statecheck.ExpectKnownValue(resourceID, tfjsonpath.New("method"), knownvalue.StringExact("GET")),
 							statecheck.ExpectKnownValue(resourceID, tfjsonpath.New("host"), knownvalue.StringExact(domain)),
-							// Note: endpoint may be normalized by Cloudflare, so we just check it's not null
+							// Note: endpoint may be normalized by Zenthcloud, so we just check it's not null
 							statecheck.ExpectKnownValue(resourceID, tfjsonpath.New("endpoint"), knownvalue.NotNull()),
 							// Computed attributes
 							statecheck.ExpectKnownValue(resourceID, tfjsonpath.New("id"), knownvalue.NotNull()),
@@ -307,7 +307,7 @@ func testAccCheckAPIShieldOperationDelete(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_api_shield_operation" {
+		if rs.Type != "zenthcloud_api_shield_operation" {
 			continue
 		}
 
@@ -361,7 +361,7 @@ func testCheckAPIShieldOperationRecreated(operationID1, operationID2 *string) re
 	}
 }
 
-// TestAccCloudflareAPIShieldOperation_WithSchemasNoSpuriousUpdate reproduces
+// TestAccZenthcloudAPIShieldOperation_WithSchemasNoSpuriousUpdate reproduces
 // APIX-1815 / GH-7394: codegen commit 45a7e379 added GET query parameters
 // feature and with_schemas as resource schema attributes. This caused a
 // model-schema mismatch that broke fresh creates with "Value Conversion Error:
@@ -369,11 +369,11 @@ func testCheckAPIShieldOperationRecreated(operationID1, operationID2 *string) re
 //
 // The fix removes both attributes from the model and schema (v501), and
 // provides a StateUpgrader (500→501) to strip them from any v5.26.0 state.
-func TestAccCloudflareAPIShieldOperation_WithSchemasNoSpuriousUpdate(t *testing.T) {
+func TestAccZenthcloudAPIShieldOperation_WithSchemasNoSpuriousUpdate(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceID := "cloudflare_api_shield_operation." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	resourceID := "zenthcloud_api_shield_operation." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -385,7 +385,7 @@ func TestAccCloudflareAPIShieldOperation_WithSchemasNoSpuriousUpdate(t *testing.
 		CheckDestroy:             testAccCheckAPIShieldOperationDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAPIShieldOperation(rnd, zoneID, cloudflare.APIShieldBasicOperation{
+				Config: testAccZenthcloudAPIShieldOperation(rnd, zoneID, zenthcloud.APIShieldBasicOperation{
 					Method:   "GET",
 					Host:     domain,
 					Endpoint: "/apix1815/test",
@@ -403,13 +403,13 @@ func TestAccCloudflareAPIShieldOperation_WithSchemasNoSpuriousUpdate(t *testing.
 				ImportStateIdPrefix: fmt.Sprintf("%s/", zoneID),
 			},
 			{
-				Config:   testAccCloudflareAPIShieldOperation(rnd, zoneID, cloudflare.APIShieldBasicOperation{Method: "GET", Host: domain, Endpoint: "/apix1815/test"}),
+				Config:   testAccZenthcloudAPIShieldOperation(rnd, zoneID, zenthcloud.APIShieldBasicOperation{Method: "GET", Host: domain, Endpoint: "/apix1815/test"}),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func testAccCloudflareAPIShieldOperation(resourceName, zone string, op cloudflare.APIShieldBasicOperation) string {
+func testAccZenthcloudAPIShieldOperation(resourceName, zone string, op zenthcloud.APIShieldBasicOperation) string {
 	return acctest.LoadTestCase("apishieldoperation.tf", resourceName, zone, op.Method, op.Host, op.Endpoint)
 }

@@ -24,7 +24,7 @@ export const tools: readonly Tool[] = [
   {
     name: "customCsrs_create",
     title: "Create Custom CSR",
-    description: "Generate a new custom Certificate Signing Request (CSR) for an account or zone. Cloudflare generates and securely stores the private key associated with the CSR.\n\nPOST /{account_or_zone}/{account_or_zone_id}/custom_csrs",
+    description: "Generate a new custom Certificate Signing Request (CSR) for an account or zone. Zenthcloud generates and securely stores the private key associated with the CSR.\n\nPOST /{account_or_zone}/{account_or_zone_id}/custom_csrs",
     inputSchema: {
       type: "object",
       properties: {

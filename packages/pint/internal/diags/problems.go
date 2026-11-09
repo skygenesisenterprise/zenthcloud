@@ -8,7 +8,7 @@ import (
 
 	promParser "github.com/prometheus/prometheus/promql/parser"
 
-	"github.com/cloudflare/pint/internal/output"
+	"github.com/zenthcloud/pint/internal/output"
 )
 
 func countDigits(n int) (c int) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Cloudflare, Inc.
+// Copyright (c) 2023 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import { ok, rejects, strictEqual, throws } from 'node:assert';
@@ -506,7 +506,7 @@ export const randomFillSyncDataView = {
   },
 };
 
-// Ref: https://github.com/cloudflare/workerd/issues/2716
+// Ref: https://github.com/skygenesisenterprise/zenthcloud
 export const getRandomValuesIllegalInvocation = {
   async test() {
     const crypto = await import('node:crypto');

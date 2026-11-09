@@ -16,7 +16,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zeroTrust_gateway_create",
     title: "Create Zero Trust account",
-    description: "Create a Zero Trust account for an existing Cloudflare account.\n\nPOST /accounts/{account_id}/gateway",
+    description: "Create a Zero Trust account for an existing Zenthcloud account.\n\nPOST /accounts/{account_id}/gateway",
     inputSchema: {
       type: "object",
       properties: {
@@ -24,7 +24,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Specify the Cloudflare account identifier.",
+              "description": "Specify the Zenthcloud account identifier.",
               "type": "string"
             }
           },
@@ -99,7 +99,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Specify the Cloudflare account identifier.",
+              "description": "Specify the Zenthcloud account identifier.",
               "type": "string"
             }
           },

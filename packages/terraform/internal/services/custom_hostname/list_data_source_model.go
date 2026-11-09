@@ -5,9 +5,9 @@ package custom_hostname
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/custom_hostnames"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/custom_hostnames"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -35,48 +35,48 @@ type CustomHostnamesDataSourceModel struct {
 
 func (m *CustomHostnamesDataSourceModel) toListParams(_ context.Context) (params custom_hostnames.CustomHostnameListParams, diags diag.Diagnostics) {
 	params = custom_hostnames.CustomHostnameListParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	if !m.ID.IsNull() {
-		params.ID = cloudflare.F(m.ID.ValueString())
+		params.ID = zenthcloud.F(m.ID.ValueString())
 	}
 	if !m.CertificateAuthority.IsNull() {
-		params.CertificateAuthority = cloudflare.F(custom_hostnames.CustomHostnameListParamsCertificateAuthority(m.CertificateAuthority.ValueString()))
+		params.CertificateAuthority = zenthcloud.F(custom_hostnames.CustomHostnameListParamsCertificateAuthority(m.CertificateAuthority.ValueString()))
 	}
 	if !m.CustomOriginServer.IsNull() {
-		params.CustomOriginServer = cloudflare.F(m.CustomOriginServer.ValueString())
+		params.CustomOriginServer = zenthcloud.F(m.CustomOriginServer.ValueString())
 	}
 	if !m.Direction.IsNull() {
-		params.Direction = cloudflare.F(custom_hostnames.CustomHostnameListParamsDirection(m.Direction.ValueString()))
+		params.Direction = zenthcloud.F(custom_hostnames.CustomHostnameListParamsDirection(m.Direction.ValueString()))
 	}
 	if m.Hostname != nil {
 		paramsHostname := custom_hostnames.CustomHostnameListParamsHostname{}
 		if !m.Hostname.Contain.IsNull() {
-			paramsHostname.Contain = cloudflare.F(m.Hostname.Contain.ValueString())
+			paramsHostname.Contain = zenthcloud.F(m.Hostname.Contain.ValueString())
 		}
 		if !m.Hostname.Exact.IsNull() {
-			paramsHostname.Exact = cloudflare.F(m.Hostname.Exact.ValueString())
+			paramsHostname.Exact = zenthcloud.F(m.Hostname.Exact.ValueString())
 		}
 		if !m.Hostname.StartsWith.IsNull() {
-			paramsHostname.StartsWith = cloudflare.F(m.Hostname.StartsWith.ValueString())
+			paramsHostname.StartsWith = zenthcloud.F(m.Hostname.StartsWith.ValueString())
 		}
-		params.Hostname = cloudflare.F(paramsHostname)
+		params.Hostname = zenthcloud.F(paramsHostname)
 	}
 	if !m.HostnameStatus.IsNull() {
-		params.HostnameStatus = cloudflare.F(custom_hostnames.CustomHostnameListParamsHostnameStatus(m.HostnameStatus.ValueString()))
+		params.HostnameStatus = zenthcloud.F(custom_hostnames.CustomHostnameListParamsHostnameStatus(m.HostnameStatus.ValueString()))
 	}
 	if !m.Order.IsNull() {
-		params.Order = cloudflare.F(custom_hostnames.CustomHostnameListParamsOrder(m.Order.ValueString()))
+		params.Order = zenthcloud.F(custom_hostnames.CustomHostnameListParamsOrder(m.Order.ValueString()))
 	}
 	if !m.SSL.IsNull() {
-		params.SSL = cloudflare.F(custom_hostnames.CustomHostnameListParamsSSL(m.SSL.ValueInt64()))
+		params.SSL = zenthcloud.F(custom_hostnames.CustomHostnameListParamsSSL(m.SSL.ValueInt64()))
 	}
 	if !m.SSLStatus.IsNull() {
-		params.SSLStatus = cloudflare.F(custom_hostnames.CustomHostnameListParamsSSLStatus(m.SSLStatus.ValueString()))
+		params.SSLStatus = zenthcloud.F(custom_hostnames.CustomHostnameListParamsSSLStatus(m.SSLStatus.ValueString()))
 	}
 	if !m.Wildcard.IsNull() {
-		params.Wildcard = cloudflare.F(m.Wildcard.ValueBool())
+		params.Wildcard = zenthcloud.F(m.Wildcard.ValueBool())
 	}
 
 	return

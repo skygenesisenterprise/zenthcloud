@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -20,13 +20,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_logpull_retention", &resource.Sweeper{
-		Name: "cloudflare_logpull_retention",
-		F:    testSweepCloudflareLogpullRetention,
+	resource.AddTestSweepers("zenthcloud_logpull_retention", &resource.Sweeper{
+		Name: "zenthcloud_logpull_retention",
+		F:    testSweepZenthcloudLogpullRetention,
 	})
 }
 
-func testSweepCloudflareLogpullRetention(r string) error {
+func testSweepZenthcloudLogpullRetention(r string) error {
 	ctx := context.Background()
 	// Logpull Retention is a zone-level configuration setting (enabled/disabled).
 	// It's a singleton setting per zone, not something that accumulates.
@@ -36,16 +36,16 @@ func testSweepCloudflareLogpullRetention(r string) error {
 }
 
 func TestAccLogpullRetention_Basic(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Logpull
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Logpull
 	// service is throwing authentication errors despite it being marked as
 	// available.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_logpull_retention." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_logpull_retention." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -107,7 +107,7 @@ func testLogpullRetentionSetConfig(id, zoneID string, enabled bool) string {
 
 func TestAccUpgradeLogpullRetention_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	config := testLogpullRetentionSetConfig(rnd, zoneID, true)
 
@@ -116,8 +116,8 @@ func TestAccUpgradeLogpullRetention_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

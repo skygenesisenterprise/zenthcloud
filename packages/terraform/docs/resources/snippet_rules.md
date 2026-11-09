@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_snippet_rules Resource - Cloudflare"
+page_title: "zenthcloud_snippet_rules Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Snippets ReadSnippets Write
 ---
 
-# cloudflare_snippet_rules (Resource)
+# zenthcloud_snippet_rules (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_snippet_rules" "example_snippet_rules" {
+resource "zenthcloud_snippet_rules" "example_snippet_rules" {
   zone_id = "9f1839b6152d298aca64c4e906b6d074"
   rules = [{
     expression = "ip.src eq 1.1.1.1"
@@ -62,7 +62,7 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_snippet_rules.example '<zone_id>'
+$ terraform import zenthcloud_snippet_rules.example '<zone_id>'
 ```
 
 

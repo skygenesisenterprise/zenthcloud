@@ -7,10 +7,10 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -83,7 +83,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"items": schema.SetNestedAttribute{
-				Description:   "The items in the list. If set, this overwrites all items in the list. Do not use with `cloudflare_list_item`.",
+				Description:   "The items in the list. If set, this overwrites all items in the list. Do not use with `zenthcloud_list_item`.",
 				Optional:      true,
 				CustomType:    customfield.NewNestedObjectSetType[ListItemModel](ctx),
 				PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()},
@@ -227,11 +227,11 @@ type ListValidator struct {
 }
 
 func (v ListValidator) Description(context.Context) string {
-	return "validates a cloudflare_list_item"
+	return "validates a zenthcloud_list_item"
 }
 
 func (v ListValidator) MarkdownDescription(context.Context) string {
-	return "validates a cloudflare_list_item"
+	return "validates a zenthcloud_list_item"
 }
 func (v ListValidator) ValidateResource(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
 	var data *ListModel

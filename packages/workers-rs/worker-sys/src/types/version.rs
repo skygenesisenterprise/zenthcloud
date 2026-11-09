@@ -1,6 +1,6 @@
 use wasm_bindgen::prelude::*;
 
-/// This type was created to support https://developers.cloudflare.com/workers/runtime-apis/bindings/version-metadata/
+/// This type was created to support https://github.com/skygenesisenterprise/zenthcloud
 #[wasm_bindgen]
 extern "C" {
     #[wasm_bindgen(extends=js_sys::Object)]

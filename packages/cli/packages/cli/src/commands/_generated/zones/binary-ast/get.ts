@@ -15,7 +15,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 zones binary-ast get\n\nBinary AST is a new binary encoding for JavaScript that enables faster parsing of scripts. When enabled, Cloudflare will serve a binary-encoded version of JavaScript to compatible browsers."
+			"$0 zones binary-ast get\n\nBinary AST is a new binary encoding for JavaScript that enables faster parsing of scripts. When enabled, Zenthcloud will serve a binary-encoded version of JavaScript to compatible browsers."
 		)
 		.option("dry-run", {
 			type: "boolean",
@@ -44,7 +44,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zones binary-ast get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/settings/binary_ast`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/settings/binary_ast`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 						},

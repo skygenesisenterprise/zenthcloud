@@ -5,7 +5,7 @@ package zero_trust_device_posture_integration
 import (
 	"context"
 
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_device_posture_integration/migration/v500"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_device_posture_integration/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -24,7 +24,7 @@ var _ resource.ResourceWithMoveState = (*ZeroTrustDevicePostureIntegrationResour
 // MoveState registers state movers for resource renames.
 // This enables Terraform 1.8+ `moved` blocks to automatically trigger state migration.
 func (r *ZeroTrustDevicePostureIntegrationResource) MoveState(ctx context.Context) []resource.StateMover {
-	sourceSchema := v500.SourceCloudflareDevicePostureIntegrationSchema()
+	sourceSchema := v500.SourceZenthcloudDevicePostureIntegrationSchema()
 
 	return []resource.StateMover{
 		{

@@ -6,11 +6,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/custom_hostnames"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/custom_hostnames"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -25,24 +25,24 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_custom_hostname", &resource.Sweeper{
-		Name: "cloudflare_custom_hostname",
-		F:    testSweepCloudflareCustomHostnames,
+	resource.AddTestSweepers("zenthcloud_custom_hostname", &resource.Sweeper{
+		Name: "zenthcloud_custom_hostname",
+		F:    testSweepZenthcloudCustomHostnames,
 	})
 }
 
-func testSweepCloudflareCustomHostnames(r string) error {
+func testSweepZenthcloudCustomHostnames(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping custom hostnames sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping custom hostnames sweep: ZENTHCLOUD_ZONE_ID not set")
 		return nil
 	}
 
 	hostnames, err := client.CustomHostnames.List(ctx, custom_hostnames.CustomHostnameListParams{
-		ZoneID: cloudflare.F(zoneID),
+		ZoneID: zenthcloud.F(zoneID),
 	})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch custom hostnames: %s", err))
@@ -56,7 +56,7 @@ func testSweepCloudflareCustomHostnames(r string) error {
 
 		tflog.Info(ctx, fmt.Sprintf("Deleting custom hostname: %s", hostname.ID))
 		_, err := client.CustomHostnames.Delete(ctx, hostname.ID, custom_hostnames.CustomHostnameDeleteParams{
-			ZoneID: cloudflare.F(zoneID),
+			ZoneID: zenthcloud.F(zoneID),
 		})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete custom hostname %s: %s", hostname.ID, err))
@@ -66,17 +66,17 @@ func testSweepCloudflareCustomHostnames(r string) error {
 	return nil
 }
 
-func testAccCheckCloudflareCustomHostnameDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudCustomHostnameDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_custom_hostname" {
+		if rs.Type != "zenthcloud_custom_hostname" {
 			continue
 		}
 
 		zoneID := rs.Primary.Attributes[consts.ZoneIDSchemaKey]
 		_, err := client.CustomHostnames.Get(context.Background(), rs.Primary.ID, custom_hostnames.CustomHostnameGetParams{
-			ZoneID: cloudflare.F(zoneID),
+			ZoneID: zenthcloud.F(zoneID),
 		})
 		if err != nil {
 			continue
@@ -92,9 +92,9 @@ func testAccCheckCloudflareCustomHostnameDestroy(s *terraform.State) error {
 // This validates that the resource can be created, read, imported, and deleted.
 func TestAccCustomHostname_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_custom_hostname." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	name := "zenthcloud_custom_hostname." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -103,7 +103,7 @@ func TestAccCustomHostname_Basic(t *testing.T) {
 			acctest.TestAccPreCheck_Domain(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareCustomHostnameDestroy,
+		CheckDestroy:             testAccCheckZenthcloudCustomHostnameDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCustomHostnameBasicConfig(zoneID, domain, rnd),
@@ -143,9 +143,9 @@ func TestAccCustomHostname_Basic(t *testing.T) {
 // This validates that optional nested attributes are handled correctly and can be updated.
 func TestAccCustomHostname_WithSSLSettings(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_custom_hostname." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	name := "zenthcloud_custom_hostname." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -154,7 +154,7 @@ func TestAccCustomHostname_WithSSLSettings(t *testing.T) {
 			acctest.TestAccPreCheck_Domain(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareCustomHostnameDestroy,
+		CheckDestroy:             testAccCheckZenthcloudCustomHostnameDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCustomHostnameWithSSLSettingsConfig(zoneID, domain, rnd),
@@ -185,9 +185,9 @@ func TestAccCustomHostname_WithSSLSettings(t *testing.T) {
 // a request with no ssl object (ssl: null).
 func TestAccCustomHostname_WithoutSSL(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_custom_hostname." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	name := "zenthcloud_custom_hostname." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -196,7 +196,7 @@ func TestAccCustomHostname_WithoutSSL(t *testing.T) {
 			acctest.TestAccPreCheck_Domain(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareCustomHostnameDestroy,
+		CheckDestroy:             testAccCheckZenthcloudCustomHostnameDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCustomHostnameWithoutSSLConfig(zoneID, domain, rnd),
@@ -229,7 +229,7 @@ func TestAccCustomHostname_WithoutSSL(t *testing.T) {
 
 func testAccCustomHostnameBasicConfig(zoneID, domain, rnd string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_custom_hostname" "%[3]s" {
+resource "zenthcloud_custom_hostname" "%[3]s" {
   zone_id  = "%[1]s"
   hostname = "%[3]s.%[2]s"
   ssl = {
@@ -252,7 +252,7 @@ resource "cloudflare_custom_hostname" "%[3]s" {
 
 func testAccCustomHostnameWithSSLSettingsConfig(zoneID, domain, rnd string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_custom_hostname" "%[3]s" {
+resource "zenthcloud_custom_hostname" "%[3]s" {
   zone_id  = "%[1]s"
   hostname = "%[3]s.%[2]s"
   ssl = {
@@ -278,7 +278,7 @@ resource "cloudflare_custom_hostname" "%[3]s" {
 
 func testAccCustomHostnameWithSSLSettingsUpdatedConfig(zoneID, domain, rnd string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_custom_hostname" "%[3]s" {
+resource "zenthcloud_custom_hostname" "%[3]s" {
   zone_id  = "%[1]s"
   hostname = "%[3]s.%[2]s"
   ssl = {
@@ -308,8 +308,8 @@ func testAccCustomHostnameWithoutSSLConfig(zoneID, domain, rnd string) string {
 
 func TestAccUpgradeCustomHostname_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	config := testAccCustomHostnameBasicConfig(zoneID, domain, rnd)
 
@@ -322,8 +322,8 @@ func TestAccUpgradeCustomHostname_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

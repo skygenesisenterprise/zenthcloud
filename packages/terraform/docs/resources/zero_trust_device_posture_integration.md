@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_device_posture_integration Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_device_posture_integration Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust Write
 ---
 
-# cloudflare_zero_trust_device_posture_integration (Resource)
+# zenthcloud_zero_trust_device_posture_integration (Resource)
 
 Accepted Permissions
 
@@ -15,7 +15,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_device_posture_integration" "example_zero_trust_device_posture_integration" {
+resource "zenthcloud_zero_trust_device_posture_integration" "example_zero_trust_device_posture_integration" {
   account_id = "699d98642c564d2e855e9661899b7252"
   config = {
     api_url = "https://as123.awmdm.com/API"
@@ -64,7 +64,7 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_device_posture_integration.example '<account_id>/<integration_id>'
+$ terraform import zenthcloud_zero_trust_device_posture_integration.example '<account_id>/<integration_id>'
 ```
 
 

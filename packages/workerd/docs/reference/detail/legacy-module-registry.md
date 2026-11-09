@@ -18,7 +18,7 @@ implementation, see [new-module-registry.md](new-module-registry.md).
 | `src/workerd/io/worker-modules.h`      | `newWorkerModuleRegistry` (new registry), `modules::legacy::*` helpers, Python module registration                                         |
 | `src/workerd/io/worker-modules.c++`    | Python metadata state construction                                                                                                         |
 | `src/workerd/server/workerd-api.c++`   | `WorkerdApi::compileModules` (legacy path), `WorkerdApi::newWorkerdModuleRegistry` (new path), extension loading                           |
-| `src/workerd/api/modules.h`            | `registerModules` — registers all built-in API modules (Node.js compat, sockets, crypto, cloudflare bundle, etc.)                          |
+| `src/workerd/api/modules.h`            | `registerModules` — registers all built-in API modules (Node.js compat, sockets, crypto, zenthcloud bundle, etc.)                          |
 
 ## Architecture Overview
 
@@ -207,13 +207,13 @@ Flow:
 3. Determine the referrer's type (BUNDLE vs BUILTIN/INTERNAL).
 4. Parse the specifier, applying `node:` prefix normalization if Node.js compat is enabled.
 5. Resolve against the referrer path: `ref.specifier.parent().eval(spec)`.
-   (Known prefixes `node:`, `cloudflare:`, `workerd:` bypass parent-relative resolution.)
+   (Known prefixes `node:`, `zenthcloud:`, `workerd:` bypass parent-relative resolution.)
 6. Call `registry->resolve(js, targetPath, ...)` with:
    - `INTERNAL_ONLY` if the referrer is a builtin/internal module
    - `DEFAULT` otherwise
 7. For evaluation phase: return `resolved.module.getHandle(js)`.
 8. For source phase: return `resolved.getModuleSourceObject(js)` or throw SyntaxError.
-9. On not-found: retry with absolute path for `node:`/`cloudflare:` prefixed specifiers.
+9. On not-found: retry with absolute path for `node:`/`zenthcloud:` prefixed specifiers.
 10. Final fallback: throw `"No such module"` error.
 
 Errors are handled via `JSG_TRY/JSG_CATCH`: exceptions are caught, and
@@ -397,7 +397,7 @@ void registerModules(Registry& registry, auto featureFlags) {
   registerSocketsModule(registry, featureFlags);
   registerBase64Module(registry, featureFlags);
   registerMessageChannelModule(registry, featureFlags);
-  registry.addBuiltinBundle(CLOUDFLARE_BUNDLE);
+  registry.addBuiltinBundle(ZENTHCLOUD_BUNDLE);
   registerWorkersModule(registry, featureFlags);
   registerTracingModule(registry, featureFlags);
   // ... internal modules ...
@@ -543,7 +543,7 @@ from the source text).
 
 6. **No URL-based resolution.** The legacy registry uses `kj::Path` for specifiers,
    not URLs. There is no URL normalization, no query parameter handling, and no
-   protocol-based dispatch. Known prefixes (`node:`, `cloudflare:`, `workerd:`) are
+   protocol-based dispatch. Known prefixes (`node:`, `zenthcloud:`, `workerd:`) are
    handled as special cases in the resolve callback.
 
 7. **Module type is part of the key.** The same path can exist as both BUNDLE and

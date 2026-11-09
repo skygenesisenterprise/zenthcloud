@@ -1,23 +1,23 @@
 ---
-page_title: "cloudflare_zero_trust_tunnel_warp_connector_token Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_tunnel_warp_connector_token Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
-  Cloudflare One Connector: cloudflared WriteCloudflare One Connectors WriteCloudflare Tunnel Write
+  Zenthcloud One Connector: zenthcloudd WriteZenthcloud One Connectors WriteZenthcloud Tunnel Write
 ---
 
-# cloudflare_zero_trust_tunnel_warp_connector_token (Data Source)
+# zenthcloud_zero_trust_tunnel_warp_connector_token (Data Source)
 
 Accepted Permissions
 
-- `Cloudflare One Connector: cloudflared Write`
-- `Cloudflare One Connectors Write`
-- `Cloudflare Tunnel Write`
+- `Zenthcloud One Connector: zenthcloudd Write`
+- `Zenthcloud One Connectors Write`
+- `Zenthcloud Tunnel Write`
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_tunnel_warp_connector_token" "example_zero_trust_tunnel_warp_connector_token" {
+data "zenthcloud_zero_trust_tunnel_warp_connector_token" "example_zero_trust_tunnel_warp_connector_token" {
   account_id = "699d98642c564d2e855e9661899b7252"
   tunnel_id = "f70ff985-a4ef-4643-bbbc-4a0ed4fc8415"
 }
@@ -28,7 +28,7 @@ data "cloudflare_zero_trust_tunnel_warp_connector_token" "example_zero_trust_tun
 
 ### Required
 
-- `account_id` (String) Cloudflare account ID
+- `account_id` (String) Zenthcloud account ID
 - `tunnel_id` (String) UUID of the tunnel.
 
 ### Read-Only

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_workflows Data Source - Cloudflare"
+page_title: "zenthcloud_workflows Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Workers Scripts ReadWorkers Scripts WriteWorkers Tail Read
 ---
 
-# cloudflare_workflows (Data Source)
+# zenthcloud_workflows (Data Source)
 
 Accepted Permissions
 
@@ -17,7 +17,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_workflows" "example_workflows" {
+data "zenthcloud_workflows" "example_workflows" {
   account_id = "account_id"
   search = "x"
 }

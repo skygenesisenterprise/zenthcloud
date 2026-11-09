@@ -6,7 +6,7 @@ export default {
 	fullPath: ["tunnels", "ready"],
 	category: "action",
 	description:
-		"Check the /ready endpoint exposed by a local cloudflared instance.",
+		"Check the /ready endpoint exposed by a local zenthcloudd instance.",
 	usage: "cf tunnels ready --metrics <address>",
 	arguments: [],
 	options: [
@@ -14,7 +14,7 @@ export default {
 			name: "metrics",
 			type: "string",
 			required: true,
-			description: "Metrics server address for the cloudflared instance",
+			description: "Metrics server address for the zenthcloudd instance",
 		},
 		{
 			name: "dry-run",

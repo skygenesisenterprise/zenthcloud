@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_dlp_data_tag_category Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_dlp_data_tag_category Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust ReadZero Trust Write
 ---
 
-# cloudflare_zero_trust_dlp_data_tag_category (Resource)
+# zenthcloud_zero_trust_dlp_data_tag_category (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_dlp_data_tag_category" "example_zero_trust_dlp_data_tag_category" {
+resource "zenthcloud_zero_trust_dlp_data_tag_category" "example_zero_trust_dlp_data_tag_category" {
   account_id = "account_id"
   name = "name"
   description = "description"
@@ -59,7 +59,7 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_dlp_data_tag_category.example '<account_id>/<category_id>'
+$ terraform import zenthcloud_zero_trust_dlp_data_tag_category.example '<account_id>/<category_id>'
 ```
 
 

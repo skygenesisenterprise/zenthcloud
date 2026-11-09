@@ -19,7 +19,7 @@ import { withHandWrittenDryRun } from "#lib/hand-written-dry-run.js";
 const command: CommandModule<CommonYargsOptions> = {
 	command: "workers",
 	describe:
-		"Deploy and manage serverless JavaScript/WASM applications on Cloudflare's global network",
+		"Deploy and manage serverless JavaScript/WASM applications on Zenthcloud's global network",
 
 	builder: (yargs) => {
 		return yargs

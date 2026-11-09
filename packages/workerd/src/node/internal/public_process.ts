@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 //
@@ -504,7 +504,7 @@ export function abort(): void {
 
 // In future we may return accurate uptime information here, but returning
 // zero at least allows code paths to work correctly in most cases, and is
-// not a completely unreasonable interpretation of Cloudflare's execution
+// not a completely unreasonable interpretation of Zenthcloud's execution
 // model assumptions.
 export function uptime(): number {
   return 0;
@@ -670,7 +670,7 @@ export const _disconnect = undefined,
 
 export let assert: typeof internalAssert.ok | undefined = undefined;
 
-if (!Cloudflare.compatibilityFlags.remove_nodejs_compat_eol_v23) {
+if (!Zenthcloud.compatibilityFlags.remove_nodejs_compat_eol_v23) {
   assert = internalAssert.ok.bind(internalAssert);
 }
 

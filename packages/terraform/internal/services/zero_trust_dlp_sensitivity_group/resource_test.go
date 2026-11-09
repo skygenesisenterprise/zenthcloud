@@ -11,16 +11,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
-// TestAccCloudflareZeroTrustDLPSensitivityGroup_Basic verifies basic CRUD
+// TestAccZenthcloudZeroTrustDLPSensitivityGroup_Basic verifies basic CRUD
 // for a sensitivity group: apply, read, import, destroy.
-func TestAccCloudflareZeroTrustDLPSensitivityGroup_Basic(t *testing.T) {
+func TestAccZenthcloudZeroTrustDLPSensitivityGroup_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	name := fmt.Sprintf("cloudflare_zero_trust_dlp_sensitivity_group.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_dlp_sensitivity_group.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -60,12 +60,12 @@ func TestAccCloudflareZeroTrustDLPSensitivityGroup_Basic(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareZeroTrustDLPSensitivityGroup_Update verifies that updating
+// TestAccZenthcloudZeroTrustDLPSensitivityGroup_Update verifies that updating
 // name and description produces an in-place update (no recreation).
-func TestAccCloudflareZeroTrustDLPSensitivityGroup_Update(t *testing.T) {
+func TestAccZenthcloudZeroTrustDLPSensitivityGroup_Update(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	name := fmt.Sprintf("cloudflare_zero_trust_dlp_sensitivity_group.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_dlp_sensitivity_group.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },

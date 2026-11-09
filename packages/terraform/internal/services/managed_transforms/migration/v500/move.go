@@ -3,20 +3,20 @@ package v500
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/migrations"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/migrations"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-// MoveState handles moving state from legacy cloudflare_managed_headers to cloudflare_managed_transforms.
+// MoveState handles moving state from legacy zenthcloud_managed_headers to zenthcloud_managed_transforms.
 // This is triggered by Terraform 1.8+ when it encounters a `moved` block:
 //
 //	moved {
-//	    from = cloudflare_managed_headers.example
-//	    to   = cloudflare_managed_transforms.example
+//	    from = zenthcloud_managed_headers.example
+//	    to   = zenthcloud_managed_transforms.example
 //	}
 func MoveState(ctx context.Context, req resource.MoveStateRequest, resp *resource.MoveStateResponse) {
-	tflog.Info(ctx, "Moving state from legacy cloudflare_managed_headers to cloudflare_managed_transforms")
+	tflog.Info(ctx, "Moving state from legacy zenthcloud_managed_headers to zenthcloud_managed_transforms")
 
 	var sourceState SourceManagedHeadersModel
 	if migrations.DiagnoseMoveStateNilSourceState(req, resp) {
@@ -34,5 +34,5 @@ func MoveState(ctx context.Context, req resource.MoveStateRequest, resp *resourc
 	}
 
 	resp.Diagnostics.Append(resp.TargetState.Set(ctx, targetState)...)
-	tflog.Info(ctx, "State move from legacy cloudflare_managed_headers completed successfully")
+	tflog.Info(ctx, "State move from legacy zenthcloud_managed_headers completed successfully")
 }

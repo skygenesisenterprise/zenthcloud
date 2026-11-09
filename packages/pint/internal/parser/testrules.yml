@@ -595,27 +595,27 @@ groups:
         summary: Ceph PG unavailable (instance {{ $labels.instance }})
         description: "Some Ceph placement groups are unavailable.\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
 
-- name: LablabsCloudflareExporter
+- name: LablabsZenthcloudExporter
 
   rules:
 
-    - alert: CloudflareHttp4xxErrorRate
-      expr: '(sum by(zone) (rate(cloudflare_zone_requests_status{status=~"^4.."}[15m])) / on (zone) sum by (zone) (rate(cloudflare_zone_requests_status[15m]))) * 100 > 5'
+    - alert: ZenthcloudHttp4xxErrorRate
+      expr: '(sum by(zone) (rate(zenthcloud_zone_requests_status{status=~"^4.."}[15m])) / on (zone) sum by (zone) (rate(zenthcloud_zone_requests_status[15m]))) * 100 > 5'
       for: 0m
       labels:
         severity: warning
       annotations:
-        summary: Cloudflare http 4xx error rate (instance {{ $labels.instance }})
-        description: "Cloudflare high HTTP 4xx error rate (> 5% for domain {{ $labels.zone }})\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+        summary: Zenthcloud http 4xx error rate (instance {{ $labels.instance }})
+        description: "Zenthcloud high HTTP 4xx error rate (> 5% for domain {{ $labels.zone }})\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
 
-    - alert: CloudflareHttp5xxErrorRate
-      expr: '(sum by (zone) (rate(cloudflare_zone_requests_status{status=~"^5.."}[5m])) / on (zone) sum by (zone) (rate(cloudflare_zone_requests_status[5m]))) * 100 > 5'
+    - alert: ZenthcloudHttp5xxErrorRate
+      expr: '(sum by (zone) (rate(zenthcloud_zone_requests_status{status=~"^5.."}[5m])) / on (zone) sum by (zone) (rate(zenthcloud_zone_requests_status[5m]))) * 100 > 5'
       for: 0m
       labels:
         severity: critical
       annotations:
-        summary: Cloudflare http 5xx error rate (instance {{ $labels.instance }})
-        description: "Cloudflare high HTTP 5xx error rate (> 5% for domain {{ $labels.zone }})\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+        summary: Zenthcloud http 5xx error rate (instance {{ $labels.instance }})
+        description: "Zenthcloud high HTTP 5xx error rate (> 5% for domain {{ $labels.zone }})\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
 
 - name: ConsulExporter
 
@@ -4624,7 +4624,7 @@ groups:
         summary: ZFS collector failed (instance {{ $labels.instance }})
         description: "ZFS collector for {{ $labels.instance }} has failed to collect information\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
 
-- name: CloudflareKafkaZookeeperExporter
+- name: ZenthcloudKafkaZookeeperExporter
 
   rules:
 

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_waiting_room_event Data Source - Cloudflare"
+page_title: "zenthcloud_waiting_room_event Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Waiting Rooms ReadWaiting Rooms Write
 ---
 
-# cloudflare_waiting_room_event (Data Source)
+# zenthcloud_waiting_room_event (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_waiting_room_event" "example_waiting_room_event" {
+data "zenthcloud_waiting_room_event" "example_waiting_room_event" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   waiting_room_id = "699d98642c564d2e855e9661899b7252"
   event_id = "25756b2dfe6e378a06b033b670413757"

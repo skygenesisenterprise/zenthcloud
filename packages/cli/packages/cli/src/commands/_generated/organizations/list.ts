@@ -132,7 +132,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf organizations list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/organizations`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

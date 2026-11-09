@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -63,7 +63,7 @@ func TestMigrateOriginCACertificate_V4ToV5_Basic(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			domain := os.Getenv("CLOUDFLARE_DOMAIN")
+			domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 			testConfig := fmt.Sprintf(tc.configFn(), rnd, domain)
 			tmpDir := t.TempDir()
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -78,8 +78,8 @@ func TestMigrateOriginCACertificate_V4ToV5_Basic(t *testing.T) {
 					{
 						// Step 1: Create with specific provider version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -90,26 +90,26 @@ func TestMigrateOriginCACertificate_V4ToV5_Basic(t *testing.T) {
 						[]statecheck.StateCheck{
 							// Verify csr (direct copy)
 							statecheck.ExpectKnownValue(
-								"cloudflare_origin_ca_certificate."+rnd,
+								"zenthcloud_origin_ca_certificate."+rnd,
 								tfjsonpath.New("csr"),
 								knownvalue.NotNull(),
 							),
 							// Verify request_type (direct copy)
 							statecheck.ExpectKnownValue(
-								"cloudflare_origin_ca_certificate."+rnd,
+								"zenthcloud_origin_ca_certificate."+rnd,
 								tfjsonpath.New("request_type"),
 								knownvalue.StringExact("origin-rsa"),
 							),
 							// Verify hostnames (Set → List conversion)
 							// Order may differ (Sets are unordered), so just verify it's a list
 							statecheck.ExpectKnownValue(
-								"cloudflare_origin_ca_certificate."+rnd,
+								"zenthcloud_origin_ca_certificate."+rnd,
 								tfjsonpath.New("hostnames"),
 								knownvalue.NotNull(),
 							),
 							// Verify requested_validity (Int64 → Float64 conversion)
 							statecheck.ExpectKnownValue(
-								"cloudflare_origin_ca_certificate."+rnd,
+								"zenthcloud_origin_ca_certificate."+rnd,
 								tfjsonpath.New("requested_validity"),
 								knownvalue.Float64Exact(365),
 							),
@@ -117,17 +117,17 @@ func TestMigrateOriginCACertificate_V4ToV5_Basic(t *testing.T) {
 							// Note: For v5 test, this field never existed
 							// Verify computed fields exist (but don't validate exact values)
 							statecheck.ExpectKnownValue(
-								"cloudflare_origin_ca_certificate."+rnd,
+								"zenthcloud_origin_ca_certificate."+rnd,
 								tfjsonpath.New("id"),
 								knownvalue.NotNull(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_origin_ca_certificate."+rnd,
+								"zenthcloud_origin_ca_certificate."+rnd,
 								tfjsonpath.New("certificate"),
 								knownvalue.NotNull(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_origin_ca_certificate."+rnd,
+								"zenthcloud_origin_ca_certificate."+rnd,
 								tfjsonpath.New("expires_on"),
 								knownvalue.NotNull(),
 							),
@@ -167,7 +167,7 @@ func TestMigrateOriginCACertificate_V4ToV5_DefaultValidity(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			domain := os.Getenv("CLOUDFLARE_DOMAIN")
+			domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 			testConfig := fmt.Sprintf(tc.configFn(), rnd, domain)
 			tmpDir := t.TempDir()
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -182,8 +182,8 @@ func TestMigrateOriginCACertificate_V4ToV5_DefaultValidity(t *testing.T) {
 					{
 						// Step 1: Create with specific provider version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -194,18 +194,18 @@ func TestMigrateOriginCACertificate_V4ToV5_DefaultValidity(t *testing.T) {
 						[]statecheck.StateCheck{
 							// Verify requested_validity defaulted to 5475
 							statecheck.ExpectKnownValue(
-								"cloudflare_origin_ca_certificate."+rnd,
+								"zenthcloud_origin_ca_certificate."+rnd,
 								tfjsonpath.New("requested_validity"),
 								knownvalue.Float64Exact(5475),
 							),
 							// Verify other required fields
 							statecheck.ExpectKnownValue(
-								"cloudflare_origin_ca_certificate."+rnd,
+								"zenthcloud_origin_ca_certificate."+rnd,
 								tfjsonpath.New("request_type"),
 								knownvalue.StringExact("origin-rsa"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_origin_ca_certificate."+rnd,
+								"zenthcloud_origin_ca_certificate."+rnd,
 								tfjsonpath.New("hostnames"),
 								knownvalue.NotNull(),
 							),

@@ -5,8 +5,8 @@ package account_dns_settings
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -35,7 +35,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"enforce_dns_only": schema.BoolAttribute{
-				Description: "When enabled, forces all proxied DNS records in the account to behave as DNS-only at the edge, regardless of each record's individual proxy setting. Note that this account-level override does not modify the records themselves; it only affects how they are served at the edge. See more on [Enforce DNS-only](https://developers.cloudflare.com/dns/proxy-status/enforce-dns-only).",
+				Description: "When enabled, forces all proxied DNS records in the account to behave as DNS-only at the edge, regardless of each record's individual proxy setting. Note that this account-level override does not modify the records themselves; it only affects how they are served at the edge. See more on [Enforce DNS-only](https://github.com/skygenesisenterprise/zenthcloud).",
 				Optional:    true,
 			},
 			"zone_defaults": schema.SingleNestedAttribute{
@@ -66,7 +66,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						PlanModifiers: []planmodifier.Object{objectplanmodifier.UseNonNullStateForUnknown()},
 					},
 					"multi_provider": schema.BoolAttribute{
-						Description: "Whether to enable multi-provider DNS, which causes Cloudflare to activate the zone even when non-Cloudflare NS records exist, and to respect NS records at the zone apex during outbound zone transfers.",
+						Description: "Whether to enable multi-provider DNS, which causes Zenthcloud to activate the zone even when non-Zenthcloud NS records exist, and to respect NS records at the zone apex during outbound zone transfers.",
 						Optional:    true,
 					},
 					"nameservers": schema.SingleNestedAttribute{
@@ -76,12 +76,12 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						CustomType:  customfield.NewNestedObjectType[AccountDNSSettingsZoneDefaultsNameserversModel](ctx),
 						Attributes: map[string]schema.Attribute{
 							"type": schema.StringAttribute{
-								Description: "Nameserver type\nAvailable values: \"cloudflare.standard\", \"cloudflare.standard.random\", \"custom.account\", \"custom.tenant\".",
+								Description: "Nameserver type\nAvailable values: \"zenthcloud.standard\", \"zenthcloud.standard.random\", \"custom.account\", \"custom.tenant\".",
 								Optional:    true,
 								Validators: []validator.String{
 									stringvalidator.OneOfCaseInsensitive(
-										"cloudflare.standard",
-										"cloudflare.standard.random",
+										"zenthcloud.standard",
+										"zenthcloud.standard.random",
 										"custom.account",
 										"custom.tenant",
 									),
@@ -122,7 +122,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 								},
 							},
 							"mname": schema.StringAttribute{
-								Description: "The primary nameserver, which may be used for outbound zone transfers. If null, a Cloudflare-assigned value will be used.",
+								Description: "The primary nameserver, which may be used for outbound zone transfers. If null, a Zenthcloud-assigned value will be used.",
 								Optional:    true,
 							},
 							"refresh": schema.Float64Attribute{

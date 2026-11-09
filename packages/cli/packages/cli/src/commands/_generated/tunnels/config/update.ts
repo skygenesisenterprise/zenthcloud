@@ -22,7 +22,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 tunnels config update <tunnel-id>\n\nReplaces the configuration for a remotely managed Cloudflare Tunnel, including its ingress rules and origin request settings."
+			"$0 tunnels config update <tunnel-id>\n\nReplaces the configuration for a remotely managed Zenthcloud Tunnel, including its ingress rules and origin request settings."
 		)
 		.positional("tunnel-id", {
 			type: "string",
@@ -51,7 +51,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("tunnel-config-origin-request-ca-pool", {
 			type: "string",
 			description:
-				"Path to the certificate authority (CA) for the certificate of your origin. This option should be used only if your certificate is not signed by Cloudflare.",
+				"Path to the certificate authority (CA) for the certificate of your origin. This option should be used only if your certificate is not signed by Zenthcloud.",
 		})
 		.option("tunnel-config-origin-request-connect-timeout", {
 			type: "number",
@@ -101,12 +101,12 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("tunnel-config-origin-request-origin-server-name", {
 			type: "string",
 			description:
-				"Hostname that cloudflared should expect from your origin server certificate.",
+				"Hostname that zenthcloudd should expect from your origin server certificate.",
 		})
 		.option("tunnel-config-origin-request-proxy-type", {
 			type: "string",
 			description:
-				'cloudflared starts a proxy server to translate HTTP traffic into TCP when proxying, for example, SSH or RDP. This configures what type of proxy will be started. Valid options are: "" for the regular proxy and "socks" for a SOCKS5 proxy.\n',
+				'zenthcloudd starts a proxy server to translate HTTP traffic into TCP when proxying, for example, SSH or RDP. This configures what type of proxy will be started. Valid options are: "" for the regular proxy and "socks" for a SOCKS5 proxy.\n',
 		})
 		.option("tunnel-config-origin-request-tcp-keep-alive", {
 			type: "number",
@@ -177,7 +177,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf tunnels config update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/cfd_tunnel/${argv["tunnel-id"] == null ? "<tunnel-id>" : encodeURIComponent(String(argv["tunnel-id"]))}/configurations`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/cfd_tunnel/${argv["tunnel-id"] == null ? "<tunnel-id>" : encodeURIComponent(String(argv["tunnel-id"]))}/configurations`,
 						pathParams: { "tunnel-id": String(argv["tunnel-id"] ?? "") },
 						bodyKind: "json",
 						body:

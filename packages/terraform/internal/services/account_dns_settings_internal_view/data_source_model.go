@@ -5,9 +5,9 @@ package account_dns_settings_internal_view
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/dns"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/dns"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -30,7 +30,7 @@ type AccountDNSSettingsInternalViewDataSourceModel struct {
 
 func (m *AccountDNSSettingsInternalViewDataSourceModel) toReadParams(_ context.Context) (params dns.SettingAccountViewGetParams, diags diag.Diagnostics) {
 	params = dns.SettingAccountViewGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -38,39 +38,39 @@ func (m *AccountDNSSettingsInternalViewDataSourceModel) toReadParams(_ context.C
 
 func (m *AccountDNSSettingsInternalViewDataSourceModel) toListParams(_ context.Context) (params dns.SettingAccountViewListParams, diags diag.Diagnostics) {
 	params = dns.SettingAccountViewListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Filter.Direction.IsNull() {
-		params.Direction = cloudflare.F(dns.SettingAccountViewListParamsDirection(m.Filter.Direction.ValueString()))
+		params.Direction = zenthcloud.F(dns.SettingAccountViewListParamsDirection(m.Filter.Direction.ValueString()))
 	}
 	if !m.Filter.Match.IsNull() {
-		params.Match = cloudflare.F(dns.SettingAccountViewListParamsMatch(m.Filter.Match.ValueString()))
+		params.Match = zenthcloud.F(dns.SettingAccountViewListParamsMatch(m.Filter.Match.ValueString()))
 	}
 	if m.Filter.Name != nil {
 		paramsName := dns.SettingAccountViewListParamsName{}
 		if !m.Filter.Name.Contains.IsNull() {
-			paramsName.Contains = cloudflare.F(m.Filter.Name.Contains.ValueString())
+			paramsName.Contains = zenthcloud.F(m.Filter.Name.Contains.ValueString())
 		}
 		if !m.Filter.Name.Endswith.IsNull() {
-			paramsName.Endswith = cloudflare.F(m.Filter.Name.Endswith.ValueString())
+			paramsName.Endswith = zenthcloud.F(m.Filter.Name.Endswith.ValueString())
 		}
 		if !m.Filter.Name.Exact.IsNull() {
-			paramsName.Exact = cloudflare.F(m.Filter.Name.Exact.ValueString())
+			paramsName.Exact = zenthcloud.F(m.Filter.Name.Exact.ValueString())
 		}
 		if !m.Filter.Name.Startswith.IsNull() {
-			paramsName.Startswith = cloudflare.F(m.Filter.Name.Startswith.ValueString())
+			paramsName.Startswith = zenthcloud.F(m.Filter.Name.Startswith.ValueString())
 		}
-		params.Name = cloudflare.F(paramsName)
+		params.Name = zenthcloud.F(paramsName)
 	}
 	if !m.Filter.Order.IsNull() {
-		params.Order = cloudflare.F(dns.SettingAccountViewListParamsOrder(m.Filter.Order.ValueString()))
+		params.Order = zenthcloud.F(dns.SettingAccountViewListParamsOrder(m.Filter.Order.ValueString()))
 	}
 	if !m.Filter.ZoneID.IsNull() {
-		params.ZoneID = cloudflare.F(m.Filter.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(m.Filter.ZoneID.ValueString())
 	}
 	if !m.Filter.ZoneName.IsNull() {
-		params.ZoneName = cloudflare.F(m.Filter.ZoneName.ValueString())
+		params.ZoneName = zenthcloud.F(m.Filter.ZoneName.ValueString())
 	}
 
 	return

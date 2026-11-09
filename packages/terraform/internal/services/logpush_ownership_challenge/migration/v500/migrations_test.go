@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -67,7 +67,7 @@ func TestMigrateLogpushOwnershipChallenge_V4ToV5_BasicZone(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
@@ -82,8 +82,8 @@ func TestMigrateLogpushOwnershipChallenge_V4ToV5_BasicZone(t *testing.T) {
 			} else {
 				step1 = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -104,18 +104,18 @@ func TestMigrateLogpushOwnershipChallenge_V4ToV5_BasicZone(t *testing.T) {
 						[]statecheck.StateCheck{
 							// Validate direct-copy fields (zone_id and destination_conf)
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_ownership_challenge."+rnd,
+								"zenthcloud_logpush_ownership_challenge."+rnd,
 								tfjsonpath.New("zone_id"),
 								knownvalue.StringExact(zoneID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_ownership_challenge."+rnd,
+								"zenthcloud_logpush_ownership_challenge."+rnd,
 								tfjsonpath.New("destination_conf"),
 								knownvalue.StringExact("gs://cf-terraform-provider-acct-test/ownership_challenges"),
 							),
 							// Validate filename is preserved from v4 ownership_challenge_filename (renamed, not dropped)
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_ownership_challenge."+rnd,
+								"zenthcloud_logpush_ownership_challenge."+rnd,
 								tfjsonpath.New("filename"),
 								knownvalue.NotNull(),
 							),
@@ -160,7 +160,7 @@ func TestMigrateLogpushOwnershipChallenge_V4ToV5_BasicAccount(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
@@ -175,8 +175,8 @@ func TestMigrateLogpushOwnershipChallenge_V4ToV5_BasicAccount(t *testing.T) {
 			} else {
 				step1 = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -197,18 +197,18 @@ func TestMigrateLogpushOwnershipChallenge_V4ToV5_BasicAccount(t *testing.T) {
 						[]statecheck.StateCheck{
 							// Validate direct-copy fields (account_id and destination_conf)
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_ownership_challenge."+rnd,
+								"zenthcloud_logpush_ownership_challenge."+rnd,
 								tfjsonpath.New("account_id"),
 								knownvalue.StringExact(accountID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_ownership_challenge."+rnd,
+								"zenthcloud_logpush_ownership_challenge."+rnd,
 								tfjsonpath.New("destination_conf"),
 								knownvalue.StringExact("gs://cf-terraform-provider-acct-test/ownership_challenges"),
 							),
 							// Validate filename is preserved from v4 ownership_challenge_filename (renamed, not dropped)
 							statecheck.ExpectKnownValue(
-								"cloudflare_logpush_ownership_challenge."+rnd,
+								"zenthcloud_logpush_ownership_challenge."+rnd,
 								tfjsonpath.New("filename"),
 								knownvalue.NotNull(),
 							),

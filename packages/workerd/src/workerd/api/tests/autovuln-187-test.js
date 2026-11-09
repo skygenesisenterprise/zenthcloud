@@ -1,10 +1,10 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
 import { rejects } from 'node:assert';
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-187.
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-187.
 //
 // A draining read delivers its result to pumpToImpl through a kj event, and it
 // runs the stream's pull() callback along the way. A pull() that aborts the

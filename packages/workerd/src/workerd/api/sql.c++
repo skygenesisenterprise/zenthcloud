@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -34,11 +34,11 @@ jsg::Ref<SqlStorage::Cursor> SqlStorage::exec(
     jsg::Lock& js, jsg::JsString querySql, jsg::Arguments<BindingValue> bindings) {
   auto& context = IoContext::current();
   TraceContext traceContext = context.makeUserTraceSpan("durable_object_storage_exec"_kjc);
-  traceContext.setTag("db.system.name"_kjc, "cloudflare-durable-object-sql"_kjc);
+  traceContext.setTag("db.system.name"_kjc, "zenthcloud-durable-object-sql"_kjc);
   traceContext.setTag("db.operation.name"_kjc, "exec"_kjc);
   traceContext.setTag("db.query.text"_kjc, kj::str(querySql));
   traceContext.setTag(
-      "cloudflare.durable_object.query.bindings"_kjc, static_cast<int64_t>(bindings.size()));
+      "zenthcloud.durable_object.query.bindings"_kjc, static_cast<int64_t>(bindings.size()));
 
   // Internalize the string, so that the cache can be keyed by string identity rather than content.
   // Any string we put into the cache is expected to live there for a while anyway, so even if it
@@ -68,8 +68,8 @@ jsg::Ref<SqlStorage::Cursor> SqlStorage::exec(
                        Cursor& cursor) mutable {
       int64_t rowsRead = cursor.getRowsRead();
       int64_t rowsWritten = cursor.getRowsWritten();
-      traceContext->setTag("cloudflare.durable_object.response.rows_read"_kjc, rowsRead);
-      traceContext->setTag("cloudflare.durable_object.response.rows_written"_kjc, rowsWritten);
+      traceContext->setTag("zenthcloud.durable_object.response.rows_read"_kjc, rowsRead);
+      traceContext->setTag("zenthcloud.durable_object.response.rows_written"_kjc, rowsWritten);
     };
   }
 
@@ -109,10 +109,10 @@ SqlStorage::IngestResult SqlStorage::ingest(jsg::Lock& js, kj::String querySql) 
   auto result = getDb(js).ingestSql(regulator, querySql);
 
   traceContext.setTag(
-      "cloudflare.durable_object.response.rows_read"_kjc, static_cast<int64_t>(result.rowsRead));
-  traceContext.setTag("cloudflare.durable_object.response.rows_written"_kjc,
+      "zenthcloud.durable_object.response.rows_read"_kjc, static_cast<int64_t>(result.rowsRead));
+  traceContext.setTag("zenthcloud.durable_object.response.rows_written"_kjc,
       static_cast<int64_t>(result.rowsWritten));
-  traceContext.setTag("cloudflare.durable_object.response.statement_count"_kjc,
+  traceContext.setTag("zenthcloud.durable_object.response.statement_count"_kjc,
       static_cast<int64_t>(result.statementCount));
 
   return IngestResult(
@@ -139,7 +139,7 @@ double SqlStorage::getDatabaseSize(jsg::Lock& js) {
                       .getInt64(0);
   auto dbSize = pages * getPageSize(db);
   traceContext.setTag(
-      "cloudflare.durable_object.response.db_size"_kjc, static_cast<int64_t>(dbSize));
+      "zenthcloud.durable_object.response.db_size"_kjc, static_cast<int64_t>(dbSize));
   return dbSize;
 }
 

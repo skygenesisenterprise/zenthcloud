@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -108,7 +108,7 @@ func TestMigrateNotificationPolicy_MultipleEmails(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := "tf-test-" + rnd
 			tmpDir := t.TempDir()
@@ -124,8 +124,8 @@ func TestMigrateNotificationPolicy_MultipleEmails(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -144,49 +144,49 @@ func TestMigrateNotificationPolicy_MultipleEmails(t *testing.T) {
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer,
 						[]statecheck.StateCheck{
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("account_id"),
 								knownvalue.StringExact(accountID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("name"),
 								knownvalue.StringExact(name),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("enabled"),
 								knownvalue.Bool(true),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("alert_type"),
 								knownvalue.StringExact("universal_ssl_event_type"),
 							),
 							// Verify multiple email integrations
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("email"),
 								knownvalue.SetSizeExact(2),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("webhooks"),
 								knownvalue.Null(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("pagerduty"),
 								knownvalue.Null(),
 							),
 							// Verify timestamps
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("created"),
 								knownvalue.NotNull(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("modified"),
 								knownvalue.NotNull(),
 							),
@@ -224,7 +224,7 @@ func TestMigrateNotificationPolicy_SingleEmail(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := "tf-test-" + rnd
 			tmpDir := t.TempDir()
@@ -240,8 +240,8 @@ func TestMigrateNotificationPolicy_SingleEmail(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -260,23 +260,23 @@ func TestMigrateNotificationPolicy_SingleEmail(t *testing.T) {
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer,
 						[]statecheck.StateCheck{
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("account_id"),
 								knownvalue.StringExact(accountID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("name"),
 								knownvalue.StringExact(name),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("alert_type"),
 								knownvalue.StringExact("universal_ssl_event_type"),
 							),
 							// Verify single email integration
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("email"),
 								knownvalue.SetExact([]knownvalue.Check{
 									knownvalue.ObjectExact(map[string]knownvalue.Check{
@@ -285,23 +285,23 @@ func TestMigrateNotificationPolicy_SingleEmail(t *testing.T) {
 								}),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("webhooks"),
 								knownvalue.Null(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("pagerduty"),
 								knownvalue.Null(),
 							),
 							// Verify timestamps
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("created"),
 								knownvalue.NotNull(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("modified"),
 								knownvalue.NotNull(),
 							),
@@ -341,7 +341,7 @@ func TestMigrateNotificationPolicy_SingleWebhook(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := "tf-test-" + rnd
 			tmpDir := t.TempDir()
@@ -358,8 +358,8 @@ func TestMigrateNotificationPolicy_SingleWebhook(t *testing.T) {
 				// v4 provider has UUID normalization quirk with webhooks
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -379,44 +379,44 @@ func TestMigrateNotificationPolicy_SingleWebhook(t *testing.T) {
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer,
 						[]statecheck.StateCheck{
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("account_id"),
 								knownvalue.StringExact(accountID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("name"),
 								knownvalue.StringExact(name),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("alert_type"),
 								knownvalue.StringExact("universal_ssl_event_type"),
 							),
 							// Verify single webhook integration (name field removed)
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("email"),
 								knownvalue.Null(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("webhooks"),
 								knownvalue.SetSizeExact(1),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("pagerduty"),
 								knownvalue.Null(),
 							),
 							// Verify timestamps
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("created"),
 								knownvalue.NotNull(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("modified"),
 								knownvalue.NotNull(),
 							),
@@ -454,7 +454,7 @@ func TestMigrateNotificationPolicy_MultipleWebhooks(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := "tf-test-" + rnd
 			tmpDir := t.TempDir()
@@ -471,8 +471,8 @@ func TestMigrateNotificationPolicy_MultipleWebhooks(t *testing.T) {
 				// v4 provider has UUID normalization quirk with webhooks
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -492,44 +492,44 @@ func TestMigrateNotificationPolicy_MultipleWebhooks(t *testing.T) {
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer,
 						[]statecheck.StateCheck{
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("account_id"),
 								knownvalue.StringExact(accountID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("name"),
 								knownvalue.StringExact(name),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("alert_type"),
 								knownvalue.StringExact("universal_ssl_event_type"),
 							),
 							// Verify three webhook integrations
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("email"),
 								knownvalue.Null(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("webhooks"),
 								knownvalue.SetSizeExact(3),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("pagerduty"),
 								knownvalue.Null(),
 							),
 							// Verify timestamps
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("created"),
 								knownvalue.NotNull(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("modified"),
 								knownvalue.NotNull(),
 							),
@@ -568,7 +568,7 @@ func TestMigrateNotificationPolicy_MixedIntegrations(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := "tf-test-" + rnd
 			tmpDir := t.TempDir()
@@ -585,8 +585,8 @@ func TestMigrateNotificationPolicy_MixedIntegrations(t *testing.T) {
 				// v4 provider has UUID normalization quirk with webhooks
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -606,44 +606,44 @@ func TestMigrateNotificationPolicy_MixedIntegrations(t *testing.T) {
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer,
 						[]statecheck.StateCheck{
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("account_id"),
 								knownvalue.StringExact(accountID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("name"),
 								knownvalue.StringExact(name),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("alert_type"),
 								knownvalue.StringExact("expiring_service_token_alert"),
 							),
 							// Verify mixed integrations: 2 emails + 1 webhook
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("email"),
 								knownvalue.SetSizeExact(2),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("webhooks"),
 								knownvalue.SetSizeExact(1),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("pagerduty"),
 								knownvalue.Null(),
 							),
 							// Verify timestamps
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("created"),
 								knownvalue.NotNull(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("modified"),
 								knownvalue.NotNull(),
 							),
@@ -681,7 +681,7 @@ func TestMigrateNotificationPolicy_EnabledFalse(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := "tf-test-" + rnd
 			tmpDir := t.TempDir()
@@ -698,8 +698,8 @@ func TestMigrateNotificationPolicy_EnabledFalse(t *testing.T) {
 				// v4 provider has UUID normalization quirk with webhooks
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -719,50 +719,50 @@ func TestMigrateNotificationPolicy_EnabledFalse(t *testing.T) {
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer,
 						[]statecheck.StateCheck{
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("account_id"),
 								knownvalue.StringExact(accountID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("name"),
 								knownvalue.StringExact(name),
 							),
 							// CRITICAL: enabled=false must be preserved (v5 defaults to true)
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("enabled"),
 								knownvalue.Bool(false),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("alert_type"),
 								knownvalue.StringExact("expiring_service_token_alert"),
 							),
 							// Verify webhook mechanism
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("email"),
 								knownvalue.Null(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("webhooks"),
 								knownvalue.SetSizeExact(1),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("pagerduty"),
 								knownvalue.Null(),
 							),
 							// Verify timestamps
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("created"),
 								knownvalue.NotNull(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("modified"),
 								knownvalue.NotNull(),
 							),
@@ -800,7 +800,7 @@ func TestMigrateNotificationPolicy_WithDescription(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := "tf-test-" + rnd
 			tmpDir := t.TempDir()
@@ -816,8 +816,8 @@ func TestMigrateNotificationPolicy_WithDescription(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -836,29 +836,29 @@ func TestMigrateNotificationPolicy_WithDescription(t *testing.T) {
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer,
 						[]statecheck.StateCheck{
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("account_id"),
 								knownvalue.StringExact(accountID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("name"),
 								knownvalue.StringExact(name),
 							),
 							// Verify description field preserved
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("description"),
 								knownvalue.StringExact("This is a comprehensive test description field for migration testing purposes"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("alert_type"),
 								knownvalue.StringExact("universal_ssl_event_type"),
 							),
 							// Verify email mechanism
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("email"),
 								knownvalue.SetExact([]knownvalue.Check{
 									knownvalue.ObjectExact(map[string]knownvalue.Check{
@@ -867,23 +867,23 @@ func TestMigrateNotificationPolicy_WithDescription(t *testing.T) {
 								}),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("webhooks"),
 								knownvalue.Null(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("pagerduty"),
 								knownvalue.Null(),
 							),
 							// Verify timestamps
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("created"),
 								knownvalue.NotNull(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("modified"),
 								knownvalue.NotNull(),
 							),
@@ -921,7 +921,7 @@ func TestMigrateNotificationPolicy_Minimal(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := "tf-test-" + rnd
 			tmpDir := t.TempDir()
@@ -937,8 +937,8 @@ func TestMigrateNotificationPolicy_Minimal(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -957,28 +957,28 @@ func TestMigrateNotificationPolicy_Minimal(t *testing.T) {
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer,
 						[]statecheck.StateCheck{
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("account_id"),
 								knownvalue.StringExact(accountID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("name"),
 								knownvalue.StringExact(name),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("enabled"),
 								knownvalue.Bool(true),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("alert_type"),
 								knownvalue.StringExact("universal_ssl_event_type"),
 							),
 							// Verify email mechanism
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("email"),
 								knownvalue.SetExact([]knownvalue.Check{
 									knownvalue.ObjectExact(map[string]knownvalue.Check{
@@ -987,34 +987,34 @@ func TestMigrateNotificationPolicy_Minimal(t *testing.T) {
 								}),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("webhooks"),
 								knownvalue.Null(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("pagerduty"),
 								knownvalue.Null(),
 							),
 							// Verify optional fields are null/absent
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("description"),
 								knownvalue.Null(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("filters"),
 								knownvalue.Null(),
 							),
 							// Verify timestamps
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("created"),
 								knownvalue.NotNull(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("modified"),
 								knownvalue.NotNull(),
 							),
@@ -1052,7 +1052,7 @@ func TestMigrateNotificationPolicy_BillingFilters(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := "tf-test-" + rnd
 			tmpDir := t.TempDir()
@@ -1069,8 +1069,8 @@ func TestMigrateNotificationPolicy_BillingFilters(t *testing.T) {
 				// v4 provider has UUID normalization quirk with webhooks
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -1090,60 +1090,60 @@ func TestMigrateNotificationPolicy_BillingFilters(t *testing.T) {
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer,
 						[]statecheck.StateCheck{
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("account_id"),
 								knownvalue.StringExact(accountID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("name"),
 								knownvalue.StringExact(name),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("alert_type"),
 								knownvalue.StringExact("billing_usage_alert"),
 							),
 							// CRITICAL: Verify filters block (v4: TypeList/MaxItems:1) → v5: SingleNestedAttribute
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("filters"),
 								knownvalue.NotNull(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("filters").AtMapKey("product"),
 								knownvalue.ListSizeExact(1),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("filters").AtMapKey("limit"),
 								knownvalue.ListSizeExact(1),
 							),
 							// Verify webhook mechanism
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("email"),
 								knownvalue.Null(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("webhooks"),
 								knownvalue.SetSizeExact(1),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("pagerduty"),
 								knownvalue.Null(),
 							),
 							// Verify timestamps
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("created"),
 								knownvalue.NotNull(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("modified"),
 								knownvalue.NotNull(),
 							),
@@ -1181,8 +1181,8 @@ func TestMigrateNotificationPolicy_TrafficAnomaliesFilters(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := "tf-test-" + rnd
 			tmpDir := t.TempDir()
@@ -1198,8 +1198,8 @@ func TestMigrateNotificationPolicy_TrafficAnomaliesFilters(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -1218,54 +1218,54 @@ func TestMigrateNotificationPolicy_TrafficAnomaliesFilters(t *testing.T) {
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer,
 						[]statecheck.StateCheck{
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("account_id"),
 								knownvalue.StringExact(accountID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("name"),
 								knownvalue.StringExact(name),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("alert_type"),
 								knownvalue.StringExact("traffic_anomalies_alert"),
 							),
 							// Verify complex filters transformation
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("filters"),
 								knownvalue.NotNull(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("filters").AtMapKey("zones"),
 								knownvalue.ListSizeExact(1),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("filters").AtMapKey("selectors"),
 								knownvalue.ListSizeExact(1),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("filters").AtMapKey("alert_trigger_preferences"),
 								knownvalue.ListSizeExact(1),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("filters").AtMapKey("group_by"),
 								knownvalue.ListSizeExact(1),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("filters").AtMapKey("where"),
 								knownvalue.ListSizeExact(1),
 							),
 							// Verify email mechanism
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("email"),
 								knownvalue.SetExact([]knownvalue.Check{
 									knownvalue.ObjectExact(map[string]knownvalue.Check{
@@ -1274,23 +1274,23 @@ func TestMigrateNotificationPolicy_TrafficAnomaliesFilters(t *testing.T) {
 								}),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("webhooks"),
 								knownvalue.Null(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("mechanisms").AtMapKey("pagerduty"),
 								knownvalue.Null(),
 							),
 							// Verify timestamps
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("created"),
 								knownvalue.NotNull(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_notification_policy."+rnd,
+								"zenthcloud_notification_policy."+rnd,
 								tfjsonpath.New("modified"),
 								knownvalue.NotNull(),
 							),

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_botnet_feed_config_asn Data Source - Cloudflare"
+page_title: "zenthcloud_botnet_feed_config_asn Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   DDoS Botnet Feed ReadDDoS Botnet Feed Write
 ---
 
-# cloudflare_botnet_feed_config_asn (Data Source)
+# zenthcloud_botnet_feed_config_asn (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_botnet_feed_config_asn" "example_botnet_feed_config_asn" {
+data "zenthcloud_botnet_feed_config_asn" "example_botnet_feed_config_asn" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```

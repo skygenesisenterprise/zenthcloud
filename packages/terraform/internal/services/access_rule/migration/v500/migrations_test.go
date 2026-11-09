@@ -8,9 +8,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -74,7 +74,7 @@ func TestMigrateAccessRule_V4ToV5_BasicZone(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Test setup
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			testIP := generateRandomTestIP()
 			tmpDir := t.TempDir()
@@ -87,8 +87,8 @@ func TestMigrateAccessRule_V4ToV5_BasicZone(t *testing.T) {
 					{
 						// Step 1: Create with specific provider version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -99,37 +99,37 @@ func TestMigrateAccessRule_V4ToV5_BasicZone(t *testing.T) {
 						[]statecheck.StateCheck{
 							// Verify zone_id preserved
 							statecheck.ExpectKnownValue(
-								"cloudflare_access_rule."+rnd,
+								"zenthcloud_access_rule."+rnd,
 								tfjsonpath.New("zone_id"),
 								knownvalue.StringExact(zoneID),
 							),
 							// Verify mode preserved
 							statecheck.ExpectKnownValue(
-								"cloudflare_access_rule."+rnd,
+								"zenthcloud_access_rule."+rnd,
 								tfjsonpath.New("mode"),
 								knownvalue.StringExact("block"),
 							),
 							// Verify notes preserved
 							statecheck.ExpectKnownValue(
-								"cloudflare_access_rule."+rnd,
+								"zenthcloud_access_rule."+rnd,
 								tfjsonpath.New("notes"),
 								knownvalue.StringExact("Test access rule"),
 							),
 							// CRITICAL: Verify configuration.target (unwrapped from array)
 							statecheck.ExpectKnownValue(
-								"cloudflare_access_rule."+rnd,
+								"zenthcloud_access_rule."+rnd,
 								tfjsonpath.New("configuration").AtMapKey("target"),
 								knownvalue.StringExact("ip"),
 							),
 							// CRITICAL: Verify configuration.value (unwrapped from array)
 							statecheck.ExpectKnownValue(
-								"cloudflare_access_rule."+rnd,
+								"zenthcloud_access_rule."+rnd,
 								tfjsonpath.New("configuration").AtMapKey("value"),
 								knownvalue.StringExact(testIP),
 							),
 							// Verify new computed fields exist (NotNull)
 							statecheck.ExpectKnownValue(
-								"cloudflare_access_rule."+rnd,
+								"zenthcloud_access_rule."+rnd,
 								tfjsonpath.New("id"),
 								knownvalue.NotNull(),
 							),
@@ -172,7 +172,7 @@ func TestMigrateAccessRule_V4ToV5_Account(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Test setup
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			testIP := generateRandomTestIP()
 			tmpDir := t.TempDir()
@@ -184,8 +184,8 @@ func TestMigrateAccessRule_V4ToV5_Account(t *testing.T) {
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -195,31 +195,31 @@ func TestMigrateAccessRule_V4ToV5_Account(t *testing.T) {
 						[]statecheck.StateCheck{
 							// Verify account_id preserved
 							statecheck.ExpectKnownValue(
-								"cloudflare_access_rule."+rnd,
+								"zenthcloud_access_rule."+rnd,
 								tfjsonpath.New("account_id"),
 								knownvalue.StringExact(accountID),
 							),
 							// Verify mode preserved
 							statecheck.ExpectKnownValue(
-								"cloudflare_access_rule."+rnd,
+								"zenthcloud_access_rule."+rnd,
 								tfjsonpath.New("mode"),
 								knownvalue.StringExact("challenge"),
 							),
 							// Verify notes exists (should be empty string default)
 							statecheck.ExpectKnownValue(
-								"cloudflare_access_rule."+rnd,
+								"zenthcloud_access_rule."+rnd,
 								tfjsonpath.New("notes"),
 								knownvalue.NotNull(),
 							),
 							// CRITICAL: Verify configuration.target
 							statecheck.ExpectKnownValue(
-								"cloudflare_access_rule."+rnd,
+								"zenthcloud_access_rule."+rnd,
 								tfjsonpath.New("configuration").AtMapKey("target"),
 								knownvalue.StringExact("ip"),
 							),
 							// CRITICAL: Verify configuration.value
 							statecheck.ExpectKnownValue(
-								"cloudflare_access_rule."+rnd,
+								"zenthcloud_access_rule."+rnd,
 								tfjsonpath.New("configuration").AtMapKey("value"),
 								knownvalue.StringExact(testIP),
 							),

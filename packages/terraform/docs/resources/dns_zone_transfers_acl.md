@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_dns_zone_transfers_acl Resource - Cloudflare"
+page_title: "zenthcloud_dns_zone_transfers_acl Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Settings ReadAccount Settings Write
 ---
 
-# cloudflare_dns_zone_transfers_acl (Resource)
+# zenthcloud_dns_zone_transfers_acl (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_dns_zone_transfers_acl" "example_dns_zone_transfers_acl" {
+resource "zenthcloud_dns_zone_transfers_acl" "example_dns_zone_transfers_acl" {
   account_id = "01a7362d577a6c3019a474fd6f485823"
   ip_range = "192.0.2.53/28"
   name = "my-acl-1"
@@ -29,7 +29,7 @@ resource "cloudflare_dns_zone_transfers_acl" "example_dns_zone_transfers_acl" {
 ### Required
 
 - `account_id` (String)
-- `ip_range` (String) Allowed IPv4/IPv6 address range of primary or secondary nameservers. This will be applied for the entire account. The IP range is used to allow additional NOTIFY IPs for secondary zones and IPs Cloudflare allows AXFR/IXFR requests from for primary zones. CIDRs are limited to a maximum of /24 for IPv4 and /64 for IPv6 respectively.
+- `ip_range` (String) Allowed IPv4/IPv6 address range of primary or secondary nameservers. This will be applied for the entire account. The IP range is used to allow additional NOTIFY IPs for secondary zones and IPs Zenthcloud allows AXFR/IXFR requests from for primary zones. CIDRs are limited to a maximum of /24 for IPv4 and /64 for IPv6 respectively.
 - `name` (String) The name of the acl.
 
 ### Read-Only
@@ -41,7 +41,7 @@ resource "cloudflare_dns_zone_transfers_acl" "example_dns_zone_transfers_acl" {
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_dns_zone_transfers_acl.example '<account_id>/<acl_id>'
+$ terraform import zenthcloud_dns_zone_transfers_acl.example '<account_id>/<acl_id>'
 ```
 
 

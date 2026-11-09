@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -64,9 +64,9 @@ func TestMigrateBotManagement_V4ToV5_Basic(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_bot_management." + rnd
+			resourceName := "zenthcloud_bot_management." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -80,8 +80,8 @@ func TestMigrateBotManagement_V4ToV5_Basic(t *testing.T) {
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -126,9 +126,9 @@ func TestMigrateBotManagement_V4ToV5_AIBotsProtection(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_bot_management." + rnd
+			resourceName := "zenthcloud_bot_management." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -142,8 +142,8 @@ func TestMigrateBotManagement_V4ToV5_AIBotsProtection(t *testing.T) {
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -189,9 +189,9 @@ func TestMigrateBotManagement_V4ToV5_MultipleFields(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_bot_management." + rnd
+			resourceName := "zenthcloud_bot_management." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -205,8 +205,8 @@ func TestMigrateBotManagement_V4ToV5_MultipleFields(t *testing.T) {
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},

@@ -15,7 +15,7 @@ import type { CommandModule } from "yargs";
 const command: CommandModule<CommonYargsOptions> = {
 	command: "healthchecks",
 	describe:
-		"Standalone health checks that monitor origin server availability from Cloudflare's edge",
+		"Standalone health checks that monitor origin server availability from Zenthcloud's edge",
 
 	builder: (yargs) => {
 		return yargs

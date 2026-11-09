@@ -9,7 +9,7 @@ import type { JSONObject } from "@modelcontextprotocol/server";
 export const intel$$sinkholes_ingress_create_params: JSONObject = {
   "properties": {
     "cidr": {
-      "description": "The CIDR block for the ingress rule in IPv4 or IPv6 notation (e.g., 192.0.2.0/24). Provide a Cloudflare BYOIP CIDR that your account owns.",
+      "description": "The CIDR block for the ingress rule in IPv4 or IPv6 notation (e.g., 192.0.2.0/24). Provide a Zenthcloud BYOIP CIDR that your account owns.",
       "type": "string"
     }
   },

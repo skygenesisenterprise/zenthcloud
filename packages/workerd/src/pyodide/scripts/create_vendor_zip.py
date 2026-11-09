@@ -148,7 +148,7 @@ def vendor_package(package_names: list[str], python: PyVer) -> tuple[Path, bool]
         print(f"Successfully created: {zip_path}")
         print(
             "Upload this zip file to the ew-snapshot-tests R2 bucket: "
-            + "https://dash.cloudflare.com/e415f1017791ced9d5f3eb0df2b31c9e/r2/default/buckets/ew-snapshot-tests"
+            + "https://github.com/skygenesisenterprise/zenthcloud"
         )
         return zip_path, native
     finally:

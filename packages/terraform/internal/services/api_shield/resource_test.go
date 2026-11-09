@@ -6,12 +6,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/api_gateway"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/api_gateway"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -23,19 +23,19 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_api_shield", &resource.Sweeper{
-		Name: "cloudflare_api_shield",
-		F:    testSweepCloudflareAPIShield,
+	resource.AddTestSweepers("zenthcloud_api_shield", &resource.Sweeper{
+		Name: "zenthcloud_api_shield",
+		F:    testSweepZenthcloudAPIShield,
 	})
 }
 
-func testSweepCloudflareAPIShield(r string) error {
+func testSweepZenthcloudAPIShield(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping API Shield sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping API Shield sweep: ZENTHCLOUD_ZONE_ID not set")
 		return nil
 	}
 
@@ -43,7 +43,7 @@ func testSweepCloudflareAPIShield(r string) error {
 	_, err := client.APIGateway.Configurations.Update(
 		ctx,
 		api_gateway.ConfigurationUpdateParams{
-			ZoneID: cloudflare.F(zoneID),
+			ZoneID: zenthcloud.F(zoneID),
 		},
 		option.WithRequestBody("application/json", []byte(`{"auth_id_characteristics":[]}`)),
 	)
@@ -56,16 +56,16 @@ func testSweepCloudflareAPIShield(r string) error {
 	return nil
 }
 
-func TestAccCloudflareAPIShieldBasic(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the API token
+func TestAccZenthcloudAPIShieldBasic(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the API token
 	// endpoint does not yet support the API tokens without an explicit scope.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceID := "cloudflare_api_shield." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceID := "zenthcloud_api_shield." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -73,7 +73,7 @@ func TestAccCloudflareAPIShieldBasic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Step 1: Create the resource with a single header-based auth characteristic
 			{
-				Config: testAccCloudflareAPIShieldBasic(rnd, zoneID),
+				Config: testAccZenthcloudAPIShieldBasic(rnd, zoneID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceID, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(resourceID, "auth_id_characteristics.#", "1"),
@@ -85,7 +85,7 @@ func TestAccCloudflareAPIShieldBasic(t *testing.T) {
 			// Step 2: Update the resource to use a cookie-based auth characteristic instead
 			// Tests that we can change both the type and name of characteristics
 			{
-				Config: testAccCloudflareAPIShieldUpdate(rnd, zoneID),
+				Config: testAccZenthcloudAPIShieldUpdate(rnd, zoneID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceID, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(resourceID, "auth_id_characteristics.#", "1"),
@@ -97,7 +97,7 @@ func TestAccCloudflareAPIShieldBasic(t *testing.T) {
 			// Step 3: Remove all auth characteristics by just setting to an empty array
 			// Tests that we can remove auth characteristics
 			{
-				Config: testAccCloudflareAPIShieldDeleteEmpty(rnd, zoneID),
+				Config: testAccZenthcloudAPIShieldDeleteEmpty(rnd, zoneID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceID, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(resourceID, "auth_id_characteristics.#", "0"),
@@ -106,7 +106,7 @@ func TestAccCloudflareAPIShieldBasic(t *testing.T) {
 			// Step 4: Add multiple auth characteristics
 			// Tests that we can have multiple auth characteristics of different types
 			{
-				Config: testAccCloudflareAPIShieldMultipleCharacteristics(rnd, zoneID),
+				Config: testAccZenthcloudAPIShieldMultipleCharacteristics(rnd, zoneID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceID, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(resourceID, "auth_id_characteristics.#", "2"),
@@ -131,35 +131,35 @@ func TestAccCloudflareAPIShieldBasic(t *testing.T) {
 	})
 }
 
-func testAccCloudflareAPIShieldBasic(resourceName, zone string) string {
+func testAccZenthcloudAPIShieldBasic(resourceName, zone string) string {
 	return acctest.LoadTestCase("basic.tf", resourceName, zone)
 }
 
-func testAccCloudflareAPIShieldUpdate(resourceName, zone string) string {
+func testAccZenthcloudAPIShieldUpdate(resourceName, zone string) string {
 	return acctest.LoadTestCase("update.tf", resourceName, zone)
 }
 
-func testAccCloudflareAPIShieldMultipleCharacteristics(resourceName, zone string) string {
+func testAccZenthcloudAPIShieldMultipleCharacteristics(resourceName, zone string) string {
 	return acctest.LoadTestCase("multiple.tf", resourceName, zone)
 }
 
-func testAccCloudflareAPIShieldDeleteEmpty(resourceName, zone string) string {
+func testAccZenthcloudAPIShieldDeleteEmpty(resourceName, zone string) string {
 	return acctest.LoadTestCase("delete_empty.tf", resourceName, zone)
 }
 
 func TestAccUpgradeApiShield_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
-	config := testAccCloudflareAPIShieldBasic(rnd, zoneID)
+	config := testAccZenthcloudAPIShieldBasic(rnd, zoneID)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

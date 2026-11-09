@@ -6,11 +6,11 @@ import {
 	writeFileSync,
 } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { clearOutputFilePath } from "@cloudflare/workers-utils";
+import { clearOutputFilePath } from "@zenthcloud/workers-utils";
 import {
 	mockConsoleMethods,
 	runInTempDir,
-} from "@cloudflare/workers-utils/test-helpers";
+} from "@zenthcloud/workers-utils/test-helpers";
 import {
 	afterEach,
 	beforeEach,
@@ -43,11 +43,11 @@ const mocks = vi.hoisted(() => ({
 	runBuild: vi.fn(),
 }));
 
-vi.mock("@cloudflare/build-output-utils", () => ({
+vi.mock("@zenthcloud/build-output-utils", () => ({
 	readBuildOutput: mocks.readBuildOutput,
 }));
 
-vi.mock("@cloudflare/deploy-helpers", () => ({
+vi.mock("@zenthcloud/deploy-helpers", () => ({
 	assertPreviewBuildOutputRootConfig: mocks.assertPreviewBuildOutputRootConfig,
 	getBranchName: mocks.getBranchName,
 	initDeployHelpersContext: mocks.initDeployHelpersContext,

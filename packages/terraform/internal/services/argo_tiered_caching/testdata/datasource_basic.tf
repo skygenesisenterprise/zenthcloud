@@ -1,10 +1,10 @@
-resource "cloudflare_argo_tiered_caching" "%[2]s" {
+resource "zenthcloud_argo_tiered_caching" "%[2]s" {
 	zone_id = "%[1]s"
 	value   = "on"
 }
 
-data "cloudflare_argo_tiered_caching" "%[2]s" {
-	zone_id = cloudflare_argo_tiered_caching.%[2]s.zone_id
+data "zenthcloud_argo_tiered_caching" "%[2]s" {
+	zone_id = zenthcloud_argo_tiered_caching.%[2]s.zone_id
 	
-	depends_on = [cloudflare_argo_tiered_caching.%[2]s]
+	depends_on = [zenthcloud_argo_tiered_caching.%[2]s]
 }

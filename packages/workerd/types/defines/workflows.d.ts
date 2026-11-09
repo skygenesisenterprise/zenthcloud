@@ -1,4 +1,4 @@
-declare module 'cloudflare:workflows' {
+declare module 'zenthcloud:workflows' {
   /**
    * NonRetryableError allows for a user to throw a fatal error
    * that makes a Workflow instance fail immediately without triggering a retry

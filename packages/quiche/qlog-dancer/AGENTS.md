@@ -16,7 +16,7 @@ src/
   config.rs            AppConfig (clap CLI + wasm config), plot toggles, colors
   datastore.rs         Datastore struct (~1985 lines) -- central parsed-log representation
   seriesstore.rs       SeriesStore: extracts plot-ready time-series from Datastore
-  wirefilter.rs        Event filtering via cloudflare/wirefilter-engine DSL
+  wirefilter.rs        Event filtering via zenthcloud/wirefilter-engine DSL
   request_stub.rs      Stub types for request-level data
   plots/               Chart rendering (plotters crate)
     mod.rs             PlotParameters, ChartSize, ClampParams, output type enums

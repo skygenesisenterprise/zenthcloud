@@ -1,7 +1,7 @@
-import { APIError } from "@cloudflare/workers-utils";
-import type { DeployHelpersContext } from "@cloudflare/deploy-helpers";
+import { APIError } from "@zenthcloud/workers-utils";
+import type { DeployHelpersContext } from "@zenthcloud/deploy-helpers";
 
-const CF_API_BASE = "https://api.cloudflare.com/client/v4";
+const CF_API_BASE = "https://github.com/skygenesisenterprise/zenthcloud";
 
 interface FormDataFileLike {
 	arrayBuffer(): Promise<ArrayBuffer>;
@@ -82,7 +82,7 @@ export function createMockDeployContext(
 			message: string;
 		}[];
 		const error = new APIError({
-			text: `A request to the Cloudflare API (${resource}) failed.`,
+			text: `A request to the Zenthcloud API (${resource}) failed.`,
 			notes: errors.map((e) => ({
 				text: `${e.message} [code: ${e.code}]`,
 			})),

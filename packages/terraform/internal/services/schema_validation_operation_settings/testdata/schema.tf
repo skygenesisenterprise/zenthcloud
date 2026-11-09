@@ -1,11 +1,11 @@
-resource "cloudflare_api_shield_operation" "getAllProductsOne" {
+resource "zenthcloud_api_shield_operation" "getAllProductsOne" {
   zone_id = "%[2]s"
   endpoint = "/products_one"
   host = "api.example.com"
   method = "GET"
 }
 
-resource "cloudflare_schema_validation_schemas" "%[1]s" {
+resource "zenthcloud_schema_validation_schemas" "%[1]s" {
   zone_id = "%[2]s"
   kind = "openapi_v3"
   name = "test_schema.yaml"
@@ -13,8 +13,8 @@ resource "cloudflare_schema_validation_schemas" "%[1]s" {
   validation_enabled = true
 }
 
-resource "cloudflare_schema_validation_operation_settings" "%[1]s" {
+resource "zenthcloud_schema_validation_operation_settings" "%[1]s" {
   zone_id = "%[2]s"
-  operation_id = cloudflare_api_shield_operation.getAllProductsOne.operation_id
+  operation_id = zenthcloud_api_shield_operation.getAllProductsOne.operation_id
   mitigation_action = "%[3]s"
 }

@@ -8,9 +8,9 @@ describe("r2", () => {
 	runInTempDir();
 	const std = mockConsoleMethods();
 
-	// cf keeps `--local` state next to the project's cloudflare.config.ts.
+	// cf keeps `--local` state next to the project's zenthcloud.config.ts.
 	beforeEach(() => {
-		writeFileSync("cloudflare.config.ts", "export default {};");
+		writeFileSync("zenthcloud.config.ts", "export default {};");
 	});
 
 	function local(persistTo?: string): string {

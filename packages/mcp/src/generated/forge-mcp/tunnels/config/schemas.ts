@@ -19,7 +19,7 @@ export const tunnel_config: JSONObject = {
     },
     "originRequest": {
       "$ref": "#/$defs/tunnel_originRequest",
-      "description": "Configuration parameters for the public hostname specific connection settings between cloudflared and origin server."
+      "description": "Configuration parameters for the public hostname specific connection settings between zenthcloudd and origin server."
     }
   },
   "type": "object"
@@ -37,7 +37,7 @@ export const tunnel_ingressRule: JSONObject = {
     },
     "originRequest": {
       "$ref": "#/$defs/tunnel_originRequest",
-      "description": "Configuration parameters for the public hostname specific connection settings between cloudflared and origin server."
+      "description": "Configuration parameters for the public hostname specific connection settings between zenthcloudd and origin server."
     },
     "path": {
       "description": "Requests with this path route to this public hostname.",
@@ -59,10 +59,10 @@ export const tunnel_ingressRule: JSONObject = {
  * The schema of `tunnel_originRequest`.
  */
 export const tunnel_originRequest: JSONObject = {
-  "description": "Configuration parameters for the public hostname specific connection settings between cloudflared and origin server.",
+  "description": "Configuration parameters for the public hostname specific connection settings between zenthcloudd and origin server.",
   "properties": {
     "access": {
-      "description": "For all L7 requests to this hostname, cloudflared will validate each request's Cf-Access-Jwt-Assertion request header.",
+      "description": "For all L7 requests to this hostname, zenthcloudd will validate each request's Cf-Access-Jwt-Assertion request header.",
       "properties": {
         "audTag": {
           "description": "Access applications that are allowed to reach this hostname for this Tunnel. Audience tags can be identified in the dashboard or via the List Access policies API.",
@@ -86,7 +86,7 @@ export const tunnel_originRequest: JSONObject = {
       "type": "object"
     },
     "caPool": {
-      "description": "Path to the certificate authority (CA) for the certificate of your origin. This option should be used only if your certificate is not signed by Cloudflare.",
+      "description": "Path to the certificate authority (CA) for the certificate of your origin. This option should be used only if your certificate is not signed by Zenthcloud.",
       "type": "string"
     },
     "connectTimeout": {
@@ -126,11 +126,11 @@ export const tunnel_originRequest: JSONObject = {
       "type": "boolean"
     },
     "originServerName": {
-      "description": "Hostname that cloudflared should expect from your origin server certificate.",
+      "description": "Hostname that zenthcloudd should expect from your origin server certificate.",
       "type": "string"
     },
     "proxyType": {
-      "description": "cloudflared starts a proxy server to translate HTTP traffic into TCP when proxying, for example, SSH or RDP. This configures what type of proxy will be started. Valid options are: \"\" for the regular proxy and \"socks\" for a SOCKS5 proxy.",
+      "description": "zenthcloudd starts a proxy server to translate HTTP traffic into TCP when proxying, for example, SSH or RDP. This configures what type of proxy will be started. Valid options are: \"\" for the regular proxy and \"socks\" for a SOCKS5 proxy.",
       "type": "string"
     },
     "tcpKeepAlive": {

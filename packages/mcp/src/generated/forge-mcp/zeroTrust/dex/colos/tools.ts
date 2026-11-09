@@ -15,8 +15,8 @@ import { digital$$experience$$monitoring_colos_response } from "./outputs.js";
 export const tools: readonly Tool[] = [
   {
     name: "zeroTrust_dex_colos_list",
-    title: "List Cloudflare colos",
-    description: "List Cloudflare colos that account's devices were connected to during a time period, sorted by usage starting from the most used colo. Colos without traffic are also returned and sorted alphabetically.\n\nGET /accounts/{account_id}/dex/colos",
+    title: "List Zenthcloud colos",
+    description: "List Zenthcloud colos that account's devices were connected to during a time period, sorted by usage starting from the most used colo. Colos without traffic are also returned and sorted alphabetically.\n\nGET /accounts/{account_id}/dex/colos",
     inputSchema: {
       type: "object",
       properties: {
@@ -24,7 +24,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Unique Cloudflare account ID.",
+              "description": "Unique Zenthcloud account ID.",
               "type": "string"
             }
           },
@@ -41,7 +41,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "sortBy": {
-              "description": "Type of usage that colos should be sorted by. If unspecified, returns all Cloudflare colos sorted alphabetically.",
+              "description": "Type of usage that colos should be sorted by. If unspecified, returns all Zenthcloud colos sorted alphabetically.",
               "enum": [
                 "fleet-status-usage",
                 "application-tests-usage"
@@ -91,7 +91,7 @@ export const tools: readonly Tool[] = [
       "idempotentHint": true,
       "openWorldHint": true,
       "readOnlyHint": true,
-      "title": "List Cloudflare colos"
+      "title": "List Zenthcloud colos"
     },
     [OPERATION]: {
       method: "GET",
@@ -104,8 +104,8 @@ export const tools: readonly Tool[] = [
       ],
       extensions: {
         "x-api-token-group": [
-          "Cloudflare DEX Write",
-          "Cloudflare DEX Read",
+          "Zenthcloud DEX Write",
+          "Zenthcloud DEX Read",
           "Zero Trust Report",
           "Zero Trust Read"
         ]

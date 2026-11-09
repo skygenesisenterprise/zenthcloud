@@ -1,3 +1,3 @@
-resource "cloudflare_email_routing_dns" "%[1]s" {
+resource "zenthcloud_email_routing_dns" "%[1]s" {
   zone_id = "%[2]s"
 }

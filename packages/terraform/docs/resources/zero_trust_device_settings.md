@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_device_settings Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_device_settings Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust Write
 ---
 
-# cloudflare_zero_trust_device_settings (Resource)
+# zenthcloud_zero_trust_device_settings (Resource)
 
 Accepted Permissions
 
@@ -15,7 +15,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_device_settings" "example_zero_trust_device_settings" {
+resource "zenthcloud_zero_trust_device_settings" "example_zero_trust_device_settings" {
   account_id = "699d98642c564d2e855e9661899b7252"
   disable_for_time = 0
   external_emergency_signal_enabled = true
@@ -45,7 +45,7 @@ resource "cloudflare_zero_trust_device_settings" "example_zero_trust_device_sett
 - `external_emergency_signal_url` (String) The HTTPS URL from which to fetch the emergency disconnect signal. Must use HTTPS and have an IPv4 or IPv6 address as the host.
 - `gateway_proxy_enabled` (Boolean) Enable gateway proxy filtering on TCP.
 - `gateway_udp_proxy_enabled` (Boolean) Enable gateway proxy filtering on UDP.
-- `root_certificate_installation_enabled` (Boolean) Enable installation of cloudflare managed root certificate.
+- `root_certificate_installation_enabled` (Boolean) Enable installation of zenthcloud managed root certificate.
 - `use_zt_virtual_ip` (Boolean) Enable using CGNAT virtual IPv4.
 
 ## Import

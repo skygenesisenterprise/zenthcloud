@@ -19,7 +19,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		)
 		.positional("organization-id", {
 			type: "string",
-			description: "Identifies the Cloudflare organization.",
+			description: "Identifies the Zenthcloud organization.",
 			demandOption: true,
 		})
 		.option("from", {
@@ -63,7 +63,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf organizations billing usage get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/organizations/${argv["organization-id"] == null ? "<organization-id>" : encodeURIComponent(String(argv["organization-id"]))}/billable/usage`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["organization-id"] == null ? "<organization-id>" : encodeURIComponent(String(argv["organization-id"]))}/billable/usage`,
 						pathParams: {
 							"organization-id": String(argv["organization-id"] ?? ""),
 						},

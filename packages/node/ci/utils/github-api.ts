@@ -8,7 +8,7 @@
 import { Octokit } from "@octokit/rest";
 
 export const GITHUB_API_URL = "https://api.github.com";
-export const GITHUB_REPO_OWNER = "cloudflare";
+export const GITHUB_REPO_OWNER = "zenthcloud";
 export const GITHUB_REPO_NAME = "kumo";
 
 /**

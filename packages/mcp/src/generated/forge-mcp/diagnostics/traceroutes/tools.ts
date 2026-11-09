@@ -30,7 +30,7 @@ export const tools: readonly Tool[] = [
   {
     name: "diagnostics_traceroutes_create",
     title: "Traceroute",
-    description: "Run traceroutes from Cloudflare colos.\n\nPOST /accounts/{account_id}/diagnostics/traceroute",
+    description: "Run traceroutes from Zenthcloud colos.\n\nPOST /accounts/{account_id}/diagnostics/traceroute",
     inputSchema: {
       type: "object",
       properties: {

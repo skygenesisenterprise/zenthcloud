@@ -5,8 +5,8 @@ package pipeline_sink
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -83,7 +83,7 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 							CustomType:  customfield.NewNestedObjectType[PipelineSinksConfigDataSourceModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"account_id": schema.StringAttribute{
-									Description: "Cloudflare Account ID for the bucket",
+									Description: "Zenthcloud Account ID for the bucket",
 									Computed:    true,
 								},
 								"bucket": schema.StringAttribute{

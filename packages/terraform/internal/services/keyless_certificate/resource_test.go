@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -22,23 +22,23 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_keyless_certificate", &resource.Sweeper{
-		Name: "cloudflare_keyless_certificate",
-		F:    testSweepCloudflareKeylessCertificates,
+	resource.AddTestSweepers("zenthcloud_keyless_certificate", &resource.Sweeper{
+		Name: "zenthcloud_keyless_certificate",
+		F:    testSweepZenthcloudKeylessCertificates,
 	})
 }
 
-func testSweepCloudflareKeylessCertificates(r string) error {
+func testSweepZenthcloudKeylessCertificates(r string) error {
 	ctx := context.Background()
 	client, clientErr := acctest.SharedV1Client()
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 		return clientErr
 	}
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping keyless certificates sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping keyless certificates sweep: ZENTHCLOUD_ZONE_ID not set")
 		return nil
 	}
 
@@ -71,19 +71,19 @@ func testSweepCloudflareKeylessCertificates(r string) error {
 	return nil
 }
 
-func TestAccCloudflareKeylessSSL_Basic(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+func TestAccZenthcloudKeylessSSL_Basic(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_keyless_certificate.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_keyless_certificate.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareKeylessCertificateDestroy,
+		CheckDestroy:             testAccCheckZenthcloudKeylessCertificateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareKeylessCertificate(rnd, zoneID, domain),
+				Config: testAccZenthcloudKeylessCertificate(rnd, zoneID, domain),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(name, "port", "24008"),
@@ -96,15 +96,15 @@ func TestAccCloudflareKeylessSSL_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareKeylessCertificateDestroy(s *terraform.State) error {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func testAccCheckZenthcloudKeylessCertificateDestroy(s *terraform.State) error {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_keyless_certificate" {
+		if rs.Type != "zenthcloud_keyless_certificate" {
 			continue
 		}
 
@@ -131,7 +131,7 @@ func testAccCheckCloudflareKeylessCertificateDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCloudflareKeylessCertificate(resourceName, zoneId string, domain string) string {
+func testAccZenthcloudKeylessCertificate(resourceName, zoneId string, domain string) string {
 	expiry := time.Now().Add(time.Hour * 730)
 	cert, _, _ := utils.GenerateEphemeralCertAndKey([]string{domain}, expiry)
 

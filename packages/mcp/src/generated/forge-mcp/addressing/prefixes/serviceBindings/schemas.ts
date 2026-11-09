@@ -13,7 +13,7 @@ export const addressing_create_binding_request: JSONObject = {
       "type": "string"
     },
     "service_id": {
-      "description": "Identifier of a Service on the Cloudflare network. Available services and their IDs may be found in the\n**List Services** endpoint.",
+      "description": "Identifier of a Service on the Zenthcloud network. Available services and their IDs may be found in the\n**List Services** endpoint.",
       "type": "string"
     }
   },

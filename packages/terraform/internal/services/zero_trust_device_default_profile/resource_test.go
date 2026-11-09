@@ -6,10 +6,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -22,13 +22,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zero_trust_device_default_profile", &resource.Sweeper{
-		Name: "cloudflare_zero_trust_device_default_profile",
-		F:    testSweepCloudflareZeroTrustDeviceDefaultProfile,
+	resource.AddTestSweepers("zenthcloud_zero_trust_device_default_profile", &resource.Sweeper{
+		Name: "zenthcloud_zero_trust_device_default_profile",
+		F:    testSweepZenthcloudZeroTrustDeviceDefaultProfile,
 	})
 }
 
-// testSweepCloudflareZeroTrustDeviceDefaultProfile resets the include/exclude split tunnel fields
+// testSweepZenthcloudZeroTrustDeviceDefaultProfile resets the include/exclude split tunnel fields
 // on the account's default device profile.
 //
 // The default device profile is a singleton per account — it cannot be deleted, only patched.
@@ -41,10 +41,10 @@ func init() {
 // - Delete is a no-op (the default profile cannot be removed)
 //
 // Run with: go test ./internal/services/zero_trust_device_default_profile/ -v -sweep=all
-func testSweepCloudflareZeroTrustDeviceDefaultProfile(r string) error {
+func testSweepZenthcloudZeroTrustDeviceDefaultProfile(r string) error {
 	ctx := context.Background()
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
 		return nil
 	}
@@ -55,16 +55,16 @@ func testSweepCloudflareZeroTrustDeviceDefaultProfile(r string) error {
 	// from previous test runs. Both cannot be set in the same request, so we clear include
 	// first (setting it to []) then clear exclude separately.
 	_, err := client.ZeroTrust.Devices.Policies.Default.Edit(ctx, zero_trust.DevicePolicyDefaultEditParams{
-		AccountID: cloudflare.F(accountID),
-		Include:   cloudflare.F([]zero_trust.SplitTunnelIncludeUnionParam{}),
+		AccountID: zenthcloud.F(accountID),
+		Include:   zenthcloud.F([]zero_trust.SplitTunnelIncludeUnionParam{}),
 	})
 	if err != nil {
 		fmt.Printf("failed to reset include on default device profile: %v\n", err)
 	}
 
 	_, err = client.ZeroTrust.Devices.Policies.Default.Edit(ctx, zero_trust.DevicePolicyDefaultEditParams{
-		AccountID: cloudflare.F(accountID),
-		Exclude:   cloudflare.F([]zero_trust.SplitTunnelExcludeUnionParam{}),
+		AccountID: zenthcloud.F(accountID),
+		Exclude:   zenthcloud.F([]zero_trust.SplitTunnelExcludeUnionParam{}),
 	})
 	if err != nil {
 		fmt.Printf("failed to reset exclude on default device profile: %v\n", err)
@@ -73,10 +73,10 @@ func testSweepCloudflareZeroTrustDeviceDefaultProfile(r string) error {
 	return nil
 }
 
-func TestAccCloudflareZeroTrustDeviceDefaultProfile_Basic(t *testing.T) {
+func TestAccZenthcloudZeroTrustDeviceDefaultProfile_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_device_default_profile.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_device_default_profile.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck_AccountID(t) },
@@ -84,7 +84,7 @@ func TestAccCloudflareZeroTrustDeviceDefaultProfile_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create
 			{
-				Config: testAccCloudflareZeroTrustDeviceDefaultProfileBasic(accountID, rnd),
+				Config: testAccZenthcloudZeroTrustDeviceDefaultProfileBasic(accountID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("allow_mode_switch"), knownvalue.Bool(true)),
@@ -105,17 +105,17 @@ func TestAccCloudflareZeroTrustDeviceDefaultProfile_Basic(t *testing.T) {
 				ImportStateId:           accountID,
 			},
 			{
-				Config:   testAccCloudflareZeroTrustDeviceDefaultProfileBasic(accountID, rnd),
+				Config:   testAccZenthcloudZeroTrustDeviceDefaultProfileBasic(accountID, rnd),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareZeroTrustDeviceDefaultProfile_Update(t *testing.T) {
+func TestAccZenthcloudZeroTrustDeviceDefaultProfile_Update(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_device_default_profile.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_device_default_profile.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck_AccountID(t) },
@@ -123,7 +123,7 @@ func TestAccCloudflareZeroTrustDeviceDefaultProfile_Update(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create
 			{
-				Config: testAccCloudflareZeroTrustDeviceDefaultProfileBasic(accountID, rnd),
+				Config: testAccZenthcloudZeroTrustDeviceDefaultProfileBasic(accountID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("allow_mode_switch"), knownvalue.Bool(true)),
@@ -133,7 +133,7 @@ func TestAccCloudflareZeroTrustDeviceDefaultProfile_Update(t *testing.T) {
 			},
 			// Update
 			{
-				Config: testAccCloudflareZeroTrustDeviceDefaultProfileUpdated(accountID, rnd),
+				Config: testAccZenthcloudZeroTrustDeviceDefaultProfileUpdated(accountID, rnd),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -157,24 +157,24 @@ func TestAccCloudflareZeroTrustDeviceDefaultProfile_Update(t *testing.T) {
 				ImportStateId:           accountID,
 			},
 			{
-				Config:   testAccCloudflareZeroTrustDeviceDefaultProfileUpdated(accountID, rnd),
+				Config:   testAccZenthcloudZeroTrustDeviceDefaultProfileUpdated(accountID, rnd),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareZeroTrustDeviceDefaultProfile_Complete(t *testing.T) {
+func TestAccZenthcloudZeroTrustDeviceDefaultProfile_Complete(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_device_default_profile.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_device_default_profile.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck_AccountID(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareZeroTrustDeviceDefaultProfileComplete(accountID, rnd),
+				Config: testAccZenthcloudZeroTrustDeviceDefaultProfileComplete(accountID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("allow_mode_switch"), knownvalue.Bool(true)),
@@ -196,24 +196,24 @@ func TestAccCloudflareZeroTrustDeviceDefaultProfile_Complete(t *testing.T) {
 				ImportStateId:           accountID,
 			},
 			{
-				Config:   testAccCloudflareZeroTrustDeviceDefaultProfileComplete(accountID, rnd),
+				Config:   testAccZenthcloudZeroTrustDeviceDefaultProfileComplete(accountID, rnd),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareZeroTrustDeviceDefaultProfile_WithExclude(t *testing.T) {
+func TestAccZenthcloudZeroTrustDeviceDefaultProfile_WithExclude(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_device_default_profile.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_device_default_profile.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck_AccountID(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareZeroTrustDeviceDefaultProfileWithExclude(accountID, rnd),
+				Config: testAccZenthcloudZeroTrustDeviceDefaultProfileWithExclude(accountID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("auto_connect"), knownvalue.Float64Exact(60)),
@@ -228,24 +228,24 @@ func TestAccCloudflareZeroTrustDeviceDefaultProfile_WithExclude(t *testing.T) {
 				ImportStateId:           accountID,
 			},
 			{
-				Config:   testAccCloudflareZeroTrustDeviceDefaultProfileWithExclude(accountID, rnd),
+				Config:   testAccZenthcloudZeroTrustDeviceDefaultProfileWithExclude(accountID, rnd),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareZeroTrustDeviceDefaultProfile_WithInclude(t *testing.T) {
+func TestAccZenthcloudZeroTrustDeviceDefaultProfile_WithInclude(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_device_default_profile.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_device_default_profile.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck_AccountID(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareZeroTrustDeviceDefaultProfileWithInclude(accountID, rnd),
+				Config: testAccZenthcloudZeroTrustDeviceDefaultProfileWithInclude(accountID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("auto_connect"), knownvalue.Float64Exact(60)),
@@ -260,46 +260,46 @@ func TestAccCloudflareZeroTrustDeviceDefaultProfile_WithInclude(t *testing.T) {
 				ImportStateId:           accountID,
 			},
 			{
-				Config:   testAccCloudflareZeroTrustDeviceDefaultProfileWithInclude(accountID, rnd),
+				Config:   testAccZenthcloudZeroTrustDeviceDefaultProfileWithInclude(accountID, rnd),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func testAccCloudflareZeroTrustDeviceDefaultProfileBasic(accountID, rnd string) string {
+func testAccZenthcloudZeroTrustDeviceDefaultProfileBasic(accountID, rnd string) string {
 	return acctest.LoadTestCase("devicedefaultprofilebasic.tf", rnd, accountID)
 }
 
-func testAccCloudflareZeroTrustDeviceDefaultProfileComplete(accountID, rnd string) string {
+func testAccZenthcloudZeroTrustDeviceDefaultProfileComplete(accountID, rnd string) string {
 	return acctest.LoadTestCase("devicedefaultprofilecomplete.tf", rnd, accountID)
 }
 
-func testAccCloudflareZeroTrustDeviceDefaultProfileUpdated(accountID, rnd string) string {
+func testAccZenthcloudZeroTrustDeviceDefaultProfileUpdated(accountID, rnd string) string {
 	return acctest.LoadTestCase("devicedefaultprofileupdated.tf", rnd, accountID)
 }
 
-func testAccCloudflareZeroTrustDeviceDefaultProfileWithExclude(accountID, rnd string) string {
+func testAccZenthcloudZeroTrustDeviceDefaultProfileWithExclude(accountID, rnd string) string {
 	return acctest.LoadTestCase("devicedefaultprofilewithexclude.tf", rnd, accountID)
 }
 
-func testAccCloudflareZeroTrustDeviceDefaultProfileWithInclude(accountID, rnd string) string {
+func testAccZenthcloudZeroTrustDeviceDefaultProfileWithInclude(accountID, rnd string) string {
 	return acctest.LoadTestCase("devicedefaultprofilewithinclude.tf", rnd, accountID)
 }
 
 func TestAccUpgradeZeroTrustDeviceDefaultProfile_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
-	config := testAccCloudflareZeroTrustDeviceDefaultProfileBasic(accountID, rnd)
+	config := testAccZenthcloudZeroTrustDeviceDefaultProfileBasic(accountID, rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck_AccountID(t) },
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},
@@ -318,17 +318,17 @@ func TestAccUpgradeZeroTrustDeviceDefaultProfile_FromPublishedV5(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareZeroTrustDeviceDefaultProfile_ServiceModeProxy(t *testing.T) {
+func TestAccZenthcloudZeroTrustDeviceDefaultProfile_ServiceModeProxy(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_device_default_profile.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_device_default_profile.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck_AccountID(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareZeroTrustDeviceDefaultProfileServiceModeProxy(accountID, rnd),
+				Config: testAccZenthcloudZeroTrustDeviceDefaultProfileServiceModeProxy(accountID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("service_mode_v2").AtMapKey("mode"), knownvalue.StringExact("proxy")),
@@ -343,24 +343,24 @@ func TestAccCloudflareZeroTrustDeviceDefaultProfile_ServiceModeProxy(t *testing.
 				ImportStateId:           accountID,
 			},
 			{
-				Config:   testAccCloudflareZeroTrustDeviceDefaultProfileServiceModeProxy(accountID, rnd),
+				Config:   testAccZenthcloudZeroTrustDeviceDefaultProfileServiceModeProxy(accountID, rnd),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareZeroTrustDeviceDefaultProfile_UnsetOptionals(t *testing.T) {
+func TestAccZenthcloudZeroTrustDeviceDefaultProfile_UnsetOptionals(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_device_default_profile.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_device_default_profile.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck_AccountID(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareZeroTrustDeviceDefaultProfileWithOptionals(accountID, rnd),
+				Config: testAccZenthcloudZeroTrustDeviceDefaultProfileWithOptionals(accountID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("allow_mode_switch"), knownvalue.Bool(true)),
@@ -378,7 +378,7 @@ func TestAccCloudflareZeroTrustDeviceDefaultProfile_UnsetOptionals(t *testing.T)
 				},
 			},
 			{
-				Config: testAccCloudflareZeroTrustDeviceDefaultProfileWithoutOptionals(accountID, rnd),
+				Config: testAccZenthcloudZeroTrustDeviceDefaultProfileWithoutOptionals(accountID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("allow_mode_switch"), knownvalue.Bool(false)),
@@ -403,21 +403,21 @@ func TestAccCloudflareZeroTrustDeviceDefaultProfile_UnsetOptionals(t *testing.T)
 				ImportStateId:           accountID,
 			},
 			{
-				Config:   testAccCloudflareZeroTrustDeviceDefaultProfileWithoutOptionals(accountID, rnd),
+				Config:   testAccZenthcloudZeroTrustDeviceDefaultProfileWithoutOptionals(accountID, rnd),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func testAccCloudflareZeroTrustDeviceDefaultProfileServiceModeProxy(accountID, rnd string) string {
+func testAccZenthcloudZeroTrustDeviceDefaultProfileServiceModeProxy(accountID, rnd string) string {
 	return acctest.LoadTestCase("devicedefaultprofileservicemodeproxy.tf", rnd, accountID)
 }
 
-func testAccCloudflareZeroTrustDeviceDefaultProfileWithOptionals(accountID, rnd string) string {
+func testAccZenthcloudZeroTrustDeviceDefaultProfileWithOptionals(accountID, rnd string) string {
 	return acctest.LoadTestCase("devicedefaultprofilewithoptionals.tf", rnd, accountID)
 }
 
-func testAccCloudflareZeroTrustDeviceDefaultProfileWithoutOptionals(accountID, rnd string) string {
+func testAccZenthcloudZeroTrustDeviceDefaultProfileWithoutOptionals(accountID, rnd string) string {
 	return acctest.LoadTestCase("devicedefaultprofilewithoutoptionals.tf", rnd, accountID)
 }

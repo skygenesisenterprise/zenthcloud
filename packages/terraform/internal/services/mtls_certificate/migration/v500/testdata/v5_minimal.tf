@@ -1,4 +1,4 @@
-resource "cloudflare_mtls_certificate" "%s" {
+resource "zenthcloud_mtls_certificate" "%s" {
   account_id   = "%s"
   ca           = false
   certificates = <<EOT

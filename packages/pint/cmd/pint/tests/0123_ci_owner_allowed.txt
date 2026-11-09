@@ -109,7 +109,7 @@ POST /rest/api/1.0/projects/prometheus/repos/rules/pull-requests/1/comments
   Content-Type: application/json
 --- BODY ---
 text: |-
-    :stop_sign: **Bug** reported by [pint](https://cloudflare.github.io/pint/) **rule/owner** check.
+    :stop_sign: **Bug** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **rule/owner** check.
 
     <details>
     <summary>missing owner</summary>
@@ -125,7 +125,7 @@ text: |-
 
     ------
 
-    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/rule/owner.html).
+    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 
     <!-- pint -->
 severity: NORMAL
@@ -143,7 +143,7 @@ POST /rest/api/1.0/projects/prometheus/repos/rules/pull-requests/1/comments
   Content-Type: application/json
 --- BODY ---
 text: |-
-    :stop_sign: **Bug** reported by [pint](https://cloudflare.github.io/pint/) **rule/owner** check.
+    :stop_sign: **Bug** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **rule/owner** check.
 
     <details>
     <summary>invalid owner</summary>
@@ -159,7 +159,7 @@ text: |-
 
     ------
 
-    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/rule/owner.html).
+    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 
     <!-- pint -->
 severity: NORMAL

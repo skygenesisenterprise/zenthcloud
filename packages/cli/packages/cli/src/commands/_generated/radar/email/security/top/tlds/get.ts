@@ -124,7 +124,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar email security top tlds get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/email/security/top/tlds`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

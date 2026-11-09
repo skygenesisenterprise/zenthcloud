@@ -74,7 +74,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf analytics query data-security content-findings top-n",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/analytics/query/data-security/content-findings/top-n`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/analytics/query/data-security/content-findings/top-n`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

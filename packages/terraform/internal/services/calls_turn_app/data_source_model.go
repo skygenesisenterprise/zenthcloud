@@ -5,8 +5,8 @@ package calls_turn_app
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/calls"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/calls"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -27,7 +27,7 @@ type CallsTURNAppDataSourceModel struct {
 
 func (m *CallsTURNAppDataSourceModel) toReadParams(_ context.Context) (params calls.TURNGetParams, diags diag.Diagnostics) {
 	params = calls.TURNGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return

@@ -1,4 +1,4 @@
-resource "cloudflare_authenticated_origin_pulls_certificate" "%s" {
+resource "zenthcloud_authenticated_origin_pulls_certificate" "%s" {
   zone_id     = "%s"
   certificate = <<-EOT
 %s
@@ -9,7 +9,7 @@ resource "cloudflare_authenticated_origin_pulls_certificate" "%s" {
   type        = "per-hostname"
 }
 
-resource "cloudflare_authenticated_origin_pulls_certificate" "%s" {
+resource "zenthcloud_authenticated_origin_pulls_certificate" "%s" {
   zone_id     = "%s"
   certificate = <<-EOT
 %s
@@ -20,16 +20,16 @@ resource "cloudflare_authenticated_origin_pulls_certificate" "%s" {
   type        = "per-hostname"
 }
 
-resource "cloudflare_authenticated_origin_pulls" "%s" {
+resource "zenthcloud_authenticated_origin_pulls" "%s" {
   zone_id                                = "%s"
   hostname                               = "%s"
-  authenticated_origin_pulls_certificate = cloudflare_authenticated_origin_pulls_certificate.%s.id
+  authenticated_origin_pulls_certificate = zenthcloud_authenticated_origin_pulls_certificate.%s.id
   enabled                                = true
 }
 
-resource "cloudflare_authenticated_origin_pulls" "%s" {
+resource "zenthcloud_authenticated_origin_pulls" "%s" {
   zone_id                                = "%s"
   hostname                               = "%s"
-  authenticated_origin_pulls_certificate = cloudflare_authenticated_origin_pulls_certificate.%s.id
+  authenticated_origin_pulls_certificate = zenthcloud_authenticated_origin_pulls_certificate.%s.id
   enabled                                = false
 }

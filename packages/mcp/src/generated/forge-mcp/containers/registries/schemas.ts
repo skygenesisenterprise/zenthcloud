@@ -7,11 +7,11 @@ import type { JSONObject } from "@modelcontextprotocol/server";
  * The schema of `cc_ContainersCreateImageRegistryRequestBody`.
  */
 export const cc_ContainersCreateImageRegistryRequestBody: JSONObject = {
-  "description": "Configuration for connecting Containers to a supported private external image\nregistry. See [Image management](https://developers.cloudflare.com/containers/platform-details/image-management/)\nfor supported providers and credential setup instructions.",
+  "description": "Configuration for connecting Containers to a supported private external image\nregistry. See [Image management](https://github.com/skygenesisenterprise/zenthcloud)\nfor supported providers and credential setup instructions.",
   "properties": {
     "auth": {
       "$ref": "#/$defs/cc_ContainersImageRegistryAuth",
-      "description": "Credentials for authenticating to a private external image registry. Store the\nprivate credential in [Secrets Store](https://developers.cloudflare.com/secrets-store/)\nbefore calling the API. Refer to [Image management](https://developers.cloudflare.com/containers/platform-details/image-management/)\nfor the credential required by each supported registry provider."
+      "description": "Credentials for authenticating to a private external image registry. Store the\nprivate credential in [Secrets Store](https://github.com/skygenesisenterprise/zenthcloud)\nbefore calling the API. Refer to [Image management](https://github.com/skygenesisenterprise/zenthcloud)\nfor the credential required by each supported registry provider."
     },
     "domain": {
       "description": "Hostname of the private registry, without a scheme or image path. Supported\nhostnames are `docker.io`, AWS ECR hostnames, and Google Artifact Registry\n`*-docker.pkg.dev` hostnames.",
@@ -46,7 +46,7 @@ export const cc_ContainersCreateImageRegistryRequestBody: JSONObject = {
  * The schema of `cc_ContainersImageRegistryAuth`.
  */
 export const cc_ContainersImageRegistryAuth: JSONObject = {
-  "description": "Credentials for authenticating to a private external image registry. Store the\nprivate credential in [Secrets Store](https://developers.cloudflare.com/secrets-store/)\nbefore calling the API. Refer to [Image management](https://developers.cloudflare.com/containers/platform-details/image-management/)\nfor the credential required by each supported registry provider.",
+  "description": "Credentials for authenticating to a private external image registry. Store the\nprivate credential in [Secrets Store](https://github.com/skygenesisenterprise/zenthcloud)\nbefore calling the API. Refer to [Image management](https://github.com/skygenesisenterprise/zenthcloud)\nfor the credential required by each supported registry provider.",
   "properties": {
     "private_credential": {
       "$ref": "#/$defs/cc_SecretsStoreRef",
@@ -68,7 +68,7 @@ export const cc_ContainersImageRegistryAuth: JSONObject = {
  * The schema of `cc_SecretsStoreRef`.
  */
 export const cc_SecretsStoreRef: JSONObject = {
-  "description": "Identifies an existing secret in [Secrets Store](https://developers.cloudflare.com/secrets-store/).\nThis reference does not contain or upload the secret value.",
+  "description": "Identifies an existing secret in [Secrets Store](https://github.com/skygenesisenterprise/zenthcloud).\nThis reference does not contain or upload the secret value.",
   "properties": {
     "secret_name": {
       "description": "Name of the secret within the store.",

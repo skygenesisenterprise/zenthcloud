@@ -5,9 +5,9 @@ package zero_trust_gateway_policy
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -36,18 +36,18 @@ func (m *ZeroTrustGatewayPoliciesDataSourceModel) toListParams(_ context.Context
 	}
 
 	params = zero_trust.GatewayRuleListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
-		Filter:    cloudflare.F(mFilter),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
+		Filter:    zenthcloud.F(mFilter),
 	}
 
 	if !m.Direction.IsNull() {
-		params.Direction = cloudflare.F(zero_trust.GatewayRuleListParamsDirection(m.Direction.ValueString()))
+		params.Direction = zenthcloud.F(zero_trust.GatewayRuleListParamsDirection(m.Direction.ValueString()))
 	}
 	if !m.OrderBy.IsNull() {
-		params.OrderBy = cloudflare.F(zero_trust.GatewayRuleListParamsOrderBy(m.OrderBy.ValueString()))
+		params.OrderBy = zenthcloud.F(zero_trust.GatewayRuleListParamsOrderBy(m.OrderBy.ValueString()))
 	}
 	if !m.Search.IsNull() {
-		params.Search = cloudflare.F(m.Search.ValueString())
+		params.Search = zenthcloud.F(m.Search.ValueString())
 	}
 
 	return
@@ -109,7 +109,7 @@ type ZeroTrustGatewayPoliciesRuleSettingsDataSourceModel struct {
 	Quarantine                      customfield.NestedObject[ZeroTrustGatewayPoliciesRuleSettingsQuarantineDataSourceModel]           `tfsdk:"quarantine" json:"quarantine,computed"`
 	Redirect                        customfield.NestedObject[ZeroTrustGatewayPoliciesRuleSettingsRedirectDataSourceModel]             `tfsdk:"redirect" json:"redirect,computed"`
 	ResolveDNSInternally            customfield.NestedObject[ZeroTrustGatewayPoliciesRuleSettingsResolveDNSInternallyDataSourceModel] `tfsdk:"resolve_dns_internally" json:"resolve_dns_internally,computed"`
-	ResolveDNSThroughCloudflare     types.Bool                                                                                        `tfsdk:"resolve_dns_through_cloudflare" json:"resolve_dns_through_cloudflare,computed"`
+	ResolveDNSThroughZenthcloud     types.Bool                                                                                        `tfsdk:"resolve_dns_through_zenthcloud" json:"resolve_dns_through_zenthcloud,computed"`
 	SetHeaders                      customfield.Map[customfield.List[types.String]]                                                   `tfsdk:"set_headers" json:"set_headers,computed"`
 	UntrustedCERT                   customfield.NestedObject[ZeroTrustGatewayPoliciesRuleSettingsUntrustedCERTDataSourceModel]        `tfsdk:"untrusted_cert" json:"untrusted_cert,computed"`
 }

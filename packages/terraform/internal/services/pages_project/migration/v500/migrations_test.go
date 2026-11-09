@@ -14,10 +14,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/pages_project/migration/v500"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/pages_project/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -127,9 +127,9 @@ func TestMigratePagesProject_V4ToV5_Minimal(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_pages_project." + rnd
+			resourceName := "zenthcloud_pages_project." + rnd
 			tmpDir := t.TempDir()
 			projectName := fmt.Sprintf("tf-test-minimal-%s", rnd)
 			testConfig := tc.configFn(rnd, accountID, projectName)
@@ -145,8 +145,8 @@ func TestMigratePagesProject_V4ToV5_Minimal(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -204,9 +204,9 @@ func TestMigratePagesProject_V4ToV5_WithBuildConfig(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_pages_project." + rnd
+			resourceName := "zenthcloud_pages_project." + rnd
 			tmpDir := t.TempDir()
 			projectName := fmt.Sprintf("tf-test-build-%s", rnd)
 			testConfig := tc.configFn(rnd, accountID, projectName)
@@ -221,8 +221,8 @@ func TestMigratePagesProject_V4ToV5_WithBuildConfig(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -259,9 +259,9 @@ func TestMigratePagesProject_V4ToV5_WithBuildConfig(t *testing.T) {
 func TestMigratePagesProject_V4ToV5_WithSourceAndConfig(t *testing.T) {
 	t.Skip("Skipping test that requires valid GitHub repository - API validates repository existence")
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_pages_project." + rnd
+	resourceName := "zenthcloud_pages_project." + rnd
 	tmpDir := t.TempDir()
 	version := acctest.GetLastV4Version()
 	sourceVer, targetVer := acctest.InferMigrationVersions(version)
@@ -281,8 +281,8 @@ func TestMigratePagesProject_V4ToV5_WithSourceAndConfig(t *testing.T) {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
@@ -299,7 +299,7 @@ func TestMigratePagesProject_V4ToV5_WithSourceAndConfig(t *testing.T) {
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("source").AtMapKey("type"), knownvalue.StringExact("github")),
 				// Verify config converted to object
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("source").AtMapKey("config"), knownvalue.NotNull()),
-				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("source").AtMapKey("config").AtMapKey("owner"), knownvalue.StringExact("cloudflare")),
+				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("source").AtMapKey("config").AtMapKey("owner"), knownvalue.StringExact("zenthcloud")),
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("source").AtMapKey("config").AtMapKey("repo_name"), knownvalue.StringExact(repoName)),
 				// Verify field rename: production_deployment_enabled → production_deployments_enabled
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("source").AtMapKey("config").AtMapKey("production_deployments_enabled"), knownvalue.Bool(true)),
@@ -334,9 +334,9 @@ func TestMigratePagesProject_V4ToV5_WithDeploymentConfigsBasic(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_pages_project." + rnd
+			resourceName := "zenthcloud_pages_project." + rnd
 			tmpDir := t.TempDir()
 			projectName := fmt.Sprintf("tf-test-deploy-%s", rnd)
 			testConfig := tc.configFn(rnd, accountID, projectName)
@@ -351,8 +351,8 @@ func TestMigratePagesProject_V4ToV5_WithDeploymentConfigsBasic(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -420,9 +420,9 @@ func TestMigratePagesProject_V4ToV5_WithDeploymentConfigsBasic(t *testing.T) {
 func TestMigratePagesProject_V4ToV5_WithEnvironmentVariables(t *testing.T) {
 	t.Skip("Skipping test - v4 provider doesn't store environment_variables/secrets in deployment_configs attribute properly")
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_pages_project." + rnd
+	resourceName := "zenthcloud_pages_project." + rnd
 	tmpDir := t.TempDir()
 	version := acctest.GetLastV4Version()
 	sourceVer, targetVer := acctest.InferMigrationVersions(version)
@@ -442,8 +442,8 @@ func TestMigratePagesProject_V4ToV5_WithEnvironmentVariables(t *testing.T) {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
@@ -480,17 +480,17 @@ func TestMigratePagesProject_V4ToV5_WithEnvironmentVariables(t *testing.T) {
 // TestMigratePagesProject_V4ToV5_WithBindings tests TypeMap wrapping and service_binding conversion
 func TestMigratePagesProject_V4ToV5_WithBindings(t *testing.T) {
 	// This test requires actual KV namespace, D1 database, R2 bucket, and worker IDs
-	kvNamespaceID := os.Getenv("TEST_CLOUDFLARE_KV_NAMESPACE_ID")
-	d1DatabaseID := os.Getenv("TEST_CLOUDFLARE_D1_DATABASE_ID")
-	workerName := os.Getenv("TEST_CLOUDFLARE_WORKER_NAME")
+	kvNamespaceID := os.Getenv("TEST_ZENTHCLOUD_KV_NAMESPACE_ID")
+	d1DatabaseID := os.Getenv("TEST_ZENTHCLOUD_D1_DATABASE_ID")
+	workerName := os.Getenv("TEST_ZENTHCLOUD_WORKER_NAME")
 
 	if kvNamespaceID == "" || d1DatabaseID == "" || workerName == "" {
-		t.Skip("Skipping binding test - requires TEST_CLOUDFLARE_KV_NAMESPACE_ID, TEST_CLOUDFLARE_D1_DATABASE_ID, and TEST_CLOUDFLARE_WORKER_NAME")
+		t.Skip("Skipping binding test - requires TEST_ZENTHCLOUD_KV_NAMESPACE_ID, TEST_ZENTHCLOUD_D1_DATABASE_ID, and TEST_ZENTHCLOUD_WORKER_NAME")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_pages_project." + rnd
+	resourceName := "zenthcloud_pages_project." + rnd
 	tmpDir := t.TempDir()
 	version := acctest.GetLastV4Version()
 	sourceVer, targetVer := acctest.InferMigrationVersions(version)
@@ -536,8 +536,8 @@ func TestMigratePagesProject_V4ToV5_WithBindings(t *testing.T) {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
@@ -573,9 +573,9 @@ func TestMigratePagesProject_V4ToV5_FullResource(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_pages_project." + rnd
+			resourceName := "zenthcloud_pages_project." + rnd
 			tmpDir := t.TempDir()
 			projectName := fmt.Sprintf("tf-test-full-%s", rnd)
 			testConfig := tc.configFn(rnd, accountID, projectName)
@@ -590,8 +590,8 @@ func TestMigratePagesProject_V4ToV5_FullResource(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -681,9 +681,9 @@ func TestMigratePagesProject_V4ToV5_WithBuildConfigComplete(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_pages_project." + rnd
+			resourceName := "zenthcloud_pages_project." + rnd
 			tmpDir := t.TempDir()
 			projectName := fmt.Sprintf("tf-test-build-complete-%s", rnd)
 			testConfig := tc.configFn(rnd, accountID, projectName)
@@ -698,8 +698,8 @@ func TestMigratePagesProject_V4ToV5_WithBuildConfigComplete(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -731,11 +731,11 @@ func TestMigratePagesProject_V4ToV5_WithBuildConfigComplete(t *testing.T) {
 
 // TestMigratePagesProject_V4ToV5_WithDurableObjectNamespaces tests durable_object_namespaces binding migration
 func TestMigratePagesProject_V4ToV5_WithDurableObjectNamespaces(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	doNamespaceID := os.Getenv("TEST_CLOUDFLARE_DO_NAMESPACE_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	doNamespaceID := os.Getenv("TEST_ZENTHCLOUD_DO_NAMESPACE_ID")
 
 	if doNamespaceID == "" {
-		t.Skip("Skipping - requires TEST_CLOUDFLARE_DO_NAMESPACE_ID")
+		t.Skip("Skipping - requires TEST_ZENTHCLOUD_DO_NAMESPACE_ID")
 	}
 
 	testCases := []struct {
@@ -762,7 +762,7 @@ func TestMigratePagesProject_V4ToV5_WithDurableObjectNamespaces(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_pages_project." + rnd
+			resourceName := "zenthcloud_pages_project." + rnd
 			tmpDir := t.TempDir()
 			projectName := fmt.Sprintf("tf-test-do-%s", rnd)
 			testConfig := tc.configFn(rnd, accountID, projectName, doNamespaceID)
@@ -777,8 +777,8 @@ func TestMigratePagesProject_V4ToV5_WithDurableObjectNamespaces(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -829,9 +829,9 @@ func TestMigratePagesProject_V4ToV5_WithCompatibilityFlags(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_pages_project." + rnd
+			resourceName := "zenthcloud_pages_project." + rnd
 			tmpDir := t.TempDir()
 			projectName := fmt.Sprintf("tf-test-compat-%s", rnd)
 			testConfig := tc.configFn(rnd, accountID, projectName)
@@ -846,8 +846,8 @@ func TestMigratePagesProject_V4ToV5_WithCompatibilityFlags(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -906,9 +906,9 @@ func TestMigratePagesProject_V4ToV5_WithDefaultChanges(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_pages_project." + rnd
+			resourceName := "zenthcloud_pages_project." + rnd
 			tmpDir := t.TempDir()
 			projectName := fmt.Sprintf("tf-test-defaults-%s", rnd)
 			testConfig := tc.configFn(rnd, accountID, projectName)
@@ -941,8 +941,8 @@ func TestMigratePagesProject_V4ToV5_WithDefaultChanges(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -988,9 +988,9 @@ func TestMigratePagesProject_V4ToV5_WithUsageModelExplicit(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_pages_project." + rnd
+			resourceName := "zenthcloud_pages_project." + rnd
 			tmpDir := t.TempDir()
 			projectName := fmt.Sprintf("tf-test-usage-%s", rnd)
 			testConfig := tc.configFn(rnd, accountID, projectName)
@@ -1005,8 +1005,8 @@ func TestMigratePagesProject_V4ToV5_WithUsageModelExplicit(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -1035,17 +1035,17 @@ func TestMigratePagesProject_V4ToV5_WithUsageModelExplicit(t *testing.T) {
 
 // TestMigratePagesProject_V4ToV5_WithMultipleBindings tests multiple bindings of different types
 func TestMigratePagesProject_V4ToV5_WithMultipleBindings(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	kvNamespaceID := os.Getenv("TEST_CLOUDFLARE_KV_NAMESPACE_ID")
-	d1DatabaseID := os.Getenv("TEST_CLOUDFLARE_D1_DATABASE_ID")
-	doNamespaceID := os.Getenv("TEST_CLOUDFLARE_DO_NAMESPACE_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	kvNamespaceID := os.Getenv("TEST_ZENTHCLOUD_KV_NAMESPACE_ID")
+	d1DatabaseID := os.Getenv("TEST_ZENTHCLOUD_D1_DATABASE_ID")
+	doNamespaceID := os.Getenv("TEST_ZENTHCLOUD_DO_NAMESPACE_ID")
 
 	if kvNamespaceID == "" || d1DatabaseID == "" || doNamespaceID == "" {
-		t.Skip("Skipping - requires TEST_CLOUDFLARE_KV_NAMESPACE_ID, TEST_CLOUDFLARE_D1_DATABASE_ID, and TEST_CLOUDFLARE_DO_NAMESPACE_ID")
+		t.Skip("Skipping - requires TEST_ZENTHCLOUD_KV_NAMESPACE_ID, TEST_ZENTHCLOUD_D1_DATABASE_ID, and TEST_ZENTHCLOUD_DO_NAMESPACE_ID")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_pages_project." + rnd
+	resourceName := "zenthcloud_pages_project." + rnd
 	tmpDir := t.TempDir()
 	version := acctest.GetLastV4Version()
 	sourceVer, targetVer := acctest.InferMigrationVersions(version)
@@ -1062,8 +1062,8 @@ func TestMigratePagesProject_V4ToV5_WithMultipleBindings(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
@@ -1090,9 +1090,9 @@ func TestMigratePagesProject_V4ToV5_WithMultipleBindings(t *testing.T) {
 
 // TestMigratePagesProject_V4ToV5_WithMultipleServiceBindings tests multiple service_binding → services migration
 func TestMigratePagesProject_V4ToV5_WithMultipleServiceBindings(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_pages_project." + rnd
+	resourceName := "zenthcloud_pages_project." + rnd
 	tmpDir := t.TempDir()
 	version := acctest.GetLastV4Version()
 	sourceVer, targetVer := acctest.InferMigrationVersions(version)
@@ -1117,8 +1117,8 @@ func TestMigratePagesProject_V4ToV5_WithMultipleServiceBindings(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
@@ -1155,9 +1155,9 @@ func TestMigratePagesProject_V4ToV5_WithAlwaysUseLatestCompatibilityDate(t *test
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_pages_project." + rnd
+			resourceName := "zenthcloud_pages_project." + rnd
 			tmpDir := t.TempDir()
 			projectName := fmt.Sprintf("tf-test-latest-compat-%s", rnd)
 			testConfig := tc.configFn(rnd, accountID, projectName)
@@ -1172,8 +1172,8 @@ func TestMigratePagesProject_V4ToV5_WithAlwaysUseLatestCompatibilityDate(t *test
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},

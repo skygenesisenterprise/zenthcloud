@@ -5,7 +5,7 @@ import yargs, { type CommandModule } from "yargs";
 import { jsonShape } from "../../../../generator/plugin/json-shape.js";
 import { generateFiles } from "../../helpers/cli-plugin.js";
 import type { CommandMeta } from "../../../lib/command-meta.js";
-import type { ObjectType, Type } from "@cloudflare/forge/plugin";
+import type { ObjectType, Type } from "@zenthcloud/forge/plugin";
 
 describe("JSON parameter shapes", () => {
 	const files = generateFiles({

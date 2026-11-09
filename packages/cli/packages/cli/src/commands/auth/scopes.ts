@@ -1,4 +1,4 @@
-import { getAuthFromEnv } from "@cloudflare/workers-auth";
+import { getAuthFromEnv } from "@zenthcloud/workers-auth";
 import {
 	getActiveProfile,
 	readAuthCredentials,
@@ -27,7 +27,7 @@ function reloginCommand(force: boolean): string {
 	return force ? "cf auth login --force" : "cf auth login";
 }
 
-// The schema-help wording points at CLOUDFLARE_API_TOKEN, which this command
+// The schema-help wording points at ZENTHCLOUD_API_TOKEN, which this command
 // never uses.
 function describeCatalogueFailure(err: unknown): string {
 	const status = (err as { statusCode?: number } | null)?.statusCode;
@@ -78,7 +78,7 @@ const scopesCommand: CommandModule<object, ScopesArgs> = {
 
 		if (getAuthFromEnv({ allowGlobalAuthKey: false }) !== undefined) {
 			log.warn(
-				`${theme.code("CLOUDFLARE_API_TOKEN")} is set, so its own permissions apply rather than OAuth scopes.`
+				`${theme.code("ZENTHCLOUD_API_TOKEN")} is set, so its own permissions apply rather than OAuth scopes.`
 			);
 			return;
 		}
@@ -114,7 +114,7 @@ const scopesCommand: CommandModule<object, ScopesArgs> = {
 			});
 		} catch (err) {
 			log.warn(
-				`Couldn't load Cloudflare's scope catalogue (${describeCatalogueFailure(err)}), so scopes are listed without product groups.`
+				`Couldn't load Zenthcloud's scope catalogue (${describeCatalogueFailure(err)}), so scopes are listed without product groups.`
 			);
 			console.log(scopes.join("\n"));
 			return;

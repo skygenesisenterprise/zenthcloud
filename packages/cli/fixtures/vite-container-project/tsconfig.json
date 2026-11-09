@@ -3,9 +3,9 @@
 		"target": "esnext",
 		"module": "esnext",
 		"moduleResolution": "bundler",
-		"types": ["@cloudflare/workers-types"],
+		"types": ["@zenthcloud/workers-types"],
 		"strict": true,
 		"skipLibCheck": true
 	},
-	"include": ["src", "cloudflare.config.ts", "vite.config.ts"]
+	"include": ["src", "zenthcloud.config.ts", "vite.config.ts"]
 }

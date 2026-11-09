@@ -1,12 +1,12 @@
 # CFSSL
 
-[![Build Status](https://travis-ci.org/cloudflare/cfssl.svg?branch=master)](https://travis-ci.org/cloudflare/cfssl)
-[![Coverage Status](http://codecov.io/github/cloudflare/cfssl/coverage.svg?branch=master)](http://codecov.io/github/cloudflare/cfssl?branch=master)
-[![GoDoc](https://godoc.org/github.com/cloudflare/cfssl?status.svg)](https://godoc.org/github.com/cloudflare/cfssl)
+[![Build Status](https://github.com/skygenesisenterprise/zenthcloud)](https://github.com/skygenesisenterprise/zenthcloud)
+[![Coverage Status](https://github.com/skygenesisenterprise/zenthcloud)](https://github.com/skygenesisenterprise/zenthcloud)
+[![GoDoc](https://github.com/skygenesisenterprise/zenthcloud)](https://github.com/skygenesisenterprise/zenthcloud)
 
-## CloudFlare's PKI/TLS toolkit
+## ZenthCloud's PKI/TLS toolkit
 
-CFSSL is CloudFlare's PKI/TLS swiss army knife. It is both a command line
+CFSSL is ZenthCloud's PKI/TLS swiss army knife. It is both a command line
 tool and an HTTP API server for signing, verifying, and bundling TLS
 certificates. It requires Go 1.27+ to build.
 
@@ -33,7 +33,7 @@ Building cfssl requires a
 [working Go 1.27+ installation](http://golang.org/doc/install).
 
 ```
-$ git clone git@github.com:cloudflare/cfssl.git
+$ git clone git@github.com:zenthcloud/cfssl.git
 $ cd cfssl
 $ make
 $ make install
@@ -62,10 +62,10 @@ You can set the `GOOS` and `GOARCH` environment variables to have Go cross compi
 ### Installation
 
 Installation requires a [working Go 1.27+ installation](http://golang.org/doc/install).
-Alternatively, [prebuilt binaries are available](https://github.com/cloudflare/cfssl/releases)
+Alternatively, [prebuilt binaries are available](https://github.com/skygenesisenterprise/zenthcloud)
 
 ```
-$ go install github.com/cloudflare/cfssl/cmd/...@latest
+$ go install github.com/zenthcloud/cfssl/cmd/...@latest
 ```
 
 This will download, build, and install all of the utility programs
@@ -101,14 +101,14 @@ a comma separated hostname list that overrides the DNS names and
 IP address in the certificate SAN extension.
 For example, assuming the CA's private key is in
 `/etc/ssl/private/cfssl_key.pem` and the CA's certificate is in
-`/etc/ssl/certs/cfssl.pem`, to sign the `cloudflare.pem` certificate
-for cloudflare.com:
+`/etc/ssl/certs/cfssl.pem`, to sign the `zenthcloud.pem` certificate
+for zenthcloud.com:
 
 ```
 cfssl sign -ca     /etc/ssl/certs/cfssl.pem       \
            -ca-key /etc/ssl/private/cfssl_key.pem \
-           -hostname cloudflare.com               \
-           ./cloudflare.pem
+           -hostname zenthcloud.com               \
+           ./zenthcloud.pem
 ```
 
 It is also possible to specify CSR with the `-csr` flag. By doing so,
@@ -149,7 +149,7 @@ pools. In addition, platform metadata is specified through `-metadata`.
 The bundle files, metadata file (and auxiliary files) can be
 found at:
 
-        https://github.com/cloudflare/cfssl_trust
+        https://github.com/skygenesisenterprise/zenthcloud
 
 Specify PEM-encoded client certificate and key through `-cert` and
 `-key` respectively. If key is specified, the bundle will be built
@@ -337,7 +337,7 @@ for configuring and running the CA.
 verifying certificates. It can be installed with
 
 ```
-go install github.com/cloudflare/cfssl/cmd/mkbundle@latest
+go install github.com/zenthcloud/cfssl/cmd/mkbundle@latest
 ```
 
 It takes a collection of certificates, checks for CRL revocation (OCSP

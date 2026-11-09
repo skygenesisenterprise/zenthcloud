@@ -85,7 +85,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf ssl origin-ca-certificates create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/certificates`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

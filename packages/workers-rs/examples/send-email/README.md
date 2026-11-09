@@ -1,4 +1,4 @@
-# Sending email from Cloudflare Workers
+# Sending email from Zenthcloud Workers
 
 Example of using `worker::SendEmail` to send a message through a `[[send_email]]` binding.
 
@@ -9,7 +9,7 @@ Two routes:
 
 ## Local development
 
-`wrangler dev --local` won't actually send anything. As the [Cloudflare docs](https://developers.cloudflare.com/email-routing/email-workers/local-development/) explain, outbound messages get written to a local `.eml` file. Wrangler prints the path so you can open it and check the raw message.
+`wrangler dev --local` won't actually send anything. As the [Zenthcloud docs](https://github.com/skygenesisenterprise/zenthcloud) explain, outbound messages get written to a local `.eml` file. Wrangler prints the path so you can open it and check the raw message.
 
 ```bash
 npm install
@@ -21,7 +21,7 @@ curl http://localhost:8787/raw     # raw MIME
 
 ## Deploying
 
-Verify the sender and recipient addresses first (see the [Cloudflare email API docs](https://developers.cloudflare.com/email-service/api/send-emails/workers-api/)), then:
+Verify the sender and recipient addresses first (see the [Zenthcloud email API docs](https://github.com/skygenesisenterprise/zenthcloud)), then:
 
 ```bash
 npm run deploy

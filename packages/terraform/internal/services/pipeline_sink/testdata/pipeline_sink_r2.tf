@@ -1,9 +1,9 @@
-resource "cloudflare_r2_bucket" "%[1]s" {
+resource "zenthcloud_r2_bucket" "%[1]s" {
   account_id = "%[2]s"
   name       = "%[1]s"
 }
 
-resource "cloudflare_pipeline_sink" "%[1]s" {
+resource "zenthcloud_pipeline_sink" "%[1]s" {
   account_id = "%[2]s"
   name       = "%[1]s"
   type       = "r2"
@@ -15,7 +15,7 @@ resource "cloudflare_pipeline_sink" "%[1]s" {
   }
   config = {
     account_id = "%[2]s"
-    bucket     = cloudflare_r2_bucket.%[1]s.name
+    bucket     = zenthcloud_r2_bucket.%[1]s.name
     credentials = {
       access_key_id     = "%[3]s"
       secret_access_key = "%[4]s"

@@ -3,7 +3,7 @@ From: Erik Corry <erikcorry@chromium.org>
 Date: Tue, 22 Apr 2025 14:59:14 +0200
 Subject: Disable slow handle check
 
-Signed-off-by: James M Snell <jsnell@cloudflare.com>
+Signed-off-by: James M Snell <jsnell@zenthcloud.com>
 
 diff --git a/src/handles/handles.h b/src/handles/handles.h
 index 4597299a93fcea042b172747dde82184bd124bf1..118cbd08787bff6320fdbd2f9fee50dbd408027e 100644

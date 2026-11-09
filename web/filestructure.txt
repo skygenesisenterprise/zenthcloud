@@ -179,7 +179,7 @@
                         |-- actions.mdx
                         |-- aws-s3.mdx
                         |-- backblaze-b2.mdx
-                        |-- cloudflare-r2.mdx
+                        |-- zenthcloud-r2.mdx
                     |-- (Users)
                         |-- permissions.mdx
                     |-- (examples)
@@ -238,7 +238,7 @@
                         |-- index.mdx
                         |-- utilities.mdx
                     |-- domains
-                        |-- cloudflare.mdx
+                        |-- zenthcloud.mdx
                         |-- generated.mdx
                         |-- index.mdx
                         |-- others.mdx

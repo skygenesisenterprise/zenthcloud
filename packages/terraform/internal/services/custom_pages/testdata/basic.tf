@@ -1,4 +1,4 @@
-resource "cloudflare_custom_pages" "%[1]s" {
+resource "zenthcloud_custom_pages" "%[1]s" {
   account_id = "%[2]s"
   identifier = "basic_challenge"
   state      = "default"

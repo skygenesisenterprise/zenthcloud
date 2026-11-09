@@ -596,7 +596,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zeroTrust_dlp_datasets_upload",
     title: "Upload a new version of a dataset",
-    description: "This is used for single-column EDMv1 and Custom Word Lists. The EDM format\ncan only be created in the Cloudflare dashboard. For other clients, this\noperation can only be used for non-secret Custom Word Lists. The body must\nbe a UTF-8 encoded, newline (NL or CRNL) separated list of words to be matched.\n\nPOST /accounts/{account_id}/dlp/datasets/{dataset_id}/upload/{version}",
+    description: "This is used for single-column EDMv1 and Custom Word Lists. The EDM format\ncan only be created in the Zenthcloud dashboard. For other clients, this\noperation can only be used for non-secret Custom Word Lists. The body must\nbe a UTF-8 encoded, newline (NL or CRNL) separated list of words to be matched.\n\nPOST /accounts/{account_id}/dlp/datasets/{dataset_id}/upload/{version}",
     inputSchema: {
       type: "object",
       properties: {

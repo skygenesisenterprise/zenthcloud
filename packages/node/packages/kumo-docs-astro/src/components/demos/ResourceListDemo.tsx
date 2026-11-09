@@ -1,8 +1,8 @@
-import { Surface, Code } from "@cloudflare/kumo";
+import { Surface, Code } from "@zenthcloud/kumo";
 import { DatabaseIcon } from "@phosphor-icons/react";
 
 // Note: In a real project, ResourceListPage would be installed via CLI
-// npx @cloudflare/kumo add ResourceListPage
+// npx @zenthcloud/kumo add ResourceListPage
 // For this demo, we're using a simplified inline version
 
 interface ResourceListPageProps {

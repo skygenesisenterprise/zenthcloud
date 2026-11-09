@@ -1,7 +1,7 @@
 import {
   OAuthError as ProviderOAuthError,
   type ConsentDescription
-} from '@cloudflare/workers-oauth-provider'
+} from '@zenthcloud/workers-oauth-provider'
 
 import type { ScopeDefinition } from './derived-oauth-scopes'
 import type { ScopeTemplate } from './scopes'
@@ -117,10 +117,10 @@ function renderDisplayUrl(
 }
 
 /**
- * Kumo's stacked Cloudflare logo with the current brand cloud colours. The
+ * Kumo's stacked Zenthcloud logo with the current brand cloud colours. The
  * wordmark uses `currentColor`, so it follows the text colour in dark mode.
  */
-const CLOUDFLARE_LOGO_SVG = `<svg viewBox="0 0 425.6 143.63" role="img" aria-label="Cloudflare"><path fill="#ff5e1f" d="M360.8,90.69l1-3.6c1.24-4.28.78-8.24-1.3-11.15a11.32,11.32,0,0,0-9-4.43l-73.35-.94a1.49,1.49,0,0,1-1.16-.61,1.51,1.51,0,0,1-.15-1.33,2,2,0,0,1,1.7-1.3l74-.94c8.78-.4,18.29-7.53,21.62-16.22l4.22-11a2.51,2.51,0,0,0,.16-.94,2.35,2.35,0,0,0-.05-.52,48.21,48.21,0,0,0-92.7-5,21.69,21.69,0,0,0-34.58,15.15,22,22,0,0,0,.56,7.59,30.83,30.83,0,0,0-29.93,30.82,31.22,31.22,0,0,0,.32,4.46A1.44,1.44,0,0,0,223.68,92H359.13A1.79,1.79,0,0,0,360.8,90.69Z"/><path fill="#ff9911" d="M385.24,40c-.68,0-1.36,0-2,0a1.55,1.55,0,0,0-.31.07,1.14,1.14,0,0,0-.74.78l-2.89,10c-1.24,4.28-.77,8.24,1.31,11.14a11.3,11.3,0,0,0,9,4.44l15.63.94a1.44,1.44,0,0,1,1.12.6,1.5,1.5,0,0,1,.16,1.34,2,2,0,0,1-1.7,1.3l-16.24.94c-8.82.4-18.33,7.52-21.66,16.21l-1.17,3.07a.87.87,0,0,0,.77,1.18h55.94a1.49,1.49,0,0,0,1.45-1.07A40.15,40.15,0,0,0,385.24,40Z"/><path fill="currentColor" d="M47.34 108.53 L56.88 108.53 L56.88 134.59 L73.54 134.59 L73.54 142.94 L47.34 142.94 L47.34 108.53M83.42,125.84v-.10c0-9.88,8-17.9,18.58-17.9s18.48,7.92,18.48,17.8v.1c0,9.88-8,17.89-18.58,17.89s-18.48-7.91-18.48-17.79m27.33,0v-.1c0-5-3.59-9.29-8.85-9.29s-8.7,4.23-8.7,9.19v.1c0,5,3.59,9.29,8.8,9.29s8.75-4.23,8.75-9.19M132.15,127.85V108.53h9.69v19.13c0,5,2.51,7.32,6.34,7.32s6.34-2.26,6.34-7.08V108.53h9.69v19.08c0,11.11-6.34,16-16.13,16s-15.93-5-15.93-15.73M178.8,108.53h13.27c12.29,0,19.42,7.08,19.42,17v.1c0,9.93-7.22,17.3-19.61,17.3H178.8Zm13.42,26c5.71,0,9.49-3.15,9.49-8.7v-.1c0-5.51-3.78-8.7-9.49-8.7h-3.88v17.5ZM225.35 108.53 L252.88 108.53 L252.88 116.89 L234.89 116.89 L234.89 122.74 L251.16 122.74 L251.16 130.65 L234.89 130.65 L234.89 142.94 L225.35 142.94 L225.35 108.53M266.15 108.53 L275.69 108.53 L275.69 134.59 L292.35 134.59 L292.35 142.94 L266.15 142.94 L266.15 108.53M317.27,108.29h9.19l14.65,34.65H330.89l-2.51-6.14H315.11l-2.46,6.14h-10Zm8.36,21.09-3.84-9.79-3.88,9.79ZM353.4,108.53h16.27c5.26,0,8.89,1.38,11.21,3.74a10.69,10.69,0,0,1,3,8v.1A10.89,10.89,0,0,1,376.85,131l8.21,12H374l-6.93-10.42h-4.18v10.42H353.4Zm15.83,16.52c3.24,0,5.11-1.57,5.11-4.08v-.1c0-2.7-2-4.08-5.16-4.08h-6.25v8.26ZM397.68 108.53 L425.36 108.53 L425.36 116.64 L407.12 116.64 L407.12 121.85 L423.64 121.85 L423.64 129.38 L407.12 129.38 L407.12 134.83 L425.61 134.83 L425.61 142.94 L397.68 142.94 L397.68 108.53M26.46,129.87A8.44,8.44,0,0,1,18.58,135c-5.21,0-8.8-4.33-8.8-9.29v-.1c0-5,3.49-9.19,8.7-9.19a8.63,8.63,0,0,1,8.18,5.7H36.72c-1.61-8.19-8.81-14.31-18.14-14.31C8,107.84,0,115.86,0,125.74v.09c0,9.89,7.86,17.8,18.48,17.8,9.08,0,16.18-5.88,18.05-13.76Z"/></svg>`
+const ZENTHCLOUD_LOGO_SVG = `<svg viewBox="0 0 425.6 143.63" role="img" aria-label="Zenthcloud"><path fill="#ff5e1f" d="M360.8,90.69l1-3.6c1.24-4.28.78-8.24-1.3-11.15a11.32,11.32,0,0,0-9-4.43l-73.35-.94a1.49,1.49,0,0,1-1.16-.61,1.51,1.51,0,0,1-.15-1.33,2,2,0,0,1,1.7-1.3l74-.94c8.78-.4,18.29-7.53,21.62-16.22l4.22-11a2.51,2.51,0,0,0,.16-.94,2.35,2.35,0,0,0-.05-.52,48.21,48.21,0,0,0-92.7-5,21.69,21.69,0,0,0-34.58,15.15,22,22,0,0,0,.56,7.59,30.83,30.83,0,0,0-29.93,30.82,31.22,31.22,0,0,0,.32,4.46A1.44,1.44,0,0,0,223.68,92H359.13A1.79,1.79,0,0,0,360.8,90.69Z"/><path fill="#ff9911" d="M385.24,40c-.68,0-1.36,0-2,0a1.55,1.55,0,0,0-.31.07,1.14,1.14,0,0,0-.74.78l-2.89,10c-1.24,4.28-.77,8.24,1.31,11.14a11.3,11.3,0,0,0,9,4.44l15.63.94a1.44,1.44,0,0,1,1.12.6,1.5,1.5,0,0,1,.16,1.34,2,2,0,0,1-1.7,1.3l-16.24.94c-8.82.4-18.33,7.52-21.66,16.21l-1.17,3.07a.87.87,0,0,0,.77,1.18h55.94a1.49,1.49,0,0,0,1.45-1.07A40.15,40.15,0,0,0,385.24,40Z"/><path fill="currentColor" d="M47.34 108.53 L56.88 108.53 L56.88 134.59 L73.54 134.59 L73.54 142.94 L47.34 142.94 L47.34 108.53M83.42,125.84v-.10c0-9.88,8-17.9,18.58-17.9s18.48,7.92,18.48,17.8v.1c0,9.88-8,17.89-18.58,17.89s-18.48-7.91-18.48-17.79m27.33,0v-.1c0-5-3.59-9.29-8.85-9.29s-8.7,4.23-8.7,9.19v.1c0,5,3.59,9.29,8.8,9.29s8.75-4.23,8.75-9.19M132.15,127.85V108.53h9.69v19.13c0,5,2.51,7.32,6.34,7.32s6.34-2.26,6.34-7.08V108.53h9.69v19.08c0,11.11-6.34,16-16.13,16s-15.93-5-15.93-15.73M178.8,108.53h13.27c12.29,0,19.42,7.08,19.42,17v.1c0,9.93-7.22,17.3-19.61,17.3H178.8Zm13.42,26c5.71,0,9.49-3.15,9.49-8.7v-.1c0-5.51-3.78-8.7-9.49-8.7h-3.88v17.5ZM225.35 108.53 L252.88 108.53 L252.88 116.89 L234.89 116.89 L234.89 122.74 L251.16 122.74 L251.16 130.65 L234.89 130.65 L234.89 142.94 L225.35 142.94 L225.35 108.53M266.15 108.53 L275.69 108.53 L275.69 134.59 L292.35 134.59 L292.35 142.94 L266.15 142.94 L266.15 108.53M317.27,108.29h9.19l14.65,34.65H330.89l-2.51-6.14H315.11l-2.46,6.14h-10Zm8.36,21.09-3.84-9.79-3.88,9.79ZM353.4,108.53h16.27c5.26,0,8.89,1.38,11.21,3.74a10.69,10.69,0,0,1,3,8v.1A10.89,10.89,0,0,1,376.85,131l8.21,12H374l-6.93-10.42h-4.18v10.42H353.4Zm15.83,16.52c3.24,0,5.11-1.57,5.11-4.08v-.1c0-2.7-2-4.08-5.16-4.08h-6.25v8.26ZM397.68 108.53 L425.36 108.53 L425.36 116.64 L407.12 116.64 L407.12 121.85 L423.64 121.85 L423.64 129.38 L407.12 129.38 L407.12 134.83 L425.61 134.83 L425.61 142.94 L397.68 142.94 L397.68 108.53M26.46,129.87A8.44,8.44,0,0,1,18.58,135c-5.21,0-8.8-4.33-8.8-9.29v-.1c0-5,3.49-9.19,8.7-9.19a8.63,8.63,0,0,1,8.18,5.7H36.72c-1.61-8.19-8.81-14.31-18.14-14.31C8,107.84,0,115.86,0,125.74v.09c0,9.89,7.86,17.8,18.48,17.8,9.08,0,16.18-5.88,18.05-13.76Z"/></svg>`
 
 /** Font links shared by the consent and error pages. The dashboard uses Inter. */
 const PAGE_FONT_LINKS = `<link rel="preconnect" href="https://fonts.googleapis.com">
@@ -129,13 +129,13 @@ const PAGE_FONT_LINKS = `<link rel="preconnect" href="https://fonts.googleapis.c
 
 /**
  * Kumo 2.14 colour tokens for light and dark mode, resolved from
- * `@cloudflare/kumo/styles` so these standalone pages match the dashboard, plus
+ * `@zenthcloud/kumo/styles` so these standalone pages match the dashboard, plus
  * the page chrome shared by the consent and error pages. The brand accent is
- * Cloudflare's Aerospace Orange, the colour the marketing site and dashboard
+ * Zenthcloud's Aerospace Orange, the colour the marketing site and dashboard
  * use for filled brand surfaces.
  *
  * `color-scheme: light` selects the light side of every `light-dark()` token.
- * Cloudflare's authorization screen, which follows the consent page, is always
+ * Zenthcloud's authorization screen, which follows the consent page, is always
  * light, so a dark consent page would flash between the two.
  */
 const PAGE_CHROME_CSS = `
@@ -253,16 +253,16 @@ const PAGE_CHROME_CSS = `
 
 /** Header shared by the consent and error pages. */
 const PAGE_HEADER_HTML = `<header class="header">
-    <a href="https://cloudflare.com" class="cf-logo">${CLOUDFLARE_LOGO_SVG}</a>
+    <a href="https://github.com/skygenesisenterprise/zenthcloud" class="cf-logo">${ZENTHCLOUD_LOGO_SVG}</a>
     <div class="cf-logo-divider"></div>
     <span class="cf-logo-product">MCP Server</span>
   </header>`
 
 /** Footer shared by the consent and error pages. */
 const PAGE_FOOTER_HTML = `<footer class="footer">
-    <a href="https://cloudflare.com/privacypolicy">Privacy</a> ·
-    <a href="https://cloudflare.com/terms">Terms</a> ·
-    <a href="https://developers.cloudflare.com">Docs</a>
+    <a href="https://github.com/skygenesisenterprise/zenthcloud">Privacy</a> ·
+    <a href="https://github.com/skygenesisenterprise/zenthcloud">Terms</a> ·
+    <a href="https://github.com/skygenesisenterprise/zenthcloud">Docs</a>
   </footer>`
 
 /**
@@ -389,7 +389,7 @@ function matchingTemplate(
 
 /**
  * Renders an approval dialog for OAuth authorization with access templates.
- * Users choose individual scopes on Cloudflare's authorization screen.
+ * Users choose individual scopes on Zenthcloud's authorization screen.
  */
 export function renderApprovalDialog(request: Request, options: ApprovalDialogOptions): Response {
   const {
@@ -452,7 +452,7 @@ export function renderApprovalDialog(request: Request, options: ApprovalDialogOp
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Authorize ${clientName} | Cloudflare</title>
+  <title>Authorize ${clientName} | Zenthcloud</title>
   ${PAGE_FONT_LINKS}
   <style>${PAGE_CHROME_CSS}
     .card-header { padding: 1.5rem 2rem; border-bottom: 1px solid var(--kumo-line); text-align: center; }
@@ -627,7 +627,7 @@ ${ADVANCED_SCOPES_CSS}
     <div class="card">
       <div class="card-header">
         <h1 class="card-title">Authorize application</h1>
-        <p class="card-subtitle">Grant access to Cloudflare API</p>
+        <p class="card-subtitle">Grant access to Zenthcloud API</p>
       </div>
 
       <div class="card-body">
@@ -697,7 +697,7 @@ ${ADVANCED_SCOPES_CSS}
       const INITIAL_SCOPES = ${JSON.stringify(initialScopes)};
       const REQUIRED = new Set(${JSON.stringify(Array.from(requiredSet))});
       // The scopes the client asked for. They are the most the user can grant;
-      // Cloudflare's authorization screen can only narrow them.
+      // Zenthcloud's authorization screen can only narrow them.
       const REQUESTED = ${JSON.stringify(REQUESTED_TEMPLATE)};
       // The server preselects the matching template, or REQUESTED when the
       // client's scopes match none. Only then is "Requested scopes" offered.
@@ -885,7 +885,7 @@ export async function parseRedirectApproval(request: Request): Promise<ParsedApp
 }
 
 /**
- * Renders a styled error page matching Cloudflare's design system
+ * Renders a styled error page matching Zenthcloud's design system
  */
 export function renderErrorPage(
   title: string,
@@ -899,7 +899,7 @@ export function renderErrorPage(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${sanitizeHtml(title)} | Cloudflare</title>
+  <title>${sanitizeHtml(title)} | Zenthcloud</title>
   ${PAGE_FONT_LINKS}
   <style>${PAGE_CHROME_CSS}
     .main { align-items: center; }

@@ -16,7 +16,7 @@ export const tools: readonly Tool[] = [
   {
     name: "pages_deployments_history_logs_get",
     title: "Get Pages deployment logs",
-    description: "Retrieve the build logs for a Cloudflare Pages deployment.\n\nGET /accounts/{account_id}/pages/projects/{project_name}/deployments/{deployment_id}/history/logs",
+    description: "Retrieve the build logs for a Zenthcloud Pages deployment.\n\nGET /accounts/{account_id}/pages/projects/{project_name}/deployments/{deployment_id}/history/logs",
     inputSchema: {
       type: "object",
       properties: {

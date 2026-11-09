@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_device_default_profile Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_device_default_profile Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust Write
 ---
 
-# cloudflare_zero_trust_device_default_profile (Resource)
+# zenthcloud_zero_trust_device_default_profile (Resource)
 
 Accepted Permissions
 
@@ -15,7 +15,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_device_default_profile" "example_zero_trust_device_default_profile" {
+resource "zenthcloud_zero_trust_device_default_profile" "example_zero_trust_device_default_profile" {
   account_id = "699d98642c564d2e855e9661899b7252"
   allow_mode_switch = true
   allow_updates = true
@@ -79,7 +79,7 @@ resource "cloudflare_zero_trust_device_default_profile" "example_zero_trust_devi
 - `dns_search_suffixes` (Attributes List) List of DNS search suffixes to apply to clients. Suffixes are evaluated in order. Use an empty array to clear. (see [below for nested schema](#nestedatt--dns_search_suffixes))
 - `exclude` (Attributes List) List of routes excluded in the WARP client's tunnel. Both 'exclude' and 'include' cannot be set in the same request. (see [below for nested schema](#nestedatt--exclude))
 - `exclude_office_ips` (Boolean) Whether to add Microsoft IPs to Split Tunnel exclusions.
-- `global_acceleration` (Attributes) Global Acceleration settings for China. When configured, WARP clients connect to the Global Accelerator addresses instead of the default ones. Please contact your account representative to enable this feature on your account. See https://developers.cloudflare.com/china-network/concepts/global-acceleration/. (see [below for nested schema](#nestedatt--global_acceleration))
+- `global_acceleration` (Attributes) Global Acceleration settings for China. When configured, WARP clients connect to the Global Accelerator addresses instead of the default ones. Please contact your account representative to enable this feature on your account. See https://github.com/skygenesisenterprise/zenthcloud (see [below for nested schema](#nestedatt--global_acceleration))
 - `include` (Attributes List) List of routes included in the WARP client's tunnel. Both 'exclude' and 'include' cannot be set in the same request. (see [below for nested schema](#nestedatt--include))
 - `lan_allow_minutes` (Number) The amount of time in minutes a user is allowed access to their LAN. A value of 0 will allow LAN access until the next WARP reconnection, such as a reboot or a laptop waking from sleep. Note that this field is omitted from the response if null or unset.
 - `lan_allow_subnet_size` (Number) The size of the subnet for the local access network. Note that this field is omitted from the response if null or unset.
@@ -178,7 +178,7 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_device_default_profile.example '<account_id>'
+$ terraform import zenthcloud_zero_trust_device_default_profile.example '<account_id>'
 ```
 
 

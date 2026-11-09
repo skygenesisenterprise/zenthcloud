@@ -5,9 +5,9 @@ package certificate_authorities_hostname_associations
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/certificate_authorities"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/certificate_authorities"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -25,11 +25,11 @@ type CertificateAuthoritiesHostnameAssociationsDataSourceModel struct {
 
 func (m *CertificateAuthoritiesHostnameAssociationsDataSourceModel) toReadParams(_ context.Context) (params certificate_authorities.HostnameAssociationGetParams, diags diag.Diagnostics) {
 	params = certificate_authorities.HostnameAssociationGetParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	if !m.MTLSCertificateID.IsNull() {
-		params.MTLSCertificateID = cloudflare.F(m.MTLSCertificateID.ValueString())
+		params.MTLSCertificateID = zenthcloud.F(m.MTLSCertificateID.ValueString())
 	}
 
 	return

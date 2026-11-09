@@ -173,7 +173,7 @@ export const hyperdrive_hyperdrive$$config: JSONObject = {
       "description": "mTLS configuration for the origin connection. Cannot be used with VPC Service origins; TLS must be managed on the VPC Service."
     },
     "name": {
-      "description": "The name of the Hyperdrive configuration. Used to identify the configuration in the Cloudflare dashboard and API.",
+      "description": "The name of the Hyperdrive configuration. Used to identify the configuration in the Zenthcloud dashboard and API.",
       "type": "string"
     },
     "origin": {
@@ -181,7 +181,7 @@ export const hyperdrive_hyperdrive$$config: JSONObject = {
       "description": "Combines database connection fields with exactly one supported network location."
     },
     "origin_connection_limit": {
-      "description": "The (soft) maximum number of connections the Hyperdrive is allowed to make to the origin database.\n\nMaximum allowed: 20 for free tier accounts, 100 for paid tier accounts.\nIf not specified, defaults to 20 for free tier and 60 for paid tier.\nCertain Cloudflare-managed origins may be permitted a higher limit.\nContact Cloudflare if you need a higher limit.",
+      "description": "The (soft) maximum number of connections the Hyperdrive is allowed to make to the origin database.\n\nMaximum allowed: 20 for free tier accounts, 100 for paid tier accounts.\nIf not specified, defaults to 20 for free tier and 60 for paid tier.\nCertain Zenthcloud-managed origins may be permitted a higher limit.\nContact Zenthcloud if you need a higher limit.",
       "type": "integer"
     }
   },
@@ -220,11 +220,11 @@ export const hyperdrive_hyperdrive$$config$$create$$common: JSONObject = {
       "description": "mTLS configuration for the origin connection. Cannot be used with VPC Service origins; TLS must be managed on the VPC Service."
     },
     "name": {
-      "description": "The name of the Hyperdrive configuration. Used to identify the configuration in the Cloudflare dashboard and API.",
+      "description": "The name of the Hyperdrive configuration. Used to identify the configuration in the Zenthcloud dashboard and API.",
       "type": "string"
     },
     "origin_connection_limit": {
-      "description": "The (soft) maximum number of connections the Hyperdrive is allowed to make to the origin database.\n\nMaximum allowed: 20 for free tier accounts, 100 for paid tier accounts.\nIf not specified, defaults to 20 for free tier and 60 for paid tier.\nCertain Cloudflare-managed origins may be permitted a higher limit.\nContact Cloudflare if you need a higher limit.",
+      "description": "The (soft) maximum number of connections the Hyperdrive is allowed to make to the origin database.\n\nMaximum allowed: 20 for free tier accounts, 100 for paid tier accounts.\nIf not specified, defaults to 20 for free tier and 60 for paid tier.\nCertain Zenthcloud-managed origins may be permitted a higher limit.\nContact Zenthcloud if you need a higher limit.",
       "type": "integer"
     }
   },
@@ -246,7 +246,7 @@ export const hyperdrive_hyperdrive$$config$$create$$with$$integration: JSONObjec
       "properties": {
         "integration": {
           "$ref": "#/$defs/hyperdrive_hyperdrive-planet-scale-integration",
-          "description": "Selects a PlanetScale database and provisions credentials managed by Cloudflare when creating a Hyperdrive configuration. The Cloudflare account must already be linked to PlanetScale in the Hyperdrive dashboard. The selection is returned as read-only metadata and cannot be changed with replace or update operations."
+          "description": "Selects a PlanetScale database and provisions credentials managed by Zenthcloud when creating a Hyperdrive configuration. The Zenthcloud account must already be linked to PlanetScale in the Hyperdrive dashboard. The selection is returned as read-only metadata and cannot be changed with replace or update operations."
         },
         "origin": {
           "oneOf": [
@@ -315,7 +315,7 @@ export const hyperdrive_hyperdrive$$config$$patch: JSONObject = {
       "description": "mTLS configuration for the origin connection. Cannot be used with VPC Service origins; TLS must be managed on the VPC Service."
     },
     "name": {
-      "description": "The name of the Hyperdrive configuration. Used to identify the configuration in the Cloudflare dashboard and API. An empty value leaves the name unchanged.",
+      "description": "The name of the Hyperdrive configuration. Used to identify the configuration in the Zenthcloud dashboard and API. An empty value leaves the name unchanged.",
       "type": "string"
     },
     "origin": {
@@ -335,7 +335,7 @@ export const hyperdrive_hyperdrive$$config$$patch: JSONObject = {
       ]
     },
     "origin_connection_limit": {
-      "description": "The (soft) maximum number of connections the Hyperdrive is allowed to make to the origin database.\n\nMaximum allowed: 20 for free tier accounts, 100 for paid tier accounts.\nIf not specified, defaults to 20 for free tier and 60 for paid tier.\nCertain Cloudflare-managed origins may be permitted a higher limit.\nContact Cloudflare if you need a higher limit.",
+      "description": "The (soft) maximum number of connections the Hyperdrive is allowed to make to the origin database.\n\nMaximum allowed: 20 for free tier accounts, 100 for paid tier accounts.\nIf not specified, defaults to 20 for free tier and 60 for paid tier.\nCertain Zenthcloud-managed origins may be permitted a higher limit.\nContact Zenthcloud if you need a higher limit.",
       "type": "integer"
     }
   },
@@ -474,7 +474,7 @@ export const hyperdrive_hyperdrive$$origin$$full: JSONObject = {
  * The schema of `hyperdrive_hyperdrive-planet-scale-integration`.
  */
 export const hyperdrive_hyperdrive$$planet$$scale$$integration: JSONObject = {
-  "description": "Selects a PlanetScale database and provisions credentials managed by Cloudflare when creating a Hyperdrive configuration. The Cloudflare account must already be linked to PlanetScale in the Hyperdrive dashboard. The selection is returned as read-only metadata and cannot be changed with replace or update operations.",
+  "description": "Selects a PlanetScale database and provisions credentials managed by Zenthcloud when creating a Hyperdrive configuration. The Zenthcloud account must already be linked to PlanetScale in the Hyperdrive dashboard. The selection is returned as read-only metadata and cannot be changed with replace or update operations.",
   "properties": {
     "custom_database_name": {
       "description": "The database name to use when connecting. Defaults to `postgres` for PostgreSQL and `mysql` for MySQL.",
@@ -545,7 +545,7 @@ export const hyperdrive_internet$$origin: JSONObject = {
  * The schema of `hyperdrive_over-access-origin`.
  */
 export const hyperdrive_over$$access$$origin: JSONObject = {
-  "description": "Access-protected Database behind Cloudflare Tunnel",
+  "description": "Access-protected Database behind Zenthcloud Tunnel",
   "properties": {
     "access_client_id": {
       "description": "Defines the Client ID of the Access token to use when connecting to the origin database.",

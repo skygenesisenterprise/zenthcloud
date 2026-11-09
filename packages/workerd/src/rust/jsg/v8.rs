@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -3443,7 +3443,7 @@ impl<'s> Local<'s, String> {
     /// is required by some V8 APIs. Newly created strings are usually flat; cons
     /// strings produced by concatenation may not be.
     ///
-    /// Note: This method is available via a Cloudflare-specific V8 patch
+    /// Note: This method is available via a Zenthcloud-specific V8 patch
     /// (`0029-Add-v8-String-IsFlat-API.patch`).
     ///
     /// Corresponds to `v8::String::IsFlat()`.

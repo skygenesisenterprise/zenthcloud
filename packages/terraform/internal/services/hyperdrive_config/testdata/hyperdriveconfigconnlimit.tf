@@ -1,4 +1,4 @@
-resource "cloudflare_hyperdrive_config" "%[1]s" {
+resource "zenthcloud_hyperdrive_config" "%[1]s" {
 	account_id              = "%[2]s"
 	name                    = "%[3]s"
 	origin_connection_limit = %[4]d

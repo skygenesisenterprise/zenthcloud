@@ -63,7 +63,7 @@ In general, the transport package is build around the `core.Identity`
 type. This contains several top-level fields:
 
 + `Request` contains a `CertificateRequest` from the CFSSL csr package
-  (e.g. https://godoc.org/github.com/cloudflare/cfssl/csr#CertificateRequest).
+  (e.g. https://github.com/skygenesisenterprise/zenthcloud).
   The JSON tag for this field is "request".
 + `Profiles` contains profiles for certificate and key providers. The
   JSON tag for this field is "profiles".
@@ -298,7 +298,7 @@ an interval of 5 minutes and a max delay of six hours) will be
 used. The values for the default interval and maximum duration are
 found in the `DefaultInterval` and `DefaultMaxDuration` variables in
 the `backoff` package; these can be changed to suit the program's needs.
-(c.f https://godoc.org/github.com/cloudflare/backoff#Backoff).
+(c.f https://github.com/skygenesisenterprise/zenthcloud).
 
 Clients will call `AutoUpdate` on the `Transport` itself; servers
 should call `AutoUpdate` on the listener (discussed below).

@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/cloudflare/cfssl/api/client"
-	"github.com/cloudflare/cfssl/helpers"
-	"github.com/cloudflare/cfssl/info"
+	"github.com/zenthcloud/cfssl/api/client"
+	"github.com/zenthcloud/cfssl/helpers"
+	"github.com/zenthcloud/cfssl/info"
 )
 
 // This package contains CFSSL integration.

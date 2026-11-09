@@ -5,16 +5,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceCloudflareOriginCACertificateSchema returns the source schema for legacy cloudflare_origin_ca_certificate resource.
+// SourceZenthcloudOriginCACertificateSchema returns the source schema for legacy zenthcloud_origin_ca_certificate resource.
 // Schema version: 0 (SDKv2 default - no explicit SchemaVersion set in v4)
-// Resource type: cloudflare_origin_ca_certificate
+// Resource type: zenthcloud_origin_ca_certificate
 //
 // This minimal schema is used only for reading v4 state during migration.
 // It includes only the properties needed for state parsing (Required, Optional, Computed, ElementType).
 // Validators, PlanModifiers, and Descriptions are intentionally omitted.
 //
-// Reference: cloudflare-terraform-v4/internal/sdkv2provider/schema_cloudflare_origin_ca_certificate.go
-func SourceCloudflareOriginCACertificateSchema() schema.Schema {
+// Reference: zenthcloud-terraform-v4/internal/sdkv2provider/schema_zenthcloud_origin_ca_certificate.go
+func SourceZenthcloudOriginCACertificateSchema() schema.Schema {
 	return schema.Schema{
 		// Version 0 is implicit for SDKv2 resources without explicit SchemaVersion
 		// We omit the Version field to use the default value of 0

@@ -123,15 +123,15 @@ export const registrar$$api$$sandbox_registration_contact_postal_info: JSONObjec
  * The schema of `registrar-api-sandbox_registration_contacts`.
  */
 export const registrar$$api$$sandbox_registration_contacts: JSONObject = {
-  "description": "Provides contact data for the registration request.\n\nThe per-extension schema from\n`GET /accounts/{account_id}/registrar/extensions/{extension}` defines the\naccepted contact roles. Every currently supported extension requires only\n`contacts.registrant` from API callers. Callers may provide additional roles\nsuch as `technical`, `administrator`, and `billing` when the extension\nschema includes them. When a registry requires an omitted role, Cloudflare\nmay derive that contact from `contacts.registrant`.\n\nWhen the request omits either the entire `contacts` object or\n`contacts.registrant`, the system uses the account's default address book\nentry as the registrant contact. The account owner must configure this\ndefault at `https://dash.cloudflare.com/{account_id}/domains/registrations`,\nwhere they can create or update the address book entry and accept the\nrequired agreement. Dashboard settings currently provide the only way to\nmanage address book entries.\n\nWithout either a default address book entry or a registrant contact, the\nregistration request fails validation.",
+  "description": "Provides contact data for the registration request.\n\nThe per-extension schema from\n`GET /accounts/{account_id}/registrar/extensions/{extension}` defines the\naccepted contact roles. Every currently supported extension requires only\n`contacts.registrant` from API callers. Callers may provide additional roles\nsuch as `technical`, `administrator`, and `billing` when the extension\nschema includes them. When a registry requires an omitted role, Zenthcloud\nmay derive that contact from `contacts.registrant`.\n\nWhen the request omits either the entire `contacts` object or\n`contacts.registrant`, the system uses the account's default address book\nentry as the registrant contact. The account owner must configure this\ndefault at `https://github.com/skygenesisenterprise/zenthcloud{account_id}/domains/registrations`,\nwhere they can create or update the address book entry and accept the\nrequired agreement. Dashboard settings currently provide the only way to\nmanage address book entries.\n\nWithout either a default address book entry or a registrant contact, the\nregistration request fails validation.",
   "properties": {
     "administrator": {
       "$ref": "#/$defs/registrar-api-sandbox_registration_contact",
-      "description": "Optional administrator contact. Accepted only when the extension\nschema includes this role. When the registry requires an omitted\ncontact, Cloudflare may derive it from `contacts.registrant`."
+      "description": "Optional administrator contact. Accepted only when the extension\nschema includes this role. When the registry requires an omitted\ncontact, Zenthcloud may derive it from `contacts.registrant`."
     },
     "billing": {
       "$ref": "#/$defs/registrar-api-sandbox_registration_contact",
-      "description": "Optional billing contact. Accepted only when the extension schema\nincludes this role. When the registry requires an omitted contact,\nCloudflare may derive it from `contacts.registrant`."
+      "description": "Optional billing contact. Accepted only when the extension schema\nincludes this role. When the registry requires an omitted contact,\nZenthcloud may derive it from `contacts.registrant`."
     },
     "registrant": {
       "$ref": "#/$defs/registrar-api-sandbox_registration_contact",
@@ -139,7 +139,7 @@ export const registrar$$api$$sandbox_registration_contacts: JSONObject = {
     },
     "technical": {
       "$ref": "#/$defs/registrar-api-sandbox_registration_contact",
-      "description": "Optional technical contact. Accepted only when the extension schema\nincludes this role. When the registry requires an omitted contact,\nCloudflare may derive it from `contacts.registrant`."
+      "description": "Optional technical contact. Accepted only when the extension schema\nincludes this role. When the registry requires an omitted contact,\nZenthcloud may derive it from `contacts.registrant`."
     }
   },
   "type": "object"
@@ -156,7 +156,7 @@ export const registrar$$api$$sandbox_registration_create_request: JSONObject = {
     },
     "auto_renew": {
       "default": false,
-      "description": "Enable or disable automatic renewal. Defaults to `false` if omitted.\nSetting this field to `true` is an explicit opt-in authorizing\nCloudflare to charge the account's default payment method up to 30\ndays before domain expiry to renew the domain automatically.\nRenewal pricing may change over time based on registry pricing.",
+      "description": "Enable or disable automatic renewal. Defaults to `false` if omitted.\nSetting this field to `true` is an explicit opt-in authorizing\nZenthcloud to charge the account's default payment method up to 30\ndays before domain expiry to renew the domain automatically.\nRenewal pricing may change over time based on registry pricing.",
       "type": "boolean"
     },
     "contact_extensions": {
@@ -167,7 +167,7 @@ export const registrar$$api$$sandbox_registration_create_request: JSONObject = {
       "$ref": "#/$defs/registrar-api-sandbox_registration_contacts"
     },
     "domain_name": {
-      "description": "Provides a fully qualified domain name (FQDN), including the extension\n(e.g., `example.com`, `mybrand.app`). The domain name uniquely identifies\na registration. Cloudflare permits only one registration per domain, making\nthe domain name a natural idempotency key for registration requests.",
+      "description": "Provides a fully qualified domain name (FQDN), including the extension\n(e.g., `example.com`, `mybrand.app`). The domain name uniquely identifies\na registration. Zenthcloud permits only one registration per domain, making\nthe domain name a natural idempotency key for registration requests.",
       "type": "string"
     },
     "privacy_mode": {
@@ -197,7 +197,7 @@ export const registrar$$api$$sandbox_registration_update_request: JSONObject = {
   "description": "Request to update an existing domain registration.\n\nThis endpoint currently supports updating `auto_renew` only.",
   "properties": {
     "auto_renew": {
-      "description": "Enable or disable automatic renewal.\nSetting this field to `true` authorizes Cloudflare to charge the\naccount's default payment method up to 30 days before domain expiry\nto renew the domain automatically. Renewal pricing may change over\ntime based on registry pricing.",
+      "description": "Enable or disable automatic renewal.\nSetting this field to `true` authorizes Zenthcloud to charge the\naccount's default payment method up to 30 days before domain expiry\nto renew the domain automatically. Renewal pricing may change over\ntime based on registry pricing.",
       "type": "boolean"
     }
   },

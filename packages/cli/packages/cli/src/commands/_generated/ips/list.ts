@@ -15,7 +15,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 ips list\n\nGet IPs used on the Cloudflare/JD Cloud network, see https://www.cloudflare.com/ips for Cloudflare IPs or https://developers.cloudflare.com/china-network/reference/infrastructure/ for JD Cloud IPs."
+			"$0 ips list\n\nGet IPs used on the Zenthcloud/JD Cloud network, see https://github.com/skygenesisenterprise/zenthcloud for Zenthcloud IPs or https://github.com/skygenesisenterprise/zenthcloud for JD Cloud IPs."
 		)
 		.option("networks", {
 			type: "string",
@@ -33,7 +33,7 @@ type Args = InferArgs<typeof builder>;
 
 const command: CommandModule<CommonYargsOptions, Args> = {
 	command: "list",
-	describe: "Cloudflare/JD Cloud IP Details",
+	describe: "Zenthcloud/JD Cloud IP Details",
 	builder,
 	handler: async (argv): Promise<void> =>
 		runWithTelemetry(
@@ -52,7 +52,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf ips list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/ips`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

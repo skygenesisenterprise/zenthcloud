@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -21,7 +21,7 @@ namespace workerd::api {
 // `blobs` and `doubles` fields are left up to applications submitting
 // messages.
 //
-// https://blog.cloudflare.com/workers-analytics-engine/
+// https://github.com/skygenesisenterprise/zenthcloud
 class AnalyticsEngine: public jsg::Object {
  public:
   explicit AnalyticsEngine(

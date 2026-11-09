@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -65,7 +65,7 @@ func TestMigrateAPIShieldOperation_V4ToV5_Basic(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
@@ -83,8 +83,8 @@ func TestMigrateAPIShieldOperation_V4ToV5_Basic(t *testing.T) {
 				// Use external v4 provider (will create version=0 state)
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -103,13 +103,13 @@ func TestMigrateAPIShieldOperation_V4ToV5_Basic(t *testing.T) {
 					// Step 2: Run migration and verify state
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
 						// Verify v4 fields migrated correctly
-						statecheck.ExpectKnownValue("cloudflare_api_shield_operation."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
-						statecheck.ExpectKnownValue("cloudflare_api_shield_operation."+rnd, tfjsonpath.New("method"), knownvalue.StringExact("GET")),
-						statecheck.ExpectKnownValue("cloudflare_api_shield_operation."+rnd, tfjsonpath.New("host"), knownvalue.StringExact("api.example.com")),
-						statecheck.ExpectKnownValue("cloudflare_api_shield_operation."+rnd, tfjsonpath.New("endpoint"), knownvalue.StringExact("/api/v1/users")),
+						statecheck.ExpectKnownValue("zenthcloud_api_shield_operation."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
+						statecheck.ExpectKnownValue("zenthcloud_api_shield_operation."+rnd, tfjsonpath.New("method"), knownvalue.StringExact("GET")),
+						statecheck.ExpectKnownValue("zenthcloud_api_shield_operation."+rnd, tfjsonpath.New("host"), knownvalue.StringExact("api.example.com")),
+						statecheck.ExpectKnownValue("zenthcloud_api_shield_operation."+rnd, tfjsonpath.New("endpoint"), knownvalue.StringExact("/api/v1/users")),
 						// Verify new v5 computed fields exist (populated by API)
-						statecheck.ExpectKnownValue("cloudflare_api_shield_operation."+rnd, tfjsonpath.New("operation_id"), knownvalue.NotNull()),
-						statecheck.ExpectKnownValue("cloudflare_api_shield_operation."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue("zenthcloud_api_shield_operation."+rnd, tfjsonpath.New("operation_id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue("zenthcloud_api_shield_operation."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
 					}),
 				},
 			})
@@ -143,7 +143,7 @@ func TestMigrateAPIShieldOperation_V4ToV5_PostMethod(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
@@ -158,8 +158,8 @@ func TestMigrateAPIShieldOperation_V4ToV5_PostMethod(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -176,12 +176,12 @@ func TestMigrateAPIShieldOperation_V4ToV5_PostMethod(t *testing.T) {
 				Steps: []resource.TestStep{
 					firstStep,
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
-						statecheck.ExpectKnownValue("cloudflare_api_shield_operation."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
-						statecheck.ExpectKnownValue("cloudflare_api_shield_operation."+rnd, tfjsonpath.New("method"), knownvalue.StringExact("POST")),
-						statecheck.ExpectKnownValue("cloudflare_api_shield_operation."+rnd, tfjsonpath.New("host"), knownvalue.StringExact("api.example.com")),
-						statecheck.ExpectKnownValue("cloudflare_api_shield_operation."+rnd, tfjsonpath.New("endpoint"), knownvalue.StringExact("/api/v1/users")),
-						statecheck.ExpectKnownValue("cloudflare_api_shield_operation."+rnd, tfjsonpath.New("operation_id"), knownvalue.NotNull()),
-						statecheck.ExpectKnownValue("cloudflare_api_shield_operation."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue("zenthcloud_api_shield_operation."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
+						statecheck.ExpectKnownValue("zenthcloud_api_shield_operation."+rnd, tfjsonpath.New("method"), knownvalue.StringExact("POST")),
+						statecheck.ExpectKnownValue("zenthcloud_api_shield_operation."+rnd, tfjsonpath.New("host"), knownvalue.StringExact("api.example.com")),
+						statecheck.ExpectKnownValue("zenthcloud_api_shield_operation."+rnd, tfjsonpath.New("endpoint"), knownvalue.StringExact("/api/v1/users")),
+						statecheck.ExpectKnownValue("zenthcloud_api_shield_operation."+rnd, tfjsonpath.New("operation_id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue("zenthcloud_api_shield_operation."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
 					}),
 				},
 			})
@@ -215,7 +215,7 @@ func TestMigrateAPIShieldOperation_V4ToV5_PathParams(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
@@ -230,8 +230,8 @@ func TestMigrateAPIShieldOperation_V4ToV5_PathParams(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -248,12 +248,12 @@ func TestMigrateAPIShieldOperation_V4ToV5_PathParams(t *testing.T) {
 				Steps: []resource.TestStep{
 					firstStep,
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
-						statecheck.ExpectKnownValue("cloudflare_api_shield_operation."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
-						statecheck.ExpectKnownValue("cloudflare_api_shield_operation."+rnd, tfjsonpath.New("method"), knownvalue.StringExact("GET")),
-						statecheck.ExpectKnownValue("cloudflare_api_shield_operation."+rnd, tfjsonpath.New("host"), knownvalue.StringExact("api.example.com")),
-						statecheck.ExpectKnownValue("cloudflare_api_shield_operation."+rnd, tfjsonpath.New("endpoint"), knownvalue.StringExact("/api/v1/users/{var1}/posts/{var2}")),
-						statecheck.ExpectKnownValue("cloudflare_api_shield_operation."+rnd, tfjsonpath.New("operation_id"), knownvalue.NotNull()),
-						statecheck.ExpectKnownValue("cloudflare_api_shield_operation."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue("zenthcloud_api_shield_operation."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
+						statecheck.ExpectKnownValue("zenthcloud_api_shield_operation."+rnd, tfjsonpath.New("method"), knownvalue.StringExact("GET")),
+						statecheck.ExpectKnownValue("zenthcloud_api_shield_operation."+rnd, tfjsonpath.New("host"), knownvalue.StringExact("api.example.com")),
+						statecheck.ExpectKnownValue("zenthcloud_api_shield_operation."+rnd, tfjsonpath.New("endpoint"), knownvalue.StringExact("/api/v1/users/{var1}/posts/{var2}")),
+						statecheck.ExpectKnownValue("zenthcloud_api_shield_operation."+rnd, tfjsonpath.New("operation_id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue("zenthcloud_api_shield_operation."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
 					}),
 				},
 			})

@@ -72,7 +72,7 @@ if __name__ == "__main__":
                 print("Internal build failed.")
                 print(resp.json()["error"]["message"])
                 print(
-                    "If you are a Cloudflare employee, please check your internal"
+                    "If you are a Zenthcloud employee, please check your internal"
                     " branch and refer this doc for further details:"
                     " https://cflare.co/workerd-internal-build"
                 )

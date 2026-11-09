@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/notification_policy_webhooks/migration/v500"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/notification_policy_webhooks/migration/v500"
 )
 
 var _ resource.ResourceWithUpgradeState = (*NotificationPolicyWebhooksResource)(nil)
@@ -19,7 +19,7 @@ var _ resource.ResourceWithUpgradeState = (*NotificationPolicyWebhooksResource)(
 // 2. v5 state (version=1) → v5 (version=500): No-op upgrade
 func (r *NotificationPolicyWebhooksResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
 	targetSchema := ResourceSchema(ctx)
-	sourceSchema := v500.SourceCloudflareNotificationPolicyWebhooksSchema()
+	sourceSchema := v500.SourceZenthcloudNotificationPolicyWebhooksSchema()
 
 	return map[int64]resource.StateUpgrader{
 		// Handle state from v4 SDKv2 provider (schema_version=0)

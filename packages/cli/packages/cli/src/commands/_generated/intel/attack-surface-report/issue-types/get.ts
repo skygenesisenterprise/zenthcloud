@@ -50,7 +50,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf intel attack-surface-report issue-types get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/intel/attack-surface-report/issue-types`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/intel/attack-surface-report/issue-types`,
 						pathParams: {},
 						bodyKind: "none",
 					});

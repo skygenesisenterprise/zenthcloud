@@ -25,7 +25,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 workers deployments create\n\nDeployments configure how [Worker Versions](https://developers.cloudflare.com/api/operations/worker-versions-list-versions) are deployed to traffic. A deployment can consist of multiple versions of a Worker."
+			"$0 workers deployments create\n\nDeployments configure how [Worker Versions](https://github.com/skygenesisenterprise/zenthcloud) are deployed to traffic. A deployment can consist of multiple versions of a Worker."
 		)
 		.option("worker", {
 			type: "string",
@@ -151,7 +151,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf workers deployments create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/workers/scripts/${encodeURIComponent(scriptName)}/deployments`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/workers/scripts/${encodeURIComponent(scriptName)}/deployments`,
 						pathParams: { worker: String(argv["worker"] ?? "") },
 						query: queryParams,
 						bodyKind: "json",

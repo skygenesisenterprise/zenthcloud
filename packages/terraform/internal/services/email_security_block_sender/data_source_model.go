@@ -5,8 +5,8 @@ package email_security_block_sender
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/email_security"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/email_security"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -32,7 +32,7 @@ type EmailSecurityBlockSenderDataSourceModel struct {
 
 func (m *EmailSecurityBlockSenderDataSourceModel) toReadParams(_ context.Context) (params email_security.SettingBlockSenderGetParams, diags diag.Diagnostics) {
 	params = email_security.SettingBlockSenderGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -40,23 +40,23 @@ func (m *EmailSecurityBlockSenderDataSourceModel) toReadParams(_ context.Context
 
 func (m *EmailSecurityBlockSenderDataSourceModel) toListParams(_ context.Context) (params email_security.SettingBlockSenderListParams, diags diag.Diagnostics) {
 	params = email_security.SettingBlockSenderListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Filter.Direction.IsNull() {
-		params.Direction = cloudflare.F(email_security.SettingBlockSenderListParamsDirection(m.Filter.Direction.ValueString()))
+		params.Direction = zenthcloud.F(email_security.SettingBlockSenderListParamsDirection(m.Filter.Direction.ValueString()))
 	}
 	if !m.Filter.Order.IsNull() {
-		params.Order = cloudflare.F(email_security.SettingBlockSenderListParamsOrder(m.Filter.Order.ValueString()))
+		params.Order = zenthcloud.F(email_security.SettingBlockSenderListParamsOrder(m.Filter.Order.ValueString()))
 	}
 	if !m.Filter.Pattern.IsNull() {
-		params.Pattern = cloudflare.F(m.Filter.Pattern.ValueString())
+		params.Pattern = zenthcloud.F(m.Filter.Pattern.ValueString())
 	}
 	if !m.Filter.PatternType.IsNull() {
-		params.PatternType = cloudflare.F(email_security.SettingBlockSenderListParamsPatternType(m.Filter.PatternType.ValueString()))
+		params.PatternType = zenthcloud.F(email_security.SettingBlockSenderListParamsPatternType(m.Filter.PatternType.ValueString()))
 	}
 	if !m.Filter.Search.IsNull() {
-		params.Search = cloudflare.F(m.Filter.Search.ValueString())
+		params.Search = zenthcloud.F(m.Filter.Search.ValueString())
 	}
 
 	return

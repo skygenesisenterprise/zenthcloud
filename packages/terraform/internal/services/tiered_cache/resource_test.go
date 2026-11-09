@@ -6,11 +6,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/cache"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/cache"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -25,13 +25,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_tiered_cache", &resource.Sweeper{
-		Name: "cloudflare_tiered_cache",
-		F:    testSweepCloudflareTieredCache,
+	resource.AddTestSweepers("zenthcloud_tiered_cache", &resource.Sweeper{
+		Name: "zenthcloud_tiered_cache",
+		F:    testSweepZenthcloudTieredCache,
 	})
 }
 
-func testSweepCloudflareTieredCache(r string) error {
+func testSweepZenthcloudTieredCache(r string) error {
 	ctx := context.Background()
 	// Tiered Cache is a zone-level configuration setting.
 	// It's a singleton setting per zone, not something that accumulates.
@@ -56,17 +56,17 @@ func testTieredCacheConfigOn(rnd, zoneID string) string {
 	return acctest.LoadTestCase("tieredcacheconfig_on.tf", rnd, zoneID)
 }
 
-func testAccCheckCloudflareTieredCacheDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudTieredCacheDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_tiered_cache" {
+		if rs.Type != "zenthcloud_tiered_cache" {
 			continue
 		}
 
 		zoneID := rs.Primary.Attributes[consts.ZoneIDSchemaKey]
 		resp, err := client.Cache.SmartTieredCache.Get(context.Background(), cache.SmartTieredCacheGetParams{
-			ZoneID: cloudflare.F(zoneID),
+			ZoneID: zenthcloud.F(zoneID),
 		})
 		if err != nil {
 			continue
@@ -81,15 +81,15 @@ func testAccCheckCloudflareTieredCacheDestroy(s *terraform.State) error {
 	return nil
 }
 
-func TestAccCloudflareTieredCache_Basic(t *testing.T) {
+func TestAccZenthcloudTieredCache_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_tiered_cache." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_tiered_cache." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareTieredCacheDestroy,
+		CheckDestroy:             testAccCheckZenthcloudTieredCacheDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testTieredCacheConfigOff(rnd, zoneID),
@@ -112,15 +112,15 @@ func TestAccCloudflareTieredCache_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareTieredCache_Update(t *testing.T) {
+func TestAccZenthcloudTieredCache_Update(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_tiered_cache." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_tiered_cache." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareTieredCacheDestroy,
+		CheckDestroy:             testAccCheckZenthcloudTieredCacheDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testTieredCacheConfigOn(rnd, zoneID),
@@ -179,15 +179,15 @@ func TestAccCloudflareTieredCache_Update(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareTieredCache_Complete(t *testing.T) {
+func TestAccZenthcloudTieredCache_Complete(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_tiered_cache." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_tiered_cache." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareTieredCacheDestroy,
+		CheckDestroy:             testAccCheckZenthcloudTieredCacheDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testTieredCacheConfigOff(rnd, zoneID),
@@ -228,15 +228,15 @@ func TestAccCloudflareTieredCache_Complete(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareTieredCache_Smart(t *testing.T) {
+func TestAccZenthcloudTieredCache_Smart(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_tiered_cache." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_tiered_cache." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareTieredCacheDestroy,
+		CheckDestroy:             testAccCheckZenthcloudTieredCacheDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testTieredCacheConfig(rnd, zoneID),
@@ -279,7 +279,7 @@ func TestAccCloudflareTieredCache_Smart(t *testing.T) {
 
 func TestAccUpgradeTieredCache_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	config := testTieredCacheConfigOn(rnd, zoneID)
 
@@ -288,8 +288,8 @@ func TestAccUpgradeTieredCache_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

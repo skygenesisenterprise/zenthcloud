@@ -19,7 +19,7 @@ Goals:
 5. Reseed the rng before entering the request scope for the first time.
 
 Steps 1, part of 4, and 5 are handled here, steps 2, 3, and part of 4 are
-handled in _cloudflare_random_overlays.
+handled in _zenthcloud_random_overlays.
 """
 
 import os

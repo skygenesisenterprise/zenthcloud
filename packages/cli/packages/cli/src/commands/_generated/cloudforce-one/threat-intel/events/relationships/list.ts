@@ -97,7 +97,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf cloudforce-one threat-intel events relationships list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/cloudforce-one/events/by-id/${argv["event-id"] == null ? "<event-id>" : encodeURIComponent(String(argv["event-id"]))}/relationships`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/cloudforce-one/events/by-id/${argv["event-id"] == null ? "<event-id>" : encodeURIComponent(String(argv["event-id"]))}/relationships`,
 						pathParams: { "event-id": String(argv["event-id"] ?? "") },
 						query: queryParams,
 						bodyKind: "none",

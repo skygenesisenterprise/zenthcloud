@@ -8,16 +8,16 @@ import (
 	"testing"
 	"time"
 
-	cfv1 "github.com/cloudflare/cloudflare-go"
+	cfv1 "github.com/zenthcloud/zenthcloud-go"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -48,13 +48,13 @@ var v4BooleanCombinationsConfig string
 //go:embed testdata/v5_boolean_combinations.tf
 var v5BooleanCombinationsConfig string
 
-// clearAPIToken unsets CLOUDFLARE_API_TOKEN for Access tests (require API_KEY + EMAIL).
+// clearAPIToken unsets ZENTHCLOUD_API_TOKEN for Access tests (require API_KEY + EMAIL).
 func clearAPIToken(t *testing.T) {
 	t.Helper()
-	originalToken := os.Getenv("CLOUDFLARE_API_TOKEN")
+	originalToken := os.Getenv("ZENTHCLOUD_API_TOKEN")
 	if originalToken != "" {
-		os.Unsetenv("CLOUDFLARE_API_TOKEN")
-		t.Cleanup(func() { os.Setenv("CLOUDFLARE_API_TOKEN", originalToken) })
+		os.Unsetenv("ZENTHCLOUD_API_TOKEN")
+		t.Cleanup(func() { os.Setenv("ZENTHCLOUD_API_TOKEN", originalToken) })
 	}
 }
 
@@ -67,14 +67,14 @@ func cleanupMTLSSettings(t *testing.T) {
 	ctx := context.Background()
 	client, err := acctest.SharedV1Client()
 	if err != nil {
-		t.Fatalf("Failed to create Cloudflare client: %v", err)
+		t.Fatalf("Failed to create Zenthcloud client: %v", err)
 	}
 
 	deletedSettings := cfv1.UpdateAccessMutualTLSHostnameSettingsParams{
 		Settings: []cfv1.AccessMutualTLSHostnameSettings{},
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID != "" {
 		for i := 0; i < 3; i++ {
 			_, err := client.UpdateAccessMutualTLSHostnameSettings(ctx, cfv1.AccountIdentifier(accountID), deletedSettings)
@@ -85,7 +85,7 @@ func cleanupMTLSSettings(t *testing.T) {
 		}
 	}
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID != "" {
 		for i := 0; i < 3; i++ {
 			_, err := client.UpdateAccessMutualTLSHostnameSettings(ctx, cfv1.ZoneIdentifier(zoneID), deletedSettings)
@@ -128,11 +128,11 @@ func TestMigrateMTLSHostnameSettingsBasic(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-			domain := os.Getenv("CLOUDFLARE_DOMAIN")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+			domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
-			resourceName := "cloudflare_zero_trust_access_mtls_hostname_settings." + rnd
+			resourceName := "zenthcloud_zero_trust_access_mtls_hostname_settings." + rnd
 			testConfig := tc.configFn(rnd, accountID, domain)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
 
@@ -145,8 +145,8 @@ func TestMigrateMTLSHostnameSettingsBasic(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -181,11 +181,11 @@ func TestMigrateMTLSHostnameSettingsMultiple(t *testing.T) {
 	cleanupMTLSSettings(t)
 	clearAPIToken(t)
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	altDomain := "alt." + domain
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_mtls_hostname_settings." + rnd
+	resourceName := "zenthcloud_zero_trust_access_mtls_hostname_settings." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(v4MultipleConfig, rnd, "account", accountID, domain, altDomain)
@@ -199,8 +199,8 @@ func TestMigrateMTLSHostnameSettingsMultiple(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: acctest.GetLastV4Version(),
 					},
 				},
@@ -223,10 +223,10 @@ func TestMigrateMTLSHostnameSettingsBooleanDefaults(t *testing.T) {
 	cleanupMTLSSettings(t)
 	clearAPIToken(t)
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_mtls_hostname_settings." + rnd
+	resourceName := "zenthcloud_zero_trust_access_mtls_hostname_settings." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(v4BooleanDefaultsConfig, rnd, "account", accountID, domain)
@@ -240,8 +240,8 @@ func TestMigrateMTLSHostnameSettingsBooleanDefaults(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: acctest.GetLastV4Version(),
 					},
 				},
@@ -265,8 +265,8 @@ func TestMigrateMTLSHostnameSettingsBooleanCombinations(t *testing.T) {
 	cleanupMTLSSettings(t)
 	clearAPIToken(t)
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	testCases := []struct {
 		name                        string
@@ -281,7 +281,7 @@ func TestMigrateMTLSHostnameSettingsBooleanCombinations(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			cleanupMTLSSettings(t)
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_zero_trust_access_mtls_hostname_settings." + rnd
+			resourceName := "zenthcloud_zero_trust_access_mtls_hostname_settings." + rnd
 			tmpDir := t.TempDir()
 
 			v4Config := fmt.Sprintf(v4BooleanCombinationsConfig, rnd, "account", accountID, domain, tc.clientCertificateForwarding, tc.chinaNetwork)
@@ -296,8 +296,8 @@ func TestMigrateMTLSHostnameSettingsBooleanCombinations(t *testing.T) {
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: acctest.GetLastV4Version(),
 							},
 						},
@@ -322,10 +322,10 @@ func TestMigrateMTLSHostnameSettingsAccountScope(t *testing.T) {
 	cleanupMTLSSettings(t)
 	clearAPIToken(t)
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_mtls_hostname_settings." + rnd
+	resourceName := "zenthcloud_zero_trust_access_mtls_hostname_settings." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(v4BasicConfig, rnd, accountID, domain)
@@ -339,8 +339,8 @@ func TestMigrateMTLSHostnameSettingsAccountScope(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: acctest.GetLastV4Version(),
 					},
 				},
@@ -362,15 +362,15 @@ func TestMigrateMTLSHostnameSettingsZoneScope(t *testing.T) {
 	cleanupMTLSSettings(t)
 	clearAPIToken(t)
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_mtls_hostname_settings." + rnd
+	resourceName := "zenthcloud_zero_trust_access_mtls_hostname_settings." + rnd
 	tmpDir := t.TempDir()
 
 	// v4_basic.tf uses %[2]s for account_id, but zone tests need zone_id
 	// Use the basic template with zone_id format arg
-	v4Config := fmt.Sprintf(`resource "cloudflare_zero_trust_access_mtls_hostname_settings" "%[1]s" {
+	v4Config := fmt.Sprintf(`resource "zenthcloud_zero_trust_access_mtls_hostname_settings" "%[1]s" {
   zone_id = "%[2]s"
   settings {
     hostname                      = "%[3]s"
@@ -389,8 +389,8 @@ func TestMigrateMTLSHostnameSettingsZoneScope(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: acctest.GetLastV4Version(),
 					},
 				},

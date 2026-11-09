@@ -1,7 +1,7 @@
 # Test configuration to verify computed fields don't cause drift
-# This tests the issue from https://github.com/cloudflare/terraform-provider-cloudflare/issues/5517
+# This tests the issue from https://github.com/skygenesisenterprise/zenthcloud
 
-resource "cloudflare_dns_record" "%[1]s_minimal" {
+resource "zenthcloud_dns_record" "%[1]s_minimal" {
   zone_id = "%[2]s"
   name    = "tf-acctest-minimal.%[1]s.%[3]s"
   type    = "A"
@@ -12,7 +12,7 @@ resource "cloudflare_dns_record" "%[1]s_minimal" {
   # Minimal configuration - let provider handle defaults
 }
 
-resource "cloudflare_dns_record" "%[1]s_cname_settings" {
+resource "zenthcloud_dns_record" "%[1]s_cname_settings" {
   zone_id = "%[2]s"
   name    = "tf-acctest-cname.%[1]s.%[3]s"
   type    = "CNAME"
@@ -29,7 +29,7 @@ resource "cloudflare_dns_record" "%[1]s_cname_settings" {
   tags = []
 }
 
-resource "cloudflare_dns_record" "%[1]s_with_comment" {
+resource "zenthcloud_dns_record" "%[1]s_with_comment" {
   zone_id = "%[2]s"
   name    = "tf-acctest-comment.%[1]s.%[3]s"
   type    = "A"

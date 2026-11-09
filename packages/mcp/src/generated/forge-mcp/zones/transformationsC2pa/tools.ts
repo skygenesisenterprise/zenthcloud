@@ -17,7 +17,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zones_transformationsC2pa_edit",
     title: "Change Image Transformations C2PA setting",
-    description: "C2PA (Coalition for Content Provenance and Authenticity) signing adds cryptographic metadata\nto images processed through Cloudflare Image Transformations, enabling verification of image\nauthenticity and provenance.\n\nPATCH /zones/{zone_id}/settings/transformations_c2pa",
+    description: "C2PA (Coalition for Content Provenance and Authenticity) signing adds cryptographic metadata\nto images processed through Zenthcloud Image Transformations, enabling verification of image\nauthenticity and provenance.\n\nPATCH /zones/{zone_id}/settings/transformations_c2pa",
     inputSchema: {
       type: "object",
       properties: {
@@ -135,7 +135,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zones_transformationsC2pa_get",
     title: "Get Image Transformations C2PA setting",
-    description: "C2PA (Coalition for Content Provenance and Authenticity) signing adds cryptographic metadata\nto images processed through Cloudflare Image Transformations, enabling verification of image\nauthenticity and provenance.\n\nGET /zones/{zone_id}/settings/transformations_c2pa",
+    description: "C2PA (Coalition for Content Provenance and Authenticity) signing adds cryptographic metadata\nto images processed through Zenthcloud Image Transformations, enabling verification of image\nauthenticity and provenance.\n\nGET /zones/{zone_id}/settings/transformations_c2pa",
     inputSchema: {
       type: "object",
       properties: {

@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	cfv1 "github.com/cloudflare/cloudflare-go"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	cfv1 "github.com/zenthcloud/zenthcloud-go"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -20,20 +20,20 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_workers_for_platforms_dispatch_namespace", &resource.Sweeper{
-		Name: "cloudflare_workers_for_platforms_dispatch_namespace",
+	resource.AddTestSweepers("zenthcloud_workers_for_platforms_dispatch_namespace", &resource.Sweeper{
+		Name: "zenthcloud_workers_for_platforms_dispatch_namespace",
 		F: func(region string) error {
 			ctx := context.Background()
 			client, err := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 			if err != nil {
-				tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", err))
+				tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", err))
 				return fmt.Errorf("error establishing client: %w", err)
 			}
 
 			if accountID == "" {
-				tflog.Info(ctx, "Skipping Workers for Platforms dispatch namespaces sweep: CLOUDFLARE_ACCOUNT_ID not set")
+				tflog.Info(ctx, "Skipping Workers for Platforms dispatch namespaces sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 				return nil
 			}
 
@@ -67,17 +67,17 @@ func init() {
 	})
 }
 
-func TestAccCloudflareWorkersForPlatforms_NamespaceManagement(t *testing.T) {
+func TestAccZenthcloudWorkersForPlatforms_NamespaceManagement(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_workers_for_platforms_dispatch_namespace." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_workers_for_platforms_dispatch_namespace." + rnd
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareWorkersForPlatformsNamespaceManagement(rnd, accountID),
+				Config: testAccCheckZenthcloudWorkersForPlatformsNamespaceManagement(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", rnd),
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
@@ -93,23 +93,23 @@ func TestAccCloudflareWorkersForPlatforms_NamespaceManagement(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareWorkersForPlatformsNamespaceManagement(rnd, accountID string) string {
+func testAccCheckZenthcloudWorkersForPlatformsNamespaceManagement(rnd, accountID string) string {
 	return acctest.LoadTestCase("workersforplatformsnamespacemanagement.tf", rnd, accountID)
 }
 
 func TestAccUpgradeWorkersForPlatformsDispatchNamespace_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
-	config := testAccCheckCloudflareWorkersForPlatformsNamespaceManagement(rnd, accountID)
+	config := testAccCheckZenthcloudWorkersForPlatformsNamespaceManagement(rnd, accountID)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},
@@ -128,11 +128,11 @@ func TestAccUpgradeWorkersForPlatformsDispatchNamespace_FromPublishedV5(t *testi
 	})
 }
 
-func testAccCheckCloudflareWorkerScriptDestroy(s *terraform.State) error {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+func testAccCheckZenthcloudWorkerScriptDestroy(s *terraform.State) error {
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_workers_script" {
+		if rs.Type != "zenthcloud_workers_script" {
 			continue
 		}
 

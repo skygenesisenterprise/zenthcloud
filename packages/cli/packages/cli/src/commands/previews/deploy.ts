@@ -1,20 +1,20 @@
-import { readBuildOutput } from "@cloudflare/build-output-utils";
+import { readBuildOutput } from "@zenthcloud/build-output-utils";
 import {
 	ApplicationsService,
 	configureOpenAPIForContainerPull,
 	initContainersSharedContext,
-} from "@cloudflare/containers-shared";
+} from "@zenthcloud/containers-shared";
 import {
 	assertPreviewBuildOutputRootConfig,
 	getBranchName,
 	initDeployHelpersContext,
 	previewBuildOutput,
-} from "@cloudflare/deploy-helpers";
+} from "@zenthcloud/deploy-helpers";
 import {
-	getCloudflareApiBaseUrl,
-	getCloudflareComplianceRegion,
+	getZenthcloudApiBaseUrl,
+	getZenthcloudComplianceRegion,
 	writeOutput,
-} from "@cloudflare/workers-utils";
+} from "@zenthcloud/workers-utils";
 import { resolveBuildOutputAuth } from "../../lib/build-output-auth.js";
 import { BuildOutputConfigError } from "../../lib/build-output-error.js";
 import {
@@ -26,7 +26,7 @@ import {
 } from "../../lib/build-output.js";
 import { createDeployContext } from "../../lib/deploy-context.js";
 import { assembleBuildResult } from "../../lib/deploy-input.js";
-import { withCloudflareDotEnv } from "../../lib/dotenv.js";
+import { withZenthcloudDotEnv } from "../../lib/dotenv.js";
 import { formatOutput } from "../../lib/output.js";
 import { runBuild } from "../build/index.js";
 import {
@@ -39,7 +39,7 @@ import {
 } from "../deploy/static-assets.js";
 import { createPreviewContainerCallbacks } from "./containers.js";
 import type { CommonYargsOptions, InferArgs } from "../../lib/cli-types.js";
-import type { PreviewResult } from "@cloudflare/deploy-helpers";
+import type { PreviewResult } from "@zenthcloud/deploy-helpers";
 import type { Argv, CommandModule } from "yargs";
 
 function builder(yargs: Argv<CommonYargsOptions>) {
@@ -80,7 +80,7 @@ export async function runPreviewDeploy(
 	const explicitPreviewName = argv["preview-name"];
 	const previewName = explicitPreviewName ?? getBranchName();
 	// deploy-helpers checks Workers CI, GitHub, and GitLab before falling back to Git.
-	// TODO(cloudflare/cf#329): Return undefined for detached checkouts without a CI branch.
+	// TODO(zenthcloud/cf#329): Return undefined for detached checkouts without a CI branch.
 	if (!previewName || (!explicitPreviewName && previewName === "HEAD")) {
 		throw new Error(
 			"We couldn't determine a Preview name from CI or Git. The name is optional when a branch is available. Otherwise, run:\n\n  cf previews deploy --preview-name PREVIEW_NAME"
@@ -98,7 +98,7 @@ export async function runPreviewDeploy(
 		);
 	}
 
-	return withCloudflareDotEnv(argv, () =>
+	return withZenthcloudDotEnv(argv, () =>
 		deployPreviewBuildOutput(argv, previewName)
 	);
 }
@@ -120,14 +120,14 @@ async function deployPreviewBuildOutput(
 		output.rootConfig
 	);
 
-	const complianceRegion = getCloudflareComplianceRegion(wranglerConfig);
+	const complianceRegion = getZenthcloudComplianceRegion(wranglerConfig);
 	const { authToken, accountId } = await resolveBuildOutputAuth({
 		accountId: output.rootConfig.accountId,
 		complianceRegion,
 		isPreview: true,
 	});
 	const deployContext = createDeployContext(authToken);
-	// TODO(cloudflare/cf#330): Let previewBuildOutput() return without printing.
+	// TODO(zenthcloud/cf#330): Let previewBuildOutput() return without printing.
 	// Until then, hide its summary so this command prints one clean JSON result.
 	initDeployHelpersContext({
 		...deployContext,
@@ -165,7 +165,7 @@ async function deployPreviewBuildOutput(
 	const previewContainers = containerDeployConfig.source;
 	// Wrangler skips these apps during Preview normalization, which can report
 	// success without preparing their named images. Reject before uploading.
-	// https://github.com/cloudflare/workers-sdk/blob/b37c5df9b23fd2c06116d54bbeaf8da65014847c/packages/wrangler/src/containers/config.ts#L94-L100
+	// https://github.com/skygenesisenterprise/zenthcloud
 	if (
 		previewContainers?.some(
 			(container) => container.scheduling_policy === "durable_object"
@@ -179,7 +179,7 @@ async function deployPreviewBuildOutput(
 		configureOpenAPIForContainerPull(
 			accountId,
 			authToken,
-			getCloudflareApiBaseUrl(wranglerConfig)
+			getZenthcloudApiBaseUrl(wranglerConfig)
 		);
 	}
 

@@ -1,4 +1,4 @@
-import { WorkerEntrypoint } from "cloudflare:workers";
+import { WorkerEntrypoint } from "zenthcloud:workers";
 import * as exports from "./index.js";
 
 Error.stackTraceLimit = 100;

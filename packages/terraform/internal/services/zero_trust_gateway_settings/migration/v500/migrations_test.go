@@ -6,10 +6,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -63,7 +63,7 @@ var v5MaxItems1BlocksConfig string
 // Zero Trust resources don't support API token authentication.
 func skipIfAPIToken(t *testing.T) {
 	t.Helper()
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
 		t.Skip("Skipping: zero_trust_gateway_settings does not support API token authentication")
 	}
 }
@@ -75,11 +75,11 @@ func skipIfAPIToken(t *testing.T) {
 //   - activity_log_enabled → settings.activity_log.enabled
 //   - tls_decrypt_enabled → settings.tls_decrypt.enabled
 //   - protocol_detection_enabled → settings.protocol_detection.enabled
-//   - Resource rename: cloudflare_teams_account → cloudflare_zero_trust_gateway_settings
+//   - Resource rename: zenthcloud_teams_account → zenthcloud_zero_trust_gateway_settings
 func TestMigrateZeroTrustGatewaySettings_V4ToV5_FlatBooleans(t *testing.T) {
 	skipIfAPIToken(t)
 
-	certID := os.Getenv("CLOUDFLARE_GATEWAY_CERTIFICATE_ID")
+	certID := os.Getenv("ZENTHCLOUD_GATEWAY_CERTIFICATE_ID")
 
 	testCases := []struct {
 		name              string
@@ -110,11 +110,11 @@ func TestMigrateZeroTrustGatewaySettings_V4ToV5_FlatBooleans(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			if certID == "" {
-				t.Skip("CLOUDFLARE_GATEWAY_CERTIFICATE_ID must be set for this sub-test.")
+				t.Skip("ZENTHCLOUD_GATEWAY_CERTIFICATE_ID must be set for this sub-test.")
 			}
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_zero_trust_gateway_settings." + rnd
+			resourceName := "zenthcloud_zero_trust_gateway_settings." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -128,8 +128,8 @@ func TestMigrateZeroTrustGatewaySettings_V4ToV5_FlatBooleans(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -197,9 +197,9 @@ func TestMigrateZeroTrustGatewaySettings_V4ToV5_Antivirus(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_zero_trust_gateway_settings." + rnd
+			resourceName := "zenthcloud_zero_trust_gateway_settings." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -213,8 +213,8 @@ func TestMigrateZeroTrustGatewaySettings_V4ToV5_Antivirus(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -266,7 +266,7 @@ func TestMigrateZeroTrustGatewaySettings_V4ToV5_Antivirus(t *testing.T) {
 func TestMigrateZeroTrustGatewaySettings_V4ToV5_Comprehensive(t *testing.T) {
 	skipIfAPIToken(t)
 
-	certID := os.Getenv("CLOUDFLARE_GATEWAY_CERTIFICATE_ID")
+	certID := os.Getenv("ZENTHCLOUD_GATEWAY_CERTIFICATE_ID")
 
 	testCases := []struct {
 		name              string
@@ -297,11 +297,11 @@ func TestMigrateZeroTrustGatewaySettings_V4ToV5_Comprehensive(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			if certID == "" {
-				t.Skip("CLOUDFLARE_GATEWAY_CERTIFICATE_ID must be set for this sub-test.")
+				t.Skip("ZENTHCLOUD_GATEWAY_CERTIFICATE_ID must be set for this sub-test.")
 			}
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_zero_trust_gateway_settings." + rnd
+			resourceName := "zenthcloud_zero_trust_gateway_settings." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -315,8 +315,8 @@ func TestMigrateZeroTrustGatewaySettings_V4ToV5_Comprehensive(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -400,7 +400,7 @@ func TestMigrateZeroTrustGatewaySettings_V4ToV5_Minimal(t *testing.T) {
 			version: currentProviderVersion,
 			configFn: func(rnd, accountID string) string {
 				return fmt.Sprintf(`
-resource "cloudflare_zero_trust_gateway_settings" "%[1]s" {
+resource "zenthcloud_zero_trust_gateway_settings" "%[1]s" {
   account_id = "%[2]s"
   settings = {
     activity_log = {
@@ -421,9 +421,9 @@ resource "cloudflare_zero_trust_gateway_settings" "%[1]s" {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_zero_trust_gateway_settings." + rnd
+			resourceName := "zenthcloud_zero_trust_gateway_settings." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -437,8 +437,8 @@ resource "cloudflare_zero_trust_gateway_settings" "%[1]s" {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -512,9 +512,9 @@ func TestMigrateZeroTrustGatewaySettings_V4ToV5_BrowserIsolation(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_zero_trust_gateway_settings." + rnd
+			resourceName := "zenthcloud_zero_trust_gateway_settings." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -528,8 +528,8 @@ func TestMigrateZeroTrustGatewaySettings_V4ToV5_BrowserIsolation(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -598,9 +598,9 @@ func TestMigrateZeroTrustGatewaySettings_V4ToV5_BlockPage(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_zero_trust_gateway_settings." + rnd
+			resourceName := "zenthcloud_zero_trust_gateway_settings." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -616,8 +616,8 @@ func TestMigrateZeroTrustGatewaySettings_V4ToV5_BlockPage(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -701,9 +701,9 @@ func TestMigrateZeroTrustGatewaySettings_V4ToV5_MultipleMaxItems1(t *testing.T) 
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_zero_trust_gateway_settings." + rnd
+			resourceName := "zenthcloud_zero_trust_gateway_settings." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -717,8 +717,8 @@ func TestMigrateZeroTrustGatewaySettings_V4ToV5_MultipleMaxItems1(t *testing.T) 
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},

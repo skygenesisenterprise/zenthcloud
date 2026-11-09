@@ -2,7 +2,7 @@ package v500
 
 import "github.com/hashicorp/terraform-plugin-framework/types"
 
-// SourceV4WorkersCustomDomainModel represents v4 cloudflare_worker_domain state.
+// SourceV4WorkersCustomDomainModel represents v4 zenthcloud_worker_domain state.
 type SourceV4WorkersCustomDomainModel struct {
 	ID          types.String `tfsdk:"id"`
 	AccountID   types.String `tfsdk:"account_id"`
@@ -14,7 +14,7 @@ type SourceV4WorkersCustomDomainModel struct {
 	CertId      types.String `tfsdk:"cert_id"`
 }
 
-// TargetWorkersCustomDomainModel represents v5 cloudflare_workers_custom_domain state.
+// TargetWorkersCustomDomainModel represents v5 zenthcloud_workers_custom_domain state.
 type TargetWorkersCustomDomainModel struct {
 	ID          types.String `tfsdk:"id"`
 	AccountID   types.String `tfsdk:"account_id"`

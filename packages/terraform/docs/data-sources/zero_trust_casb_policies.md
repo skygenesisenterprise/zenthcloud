@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_casb_policies Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_casb_policies Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust ReadZero Trust Write
 ---
 
-# cloudflare_zero_trust_casb_policies (Data Source)
+# zenthcloud_zero_trust_casb_policies (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_casb_policies" "example_zero_trust_casb_policies" {
+data "zenthcloud_zero_trust_casb_policies" "example_zero_trust_casb_policies" {
   account_id = "46148281d8a93d002ef242d8b0d5f9f6"
 }
 ```

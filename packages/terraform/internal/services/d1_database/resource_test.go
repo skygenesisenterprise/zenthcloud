@@ -6,12 +6,12 @@ import (
 	"os"
 	"testing"
 
-	cfv1 "github.com/cloudflare/cloudflare-go"
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/d1"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	cfv1 "github.com/zenthcloud/zenthcloud-go"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/d1"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -26,20 +26,20 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_d1_database", &resource.Sweeper{
-		Name: "cloudflare_d1_database",
+	resource.AddTestSweepers("zenthcloud_d1_database", &resource.Sweeper{
+		Name: "zenthcloud_d1_database",
 		F: func(region string) error {
 			ctx := context.Background()
 			client, err := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 			if err != nil {
-				tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", err))
+				tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", err))
 				return fmt.Errorf("error establishing client: %w", err)
 			}
 
 			if accountID == "" {
-				tflog.Info(ctx, "Skipping D1 databases sweep: CLOUDFLARE_ACCOUNT_ID not set")
+				tflog.Info(ctx, "Skipping D1 databases sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 				return nil
 			}
 
@@ -79,11 +79,11 @@ func init() {
 	})
 }
 
-func testAccCheckCloudflareD1DatabaseDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudD1DatabaseDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_d1_database" {
+		if rs.Type != "zenthcloud_d1_database" {
 			continue
 		}
 
@@ -92,7 +92,7 @@ func testAccCheckCloudflareD1DatabaseDestroy(s *terraform.State) error {
 			context.Background(),
 			rs.Primary.ID,
 			d1.DatabaseGetParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			},
 		)
 		if err == nil {
@@ -103,25 +103,25 @@ func testAccCheckCloudflareD1DatabaseDestroy(s *terraform.State) error {
 	return nil
 }
 
-// TestAccCloudflareD1Database_Basic verifies basic create and read of a D1
+// TestAccZenthcloudD1Database_Basic verifies basic create and read of a D1
 // database with only the required attributes (account_id, name).
 //
 // Skip: read_replication is Optional-only in the current schema, but the API
 // always returns it in responses, causing refresh drift. Blocked on BUGS-2016
 // codegen fix (PR #7183).
-func TestAccCloudflareD1Database_Basic(t *testing.T) {
+func TestAccZenthcloudD1Database_Basic(t *testing.T) {
 	t.Skip("BUGS-2016: read_replication drift -- waiting for codegen fix on next (PR #7183)")
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_d1_database." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_d1_database." + rnd
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareD1DatabaseDestroy,
+		CheckDestroy:             testAccCheckZenthcloudD1DatabaseDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareD1DatabaseBasic(rnd, accountID),
+				Config: testAccCheckZenthcloudD1DatabaseBasic(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", rnd),
 					resource.TestCheckResourceAttr(resourceName, consts.AccountIDSchemaKey, accountID),
@@ -145,22 +145,22 @@ func TestAccCloudflareD1Database_Basic(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareD1Database_ReadReplication verifies creating a D1 database
+// TestAccZenthcloudD1Database_ReadReplication verifies creating a D1 database
 // with read_replication set to "disabled", then updating it to "auto", and
 // back to "disabled".
-func TestAccCloudflareD1Database_ReadReplication(t *testing.T) {
+func TestAccZenthcloudD1Database_ReadReplication(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_d1_database." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_d1_database." + rnd
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareD1DatabaseDestroy,
+		CheckDestroy:             testAccCheckZenthcloudD1DatabaseDestroy,
 		Steps: []resource.TestStep{
 			// Step 1: Create with read_replication disabled
 			{
-				Config: testAccCheckCloudflareD1DatabaseReadReplication(rnd, accountID, "disabled"),
+				Config: testAccCheckZenthcloudD1DatabaseReadReplication(rnd, accountID, "disabled"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", rnd),
 					resource.TestCheckResourceAttr(resourceName, consts.AccountIDSchemaKey, accountID),
@@ -179,7 +179,7 @@ func TestAccCloudflareD1Database_ReadReplication(t *testing.T) {
 			},
 			// Step 2: Update to auto
 			{
-				Config: testAccCheckCloudflareD1DatabaseReadReplication(rnd, accountID, "auto"),
+				Config: testAccCheckZenthcloudD1DatabaseReadReplication(rnd, accountID, "auto"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -201,7 +201,7 @@ func TestAccCloudflareD1Database_ReadReplication(t *testing.T) {
 			},
 			// Step 3: Update back to disabled
 			{
-				Config: testAccCheckCloudflareD1DatabaseReadReplication(rnd, accountID, "disabled"),
+				Config: testAccCheckZenthcloudD1DatabaseReadReplication(rnd, accountID, "disabled"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -215,32 +215,32 @@ func TestAccCloudflareD1Database_ReadReplication(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareD1Database_NoDrift verifies that re-applying the same
+// TestAccZenthcloudD1Database_NoDrift verifies that re-applying the same
 // config produces an empty plan (no perpetual drift).
 //
 // Skip: read_replication is Optional-only in the current schema, but the API
 // always returns it in responses, causing refresh drift. Blocked on BUGS-2016
 // codegen fix (PR #7183).
-func TestAccCloudflareD1Database_NoDrift(t *testing.T) {
+func TestAccZenthcloudD1Database_NoDrift(t *testing.T) {
 	t.Skip("BUGS-2016: read_replication drift -- waiting for codegen fix on next (PR #7183)")
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_d1_database." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_d1_database." + rnd
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareD1DatabaseDestroy,
+		CheckDestroy:             testAccCheckZenthcloudD1DatabaseDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareD1DatabaseBasic(rnd, accountID),
+				Config: testAccCheckZenthcloudD1DatabaseBasic(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", rnd),
 				),
 			},
 			// Re-apply the same config and verify no changes are planned
 			{
-				Config:             testAccCheckCloudflareD1DatabaseBasic(rnd, accountID),
+				Config:             testAccCheckZenthcloudD1DatabaseBasic(rnd, accountID),
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: false,
 			},
@@ -248,7 +248,7 @@ func TestAccCloudflareD1Database_NoDrift(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareD1Database_ReadReplicationNoDrift verifies that a database
+// TestAccZenthcloudD1Database_ReadReplicationNoDrift verifies that a database
 // created with read_replication does not show perpetual drift. This is the
 // regression test for BUGS-2016.
 //
@@ -256,26 +256,26 @@ func TestAccCloudflareD1Database_NoDrift(t *testing.T) {
 // on read-replication-details-for-request) is on origin/generated but has not
 // synced to next yet. Remove this skip once codegen sync PR #7183 merges and
 // read_replication is marked Computed+Optional in schema.go.
-func TestAccCloudflareD1Database_ReadReplicationNoDrift(t *testing.T) {
+func TestAccZenthcloudD1Database_ReadReplicationNoDrift(t *testing.T) {
 	t.Skip("BUGS-2016: waiting for codegen fix to land on next (PR #7183)")
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_d1_database." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_d1_database." + rnd
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareD1DatabaseDestroy,
+		CheckDestroy:             testAccCheckZenthcloudD1DatabaseDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareD1DatabaseReadReplication(rnd, accountID, "disabled"),
+				Config: testAccCheckZenthcloudD1DatabaseReadReplication(rnd, accountID, "disabled"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "read_replication.mode", "disabled"),
 				),
 			},
 			// Re-apply the same config and verify no drift
 			{
-				Config:             testAccCheckCloudflareD1DatabaseReadReplication(rnd, accountID, "disabled"),
+				Config:             testAccCheckZenthcloudD1DatabaseReadReplication(rnd, accountID, "disabled"),
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: false,
 			},
@@ -285,10 +285,10 @@ func TestAccCloudflareD1Database_ReadReplicationNoDrift(t *testing.T) {
 
 // Config helpers
 
-func testAccCheckCloudflareD1DatabaseBasic(rnd, accountID string) string {
+func testAccCheckZenthcloudD1DatabaseBasic(rnd, accountID string) string {
 	return acctest.LoadTestCase("d1databasebasic.tf", rnd, accountID)
 }
 
-func testAccCheckCloudflareD1DatabaseReadReplication(rnd, accountID, mode string) string {
+func testAccCheckZenthcloudD1DatabaseReadReplication(rnd, accountID, mode string) string {
 	return acctest.LoadTestCase("d1databasereadreplication.tf", rnd, accountID, mode)
 }

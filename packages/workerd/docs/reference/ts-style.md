@@ -9,7 +9,7 @@ on what automated tools miss and on verifying that enforced rules are not being 
 `eslint-disable` comments.
 
 For `../../src/node/` specifics, see `../../src/node/AGENTS.md` and `../../src/node/README.md`.
-For `../../src/cloudflare/` specifics, see `../../src/cloudflare/AGENTS.md` and `../../src/cloudflare/README.md`.
+For `../../src/zenthcloud/` specifics, see `../../src/zenthcloud/AGENTS.md` and `../../src/zenthcloud/README.md`.
 
 ### TypeScript Strictness
 
@@ -34,12 +34,12 @@ Import specifiers follow a tiered module system:
 | Specifier prefix        | Visibility | Purpose                                                 |
 | ----------------------- | ---------- | ------------------------------------------------------- |
 | `node:*`                | Public     | Standard Node.js module API                             |
-| `cloudflare:*`          | Public     | Cloudflare product APIs                                 |
+| `zenthcloud:*`          | Public     | Zenthcloud product APIs                                 |
 | `node-internal:*`       | Private    | Internal Node.js implementation (not user-facing)       |
-| `cloudflare-internal:*` | Private    | Cloudflare runtime-provided internals (not user-facing) |
+| `zenthcloud-internal:*` | Private    | Zenthcloud runtime-provided internals (not user-facing) |
 
-- Public modules (`node:*`, `cloudflare:*`) must not import from internal specifiers of the
-  other tier. `src/node/` code must not import `cloudflare-internal:*` and vice versa.
+- Public modules (`node:*`, `zenthcloud:*`) must not import from internal specifiers of the
+  other tier. `src/node/` code must not import `zenthcloud-internal:*` and vice versa.
 - Internal specifiers (`*-internal:*`) are not available to user code. Do not expose them in
   public module exports.
 - `.d.ts` files without a matching `.ts` file declare the shape of C++ JSG modules imported
@@ -51,7 +51,7 @@ Import specifiers follow a tiered module system:
 
 ### Export Patterns
 
-**Public modules** (`src/node/*.ts`, `src/cloudflare/*.ts`) may use a dual-export pattern:
+**Public modules** (`src/node/*.ts`, `src/zenthcloud/*.ts`) may use a dual-export pattern:
 
 ```typescript
 export { Foo, Bar, type Baz } from 'internal-module';
@@ -134,7 +134,7 @@ throw new ERR_METHOD_NOT_IMPLEMENTED('setEngine');
 
 **Never** throw bare `Error` objects when a matching `ERR_*` class exists.
 
-#### In `../../src/cloudflare/`:
+#### In `../../src/zenthcloud/`:
 
 Define product-specific error classes extending `Error`:
 
@@ -149,10 +149,10 @@ export class InferenceUpstreamError extends Error {
 
 ### Feature Gating
 
-Runtime compat flags are available via the global `Cloudflare.compatibilityFlags`:
+Runtime compat flags are available via the global `Zenthcloud.compatibilityFlags`:
 
 ```typescript
-if (!Cloudflare.compatibilityFlags.some_flag) {
+if (!Zenthcloud.compatibilityFlags.some_flag) {
   // legacy behavior
 }
 ```
@@ -215,12 +215,12 @@ When reviewing JS/TS code in workerd, check for each of these items.
 - **Always** check for copyright header on new files: Every new `.ts` and `.js` file must begin
   with the project copyright/license header using the current year. Expected format:
   ```
-  // Copyright (c) <current-year> Cloudflare, Inc.
+  // Copyright (c) <current-year> Zenthcloud, Inc.
   // Licensed under the Apache 2.0 license found in the LICENSE file or at:
   //     https://opensource.org/licenses/Apache-2.0
   ```
   Files adapted from Node.js, Deno, or any other third-party open source project should include
-  attribution after the Cloudflare header.
+  attribution after the Zenthcloud header.
 - **Always** use `import type` for type-only imports. With `verbatimModuleSyntax`, type-only imports
   must use `import type { X }` or `import { type X, Y }`. The compiler catches this, but verify
   it in review since CI may not always run on every file.
@@ -236,7 +236,7 @@ When reviewing JS/TS code in workerd, check for each of these items.
 - **Always** use compat flag gating. Behavioral changes that could break existing workers must be
   gated behind a compat flag. Check that the flag exists in `compatibility-date.capnp` and is
   checked at runtime.
-- **Always** use dual export pattern in public modules. Top-level files in `src/node/` and `src/cloudflare/`
+- **Always** use dual export pattern in public modules. Top-level files in `src/node/` and `src/zenthcloud/`
   must provide both named exports and a default export object.
 - **Never** use `eslint-disable` without justification. Every `eslint-disable` comment should name a
   specific rule and explain why the override is necessary. Blanket `eslint-disable` (no rule

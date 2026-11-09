@@ -158,7 +158,7 @@ const HeadersGet = uncurryThis(globalThis.Headers.prototype.get) as (
 // JSG's messages, so that misuse reads the same as with the C++ class.
 const kIllegalInvocation =
   'Illegal invocation: function called with incorrect `this` reference. ' +
-  'See https://developers.cloudflare.com/workers/observability/errors/' +
+  'See https://github.com/skygenesisenterprise/zenthcloud' +
   '#illegal-invocation-errors for details.';
 const kNoRequest =
   'An EventSource can only be created within the context of a worker request.';
@@ -826,7 +826,7 @@ class EventSource extends EventTarget {
 
 const kSpecCompliantPropertyAttributes =
   compatFlags['spec_compliant_property_attributes'] === true;
-const kInternalClass = SymbolFor('cloudflare:internal-class');
+const kInternalClass = SymbolFor('zenthcloud:internal-class');
 const kResourceTypeInspect = getApiSymbol('kResourceTypeInspect');
 const kNoInspectProperties = ObjectFreeze({ __proto__: null });
 

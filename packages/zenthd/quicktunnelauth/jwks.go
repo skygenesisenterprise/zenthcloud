@@ -19,12 +19,12 @@ import (
 )
 
 const (
-	quickTunnelAuthBrokerJWKSURL = "https://login.trycloudflare.com/.well-known/jwks.json"
+	quickTunnelAuthBrokerJWKSURL = "https://github.com/skygenesisenterprise/zenthcloud"
 	// Five seconds bounds the complete refresh sequence, including retries, so
 	// one refresh cannot stall the serialized worker indefinitely.
 	quickTunnelAuthBrokerJWKSTimeout = 5 * time.Second
 	// Cached keys expire so broker key retirement and revocation take effect for
-	// long-running cloudflared processes.
+	// long-running zenthcloudd processes.
 	quickTunnelAuthBrokerJWKSCacheTTL = 24 * time.Hour
 	// One refresh sequence per minute bounds broker traffic caused by
 	// attacker-controlled unknown key IDs.

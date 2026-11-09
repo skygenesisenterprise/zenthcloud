@@ -68,7 +68,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf addressing prefixes delegations delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/addressing/prefixes/${argv["prefix-id"] == null ? "<prefix-id>" : encodeURIComponent(String(argv["prefix-id"]))}/delegations/${argv["delegation-id"] == null ? "<delegation-id>" : encodeURIComponent(String(argv["delegation-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/addressing/prefixes/${argv["prefix-id"] == null ? "<prefix-id>" : encodeURIComponent(String(argv["prefix-id"]))}/delegations/${argv["delegation-id"] == null ? "<delegation-id>" : encodeURIComponent(String(argv["delegation-id"]))}`,
 						pathParams: {
 							"prefix-id": String(argv["prefix-id"] ?? ""),
 							"delegation-id": String(argv["delegation-id"] ?? ""),

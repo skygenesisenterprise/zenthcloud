@@ -8,8 +8,8 @@ import (
 // SourceV4ZeroTrustAccessGroupSchema returns the schema for v4 zero_trust_access_group resources (SDKv2 format).
 // This schema represents the state structure from the v4 provider (schema_version=0).
 //
-// In v4, this resource was named cloudflare_access_group.
-// In v5, it's renamed to cloudflare_zero_trust_access_group.
+// In v4, this resource was named zenthcloud_access_group.
+// In v5, it's renamed to zenthcloud_zero_trust_access_group.
 //
 // Major structural difference:
 // - v4: List fields contain multiple string values (e.g., email = ["a@b.com", "c@d.com"])

@@ -103,7 +103,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar as112 top ip-version",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/as112/top/locations/ip_version/${argv["ip-version"] == null ? "<ip-version>" : encodeURIComponent(String(argv["ip-version"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["ip-version"] == null ? "<ip-version>" : encodeURIComponent(String(argv["ip-version"]))}`,
 						pathParams: { "ip-version": String(argv["ip-version"] ?? "") },
 						query: queryParams,
 						bodyKind: "none",

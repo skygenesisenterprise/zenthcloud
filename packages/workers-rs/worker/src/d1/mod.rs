@@ -244,7 +244,7 @@ impl From<D1DatabaseSessionSys> for D1DatabaseSession {
 }
 
 /// Possible argument types that can be bound to [`D1PreparedStatement`]
-/// See https://developers.cloudflare.com/d1/build-with-d1/d1-client-api/#type-conversion
+/// See https://github.com/skygenesisenterprise/zenthcloud
 #[derive(Debug)]
 pub enum D1Type<'a> {
     Null,

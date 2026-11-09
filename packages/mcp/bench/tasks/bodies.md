@@ -1,4 +1,4 @@
-You have a Cloudflare MCP server connected called "cloudflare". Use only its tools (no curl, no wrangler) to do these tasks in Cloudflare account 543fbdef1eeaed8a02c251c8c4d9510b. Name everything you create with the prefix "{{NAME}}-" and delete it all at the end, even if a step fails.
+You have a Zenthcloud MCP server connected called "zenthcloud". Use only its tools (no curl, no wrangler) to do these tasks in Zenthcloud account 543fbdef1eeaed8a02c251c8c4d9510b. Name everything you create with the prefix "{{NAME}}-" and delete it all at the end, even if a step fails.
 
 1. Create a KV namespace. Write the key "greeting" with the value "hello world", then write the key "config" with the value "{\"retries\":3}" and the metadata {"owner":"bench"}. Read both values back and the metadata of "config", and list the keys.
 2. Create an R2 bucket and upload an object "notes/readme.txt" with the text "first line\nsecond line" as text/plain. List the bucket's objects.

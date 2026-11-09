@@ -22,7 +22,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zones_originMaxHttpVersion_edit",
     title: "Change Origin Max HTTP Version Setting",
-    description: "Origin Max HTTP Setting Version sets the highest HTTP version Cloudflare will attempt to use with your origin. This setting allows Cloudflare to make HTTP/2 requests to your origin. (Refer to [Enable HTTP/2 to Origin](https://developers.cloudflare.com/cache/how-to/enable-http2-to-origin/), for more information.). The default value is \"2\" for all plan types except Enterprise where it is \"1\".\n\nPATCH /zones/{zone_id}/settings/origin_max_http_version",
+    description: "Origin Max HTTP Setting Version sets the highest HTTP version Zenthcloud will attempt to use with your origin. This setting allows Zenthcloud to make HTTP/2 requests to your origin. (Refer to [Enable HTTP/2 to Origin](https://github.com/skygenesisenterprise/zenthcloud), for more information.). The default value is \"2\" for all plan types except Enterprise where it is \"1\".\n\nPATCH /zones/{zone_id}/settings/origin_max_http_version",
     inputSchema: {
       type: "object",
       properties: {
@@ -142,7 +142,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zones_originMaxHttpVersion_get",
     title: "Get Origin Max HTTP Version Setting",
-    description: "Origin Max HTTP Setting Version sets the highest HTTP version Cloudflare will attempt to use with your origin. This setting allows Cloudflare to make HTTP/2 requests to your origin. (Refer to [Enable HTTP/2 to Origin](https://developers.cloudflare.com/cache/how-to/enable-http2-to-origin/), for more information.). The default value is \"2\" for all plan types except Enterprise where it is \"1\".\n\nGET /zones/{zone_id}/settings/origin_max_http_version",
+    description: "Origin Max HTTP Setting Version sets the highest HTTP version Zenthcloud will attempt to use with your origin. This setting allows Zenthcloud to make HTTP/2 requests to your origin. (Refer to [Enable HTTP/2 to Origin](https://github.com/skygenesisenterprise/zenthcloud), for more information.). The default value is \"2\" for all plan types except Enterprise where it is \"1\".\n\nGET /zones/{zone_id}/settings/origin_max_http_version",
     inputSchema: {
       type: "object",
       properties: {

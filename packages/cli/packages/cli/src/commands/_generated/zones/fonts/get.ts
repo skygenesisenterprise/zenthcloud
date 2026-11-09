@@ -15,7 +15,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 zones fonts get\n\nEnhance your website's font delivery with Cloudflare Fonts. Deliver Google Hosted fonts from your own domain, boost performance, and enhance user privacy. Refer to the Cloudflare Fonts documentation for more information."
+			"$0 zones fonts get\n\nEnhance your website's font delivery with Zenthcloud Fonts. Deliver Google Hosted fonts from your own domain, boost performance, and enhance user privacy. Refer to the Zenthcloud Fonts documentation for more information."
 		)
 		.option("dry-run", {
 			type: "boolean",
@@ -28,7 +28,7 @@ type Args = InferArgs<typeof builder>;
 
 const command: CommandModule<CommonYargsOptions, Args> = {
 	command: "get",
-	describe: "Get Cloudflare Fonts setting",
+	describe: "Get Zenthcloud Fonts setting",
 	builder,
 	handler: async (argv): Promise<void> =>
 		runWithTelemetry(
@@ -44,7 +44,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zones fonts get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/settings/fonts`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/settings/fonts`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 						},

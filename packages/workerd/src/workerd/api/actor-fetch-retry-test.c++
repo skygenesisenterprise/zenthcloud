@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -1646,8 +1646,8 @@ class LostFirstResponseOutgoingFactory final: public Fetcher::OutgoingFactory {
 };
 
 constexpr kj::StringPtr RETRYABLE_FETCH_ACTOR_SOURCE = R"SCRIPT(
-  import { DurableObject } from "cloudflare:workers";
-  import { retryable } from "cloudflare:durable-objects";
+  import { DurableObject } from "zenthcloud:workers";
+  import { retryable } from "zenthcloud:durable-objects";
   class Actor extends DurableObject {
     static {
       retryable(this.prototype.fetch);
@@ -1660,7 +1660,7 @@ constexpr kj::StringPtr RETRYABLE_FETCH_ACTOR_SOURCE = R"SCRIPT(
 )SCRIPT"_kj;
 
 constexpr kj::StringPtr PLAIN_FETCH_ACTOR_SOURCE = R"SCRIPT(
-  import { DurableObject } from "cloudflare:workers";
+  import { DurableObject } from "zenthcloud:workers";
   export default class Actor extends DurableObject {
     async fetch() {
       return new Response("OK");

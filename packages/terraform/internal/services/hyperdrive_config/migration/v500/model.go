@@ -6,19 +6,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceCloudflareHyperdriveConfigModel represents the source cloudflare_hyperdrive_config state structure.
-// This corresponds to schema_version=0 from the legacy (framework) cloudflare provider v4.
+// SourceZenthcloudHyperdriveConfigModel represents the source zenthcloud_hyperdrive_config state structure.
+// This corresponds to schema_version=0 from the legacy (framework) zenthcloud provider v4.
 // Used by UpgradeFromV0 to parse legacy state.
-type SourceCloudflareHyperdriveConfigModel struct {
+type SourceZenthcloudHyperdriveConfigModel struct {
 	ID        types.String                                 `tfsdk:"id"`
 	AccountID types.String                                 `tfsdk:"account_id"`
 	Name      types.String                                 `tfsdk:"name"`
-	Origin    *SourceCloudflareHyperdriveConfigOriginModel `tfsdk:"origin"`
+	Origin    *SourceZenthcloudHyperdriveConfigOriginModel `tfsdk:"origin"`
 	Caching   types.Object                                 `tfsdk:"caching"`
 }
 
-// SourceCloudflareHyperdriveConfigOriginModel represents the v4 origin nested object.
-type SourceCloudflareHyperdriveConfigOriginModel struct {
+// SourceZenthcloudHyperdriveConfigOriginModel represents the v4 origin nested object.
+type SourceZenthcloudHyperdriveConfigOriginModel struct {
 	Database           types.String `tfsdk:"database"`
 	Password           types.String `tfsdk:"password"`
 	Host               types.String `tfsdk:"host"`
@@ -29,7 +29,7 @@ type SourceCloudflareHyperdriveConfigOriginModel struct {
 	AccessClientSecret types.String `tfsdk:"access_client_secret"`
 }
 
-// TargetHyperdriveConfigModel represents the target cloudflare_hyperdrive_config state structure (v500).
+// TargetHyperdriveConfigModel represents the target zenthcloud_hyperdrive_config state structure (v500).
 // Must match the v5 HyperdriveConfigModel structure exactly.
 type TargetHyperdriveConfigModel struct {
 	ID                    types.String                        `tfsdk:"id"`

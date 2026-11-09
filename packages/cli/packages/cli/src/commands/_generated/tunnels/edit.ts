@@ -22,7 +22,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 tunnels edit <tunnel-id>\n\nUpdates the name or secret of an existing Cloudflare Tunnel."
+			"$0 tunnels edit <tunnel-id>\n\nUpdates the name or secret of an existing Zenthcloud Tunnel."
 		)
 		.positional("tunnel-id", {
 			type: "string",
@@ -53,7 +53,7 @@ type Args = InferArgs<typeof builder>;
 
 const command: CommandModule<CommonYargsOptions, Args> = {
 	command: "edit <tunnel-id>",
-	describe: "Update a Cloudflare Tunnel",
+	describe: "Update a Zenthcloud Tunnel",
 	builder,
 	handler: async (argv): Promise<void> =>
 		runWithTelemetry(
@@ -70,7 +70,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf tunnels edit",
 						method: "PATCH",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/cfd_tunnel/${argv["tunnel-id"] == null ? "<tunnel-id>" : encodeURIComponent(String(argv["tunnel-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/cfd_tunnel/${argv["tunnel-id"] == null ? "<tunnel-id>" : encodeURIComponent(String(argv["tunnel-id"]))}`,
 						pathParams: { "tunnel-id": String(argv["tunnel-id"] ?? "") },
 						bodyKind: "json",
 						body:

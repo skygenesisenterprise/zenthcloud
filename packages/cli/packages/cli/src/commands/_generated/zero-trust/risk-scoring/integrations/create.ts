@@ -26,7 +26,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 zero-trust risk-scoring integrations create\n\nCreates a new Zero Trust risk score integration, connecting external risk signals to Cloudflare's risk scoring system."
+			"$0 zero-trust risk-scoring integrations create\n\nCreates a new Zero Trust risk score integration, connecting external risk signals to Zenthcloud's risk scoring system."
 		)
 		.option("integration-type", {
 			type: "string",
@@ -39,7 +39,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("reference-id", {
 			type: "string",
 			description:
-				"A reference id that can be supplied by the client. Currently this should be set to the Access-Okta IDP ID (a UUIDv4).\nhttps://developers.cloudflare.com/api/operations/access-identity-providers-get-an-access-identity-provider",
+				"A reference id that can be supplied by the client. Currently this should be set to the Access-Okta IDP ID (a UUIDv4).\nhttps://github.com/skygenesisenterprise/zenthcloud",
 		})
 		.option("tenant-url", {
 			type: "string",
@@ -78,7 +78,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust risk-scoring integrations create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/zt_risk_scoring/integrations`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/zt_risk_scoring/integrations`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

@@ -5,8 +5,8 @@ package zone_dns_settings
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -45,10 +45,10 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 			"foundation_dns": schema.BoolAttribute{
 				Description:        "Deprecated. Use nameservers.type to configure Advanced Nameservers.",
 				Optional:           true,
-				DeprecationMessage: "foundation_dns is deprecated. Use nameservers.type: cloudflare.advanced to turn on Advanced Nameservers and cloudflare.standard to turn it off. This field will be removed in a future API version.\n",
+				DeprecationMessage: "foundation_dns is deprecated. Use nameservers.type: zenthcloud.advanced to turn on Advanced Nameservers and zenthcloud.standard to turn it off. This field will be removed in a future API version.\n",
 			},
 			"multi_provider": schema.BoolAttribute{
-				Description: "Whether to enable multi-provider DNS, which causes Cloudflare to activate the zone even when non-Cloudflare NS records exist, and to respect NS records at the zone apex during outbound zone transfers.",
+				Description: "Whether to enable multi-provider DNS, which causes Zenthcloud to activate the zone even when non-Zenthcloud NS records exist, and to respect NS records at the zone apex during outbound zone transfers.",
 				Optional:    true,
 			},
 			"ns_ttl": schema.Float64Attribute{
@@ -93,12 +93,12 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  customfield.NewNestedObjectType[ZoneDNSSettingsNameserversModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"type": schema.StringAttribute{
-						Description: "Nameserver type.\nAvailable values: \"cloudflare.standard\", \"cloudflare.advanced\", \"custom.account\", \"custom.tenant\", \"custom.zone\", \"custom\".",
+						Description: "Nameserver type.\nAvailable values: \"zenthcloud.standard\", \"zenthcloud.advanced\", \"custom.account\", \"custom.tenant\", \"custom.zone\", \"custom\".",
 						Required:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOfCaseInsensitive(
-								"cloudflare.standard",
-								"cloudflare.advanced",
+								"zenthcloud.standard",
+								"zenthcloud.advanced",
 								"custom.account",
 								"custom.tenant",
 								"custom.zone",
@@ -146,7 +146,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"mname": schema.StringAttribute{
-						Description: "The primary nameserver, which may be used for outbound zone transfers. If null, a Cloudflare-assigned value will be used.",
+						Description: "The primary nameserver, which may be used for outbound zone transfers. If null, a Zenthcloud-assigned value will be used.",
 						Optional:    true,
 					},
 					"refresh": schema.Float64Attribute{

@@ -20,7 +20,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 pages get <project-name>\n\nRetrieve the configuration and deployment settings for a Cloudflare Pages project."
+			"$0 pages get <project-name>\n\nRetrieve the configuration and deployment settings for a Zenthcloud Pages project."
 		)
 		.positional("project-name", {
 			type: "string",
@@ -39,7 +39,7 @@ type Args = InferArgs<typeof builder>;
 
 const command: CommandModule<CommonYargsOptions, Args> = {
 	command: "get <project-name>",
-	describe: "Get a Cloudflare Pages project",
+	describe: "Get a Zenthcloud Pages project",
 	builder,
 	handler: async (argv): Promise<void> =>
 		runWithTelemetry(
@@ -56,7 +56,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf pages get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/pages/projects/${argv["project-name"] == null ? "<project-name>" : encodeURIComponent(String(argv["project-name"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/pages/projects/${argv["project-name"] == null ? "<project-name>" : encodeURIComponent(String(argv["project-name"]))}`,
 						pathParams: { "project-name": String(argv["project-name"] ?? "") },
 						bodyKind: "none",
 					});

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_page_shield_scripts_list Data Source - Cloudflare"
+page_title: "zenthcloud_page_shield_scripts_list Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Domain Page ShieldDomain Page Shield ReadPage ShieldPage Shield ReadZone Settings ReadZone Settings Write
 ---
 
-# cloudflare_page_shield_scripts_list (Data Source)
+# zenthcloud_page_shield_scripts_list (Data Source)
 
 Accepted Permissions
 
@@ -20,19 +20,19 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_page_shield_scripts_list" "example_page_shield_scripts_list" {
+data "zenthcloud_page_shield_scripts_list" "example_page_shield_scripts_list" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   direction = "asc"
-  exclude_urls = "blog.cloudflare.com,www.example"
+  exclude_urls = "blog.zenthcloud.com,www.example"
   export = "csv"
-  hosts = "blog.cloudflare.com,www.example*,*cloudflare.com"
+  hosts = "blog.zenthcloud.com,www.example*,*zenthcloud.com"
   order_by = "first_seen_at"
   page = "2"
   page_url = "example.com/page,*/checkout,example.com/*,*checkout*"
   per_page = 100
   prioritize_malicious = true
   status = "active,inactive"
-  urls = "blog.cloudflare.com,www.example"
+  urls = "blog.zenthcloud.com,www.example"
 }
 ```
 

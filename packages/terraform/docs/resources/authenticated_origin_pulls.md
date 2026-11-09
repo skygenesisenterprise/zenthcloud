@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_authenticated_origin_pulls Resource - Cloudflare"
+page_title: "zenthcloud_authenticated_origin_pulls Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_authenticated_origin_pulls (Resource)
+# zenthcloud_authenticated_origin_pulls (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_authenticated_origin_pulls" "example_authenticated_origin_pulls" {
+resource "zenthcloud_authenticated_origin_pulls" "example_authenticated_origin_pulls" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   config = [{
     cert_id = "2458ce5a-0c35-4c7f-82c7-8e9487d3ff60"
@@ -65,7 +65,7 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_authenticated_origin_pulls.example '<zone_id>/<hostname>'
+$ terraform import zenthcloud_authenticated_origin_pulls.example '<zone_id>/<hostname>'
 ```
 
 

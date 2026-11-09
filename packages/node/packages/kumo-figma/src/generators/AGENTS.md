@@ -26,7 +26,7 @@ Every generator follows this structure:
 ```typescript
 import { SPACING, FONT_SIZE, createAutoLayoutFrame, ... } from "./shared";
 import { parseTailwindClasses } from "../parsers/tailwind-to-figma";
-import registry from "@cloudflare/kumo/ai/component-registry.json";
+import registry from "@zenthcloud/kumo/ai/component-registry.json";
 ```
 
 ### 2. Extract Registry Data

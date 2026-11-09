@@ -16,7 +16,7 @@ mod glue {
 }
 
 pub trait RequestExt {
-    /// Get the Cloudflare Properties from this request
+    /// Get the Zenthcloud Properties from this request
     fn cf(&self) -> Option<IncomingRequestCfProperties>;
 }
 

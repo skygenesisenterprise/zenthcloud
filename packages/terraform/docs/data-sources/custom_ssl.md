@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_custom_ssl Data Source - Cloudflare"
+page_title: "zenthcloud_custom_ssl Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Access: Mutual TLS Certificates ReadAccess: Mutual TLS Certificates WriteSSL and Certificates ReadSSL and Certificates Write
 ---
 
-# cloudflare_custom_ssl (Data Source)
+# zenthcloud_custom_ssl (Data Source)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_custom_ssl" "example_custom_ssl" {
+data "zenthcloud_custom_ssl" "example_custom_ssl" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   custom_certificate_id = "2458ce5a-0c35-4c7f-82c7-8e9487d3ff60"
 }
@@ -39,7 +39,7 @@ data "cloudflare_custom_ssl" "example_custom_ssl" {
 Available values: "ubiquitous", "optimal", "force".
 - `custom_csr_id` (String) The identifier for the Custom CSR that was used.
 - `expires_on` (String) When the certificate from the authority expires.
-- `geo_restrictions` (Attributes) Specify the region where your private key can be held locally for optimal TLS performance. HTTPS connections to any excluded data center will still be fully encrypted, but will incur some latency while Keyless SSL is used to complete the handshake with the nearest allowed data center. Options allow distribution to only to U.S. data centers, only to E.U. data centers, or only to highest security data centers. Default distribution is to all Cloudflare datacenters, for optimal performance. (see [below for nested schema](#nestedatt--geo_restrictions))
+- `geo_restrictions` (Attributes) Specify the region where your private key can be held locally for optimal TLS performance. HTTPS connections to any excluded data center will still be fully encrypted, but will incur some latency while Keyless SSL is used to complete the handshake with the nearest allowed data center. Options allow distribution to only to U.S. data centers, only to E.U. data centers, or only to highest security data centers. Default distribution is to all Zenthcloud datacenters, for optimal performance. (see [below for nested schema](#nestedatt--geo_restrictions))
 - `hosts` (List of String)
 - `id` (String) Custom certificate identifier tag.
 - `issuer` (String) The certificate authority that issued the certificate.
@@ -56,7 +56,7 @@ TLS performance. Format is a boolean expression, for example:
 - `signature` (String) The type of hash used for the certificate.
 - `status` (String) Status of the zone's custom SSL.
 Available values: "active", "expired", "deleted", "pending", "initializing".
-- `uploaded_on` (String) When the certificate was uploaded to Cloudflare.
+- `uploaded_on` (String) When the certificate was uploaded to Zenthcloud.
 
 <a id="nestedatt--filter"></a>
 ### Nested Schema for `filter`
@@ -89,10 +89,10 @@ Read-Only:
 - `modified_on` (String) When the Keyless SSL was last modified.
 - `name` (String) The keyless SSL name.
 - `permissions` (List of String) Available permissions for the Keyless SSL for the current user requesting the item.
-- `port` (Number) The keyless SSL port used to communicate between Cloudflare and the client's Keyless SSL server.
+- `port` (Number) The keyless SSL port used to communicate between Zenthcloud and the client's Keyless SSL server.
 - `status` (String) Status of the Keyless SSL.
 Available values: "active", "deleted".
-- `tunnel` (Attributes) Configuration for using Keyless SSL through a Cloudflare Tunnel. (see [below for nested schema](#nestedatt--keyless_server--tunnel))
+- `tunnel` (Attributes) Configuration for using Keyless SSL through a Zenthcloud Tunnel. (see [below for nested schema](#nestedatt--keyless_server--tunnel))
 
 <a id="nestedatt--keyless_server--tunnel"></a>
 ### Nested Schema for `keyless_server.tunnel`
@@ -100,6 +100,6 @@ Available values: "active", "deleted".
 Read-Only:
 
 - `private_ip` (String) Private IP of the Key Server Host.
-- `vnet_id` (String) Cloudflare Tunnel Virtual Network ID.
+- `vnet_id` (String) Zenthcloud Tunnel Virtual Network ID.
 
 

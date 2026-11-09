@@ -5,9 +5,9 @@ package share
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/resource_sharing"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/resource_sharing"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -48,31 +48,31 @@ func (m *SharesDataSourceModel) toListParams(_ context.Context) (params resource
 	}
 
 	params = resource_sharing.ResourceSharingListParams{
-		AccountID:     cloudflare.F(m.AccountID.ValueString()),
-		ResourceTypes: cloudflare.F(mResourceTypes),
-		Tag:           cloudflare.F(mTag),
+		AccountID:     zenthcloud.F(m.AccountID.ValueString()),
+		ResourceTypes: zenthcloud.F(mResourceTypes),
+		Tag:           zenthcloud.F(mTag),
 	}
 
 	if !m.Direction.IsNull() {
-		params.Direction = cloudflare.F(resource_sharing.ResourceSharingListParamsDirection(m.Direction.ValueString()))
+		params.Direction = zenthcloud.F(resource_sharing.ResourceSharingListParamsDirection(m.Direction.ValueString()))
 	}
 	if !m.IncludeRecipientCounts.IsNull() {
-		params.IncludeRecipientCounts = cloudflare.F(m.IncludeRecipientCounts.ValueBool())
+		params.IncludeRecipientCounts = zenthcloud.F(m.IncludeRecipientCounts.ValueBool())
 	}
 	if !m.IncludeResources.IsNull() {
-		params.IncludeResources = cloudflare.F(m.IncludeResources.ValueBool())
+		params.IncludeResources = zenthcloud.F(m.IncludeResources.ValueBool())
 	}
 	if !m.Kind.IsNull() {
-		params.Kind = cloudflare.F(resource_sharing.ResourceSharingListParamsKind(m.Kind.ValueString()))
+		params.Kind = zenthcloud.F(resource_sharing.ResourceSharingListParamsKind(m.Kind.ValueString()))
 	}
 	if !m.Order.IsNull() {
-		params.Order = cloudflare.F(resource_sharing.ResourceSharingListParamsOrder(m.Order.ValueString()))
+		params.Order = zenthcloud.F(resource_sharing.ResourceSharingListParamsOrder(m.Order.ValueString()))
 	}
 	if !m.Status.IsNull() {
-		params.Status = cloudflare.F(resource_sharing.ResourceSharingListParamsStatus(m.Status.ValueString()))
+		params.Status = zenthcloud.F(resource_sharing.ResourceSharingListParamsStatus(m.Status.ValueString()))
 	}
 	if !m.TargetType.IsNull() {
-		params.TargetType = cloudflare.F(resource_sharing.ResourceSharingListParamsTargetType(m.TargetType.ValueString()))
+		params.TargetType = zenthcloud.F(resource_sharing.ResourceSharingListParamsTargetType(m.TargetType.ValueString()))
 	}
 
 	return

@@ -8,10 +8,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/workers"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/workers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -26,24 +26,24 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_workers_custom_domain", &resource.Sweeper{
-		Name: "cloudflare_workers_custom_domain",
-		F:    testSweepCloudflareWorkersCustomDomains,
+	resource.AddTestSweepers("zenthcloud_workers_custom_domain", &resource.Sweeper{
+		Name: "zenthcloud_workers_custom_domain",
+		F:    testSweepZenthcloudWorkersCustomDomains,
 	})
 }
 
-func testSweepCloudflareWorkersCustomDomains(r string) error {
+func testSweepZenthcloudWorkersCustomDomains(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping workers custom domains sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping workers custom domains sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
 	page, err := client.Workers.Domains.List(ctx, workers.DomainListParams{
-		AccountID: cloudflare.F(accountID),
+		AccountID: zenthcloud.F(accountID),
 	})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch workers custom domains: %s", err))
@@ -58,7 +58,7 @@ func testSweepCloudflareWorkersCustomDomains(r string) error {
 
 			tflog.Info(ctx, fmt.Sprintf("Deleting workers custom domain: %s (account: %s)", domain.Hostname, accountID))
 			_, err := client.Workers.Domains.Delete(ctx, domain.ID, workers.DomainDeleteParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			})
 			if err != nil {
 				tflog.Error(ctx, fmt.Sprintf("Failed to delete workers custom domain %s: %s", domain.ID, err))
@@ -76,14 +76,14 @@ func testSweepCloudflareWorkersCustomDomains(r string) error {
 	return nil
 }
 
-func TestAccCloudflareWorkersCustomDomain_Basic(t *testing.T) {
+func TestAccZenthcloudWorkersCustomDomain_Basic(t *testing.T) {
 	t.Parallel()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_workers_custom_domain." + rnd
+	resourceName := "zenthcloud_workers_custom_domain." + rnd
 	hostname := rnd + "." + zoneName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -91,10 +91,10 @@ func TestAccCloudflareWorkersCustomDomain_Basic(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWorkersCustomDomainDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWorkersCustomDomainDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareWorkersCustomDomainConfig(rnd, accountID, hostname, zoneID),
+				Config: testAccZenthcloudWorkersCustomDomainConfig(rnd, accountID, hostname, zoneID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("hostname"), knownvalue.StringExact(hostname)),
@@ -114,16 +114,16 @@ func TestAccCloudflareWorkersCustomDomain_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareWorkersCustomDomain_Idempotency(t *testing.T) {
+func TestAccZenthcloudWorkersCustomDomain_Idempotency(t *testing.T) {
 	t.Parallel()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_workers_custom_domain." + rnd
+	resourceName := "zenthcloud_workers_custom_domain." + rnd
 	hostname := rnd + "." + zoneName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
-	config := testAccCloudflareWorkersCustomDomainZoneIDConfig(rnd, accountID, hostname, zoneID)
+	config := testAccZenthcloudWorkersCustomDomainZoneIDConfig(rnd, accountID, hostname, zoneID)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -131,7 +131,7 @@ func TestAccCloudflareWorkersCustomDomain_Idempotency(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWorkersCustomDomainDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWorkersCustomDomainDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: config,
@@ -151,14 +151,14 @@ func TestAccCloudflareWorkersCustomDomain_Idempotency(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareWorkersCustomDomain_RecreateOnServiceChange(t *testing.T) {
+func TestAccZenthcloudWorkersCustomDomain_RecreateOnServiceChange(t *testing.T) {
 	t.Parallel()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_workers_custom_domain." + rnd
+	resourceName := "zenthcloud_workers_custom_domain." + rnd
 	hostname := rnd + "." + zoneName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -166,17 +166,17 @@ func TestAccCloudflareWorkersCustomDomain_RecreateOnServiceChange(t *testing.T) 
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWorkersCustomDomainDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWorkersCustomDomainDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareWorkersCustomDomainDifferentServiceConfig(rnd, accountID, hostname, "mute-truth-fdb1", zoneID),
+				Config: testAccZenthcloudWorkersCustomDomainDifferentServiceConfig(rnd, accountID, hostname, "mute-truth-fdb1", zoneID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("service"), knownvalue.StringExact("mute-truth-fdb1")),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("hostname"), knownvalue.StringExact(hostname)),
 				},
 			},
 			{
-				Config: testAccCloudflareWorkersCustomDomainDifferentServiceConfig(rnd, accountID, hostname, "mute-truth-fdb1-staging", zoneID),
+				Config: testAccZenthcloudWorkersCustomDomainDifferentServiceConfig(rnd, accountID, hostname, "mute-truth-fdb1-staging", zoneID),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionDestroyBeforeCreate),
@@ -191,14 +191,14 @@ func TestAccCloudflareWorkersCustomDomain_RecreateOnServiceChange(t *testing.T) 
 	})
 }
 
-func TestAccCloudflareWorkersCustomDomain_ComputedFields(t *testing.T) {
+func TestAccZenthcloudWorkersCustomDomain_ComputedFields(t *testing.T) {
 	t.Parallel()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_workers_custom_domain." + rnd
+	resourceName := "zenthcloud_workers_custom_domain." + rnd
 	hostname := rnd + "." + zoneName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -206,10 +206,10 @@ func TestAccCloudflareWorkersCustomDomain_ComputedFields(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWorkersCustomDomainDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWorkersCustomDomainDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareWorkersCustomDomainZoneIDConfig(rnd, accountID, hostname, zoneID),
+				Config: testAccZenthcloudWorkersCustomDomainZoneIDConfig(rnd, accountID, hostname, zoneID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
@@ -224,13 +224,13 @@ func TestAccCloudflareWorkersCustomDomain_ComputedFields(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareWorkersCustomDomain_MinimalConfigWithImport(t *testing.T) {
+func TestAccZenthcloudWorkersCustomDomain_MinimalConfigWithImport(t *testing.T) {
 	t.Parallel()
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_workers_custom_domain." + rnd
+	resourceName := "zenthcloud_workers_custom_domain." + rnd
 	hostname := rnd + "." + zoneName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -238,10 +238,10 @@ func TestAccCloudflareWorkersCustomDomain_MinimalConfigWithImport(t *testing.T) 
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWorkersCustomDomainDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWorkersCustomDomainDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareWorkersCustomDomainMinimalConfig(rnd, accountID, hostname),
+				Config: testAccZenthcloudWorkersCustomDomainMinimalConfig(rnd, accountID, hostname),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("hostname"), knownvalue.StringExact(hostname)),
@@ -265,14 +265,14 @@ func TestAccCloudflareWorkersCustomDomain_MinimalConfigWithImport(t *testing.T) 
 	})
 }
 
-func TestAccCloudflareWorkersCustomDomain_WithZoneNameImport(t *testing.T) {
+func TestAccZenthcloudWorkersCustomDomain_WithZoneNameImport(t *testing.T) {
 	t.Parallel()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_workers_custom_domain." + rnd
+	resourceName := "zenthcloud_workers_custom_domain." + rnd
 	hostname := rnd + "." + zoneName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -280,10 +280,10 @@ func TestAccCloudflareWorkersCustomDomain_WithZoneNameImport(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWorkersCustomDomainDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWorkersCustomDomainDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareWorkersCustomDomainWithZoneNameConfig(rnd, accountID, hostname, zoneName),
+				Config: testAccZenthcloudWorkersCustomDomainWithZoneNameConfig(rnd, accountID, hostname, zoneName),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("hostname"), knownvalue.StringExact(hostname)),
@@ -303,18 +303,18 @@ func TestAccCloudflareWorkersCustomDomain_WithZoneNameImport(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareWorkersCustomDomain_RecreateOnZoneIDChange(t *testing.T) {
-	t.Skip("Skipping: step 2 uses CLOUDFLARE_ALT_ZONE_ID which lacks custom domain permissions in the test account")
+func TestAccZenthcloudWorkersCustomDomain_RecreateOnZoneIDChange(t *testing.T) {
+	t.Skip("Skipping: step 2 uses ZENTHCLOUD_ALT_ZONE_ID which lacks custom domain permissions in the test account")
 	t.Parallel()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	altZoneID := os.Getenv("CLOUDFLARE_ALT_ZONE_ID")
-	altZoneName := os.Getenv("CLOUDFLARE_ALT_DOMAIN")
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	altZoneID := os.Getenv("ZENTHCLOUD_ALT_ZONE_ID")
+	altZoneName := os.Getenv("ZENTHCLOUD_ALT_DOMAIN")
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_workers_custom_domain." + rnd
+	resourceName := "zenthcloud_workers_custom_domain." + rnd
 	hostname1 := rnd + "." + zoneName
 	hostname2 := rnd + "." + altZoneName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -324,17 +324,17 @@ func TestAccCloudflareWorkersCustomDomain_RecreateOnZoneIDChange(t *testing.T) {
 			acctest.TestAccPreCheck_AlternateDomain(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWorkersCustomDomainDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWorkersCustomDomainDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareWorkersCustomDomainZoneIDConfig(rnd, accountID, hostname1, zoneID),
+				Config: testAccZenthcloudWorkersCustomDomainZoneIDConfig(rnd, accountID, hostname1, zoneID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("hostname"), knownvalue.StringExact(hostname1)),
 				},
 			},
 			{
-				Config: testAccCloudflareWorkersCustomDomainZoneIDConfig(rnd, accountID, hostname2, altZoneID),
+				Config: testAccZenthcloudWorkersCustomDomainZoneIDConfig(rnd, accountID, hostname2, altZoneID),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionDestroyBeforeCreate),
@@ -349,15 +349,15 @@ func TestAccCloudflareWorkersCustomDomain_RecreateOnZoneIDChange(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareWorkersCustomDomain_RecreateOnHostnameChange(t *testing.T) {
+func TestAccZenthcloudWorkersCustomDomain_RecreateOnHostnameChange(t *testing.T) {
 	t.Parallel()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_workers_custom_domain." + rnd
+	resourceName := "zenthcloud_workers_custom_domain." + rnd
 	hostname1 := rnd + "." + zoneName
 	hostname2 := rnd + "-new." + zoneName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -365,16 +365,16 @@ func TestAccCloudflareWorkersCustomDomain_RecreateOnHostnameChange(t *testing.T)
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWorkersCustomDomainDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWorkersCustomDomainDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareWorkersCustomDomainConfig(rnd, accountID, hostname1, zoneID),
+				Config: testAccZenthcloudWorkersCustomDomainConfig(rnd, accountID, hostname1, zoneID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("hostname"), knownvalue.StringExact(hostname1)),
 				},
 			},
 			{
-				Config: testAccCloudflareWorkersCustomDomainConfig(rnd, accountID, hostname2, zoneID),
+				Config: testAccZenthcloudWorkersCustomDomainConfig(rnd, accountID, hostname2, zoneID),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionDestroyBeforeCreate),
@@ -388,14 +388,14 @@ func TestAccCloudflareWorkersCustomDomain_RecreateOnHostnameChange(t *testing.T)
 	})
 }
 
-func TestAccCloudflareWorkersCustomDomain_WithZoneName(t *testing.T) {
+func TestAccZenthcloudWorkersCustomDomain_WithZoneName(t *testing.T) {
 	t.Skip("Skipping: workers custom domain creation via zone name requires permissions not available in the test account")
 	t.Parallel()
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_workers_custom_domain." + rnd
+	resourceName := "zenthcloud_workers_custom_domain." + rnd
 	hostname := rnd + "." + zoneName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -403,10 +403,10 @@ func TestAccCloudflareWorkersCustomDomain_WithZoneName(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWorkersCustomDomainDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWorkersCustomDomainDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareWorkersCustomDomainWithZoneNameConfig(rnd, accountID, hostname, zoneName),
+				Config: testAccZenthcloudWorkersCustomDomainWithZoneNameConfig(rnd, accountID, hostname, zoneName),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("hostname"), knownvalue.StringExact(hostname)),
@@ -419,13 +419,13 @@ func TestAccCloudflareWorkersCustomDomain_WithZoneName(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareWorkersCustomDomain_MinimalConfig(t *testing.T) {
+func TestAccZenthcloudWorkersCustomDomain_MinimalConfig(t *testing.T) {
 	t.Parallel()
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_workers_custom_domain." + rnd
+	resourceName := "zenthcloud_workers_custom_domain." + rnd
 	hostname := rnd + "." + zoneName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -433,10 +433,10 @@ func TestAccCloudflareWorkersCustomDomain_MinimalConfig(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWorkersCustomDomainDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWorkersCustomDomainDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareWorkersCustomDomainMinimalConfig(rnd, accountID, hostname),
+				Config: testAccZenthcloudWorkersCustomDomainMinimalConfig(rnd, accountID, hostname),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("hostname"), knownvalue.StringExact(hostname)),
@@ -451,23 +451,23 @@ func TestAccCloudflareWorkersCustomDomain_MinimalConfig(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareWorkersCustomDomainDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudWorkersCustomDomainDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_workers_custom_domain" {
+		if rs.Type != "zenthcloud_workers_custom_domain" {
 			continue
 		}
 
 		_, err := client.Workers.Domains.Get(context.Background(), rs.Primary.ID, workers.DomainGetParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		})
 		if err == nil {
 			return fmt.Errorf("workers custom domain with id %s still exists", rs.Primary.ID)
 		}
 
-		var apierr *cloudflare.Error
+		var apierr *zenthcloud.Error
 		if errors.As(err, &apierr) && apierr.StatusCode != http.StatusNotFound {
 			return fmt.Errorf("error checking if workers custom domain %s was destroyed: %w", rs.Primary.ID, err)
 		}
@@ -476,35 +476,35 @@ func testAccCheckCloudflareWorkersCustomDomainDestroy(s *terraform.State) error 
 	return nil
 }
 
-func testAccCloudflareWorkersCustomDomainConfig(rnd, accountID, hostname, zoneID string) string {
+func testAccZenthcloudWorkersCustomDomainConfig(rnd, accountID, hostname, zoneID string) string {
 	return acctest.LoadTestCase("workerdomainattach.tf", rnd, accountID, hostname, zoneID)
 }
 
-func testAccCloudflareWorkersCustomDomainWithZoneNameConfig(rnd, accountID, hostname, zoneName string) string {
+func testAccZenthcloudWorkersCustomDomainWithZoneNameConfig(rnd, accountID, hostname, zoneName string) string {
 	return acctest.LoadTestCase("workerdomainattach_zonename.tf", rnd, accountID, hostname, zoneName)
 }
 
-func testAccCloudflareWorkersCustomDomainMinimalConfig(rnd, accountID, hostname string) string {
+func testAccZenthcloudWorkersCustomDomainMinimalConfig(rnd, accountID, hostname string) string {
 	return acctest.LoadTestCase("workerdomainattach_minimal.tf", rnd, accountID, hostname)
 }
 
-func testAccCloudflareWorkersCustomDomainDifferentServiceConfig(rnd, accountID, hostname, service, zoneID string) string {
+func testAccZenthcloudWorkersCustomDomainDifferentServiceConfig(rnd, accountID, hostname, service, zoneID string) string {
 	return acctest.LoadTestCase("workerdomainattach_different_service.tf", rnd, accountID, hostname, service, zoneID)
 }
 
-func testAccCloudflareWorkersCustomDomainZoneIDConfig(rnd, accountID, hostname, zoneID string) string {
+func testAccZenthcloudWorkersCustomDomainZoneIDConfig(rnd, accountID, hostname, zoneID string) string {
 	return acctest.LoadTestCase("workerdomainattach_zoneid_change.tf", rnd, accountID, hostname, zoneID)
 }
 
 func TestAccUpgradeWorkersCustomDomain_FromPublishedV5(t *testing.T) {
 	t.Parallel()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
 	hostname := rnd + "." + zoneName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
-	config := testAccCloudflareWorkersCustomDomainConfig(rnd, accountID, hostname, zoneID)
+	config := testAccZenthcloudWorkersCustomDomainConfig(rnd, accountID, hostname, zoneID)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -514,8 +514,8 @@ func TestAccUpgradeWorkersCustomDomain_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

@@ -48,7 +48,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 			type: "string",
 			array: true,
 			description:
-				"A list of regions from which to run health checks. Null means Cloudflare will pick a default region.",
+				"A list of regions from which to run health checks. Null means Zenthcloud will pick a default region.",
 		})
 		.option("result-consecutive-fails", {
 			type: "number",
@@ -191,7 +191,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf smart-shield health-checks update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/smart_shield/healthchecks/${argv["healthcheck-id"] == null ? "<healthcheck-id>" : encodeURIComponent(String(argv["healthcheck-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/smart_shield/healthchecks/${argv["healthcheck-id"] == null ? "<healthcheck-id>" : encodeURIComponent(String(argv["healthcheck-id"]))}`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 							"healthcheck-id": String(argv["healthcheck-id"] ?? ""),

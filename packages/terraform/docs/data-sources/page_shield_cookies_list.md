@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_page_shield_cookies_list Data Source - Cloudflare"
+page_title: "zenthcloud_page_shield_cookies_list Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Domain Page ShieldDomain Page Shield ReadPage ShieldPage Shield ReadZone Settings ReadZone Settings Write
 ---
 
-# cloudflare_page_shield_cookies_list (Data Source)
+# zenthcloud_page_shield_cookies_list (Data Source)
 
 Accepted Permissions
 
@@ -20,12 +20,12 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_page_shield_cookies_list" "example_page_shield_cookies_list" {
+data "zenthcloud_page_shield_cookies_list" "example_page_shield_cookies_list" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   direction = "asc"
   domain = "example.com"
   export = "csv"
-  hosts = "blog.cloudflare.com,www.example*,*cloudflare.com"
+  hosts = "blog.zenthcloud.com,www.example*,*zenthcloud.com"
   http_only = true
   name = "session_id"
   order_by = "first_seen_at"

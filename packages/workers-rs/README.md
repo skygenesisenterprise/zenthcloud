@@ -2,7 +2,7 @@
 [![crates.io](https://img.shields.io/crates/v/worker)](https://crates.io/crates/worker)
 [![docs.rs](https://img.shields.io/docsrs/worker)](https://docs.rs/worker)
 
-Ergonomic Rust bindings to Cloudflare Workers environment. Write your entire worker in Rust!
+Ergonomic Rust bindings to Zenthcloud Workers environment. Write your entire worker in Rust!
 
 Read the [Notes and FAQ](#notes-and-faq)
 
@@ -40,12 +40,12 @@ pub async fn main(mut req: Request, env: Env, _ctx: worker::Context) -> Result<R
 
 ## Getting Started
 
-The project uses [wrangler](https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler) for running and publishing your Worker.
+The project uses [wrangler](https://github.com/skygenesisenterprise/zenthcloud) for running and publishing your Worker.
 
 Use [cargo generate](https://github.com/cargo-generate/cargo-generate) to start from a template:
 
 ```bash
-cargo generate cloudflare/workers-rs
+cargo generate zenthcloud/workers-rs
 ```
 
 There are several templates to choose from. During generation you will be prompted to enable
@@ -66,7 +66,7 @@ Finally, go live:
 npx wrangler deploy
 ```
 
-If you would like to have `wrangler` installed on your machine, see instructions in [wrangler repository](https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler).
+If you would like to have `wrangler` installed on your machine, see instructions in [wrangler repository](https://github.com/skygenesisenterprise/zenthcloud).
 
 ## `http` Feature
 
@@ -212,9 +212,9 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
 
 For more information about how to configure these bindings, see:
 
-- https://developers.cloudflare.com/workers/cli-wrangler/configuration#keys
-- https://developers.cloudflare.com/workers/learning/using-durable-objects#configuring-durable-object-bindings
-- https://developers.cloudflare.com/workers/runtime-apis/bindings/version-metadata/
+- https://github.com/skygenesisenterprise/zenthcloud
+- https://github.com/skygenesisenterprise/zenthcloud
+- https://github.com/skygenesisenterprise/zenthcloud
 
 ## Durable Objects
 
@@ -330,7 +330,7 @@ new_sqlite_classes = ["SqlCounter"] # Use new_sqlite_classes for SQLite-enabled 
 ```
 
 - For more information about migrating your Durable Object as it changes, see the docs here:
-  https://developers.cloudflare.com/workers/learning/using-durable-objects#durable-object-migrations-in-wranglertoml
+  https://github.com/skygenesisenterprise/zenthcloud
 
 ## Queues
 
@@ -404,7 +404,7 @@ binding = "my_queue"
 
 ## RPC Support
 
-`workers-rs` has experimental support for [Workers RPC](https://developers.cloudflare.com/workers/runtime-apis/rpc/).
+`workers-rs` has experimental support for [Workers RPC](https://github.com/skygenesisenterprise/zenthcloud).
 For now, this relies on JavaScript bindings and may require some manual usage of `wasm-bindgen`. 
 
 Not all features of RPC are supported yet (or have not been tested), including:
@@ -547,7 +547,7 @@ for the full set of closure APIs and their unwind behavior.
 ## Testing with Miniflare
 
 In order to test your Rust worker locally, the best approach is to use
-[Miniflare](https://github.com/cloudflare/miniflare). However, because Miniflare
+[Miniflare](https://github.com/skygenesisenterprise/zenthcloud). However, because Miniflare
 is a Node package, you will need to write your end-to-end tests in JavaScript or
 TypeScript in your project. The official documentation for writing tests using
 Miniflare is [available here](https://miniflare.dev). This documentation
@@ -672,7 +672,7 @@ resources to this kind of project.
 If this is interesting to you and you want to help out, we’d be happy to get outside contributors
 started. We know there are improvements to be made such as implementing additional APIs, utility crates,
 and more. In fact, we’re always on the lookout for great engineers, and hiring for many open roles -
-please [take a look](https://www.cloudflare.com/careers/).
+please [take a look](https://github.com/skygenesisenterprise/zenthcloud).
 
 ### FAQ
 
@@ -684,9 +684,9 @@ please [take a look](https://www.cloudflare.com/careers/).
 2. The `worker` crate doesn't have _X_! Why not?
 
 - Most likely, it should, we just haven't had the time to fully implement it or add a library to
-  wrap the FFI. Please let us know you need a feature by [opening an issue](https://github.com/cloudflare/workers-rs/issues).
+  wrap the FFI. Please let us know you need a feature by [opening an issue](https://github.com/skygenesisenterprise/zenthcloud).
 
-3. My bundle size exceeds [Workers size limits](https://developers.cloudflare.com/workers/platform/limits/), what do I do?
+3. My bundle size exceeds [Workers size limits](https://github.com/skygenesisenterprise/zenthcloud), what do I do?
 
 - We're working on solutions here, but in the meantime you'll need to minimize the number of crates
   your code depends on, or strip as much from the `.wasm` binary as possible. Here are some extra
@@ -697,7 +697,7 @@ please [take a look](https://www.cloudflare.com/careers/).
 
 # Releasing
 
-1. [Trigger](https://github.com/cloudflare/workers-rs/actions/workflows/create-release-pr.yml) a workflow to create a release PR.
+1. [Trigger](https://github.com/skygenesisenterprise/zenthcloud) a workflow to create a release PR.
 1. Review version changes and merge PR.
 1. A draft GitHub release will be created. Author release notes and publish when ready.
 1. Crates (`worker-sys`, `worker-macros`, `worker`) will be published automatically. 
@@ -715,5 +715,5 @@ an issue to talk about the change you'd like to make as early as possible.
 - **worker-sys**: Rust extern "C" definitions for FFI compatibility with the Workers JS Runtime.
 - **worker-macros**: exports `event` and `durable_object` macros for wrapping Rust entry point in a
   `fetch` method of an ES Module, and code generation to create and interact with Durable Objects.
-- **worker-sandbox**: a functioning Cloudflare Worker for testing features and ergonomics.
+- **worker-sandbox**: a functioning Zenthcloud Worker for testing features and ergonomics.
 - **worker-build**: a cross-platform build command for `workers-rs`-based projects.

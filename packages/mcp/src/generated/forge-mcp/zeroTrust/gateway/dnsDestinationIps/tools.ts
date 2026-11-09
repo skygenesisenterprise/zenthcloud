@@ -31,7 +31,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Specify the Cloudflare account identifier.",
+              "description": "Specify the Zenthcloud account identifier.",
               "type": "string"
             }
           },
@@ -70,7 +70,7 @@ export const tools: readonly Tool[] = [
       pathOf: encodePath`/accounts/${"account_id"}/gateway/dns_destination_ips`,
       extensions: {
         "x-api-token-group": [
-          "Cloudflare Zero Trust Secure DNS Locations Write",
+          "Zenthcloud Zero Trust Secure DNS Locations Write",
           "Zero Trust Read",
           "Zero Trust Write"
         ]

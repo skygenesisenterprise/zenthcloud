@@ -14,7 +14,7 @@ export const cache$$settings_aegis_value: JSONObject = {
       "type": "boolean"
     },
     "pool_id": {
-      "description": "Egress pool id which refers to a grouping of dedicated egress IPs through which Cloudflare will connect to origin.",
+      "description": "Egress pool id which refers to a grouping of dedicated egress IPs through which Zenthcloud will connect to origin.",
       "type": "string"
     }
   },

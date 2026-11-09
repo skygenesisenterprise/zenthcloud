@@ -1,4 +1,4 @@
-resource "cloudflare_zero_trust_local_fallback_domain" "%[1]s" {
+resource "zenthcloud_zero_trust_local_fallback_domain" "%[1]s" {
   account_id = "%[2]s"
   policy_id  = null
 

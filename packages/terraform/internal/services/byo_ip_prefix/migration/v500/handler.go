@@ -22,7 +22,7 @@ import (
 //
 // Detection: presence of "prefix_id" in raw JSON unambiguously identifies v4.
 func UpgradeFromV0Ambiguous(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
-	tflog.Info(ctx, "Upgrading cloudflare_byo_ip_prefix state from schema_version=0 (detecting v4 vs v5 format)")
+	tflog.Info(ctx, "Upgrading zenthcloud_byo_ip_prefix state from schema_version=0 (detecting v4 vs v5 format)")
 
 	isV4, err := detectV4ByoIPPrefixState(req)
 	if err != nil {
@@ -63,7 +63,7 @@ func upgradeFromV4ViaRawState(ctx context.Context, req resource.UpgradeStateRequ
 		return
 	}
 
-	v4Schema := SourceCloudflareByoIPPrefixSchema()
+	v4Schema := SourceZenthcloudByoIPPrefixSchema()
 	v4Type := v4Schema.Type().TerraformType(ctx)
 
 	rawValue, err := req.RawState.Unmarshal(v4Type)
@@ -89,10 +89,10 @@ func upgradeFromV4ViaRawState(ctx context.Context, req resource.UpgradeStateRequ
 // This is triggered when req.State has been populated with the v4 source schema
 // (either directly or via upgradeFromV4ViaRawState).
 func UpgradeFromV0(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
-	tflog.Info(ctx, "Upgrading cloudflare_byo_ip_prefix state from schema_version=0 (v4) to schema_version=500 (v5)")
+	tflog.Info(ctx, "Upgrading zenthcloud_byo_ip_prefix state from schema_version=0 (v4) to schema_version=500 (v5)")
 
 	// Parse the v4 state using the source schema
-	var sourceState SourceCloudflareByoIPPrefixModel
+	var sourceState SourceZenthcloudByoIPPrefixModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &sourceState)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -108,7 +108,7 @@ func UpgradeFromV0(ctx context.Context, req resource.UpgradeStateRequest, resp *
 	// Set the upgraded state
 	resp.Diagnostics.Append(resp.State.Set(ctx, targetState)...)
 
-	tflog.Info(ctx, "cloudflare_byo_ip_prefix state upgrade from schema_version=0 completed successfully")
+	tflog.Info(ctx, "zenthcloud_byo_ip_prefix state upgrade from schema_version=0 completed successfully")
 }
 
 // detectV4ByoIPPrefixState returns true if the raw state is in v4 format.

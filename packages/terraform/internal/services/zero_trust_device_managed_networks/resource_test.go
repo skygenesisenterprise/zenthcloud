@@ -6,11 +6,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -25,21 +25,21 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zero_trust_device_managed_networks", &resource.Sweeper{
-		Name: "cloudflare_zero_trust_device_managed_networks",
-		F:    testSweepCloudflareZeroTrustDeviceManagedNetworks,
+	resource.AddTestSweepers("zenthcloud_zero_trust_device_managed_networks", &resource.Sweeper{
+		Name: "zenthcloud_zero_trust_device_managed_networks",
+		F:    testSweepZenthcloudZeroTrustDeviceManagedNetworks,
 	})
 }
 
-func testSweepCloudflareZeroTrustDeviceManagedNetworks(r string) error {
+func testSweepZenthcloudZeroTrustDeviceManagedNetworks(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	networksResp, err := client.ZeroTrust.Devices.Networks.List(
 		ctx,
 		zero_trust.DeviceNetworkListParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		},
 	)
 	if err != nil {
@@ -57,7 +57,7 @@ func testSweepCloudflareZeroTrustDeviceManagedNetworks(r string) error {
 			ctx,
 			network.NetworkID,
 			zero_trust.DeviceNetworkDeleteParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			},
 		)
 		if err != nil {
@@ -68,20 +68,20 @@ func testSweepCloudflareZeroTrustDeviceManagedNetworks(r string) error {
 	return nil
 }
 
-func TestAccCloudflareDeviceManagedNetworks(t *testing.T) {
+func TestAccZenthcloudDeviceManagedNetworks(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_device_managed_networks.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_device_managed_networks.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareDeviceManagedNetworksDestroy,
+		CheckDestroy:             testAccCheckZenthcloudDeviceManagedNetworksDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareDeviceManagedNetworks(accountID, rnd),
+				Config: testAccZenthcloudDeviceManagedNetworks(accountID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -100,22 +100,22 @@ func TestAccCloudflareDeviceManagedNetworks(t *testing.T) {
 	})
 }
 
-func testAccCloudflareDeviceManagedNetworks(accountID, rnd string) string {
+func testAccZenthcloudDeviceManagedNetworks(accountID, rnd string) string {
 	return acctest.LoadTestCase("devicemanagednetworks.tf", rnd, accountID)
 }
 
-func testAccCheckCloudflareDeviceManagedNetworksDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudDeviceManagedNetworksDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_zero_trust_device_managed_networks" {
+		if rs.Type != "zenthcloud_zero_trust_device_managed_networks" {
 			continue
 		}
 
 		accountID := rs.Primary.Attributes[consts.AccountIDSchemaKey]
 		networkID := rs.Primary.ID
 		_, err := client.ZeroTrust.Devices.Networks.Get(context.Background(), networkID, zero_trust.DeviceNetworkGetParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		})
 		if err == nil {
 			return fmt.Errorf("device managed network still exists: %s", networkID)
@@ -127,9 +127,9 @@ func testAccCheckCloudflareDeviceManagedNetworksDestroy(s *terraform.State) erro
 
 func TestAccUpgradeZeroTrustDeviceManagedNetworks_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
-	config := testAccCloudflareDeviceManagedNetworks(accountID, rnd)
+	config := testAccZenthcloudDeviceManagedNetworks(accountID, rnd)
 
 	// Stepping-stone upgrade: 5.16.0 → 5.17.0 → latest.
 	//
@@ -146,8 +146,8 @@ func TestAccUpgradeZeroTrustDeviceManagedNetworks_FromPublishedV5(t *testing.T) 
 			// Step 1: create with v5.16.0 (schema_version=0, config as object)
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},
@@ -156,8 +156,8 @@ func TestAccUpgradeZeroTrustDeviceManagedNetworks_FromPublishedV5(t *testing.T) 
 			// Step 2: upgrade to v5.17.0 (bumps schema_version 0→1, no-op transform)
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.17.0",
 					},
 				},

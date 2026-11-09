@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_dls_prefix_bindings Data Source - Cloudflare"
+page_title: "zenthcloud_dls_prefix_bindings Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_dls_prefix_bindings (Data Source)
+# zenthcloud_dls_prefix_bindings (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_dls_prefix_bindings" "example_dls_prefix_bindings" {
+data "zenthcloud_dls_prefix_bindings" "example_dls_prefix_bindings" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```
@@ -22,7 +22,7 @@ data "cloudflare_dls_prefix_bindings" "example_dls_prefix_bindings" {
 
 ### Required
 
-- `account_id` (String) Identifier of a Cloudflare account.
+- `account_id` (String) Identifier of a Zenthcloud account.
 
 ### Optional
 

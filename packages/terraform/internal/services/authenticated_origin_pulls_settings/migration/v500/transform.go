@@ -12,7 +12,7 @@ import (
 // Transformation logic:
 // - Copy: id, zone_id, enabled
 // - Drop: hostname, authenticated_origin_pulls_certificate (removed in v5)
-func Transform(ctx context.Context, source SourceCloudflareAuthenticatedOriginPullsModel) (TargetAuthenticatedOriginPullsSettingsModel, diag.Diagnostics) {
+func Transform(ctx context.Context, source SourceZenthcloudAuthenticatedOriginPullsModel) (TargetAuthenticatedOriginPullsSettingsModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	var target TargetAuthenticatedOriginPullsSettingsModel
 

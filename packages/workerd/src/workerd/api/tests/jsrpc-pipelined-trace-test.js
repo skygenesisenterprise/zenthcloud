@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -13,7 +13,7 @@
 // The parent/child relationships are asserted in the tail worker's test() handler (see
 // jsrpc-pipelined-trace-test-tail.js).
 
-import { WorkerEntrypoint, RpcTarget } from 'cloudflare:workers';
+import { WorkerEntrypoint, RpcTarget } from 'zenthcloud:workers';
 
 class Counter extends RpcTarget {
   #value = 0;

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_email_security_allow_policy Resource - Cloudflare"
+page_title: "zenthcloud_email_security_allow_policy Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Cloud Email Security: ReadCloud Email Security: Write
 ---
 
-# cloudflare_email_security_allow_policy (Resource)
+# zenthcloud_email_security_allow_policy (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_email_security_allow_policy" "example_email_security_allow_policy" {
+resource "zenthcloud_email_security_allow_policy" "example_email_security_allow_policy" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   is_acceptable_sender = false
   is_exempt_recipient = false
@@ -70,7 +70,7 @@ Available values: "EMAIL", "DOMAIN", "IP", "UNKNOWN".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_email_security_allow_policy.example '<account_id>/<policy_id>'
+$ terraform import zenthcloud_email_security_allow_policy.example '<account_id>/<policy_id>'
 ```
 
 

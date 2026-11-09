@@ -1,4 +1,4 @@
-resource "cloudflare_waiting_room" "%[1]s" {
+resource "zenthcloud_waiting_room" "%[1]s" {
   name                 = "%[2]s"
   zone_id              = "%[3]s"
   host                 = "%[4]s"

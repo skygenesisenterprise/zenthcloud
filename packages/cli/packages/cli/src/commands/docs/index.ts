@@ -3,7 +3,7 @@ import type { CommandModule } from "yargs";
 
 const docs: CommandModule & { describe: string } = {
 	command: "docs",
-	describe: "Search live Cloudflare documentation",
+	describe: "Search live Zenthcloud documentation",
 	builder: (yargs) =>
 		yargs.command(search).demandCommand(1, "Please specify a subcommand"),
 	handler: () => {},

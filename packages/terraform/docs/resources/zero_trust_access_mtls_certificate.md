@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_access_mtls_certificate Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_access_mtls_certificate Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Access: Mutual TLS Certificates ReadAccess: Mutual TLS Certificates Write
 ---
 
-# cloudflare_zero_trust_access_mtls_certificate (Resource)
+# zenthcloud_zero_trust_access_mtls_certificate (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_access_mtls_certificate" "example_zero_trust_access_mtls_certificate" {
+resource "zenthcloud_zero_trust_access_mtls_certificate" "example_zero_trust_access_mtls_certificate" {
   certificate = <<EOT
   -----BEGIN CERTIFICATE-----
   MIIGAjCCA+qgAwIBAgIJAI7kymlF7CWT...N4RI7KKB7nikiuUf8vhULKy5IX10
@@ -55,5 +55,5 @@ Note: The "certificate" field cannot be imported by this module and must be manu
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_access_mtls_certificate.example '<{accounts|zones}/{account_id|zone_id}>/<certificate_id>'
+$ terraform import zenthcloud_zero_trust_access_mtls_certificate.example '<{accounts|zones}/{account_id|zone_id}>/<certificate_id>'
 ```

@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -47,10 +47,10 @@ func TestMigrateCustomHostnameBasic(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-			domain := os.Getenv("CLOUDFLARE_DOMAIN")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+			domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_custom_hostname." + rnd
+			resourceName := "zenthcloud_custom_hostname." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID, domain)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -65,8 +65,8 @@ func TestMigrateCustomHostnameBasic(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},

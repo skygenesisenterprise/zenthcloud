@@ -22,7 +22,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 r2 objects bulk-delete\n\nDeletes the listed objects from an R2 bucket. Provide a JSON array of 1 to 1000 object keys in the request body. If any key cannot be deleted (for example, because it does not exist or is locked), the remaining keys are still deleted, but the response is HTTP 200 with `success: false`, `result: null` and one entry in `errors` per failed key. The entries in `errors` do not identify which key failed. To delete every object under a prefix, or to empty a bucket, create a `prefixDelete` job with the Create Bucket Job endpoint instead. The `prefix` query parameter on this endpoint is deprecated; it creates the same job, but responses to it carry a `Deprecation` header and a message pointing to Create Bucket Job. For most workloads, we recommend using R2's [S3-compatible API](https://developers.cloudflare.com/r2/api/s3/api/) or a [Worker with an R2 binding](https://developers.cloudflare.com/r2/api/workers/workers-api-reference/) instead."
+			"$0 r2 objects bulk-delete\n\nDeletes the listed objects from an R2 bucket. Provide a JSON array of 1 to 1000 object keys in the request body. If any key cannot be deleted (for example, because it does not exist or is locked), the remaining keys are still deleted, but the response is HTTP 200 with `success: false`, `result: null` and one entry in `errors` per failed key. The entries in `errors` do not identify which key failed. To delete every object under a prefix, or to empty a bucket, create a `prefixDelete` job with the Create Bucket Job endpoint instead. The `prefix` query parameter on this endpoint is deprecated; it creates the same job, but responses to it carry a `Deprecation` header and a message pointing to Create Bucket Job. For most workloads, we recommend using R2's [S3-compatible API](https://github.com/skygenesisenterprise/zenthcloud) or a [Worker with an R2 binding](https://github.com/skygenesisenterprise/zenthcloud) instead."
 		)
 		.option("bucket-name", {
 			type: "string",
@@ -95,7 +95,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf r2 objects bulk-delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/r2/buckets/${argv["bucket-name"] == null ? "<bucket-name>" : encodeURIComponent(String(argv["bucket-name"]))}/objects`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/r2/buckets/${argv["bucket-name"] == null ? "<bucket-name>" : encodeURIComponent(String(argv["bucket-name"]))}/objects`,
 						pathParams: { "bucket-name": String(argv["bucket-name"] ?? "") },
 						query: queryParams,
 						bodyKind: "json",

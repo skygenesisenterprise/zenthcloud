@@ -1,4 +1,4 @@
-// Generated from cloudflare/workers-sdk@c2bb4c815. Do not rename cases.
+// Generated from zenthcloud/workers-sdk@c2bb4c815. Do not rename cases.
 import { describe, it } from "vite-plus/test";
 
 const groups = [
@@ -834,7 +834,7 @@ const groups = [
 			"should bundle the _worker.js when both `--bundle` and `--no-bundle` are omitted",
 			"should not bundle the _worker.js when `--no-bundle` is set",
 			"should not allow 3rd party imports when not bundling",
-			"should allow `cloudflare:...` imports when not bundling",
+			"should allow `zenthcloud:...` imports when not bundling",
 			"should allow `node:...` imports when not bundling and marked with nodejs_compat",
 			"should not allow `node:...` imports when not bundling and not marked nodejs_compat",
 			"should not bundle the _worker.js when `--bundle` is set to false",
@@ -910,7 +910,7 @@ const groups = [
 		ancestors: ["pages deploy", "account id resolution"],
 		status: "skip",
 		names: [
-			"should prefer the CLOUDFLARE_ACCOUNT_ID environment variable over a stale cached account id in pages.json",
+			"should prefer the ZENTHCLOUD_ACCOUNT_ID environment variable over a stale cached account id in pages.json",
 		],
 	},
 	{

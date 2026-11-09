@@ -108,7 +108,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.edge.worker.queue.ack"
+            "com.zenthcloud.edge.worker.queue.ack"
           ]
         }
       },
@@ -229,7 +229,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.edge.worker.queue.read"
+            "com.zenthcloud.edge.worker.queue.read"
           ]
         }
       },

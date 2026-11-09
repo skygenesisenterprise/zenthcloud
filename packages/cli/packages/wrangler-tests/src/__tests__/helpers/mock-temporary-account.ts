@@ -1,19 +1,19 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { getGlobalConfigPath } from "@cloudflare/workers-utils";
+import { getGlobalConfigPath } from "@zenthcloud/workers-utils";
 import { http, HttpResponse } from "msw/http";
 import { createFetchResult, msw } from "./msw";
 
 const temporaryPreviewAccountUrl = "*/provisioning/previews";
 
-const termsOfService = "https://www.cloudflare.com/terms/";
-const privacyPolicy = "https://www.cloudflare.com/privacypolicy/";
+const termsOfService = "https://github.com/skygenesisenterprise/zenthcloud";
+const privacyPolicy = "https://github.com/skygenesisenterprise/zenthcloud";
 
 /** The terms notice workers-auth prints instead of prompting in CI. */
-export const TEMPORARY_TERMS_NOTICE = `Continuing means you accept Cloudflare's Terms of Service (${termsOfService}) and Privacy Policy (${privacyPolicy}).`;
+export const TEMPORARY_TERMS_NOTICE = `Continuing means you accept Zenthcloud's Terms of Service (${termsOfService}) and Privacy Policy (${privacyPolicy}).`;
 
 /** The terms prompt workers-auth asks interactively. */
-export const TEMPORARY_TERMS_PROMPT = `You must accept Cloudflare's Terms of Service (${termsOfService}) and Privacy Policy (${privacyPolicy}) in order to continue. By typing "yes", you agree to these terms. Type "yes" to continue.`;
+export const TEMPORARY_TERMS_PROMPT = `You must accept Zenthcloud's Terms of Service (${termsOfService}) and Privacy Policy (${privacyPolicy}) in order to continue. By typing "yes", you agree to these terms. Type "yes" to continue.`;
 
 /**
  * cf's temporary-account cache. Computed lazily so `runInTempDir()`'s HOME and
@@ -22,13 +22,13 @@ export const TEMPORARY_TERMS_PROMPT = `You must accept Cloudflare's Terms of Ser
 export function temporaryAccountCachePath(environment = "production"): string {
 	return join(
 		getGlobalConfigPath({
-			appName: "cloudflare",
+			appName: "zenthcloud",
 			leadingDot: false,
 			useLegacyHomeDir: false,
 		}),
 		environment === "production"
-			? "cloudflare-temporary-account.json"
-			: `cloudflare-temporary-account.${environment}.json`
+			? "zenthcloud-temporary-account.json"
+			: `zenthcloud-temporary-account.${environment}.json`
 	);
 }
 
@@ -96,7 +96,7 @@ export function mockTemporaryPreviewAccount(): Array<{
 					},
 					claim: {
 						token: "claim-token",
-						url: "https://dash.cloudflare.com/claim-preview?claimToken=claim-token",
+						url: "https://github.com/skygenesisenterprise/zenthcloud",
 						expiresAt: "2999-01-02T00:00:00.000Z",
 					},
 					...(body.eventCode ? { eventCodeAccepted: true } : {}),

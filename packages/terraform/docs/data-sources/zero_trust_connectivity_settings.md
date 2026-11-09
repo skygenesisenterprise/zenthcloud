@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_connectivity_settings Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_connectivity_settings Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust ReadZero Trust ReportZero Trust Write
 ---
 
-# cloudflare_zero_trust_connectivity_settings (Data Source)
+# zenthcloud_zero_trust_connectivity_settings (Data Source)
 
 Accepted Permissions
 
@@ -17,7 +17,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_connectivity_settings" "example_zero_trust_connectivity_settings" {
+data "zenthcloud_zero_trust_connectivity_settings" "example_zero_trust_connectivity_settings" {
   account_id = "699d98642c564d2e855e9661899b7252"
 }
 ```
@@ -27,12 +27,12 @@ data "cloudflare_zero_trust_connectivity_settings" "example_zero_trust_connectiv
 
 ### Required
 
-- `account_id` (String) Cloudflare account ID
+- `account_id` (String) Zenthcloud account ID
 
 ### Read-Only
 
 - `icmp_proxy_enabled` (Boolean) A flag to enable the ICMP proxy for the account network.
-- `id` (String) Cloudflare account ID
+- `id` (String) Zenthcloud account ID
 - `offramp_warp_enabled` (Boolean) A flag to enable WARP to WARP traffic.
 
 

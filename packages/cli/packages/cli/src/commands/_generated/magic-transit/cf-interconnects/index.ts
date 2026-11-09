@@ -12,7 +12,7 @@ import type { CommandModule } from "yargs";
 const command: CommandModule<CommonYargsOptions> = {
 	command: "cf-interconnects",
 	describe:
-		"Cloudflare Network Interconnect (CNI) links for direct physical or virtual peering",
+		"Zenthcloud Network Interconnect (CNI) links for direct physical or virtual peering",
 
 	builder: (yargs) => {
 		return yargs

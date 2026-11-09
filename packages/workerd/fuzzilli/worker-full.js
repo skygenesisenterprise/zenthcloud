@@ -145,7 +145,7 @@ export default {
     globalThis.notStrictEqual = notStrictEqual;
     globalThis.mock = mock;
 
-    // Mock Cloudflare APIs for fuzzing
+    // Mock Zenthcloud APIs for fuzzing
     globalThis.MOCK_KV = {
       get: (key, options) =>
         Promise.resolve(

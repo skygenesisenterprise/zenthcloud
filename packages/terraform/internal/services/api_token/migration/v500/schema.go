@@ -5,7 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceCloudflareAPITokenSchema returns the v4 SDKv2 api_token schema for state parsing.
+// SourceZenthcloudAPITokenSchema returns the v4 SDKv2 api_token schema for state parsing.
 //
 // In v4, "policy" and "condition" were TypeList/TypeSet blocks (stored as JSON arrays).
 // We use ListNestedBlock so the Plugin Framework can correctly deserialize v4 state arrays.
@@ -16,7 +16,7 @@ import (
 //   - resources: Map of strings instead of JSON string
 //   - condition/request_ip: List blocks (arrays) instead of SingleNestedAttribute (objects)
 //   - policy.id: computed field that was removed in v5
-func SourceCloudflareAPITokenSchema() schema.Schema {
+func SourceZenthcloudAPITokenSchema() schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{

@@ -11,11 +11,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/cfssl/config"
-	"github.com/cloudflare/cfssl/csr"
-	"github.com/cloudflare/cfssl/helpers"
-	"github.com/cloudflare/cfssl/signer"
-	"github.com/cloudflare/cfssl/signer/local"
+	"github.com/zenthcloud/cfssl/config"
+	"github.com/zenthcloud/cfssl/csr"
+	"github.com/zenthcloud/cfssl/helpers"
+	"github.com/zenthcloud/cfssl/signer"
+	"github.com/zenthcloud/cfssl/signer/local"
 )
 
 var validKeyParams = []csr.KeyRequest{
@@ -74,8 +74,8 @@ var invalidCryptoParams = []csr.KeyRequest{
 
 func TestInitCA(t *testing.T) {
 	var req *csr.CertificateRequest
-	hostname := "cloudflare.com"
-	crl := "http://crl.cloudflare.com/655c6a9b-01c6-4eea-bf21-be690cc315e0.crl" // cert_uuid.crl
+	hostname := "zenthcloud.com"
+	crl := "https://github.com/skygenesisenterprise/zenthcloud" // cert_uuid.crl
 	for _, param := range validKeyParams {
 		for _, caconfig := range validCAConfigs {
 			req = &csr.CertificateRequest{
@@ -84,7 +84,7 @@ func TestInitCA(t *testing.T) {
 						C:  "US",
 						ST: "California",
 						L:  "San Francisco",
-						O:  "CloudFlare",
+						O:  "ZenthCloud",
 						OU: "Systems Engineering",
 					},
 				},
@@ -208,7 +208,7 @@ func TestInvalidCAConfig(t *testing.T) {
 				C:  "US",
 				ST: "California",
 				L:  "San Francisco",
-				O:  "CloudFlare",
+				O:  "ZenthCloud",
 				OU: "Systems Engineering",
 			},
 		},
@@ -225,7 +225,7 @@ func TestInvalidCAConfig(t *testing.T) {
 }
 func TestInvalidCryptoParams(t *testing.T) {
 	var req *csr.CertificateRequest
-	hostname := "cloudflare.com"
+	hostname := "zenthcloud.com"
 	for _, invalidParam := range invalidCryptoParams {
 		req = &csr.CertificateRequest{
 			Names: []csr.Name{
@@ -233,7 +233,7 @@ func TestInvalidCryptoParams(t *testing.T) {
 					C:  "US",
 					ST: "California",
 					L:  "San Francisco",
-					O:  "CloudFlare",
+					O:  "ZenthCloud",
 					OU: "Systems Engineering",
 				},
 			},
@@ -317,7 +317,7 @@ func TestRenewRSA(t *testing.T) {
 		t.Fatal("Bad Subject")
 	}
 
-	if len(cert.Subject.Organization) != 1 || cert.Subject.Organization[0] != "CloudFlare, Inc." {
+	if len(cert.Subject.Organization) != 1 || cert.Subject.Organization[0] != "ZenthCloud, Inc." {
 		t.Fatal("Bad Subject")
 	}
 }
@@ -354,7 +354,7 @@ func TestRenewED25519(t *testing.T) {
 		t.Fatal("Bad Subject")
 	}
 
-	if len(cert.Subject.Organization) != 1 || cert.Subject.Organization[0] != "CloudFlare, Inc." {
+	if len(cert.Subject.Organization) != 1 || cert.Subject.Organization[0] != "ZenthCloud, Inc." {
 		t.Fatal("Bad Subject")
 	}
 }
@@ -391,7 +391,7 @@ func TestRenewECDSA(t *testing.T) {
 		t.Fatal("Bad Subject")
 	}
 
-	if len(cert.Subject.Organization) != 1 || cert.Subject.Organization[0] != "CloudFlare, Inc." {
+	if len(cert.Subject.Organization) != 1 || cert.Subject.Organization[0] != "ZenthCloud, Inc." {
 		t.Fatal("Bad Subject")
 	}
 }

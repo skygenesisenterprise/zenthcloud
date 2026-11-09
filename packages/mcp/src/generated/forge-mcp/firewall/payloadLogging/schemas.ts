@@ -9,7 +9,7 @@ import type { JSONObject } from "@modelcontextprotocol/server";
 export const firewall_payload_logging_key: JSONObject = {
   "properties": {
     "public_key": {
-      "description": "Defines the X25519 public key, as standard base64 of exactly 32 bytes, that encrypts matched payloads. Cloudflare stores only the public key; keep the private key to decrypt logged payloads.",
+      "description": "Defines the X25519 public key, as standard base64 of exactly 32 bytes, that encrypts matched payloads. Zenthcloud stores only the public key; keep the private key to decrypt logged payloads.",
       "type": "string"
     }
   },

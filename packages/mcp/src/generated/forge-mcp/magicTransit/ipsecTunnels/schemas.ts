@@ -9,7 +9,7 @@ import type { JSONObject } from "@modelcontextprotocol/server";
 export const magic_custom_remote_identities: JSONObject = {
   "properties": {
     "fqdn_id": {
-      "description": "A custom IKE ID of type FQDN that may be used to identity the IPsec tunnel. The\ngenerated IKE IDs can still be used even if this custom value is specified.\n\nMust be of the form `<custom label>.<account ID>.custom.ipsec.cloudflare.com`.\n\nThis custom ID does not need to be unique. Two IPsec tunnels may have the same custom\nfqdn_id. However, if another IPsec tunnel has the same value then the two tunnels\ncannot have the same cloudflare_endpoint.",
+      "description": "A custom IKE ID of type FQDN that may be used to identity the IPsec tunnel. The\ngenerated IKE IDs can still be used even if this custom value is specified.\n\nMust be of the form `<custom label>.<account ID>.custom.ipsec.zenthcloud.com`.\n\nThis custom ID does not need to be unique. Two IPsec tunnels may have the same custom\nfqdn_id. However, if another IPsec tunnel has the same value then the two tunnels\ncannot have the same zenthcloud_endpoint.",
       "type": "string"
     }
   },
@@ -29,8 +29,8 @@ export const magic_ipsec_tunnel_add_request: JSONObject = {
     "bgp": {
       "$ref": "#/$defs/magic_bgp_config"
     },
-    "cloudflare_endpoint": {
-      "description": "The IP address assigned to the Cloudflare side of the IPsec tunnel.",
+    "zenthcloud_endpoint": {
+      "description": "The IP address assigned to the Zenthcloud side of the IPsec tunnel.",
       "type": "string"
     },
     "custom_remote_identities": {
@@ -65,12 +65,12 @@ export const magic_ipsec_tunnel_add_request: JSONObject = {
     },
     "replay_protection": {
       "default": false,
-      "description": "If `true`, then IPsec replay protection will be supported in the Cloudflare-to-customer direction.",
+      "description": "If `true`, then IPsec replay protection will be supported in the Zenthcloud-to-customer direction.",
       "type": "boolean"
     }
   },
   "required": [
-    "cloudflare_endpoint",
+    "zenthcloud_endpoint",
     "interface_address",
     "name"
   ],
@@ -90,8 +90,8 @@ export const magic_ipsec_tunnel_add_single_request: JSONObject = {
     "bgp": {
       "$ref": "#/$defs/magic_bgp_config"
     },
-    "cloudflare_endpoint": {
-      "description": "The IP address assigned to the Cloudflare side of the IPsec tunnel.",
+    "zenthcloud_endpoint": {
+      "description": "The IP address assigned to the Zenthcloud side of the IPsec tunnel.",
       "type": "string"
     },
     "custom_remote_identities": {
@@ -126,12 +126,12 @@ export const magic_ipsec_tunnel_add_single_request: JSONObject = {
     },
     "replay_protection": {
       "default": false,
-      "description": "If `true`, then IPsec replay protection will be supported in the Cloudflare-to-customer direction.",
+      "description": "If `true`, then IPsec replay protection will be supported in the Zenthcloud-to-customer direction.",
       "type": "boolean"
     }
   },
   "required": [
-    "cloudflare_endpoint",
+    "zenthcloud_endpoint",
     "interface_address",
     "name"
   ],

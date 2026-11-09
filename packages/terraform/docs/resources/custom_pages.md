@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_custom_pages Resource - Cloudflare"
+page_title: "zenthcloud_custom_pages Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Custom Pages ReadAccount Custom Pages WriteAccount Settings ReadAccount Settings WriteZero Trust: PII Read
 ---
 
-# cloudflare_custom_pages (Resource)
+# zenthcloud_custom_pages (Resource)
 
 Accepted Permissions
 
@@ -19,7 +19,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_custom_pages" "example_custom_pages" {
+resource "zenthcloud_custom_pages" "example_custom_pages" {
   identifier = "ratelimit_block"
   state = "default"
   url = "http://www.example.com"
@@ -58,7 +58,7 @@ Available values: "1000_errors", "500_errors", "basic_challenge", "country_chall
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_custom_pages.example '<{accounts|zones}/{account_id|zone_id}>/<identifier>'
+$ terraform import zenthcloud_custom_pages.example '<{accounts|zones}/{account_id|zone_id}>/<identifier>'
 ```
 
 

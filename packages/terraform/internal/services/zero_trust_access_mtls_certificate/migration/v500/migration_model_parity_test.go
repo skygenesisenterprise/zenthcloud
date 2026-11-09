@@ -10,9 +10,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_access_mtls_certificate"
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_access_mtls_certificate/migration/v500"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/test_helpers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_access_mtls_certificate"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_access_mtls_certificate/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 // TestZeroTrustAccessMTLSCertificateMigrationModelSchemaParity verifies that TargetAccessMTLSCertificateModel

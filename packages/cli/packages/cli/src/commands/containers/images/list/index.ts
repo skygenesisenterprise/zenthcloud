@@ -1,4 +1,4 @@
-import { listContainerImages } from "@cloudflare/containers-shared";
+import { listContainerImages } from "@zenthcloud/containers-shared";
 import { configureRegistryAccess } from "../context.js";
 import type { CommonYargsOptions, InferArgs } from "#lib/cli-types.js";
 import type { Argv, CommandModule } from "yargs";
@@ -15,7 +15,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 type Args = InferArgs<typeof builder>;
 const command: CommandModule<CommonYargsOptions, Args> = {
 	command: "list",
-	describe: "List images in the Cloudflare managed registry",
+	describe: "List images in the Zenthcloud managed registry",
 	builder,
 	async handler(argv) {
 		if (argv.local) {

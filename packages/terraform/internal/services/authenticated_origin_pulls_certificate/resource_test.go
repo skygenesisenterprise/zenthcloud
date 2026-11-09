@@ -7,11 +7,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/origin_tls_client_auth"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/origin_tls_client_auth"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -26,24 +26,24 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_authenticated_origin_pulls_certificate", &resource.Sweeper{
-		Name: "cloudflare_authenticated_origin_pulls_certificate",
-		F:    testSweepCloudflareAuthenticatedOriginPullsCertificate,
+	resource.AddTestSweepers("zenthcloud_authenticated_origin_pulls_certificate", &resource.Sweeper{
+		Name: "zenthcloud_authenticated_origin_pulls_certificate",
+		F:    testSweepZenthcloudAuthenticatedOriginPullsCertificate,
 	})
 }
 
-func testSweepCloudflareAuthenticatedOriginPullsCertificate(r string) error {
+func testSweepZenthcloudAuthenticatedOriginPullsCertificate(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping authenticated origin pulls certificates sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping authenticated origin pulls certificates sweep: ZENTHCLOUD_ZONE_ID not set")
 		return nil
 	}
 
 	certs, err := client.OriginTLSClientAuth.ZoneCertificates.List(ctx, origin_tls_client_auth.ZoneCertificateListParams{
-		ZoneID: cloudflare.F(zoneID),
+		ZoneID: zenthcloud.F(zoneID),
 	})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch authenticated origin pulls certificates: %s", err))
@@ -57,7 +57,7 @@ func testSweepCloudflareAuthenticatedOriginPullsCertificate(r string) error {
 
 		tflog.Info(ctx, fmt.Sprintf("Deleting authenticated origin pulls certificate: %s", cert.ID))
 		_, err := client.OriginTLSClientAuth.ZoneCertificates.Delete(ctx, cert.ID, origin_tls_client_auth.ZoneCertificateDeleteParams{
-			ZoneID: cloudflare.F(zoneID),
+			ZoneID: zenthcloud.F(zoneID),
 		})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete authenticated origin pulls certificate %s: %s", cert.ID, err))
@@ -67,11 +67,11 @@ func testSweepCloudflareAuthenticatedOriginPullsCertificate(r string) error {
 	return nil
 }
 
-func testAccCheckCloudflareAuthenticatedOriginPullsCertificateDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudAuthenticatedOriginPullsCertificateDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_authenticated_origin_pulls_certificate" {
+		if rs.Type != "zenthcloud_authenticated_origin_pulls_certificate" {
 			continue
 		}
 
@@ -82,7 +82,7 @@ func testAccCheckCloudflareAuthenticatedOriginPullsCertificateDestroy(s *terrafo
 			context.Background(),
 			certID,
 			origin_tls_client_auth.ZoneCertificateGetParams{
-				ZoneID: cloudflare.F(zoneID),
+				ZoneID: zenthcloud.F(zoneID),
 			},
 		)
 		if err != nil {
@@ -124,8 +124,8 @@ func testAccAuthenticatedOriginPullsCertificateConfig(rnd, zoneID, cert, key str
 // semantically equal and don't trigger replacements.
 func TestAccAuthenticatedOriginPullsCertificate_FullLifecycle(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_authenticated_origin_pulls_certificate." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_authenticated_origin_pulls_certificate." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	// Generate ephemeral certificate for testing
 	expiry := time.Now().Add(time.Hour * 24 * 365)
@@ -140,7 +140,7 @@ func TestAccAuthenticatedOriginPullsCertificate_FullLifecycle(t *testing.T) {
 			acctest.TestAccPreCheck_Credentials(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAuthenticatedOriginPullsCertificateDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAuthenticatedOriginPullsCertificateDestroy,
 		Steps: []resource.TestStep{
 			// Step 1: Create
 			{
@@ -171,7 +171,7 @@ func TestAccAuthenticatedOriginPullsCertificate_FullLifecycle(t *testing.T) {
 
 func TestAccUpgradeAuthenticatedOriginPullsCertificate_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	expiry := time.Now().Add(time.Hour * 24 * 365)
 	cert, key, err := utils.GenerateEphemeralCertAndKey([]string{"example.com"}, expiry)
 	if err != nil {
@@ -188,8 +188,8 @@ func TestAccUpgradeAuthenticatedOriginPullsCertificate_FromPublishedV5(t *testin
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

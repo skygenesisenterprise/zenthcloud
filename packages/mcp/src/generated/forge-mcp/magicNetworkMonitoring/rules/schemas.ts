@@ -11,7 +11,7 @@ export const magic$$visibility$$mnm_mnm_rule_create: JSONObject = {
     {
       "properties": {
         "automatic_advertisement": {
-          "description": "Toggle on if you would like Cloudflare to automatically advertise the IP Prefixes within the rule via Magic Transit when the rule is triggered. Only available for users of Magic Transit.",
+          "description": "Toggle on if you would like Zenthcloud to automatically advertise the IP Prefixes within the rule via Magic Transit when the rule is triggered. Only available for users of Magic Transit.",
           "oneOf": [
             {
               "type": "boolean"

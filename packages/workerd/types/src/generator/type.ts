@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2023 Cloudflare, Inc.
+// Copyright (c) 2022-2023 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -69,22 +69,22 @@ function getMaybeFlags(maybe: MaybeType): {
 
 // Returns `true` iff this number type represents a character
 function isCharNumber(number: NumberType): boolean {
-  // https://github.com/cloudflare/workerd/blob/33e692f2216704b7226c8c59b1455eefedf79068/src/workerd/jsg/rtti.h#L158
+  // https://github.com/skygenesisenterprise/zenthcloud
   const name = number.name;
   return name === 'char';
 }
 
 // Returns `true` iff this number type represents a byte
 function isByteNumber(number: NumberType): boolean {
-  // https://github.com/cloudflare/workerd/blob/33e692f2216704b7226c8c59b1455eefedf79068/src/workerd/jsg/rtti.h#L160
+  // https://github.com/skygenesisenterprise/zenthcloud
   const name = number.name;
   return name === 'unsigned char';
 }
 
 // Returns `true` iff this number type represents `number | bigint`
 function isBigNumber(number: NumberType): boolean {
-  // https://github.com/cloudflare/workerd/blob/33e692f2216704b7226c8c59b1455eefedf79068/src/workerd/jsg/README.md?plain=1#L56-L82
-  // https://github.com/cloudflare/workerd/blob/33e692f2216704b7226c8c59b1455eefedf79068/src/workerd/jsg/rtti.h#L157-L167
+  // https://github.com/skygenesisenterprise/zenthcloud
+  // https://github.com/skygenesisenterprise/zenthcloud
   const name = number.name;
   return (
     name === 'long' ||
@@ -105,7 +105,7 @@ function isArrayPointer(array: ArrayType): boolean {
 
 // Returns `true` iff this array type represents an iterable
 function isIterable(array: ArrayType): boolean {
-  // https://github.com/cloudflare/workerd/blob/33e692f2216704b7226c8c59b1455eefedf79068/src/workerd/jsg/README.md?plain=1#L185-L186
+  // https://github.com/skygenesisenterprise/zenthcloud
   return array.name === 'jsg::Sequence';
 }
 

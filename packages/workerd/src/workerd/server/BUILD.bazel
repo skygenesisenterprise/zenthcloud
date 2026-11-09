@@ -234,7 +234,7 @@ wd_cc_library(
         ":fallback-service",
         ":workerd-debug-port-client",
         ":workerd_capnp",
-        "//src/cloudflare",
+        "//src/zenthcloud",
         "//src/node",
         "//src/pyodide:pyodide_static",
         "//src/pyodide:python-entrypoint",

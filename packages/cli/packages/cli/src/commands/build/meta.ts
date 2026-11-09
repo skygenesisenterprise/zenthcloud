@@ -6,7 +6,7 @@ export default [
 		name: "build",
 		fullPath: ["build"],
 		category: "action",
-		description: "Build a project for Cloudflare",
+		description: "Build a project for Zenthcloud",
 		usage: "cf build [options]",
 		arguments: [],
 		options: [

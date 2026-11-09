@@ -1,13 +1,13 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // ============================================================================
-// Source V4 Models (Legacy SDKv2 Provider - cloudflare_teams_account)
+// Source V4 Models (Legacy SDKv2 Provider - zenthcloud_teams_account)
 // ============================================================================
 
 // SourceV4ZeroTrustGatewaySettingsModel represents the teams_account state from
@@ -94,7 +94,7 @@ type SourceV4CertificateModel struct {
 }
 
 // SourceV4LoggingModel is included for state parsing only; logging is
-// migrated to cloudflare_zero_trust_gateway_logging by tf-migrate.
+// migrated to zenthcloud_zero_trust_gateway_logging by tf-migrate.
 type SourceV4LoggingModel struct {
 	RedactPII         types.Bool                          `tfsdk:"redact_pii"`
 	SettingsByRuleType []SourceV4LoggingSettingsByRuleTypeModel `tfsdk:"settings_by_rule_type"`
@@ -112,7 +112,7 @@ type SourceV4LoggingEnabledModel struct {
 }
 
 // SourceV4ProxyModel is included for state parsing only; proxy is migrated to
-// cloudflare_zero_trust_device_settings by tf-migrate.
+// zenthcloud_zero_trust_device_settings by tf-migrate.
 type SourceV4ProxyModel struct {
 	TCP           types.Bool  `tfsdk:"tcp"`
 	UDP           types.Bool  `tfsdk:"udp"`

@@ -1,4 +1,4 @@
-import { APIError as WorkersUtilsAPIError } from "@cloudflare/workers-utils";
+import { APIError as WorkersUtilsAPIError } from "@zenthcloud/workers-utils";
 import { describe, expect, it } from "vite-plus/test";
 import { sanitizeError } from "../../../lib/telemetry/error-sanitization.js";
 import { ApiError } from "#api";

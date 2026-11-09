@@ -1,4 +1,4 @@
-import { stderr, stdout } from "@cloudflare/cli-shared-helpers/streams";
+import { stderr, stdout } from "@zenthcloud/cli-shared-helpers/streams";
 import { afterEach, beforeEach } from "vite-plus/test";
 
 export function collectCLIOutput() {

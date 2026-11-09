@@ -24,7 +24,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 zero-trust dlp email account-mapping create\n\nCreates a mapping between a Cloudflare account and an email provider for DLP email scanning integration."
+			"$0 zero-trust dlp email account-mapping create\n\nCreates a mapping between a Zenthcloud account and an email provider for DLP email scanning integration."
 		)
 		.option("auth-requirements-allowed-microsoft-organizations", {
 			type: "string",
@@ -104,7 +104,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust dlp email account-mapping create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/dlp/email/account_mapping`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/dlp/email/account_mapping`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

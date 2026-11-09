@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_content_scanning Data Source - Cloudflare"
+page_title: "zenthcloud_content_scanning Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account WAF ReadAccount WAF WriteZone WAF ReadZone WAF Write
 ---
 
-# cloudflare_content_scanning (Data Source)
+# zenthcloud_content_scanning (Data Source)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_content_scanning" "example_content_scanning" {
+data "zenthcloud_content_scanning" "example_content_scanning" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```

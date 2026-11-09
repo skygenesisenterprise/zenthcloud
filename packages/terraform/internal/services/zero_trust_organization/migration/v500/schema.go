@@ -4,15 +4,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-// SourceCloudflareAccessOrganizationSchema returns the legacy schema (schema_version=0).
+// SourceZenthcloudAccessOrganizationSchema returns the legacy schema (schema_version=0).
 // This is used by MoveState and UpgradeFromLegacyV0 to parse state from the legacy SDKv2 provider.
 //
 // Handles BOTH v4 resource names (they share identical schemas):
-// - cloudflare_access_organization
-// - cloudflare_zero_trust_access_organization
+// - zenthcloud_access_organization
+// - zenthcloud_zero_trust_access_organization
 //
-// Reference: https://github.com/cloudflare/terraform-provider-cloudflare/blob/v4/internal/sdkv2provider/schema_cloudflare_access_organization.go
-func SourceCloudflareAccessOrganizationSchema() schema.Schema {
+// Reference: https://github.com/skygenesisenterprise/zenthcloud
+func SourceZenthcloudAccessOrganizationSchema() schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{

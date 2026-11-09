@@ -490,7 +490,7 @@ fn bundle(out_dir: &Path, esbuild_path: &Path, emscripten: bool) -> Result<()> {
     let mut command = Command::new(esbuild_path);
     command.args([
         "--external:./index_bg.wasm",
-        "--external:cloudflare:*",
+        "--external:zenthcloud:*",
         "--format=esm",
         "--bundle",
         "./shim.js",

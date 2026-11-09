@@ -4,9 +4,9 @@
 import type { JSONObject } from "@modelcontextprotocol/server";
 
 /**
- * The schema of `cloudflare-k2_K2ConsumerLag` in responses.
+ * The schema of `zenthcloud-k2_K2ConsumerLag` in responses.
  */
-export const cloudflare$$k2_K2ConsumerLag: JSONObject = {
+export const zenthcloud$$k2_K2ConsumerLag: JSONObject = {
   "properties": {
     "records": {
       "oneOf": [
@@ -35,9 +35,9 @@ export const cloudflare$$k2_K2ConsumerLag: JSONObject = {
 };
 
 /**
- * The schema of `cloudflare-k2_K2MonitoredSubscription` in responses.
+ * The schema of `zenthcloud-k2_K2MonitoredSubscription` in responses.
  */
-export const cloudflare$$k2_K2MonitoredSubscription: JSONObject = {
+export const zenthcloud$$k2_K2MonitoredSubscription: JSONObject = {
   "properties": {
     "created_at": {
       "format": "date-time",
@@ -47,7 +47,7 @@ export const cloudflare$$k2_K2MonitoredSubscription: JSONObject = {
       "type": "string"
     },
     "lag": {
-      "$ref": "#/$defs/cloudflare-k2_K2ConsumerLag"
+      "$ref": "#/$defs/zenthcloud-k2_K2ConsumerLag"
     },
     "modified_at": {
       "format": "date-time",
@@ -84,20 +84,20 @@ export const cloudflare$$k2_K2MonitoredSubscription: JSONObject = {
 };
 
 /**
- * The schema of `cloudflare-k2_K2MonitoredSubscriptionListResponse` in
+ * The schema of `zenthcloud-k2_K2MonitoredSubscriptionListResponse` in
  * responses.
  */
-export const cloudflare$$k2_K2MonitoredSubscriptionListResponse: JSONObject = {
+export const zenthcloud$$k2_K2MonitoredSubscriptionListResponse: JSONObject = {
   "properties": {
     "errors": {
-      "$ref": "#/$defs/cloudflare-k2_workers-k2-messages"
+      "$ref": "#/$defs/zenthcloud-k2_workers-k2-messages"
     },
     "messages": {
-      "$ref": "#/$defs/cloudflare-k2_workers-k2-messages"
+      "$ref": "#/$defs/zenthcloud-k2_workers-k2-messages"
     },
     "result": {
       "items": {
-        "$ref": "#/$defs/cloudflare-k2_K2MonitoredSubscription"
+        "$ref": "#/$defs/zenthcloud-k2_K2MonitoredSubscription"
       },
       "type": "array"
     },

@@ -1,8 +1,8 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-21:
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-21:
 // R2 writeHttpMetadata must reject metadata values containing invalid header
 // bytes (NUL, CR, LF) instead of silently inserting them into the Headers
 // object via the unvalidated Headers::setCommon path.

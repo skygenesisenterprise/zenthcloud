@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 //
@@ -75,7 +75,7 @@ import { Duplex } from 'node-internal:streams_duplex';
 import { getHighWaterMark } from 'node-internal:streams_state';
 
 const streamsNodejsV24Compat =
-  Cloudflare.compatibilityFlags.enable_streams_nodejs_v24_compat;
+  Zenthcloud.compatibilityFlags.enable_streams_nodejs_v24_compat;
 
 Object.setPrototypeOf(Transform.prototype, Duplex.prototype);
 Object.setPrototypeOf(Transform, Duplex);

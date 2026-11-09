@@ -2,7 +2,7 @@ package v500
 
 import "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 
-// SourceSchemaV0 returns the v4 cloudflare_worker_domain schema.
+// SourceSchemaV0 returns the v4 zenthcloud_worker_domain schema.
 func SourceSchemaV0() schema.Schema {
 	return schema.Schema{
 		Version: 0,

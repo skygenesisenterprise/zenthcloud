@@ -13,7 +13,7 @@ import type { CommandModule } from "yargs";
 const command: CommandModule<CommonYargsOptions> = {
 	command: "endpoint-healthchecks",
 	describe:
-		"Monitor endpoint reachability from Cloudflare with periodic ICMP health checks",
+		"Monitor endpoint reachability from Zenthcloud with periodic ICMP health checks",
 
 	builder: (yargs) => {
 		return yargs

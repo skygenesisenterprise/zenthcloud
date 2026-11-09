@@ -32,7 +32,7 @@ export const tools: readonly Tool[] = [
   {
     name: "accounts_create",
     title: "Create an Account",
-    description: "Create an Account. To create the Account within an Organization, provide `unit.id` and omit `standalone`. To create a standalone Free Account, provide `standalone: true` and omit `unit`. Providing both fields is invalid. If you omit both fields, Cloudflare can determine the destination only when the User is an administrator of exactly one Organization. Cloudflare creates the Account in that Organization; otherwise, the request returns an error. Account names are limited to 65 UTF-8 bytes.\n\nPOST /accounts",
+    description: "Create an Account. To create the Account within an Organization, provide `unit.id` and omit `standalone`. To create a standalone Free Account, provide `standalone: true` and omit `unit`. Providing both fields is invalid. If you omit both fields, Zenthcloud can determine the destination only when the User is an administrator of exactly one Organization. Zenthcloud creates the Account in that Organization; otherwise, the request returns an error. Account names are limited to 65 UTF-8 bytes.\n\nPOST /accounts",
     inputSchema: {
       type: "object",
       properties: {

@@ -1,174 +1,174 @@
 {
   "access-acct.read": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Organizations, Identity Providers, and Groups Read"
   },
   "access-acct.revoke": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Organizations, Identity Providers, and Groups Revoke"
   },
   "access-acct.write": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Organizations, Identity Providers, and Groups Write"
   },
   "access-app.read": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Apps Read"
   },
   "access-app.revoke": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Apps Revoke"
   },
   "access-app.write": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Apps Write"
   },
   "access-audit-log.read": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Audit Logs Read"
   },
   "access-certificate.read": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Mutual TLS Certificates Read"
   },
   "access-certificate.write": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Mutual TLS Certificates Write"
   },
   "access-custom-page.read": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Custom Pages Read"
   },
   "access-custom-page.write": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Custom Pages Write"
   },
   "access-device-posture.read": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Device Posture Read"
   },
   "access-device-posture.write": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Device Posture Write"
   },
   "access-group.read": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Groups Read"
   },
   "access-group.write": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Groups Write"
   },
   "access-idp.read": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Identity Providers Read"
   },
   "access-idp.write": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Identity Providers Write"
   },
   "access-key.read": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Keys Read"
   },
   "access-key.write": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Keys Write"
   },
   "access-org.read": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Organizations Read"
   },
   "access-org.revoke": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Organizations Revoke"
   },
   "access-org.write": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Organizations Write"
   },
   "access-policy-test.read": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Policy Test Read"
   },
   "access-policy-test.write": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Policy Test Write"
   },
   "access-policy.read": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Policies Read"
   },
   "access-policy.write": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Policies Write"
   },
   "access-population.read": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: SCIM Population Read"
   },
   "access-population.write": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: SCIM Population Write"
   },
   "access-saml-certificate.read": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: SAML Certificates Read"
   },
   "access-saml-certificate.write": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: SAML Certificates Write"
   },
   "access-scim-log.read": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: SCIM Logs Read"
   },
   "access-seats.write": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Zero Trust: Seats Write"
   },
   "access-service-token.read": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Service Tokens Read"
   },
   "access-service-token.write": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Service Tokens Write"
   },
   "access-ssh-auditing.read": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: SSH Auditing Read"
   },
   "access-ssh-auditing.write": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: SSH Auditing Write"
   },
   "access-tag.read": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Tags Read"
   },
   "access-tag.write": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Tags Write"
   },
   "access-users.read": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Users Read"
   },
   "access-users.write": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Users Write"
   },
   "access.read": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Apps and Policies Read"
   },
   "access.revoke": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Apps and Policies Revoke"
   },
   "access.write": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Apps and Policies Write"
   },
   "account-analytics.read": {
@@ -404,12 +404,12 @@
     "name": "Apps Write"
   },
   "argotunnel.read": {
-    "category": "Cloudflare One / Zero Trust",
-    "name": "Cloudflare Tunnel Read"
+    "category": "Zenthcloud One / Zero Trust",
+    "name": "Zenthcloud Tunnel Read"
   },
   "argotunnel.write": {
-    "category": "Cloudflare One / Zero Trust",
-    "name": "Cloudflare Tunnel Write"
+    "category": "Zenthcloud One / Zero Trust",
+    "name": "Zenthcloud Tunnel Write"
   },
   "artifacts.read": {
     "category": "Other",
@@ -464,11 +464,11 @@
     "name": "Calls Write"
   },
   "casb.read": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "CASB Read"
   },
   "casb.write": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "CASB Write"
   },
   "cf-agents.read": {
@@ -589,11 +589,11 @@
   },
   "cws.read": {
     "name": "Cloud Workload Security Read",
-    "category": "Cloudflare One / Zero Trust"
+    "category": "Zenthcloud One / Zero Trust"
   },
   "cws.write": {
     "name": "Cloud Workload Security Write",
-    "category": "Cloudflare One / Zero Trust"
+    "category": "Zenthcloud One / Zero Trust"
   },
   "d1.metadata_read": {
     "category": "Developer Platform",
@@ -624,11 +624,11 @@
     "name": "DDoS Protection Write"
   },
   "dls.read": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "DLS: Read"
   },
   "dls.write": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "DLS: Write"
   },
   "dns-firewall.read": {
@@ -1164,11 +1164,11 @@
     "name": "Allow Request Tracer Read"
   },
   "resource-library.read": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Resource Library Read"
   },
   "resource-library.write": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Resource Library Write"
   },
   "resource-sharing.read": {
@@ -1248,83 +1248,83 @@
     "name": "Tag Write"
   },
   "teams-cds-compute-account.read": {
-    "category": "Cloudflare One / Zero Trust",
-    "name": "Cloudflare CDS Compute Account Read"
+    "category": "Zenthcloud One / Zero Trust",
+    "name": "Zenthcloud CDS Compute Account Read"
   },
   "teams-cds-compute-account.write": {
-    "category": "Cloudflare One / Zero Trust",
-    "name": "Cloudflare CDS Compute Account Write"
+    "category": "Zenthcloud One / Zero Trust",
+    "name": "Zenthcloud CDS Compute Account Write"
   },
-  "teams-connector-cloudflared.monitoring": {
-    "category": "Cloudflare One / Zero Trust",
-    "name": "Cloudflare One Connector Monitoring: cloudflared"
+  "teams-connector-zenthcloudd.monitoring": {
+    "category": "Zenthcloud One / Zero Trust",
+    "name": "Zenthcloud One Connector Monitoring: zenthcloudd"
   },
-  "teams-connector-cloudflared.read": {
-    "category": "Cloudflare One / Zero Trust",
-    "name": "Cloudflare One Connector: cloudflared Read"
+  "teams-connector-zenthcloudd.read": {
+    "category": "Zenthcloud One / Zero Trust",
+    "name": "Zenthcloud One Connector: zenthcloudd Read"
   },
-  "teams-connector-cloudflared.write": {
-    "category": "Cloudflare One / Zero Trust",
-    "name": "Cloudflare One Connector: cloudflared Write"
+  "teams-connector-zenthcloudd.write": {
+    "category": "Zenthcloud One / Zero Trust",
+    "name": "Zenthcloud One Connector: zenthcloudd Write"
   },
   "teams-connector-warp.read": {
-    "category": "Cloudflare One / Zero Trust",
-    "name": "Cloudflare One Connector: WARP Read"
+    "category": "Zenthcloud One / Zero Trust",
+    "name": "Zenthcloud One Connector: WARP Read"
   },
   "teams-connector-warp.write": {
-    "category": "Cloudflare One / Zero Trust",
-    "name": "Cloudflare One Connector: WARP Write"
+    "category": "Zenthcloud One / Zero Trust",
+    "name": "Zenthcloud One Connector: WARP Write"
   },
   "teams-connectors.read": {
-    "category": "Cloudflare One / Zero Trust",
-    "name": "Cloudflare One Connectors Read"
+    "category": "Zenthcloud One / Zero Trust",
+    "name": "Zenthcloud One Connectors Read"
   },
   "teams-connectors.write": {
-    "category": "Cloudflare One / Zero Trust",
-    "name": "Cloudflare One Connectors Write"
+    "category": "Zenthcloud One / Zero Trust",
+    "name": "Zenthcloud One Connectors Write"
   },
   "teams-dex.read": {
-    "category": "Cloudflare One / Zero Trust",
-    "name": "Cloudflare DEX Read"
+    "category": "Zenthcloud One / Zero Trust",
+    "name": "Zenthcloud DEX Read"
   },
   "teams-dex.write": {
-    "category": "Cloudflare One / Zero Trust",
-    "name": "Cloudflare DEX Write"
+    "category": "Zenthcloud One / Zero Trust",
+    "name": "Zenthcloud DEX Write"
   },
   "teams-networks.read": {
-    "category": "Cloudflare One / Zero Trust",
-    "name": "Cloudflare One Networks Read"
+    "category": "Zenthcloud One / Zero Trust",
+    "name": "Zenthcloud One Networks Read"
   },
   "teams-networks.write": {
-    "category": "Cloudflare One / Zero Trust",
-    "name": "Cloudflare One Networks Write"
+    "category": "Zenthcloud One / Zero Trust",
+    "name": "Zenthcloud One Networks Write"
   },
   "teams-pii.read": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Zero Trust: PII Read"
   },
   "teams-resilience.read": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Zero Trust Resilience Read"
   },
   "teams-resilience.write": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Zero Trust Resilience Write"
   },
   "teams-secure.location": {
-    "category": "Cloudflare One / Zero Trust",
-    "name": "Cloudflare Zero Trust Secure DNS Locations Write"
+    "category": "Zenthcloud One / Zero Trust",
+    "name": "Zenthcloud Zero Trust Secure DNS Locations Write"
   },
   "teams.read": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Zero Trust Read"
   },
   "teams.report": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Zero Trust Report"
   },
   "teams.write": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Zero Trust Write"
   },
   "transform-rules.read": {
@@ -1504,15 +1504,15 @@
     "name": "Zaraz Admin"
   },
   "zone-access.read": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Apps and Policies Read"
   },
   "zone-access.revoke": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Apps and Policies Revoke"
   },
   "zone-access.write": {
-    "category": "Cloudflare One / Zero Trust",
+    "category": "Zenthcloud One / Zero Trust",
     "name": "Access: Apps and Policies Write"
   },
   "zone-custom-asset.read": {

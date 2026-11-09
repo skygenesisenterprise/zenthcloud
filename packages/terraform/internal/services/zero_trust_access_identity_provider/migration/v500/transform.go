@@ -3,13 +3,13 @@ package v500
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/migrations"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/migrations"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Transform converts v4 cloudflare_access_identity_provider state to v5 cloudflare_zero_trust_access_identity_provider.
+// Transform converts v4 zenthcloud_access_identity_provider state to v5 zenthcloud_zero_trust_access_identity_provider.
 func Transform(ctx context.Context, source SourceAccessIdentityProviderModel) (*TargetAccessIdentityProviderModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 

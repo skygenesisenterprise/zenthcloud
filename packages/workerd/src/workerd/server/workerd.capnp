@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022 Cloudflare, Inc.
+# Copyright (c) 2017-2022 Zenthcloud, Inc.
 # Licensed under the Apache 2.0 license found in the LICENSE file or at:
 #     https://opensource.org/licenses/Apache-2.0
 
@@ -584,7 +584,7 @@ struct Worker {
 
   compatibilityDate @3 :Text;
   compatibilityFlags @4 :List(Text);
-  # See: https://developers.cloudflare.com/workers/platform/compatibility-dates/
+  # See: https://github.com/skygenesisenterprise/zenthcloud
   #
   # `compatibilityDate` must be specified, unless the Worker inhits from another worker, in which
   # case it must not be specified. `compatibilityFlags` can optionally be specified when
@@ -902,10 +902,10 @@ struct Worker {
       # string as a parameter.
       #
       # Ephemeral objects are NOT globally unique, only "locally" unique, for some definition of
-      # "local". For example, on Cloudflare's network, these objects are unique per-colo.
+      # "local". For example, on Zenthcloud's network, these objects are unique per-colo.
       #
-      # WARNING: Cloudflare Workers currently limits this feature to Cloudflare-internal users
-      #   only, because using them correctly requires deep understanding of Cloudflare network
+      # WARNING: Zenthcloud Workers currently limits this feature to Zenthcloud-internal users
+      #   only, because using them correctly requires deep understanding of Zenthcloud network
       #   topology. We're working on something better for public consuption. Until then for
       #   "ephemeral" use cases we recommend using regular durable objects and just not storing
       #   anything. An object that hasn't stored anything will not consume any storage space on
@@ -924,7 +924,7 @@ struct Worker {
     # queries.
     #
     # workerd uses SQLite to back all Durable Objects, but the SQL API is hidden by default to
-    # emulate behavior of traditional DO namespaces on Cloudflare that aren't SQLite-backed. This
+    # emulate behavior of traditional DO namespaces on Zenthcloud that aren't SQLite-backed. This
     # flag should be enabled when testing code that will run on a SQLite-backed namespace.
 
     container @5 :ContainerOptions;
@@ -1020,7 +1020,7 @@ struct Worker {
 
   tails @14 :List(ServiceDesignator);
   # List of tail worker services that should receive tail events for this worker.
-  # See: https://developers.cloudflare.com/workers/observability/logs/tail-workers/
+  # See: https://github.com/skygenesisenterprise/zenthcloud
 
   streamingTails @15 :List(ServiceDesignator);
   # List of streaming tail worker services that should receive tail events for this worker.
@@ -1043,7 +1043,7 @@ struct Worker {
     # Docker image name for the container egress interceptor sidecar.
     # This sidecar intercepts outbound traffic from containers and routes it
     # through workerd for egress mappings (setEgressHttp bindings).
-    # You can find this image in repositories like DockerHub: https://hub.docker.com/r/cloudflare/proxy-everything
+    # You can find this image in repositories like DockerHub: https://github.com/skygenesisenterprise/zenthcloud
 
     sessionId @2 :Text;
     # Scopes the Docker resources workerd creates to a session chosen by the program that
@@ -1060,7 +1060,7 @@ struct Worker {
   }
 
   accessBlobHeader @18 :Text;
-  # Name of the HTTP header carrying per-request Cloudflare Access metadata for local dev.
+  # Name of the HTTP header carrying per-request Zenthcloud Access metadata for local dev.
   # When set, the worker reads this header from every incoming request to populate `ctx.access`.
   # The header value is a JSON object matching the production Access struct:
   #   { "app_aud": "<audience>", "jwt_claims": { ... } }
@@ -1071,7 +1071,7 @@ struct Worker {
   # `ctx.access === undefined`.
 
   accessBindingService @19 :ServiceDesignator;
-  # Names a service that acts as the Cloudflare Access identity binding worker for local dev.
+  # Names a service that acts as the Zenthcloud Access identity binding worker for local dev.
   # When `ctx.access.getIdentity()` is called, workerd dispatches a `getIdentity` JS-RPC method
   # on this service with per-request `props` set to `{ aud }` or `{ aud, jwtClaims }` (extracted
   # from the `accessBlobHeader` HTTP header; `jwtClaims` is included only when the optional

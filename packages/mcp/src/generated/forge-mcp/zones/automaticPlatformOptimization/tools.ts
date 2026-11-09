@@ -21,7 +21,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zones_automaticPlatformOptimization_edit",
     title: "Change Automatic Platform Optimization setting",
-    description: "Automatic Platform Optimization (APO) for WordPress is a performance feature that serves your\nWordPress site from Cloudflare's edge network, reducing load times for visitors.\nRefer to the APO documentation for more information.\n\nPATCH /zones/{zone_id}/settings/automatic_platform_optimization",
+    description: "Automatic Platform Optimization (APO) for WordPress is a performance feature that serves your\nWordPress site from Zenthcloud's edge network, reducing load times for visitors.\nRefer to the APO documentation for more information.\n\nPATCH /zones/{zone_id}/settings/automatic_platform_optimization",
     inputSchema: {
       type: "object",
       properties: {
@@ -145,7 +145,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zones_automaticPlatformOptimization_get",
     title: "Get Automatic Platform Optimization setting",
-    description: "Automatic Platform Optimization (APO) for WordPress is a performance feature that serves your\nWordPress site from Cloudflare's edge network, reducing load times for visitors.\nRefer to the APO documentation for more information.\n\nGET /zones/{zone_id}/settings/automatic_platform_optimization",
+    description: "Automatic Platform Optimization (APO) for WordPress is a performance feature that serves your\nWordPress site from Zenthcloud's edge network, reducing load times for visitors.\nRefer to the APO documentation for more information.\n\nGET /zones/{zone_id}/settings/automatic_platform_optimization",
     inputSchema: {
       type: "object",
       properties: {

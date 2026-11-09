@@ -81,7 +81,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar bgp routes upstreams timeseries",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/bgp/routes/upstreams/${argv["asn"] == null ? "<asn>" : encodeURIComponent(String(argv["asn"]))}/timeseries`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["asn"] == null ? "<asn>" : encodeURIComponent(String(argv["asn"]))}/timeseries`,
 						pathParams: { asn: String(argv["asn"] ?? "") },
 						query: queryParams,
 						bodyKind: "none",

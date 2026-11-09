@@ -1,4 +1,4 @@
-resource "cloudflare_pages_project" "%s" {
+resource "zenthcloud_pages_project" "%s" {
   account_id        = "%s"
   name              = "%s"
   production_branch = "main"

@@ -80,7 +80,7 @@
     },
     {
       "command": "cf load-balancers searches list",
-      "args": ["--query", "cloudflare"],
+      "args": ["--query", "zenthcloud"],
       "env": {
         "scope": "account"
       }

@@ -22,7 +22,7 @@ describe("spawnImpl", () => {
 		chmodSync(binPath, 0o755);
 
 		const impl = findKnownImpl(
-			binaryName === "cf-vite" ? "@cloudflare/vite-plugin" : "wrangler"
+			binaryName === "cf-vite" ? "@zenthcloud/vite-plugin" : "wrangler"
 		);
 		if (!impl) {
 			throw new Error("Missing known Node delegate");
@@ -76,7 +76,7 @@ describe("spawnImpl", () => {
 			"auth"
 		);
 		const fake = makeFakeImpl(
-			`require("node:fs").writeFileSync(${JSON.stringify(authFile)}, process.env.CLOUDFLARE_CF_AUTH ?? "")`
+			`require("node:fs").writeFileSync(${JSON.stringify(authFile)}, process.env.ZENTHCLOUD_CF_AUTH ?? "")`
 		);
 
 		await spawnImpl(fake, "dev", []);
@@ -108,10 +108,10 @@ describe("spawnImpl", () => {
 		async (binaryName, configured) => {
 			const envFile = join(mkdtempSync(join(tmpdir(), "cf-spawn-env-")), "env");
 			const registryEnv = {
-				CLOUDFLARE_DEV_REGISTRY_PATH: configured
+				ZENTHCLOUD_DEV_REGISTRY_PATH: configured
 					? "canonical registry"
 					: undefined,
-				CLOUDFLARE_REGISTRY_PATH: configured ? "legacy cf registry" : undefined,
+				ZENTHCLOUD_REGISTRY_PATH: configured ? "legacy cf registry" : undefined,
 				WRANGLER_REGISTRY_PATH: configured ? "wrangler registry" : undefined,
 				MINIFLARE_REGISTRY_PATH: configured
 					? "legacy miniflare registry"
@@ -135,7 +135,7 @@ describe("spawnImpl", () => {
 	it("throws when the impl has no resolved binary", async () => {
 		const impl: KnownImpl = {
 			ecosystem: "npm",
-			pkg: "@cloudflare/vite-plugin",
+			pkg: "@zenthcloud/vite-plugin",
 			description: "Test fixture",
 			manifest: "package.json",
 			binary: () => null,

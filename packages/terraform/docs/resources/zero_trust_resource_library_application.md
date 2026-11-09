@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zero_trust_resource_library_application Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_resource_library_application Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zero_trust_resource_library_application (Resource)
+# zenthcloud_zero_trust_resource_library_application (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_resource_library_application" "example_zero_trust_resource_library_application" {
+resource "zenthcloud_zero_trust_resource_library_application" "example_zero_trust_resource_library_application" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   hostnames = ["example.com", "foo.com"]
   category_id = 12
@@ -51,7 +51,7 @@ resource "cloudflare_zero_trust_resource_library_application" "example_zero_trus
 - `created_at` (String) Returns the application creation time.
 - `gen_ai_score` (Number) GenAI score for the application. Returns -1 when no score is available.
 - `id` (Number) Numeric identifier for the application.
-- `supported` (Set of String) Cloudflare products that support this application.
+- `supported` (Set of String) Zenthcloud products that support this application.
 - `updated_at` (String) Returns the application update time.
 - `version` (String) Returns the application version.
 
@@ -60,7 +60,7 @@ resource "cloudflare_zero_trust_resource_library_application" "example_zero_trus
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_resource_library_application.example '<account_id>/<id>'
+$ terraform import zenthcloud_zero_trust_resource_library_application.example '<account_id>/<id>'
 ```
 
 

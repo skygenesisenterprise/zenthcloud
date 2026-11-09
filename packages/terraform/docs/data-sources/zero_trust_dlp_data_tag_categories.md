@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_dlp_data_tag_categories Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_dlp_data_tag_categories Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust ReadZero Trust Write
 ---
 
-# cloudflare_zero_trust_dlp_data_tag_categories (Data Source)
+# zenthcloud_zero_trust_dlp_data_tag_categories (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_dlp_data_tag_categories" "example_zero_trust_dlp_data_tag_categories" {
+data "zenthcloud_zero_trust_dlp_data_tag_categories" "example_zero_trust_dlp_data_tag_categories" {
   account_id = "account_id"
 }
 ```

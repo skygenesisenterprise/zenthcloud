@@ -1,15 +1,15 @@
 ## We are not accepting pull requests
 
 > [!IMPORTANT]
-> This repository is **auto-generated** and maintained internally at Cloudflare.
+> This repository is **auto-generated** and maintained internally at Zenthcloud.
 > Because of this, **we are no longer accepting pull requests from the community.**
 > Any pull requests that are opened will not be merged.
 
 If you have found a bug or would like to request a feature, please open an
-[issue](https://www.github.com/cloudflare/terraform-provider-cloudflare/issues)
-instead. Issues are triaged by the team on internal Cloudflare systems. For
+[issue](https://github.com/skygenesisenterprise/zenthcloud)
+instead. Issues are triaged by the team on internal Zenthcloud systems. For
 urgent issues, please contact
-[Cloudflare support](https://developers.cloudflare.com/support/contacting-cloudflare-support/).
+[Zenthcloud support](https://github.com/skygenesisenterprise/zenthcloud).
 
 If you have a fix that is known to work, a pull request can still be helpful as
 a reference implementation for the team, even though it will not be merged
@@ -45,7 +45,7 @@ Then edit (or create) your `~/.terraformrc` to look something like this:
 ```hcl
   provider_installation {
     dev_overrides {
-      "cloudflare/cloudflare" = "/local/path/to/this/repo"
+      "zenthcloud/zenthcloud" = "/local/path/to/this/repo"
     }
     direct {}
   }

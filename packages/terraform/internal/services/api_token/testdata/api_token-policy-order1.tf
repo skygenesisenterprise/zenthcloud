@@ -1,14 +1,14 @@
-data "cloudflare_api_token_permission_groups_list" "dns_read" {
+data "zenthcloud_api_token_permission_groups_list" "dns_read" {
   name  = "DNS Read"
-  scope = "com.cloudflare.api.account.zone"
+  scope = "com.zenthcloud.api.account.zone"
 }
 
-data "cloudflare_api_token_permission_groups_list" "disable_esc_read" {
+data "zenthcloud_api_token_permission_groups_list" "disable_esc_read" {
   name  = "Disable ESC Read"
-  scope = "com.cloudflare.api.account.zone"
+  scope = "com.zenthcloud.api.account.zone"
 }
 
-resource "cloudflare_api_token" "test_account_token" {
+resource "zenthcloud_api_token" "test_account_token" {
   name   = "%[1]s"
   status = "active"
 
@@ -16,25 +16,25 @@ resource "cloudflare_api_token" "test_account_token" {
     {
       effect = "allow"
       permission_groups = [{
-        id = data.cloudflare_api_token_permission_groups_list.disable_esc_read.result[0].id
+        id = data.zenthcloud_api_token_permission_groups_list.disable_esc_read.result[0].id
       }]
       resources = jsonencode({
-        "com.cloudflare.api.account.zone.*" = "*"
+        "com.zenthcloud.api.account.zone.*" = "*"
       })
     },
     {
       effect = "allow"
       permission_groups = [{
-        id = data.cloudflare_api_token_permission_groups_list.dns_read.result[0].id
+        id = data.zenthcloud_api_token_permission_groups_list.dns_read.result[0].id
       }]
       resources = jsonencode({
-        "com.cloudflare.api.account.zone.*" = "*"
+        "com.zenthcloud.api.account.zone.*" = "*"
       })
     },
   ]
 }
 
-data "cloudflare_api_token" "test_account_token" {
-  token_id   = cloudflare_api_token.test_account_token.id
-  depends_on = [cloudflare_api_token.test_account_token]
+data "zenthcloud_api_token" "test_account_token" {
+  token_id   = zenthcloud_api_token.test_account_token.id
+  depends_on = [zenthcloud_api_token.test_account_token]
 }

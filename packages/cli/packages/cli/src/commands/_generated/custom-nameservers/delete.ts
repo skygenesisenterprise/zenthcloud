@@ -63,7 +63,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf custom-nameservers delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/custom_ns/${argv["custom-ns-id"] == null ? "<custom-ns-id>" : encodeURIComponent(String(argv["custom-ns-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/custom_ns/${argv["custom-ns-id"] == null ? "<custom-ns-id>" : encodeURIComponent(String(argv["custom-ns-id"]))}`,
 						pathParams: { "custom-ns-id": String(argv["custom-ns-id"] ?? "") },
 						bodyKind: "none",
 					});

@@ -61,7 +61,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf addressing loa-documents get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/addressing/loa_documents/${argv["loa-document-id"] == null ? "<loa-document-id>" : encodeURIComponent(String(argv["loa-document-id"]))}/download`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/addressing/loa_documents/${argv["loa-document-id"] == null ? "<loa-document-id>" : encodeURIComponent(String(argv["loa-document-id"]))}/download`,
 						pathParams: {
 							"loa-document-id": String(argv["loa-document-id"] ?? ""),
 						},

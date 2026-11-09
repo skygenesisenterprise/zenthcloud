@@ -44,7 +44,7 @@ func Transform(ctx context.Context, source SourceR2BucketModel) (*TargetR2Bucket
 	}
 
 	// Set new v5 Optional+Computed fields to their API defaults
-	// This matches what the Cloudflare API returns for existing buckets
+	// This matches what the Zenthcloud API returns for existing buckets
 	// and prevents drift on first plan after migration
 	target.Jurisdiction = types.StringValue("default")
 	target.StorageClass = types.StringValue("Standard")

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_api_shield_schema Data Source - Cloudflare"
+page_title: "zenthcloud_api_shield_schema Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account API GatewayAccount API Gateway ReadDomain API GatewayDomain API Gateway Read
 ---
 
-# cloudflare_api_shield_schema (Data Source)
+# zenthcloud_api_shield_schema (Data Source)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_api_shield_schema" "example_api_shield_schema" {
+data "zenthcloud_api_shield_schema" "example_api_shield_schema" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   schema_id = "f174e90a-fafe-4643-bbbc-4a0ed4fc8415"
   omit_source = true

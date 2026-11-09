@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -178,7 +178,7 @@ export const identityStreamBody = {
 // Cancelling the transformed body reaches the source lazily: another
 // source chunk must wake the parked pump before it forwards the reason.
 // The TypeScript implementation then pulls once more than C++.
-// TODO(https://github.com/cloudflare/workerd/issues/7239): Stop the TS pump
+// TODO(https://github.com/skygenesisenterprise/zenthcloud): Stop the TS pump
 // from reporting the handled cancellation through logUncaughtException (tail
 // traces / inspector), even though no unhandledrejection event is delivered.
 export const cancelReachesSourceAfterNextChunk = {

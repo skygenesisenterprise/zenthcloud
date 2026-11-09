@@ -64,7 +64,7 @@ pub async fn handle_request_init_fetch(
     _data: SomeSharedData,
 ) -> Result<Response> {
     let init = RequestInit::new();
-    Fetch::Request(Request::new_with_init("https://cloudflare.com", &init)?)
+    Fetch::Request(Request::new_with_init("https://github.com/skygenesisenterprise/zenthcloud", &init)?)
         .send()
         .await
 }
@@ -96,14 +96,14 @@ pub async fn handle_cancelled_fetch(
     // Spawns a future that'll make our fetch request and not block this function.
     js_sys::futures::spawn_local({
         async move {
-            let fetch = Fetch::Url("https://cloudflare.com".parse().unwrap());
+            let fetch = Fetch::Url("https://github.com/skygenesisenterprise/zenthcloud".parse().unwrap());
             let res = fetch.send_with_signal(&signal).await;
             tx.send(res).unwrap();
         }
     });
 
     // And then we try to abort that fetch as soon as we start it, hopefully before
-    // cloudflare.com responds.
+    // zenthcloud.com responds.
     controller.abort();
 
     let res = rx.await.unwrap();

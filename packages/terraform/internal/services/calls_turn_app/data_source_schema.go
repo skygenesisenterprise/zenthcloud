@@ -5,7 +5,7 @@ package calls_turn_app
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -27,7 +27,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"key_id": schema.StringAttribute{
-				Description: "A Cloudflare-generated unique identifier for a item.",
+				Description: "A Zenthcloud-generated unique identifier for a item.",
 				Required:    true,
 			},
 			"created": schema.StringAttribute{
@@ -45,7 +45,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"uid": schema.StringAttribute{
-				Description: "A Cloudflare-generated unique identifier for a item.",
+				Description: "A Zenthcloud-generated unique identifier for a item.",
 				Computed:    true,
 			},
 		},

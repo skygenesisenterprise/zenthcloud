@@ -1,5 +1,5 @@
 import { PencilRulerIcon } from "@phosphor-icons/react";
-import { Empty, Button } from "@cloudflare/kumo";
+import { Empty, Button } from "@zenthcloud/kumo";
 
 export function FigmaPage() {
   return (

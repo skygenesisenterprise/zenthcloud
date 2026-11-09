@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_moq_relay Resource - Cloudflare"
+page_title: "zenthcloud_moq_relay Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_moq_relay (Resource)
+# zenthcloud_moq_relay (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_moq_relay" "example_moq_relay" {
+resource "zenthcloud_moq_relay" "example_moq_relay" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name = "Production Live Stream"
 }
@@ -23,7 +23,7 @@ resource "cloudflare_moq_relay" "example_moq_relay" {
 
 ### Required
 
-- `account_id` (String) Cloudflare account identifier.
+- `account_id` (String) Zenthcloud account identifier.
 - `name` (String) Human-readable name for the relay.
 
 ### Optional
@@ -83,7 +83,7 @@ host and a scheme the relay can dial: moqt:// (raw QUIC) or https://
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_moq_relay.example '<account_id>/<relay_id>'
+$ terraform import zenthcloud_moq_relay.example '<account_id>/<relay_id>'
 ```
 
 

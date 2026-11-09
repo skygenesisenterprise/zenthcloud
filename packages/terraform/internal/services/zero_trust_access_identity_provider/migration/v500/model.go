@@ -1,13 +1,13 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Source models (v4 cloudflare_access_identity_provider)
+// Source models (v4 zenthcloud_access_identity_provider)
 
 type SourceAccessIdentityProviderModel struct {
 	ID         types.String            `tfsdk:"id"`
@@ -61,7 +61,7 @@ type SourceScimConfigModel struct {
 	GroupMemberDeprovision types.Bool   `tfsdk:"group_member_deprovision"` // deprecated
 }
 
-// Target models (v5 cloudflare_zero_trust_access_identity_provider)
+// Target models (v5 zenthcloud_zero_trust_access_identity_provider)
 
 type TargetAccessIdentityProviderModel struct {
 	ID                   types.String                                            `tfsdk:"id"`

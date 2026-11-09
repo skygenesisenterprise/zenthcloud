@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_worker_version Resource - Cloudflare"
+page_title: "zenthcloud_worker_version Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Workers Scripts ReadWorkers Scripts WriteWorkers Tail Read
 ---
 
-# cloudflare_worker_version (Resource)
+# zenthcloud_worker_version (Resource)
 
 Accepted Permissions
 
@@ -17,7 +17,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_worker_version" "example_worker_version" {
+resource "zenthcloud_worker_version" "example_worker_version" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   worker_id = "worker_id"
   annotations = {
@@ -125,12 +125,12 @@ resource "cloudflare_worker_version" "example_worker_version" {
 - `annotations` (Attributes) Metadata about the version. (see [below for nested schema](#nestedatt--annotations))
 - `assets` (Attributes) Configuration for assets within a Worker.
 
-[`_headers`](https://developers.cloudflare.com/workers/static-assets/headers/#custom-headers) and
-[`_redirects`](https://developers.cloudflare.com/workers/static-assets/redirects/) files should be
+[`_headers`](https://github.com/skygenesisenterprise/zenthcloud) and
+[`_redirects`](https://github.com/skygenesisenterprise/zenthcloud) files should be
 included as modules named `_headers` and `_redirects` with content type `text/plain`. (see [below for nested schema](#nestedatt--assets))
-- `bindings` (Attributes List) List of bindings attached to a Worker. You can find more about bindings on our docs: https://developers.cloudflare.com/workers/configuration/multipart-upload-metadata/#bindings. (see [below for nested schema](#nestedatt--bindings))
+- `bindings` (Attributes List) List of bindings attached to a Worker. You can find more about bindings on our docs: https://github.com/skygenesisenterprise/zenthcloud (see [below for nested schema](#nestedatt--bindings))
 - `cache_options` (Attributes) Global CacheW configuration for the Worker. When caching is on,
-the platform provisions a `cloudflare.app` zone for the Worker.
+the platform provisions a `zenthcloud.app` zone for the Worker.
 A `type: worker` entry in the `exports` map can override this
 value for a single entrypoint. (see [below for nested schema](#nestedatt--cache_options))
 - `compatibility_date` (String) Date indicating targeted support in the Workers runtime. Backwards incompatible fixes to the runtime following this date will not affect this Worker.
@@ -150,13 +150,13 @@ Available values: "modules".
 - `migrations` (Attributes) Migrations for Durable Objects associated with the version. Migrations are applied when the version is deployed. (see [below for nested schema](#nestedatt--migrations))
 - `modules` (Attributes Set) Code, sourcemaps, and other content used at runtime.
 
-This includes [`_headers`](https://developers.cloudflare.com/workers/static-assets/headers/#custom-headers) and
-[`_redirects`](https://developers.cloudflare.com/workers/static-assets/redirects/) files used to configure
-[Static Assets](https://developers.cloudflare.com/workers/static-assets/). `_headers` and `_redirects` files should be
+This includes [`_headers`](https://github.com/skygenesisenterprise/zenthcloud) and
+[`_redirects`](https://github.com/skygenesisenterprise/zenthcloud) files used to configure
+[Static Assets](https://github.com/skygenesisenterprise/zenthcloud). `_headers` and `_redirects` files should be
 included as modules named `_headers` and `_redirects` with content type `text/plain`. (see [below for nested schema](#nestedatt--modules))
 - `package_dependencies` (Attributes List) The list of npm packages that were installed and used when this Worker
 version was built. (see [below for nested schema](#nestedatt--package_dependencies))
-- `placement` (Attributes) Configuration for [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement). Specify mode='smart' for Smart Placement, or one of region/hostname/host. (see [below for nested schema](#nestedatt--placement))
+- `placement` (Attributes) Configuration for [Smart Placement](https://github.com/skygenesisenterprise/zenthcloud). Specify mode='smart' for Smart Placement, or one of region/hostname/host. (see [below for nested schema](#nestedatt--placement))
 - `usage_model` (String, Deprecated) Usage model for the version.
 Available values: "standard", "bundled", "unbound".
 
@@ -171,7 +171,7 @@ Available values: "standard", "bundled", "unbound".
 - `migration_tag` (String) Durable Object migration tag. Set when the version is deployed. Omitted if the version has not been deployed or the Worker does not use Durable Objects.
 - `number` (Number) The integer version number, starting from one.
 - `source` (String) The client used to create the version.
-- `startup_time_ms` (Number) Time in milliseconds spent on [Worker startup](https://developers.cloudflare.com/workers/platform/limits/#worker-startup-time).
+- `startup_time_ms` (Number) Time in milliseconds spent on [Worker startup](https://github.com/skygenesisenterprise/zenthcloud).
 - `urls` (List of String) All routable URLs that always point to this version. Does not include alias URLs, since aliases can be updated to point to a different version.
 
 <a id="nestedatt--annotations"></a>
@@ -246,7 +246,7 @@ Available values: "runtime-email-alpha".
 - `index_name` (String) Name of the Vectorize index to bind to.
 - `instance_name` (String) The user-chosen instance name. Must exist at deploy time. The worker can search, chat, update, and manage items/jobs on this instance.
 - `json` (String) JSON data to use.
-- `jurisdiction` (String) The [jurisdiction](https://developers.cloudflare.com/r2/reference/data-location/#jurisdictional-restrictions) of the R2 bucket.
+- `jurisdiction` (String) The [jurisdiction](https://github.com/skygenesisenterprise/zenthcloud) of the R2 bucket.
 Available values: "eu", "fedramp", "fedramp-high", "us".
 - `key_base64` (String, Sensitive) Base64-encoded key data. Required if `format` is "raw", "pkcs8", or "spki".
 - `key_jwk` (String, Sensitive) Key data in [JSON Web Key](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#json_web_key) format. Required if `format` is "jwk".
@@ -267,7 +267,7 @@ Available values: "eu", "fedramp", "fedramp-high", "us".
 - `store_id` (String) ID of the store containing the secret.
 - `stream` (String) ID of a K2 stream owned by the account deploying the Worker.
 - `text` (String, Sensitive) The text value to use.
-- `tunnel_id` (String) UUID of the Cloudflare Tunnel to bind to. Mutually exclusive with network_id.
+- `tunnel_id` (String) UUID of the Zenthcloud Tunnel to bind to. Mutually exclusive with network_id.
 - `usages` (Set of String) Allowed operations with the key. [Learn more](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#keyUsages).
 - `version_id` (String) Identifier for the version to inherit the binding from, which can be the version ID or the literal "latest" to inherit from the latest version. Defaults to inheriting the binding from the latest version.
 - `workflow_name` (String) Name of the Workflow to bind to.
@@ -503,7 +503,7 @@ Optional:
 
 - `host` (String) TCP host and port for targeted placement.
 - `hostname` (String) HTTP hostname for targeted placement.
-- `mode` (String) Enables [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+- `mode` (String) Enables [Smart Placement](https://github.com/skygenesisenterprise/zenthcloud).
 Available values: "smart", "targeted".
 - `region` (String) Cloud region for targeted placement in format 'provider:region'.
 - `target` (Attributes List) Array of placement targets (currently limited to single target). (see [below for nested schema](#nestedatt--placement--target))
@@ -589,7 +589,7 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_worker_version.example '<account_id>/<worker_id>/<version_id>'
+$ terraform import zenthcloud_worker_version.example '<account_id>/<worker_id>/<version_id>'
 ```
 
 

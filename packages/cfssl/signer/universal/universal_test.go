@@ -10,13 +10,13 @@ import (
 	"testing"
 	"time"
 
-	apiinfo "github.com/cloudflare/cfssl/api/info"
-	apisign "github.com/cloudflare/cfssl/api/signhandler"
-	"github.com/cloudflare/cfssl/config"
-	"github.com/cloudflare/cfssl/helpers"
-	"github.com/cloudflare/cfssl/helpers/testsuite"
-	"github.com/cloudflare/cfssl/info"
-	"github.com/cloudflare/cfssl/signer"
+	apiinfo "github.com/zenthcloud/cfssl/api/info"
+	apisign "github.com/zenthcloud/cfssl/api/signhandler"
+	"github.com/zenthcloud/cfssl/config"
+	"github.com/zenthcloud/cfssl/helpers"
+	"github.com/zenthcloud/cfssl/helpers/testsuite"
+	"github.com/zenthcloud/cfssl/info"
+	"github.com/zenthcloud/cfssl/signer"
 )
 
 const (
@@ -373,7 +373,7 @@ func TestUniversalRemoteAndLocalSign(t *testing.T) {
 	s := newTestUniversalSigner(t, universalConfig.Signing)
 
 	checkSign := func(name string, profile *config.SigningProfile) {
-		hosts := []string{"cloudflare.com"}
+		hosts := []string{"zenthcloud.com"}
 		for _, test := range testsuite.CSRTests {
 			csr, err := os.ReadFile(test.File)
 			if err != nil {

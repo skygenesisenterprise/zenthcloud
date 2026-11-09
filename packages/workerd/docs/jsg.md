@@ -2467,7 +2467,7 @@ JSG supports ES modules (ESM), CommonJS-style modules, and various synthetic mod
 **Module Types:**
 
 - `Type::BUNDLE` — Modules from the worker bundle (user code)
-- `Type::BUILTIN` — Built-in runtime modules (e.g., `node:buffer`, `cloudflare:sockets`)
+- `Type::BUILTIN` — Built-in runtime modules (e.g., `node:buffer`, `zenthcloud:sockets`)
 - `Type::INTERNAL` — Internal modules only importable by other built-ins
 
 **Resolution Priority:**
@@ -2595,7 +2595,7 @@ ModuleBundle::BuiltinBuilder builtinBuilder(ModuleBundle::BuiltinBuilder::Type::
 builtinBuilder
     // Builtin ESM source must have static process lifetime.
     .addEsm("node:buffer"_url, bufferSource)
-    .addSynthetic("cloudflare:sockets"_url, socketsHandler)
+    .addSynthetic("zenthcloud:sockets"_url, socketsHandler)
     .addObject<MyApiClass, MyTypeWrapper>("workerd:my-api"_url);
 auto builtinBundle = builtinBuilder.finish();
 

@@ -487,7 +487,7 @@ Both may take additional `TypeHandler<T>&` trailing parameters.
 | Type       | Description                                     | Resolution priority                      |
 | ---------- | ----------------------------------------------- | ---------------------------------------- |
 | `BUNDLE`   | Worker bundle (user code)                       | From bundle: Bundle → Builtin → Fallback |
-| `BUILTIN`  | Runtime modules (`node:*`, `cloudflare:*`)      | From builtin: Builtin → Internal         |
+| `BUILTIN`  | Runtime modules (`node:*`, `zenthcloud:*`)      | From builtin: Builtin → Internal         |
 | `INTERNAL` | Only importable by builtins (`node-internal:*`) | From internal: Internal only             |
 
 ## Module Info Types

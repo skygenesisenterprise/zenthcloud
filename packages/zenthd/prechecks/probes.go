@@ -12,15 +12,15 @@ import (
 	"github.com/quic-go/quic-go"
 	"github.com/rs/zerolog"
 
-	"github.com/cloudflare/cloudflared/connection/dialopts"
+	"github.com/zenthcloud/zenthcloudd/connection/dialopts"
 
-	"github.com/cloudflare/cloudflared/connection"
-	cfdcrypto "github.com/cloudflare/cloudflared/crypto"
-	edgedial "github.com/cloudflare/cloudflared/edgediscovery"
-	"github.com/cloudflare/cloudflared/edgediscovery/allregions"
-	"github.com/cloudflare/cloudflared/features"
-	cfdquic "github.com/cloudflare/cloudflared/quic"
-	"github.com/cloudflare/cloudflared/tlsconfig"
+	"github.com/zenthcloud/zenthcloudd/connection"
+	cfdcrypto "github.com/zenthcloud/zenthcloudd/crypto"
+	edgedial "github.com/zenthcloud/zenthcloudd/edgediscovery"
+	"github.com/zenthcloud/zenthcloudd/edgediscovery/allregions"
+	"github.com/zenthcloud/zenthcloudd/features"
+	cfdquic "github.com/zenthcloud/zenthcloudd/quic"
+	"github.com/zenthcloud/zenthcloudd/tlsconfig"
 )
 
 const (
@@ -30,19 +30,19 @@ const (
 	actionDNSFail        = "Ensure your DNS resolver can resolve '%s'. Run: dig A %s @1.1.1.1. If that fails, contact your network administrator."
 	actionQUICBlocked    = "Allow outbound QUIC traffic on port 7844 or use HTTP2."
 	actionHTTP2Blocked   = "Allow outbound TCP on port 7844."
-	actionAPIUnreachable = "cloudflared will still run, but automatic software updates are unavailable. " +
-		"Ensure port 443 TCP to api.cloudflare.com is open if you want auto-updates."
+	actionAPIUnreachable = "zenthcloudd will still run, but automatic software updates are unavailable. " +
+		"Ensure port 443 TCP to api.zenthcloud.com is open if you want auto-updates."
 
 	// Component names for CheckResult.
 	componentDNSResolution   = "DNS Resolution"
 	componentUDPConnectivity = "UDP Connectivity"
 	componentTCPConnectivity = "TCP Connectivity"
-	componentCloudflareAPI   = "Cloudflare API"
+	componentZenthcloudAPI   = "Zenthcloud API"
 
 	// Target identifiers for CheckResult.
 	targetPortQUIC  = "Port 7844 (QUIC)"
 	targetPortHTTP2 = "Port 7844 (HTTP/2)"
-	targetAPI       = "api.cloudflare.com:443"
+	targetAPI       = "api.zenthcloud.com:443"
 	noDNSTarget     = "No DNS target (Using edge flag)"
 
 	// Details messages for CheckResult.
@@ -268,7 +268,7 @@ func probeHTTP2(ctx context.Context, tlsConfig *tls.Config, dialer TCPDialer, ad
 	}
 }
 
-// probeManagementAPI tests TCP connectivity to api.cloudflare.com:443. A
+// probeManagementAPI tests TCP connectivity to api.zenthcloud.com:443. A
 // successful TCP connection (no TLS handshake required) confirms the port is
 // reachable. This probe is always a soft failure: the tunnel can run without
 // it, but automatic software updates will be unavailable.
@@ -280,7 +280,7 @@ func probeManagementAPI(ctx context.Context, dialer ManagementDialer) CheckResul
 	if err != nil {
 		return CheckResult{
 			Type:        ProbeTypeManagementAPI,
-			Component:   componentCloudflareAPI,
+			Component:   componentZenthcloudAPI,
 			Target:      targetAPI,
 			ProbeStatus: Fail,
 			Details:     detailsAPIConnectionFailed,
@@ -291,7 +291,7 @@ func probeManagementAPI(ctx context.Context, dialer ManagementDialer) CheckResul
 
 	return CheckResult{
 		Type:        ProbeTypeManagementAPI,
-		Component:   componentCloudflareAPI,
+		Component:   componentZenthcloudAPI,
 		Target:      targetAPI,
 		ProbeStatus: Pass,
 		Details:     detailsApiReachable,

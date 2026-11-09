@@ -5,9 +5,9 @@ package api_token
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/user"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/user"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -39,10 +39,10 @@ func (m *APITokenDataSourceModel) toListParams(_ context.Context) (params user.T
 	params = user.TokenListParams{}
 
 	if !m.Filter.Direction.IsNull() {
-		params.Direction = cloudflare.F(user.TokenListParamsDirection(m.Filter.Direction.ValueString()))
+		params.Direction = zenthcloud.F(user.TokenListParamsDirection(m.Filter.Direction.ValueString()))
 	}
 	if !m.Filter.IncludeExpired.IsNull() {
-		params.IncludeExpired = cloudflare.F(m.Filter.IncludeExpired.ValueBool())
+		params.IncludeExpired = zenthcloud.F(m.Filter.IncludeExpired.ValueBool())
 	}
 
 	return

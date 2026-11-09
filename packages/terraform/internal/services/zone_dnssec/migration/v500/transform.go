@@ -13,7 +13,7 @@ import (
 
 // Transform converts a v4 (SDKv2) state to a v5 (Plugin Framework) state
 // This handles all field transformations needed for the migration
-func Transform(ctx context.Context, source SourceCloudflareZoneDNSSECModel) (*TargetZoneDNSSECModel, diag.Diagnostics) {
+func Transform(ctx context.Context, source SourceZenthcloudZoneDNSSECModel) (*TargetZoneDNSSECModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	target := &TargetZoneDNSSECModel{}
 

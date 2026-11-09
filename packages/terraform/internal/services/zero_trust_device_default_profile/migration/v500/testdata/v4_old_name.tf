@@ -1,4 +1,4 @@
-resource "cloudflare_device_settings_policy" "%s" {
+resource "zenthcloud_device_settings_policy" "%s" {
   account_id  = "%s"
   name        = "Old Name Test Profile"
   description = "Test device profile with old resource name"

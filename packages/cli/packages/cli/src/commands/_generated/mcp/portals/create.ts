@@ -23,7 +23,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 mcp portals create\n\nCreates a new MCP portal for managing AI tool access through Cloudflare Access."
+			"$0 mcp portals create\n\nCreates a new MCP portal for managing AI tool access through Zenthcloud Access."
 		)
 		.option("allow-code-mode", {
 			type: "boolean",
@@ -103,7 +103,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf mcp portals create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/access/ai-controls/mcp/portals`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/access/ai-controls/mcp/portals`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

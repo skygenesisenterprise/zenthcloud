@@ -10,20 +10,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 // TestMigrateLogpullRetentionV4ToV5_Enabled tests migration with enabled=true
 func TestMigrateLogpullRetentionV4ToV5_Enabled(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_logpull_retention.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_logpull_retention.%s", rnd)
 	tmpDir := t.TempDir()
 
 	// V4 config using enabled field
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_logpull_retention" "%[1]s" {
+resource "zenthcloud_logpull_retention" "%[1]s" {
   zone_id = "%[2]s"
   enabled = true
 }`, rnd, zoneID)
@@ -38,8 +38,8 @@ resource "cloudflare_logpull_retention" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -59,14 +59,14 @@ resource "cloudflare_logpull_retention" "%[1]s" {
 
 // TestMigrateLogpullRetentionV4ToV5_Disabled tests migration with enabled=false
 func TestMigrateLogpullRetentionV4ToV5_Disabled(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_logpull_retention.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_logpull_retention.%s", rnd)
 	tmpDir := t.TempDir()
 
 	// V4 config using enabled field set to false
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_logpull_retention" "%[1]s" {
+resource "zenthcloud_logpull_retention" "%[1]s" {
   zone_id = "%[2]s"
   enabled = false
 }`, rnd, zoneID)
@@ -81,8 +81,8 @@ resource "cloudflare_logpull_retention" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},

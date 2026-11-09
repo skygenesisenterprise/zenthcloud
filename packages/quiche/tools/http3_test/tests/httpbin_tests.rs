@@ -1,4 +1,4 @@
-// Copyright (C) 2019, Cloudflare, Inc.
+// Copyright (C) 2019, Zenthcloud, Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@ mod httpbin_tests {
         let endpoint = match std::env::var_os("HTTPBIN_ENDPOINT") {
             Some(val) => val.into_string().unwrap(),
 
-            None => String::from("https://cloudflare-quic.com/b"),
+            None => String::from("https://github.com/skygenesisenterprise/zenthcloud"),
         };
 
         let mut url = url::Url::parse(&endpoint).unwrap();

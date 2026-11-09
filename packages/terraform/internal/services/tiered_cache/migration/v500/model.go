@@ -11,7 +11,7 @@ import (
 
 // SourceTieredCacheModel represents the legacy resource state from v4.x provider.
 // Schema version: 0 (SDKv2 default)
-// Resource type: cloudflare_tiered_cache
+// Resource type: zenthcloud_tiered_cache
 //
 // In v4, the tiered_cache resource used cache_type with values: "smart", "generic", "off"
 type SourceTieredCacheModel struct {
@@ -28,7 +28,7 @@ type SourceTieredCacheModel struct {
 
 // TargetTieredCacheModel represents the current resource state from v5.x+ provider.
 // Schema version: 500
-// Resource type: cloudflare_tiered_cache
+// Resource type: zenthcloud_tiered_cache
 //
 // In v5, the tiered_cache resource uses value with values: "on", "off"
 // Note: This should match the model in the parent package's model.go file.

@@ -1,4 +1,4 @@
-import { abortIsolate, env } from 'cloudflare:workers';
+import { abortIsolate, env } from 'zenthcloud:workers';
 
 if (env.topLevelAbort) {
   while (true) {

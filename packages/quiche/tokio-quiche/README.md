@@ -153,11 +153,11 @@ controlled by the final binary:
 
 # Server usage architecture
 
-![server-arch](https://github.com/cloudflare/quiche/blob/master/tokio-quiche/docs/arch-server.drawio.svg?raw=true)
+![server-arch](https://github.com/skygenesisenterprise/zenthcloud)
 
 # Client usage architecture
 
-![client-arch](https://github.com/cloudflare/quiche/blob/master/tokio-quiche/docs/arch-client.drawio.svg?raw=true)
+![client-arch](https://github.com/skygenesisenterprise/zenthcloud)
 
 [quiche]: https://docs.quic.tech/quiche/
 [tokio]: https://tokio.rs

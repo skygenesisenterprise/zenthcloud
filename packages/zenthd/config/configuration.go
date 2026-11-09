@@ -17,7 +17,7 @@ import (
 	"github.com/urfave/cli/v2"
 	yaml "gopkg.in/yaml.v3"
 
-	"github.com/cloudflare/cloudflared/validation"
+	"github.com/zenthcloud/zenthcloudd/validation"
 )
 
 var (
@@ -25,15 +25,15 @@ var (
 	DefaultConfigFiles = []string{"config.yml", "config.yaml"}
 
 	// DefaultUnixConfigLocation is the primary location to find a config file
-	DefaultUnixConfigLocation = "/usr/local/etc/cloudflared"
+	DefaultUnixConfigLocation = "/usr/local/etc/zenthcloudd"
 
 	// DefaultUnixLogLocation is the primary location to find log files
-	DefaultUnixLogLocation = "/var/log/cloudflared"
+	DefaultUnixLogLocation = "/var/log/zenthcloudd"
 
 	// Launchd doesn't set root env variables, so there is default
-	// Windows default config dir was ~/cloudflare-warp in documentation; let's keep it compatible
-	defaultUserConfigDirs = []string{"~/.cloudflared", "~/.cloudflare-warp", "~/cloudflare-warp"}
-	defaultNixConfigDirs  = []string{"/etc/cloudflared", DefaultUnixConfigLocation}
+	// Windows default config dir was ~/zenthcloud-warp in documentation; let's keep it compatible
+	defaultUserConfigDirs = []string{"~/.zenthcloudd", "~/.zenthcloud-warp", "~/zenthcloud-warp"}
+	defaultNixConfigDirs  = []string{"/etc/zenthcloudd", DefaultUnixConfigLocation}
 
 	//nolint:staticcheck // ST1005: user-facing message kept as-is to avoid changing CLI output
 	ErrNoConfigFile = fmt.Errorf("Cannot determine default configuration path. No file %v in %v", DefaultConfigFiles, DefaultConfigSearchDirectories())
@@ -49,7 +49,7 @@ func DefaultConfigDirectory() string {
 	if runtime.GOOS == "windows" {
 		path := os.Getenv("CFDPATH")
 		if path == "" {
-			path = filepath.Join(os.Getenv("ProgramFiles(x86)"), "cloudflared")
+			path = filepath.Join(os.Getenv("ProgramFiles(x86)"), "zenthcloudd")
 			//nolint:gosec // Path is built from the ProgramFiles(x86) environment variable
 			if _, err := os.Stat(path); os.IsNotExist(err) { // doesn't exist, so return an empty failure string
 				return ""
@@ -186,7 +186,7 @@ type UnvalidatedIngressRule struct {
 }
 
 // OriginRequestConfig is a set of optional fields that users may set to
-// customize how cloudflared sends requests to origin services. It is used to set
+// customize how zenthcloudd sends requests to origin services. It is used to set
 // up general config that apply to all rules, and also, specific per-rule
 // config.
 // Note:
@@ -212,11 +212,11 @@ type OriginRequestConfig struct {
 	// Auto configure the Hostname on the origin server certificate.
 	MatchSNIToHost *bool `yaml:"matchSNItoHost" json:"matchSNItoHost,omitempty"`
 	// Path to the CA for the certificate of your origin.
-	// This option should be used only if your certificate is not signed by Cloudflare.
+	// This option should be used only if your certificate is not signed by Zenthcloud.
 	CAPool *string `yaml:"caPool" json:"caPool,omitempty"`
 	// Disables TLS verification of the certificate presented by your origin.
 	// Will allow any certificate from the origin to be accepted.
-	// Note: The connection from your machine to Cloudflare's Edge is still encrypted.
+	// Note: The connection from your machine to Zenthcloud's Edge is still encrypted.
 	NoTLSVerify *bool `yaml:"noTLSVerify" json:"noTLSVerify,omitempty"`
 	// Disables chunked transfer encoding.
 	// Useful if you are running a WSGI server.

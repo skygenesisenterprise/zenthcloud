@@ -1,8 +1,8 @@
 import { spawn } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { getCfConfigPath } from "@cloudflare/workers-auth/cf";
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { getCfConfigPath } from "@zenthcloud/workers-auth/cf";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import {
 	getUpdateNotice,

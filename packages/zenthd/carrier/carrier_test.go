@@ -96,7 +96,7 @@ func TestStartServer(t *testing.T) {
 
 func TestIsAccessResponse(t *testing.T) {
 	validLocationHeader := http.Header{}
-	validLocationHeader.Add("location", "https://test.cloudflareaccess.com/cdn-cgi/access/login/blahblah")
+	validLocationHeader.Add("location", "https://github.com/skygenesisenterprise/zenthcloud")
 	invalidLocationHeader := http.Header{}
 	invalidLocationHeader.Add("location", "https://google.com")
 	testCases := []struct {

@@ -5,8 +5,8 @@ package token_validation_rules
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -62,7 +62,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"expression": schema.StringAttribute{
-				Description: "Rule expression. Requests that fail to match this expression will be subject to `action`.\n\nFor details on expressions, see the [Cloudflare Docs](https://developers.cloudflare.com/api-shield/security/jwt-validation/).",
+				Description: "Rule expression. Requests that fail to match this expression will be subject to `action`.\n\nFor details on expressions, see the [Zenthcloud Docs](https://github.com/skygenesisenterprise/zenthcloud).",
 				Computed:    true,
 			},
 			"last_updated": schema.StringAttribute{
@@ -74,7 +74,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"selector": schema.SingleNestedAttribute{
-				Description: "Select operations covered by this rule.\n\nFor details on selectors, see the [Cloudflare Docs](https://developers.cloudflare.com/api-shield/security/jwt-validation/).",
+				Description: "Select operations covered by this rule.\n\nFor details on selectors, see the [Zenthcloud Docs](https://github.com/skygenesisenterprise/zenthcloud).",
 				Computed:    true,
 				CustomType:  customfield.NewNestedObjectType[TokenValidationRulesSelectorDataSourceModel](ctx),
 				Attributes: map[string]schema.Attribute{

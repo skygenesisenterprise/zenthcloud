@@ -23,7 +23,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 pages domains create <project-name>\n\nAttach a custom domain to a Cloudflare Pages project."
+			"$0 pages domains create <project-name>\n\nAttach a custom domain to a Zenthcloud Pages project."
 		)
 		.positional("project-name", {
 			type: "string",
@@ -68,7 +68,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf pages domains create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/pages/projects/${argv["project-name"] == null ? "<project-name>" : encodeURIComponent(String(argv["project-name"]))}/domains`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/pages/projects/${argv["project-name"] == null ? "<project-name>" : encodeURIComponent(String(argv["project-name"]))}/domains`,
 						pathParams: { "project-name": String(argv["project-name"] ?? "") },
 						bodyKind: "json",
 						body:

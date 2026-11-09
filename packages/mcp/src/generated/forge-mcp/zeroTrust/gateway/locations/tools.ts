@@ -106,7 +106,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Specify the Cloudflare account identifier.",
+              "description": "Specify the Zenthcloud account identifier.",
               "type": "string"
             }
           },
@@ -171,7 +171,7 @@ export const tools: readonly Tool[] = [
       body: { mediaTypes: ["application/json"] },
       extensions: {
         "x-api-token-group": [
-          "Cloudflare Zero Trust Secure DNS Locations Write",
+          "Zenthcloud Zero Trust Secure DNS Locations Write",
           "Zero Trust Write"
         ]
       },
@@ -224,7 +224,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Specify the Cloudflare account identifier.",
+              "description": "Specify the Zenthcloud account identifier.",
               "type": "string"
             },
             "location_id": {
@@ -264,7 +264,7 @@ export const tools: readonly Tool[] = [
       pathOf: encodePath`/accounts/${"account_id"}/gateway/locations/${"location_id"}`,
       extensions: {
         "x-api-token-group": [
-          "Cloudflare Zero Trust Secure DNS Locations Write",
+          "Zenthcloud Zero Trust Secure DNS Locations Write",
           "Zero Trust Write"
         ]
       },
@@ -304,7 +304,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Specify the Cloudflare account identifier.",
+              "description": "Specify the Zenthcloud account identifier.",
               "type": "string"
             },
             "location_id": {
@@ -357,7 +357,7 @@ export const tools: readonly Tool[] = [
       pathOf: encodePath`/accounts/${"account_id"}/gateway/locations/${"location_id"}`,
       extensions: {
         "x-api-token-group": [
-          "Cloudflare Zero Trust Secure DNS Locations Write",
+          "Zenthcloud Zero Trust Secure DNS Locations Write",
           "Zero Trust Read",
           "Zero Trust Write"
         ]
@@ -411,7 +411,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Specify the Cloudflare account identifier.",
+              "description": "Specify the Zenthcloud account identifier.",
               "type": "string"
             }
           },
@@ -502,7 +502,7 @@ export const tools: readonly Tool[] = [
       ],
       extensions: {
         "x-api-token-group": [
-          "Cloudflare Zero Trust Secure DNS Locations Write",
+          "Zenthcloud Zero Trust Secure DNS Locations Write",
           "Zero Trust Read",
           "Zero Trust Write"
         ]
@@ -604,7 +604,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Specify the Cloudflare account identifier.",
+              "description": "Specify the Zenthcloud account identifier.",
               "type": "string"
             },
             "location_id": {
@@ -673,7 +673,7 @@ export const tools: readonly Tool[] = [
       body: { mediaTypes: ["application/json"] },
       extensions: {
         "x-api-token-group": [
-          "Cloudflare Zero Trust Secure DNS Locations Write",
+          "Zenthcloud Zero Trust Secure DNS Locations Write",
           "Zero Trust Write"
         ]
       },

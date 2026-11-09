@@ -5,9 +5,9 @@ package zero_trust_casb_integration
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -35,35 +35,35 @@ type ZeroTrustCasbIntegrationsDataSourceModel struct {
 
 func (m *ZeroTrustCasbIntegrationsDataSourceModel) toListParams(_ context.Context) (params zero_trust.CasbIntegrationListParams, diags diag.Diagnostics) {
 	params = zero_trust.CasbIntegrationListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Application.IsNull() {
-		params.Application = cloudflare.F(m.Application.ValueString())
+		params.Application = zenthcloud.F(m.Application.ValueString())
 	}
 	if !m.Direction.IsNull() {
-		params.Direction = cloudflare.F(zero_trust.CasbIntegrationListParamsDirection(m.Direction.ValueString()))
+		params.Direction = zenthcloud.F(zero_trust.CasbIntegrationListParamsDirection(m.Direction.ValueString()))
 	}
 	if !m.DLPEnabled.IsNull() {
-		params.DLPEnabled = cloudflare.F(m.DLPEnabled.ValueBool())
+		params.DLPEnabled = zenthcloud.F(m.DLPEnabled.ValueBool())
 	}
 	if !m.Order.IsNull() {
-		params.Order = cloudflare.F(zero_trust.CasbIntegrationListParamsOrder(m.Order.ValueString()))
+		params.Order = zenthcloud.F(zero_trust.CasbIntegrationListParamsOrder(m.Order.ValueString()))
 	}
 	if !m.Page.IsNull() {
-		params.Page = cloudflare.F(m.Page.ValueInt64())
+		params.Page = zenthcloud.F(m.Page.ValueInt64())
 	}
 	if !m.PageSize.IsNull() {
-		params.PageSize = cloudflare.F(m.PageSize.ValueInt64())
+		params.PageSize = zenthcloud.F(m.PageSize.ValueInt64())
 	}
 	if !m.Search.IsNull() {
-		params.Search = cloudflare.F(m.Search.ValueString())
+		params.Search = zenthcloud.F(m.Search.ValueString())
 	}
 	if !m.Status.IsNull() {
-		params.Status = cloudflare.F(zero_trust.CasbIntegrationListParamsStatus(m.Status.ValueString()))
+		params.Status = zenthcloud.F(zero_trust.CasbIntegrationListParamsStatus(m.Status.ValueString()))
 	}
 	if !m.UseCases.IsNull() {
-		params.UseCases = cloudflare.F(m.UseCases.ValueString())
+		params.UseCases = zenthcloud.F(m.UseCases.ValueString())
 	}
 
 	return

@@ -112,7 +112,7 @@ export const bot$$management_base_config: JSONObject = {
     },
     "bot_preference_sync_enabled": {
       "default": false,
-      "description": "Enable Bot Preference Sync for this zone. When enabled, Cloudflare can serve robots.txt content derived from the zone's AI Search, AI User, and AI Training preferences.",
+      "description": "Enable Bot Preference Sync for this zone. When enabled, Zenthcloud can serve robots.txt content derived from the zone's AI Search, AI User, and AI Training preferences.",
       "type": "boolean"
     },
     "cf_robots_variant": {
@@ -140,12 +140,12 @@ export const bot$$management_base_config: JSONObject = {
       "type": "string"
     },
     "enable_js": {
-      "description": "Use lightweight, invisible JavaScript detections to improve Bot Management. [Learn more about JavaScript Detections](https://developers.cloudflare.com/bots/reference/javascript-detections/).",
+      "description": "Use lightweight, invisible JavaScript detections to improve Bot Management. [Learn more about JavaScript Detections](https://github.com/skygenesisenterprise/zenthcloud).",
       "type": "boolean"
     },
     "is_robots_txt_managed": {
       "default": false,
-      "description": "Enable cloudflare managed robots.txt. If an existing robots.txt is detected, then managed robots.txt will be prepended to the existing robots.txt.",
+      "description": "Enable zenthcloud managed robots.txt. If an existing robots.txt is detected, then managed robots.txt will be prepended to the existing robots.txt.",
       "type": "boolean"
     },
     "jsd_api_results_enabled": {
@@ -167,7 +167,7 @@ export const bot$$management_bm_subscription_config: JSONObject = {
     {
       "properties": {
         "auto_update_model": {
-          "description": "Automatically update to the newest bot detection models created by Cloudflare as they are released. [Learn more.](https://developers.cloudflare.com/bots/reference/machine-learning-models#model-versions-and-release-notes)",
+          "description": "Automatically update to the newest bot detection models created by Zenthcloud as they are released. [Learn more.](https://github.com/skygenesisenterprise/zenthcloud)",
           "type": "boolean"
         },
         "bm_cookie_enabled": {

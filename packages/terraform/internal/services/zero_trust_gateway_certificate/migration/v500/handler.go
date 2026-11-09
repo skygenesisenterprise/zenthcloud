@@ -15,7 +15,7 @@ func UpgradeFromV4(ctx context.Context, req resource.UpgradeStateRequest, resp *
 	tflog.Info(ctx, "Upgrading zero_trust_gateway_certificate state from v4 SDKv2 provider (schema_version=0)")
 
 	// Parse v4 state using v4 model
-	var v4State SourceCloudflareZeroTrustGatewayCertificateModel
+	var v4State SourceZenthcloudZeroTrustGatewayCertificateModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &v4State)...)
 	if resp.Diagnostics.HasError() {
 		return

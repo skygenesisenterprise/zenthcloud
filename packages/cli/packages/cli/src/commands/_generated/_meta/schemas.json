@@ -55,19 +55,19 @@
 					"name": "comments",
 					"type": "string",
 					"required": false,
-					"description": "Any additional comments about the infringement not exceeding 2000 characters. With the exception of delegated reports, comments are kept internal to Cloudflare and not shared with the host or customer as part of regular processing. For the limited circumstances where we delegate reports to customers with established abuse-handling programs, comments may be shared in full."
+					"description": "Any additional comments about the infringement not exceeding 2000 characters. With the exception of delegated reports, comments are kept internal to Zenthcloud and not shared with the host or customer as part of regular processing. For the limited circumstances where we delegate reports to customers with established abuse-handling programs, comments may be shared in full."
 				},
 				{
 					"name": "company",
 					"type": "string",
 					"required": false,
-					"description": "Text not exceeding 100 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/)."
+					"description": "Text not exceeding 100 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/)."
 				},
 				{
 					"name": "email",
 					"type": "string",
 					"required": true,
-					"description": "A valid email of the abuse reporter. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/)."
+					"description": "A valid email of the abuse reporter. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/)."
 				},
 				{
 					"name": "email2",
@@ -79,7 +79,7 @@
 					"name": "name",
 					"type": "string",
 					"required": true,
-					"description": "Text not exceeding 255 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/)."
+					"description": "Text not exceeding 255 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/)."
 				},
 				{
 					"name": "reported-country",
@@ -97,7 +97,7 @@
 					"name": "tele",
 					"type": "string",
 					"required": false,
-					"description": "Text not exceeding 20 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/)."
+					"description": "Text not exceeding 20 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/)."
 				},
 				{
 					"name": "title",
@@ -109,19 +109,19 @@
 					"name": "urls",
 					"type": "string",
 					"required": true,
-					"description": "A list of valid URLs separated by ‘\\n’ (new line character). The list of the URLs should not exceed 250 URLs. All URLs should have the same hostname. Each URL should be unique. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/)."
+					"description": "A list of valid URLs separated by ‘\\n’ (new line character). The list of the URLs should not exceed 250 URLs. All URLs should have the same hostname. Each URL should be unique. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/)."
 				},
 				{
 					"name": "address1",
 					"type": "string",
 					"required": false,
-					"description": "Text not exceeding 100 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/)."
+					"description": "Text not exceeding 100 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/)."
 				},
 				{
 					"name": "agent-name",
 					"type": "string",
 					"required": false,
-					"description": "The name of the copyright holder. Text not exceeding 60 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/)."
+					"description": "The name of the copyright holder. Text not exceeding 60 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/)."
 				},
 				{
 					"name": "agree",
@@ -133,13 +133,13 @@
 					"name": "city",
 					"type": "string",
 					"required": false,
-					"description": "Text not exceeding 255 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/)."
+					"description": "Text not exceeding 255 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/)."
 				},
 				{
 					"name": "country",
 					"type": "string",
 					"required": false,
-					"description": "Text not exceeding 255 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/).\n"
+					"description": "Text not exceeding 255 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/).\n"
 				},
 				{
 					"name": "host-notification",
@@ -151,7 +151,7 @@
 					"name": "original-work",
 					"type": "string",
 					"required": false,
-					"description": "Text not exceeding 255 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/).\n"
+					"description": "Text not exceeding 255 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/).\n"
 				},
 				{
 					"name": "owner-notification",
@@ -163,13 +163,13 @@
 					"name": "signature",
 					"type": "string",
 					"required": false,
-					"description": "Required for DMCA reports, should be same as Name. An affirmation that all information in the report is true and accurate while agreeing to the policies of Cloudflare's abuse reports"
+					"description": "Required for DMCA reports, should be same as Name. An affirmation that all information in the report is true and accurate while agreeing to the policies of Zenthcloud's abuse reports"
 				},
 				{
 					"name": "state",
 					"type": "string",
 					"required": false,
-					"description": "Text not exceeding 255 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/)."
+					"description": "Text not exceeding 255 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/)."
 				},
 				{
 					"name": "justification",
@@ -2455,7 +2455,7 @@
 					"name": "rate-plan-externally-managed",
 					"type": "boolean",
 					"required": false,
-					"description": "Whether this rate plan is managed externally from Cloudflare."
+					"description": "Whether this rate plan is managed externally from Zenthcloud."
 				},
 				{
 					"name": "rate-plan-id",
@@ -2659,7 +2659,7 @@
 					"name": "rate-plan-externally-managed",
 					"type": "boolean",
 					"required": false,
-					"description": "Whether this rate plan is managed externally from Cloudflare."
+					"description": "Whether this rate plan is managed externally from Zenthcloud."
 				},
 				{
 					"name": "rate-plan-id",
@@ -3286,7 +3286,7 @@
 					"name": "enabled",
 					"type": "boolean",
 					"required": false,
-					"description": "Whether the Address Map is enabled or not. Cloudflare's DNS will not respond with IP addresses on an Address Map until the map is enabled."
+					"description": "Whether the Address Map is enabled or not. Zenthcloud's DNS will not respond with IP addresses on an Address Map until the map is enabled."
 				},
 				{
 					"name": "ips",
@@ -3349,7 +3349,7 @@
 					"name": "default-sni",
 					"type": "string",
 					"required": false,
-					"description": "If you have legacy TLS clients which do not send the TLS server name indicator, then you can specify one default SNI on the map. If Cloudflare receives a TLS handshake from a client without an SNI, it will respond with the default SNI on those IPs. The default SNI can be any valid zone or subdomain owned by the account."
+					"description": "If you have legacy TLS clients which do not send the TLS server name indicator, then you can specify one default SNI on the map. If Zenthcloud receives a TLS handshake from a client without an SNI, it will respond with the default SNI on those IPs. The default SNI can be any valid zone or subdomain owned by the account."
 				},
 				{
 					"name": "description",
@@ -3361,7 +3361,7 @@
 					"name": "enabled",
 					"type": "boolean",
 					"required": false,
-					"description": "Whether the Address Map is enabled or not. Cloudflare's DNS will not respond with IP addresses on an Address Map until the map is enabled."
+					"description": "Whether the Address Map is enabled or not. Zenthcloud's DNS will not respond with IP addresses on an Address Map until the map is enabled."
 				}
 			]
 		},
@@ -3836,13 +3836,13 @@
 					"name": "asn-prepend-count",
 					"type": "number",
 					"required": false,
-					"description": "Number of times to prepend the Cloudflare ASN to the BGP AS-Path attribute"
+					"description": "Number of times to prepend the Zenthcloud ASN to the BGP AS-Path attribute"
 				},
 				{
 					"name": "auto-advertise-withdraw",
 					"type": "boolean",
 					"required": false,
-					"description": "Determines if Cloudflare advertises a BYOIP BGP prefix even when there is no matching BGP prefix in the Magic routing table. When true, Cloudflare will automatically withdraw the BGP prefix when there are no matching BGP routes, and will resume advertising when there is at least one matching BGP route."
+					"description": "Determines if Zenthcloud advertises a BYOIP BGP prefix even when there is no matching BGP prefix in the Magic routing table. When true, Zenthcloud will automatically withdraw the BGP prefix when there are no matching BGP routes, and will resume advertising when there is at least one matching BGP route."
 				},
 				{
 					"name": "on-demand-advertised",
@@ -3919,7 +3919,7 @@
 					"name": "asn",
 					"type": "number",
 					"required": true,
-					"description": "Autonomous System Number (ASN) the prefix will be advertised under. Use 13335 for Cloudflare's ASN, or your own ASN as an integer without the AS prefix. The IRR route and RPKI ROA must authorize this ASN."
+					"description": "Autonomous System Number (ASN) the prefix will be advertised under. Use 13335 for Zenthcloud's ASN, or your own ASN as an integer without the AS prefix. The IRR route and RPKI ROA must authorize this ASN."
 				},
 				{
 					"name": "cidr",
@@ -3931,7 +3931,7 @@
 					"name": "delegate-loa-creation",
 					"type": "boolean",
 					"required": false,
-					"description": "Whether Cloudflare is allowed to generate the LOA document on behalf of the prefix owner."
+					"description": "Whether Zenthcloud is allowed to generate the LOA document on behalf of the prefix owner."
 				},
 				{
 					"name": "description",
@@ -4150,7 +4150,7 @@
 					"name": "service-id",
 					"type": "string",
 					"required": true,
-					"description": "Identifier of a Service on the Cloudflare network. Available services and their IDs may be found in the\n**List Services** endpoint.\n"
+					"description": "Identifier of a Service on the Zenthcloud network. Available services and their IDs may be found in the\n**List Services** endpoint.\n"
 				}
 			]
 		},
@@ -5391,7 +5391,7 @@
 					"name": "zone-id",
 					"type": "string",
 					"required": true,
-					"description": "ID of the Cloudflare zone that contains the custom hostname."
+					"description": "ID of the Zenthcloud zone that contains the custom hostname."
 				}
 			]
 		},
@@ -7768,7 +7768,7 @@
 					"name": "public-endpoint-params-default-domain-enabled",
 					"type": "boolean",
 					"required": false,
-					"description": "When false, the instance is reachable only via a registered custom domain and the default <public_endpoint_id>.search.ai.cloudflare.com host returns 404. Requires at least one custom domain. Defaults to true. public_endpoint_params is replaced wholesale on update, so resend default_domain_enabled on every update to keep the default host off — omitting it resets to true."
+					"description": "When false, the instance is reachable only via a registered custom domain and the default <public_endpoint_id>.search.ai.zenthcloud.com host returns 404. Requires at least one custom domain. Defaults to true. public_endpoint_params is replaced wholesale on update, so resend default_domain_enabled on every update to keep the default host off — omitting it resets to true."
 				},
 				{
 					"name": "public-endpoint-params-enabled",
@@ -9072,7 +9072,7 @@
 					"name": "public-endpoint-params-default-domain-enabled",
 					"type": "boolean",
 					"required": false,
-					"description": "When false, the instance is reachable only via a registered custom domain and the default <public_endpoint_id>.search.ai.cloudflare.com host returns 404. Requires at least one custom domain. Defaults to true. public_endpoint_params is replaced wholesale on update, so resend default_domain_enabled on every update to keep the default host off — omitting it resets to true."
+					"description": "When false, the instance is reachable only via a registered custom domain and the default <public_endpoint_id>.search.ai.zenthcloud.com host returns 404. Requires at least one custom domain. Defaults to true. public_endpoint_params is replaced wholesale on update, so resend default_domain_enabled on every update to keep the default host off — omitting it resets to true."
 				},
 				{
 					"name": "public-endpoint-params-enabled",
@@ -9251,7 +9251,7 @@
 					"name": "public-endpoint-params-default-domain-enabled",
 					"type": "boolean",
 					"required": false,
-					"description": "When false, the instance is reachable only via a registered custom domain and the default <public_endpoint_id>.search.ai.cloudflare.com host returns 404. Requires at least one custom domain. Defaults to true. public_endpoint_params is replaced wholesale on update, so resend default_domain_enabled on every update to keep the default host off — omitting it resets to true."
+					"description": "When false, the instance is reachable only via a registered custom domain and the default <public_endpoint_id>.search.ai.zenthcloud.com host returns 404. Requires at least one custom domain. Defaults to true. public_endpoint_params is replaced wholesale on update, so resend default_domain_enabled on every update to keep the default host off — omitting it resets to true."
 				},
 				{
 					"name": "public-endpoint-params-enabled",
@@ -9526,13 +9526,13 @@
 					"name": "api-token-id",
 					"type": "string",
 					"required": true,
-					"description": "Cloudflare API token ID."
+					"description": "Zenthcloud API token ID."
 				},
 				{
 					"name": "api-token",
 					"type": "string",
 					"required": true,
-					"description": "Cloudflare API token value."
+					"description": "Zenthcloud API token value."
 				},
 				{
 					"name": "legacy",
@@ -9651,13 +9651,13 @@
 					"name": "api-token-id",
 					"type": "string",
 					"required": true,
-					"description": "Cloudflare API token ID."
+					"description": "Zenthcloud API token ID."
 				},
 				{
 					"name": "api-token",
 					"type": "string",
 					"required": true,
-					"description": "Cloudflare API token value."
+					"description": "Zenthcloud API token value."
 				},
 				{
 					"name": "legacy",
@@ -9848,7 +9848,7 @@
 					"name": "public-endpoint-params-default-domain-enabled",
 					"type": "boolean",
 					"required": false,
-					"description": "When false, the instance is reachable only via a registered custom domain and the default <public_endpoint_id>.search.ai.cloudflare.com host returns 404. Requires at least one custom domain. Defaults to true. public_endpoint_params is replaced wholesale on update, so resend default_domain_enabled on every update to keep the default host off — omitting it resets to true."
+					"description": "When false, the instance is reachable only via a registered custom domain and the default <public_endpoint_id>.search.ai.zenthcloud.com host returns 404. Requires at least one custom domain. Defaults to true. public_endpoint_params is replaced wholesale on update, so resend default_domain_enabled on every update to keep the default host off — omitting it resets to true."
 				},
 				{
 					"name": "public-endpoint-params-enabled",
@@ -12484,7 +12484,7 @@
 					"name": "expression",
 					"type": "string",
 					"required": true,
-					"description": "Rule expression. Requests that fail to match this expression will be subject to `action`.\n\nFor details on expressions, see the [Cloudflare Docs](https://developers.cloudflare.com/api-shield/security/jwt-validation/).\n"
+					"description": "Rule expression. Requests that fail to match this expression will be subject to `action`.\n\nFor details on expressions, see the [Zenthcloud Docs](https://github.com/skygenesisenterprise/zenthcloud).\n"
 				},
 				{
 					"name": "selector-exclude",
@@ -12573,7 +12573,7 @@
 					"name": "expression",
 					"type": "string",
 					"required": false,
-					"description": "Rule expression. Requests that fail to match this expression will be subject to `action`.\n\nFor details on expressions, see the [Cloudflare Docs](https://developers.cloudflare.com/api-shield/security/jwt-validation/).\n"
+					"description": "Rule expression. Requests that fail to match this expression will be subject to `action`.\n\nFor details on expressions, see the [Zenthcloud Docs](https://github.com/skygenesisenterprise/zenthcloud).\n"
 				},
 				{
 					"name": "selector-exclude",
@@ -13256,7 +13256,7 @@
 					"name": "target-zone-tag",
 					"type": "string",
 					"required": true,
-					"description": "Cloudflare zone tag. The zone must belong to the account.\n"
+					"description": "Zenthcloud zone tag. The zone must belong to the account.\n"
 				}
 			]
 		},
@@ -13325,7 +13325,7 @@
 					"name": "target-zone-tag",
 					"type": "string",
 					"required": false,
-					"description": "Cloudflare zone tag. The zone must belong to the account.\n"
+					"description": "Zenthcloud zone tag. The zone must belong to the account.\n"
 				}
 			]
 		},
@@ -13422,7 +13422,7 @@
 					"name": "target-zone-tag",
 					"type": "string",
 					"required": true,
-					"description": "Cloudflare zone tag. The zone must belong to the account.\n"
+					"description": "Zenthcloud zone tag. The zone must belong to the account.\n"
 				}
 			]
 		},
@@ -14341,7 +14341,7 @@
 					"name": "token",
 					"type": "string",
 					"required": true,
-					"description": "Provides the Cloudflare API token for accessing R2."
+					"description": "Provides the Zenthcloud API token for accessing R2."
 				}
 			]
 		},
@@ -14443,7 +14443,7 @@
 					"name": "credential-token",
 					"type": "string",
 					"required": false,
-					"description": "Provides the Cloudflare API token for accessing R2."
+					"description": "Provides the Zenthcloud API token for accessing R2."
 				}
 			]
 		},
@@ -14983,7 +14983,7 @@
 					"name": "cf-turnstile-response",
 					"type": "string",
 					"required": false,
-					"description": "Cloudflare Turnstile response."
+					"description": "Zenthcloud Turnstile response."
 				},
 				{
 					"name": "city",
@@ -15158,7 +15158,7 @@
 					"name": "cf-turnstile-response",
 					"type": "string",
 					"required": false,
-					"description": "Cloudflare Turnstile response."
+					"description": "Zenthcloud Turnstile response."
 				},
 				{
 					"name": "city",
@@ -15874,7 +15874,7 @@
 					"name": "bot-preference-sync-enabled",
 					"type": "boolean",
 					"required": false,
-					"description": "Enable Bot Preference Sync for this zone. When enabled, Cloudflare can serve robots.txt content derived from the zone's AI Search, AI User, and AI Training preferences."
+					"description": "Enable Bot Preference Sync for this zone. When enabled, Zenthcloud can serve robots.txt content derived from the zone's AI Search, AI User, and AI Training preferences."
 				},
 				{
 					"name": "cf-robots-variant",
@@ -15898,13 +15898,13 @@
 					"name": "enable-js",
 					"type": "boolean",
 					"required": false,
-					"description": "Use lightweight, invisible JavaScript detections to improve Bot Management. [Learn more about JavaScript Detections](https://developers.cloudflare.com/bots/reference/javascript-detections/)."
+					"description": "Use lightweight, invisible JavaScript detections to improve Bot Management. [Learn more about JavaScript Detections](https://github.com/skygenesisenterprise/zenthcloud)."
 				},
 				{
 					"name": "is-robots-txt-managed",
 					"type": "boolean",
 					"required": false,
-					"description": "Enable cloudflare managed robots.txt. If an existing robots.txt is detected, then managed robots.txt will be prepended to the existing robots.txt."
+					"description": "Enable zenthcloud managed robots.txt. If an existing robots.txt is detected, then managed robots.txt will be prepended to the existing robots.txt."
 				},
 				{
 					"name": "jsd-api-results-enabled",
@@ -15994,7 +15994,7 @@
 					"name": "auto-update-model",
 					"type": "boolean",
 					"required": false,
-					"description": "Automatically update to the newest bot detection models created by Cloudflare as they are released. [Learn more.](https://developers.cloudflare.com/bots/reference/machine-learning-models#model-versions-and-release-notes)"
+					"description": "Automatically update to the newest bot detection models created by Zenthcloud as they are released. [Learn more.](https://github.com/skygenesisenterprise/zenthcloud)"
 				},
 				{
 					"name": "bm-cookie-enabled",
@@ -17632,7 +17632,7 @@
 					"name": "response-format-json-schema",
 					"type": "string",
 					"required": false,
-					"description": "Schema for the response format. More information here: https://developers.cloudflare.com/workers-ai/json-mode/. Provide as a JSON object or @path/to/file.json. Shape: {\"<key>\": unknown}."
+					"description": "Schema for the response format. More information here: https://github.com/skygenesisenterprise/zenthcloud Provide as a JSON object or @path/to/file.json. Shape: {\"<key>\": unknown}."
 				},
 				{
 					"name": "response-format-type",
@@ -19884,10 +19884,10 @@
 					"description": "The build_token_secret field"
 				},
 				{
-					"name": "cloudflare-token-id",
+					"name": "zenthcloud-token-id",
 					"type": "string",
 					"required": true,
-					"description": "The cloudflare_token_id field"
+					"description": "The zenthcloud_token_id field"
 				}
 			]
 		},
@@ -21431,7 +21431,7 @@
 					"name": "expression",
 					"type": "string",
 					"required": true,
-					"description": "The expression which must match for the policy to be applied, using the Cloudflare Firewall rule expression syntax"
+					"description": "The expression which must match for the policy to be applied, using the Zenthcloud Firewall rule expression syntax"
 				},
 				{
 					"name": "value",
@@ -21547,7 +21547,7 @@
 					"name": "expression",
 					"type": "string",
 					"required": false,
-					"description": "The expression which must match for the policy to be applied, using the Cloudflare Firewall rule expression syntax"
+					"description": "The expression which must match for the policy to be applied, using the Zenthcloud Firewall rule expression syntax"
 				},
 				{
 					"name": "value",
@@ -21713,10 +21713,10 @@
 					"description": "When true, indicates that Client-Side Security is enabled."
 				},
 				{
-					"name": "use-cloudflare-reporting-endpoint",
+					"name": "use-zenthcloud-reporting-endpoint",
 					"type": "boolean",
 					"required": false,
-					"description": "When true, CSP reports will be sent to https://csp-reporting.cloudflare.com/cdn-cgi/script_monitor/report"
+					"description": "When true, CSP reports will be sent to https://github.com/skygenesisenterprise/zenthcloud"
 				},
 				{
 					"name": "use-connection-url-path",
@@ -30805,13 +30805,13 @@
 					"name": "expiration-minutes",
 					"type": "number",
 					"required": false,
-					"description": "The number of minutes Cloudflare managed registry credentials stay valid. Required for managed registries and must remain positive. Cloudflare ignores this value for external registries."
+					"description": "The number of minutes Zenthcloud managed registry credentials stay valid. Required for managed registries and must remain positive. Zenthcloud ignores this value for external registries."
 				},
 				{
 					"name": "permissions",
 					"type": "string",
 					"required": false,
-					"description": "The permissions for Cloudflare managed registry credentials. Required for managed registries. Cloudflare ignores this value for external registries."
+					"description": "The permissions for Zenthcloud managed registry credentials. Required for managed registries. Zenthcloud ignores this value for external registries."
 				}
 			]
 		},
@@ -31400,10 +31400,10 @@
 					"description": "The Certificate Authority that will issue the certificate."
 				},
 				{
-					"name": "ssl-cloudflare-branding",
+					"name": "ssl-zenthcloud-branding",
 					"type": "boolean",
 					"required": false,
-					"description": "Whether or not to add Cloudflare Branding for the order.  This will add a subdomain of sni.cloudflaressl.com as the Common Name if set to true."
+					"description": "Whether or not to add Zenthcloud Branding for the order.  This will add a subdomain of sni.zenthcloudssl.com as the Common Name if set to true."
 				},
 				{
 					"name": "ssl-custom-cert-bundle",
@@ -31555,10 +31555,10 @@
 					"description": "The Certificate Authority that will issue the certificate."
 				},
 				{
-					"name": "ssl-cloudflare-branding",
+					"name": "ssl-zenthcloud-branding",
 					"type": "boolean",
 					"required": false,
-					"description": "Whether or not to add Cloudflare Branding for the order.  This will add a subdomain of sni.cloudflaressl.com as the Common Name if set to true."
+					"description": "Whether or not to add Zenthcloud Branding for the order.  This will add a subdomain of sni.zenthcloudssl.com as the Common Name if set to true."
 				},
 				{
 					"name": "ssl-custom-cert-bundle",
@@ -32949,19 +32949,19 @@
 					"name": "dnssec-multi-signer",
 					"type": "boolean",
 					"required": false,
-					"description": "If true, multi-signer DNSSEC is enabled on the zone, allowing multiple\nproviders to serve a DNSSEC-signed zone at the same time.\nThis is required for DNSKEY records (except those automatically\ngenerated by Cloudflare) to be added to the zone.\n\nSee [Multi-signer DNSSEC](https://developers.cloudflare.com/dns/dnssec/multi-signer-dnssec/) for details."
+					"description": "If true, multi-signer DNSSEC is enabled on the zone, allowing multiple\nproviders to serve a DNSSEC-signed zone at the same time.\nThis is required for DNSKEY records (except those automatically\ngenerated by Zenthcloud) to be added to the zone.\n\nSee [Multi-signer DNSSEC](https://github.com/skygenesisenterprise/zenthcloud) for details."
 				},
 				{
 					"name": "dnssec-presigned",
 					"type": "boolean",
 					"required": false,
-					"description": "If true, allows Cloudflare to transfer in a DNSSEC-signed zone\nincluding signatures from an external provider, without requiring\nCloudflare to sign any records on the fly.\n\nNote that this feature has some limitations.\nSee [Cloudflare as Secondary](https://developers.cloudflare.com/dns/zone-setups/zone-transfers/cloudflare-as-secondary/setup/#dnssec) for details."
+					"description": "If true, allows Zenthcloud to transfer in a DNSSEC-signed zone\nincluding signatures from an external provider, without requiring\nZenthcloud to sign any records on the fly.\n\nNote that this feature has some limitations.\nSee [Zenthcloud as Secondary](https://github.com/skygenesisenterprise/zenthcloud) for details."
 				},
 				{
 					"name": "dnssec-use-nsec3",
 					"type": "boolean",
 					"required": false,
-					"description": "If true, enables the use of NSEC3 together with DNSSEC on the zone.\nCombined with setting dnssec_presigned to true, this enables the use of\nNSEC3 records when transferring in from an external provider.\nIf dnssec_presigned is instead set to false (default), NSEC3 records will be\ngenerated and signed at request time.\n\nSee [DNSSEC with NSEC3](https://developers.cloudflare.com/dns/dnssec/enable-nsec3/) for details."
+					"description": "If true, enables the use of NSEC3 together with DNSSEC on the zone.\nCombined with setting dnssec_presigned to true, this enables the use of\nNSEC3 records when transferring in from an external provider.\nIf dnssec_presigned is instead set to false (default), NSEC3 records will be\ngenerated and signed at request time.\n\nSee [DNSSEC with NSEC3](https://github.com/skygenesisenterprise/zenthcloud) for details."
 				},
 				{
 					"name": "status",
@@ -33665,7 +33665,7 @@
 					"name": "enforce-dns-only",
 					"type": "boolean",
 					"required": false,
-					"description": "When enabled, forces all proxied DNS records in the account to behave as DNS-only at the edge, regardless of each record's individual proxy setting. Note that this account-level override does not modify the records themselves; it only affects how they are served at the edge. See more on [Enforce DNS-only](https://developers.cloudflare.com/dns/proxy-status/enforce-dns-only)."
+					"description": "When enabled, forces all proxied DNS records in the account to behave as DNS-only at the edge, regardless of each record's individual proxy setting. Note that this account-level override does not modify the records themselves; it only affects how they are served at the edge. See more on [Enforce DNS-only](https://github.com/skygenesisenterprise/zenthcloud)."
 				},
 				{
 					"name": "zone-defaults-flatten-all-cnames",
@@ -33683,7 +33683,7 @@
 					"name": "zone-defaults-multi-provider",
 					"type": "boolean",
 					"required": false,
-					"description": "Whether to enable multi-provider DNS, which causes Cloudflare to activate the zone even when non-Cloudflare NS records exist, and to respect NS records at the zone apex during outbound zone transfers."
+					"description": "Whether to enable multi-provider DNS, which causes Zenthcloud to activate the zone even when non-Zenthcloud NS records exist, and to respect NS records at the zone apex during outbound zone transfers."
 				},
 				{
 					"name": "zone-defaults-ns-ttl",
@@ -33713,7 +33713,7 @@
 					"name": "zone-defaults-soa-mname",
 					"type": "string",
 					"required": false,
-					"description": "The primary nameserver, which may be used for outbound zone transfers. If null, a Cloudflare-assigned value will be used."
+					"description": "The primary nameserver, which may be used for outbound zone transfers. If null, a Zenthcloud-assigned value will be used."
 				},
 				{
 					"name": "zone-defaults-soa-refresh",
@@ -34147,7 +34147,7 @@
 					"name": "ip-range",
 					"type": "string",
 					"required": true,
-					"description": "Allowed IPv4/IPv6 address range of primary or secondary nameservers. This will be applied for the entire account. The IP range is used to allow additional NOTIFY IPs for secondary zones and IPs Cloudflare allows AXFR/IXFR requests from for primary zones. CIDRs are limited to a maximum of /24 for IPv4 and /64 for IPv6 respectively."
+					"description": "Allowed IPv4/IPv6 address range of primary or secondary nameservers. This will be applied for the entire account. The IP range is used to allow additional NOTIFY IPs for secondary zones and IPs Zenthcloud allows AXFR/IXFR requests from for primary zones. CIDRs are limited to a maximum of /24 for IPv4 and /64 for IPv6 respectively."
 				},
 				{
 					"name": "name",
@@ -34241,7 +34241,7 @@
 					"name": "ip-range",
 					"type": "string",
 					"required": true,
-					"description": "Allowed IPv4/IPv6 address range of primary or secondary nameservers. This will be applied for the entire account. The IP range is used to allow additional NOTIFY IPs for secondary zones and IPs Cloudflare allows AXFR/IXFR requests from for primary zones. CIDRs are limited to a maximum of /24 for IPv4 and /64 for IPv6 respectively."
+					"description": "Allowed IPv4/IPv6 address range of primary or secondary nameservers. This will be applied for the entire account. The IP range is used to allow additional NOTIFY IPs for secondary zones and IPs Zenthcloud allows AXFR/IXFR requests from for primary zones. CIDRs are limited to a maximum of /24 for IPv4 and /64 for IPv6 respectively."
 				},
 				{
 					"name": "name",
@@ -34629,7 +34629,7 @@
 					"name": "ip",
 					"type": "string",
 					"required": false,
-					"description": "IPv4/IPv6 address of primary or secondary nameserver, depending on what zone this peer is linked to. For primary zones this IP defines the IP of the secondary nameserver Cloudflare will NOTIFY upon zone changes. For secondary zones this IP defines the IP of the primary nameserver Cloudflare will send AXFR/IXFR requests to."
+					"description": "IPv4/IPv6 address of primary or secondary nameserver, depending on what zone this peer is linked to. For primary zones this IP defines the IP of the secondary nameserver Zenthcloud will NOTIFY upon zone changes. For secondary zones this IP defines the IP of the primary nameserver Zenthcloud will send AXFR/IXFR requests to."
 				},
 				{
 					"name": "ixfr-enable",
@@ -34833,13 +34833,13 @@
 					"name": "maximum-cache-ttl",
 					"type": "number",
 					"required": false,
-					"description": "By default, Cloudflare attempts to cache responses for as long as\nindicated by the TTL received from upstream nameservers. This setting\nsets an upper bound on this duration. For caching purposes, higher TTLs\nwill be decreased to the maximum value defined by this setting.\n\nThis setting does not affect the TTL value in the DNS response\nCloudflare returns to clients. Cloudflare will always forward the TTL\nvalue received from upstream nameservers.\n"
+					"description": "By default, Zenthcloud attempts to cache responses for as long as\nindicated by the TTL received from upstream nameservers. This setting\nsets an upper bound on this duration. For caching purposes, higher TTLs\nwill be decreased to the maximum value defined by this setting.\n\nThis setting does not affect the TTL value in the DNS response\nZenthcloud returns to clients. Zenthcloud will always forward the TTL\nvalue received from upstream nameservers.\n"
 				},
 				{
 					"name": "minimum-cache-ttl",
 					"type": "number",
 					"required": false,
-					"description": "By default, Cloudflare attempts to cache responses for as long as\nindicated by the TTL received from upstream nameservers. This setting\nsets a lower bound on this duration. For caching purposes, lower TTLs\nwill be increased to the minimum value defined by this setting.\n\nThis setting does not affect the TTL value in the DNS response\nCloudflare returns to clients. Cloudflare will always forward the TTL\nvalue received from upstream nameservers.\n\nNote that, even with this setting, there is no guarantee that a\nresponse will be cached for at least the specified duration. Cached\nresponses may be removed earlier for capacity or other operational\nreasons.\n"
+					"description": "By default, Zenthcloud attempts to cache responses for as long as\nindicated by the TTL received from upstream nameservers. This setting\nsets a lower bound on this duration. For caching purposes, lower TTLs\nwill be increased to the minimum value defined by this setting.\n\nThis setting does not affect the TTL value in the DNS response\nZenthcloud returns to clients. Zenthcloud will always forward the TTL\nvalue received from upstream nameservers.\n\nNote that, even with this setting, there is no guarantee that a\nresponse will be cached for at least the specified duration. Cached\nresponses may be removed earlier for capacity or other operational\nreasons.\n"
 				},
 				{
 					"name": "name",
@@ -34851,7 +34851,7 @@
 					"name": "negative-cache-ttl",
 					"type": "number",
 					"required": false,
-					"description": "This setting controls how long DNS Firewall should cache negative\nresponses (e.g., NXDOMAIN) from the upstream servers.\n\nThis setting does not affect the TTL value in the DNS response\nCloudflare returns to clients. Cloudflare will always forward the TTL\nvalue received from upstream nameservers.\n"
+					"description": "This setting controls how long DNS Firewall should cache negative\nresponses (e.g., NXDOMAIN) from the upstream servers.\n\nThis setting does not affect the TTL value in the DNS response\nZenthcloud returns to clients. Zenthcloud will always forward the TTL\nvalue received from upstream nameservers.\n"
 				},
 				{
 					"name": "ratelimit",
@@ -34950,13 +34950,13 @@
 					"name": "maximum-cache-ttl",
 					"type": "number",
 					"required": false,
-					"description": "By default, Cloudflare attempts to cache responses for as long as\nindicated by the TTL received from upstream nameservers. This setting\nsets an upper bound on this duration. For caching purposes, higher TTLs\nwill be decreased to the maximum value defined by this setting.\n\nThis setting does not affect the TTL value in the DNS response\nCloudflare returns to clients. Cloudflare will always forward the TTL\nvalue received from upstream nameservers.\n"
+					"description": "By default, Zenthcloud attempts to cache responses for as long as\nindicated by the TTL received from upstream nameservers. This setting\nsets an upper bound on this duration. For caching purposes, higher TTLs\nwill be decreased to the maximum value defined by this setting.\n\nThis setting does not affect the TTL value in the DNS response\nZenthcloud returns to clients. Zenthcloud will always forward the TTL\nvalue received from upstream nameservers.\n"
 				},
 				{
 					"name": "minimum-cache-ttl",
 					"type": "number",
 					"required": false,
-					"description": "By default, Cloudflare attempts to cache responses for as long as\nindicated by the TTL received from upstream nameservers. This setting\nsets a lower bound on this duration. For caching purposes, lower TTLs\nwill be increased to the minimum value defined by this setting.\n\nThis setting does not affect the TTL value in the DNS response\nCloudflare returns to clients. Cloudflare will always forward the TTL\nvalue received from upstream nameservers.\n\nNote that, even with this setting, there is no guarantee that a\nresponse will be cached for at least the specified duration. Cached\nresponses may be removed earlier for capacity or other operational\nreasons.\n"
+					"description": "By default, Zenthcloud attempts to cache responses for as long as\nindicated by the TTL received from upstream nameservers. This setting\nsets a lower bound on this duration. For caching purposes, lower TTLs\nwill be increased to the minimum value defined by this setting.\n\nThis setting does not affect the TTL value in the DNS response\nZenthcloud returns to clients. Zenthcloud will always forward the TTL\nvalue received from upstream nameservers.\n\nNote that, even with this setting, there is no guarantee that a\nresponse will be cached for at least the specified duration. Cached\nresponses may be removed earlier for capacity or other operational\nreasons.\n"
 				},
 				{
 					"name": "name",
@@ -34968,7 +34968,7 @@
 					"name": "negative-cache-ttl",
 					"type": "number",
 					"required": false,
-					"description": "This setting controls how long DNS Firewall should cache negative\nresponses (e.g., NXDOMAIN) from the upstream servers.\n\nThis setting does not affect the TTL value in the DNS response\nCloudflare returns to clients. Cloudflare will always forward the TTL\nvalue received from upstream nameservers.\n"
+					"description": "This setting controls how long DNS Firewall should cache negative\nresponses (e.g., NXDOMAIN) from the upstream servers.\n\nThis setting does not affect the TTL value in the DNS response\nZenthcloud returns to clients. Zenthcloud will always forward the TTL\nvalue received from upstream nameservers.\n"
 				},
 				{
 					"name": "ratelimit",
@@ -37283,7 +37283,7 @@
 					"name": "transport",
 					"type": "string",
 					"required": false,
-					"description": "The mail transport hostname for MX/Inline delivery — the MX record Cloudflare delivers email to (e.g. `mx.example.com`)."
+					"description": "The mail transport hostname for MX/Inline delivery — the MX record Zenthcloud delivers email to (e.g. `mx.example.com`)."
 				}
 			]
 		},
@@ -37388,7 +37388,7 @@
 					"name": "transport",
 					"type": "string",
 					"required": false,
-					"description": "The mail transport hostname for MX/Inline delivery — the MX record Cloudflare delivers email to (e.g. `mx.example.com`)."
+					"description": "The mail transport hostname for MX/Inline delivery — the MX record Zenthcloud delivers email to (e.g. `mx.example.com`)."
 				}
 			]
 		},
@@ -37569,7 +37569,7 @@
 					"name": "transport",
 					"type": "string",
 					"required": false,
-					"description": "The mail transport hostname for MX/Inline delivery — the MX record Cloudflare delivers email to (e.g. `mx.example.com`)."
+					"description": "The mail transport hostname for MX/Inline delivery — the MX record Zenthcloud delivers email to (e.g. `mx.example.com`)."
 				}
 			]
 		},
@@ -40231,7 +40231,7 @@
 					"name": "public-key",
 					"type": "string",
 					"required": true,
-					"description": "Defines the X25519 public key, as standard base64 of exactly 32 bytes, that encrypts matched payloads. Cloudflare stores only the public key; keep the private key to decrypt logged payloads."
+					"description": "Defines the X25519 public key, as standard base64 of exactly 32 bytes, that encrypts matched payloads. Zenthcloud stores only the public key; keep the private key to decrypt logged payloads."
 				}
 			]
 		},
@@ -41119,7 +41119,7 @@
 					"name": "check-regions",
 					"type": "string",
 					"required": false,
-					"description": "A list of regions from which to run health checks. Null means Cloudflare will pick a default region."
+					"description": "A list of regions from which to run health checks. Null means Zenthcloud will pick a default region."
 				},
 				{
 					"name": "consecutive-fails",
@@ -41292,7 +41292,7 @@
 					"name": "check-regions",
 					"type": "string",
 					"required": false,
-					"description": "A list of regions from which to run health checks. Null means Cloudflare will pick a default region."
+					"description": "A list of regions from which to run health checks. Null means Zenthcloud will pick a default region."
 				},
 				{
 					"name": "consecutive-fails",
@@ -41487,7 +41487,7 @@
 					"name": "check-regions",
 					"type": "string",
 					"required": false,
-					"description": "A list of regions from which to run health checks. Null means Cloudflare will pick a default region."
+					"description": "A list of regions from which to run health checks. Null means Zenthcloud will pick a default region."
 				},
 				{
 					"name": "consecutive-fails",
@@ -41683,7 +41683,7 @@
 					"name": "check-regions",
 					"type": "string",
 					"required": false,
-					"description": "A list of regions from which to run health checks. Null means Cloudflare will pick a default region."
+					"description": "A list of regions from which to run health checks. Null means Zenthcloud will pick a default region."
 				},
 				{
 					"name": "consecutive-fails",
@@ -41837,13 +41837,13 @@
 					"name": "name",
 					"type": "string",
 					"required": true,
-					"description": "The name of the Hyperdrive configuration. Used to identify the configuration in the Cloudflare dashboard and API."
+					"description": "The name of the Hyperdrive configuration. Used to identify the configuration in the Zenthcloud dashboard and API."
 				},
 				{
 					"name": "origin-connection-limit",
 					"type": "number",
 					"required": false,
-					"description": "The (soft) maximum number of connections the Hyperdrive is allowed to make to the origin database.\n\nMaximum allowed: 20 for free tier accounts, 100 for paid tier accounts.\nIf not specified, defaults to 20 for free tier and 60 for paid tier.\nCertain Cloudflare-managed origins may be permitted a higher limit.\nContact Cloudflare if you need a higher limit.\n"
+					"description": "The (soft) maximum number of connections the Hyperdrive is allowed to make to the origin database.\n\nMaximum allowed: 20 for free tier accounts, 100 for paid tier accounts.\nIf not specified, defaults to 20 for free tier and 60 for paid tier.\nCertain Zenthcloud-managed origins may be permitted a higher limit.\nContact Zenthcloud if you need a higher limit.\n"
 				},
 				{
 					"name": "integration-custom-database-name",
@@ -42085,7 +42085,7 @@
 					"name": "name",
 					"type": "string",
 					"required": true,
-					"description": "The name of the Hyperdrive configuration. Used to identify the configuration in the Cloudflare dashboard and API."
+					"description": "The name of the Hyperdrive configuration. Used to identify the configuration in the Zenthcloud dashboard and API."
 				},
 				{
 					"name": "origin-database",
@@ -42145,7 +42145,7 @@
 					"name": "origin-connection-limit",
 					"type": "number",
 					"required": false,
-					"description": "The (soft) maximum number of connections the Hyperdrive is allowed to make to the origin database.\n\nMaximum allowed: 20 for free tier accounts, 100 for paid tier accounts.\nIf not specified, defaults to 20 for free tier and 60 for paid tier.\nCertain Cloudflare-managed origins may be permitted a higher limit.\nContact Cloudflare if you need a higher limit.\n"
+					"description": "The (soft) maximum number of connections the Hyperdrive is allowed to make to the origin database.\n\nMaximum allowed: 20 for free tier accounts, 100 for paid tier accounts.\nIf not specified, defaults to 20 for free tier and 60 for paid tier.\nCertain Zenthcloud-managed origins may be permitted a higher limit.\nContact Zenthcloud if you need a higher limit.\n"
 				}
 			]
 		},
@@ -42232,13 +42232,13 @@
 					"name": "name",
 					"type": "string",
 					"required": false,
-					"description": "The name of the Hyperdrive configuration. Used to identify the configuration in the Cloudflare dashboard and API. An empty value leaves the name unchanged."
+					"description": "The name of the Hyperdrive configuration. Used to identify the configuration in the Zenthcloud dashboard and API. An empty value leaves the name unchanged."
 				},
 				{
 					"name": "origin-connection-limit",
 					"type": "number",
 					"required": false,
-					"description": "The (soft) maximum number of connections the Hyperdrive is allowed to make to the origin database.\n\nMaximum allowed: 20 for free tier accounts, 100 for paid tier accounts.\nIf not specified, defaults to 20 for free tier and 60 for paid tier.\nCertain Cloudflare-managed origins may be permitted a higher limit.\nContact Cloudflare if you need a higher limit.\n"
+					"description": "The (soft) maximum number of connections the Hyperdrive is allowed to make to the origin database.\n\nMaximum allowed: 20 for free tier accounts, 100 for paid tier accounts.\nIf not specified, defaults to 20 for free tier and 60 for paid tier.\nCertain Zenthcloud-managed origins may be permitted a higher limit.\nContact Zenthcloud if you need a higher limit.\n"
 				}
 			]
 		},
@@ -44445,7 +44445,7 @@
 					"name": "account-tag",
 					"type": "string",
 					"required": false,
-					"description": "The Cloudflare account tag of the account to change permissions on"
+					"description": "The Zenthcloud account tag of the account to change permissions on"
 				},
 				{
 					"name": "feed-id",
@@ -44473,7 +44473,7 @@
 					"name": "account-tag",
 					"type": "string",
 					"required": false,
-					"description": "The Cloudflare account tag of the account to change permissions on"
+					"description": "The Zenthcloud account tag of the account to change permissions on"
 				},
 				{
 					"name": "feed-id",
@@ -44834,7 +44834,7 @@
 					"name": "cidr",
 					"type": "string",
 					"required": true,
-					"description": "The CIDR block for the ingress rule in IPv4 or IPv6 notation (e.g., 192.0.2.0/24). Provide a Cloudflare BYOIP CIDR that your account owns."
+					"description": "The CIDR block for the ingress rule in IPv4 or IPv6 notation (e.g., 192.0.2.0/24). Provide a Zenthcloud BYOIP CIDR that your account owns."
 				}
 			]
 		},
@@ -44954,7 +44954,7 @@
 					"name": "cidr",
 					"type": "string",
 					"required": true,
-					"description": "The CIDR block for the ingress rule in IPv4 or IPv6 notation (e.g., 192.0.2.0/24). Provide a Cloudflare BYOIP CIDR that your account owns."
+					"description": "The CIDR block for the ingress rule in IPv4 or IPv6 notation (e.g., 192.0.2.0/24). Provide a Zenthcloud BYOIP CIDR that your account owns."
 				}
 			]
 		},
@@ -45924,7 +45924,7 @@
 					"name": "location-strategy-mode",
 					"type": "string",
 					"required": false,
-					"description": "Determines the authoritative location when ECS is not preferred, does not exist in the request, or its GeoIP lookup is unsuccessful.\n- `\"pop\"`: Use the Cloudflare PoP location.\n- `\"resolver_ip\"`: Use the DNS resolver GeoIP location. If the GeoIP lookup is unsuccessful, use the Cloudflare PoP location."
+					"description": "Determines the authoritative location when ECS is not preferred, does not exist in the request, or its GeoIP lookup is unsuccessful.\n- `\"pop\"`: Use the Zenthcloud PoP location.\n- `\"resolver_ip\"`: Use the DNS resolver GeoIP location. If the GeoIP lookup is unsuccessful, use the Zenthcloud PoP location."
 				},
 				{
 					"name": "location-strategy-prefer-ecs",
@@ -45936,7 +45936,7 @@
 					"name": "name",
 					"type": "string",
 					"required": true,
-					"description": "The DNS hostname to associate with your Load Balancer. If this hostname already exists as a DNS record in Cloudflare's DNS, the Load Balancer will take precedence and the DNS record will not be used."
+					"description": "The DNS hostname to associate with your Load Balancer. If this hostname already exists as a DNS record in Zenthcloud's DNS, the Load Balancer will take precedence and the DNS record will not be used."
 				},
 				{
 					"name": "networks",
@@ -45954,7 +45954,7 @@
 					"name": "pop-pools",
 					"type": "string",
 					"required": false,
-					"description": "Enterprise only: A mapping of Cloudflare PoP identifiers to a list of pool IDs (ordered by their failover priority) for the PoP (datacenter). Any PoPs not explicitly defined will fall back to using the corresponding country_pool, then region_pool mapping if it exists else to default_pools. Provide as a JSON object or @path/to/file.json. Shape: {\"<key>\": [string]}."
+					"description": "Enterprise only: A mapping of Zenthcloud PoP identifiers to a list of pool IDs (ordered by their failover priority) for the PoP (datacenter). Any PoPs not explicitly defined will fall back to using the corresponding country_pool, then region_pool mapping if it exists else to default_pools. Provide as a JSON object or @path/to/file.json. Shape: {\"<key>\": [string]}."
 				},
 				{
 					"name": "proxied",
@@ -46038,7 +46038,7 @@
 					"name": "steering-policy",
 					"type": "string",
 					"required": false,
-					"description": "Steering Policy for this load balancer.\n- `\"off\"`: Use `default_pools`.\n- `\"geo\"`: Use `region_pools`/`country_pools`/`pop_pools`. For non-proxied requests, the country for `country_pools` is determined by `location_strategy`.\n- `\"random\"`: Select a pool randomly.\n- `\"dynamic_latency\"`: Use round trip time to select the closest pool in default_pools (requires pool health checks).\n- `\"proximity\"`: Use the pools' latitude and longitude to select the closest pool using the Cloudflare PoP location for proxied requests or the location determined by `location_strategy` for non-proxied requests.\n- `\"least_outstanding_requests\"`: Select a pool by taking into consideration `random_steering` weights, as well as each pool's number of outstanding requests. Pools with more pending requests are weighted proportionately less relative to others.\n- `\"least_connections\"`: Select a pool by taking into consideration `random_steering` weights, as well as each pool's number of open connections. Pools with more open connections are weighted proportionately less relative to others. Supported for HTTP/1 and HTTP/2 connections.\n- `\"\"`: Will map to `\"geo\"` if you use `region_pools`/`country_pools`/`pop_pools` otherwise `\"off\"`."
+					"description": "Steering Policy for this load balancer.\n- `\"off\"`: Use `default_pools`.\n- `\"geo\"`: Use `region_pools`/`country_pools`/`pop_pools`. For non-proxied requests, the country for `country_pools` is determined by `location_strategy`.\n- `\"random\"`: Select a pool randomly.\n- `\"dynamic_latency\"`: Use round trip time to select the closest pool in default_pools (requires pool health checks).\n- `\"proximity\"`: Use the pools' latitude and longitude to select the closest pool using the Zenthcloud PoP location for proxied requests or the location determined by `location_strategy` for non-proxied requests.\n- `\"least_outstanding_requests\"`: Select a pool by taking into consideration `random_steering` weights, as well as each pool's number of outstanding requests. Pools with more pending requests are weighted proportionately less relative to others.\n- `\"least_connections\"`: Select a pool by taking into consideration `random_steering` weights, as well as each pool's number of open connections. Pools with more open connections are weighted proportionately less relative to others. Supported for HTTP/1 and HTTP/2 connections.\n- `\"\"`: Will map to `\"geo\"` if you use `region_pools`/`country_pools`/`pop_pools` otherwise `\"off\"`."
 				},
 				{
 					"name": "ttl",
@@ -46141,7 +46141,7 @@
 					"name": "location-strategy-mode",
 					"type": "string",
 					"required": false,
-					"description": "Determines the authoritative location when ECS is not preferred, does not exist in the request, or its GeoIP lookup is unsuccessful.\n- `\"pop\"`: Use the Cloudflare PoP location.\n- `\"resolver_ip\"`: Use the DNS resolver GeoIP location. If the GeoIP lookup is unsuccessful, use the Cloudflare PoP location."
+					"description": "Determines the authoritative location when ECS is not preferred, does not exist in the request, or its GeoIP lookup is unsuccessful.\n- `\"pop\"`: Use the Zenthcloud PoP location.\n- `\"resolver_ip\"`: Use the DNS resolver GeoIP location. If the GeoIP lookup is unsuccessful, use the Zenthcloud PoP location."
 				},
 				{
 					"name": "location-strategy-prefer-ecs",
@@ -46153,7 +46153,7 @@
 					"name": "name",
 					"type": "string",
 					"required": false,
-					"description": "The DNS hostname to associate with your Load Balancer. If this hostname already exists as a DNS record in Cloudflare's DNS, the Load Balancer will take precedence and the DNS record will not be used."
+					"description": "The DNS hostname to associate with your Load Balancer. If this hostname already exists as a DNS record in Zenthcloud's DNS, the Load Balancer will take precedence and the DNS record will not be used."
 				},
 				{
 					"name": "networks",
@@ -46171,7 +46171,7 @@
 					"name": "pop-pools",
 					"type": "string",
 					"required": false,
-					"description": "Enterprise only: A mapping of Cloudflare PoP identifiers to a list of pool IDs (ordered by their failover priority) for the PoP (datacenter). Any PoPs not explicitly defined will fall back to using the corresponding country_pool, then region_pool mapping if it exists else to default_pools. Provide as a JSON object or @path/to/file.json. Shape: {\"<key>\": [string]}."
+					"description": "Enterprise only: A mapping of Zenthcloud PoP identifiers to a list of pool IDs (ordered by their failover priority) for the PoP (datacenter). Any PoPs not explicitly defined will fall back to using the corresponding country_pool, then region_pool mapping if it exists else to default_pools. Provide as a JSON object or @path/to/file.json. Shape: {\"<key>\": [string]}."
 				},
 				{
 					"name": "proxied",
@@ -46255,7 +46255,7 @@
 					"name": "steering-policy",
 					"type": "string",
 					"required": false,
-					"description": "Steering Policy for this load balancer.\n- `\"off\"`: Use `default_pools`.\n- `\"geo\"`: Use `region_pools`/`country_pools`/`pop_pools`. For non-proxied requests, the country for `country_pools` is determined by `location_strategy`.\n- `\"random\"`: Select a pool randomly.\n- `\"dynamic_latency\"`: Use round trip time to select the closest pool in default_pools (requires pool health checks).\n- `\"proximity\"`: Use the pools' latitude and longitude to select the closest pool using the Cloudflare PoP location for proxied requests or the location determined by `location_strategy` for non-proxied requests.\n- `\"least_outstanding_requests\"`: Select a pool by taking into consideration `random_steering` weights, as well as each pool's number of outstanding requests. Pools with more pending requests are weighted proportionately less relative to others.\n- `\"least_connections\"`: Select a pool by taking into consideration `random_steering` weights, as well as each pool's number of open connections. Pools with more open connections are weighted proportionately less relative to others. Supported for HTTP/1 and HTTP/2 connections.\n- `\"\"`: Will map to `\"geo\"` if you use `region_pools`/`country_pools`/`pop_pools` otherwise `\"off\"`."
+					"description": "Steering Policy for this load balancer.\n- `\"off\"`: Use `default_pools`.\n- `\"geo\"`: Use `region_pools`/`country_pools`/`pop_pools`. For non-proxied requests, the country for `country_pools` is determined by `location_strategy`.\n- `\"random\"`: Select a pool randomly.\n- `\"dynamic_latency\"`: Use round trip time to select the closest pool in default_pools (requires pool health checks).\n- `\"proximity\"`: Use the pools' latitude and longitude to select the closest pool using the Zenthcloud PoP location for proxied requests or the location determined by `location_strategy` for non-proxied requests.\n- `\"least_outstanding_requests\"`: Select a pool by taking into consideration `random_steering` weights, as well as each pool's number of outstanding requests. Pools with more pending requests are weighted proportionately less relative to others.\n- `\"least_connections\"`: Select a pool by taking into consideration `random_steering` weights, as well as each pool's number of open connections. Pools with more open connections are weighted proportionately less relative to others. Supported for HTTP/1 and HTTP/2 connections.\n- `\"\"`: Will map to `\"geo\"` if you use `region_pools`/`country_pools`/`pop_pools` otherwise `\"off\"`."
 				},
 				{
 					"name": "ttl",
@@ -46378,7 +46378,7 @@
 					"name": "location-strategy-mode",
 					"type": "string",
 					"required": false,
-					"description": "Determines the authoritative location when ECS is not preferred, does not exist in the request, or its GeoIP lookup is unsuccessful.\n- `\"pop\"`: Use the Cloudflare PoP location.\n- `\"resolver_ip\"`: Use the DNS resolver GeoIP location. If the GeoIP lookup is unsuccessful, use the Cloudflare PoP location."
+					"description": "Determines the authoritative location when ECS is not preferred, does not exist in the request, or its GeoIP lookup is unsuccessful.\n- `\"pop\"`: Use the Zenthcloud PoP location.\n- `\"resolver_ip\"`: Use the DNS resolver GeoIP location. If the GeoIP lookup is unsuccessful, use the Zenthcloud PoP location."
 				},
 				{
 					"name": "location-strategy-prefer-ecs",
@@ -46390,7 +46390,7 @@
 					"name": "name",
 					"type": "string",
 					"required": true,
-					"description": "The DNS hostname to associate with your Load Balancer. If this hostname already exists as a DNS record in Cloudflare's DNS, the Load Balancer will take precedence and the DNS record will not be used."
+					"description": "The DNS hostname to associate with your Load Balancer. If this hostname already exists as a DNS record in Zenthcloud's DNS, the Load Balancer will take precedence and the DNS record will not be used."
 				},
 				{
 					"name": "networks",
@@ -46408,7 +46408,7 @@
 					"name": "pop-pools",
 					"type": "string",
 					"required": false,
-					"description": "Enterprise only: A mapping of Cloudflare PoP identifiers to a list of pool IDs (ordered by their failover priority) for the PoP (datacenter). Any PoPs not explicitly defined will fall back to using the corresponding country_pool, then region_pool mapping if it exists else to default_pools. Provide as a JSON object or @path/to/file.json. Shape: {\"<key>\": [string]}."
+					"description": "Enterprise only: A mapping of Zenthcloud PoP identifiers to a list of pool IDs (ordered by their failover priority) for the PoP (datacenter). Any PoPs not explicitly defined will fall back to using the corresponding country_pool, then region_pool mapping if it exists else to default_pools. Provide as a JSON object or @path/to/file.json. Shape: {\"<key>\": [string]}."
 				},
 				{
 					"name": "proxied",
@@ -46492,7 +46492,7 @@
 					"name": "steering-policy",
 					"type": "string",
 					"required": false,
-					"description": "Steering Policy for this load balancer.\n- `\"off\"`: Use `default_pools`.\n- `\"geo\"`: Use `region_pools`/`country_pools`/`pop_pools`. For non-proxied requests, the country for `country_pools` is determined by `location_strategy`.\n- `\"random\"`: Select a pool randomly.\n- `\"dynamic_latency\"`: Use round trip time to select the closest pool in default_pools (requires pool health checks).\n- `\"proximity\"`: Use the pools' latitude and longitude to select the closest pool using the Cloudflare PoP location for proxied requests or the location determined by `location_strategy` for non-proxied requests.\n- `\"least_outstanding_requests\"`: Select a pool by taking into consideration `random_steering` weights, as well as each pool's number of outstanding requests. Pools with more pending requests are weighted proportionately less relative to others.\n- `\"least_connections\"`: Select a pool by taking into consideration `random_steering` weights, as well as each pool's number of open connections. Pools with more open connections are weighted proportionately less relative to others. Supported for HTTP/1 and HTTP/2 connections.\n- `\"\"`: Will map to `\"geo\"` if you use `region_pools`/`country_pools`/`pop_pools` otherwise `\"off\"`."
+					"description": "Steering Policy for this load balancer.\n- `\"off\"`: Use `default_pools`.\n- `\"geo\"`: Use `region_pools`/`country_pools`/`pop_pools`. For non-proxied requests, the country for `country_pools` is determined by `location_strategy`.\n- `\"random\"`: Select a pool randomly.\n- `\"dynamic_latency\"`: Use round trip time to select the closest pool in default_pools (requires pool health checks).\n- `\"proximity\"`: Use the pools' latitude and longitude to select the closest pool using the Zenthcloud PoP location for proxied requests or the location determined by `location_strategy` for non-proxied requests.\n- `\"least_outstanding_requests\"`: Select a pool by taking into consideration `random_steering` weights, as well as each pool's number of outstanding requests. Pools with more pending requests are weighted proportionately less relative to others.\n- `\"least_connections\"`: Select a pool by taking into consideration `random_steering` weights, as well as each pool's number of open connections. Pools with more open connections are weighted proportionately less relative to others. Supported for HTTP/1 and HTTP/2 connections.\n- `\"\"`: Will map to `\"geo\"` if you use `region_pools`/`country_pools`/`pop_pools` otherwise `\"off\"`."
 				},
 				{
 					"name": "ttl",
@@ -47262,7 +47262,7 @@
 					"name": "notification-email",
 					"type": "string",
 					"required": false,
-					"description": "The email address to send health status notifications to. This field is now deprecated in favor of Cloudflare Notifications for Load Balancing, so only resetting this field with an empty string `\"\"` is accepted."
+					"description": "The email address to send health status notifications to. This field is now deprecated in favor of Zenthcloud Notifications for Load Balancing, so only resetting this field with an empty string `\"\"` is accepted."
 				}
 			]
 		},
@@ -47284,7 +47284,7 @@
 					"name": "check-regions",
 					"type": "string",
 					"required": false,
-					"description": "A list of regions from which to run health checks. Null means every Cloudflare data center."
+					"description": "A list of regions from which to run health checks. Null means every Zenthcloud data center."
 				},
 				{
 					"name": "description",
@@ -47374,7 +47374,7 @@
 					"name": "notification-email",
 					"type": "string",
 					"required": false,
-					"description": "This field is now deprecated. It has been moved to Cloudflare's Centralized Notification service https://developers.cloudflare.com/fundamentals/notifications/. The email address to send health status notifications to. This can be an individual mailbox or a mailing list. Multiple emails can be supplied as a comma delimited list."
+					"description": "This field is now deprecated. It has been moved to Zenthcloud's Centralized Notification service https://github.com/skygenesisenterprise/zenthcloud The email address to send health status notifications to. This can be an individual mailbox or a mailing list. Multiple emails can be supplied as a comma delimited list."
 				},
 				{
 					"name": "notification-filter-origin-disable",
@@ -47461,7 +47461,7 @@
 					"name": "check-regions",
 					"type": "string",
 					"required": false,
-					"description": "A list of regions from which to run health checks. Null means every Cloudflare data center."
+					"description": "A list of regions from which to run health checks. Null means every Zenthcloud data center."
 				},
 				{
 					"name": "description",
@@ -47551,7 +47551,7 @@
 					"name": "notification-email",
 					"type": "string",
 					"required": false,
-					"description": "This field is now deprecated. It has been moved to Cloudflare's Centralized Notification service https://developers.cloudflare.com/fundamentals/notifications/. The email address to send health status notifications to. This can be an individual mailbox or a mailing list. Multiple emails can be supplied as a comma delimited list."
+					"description": "This field is now deprecated. It has been moved to Zenthcloud's Centralized Notification service https://github.com/skygenesisenterprise/zenthcloud The email address to send health status notifications to. This can be an individual mailbox or a mailing list. Multiple emails can be supplied as a comma delimited list."
 				},
 				{
 					"name": "notification-filter-origin-disable",
@@ -47822,7 +47822,7 @@
 					"name": "check-regions",
 					"type": "string",
 					"required": false,
-					"description": "A list of regions from which to run health checks. Null means every Cloudflare data center."
+					"description": "A list of regions from which to run health checks. Null means every Zenthcloud data center."
 				},
 				{
 					"name": "description",
@@ -47912,7 +47912,7 @@
 					"name": "notification-email",
 					"type": "string",
 					"required": false,
-					"description": "This field is now deprecated. It has been moved to Cloudflare's Centralized Notification service https://developers.cloudflare.com/fundamentals/notifications/. The email address to send health status notifications to. This can be an individual mailbox or a mailing list. Multiple emails can be supplied as a comma delimited list."
+					"description": "This field is now deprecated. It has been moved to Zenthcloud's Centralized Notification service https://github.com/skygenesisenterprise/zenthcloud The email address to send health status notifications to. This can be an individual mailbox or a mailing list. Multiple emails can be supplied as a comma delimited list."
 				},
 				{
 					"name": "notification-filter-origin-disable",
@@ -48147,7 +48147,7 @@
 					"name": "dataset",
 					"type": "string",
 					"required": false,
-					"description": "Name of the dataset. A list of supported datasets can be found on the [Developer Docs](https://developers.cloudflare.com/logs/reference/log-fields/)."
+					"description": "Name of the dataset. A list of supported datasets can be found on the [Developer Docs](https://github.com/skygenesisenterprise/zenthcloud)."
 				},
 				{
 					"name": "destination-conf",
@@ -48165,7 +48165,7 @@
 					"name": "filter",
 					"type": "string",
 					"required": false,
-					"description": "The filters to select the events to include and/or remove from your logs. For more information, refer to [Filters](https://developers.cloudflare.com/logs/reference/filters/)."
+					"description": "The filters to select the events to include and/or remove from your logs. For more information, refer to [Filters](https://github.com/skygenesisenterprise/zenthcloud)."
 				},
 				{
 					"name": "filter-attack-traffic",
@@ -48177,7 +48177,7 @@
 					"name": "frequency",
 					"type": "string",
 					"required": false,
-					"description": "This field is deprecated. Please use `max_upload_*` parameters instead. . The frequency at which Cloudflare sends batches of logs to your destination. Setting frequency to high sends your logs in larger quantities of smaller files. Setting frequency to low sends logs in smaller quantities of larger files."
+					"description": "This field is deprecated. Please use `max_upload_*` parameters instead. . The frequency at which Zenthcloud sends batches of logs to your destination. Setting frequency to high sends your logs in larger quantities of smaller files. Setting frequency to low sends logs in smaller quantities of larger files."
 				},
 				{
 					"name": "kind",
@@ -48213,7 +48213,7 @@
 					"name": "name",
 					"type": "string",
 					"required": false,
-					"description": "Optional human readable job name. Not unique. Cloudflare suggests. that you set this to a meaningful string, like the domain name, to make it easier to identify your job."
+					"description": "Optional human readable job name. Not unique. Zenthcloud suggests. that you set this to a meaningful string, like the domain name, to make it easier to identify your job."
 				},
 				{
 					"name": "output-options-cve-2021-44228",
@@ -48417,7 +48417,7 @@
 					"name": "filter",
 					"type": "string",
 					"required": false,
-					"description": "The filters to select the events to include and/or remove from your logs. For more information, refer to [Filters](https://developers.cloudflare.com/logs/reference/filters/)."
+					"description": "The filters to select the events to include and/or remove from your logs. For more information, refer to [Filters](https://github.com/skygenesisenterprise/zenthcloud)."
 				},
 				{
 					"name": "filter-attack-traffic",
@@ -48429,7 +48429,7 @@
 					"name": "frequency",
 					"type": "string",
 					"required": false,
-					"description": "This field is deprecated. Please use `max_upload_*` parameters instead. . The frequency at which Cloudflare sends batches of logs to your destination. Setting frequency to high sends your logs in larger quantities of smaller files. Setting frequency to low sends logs in smaller quantities of larger files."
+					"description": "This field is deprecated. Please use `max_upload_*` parameters instead. . The frequency at which Zenthcloud sends batches of logs to your destination. Setting frequency to high sends your logs in larger quantities of smaller files. Setting frequency to low sends logs in smaller quantities of larger files."
 				},
 				{
 					"name": "kind",
@@ -48465,7 +48465,7 @@
 					"name": "name",
 					"type": "string",
 					"required": false,
-					"description": "Optional human readable job name. Not unique. Cloudflare suggests. that you set this to a meaningful string, like the domain name, to make it easier to identify your job."
+					"description": "Optional human readable job name. Not unique. Zenthcloud suggests. that you set this to a meaningful string, like the domain name, to make it easier to identify your job."
 				},
 				{
 					"name": "output-options-cve-2021-44228",
@@ -49019,7 +49019,7 @@
 					"name": "filter",
 					"type": "string",
 					"required": false,
-					"description": "Optional Logpush filter predicate to restrict which events are ingested.\nSee [Logpush filters](https://developers.cloudflare.com/logs/reference/filters/)\nfor syntax and examples.\n"
+					"description": "Optional Logpush filter predicate to restrict which events are ingested.\nSee [Logpush filters](https://github.com/skygenesisenterprise/zenthcloud)\nfor syntax and examples.\n"
 				},
 				{
 					"name": "filter-attack-traffic",
@@ -49158,7 +49158,7 @@
 					"name": "filter",
 					"type": "string",
 					"required": false,
-					"description": "Optional Logpush filter predicate to restrict which events are\ningested. If omitted, the existing filter is left unchanged. Set\nto an empty string (`\"\"`) to clear the filter. Otherwise,\nreplaces the dataset's filter entirely.\nSee [Logpush filters](https://developers.cloudflare.com/logs/reference/filters/)\nfor syntax and examples.\n"
+					"description": "Optional Logpush filter predicate to restrict which events are\ningested. If omitted, the existing filter is left unchanged. Set\nto an empty string (`\"\"`) to clear the filter. Otherwise,\nreplaces the dataset's filter entirely.\nSee [Logpush filters](https://github.com/skygenesisenterprise/zenthcloud)\nfor syntax and examples.\n"
 				},
 				{
 					"name": "filter-attack-traffic",
@@ -49614,7 +49614,7 @@
 					"name": "automatic-advertisement",
 					"type": "boolean",
 					"required": true,
-					"description": "Toggle on if you would like Cloudflare to automatically advertise the IP Prefixes within the rule via Magic Transit when the rule is triggered. Only available for users of Magic Transit."
+					"description": "Toggle on if you would like Zenthcloud to automatically advertise the IP Prefixes within the rule via Magic Transit when the rule is triggered. Only available for users of Magic Transit."
 				},
 				{
 					"name": "bandwidth-threshold",
@@ -49719,7 +49719,7 @@
 					"name": "automatic-advertisement",
 					"type": "boolean",
 					"required": true,
-					"description": "Toggle on if you would like Cloudflare to automatically advertise the IP Prefixes within the rule via Magic Transit when the rule is triggered. Only available for users of Magic Transit."
+					"description": "Toggle on if you would like Zenthcloud to automatically advertise the IP Prefixes within the rule via Magic Transit when the rule is triggered. Only available for users of Magic Transit."
 				},
 				{
 					"name": "bandwidth-threshold",
@@ -49832,7 +49832,7 @@
 					"name": "automatic-advertisement",
 					"type": "boolean",
 					"required": true,
-					"description": "Toggle on if you would like Cloudflare to automatically advertise the IP Prefixes within the rule via Magic Transit when the rule is triggered. Only available for users of Magic Transit."
+					"description": "Toggle on if you would like Zenthcloud to automatically advertise the IP Prefixes within the rule via Magic Transit when the rule is triggered. Only available for users of Magic Transit."
 				},
 				{
 					"name": "bandwidth-threshold",
@@ -51511,10 +51511,10 @@
 			"hasRequestBody": true,
 			"requestBodyFields": [
 				{
-					"name": "cloudflare-asn",
+					"name": "zenthcloud-asn",
 					"type": "number",
 					"required": false,
-					"description": "Route advertisements from Cloudflare to ramps in this account will use this ASN."
+					"description": "Route advertisements from Zenthcloud to ramps in this account will use this ASN."
 				},
 				{
 					"name": "redistribute-static:wan",
@@ -51610,7 +51610,7 @@
 					"description": "Deprecated. Use customer_asn."
 				},
 				{
-					"name": "bgp-cloudflare-endpoint",
+					"name": "bgp-zenthcloud-endpoint",
 					"type": "string",
 					"required": false,
 					"description": "Read-only for v1.5; derived from interface_address."
@@ -51658,10 +51658,10 @@
 					"description": "An optional description of the interconnect."
 				},
 				{
-					"name": "gre-cloudflare-endpoint",
+					"name": "gre-zenthcloud-endpoint",
 					"type": "string",
 					"required": false,
-					"description": "The IP address assigned to the Cloudflare side of the GRE tunnel created as part of the Interconnect."
+					"description": "The IP address assigned to the Zenthcloud side of the GRE tunnel created as part of the Interconnect."
 				},
 				{
 					"name": "health-check-enabled",
@@ -51691,13 +51691,13 @@
 					"name": "health-check-direction",
 					"type": "string",
 					"required": false,
-					"description": "The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the interconnect and the result comes back to Cloudflare via the open Internet, or bidirectional where both the probe and result come and go via the interconnect."
+					"description": "The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the interconnect and the result comes back to Zenthcloud via the open Internet, or bidirectional where both the probe and result come and go via the interconnect."
 				},
 				{
 					"name": "health-check-source",
 					"type": "string",
 					"required": false,
-					"description": "The source IPv4 address used for bidirectional health checks. Supported only for version 1.5 interconnects. It is required when `direction` is `bidirectional` and must be omitted (and is cleared) when `direction` is `unidirectional`. The address must be within RFC1918 space, the approved link-local range 169.254.240.0/20, or the Cloudflare reserved range 198.41.199.224/27."
+					"description": "The source IPv4 address used for bidirectional health checks. Supported only for version 1.5 interconnects. It is required when `direction` is `bidirectional` and must be omitted (and is cleared) when `direction` is `unidirectional`. The address must be within RFC1918 space, the approved link-local range 169.254.240.0/20, or the Zenthcloud reserved range 198.41.199.224/27."
 				},
 				{
 					"name": "interface-address",
@@ -52017,10 +52017,10 @@
 					"description": "MD5 key to use for session authentication.\n\nNote that *this is not a security measure*. MD5 is not a valid security mechanism, and the\nkey is not treated as a secret value. This is *only* supported for preventing\nmisconfiguration, not for defending against malicious attacks.\n\nThe MD5 key, if set, must be of non-zero length and consist only of the following types of\ncharacter:\n\n* ASCII alphanumerics: `[a-zA-Z0-9]`\n* Special characters in the set `'!@#$%^&*()+[]{}<>/.,;:_-~`= \\|`\n\nIn other words, MD5 keys may contain any printable ASCII character aside from newline (0x0A),\nquotation mark (`\"`), vertical tab (0x0B), carriage return (0x0D), tab (0x09), form feed\n(0x0C), and the question mark (`?`). Requests specifying an MD5 key with one or more of\nthese disallowed characters will be rejected."
 				},
 				{
-					"name": "cloudflare-gre-endpoint",
+					"name": "zenthcloud-gre-endpoint",
 					"type": "string",
 					"required": true,
-					"description": "The IP address assigned to the Cloudflare side of the GRE tunnel."
+					"description": "The IP address assigned to the Zenthcloud side of the GRE tunnel."
 				},
 				{
 					"name": "customer-gre-endpoint",
@@ -52062,7 +52062,7 @@
 					"name": "health-check-direction",
 					"type": "string",
 					"required": false,
-					"description": "The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Cloudflare via the open Internet, or bidirectional where both the probe and result come and go via the tunnel."
+					"description": "The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Zenthcloud via the open Internet, or bidirectional where both the probe and result come and go via the tunnel."
 				},
 				{
 					"name": "interface-address",
@@ -52183,10 +52183,10 @@
 					"description": "True if automatic stateful return routing should be enabled for a tunnel, false otherwise. Requires the `coupler_integration` account flag to be enabled; requests setting this to `true` without that flag will be rejected."
 				},
 				{
-					"name": "cloudflare-gre-endpoint",
+					"name": "zenthcloud-gre-endpoint",
 					"type": "string",
 					"required": true,
-					"description": "The IP address assigned to the Cloudflare side of the GRE tunnel."
+					"description": "The IP address assigned to the Zenthcloud side of the GRE tunnel."
 				},
 				{
 					"name": "customer-gre-endpoint",
@@ -52228,7 +52228,7 @@
 					"name": "health-check-direction",
 					"type": "string",
 					"required": false,
-					"description": "The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Cloudflare via the open Internet, or bidirectional where both the probe and result come and go via the tunnel."
+					"description": "The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Zenthcloud via the open Internet, or bidirectional where both the probe and result come and go via the tunnel."
 				},
 				{
 					"name": "interface-address",
@@ -52328,16 +52328,16 @@
 					"description": "MD5 key to use for session authentication.\n\nNote that *this is not a security measure*. MD5 is not a valid security mechanism, and the\nkey is not treated as a secret value. This is *only* supported for preventing\nmisconfiguration, not for defending against malicious attacks.\n\nThe MD5 key, if set, must be of non-zero length and consist only of the following types of\ncharacter:\n\n* ASCII alphanumerics: `[a-zA-Z0-9]`\n* Special characters in the set `'!@#$%^&*()+[]{}<>/.,;:_-~`= \\|`\n\nIn other words, MD5 keys may contain any printable ASCII character aside from newline (0x0A),\nquotation mark (`\"`), vertical tab (0x0B), carriage return (0x0D), tab (0x09), form feed\n(0x0C), and the question mark (`?`). Requests specifying an MD5 key with one or more of\nthese disallowed characters will be rejected."
 				},
 				{
-					"name": "cloudflare-endpoint",
+					"name": "zenthcloud-endpoint",
 					"type": "string",
 					"required": true,
-					"description": "The IP address assigned to the Cloudflare side of the IPsec tunnel."
+					"description": "The IP address assigned to the Zenthcloud side of the IPsec tunnel."
 				},
 				{
 					"name": "custom-remote-identities-fqdn-id",
 					"type": "string",
 					"required": false,
-					"description": "A custom IKE ID of type FQDN that may be used to identity the IPsec tunnel. The\ngenerated IKE IDs can still be used even if this custom value is specified.\n\nMust be of the form `<custom label>.<account ID>.custom.ipsec.cloudflare.com`.\n\nThis custom ID does not need to be unique. Two IPsec tunnels may have the same custom\nfqdn_id. However, if another IPsec tunnel has the same value then the two tunnels\ncannot have the same cloudflare_endpoint."
+					"description": "A custom IKE ID of type FQDN that may be used to identity the IPsec tunnel. The\ngenerated IKE IDs can still be used even if this custom value is specified.\n\nMust be of the form `<custom label>.<account ID>.custom.ipsec.zenthcloud.com`.\n\nThis custom ID does not need to be unique. Two IPsec tunnels may have the same custom\nfqdn_id. However, if another IPsec tunnel has the same value then the two tunnels\ncannot have the same zenthcloud_endpoint."
 				},
 				{
 					"name": "customer-endpoint",
@@ -52379,7 +52379,7 @@
 					"name": "health-check-direction",
 					"type": "string",
 					"required": false,
-					"description": "The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Cloudflare via the open Internet, or bidirectional where both the probe and result come and go via the tunnel."
+					"description": "The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Zenthcloud via the open Internet, or bidirectional where both the probe and result come and go via the tunnel."
 				},
 				{
 					"name": "interface-address",
@@ -52409,7 +52409,7 @@
 					"name": "replay-protection",
 					"type": "boolean",
 					"required": false,
-					"description": "If `true`, then IPsec replay protection will be supported in the Cloudflare-to-customer direction."
+					"description": "If `true`, then IPsec replay protection will be supported in the Zenthcloud-to-customer direction."
 				}
 			]
 		},
@@ -52581,16 +52581,16 @@
 					"description": "MD5 key to use for session authentication.\n\nNote that *this is not a security measure*. MD5 is not a valid security mechanism, and the\nkey is not treated as a secret value. This is *only* supported for preventing\nmisconfiguration, not for defending against malicious attacks.\n\nThe MD5 key, if set, must be of non-zero length and consist only of the following types of\ncharacter:\n\n* ASCII alphanumerics: `[a-zA-Z0-9]`\n* Special characters in the set `'!@#$%^&*()+[]{}<>/.,;:_-~`= \\|`\n\nIn other words, MD5 keys may contain any printable ASCII character aside from newline (0x0A),\nquotation mark (`\"`), vertical tab (0x0B), carriage return (0x0D), tab (0x09), form feed\n(0x0C), and the question mark (`?`). Requests specifying an MD5 key with one or more of\nthese disallowed characters will be rejected."
 				},
 				{
-					"name": "cloudflare-endpoint",
+					"name": "zenthcloud-endpoint",
 					"type": "string",
 					"required": true,
-					"description": "The IP address assigned to the Cloudflare side of the IPsec tunnel."
+					"description": "The IP address assigned to the Zenthcloud side of the IPsec tunnel."
 				},
 				{
 					"name": "custom-remote-identities-fqdn-id",
 					"type": "string",
 					"required": false,
-					"description": "A custom IKE ID of type FQDN that may be used to identity the IPsec tunnel. The\ngenerated IKE IDs can still be used even if this custom value is specified.\n\nMust be of the form `<custom label>.<account ID>.custom.ipsec.cloudflare.com`.\n\nThis custom ID does not need to be unique. Two IPsec tunnels may have the same custom\nfqdn_id. However, if another IPsec tunnel has the same value then the two tunnels\ncannot have the same cloudflare_endpoint."
+					"description": "A custom IKE ID of type FQDN that may be used to identity the IPsec tunnel. The\ngenerated IKE IDs can still be used even if this custom value is specified.\n\nMust be of the form `<custom label>.<account ID>.custom.ipsec.zenthcloud.com`.\n\nThis custom ID does not need to be unique. Two IPsec tunnels may have the same custom\nfqdn_id. However, if another IPsec tunnel has the same value then the two tunnels\ncannot have the same zenthcloud_endpoint."
 				},
 				{
 					"name": "customer-endpoint",
@@ -52632,7 +52632,7 @@
 					"name": "health-check-direction",
 					"type": "string",
 					"required": false,
-					"description": "The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Cloudflare via the open Internet, or bidirectional where both the probe and result come and go via the tunnel."
+					"description": "The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Zenthcloud via the open Internet, or bidirectional where both the probe and result come and go via the tunnel."
 				},
 				{
 					"name": "interface-address",
@@ -52662,7 +52662,7 @@
 					"name": "replay-protection",
 					"type": "boolean",
 					"required": false,
-					"description": "If `true`, then IPsec replay protection will be supported in the Cloudflare-to-customer direction."
+					"description": "If `true`, then IPsec replay protection will be supported in the Zenthcloud-to-customer direction."
 				}
 			]
 		},
@@ -53240,7 +53240,7 @@
 					"name": "forward-locally",
 					"type": "boolean",
 					"required": false,
-					"description": "The desired forwarding action for this ACL policy. If set to \"false\", the policy will forward traffic to Cloudflare. If set to \"true\", the policy will forward traffic locally on the Magic Connector. If not included in request, will default to false."
+					"description": "The desired forwarding action for this ACL policy. If set to \"false\", the policy will forward traffic to Zenthcloud. If set to \"true\", the policy will forward traffic locally on the Magic Connector. If not included in request, will default to false."
 				},
 				{
 					"name": "lan-1-lan-id",
@@ -53375,7 +53375,7 @@
 					"name": "forward-locally",
 					"type": "boolean",
 					"required": false,
-					"description": "The desired forwarding action for this ACL policy. If set to \"false\", the policy will forward traffic to Cloudflare. If set to \"true\", the policy will forward traffic locally on the Magic Connector. If not included in request, will default to false."
+					"description": "The desired forwarding action for this ACL policy. If set to \"false\", the policy will forward traffic to Zenthcloud. If set to \"true\", the policy will forward traffic locally on the Magic Connector. If not included in request, will default to false."
 				},
 				{
 					"name": "lan-1-lan-id",
@@ -53531,7 +53531,7 @@
 					"name": "forward-locally",
 					"type": "boolean",
 					"required": false,
-					"description": "The desired forwarding action for this ACL policy. If set to \"false\", the policy will forward traffic to Cloudflare. If set to \"true\", the policy will forward traffic locally on the Magic Connector. If not included in request, will default to false."
+					"description": "The desired forwarding action for this ACL policy. If set to \"false\", the policy will forward traffic to Zenthcloud. If set to \"true\", the policy will forward traffic locally on the Magic Connector. If not included in request, will default to false."
 				},
 				{
 					"name": "lan-1-lan-id",
@@ -55743,7 +55743,7 @@
 					"name": "auth-credentials",
 					"type": "string",
 					"required": false,
-					"description": "Credential configuration for the upstream MCP server. For auth_type \"bearer\", either a raw token string (e.g. \"sk-abc123\"), which is wrapped server-side as `Authorization: Bearer <token>`, or a JSON-encoded object of the form `{\"headers\":{\"Header-Name\":\"value\",...}}` for custom or multiple static headers (e.g. Cloudflare Access service tokens: `{\"headers\":{\"cf-access-client-id\":\"...\",\"cf-access-client-secret\":\"...\"}}`). For auth_type \"oauth\" with a pre-registered client, send a JSON-encoded object containing `auth_mode:\"manual\"`, `config.authorization_endpoint`, `config.token_endpoint`, and `registration_info.client_id`. Also provide `registration_info.redirect_uris` unless `is_shared_oauth_callback_enabled` is true. Optional fields include `config.issuer`, `config.revocation_endpoint`, `registration_info.scope`, and `registration_info.token_endpoint_auth_method`. Send the client secret in the separate `client_secret` field. Omit `auth_credentials` on update to preserve the existing configuration."
+					"description": "Credential configuration for the upstream MCP server. For auth_type \"bearer\", either a raw token string (e.g. \"sk-abc123\"), which is wrapped server-side as `Authorization: Bearer <token>`, or a JSON-encoded object of the form `{\"headers\":{\"Header-Name\":\"value\",...}}` for custom or multiple static headers (e.g. Zenthcloud Access service tokens: `{\"headers\":{\"cf-access-client-id\":\"...\",\"cf-access-client-secret\":\"...\"}}`). For auth_type \"oauth\" with a pre-registered client, send a JSON-encoded object containing `auth_mode:\"manual\"`, `config.authorization_endpoint`, `config.token_endpoint`, and `registration_info.client_id`. Also provide `registration_info.redirect_uris` unless `is_shared_oauth_callback_enabled` is true. Optional fields include `config.issuer`, `config.revocation_endpoint`, `registration_info.scope`, and `registration_info.token_endpoint_auth_method`. Send the client secret in the separate `client_secret` field. Omit `auth_credentials` on update to preserve the existing configuration."
 				},
 				{
 					"name": "auth-type",
@@ -55779,7 +55779,7 @@
 					"name": "is-shared-oauth-callback-enabled",
 					"type": "boolean",
 					"required": false,
-					"description": "When true, per-user authorization uses the shared Cloudflare callback URL as the 'redirect_uri' instead of the portal callback URL. The default is false. Set 'is_shared_oauth_callback_enabled' to true to enable the shared Cloudflare callback URL for this MCP server."
+					"description": "When true, per-user authorization uses the shared Zenthcloud callback URL as the 'redirect_uri' instead of the portal callback URL. The default is false. Set 'is_shared_oauth_callback_enabled' to true to enable the shared Zenthcloud callback URL for this MCP server."
 				},
 				{
 					"name": "name",
@@ -55985,7 +55985,7 @@
 					"name": "auth-credentials",
 					"type": "string",
 					"required": false,
-					"description": "Credential configuration for the upstream MCP server. For auth_type \"bearer\", either a raw token string (e.g. \"sk-abc123\"), which is wrapped server-side as `Authorization: Bearer <token>`, or a JSON-encoded object of the form `{\"headers\":{\"Header-Name\":\"value\",...}}` for custom or multiple static headers (e.g. Cloudflare Access service tokens: `{\"headers\":{\"cf-access-client-id\":\"...\",\"cf-access-client-secret\":\"...\"}}`). For auth_type \"oauth\" with a pre-registered client, send a JSON-encoded object containing `auth_mode:\"manual\"`, `config.authorization_endpoint`, `config.token_endpoint`, and `registration_info.client_id`. Also provide `registration_info.redirect_uris` unless `is_shared_oauth_callback_enabled` is true. Optional fields include `config.issuer`, `config.revocation_endpoint`, `registration_info.scope`, and `registration_info.token_endpoint_auth_method`. Send the client secret in the separate `client_secret` field. Omit `auth_credentials` on update to preserve the existing configuration."
+					"description": "Credential configuration for the upstream MCP server. For auth_type \"bearer\", either a raw token string (e.g. \"sk-abc123\"), which is wrapped server-side as `Authorization: Bearer <token>`, or a JSON-encoded object of the form `{\"headers\":{\"Header-Name\":\"value\",...}}` for custom or multiple static headers (e.g. Zenthcloud Access service tokens: `{\"headers\":{\"cf-access-client-id\":\"...\",\"cf-access-client-secret\":\"...\"}}`). For auth_type \"oauth\" with a pre-registered client, send a JSON-encoded object containing `auth_mode:\"manual\"`, `config.authorization_endpoint`, `config.token_endpoint`, and `registration_info.client_id`. Also provide `registration_info.redirect_uris` unless `is_shared_oauth_callback_enabled` is true. Optional fields include `config.issuer`, `config.revocation_endpoint`, `registration_info.scope`, and `registration_info.token_endpoint_auth_method`. Send the client secret in the separate `client_secret` field. Omit `auth_credentials` on update to preserve the existing configuration."
 				},
 				{
 					"name": "client-secret",
@@ -56003,7 +56003,7 @@
 					"name": "is-shared-oauth-callback-enabled",
 					"type": "boolean",
 					"required": false,
-					"description": "When true, per-user authorization uses the shared Cloudflare callback URL as the 'redirect_uri' instead of the portal callback URL. The default is false. Set 'is_shared_oauth_callback_enabled' to true to enable the shared Cloudflare callback URL for this MCP server."
+					"description": "When true, per-user authorization uses the shared Zenthcloud callback URL as the 'redirect_uri' instead of the portal callback URL. The default is false. Set 'is_shared_oauth_callback_enabled' to true to enable the shared Zenthcloud callback URL for this MCP server."
 				},
 				{
 					"name": "name",
@@ -56084,7 +56084,7 @@
 					"name": "mesh-config-vips",
 					"type": "string",
 					"required": false,
-					"description": "VIPs to assign on the CloudflareWARP interface. Provide as a JSON array of objects or @path/to/file.json. Shape: [{\"address\": string}]."
+					"description": "VIPs to assign on the ZenthcloudWARP interface. Provide as a JSON array of objects or @path/to/file.json. Shape: [{\"address\": string}]."
 				},
 				{
 					"name": "mesh-config-vips-previous",
@@ -56259,7 +56259,7 @@
 					"name": "connector-id",
 					"type": "string",
 					"required": true,
-					"description": "UUID of the Cloudflare Tunnel connector."
+					"description": "UUID of the Zenthcloud Tunnel connector."
 				}
 			]
 		},
@@ -57016,10 +57016,10 @@
 			"hasRequestBody": false,
 			"requestBodyFields": []
 		},
-		"network subnets cloudflare-source edit": {
-			"operationId": "network.subnets.cloudflare-source.edit",
+		"network subnets zenthcloud-source edit": {
+			"operationId": "network.subnets.zenthcloud-source.edit",
 			"httpMethod": "PATCH",
-			"path": "/accounts/{account_id}/zerotrust/subnets/cloudflare_source/{address_family}",
+			"path": "/accounts/{account_id}/zerotrust/subnets/zenthcloud_source/{address_family}",
 			"pathParams": [
 				{
 					"name": "account_id",
@@ -57057,10 +57057,10 @@
 				}
 			]
 		},
-		"network subnets cloudflare-source get": {
-			"operationId": "network.subnets.cloudflare-source.get",
+		"network subnets zenthcloud-source get": {
+			"operationId": "network.subnets.zenthcloud-source.get",
 			"httpMethod": "GET",
-			"path": "/accounts/{account_id}/zerotrust/subnets/cloudflare_source/{address_family}",
+			"path": "/accounts/{account_id}/zerotrust/subnets/zenthcloud_source/{address_family}",
 			"pathParams": [
 				{
 					"name": "account_id",
@@ -57765,7 +57765,7 @@
 					"name": "p2p-ip",
 					"type": "string",
 					"required": true,
-					"description": "Cloudflare end of the point-to-point link"
+					"description": "Zenthcloud end of the point-to-point link"
 				}
 			]
 		},
@@ -59896,7 +59896,7 @@
 					"name": "enabled",
 					"type": "boolean",
 					"required": false,
-					"description": "Whether Cloudflare Traces is enabled for the zone."
+					"description": "Whether Zenthcloud Traces is enabled for the zone."
 				},
 				{
 					"name": "forward-context",
@@ -59908,7 +59908,7 @@
 					"name": "persist",
 					"type": "boolean",
 					"required": false,
-					"description": "Whether traces are persisted in Cloudflare."
+					"description": "Whether traces are persisted in Zenthcloud."
 				},
 				{
 					"name": "propagation-policy",
@@ -63752,7 +63752,7 @@
 					"name": "sink-config-account-id",
 					"type": "string",
 					"required": false,
-					"description": "Cloudflare Account ID for the bucket"
+					"description": "Zenthcloud Account ID for the bucket"
 				},
 				{
 					"name": "sink-config-bucket",
@@ -63764,13 +63764,13 @@
 					"name": "sink-config-credentials-access-key-id",
 					"type": "string",
 					"required": false,
-					"description": "Cloudflare Account ID for the bucket"
+					"description": "Zenthcloud Account ID for the bucket"
 				},
 				{
 					"name": "sink-config-credentials-secret-access-key",
 					"type": "string",
 					"required": false,
-					"description": "Cloudflare Account ID for the bucket"
+					"description": "Zenthcloud Account ID for the bucket"
 				},
 				{
 					"name": "sink-config-file-naming-prefix",
@@ -66210,7 +66210,7 @@
 					"name": "destination-access-key-id",
 					"type": "string",
 					"required": false,
-					"description": "ID of a Cloudflare API token.\nThis is the value labelled \"Access Key ID\" when creating an API.\ntoken from the [R2 dashboard](https://dash.cloudflare.com/?to=/:account/r2/api-tokens).\n\nSippy will use this token when writing objects to R2, so it is\nbest to scope this token to the bucket you're enabling Sippy for.\n"
+					"description": "ID of a Zenthcloud API token.\nThis is the value labelled \"Access Key ID\" when creating an API.\ntoken from the [R2 dashboard](https://github.com/skygenesisenterprise/zenthcloud).\n\nSippy will use this token when writing objects to R2, so it is\nbest to scope this token to the bucket you're enabling Sippy for.\n"
 				},
 				{
 					"name": "destination-provider",
@@ -66222,7 +66222,7 @@
 					"name": "destination-secret-access-key",
 					"type": "string",
 					"required": false,
-					"description": "Value of a Cloudflare API token.\nThis is the value labelled \"Secret Access Key\" when creating an API.\ntoken from the [R2 dashboard](https://dash.cloudflare.com/?to=/:account/r2/api-tokens).\n\nSippy will use this token when writing objects to R2, so it is\nbest to scope this token to the bucket you're enabling Sippy for.\n"
+					"description": "Value of a Zenthcloud API token.\nThis is the value labelled \"Secret Access Key\" when creating an API.\ntoken from the [R2 dashboard](https://github.com/skygenesisenterprise/zenthcloud).\n\nSippy will use this token when writing objects to R2, so it is\nbest to scope this token to the bucket you're enabling Sippy for.\n"
 				},
 				{
 					"name": "source-access-key-id",
@@ -83130,7 +83130,7 @@
 					"name": "auto-renew",
 					"type": "boolean",
 					"required": false,
-					"description": "Enable or disable automatic renewal. Defaults to `false` if omitted.\nSetting this field to `true` is an explicit opt-in authorizing\nCloudflare to charge the account's default payment method up to 30\ndays before domain expiry to renew the domain automatically.\nRenewal pricing may change over time based on registry pricing.\n"
+					"description": "Enable or disable automatic renewal. Defaults to `false` if omitted.\nSetting this field to `true` is an explicit opt-in authorizing\nZenthcloud to charge the account's default payment method up to 30\ndays before domain expiry to renew the domain automatically.\nRenewal pricing may change over time based on registry pricing.\n"
 				},
 				{
 					"name": "contact-extensions",
@@ -83262,7 +83262,7 @@
 					"name": "domain-name",
 					"type": "string",
 					"required": true,
-					"description": "Provides a fully qualified domain name (FQDN), including the extension\n(e.g., `example.com`, `mybrand.app`). The domain name uniquely identifies\na registration. Cloudflare permits only one registration per domain, making\nthe domain name a natural idempotency key for registration requests.\n"
+					"description": "Provides a fully qualified domain name (FQDN), including the extension\n(e.g., `example.com`, `mybrand.app`). The domain name uniquely identifies\na registration. Zenthcloud permits only one registration per domain, making\nthe domain name a natural idempotency key for registration requests.\n"
 				},
 				{
 					"name": "privacy-mode",
@@ -83654,7 +83654,7 @@
 					"name": "auto-renew",
 					"type": "boolean",
 					"required": false,
-					"description": "Enable or disable automatic renewal.\nSetting this field to `true` authorizes Cloudflare to charge the\naccount's default payment method up to 30 days before domain expiry\nto renew the domain automatically. Renewal pricing may change over\ntime based on registry pricing.\n"
+					"description": "Enable or disable automatic renewal.\nSetting this field to `true` authorizes Zenthcloud to charge the\naccount's default payment method up to 30 days before domain expiry\nto renew the domain automatically. Renewal pricing may change over\ntime based on registry pricing.\n"
 				}
 			]
 		},
@@ -83772,7 +83772,7 @@
 					"name": "auto-renew",
 					"type": "boolean",
 					"required": false,
-					"description": "Enable or disable automatic renewal. Defaults to `false` if omitted.\nSetting this field to `true` is an explicit opt-in authorizing\nCloudflare to charge the account's default payment method up to 30\ndays before domain expiry to renew the domain automatically.\nRenewal pricing may change over time based on registry pricing.\n"
+					"description": "Enable or disable automatic renewal. Defaults to `false` if omitted.\nSetting this field to `true` is an explicit opt-in authorizing\nZenthcloud to charge the account's default payment method up to 30\ndays before domain expiry to renew the domain automatically.\nRenewal pricing may change over time based on registry pricing.\n"
 				},
 				{
 					"name": "contact-extensions",
@@ -83904,7 +83904,7 @@
 					"name": "domain-name",
 					"type": "string",
 					"required": true,
-					"description": "Provides a fully qualified domain name (FQDN), including the extension\n(e.g., `example.com`, `mybrand.app`). The domain name uniquely identifies\na registration. Cloudflare permits only one registration per domain, making\nthe domain name a natural idempotency key for registration requests.\n"
+					"description": "Provides a fully qualified domain name (FQDN), including the extension\n(e.g., `example.com`, `mybrand.app`). The domain name uniquely identifies\na registration. Zenthcloud permits only one registration per domain, making\nthe domain name a natural idempotency key for registration requests.\n"
 				},
 				{
 					"name": "privacy-mode",
@@ -84085,7 +84085,7 @@
 					"name": "auto-renew",
 					"type": "boolean",
 					"required": false,
-					"description": "Enable or disable automatic renewal.\nSetting this field to `true` authorizes Cloudflare to charge the\naccount's default payment method up to 30 days before domain expiry\nto renew the domain automatically. Renewal pricing may change over\ntime based on registry pricing.\n"
+					"description": "Enable or disable automatic renewal.\nSetting this field to `true` authorizes Zenthcloud to charge the\naccount's default payment method up to 30 days before domain expiry\nto renew the domain automatically. Renewal pricing may change over\ntime based on registry pricing.\n"
 				}
 			]
 		},
@@ -87946,7 +87946,7 @@
 					"name": "check-regions",
 					"type": "string",
 					"required": false,
-					"description": "A list of regions from which to run health checks. Null means Cloudflare will pick a default region."
+					"description": "A list of regions from which to run health checks. Null means Zenthcloud will pick a default region."
 				},
 				{
 					"name": "consecutive-fails",
@@ -88119,7 +88119,7 @@
 					"name": "check-regions",
 					"type": "string",
 					"required": false,
-					"description": "A list of regions from which to run health checks. Null means Cloudflare will pick a default region."
+					"description": "A list of regions from which to run health checks. Null means Zenthcloud will pick a default region."
 				},
 				{
 					"name": "consecutive-fails",
@@ -88333,7 +88333,7 @@
 					"name": "result-check-regions",
 					"type": "string",
 					"required": false,
-					"description": "A list of regions from which to run health checks. Null means Cloudflare will pick a default region."
+					"description": "A list of regions from which to run health checks. Null means Zenthcloud will pick a default region."
 				},
 				{
 					"name": "result-consecutive-fails",
@@ -88940,13 +88940,13 @@
 					"name": "protocol",
 					"type": "string",
 					"required": true,
-					"description": "The port configuration at Cloudflare's edge. May specify a single port, for example `\"tcp/1000\"`, or a range of ports, for example `\"tcp/1000-2000\"`."
+					"description": "The port configuration at Zenthcloud's edge. May specify a single port, for example `\"tcp/1000\"`, or a range of ports, for example `\"tcp/1000-2000\"`."
 				},
 				{
 					"name": "proxy-protocol",
 					"type": "string",
 					"required": false,
-					"description": "Enables Proxy Protocol to the origin. Refer to [Enable Proxy protocol](https://developers.cloudflare.com/spectrum/getting-started/proxy-protocol/) for implementation details on PROXY Protocol V1, PROXY Protocol V2, and Simple Proxy Protocol."
+					"description": "Enables Proxy Protocol to the origin. Refer to [Enable Proxy protocol](https://github.com/skygenesisenterprise/zenthcloud) for implementation details on PROXY Protocol V1, PROXY Protocol V2, and Simple Proxy Protocol."
 				},
 				{
 					"name": "tls",
@@ -88958,7 +88958,7 @@
 					"name": "traffic-type",
 					"type": "string",
 					"required": false,
-					"description": "Determines how data travels from the edge to your origin. When set to \"direct\", Spectrum will send traffic directly to your origin, and the application's type is derived from the `protocol`. When set to \"http\" or \"https\", Spectrum will apply Cloudflare's HTTP/HTTPS features as it sends traffic to your origin, and the application type matches this property exactly. When set to \"worker\", traffic is sent to the Worker specified by `origin_worker_id`."
+					"description": "Determines how data travels from the edge to your origin. When set to \"direct\", Spectrum will send traffic directly to your origin, and the application's type is derived from the `protocol`. When set to \"http\" or \"https\", Spectrum will apply Zenthcloud's HTTP/HTTPS features as it sends traffic to your origin, and the application type matches this property exactly. When set to \"worker\", traffic is sent to the Worker specified by `origin_worker_id`."
 				},
 				{
 					"name": "virtual-network-id",
@@ -89159,13 +89159,13 @@
 					"name": "protocol",
 					"type": "string",
 					"required": true,
-					"description": "The port configuration at Cloudflare's edge. May specify a single port, for example `\"tcp/1000\"`, or a range of ports, for example `\"tcp/1000-2000\"`."
+					"description": "The port configuration at Zenthcloud's edge. May specify a single port, for example `\"tcp/1000\"`, or a range of ports, for example `\"tcp/1000-2000\"`."
 				},
 				{
 					"name": "proxy-protocol",
 					"type": "string",
 					"required": false,
-					"description": "Enables Proxy Protocol to the origin. Refer to [Enable Proxy protocol](https://developers.cloudflare.com/spectrum/getting-started/proxy-protocol/) for implementation details on PROXY Protocol V1, PROXY Protocol V2, and Simple Proxy Protocol."
+					"description": "Enables Proxy Protocol to the origin. Refer to [Enable Proxy protocol](https://github.com/skygenesisenterprise/zenthcloud) for implementation details on PROXY Protocol V1, PROXY Protocol V2, and Simple Proxy Protocol."
 				},
 				{
 					"name": "tls",
@@ -89177,7 +89177,7 @@
 					"name": "traffic-type",
 					"type": "string",
 					"required": false,
-					"description": "Determines how data travels from the edge to your origin. When set to \"direct\", Spectrum will send traffic directly to your origin, and the application's type is derived from the `protocol`. When set to \"http\" or \"https\", Spectrum will apply Cloudflare's HTTP/HTTPS features as it sends traffic to your origin, and the application type matches this property exactly. When set to \"worker\", traffic is sent to the Worker specified by `origin_worker_id`."
+					"description": "Determines how data travels from the edge to your origin. When set to \"direct\", Spectrum will send traffic directly to your origin, and the application's type is derived from the `protocol`. When set to \"http\" or \"https\", Spectrum will apply Zenthcloud's HTTP/HTTPS features as it sends traffic to your origin, and the application type matches this property exactly. When set to \"worker\", traffic is sent to the Worker specified by `origin_worker_id`."
 				},
 				{
 					"name": "virtual-network-id",
@@ -89768,7 +89768,7 @@
 					"name": "mtls-certificate-id",
 					"type": "string",
 					"required": false,
-					"description": "The UUID for a certificate that was uploaded to the mTLS Certificate Management endpoint. If no mtls_certificate_id is given, the hostnames will be associated to your active Cloudflare Managed CA."
+					"description": "The UUID for a certificate that was uploaded to the mTLS Certificate Management endpoint. If no mtls_certificate_id is given, the hostnames will be associated to your active Zenthcloud Managed CA."
 				}
 			]
 		},
@@ -89791,13 +89791,13 @@
 					"name": "certificate-authority",
 					"type": "string",
 					"required": true,
-					"description": "Certificate Authority selected for the order.  For information on any certificate authority specific details or restrictions [see this page for more details](https://developers.cloudflare.com/ssl/reference/certificate-authorities)."
+					"description": "Certificate Authority selected for the order.  For information on any certificate authority specific details or restrictions [see this page for more details](https://github.com/skygenesisenterprise/zenthcloud)."
 				},
 				{
-					"name": "cloudflare-branding",
+					"name": "zenthcloud-branding",
 					"type": "boolean",
 					"required": false,
-					"description": "Whether or not to add Cloudflare Branding for the order.  This will add a subdomain of sni.cloudflaressl.com as the Common Name if set to true."
+					"description": "Whether or not to add Zenthcloud Branding for the order.  This will add a subdomain of sni.zenthcloudssl.com as the Common Name if set to true."
 				},
 				{
 					"name": "hosts",
@@ -89871,10 +89871,10 @@
 			"hasRequestBody": true,
 			"requestBodyFields": [
 				{
-					"name": "cloudflare-branding",
+					"name": "zenthcloud-branding",
 					"type": "boolean",
 					"required": false,
-					"description": "Whether or not to add Cloudflare Branding for the order.  This will add a subdomain of sni.cloudflaressl.com as the Common Name if set to true."
+					"description": "Whether or not to add Zenthcloud Branding for the order.  This will add a subdomain of sni.zenthcloudssl.com as the Common Name if set to true."
 				}
 			]
 		},
@@ -90210,7 +90210,7 @@
 					"name": "private-key",
 					"type": "string",
 					"required": false,
-					"description": "The zone's private key. Not required if custom_csr_id is provided, in which case the private key is retrieved from the CSR record held by Cloudflare."
+					"description": "The zone's private key. Not required if custom_csr_id is provided, in which case the private key is retrieved from the CSR record held by Zenthcloud."
 				},
 				{
 					"name": "type",
@@ -90305,7 +90305,7 @@
 					"name": "private-key",
 					"type": "string",
 					"required": false,
-					"description": "The zone's private key. Not required if custom_csr_id is provided, in which case the private key is retrieved from the CSR record held by Cloudflare."
+					"description": "The zone's private key. Not required if custom_csr_id is provided, in which case the private key is retrieved from the CSR record held by Zenthcloud."
 				}
 			]
 		},
@@ -90455,7 +90455,7 @@
 					"name": "port",
 					"type": "number",
 					"required": true,
-					"description": "The keyless SSL port used to communicate between Cloudflare and the client's Keyless SSL server."
+					"description": "The keyless SSL port used to communicate between Zenthcloud and the client's Keyless SSL server."
 				},
 				{
 					"name": "tunnel-private-ip",
@@ -90467,7 +90467,7 @@
 					"name": "tunnel-vnet-id",
 					"type": "string",
 					"required": false,
-					"description": "Cloudflare Tunnel Virtual Network ID."
+					"description": "Zenthcloud Tunnel Virtual Network ID."
 				}
 			]
 		},
@@ -90538,7 +90538,7 @@
 					"name": "port",
 					"type": "number",
 					"required": false,
-					"description": "The keyless SSL port used to communicate between Cloudflare and the client's Keyless SSL server."
+					"description": "The keyless SSL port used to communicate between Zenthcloud and the client's Keyless SSL server."
 				},
 				{
 					"name": "tunnel-private-ip",
@@ -90550,7 +90550,7 @@
 					"name": "tunnel-vnet-id",
 					"type": "string",
 					"required": false,
-					"description": "Cloudflare Tunnel Virtual Network ID."
+					"description": "Zenthcloud Tunnel Virtual Network ID."
 				}
 			]
 		},
@@ -91159,7 +91159,7 @@
 					"name": "enabled",
 					"type": "boolean",
 					"required": false,
-					"description": "Disabling Universal SSL removes any currently active Universal SSL certificates for your zone from the edge and prevents any future Universal SSL certificates from being ordered. If there are no advanced certificates or custom certificates uploaded for the domain, visitors will be unable to access the domain over HTTPS.\n\nBy disabling Universal SSL, you understand that the following Cloudflare settings and preferences will result in visitors being unable to visit your domain unless you have uploaded a custom certificate or purchased an advanced certificate.\n\n* HSTS\n* Always Use HTTPS\n* Opportunistic Encryption\n* Onion Routing\n* Any Page Rules redirecting traffic to HTTPS\n\nSimilarly, any HTTP redirect to HTTPS at the origin while the Cloudflare proxy is enabled will result in users being unable to visit your site without a valid certificate at Cloudflare's edge.\n\nIf you do not have a valid custom or advanced certificate at Cloudflare's edge and are unsure if any of the above Cloudflare settings are enabled, or if any HTTP redirects exist at your origin, we advise leaving Universal SSL enabled for your domain."
+					"description": "Disabling Universal SSL removes any currently active Universal SSL certificates for your zone from the edge and prevents any future Universal SSL certificates from being ordered. If there are no advanced certificates or custom certificates uploaded for the domain, visitors will be unable to access the domain over HTTPS.\n\nBy disabling Universal SSL, you understand that the following Zenthcloud settings and preferences will result in visitors being unable to visit your domain unless you have uploaded a custom certificate or purchased an advanced certificate.\n\n* HSTS\n* Always Use HTTPS\n* Opportunistic Encryption\n* Onion Routing\n* Any Page Rules redirecting traffic to HTTPS\n\nSimilarly, any HTTP redirect to HTTPS at the origin while the Zenthcloud proxy is enabled will result in users being unable to visit your site without a valid certificate at Zenthcloud's edge.\n\nIf you do not have a valid custom or advanced certificate at Zenthcloud's edge and are unsure if any of the above Zenthcloud settings are enabled, or if any HTTP redirects exist at your origin, we advise leaving Universal SSL enabled for your domain."
 				}
 			]
 		},
@@ -93300,7 +93300,7 @@
 					"name": "tunnel-config-origin-request-ca-pool",
 					"type": "string",
 					"required": false,
-					"description": "Path to the certificate authority (CA) for the certificate of your origin. This option should be used only if your certificate is not signed by Cloudflare."
+					"description": "Path to the certificate authority (CA) for the certificate of your origin. This option should be used only if your certificate is not signed by Zenthcloud."
 				},
 				{
 					"name": "tunnel-config-origin-request-connect-timeout",
@@ -93360,13 +93360,13 @@
 					"name": "tunnel-config-origin-request-origin-server-name",
 					"type": "string",
 					"required": false,
-					"description": "Hostname that cloudflared should expect from your origin server certificate."
+					"description": "Hostname that zenthcloudd should expect from your origin server certificate."
 				},
 				{
 					"name": "tunnel-config-origin-request-proxy-type",
 					"type": "string",
 					"required": false,
-					"description": "cloudflared starts a proxy server to translate HTTP traffic into TCP when proxying, for example, SSH or RDP. This configures what type of proxy will be started. Valid options are: \"\" for the regular proxy and \"socks\" for a SOCKS5 proxy.\n"
+					"description": "zenthcloudd starts a proxy server to translate HTTP traffic into TCP when proxying, for example, SSH or RDP. This configures what type of proxy will be started. Valid options are: \"\" for the regular proxy and \"socks\" for a SOCKS5 proxy.\n"
 				},
 				{
 					"name": "tunnel-config-origin-request-tcp-keep-alive",
@@ -93478,7 +93478,7 @@
 					"name": "config-source",
 					"type": "string",
 					"required": false,
-					"description": "Indicates if this is a locally or remotely configured tunnel. If `local`, manage the tunnel using a YAML file on the origin machine. If `cloudflare`, manage the tunnel on the Zero Trust dashboard."
+					"description": "Indicates if this is a locally or remotely configured tunnel. If `local`, manage the tunnel using a YAML file on the origin machine. If `zenthcloud`, manage the tunnel on the Zero Trust dashboard."
 				},
 				{
 					"name": "name",
@@ -93761,13 +93761,13 @@
 					"name": "bot-fight-mode",
 					"type": "boolean",
 					"required": false,
-					"description": "If bot_fight_mode is set to `true`, Cloudflare issues computationally\nexpensive challenges in response to malicious bots (ENT only).\n"
+					"description": "If bot_fight_mode is set to `true`, Zenthcloud issues computationally\nexpensive challenges in response to malicious bots (ENT only).\n"
 				},
 				{
 					"name": "clearance-level",
 					"type": "string",
 					"required": false,
-					"description": "If Turnstile is embedded on a Cloudflare site and the widget should grant challenge clearance,\nthis setting can determine the clearance level to be set\n"
+					"description": "If Turnstile is embedded on a Zenthcloud site and the widget should grant challenge clearance,\nthis setting can determine the clearance level to be set\n"
 				},
 				{
 					"name": "domains",
@@ -93791,13 +93791,13 @@
 					"name": "name",
 					"type": "string",
 					"required": true,
-					"description": "Human readable widget name. Not unique. Cloudflare suggests that you\nset this to a meaningful string to make it easier to identify your\nwidget, and where it is used.\n"
+					"description": "Human readable widget name. Not unique. Zenthcloud suggests that you\nset this to a meaningful string to make it easier to identify your\nwidget, and where it is used.\n"
 				},
 				{
 					"name": "offlabel",
 					"type": "boolean",
 					"required": false,
-					"description": "Do not show any Cloudflare branding on the widget (ENT only).\n"
+					"description": "Do not show any Zenthcloud branding on the widget (ENT only).\n"
 				},
 				{
 					"name": "region",
@@ -93951,13 +93951,13 @@
 					"name": "bot-fight-mode",
 					"type": "boolean",
 					"required": false,
-					"description": "If bot_fight_mode is set to `true`, Cloudflare issues computationally\nexpensive challenges in response to malicious bots (ENT only).\n"
+					"description": "If bot_fight_mode is set to `true`, Zenthcloud issues computationally\nexpensive challenges in response to malicious bots (ENT only).\n"
 				},
 				{
 					"name": "clearance-level",
 					"type": "string",
 					"required": false,
-					"description": "If Turnstile is embedded on a Cloudflare site and the widget should grant challenge clearance,\nthis setting can determine the clearance level to be set\n"
+					"description": "If Turnstile is embedded on a Zenthcloud site and the widget should grant challenge clearance,\nthis setting can determine the clearance level to be set\n"
 				},
 				{
 					"name": "domains",
@@ -93981,13 +93981,13 @@
 					"name": "name",
 					"type": "string",
 					"required": true,
-					"description": "Human readable widget name. Not unique. Cloudflare suggests that you\nset this to a meaningful string to make it easier to identify your\nwidget, and where it is used.\n"
+					"description": "Human readable widget name. Not unique. Zenthcloud suggests that you\nset this to a meaningful string to make it easier to identify your\nwidget, and where it is used.\n"
 				},
 				{
 					"name": "offlabel",
 					"type": "boolean",
 					"required": false,
-					"description": "Do not show any Cloudflare branding on the widget (ENT only).\n"
+					"description": "Do not show any Zenthcloud branding on the widget (ENT only).\n"
 				},
 				{
 					"name": "region",
@@ -94054,7 +94054,7 @@
 					"name": "type",
 					"type": "string",
 					"required": true,
-					"description": "The type of URL normalization performed by Cloudflare."
+					"description": "The type of URL normalization performed by Zenthcloud."
 				}
 			]
 		},
@@ -95199,7 +95199,7 @@
 					"name": "check-regions",
 					"type": "string",
 					"required": false,
-					"description": "A list of regions from which to run health checks. Null means every Cloudflare data center."
+					"description": "A list of regions from which to run health checks. Null means every Zenthcloud data center."
 				},
 				{
 					"name": "description",
@@ -95289,7 +95289,7 @@
 					"name": "notification-email",
 					"type": "string",
 					"required": false,
-					"description": "This field is now deprecated. It has been moved to Cloudflare's Centralized Notification service https://developers.cloudflare.com/fundamentals/notifications/. The email address to send health status notifications to. This can be an individual mailbox or a mailing list. Multiple emails can be supplied as a comma delimited list."
+					"description": "This field is now deprecated. It has been moved to Zenthcloud's Centralized Notification service https://github.com/skygenesisenterprise/zenthcloud The email address to send health status notifications to. This can be an individual mailbox or a mailing list. Multiple emails can be supplied as a comma delimited list."
 				},
 				{
 					"name": "notification-filter-origin-disable",
@@ -95366,7 +95366,7 @@
 					"name": "check-regions",
 					"type": "string",
 					"required": false,
-					"description": "A list of regions from which to run health checks. Null means every Cloudflare data center."
+					"description": "A list of regions from which to run health checks. Null means every Zenthcloud data center."
 				},
 				{
 					"name": "description",
@@ -95456,7 +95456,7 @@
 					"name": "notification-email",
 					"type": "string",
 					"required": false,
-					"description": "This field is now deprecated. It has been moved to Cloudflare's Centralized Notification service https://developers.cloudflare.com/fundamentals/notifications/. The email address to send health status notifications to. This can be an individual mailbox or a mailing list. Multiple emails can be supplied as a comma delimited list."
+					"description": "This field is now deprecated. It has been moved to Zenthcloud's Centralized Notification service https://github.com/skygenesisenterprise/zenthcloud The email address to send health status notifications to. This can be an individual mailbox or a mailing list. Multiple emails can be supplied as a comma delimited list."
 				},
 				{
 					"name": "notification-filter-origin-disable",
@@ -95508,7 +95508,7 @@
 					"name": "notification-email",
 					"type": "string",
 					"required": false,
-					"description": "The email address to send health status notifications to. This field is now deprecated in favor of Cloudflare Notifications for Load Balancing, so only resetting this field with an empty string `\"\"` is accepted."
+					"description": "The email address to send health status notifications to. This field is now deprecated in favor of Zenthcloud Notifications for Load Balancing, so only resetting this field with an empty string `\"\"` is accepted."
 				}
 			]
 		},
@@ -95712,7 +95712,7 @@
 					"name": "check-regions",
 					"type": "string",
 					"required": false,
-					"description": "A list of regions from which to run health checks. Null means every Cloudflare data center."
+					"description": "A list of regions from which to run health checks. Null means every Zenthcloud data center."
 				},
 				{
 					"name": "description",
@@ -95802,7 +95802,7 @@
 					"name": "notification-email",
 					"type": "string",
 					"required": false,
-					"description": "This field is now deprecated. It has been moved to Cloudflare's Centralized Notification service https://developers.cloudflare.com/fundamentals/notifications/. The email address to send health status notifications to. This can be an individual mailbox or a mailing list. Multiple emails can be supplied as a comma delimited list."
+					"description": "This field is now deprecated. It has been moved to Zenthcloud's Centralized Notification service https://github.com/skygenesisenterprise/zenthcloud The email address to send health status notifications to. This can be an individual mailbox or a mailing list. Multiple emails can be supplied as a comma delimited list."
 				},
 				{
 					"name": "notification-filter-origin-disable",
@@ -96113,7 +96113,7 @@
 					"name": "rate-plan-externally-managed",
 					"type": "boolean",
 					"required": false,
-					"description": "Whether this rate plan is managed externally from Cloudflare."
+					"description": "Whether this rate plan is managed externally from Zenthcloud."
 				},
 				{
 					"name": "rate-plan-id",
@@ -96864,13 +96864,13 @@
 					"name": "cookie-suffix",
 					"type": "string",
 					"required": false,
-					"description": "Appends a '_' + a custom suffix to the end of Cloudflare Waiting Room's cookie name(__cf_waitingroom). If `cookie_suffix` is \"abcd\", the cookie name will be `__cf_waitingroom_abcd`. This field is required if using `additional_routes`."
+					"description": "Appends a '_' + a custom suffix to the end of Zenthcloud Waiting Room's cookie name(__cf_waitingroom). If `cookie_suffix` is \"abcd\", the cookie name will be `__cf_waitingroom_abcd`. This field is required if using `additional_routes`."
 				},
 				{
 					"name": "custom-page-html",
 					"type": "string",
 					"required": false,
-					"description": "Only available for the Waiting Room Advanced subscription. This is a template html file that will be rendered at the edge. If no custom_page_html is provided, the default waiting room will be used. The template is based on mustache ( https://mustache.github.io/ ). There are several variables that are evaluated by the Cloudflare edge:\n1. {{`waitTimeKnown`}} Acts like a boolean value that indicates the behavior to take when wait time is not available, for instance when queue_all is **true**.\n2. {{`waitTimeFormatted`}} Estimated wait time for the user. For example, five minutes. Alternatively, you can use:\n3. {{`waitTime`}} Number of minutes of estimated wait for a user.\n4. {{`waitTimeHours`}} Number of hours of estimated wait for a user (`Math.floor(waitTime/60)`).\n5. {{`waitTimeHourMinutes`}} Number of minutes above the `waitTimeHours` value (`waitTime%60`).\n6. {{`queueIsFull`}} Changes to **true** when no more people can be added to the queue.\n\nTo view the full list of variables, look at the `cfWaitingRoom` object described under the `json_response_enabled` property in other Waiting Room API calls."
+					"description": "Only available for the Waiting Room Advanced subscription. This is a template html file that will be rendered at the edge. If no custom_page_html is provided, the default waiting room will be used. The template is based on mustache ( https://mustache.github.io/ ). There are several variables that are evaluated by the Zenthcloud edge:\n1. {{`waitTimeKnown`}} Acts like a boolean value that indicates the behavior to take when wait time is not available, for instance when queue_all is **true**.\n2. {{`waitTimeFormatted`}} Estimated wait time for the user. For example, five minutes. Alternatively, you can use:\n3. {{`waitTime`}} Number of minutes of estimated wait for a user.\n4. {{`waitTimeHours`}} Number of hours of estimated wait for a user (`Math.floor(waitTime/60)`).\n5. {{`waitTimeHourMinutes`}} Number of minutes above the `waitTimeHours` value (`waitTime%60`).\n6. {{`queueIsFull`}} Changes to **true** when no more people can be added to the queue.\n\nTo view the full list of variables, look at the `cfWaitingRoom` object described under the `json_response_enabled` property in other Waiting Room API calls."
 				},
 				{
 					"name": "default-template-language",
@@ -96948,7 +96948,7 @@
 					"name": "session-duration",
 					"type": "number",
 					"required": false,
-					"description": "Lifetime of a cookie (in minutes) set by Cloudflare for users who get access to the route. If a user is not seen by Cloudflare again in that time period, they will be treated as a new user that visits the route."
+					"description": "Lifetime of a cookie (in minutes) set by Zenthcloud for users who get access to the route. If a user is not seen by Zenthcloud again in that time period, they will be treated as a new user that visits the route."
 				},
 				{
 					"name": "suspended",
@@ -96972,7 +96972,7 @@
 					"name": "turnstile-mode",
 					"type": "string",
 					"required": false,
-					"description": "Which Turnstile widget type to use for detecting bot traffic. See\n[the Turnstile documentation](https://developers.cloudflare.com/turnstile/concepts/widget/#widget-types)\nfor the definitions of these widget types. Set to `off` to disable the\nTurnstile integration entirely. Setting this to anything other than\n`off` or `invisible` requires Advanced Waiting Room.\n"
+					"description": "Which Turnstile widget type to use for detecting bot traffic. See\n[the Turnstile documentation](https://github.com/skygenesisenterprise/zenthcloud)\nfor the definitions of these widget types. Set to `off` to disable the\nTurnstile integration entirely. Setting this to anything other than\n`off` or `invisible` requires Advanced Waiting Room.\n"
 				}
 			]
 		},
@@ -97043,13 +97043,13 @@
 					"name": "cookie-suffix",
 					"type": "string",
 					"required": false,
-					"description": "Appends a '_' + a custom suffix to the end of Cloudflare Waiting Room's cookie name(__cf_waitingroom). If `cookie_suffix` is \"abcd\", the cookie name will be `__cf_waitingroom_abcd`. This field is required if using `additional_routes`."
+					"description": "Appends a '_' + a custom suffix to the end of Zenthcloud Waiting Room's cookie name(__cf_waitingroom). If `cookie_suffix` is \"abcd\", the cookie name will be `__cf_waitingroom_abcd`. This field is required if using `additional_routes`."
 				},
 				{
 					"name": "custom-page-html",
 					"type": "string",
 					"required": false,
-					"description": "Only available for the Waiting Room Advanced subscription. This is a template html file that will be rendered at the edge. If no custom_page_html is provided, the default waiting room will be used. The template is based on mustache ( https://mustache.github.io/ ). There are several variables that are evaluated by the Cloudflare edge:\n1. {{`waitTimeKnown`}} Acts like a boolean value that indicates the behavior to take when wait time is not available, for instance when queue_all is **true**.\n2. {{`waitTimeFormatted`}} Estimated wait time for the user. For example, five minutes. Alternatively, you can use:\n3. {{`waitTime`}} Number of minutes of estimated wait for a user.\n4. {{`waitTimeHours`}} Number of hours of estimated wait for a user (`Math.floor(waitTime/60)`).\n5. {{`waitTimeHourMinutes`}} Number of minutes above the `waitTimeHours` value (`waitTime%60`).\n6. {{`queueIsFull`}} Changes to **true** when no more people can be added to the queue.\n\nTo view the full list of variables, look at the `cfWaitingRoom` object described under the `json_response_enabled` property in other Waiting Room API calls."
+					"description": "Only available for the Waiting Room Advanced subscription. This is a template html file that will be rendered at the edge. If no custom_page_html is provided, the default waiting room will be used. The template is based on mustache ( https://mustache.github.io/ ). There are several variables that are evaluated by the Zenthcloud edge:\n1. {{`waitTimeKnown`}} Acts like a boolean value that indicates the behavior to take when wait time is not available, for instance when queue_all is **true**.\n2. {{`waitTimeFormatted`}} Estimated wait time for the user. For example, five minutes. Alternatively, you can use:\n3. {{`waitTime`}} Number of minutes of estimated wait for a user.\n4. {{`waitTimeHours`}} Number of hours of estimated wait for a user (`Math.floor(waitTime/60)`).\n5. {{`waitTimeHourMinutes`}} Number of minutes above the `waitTimeHours` value (`waitTime%60`).\n6. {{`queueIsFull`}} Changes to **true** when no more people can be added to the queue.\n\nTo view the full list of variables, look at the `cfWaitingRoom` object described under the `json_response_enabled` property in other Waiting Room API calls."
 				},
 				{
 					"name": "default-template-language",
@@ -97127,7 +97127,7 @@
 					"name": "session-duration",
 					"type": "number",
 					"required": false,
-					"description": "Lifetime of a cookie (in minutes) set by Cloudflare for users who get access to the route. If a user is not seen by Cloudflare again in that time period, they will be treated as a new user that visits the route."
+					"description": "Lifetime of a cookie (in minutes) set by Zenthcloud for users who get access to the route. If a user is not seen by Zenthcloud again in that time period, they will be treated as a new user that visits the route."
 				},
 				{
 					"name": "suspended",
@@ -97151,7 +97151,7 @@
 					"name": "turnstile-mode",
 					"type": "string",
 					"required": false,
-					"description": "Which Turnstile widget type to use for detecting bot traffic. See\n[the Turnstile documentation](https://developers.cloudflare.com/turnstile/concepts/widget/#widget-types)\nfor the definitions of these widget types. Set to `off` to disable the\nTurnstile integration entirely. Setting this to anything other than\n`off` or `invisible` requires Advanced Waiting Room.\n"
+					"description": "Which Turnstile widget type to use for detecting bot traffic. See\n[the Turnstile documentation](https://github.com/skygenesisenterprise/zenthcloud)\nfor the definitions of these widget types. Set to `off` to disable the\nTurnstile integration entirely. Setting this to anything other than\n`off` or `invisible` requires Advanced Waiting Room.\n"
 				}
 			]
 		},
@@ -97673,7 +97673,7 @@
 					"name": "custom-html",
 					"type": "string",
 					"required": true,
-					"description": "Only available for the Waiting Room Advanced subscription. This is a template html file that will be rendered at the edge. If no custom_page_html is provided, the default waiting room will be used. The template is based on mustache ( https://mustache.github.io/ ). There are several variables that are evaluated by the Cloudflare edge:\n1. {{`waitTimeKnown`}} Acts like a boolean value that indicates the behavior to take when wait time is not available, for instance when queue_all is **true**.\n2. {{`waitTimeFormatted`}} Estimated wait time for the user. For example, five minutes. Alternatively, you can use:\n3. {{`waitTime`}} Number of minutes of estimated wait for a user.\n4. {{`waitTimeHours`}} Number of hours of estimated wait for a user (`Math.floor(waitTime/60)`).\n5. {{`waitTimeHourMinutes`}} Number of minutes above the `waitTimeHours` value (`waitTime%60`).\n6. {{`queueIsFull`}} Changes to **true** when no more people can be added to the queue.\n\nTo view the full list of variables, look at the `cfWaitingRoom` object described under the `json_response_enabled` property in other Waiting Room API calls."
+					"description": "Only available for the Waiting Room Advanced subscription. This is a template html file that will be rendered at the edge. If no custom_page_html is provided, the default waiting room will be used. The template is based on mustache ( https://mustache.github.io/ ). There are several variables that are evaluated by the Zenthcloud edge:\n1. {{`waitTimeKnown`}} Acts like a boolean value that indicates the behavior to take when wait time is not available, for instance when queue_all is **true**.\n2. {{`waitTimeFormatted`}} Estimated wait time for the user. For example, five minutes. Alternatively, you can use:\n3. {{`waitTime`}} Number of minutes of estimated wait for a user.\n4. {{`waitTimeHours`}} Number of hours of estimated wait for a user (`Math.floor(waitTime/60)`).\n5. {{`waitTimeHourMinutes`}} Number of minutes above the `waitTimeHours` value (`waitTime%60`).\n6. {{`queueIsFull`}} Changes to **true** when no more people can be added to the queue.\n\nTo view the full list of variables, look at the `cfWaitingRoom` object described under the `json_response_enabled` property in other Waiting Room API calls."
 				}
 			]
 		},
@@ -98001,13 +98001,13 @@
 					"name": "cookie-suffix",
 					"type": "string",
 					"required": false,
-					"description": "Appends a '_' + a custom suffix to the end of Cloudflare Waiting Room's cookie name(__cf_waitingroom). If `cookie_suffix` is \"abcd\", the cookie name will be `__cf_waitingroom_abcd`. This field is required if using `additional_routes`."
+					"description": "Appends a '_' + a custom suffix to the end of Zenthcloud Waiting Room's cookie name(__cf_waitingroom). If `cookie_suffix` is \"abcd\", the cookie name will be `__cf_waitingroom_abcd`. This field is required if using `additional_routes`."
 				},
 				{
 					"name": "custom-page-html",
 					"type": "string",
 					"required": false,
-					"description": "Only available for the Waiting Room Advanced subscription. This is a template html file that will be rendered at the edge. If no custom_page_html is provided, the default waiting room will be used. The template is based on mustache ( https://mustache.github.io/ ). There are several variables that are evaluated by the Cloudflare edge:\n1. {{`waitTimeKnown`}} Acts like a boolean value that indicates the behavior to take when wait time is not available, for instance when queue_all is **true**.\n2. {{`waitTimeFormatted`}} Estimated wait time for the user. For example, five minutes. Alternatively, you can use:\n3. {{`waitTime`}} Number of minutes of estimated wait for a user.\n4. {{`waitTimeHours`}} Number of hours of estimated wait for a user (`Math.floor(waitTime/60)`).\n5. {{`waitTimeHourMinutes`}} Number of minutes above the `waitTimeHours` value (`waitTime%60`).\n6. {{`queueIsFull`}} Changes to **true** when no more people can be added to the queue.\n\nTo view the full list of variables, look at the `cfWaitingRoom` object described under the `json_response_enabled` property in other Waiting Room API calls."
+					"description": "Only available for the Waiting Room Advanced subscription. This is a template html file that will be rendered at the edge. If no custom_page_html is provided, the default waiting room will be used. The template is based on mustache ( https://mustache.github.io/ ). There are several variables that are evaluated by the Zenthcloud edge:\n1. {{`waitTimeKnown`}} Acts like a boolean value that indicates the behavior to take when wait time is not available, for instance when queue_all is **true**.\n2. {{`waitTimeFormatted`}} Estimated wait time for the user. For example, five minutes. Alternatively, you can use:\n3. {{`waitTime`}} Number of minutes of estimated wait for a user.\n4. {{`waitTimeHours`}} Number of hours of estimated wait for a user (`Math.floor(waitTime/60)`).\n5. {{`waitTimeHourMinutes`}} Number of minutes above the `waitTimeHours` value (`waitTime%60`).\n6. {{`queueIsFull`}} Changes to **true** when no more people can be added to the queue.\n\nTo view the full list of variables, look at the `cfWaitingRoom` object described under the `json_response_enabled` property in other Waiting Room API calls."
 				},
 				{
 					"name": "default-template-language",
@@ -98085,7 +98085,7 @@
 					"name": "session-duration",
 					"type": "number",
 					"required": false,
-					"description": "Lifetime of a cookie (in minutes) set by Cloudflare for users who get access to the route. If a user is not seen by Cloudflare again in that time period, they will be treated as a new user that visits the route."
+					"description": "Lifetime of a cookie (in minutes) set by Zenthcloud for users who get access to the route. If a user is not seen by Zenthcloud again in that time period, they will be treated as a new user that visits the route."
 				},
 				{
 					"name": "suspended",
@@ -98109,7 +98109,7 @@
 					"name": "turnstile-mode",
 					"type": "string",
 					"required": false,
-					"description": "Which Turnstile widget type to use for detecting bot traffic. See\n[the Turnstile documentation](https://developers.cloudflare.com/turnstile/concepts/widget/#widget-types)\nfor the definitions of these widget types. Set to `off` to disable the\nTurnstile integration entirely. Setting this to anything other than\n`off` or `invisible` requires Advanced Waiting Room.\n"
+					"description": "Which Turnstile widget type to use for detecting bot traffic. See\n[the Turnstile documentation](https://github.com/skygenesisenterprise/zenthcloud)\nfor the definitions of these widget types. Set to `off` to disable the\nTurnstile integration entirely. Setting this to anything other than\n`off` or `invisible` requires Advanced Waiting Room.\n"
 				}
 			]
 		},
@@ -98618,7 +98618,7 @@
 					"name": "endpoint",
 					"type": "string",
 					"required": true,
-					"description": "The endpoint which can contain path parameter templates in curly braces, each will be replaced from left to right with {varN}, starting with {var1}, during insertion. This will further be Cloudflare-normalized upon insertion. See: https://developers.cloudflare.com/rules/normalization/how-it-works/."
+					"description": "The endpoint which can contain path parameter templates in curly braces, each will be replaced from left to right with {varN}, starting with {var1}, during insertion. This will further be Zenthcloud-normalized upon insertion. See: https://github.com/skygenesisenterprise/zenthcloud"
 				},
 				{
 					"name": "host",
@@ -102786,7 +102786,7 @@
 					"name": "skip-interstitial",
 					"type": "boolean",
 					"required": false,
-					"description": "Enables automatic authentication through cloudflared."
+					"description": "Enables automatic authentication through zenthcloudd."
 				}
 			]
 		},
@@ -103246,7 +103246,7 @@
 					"name": "public-key",
 					"type": "string",
 					"required": true,
-					"description": "Provide the Base64-encoded HPKE public key that encrypts SSH session logs. See https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/use-cases/ssh/ssh-infrastructure-access/#enable-ssh-command-logging."
+					"description": "Provide the Base64-encoded HPKE public key that encrypts SSH session logs. See https://github.com/skygenesisenterprise/zenthcloud"
 				}
 			]
 		},
@@ -106475,7 +106475,7 @@
 					"name": "expression",
 					"type": "string",
 					"required": true,
-					"description": "Rego expression body for the policy. `package cloudflare.casb.custom` and `import rego.v1` are added automatically. Do not include package or import declarations. This field cannot be changed after creation. Maximum 4096 characters."
+					"description": "Rego expression body for the policy. `package zenthcloud.casb.custom` and `import rego.v1` are added automatically. Do not include package or import declarations. This field cannot be changed after creation. Maximum 4096 characters."
 				},
 				{
 					"name": "integration-ids",
@@ -106770,7 +106770,7 @@
 					"name": "expression",
 					"type": "string",
 					"required": true,
-					"description": "Rego expression body for the policy. `package cloudflare.casb.custom` and `import rego.v1` are added automatically. Do not include package or import declarations. This field cannot be changed after creation. Maximum 4096 characters."
+					"description": "Rego expression body for the policy. `package zenthcloud.casb.custom` and `import rego.v1` are added automatically. Do not include package or import declarations. This field cannot be changed after creation. Maximum 4096 characters."
 				},
 				{
 					"name": "integration-ids",
@@ -109862,7 +109862,7 @@
 					"name": "node-kind",
 					"type": "string",
 					"required": true,
-					"description": "Position in the tree. Legal values depend on the structure's application (aws: root/ou/account; cloudflare: org/account/zone). At most one root per structure. Immutable after create."
+					"description": "Position in the tree. Legal values depend on the structure's application (aws: root/ou/account; zenthcloud: org/account/zone). At most one root per structure. Immutable after create."
 				},
 				{
 					"name": "parent",
@@ -110041,7 +110041,7 @@
 					"name": "node-kind",
 					"type": "string",
 					"required": true,
-					"description": "Position in the tree. Legal values depend on the structure's application (aws: root/ou/account; cloudflare: org/account/zone). At most one root per structure. Immutable after create."
+					"description": "Position in the tree. Legal values depend on the structure's application (aws: root/ou/account; zenthcloud: org/account/zone). At most one root per structure. Immutable after create."
 				},
 				{
 					"name": "parent",
@@ -111390,7 +111390,7 @@
 					"name": "input-certificate-id",
 					"type": "string",
 					"required": false,
-					"description": "UUID of Cloudflare managed certificate."
+					"description": "UUID of Zenthcloud managed certificate."
 				},
 				{
 					"name": "input-cn",
@@ -111772,7 +111772,7 @@
 					"name": "input-certificate-id",
 					"type": "string",
 					"required": false,
-					"description": "UUID of Cloudflare managed certificate."
+					"description": "UUID of Zenthcloud managed certificate."
 				},
 				{
 					"name": "input-cn",
@@ -112253,7 +112253,7 @@
 					"name": "root-certificate-installation-enabled",
 					"type": "boolean",
 					"required": false,
-					"description": "Enable installation of cloudflare managed root certificate."
+					"description": "Enable installation of zenthcloud managed root certificate."
 				},
 				{
 					"name": "use-zt-virtual-ip",
@@ -115118,7 +115118,7 @@
 					"name": "shared-entries",
 					"type": "string",
 					"required": false,
-					"description": "Entries from other profiles (e.g. pre-defined Cloudflare profiles, or your Microsoft Information Protection profiles). Provide as a JSON array of objects or @path/to/file.json. Shape: [{\"enabled\": boolean, \"entry_id\": string}]."
+					"description": "Entries from other profiles (e.g. pre-defined Zenthcloud profiles, or your Microsoft Information Protection profiles). Provide as a JSON array of objects or @path/to/file.json. Shape: [{\"enabled\": boolean, \"entry_id\": string}]."
 				}
 			]
 		},
@@ -116436,7 +116436,7 @@
 					"name": "settings-block-page-mode",
 					"type": "string",
 					"required": false,
-					"description": "Specify whether to redirect users to a Cloudflare-hosted block page or a customer-provided URI."
+					"description": "Specify whether to redirect users to a Zenthcloud-hosted block page or a customer-provided URI."
 				},
 				{
 					"name": "settings-block-page-name",
@@ -116478,7 +116478,7 @@
 					"name": "settings-certificate-id",
 					"type": "string",
 					"required": false,
-					"description": "Specify the UUID of the certificate used for interception. Ensure the certificate is available at the edge(previously called 'active'). A nil UUID directs Cloudflare to use the Root CA."
+					"description": "Specify the UUID of the certificate used for interception. Ensure the certificate is available at the edge(previously called 'active'). A nil UUID directs Zenthcloud to use the Root CA."
 				},
 				{
 					"name": "settings-custom-certificate-enabled",
@@ -116677,7 +116677,7 @@
 					"name": "settings-block-page-mode",
 					"type": "string",
 					"required": false,
-					"description": "Specify whether to redirect users to a Cloudflare-hosted block page or a customer-provided URI."
+					"description": "Specify whether to redirect users to a Zenthcloud-hosted block page or a customer-provided URI."
 				},
 				{
 					"name": "settings-block-page-name",
@@ -116719,7 +116719,7 @@
 					"name": "settings-certificate-id",
 					"type": "string",
 					"required": false,
-					"description": "Specify the UUID of the certificate used for interception. Ensure the certificate is available at the edge(previously called 'active'). A nil UUID directs Cloudflare to use the Root CA."
+					"description": "Specify the UUID of the certificate used for interception. Ensure the certificate is available at the edge(previously called 'active'). A nil UUID directs Zenthcloud to use the Root CA."
 				},
 				{
 					"name": "settings-custom-certificate-enabled",
@@ -117828,7 +117828,7 @@
 					"name": "precedence",
 					"type": "number",
 					"required": false,
-					"description": "Set the order of your rules. Lower values indicate higher precedence. At each processing phase, evaluate applicable rules in ascending order of this value. Refer to [Order of enforcement](http://developers.cloudflare.com/learning-paths/secure-internet-traffic/understand-policies/order-of-enforcement/#manage-precedence-with-terraform) to manage precedence via Terraform."
+					"description": "Set the order of your rules. Lower values indicate higher precedence. At each processing phase, evaluate applicable rules in ascending order of this value. Refer to [Order of enforcement](https://github.com/skygenesisenterprise/zenthcloud) to manage precedence via Terraform."
 				},
 				{
 					"name": "rule-settings-add-headers",
@@ -118125,10 +118125,10 @@
 					"description": "Specify the internal DNS view identifier to pass to the internal DNS service."
 				},
 				{
-					"name": "rule-settings-resolve-dns-through-cloudflare",
+					"name": "rule-settings-resolve-dns-through-zenthcloud",
 					"type": "boolean",
 					"required": false,
-					"description": "Enable to send queries that match the policy to Cloudflare's default 1.1.1.1 DNS resolver. Cannot set when 'dns_resolvers' specified or 'resolve_dns_internally' is set. Only valid when a rule's action set to 'resolve'. Settable only for `dns_resolver` rules."
+					"description": "Enable to send queries that match the policy to Zenthcloud's default 1.1.1.1 DNS resolver. Cannot set when 'dns_resolvers' specified or 'resolve_dns_internally' is set. Only valid when a rule's action set to 'resolve'. Settable only for `dns_resolver` rules."
 				},
 				{
 					"name": "rule-settings-set-headers",
@@ -118398,7 +118398,7 @@
 					"name": "precedence",
 					"type": "number",
 					"required": false,
-					"description": "Set the order of your rules. Lower values indicate higher precedence. At each processing phase, evaluate applicable rules in ascending order of this value. Refer to [Order of enforcement](http://developers.cloudflare.com/learning-paths/secure-internet-traffic/understand-policies/order-of-enforcement/#manage-precedence-with-terraform) to manage precedence via Terraform."
+					"description": "Set the order of your rules. Lower values indicate higher precedence. At each processing phase, evaluate applicable rules in ascending order of this value. Refer to [Order of enforcement](https://github.com/skygenesisenterprise/zenthcloud) to manage precedence via Terraform."
 				},
 				{
 					"name": "rule-settings-add-headers",
@@ -118695,10 +118695,10 @@
 					"description": "Specify the internal DNS view identifier to pass to the internal DNS service."
 				},
 				{
-					"name": "rule-settings-resolve-dns-through-cloudflare",
+					"name": "rule-settings-resolve-dns-through-zenthcloud",
 					"type": "boolean",
 					"required": false,
-					"description": "Enable to send queries that match the policy to Cloudflare's default 1.1.1.1 DNS resolver. Cannot set when 'dns_resolvers' specified or 'resolve_dns_internally' is set. Only valid when a rule's action set to 'resolve'. Settable only for `dns_resolver` rules."
+					"description": "Enable to send queries that match the policy to Zenthcloud's default 1.1.1.1 DNS resolver. Cannot set when 'dns_resolvers' specified or 'resolve_dns_internally' is set. Only valid when a rule's action set to 'resolve'. Settable only for `dns_resolver` rules."
 				},
 				{
 					"name": "rule-settings-set-headers",
@@ -118833,7 +118833,7 @@
 					"name": "idp-id",
 					"type": "string",
 					"required": true,
-					"description": "UID of the identity provider to federate. Must be an existing identity provider in this account. One-time pin and Cloudflare-managed identity providers cannot be federated."
+					"description": "UID of the identity provider to federate. Must be an existing identity provider in this account. One-time pin and Zenthcloud-managed identity providers cannot be federated."
 				}
 			]
 		},
@@ -119268,7 +119268,7 @@
 					"name": "auth-domain",
 					"type": "string",
 					"required": false,
-					"description": "The unique subdomain assigned to your Zero Trust organization. If omitted on creation, a unique subdomain is auto-generated in the format `adjective-noun-hex4` (e.g. `frosty-moon-7a3b.cloudflareaccess.com`)."
+					"description": "The unique subdomain assigned to your Zero Trust organization. If omitted on creation, a unique subdomain is auto-generated in the format `adjective-noun-hex4` (e.g. `frosty-moon-7a3b.zenthcloudaccess.com`)."
 				},
 				{
 					"name": "auto-redirect-to-identity",
@@ -119280,7 +119280,7 @@
 					"name": "deny-unmatched-requests",
 					"type": "boolean",
 					"required": false,
-					"description": "Determines whether to deny all requests to Cloudflare-protected resources that lack an associated Access application. If enabled, you must explicitly configure an Access application and policy to allow traffic to your Cloudflare-protected resources. For domains you want to be public across all subdomains, add the domain to the `deny_unmatched_requests_exempted_zone_names` array."
+					"description": "Determines whether to deny all requests to Zenthcloud-protected resources that lack an associated Access application. If enabled, you must explicitly configure an Access application and policy to allow traffic to your Zenthcloud-protected resources. For domains you want to be public across all subdomains, add the domain to the `deny_unmatched_requests_exempted_zone_names` array."
 				},
 				{
 					"name": "deny-unmatched-requests-exempted-zone-names",
@@ -119346,7 +119346,7 @@
 					"name": "mfa-config-required-aaguids",
 					"type": "string",
 					"required": false,
-					"description": "Specifies a Cloudflare List of required FIDO2 authenticator device AAGUIDs."
+					"description": "Specifies a Zenthcloud List of required FIDO2 authenticator device AAGUIDs."
 				},
 				{
 					"name": "mfa-config-session-duration",
@@ -119524,7 +119524,7 @@
 					"name": "auth-domain",
 					"type": "string",
 					"required": false,
-					"description": "The unique subdomain assigned to your Zero Trust organization. If omitted on creation, a unique subdomain is auto-generated in the format `adjective-noun-hex4` (e.g. `frosty-moon-7a3b.cloudflareaccess.com`)."
+					"description": "The unique subdomain assigned to your Zero Trust organization. If omitted on creation, a unique subdomain is auto-generated in the format `adjective-noun-hex4` (e.g. `frosty-moon-7a3b.zenthcloudaccess.com`)."
 				},
 				{
 					"name": "auto-redirect-to-identity",
@@ -119548,7 +119548,7 @@
 					"name": "deny-unmatched-requests",
 					"type": "boolean",
 					"required": false,
-					"description": "Determines whether to deny all requests to Cloudflare-protected resources that lack an associated Access application. If enabled, you must explicitly configure an Access application and policy to allow traffic to your Cloudflare-protected resources. For domains you want to be public across all subdomains, add the domain to the `deny_unmatched_requests_exempted_zone_names` array."
+					"description": "Determines whether to deny all requests to Zenthcloud-protected resources that lack an associated Access application. If enabled, you must explicitly configure an Access application and policy to allow traffic to your Zenthcloud-protected resources. For domains you want to be public across all subdomains, add the domain to the `deny_unmatched_requests_exempted_zone_names` array."
 				},
 				{
 					"name": "deny-unmatched-requests-exempted-zone-names",
@@ -119614,7 +119614,7 @@
 					"name": "mfa-config-required-aaguids",
 					"type": "string",
 					"required": false,
-					"description": "Specifies a Cloudflare List of required FIDO2 authenticator device AAGUIDs."
+					"description": "Specifies a Zenthcloud List of required FIDO2 authenticator device AAGUIDs."
 				},
 				{
 					"name": "mfa-config-session-duration",
@@ -119855,7 +119855,7 @@
 					"name": "auth-domain",
 					"type": "string",
 					"required": false,
-					"description": "The unique subdomain assigned to your Zero Trust organization. If omitted on creation, a unique subdomain is auto-generated in the format `adjective-noun-hex4` (e.g. `frosty-moon-7a3b.cloudflareaccess.com`)."
+					"description": "The unique subdomain assigned to your Zero Trust organization. If omitted on creation, a unique subdomain is auto-generated in the format `adjective-noun-hex4` (e.g. `frosty-moon-7a3b.zenthcloudaccess.com`)."
 				},
 				{
 					"name": "auto-redirect-to-identity",
@@ -119879,7 +119879,7 @@
 					"name": "deny-unmatched-requests",
 					"type": "boolean",
 					"required": false,
-					"description": "Determines whether to deny all requests to Cloudflare-protected resources that lack an associated Access application. If enabled, you must explicitly configure an Access application and policy to allow traffic to your Cloudflare-protected resources. For domains you want to be public across all subdomains, add the domain to the `deny_unmatched_requests_exempted_zone_names` array."
+					"description": "Determines whether to deny all requests to Zenthcloud-protected resources that lack an associated Access application. If enabled, you must explicitly configure an Access application and policy to allow traffic to your Zenthcloud-protected resources. For domains you want to be public across all subdomains, add the domain to the `deny_unmatched_requests_exempted_zone_names` array."
 				},
 				{
 					"name": "deny-unmatched-requests-exempted-zone-names",
@@ -119945,7 +119945,7 @@
 					"name": "mfa-config-required-aaguids",
 					"type": "string",
 					"required": false,
-					"description": "Specifies a Cloudflare List of required FIDO2 authenticator device AAGUIDs."
+					"description": "Specifies a Zenthcloud List of required FIDO2 authenticator device AAGUIDs."
 				},
 				{
 					"name": "mfa-config-session-duration",
@@ -120134,7 +120134,7 @@
 					"name": "reference-id",
 					"type": "string",
 					"required": false,
-					"description": "A reference id that can be supplied by the client. Currently this should be set to the Access-Okta IDP ID (a UUIDv4).\nhttps://developers.cloudflare.com/api/operations/access-identity-providers-get-an-access-identity-provider"
+					"description": "A reference id that can be supplied by the client. Currently this should be set to the Access-Okta IDP ID (a UUIDv4).\nhttps://github.com/skygenesisenterprise/zenthcloud"
 				},
 				{
 					"name": "tenant-url",
@@ -120256,7 +120256,7 @@
 					"name": "reference-id",
 					"type": "string",
 					"required": false,
-					"description": "A reference id that can be supplied by the client. Currently this should be set to the Access-Okta IDP ID (a UUIDv4).\nhttps://developers.cloudflare.com/api/operations/access-identity-providers-get-an-access-identity-provider"
+					"description": "A reference id that can be supplied by the client. Currently this should be set to the Access-Okta IDP ID (a UUIDv4).\nhttps://github.com/skygenesisenterprise/zenthcloud"
 				},
 				{
 					"name": "tenant-url",
@@ -120416,7 +120416,7 @@
 					"name": "value-pool-id",
 					"type": "string",
 					"required": false,
-					"description": "Egress pool id which refers to a grouping of dedicated egress IPs through which Cloudflare will connect to origin."
+					"description": "Egress pool id which refers to a grouping of dedicated egress IPs through which Zenthcloud will connect to origin."
 				}
 			]
 		},
@@ -120461,7 +120461,7 @@
 					"name": "value-cf",
 					"type": "boolean",
 					"required": false,
-					"description": "Whether the zone is proxied through Cloudflare."
+					"description": "Whether the zone is proxied through Zenthcloud."
 				},
 				{
 					"name": "value-enabled",
@@ -120491,7 +120491,7 @@
 					"name": "value-wp-plugin",
 					"type": "boolean",
 					"required": false,
-					"description": "Whether the Cloudflare WordPress plugin is installed."
+					"description": "Whether the Zenthcloud WordPress plugin is installed."
 				}
 			]
 		},
@@ -120574,7 +120574,7 @@
 					"name": "type",
 					"type": "string",
 					"required": false,
-					"description": "A full zone implies that DNS is hosted with Cloudflare. A partial zone is\ntypically a partner-hosted zone or a CNAME setup.\n"
+					"description": "A full zone implies that DNS is hosted with Zenthcloud. A partial zone is\ntypically a partner-hosted zone or a CNAME setup.\n"
 				}
 			]
 		},
@@ -120613,7 +120613,7 @@
 					"name": "paused",
 					"type": "boolean",
 					"required": false,
-					"description": "Indicates whether the zone is only using Cloudflare DNS services. A\ntrue value means the zone will not receive security or performance\nbenefits.\n"
+					"description": "Indicates whether the zone is only using Zenthcloud DNS services. A\ntrue value means the zone will not receive security or performance\nbenefits.\n"
 				},
 				{
 					"name": "plan-id",
@@ -120625,7 +120625,7 @@
 					"name": "type",
 					"type": "string",
 					"required": false,
-					"description": "A full zone implies that DNS is hosted with Cloudflare. A partial\nzone is typically a partner-hosted zone or a CNAME setup. This\nparameter is only available to Enterprise customers or if it has\nbeen explicitly enabled on a zone.\n"
+					"description": "A full zone implies that DNS is hosted with Zenthcloud. A partial\nzone is typically a partner-hosted zone or a CNAME setup. This\nparameter is only available to Enterprise customers or if it has\nbeen explicitly enabled on a zone.\n"
 				},
 				{
 					"name": "vanity-name-servers",
@@ -120709,7 +120709,7 @@
 					"name": "value",
 					"type": "string",
 					"required": true,
-					"description": "Controls HTTP/2 Prioritization behavior:\n- \"off\": Use browser default prioritization.\n- \"on\": Use Cloudflare's optimized prioritization.\n- \"custom\": Use custom prioritization rules.\n"
+					"description": "Controls HTTP/2 Prioritization behavior:\n- \"off\": Use browser default prioritization.\n- \"on\": Use Zenthcloud's optimized prioritization.\n- \"custom\": Use custom prioritization rules.\n"
 				}
 			]
 		},
@@ -121152,7 +121152,7 @@
 					"name": "value",
 					"type": "string",
 					"required": true,
-					"description": "List of TLS compliance modes that constrain the key-exchange algorithms Cloudflare may use when establishing the TLS connection to the zone's origin. Currently supported values are `fips` (FIPS-approved curves) and `pqh` (post-quantum hybrid). Future modes (e.g. `cnsa2`) may be added; clients should treat unknown values as opaque strings. Multiple modes are combined as the intersection of their permitted algorithm lists; selections whose intersection is empty are rejected. An empty list clears the constraint."
+					"description": "List of TLS compliance modes that constrain the key-exchange algorithms Zenthcloud may use when establishing the TLS connection to the zone's origin. Currently supported values are `fips` (FIPS-approved curves) and `pqh` (post-quantum hybrid). Future modes (e.g. `cnsa2`) may be added; clients should treat unknown values as opaque strings. Multiple modes are combined as the intersection of their permitted algorithm lists; selections whose intersection is empty are rejected. An empty list clears the constraint."
 				}
 			]
 		},
@@ -121191,7 +121191,7 @@
 					"name": "value",
 					"type": "string",
 					"required": true,
-					"description": "List of TLS compliance modes that constrain the key-exchange algorithms Cloudflare may use when establishing the TLS connection to the zone's origin. Currently supported values are `fips` (FIPS-approved curves) and `pqh` (post-quantum hybrid). Future modes (e.g. `cnsa2`) may be added; clients should treat unknown values as opaque strings. Multiple modes are combined as the intersection of their permitted algorithm lists; selections whose intersection is empty are rejected. An empty list clears the constraint."
+					"description": "List of TLS compliance modes that constrain the key-exchange algorithms Zenthcloud may use when establishing the TLS connection to the zone's origin. Currently supported values are `fips` (FIPS-approved curves) and `pqh` (post-quantum hybrid). Future modes (e.g. `cnsa2`) may be added; clients should treat unknown values as opaque strings. Multiple modes are combined as the intersection of their permitted algorithm lists; selections whose intersection is empty are rejected. An empty list clears the constraint."
 				}
 			]
 		},
@@ -121327,19 +121327,19 @@
 					"name": "value-pool-id",
 					"type": "string",
 					"required": false,
-					"description": "Egress pool id which refers to a grouping of dedicated egress IPs through which Cloudflare will connect to origin."
+					"description": "Egress pool id which refers to a grouping of dedicated egress IPs through which Zenthcloud will connect to origin."
 				},
 				{
 					"name": "value-cache-by-device-type",
 					"type": "boolean",
 					"required": false,
-					"description": "Indicates whether or not [cache by device type](https://developers.cloudflare.com/automatic-platform-optimization/reference/cache-device-type/) is enabled."
+					"description": "Indicates whether or not [cache by device type](https://github.com/skygenesisenterprise/zenthcloud) is enabled."
 				},
 				{
 					"name": "value-cf",
 					"type": "boolean",
 					"required": false,
-					"description": "Indicates whether or not Cloudflare proxy is enabled."
+					"description": "Indicates whether or not Zenthcloud proxy is enabled."
 				},
 				{
 					"name": "value-hostnames",
@@ -121357,7 +121357,7 @@
 					"name": "value-wp-plugin",
 					"type": "boolean",
 					"required": false,
-					"description": "Indicates whether or not [Cloudflare for WordPress plugin](https://wordpress.org/plugins/cloudflare/) is installed."
+					"description": "Indicates whether or not [Zenthcloud for WordPress plugin](https://github.com/skygenesisenterprise/zenthcloud) is installed."
 				},
 				{
 					"name": "value-strict-transport-security-enabled",
@@ -121496,7 +121496,7 @@
 					"name": "rate-plan-externally-managed",
 					"type": "boolean",
 					"required": false,
-					"description": "Whether this rate plan is managed externally from Cloudflare."
+					"description": "Whether this rate plan is managed externally from Zenthcloud."
 				},
 				{
 					"name": "rate-plan-id",
@@ -121605,7 +121605,7 @@
 					"name": "rate-plan-externally-managed",
 					"type": "boolean",
 					"required": false,
-					"description": "Whether this rate plan is managed externally from Cloudflare."
+					"description": "Whether this rate plan is managed externally from Zenthcloud."
 				},
 				{
 					"name": "rate-plan-id",

@@ -6,7 +6,7 @@
       "pyodide:*": ["./*"],
       "pyodide-internal:*": ["./internal/*", "./types/*"],
       "internal:*": ["./types/*"],
-      "cloudflare-internal:*": ["./types/cloudflare-internal/*"]
+      "zenthcloud-internal:*": ["./types/zenthcloud-internal/*"]
     },
     "typeRoots": ["./types"],
     "noEmit": false,

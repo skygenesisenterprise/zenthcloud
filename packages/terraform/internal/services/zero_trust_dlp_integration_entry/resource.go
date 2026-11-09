@@ -8,12 +8,12 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -29,7 +29,7 @@ func NewResource() resource.Resource {
 
 // ZeroTrustDLPIntegrationEntryResource defines the resource implementation.
 type ZeroTrustDLPIntegrationEntryResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *ZeroTrustDLPIntegrationEntryResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -41,12 +41,12 @@ func (r *ZeroTrustDLPIntegrationEntryResource) Configure(ctx context.Context, re
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -74,7 +74,7 @@ func (r *ZeroTrustDLPIntegrationEntryResource) Create(ctx context.Context, req r
 	_, err = r.client.ZeroTrust.DLP.Entries.Integration.New(
 		ctx,
 		zero_trust.DLPEntryIntegrationNewParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -123,7 +123,7 @@ func (r *ZeroTrustDLPIntegrationEntryResource) Update(ctx context.Context, req r
 		ctx,
 		data.EntryID.ValueString(),
 		zero_trust.DLPEntryIntegrationUpdateParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -159,7 +159,7 @@ func (r *ZeroTrustDLPIntegrationEntryResource) Read(ctx context.Context, req res
 		ctx,
 		data.EntryID.ValueString(),
 		zero_trust.DLPEntryIntegrationGetParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -197,7 +197,7 @@ func (r *ZeroTrustDLPIntegrationEntryResource) Delete(ctx context.Context, req r
 		ctx,
 		data.EntryID.ValueString(),
 		zero_trust.DLPEntryIntegrationDeleteParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
@@ -234,7 +234,7 @@ func (r *ZeroTrustDLPIntegrationEntryResource) ImportState(ctx context.Context, 
 		ctx,
 		path_entry_id,
 		zero_trust.DLPEntryIntegrationGetParams{
-			AccountID: cloudflare.F(path_account_id),
+			AccountID: zenthcloud.F(path_account_id),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),

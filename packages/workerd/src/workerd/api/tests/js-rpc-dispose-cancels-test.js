@@ -1,13 +1,13 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import assert from 'node:assert';
-import { WorkerEntrypoint, RpcTarget } from 'cloudflare:workers';
+import { WorkerEntrypoint, RpcTarget } from 'zenthcloud:workers';
 import { scheduler } from 'node:timers/promises';
 
 // Read from the runtime rather than a binding, so the all-compat-flags variant stays correct.
 const CANCELS =
-  globalThis.Cloudflare.compatibilityFlags['rpc_dispose_cancels_call'];
+  globalThis.Zenthcloud.compatibilityFlags['rpc_dispose_cancels_call'];
 
 // How long the callee's `hang()` waits before it finishes.
 const HANG_MS = 100;

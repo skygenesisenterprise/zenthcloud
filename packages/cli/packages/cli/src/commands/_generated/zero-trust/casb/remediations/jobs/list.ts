@@ -20,7 +20,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 zero-trust casb remediations jobs list\n\nList all remediation jobs tied to a specific Cloudflare Account. Note that `cursor` and `page` are mutually exclusive."
+			"$0 zero-trust casb remediations jobs list\n\nList all remediation jobs tied to a specific Zenthcloud Account. Note that `cursor` and `page` are mutually exclusive."
 		)
 		.option("cursor", {
 			type: "string",
@@ -119,7 +119,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust casb remediations jobs list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/data-security/posture/remediations/jobs`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/data-security/posture/remediations/jobs`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

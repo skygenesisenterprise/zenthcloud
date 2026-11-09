@@ -63,7 +63,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf magic-transit apps delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/magic/apps/${argv["account-app-id"] == null ? "<account-app-id>" : encodeURIComponent(String(argv["account-app-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/magic/apps/${argv["account-app-id"] == null ? "<account-app-id>" : encodeURIComponent(String(argv["account-app-id"]))}`,
 						pathParams: {
 							"account-app-id": String(argv["account-app-id"] ?? ""),
 						},

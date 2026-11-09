@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_pipeline_sink Resource - Cloudflare"
+page_title: "zenthcloud_pipeline_sink Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Pipelines ReadPipelines Write
 ---
 
-# cloudflare_pipeline_sink (Resource)
+# zenthcloud_pipeline_sink (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_pipeline_sink" "example_pipeline_sink" {
+resource "zenthcloud_pipeline_sink" "example_pipeline_sink" {
   account_id = "0123105f4ecef8ad9ca31a8372d0c353"
   name = "my_sink"
   type = "r2"
@@ -90,7 +90,7 @@ Available values: "r2", "r2_data_catalog", "basin_catalog".
 
 Required:
 
-- `account_id` (String) Cloudflare Account ID for the bucket
+- `account_id` (String) Zenthcloud Account ID for the bucket
 - `bucket` (String) R2 Bucket to write to
 
 Optional:
@@ -110,8 +110,8 @@ Optional:
 
 Required:
 
-- `access_key_id` (String) Cloudflare Account ID for the bucket
-- `secret_access_key` (String, Sensitive) Cloudflare Account ID for the bucket
+- `access_key_id` (String) Zenthcloud Account ID for the bucket
+- `secret_access_key` (String, Sensitive) Zenthcloud Account ID for the bucket
 
 
 <a id="nestedatt--config--file_naming"></a>
@@ -189,7 +189,7 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_pipeline_sink.example '<account_id>/<sink_id>'
+$ terraform import zenthcloud_pipeline_sink.example '<account_id>/<sink_id>'
 ```
 
 

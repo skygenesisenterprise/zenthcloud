@@ -1,0 +1,48 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package zero_trust_tunnel_zenthcloudd_token
+
+import (
+	"context"
+
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+)
+
+var _ datasource.DataSourceWithConfigValidators = (*ZeroTrustTunnelZenthclouddTokenDataSource)(nil)
+
+func DataSourceSchema(ctx context.Context) schema.Schema {
+	return schema.Schema{
+		MarkdownDescription: schemata.Description{
+			Scopes: []string{
+				"Zenthcloud One Connector: zenthcloudd Write",
+				"Zenthcloud One Connectors Write",
+				"Zenthcloud Tunnel Write",
+			},
+		}.String(),
+		Attributes: map[string]schema.Attribute{
+			"account_id": schema.StringAttribute{
+				Description: "Zenthcloud account ID",
+				Required:    true,
+			},
+			"tunnel_id": schema.StringAttribute{
+				Description: "UUID of the tunnel.",
+				Required:    true,
+			},
+			"token": schema.StringAttribute{
+				Description: "The Tunnel Token is used as a mechanism to authenticate the operation of a tunnel.",
+				Computed:    true,
+				Sensitive:   true,
+			},
+		},
+	}
+}
+
+func (d *ZeroTrustTunnelZenthclouddTokenDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = DataSourceSchema(ctx)
+}
+
+func (d *ZeroTrustTunnelZenthclouddTokenDataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
+	return []datasource.ConfigValidator{}
+}

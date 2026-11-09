@@ -31,7 +31,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		})
 		.option("credential-token", {
 			type: "string",
-			description: "Provides the Cloudflare API token for accessing R2.",
+			description: "Provides the Zenthcloud API token for accessing R2.",
 		})
 		.option("dry-run", {
 			type: "boolean",
@@ -66,7 +66,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf basin-catalog enable",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/basin-catalog/${argv["bucket-name"] == null ? "<bucket-name>" : encodeURIComponent(String(argv["bucket-name"]))}/enable`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/basin-catalog/${argv["bucket-name"] == null ? "<bucket-name>" : encodeURIComponent(String(argv["bucket-name"]))}/enable`,
 						pathParams: { "bucket-name": String(argv["bucket-name"] ?? "") },
 						bodyKind: "json",
 						body:

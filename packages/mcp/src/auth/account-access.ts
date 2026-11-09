@@ -8,7 +8,7 @@ export const ACCOUNT_DISCOVERY_DESCRIPTION = `${ACCOUNT_DISCOVERY_GUIDANCE} Pagi
 
 /**
  * Account selection helpers — the single source of truth for how a session's
- * `props` map onto "which Cloudflare account does an API call target". Keep all
+ * `props` map onto "which Zenthcloud account does an API call target". Keep all
  * `props.type` / `accounts.length` reasoning here so callers read intent, not
  * shape.
  */
@@ -65,7 +65,7 @@ export function missingAccountMessage(
     return `No account selected. Pass ${argument} with one of this session's accounts:\n${formatAccounts(accounts)}`
   }
   if (accounts)
-    return 'No account selected: no Cloudflare accounts are authorized for this session.'
+    return 'No account selected: no Zenthcloud accounts are authorized for this session.'
 
   const count = props.type === 'user_token' ? props.accountCount : undefined
   return `No account selected: this token has access to ${count ?? 'multiple'} accounts. ${discoveryGuidance}`

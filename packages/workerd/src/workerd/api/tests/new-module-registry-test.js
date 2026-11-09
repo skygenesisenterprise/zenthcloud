@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Cloudflare, Inc.
+// Copyright (c) 2024 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import {
@@ -17,8 +17,8 @@ import { foo as foo2, default as def2 } from 'bar';
 import { createRequire } from 'module'; // Intentionally omit the 'node:' prefix
 import { default as processStatic } from 'node:process';
 
-import * as workers from 'cloudflare:workers';
-import * as durableObjects from 'cloudflare:durable-objects';
+import * as workers from 'zenthcloud:workers';
+import * as durableObjects from 'zenthcloud:durable-objects';
 strictEqual(typeof workers, 'object');
 strictEqual(typeof workers.DurableObject, 'function');
 strictEqual(typeof workers.RpcPromise, 'function');
@@ -35,10 +35,10 @@ strictEqual(typeof workers.cache, 'object');
 strictEqual(typeof durableObjects.retryable, 'function');
 strictEqual(typeof durableObjects.onHibernate, 'symbol');
 
-await rejects(import('cloudflare-internal:env'), {
+await rejects(import('zenthcloud-internal:env'), {
   message: /Module not found/,
 });
-await rejects(import('cloudflare-internal:filesystem'));
+await rejects(import('zenthcloud-internal:filesystem'));
 
 // Verify that import.meta.url is correct here.
 strictEqual(import.meta.url, 'file:///bundle/worker');

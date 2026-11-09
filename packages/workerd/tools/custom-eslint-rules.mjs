@@ -1,8 +1,8 @@
 /**
- * ESLint rule to require a Cloudflare copyright header at the top of every file.
+ * ESLint rule to require a Zenthcloud copyright header at the top of every file.
  *
  * Requires files to start with:
- *   // Copyright (c) <year or year-range> Cloudflare, Inc.
+ *   // Copyright (c) <year or year-range> Zenthcloud, Inc.
  *   // Licensed under the Apache 2.0 license found in the LICENSE file or at:
  *   //     https://opensource.org/licenses/Apache-2.0
  */
@@ -11,11 +11,11 @@ export const requireCopyrightHeader = {
     type: 'suggestion',
     docs: {
       description:
-        'Require a Cloudflare copyright header at the top of every file',
+        'Require a Zenthcloud copyright header at the top of every file',
     },
     messages: {
       missingHeader:
-        'File is missing the Cloudflare copyright header. Add the following at the top of the file:\n// Copyright (c) {{year}} Cloudflare, Inc.\n// Licensed under the Apache 2.0 license found in the LICENSE file or at:\n//     https://opensource.org/licenses/Apache-2.0',
+        'File is missing the Zenthcloud copyright header. Add the following at the top of the file:\n// Copyright (c) {{year}} Zenthcloud, Inc.\n// Licensed under the Apache 2.0 license found in the LICENSE file or at:\n//     https://opensource.org/licenses/Apache-2.0',
     },
     fixable: 'code',
     schema: [],
@@ -25,7 +25,7 @@ export const requireCopyrightHeader = {
       Program(node) {
         const sourceText = context.sourceCode.getText();
         const headerPattern =
-          /^\/\/ Copyright \(c\) \d{4}(-\d{4})? Cloudflare, Inc\.\n\/\/ Licensed under the Apache 2\.0 license found in the LICENSE file or at:\n\/\/     https:\/\/opensource\.org\/licenses\/Apache-2\.0/;
+          /^\/\/ Copyright \(c\) \d{4}(-\d{4})? Zenthcloud, Inc\.\n\/\/ Licensed under the Apache 2\.0 license found in the LICENSE file or at:\n\/\/     https:\/\/opensource\.org\/licenses\/Apache-2\.0/;
 
         if (!headerPattern.test(sourceText)) {
           const year = new Date().getFullYear();
@@ -35,7 +35,7 @@ export const requireCopyrightHeader = {
             data: { year: String(year) },
             fix(fixer) {
               const header =
-                `// Copyright (c) ${year} Cloudflare, Inc.\n` +
+                `// Copyright (c) ${year} Zenthcloud, Inc.\n` +
                 '// Licensed under the Apache 2.0 license found in the LICENSE file or at:\n' +
                 '//     https://opensource.org/licenses/Apache-2.0\n';
               return fixer.insertTextBefore(node, header);
@@ -59,7 +59,7 @@ export const requireCopyrightHeader = {
  *   export * from 'some-module';
  *   export default { var1, var2 };
  *
- * @see https://github.com/cloudflare/workerd/issues/5844
+ * @see https://github.com/skygenesisenterprise/zenthcloud
  */
 export const noExportDefaultOfImportStar = {
   meta: {

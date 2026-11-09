@@ -4,7 +4,7 @@ package authenticated_origin_pulls_settings
 
 import (
 	"context"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/authenticated_origin_pulls_settings/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/authenticated_origin_pulls_settings/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
@@ -15,7 +15,7 @@ var _ resource.ResourceWithMoveState = (*AuthenticatedOriginPullsSettingsResourc
 // MoveState registers state movers for resource renames.
 // This enables Terraform 1.8+ `moved` blocks to automatically trigger state migration.
 func (r *AuthenticatedOriginPullsSettingsResource) MoveState(ctx context.Context) []resource.StateMover {
-	sourceSchema := v500.SourceCloudflareAuthenticatedOriginPullsSchema()
+	sourceSchema := v500.SourceZenthcloudAuthenticatedOriginPullsSchema()
 
 	return []resource.StateMover{
 		{
@@ -28,7 +28,7 @@ func (r *AuthenticatedOriginPullsSettingsResource) MoveState(ctx context.Context
 // UpgradeState registers state upgraders for schema version changes.
 func (r *AuthenticatedOriginPullsSettingsResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
 
-	sourceSchema := v500.SourceCloudflareAuthenticatedOriginPullsSchema()
+	sourceSchema := v500.SourceZenthcloudAuthenticatedOriginPullsSchema()
 
 	return map[int64]resource.StateUpgrader{
 		// Upgrade from v4 (schema version 0) to v5 (schema version 500)

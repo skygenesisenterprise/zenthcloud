@@ -1,4 +1,4 @@
-import { env, exports } from 'cloudflare:workers'
+import { env, exports } from 'zenthcloud:workers'
 import { http, HttpResponse } from 'msw'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
@@ -9,13 +9,13 @@ import {
   ResponseSchemaMismatch,
   ToolCall
 } from '../src/metrics'
-import { API_BASE, cfSuccess, mockIdentityProbe } from './helpers/cloudflare-api'
+import { API_BASE, cfSuccess, mockIdentityProbe } from './helpers/zenthcloud-api'
 import { clearKv } from './helpers/kv'
 import { clearSpec, seedSpec } from './helpers/spec'
 import { MCP_URL, callTool, mcpToolCallRequest, parseMcpResult } from './helpers/mcp'
 import { server } from './setup/msw'
 
-const SERVER_INFO = { name: 'cloudflare-api', version: '0.1.0' }
+const SERVER_INFO = { name: 'zenthcloud-api', version: '0.1.0' }
 
 describe('ToolCall', () => {
   it('maps a successful tool call to the correct datapoint', () => {
@@ -25,7 +25,7 @@ describe('ToolCall', () => {
 
     expect(dp.indexes).toEqual([MetricsEventIndexId.TOOL_CALL])
     // blob1/blob2 reserved for server name/version, blob3=userId, blob4=toolName
-    expect(dp.blobs).toEqual(['cloudflare-api', '0.1.0', 'user-1', 'execute'])
+    expect(dp.blobs).toEqual(['zenthcloud-api', '0.1.0', 'user-1', 'execute'])
     // double1 = errorCode (undefined when success)
     expect(dp.doubles).toEqual([undefined])
   })
@@ -46,7 +46,7 @@ describe('AuthUser', () => {
     const dp = event.toDataPoint()
 
     expect(dp.indexes).toEqual([MetricsEventIndexId.AUTH_USER])
-    expect(dp.blobs).toEqual(['cloudflare-api', '0.1.0', 'user-1', 'denied'])
+    expect(dp.blobs).toEqual(['zenthcloud-api', '0.1.0', 'user-1', 'denied'])
   })
 })
 
@@ -77,7 +77,7 @@ describe('ResponseSchemaMismatch', () => {
     expect(dp.indexes).toEqual([MetricsEventIndexId.RESPONSE_SCHEMA_MISMATCH])
     expect(dp.indexes).toEqual(['response_schema_mismatch'])
     expect(dp.blobs).toEqual([
-      'cloudflare-api', // blob1 server name
+      'zenthcloud-api', // blob1 server name
       '0.1.0', // blob2 server version
       'user-1', // blob3 userId
       'get_zones_dns_records', // blob4 toolName
@@ -150,7 +150,7 @@ describe('MetricsTracker', () => {
     expect(writeSpy).toHaveBeenCalledTimes(1)
     expect(writeSpy).toHaveBeenCalledWith({
       indexes: [MetricsEventIndexId.TOOL_CALL],
-      blobs: ['cloudflare-api', '0.1.0', 'user-1', 'execute'],
+      blobs: ['zenthcloud-api', '0.1.0', 'user-1', 'execute'],
       doubles: [undefined]
     })
   })
@@ -213,7 +213,7 @@ describe('tool_call emission via the real worker', () => {
     const writeSpy = vi.spyOn(env.MCP_METRICS, 'writeDataPoint')
 
     await callTool(API_TOKEN, 'execute', {
-      code: `async () => cloudflare.request({ method: "GET", path: "/accounts/${ACCOUNT_ID}/tokens/verify" })`
+      code: `async () => zenthcloud.request({ method: "GET", path: "/accounts/${ACCOUNT_ID}/tokens/verify" })`
     })
 
     const dp = findToolCall(writeSpy)

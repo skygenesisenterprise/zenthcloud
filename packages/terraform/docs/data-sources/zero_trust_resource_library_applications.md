@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zero_trust_resource_library_applications Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_resource_library_applications Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zero_trust_resource_library_applications (Data Source)
+# zenthcloud_zero_trust_resource_library_applications (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_resource_library_applications" "example_zero_trust_resource_library_applications" {
+data "zenthcloud_zero_trust_resource_library_applications" "example_zero_trust_resource_library_applications" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   fields = "fields"
   filter = "filter"
@@ -51,11 +51,11 @@ Unknown or empty property names return `400`.
 - `id`: application ID (for example, `id:498`).
 - `human_id`: human-readable ID (for example, `human_id:HR`).
 - `hostname`: hostname or support domain (for example, `hostname:portal.example.com`).
-- `source`: application source name (for example, `source:cloudflare`).
+- `source`: application source name (for example, `source:zenthcloud`).
 - `ip_subnet`: CIDR containment; returns applications where a stored subnet contains the search value (for example, `ip_subnet:10.0.1.5/32` matches `10.0.0.0/16`).
 - `category_id`: category ID (for example, `category_id:12`).
 - `category_name`: category name (for example, `category_name:HR`).
-- `supported`: supported Cloudflare product. Values: `GATEWAY`, `ACCESS`, `CASB`.
+- `supported`: supported Zenthcloud product. Values: `GATEWAY`, `ACCESS`, `CASB`.
 - `review_status`: account-specific Gateway review status. Values: `approved`, `unapproved`, `in_review`, `unreviewed`.
 - `limit` (Number) Number of results to return. Defaults to 25; values are clamped to 1–250.
 - `lookup` (String) Find complete, case-insensitive application name mentions in a phrase or
@@ -97,7 +97,7 @@ Read-Only:
 - `review_status` (String) The account-specific Gateway review status. Applications with no assigned review status are returned as `unreviewed`.
 Available values: "approved", "unapproved", "in_review", "unreviewed".
 - `support_domains` (Set of String) Support domains matched by the application.
-- `supported` (Set of String) Cloudflare products that support this application.
+- `supported` (Set of String) Zenthcloud products that support this application.
 - `updated_at` (String) Returns the application update time.
 - `version` (String) Returns the application version.
 

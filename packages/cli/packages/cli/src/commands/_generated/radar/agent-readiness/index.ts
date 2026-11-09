@@ -8,7 +8,7 @@ import type { CommandModule } from "yargs";
 
 const command: CommandModule<CommonYargsOptions> = {
 	command: "agent-readiness",
-	describe: "Agent readiness summary statistics across the Cloudflare network",
+	describe: "Agent readiness summary statistics across the Zenthcloud network",
 
 	builder: (yargs) => {
 		return yargs

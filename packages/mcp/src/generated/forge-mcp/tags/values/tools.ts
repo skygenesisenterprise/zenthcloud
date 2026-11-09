@@ -61,7 +61,7 @@ export const tools: readonly Tool[] = [
                 "alerting_policy",
                 "alerting_webhook",
                 "api_gateway_operation",
-                "cloudflared_tunnel",
+                "zenthcloudd_tunnel",
                 "custom_certificate",
                 "custom_hostname",
                 "cws_deployment",

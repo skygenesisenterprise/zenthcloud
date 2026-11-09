@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_dlp_predefined_profile Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_dlp_predefined_profile Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust ReadZero Trust Write
 ---
 
-# cloudflare_zero_trust_dlp_predefined_profile (Resource)
+# zenthcloud_zero_trust_dlp_predefined_profile (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_dlp_predefined_profile" "example_zero_trust_dlp_predefined_profile"   {
+resource "zenthcloud_zero_trust_dlp_predefined_profile" "example_zero_trust_dlp_predefined_profile"   {
   profile_id = "e91a2360-da51-4fdf-9711-bcdecd462614"
   account_id = "account_id"
   ocr_enabled = true
@@ -75,7 +75,7 @@ Required:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_dlp_predefined_profile.example '<account_id>/<profile_id>'
+$ terraform import zenthcloud_zero_trust_dlp_predefined_profile.example '<account_id>/<profile_id>'
 ```
 
 

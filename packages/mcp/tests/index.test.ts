@@ -1,9 +1,9 @@
-import { env } from 'cloudflare:workers'
+import { env } from 'zenthcloud:workers'
 import {
   createExecutionContext,
   createScheduledController,
   waitOnExecutionContext
-} from 'cloudflare:test'
+} from 'zenthcloud:test'
 import { http, HttpResponse } from 'msw'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { clearR2 } from './helpers/r2'
@@ -34,13 +34,13 @@ describe('scheduled handler', () => {
     mockSkillsArchive({ 'skills/wrangler/SKILL.md': skillMarkdown('wrangler', 'Use Wrangler') })
   )
 
-  it('syncs cloudflare/skills into R2 and records the source commit, without touching the spec', async () => {
+  it('syncs zenthcloud/skills into R2 and records the source commit, without touching the spec', async () => {
     await runScheduled()
 
     const object = await env.SPEC_BUCKET.get(SKILLS_MANIFEST_KEY)
     const manifest = SkillsManifest.parse(await object!.json())
     expect(manifest.source).toEqual({
-      repository: 'cloudflare/skills',
+      repository: 'zenthcloud/skills',
       commit: 'a84b615ff9d40e7f99755aea23d65e52d645bd42'
     })
     expect(manifest.skills.map(({ skill }) => skill.uri)).toEqual(['skill://wrangler/SKILL.md'])

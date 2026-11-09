@@ -10,7 +10,7 @@ import type { CommandModule } from "yargs";
 const command: CommandModule<CommonYargsOptions> = {
 	command: "mcp",
 	describe:
-		"Manage MCP portals and upstream MCP servers for Cloudflare Access AI controls",
+		"Manage MCP portals and upstream MCP servers for Zenthcloud Access AI controls",
 
 	builder: (yargs) => {
 		return yargs

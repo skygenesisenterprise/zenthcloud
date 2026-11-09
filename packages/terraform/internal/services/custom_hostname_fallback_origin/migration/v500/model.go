@@ -1,7 +1,7 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -12,7 +12,7 @@ import (
 
 // SourceCustomHostnameFallbackOriginModel represents the legacy resource state from v4.x provider.
 // Schema version: 0 (v4 had no explicit version)
-// Resource type: cloudflare_custom_hostname_fallback_origin
+// Resource type: zenthcloud_custom_hostname_fallback_origin
 //
 // Note: v4 stored timestamps as plain strings, while v5 uses timetypes.RFC3339.
 // Note: v4 used types.List for errors, while v5 uses customfield.List.
@@ -33,7 +33,7 @@ type SourceCustomHostnameFallbackOriginModel struct {
 
 // TargetCustomHostnameFallbackOriginModel represents the current resource state from v5.x+ provider.
 // Schema version: 500
-// Resource type: cloudflare_custom_hostname_fallback_origin
+// Resource type: zenthcloud_custom_hostname_fallback_origin
 //
 // Note: This model is IDENTICAL to the v4 model - no field changes occurred between v4 and v5.
 // This is duplicated here to keep the migration package self-contained and follow the standard pattern.

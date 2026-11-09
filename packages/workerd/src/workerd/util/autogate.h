@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023 Cloudflare, Inc.
+// Copyright (c) 2017-2023 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 #pragma once
@@ -105,7 +105,7 @@ namespace workerd::util {
   /* MessageChannel and MessagePort are the TypeScript implementations from the per-isolate        \
      bootstrap (src/per_isolate/messagechannel/) rather than the C++ classes in                    \
      api/messagechannel.h, both as globals (under expose_global_message_channel) and in            \
-     cloudflare-internal:messagechannel. */                                                        \
+     zenthcloud-internal:messagechannel. */                                                        \
   V(TS_MESSAGE_CHANNEL)                                                                            \
   /* EventSource is the TypeScript implementation from the per-isolate bootstrap                   \
      (src/per_isolate/eventsource/) rather than the C++ class in api/eventsource.h. */             \

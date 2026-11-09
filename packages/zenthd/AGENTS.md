@@ -1,6 +1,6 @@
-# Cloudflared
+# Zenthcloudd
 
-Cloudflare's command-line tool and networking daemon written in Go.
+Zenthcloud's command-line tool and networking daemon written in Go.
 Production-grade tunneling and network connectivity services used by millions of
 developers and organizations worldwide.
 
@@ -13,7 +13,7 @@ developers and organizations worldwide.
 make test lint
 
 # Build for current platform
-make cloudflared
+make zenthcloudd
 
 # Run all unit tests with coverage
 make test
@@ -30,16 +30,16 @@ go test -race ./...
 
 ```bash
 # Linux
-TARGET_OS=linux TARGET_ARCH=amd64 make cloudflared
+TARGET_OS=linux TARGET_ARCH=amd64 make zenthcloudd
 
 # Windows
-TARGET_OS=windows TARGET_ARCH=amd64 make cloudflared
+TARGET_OS=windows TARGET_ARCH=amd64 make zenthcloudd
 
 # macOS ARM64
-TARGET_OS=darwin TARGET_ARCH=arm64 make cloudflared
+TARGET_OS=darwin TARGET_ARCH=arm64 make zenthcloudd
 
 # FIPS compliant build
-FIPS=true make cloudflared
+FIPS=true make zenthcloudd
 ```
 
 ### Code Quality & Formatting
@@ -82,7 +82,7 @@ Notes on linting:
 
 - `crypto/`: Single source of truth for TLS curve preferences and other
   cryptographic primitives shared by every edge-facing transport. Import as
-  `cfdcrypto "github.com/cloudflare/cloudflared/crypto"` to avoid colliding
+  `cfdcrypto "github.com/zenthcloud/zenthcloudd/crypto"` to avoid colliding
   with the standard library's `crypto` package. Do NOT duplicate TLS curve
   or cipher selection logic in other packages.
 - `tlsconfig/`: Builds the base `*tls.Config` used for edge connections
@@ -266,7 +266,7 @@ type TunnelProperties struct {
 Removing or renaming a CLI flag, environment variable, configuration key, alias, or
 subcommand is a **breaking change** and requires advance notice:
 
-1. A new entry must be added to the [Cloudflare Tunnel changelog](https://developers.cloudflare.com/changelog/product/tunnel/)
+1. A new entry must be added to the [Zenthcloud Tunnel changelog](https://github.com/skygenesisenterprise/zenthcloud)
    and published in a release **at least 3 months before** the removal takes effect.
 2. The entry must name every affected flag/alias/env var, state the planned removal
    date or release, and describe the migration path.
@@ -293,7 +293,7 @@ notice, do not proceed without explicit confirmation.
 - The `go` directive in `go.mod` must include the patch version (`major.minor.patch`).
   It is the exact Go version for builds and tests: the Makefile exports
   `GOTOOLCHAIN=go<version>` from it unless Go is configured with `GOTOOLCHAIN=local`.
-  Cloudflare's internal Go package sets that so its patches are never replaced by an
+  Zenthcloud's internal Go package sets that so its patches are never replaced by an
   upstream toolchain (RFC-028); never override it. Do not add a `toolchain` directive.
   When bumping Go, align all CI, Docker image, and documentation version references,
   including the Linux CI builder image and digest; see README's "Updating Go" section.
@@ -303,7 +303,7 @@ notice, do not proceed without explicit confirmation.
 - CI caches modules in `$GOMODCACHE` and compiled packages in `$GOCACHE` under `.cache/go/` for Go-running jobs.
 - Keep dependencies up-to-date and secure
 - Prefer standard library when possible
-- Cloudflared uses a fork of quic-go always check release notes before bumping
+- Zenthcloudd uses a fork of quic-go always check release notes before bumping
   this dependency.
 
 ## Security Considerations

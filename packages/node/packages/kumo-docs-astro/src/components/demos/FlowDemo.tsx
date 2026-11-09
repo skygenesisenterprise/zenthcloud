@@ -1,5 +1,5 @@
 import { forwardRef, useState } from "react";
-import { Flow } from "@cloudflare/kumo";
+import { Flow } from "@zenthcloud/kumo";
 import { CaretDownIcon } from "@phosphor-icons/react";
 
 const ExpandableNode = forwardRef<

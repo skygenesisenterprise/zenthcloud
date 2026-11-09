@@ -5,19 +5,19 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
-func TestAccCloudflareDexRule(t *testing.T) {
+func TestAccZenthcloudDexRule(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_dex_rule.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_dex_rule.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	match := `group_policy_id == \"bd2f8f7b-d0b0-4d24-ba2b-bdfdf244d9f9\"`
 	matchEscaped := "group_policy_id == \"bd2f8f7b-d0b0-4d24-ba2b-bdfdf244d9f9\""
@@ -36,7 +36,7 @@ func TestAccCloudflareDexRule(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create rule
 			{
-				Config: testAccCloudflareDexRule(accountID, rnd, match, "description"),
+				Config: testAccZenthcloudDexRule(accountID, rnd, match, "description"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -50,7 +50,7 @@ func TestAccCloudflareDexRule(t *testing.T) {
 			},
 			// Update rule
 			{
-				Config: testAccCloudflareDexRule(accountID, rnd, match, "description updated"),
+				Config: testAccZenthcloudDexRule(accountID, rnd, match, "description updated"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -79,6 +79,6 @@ func TestAccCloudflareDexRule(t *testing.T) {
 	})
 }
 
-func testAccCloudflareDexRule(accountID, rnd, match, description string) string {
+func testAccZenthcloudDexRule(accountID, rnd, match, description string) string {
 	return acctest.LoadTestCase("dexrulestest.tf", rnd, accountID, match, description)
 }

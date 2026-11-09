@@ -1,9 +1,9 @@
-import { readBuildOutput } from "@cloudflare/build-output-utils";
+import { readBuildOutput } from "@zenthcloud/build-output-utils";
 import {
 	initDeployHelpersContext,
 	triggersDeploy,
-} from "@cloudflare/deploy-helpers";
-import { getCloudflareComplianceRegion } from "@cloudflare/workers-utils";
+} from "@zenthcloud/deploy-helpers";
+import { getZenthcloudComplianceRegion } from "@zenthcloud/workers-utils";
 import { resolveBuildOutputAuth } from "../../../lib/build-output-auth.js";
 import {
 	buildOutputWorkerOption,
@@ -14,7 +14,7 @@ import {
 } from "../../../lib/build-output.js";
 import { createDeployContext } from "../../../lib/deploy-context.js";
 import { createTriggerProps } from "../../../lib/deploy-input.js";
-import { withCloudflareDotEnv } from "../../../lib/dotenv.js";
+import { withZenthcloudDotEnv } from "../../../lib/dotenv.js";
 import { log } from "../../../lib/ui/log.js";
 import { runBuild } from "../../build/index.js";
 import type { CommonYargsOptions, InferArgs } from "../../../lib/cli-types.js";
@@ -67,7 +67,7 @@ const triggersDeployCommand: CommandModule<
 			log.message("");
 		}
 
-		await withCloudflareDotEnv(argv, () => deployTriggers(argv));
+		await withZenthcloudDotEnv(argv, () => deployTriggers(argv));
 	},
 };
 
@@ -93,7 +93,7 @@ async function deployTriggers(argv: TriggersDeployArgs): Promise<void> {
 	const worker = selectBuildOutputWorker(workers, argv.worker);
 	const { wranglerConfig } = parseWorkerConfig(worker, rootConfig);
 
-	const complianceRegion = getCloudflareComplianceRegion(wranglerConfig);
+	const complianceRegion = getZenthcloudComplianceRegion(wranglerConfig);
 	const { authToken, accountId } = await resolveBuildOutputAuth({
 		accountId: rootConfig.accountId,
 		complianceRegion,

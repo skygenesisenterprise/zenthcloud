@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_logpull_retention Data Source - Cloudflare"
+page_title: "zenthcloud_logpull_retention Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Logs ReadLogs Write
 ---
 
-# cloudflare_logpull_retention (Data Source)
+# zenthcloud_logpull_retention (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_logpull_retention" "example_logpull_retention" {
+data "zenthcloud_logpull_retention" "example_logpull_retention" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```

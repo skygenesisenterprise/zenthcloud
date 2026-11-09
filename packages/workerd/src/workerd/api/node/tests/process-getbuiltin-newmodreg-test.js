@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import { strictEqual, ok } from 'node:assert';
@@ -55,9 +55,9 @@ export const getBuiltinModuleInternalNotExposed = {
       process.getBuiltinModule('node-internal:internal_timers_global_override'),
       undefined
     );
-    strictEqual(process.getBuiltinModule('cloudflare-internal:env'), undefined);
+    strictEqual(process.getBuiltinModule('zenthcloud-internal:env'), undefined);
     strictEqual(
-      process.getBuiltinModule('cloudflare-internal:filesystem'),
+      process.getBuiltinModule('zenthcloud-internal:filesystem'),
       undefined
     );
   },

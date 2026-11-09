@@ -8,14 +8,14 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
@@ -30,7 +30,7 @@ func NewResource() resource.Resource {
 
 // ZeroTrustOrganizationResource defines the resource implementation.
 type ZeroTrustOrganizationResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *ZeroTrustOrganizationResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -42,12 +42,12 @@ func (r *ZeroTrustOrganizationResource) Configure(ctx context.Context, req resou
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -75,9 +75,9 @@ func (r *ZeroTrustOrganizationResource) Create(ctx context.Context, req resource
 	params := zero_trust.OrganizationUpdateParams{}
 
 	if !data.AccountID.IsNull() {
-		params.AccountID = cloudflare.F(data.AccountID.ValueString())
+		params.AccountID = zenthcloud.F(data.AccountID.ValueString())
 	} else {
-		params.ZoneID = cloudflare.F(data.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(data.ZoneID.ValueString())
 	}
 
 	_, err = r.client.ZeroTrust.Organizations.Update(
@@ -136,9 +136,9 @@ func (r *ZeroTrustOrganizationResource) Update(ctx context.Context, req resource
 	params := zero_trust.OrganizationUpdateParams{}
 
 	if !data.AccountID.IsNull() {
-		params.AccountID = cloudflare.F(data.AccountID.ValueString())
+		params.AccountID = zenthcloud.F(data.AccountID.ValueString())
 	} else {
-		params.ZoneID = cloudflare.F(data.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(data.ZoneID.ValueString())
 	}
 
 	_, err = r.client.ZeroTrust.Organizations.Update(
@@ -184,9 +184,9 @@ func (r *ZeroTrustOrganizationResource) Read(ctx context.Context, req resource.R
 	params := zero_trust.OrganizationListParams{}
 
 	if !data.AccountID.IsNull() {
-		params.AccountID = cloudflare.F(data.AccountID.ValueString())
+		params.AccountID = zenthcloud.F(data.AccountID.ValueString())
 	} else {
-		params.ZoneID = cloudflare.F(data.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(data.ZoneID.ValueString())
 	}
 
 	_, err := r.client.ZeroTrust.Organizations.List(
@@ -242,7 +242,7 @@ func (r *ZeroTrustOrganizationResource) ImportState(ctx context.Context, req res
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	params.AccountID = cloudflare.F(accID)
+	params.AccountID = zenthcloud.F(accID)
 	data.AccountID = types.StringValue(accID)
 
 	res := new(http.Response)

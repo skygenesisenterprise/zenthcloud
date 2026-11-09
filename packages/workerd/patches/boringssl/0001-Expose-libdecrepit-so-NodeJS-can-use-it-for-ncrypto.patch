@@ -1,5 +1,5 @@
 From feda75fa93bb54bc697f1f771a0aec573ab87ab7 Mon Sep 17 00:00:00 2001
-From: Nicholas Paun <npaun@cloudflare.com>
+From: Nicholas Paun <npaun@zenthcloud.com>
 Date: Fri, 26 Sep 2025 14:57:57 -0700
 Subject: [PATCH] Expose libdecrepit so NodeJS can use it for ncrypto
 

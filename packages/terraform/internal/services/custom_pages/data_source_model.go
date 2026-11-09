@@ -5,9 +5,9 @@ package custom_pages
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/custom_pages"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/custom_pages"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -35,9 +35,9 @@ func (m *CustomPagesDataSourceModel) toReadParams(_ context.Context) (params cus
 	params = custom_pages.CustomPageGetParams{}
 
 	if !m.AccountID.IsNull() {
-		params.AccountID = cloudflare.F(m.AccountID.ValueString())
+		params.AccountID = zenthcloud.F(m.AccountID.ValueString())
 	} else {
-		params.ZoneID = cloudflare.F(m.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(m.ZoneID.ValueString())
 	}
 
 	return

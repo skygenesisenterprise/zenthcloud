@@ -8,12 +8,12 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/api_gateway"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/api_gateway"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -29,7 +29,7 @@ func NewResource() resource.Resource {
 
 // APIShieldResource defines the resource implementation.
 type APIShieldResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *APIShieldResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -41,12 +41,12 @@ func (r *APIShieldResource) Configure(ctx context.Context, req resource.Configur
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -65,11 +65,11 @@ func (r *APIShieldResource) Create(ctx context.Context, req resource.CreateReque
 	}
 
 	params := api_gateway.ConfigurationUpdateParams{
-		ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 	}
 
 	if !data.Normalize.IsNull() && !data.Normalize.IsUnknown() {
-		params.Normalize = cloudflare.F(data.Normalize.ValueBool())
+		params.Normalize = zenthcloud.F(data.Normalize.ValueBool())
 	}
 
 	dataBytes, err := data.MarshalJSON()
@@ -120,11 +120,11 @@ func (r *APIShieldResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	params := api_gateway.ConfigurationUpdateParams{
-		ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 	}
 
 	if !data.Normalize.IsNull() && !data.Normalize.IsUnknown() {
-		params.Normalize = cloudflare.F(data.Normalize.ValueBool())
+		params.Normalize = zenthcloud.F(data.Normalize.ValueBool())
 	}
 
 	dataBytes, err := data.MarshalJSONForUpdate(*state)
@@ -167,11 +167,11 @@ func (r *APIShieldResource) Read(ctx context.Context, req resource.ReadRequest, 
 	}
 
 	params := api_gateway.ConfigurationGetParams{
-		ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 	}
 
 	if !data.Normalize.IsNull() && !data.Normalize.IsUnknown() {
-		params.Normalize = cloudflare.F(data.Normalize.ValueBool())
+		params.Normalize = zenthcloud.F(data.Normalize.ValueBool())
 	}
 
 	res := new(http.Response)
@@ -228,7 +228,7 @@ func (r *APIShieldResource) ImportState(ctx context.Context, req resource.Import
 	_, err := r.client.APIGateway.Configurations.Get(
 		ctx,
 		api_gateway.ConfigurationGetParams{
-			ZoneID: cloudflare.F(path),
+			ZoneID: zenthcloud.F(path),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),

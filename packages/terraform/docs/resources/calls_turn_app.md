@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_calls_turn_app Resource - Cloudflare"
+page_title: "zenthcloud_calls_turn_app Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Calls ReadCalls Write
 ---
 
-# cloudflare_calls_turn_app (Resource)
+# zenthcloud_calls_turn_app (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_calls_turn_app" "example_calls_turn_app" {
+resource "zenthcloud_calls_turn_app" "example_calls_turn_app" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name = "my-turn-key"
 }
@@ -31,7 +31,7 @@ resource "cloudflare_calls_turn_app" "example_calls_turn_app" {
 
 ### Optional
 
-- `key_id` (String) A Cloudflare-generated unique identifier for a item.
+- `key_id` (String) A Zenthcloud-generated unique identifier for a item.
 - `name` (String) A short description of a TURN key, not shown to end users.
 
 ### Read-Only
@@ -39,14 +39,14 @@ resource "cloudflare_calls_turn_app" "example_calls_turn_app" {
 - `created` (String) The date and time the item was created.
 - `key` (String, Sensitive) Bearer token
 - `modified` (String) The date and time the item was last modified.
-- `uid` (String) A Cloudflare-generated unique identifier for a item.
+- `uid` (String) A Zenthcloud-generated unique identifier for a item.
 
 ## Import
 
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_calls_turn_app.example '<account_id>/<key_id>'
+$ terraform import zenthcloud_calls_turn_app.example '<account_id>/<key_id>'
 ```
 
 

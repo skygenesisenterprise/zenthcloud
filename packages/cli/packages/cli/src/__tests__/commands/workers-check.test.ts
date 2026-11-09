@@ -3,12 +3,12 @@ import { existsSync, readFileSync, readdirSync, symlinkSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import * as startupProfile from "@cloudflare/deploy-helpers/startup-profile";
+import * as startupProfile from "@zenthcloud/deploy-helpers/startup-profile";
 import {
 	mockConsoleMethods,
 	runInTempDir,
 	seed,
-} from "@cloudflare/workers-utils/test-helpers";
+} from "@zenthcloud/workers-utils/test-helpers";
 import {
 	afterEach,
 	beforeEach,
@@ -26,7 +26,7 @@ import {
 	workerConfig,
 } from "./deploy/helpers.js";
 
-vi.mock("@cloudflare/deploy-helpers/startup-profile", { spy: true });
+vi.mock("@zenthcloud/deploy-helpers/startup-profile", { spy: true });
 
 // Keep the successful binding checks on-CPU long enough to appear in the
 // sampled profile; a fixed workload avoids workerd's frozen wall clock.
@@ -37,7 +37,7 @@ const WRANGLER_FIXTURE_ROOT = fileURLToPath(
 );
 const WRANGLER_FIXTURE_FILES = [
 	"package.json",
-	"cloudflare.config.ts",
+	"zenthcloud.config.ts",
 	"src/worker.ts",
 ] as const;
 
@@ -69,8 +69,8 @@ describe("cf workers check", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		vi.stubEnv("CLOUDFLARE_API_TOKEN", undefined);
-		vi.stubEnv("CLOUDFLARE_ACCOUNT_ID", undefined);
+		vi.stubEnv("ZENTHCLOUD_API_TOKEN", undefined);
+		vi.stubEnv("ZENTHCLOUD_ACCOUNT_ID", undefined);
 	});
 
 	// Run before runInTempDir's cleanup removes the delegate's debug logs.
@@ -80,7 +80,7 @@ describe("cf workers check", () => {
 		}
 		process.stderr.write(
 			`\nWorkers check diagnostics: ${JSON.stringify({
-				buildOutputWritten: existsSync(".cloudflare/output/v0/config.json"),
+				buildOutputWritten: existsSync(".zenthcloud/output/v0/config.json"),
 				profilingStarted:
 					vi.mocked(startupProfile.analyseBundle).mock.calls.length > 0,
 				profileWritten: existsSync("worker-startup.cpuprofile"),
@@ -105,19 +105,19 @@ describe("cf workers check", () => {
 		const helper = 'export const message = "ok";';
 
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig({
 				buildContext: { isPreview: false, mode: "staging" },
 			}),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				modules: {
 					"index.js": { type: "esm" },
 					"message.js": { type: "esm" },
 					"index.js.map": { type: "sourcemap" },
 				},
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.js": entry,
-			".cloudflare/output/v0/workers/default/bundle/message.js": helper,
-			".cloudflare/output/v0/workers/default/bundle/index.js.map":
+			".zenthcloud/output/v0/workers/default/bundle/index.js": entry,
+			".zenthcloud/output/v0/workers/default/bundle/message.js": helper,
+			".zenthcloud/output/v0/workers/default/bundle/index.js.map":
 				JSON.stringify({
 					version: 3,
 					file: "index.js",
@@ -164,8 +164,8 @@ describe("cf workers check", () => {
 
 	// This runs a real Wrangler build (including type generation) before
 	// profiling. Cold Windows runners can exceed the unit tests' 30s budget.
-	it("builds and profiles a Worker from cloudflare.config.ts", async () => {
-		const publicEntry = resolveCloudflareConfigPublicEntry();
+	it("builds and profiles a Worker from zenthcloud.config.ts", async () => {
+		const publicEntry = resolveZenthcloudConfigPublicEntry();
 		await seed({
 			...Object.fromEntries(
 				WRANGLER_FIXTURE_FILES.map((file) => [
@@ -187,7 +187,7 @@ describe("cf workers check", () => {
 			resolve("node_modules/wrangler"),
 			"junction"
 		);
-		vi.stubEnv("CLOUDFLARE_ENV", undefined);
+		vi.stubEnv("ZENTHCLOUD_ENV", undefined);
 		vi.stubEnv("WRANGLER_LOG_PATH", resolve(".wrangler/logs"));
 
 		const { exitCode } = await runCf(["workers", "check", "--quiet"]);
@@ -207,17 +207,17 @@ describe("cf workers check", () => {
 
 	it("preserves a nested entrypoint path when resolving relative modules", async () => {
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				mainModule: "worker/index.js",
 				modules: {
 					"worker/index.js": { type: "esm" },
 					"worker/helper.js": { type: "esm" },
 				},
 			}),
-			".cloudflare/output/v0/workers/default/bundle/worker/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/worker/index.js":
 				'import { message } from "./helper.js"; export default { fetch() { return new Response(message); } };',
-			".cloudflare/output/v0/workers/default/bundle/worker/helper.js":
+			".zenthcloud/output/v0/workers/default/bundle/worker/helper.js":
 				'export const message = "ok";',
 		});
 
@@ -237,8 +237,8 @@ describe("cf workers check", () => {
 
 	it("makes Build Output bindings available during module evaluation", async () => {
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				env: {
 					STARTUP_TEXT: { type: "text", value: "available" },
 					STARTUP_JSON: {
@@ -248,8 +248,8 @@ describe("cf workers check", () => {
 					STARTUP_KV: { type: "kv", id: "startup-kv" },
 				},
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.js": /* javascript */ `
-					import { env } from "cloudflare:workers";
+			".zenthcloud/output/v0/workers/default/bundle/index.js": /* javascript */ `
+					import { env } from "zenthcloud:workers";
 					if (env.STARTUP_TEXT !== "available") {
 						throw new Error("Expected STARTUP_TEXT during module evaluation");
 					}
@@ -306,12 +306,12 @@ describe("cf workers check", () => {
 
 	it("uses existing build output and writes a custom outfile", async () => {
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig({
 				buildContext: { isPreview: false, mode: "staging" },
 			}),
-			".cloudflare/output/v0/workers/default/worker.config.json":
+			".zenthcloud/output/v0/workers/default/worker.config.json":
 				workerConfig(),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"console.log('startup log'); export default { fetch() { return new Response('ok'); } };",
 		});
 
@@ -340,12 +340,12 @@ describe("cf workers check", () => {
 
 	it("checks prebuilt output with a recorded mode without --mode", async () => {
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig({
 				buildContext: { isPreview: false, mode: "staging" },
 			}),
-			".cloudflare/output/v0/workers/default/worker.config.json":
+			".zenthcloud/output/v0/workers/default/worker.config.json":
 				workerConfig(),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export default { fetch() { return new Response('ok'); } };",
 		});
 
@@ -358,17 +358,17 @@ describe("cf workers check", () => {
 
 	it("profiles the Worker selected by --worker", async () => {
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-			".cloudflare/output/v0/workers/default/worker.config.json":
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+			".zenthcloud/output/v0/workers/default/worker.config.json":
 				workerConfig(),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export default { fetch() { return new Response('ok'); } };",
-			".cloudflare/output/v0/workers/api/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/workers/api/worker.config.json": workerConfig({
 				name: "api",
 				mainModule: "api.js",
 				modules: { "api.js": { type: "esm" } },
 			}),
-			".cloudflare/output/v0/workers/api/bundle/api.js":
+			".zenthcloud/output/v0/workers/api/bundle/api.js":
 				"export default { fetch() { return new Response('api'); } };",
 		});
 
@@ -387,12 +387,12 @@ describe("cf workers check", () => {
 
 	it("rejects assets-only build output", async () => {
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				mainModule: undefined,
 				modules: undefined,
 			}),
-			".cloudflare/output/v0/workers/default/assets/index.html":
+			".zenthcloud/output/v0/workers/default/assets/index.html":
 				"<h1>Hello</h1>",
 		});
 
@@ -404,22 +404,22 @@ describe("cf workers check", () => {
 
 	it("rejects service-worker format build output", async () => {
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				mainModule: "index.cjs",
 				modules: {
 					"index.cjs": { type: "cjs" },
 					"helper.cjs": { type: "cjs" },
 				},
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.cjs":
+			".zenthcloud/output/v0/workers/default/bundle/index.cjs":
 				'const { message } = require("./helper.cjs"); addEventListener("fetch", (event) => event.respondWith(new Response(message)));',
-			".cloudflare/output/v0/workers/default/bundle/helper.cjs":
+			".zenthcloud/output/v0/workers/default/bundle/helper.cjs":
 				'module.exports = { message: "ok" };',
 		});
 
 		await expect(runCf(["workers", "check", "--prebuilt"])).rejects.toThrow(
-			"Startup profiling does not support service-worker format Workers. Refer to https://developers.cloudflare.com/workers/reference/migrate-to-module-workers/ for migration guidance."
+			"Startup profiling does not support service-worker format Workers. Refer to https://github.com/skygenesisenterprise/zenthcloud for migration guidance."
 		);
 		expect(startupProfile.analyseBundle).not.toHaveBeenCalled();
 		expect(existsSync("worker-startup.cpuprofile")).toBe(false);
@@ -433,10 +433,10 @@ describe("cf workers check", () => {
 	});
 });
 
-function resolveCloudflareConfigPublicEntry(): string {
+function resolveZenthcloudConfigPublicEntry(): string {
 	const packageRoot = resolve(
 		__dirname,
-		"../../../node_modules/@cloudflare/config"
+		"../../../node_modules/@zenthcloud/config"
 	);
 	const packageJson = JSON.parse(
 		readFileSync(join(packageRoot, "package.json"), "utf8")

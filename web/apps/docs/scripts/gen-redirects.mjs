@@ -94,7 +94,7 @@ const LEGACY_REDIRECTS = {
 	"/docs/core/enterprise/sso/okta": "/docs/core/sso/okta",
 	"/docs/core/enterprise/sso/zitadel": "/docs/core/sso/zitadel",
 	"/docs/core/enterprise/whitelabeling": "/docs/core/whitelabeling",
-	"/docs/core/guides/cloudflare-tunnels": "/docs/core/cloudflare-tunnels",
+	"/docs/core/guides/zenthcloud-tunnels": "/docs/core/zenthcloud-tunnels",
 	"/docs/core/guides/production-hardening": "/docs/core/production-hardening",
 	"/docs/core/guides/tailscale": "/docs/core/tailscale",
 	"/docs/core/migration": "/docs/core/compatibility",

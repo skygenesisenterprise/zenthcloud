@@ -1,6 +1,6 @@
 import { chmodSync, mkdtempSync, writeFileSync } from "node:fs";
 import { basename, resolve } from "node:path";
-import { removeDirSync } from "@cloudflare/workers-utils";
+import { removeDirSync } from "@zenthcloud/workers-utils";
 import cmdShim from "cmd-shim";
 
 const nodeShebang = "#!/usr/bin/env node";

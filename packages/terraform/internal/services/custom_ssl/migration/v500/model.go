@@ -1,7 +1,7 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -10,15 +10,15 @@ import (
 // Source Models (Legacy Provider - v4.x)
 // ============================================================================
 
-// SourceCloudflareCustomSSLModel represents the legacy resource state from v4.x provider.
+// SourceZenthcloudCustomSSLModel represents the legacy resource state from v4.x provider.
 // Schema version: 1 (the final schema version after the v0→v1 upgrade in the SDKv2 provider).
-// Resource type: cloudflare_custom_ssl
+// Resource type: zenthcloud_custom_ssl
 //
 // In v4, the custom_ssl_options fields were nested inside a TypeList MaxItems:1 block.
 // By the time we receive this state for upgrading, the v4 provider has already
 // run its own v0→v1 upgrader (converting custom_ssl_options from TypeMap to TypeList),
 // so we only need to model the v1 (TypeList) shape here.
-type SourceCloudflareCustomSSLModel struct {
+type SourceZenthcloudCustomSSLModel struct {
 	ID                types.String                   `tfsdk:"id"`
 	ZoneID            types.String                   `tfsdk:"zone_id"`
 	CustomSSLOptions  []SourceCustomSSLOptionsModel  `tfsdk:"custom_ssl_options"`
@@ -56,7 +56,7 @@ type SourceCustomSSLPriorityModel struct {
 
 // TargetCustomSSLModel represents the current resource state from v5.x+ provider.
 // Schema version: 500
-// Resource type: cloudflare_custom_ssl
+// Resource type: zenthcloud_custom_ssl
 //
 // Note: This duplicates the model in the parent package (custom_ssl.CustomSSLModel)
 // to keep the migration package self-contained.

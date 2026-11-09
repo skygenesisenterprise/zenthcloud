@@ -7,12 +7,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/cloudflare-go"
-	cloudflarev7 "github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/hostnames"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go"
+	zenthcloudv7 "github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/hostnames"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -24,28 +24,28 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_hostname_tls_setting", &resource.Sweeper{
-		Name: "cloudflare_hostname_tls_setting",
-		F:    testSweepCloudflareHostnameTLSSettings,
+	resource.AddTestSweepers("zenthcloud_hostname_tls_setting", &resource.Sweeper{
+		Name: "zenthcloud_hostname_tls_setting",
+		F:    testSweepZenthcloudHostnameTLSSettings,
 	})
 }
 
-func testSweepCloudflareHostnameTLSSettings(r string) error {
+func testSweepZenthcloudHostnameTLSSettings(r string) error {
 	ctx := context.Background()
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 		return clientErr
 	}
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping hostname TLS settings sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping hostname TLS settings sweep: ZENTHCLOUD_ZONE_ID not set")
 		return nil
 	}
 
-	zoneIDrc := cloudflare.ZoneIdentifier(zoneID)
-	params := cloudflare.ListHostnameTLSSettingsParams{
+	zoneIDrc := zenthcloud.ZoneIdentifier(zoneID)
+	params := zenthcloud.ListHostnameTLSSettingsParams{
 		Setting: "min_tls_version",
 	}
 	settings, resultInfo, err := client.ListHostnameTLSSettings(ctx, zoneIDrc, params)
@@ -63,7 +63,7 @@ func testSweepCloudflareHostnameTLSSettings(r string) error {
 			continue
 		}
 		tflog.Info(ctx, fmt.Sprintf("Deleting hostname TLS setting: %s (zone: %s)", setting.Hostname, zoneID))
-		deleteParams := cloudflare.DeleteHostnameTLSSettingParams{
+		deleteParams := zenthcloud.DeleteHostnameTLSSettingParams{
 			Setting:  "min_tls_version",
 			Hostname: setting.Hostname,
 		}
@@ -78,13 +78,13 @@ func testSweepCloudflareHostnameTLSSettings(r string) error {
 	return nil
 }
 
-func TestAccCloudflareHostnameTLSSetting_Basic(t *testing.T) {
+func TestAccZenthcloudHostnameTLSSetting_Basic(t *testing.T) {
 	t.Parallel()
-	var htlss cloudflare.HostnameTLSSetting
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	hostname := os.Getenv("CLOUDFLARE_DOMAIN")
+	var htlss zenthcloud.HostnameTLSSetting
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	hostname := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_hostname_tls_setting." + rnd
+	resourceName := "zenthcloud_hostname_tls_setting." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -93,9 +93,9 @@ func TestAccCloudflareHostnameTLSSetting_Basic(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareHostnameTLSSettingConfig(zoneID, fmt.Sprintf("%s.%s", rnd, hostname), "min_tls_version", "1.2", rnd),
+				Config: testAccCheckZenthcloudHostnameTLSSettingConfig(zoneID, fmt.Sprintf("%s.%s", rnd, hostname), "min_tls_version", "1.2", rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareHostnameTLSSettingExists(resourceName, &htlss),
+					testAccCheckZenthcloudHostnameTLSSettingExists(resourceName, &htlss),
 					resource.TestCheckResourceAttr(resourceName, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(resourceName, "id", "min_tls_version"),
 					resource.TestCheckResourceAttr(resourceName, "setting_id", "min_tls_version"),
@@ -116,12 +116,12 @@ func TestAccCloudflareHostnameTLSSetting_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareHostnameTLSSetting_ListOfStrings(t *testing.T) {
+func TestAccZenthcloudHostnameTLSSetting_ListOfStrings(t *testing.T) {
 	t.Parallel()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	hostname := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	hostname := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_hostname_tls_setting." + rnd
+	resourceName := "zenthcloud_hostname_tls_setting." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -130,7 +130,7 @@ func TestAccCloudflareHostnameTLSSetting_ListOfStrings(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareHostnameTLSSettingConfig_Ciphers(zoneID, fmt.Sprintf("%s.%s", rnd, hostname), "ciphers", rnd),
+				Config: testAccCheckZenthcloudHostnameTLSSettingConfig_Ciphers(zoneID, fmt.Sprintf("%s.%s", rnd, hostname), "ciphers", rnd),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(resourceName, "id", "ciphers"),
@@ -169,7 +169,7 @@ func testAccCheckHostnameTLSSettingDeployed(resourceName string) resource.TestCh
 				ctx,
 				hostnames.SettingTLSGetParamsSettingID(rs.Primary.Attributes["setting_id"]),
 				rs.Primary.Attributes["hostname"],
-				hostnames.SettingTLSGetParams{ZoneID: cloudflarev7.F(rs.Primary.Attributes[consts.ZoneIDSchemaKey])},
+				hostnames.SettingTLSGetParams{ZoneID: zenthcloudv7.F(rs.Primary.Attributes[consts.ZoneIDSchemaKey])},
 			)
 			if err != nil {
 				return retry.NonRetryableError(fmt.Errorf("get TLS deployment status: %w", err))
@@ -196,15 +196,15 @@ func testAccHostnameTLSSettingImportStateID(resourceName string) resource.Import
 	}
 }
 
-func testAccCheckCloudflareHostnameTLSSettingConfig(zoneID, hostname, setting, value, rnd string) string {
+func testAccCheckZenthcloudHostnameTLSSettingConfig(zoneID, hostname, setting, value, rnd string) string {
 	return acctest.LoadTestCase("hostnametlssettingconfig.tf", zoneID, hostname, setting, value, rnd)
 }
 
-func testAccCheckCloudflareHostnameTLSSettingConfig_Ciphers(zoneID, hostname, setting, rnd string) string {
+func testAccCheckZenthcloudHostnameTLSSettingConfig_Ciphers(zoneID, hostname, setting, rnd string) string {
 	return acctest.LoadTestCase("ciphers.tf", zoneID, hostname, setting, rnd)
 }
 
-func testAccCheckCloudflareHostnameTLSSettingExists(name string, htlss *cloudflare.HostnameTLSSetting) resource.TestCheckFunc {
+func testAccCheckZenthcloudHostnameTLSSettingExists(name string, htlss *zenthcloud.HostnameTLSSetting) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -213,11 +213,11 @@ func testAccCheckCloudflareHostnameTLSSettingExists(name string, htlss *cloudfla
 
 		client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 		if clientErr != nil {
-			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 		}
 		zoneID := rs.Primary.Attributes[consts.ZoneIDSchemaKey]
-		zoneIDrc := cloudflare.ZoneIdentifier(zoneID)
-		params := cloudflare.ListHostnameTLSSettingsParams{
+		zoneIDrc := zenthcloud.ZoneIdentifier(zoneID)
+		params := zenthcloud.ListHostnameTLSSettingsParams{
 			Setting:  "min_tls_version",
 			Hostname: []string{rs.Primary.Attributes["hostname"]},
 		}

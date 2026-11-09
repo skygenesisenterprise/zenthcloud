@@ -6,10 +6,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -41,7 +41,7 @@ var v5OffConfig string
 var v5VariableConfig string
 
 // TestMigrateTieredCache_Smart tests migration from v4 cache_type="smart" to v5 value="on"
-// NOTE: The tf-migrate tool creates BOTH cloudflare_tiered_cache AND cloudflare_argo_tiered_caching
+// NOTE: The tf-migrate tool creates BOTH zenthcloud_tiered_cache AND zenthcloud_argo_tiered_caching
 // resources. The argo_tiered_caching resource will be created on next apply (this is by design).
 func TestMigrateTieredCache_Smart(t *testing.T) {
 	testCases := []struct {
@@ -71,9 +71,9 @@ func TestMigrateTieredCache_Smart(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			tieredCacheResourceName := "cloudflare_tiered_cache." + rnd
-			argoTieredCachingResourceName := "cloudflare_argo_tiered_caching." + rnd
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			tieredCacheResourceName := "zenthcloud_tiered_cache." + rnd
+			argoTieredCachingResourceName := "zenthcloud_argo_tiered_caching." + rnd
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -107,8 +107,8 @@ func TestMigrateTieredCache_Smart(t *testing.T) {
 				// Use external v4 provider (will create version=0 state)
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -133,8 +133,8 @@ func TestMigrateTieredCache_Smart(t *testing.T) {
 }
 
 // TestMigrateTieredCache_Generic tests migration from v4 cache_type="generic"
-// NOTE: The tf-migrate tool creates BOTH cloudflare_tiered_cache (with value="off") AND
-// cloudflare_argo_tiered_caching (with value="on") resources.
+// NOTE: The tf-migrate tool creates BOTH zenthcloud_tiered_cache (with value="off") AND
+// zenthcloud_argo_tiered_caching (with value="on") resources.
 func TestMigrateTieredCache_Generic(t *testing.T) {
 	testCases := []struct {
 		name     string
@@ -153,9 +153,9 @@ func TestMigrateTieredCache_Generic(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			tieredCacheResourceName := "cloudflare_tiered_cache." + rnd
-			argoTieredCachingResourceName := "cloudflare_argo_tiered_caching." + rnd
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			tieredCacheResourceName := "zenthcloud_tiered_cache." + rnd
+			argoTieredCachingResourceName := "zenthcloud_argo_tiered_caching." + rnd
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -175,8 +175,8 @@ func TestMigrateTieredCache_Generic(t *testing.T) {
 			steps := []resource.TestStep{
 				{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -200,7 +200,7 @@ func TestMigrateTieredCache_Generic(t *testing.T) {
 }
 
 // TestMigrateTieredCache_Off tests migration from v4 cache_type="off" to v5 value="off"
-// NOTE: The tf-migrate tool creates BOTH cloudflare_tiered_cache AND cloudflare_argo_tiered_caching
+// NOTE: The tf-migrate tool creates BOTH zenthcloud_tiered_cache AND zenthcloud_argo_tiered_caching
 // resources with value="off". The argo_tiered_caching resource will be created on next apply.
 func TestMigrateTieredCache_Off(t *testing.T) {
 	testCases := []struct {
@@ -230,9 +230,9 @@ func TestMigrateTieredCache_Off(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			tieredCacheResourceName := "cloudflare_tiered_cache." + rnd
-			argoTieredCachingResourceName := "cloudflare_argo_tiered_caching." + rnd
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			tieredCacheResourceName := "zenthcloud_tiered_cache." + rnd
+			argoTieredCachingResourceName := "zenthcloud_argo_tiered_caching." + rnd
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -266,8 +266,8 @@ func TestMigrateTieredCache_Off(t *testing.T) {
 				// Use external v4 provider (will create version=0 state)
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -316,8 +316,8 @@ func TestMigrateTieredCache_V5VersionUpgrade(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_tiered_cache." + rnd
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			resourceName := "zenthcloud_tiered_cache." + rnd
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			tmpDir := t.TempDir()
 			testConfig := fmt.Sprintf(v5OnConfig, rnd, zoneID)
 
@@ -331,8 +331,8 @@ func TestMigrateTieredCache_V5VersionUpgrade(t *testing.T) {
 					{
 						// Step 1: Create with specific v5 provider version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -363,8 +363,8 @@ func TestMigrateTieredCache_V5VersionUpgrade(t *testing.T) {
 // TestMigrateTieredCache_V5VersionUpgrade_Off tests v5 version upgrade with value="off"
 func TestMigrateTieredCache_V5VersionUpgrade_Off(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_tiered_cache." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_tiered_cache." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	tmpDir := t.TempDir()
 	testConfig := fmt.Sprintf(v5OffConfig, rnd, zoneID)
 
@@ -378,8 +378,8 @@ func TestMigrateTieredCache_V5VersionUpgrade_Off(t *testing.T) {
 			{
 				// Step 1: Create with v5.9.0 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.9.0",
 					},
 				},
@@ -407,8 +407,8 @@ func TestMigrateTieredCache_V5VersionUpgrade_Off(t *testing.T) {
 // TestMigrateTieredCache_V5VersionUpgrade_WithVariables tests v5 version upgrade with variable references
 func TestMigrateTieredCache_V5VersionUpgrade_WithVariables(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_tiered_cache." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_tiered_cache." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	tmpDir := t.TempDir()
 	testConfig := fmt.Sprintf(v5VariableConfig, rnd, zoneID)
 
@@ -422,8 +422,8 @@ func TestMigrateTieredCache_V5VersionUpgrade_WithVariables(t *testing.T) {
 			{
 				// Step 1: Create with v5.9.0 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.9.0",
 					},
 				},

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_device_posture_rule Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_device_posture_rule Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust Write
 ---
 
-# cloudflare_zero_trust_device_posture_rule (Resource)
+# zenthcloud_zero_trust_device_posture_rule (Resource)
 
 Accepted Permissions
 
@@ -15,7 +15,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_device_posture_rule" "example_zero_trust_device_posture_rule" {
+resource "zenthcloud_zero_trust_device_posture_rule" "example_zero_trust_device_posture_rule" {
   account_id = "699d98642c564d2e855e9661899b7252"
   name = "Admin Serial Numbers"
   type = "file"
@@ -65,7 +65,7 @@ Optional:
 
 - `active_threats` (Number) The Number of active threats.
 - `auth_state` (List of String) The set of Kolide device authentication states that pass the posture check. Device must match one of the specified states.
-- `certificate_id` (String) UUID of Cloudflare managed certificate.
+- `certificate_id` (String) UUID of Zenthcloud managed certificate.
 - `check_disks` (List of String) List of volume names to be checked for encryption.
 - `check_private_key` (Boolean) Confirm the certificate was not imported from another device. We recommend keeping this enabled unless the certificate was deployed without a private key.
 - `cn` (String) Common Name that is protected by the certificate.
@@ -139,7 +139,7 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_device_posture_rule.example '<account_id>/<rule_id>'
+$ terraform import zenthcloud_zero_trust_device_posture_rule.example '<account_id>/<rule_id>'
 ```
 
 

@@ -1,4 +1,4 @@
-import { getAuthFromEnv } from "@cloudflare/workers-auth";
+import { getAuthFromEnv } from "@zenthcloud/workers-auth";
 import {
 	getActiveProfile,
 	getConfigPath,
@@ -35,7 +35,7 @@ export const loginTelemetryClassification: ArgClassification<LoginArgs> = {
 
 const loginCommand: CommandModule<object, LoginArgs> = {
 	command: "login",
-	describe: "Authenticate with Cloudflare",
+	describe: "Authenticate with Zenthcloud",
 
 	builder: (yargs: Argv): Argv<LoginArgs> => {
 		return yargs
@@ -97,7 +97,7 @@ const loginCommand: CommandModule<object, LoginArgs> = {
 		// to start while they are set.
 		if (getAuthFromEnv({ allowGlobalAuthKey: false }) !== undefined) {
 			log.warn(
-				`${theme.code("CLOUDFLARE_API_TOKEN")} is set and takes precedence. Unset it to log in via OAuth.`
+				`${theme.code("ZENTHCLOUD_API_TOKEN")} is set and takes precedence. Unset it to log in via OAuth.`
 			);
 			return;
 		}

@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_moq_relay Data Source - Cloudflare"
+page_title: "zenthcloud_moq_relay Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_moq_relay (Data Source)
+# zenthcloud_moq_relay (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_moq_relay" "example_moq_relay" {
+data "zenthcloud_moq_relay" "example_moq_relay" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   relay_id = "a1b2c3d4e5f67890a1b2c3d4e5f67890"
 }
@@ -23,7 +23,7 @@ data "cloudflare_moq_relay" "example_moq_relay" {
 
 ### Required
 
-- `account_id` (String) Cloudflare account identifier.
+- `account_id` (String) Zenthcloud account identifier.
 
 ### Optional
 

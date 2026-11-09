@@ -68,7 +68,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf accounts billing get-receipt-pdf",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/receipts/${argv["receipt-id"] == null ? "<receipt-id>" : encodeURIComponent(String(argv["receipt-id"]))}/pdf`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/receipts/${argv["receipt-id"] == null ? "<receipt-id>" : encodeURIComponent(String(argv["receipt-id"]))}/pdf`,
 						pathParams: { "receipt-id": String(argv["receipt-id"] ?? "") },
 						query: queryParams,
 						bodyKind: "none",

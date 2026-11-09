@@ -1,24 +1,24 @@
 ---
-page_title: "cloudflare_zero_trust_dex_rule Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_dex_rule Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
-  Cloudflare DEX ReadCloudflare DEX WriteZero Trust ReadZero Trust Report
+  Zenthcloud DEX ReadZenthcloud DEX WriteZero Trust ReadZero Trust Report
 ---
 
-# cloudflare_zero_trust_dex_rule (Data Source)
+# zenthcloud_zero_trust_dex_rule (Data Source)
 
 Accepted Permissions
 
-- `Cloudflare DEX Read`
-- `Cloudflare DEX Write`
+- `Zenthcloud DEX Read`
+- `Zenthcloud DEX Write`
 - `Zero Trust Read`
 - `Zero Trust Report`
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_dex_rule" "example_zero_trust_dex_rule" {
+data "zenthcloud_zero_trust_dex_rule" "example_zero_trust_dex_rule" {
   account_id = "01a7362d577a6c3019a474fd6f485823"
   rule_id = "f174e90a-fafe-4643-bbbc-4a0ed4fc8415"
 }

@@ -16,7 +16,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.usage(
 			"$0 precursor get\n\nRetrieve a zone's Precursor configuration: the detection `mode`, whether to `show_interstitial`, and the ordered list of `rules`."
 		)
-		.option("cloudflare-version", {
+		.option("zenthcloud-version", {
 			type: "string",
 			description: "Selects the split Precursor API schema.",
 			demandOption: true,
@@ -45,13 +45,13 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 			argv as Record<string, unknown>,
 			async () => {
 				const headers: Record<string, string> = {};
-				if (argv["cloudflare-version"] !== undefined)
-					headers["Cloudflare-Version"] = String(argv["cloudflare-version"]);
+				if (argv["zenthcloud-version"] !== undefined)
+					headers["Zenthcloud-Version"] = String(argv["zenthcloud-version"]);
 				if (argv.dryRun) {
 					formatDryRun({
 						command: "cf precursor get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/precursor`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/precursor`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 						},

@@ -8,9 +8,9 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/cloudflare/cloudflared/management"
-	"github.com/cloudflare/cloudflared/tunnelrpc"
-	"github.com/cloudflare/cloudflared/tunnelrpc/pogs"
+	"github.com/zenthcloud/zenthcloudd/management"
+	"github.com/zenthcloud/zenthcloudd/tunnelrpc"
+	"github.com/zenthcloud/zenthcloudd/tunnelrpc/pogs"
 )
 
 // registerClient derives a named tunnel rpc client that can then be used to register and unregister connections.
@@ -139,7 +139,7 @@ func (c *controlStream) waitForUnregister(ctx context.Context, registrationClien
 		return errors.Wrap(err, "Error shutting down control stream")
 	}
 	c.observer.log.Info().
-		Int(management.EventTypeKey, int(management.Cloudflared)).
+		Int(management.EventTypeKey, int(management.Zenthcloudd)).
 		Uint8(LogFieldConnIndex, c.connIndex).
 		IPAddr(LogFieldIPAddress, c.edgeAddress).
 		Msg("Unregistered tunnel connection")

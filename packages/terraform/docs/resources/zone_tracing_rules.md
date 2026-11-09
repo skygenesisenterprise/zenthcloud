@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zone_tracing_rules Resource - Cloudflare"
+page_title: "zenthcloud_zone_tracing_rules Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zone_tracing_rules (Resource)
+# zenthcloud_zone_tracing_rules (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zone_tracing_rules" "example_zone_tracing_rules" {
+resource "zenthcloud_zone_tracing_rules" "example_zone_tracing_rules" {
   zone_id = "zone_id"
   rules = [{
     action = "set_trace_settings"
@@ -61,7 +61,7 @@ Required:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zone_tracing_rules.example '<zone_id>'
+$ terraform import zenthcloud_zone_tracing_rules.example '<zone_id>'
 ```
 
 

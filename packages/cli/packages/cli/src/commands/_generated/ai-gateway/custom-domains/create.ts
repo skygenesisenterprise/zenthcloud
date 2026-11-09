@@ -23,7 +23,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 ai-gateway custom-domains create <gateway-id>\n\nProvisions a Cloudflare-for-SaaS custom hostname and returns the CNAME target to point DNS at."
+			"$0 ai-gateway custom-domains create <gateway-id>\n\nProvisions a Zenthcloud-for-SaaS custom hostname and returns the CNAME target to point DNS at."
 		)
 		.positional("gateway-id", {
 			type: "string",
@@ -43,7 +43,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("zone-id", {
 			type: "string",
 			description:
-				"ID of the Cloudflare zone that contains the custom hostname.",
+				"ID of the Zenthcloud zone that contains the custom hostname.",
 		})
 		.option("dry-run", {
 			type: "boolean",
@@ -77,7 +77,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf ai-gateway custom-domains create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/ai-gateway/gateways/${argv["gateway-id"] == null ? "<gateway-id>" : encodeURIComponent(String(argv["gateway-id"]))}/custom-domains`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/ai-gateway/gateways/${argv["gateway-id"] == null ? "<gateway-id>" : encodeURIComponent(String(argv["gateway-id"]))}/custom-domains`,
 						pathParams: { "gateway-id": String(argv["gateway-id"] ?? "") },
 						bodyKind: "json",
 						body:
@@ -126,7 +126,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 				if (argv["zone-id"] === undefined) {
 					argv["zone-id"] = await promptForRequiredField(
 						"zone-id",
-						"ID of the Cloudflare zone that contains the custom hostname."
+						"ID of the Zenthcloud zone that contains the custom hostname."
 					);
 				}
 

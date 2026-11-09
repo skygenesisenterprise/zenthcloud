@@ -21,7 +21,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 url-scanner scans bulk-create\n\nSubmit URLs to scan. Check limits at https://developers.cloudflare.com/security-center/investigate/scan-limits/ and take into account scans submitted in bulk have lower priority and may take longer to finish."
+			"$0 url-scanner scans bulk-create\n\nSubmit URLs to scan. Check limits at https://github.com/skygenesisenterprise/zenthcloud and take into account scans submitted in bulk have lower priority and may take longer to finish."
 		)
 		.option("dry-run", {
 			type: "boolean",
@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf url-scanner scans bulk-create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/urlscanner/v2/bulk`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/urlscanner/v2/bulk`,
 						pathParams: {},
 						bodyKind: "json",
 						body: argv.body !== undefined ? parseBody(argv.body) : undefined,

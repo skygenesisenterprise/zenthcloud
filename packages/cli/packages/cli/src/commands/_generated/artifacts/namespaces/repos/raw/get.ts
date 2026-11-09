@@ -76,7 +76,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf artifacts namespaces repos raw get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/artifacts/namespaces/${argv["namespace"] == null ? "<namespace>" : encodeURIComponent(String(argv["namespace"]))}/repos/${argv["name"] == null ? "<name>" : encodeURIComponent(String(argv["name"]))}/raw/${argv["ref"] == null ? "<ref>" : encodeURIComponent(String(argv["ref"]))}/${argv["path"] == null ? "<path>" : encodeURIComponent(String(argv["path"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/artifacts/namespaces/${argv["namespace"] == null ? "<namespace>" : encodeURIComponent(String(argv["namespace"]))}/repos/${argv["name"] == null ? "<name>" : encodeURIComponent(String(argv["name"]))}/raw/${argv["ref"] == null ? "<ref>" : encodeURIComponent(String(argv["ref"]))}/${argv["path"] == null ? "<path>" : encodeURIComponent(String(argv["path"]))}`,
 						pathParams: {
 							namespace: String(argv["namespace"] ?? ""),
 							name: String(argv["name"] ?? ""),

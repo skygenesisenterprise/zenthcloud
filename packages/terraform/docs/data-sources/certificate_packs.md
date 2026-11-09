@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_certificate_packs Data Source - Cloudflare"
+page_title: "zenthcloud_certificate_packs Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   SSL and Certificates ReadSSL and Certificates Write
 ---
 
-# cloudflare_certificate_packs (Data Source)
+# zenthcloud_certificate_packs (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_certificate_packs" "example_certificate_packs" {
+data "zenthcloud_certificate_packs" "example_certificate_packs" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   deploy = "staging"
   status = "all"
@@ -44,10 +44,10 @@ Available values: "all".
 
 Read-Only:
 
-- `certificate_authority` (String) Certificate Authority selected for the order.  For information on any certificate authority specific details or restrictions [see this page for more details](https://developers.cloudflare.com/ssl/reference/certificate-authorities).
+- `certificate_authority` (String) Certificate Authority selected for the order.  For information on any certificate authority specific details or restrictions [see this page for more details](https://github.com/skygenesisenterprise/zenthcloud).
 Available values: "google", "lets_encrypt", "ssl_com".
 - `certificates` (Attributes List) Array of certificates in this pack. (see [below for nested schema](#nestedatt--result--certificates))
-- `cloudflare_branding` (Boolean) Whether or not to add Cloudflare Branding for the order.  This will add a subdomain of sni.cloudflaressl.com as the Common Name if set to true.
+- `zenthcloud_branding` (Boolean) Whether or not to add Zenthcloud Branding for the order.  This will add a subdomain of sni.zenthcloudssl.com as the Common Name if set to true.
 - `dcv_delegation_records` (Attributes List) DCV Delegation records for domain validation. (see [below for nested schema](#nestedatt--result--dcv_delegation_records))
 - `hosts` (Set of String) Comma separated list of valid host names for the certificate packs. Must contain the zone apex, may not contain more than 50 hosts, and may not be empty.
 - `id` (String) The unique identifier for a certificate_pack.
@@ -78,7 +78,7 @@ Read-Only:
 - `priority` (Number) The order/priority in which the certificate will be used.
 - `signature` (String) The type of hash used for the certificate.
 - `status` (String) Certificate status.
-- `uploaded_on` (String) When the certificate was uploaded to Cloudflare.
+- `uploaded_on` (String) When the certificate was uploaded to Zenthcloud.
 - `zone_id` (String) Identifier.
 
 <a id="nestedatt--result--certificates--geo_restrictions"></a>

@@ -1,8 +1,8 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import assert from 'node:assert';
-import { DurableObject, WorkerEntrypoint } from 'cloudflare:workers';
+import { DurableObject, WorkerEntrypoint } from 'zenthcloud:workers';
 
 // Keeps rejected promises reachable so that GC cannot release their pipelines
 // and hide a pipeline that the runtime failed to drop.

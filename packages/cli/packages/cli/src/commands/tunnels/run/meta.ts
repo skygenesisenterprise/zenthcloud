@@ -6,7 +6,7 @@ export default {
 	fullPath: ["tunnels", "run"],
 	category: "action",
 	description:
-		"Run a named Cloudflare Tunnel using the cf-managed cloudflared binary.",
+		"Run a named Zenthcloud Tunnel using the cf-managed zenthcloudd binary.",
 	usage: "cf tunnels run [tunnel] [options]",
 	arguments: [
 		{
@@ -22,14 +22,14 @@ export default {
 			name: "token",
 			type: "string",
 			required: false,
-			description: "Tunnel token supplied directly to cloudflared",
+			description: "Tunnel token supplied directly to zenthcloudd",
 		},
 		{
 			name: "log-level",
 			type: "string",
 			required: false,
 			default: "info",
-			description: "cloudflared log level",
+			description: "zenthcloudd log level",
 			enum: [
 				"trace",
 				"debug",

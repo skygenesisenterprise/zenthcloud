@@ -5,7 +5,7 @@ package zero_trust_dlp_custom_profile
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -158,7 +158,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"shared_entries": schema.SetNestedAttribute{
-				Description: "Entries from other profiles (e.g. pre-defined Cloudflare profiles, or your Microsoft Information Protection profiles).",
+				Description: "Entries from other profiles (e.g. pre-defined Zenthcloud profiles, or your Microsoft Information Protection profiles).",
 				Optional:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{

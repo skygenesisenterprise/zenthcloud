@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_organization"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_organization"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -118,7 +118,7 @@ func TestMarshalJSONSendsPivKeyRequirements(t *testing.T) {
 
 	model := zero_trust_organization.ZeroTrustOrganizationModel{
 		Name:                  types.StringValue("Example"),
-		AuthDomain:            types.StringValue("example.cloudflareaccess.com"),
+		AuthDomain:            types.StringValue("example.zenthcloudaccess.com"),
 		MfaPivKeyRequirements: pivRequirements(),
 	}
 
@@ -135,7 +135,7 @@ func TestMarshalJSONForUpdateSendsPivKeyRequirements(t *testing.T) {
 
 	state := zero_trust_organization.ZeroTrustOrganizationModel{
 		Name:                  types.StringValue("Example"),
-		AuthDomain:            types.StringValue("example.cloudflareaccess.com"),
+		AuthDomain:            types.StringValue("example.zenthcloudaccess.com"),
 		MfaPivKeyRequirements: pivRequirements(),
 	}
 	plan := state
@@ -155,7 +155,7 @@ func TestUnmarshalPopulatesPivKeyRequirements(t *testing.T) {
 	const apiResponse = `{
 	  "result": {
 	    "name": "Example",
-	    "auth_domain": "example.cloudflareaccess.com",
+	    "auth_domain": "example.zenthcloudaccess.com",
 	    "mfa_piv_key_requirements": {
 	      "pin_policy": "once",
 	      "require_fips_device": true,

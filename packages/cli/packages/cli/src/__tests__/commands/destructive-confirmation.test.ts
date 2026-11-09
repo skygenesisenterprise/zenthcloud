@@ -1,4 +1,4 @@
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { runCf } from "../helpers/run-cf.js";
 
@@ -20,8 +20,8 @@ describe("non-interactive destructive confirmation", () => {
 		const stdout = vi.spyOn(console, "log").mockImplementation(() => {});
 
 		const result = await runCf(args, {
-			CLOUDFLARE_API_TOKEN: "test-token",
-			CLOUDFLARE_ACCOUNT_ID: "test-account",
+			ZENTHCLOUD_API_TOKEN: "test-token",
+			ZENTHCLOUD_ACCOUNT_ID: "test-account",
 			DO_NOT_TRACK: "1",
 		});
 

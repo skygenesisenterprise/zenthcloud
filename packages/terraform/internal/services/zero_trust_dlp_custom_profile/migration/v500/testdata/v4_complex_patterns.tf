@@ -1,4 +1,4 @@
-resource "cloudflare_dlp_profile" "%[1]s" {
+resource "zenthcloud_dlp_profile" "%[1]s" {
   account_id          = "%[2]s"
   name                = "complex-%[1]s"
   description         = "Complex pattern detection"

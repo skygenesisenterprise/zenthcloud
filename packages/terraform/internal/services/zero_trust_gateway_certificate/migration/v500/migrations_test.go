@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -67,13 +67,13 @@ func TestMigrateZeroTrustGatewayCertificate_V4ToV5_Basic(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Zero Trust resources require API key, not token
-			if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-				t.Setenv("CLOUDFLARE_API_TOKEN", "")
+			if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+				t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 			}
 
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_zero_trust_gateway_certificate." + rnd
+			resourceName := "zenthcloud_zero_trust_gateway_certificate." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -89,8 +89,8 @@ func TestMigrateZeroTrustGatewayCertificate_V4ToV5_Basic(t *testing.T) {
 				// Use external v4 provider (creates version=0 state)
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -149,13 +149,13 @@ func TestMigrateZeroTrustGatewayCertificate_V4ToV5_WithActivate(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Zero Trust resources require API key, not token
-			if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-				t.Setenv("CLOUDFLARE_API_TOKEN", "")
+			if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+				t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 			}
 
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_zero_trust_gateway_certificate." + rnd
+			resourceName := "zenthcloud_zero_trust_gateway_certificate." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -169,8 +169,8 @@ func TestMigrateZeroTrustGatewayCertificate_V4ToV5_WithActivate(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -224,13 +224,13 @@ func TestMigrateZeroTrustGatewayCertificate_V4ToV5_WithExplicitValidity(t *testi
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Zero Trust resources require API key, not token
-			if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-				t.Setenv("CLOUDFLARE_API_TOKEN", "")
+			if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+				t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 			}
 
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_zero_trust_gateway_certificate." + rnd
+			resourceName := "zenthcloud_zero_trust_gateway_certificate." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -244,8 +244,8 @@ func TestMigrateZeroTrustGatewayCertificate_V4ToV5_WithExplicitValidity(t *testi
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},

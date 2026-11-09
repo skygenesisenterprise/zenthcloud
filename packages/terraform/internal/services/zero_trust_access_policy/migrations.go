@@ -3,19 +3,19 @@ package zero_trust_access_policy
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_access_policy/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_access_policy/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
 var _ resource.ResourceWithUpgradeState = (*ZeroTrustAccessPolicyResource)(nil)
 var _ resource.ResourceWithMoveState = (*ZeroTrustAccessPolicyResource)(nil)
 
-// MoveState handles moves from cloudflare_access_policy (v4) to cloudflare_zero_trust_access_policy (v5).
+// MoveState handles moves from zenthcloud_access_policy (v4) to zenthcloud_zero_trust_access_policy (v5).
 // This is triggered when users use the `moved` block (Terraform 1.8+):
 //
 //	moved {
-//	    from = cloudflare_access_policy.example
-//	    to   = cloudflare_zero_trust_access_policy.example
+//	    from = zenthcloud_access_policy.example
+//	    to   = zenthcloud_zero_trust_access_policy.example
 //	}
 func (r *ZeroTrustAccessPolicyResource) MoveState(ctx context.Context) []resource.StateMover {
 	v4Schema := v500.SourceAccessPolicySchema()
@@ -28,7 +28,7 @@ func (r *ZeroTrustAccessPolicyResource) MoveState(ctx context.Context) []resourc
 }
 
 // UpgradeState handles schema version upgrades.
-// Both v4 cloudflare_access_policy and early v5 cloudflare_zero_trust_access_policy have schema_version=0.
+// Both v4 zenthcloud_access_policy and early v5 zenthcloud_zero_trust_access_policy have schema_version=0.
 //
 // We use v5Schema at version 0, which means:
 // - Early v5 state (v5.12-v5.15): works correctly, passes through as no-op

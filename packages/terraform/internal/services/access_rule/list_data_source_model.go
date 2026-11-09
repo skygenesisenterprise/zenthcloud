@@ -5,9 +5,9 @@ package access_rule
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/firewall"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/firewall"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -36,33 +36,33 @@ func (m *AccessRulesDataSourceModel) toListParams(_ context.Context) (params fir
 	if m.Configuration != nil {
 		paramsConfiguration := firewall.AccessRuleListParamsConfiguration{}
 		if !m.Configuration.Target.IsNull() {
-			paramsConfiguration.Target = cloudflare.F(firewall.AccessRuleListParamsConfigurationTarget(m.Configuration.Target.ValueString()))
+			paramsConfiguration.Target = zenthcloud.F(firewall.AccessRuleListParamsConfigurationTarget(m.Configuration.Target.ValueString()))
 		}
 		if !m.Configuration.Value.IsNull() {
-			paramsConfiguration.Value = cloudflare.F(m.Configuration.Value.ValueString())
+			paramsConfiguration.Value = zenthcloud.F(m.Configuration.Value.ValueString())
 		}
-		params.Configuration = cloudflare.F(paramsConfiguration)
+		params.Configuration = zenthcloud.F(paramsConfiguration)
 	}
 	if !m.Direction.IsNull() {
-		params.Direction = cloudflare.F(firewall.AccessRuleListParamsDirection(m.Direction.ValueString()))
+		params.Direction = zenthcloud.F(firewall.AccessRuleListParamsDirection(m.Direction.ValueString()))
 	}
 	if !m.Match.IsNull() {
-		params.Match = cloudflare.F(firewall.AccessRuleListParamsMatch(m.Match.ValueString()))
+		params.Match = zenthcloud.F(firewall.AccessRuleListParamsMatch(m.Match.ValueString()))
 	}
 	if !m.Mode.IsNull() {
-		params.Mode = cloudflare.F(firewall.AccessRuleListParamsMode(m.Mode.ValueString()))
+		params.Mode = zenthcloud.F(firewall.AccessRuleListParamsMode(m.Mode.ValueString()))
 	}
 	if !m.Notes.IsNull() {
-		params.Notes = cloudflare.F(m.Notes.ValueString())
+		params.Notes = zenthcloud.F(m.Notes.ValueString())
 	}
 	if !m.Order.IsNull() {
-		params.Order = cloudflare.F(firewall.AccessRuleListParamsOrder(m.Order.ValueString()))
+		params.Order = zenthcloud.F(firewall.AccessRuleListParamsOrder(m.Order.ValueString()))
 	}
 
 	if !m.AccountID.IsNull() {
-		params.AccountID = cloudflare.F(m.AccountID.ValueString())
+		params.AccountID = zenthcloud.F(m.AccountID.ValueString())
 	} else {
-		params.ZoneID = cloudflare.F(m.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(m.ZoneID.ValueString())
 	}
 
 	return

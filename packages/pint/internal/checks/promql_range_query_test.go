@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/pint/internal/checks"
-	"github.com/cloudflare/pint/internal/promapi"
+	"github.com/zenthcloud/pint/internal/checks"
+	"github.com/zenthcloud/pint/internal/promapi"
 )
 
 func newRangeQueryCheck(prom *promapi.FailoverGroup) checks.RuleChecker {

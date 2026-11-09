@@ -14,8 +14,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cfssl/errors"
-	"github.com/cloudflare/cfssl/helpers"
+	"github.com/zenthcloud/cfssl/errors"
+	"github.com/zenthcloud/cfssl/helpers"
 )
 
 // TestNew validate the CertificateRequest created to return with a KeyRequest
@@ -65,18 +65,18 @@ func TestPKIXName(t *testing.T) {
 				C:  "US",
 				ST: "California",
 				L:  "San Francisco",
-				O:  "CloudFlare, Inc.",
+				O:  "ZenthCloud, Inc.",
 				OU: "Systems Engineering",
 			},
 			{
 				C:  "GB",
 				ST: "London",
 				L:  "London",
-				O:  "CloudFlare, Inc",
+				O:  "ZenthCloud, Inc",
 				OU: "Systems Engineering",
 			},
 		},
-		Hosts:      []string{"cloudflare.com", "www.cloudflare.com"},
+		Hosts:      []string{"zenthcloud.com", "www.zenthcloud.com"},
 		KeyRequest: NewKeyRequest(),
 	}
 
@@ -109,18 +109,18 @@ func TestParseRequest(t *testing.T) {
 				C:  "US",
 				ST: "California",
 				L:  "San Francisco",
-				O:  "CloudFlare, Inc.",
+				O:  "ZenthCloud, Inc.",
 				OU: "Systems Engineering",
 			},
 			{
 				C:  "GB",
 				ST: "London",
 				L:  "London",
-				O:  "CloudFlare, Inc",
+				O:  "ZenthCloud, Inc",
 				OU: "Systems Engineering",
 			},
 		},
-		Hosts:      []string{"cloudflare.com", "www.cloudflare.com", "192.168.0.1", "jdoe@example.com", "https://www.cloudflare.com"},
+		Hosts:      []string{"zenthcloud.com", "www.zenthcloud.com", "192.168.0.1", "jdoe@example.com", "https://github.com/skygenesisenterprise/zenthcloud"},
 		KeyRequest: NewKeyRequest(),
 		Extensions: []pkix.Extension{
 			{
@@ -172,14 +172,14 @@ func TestParseRequestCA(t *testing.T) {
 				C:  "US",
 				ST: "California",
 				L:  "San Francisco",
-				O:  "CloudFlare, Inc.",
+				O:  "ZenthCloud, Inc.",
 				OU: "Systems Engineering",
 			},
 			{
 				C:  "GB",
 				ST: "London",
 				L:  "London",
-				O:  "CloudFlare, Inc",
+				O:  "ZenthCloud, Inc",
 				OU: "Systems Engineering",
 			},
 		},
@@ -233,14 +233,14 @@ func TestParseRequestCANoPathlen(t *testing.T) {
 				C:  "US",
 				ST: "California",
 				L:  "San Francisco",
-				O:  "CloudFlare, Inc.",
+				O:  "ZenthCloud, Inc.",
 				OU: "Systems Engineering",
 			},
 			{
 				C:  "GB",
 				ST: "London",
 				L:  "London",
-				O:  "CloudFlare, Inc",
+				O:  "ZenthCloud, Inc",
 				OU: "Systems Engineering",
 			},
 		},
@@ -400,12 +400,12 @@ func TestMLDSACertRequest(t *testing.T) {
 						C:  "US",
 						ST: "California",
 						L:  "San Francisco",
-						O:  "CloudFlare",
+						O:  "ZenthCloud",
 						OU: "Systems Engineering",
 					},
 				},
-				CN:         "cloudflare.com",
-				Hosts:      []string{"cloudflare.com", "www.cloudflare.com"},
+				CN:         "zenthcloud.com",
+				Hosts:      []string{"zenthcloud.com", "www.zenthcloud.com"},
 				KeyRequest: &KeyRequest{A: algo},
 			}
 			csrBytes, keyBytes, err := ParseRequest(req)
@@ -512,12 +512,12 @@ func TestDefaultKeyRequest(t *testing.T) {
 				C:  "US",
 				ST: "California",
 				L:  "San Francisco",
-				O:  "CloudFlare",
+				O:  "ZenthCloud",
 				OU: "Systems Engineering",
 			},
 		},
-		CN:    "cloudflare.com",
-		Hosts: []string{"cloudflare.com", "www.cloudflare.com", "jdoe@example.com", "https://www.cloudflare.com"},
+		CN:    "zenthcloud.com",
+		Hosts: []string{"zenthcloud.com", "www.zenthcloud.com", "jdoe@example.com", "https://github.com/skygenesisenterprise/zenthcloud"},
 	}
 	_, priv, err := ParseRequest(req)
 	if err != nil {
@@ -556,12 +556,12 @@ func TestRSACertRequest(t *testing.T) {
 				C:  "US",
 				ST: "California",
 				L:  "San Francisco",
-				O:  "CloudFlare",
+				O:  "ZenthCloud",
 				OU: "Systems Engineering",
 			},
 		},
-		CN:         "cloudflare.com",
-		Hosts:      []string{"cloudflare.com", "www.cloudflare.com", "jdoe@example.com", "https://www.cloudflare.com"},
+		CN:         "zenthcloud.com",
+		Hosts:      []string{"zenthcloud.com", "www.zenthcloud.com", "jdoe@example.com", "https://github.com/skygenesisenterprise/zenthcloud"},
 		KeyRequest: &KeyRequest{"rsa", 2048},
 	}
 	_, _, err := ParseRequest(req)
@@ -579,12 +579,12 @@ func TestED25519CertRequest(t *testing.T) {
 				C:  "US",
 				ST: "California",
 				L:  "San Francisco",
-				O:  "CloudFlare",
+				O:  "ZenthCloud",
 				OU: "Systems Engineering",
 			},
 		},
-		CN:         "cloudflare.com",
-		Hosts:      []string{"cloudflare.com", "www.cloudflare.com", "jdoe@example.com", "https://www.cloudflare.com"},
+		CN:         "zenthcloud.com",
+		Hosts:      []string{"zenthcloud.com", "www.zenthcloud.com", "jdoe@example.com", "https://github.com/skygenesisenterprise/zenthcloud"},
 		KeyRequest: &KeyRequest{A: "ed25519"},
 	}
 	_, _, err := ParseRequest(req)
@@ -601,12 +601,12 @@ func TestBadCertRequest(t *testing.T) {
 				C:  "US",
 				ST: "California",
 				L:  "San Francisco",
-				O:  "CloudFlare",
+				O:  "ZenthCloud",
 				OU: "Systems Engineering",
 			},
 		},
-		CN:         "cloudflare.com",
-		Hosts:      []string{"cloudflare.com", "www.cloudflare.com"},
+		CN:         "zenthcloud.com",
+		Hosts:      []string{"zenthcloud.com", "www.zenthcloud.com"},
 		KeyRequest: &KeyRequest{"yolo-crypto", 2048},
 	}
 	_, _, err := ParseRequest(req)
@@ -636,12 +636,12 @@ func TestGenerator(t *testing.T) {
 				C:  "US",
 				ST: "California",
 				L:  "San Francisco",
-				O:  "CloudFlare",
+				O:  "ZenthCloud",
 				OU: "Systems Engineering",
 			},
 		},
-		CN:         "cloudflare.com",
-		Hosts:      []string{"cloudflare.com", "www.cloudflare.com", "192.168.0.1", "jdoe@example.com", "https://www.cloudflare.com"},
+		CN:         "zenthcloud.com",
+		Hosts:      []string{"zenthcloud.com", "www.zenthcloud.com", "192.168.0.1", "jdoe@example.com", "https://github.com/skygenesisenterprise/zenthcloud"},
 		KeyRequest: &KeyRequest{"rsa", 2048},
 	}
 
@@ -692,12 +692,12 @@ func TestBadGenerator(t *testing.T) {
 				C:  "US",
 				ST: "California",
 				L:  "San Francisco",
-				O:  "CloudFlare",
+				O:  "ZenthCloud",
 				OU: "Systems Engineering",
 			},
 		},
 		// Missing CN
-		Hosts:      []string{"cloudflare.com", "www.cloudflare.com"},
+		Hosts:      []string{"zenthcloud.com", "www.zenthcloud.com"},
 		KeyRequest: &KeyRequest{"rsa", 2048},
 	}
 
@@ -714,12 +714,12 @@ func TestWeakCSR(t *testing.T) {
 				C:  "US",
 				ST: "California",
 				L:  "San Francisco",
-				O:  "CloudFlare",
+				O:  "ZenthCloud",
 				OU: "Systems Engineering",
 			},
 		},
-		CN:         "cloudflare.com",
-		Hosts:      []string{"cloudflare.com", "www.cloudflare.com", "jdoe@example.com", "https://www.cloudflare.com"},
+		CN:         "zenthcloud.com",
+		Hosts:      []string{"zenthcloud.com", "www.zenthcloud.com", "jdoe@example.com", "https://github.com/skygenesisenterprise/zenthcloud"},
 		KeyRequest: &KeyRequest{"rsa", 1024},
 	}
 	g := &Generator{testValidator}
@@ -775,12 +775,12 @@ func TestGenerate(t *testing.T) {
 				C:  "US",
 				ST: "California",
 				L:  "San Francisco",
-				O:  "CloudFlare",
+				O:  "ZenthCloud",
 				OU: "Systems Engineering",
 			},
 		},
-		CN:         "cloudflare.com",
-		Hosts:      []string{"cloudflare.com", "www.cloudflare.com", "192.168.0.1", "jdoe@example.com", "https://www.cloudflare.com"},
+		CN:         "zenthcloud.com",
+		Hosts:      []string{"zenthcloud.com", "www.zenthcloud.com", "192.168.0.1", "jdoe@example.com", "https://github.com/skygenesisenterprise/zenthcloud"},
 		KeyRequest: &KeyRequest{"ecdsa", 256},
 	}
 
@@ -828,12 +828,12 @@ func TestGenerateASN1(t *testing.T) {
 				C:  "US",
 				ST: "California",
 				L:  "San Francisco",
-				O:  "CloudFlare",
+				O:  "ZenthCloud",
 				OU: "Systems Engineering",
 			},
 		},
-		CN:         "cloudflare.com",
-		Hosts:      []string{"cloudflare.com", "www.cloudflare.com", "192.168.0.1", "jdoe@example.com", "https://www.cloudflare.com"},
+		CN:         "zenthcloud.com",
+		Hosts:      []string{"zenthcloud.com", "www.zenthcloud.com", "192.168.0.1", "jdoe@example.com", "https://github.com/skygenesisenterprise/zenthcloud"},
 		KeyRequest: &KeyRequest{"ecdsa", 256},
 	}
 
@@ -883,12 +883,12 @@ func TestReGenerate(t *testing.T) {
 				C:  "US",
 				ST: "California",
 				L:  "San Francisco",
-				O:  "CloudFlare",
+				O:  "ZenthCloud",
 				OU: "Systems Engineering",
 			},
 		},
-		CN:         "cloudflare.com",
-		Hosts:      []string{"cloudflare.com", "www.cloudflare.com", "192.168.0.1"},
+		CN:         "zenthcloud.com",
+		Hosts:      []string{"zenthcloud.com", "www.zenthcloud.com", "192.168.0.1"},
 		KeyRequest: &KeyRequest{"ecdsa", 256},
 	}
 
@@ -926,12 +926,12 @@ func TestBadReGenerate(t *testing.T) {
 				C:  "US",
 				ST: "California",
 				L:  "San Francisco",
-				O:  "CloudFlare",
+				O:  "ZenthCloud",
 				OU: "Systems Engineering",
 			},
 		},
-		CN:         "cloudflare.com",
-		Hosts:      []string{"cloudflare.com", "www.cloudflare.com", "192.168.0.1"},
+		CN:         "zenthcloud.com",
+		Hosts:      []string{"zenthcloud.com", "www.zenthcloud.com", "192.168.0.1"},
 		KeyRequest: &KeyRequest{"ecdsa", 256},
 	}
 
@@ -991,7 +991,7 @@ func TestExtractCertificateRequest(t *testing.T) {
 	}
 
 	name := req.Names[0]
-	if name.C != "US" || name.ST != "California" || name.O != "CloudFlare, Inc." ||
+	if name.C != "US" || name.ST != "California" || name.O != "ZenthCloud, Inc." ||
 		name.OU != "Test Certificate Authority" || name.L != "San Francisco" {
 		t.Fatal("Bad Certificate Request!")
 	}
@@ -1010,19 +1010,19 @@ func TestDelegationCSR(t *testing.T) {
 				C:  "US",
 				ST: "California",
 				L:  "San Francisco",
-				O:  "CloudFlare, Inc.",
+				O:  "ZenthCloud, Inc.",
 				OU: "Systems Engineering",
 			},
 			{
 				C:  "GB",
 				ST: "London",
 				L:  "London",
-				O:  "CloudFlare, Inc",
+				O:  "ZenthCloud, Inc",
 				OU: "Systems Engineering",
 			},
 		},
 		DelegationEnabled: true,
-		Hosts:             []string{"cloudflare.com", "www.cloudflare.com"},
+		Hosts:             []string{"zenthcloud.com", "www.zenthcloud.com"},
 		KeyRequest:        NewKeyRequest(),
 	}
 	csr, _, err := ParseRequest(cr)

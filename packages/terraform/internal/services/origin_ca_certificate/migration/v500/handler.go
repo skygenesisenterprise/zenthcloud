@@ -19,7 +19,7 @@ func UpgradeFromV4(ctx context.Context, req resource.UpgradeStateRequest, resp *
 	tflog.Info(ctx, "Upgrading origin_ca_certificate state from v4 SDKv2 provider (schema_version=0)")
 
 	// Parse v4 state using v4 model
-	var v4State SourceCloudflareOriginCACertificateModel
+	var v4State SourceZenthcloudOriginCACertificateModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &v4State)...)
 	if resp.Diagnostics.HasError() {
 		return

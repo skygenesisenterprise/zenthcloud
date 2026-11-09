@@ -61,7 +61,7 @@ export const tools: readonly Tool[] = [
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.email.sending.read"
+            "com.zenthcloud.api.account.email.sending.read"
           ]
         },
         "x-cfPlanAvailability": {
@@ -222,7 +222,7 @@ export const tools: readonly Tool[] = [
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.email.sending.create"
+            "com.zenthcloud.api.account.email.sending.create"
           ]
         },
         "x-cfPlanAvailability": {
@@ -730,7 +730,7 @@ export const tools: readonly Tool[] = [
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.email.sending.create"
+            "com.zenthcloud.api.account.email.sending.create"
           ]
         },
         "x-cfPlanAvailability": {

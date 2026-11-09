@@ -64,7 +64,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf email-security investigate get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/email-security/investigate/${argv["investigate-id"] == null ? "<investigate-id>" : encodeURIComponent(String(argv["investigate-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/email-security/investigate/${argv["investigate-id"] == null ? "<investigate-id>" : encodeURIComponent(String(argv["investigate-id"]))}`,
 						pathParams: {
 							"investigate-id": String(argv["investigate-id"] ?? ""),
 						},

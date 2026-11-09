@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -905,7 +905,7 @@ jsg::Promise<BenchGroupResult> ServiceWorkerGlobalScope::bench(Worker::Lock& loc
 kj::Promise<void> ServiceWorkerGlobalScope::eventTimeoutPromise(uint32_t timeoutMs) {
   auto& actor = KJ_ASSERT_NONNULL(IoContext::current().getActor());
   co_await IoContext::current().afterLimitTimeout(timeoutMs * kj::MILLISECONDS);
-  // This is the ActorFlushReason for eviction in Cloudflare's internal implementation.
+  // This is the ActorFlushReason for eviction in Zenthcloud's internal implementation.
   auto evictionCode = 2;
   auto e = KJ_EXCEPTION(DISCONNECTED,
       "broken.dropped; jsg.Error: Actor exceeded event execution time and was disconnected.");
@@ -1450,7 +1450,7 @@ void ServiceWorkerGlobalScope::clearImmediate(kj::Maybe<jsg::Ref<Immediate>> may
   }
 }
 
-jsg::JsObject Cloudflare::getCompatibilityFlags(jsg::Lock& js) {
+jsg::JsObject Zenthcloud::getCompatibilityFlags(jsg::Lock& js) {
   auto flags = FeatureFlags::get(js);
   auto obj = js.objNoProto();
   auto dynamic = capnp::toDynamic(flags);

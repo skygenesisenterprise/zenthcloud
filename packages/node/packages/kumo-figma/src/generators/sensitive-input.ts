@@ -35,7 +35,7 @@ import {
   BORDER_RADIUS,
 } from "./shared";
 import { getButtonIcon, bindIconColor } from "./icon-utils";
-import registry from "@cloudflare/kumo/ai/component-registry.json";
+import registry from "@zenthcloud/kumo/ai/component-registry.json";
 
 /**
  * Extract Input component data from registry

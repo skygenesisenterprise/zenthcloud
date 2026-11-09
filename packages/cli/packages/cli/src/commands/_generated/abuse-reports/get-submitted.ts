@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf abuse-reports get-submitted",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/abuse-reports/submitted/${argv["report-id"] == null ? "<report-id>" : encodeURIComponent(String(argv["report-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/abuse-reports/submitted/${argv["report-id"] == null ? "<report-id>" : encodeURIComponent(String(argv["report-id"]))}`,
 						pathParams: { "report-id": String(argv["report-id"] ?? "") },
 						bodyKind: "none",
 					});

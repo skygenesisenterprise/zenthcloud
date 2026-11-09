@@ -12,9 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
 )
 
 var (
@@ -67,10 +67,10 @@ func TestMigrateObservatoryScheduledTest_V4ToV5_Basic(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-			domain := os.Getenv("CLOUDFLARE_DOMAIN")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+			domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 			url := normalizeObservatoryURL(domain)
-			resourceName := "cloudflare_observatory_scheduled_test.test"
+			resourceName := "zenthcloud_observatory_scheduled_test.test"
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(zoneID, url)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -87,8 +87,8 @@ func TestMigrateObservatoryScheduledTest_V4ToV5_Basic(t *testing.T) {
 				// Download from registry
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},

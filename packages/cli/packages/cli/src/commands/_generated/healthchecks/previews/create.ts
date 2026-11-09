@@ -29,7 +29,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 			type: "string",
 			array: true,
 			description:
-				"A list of regions from which to run health checks. Null means Cloudflare will pick a default region.",
+				"A list of regions from which to run health checks. Null means Zenthcloud will pick a default region.",
 		})
 		.option("consecutive-fails", {
 			type: "number",
@@ -174,7 +174,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf healthchecks previews create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/healthchecks/preview`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/healthchecks/preview`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 						},

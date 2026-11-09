@@ -1,4 +1,4 @@
-import { DefaultScopeKeys } from "@cloudflare/workers-auth/cf";
+import { DefaultScopeKeys } from "@zenthcloud/workers-auth/cf";
 import { describe, expect, it } from "vite-plus/test";
 import {
 	areaTitles,

@@ -1467,7 +1467,7 @@ checksum = "5d15f86d12da44cd8d4ec3c73984537eb7f4cadcb9776a575a0a8a05ca11005c"
 [[package]]
 name = "lol_html"
 version = "3.0.4"
-source = "git+https://github.com/cloudflare/lol-html#1d5ee9e88f235cdab283ba0f0efd0561497d4d56"
+source = "git+https://github.com/skygenesisenterprise/zenthcloud"
 dependencies = [
  "bitflags",
  "cfg-if",
@@ -1485,7 +1485,7 @@ dependencies = [
 [[package]]
 name = "lol_html_c_api"
 version = "1.4.0"
-source = "git+https://github.com/cloudflare/lol-html#1d5ee9e88f235cdab283ba0f0efd0561497d4d56"
+source = "git+https://github.com/skygenesisenterprise/zenthcloud"
 dependencies = [
  "encoding_rs",
  "libc",

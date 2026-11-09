@@ -53,13 +53,13 @@ describe("whoami", () => {
 	it("should output JSON with user info when --json flag is used and authenticated", async ({
 		expect,
 	}) => {
-		vi.stubEnv("CLOUDFLARE_API_TOKEN", "123456789");
+		vi.stubEnv("ZENTHCLOUD_API_TOKEN", "123456789");
 		await runWrangler("auth whoami");
 		let output: Record<string, unknown> | undefined;
 		expect(() => (output = JSON.parse(std.out))).not.toThrow();
 		expect(output).toMatchObject({
 			authenticated: true,
-			authSource: "CLOUDFLARE_API_TOKEN environment variable",
+			authSource: "ZENTHCLOUD_API_TOKEN environment variable",
 			tokenValid: true,
 			email: "user@example.com",
 		});
@@ -74,7 +74,7 @@ describe("whoami", () => {
 	it("should output JSON with loggedIn:false and exit with non-zero when --json flag is used and not authenticated", async ({
 		expect,
 	}) => {
-		vi.stubEnv("CLOUDFLARE_API_TOKEN", undefined);
+		vi.stubEnv("ZENTHCLOUD_API_TOKEN", undefined);
 		await runWrangler("auth whoami");
 		let output: Record<string, unknown> | undefined;
 		expect(() => (output = JSON.parse(std.out))).not.toThrow();
@@ -86,7 +86,7 @@ describe("whoami", () => {
 	it("should suggest a temporary preview account when not authenticated", async ({
 		expect,
 	}) => {
-		vi.stubEnv("CLOUDFLARE_API_TOKEN", undefined);
+		vi.stubEnv("ZENTHCLOUD_API_TOKEN", undefined);
 		vi.stubEnv("CLAUDECODE", "1");
 		await runWrangler("auth whoami");
 		expect(JSON.parse(std.out)).toMatchObject({ authenticated: false });
@@ -95,7 +95,7 @@ describe("whoami", () => {
 			'Ask the user: "I can put this online for 60 minutes without you signing in. To keep it, complete the temporary-account claim before it expires. Would you like me to deploy it that way?"'
 		);
 		expect(std.err).toContain(
-			"https://developers.cloudflare.com/workers/platform/claim-deployments/"
+			"https://github.com/skygenesisenterprise/zenthcloud"
 		);
 		expect(std.err).toContain(
 			"If they agree, run `cf deploy --temporary-account`"
@@ -103,12 +103,12 @@ describe("whoami", () => {
 	});
 
 	it("should output JSON with API token auth type", async ({ expect }) => {
-		vi.stubEnv("CLOUDFLARE_API_TOKEN", "123456789");
+		vi.stubEnv("ZENTHCLOUD_API_TOKEN", "123456789");
 		await runWrangler("auth whoami");
 		const output = JSON.parse(std.out) as Record<string, unknown>;
 		expect(output).toMatchObject({
 			authenticated: true,
-			authSource: "CLOUDFLARE_API_TOKEN environment variable",
+			authSource: "ZENTHCLOUD_API_TOKEN environment variable",
 		});
 	});
 });

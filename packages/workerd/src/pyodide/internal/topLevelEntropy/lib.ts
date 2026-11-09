@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -31,7 +31,7 @@ function setupShouldAllowBadEntropy(Module: Module): void {
   // We parse this as an integer.
   const res = simpleRunPython(
     Module,
-    'from _cloudflare.entropy_import_context import get_bad_entropy_flag;' +
+    'from _zenthcloud.entropy_import_context import get_bad_entropy_flag;' +
       'get_bad_entropy_flag();' +
       'del get_bad_entropy_flag'
   );
@@ -88,8 +88,8 @@ export function getRandomValues(
  * Hypothetically, we could skip it for new dedicated snapshots.
  */
 export function entropyMountFiles(Module: Module): void {
-  const cloudflareDir = Module.FS.sitePackages + '/_cloudflare';
-  Module.FS.mkdir(cloudflareDir);
+  const zenthcloudDir = Module.FS.sitePackages + '/_zenthcloud';
+  Module.FS.mkdir(zenthcloudDir);
   const files: [string, ArrayBuffer][] = [
     ['__init__.py', new ArrayBuffer(0)],
     ['entropy_patches.py', entropyPatches],
@@ -105,7 +105,7 @@ export function entropyMountFiles(Module: Module): void {
   }
 
   for (const [name, contents] of files) {
-    Module.FS.writeFile(cloudflareDir + '/' + name, new Uint8Array(contents), {
+    Module.FS.writeFile(zenthcloudDir + '/' + name, new Uint8Array(contents), {
       canOwn: true,
     });
   }
@@ -129,7 +129,7 @@ export function entropyBeforeTopLevel(Module: Module): void {
   simpleRunPython(
     Module,
     `
-from _cloudflare.entropy_patches import before_top_level
+from _zenthcloud.entropy_patches import before_top_level
 before_top_level()
 del before_top_level
 `
@@ -147,7 +147,7 @@ export function entropyAfterSnapshot(Module: Module): void {
   simpleRunPython(
     Module,
     `
-from _cloudflare.entropy_patches import after_snapshot
+from _zenthcloud.entropy_patches import after_snapshot
 after_snapshot()
 del after_snapshot
     `
@@ -168,7 +168,7 @@ export function entropyBeforeRequest(Module: Module): void {
   simpleRunPython(
     Module,
     `
-from _cloudflare.entropy_patches import before_first_request
+from _zenthcloud.entropy_patches import before_first_request
 before_first_request()
 del before_first_request
     `

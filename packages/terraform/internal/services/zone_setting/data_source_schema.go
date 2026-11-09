@@ -5,7 +5,7 @@ package zone_setting
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -37,7 +37,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"editable": schema.BoolAttribute{
-				Description: "Whether or not this setting can be modified for this zone (based on your Cloudflare plan level).",
+				Description: "Whether or not this setting can be modified for this zone (based on your Zenthcloud plan level).",
 				Computed:    true,
 			},
 			"enabled": schema.BoolAttribute{

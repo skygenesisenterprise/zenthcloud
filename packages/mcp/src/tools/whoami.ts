@@ -2,13 +2,13 @@ import { z } from 'zod'
 import type { CallToolResult, McpServer, Tool } from '@modelcontextprotocol/server'
 import type { AuthProps } from '../auth/types'
 
-const TITLE = 'Current Cloudflare Identity'
+const TITLE = 'Current Zenthcloud Identity'
 
 const DESCRIPTION =
-  'Return the Cloudflare user or account that this connection is authenticated as. ' +
+  'Return the Zenthcloud user or account that this connection is authenticated as. ' +
   'Takes no arguments. The id is stable across token refresh, reconnection and permission changes.'
 
-/** A Cloudflare user or account ID that can anchor a profile. */
+/** A Zenthcloud user or account ID that can anchor a profile. */
 const SubjectIdSchema = z.string().regex(/\S/)
 
 const ID_DESCRIPTION =
@@ -79,7 +79,7 @@ export const WHOAMI_TOOL: Tool = {
 
 /**
  * The profile this credential represents. User credentials (OAuth, `cfut_`,
- * `cfoat_`, legacy user tokens) resolve to the Cloudflare user, so every
+ * `cfoat_`, legacy user tokens) resolve to the Zenthcloud user, so every
  * connection of that user is one profile. Account tokens resolve to their
  * account. The prefix keeps the two ID spaces apart.
  *
@@ -109,7 +109,7 @@ export function runWhoamiTool(props: AuthProps): CallToolResult {
   const whoami = whoamiFor(props)
   if (!whoami) {
     return {
-      content: [{ type: 'text', text: 'This credential has no Cloudflare user or account ID.' }],
+      content: [{ type: 'text', text: 'This credential has no Zenthcloud user or account ID.' }],
       isError: true
     }
   }

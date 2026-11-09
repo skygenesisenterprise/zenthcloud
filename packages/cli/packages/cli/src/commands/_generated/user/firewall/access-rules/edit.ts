@@ -74,7 +74,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf user firewall access-rules edit",
 						method: "PATCH",
-						url: `https://api.cloudflare.com/client/v4/user/firewall/access_rules/rules/${argv["rule-id"] == null ? "<rule-id>" : encodeURIComponent(String(argv["rule-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["rule-id"] == null ? "<rule-id>" : encodeURIComponent(String(argv["rule-id"]))}`,
 						pathParams: { "rule-id": String(argv["rule-id"] ?? "") },
 						bodyKind: "json",
 						body:

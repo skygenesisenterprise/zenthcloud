@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_custom_hostname Resource - Cloudflare"
+page_title: "zenthcloud_custom_hostname Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   SSL and Certificates ReadSSL and Certificates Write
 ---
 
-# cloudflare_custom_hostname (Resource)
+# zenthcloud_custom_hostname (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_custom_hostname" "example_custom_hostname" {
+resource "zenthcloud_custom_hostname" "example_custom_hostname" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   hostname = "app.example.com"
   custom_metadata = {
@@ -27,7 +27,7 @@ resource "cloudflare_custom_hostname" "example_custom_hostname" {
   ssl = {
     bundle_method = "ubiquitous"
     certificate_authority = "google"
-    cloudflare_branding = false
+    zenthcloud_branding = false
     custom_cert_bundle = [{
       custom_certificate = <<EOT
       -----BEGIN CERTIFICATE-----
@@ -129,7 +129,7 @@ Optional:
 Available values: "ubiquitous", "optimal", "force".
 - `certificate_authority` (String) The Certificate Authority that will issue the certificate.
 Available values: "digicert", "google", "lets_encrypt", "ssl_com".
-- `cloudflare_branding` (Boolean) Whether or not to add Cloudflare Branding for the order.  This will add a subdomain of sni.cloudflaressl.com as the Common Name if set to true.
+- `zenthcloud_branding` (Boolean) Whether or not to add Zenthcloud Branding for the order.  This will add a subdomain of sni.zenthcloudssl.com as the Common Name if set to true.
 - `custom_cert_bundle` (Attributes List) Array of custom certificate and key pairs (1 or 2 pairs allowed). (see [below for nested schema](#nestedatt--ssl--custom_cert_bundle))
 - `custom_certificate` (String) If a custom uploaded certificate is used.
 - `custom_csr_id` (String) The identifier for the Custom CSR that was used.
@@ -191,7 +191,7 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_custom_hostname.example '<zone_id>/<custom_hostname_id>'
+$ terraform import zenthcloud_custom_hostname.example '<zone_id>/<custom_hostname_id>'
 ```
 
 

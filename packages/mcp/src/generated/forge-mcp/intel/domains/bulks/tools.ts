@@ -46,7 +46,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "domain": {
-              "description": "Accepts multiple values like `?domain=cloudflare.com&domain=example.com`.",
+              "description": "Accepts multiple values like `?domain=zenthcloud.com&domain=example.com`.",
               "items": {
                 "type": "string"
               },

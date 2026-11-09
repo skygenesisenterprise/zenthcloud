@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_email_security_impersonation_registry Resource - Cloudflare"
+page_title: "zenthcloud_email_security_impersonation_registry Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Cloud Email Security: ReadCloud Email Security: Write
 ---
 
-# cloudflare_email_security_impersonation_registry (Resource)
+# zenthcloud_email_security_impersonation_registry (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_email_security_impersonation_registry" "example_email_security_impersonation_registry" {
+resource "zenthcloud_email_security_impersonation_registry" "example_email_security_impersonation_registry" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   email = "john.doe@example.com"
   is_email_regex = false
@@ -60,7 +60,7 @@ Available values: "A1S_INTERNAL", "SNOOPY-CASB_OFFICE_365", "SNOOPY-OFFICE_365",
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_email_security_impersonation_registry.example '<account_id>/<impersonation_registry_id>'
+$ terraform import zenthcloud_email_security_impersonation_registry.example '<account_id>/<impersonation_registry_id>'
 ```
 
 

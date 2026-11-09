@@ -82,10 +82,10 @@ export const tools: readonly Tool[] = [
       pathOf: encodePath`/accounts/${"account_id"}/warp_connector/${"tunnel_id"}/configurations`,
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Connectors Write",
-          "Cloudflare One Connectors Read",
-          "Cloudflare One Connector: WARP Write",
-          "Cloudflare One Connector: WARP Read"
+          "Zenthcloud One Connectors Write",
+          "Zenthcloud One Connectors Read",
+          "Zenthcloud One Connector: WARP Write",
+          "Zenthcloud One Connector: WARP Read"
         ]
       },
       responses: {
@@ -178,8 +178,8 @@ export const tools: readonly Tool[] = [
       body: { mediaTypes: ["application/json"] },
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Connectors Write",
-          "Cloudflare One Connector: WARP Write"
+          "Zenthcloud One Connectors Write",
+          "Zenthcloud One Connector: WARP Write"
         ]
       },
       responses: {

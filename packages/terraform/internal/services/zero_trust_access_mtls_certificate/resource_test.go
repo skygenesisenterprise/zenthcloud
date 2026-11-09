@@ -14,7 +14,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/cloudflare-go"
+	"github.com/zenthcloud/zenthcloud-go"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -23,17 +23,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var EnvTfAcc = "TF_ACC"
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zero_trust_access_mtls_certificate", &resource.Sweeper{
-		Name: "cloudflare_zero_trust_access_mtls_certificate",
-		F:    testSweepCloudflareAccessMutualTLSCertificate,
+	resource.AddTestSweepers("zenthcloud_zero_trust_access_mtls_certificate", &resource.Sweeper{
+		Name: "zenthcloud_zero_trust_access_mtls_certificate",
+		F:    testSweepZenthcloudAccessMutualTLSCertificate,
 	})
 }
 
@@ -41,21 +41,21 @@ func TestMain(m *testing.M) {
 	resource.TestMain(m)
 }
 
-func testSweepCloudflareAccessMutualTLSCertificate(r string) error {
+func testSweepZenthcloudAccessMutualTLSCertificate(r string) error {
 	ctx := context.Background()
 
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 		return clientErr
 	}
 
 	// In test environment, be more aggressive about cleanup to prevent certificate conflicts
 	// This prevents "certificate already exists" errors in tests
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	accountCerts, _, err := client.ListAccessMutualTLSCertificates(context.Background(), cloudflare.AccountIdentifier(accountID), cloudflare.ListAccessMutualTLSCertificatesParams{})
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	accountCerts, _, err := client.ListAccessMutualTLSCertificates(context.Background(), zenthcloud.AccountIdentifier(accountID), zenthcloud.ListAccessMutualTLSCertificatesParams{})
 	if err != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Cloudflare Access Mutual TLS certificates: %s", err))
+		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Zenthcloud Access Mutual TLS certificates: %s", err))
 		return err
 	}
 
@@ -66,12 +66,12 @@ func testSweepCloudflareAccessMutualTLSCertificate(r string) error {
 		}
 
 		// to delete we need to update first with empty hostnames
-		_, err = client.UpdateAccessMutualTLSCertificate(context.Background(), cloudflare.AccountIdentifier(accountID), cloudflare.UpdateAccessMutualTLSCertificateParams{
+		_, err = client.UpdateAccessMutualTLSCertificate(context.Background(), zenthcloud.AccountIdentifier(accountID), zenthcloud.UpdateAccessMutualTLSCertificateParams{
 			ID:                  cert.ID,
 			AssociatedHostnames: []string{},
 		})
 		if err != nil {
-			tflog.Error(ctx, fmt.Sprintf("Failed to update Cloudflare Access Mutual TLS certificate (%s) in account ID: %s", cert.ID, accountID))
+			tflog.Error(ctx, fmt.Sprintf("Failed to update Zenthcloud Access Mutual TLS certificate (%s) in account ID: %s", cert.ID, accountID))
 		}
 
 		// Wait for update to propagate with retry logic
@@ -79,7 +79,7 @@ func testSweepCloudflareAccessMutualTLSCertificate(r string) error {
 		backoff := time.Second * 2
 		for range maxRetries {
 			time.Sleep(backoff)
-			updatedCert, checkErr := client.GetAccessMutualTLSCertificate(context.Background(), cloudflare.AccountIdentifier(accountID), cert.ID)
+			updatedCert, checkErr := client.GetAccessMutualTLSCertificate(context.Background(), zenthcloud.AccountIdentifier(accountID), cert.ID)
 			if checkErr == nil && len(updatedCert.AssociatedHostnames) == 0 {
 				break
 			}
@@ -89,7 +89,7 @@ func testSweepCloudflareAccessMutualTLSCertificate(r string) error {
 		// Retry deletion with exponential backoff to handle race conditions
 		var lastErr error
 		for range maxRetries {
-			err = client.DeleteAccessMutualTLSCertificate(context.Background(), cloudflare.AccountIdentifier(accountID), cert.ID)
+			err = client.DeleteAccessMutualTLSCertificate(context.Background(), zenthcloud.AccountIdentifier(accountID), cert.ID)
 			if err == nil {
 				lastErr = nil
 				break
@@ -100,14 +100,14 @@ func testSweepCloudflareAccessMutualTLSCertificate(r string) error {
 		}
 
 		if lastErr != nil {
-			tflog.Error(ctx, fmt.Sprintf("Failed to delete Cloudflare Access Mutual TLS certificate (%s) in account ID: %s after retries: %s", cert.ID, accountID, lastErr))
+			tflog.Error(ctx, fmt.Sprintf("Failed to delete Zenthcloud Access Mutual TLS certificate (%s) in account ID: %s after retries: %s", cert.ID, accountID, lastErr))
 		}
 	}
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	zoneCerts, _, err := client.ListAccessMutualTLSCertificates(context.Background(), cloudflare.ZoneIdentifier(zoneID), cloudflare.ListAccessMutualTLSCertificatesParams{})
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	zoneCerts, _, err := client.ListAccessMutualTLSCertificates(context.Background(), zenthcloud.ZoneIdentifier(zoneID), zenthcloud.ListAccessMutualTLSCertificatesParams{})
 	if err != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Cloudflare Access Mutual TLS certificates: %s", err))
+		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Zenthcloud Access Mutual TLS certificates: %s", err))
 		return err
 	}
 
@@ -118,13 +118,13 @@ func testSweepCloudflareAccessMutualTLSCertificate(r string) error {
 		}
 
 		// to delete we need to update first with empty hostnames
-		_, err = client.UpdateAccessMutualTLSCertificate(context.Background(), cloudflare.ZoneIdentifier(zoneID), cloudflare.UpdateAccessMutualTLSCertificateParams{
+		_, err = client.UpdateAccessMutualTLSCertificate(context.Background(), zenthcloud.ZoneIdentifier(zoneID), zenthcloud.UpdateAccessMutualTLSCertificateParams{
 			ID:                  cert.ID,
 			AssociatedHostnames: []string{},
 		})
 
 		if err != nil {
-			tflog.Error(ctx, fmt.Sprintf("Failed to update Cloudflare Access Mutual TLS certificate (%s) in zone ID: %s", cert.ID, zoneID))
+			tflog.Error(ctx, fmt.Sprintf("Failed to update Zenthcloud Access Mutual TLS certificate (%s) in zone ID: %s", cert.ID, zoneID))
 		}
 
 		// Wait for update to propagate with retry logic
@@ -132,7 +132,7 @@ func testSweepCloudflareAccessMutualTLSCertificate(r string) error {
 		backoff := time.Second * 2
 		for range maxRetries {
 			time.Sleep(backoff)
-			updatedCert, checkErr := client.GetAccessMutualTLSCertificate(context.Background(), cloudflare.ZoneIdentifier(zoneID), cert.ID)
+			updatedCert, checkErr := client.GetAccessMutualTLSCertificate(context.Background(), zenthcloud.ZoneIdentifier(zoneID), cert.ID)
 			if checkErr == nil && len(updatedCert.AssociatedHostnames) == 0 {
 				break
 			}
@@ -142,7 +142,7 @@ func testSweepCloudflareAccessMutualTLSCertificate(r string) error {
 		// Retry deletion with exponential backoff to handle race conditions
 		var lastErr error
 		for range maxRetries {
-			err = client.DeleteAccessMutualTLSCertificate(context.Background(), cloudflare.ZoneIdentifier(zoneID), cert.ID)
+			err = client.DeleteAccessMutualTLSCertificate(context.Background(), zenthcloud.ZoneIdentifier(zoneID), cert.ID)
 			if err == nil {
 				lastErr = nil
 				break
@@ -153,7 +153,7 @@ func testSweepCloudflareAccessMutualTLSCertificate(r string) error {
 		}
 
 		if lastErr != nil {
-			tflog.Error(ctx, fmt.Sprintf("Failed to delete Cloudflare Access Mutual TLS certificate (%s) in zone ID: %s after retries: %s", cert.ID, zoneID, lastErr))
+			tflog.Error(ctx, fmt.Sprintf("Failed to delete Zenthcloud Access Mutual TLS certificate (%s) in zone ID: %s after retries: %s", cert.ID, zoneID, lastErr))
 		}
 	}
 
@@ -204,7 +204,7 @@ func waitForCertificateCleanup(t *testing.T, isZone bool) {
 
 	client, err := acctest.SharedV1Client()
 	if err != nil {
-		t.Fatalf("Failed to create Cloudflare client: %s", err)
+		t.Fatalf("Failed to create Zenthcloud client: %s", err)
 	}
 
 	maxWait := 30 * time.Second
@@ -212,13 +212,13 @@ func waitForCertificateCleanup(t *testing.T, isZone bool) {
 	deadline := time.Now().Add(maxWait)
 
 	for time.Now().Before(deadline) {
-		var certs []cloudflare.AccessMutualTLSCertificate
+		var certs []zenthcloud.AccessMutualTLSCertificate
 		var listErr error
 
 		if isZone {
-			certs, _, listErr = client.ListAccessMutualTLSCertificates(context.Background(), cloudflare.ZoneIdentifier(os.Getenv("CLOUDFLARE_ZONE_ID")), cloudflare.ListAccessMutualTLSCertificatesParams{})
+			certs, _, listErr = client.ListAccessMutualTLSCertificates(context.Background(), zenthcloud.ZoneIdentifier(os.Getenv("ZENTHCLOUD_ZONE_ID")), zenthcloud.ListAccessMutualTLSCertificatesParams{})
 		} else {
-			certs, _, listErr = client.ListAccessMutualTLSCertificates(context.Background(), cloudflare.AccountIdentifier(os.Getenv("CLOUDFLARE_ACCOUNT_ID")), cloudflare.ListAccessMutualTLSCertificatesParams{})
+			certs, _, listErr = client.ListAccessMutualTLSCertificates(context.Background(), zenthcloud.AccountIdentifier(os.Getenv("ZENTHCLOUD_ACCOUNT_ID")), zenthcloud.ListAccessMutualTLSCertificatesParams{})
 		}
 
 		if listErr != nil {
@@ -234,24 +234,24 @@ func waitForCertificateCleanup(t *testing.T, isZone bool) {
 	}
 }
 
-func TestAccCloudflareAccessMutualTLSBasic(t *testing.T) {
+func TestAccZenthcloudAccessMutualTLSBasic(t *testing.T) {
 	waitForCertificateCleanup(t, false)
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_access_mtls_certificate.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_access_mtls_certificate.%s", rnd)
 
 	cert, err := generateUniqueTestCertificate(fmt.Sprintf("basic-%s", rnd))
 	if err != nil {
 		t.Fatalf("Failed to generate test certificate: %v", err)
 	}
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -259,10 +259,10 @@ func TestAccCloudflareAccessMutualTLSBasic(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessMutualTLSCertificateDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessMutualTLSCertificateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccessMutualTLSCertificateConfigBasic(rnd, cloudflare.AccountIdentifier(accountID), cert, domain),
+				Config: testAccessMutualTLSCertificateConfigBasic(rnd, zenthcloud.AccountIdentifier(accountID), cert, domain),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -282,11 +282,11 @@ func TestAccCloudflareAccessMutualTLSBasic(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccessMutualTLSCertificateConfigBasic(rnd, cloudflare.AccountIdentifier(accountID), cert, domain),
+				Config:   testAccessMutualTLSCertificateConfigBasic(rnd, zenthcloud.AccountIdentifier(accountID), cert, domain),
 				PlanOnly: true,
 			},
 			{
-				Config: testAccessMutualTLSCertificateUpdated(rnd, cloudflare.AccountIdentifier(accountID), cert),
+				Config: testAccessMutualTLSCertificateUpdated(rnd, zenthcloud.AccountIdentifier(accountID), cert),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -301,34 +301,34 @@ func TestAccCloudflareAccessMutualTLSBasic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareAccessMutualTLSBasicWithZoneID(t *testing.T) {
+func TestAccZenthcloudAccessMutualTLSBasicWithZoneID(t *testing.T) {
 	waitForCertificateCleanup(t, true)
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_access_mtls_certificate.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_access_mtls_certificate.%s", rnd)
 
 	cert, err := generateUniqueTestCertificate(fmt.Sprintf("zone-%s", rnd))
 	if err != nil {
 		t.Fatalf("Failed to generate test certificate: %v", err)
 	}
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessMutualTLSCertificateDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessMutualTLSCertificateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccessMutualTLSCertificateConfigBasic(rnd, cloudflare.ZoneIdentifier(zoneID), cert, domain),
+				Config: testAccessMutualTLSCertificateConfigBasic(rnd, zenthcloud.ZoneIdentifier(zoneID), cert, domain),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -348,11 +348,11 @@ func TestAccCloudflareAccessMutualTLSBasicWithZoneID(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccessMutualTLSCertificateConfigBasic(rnd, cloudflare.ZoneIdentifier(zoneID), cert, domain),
+				Config:   testAccessMutualTLSCertificateConfigBasic(rnd, zenthcloud.ZoneIdentifier(zoneID), cert, domain),
 				PlanOnly: true,
 			},
 			{
-				Config: testAccessMutualTLSCertificateUpdated(rnd, cloudflare.ZoneIdentifier(zoneID), cert),
+				Config: testAccessMutualTLSCertificateUpdated(rnd, zenthcloud.ZoneIdentifier(zoneID), cert),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -365,30 +365,30 @@ func TestAccCloudflareAccessMutualTLSBasicWithZoneID(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccessMutualTLSCertificateUpdated(rnd, cloudflare.ZoneIdentifier(zoneID), cert),
+				Config:   testAccessMutualTLSCertificateUpdated(rnd, zenthcloud.ZoneIdentifier(zoneID), cert),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessMutualTLSMinimal(t *testing.T) {
+func TestAccZenthcloudAccessMutualTLSMinimal(t *testing.T) {
 	waitForCertificateCleanup(t, false)
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_access_mtls_certificate.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_access_mtls_certificate.%s", rnd)
 
 	cert, err := generateUniqueTestCertificate(fmt.Sprintf("minimal-%s", rnd))
 	if err != nil {
 		t.Fatalf("Failed to generate test certificate: %v", err)
 	}
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -396,10 +396,10 @@ func TestAccCloudflareAccessMutualTLSMinimal(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessMutualTLSCertificateDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessMutualTLSCertificateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccessMutualTLSCertificateMinimal(rnd, cloudflare.AccountIdentifier(accountID), cert),
+				Config: testAccessMutualTLSCertificateMinimal(rnd, zenthcloud.AccountIdentifier(accountID), cert),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -421,15 +421,15 @@ func TestAccCloudflareAccessMutualTLSMinimal(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareAccessMutualTLSCertificateDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudAccessMutualTLSCertificateDestroy(s *terraform.State) error {
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 		return clientErr
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_zero_trust_access_mtls_certificate" {
+		if rs.Type != "zenthcloud_zero_trust_access_mtls_certificate" {
 			continue
 		}
 
@@ -437,7 +437,7 @@ func testAccCheckCloudflareAccessMutualTLSCertificateDestroy(s *terraform.State)
 		if rs.Primary.Attributes[consts.ZoneIDSchemaKey] != "" {
 			zoneID := rs.Primary.Attributes[consts.ZoneIDSchemaKey]
 			// Try to clear associations first
-			_, updateErr := client.UpdateAccessMutualTLSCertificate(context.Background(), cloudflare.ZoneIdentifier(zoneID), cloudflare.UpdateAccessMutualTLSCertificateParams{
+			_, updateErr := client.UpdateAccessMutualTLSCertificate(context.Background(), zenthcloud.ZoneIdentifier(zoneID), zenthcloud.UpdateAccessMutualTLSCertificateParams{
 				ID:                  rs.Primary.ID,
 				AssociatedHostnames: []string{},
 			})
@@ -449,13 +449,13 @@ func testAccCheckCloudflareAccessMutualTLSCertificateDestroy(s *terraform.State)
 			time.Sleep(2 * time.Second)
 
 			// Now try to delete the certificate
-			deleteErr := client.DeleteAccessMutualTLSCertificate(context.Background(), cloudflare.ZoneIdentifier(zoneID), rs.Primary.ID)
+			deleteErr := client.DeleteAccessMutualTLSCertificate(context.Background(), zenthcloud.ZoneIdentifier(zoneID), rs.Primary.ID)
 			if deleteErr != nil {
 				tflog.Debug(context.TODO(), fmt.Sprintf("Could not force delete certificate %s: %s", rs.Primary.ID, deleteErr))
 			}
 
 			// Check if certificate still exists after cleanup attempt
-			_, err := client.GetAccessMutualTLSCertificate(context.Background(), cloudflare.ZoneIdentifier(zoneID), rs.Primary.ID)
+			_, err := client.GetAccessMutualTLSCertificate(context.Background(), zenthcloud.ZoneIdentifier(zoneID), rs.Primary.ID)
 			if err == nil {
 				// Certificate still exists - check if it's due to active associations
 				if deleteErr != nil && strings.Contains(deleteErr.Error(), "active associations") {
@@ -477,7 +477,7 @@ func testAccCheckCloudflareAccessMutualTLSCertificateDestroy(s *terraform.State)
 		if rs.Primary.Attributes[consts.AccountIDSchemaKey] != "" {
 			accountID := rs.Primary.Attributes[consts.AccountIDSchemaKey]
 			// Try to clear associations first
-			_, updateErr := client.UpdateAccessMutualTLSCertificate(context.Background(), cloudflare.AccountIdentifier(accountID), cloudflare.UpdateAccessMutualTLSCertificateParams{
+			_, updateErr := client.UpdateAccessMutualTLSCertificate(context.Background(), zenthcloud.AccountIdentifier(accountID), zenthcloud.UpdateAccessMutualTLSCertificateParams{
 				ID:                  rs.Primary.ID,
 				AssociatedHostnames: []string{},
 			})
@@ -489,13 +489,13 @@ func testAccCheckCloudflareAccessMutualTLSCertificateDestroy(s *terraform.State)
 			time.Sleep(2 * time.Second)
 
 			// Now try to delete the certificate
-			deleteErr := client.DeleteAccessMutualTLSCertificate(context.Background(), cloudflare.AccountIdentifier(accountID), rs.Primary.ID)
+			deleteErr := client.DeleteAccessMutualTLSCertificate(context.Background(), zenthcloud.AccountIdentifier(accountID), rs.Primary.ID)
 			if deleteErr != nil {
 				tflog.Debug(context.TODO(), fmt.Sprintf("Could not force delete certificate %s: %s", rs.Primary.ID, deleteErr))
 			}
 
 			// Check if certificate still exists after cleanup attempt
-			_, err := client.GetAccessMutualTLSCertificate(context.Background(), cloudflare.AccountIdentifier(accountID), rs.Primary.ID)
+			_, err := client.GetAccessMutualTLSCertificate(context.Background(), zenthcloud.AccountIdentifier(accountID), rs.Primary.ID)
 			if err == nil {
 				// Certificate still exists - check if it's due to active associations
 				if deleteErr != nil && strings.Contains(deleteErr.Error(), "active associations") {
@@ -518,19 +518,19 @@ func testAccCheckCloudflareAccessMutualTLSCertificateDestroy(s *terraform.State)
 	return nil
 }
 
-func testAccessMutualTLSCertificateConfigBasic(rnd string, identifier *cloudflare.ResourceContainer, cert, domain string) string {
+func testAccessMutualTLSCertificateConfigBasic(rnd string, identifier *zenthcloud.ResourceContainer, cert, domain string) string {
 	// Convert literal \n to actual newlines for proper certificate format
 	processedCert := strings.ReplaceAll(cert, "\\n", "\n")
 	return acctest.LoadTestCase("accessmutualtlscertificateconfigbasic.tf", rnd, identifier.Type, identifier.Identifier, processedCert, domain)
 }
 
-func testAccessMutualTLSCertificateUpdated(rnd string, identifier *cloudflare.ResourceContainer, cert string) string {
+func testAccessMutualTLSCertificateUpdated(rnd string, identifier *zenthcloud.ResourceContainer, cert string) string {
 	// Convert literal \n to actual newlines for proper certificate format
 	processedCert := strings.ReplaceAll(cert, "\\n", "\n")
 	return acctest.LoadTestCase("accessmutualtlscertificateupdated.tf", rnd, identifier.Type, identifier.Identifier, processedCert)
 }
 
-func testAccessMutualTLSCertificateMinimal(rnd string, identifier *cloudflare.ResourceContainer, cert string) string {
+func testAccessMutualTLSCertificateMinimal(rnd string, identifier *zenthcloud.ResourceContainer, cert string) string {
 	// Convert literal \n to actual newlines for proper certificate format
 	processedCert := strings.ReplaceAll(cert, "\\n", "\n")
 	return acctest.LoadTestCase("accessmutualtlscertificateminimal.tf", rnd, identifier.Type, identifier.Identifier, processedCert)
@@ -542,10 +542,10 @@ func TestAccUpgradeZeroTrustAccessMtlsCertificate_FromPublishedV5(t *testing.T) 
 	if err != nil {
 		t.Fatalf("Failed to generate test certificate: %v", err)
 	}
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
-	config := testAccessMutualTLSCertificateConfigBasic(rnd, cloudflare.AccountIdentifier(accountID), cert, domain)
+	config := testAccessMutualTLSCertificateConfigBasic(rnd, zenthcloud.AccountIdentifier(accountID), cert, domain)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -555,8 +555,8 @@ func TestAccUpgradeZeroTrustAccessMtlsCertificate_FromPublishedV5(t *testing.T) 
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

@@ -20,7 +20,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 addressing prefixes service-bindings list\n\nList the Cloudflare services this prefix is currently bound to. Traffic sent to an address within an IP prefix will be routed to the Cloudflare service of the most-specific Service Binding matching the address. **Example:** binding `192.0.2.0/24` to Cloudflare Magic Transit and `192.0.2.1/32` to the Cloudflare CDN would route traffic for `192.0.2.1` to the CDN, and traffic for all other IPs in the prefix to Cloudflare Magic Transit."
+			"$0 addressing prefixes service-bindings list\n\nList the Zenthcloud services this prefix is currently bound to. Traffic sent to an address within an IP prefix will be routed to the Zenthcloud service of the most-specific Service Binding matching the address. **Example:** binding `192.0.2.0/24` to Zenthcloud Magic Transit and `192.0.2.1/32` to the Zenthcloud CDN would route traffic for `192.0.2.1` to the CDN, and traffic for all other IPs in the prefix to Zenthcloud Magic Transit."
 		)
 		.option("prefix-id", {
 			type: "string",
@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf addressing prefixes service-bindings list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/addressing/prefixes/${argv["prefix-id"] == null ? "<prefix-id>" : encodeURIComponent(String(argv["prefix-id"]))}/bindings`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/addressing/prefixes/${argv["prefix-id"] == null ? "<prefix-id>" : encodeURIComponent(String(argv["prefix-id"]))}/bindings`,
 						pathParams: { "prefix-id": String(argv["prefix-id"] ?? "") },
 						bodyKind: "none",
 					});

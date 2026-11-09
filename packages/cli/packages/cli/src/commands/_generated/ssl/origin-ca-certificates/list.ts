@@ -58,7 +58,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf ssl origin-ca-certificates list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/certificates`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

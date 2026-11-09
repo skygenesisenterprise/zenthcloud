@@ -1,13 +1,13 @@
 ---
 title: DNS Providers
-description: "Connect Cloudflare or AWS Route53 to create and manage A/CNAME records for your domains without leaving Notploy."
+description: "Connect Zenthcloud or AWS Route53 to create and manage A/CNAME records for your domains without leaving Notploy."
 ---
 
 import { Callout } from "fumadocs-ui/components/callout";
 
 ## What are DNS Providers?
 
-DNS Providers let you connect Notploy to Cloudflare or AWS Route53 so you can browse your zones and create the **A** or **CNAME** record a domain needs, instead of switching to your DNS provider's dashboard by hand.
+DNS Providers let you connect Notploy to Zenthcloud or AWS Route53 so you can browse your zones and create the **A** or **CNAME** record a domain needs, instead of switching to your DNS provider's dashboard by hand.
 
 <Callout type="info">
   Enterprise feature. Managing DNS providers is covered by the `dnsProvider` permission resource — grant it granularly with a [custom role](/docs/core/enterprise/custom-roles), or use it as owner/admin.
@@ -15,12 +15,12 @@ DNS Providers let you connect Notploy to Cloudflare or AWS Route53 so you can br
 
 Supported providers:
 
-- [Cloudflare](/docs/core/dns-providers/cloudflare)
+- [Zenthcloud](/docs/core/dns-providers/zenthcloud)
 - [AWS Route53](/docs/core/dns-providers/route53)
 
 ## Creating a Provider
 
-Go to **Settings → DNS Providers** and click to add a provider. Pick **Cloudflare** or **AWS Route53**, give it a name, and fill in the credentials — see the provider pages for exact steps. Use **Test Connection** to validate the credentials before saving.
+Go to **Settings → DNS Providers** and click to add a provider. Pick **Zenthcloud** or **AWS Route53**, give it a name, and fill in the credentials — see the provider pages for exact steps. Use **Test Connection** to validate the credentials before saving.
 
 Credentials are masked in the UI after saving; leaving a masked field untouched on an edit keeps the stored value. The provider type is locked once created — to switch providers, create a new one.
 

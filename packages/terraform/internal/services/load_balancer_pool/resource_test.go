@@ -8,18 +8,18 @@ import (
 	"testing"
 	"time"
 
-	cfold "github.com/cloudflare/cloudflare-go"
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/load_balancers"
+	cfold "github.com/zenthcloud/zenthcloud-go"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/load_balancers"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pkg/errors"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 func TestMain(m *testing.M) {
@@ -27,38 +27,38 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_load_balancer_pool", &resource.Sweeper{
-		Name: "cloudflare_load_balancer_pool",
-		F:    testSweepCloudflareLoadBalancerPool,
+	resource.AddTestSweepers("zenthcloud_load_balancer_pool", &resource.Sweeper{
+		Name: "zenthcloud_load_balancer_pool",
+		F:    testSweepZenthcloudLoadBalancerPool,
 	})
 }
 
-func testSweepCloudflareLoadBalancerPool(r string) error {
+func testSweepZenthcloudLoadBalancerPool(r string) error {
 	ctx := context.Background()
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 		return clientErr
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping load balancer pools sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping load balancer pools sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
 	pools, err := client.ListLoadBalancerPools(ctx, cfold.AccountIdentifier(accountID), cfold.ListLoadBalancerPoolParams{})
 	if err != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Cloudflare Load Balancer Pools: %s", err))
+		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Zenthcloud Load Balancer Pools: %s", err))
 		return err
 	}
 
 	if len(pools) == 0 {
-		tflog.Debug(ctx, "[DEBUG] No Cloudflare Load Balancer Pools to sweep")
+		tflog.Debug(ctx, "[DEBUG] No Zenthcloud Load Balancer Pools to sweep")
 		return nil
 	}
 
-	tflog.Debug(ctx, fmt.Sprintf("[DEBUG] Found %d Cloudflare Load Balancer Pools to sweep", len(pools)))
+	tflog.Debug(ctx, fmt.Sprintf("[DEBUG] Found %d Zenthcloud Load Balancer Pools to sweep", len(pools)))
 
 	// Track deletion results
 	deleted := 0
@@ -70,7 +70,7 @@ func testSweepCloudflareLoadBalancerPool(r string) error {
 			continue
 		}
 
-		tflog.Info(ctx, fmt.Sprintf("Deleting Cloudflare Load Balancer Pool: %s (%s)", pool.Name, pool.ID))
+		tflog.Info(ctx, fmt.Sprintf("Deleting Zenthcloud Load Balancer Pool: %s (%s)", pool.Name, pool.ID))
 
 		err := client.DeleteLoadBalancerPool(ctx, cfold.AccountIdentifier(accountID), pool.ID)
 		if err != nil {
@@ -111,9 +111,9 @@ func testSweepCloudflareLoadBalancerPool(r string) error {
 
 // cleanupReferencingLoadBalancers attempts to delete all load balancers to clear dependencies
 func cleanupReferencingLoadBalancers(ctx context.Context, client *cfold.API, poolID string) error {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		return errors.New("CLOUDFLARE_ZONE_ID must be set for load balancer cleanup")
+		return errors.New("ZENTHCLOUD_ZONE_ID must be set for load balancer cleanup")
 	}
 
 	// Simple approach: delete all load balancers when we hit dependency issues
@@ -144,62 +144,62 @@ func cleanupReferencingLoadBalancers(ctx context.Context, client *cfold.API, poo
 	return nil
 }
 
-func TestAccCloudflareLoadBalancerPool_Basic(t *testing.T) {
+func TestAccZenthcloudLoadBalancerPool_Basic(t *testing.T) {
 	// multiple instances of this config would conflict but we only use it once
 	t.Parallel()
 	testStartTime := time.Now().UTC()
 	var loadBalancerPool cfold.LoadBalancerPool
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer_pool." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_load_balancer_pool." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerPoolDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerPoolDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerPoolConfigBasic(rnd, accountID),
+				Config: testAccCheckZenthcloudLoadBalancerPoolConfigBasic(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerPoolExists(name, &loadBalancerPool),
+					testAccCheckZenthcloudLoadBalancerPoolExists(name, &loadBalancerPool),
 					// dont check that specified values are set, this will be evident by lack of plan diff
 					// some values will get empty values
 					resource.TestCheckResourceAttr(name, "check_regions.#", "0"),
 					resource.TestCheckResourceAttr(name, "header.#", "0"),
 					// also expect api to generate some values
-					testAccCheckCloudflareLoadBalancerPoolDates(name, &loadBalancerPool, testStartTime),
+					testAccCheckZenthcloudLoadBalancerPoolDates(name, &loadBalancerPool, testStartTime),
 				),
 			},
 		},
 	})
 }
 
-// TestAccCloudflareLoadBalancerPool_NoLoadSheddingDrift verifies that a pool
+// TestAccZenthcloudLoadBalancerPool_NoLoadSheddingDrift verifies that a pool
 // config with no explicit load_shedding block does NOT produce drift on a
 // no-op re-apply. Without the UseStateForUnknown plan modifier on
 // load_shedding, Terraform fills in child Default values (default_percent=0,
 // session_percent=0) on every plan, causing a perpetual null -> 0 diff.
-func TestAccCloudflareLoadBalancerPool_NoLoadSheddingDrift(t *testing.T) {
+func TestAccZenthcloudLoadBalancerPool_NoLoadSheddingDrift(t *testing.T) {
 	t.Parallel()
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer_pool." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_load_balancer_pool." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerPoolDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerPoolDestroy,
 		Steps: []resource.TestStep{
 			{
 				// Step 1: create pool without load_shedding declared.
-				Config: testAccCheckCloudflareLoadBalancerPoolConfigBasic(rnd, accountID),
+				Config: testAccCheckZenthcloudLoadBalancerPoolConfigBasic(rnd, accountID),
 			},
 			{
 				// Step 2: re-apply identical config. Must be a no-op.
 				// Without UseStateForUnknown on load_shedding, this
 				// would plan an in-place update (null -> 0 on percent
 				// fields).
-				Config: testAccCheckCloudflareLoadBalancerPoolConfigBasic(rnd, accountID),
+				Config: testAccCheckZenthcloudLoadBalancerPoolConfigBasic(rnd, accountID),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(name, plancheck.ResourceActionNoop),
@@ -210,26 +210,26 @@ func TestAccCloudflareLoadBalancerPool_NoLoadSheddingDrift(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareLoadBalancerPool_OriginsOrderNoDrift verifies that a pool
+// TestAccZenthcloudLoadBalancerPool_OriginsOrderNoDrift verifies that a pool
 // whose origins are declared in a non-alphabetical order does NOT produce drift
 // on a no-op re-apply. The Load Balancing API canonically returns origins sorted
 // ascending by name; without reordering the API response back to the planned
 // order, Terraform sees the reordered list as a change on every plan
 // (GitHub #7179, previously #6140).
-func TestAccCloudflareLoadBalancerPool_OriginsOrderNoDrift(t *testing.T) {
+func TestAccZenthcloudLoadBalancerPool_OriginsOrderNoDrift(t *testing.T) {
 	t.Parallel()
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer_pool." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_load_balancer_pool." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerPoolDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerPoolDestroy,
 		Steps: []resource.TestStep{
 			{
 				// Step 1: create a pool with origins in descending name order.
-				Config: testAccCheckCloudflareLoadBalancerPoolConfigOriginsOrder(rnd, accountID),
+				Config: testAccCheckZenthcloudLoadBalancerPoolConfigOriginsOrder(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "origins.#", "2"),
 					// Planned (descending) order must be preserved in state.
@@ -241,7 +241,7 @@ func TestAccCloudflareLoadBalancerPool_OriginsOrderNoDrift(t *testing.T) {
 				// Step 2: re-apply identical config. Must be a no-op. Without
 				// the response reordering, this would plan an in-place update
 				// because the API returns origins sorted ascending by name.
-				Config: testAccCheckCloudflareLoadBalancerPoolConfigOriginsOrder(rnd, accountID),
+				Config: testAccCheckZenthcloudLoadBalancerPoolConfigOriginsOrder(rnd, accountID),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(name, plancheck.ResourceActionNoop),
@@ -252,24 +252,24 @@ func TestAccCloudflareLoadBalancerPool_OriginsOrderNoDrift(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareLoadBalancerPool_OriginSteeringLeastOutstandingRequests(t *testing.T) {
+func TestAccZenthcloudLoadBalancerPool_OriginSteeringLeastOutstandingRequests(t *testing.T) {
 	// multiple instances of this config would conflict but we only use it once
 	t.Parallel()
 	testStartTime := time.Now().UTC()
 	var loadBalancerPool cfold.LoadBalancerPool
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer_pool." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_load_balancer_pool." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerPoolDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerPoolDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerPoolConfigOriginSteeringLeastOutstandingRequests(rnd, accountID),
+				Config: testAccCheckZenthcloudLoadBalancerPoolConfigOriginSteeringLeastOutstandingRequests(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerPoolExists(name, &loadBalancerPool),
+					testAccCheckZenthcloudLoadBalancerPoolExists(name, &loadBalancerPool),
 					// dont check that specified values are set, this will be evident by lack of plan diff
 					// some values will get empty values
 					resource.TestCheckResourceAttr(name, "check_regions.#", "0"),
@@ -277,7 +277,7 @@ func TestAccCloudflareLoadBalancerPool_OriginSteeringLeastOutstandingRequests(t 
 					resource.TestCheckResourceAttr(name, "origin_steering.%", "1"),
 					resource.TestCheckResourceAttr(name, "origin_steering.policy", "least_outstanding_requests"),
 					// also expect api to generate some values
-					testAccCheckCloudflareLoadBalancerPoolDates(name, &loadBalancerPool, testStartTime),
+					testAccCheckZenthcloudLoadBalancerPoolDates(name, &loadBalancerPool, testStartTime),
 				),
 			},
 			// Import
@@ -291,24 +291,24 @@ func TestAccCloudflareLoadBalancerPool_OriginSteeringLeastOutstandingRequests(t 
 	})
 }
 
-func TestAccCloudflareLoadBalancerPool_OriginSteeringLeastConnections(t *testing.T) {
+func TestAccZenthcloudLoadBalancerPool_OriginSteeringLeastConnections(t *testing.T) {
 	// multiple instances of this config would conflict but we only use it once
 	t.Parallel()
 	testStartTime := time.Now().UTC()
 	var loadBalancerPool cfold.LoadBalancerPool
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer_pool." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_load_balancer_pool." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerPoolDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerPoolDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerPoolConfigOriginSteeringLeastConnections(rnd, accountID),
+				Config: testAccCheckZenthcloudLoadBalancerPoolConfigOriginSteeringLeastConnections(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerPoolExists(name, &loadBalancerPool),
+					testAccCheckZenthcloudLoadBalancerPoolExists(name, &loadBalancerPool),
 					// dont check that specified values are set, this will be evident by lack of plan diff
 					// some values will get empty values
 					resource.TestCheckResourceAttr(name, "check_regions.#", "0"),
@@ -316,14 +316,14 @@ func TestAccCloudflareLoadBalancerPool_OriginSteeringLeastConnections(t *testing
 					resource.TestCheckResourceAttr(name, "origin_steering.%", "1"),
 					resource.TestCheckResourceAttr(name, "origin_steering.policy", "least_connections"),
 					// also expect api to generate some values
-					testAccCheckCloudflareLoadBalancerPoolDates(name, &loadBalancerPool, testStartTime),
+					testAccCheckZenthcloudLoadBalancerPoolDates(name, &loadBalancerPool, testStartTime),
 				),
 			},
 		},
 	})
 }
 
-func TestAccCloudflareLoadBalancerPool_VirtualNetworkID(t *testing.T) {
+func TestAccZenthcloudLoadBalancerPool_VirtualNetworkID(t *testing.T) {
 	//
 	// Note: We need to first set up a valid vnet that covers the address "192.0.2.1" or the LB API will complain with:
 	// --> "virtual_network_id does not belong to tunnel route that covers origin IP: validation failed".
@@ -336,56 +336,56 @@ func TestAccCloudflareLoadBalancerPool_VirtualNetworkID(t *testing.T) {
 	var tunnelVirtualNetwork cfold.TunnelVirtualNetwork
 	var loadBalancerPool cfold.LoadBalancerPool
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	vnetResID := utils.GenerateRandomResourceName()
 	tunnelResID := utils.GenerateRandomResourceName()
 	tunnelRouteResID := utils.GenerateRandomResourceName()
 	poolResID := utils.GenerateRandomResourceName()
 
-	vnetName := "cloudflare_zero_trust_tunnel_cloudflared_virtual_network." + vnetResID
-	poolName := "cloudflare_load_balancer_pool." + poolResID
+	vnetName := "zenthcloud_zero_trust_tunnel_zenthcloudd_virtual_network." + vnetResID
+	poolName := "zenthcloud_load_balancer_pool." + poolResID
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerPoolDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerPoolDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerPoolConfigVirtualNetworkID(accountID, vnetResID, tunnelResID, tunnelRouteResID, poolResID),
+				Config: testAccCheckZenthcloudLoadBalancerPoolConfigVirtualNetworkID(accountID, vnetResID, tunnelResID, tunnelRouteResID, poolResID),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareTunnelVirtualNetworkExists(vnetName, &tunnelVirtualNetwork),
-					testAccCheckCloudflareLoadBalancerPoolExists(poolName, &loadBalancerPool),
+					testAccCheckZenthcloudTunnelVirtualNetworkExists(vnetName, &tunnelVirtualNetwork),
+					testAccCheckZenthcloudLoadBalancerPoolExists(poolName, &loadBalancerPool),
 					// check that virtual network ID is the same on the virtual network and load balancer pool
-					testAccCheckCloudflareLoadBalancerPoolVirtualNetworkMatch(vnetName, poolName),
+					testAccCheckZenthcloudLoadBalancerPoolVirtualNetworkMatch(vnetName, poolName),
 					// dont check that specified values are set, this will be evident by lack of plan diff
 					// some values will get empty values
 					//// resource.TestCheckResourceAttr(poolName, "check_regions.#", "0"),
 					//// resource.TestCheckResourceAttr(poolName, "header.#", "0"),
 					// also expect api to generate some values
-					testAccCheckCloudflareLoadBalancerPoolDates(poolName, &loadBalancerPool, testStartTime),
+					testAccCheckZenthcloudLoadBalancerPoolDates(poolName, &loadBalancerPool, testStartTime),
 				),
 			},
 		},
 	})
 }
 
-func TestAccCloudflareLoadBalancerPool_PatchBehavior(t *testing.T) {
+func TestAccZenthcloudLoadBalancerPool_PatchBehavior(t *testing.T) {
 	t.Parallel()
 	testStartTime := time.Now().UTC()
 	var loadBalancerPool cfold.LoadBalancerPool
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer_pool." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_load_balancer_pool." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerPoolDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerPoolDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerPoolConfigBasic(rnd, accountID),
+				Config: testAccCheckZenthcloudLoadBalancerPoolConfigBasic(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerPoolExists(name, &loadBalancerPool),
+					testAccCheckZenthcloudLoadBalancerPoolExists(name, &loadBalancerPool),
 					resource.TestCheckResourceAttr(name, "name", fmt.Sprintf("my-tf-pool-basic-%s", rnd)),
 					resource.TestCheckResourceAttr(name, "enabled", "true"),
 					resource.TestCheckResourceAttr(name, "latitude", "12.3"),
@@ -393,14 +393,14 @@ func TestAccCloudflareLoadBalancerPool_PatchBehavior(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "origins.#", "1"),
 					resource.TestCheckResourceAttr(name, "origins.0.name", "example-1"),
 					resource.TestCheckResourceAttr(name, "origins.0.address", "192.0.2.1"),
-					testAccCheckCloudflareLoadBalancerPoolDates(name, &loadBalancerPool, testStartTime),
+					testAccCheckZenthcloudLoadBalancerPoolDates(name, &loadBalancerPool, testStartTime),
 				),
 			},
 			{
 				// Patch the load balancer pool with updated properties
-				Config: testAccCheckCloudflareLoadBalancerPoolConfigPatched(rnd, accountID),
+				Config: testAccCheckZenthcloudLoadBalancerPoolConfigPatched(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerPoolExists(name, &loadBalancerPool),
+					testAccCheckZenthcloudLoadBalancerPoolExists(name, &loadBalancerPool),
 					// Verify patched properties
 					resource.TestCheckResourceAttr(name, "name", fmt.Sprintf("my-tf-pool-patched-%s", rnd)),
 					resource.TestCheckResourceAttr(name, "description", "Patched load balancer pool"),
@@ -420,30 +420,30 @@ func TestAccCloudflareLoadBalancerPool_PatchBehavior(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "load_shedding.default_policy", "random"),
 					resource.TestCheckResourceAttr(name, "origin_steering.%", "1"),
 					resource.TestCheckResourceAttr(name, "origin_steering.policy", "random"),
-					testAccCheckCloudflareLoadBalancerPoolDates(name, &loadBalancerPool, testStartTime),
+					testAccCheckZenthcloudLoadBalancerPoolDates(name, &loadBalancerPool, testStartTime),
 				),
 			},
 		},
 	})
 }
 
-func TestAccCloudflareLoadBalancerPool_FullySpecified(t *testing.T) {
+func TestAccZenthcloudLoadBalancerPool_FullySpecified(t *testing.T) {
 	t.Parallel()
 	var loadBalancerPool cfold.LoadBalancerPool
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer_pool." + rnd
-	headerValue := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_load_balancer_pool." + rnd
+	headerValue := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerPoolDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerPoolDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerPoolConfigFullySpecified(rnd, headerValue, accountID),
+				Config: testAccCheckZenthcloudLoadBalancerPoolConfigFullySpecified(rnd, headerValue, accountID),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerPoolExists(name, &loadBalancerPool),
+					testAccCheckZenthcloudLoadBalancerPoolExists(name, &loadBalancerPool),
 					// checking our overrides of default values worked
 					resource.TestCheckResourceAttr(name, "enabled", "false"),
 					resource.TestCheckResourceAttr(name, "load_shedding.%", "4"),
@@ -467,31 +467,31 @@ func TestAccCloudflareLoadBalancerPool_FullySpecified(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareLoadBalancerPool_CreateAfterManualDestroy(t *testing.T) {
+func TestAccZenthcloudLoadBalancerPool_CreateAfterManualDestroy(t *testing.T) {
 	t.Parallel()
 	var loadBalancerPool cfold.LoadBalancerPool
 	var initialId string
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer_pool." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_load_balancer_pool." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerPoolDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerPoolDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerPoolConfigBasic(rnd, accountID),
+				Config: testAccCheckZenthcloudLoadBalancerPoolConfigBasic(rnd, accountID),
 				Check:  resource.ComposeTestCheckFunc(
 				// TODO: see if this is still actually needed
-				// testAccCheckCloudflareLoadBalancerPoolExists(name, &loadBalancerPool),
+				// testAccCheckZenthcloudLoadBalancerPoolExists(name, &loadBalancerPool),
 				// testAccManuallyDeleteLoadBalancerPool(name, &loadBalancerPool, &initialId),
 				),
 			},
 			{
-				Config: testAccCheckCloudflareLoadBalancerPoolConfigBasic(rnd, accountID),
+				Config: testAccCheckZenthcloudLoadBalancerPoolConfigBasic(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerPoolExists(name, &loadBalancerPool),
+					testAccCheckZenthcloudLoadBalancerPoolExists(name, &loadBalancerPool),
 					func(state *terraform.State) error {
 						if initialId == loadBalancerPool.ID {
 							return fmt.Errorf("load balancer pool id is unchanged even after we thought we deleted it ( %s )", loadBalancerPool.ID)
@@ -504,16 +504,16 @@ func TestAccCloudflareLoadBalancerPool_CreateAfterManualDestroy(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareLoadBalancerPoolDestroy(s *terraform.State) error {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+func testAccCheckZenthcloudLoadBalancerPoolDestroy(s *terraform.State) error {
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_load_balancer_pool" {
+		if rs.Type != "zenthcloud_load_balancer_pool" {
 			continue
 		}
 
@@ -526,8 +526,8 @@ func testAccCheckCloudflareLoadBalancerPoolDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckCloudflareLoadBalancerPoolExists(n string, loadBalancerPool *cfold.LoadBalancerPool) resource.TestCheckFunc {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+func testAccCheckZenthcloudLoadBalancerPoolExists(n string, loadBalancerPool *cfold.LoadBalancerPool) resource.TestCheckFunc {
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -540,7 +540,7 @@ func testAccCheckCloudflareLoadBalancerPoolExists(n string, loadBalancerPool *cf
 
 		client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 		if clientErr != nil {
-			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 		}
 		foundLoadBalancerPool, err := client.GetLoadBalancerPool(context.Background(), cfold.AccountIdentifier(accountID), rs.Primary.ID)
 		if err != nil {
@@ -552,17 +552,17 @@ func testAccCheckCloudflareLoadBalancerPoolExists(n string, loadBalancerPool *cf
 		return nil
 	}
 }
-func testAccCheckCloudflareLoadBalancerPoolVirtualNetworkMatch(vnetName, poolName string) resource.TestCheckFunc {
+func testAccCheckZenthcloudLoadBalancerPoolVirtualNetworkMatch(vnetName, poolName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		// fetch virtual network and pool and make sure they both reference the same virtual network ID
 		var tunnelVirtualNetwork cfold.TunnelVirtualNetwork
 		var loadBalancerPool cfold.LoadBalancerPool
 
-		if err := testAccCheckCloudflareTunnelVirtualNetworkExists(vnetName, &tunnelVirtualNetwork)(s); err != nil {
+		if err := testAccCheckZenthcloudTunnelVirtualNetworkExists(vnetName, &tunnelVirtualNetwork)(s); err != nil {
 			return err
 		}
 
-		if err := testAccCheckCloudflareLoadBalancerPoolExists(poolName, &loadBalancerPool)(s); err != nil {
+		if err := testAccCheckZenthcloudLoadBalancerPoolExists(poolName, &loadBalancerPool)(s); err != nil {
 			return err
 		}
 
@@ -589,7 +589,7 @@ func testAccCheckCloudflareLoadBalancerPoolVirtualNetworkMatch(vnetName, poolNam
 	}
 }
 
-func testAccCheckCloudflareLoadBalancerPoolDates(n string, loadBalancerPool *cfold.LoadBalancerPool, testStartTime time.Time) resource.TestCheckFunc {
+func testAccCheckZenthcloudLoadBalancerPoolDates(n string, loadBalancerPool *cfold.LoadBalancerPool, testStartTime time.Time) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, _ := s.RootModule().Resources[n]
 
@@ -619,7 +619,7 @@ func testAccManuallyDeleteLoadBalancerPool(name string, loadBalancerPool *cfold.
 		client := acctest.SharedClient()
 		*initialId = loadBalancerPool.ID
 		_, err := client.LoadBalancers.Pools.Delete(context.Background(), loadBalancerPool.ID, load_balancers.PoolDeleteParams{
-			AccountID: cloudflare.F(os.Getenv("CLOUDFLARE_ACCOUNT_ID")),
+			AccountID: zenthcloud.F(os.Getenv("ZENTHCLOUD_ACCOUNT_ID")),
 		})
 		if err != nil {
 			return err
@@ -629,36 +629,36 @@ func testAccManuallyDeleteLoadBalancerPool(name string, loadBalancerPool *cfold.
 }
 
 // using IPs from 192.0.2.0/24 as per RFC5737.
-func testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID string) string {
+func testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID string) string {
 	return acctest.LoadTestCase("loadbalancerpoolconfigbasic.tf", id, accountID)
 }
 
-func testAccCheckCloudflareLoadBalancerPoolConfigOriginsOrder(id, accountID string) string {
+func testAccCheckZenthcloudLoadBalancerPoolConfigOriginsOrder(id, accountID string) string {
 	return acctest.LoadTestCase("loadbalancerpoolconfigoriginsorder.tf", id, accountID)
 }
 
-func testAccCheckCloudflareLoadBalancerPoolConfigOriginSteeringLeastOutstandingRequests(id, accountID string) string {
+func testAccCheckZenthcloudLoadBalancerPoolConfigOriginSteeringLeastOutstandingRequests(id, accountID string) string {
 	return acctest.LoadTestCase("loadbalancerpoolconfigoriginsteeringleastoutstandingrequests.tf", id, accountID)
 }
 
-func testAccCheckCloudflareLoadBalancerPoolConfigOriginSteeringLeastConnections(id, accountID string) string {
+func testAccCheckZenthcloudLoadBalancerPoolConfigOriginSteeringLeastConnections(id, accountID string) string {
 	return acctest.LoadTestCase("loadbalancerpoolconfigoriginsteeringleastconnections.tf", id, accountID)
 }
 
-func testAccCheckCloudflareLoadBalancerPoolConfigVirtualNetworkID(accountID, vnetResID, tunnelResID, tunnelRouteResID, poolResID string) string {
+func testAccCheckZenthcloudLoadBalancerPoolConfigVirtualNetworkID(accountID, vnetResID, tunnelResID, tunnelRouteResID, poolResID string) string {
 	return acctest.LoadTestCase("loadbalancerpoolconfigvirtualnetworkid.tf", accountID, vnetResID, tunnelResID, tunnelRouteResID, poolResID)
 }
 
-func testAccCheckCloudflareLoadBalancerPoolConfigFullySpecified(id, headerValue, accountID string) string {
+func testAccCheckZenthcloudLoadBalancerPoolConfigFullySpecified(id, headerValue, accountID string) string {
 	return acctest.LoadTestCase("loadbalancerpoolconfigfullyspecified.tf", id, headerValue, accountID)
 	// TODO add field to config after creating monitor resource
 }
 
-func testAccCheckCloudflareLoadBalancerPoolConfigPatched(id, accountID string) string {
+func testAccCheckZenthcloudLoadBalancerPoolConfigPatched(id, accountID string) string {
 	return acctest.LoadTestCase("loadbalancerpoolconfigpatched.tf", id, accountID)
 }
 
-func testAccCheckCloudflareTunnelVirtualNetworkExists(name string, virtualNetwork *cfold.TunnelVirtualNetwork) resource.TestCheckFunc {
+func testAccCheckZenthcloudTunnelVirtualNetworkExists(name string, virtualNetwork *cfold.TunnelVirtualNetwork) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -671,7 +671,7 @@ func testAccCheckCloudflareTunnelVirtualNetworkExists(name string, virtualNetwor
 
 		client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 		if clientErr != nil {
-			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 		}
 		foundTunnelVirtualNetworks, err := client.ListTunnelVirtualNetworks(context.Background(), cfold.AccountIdentifier(rs.Primary.Attributes[consts.AccountIDSchemaKey]), cfold.TunnelVirtualNetworksListParams{
 			IsDeleted: cfold.BoolPtr(false),
@@ -690,17 +690,17 @@ func testAccCheckCloudflareTunnelVirtualNetworkExists(name string, virtualNetwor
 
 func TestAccUpgradeLoadBalancerPool_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
-	config := testAccCheckCloudflareLoadBalancerPoolConfigBasic(rnd, accountID)
+	config := testAccCheckZenthcloudLoadBalancerPoolConfigBasic(rnd, accountID)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

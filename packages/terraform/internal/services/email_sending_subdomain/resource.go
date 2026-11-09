@@ -8,12 +8,12 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/email_sending"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/email_sending"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -29,7 +29,7 @@ func NewResource() resource.Resource {
 
 // EmailSendingSubdomainResource defines the resource implementation.
 type EmailSendingSubdomainResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *EmailSendingSubdomainResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -41,12 +41,12 @@ func (r *EmailSendingSubdomainResource) Configure(ctx context.Context, req resou
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -74,7 +74,7 @@ func (r *EmailSendingSubdomainResource) Create(ctx context.Context, req resource
 	_, err = r.client.EmailSending.Subdomains.New(
 		ctx,
 		email_sending.SubdomainNewParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -124,7 +124,7 @@ func (r *EmailSendingSubdomainResource) Update(ctx context.Context, req resource
 		ctx,
 		data.Tag.ValueString(),
 		email_sending.SubdomainEditParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -161,7 +161,7 @@ func (r *EmailSendingSubdomainResource) Read(ctx context.Context, req resource.R
 		ctx,
 		data.Tag.ValueString(),
 		email_sending.SubdomainGetParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -200,7 +200,7 @@ func (r *EmailSendingSubdomainResource) Delete(ctx context.Context, req resource
 		ctx,
 		data.Tag.ValueString(),
 		email_sending.SubdomainDeleteParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
@@ -238,7 +238,7 @@ func (r *EmailSendingSubdomainResource) ImportState(ctx context.Context, req res
 		ctx,
 		path_subdomain_id,
 		email_sending.SubdomainGetParams{
-			ZoneID: cloudflare.F(path_zone_id),
+			ZoneID: zenthcloud.F(path_zone_id),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),

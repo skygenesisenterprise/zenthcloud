@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -27,7 +27,7 @@ var (
 // - Current v5 release: auto-updates with releases (internal.PackageVersion)
 //
 // For r2_bucket:
-// - Resource name unchanged (cloudflare_r2_bucket → cloudflare_r2_bucket)
+// - Resource name unchanged (zenthcloud_r2_bucket → zenthcloud_r2_bucket)
 // - New fields added: jurisdiction (default: "default"), storage_class (default: "Standard"), creation_date (computed)
 // - All existing fields preserved: id, name, account_id, location
 
@@ -73,7 +73,7 @@ func TestMigrateR2BucketBasic(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			bucketName := fmt.Sprintf("tf-test-r2-bucket-%s", rnd)
 			tmpDir := t.TempDir()
@@ -84,8 +84,8 @@ func TestMigrateR2BucketBasic(t *testing.T) {
 				{
 					// Step 1: Create with specific version
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -96,8 +96,8 @@ func TestMigrateR2BucketBasic(t *testing.T) {
 			// Step 2-4: Run migration with state normalization for v4→v5, or simple migration for v5→v5
 			migrationSteps := acctest.MigrationV2TestStepWithStateNormalization(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
 				// Verify existing fields are preserved
-				statecheck.ExpectKnownValue("cloudflare_r2_bucket."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-				statecheck.ExpectKnownValue("cloudflare_r2_bucket."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(bucketName)),
+				statecheck.ExpectKnownValue("zenthcloud_r2_bucket."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+				statecheck.ExpectKnownValue("zenthcloud_r2_bucket."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(bucketName)),
 				// Note: jurisdiction, storage_class, and creation_date are normalized after migration
 			})
 
@@ -140,7 +140,7 @@ func TestMigrateR2BucketWithLocation(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			bucketName := fmt.Sprintf("tf-test-r2-bucket-%s", rnd)
 			tmpDir := t.TempDir()
@@ -151,8 +151,8 @@ func TestMigrateR2BucketWithLocation(t *testing.T) {
 				{
 					// Step 1: Create with specific version
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -162,9 +162,9 @@ func TestMigrateR2BucketWithLocation(t *testing.T) {
 
 			// Step 2-4: Run migration with state normalization
 			migrationSteps := acctest.MigrationV2TestStepWithStateNormalization(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
-				statecheck.ExpectKnownValue("cloudflare_r2_bucket."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-				statecheck.ExpectKnownValue("cloudflare_r2_bucket."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(bucketName)),
-				statecheck.ExpectKnownValue("cloudflare_r2_bucket."+rnd, tfjsonpath.New("location"), knownvalue.StringExact("WNAM")),
+				statecheck.ExpectKnownValue("zenthcloud_r2_bucket."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+				statecheck.ExpectKnownValue("zenthcloud_r2_bucket."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(bucketName)),
+				statecheck.ExpectKnownValue("zenthcloud_r2_bucket."+rnd, tfjsonpath.New("location"), knownvalue.StringExact("WNAM")),
 			})
 
 			testSteps = append(testSteps, migrationSteps...)
@@ -183,7 +183,7 @@ func TestMigrateR2BucketWithLocation(t *testing.T) {
 
 // TestMigrateR2BucketMultiple tests migration of multiple R2 buckets in one config
 func TestMigrateR2BucketMultiple(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	rnd1 := rnd + "1"
 	rnd2 := rnd + "2"
@@ -199,8 +199,8 @@ func TestMigrateR2BucketMultiple(t *testing.T) {
 		{
 			// Step 1: Create with v4 provider
 			ExternalProviders: map[string]resource.ExternalProvider{
-				"cloudflare": {
-					Source:            "cloudflare/cloudflare",
+				"zenthcloud": {
+					Source:            "zenthcloud/zenthcloud",
 					VersionConstraint: version,
 				},
 			},
@@ -211,13 +211,13 @@ func TestMigrateR2BucketMultiple(t *testing.T) {
 	// Step 2-4: Run migration with state normalization
 	migrationSteps := acctest.MigrationV2TestStepWithStateNormalization(t, v4Config, tmpDir, version, sourceVer, targetVer, []statecheck.StateCheck{
 		// Verify first bucket
-		statecheck.ExpectKnownValue("cloudflare_r2_bucket."+rnd1, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-		statecheck.ExpectKnownValue("cloudflare_r2_bucket."+rnd1, tfjsonpath.New("name"), knownvalue.StringExact(bucketName1)),
+		statecheck.ExpectKnownValue("zenthcloud_r2_bucket."+rnd1, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+		statecheck.ExpectKnownValue("zenthcloud_r2_bucket."+rnd1, tfjsonpath.New("name"), knownvalue.StringExact(bucketName1)),
 
 		// Verify second bucket
-		statecheck.ExpectKnownValue("cloudflare_r2_bucket."+rnd2, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-		statecheck.ExpectKnownValue("cloudflare_r2_bucket."+rnd2, tfjsonpath.New("name"), knownvalue.StringExact(bucketName2)),
-		statecheck.ExpectKnownValue("cloudflare_r2_bucket."+rnd2, tfjsonpath.New("location"), knownvalue.StringExact("EEUR")),
+		statecheck.ExpectKnownValue("zenthcloud_r2_bucket."+rnd2, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+		statecheck.ExpectKnownValue("zenthcloud_r2_bucket."+rnd2, tfjsonpath.New("name"), knownvalue.StringExact(bucketName2)),
+		statecheck.ExpectKnownValue("zenthcloud_r2_bucket."+rnd2, tfjsonpath.New("location"), knownvalue.StringExact("EEUR")),
 	})
 
 	testSteps = append(testSteps, migrationSteps...)
@@ -248,7 +248,7 @@ func TestMigrateR2BucketVariousLocations(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			bucketName := fmt.Sprintf("tf-test-bucket-%s", rnd)
 			tmpDir := t.TempDir()
@@ -256,7 +256,7 @@ func TestMigrateR2BucketVariousLocations(t *testing.T) {
 			sourceVer, targetVer := acctest.InferMigrationVersions(version)
 
 			v4Config := fmt.Sprintf(`
-resource "cloudflare_r2_bucket" "%s" {
+resource "zenthcloud_r2_bucket" "%s" {
   account_id = "%s"
   name       = "%s"
   location   = "%s"
@@ -266,8 +266,8 @@ resource "cloudflare_r2_bucket" "%s" {
 				{
 					// Step 1: Create with v4 provider
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: version,
 						},
 					},
@@ -277,9 +277,9 @@ resource "cloudflare_r2_bucket" "%s" {
 
 			// Step 2-4: Run migration with state normalization
 			migrationSteps := acctest.MigrationV2TestStepWithStateNormalization(t, v4Config, tmpDir, version, sourceVer, targetVer, []statecheck.StateCheck{
-				statecheck.ExpectKnownValue("cloudflare_r2_bucket."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-				statecheck.ExpectKnownValue("cloudflare_r2_bucket."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(bucketName)),
-				statecheck.ExpectKnownValue("cloudflare_r2_bucket."+rnd, tfjsonpath.New("location"), knownvalue.StringExact(tc.location)),
+				statecheck.ExpectKnownValue("zenthcloud_r2_bucket."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+				statecheck.ExpectKnownValue("zenthcloud_r2_bucket."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(bucketName)),
+				statecheck.ExpectKnownValue("zenthcloud_r2_bucket."+rnd, tfjsonpath.New("location"), knownvalue.StringExact(tc.location)),
 			})
 
 			testSteps = append(testSteps, migrationSteps...)

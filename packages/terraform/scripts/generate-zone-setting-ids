@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Extracts valid zone setting IDs from the Cloudflare OpenAPI spec and injects
+Extracts valid zone setting IDs from the Zenthcloud OpenAPI spec and injects
 a markdown table into Terraform documentation templates.
 
 Usage:
@@ -206,9 +206,9 @@ def generate_markdown_table(settings):
     lines.append("")
     lines.append(
         "The following table lists all valid `setting_id` values. "
-        "Some settings may require a specific Cloudflare plan level. "
+        "Some settings may require a specific Zenthcloud plan level. "
         "For more details, see the "
-        "[API documentation](https://developers.cloudflare.com/api/resources/zones/subresources/settings/methods/list/)."
+        "[API documentation](https://github.com/skygenesisenterprise/zenthcloud)."
     )
     lines.append("")
     lines.append("| Setting ID | Value Type | Description |")

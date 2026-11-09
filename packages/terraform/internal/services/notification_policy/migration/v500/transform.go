@@ -5,7 +5,7 @@ package v500
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -13,7 +13,7 @@ import (
 
 // Transform converts source (legacy v4) state to target (current v5) state.
 // This function handles the complete v4 → v5 transformation.
-func Transform(ctx context.Context, source SourceCloudflareNotificationPolicyModel) (*TargetNotificationPolicyModel, diag.Diagnostics) {
+func Transform(ctx context.Context, source SourceZenthcloudNotificationPolicyModel) (*TargetNotificationPolicyModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Step 1: Validate required fields

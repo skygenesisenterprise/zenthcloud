@@ -1,10 +1,10 @@
 {
-  "name": "@cloudflare/kumo",
+  "name": "@zenthcloud/kumo",
   "version": "2.17.0",
   "private": false,
-  "description": "Kumo - Cloudflare's component library for building modern web applications",
+  "description": "Kumo - Zenthcloud's component library for building modern web applications",
   "keywords": [
-    "cloudflare",
+    "zenthcloud",
     "components",
     "design-system",
     "react",
@@ -13,7 +13,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cloudflare/kumo.git",
+    "url": "git+https://github.com/skygenesisenterprise/zenthcloud",
     "directory": "packages/kumo"
   },
   "bin": {
@@ -92,9 +92,9 @@
       "types": "./dist/components/clipboard-text.d.ts",
       "import": "./dist/components/clipboard-text.js"
     },
-    "./components/cloudflare-logo": {
-      "types": "./dist/components/cloudflare-logo.d.ts",
-      "import": "./dist/components/cloudflare-logo.js"
+    "./components/zenthcloud-logo": {
+      "types": "./dist/components/zenthcloud-logo.d.ts",
+      "import": "./dist/components/zenthcloud-logo.js"
     },
     "./components/code": {
       "types": "./dist/components/code.d.ts",
@@ -457,7 +457,7 @@
     "codegen:themes": "tsx scripts/theme-generator/index.ts",
     "migrate:tokens": "tsx scripts/theme-generator/migrate.ts",
     "codegen:primitives": "tsx scripts/generate-primitives.ts",
-    "codegen:registry": "pnpm --filter @cloudflare/kumo-docs-astro codegen:demos && tsx scripts/component-registry/index.ts",
+    "codegen:registry": "pnpm --filter @zenthcloud/kumo-docs-astro codegen:demos && tsx scripts/component-registry/index.ts",
     "lint": "pnpm run lint:oxlint",
     "lint:oxlint": "vp lint src/",
     "test": "CI=true vp test run --project=unit",

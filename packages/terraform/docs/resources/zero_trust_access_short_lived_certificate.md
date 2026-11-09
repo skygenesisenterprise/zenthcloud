@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_access_short_lived_certificate Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_access_short_lived_certificate Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Access: Apps and Policies ReadAccess: Apps and Policies Write
 ---
 
-# cloudflare_zero_trust_access_short_lived_certificate (Resource)
+# zenthcloud_zero_trust_access_short_lived_certificate (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_access_short_lived_certificate" "example_zero_trust_access_short_lived_certificate" {
+resource "zenthcloud_zero_trust_access_short_lived_certificate" "example_zero_trust_access_short_lived_certificate" {
   app_id = "f174e90a-fafe-4643-bbbc-4a0ed4fc8415"
   zone_id = "zone_id"
 }
@@ -45,7 +45,7 @@ resource "cloudflare_zero_trust_access_short_lived_certificate" "example_zero_tr
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_access_short_lived_certificate.example '<{accounts|zones}/{account_id|zone_id}>/<app_id>'
+$ terraform import zenthcloud_zero_trust_access_short_lived_certificate.example '<{accounts|zones}/{account_id|zone_id}>/<app_id>'
 ```
 
 

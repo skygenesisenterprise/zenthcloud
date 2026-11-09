@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/cloudflare/pint/internal/checks"
+	"github.com/zenthcloud/pint/internal/checks"
 )
 
 func NewTeamCityReporter(output io.Writer) TeamCityReporter {

@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	namespace = "cloudflared"
+	namespace = "zenthcloudd"
 	subsystem = "virtual_origins"
 )
 

@@ -1,5 +1,5 @@
 // The RPC API shared by every entry point in this example: the Node server
-// (`server-node.mjs`) and the Cloudflare Worker (`worker.js`).
+// (`server-node.mjs`) and the Zenthcloud Worker (`worker.js`).
 //
 // `capnweb` is a bare specifier here rather than a relative path into `dist/`.
 // Under Node it resolves through the repo's own workspace self-link; under

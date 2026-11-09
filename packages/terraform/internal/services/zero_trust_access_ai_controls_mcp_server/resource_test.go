@@ -6,10 +6,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -20,21 +20,21 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zero_trust_access_ai_controls_mcp_server", &resource.Sweeper{
-		Name: "cloudflare_zero_trust_access_ai_controls_mcp_server",
-		F:    testSweepCloudflareZeroTrustAccessAIControlsMcpServer,
+	resource.AddTestSweepers("zenthcloud_zero_trust_access_ai_controls_mcp_server", &resource.Sweeper{
+		Name: "zenthcloud_zero_trust_access_ai_controls_mcp_server",
+		F:    testSweepZenthcloudZeroTrustAccessAIControlsMcpServer,
 	})
 }
 
-func testSweepCloudflareZeroTrustAccessAIControlsMcpServer(r string) error {
+func testSweepZenthcloudZeroTrustAccessAIControlsMcpServer(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	serversResp, err := client.ZeroTrust.Access.AIControls.Mcp.Servers.List(
 		ctx,
 		zero_trust.AccessAIControlMcpServerListParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		},
 	)
 	if err != nil {
@@ -52,7 +52,7 @@ func testSweepCloudflareZeroTrustAccessAIControlsMcpServer(r string) error {
 			ctx,
 			server.ID,
 			zero_trust.AccessAIControlMcpServerDeleteParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			},
 		)
 		if err != nil {
@@ -64,16 +64,16 @@ func testSweepCloudflareZeroTrustAccessAIControlsMcpServer(r string) error {
 }
 
 func TestAccZeroTrustAccessAIControlsMcpServer_basic(t *testing.T) {
-	resourceName := "cloudflare_zero_trust_access_ai_controls_mcp_server.tf-test"
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	mcpUrl := "https://docs.mcp.cloudflare.com/mcp"
+	resourceName := "zenthcloud_zero_trust_access_ai_controls_mcp_server.tf-test"
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	mcpUrl := "https://github.com/skygenesisenterprise/zenthcloud"
 	name1 := "Test Server"
 	name2 := "Updated Test Server"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustAccessAIControlsMcpServerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustAccessAIControlsMcpServerDestroy,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
@@ -114,13 +114,13 @@ func TestAccZeroTrustAccessAIControlsMcpServer_basic(t *testing.T) {
 }
 
 func TestAccZeroTrustAccessAIControlsMcpServer_manualOAuth(t *testing.T) {
-	resourceName := "cloudflare_zero_trust_access_ai_controls_mcp_server.tf-test-manual"
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_zero_trust_access_ai_controls_mcp_server.tf-test-manual"
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustAccessAIControlsMcpServerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustAccessAIControlsMcpServerDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: acctest.LoadTestCase("manual_oauth.tf", accountID, "Manual OAuth Server", "test-secret-v1"),
@@ -161,12 +161,12 @@ func TestAccZeroTrustAccessAIControlsMcpServer_manualOAuth(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareZeroTrustAccessAIControlsMcpServerDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudZeroTrustAccessAIControlsMcpServerDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_zero_trust_access_ai_controls_mcp_server" {
+		if rs.Type != "zenthcloud_zero_trust_access_ai_controls_mcp_server" {
 			continue
 		}
 
@@ -174,7 +174,7 @@ func testAccCheckCloudflareZeroTrustAccessAIControlsMcpServerDestroy(s *terrafor
 			context.Background(),
 			rs.Primary.ID,
 			zero_trust.AccessAIControlMcpServerReadParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			},
 		)
 

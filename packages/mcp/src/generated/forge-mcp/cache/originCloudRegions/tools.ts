@@ -221,7 +221,7 @@ export const tools: readonly Tool[] = [
   {
     name: "cache_originCloudRegions_list",
     title: "List origin cloud region mappings",
-    description: "Returns all IP-to-cloud-region mappings configured for the zone with pagination support. Each mapping tells Cloudflare which cloud vendor and region hosts the origin at that IP, enabling the edge to route via the nearest Tiered Cache upper-tier co-located with that cloud provider. Returns an empty array when no mappings exist.\n\nGET /zones/{zone_id}/origin/cloud_regions",
+    description: "Returns all IP-to-cloud-region mappings configured for the zone with pagination support. Each mapping tells Zenthcloud which cloud vendor and region hosts the origin at that IP, enabling the edge to route via the nearest Tiered Cache upper-tier co-located with that cloud provider. Returns an empty array when no mappings exist.\n\nGET /zones/{zone_id}/origin/cloud_regions",
     inputSchema: {
       type: "object",
       properties: {

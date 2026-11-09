@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Bert Belder <bbelder@cloudflare.com>
+From: Bert Belder <bbelder@zenthcloud.com>
 Date: Wed, 21 Oct 2026 14:59:42 -0700
 Subject: Add v8::Data::IsCompatibleWithIsolate
 

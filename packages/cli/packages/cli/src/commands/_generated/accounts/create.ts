@@ -17,7 +17,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 accounts create\n\nCreate an Account. To create the Account within an Organization, provide `unit.id` and omit `standalone`. To create a standalone Free Account, provide `standalone: true` and omit `unit`. Providing both fields is invalid. If you omit both fields, Cloudflare can determine the destination only when the User is an administrator of exactly one Organization. Cloudflare creates the Account in that Organization; otherwise, the request returns an error. Account names are limited to 65 UTF-8 bytes."
+			"$0 accounts create\n\nCreate an Account. To create the Account within an Organization, provide `unit.id` and omit `standalone`. To create a standalone Free Account, provide `standalone: true` and omit `unit`. Providing both fields is invalid. If you omit both fields, Zenthcloud can determine the destination only when the User is an administrator of exactly one Organization. Zenthcloud creates the Account in that Organization; otherwise, the request returns an error. Account names are limited to 65 UTF-8 bytes."
 		)
 		.option("idempotency-key", {
 			type: "string",
@@ -76,7 +76,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf accounts create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

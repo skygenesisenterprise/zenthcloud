@@ -1,22 +1,22 @@
 ---
-page_title: "cloudflare_zero_trust_device_subnet Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_device_subnet Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
-  Cloudflare One Networks ReadCloudflare One Networks Write
+  Zenthcloud One Networks ReadZenthcloud One Networks Write
 ---
 
-# cloudflare_zero_trust_device_subnet (Data Source)
+# zenthcloud_zero_trust_device_subnet (Data Source)
 
 Accepted Permissions
 
-- `Cloudflare One Networks Read`
-- `Cloudflare One Networks Write`
+- `Zenthcloud One Networks Read`
+- `Zenthcloud One Networks Write`
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_device_subnet" "example_zero_trust_device_subnet" {
+data "zenthcloud_zero_trust_device_subnet" "example_zero_trust_device_subnet" {
   account_id = "699d98642c564d2e855e9661899b7252"
   subnet_id = "f70ff985-a4ef-4643-bbbc-4a0ed4fc8415"
 }
@@ -31,7 +31,7 @@ data "cloudflare_zero_trust_device_subnet" "example_zero_trust_device_subnet" {
 
 ### Optional
 
-- `account_id` (String) Cloudflare account ID
+- `account_id` (String) Zenthcloud account ID
 
 ### Read-Only
 
@@ -44,7 +44,7 @@ data "cloudflare_zero_trust_device_subnet" "example_zero_trust_device_subnet" {
 - `name` (String) A user-friendly name for the subnet.
 - `network` (String) The private IPv4 or IPv6 range defining the subnet, in CIDR notation.
 - `subnet_type` (String) The type of subnet.
-Available values: "cloudflare_source", "initial_resolved_ip", "warp".
+Available values: "zenthcloud_source", "initial_resolved_ip", "warp".
 
 <a id="nestedatt--capacity"></a>
 ### Nested Schema for `capacity`

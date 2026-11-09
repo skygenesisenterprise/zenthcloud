@@ -98,7 +98,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("precedence", {
 			type: "number",
 			description:
-				"Set the order of your rules. Lower values indicate higher precedence. At each processing phase, evaluate applicable rules in ascending order of this value. Refer to [Order of enforcement](http://developers.cloudflare.com/learning-paths/secure-internet-traffic/understand-policies/order-of-enforcement/#manage-precedence-with-terraform) to manage precedence via Terraform.",
+				"Set the order of your rules. Lower values indicate higher precedence. At each processing phase, evaluate applicable rules in ascending order of this value. Refer to [Order of enforcement](https://github.com/skygenesisenterprise/zenthcloud) to manage precedence via Terraform.",
 		})
 		.option("rule-settings-add-headers", {
 			type: "string",
@@ -391,10 +391,10 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 			description:
 				"Specify the internal DNS view identifier to pass to the internal DNS service.",
 		})
-		.option("rule-settings-resolve-dns-through-cloudflare", {
+		.option("rule-settings-resolve-dns-through-zenthcloud", {
 			type: "boolean",
 			description:
-				"Enable to send queries that match the policy to Cloudflare's default 1.1.1.1 DNS resolver. Cannot set when 'dns_resolvers' specified or 'resolve_dns_internally' is set. Only valid when a rule's action set to 'resolve'. Settable only for `dns_resolver` rules.",
+				"Enable to send queries that match the policy to Zenthcloud's default 1.1.1.1 DNS resolver. Cannot set when 'dns_resolvers' specified or 'resolve_dns_internally' is set. Only valid when a rule's action set to 'resolve'. Settable only for `dns_resolver` rules.",
 		})
 		.option("rule-settings-set-headers", {
 			type: "string",
@@ -560,7 +560,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 						"rule-settings-redirect-include-context",
 						"rule-settings-redirect-preserve-path-and-query",
 						"rule-settings-resolve-dns-internally-fallback",
-						"rule-settings-resolve-dns-through-cloudflare",
+						"rule-settings-resolve-dns-through-zenthcloud",
 						"rule-settings-untrusted-cert-action",
 						"dry-run",
 					],
@@ -573,7 +573,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust gateway rules create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/gateway/rules`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/gateway/rules`,
 						pathParams: {},
 						bodyKind: "json",
 						body:
@@ -809,8 +809,8 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 														"text"
 													),
 												},
-												resolve_dns_through_cloudflare:
-													argv["rule-settings-resolve-dns-through-cloudflare"],
+												resolve_dns_through_zenthcloud:
+													argv["rule-settings-resolve-dns-through-zenthcloud"],
 												set_headers: parseJsonMap(
 													argv["rule-settings-set-headers"],
 													"rule-settings-set-headers"
@@ -1118,8 +1118,8 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 									"text"
 								),
 							},
-							resolve_dns_through_cloudflare:
-								argv["rule-settings-resolve-dns-through-cloudflare"],
+							resolve_dns_through_zenthcloud:
+								argv["rule-settings-resolve-dns-through-zenthcloud"],
 							set_headers: parseJsonMap(
 								argv["rule-settings-set-headers"],
 								"rule-settings-set-headers"

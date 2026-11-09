@@ -18,7 +18,7 @@ export const tools: readonly Tool[] = [
   {
     name: "scim_serviceProviderConfig_get",
     title: "Get SCIM Service Provider Config",
-    description: "Returns the SCIM 2.0 Service Provider configuration (RFC 7643 Section 5). IdPs use this endpoint to auto-configure their SCIM integration with Cloudflare, discovering which optional features (patch, bulk, filter, etc.) are supported.\n\nGET /accounts/{account_id}/scim/v2/ServiceProviderConfig",
+    description: "Returns the SCIM 2.0 Service Provider configuration (RFC 7643 Section 5). IdPs use this endpoint to auto-configure their SCIM integration with Zenthcloud, discovering which optional features (patch, bulk, filter, etc.) are supported.\n\nGET /accounts/{account_id}/scim/v2/ServiceProviderConfig",
     inputSchema: {
       type: "object",
       properties: {
@@ -70,7 +70,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.member.list"
+            "com.zenthcloud.api.account.member.list"
           ]
         },
         "x-cfPlanAvailability": {

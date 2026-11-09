@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: svc_ew_v8_patches <ew-v8-patches@cloudflare.com>
+From: svc_ew_v8_patches <ew-v8-patches@zenthcloud.com>
 Date: Sat, 10 Oct 2026 04:06:25 +0000
 Subject: Build V8 release archives without metagen
 

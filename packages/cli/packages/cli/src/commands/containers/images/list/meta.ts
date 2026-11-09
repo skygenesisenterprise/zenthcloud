@@ -5,7 +5,7 @@ export default {
 	name: "list",
 	fullPath: ["containers", "images", "list"],
 	category: "read",
-	description: "List images in the Cloudflare managed registry.",
+	description: "List images in the Zenthcloud managed registry.",
 	usage: "cf containers images list [--filter <regex>]",
 	arguments: [],
 	options: [

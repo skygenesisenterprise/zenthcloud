@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_account_dns_settings_internal_view Resource - Cloudflare"
+page_title: "zenthcloud_account_dns_settings_internal_view Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   DNS View ReadDNS View Write
 ---
 
-# cloudflare_account_dns_settings_internal_view (Resource)
+# zenthcloud_account_dns_settings_internal_view (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_account_dns_settings_internal_view" "example_account_dns_settings_internal_view" {
+resource "zenthcloud_account_dns_settings_internal_view" "example_account_dns_settings_internal_view" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name = "my view"
   zones = ["372e67954025e0ba6aaa6d586b9e0b59"]
@@ -43,7 +43,7 @@ resource "cloudflare_account_dns_settings_internal_view" "example_account_dns_se
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_account_dns_settings_internal_view.example '<account_id>/<view_id>'
+$ terraform import zenthcloud_account_dns_settings_internal_view.example '<account_id>/<view_id>'
 ```
 
 

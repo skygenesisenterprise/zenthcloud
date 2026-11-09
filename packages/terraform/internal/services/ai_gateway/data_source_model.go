@@ -5,9 +5,9 @@ package ai_gateway
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/ai_gateway"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/ai_gateway"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -52,7 +52,7 @@ type AIGatewayDataSourceModel struct {
 
 func (m *AIGatewayDataSourceModel) toReadParams(_ context.Context) (params ai_gateway.AIGatewayGetParams, diags diag.Diagnostics) {
 	params = ai_gateway.AIGatewayGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -60,11 +60,11 @@ func (m *AIGatewayDataSourceModel) toReadParams(_ context.Context) (params ai_ga
 
 func (m *AIGatewayDataSourceModel) toListParams(_ context.Context) (params ai_gateway.AIGatewayListParams, diags diag.Diagnostics) {
 	params = ai_gateway.AIGatewayListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Filter.Search.IsNull() {
-		params.Search = cloudflare.F(m.Filter.Search.ValueString())
+		params.Search = zenthcloud.F(m.Filter.Search.ValueString())
 	}
 
 	return

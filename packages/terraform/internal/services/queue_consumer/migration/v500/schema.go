@@ -4,13 +4,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-// SourceCloudflareQueueConsumerSchema returns the schema for cloudflare_queue_consumer at schema_version=0.
+// SourceZenthcloudQueueConsumerSchema returns the schema for zenthcloud_queue_consumer at schema_version=0.
 // This resource was introduced in v5 with no v4 predecessor. The source schema matches the original
 // v5 schema before explicit versioning was applied (i.e., before Version: GetSchemaVersion(1, 500)).
 //
 // Note: PlanModifiers and Validators are intentionally omitted — they are not stored in state
 // and are not needed for state parsing.
-func SourceCloudflareQueueConsumerSchema() schema.Schema {
+func SourceZenthcloudQueueConsumerSchema() schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"account_id": schema.StringAttribute{

@@ -64,7 +64,7 @@ export const tunnel_mesh_configuration_request_body: JSONObject = {
 export const tunnel_mesh_local_config: JSONObject = {
   "properties": {
     "vips": {
-      "description": "VIPs to assign on the CloudflareWARP interface.",
+      "description": "VIPs to assign on the ZenthcloudWARP interface.",
       "items": {
         "$ref": "#/$defs/tunnel_mesh_vip_entry"
       },

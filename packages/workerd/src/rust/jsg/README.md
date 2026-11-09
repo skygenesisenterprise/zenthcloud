@@ -206,7 +206,7 @@ impl that visits through it must handle). The `jsg::` cells below detach a value
   and the std cells are `Traced` only for types that hold no GC references
   (`jsg::HoldsNoGcReferences`). The exception is a resource's `Drop` impl, which has
   `&mut self`: a reference it moves out of a field and keeps must be cloned or dropped there.
-  See [#7976](https://github.com/cloudflare/workerd/issues/7976).
+  See [#7976](https://github.com/skygenesisenterprise/zenthcloud).
 - Don't put a `jsg::v8::Global` in anything GC traces. A `Global` is always strong, so if it
   points back at its owner (for example function data that holds the function itself), neither
   is ever collected. Use a `TracedGlobal`. The compiler rejects a `Global` field in a resource,

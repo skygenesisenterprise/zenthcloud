@@ -20,7 +20,7 @@ import (
 )
 
 var (
-	issuer = fmt.Sprintf(cloudflareAccessCertsURL, "testteam")
+	issuer = fmt.Sprintf(zenthcloudAccessCertsURL, "testteam")
 )
 
 type accessTokenClaims struct {

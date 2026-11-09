@@ -7,7 +7,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 )
 
@@ -22,7 +22,7 @@ func main() {
 	flag.Parse()
 
 	opts := providerserver.ServeOpts{
-		Address: "registry.terraform.io/cloudflare/cloudflare",
+		Address: "registry.terraform.io/zenthcloud/zenthcloud",
 		Debug:   debug,
 	}
 

@@ -6,11 +6,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/ai_search"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/ai_search"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -24,24 +24,24 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_ai_search_instance", &resource.Sweeper{
-		Name: "cloudflare_ai_search_instance",
-		F:    testSweepCloudflareAISearchInstances,
+	resource.AddTestSweepers("zenthcloud_ai_search_instance", &resource.Sweeper{
+		Name: "zenthcloud_ai_search_instance",
+		F:    testSweepZenthcloudAISearchInstances,
 	})
 }
 
-func testSweepCloudflareAISearchInstances(r string) error {
+func testSweepZenthcloudAISearchInstances(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping AI Search instance sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping AI Search instance sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
 	instances, err := client.AISearch.Instances.List(ctx, ai_search.InstanceListParams{
-		AccountID: cloudflare.F(accountID),
+		AccountID: zenthcloud.F(accountID),
 	})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch AI Search instances: %s", err))
@@ -60,7 +60,7 @@ func testSweepCloudflareAISearchInstances(r string) error {
 
 		tflog.Info(ctx, fmt.Sprintf("Deleting AI Search instance: %s (account: %s)", instance.ID, accountID))
 		_, err := client.AISearch.Instances.Delete(ctx, instance.ID, ai_search.InstanceDeleteParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete AI Search instance %s: %s", instance.ID, err))
@@ -72,17 +72,17 @@ func testSweepCloudflareAISearchInstances(r string) error {
 	return nil
 }
 
-func TestAccCloudflareAISearchInstance_Basic(t *testing.T) {
+func TestAccZenthcloudAISearchInstance_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_ai_search_instance." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_ai_search_instance." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAISearchInstanceDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAISearchInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: acctest.LoadTestCase("aisearchinstancebasic.tf", rnd, accountID),
@@ -115,11 +115,11 @@ func TestAccCloudflareAISearchInstance_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareAISearchInstanceDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudAISearchInstanceDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_ai_search_instance" {
+		if rs.Type != "zenthcloud_ai_search_instance" {
 			continue
 		}
 
@@ -128,7 +128,7 @@ func testAccCheckCloudflareAISearchInstanceDestroy(s *terraform.State) error {
 			context.Background(),
 			rs.Primary.ID,
 			ai_search.InstanceReadParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			},
 		)
 		if err == nil {

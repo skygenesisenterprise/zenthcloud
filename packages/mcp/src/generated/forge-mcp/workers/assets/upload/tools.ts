@@ -24,7 +24,7 @@ export const tools: readonly Tool[] = [
   {
     name: "workers_assets_upload_create",
     title: "Upload Worker Assets",
-    description: "Upload Worker assets ahead of creating a Worker version. To learn more about the direct uploads of assets, see https://developers.cloudflare.com/workers/static-assets/direct-upload/.\n\nPOST /accounts/{account_id}/workers/assets/upload",
+    description: "Upload Worker assets ahead of creating a Worker version. To learn more about the direct uploads of assets, see https://github.com/skygenesisenterprise/zenthcloud\n\nPOST /accounts/{account_id}/workers/assets/upload",
     inputSchema: {
       type: "object",
       properties: {
@@ -132,7 +132,7 @@ export const tools: readonly Tool[] = [
   {
     name: "workers_assets_upload_createSession",
     title: "Create Worker Assets Upload Session",
-    description: "Start uploading a collection of assets for use in a Worker version. To learn more about the direct uploads of assets, see https://developers.cloudflare.com/workers/static-assets/direct-upload/.\n\nPOST /accounts/{account_id}/workers/scripts/{script_name}/assets-upload-session",
+    description: "Start uploading a collection of assets for use in a Worker version. To learn more about the direct uploads of assets, see https://github.com/skygenesisenterprise/zenthcloud\n\nPOST /accounts/{account_id}/workers/scripts/{script_name}/assets-upload-session",
     inputSchema: {
       type: "object",
       properties: {

@@ -14,15 +14,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/cloudflare-go"
+	"github.com/zenthcloud/zenthcloud-go"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -41,13 +41,13 @@ var v4ZoneScopedConfig string
 //go:embed testdata/v5_zone_scoped.tf
 var v5ZoneScopedConfig string
 
-// clearAPIToken unsets CLOUDFLARE_API_TOKEN for Access tests (require API_KEY + EMAIL).
+// clearAPIToken unsets ZENTHCLOUD_API_TOKEN for Access tests (require API_KEY + EMAIL).
 func clearAPIToken(t *testing.T) {
 	t.Helper()
-	originalToken := os.Getenv("CLOUDFLARE_API_TOKEN")
+	originalToken := os.Getenv("ZENTHCLOUD_API_TOKEN")
 	if originalToken != "" {
-		os.Unsetenv("CLOUDFLARE_API_TOKEN")
-		t.Cleanup(func() { os.Setenv("CLOUDFLARE_API_TOKEN", originalToken) })
+		os.Unsetenv("ZENTHCLOUD_API_TOKEN")
+		t.Cleanup(func() { os.Setenv("ZENTHCLOUD_API_TOKEN", originalToken) })
 	}
 }
 
@@ -92,7 +92,7 @@ func waitForCertificateCleanup(t *testing.T, isZone bool) {
 
 	client, err := acctest.SharedV1Client()
 	if err != nil {
-		t.Fatalf("Failed to create Cloudflare client: %s", err)
+		t.Fatalf("Failed to create Zenthcloud client: %s", err)
 	}
 
 	maxWait := 30 * time.Second
@@ -100,13 +100,13 @@ func waitForCertificateCleanup(t *testing.T, isZone bool) {
 	deadline := time.Now().Add(maxWait)
 
 	for time.Now().Before(deadline) {
-		var certs []cloudflare.AccessMutualTLSCertificate
+		var certs []zenthcloud.AccessMutualTLSCertificate
 		var listErr error
 
 		if isZone {
-			certs, _, listErr = client.ListAccessMutualTLSCertificates(context.Background(), cloudflare.ZoneIdentifier(os.Getenv("CLOUDFLARE_ZONE_ID")), cloudflare.ListAccessMutualTLSCertificatesParams{})
+			certs, _, listErr = client.ListAccessMutualTLSCertificates(context.Background(), zenthcloud.ZoneIdentifier(os.Getenv("ZENTHCLOUD_ZONE_ID")), zenthcloud.ListAccessMutualTLSCertificatesParams{})
 		} else {
-			certs, _, listErr = client.ListAccessMutualTLSCertificates(context.Background(), cloudflare.AccountIdentifier(os.Getenv("CLOUDFLARE_ACCOUNT_ID")), cloudflare.ListAccessMutualTLSCertificatesParams{})
+			certs, _, listErr = client.ListAccessMutualTLSCertificates(context.Background(), zenthcloud.AccountIdentifier(os.Getenv("ZENTHCLOUD_ACCOUNT_ID")), zenthcloud.ListAccessMutualTLSCertificatesParams{})
 		}
 
 		if listErr != nil {
@@ -150,11 +150,11 @@ func TestMigrateAccessMTLSCertificateBasic(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := fmt.Sprintf("tf-test-mtls-%s", rnd)
 			tmpDir := t.TempDir()
-			resourceName := "cloudflare_zero_trust_access_mtls_certificate." + rnd
+			resourceName := "zenthcloud_zero_trust_access_mtls_certificate." + rnd
 
 			testCert, err := generateTestCertificate(fmt.Sprintf("basic-%s", rnd))
 			if err != nil {
@@ -173,8 +173,8 @@ func TestMigrateAccessMTLSCertificateBasic(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -232,11 +232,11 @@ func TestMigrateAccessMTLSCertificateZoneScoped(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := fmt.Sprintf("tf-test-mtls-zone-%s", rnd)
 			tmpDir := t.TempDir()
-			resourceName := "cloudflare_zero_trust_access_mtls_certificate." + rnd
+			resourceName := "zenthcloud_zero_trust_access_mtls_certificate." + rnd
 
 			testCert, err := generateTestCertificate(fmt.Sprintf("zone-%s", rnd))
 			if err != nil {
@@ -255,8 +255,8 @@ func TestMigrateAccessMTLSCertificateZoneScoped(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},

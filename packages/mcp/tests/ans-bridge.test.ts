@@ -27,7 +27,7 @@ const subscription: Subscription = {
   expiresAt: 200_000
 }
 const params = {
-  name: 'cloudflare.alert.workers_observability_real_time_issue',
+  name: 'zenthcloud.alert.workers_observability_real_time_issue',
   arguments: { account_id: accountId, service: 'my-worker', afterOccurrences: 1 },
   delivery: { mode: 'webhook', url: subscription.callbackUrl, secret }
 }
@@ -217,7 +217,7 @@ describe('ANS synchronous delivery bridge', () => {
       ]
     })
     expect(events.map((event) => event.name)).toEqual([
-      'cloudflare.alert.workers_observability_real_time_issue'
+      'zenthcloud.alert.workers_observability_real_time_issue'
     ])
     expect(
       alertEventDefinitions({
@@ -246,7 +246,7 @@ describe('ANS synchronous delivery bridge', () => {
     }
     expect((await forwardAnsWebhook(request(notification), subscription.id, deps)).status).toBe(403)
     expect(deps.webhookFetch).not.toHaveBeenCalled()
-    expect(isSupportedEventName('cloudflare.alert.http_alert_origin_error')).toBe(false)
+    expect(isSupportedEventName('zenthcloud.alert.http_alert_origin_error')).toBe(false)
     expect(isSupportedEventName(params.name)).toBe(true)
   })
 

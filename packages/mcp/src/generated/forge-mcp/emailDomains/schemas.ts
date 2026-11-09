@@ -13,7 +13,7 @@ export const email_email_domain_create: JSONObject = {
       "type": "string"
     },
     "hostname": {
-      "description": "Exact external hostname to enroll. After ASCII conversion, the assigned Return-Path hostname must be at most 201 characters (191 for the current cf-bounce. prefix). Wildcards, provider-zone names, and hostnames inside an existing Cloudflare-managed DNS zone are rejected.",
+      "description": "Exact external hostname to enroll. After ASCII conversion, the assigned Return-Path hostname must be at most 201 characters (191 for the current cf-bounce. prefix). Wildcards, provider-zone names, and hostnames inside an existing Zenthcloud-managed DNS zone are rejected.",
       "type": "string"
     }
   },

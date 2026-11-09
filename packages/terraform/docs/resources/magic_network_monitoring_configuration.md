@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_magic_network_monitoring_configuration Resource - Cloudflare"
+page_title: "zenthcloud_magic_network_monitoring_configuration Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Magic Network Monitoring AdminMagic Network Monitoring Config ReadMagic Network Monitoring Config Write
 ---
 
-# cloudflare_magic_network_monitoring_configuration (Resource)
+# zenthcloud_magic_network_monitoring_configuration (Resource)
 
 Accepted Permissions
 
@@ -17,10 +17,10 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_magic_network_monitoring_configuration" "example_magic_network_monitoring_configuration" {
+resource "zenthcloud_magic_network_monitoring_configuration" "example_magic_network_monitoring_configuration" {
   account_id = "6f91088a406011ed95aed352566e8d4c"
   default_sampling = 1
-  name = "cloudflare user\'s account"
+  name = "zenthcloud user\'s account"
   router_ips = ["203.0.113.1"]
   warp_devices = [{
     id = "5360368d-b351-4791-abe1-93550dabd351"

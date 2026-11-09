@@ -1,4 +1,4 @@
-resource "cloudflare_device_settings_policy" "%[1]s_profile" {
+resource "zenthcloud_device_settings_policy" "%[1]s_profile" {
   account_id  = "%[2]s"
   name        = "Deprecated Name Profile"
   description = "Using deprecated resource name"
@@ -6,9 +6,9 @@ resource "cloudflare_device_settings_policy" "%[1]s_profile" {
   precedence  = %[3]d
 }
 
-resource "cloudflare_fallback_domain" "%[1]s" {
+resource "zenthcloud_fallback_domain" "%[1]s" {
   account_id = "%[2]s"
-  policy_id  = cloudflare_device_settings_policy.%[1]s_profile.id
+  policy_id  = zenthcloud_device_settings_policy.%[1]s_profile.id
 
   domains {
     suffix      = "deprecated.example.com"

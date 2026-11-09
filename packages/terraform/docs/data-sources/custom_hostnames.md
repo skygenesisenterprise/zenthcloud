@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_custom_hostnames Data Source - Cloudflare"
+page_title: "zenthcloud_custom_hostnames Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   SSL and Certificates ReadSSL and Certificates Write
 ---
 
-# cloudflare_custom_hostnames (Data Source)
+# zenthcloud_custom_hostnames (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_custom_hostnames" "example_custom_hostnames" {
+data "zenthcloud_custom_hostnames" "example_custom_hostnames" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   id = "0d89c70d-ad9f-4843-b99f-6cc0252067e9"
   certificate_authority = "google"

@@ -8,12 +8,12 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/spectrum"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/spectrum"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -29,7 +29,7 @@ func NewResource() resource.Resource {
 
 // SpectrumApplicationResource defines the resource implementation.
 type SpectrumApplicationResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *SpectrumApplicationResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -41,12 +41,12 @@ func (r *SpectrumApplicationResource) Configure(ctx context.Context, req resourc
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -74,7 +74,7 @@ func (r *SpectrumApplicationResource) Create(ctx context.Context, req resource.C
 	_, err = r.client.Spectrum.Apps.New(
 		ctx,
 		spectrum.AppNewParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -123,7 +123,7 @@ func (r *SpectrumApplicationResource) Update(ctx context.Context, req resource.U
 		ctx,
 		data.ID.ValueString(),
 		spectrum.AppUpdateParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -159,7 +159,7 @@ func (r *SpectrumApplicationResource) Read(ctx context.Context, req resource.Rea
 		ctx,
 		data.ID.ValueString(),
 		spectrum.AppGetParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -197,7 +197,7 @@ func (r *SpectrumApplicationResource) Delete(ctx context.Context, req resource.D
 		ctx,
 		data.ID.ValueString(),
 		spectrum.AppDeleteParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
@@ -234,7 +234,7 @@ func (r *SpectrumApplicationResource) ImportState(ctx context.Context, req resou
 		ctx,
 		path_app_id,
 		spectrum.AppGetParams{
-			ZoneID: cloudflare.F(path_zone_id),
+			ZoneID: zenthcloud.F(path_zone_id),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),

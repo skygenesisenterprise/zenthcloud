@@ -2,7 +2,7 @@ import type {
 	IntersectionType,
 	Type,
 	UnionType,
-} from "@cloudflare/forge/plugin";
+} from "@zenthcloud/forge/plugin";
 
 const MAX_FIELDS = 5;
 const MAX_ALTERNATIVES = 3;

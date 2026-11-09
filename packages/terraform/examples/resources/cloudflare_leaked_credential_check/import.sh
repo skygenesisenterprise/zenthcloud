@@ -1,1 +1,0 @@
-$ terraform import cloudflare_leaked_credential_check.example '<zone_id>'

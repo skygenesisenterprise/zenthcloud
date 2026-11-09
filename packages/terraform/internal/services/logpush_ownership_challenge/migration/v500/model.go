@@ -8,13 +8,13 @@ import (
 // Source Models (Legacy Provider - v4.x SDKv2)
 // ============================================================================
 
-// SourceCloudflareLogpushOwnershipChallengeModel represents the source
-// cloudflare_logpush_ownership_challenge state structure from v4.x SDKv2 provider.
+// SourceZenthcloudLogpushOwnershipChallengeModel represents the source
+// zenthcloud_logpush_ownership_challenge state structure from v4.x SDKv2 provider.
 // Schema version: 0 (SDKv2 default)
-// Resource type: cloudflare_logpush_ownership_challenge (unchanged in v5)
+// Resource type: zenthcloud_logpush_ownership_challenge (unchanged in v5)
 //
-// Reference: cloudflare-terraform-v4/internal/sdkv2provider/schema_cloudflare_logpush_ownership_challenge.go
-type SourceCloudflareLogpushOwnershipChallengeModel struct {
+// Reference: zenthcloud-terraform-v4/internal/sdkv2provider/schema_zenthcloud_logpush_ownership_challenge.go
+type SourceZenthcloudLogpushOwnershipChallengeModel struct {
 	AccountID                  types.String `tfsdk:"account_id"`
 	ZoneID                     types.String `tfsdk:"zone_id"`
 	DestinationConf            types.String `tfsdk:"destination_conf"`
@@ -26,7 +26,7 @@ type SourceCloudflareLogpushOwnershipChallengeModel struct {
 // ============================================================================
 
 // TargetLogpushOwnershipChallengeModel represents the target
-// cloudflare_logpush_ownership_challenge state structure (v500).
+// zenthcloud_logpush_ownership_challenge state structure (v500).
 // This matches the model in the parent package (internal/services/logpush_ownership_challenge/model.go).
 //
 // Key changes from v4:

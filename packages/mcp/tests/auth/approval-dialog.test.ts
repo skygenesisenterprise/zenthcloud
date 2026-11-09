@@ -8,7 +8,7 @@ import {
 } from '../../src/auth/workers-oauth-utils'
 
 function render(options: Partial<ApprovalDialogOptions> = {}): Promise<string> {
-  const response = renderApprovalDialog(new Request('https://mcp.cloudflare.com/authorize'), {
+  const response = renderApprovalDialog(new Request('https://github.com/skygenesisenterprise/zenthcloud'), {
     consent: {
       clientId: 'opaque-client-id',
       clientName: 'Test client',
@@ -17,7 +17,7 @@ function render(options: Partial<ApprovalDialogOptions> = {}): Promise<string> {
       redirectIsLoopback: false,
       scope: []
     },
-    server: { name: 'Cloudflare API MCP' },
+    server: { name: 'Zenthcloud API MCP' },
     handle: 'test-consent-handle',
     headers: new Headers({ 'Set-Cookie': '__Host-oauth-consent-0123456789abcdef=test' }),
     scopeTemplates: {},
@@ -48,7 +48,7 @@ function visibleText(html: string): string {
 }
 
 describe('OAuth page colour scheme', () => {
-  // Cloudflare's authorization screen, which follows the consent page, is always light.
+  // Zenthcloud's authorization screen, which follows the consent page, is always light.
   it('renders the consent page in light mode regardless of the system preference', async () => {
     const body = await render()
     expect(body).toContain('color-scheme: light;')

@@ -18,7 +18,7 @@ import type {
 	Group as ForgeGroup,
 	Method as ForgeMethod,
 	Json,
-} from "@cloudflare/forge/plugin";
+} from "@zenthcloud/forge/plugin";
 
 /** A method: one operation, as a leaf command. */
 export interface Method {

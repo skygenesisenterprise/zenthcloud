@@ -1,7 +1,7 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -12,7 +12,7 @@ import (
 
 // SourceSpectrumApplicationModel represents the legacy resource state from v4.x provider.
 // Schema version: 1 (v4 provider schema version)
-// Resource type: cloudflare_spectrum_application
+// Resource type: zenthcloud_spectrum_application
 //
 // Key differences from v5:
 // - dns, origin_dns, edge_ips stored as arrays (MaxItems:1 blocks)
@@ -65,7 +65,7 @@ type SourceOriginPortRangeModel struct {
 
 // TargetSpectrumApplicationModel represents the current resource state from v5.x+ provider.
 // Schema version: 500
-// Resource type: cloudflare_spectrum_application
+// Resource type: zenthcloud_spectrum_application
 type TargetSpectrumApplicationModel struct {
 	ID               types.String                                 `tfsdk:"id"`
 	ZoneID           types.String                                 `tfsdk:"zone_id"`

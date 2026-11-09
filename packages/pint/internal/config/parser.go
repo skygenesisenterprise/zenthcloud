@@ -6,7 +6,7 @@ import (
 
 	"github.com/prometheus/common/model"
 
-	"github.com/cloudflare/pint/internal/parser"
+	"github.com/zenthcloud/pint/internal/parser"
 )
 
 const (

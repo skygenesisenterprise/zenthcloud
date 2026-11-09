@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_secrets_store Resource - Cloudflare"
+page_title: "zenthcloud_secrets_store Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Secrets Store ReadSecrets Store Write
 ---
 
-# cloudflare_secrets_store (Resource)
+# zenthcloud_secrets_store (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_secrets_store" "example_secrets_store" {
+resource "zenthcloud_secrets_store" "example_secrets_store" {
   account_id = "985e105f4ecef8ad9ca31a8372d0c353"
   name = "service_x_keys"
 }
@@ -47,7 +47,7 @@ delete a non-empty store returns 409.
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_secrets_store.example '<account_id>/<store_id>'
+$ terraform import zenthcloud_secrets_store.example '<account_id>/<store_id>'
 ```
 
 

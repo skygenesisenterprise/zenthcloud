@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_regional_tiered_cache Resource - Cloudflare"
+page_title: "zenthcloud_regional_tiered_cache Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zone ReadZone Settings ReadZone Settings WriteZone Write
 ---
 
-# cloudflare_regional_tiered_cache (Resource)
+# zenthcloud_regional_tiered_cache (Resource)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_regional_tiered_cache" "example_regional_tiered_cache" {
+resource "zenthcloud_regional_tiered_cache" "example_regional_tiered_cache" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   value = "on"
 }
@@ -47,7 +47,7 @@ Available values: "on", "off".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_regional_tiered_cache.example '<zone_id>'
+$ terraform import zenthcloud_regional_tiered_cache.example '<zone_id>'
 ```
 
 

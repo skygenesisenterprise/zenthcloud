@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf user tokens delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/user/tokens/${argv["token-id"] == null ? "<token-id>" : encodeURIComponent(String(argv["token-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["token-id"] == null ? "<token-id>" : encodeURIComponent(String(argv["token-id"]))}`,
 						pathParams: { "token-id": String(argv["token-id"] ?? "") },
 						bodyKind: "none",
 					});

@@ -5,8 +5,8 @@ package account_subscription
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -113,7 +113,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						Computed:    true,
 					},
 					"externally_managed": schema.BoolAttribute{
-						Description: "Whether this rate plan is managed externally from Cloudflare.",
+						Description: "Whether this rate plan is managed externally from Zenthcloud.",
 						Computed:    true,
 					},
 					"is_contract": schema.BoolAttribute{

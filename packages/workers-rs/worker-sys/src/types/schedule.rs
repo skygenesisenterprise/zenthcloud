@@ -13,7 +13,7 @@ extern "C" {
     pub fn cron(this: &ScheduledEvent) -> Result<String, JsValue>;
 }
 
-/// [Context](https://developers.cloudflare.com/workers/runtime-apis/scheduled-event#syntax-module-worker)
+/// [Context](https://github.com/skygenesisenterprise/zenthcloud)
 #[wasm_bindgen]
 extern "C" {
     #[wasm_bindgen(extends=js_sys::Object)]

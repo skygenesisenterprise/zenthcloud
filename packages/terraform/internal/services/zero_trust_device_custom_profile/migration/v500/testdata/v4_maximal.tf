@@ -1,4 +1,4 @@
-resource "cloudflare_zero_trust_device_profiles" "%s" {
+resource "zenthcloud_zero_trust_device_profiles" "%s" {
   account_id  = "%s"
   name        = "Maximal Custom Profile"
   description = "Test custom profile with all optional fields"

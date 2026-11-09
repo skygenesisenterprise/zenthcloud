@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -18,13 +18,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zone_cache_reserve", &resource.Sweeper{
-		Name: "cloudflare_zone_cache_reserve",
-		F:    testSweepCloudflareZoneCacheReserve,
+	resource.AddTestSweepers("zenthcloud_zone_cache_reserve", &resource.Sweeper{
+		Name: "zenthcloud_zone_cache_reserve",
+		F:    testSweepZenthcloudZoneCacheReserve,
 	})
 }
 
-func testSweepCloudflareZoneCacheReserve(r string) error {
+func testSweepZenthcloudZoneCacheReserve(r string) error {
 	ctx := context.Background()
 	// Zone Cache Reserve is a zone-level caching configuration setting.
 	// It's a singleton setting per zone, not something that accumulates.
@@ -33,10 +33,10 @@ func testSweepCloudflareZoneCacheReserve(r string) error {
 	return nil
 }
 
-func TestAccCloudflareZoneCacheReserve_Basic(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudZoneCacheReserve_Basic(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zone_cache_reserve.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zone_cache_reserve.%s", rnd)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
@@ -45,35 +45,35 @@ func TestAccCloudflareZoneCacheReserve_Basic(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareZoneCacheReserveConfig(zoneID, rnd, "on"),
+				Config: testAccZenthcloudZoneCacheReserveConfig(zoneID, rnd, "on"),
 				Check: resource.ComposeTestCheckFunc(
-					// testAccCheckCloudflareZoneCacheReserveValuesUpdated(zoneID, true),
+					// testAccCheckZenthcloudZoneCacheReserveValuesUpdated(zoneID, true),
 					resource.TestCheckResourceAttrSet(name, consts.ZoneIDSchemaKey),
 					resource.TestCheckResourceAttr(name, "value", "on"),
 				),
 			},
 			{
-				Config: testAccCloudflareZoneCacheReserveConfig(zoneID, rnd, "off"),
+				Config: testAccZenthcloudZoneCacheReserveConfig(zoneID, rnd, "off"),
 				Check: resource.ComposeTestCheckFunc(
-					// testAccCheckCloudflareZoneCacheReserveValuesUpdated(zoneID, false),
+					// testAccCheckZenthcloudZoneCacheReserveValuesUpdated(zoneID, false),
 					resource.TestCheckResourceAttrSet(name, consts.ZoneIDSchemaKey),
 					resource.TestCheckResourceAttr(name, "value", "off"),
 				),
 			},
 		},
-		// CheckDestroy: testAccCheckCloudflareZoneCacheReserveDestroy(zoneID),
+		// CheckDestroy: testAccCheckZenthcloudZoneCacheReserveDestroy(zoneID),
 	})
 }
 
-// func testAccCheckCloudflareZoneCacheReserveValuesUpdated(zoneID string, enable bool) resource.TestCheckFunc {
+// func testAccCheckZenthcloudZoneCacheReserveValuesUpdated(zoneID string, enable bool) resource.TestCheckFunc {
 // 	return func(s *terraform.State) error {
 // 		client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 // 		if clientErr != nil {
-// 			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+// 			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 // 		}
 
-// 		params := cloudflare.GetCacheReserveParams{}
-// 		output, err := client.GetCacheReserve(context.Background(), cloudflare.ZoneIdentifier(zoneID), params)
+// 		params := zenthcloud.GetCacheReserveParams{}
+// 		output, err := client.GetCacheReserve(context.Background(), zenthcloud.ZoneIdentifier(zoneID), params)
 // 		if err != nil {
 // 			return fmt.Errorf("unable to read Cache Reserve for zone %q: %w", zoneID, err)
 // 		}
@@ -92,15 +92,15 @@ func TestAccCloudflareZoneCacheReserve_Basic(t *testing.T) {
 // 	}
 // }
 
-// func testAccCheckCloudflareZoneCacheReserveDestroy(zoneID string) resource.TestCheckFunc {
+// func testAccCheckZenthcloudZoneCacheReserveDestroy(zoneID string) resource.TestCheckFunc {
 // 	return func(s *terraform.State) error {
 // 		client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 // 		if clientErr != nil {
-// 			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+// 			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 // 		}
 
-// 		params := cloudflare.GetCacheReserveParams{}
-// 		output, err := client.GetCacheReserve(context.Background(), cloudflare.ZoneIdentifier(zoneID), params)
+// 		params := zenthcloud.GetCacheReserveParams{}
+// 		output, err := client.GetCacheReserve(context.Background(), zenthcloud.ZoneIdentifier(zoneID), params)
 // 		if err != nil {
 // 			return fmt.Errorf("unable to read Cache Reserve for zone %q: %w", zoneID, err)
 // 		}
@@ -115,25 +115,25 @@ func TestAccCloudflareZoneCacheReserve_Basic(t *testing.T) {
 // 	}
 // }
 
-// func testAccCloudflareZoneCacheReserveUpdate(t *testing.T, zoneID string, enable bool) {
+// func testAccZenthcloudZoneCacheReserveUpdate(t *testing.T, zoneID string, enable bool) {
 // 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 // 	if clientErr != nil {
-// 		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+// 		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 // 	}
 
-// 	params := cloudflare.UpdateCacheReserveParams{
+// 	params := zenthcloud.UpdateCacheReserveParams{
 // 		Value: cacheReserveDisabled,
 // 	}
 // 	if enable {
 // 		params.Value = cacheReserveEnabled
 // 	}
 
-// 	_, err := client.UpdateCacheReserve(context.Background(), cloudflare.ZoneIdentifier(zoneID), params)
+// 	_, err := client.UpdateCacheReserve(context.Background(), zenthcloud.ZoneIdentifier(zoneID), params)
 // 	if err != nil {
 // 		t.Errorf("unable to set Cache Reserve for zone %q: %s", zoneID, err)
 // 	}
 // }
 
-func testAccCloudflareZoneCacheReserveConfig(zoneID, name, enable string) string {
+func testAccZenthcloudZoneCacheReserveConfig(zoneID, name, enable string) string {
 	return acctest.LoadTestCase("zonecachereserveconfig.tf", zoneID, name, enable)
 }

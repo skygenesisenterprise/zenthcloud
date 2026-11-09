@@ -217,24 +217,24 @@ func UpgradeFromV1(ctx context.Context, req resource.UpgradeStateRequest, resp *
 	tflog.Info(ctx, "State upgrade from schema_version=1 completed")
 }
 
-// MoveFromAccessApplication handles moves from cloudflare_access_application (v4) to cloudflare_zero_trust_access_application (v5).
+// MoveFromAccessApplication handles moves from zenthcloud_access_application (v4) to zenthcloud_zero_trust_access_application (v5).
 // This is triggered when users use the `moved` block (Terraform 1.8+):
 //
 //	moved {
-//	    from = cloudflare_access_application.example
-//	    to   = cloudflare_zero_trust_access_application.example
+//	    from = zenthcloud_access_application.example
+//	    to   = zenthcloud_zero_trust_access_application.example
 //	}
 func MoveFromAccessApplication(ctx context.Context, req resource.MoveStateRequest, resp *resource.MoveStateResponse) {
-	// Verify source is cloudflare_access_application from cloudflare provider
-	if req.SourceTypeName != "cloudflare_access_application" {
+	// Verify source is zenthcloud_access_application from zenthcloud provider
+	if req.SourceTypeName != "zenthcloud_access_application" {
 		return
 	}
 
-	if !isCloudflareProvider(req.SourceProviderAddress) {
+	if !isZenthcloudProvider(req.SourceProviderAddress) {
 		return
 	}
 
-	tflog.Info(ctx, "Starting state move from cloudflare_access_application to cloudflare_zero_trust_access_application",
+	tflog.Info(ctx, "Starting state move from zenthcloud_access_application to zenthcloud_zero_trust_access_application",
 		map[string]interface{}{
 			"source_type":           req.SourceTypeName,
 			"source_schema_version": req.SourceSchemaVersion,
@@ -258,11 +258,11 @@ func MoveFromAccessApplication(ctx context.Context, req resource.MoveStateReques
 	// Set the v5 state
 	resp.Diagnostics.Append(resp.TargetState.Set(ctx, v5State)...)
 
-	tflog.Info(ctx, "State move from cloudflare_access_application to cloudflare_zero_trust_access_application completed successfully")
+	tflog.Info(ctx, "State move from zenthcloud_access_application to zenthcloud_zero_trust_access_application completed successfully")
 }
 
-// isCloudflareProvider checks if the provider address is the Cloudflare provider.
-func isCloudflareProvider(addr string) bool {
-	return strings.Contains(addr, "cloudflare/cloudflare") ||
-		strings.Contains(addr, "registry.terraform.io/cloudflare")
+// isZenthcloudProvider checks if the provider address is the Zenthcloud provider.
+func isZenthcloudProvider(addr string) bool {
+	return strings.Contains(addr, "zenthcloud/zenthcloud") ||
+		strings.Contains(addr, "registry.terraform.io/zenthcloud")
 }

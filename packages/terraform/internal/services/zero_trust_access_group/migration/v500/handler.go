@@ -12,7 +12,7 @@ import (
 
 // UpgradeFromV0 handles state upgrades from v0 to v500.
 // This is triggered for resources that were created with schema version 0
-// (either from the old cloudflare_access_group or early cloudflare_zero_trust_access_group).
+// (either from the old zenthcloud_access_group or early zenthcloud_zero_trust_access_group).
 //
 // NOTE: When called from the parent package dispatcher (PriorSchema=nil), req.State is empty
 // and we must unmarshal from req.RawState using the v4 source schema directly.

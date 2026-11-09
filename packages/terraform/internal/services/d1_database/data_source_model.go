@@ -5,9 +5,9 @@ package d1_database
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/d1"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/d1"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -42,8 +42,8 @@ func (m *D1DatabaseDataSourceModel) toReadParams(_ context.Context) (params d1.D
 	}
 
 	params = d1.DatabaseGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
-		Fields:    cloudflare.F(mFields),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
+		Fields:    zenthcloud.F(mFields),
 	}
 
 	return
@@ -51,11 +51,11 @@ func (m *D1DatabaseDataSourceModel) toReadParams(_ context.Context) (params d1.D
 
 func (m *D1DatabaseDataSourceModel) toListParams(_ context.Context) (params d1.DatabaseListParams, diags diag.Diagnostics) {
 	params = d1.DatabaseListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Filter.Name.IsNull() {
-		params.Name = cloudflare.F(m.Filter.Name.ValueString())
+		params.Name = zenthcloud.F(m.Filter.Name.ValueString())
 	}
 
 	return

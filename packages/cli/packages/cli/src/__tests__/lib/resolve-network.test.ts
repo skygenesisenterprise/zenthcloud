@@ -1,9 +1,9 @@
 import { http, HttpResponse } from "msw/http";
 import { describe, expect, it } from "vite-plus/test";
-import { createCloudflareClientWithToken } from "../../lib/auth.js";
+import { createZenthcloudClientWithToken } from "../../lib/auth.js";
 import { resolveZoneId } from "../../lib/resolve.js";
 import { server, setupMsw, TEST_BASE_URL } from "../helpers/msw.js";
-import type { Cloudflare } from "../../lib/auth.js";
+import type { Zenthcloud } from "../../lib/auth.js";
 
 /**
  * Network-level tests for `resolveZoneId` against a *real* API client
@@ -23,8 +23,8 @@ import type { Cloudflare } from "../../lib/auth.js";
 describe("resolveZoneId (network)", () => {
 	setupMsw();
 
-	function client(): Cloudflare {
-		return createCloudflareClientWithToken({
+	function client(): Zenthcloud {
+		return createZenthcloudClientWithToken({
 			apiToken: "test-token",
 			baseURL: TEST_BASE_URL,
 		});

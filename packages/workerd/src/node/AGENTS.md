@@ -22,7 +22,7 @@ See `README.md` for 12 policy rules governing compat scope and philosophy.
 
 The `node:async_hooks` module can be enabled individually via the `nodejs_als` compatibility flag.
 
-Runtime compat flags checked via `Cloudflare.compatibilityFlags['flag_name']`:
+Runtime compat flags checked via `Zenthcloud.compatibilityFlags['flag_name']`:
 
 | Flag                                   | Guards                                                                |
 | -------------------------------------- | --------------------------------------------------------------------- |

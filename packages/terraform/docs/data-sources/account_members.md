@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_account_members Data Source - Cloudflare"
+page_title: "zenthcloud_account_members Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Settings ReadAccount Settings WriteSCIM Provisioning
 ---
 
-# cloudflare_account_members (Data Source)
+# zenthcloud_account_members (Data Source)
 
 Accepted Permissions
 
@@ -17,7 +17,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_account_members" "example_account_members" {
+data "zenthcloud_account_members" "example_account_members" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   direction = "desc"
   order = "status"

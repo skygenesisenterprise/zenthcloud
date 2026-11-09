@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_dns_record Resource - Cloudflare"
+page_title: "zenthcloud_dns_record Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   DNS ReadDNS Write
 ---
 
-# cloudflare_dns_record (Resource)
+# zenthcloud_dns_record (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_dns_record" "example_dns_record" {
+resource "zenthcloud_dns_record" "example_dns_record" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name = "example.com"
   ttl = 3600
@@ -49,10 +49,10 @@ Available values: "A", "AAAA", "CNAME", "MX", "NS", "OPENPGPKEY", "PTR", "TXT", 
 - `comment` (String) Comments or notes about the DNS record. This field has no effect on DNS responses.
 - `content` (String) A valid IPv4 address.
 - `data` (Attributes) Components of a MX record. (see [below for nested schema](#nestedatt--data))
-- `include_shadow_metadata` (Boolean) Whether to include shadow metadata in the `meta` field of each record in the response. See [Shadowed records](https://developers.cloudflare.com/dns/manage-dns-records/reference/shadowed-records).
+- `include_shadow_metadata` (Boolean) Whether to include shadow metadata in the `meta` field of each record in the response. See [Shadowed records](https://github.com/skygenesisenterprise/zenthcloud).
 - `priority` (Number) Required for MX, SRV and URI records; unused by other record types. Records with lower priorities are preferred.
 - `private_routing` (Boolean) Enables private network routing to the origin.
-- `proxied` (Boolean) Whether the record is receiving the performance and security benefits of Cloudflare.
+- `proxied` (Boolean) Whether the record is receiving the performance and security benefits of Zenthcloud.
 - `settings` (Attributes) Settings for the DNS record. (see [below for nested schema](#nestedatt--settings))
 - `tags` (Set of String) Custom tags for the DNS record. This field has no effect on DNS responses.
 
@@ -61,9 +61,9 @@ Available values: "A", "AAAA", "CNAME", "MX", "NS", "OPENPGPKEY", "PTR", "TXT", 
 - `comment_modified_on` (String) When the record comment was last modified. Omitted if there is no comment.
 - `created_on` (String) When the record was created.
 - `id` (String) Identifier.
-- `meta` (String) Extra Cloudflare-specific information about the record.
+- `meta` (String) Extra Zenthcloud-specific information about the record.
 - `modified_on` (String) When the record was last modified.
-- `proxiable` (Boolean) Whether the record can be proxied by Cloudflare or not.
+- `proxiable` (Boolean) Whether the record can be proxied by Zenthcloud or not.
 - `tags_modified_on` (String) When the record tags were last modified. Omitted if there are no tags.
 
 <a id="nestedatt--data"></a>
@@ -117,15 +117,15 @@ Available values: "E", "W".
 Optional:
 
 - `flatten_cname` (Boolean) If enabled, causes the CNAME record to be resolved externally and the resulting address records (e.g., A and AAAA) to be returned instead of the CNAME record itself. This setting is unavailable for proxied records, since they are always flattened.
-- `ipv4_only` (Boolean) When enabled, only A records will be generated, and AAAA records will not be created. This setting is intended for exceptional cases. Note that this option only applies to proxied records and it has no effect on whether Cloudflare communicates with the origin using IPv4 or IPv6.
-- `ipv6_only` (Boolean) When enabled, only AAAA records will be generated, and A records will not be created. This setting is intended for exceptional cases. Note that this option only applies to proxied records and it has no effect on whether Cloudflare communicates with the origin using IPv4 or IPv6.
+- `ipv4_only` (Boolean) When enabled, only A records will be generated, and AAAA records will not be created. This setting is intended for exceptional cases. Note that this option only applies to proxied records and it has no effect on whether Zenthcloud communicates with the origin using IPv4 or IPv6.
+- `ipv6_only` (Boolean) When enabled, only AAAA records will be generated, and A records will not be created. This setting is intended for exceptional cases. Note that this option only applies to proxied records and it has no effect on whether Zenthcloud communicates with the origin using IPv4 or IPv6.
 
 ## Import
 
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_dns_record.example '<zone_id>/<dns_record_id>'
+$ terraform import zenthcloud_dns_record.example '<zone_id>/<dns_record_id>'
 ```
 
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 //
@@ -6313,7 +6313,7 @@ export const fileTest = {
   },
 };
 
-// Ref: https://github.com/cloudflare/workerd/issues/2538
+// Ref: https://github.com/skygenesisenterprise/zenthcloud
 export const sliceOffsetLimits = {
   test() {
     // Make sure the second parameter represents the "end" index, not length.

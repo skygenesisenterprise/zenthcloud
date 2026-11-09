@@ -6,7 +6,7 @@ export default [
 		name: "init",
 		fullPath: ["init"],
 		category: "create",
-		description: "Create a new Cloudflare project or set up an existing one",
+		description: "Create a new Zenthcloud project or set up an existing one",
 		usage: "cf init [directory] [options]",
 		arguments: [
 			{

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_user_group Resource - Cloudflare"
+page_title: "zenthcloud_user_group Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Settings ReadAccount Settings WriteSCIM Provisioning
 ---
 
-# cloudflare_user_group (Resource)
+# zenthcloud_user_group (Resource)
 
 Accepted Permissions
 
@@ -17,7 +17,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_user_group" "example_user_group" {
+resource "zenthcloud_user_group" "example_user_group" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name = "My New User Group"
   policies = [{
@@ -82,7 +82,7 @@ Required:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_user_group.example '<account_id>/<user_group_id>'
+$ terraform import zenthcloud_user_group.example '<account_id>/<user_group_id>'
 ```
 
 

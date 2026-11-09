@@ -3,17 +3,17 @@ package v500
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/migrations"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/migrations"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 )
 
-// Transform converts a source cloudflare_record state to target cloudflare_dns_record state.
-func Transform(ctx context.Context, source SourceCloudflareRecordModel) (*TargetDNSRecordModel, diag.Diagnostics) {
+// Transform converts a source zenthcloud_record state to target zenthcloud_dns_record state.
+func Transform(ctx context.Context, source SourceZenthcloudRecordModel) (*TargetDNSRecordModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Validate required fields
@@ -41,7 +41,7 @@ func Transform(ctx context.Context, source SourceCloudflareRecordModel) (*Target
 	}
 
 	// TTL: source is Int64, target is Float64
-	// TTL defaults to 1 (auto) when not specified - this tells Cloudflare to use automatic TTL
+	// TTL defaults to 1 (auto) when not specified - this tells Zenthcloud to use automatic TTL
 	if !source.TTL.IsNull() && !source.TTL.IsUnknown() {
 		target.TTL = types.Float64Value(float64(source.TTL.ValueInt64()))
 	} else {

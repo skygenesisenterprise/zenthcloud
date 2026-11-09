@@ -1,4 +1,4 @@
-resource "cloudflare_device_dex_test" "%s" {
+resource "zenthcloud_device_dex_test" "%s" {
   account_id  = "%s"
   name        = "%s"
   description = "Comprehensive test with all fields"
@@ -7,7 +7,7 @@ resource "cloudflare_device_dex_test" "%s" {
 
   data {
     kind   = "http"
-    host   = "https://dash.cloudflare.com/login"
+    host   = "https://github.com/skygenesisenterprise/zenthcloud"
     method = "GET"
   }
 }

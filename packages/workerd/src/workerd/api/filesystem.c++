@@ -14,7 +14,7 @@
 namespace workerd::api {
 
 // =======================================================================================
-// Implementation of cloudflare-internal:filesystem in support of node:fs
+// Implementation of zenthcloud-internal:filesystem in support of node:fs
 
 namespace {
 static constexpr uint32_t kMax = kj::maxValue;

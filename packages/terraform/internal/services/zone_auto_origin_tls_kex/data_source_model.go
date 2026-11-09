@@ -5,8 +5,8 @@ package zone_auto_origin_tls_kex
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/ssl"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/ssl"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -25,7 +25,7 @@ type ZoneAutoOriginTLSKexDataSourceModel struct {
 
 func (m *ZoneAutoOriginTLSKexDataSourceModel) toReadParams(_ context.Context) (params ssl.AutoOriginTLSKexGetParams, diags diag.Diagnostics) {
 	params = ssl.AutoOriginTLSKexGetParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	return

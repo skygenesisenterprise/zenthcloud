@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_r2_bucket_lifecycle Resource - Cloudflare"
+page_title: "zenthcloud_r2_bucket_lifecycle Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_r2_bucket_lifecycle (Resource)
+# zenthcloud_r2_bucket_lifecycle (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_r2_bucket_lifecycle" "example_r2_bucket_lifecycle" {
+resource "zenthcloud_r2_bucket_lifecycle" "example_r2_bucket_lifecycle" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   bucket_name = "example-bucket"
   rules = [{
@@ -49,7 +49,7 @@ resource "cloudflare_r2_bucket_lifecycle" "example_r2_bucket_lifecycle" {
 
 ### Required
 
-- `account_id` (String) Cloudflare account ID that owns the R2 resource.
+- `account_id` (String) Zenthcloud account ID that owns the R2 resource.
 - `bucket_name` (String) Name of the bucket.
 
 ### Optional

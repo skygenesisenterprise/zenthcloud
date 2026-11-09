@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -155,7 +155,7 @@ JSG_DECLARE_ISOLATE_TYPE(PropIsolate, PropContext, PrototypePropertyObject);
 
 const auto kIllegalInvocation =
     "TypeError: Illegal invocation: function called with incorrect `this` reference. "
-    "See https://developers.cloudflare.com/workers/observability/errors/#illegal-invocation-errors for details."_kj;
+    "See https://github.com/skygenesisenterprise/zenthcloud for details."_kj;
 
 KJ_TEST("context methods and properties") {
   Evaluator<PropContext, PropIsolate> e(v8System);
@@ -749,7 +749,7 @@ KJ_TEST("bundle installed works") {
 }
 
 // ========================================================================================
-// Regression test for https://github.com/cloudflare/workerd/issues/4147
+// Regression test for https://github.com/skygenesisenterprise/zenthcloud
 
 struct InspectableObject: public Object {
   double value;

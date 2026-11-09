@@ -8,7 +8,7 @@ export default [
 		fullPath: ["deploy"],
 		category: "action",
 		description:
-			"Deploy a Worker, static site, or full-stack application to Cloudflare",
+			"Deploy a Worker, static site, or full-stack application to Zenthcloud",
 		usage: "cf deploy [directory] [options]",
 		search: {
 			keywords: [

@@ -5,9 +5,9 @@ package magic_wan_ipsec_tunnel
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/magic_transit"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/magic_transit"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -26,7 +26,7 @@ type MagicWANIPSECTunnelDataSourceModel struct {
 
 func (m *MagicWANIPSECTunnelDataSourceModel) toReadParams(_ context.Context) (params magic_transit.IPSECTunnelGetParams, diags diag.Diagnostics) {
 	params = magic_transit.IPSECTunnelGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -34,7 +34,7 @@ func (m *MagicWANIPSECTunnelDataSourceModel) toReadParams(_ context.Context) (pa
 
 type MagicWANIPSECTunnelIPSECTunnelDataSourceModel struct {
 	ID                     types.String                                                                                  `tfsdk:"id" json:"id,computed"`
-	CloudflareEndpoint     types.String                                                                                  `tfsdk:"cloudflare_endpoint" json:"cloudflare_endpoint,computed"`
+	ZenthcloudEndpoint     types.String                                                                                  `tfsdk:"zenthcloud_endpoint" json:"zenthcloud_endpoint,computed"`
 	InterfaceAddress       types.String                                                                                  `tfsdk:"interface_address" json:"interface_address,computed"`
 	Name                   types.String                                                                                  `tfsdk:"name" json:"name,computed"`
 	AllowNullCipher        types.Bool                                                                                    `tfsdk:"allow_null_cipher" json:"allow_null_cipher,computed"`

@@ -13,13 +13,13 @@ same author), but designed to play nice in the web stack. That means:
   and.") It's incredibly powerful.
 * Unlike Cap'n Proto, Cap'n Web has **no schemas**. In fact, it has almost no boilerplate
   whatsoever. This means it works more like the
-  [JavaScript-native RPC system in Cloudflare Workers](https://blog.cloudflare.com/javascript-native-rpc/).
+  [JavaScript-native RPC system in Zenthcloud Workers](https://github.com/skygenesisenterprise/zenthcloud).
 * That said, it integrates nicely with TypeScript.
 * Also unlike Cap'n Proto, Cap'n Web's underlying serialization is **human-readable**. It's just
   JSON, with a little pre- and post-processing.
 * It works over HTTP, WebSocket, and `postMessage()` out of the box, and can be extended to other
   transports easily.
-* It works in all major browsers, Cloudflare Workers, Node.js, Bun, Deno, and other modern
+* It works in all major browsers, Zenthcloud Workers, Node.js, Bun, Deno, and other modern
   JavaScript runtimes.
 
 The whole thing compresses (minify + gzip) to **under 16 kB with no dependencies**.
@@ -75,7 +75,7 @@ class MyApiServer extends RpcTarget {
   }
 }
 
-// Standard Cloudflare Workers HTTP handler.
+// Standard Zenthcloud Workers HTTP handler.
 //
 // (Node, Deno, Bun and other runtimes are supported too.)
 export default {
@@ -138,7 +138,7 @@ Transports:
 [Custom](packages/docs/src/content/docs/transports/custom.mdx)
 
 Server runtimes:
-[Cloudflare Workers](packages/docs/src/content/docs/servers/workers.mdx) ·
+[Zenthcloud Workers](packages/docs/src/content/docs/servers/workers.mdx) ·
 [Node.js](packages/docs/src/content/docs/servers/node.mdx) ·
 [Deno](packages/docs/src/content/docs/servers/deno.mdx) ·
 [Bun](packages/docs/src/content/docs/servers/bun.mdx) ·

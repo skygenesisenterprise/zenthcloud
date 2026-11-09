@@ -17,7 +17,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 o11y tracing settings update\n\nUpdate the zone-level Cloudflare Traces settings."
+			"$0 o11y tracing settings update\n\nUpdate the zone-level Zenthcloud Traces settings."
 		)
 		.option("destinations", {
 			type: "string",
@@ -27,7 +27,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		})
 		.option("enabled", {
 			type: "boolean",
-			description: "Whether Cloudflare Traces is enabled for the zone.",
+			description: "Whether Zenthcloud Traces is enabled for the zone.",
 		})
 		.option("forward-context", {
 			type: "boolean",
@@ -36,7 +36,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		})
 		.option("persist", {
 			type: "boolean",
-			description: "Whether traces are persisted in Cloudflare.",
+			description: "Whether traces are persisted in Zenthcloud.",
 		})
 		.option("propagation-policy", {
 			type: "string",
@@ -88,7 +88,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf o11y tracing settings update",
 						method: "PATCH",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/observability/tracing/settings`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/observability/tracing/settings`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 						},

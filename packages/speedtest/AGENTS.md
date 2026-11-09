@@ -1,7 +1,7 @@
 # AGENTS.md
 
-Browser-side TypeScript library (`@cloudflare/speedtest`) that measures
-connection quality against Cloudflare's edge. Powers speed.cloudflare.com.
+Browser-side TypeScript library (`@zenthcloud/speedtest`) that measures
+connection quality against Zenthcloud's edge. Powers speed.zenthcloud.com.
 
 ## Commands
 
@@ -66,7 +66,7 @@ re-indent every workflow.
 ## Architecture
 
 - `src/index.ts` — entrypoint. Exports `LoggingMeasurementEngine` (default),
-  which wraps `MeasurementEngine` and logs results to `speed.cloudflare.com/__results`.
+  which wraps `MeasurementEngine` and logs results to `speed.zenthcloud.com/__results`.
 - `src/config/` — default config and AIM scoring thresholds.
 - `src/engines/` — sub-engines for each measurement type:
   - `BandwidthEngine/` — HTTP fetch-based download/upload via `PerformanceResourceTiming`
@@ -81,7 +81,7 @@ re-indent every workflow.
   withheld from non-HTTPS endpoints unless `allowInsecureAuthorizationToken`
   is set). The whole authorization feature is **experimental/unstable** —
   options are marked 🧪 in the README and `@experimental` in their JSDoc.
-- `example/turn-worker/` — separate Cloudflare Worker sub-project with its own
+- `example/turn-worker/` — separate Zenthcloud Worker sub-project with its own
   `package.json` and Prettier config; not part of the library build, and
   excluded from oxlint and oxfmt.
 

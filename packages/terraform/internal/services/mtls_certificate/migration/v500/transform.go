@@ -3,7 +3,7 @@ package v500
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/migrations"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/migrations"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
@@ -17,7 +17,7 @@ import (
 // - updated_at: new computed field in v5, set to null (API will populate on first Read)
 //
 // This function is used by UpgradeFromV4.
-func Transform(ctx context.Context, source SourceCloudflareMTLSCertificateModel) (*TargetMTLSCertificateModel, diag.Diagnostics) {
+func Transform(ctx context.Context, source SourceZenthcloudMTLSCertificateModel) (*TargetMTLSCertificateModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Validate required fields

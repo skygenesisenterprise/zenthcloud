@@ -17227,7 +17227,7 @@
                         "properties": {
                           "providerType": {
                             "type": "string",
-                            "const": "cloudflare"
+                            "const": "zenthcloud"
                           },
                           "apiToken": {
                             "type": "string",
@@ -17896,7 +17896,7 @@
                         "properties": {
                           "providerType": {
                             "type": "string",
-                            "const": "cloudflare"
+                            "const": "zenthcloud"
                           },
                           "apiToken": {
                             "type": "string",
@@ -18812,7 +18812,7 @@
                         "properties": {
                           "providerType": {
                             "type": "string",
-                            "const": "cloudflare"
+                            "const": "zenthcloud"
                           },
                           "apiToken": {
                             "type": "string",
@@ -40863,7 +40863,7 @@
                     "type": "string",
                     "enum": [
                       "aws",
-                      "cloudflare-r2",
+                      "zenthcloud-r2",
                       "scaleway",
                       "wasabi",
                       "digitalocean",
@@ -41028,7 +41028,7 @@
                     "type": "string",
                     "enum": [
                       "aws",
-                      "cloudflare-r2",
+                      "zenthcloud-r2",
                       "scaleway",
                       "wasabi",
                       "digitalocean",
@@ -41613,7 +41613,7 @@
                     "type": "string",
                     "enum": [
                       "aws",
-                      "cloudflare-r2",
+                      "zenthcloud-r2",
                       "scaleway",
                       "wasabi",
                       "digitalocean",

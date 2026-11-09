@@ -1,35 +1,35 @@
 import { writeFile } from "node:fs/promises";
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import {
-	applyCloudflareDotEnv,
-	shouldApplyCloudflareDotEnv,
-	withCloudflareDotEnv,
+	applyZenthcloudDotEnv,
+	shouldApplyZenthcloudDotEnv,
+	withZenthcloudDotEnv,
 } from "../../lib/dotenv.js";
 
 const SUPPORTED_VALUES = [
-	["CLOUDFLARE_ACCESS_CLIENT_ID", "access-client-id"],
-	["CLOUDFLARE_ACCESS_CLIENT_SECRET", "access-client-secret"],
-	["CLOUDFLARE_ACCOUNT_ID", "account-id"],
-	["CLOUDFLARE_API_TOKEN", "api-token"],
-	["CLOUDFLARE_COMPLIANCE_REGION", "public"],
-	["CLOUDFLARE_DEPENDENCIES_INSTRUMENTATION", "false"],
-	["CLOUDFLARE_ZONE_ID", "zone-id"],
+	["ZENTHCLOUD_ACCESS_CLIENT_ID", "access-client-id"],
+	["ZENTHCLOUD_ACCESS_CLIENT_SECRET", "access-client-secret"],
+	["ZENTHCLOUD_ACCOUNT_ID", "account-id"],
+	["ZENTHCLOUD_API_TOKEN", "api-token"],
+	["ZENTHCLOUD_COMPLIANCE_REGION", "public"],
+	["ZENTHCLOUD_DEPENDENCIES_INSTRUMENTATION", "false"],
+	["ZENTHCLOUD_ZONE_ID", "zone-id"],
 	["WRANGLER_API_ENVIRONMENT", "staging"],
 ] as const;
-const FILE_VALUE = "CLOUDFLARE_API_TOKEN";
-const PROCESS_VALUE = "CLOUDFLARE_ACCOUNT_ID";
+const FILE_VALUE = "ZENTHCLOUD_API_TOKEN";
+const PROCESS_VALUE = "ZENTHCLOUD_ACCOUNT_ID";
 const PROCESS_ONLY_VALUES = [
-	"CLOUDFLARE_API_BASE_URL",
-	"CLOUDFLARE_AUTH_USE_KEYRING",
-	"CLOUDFLARE_CLIENT_ID",
-	"CLOUDFLARE_CONTAINER_REGISTRY",
+	"ZENTHCLOUD_API_BASE_URL",
+	"ZENTHCLOUD_AUTH_USE_KEYRING",
+	"ZENTHCLOUD_CLIENT_ID",
+	"ZENTHCLOUD_CONTAINER_REGISTRY",
 ] as const;
-const UNSUPPORTED_CLOUDFLARE_VALUE = "CLOUDFLARE_CF_LOCAL_ENV_TEST";
+const UNSUPPORTED_ZENTHCLOUD_VALUE = "ZENTHCLOUD_CF_LOCAL_ENV_TEST";
 const UNRELATED_VALUE = "CF_UNRELATED_LOCAL_ENV_TEST";
 const UNRELATED_WRANGLER_VALUE = "WRANGLER_LOG_SANITIZE";
 
-describe("applyCloudflareDotEnv", () => {
+describe("applyZenthcloudDotEnv", () => {
 	runInTempDir();
 
 	beforeEach(() => {
@@ -39,7 +39,7 @@ describe("applyCloudflareDotEnv", () => {
 		for (const name of PROCESS_ONLY_VALUES) {
 			vi.stubEnv(name, undefined);
 		}
-		vi.stubEnv(UNSUPPORTED_CLOUDFLARE_VALUE, undefined);
+		vi.stubEnv(UNSUPPORTED_ZENTHCLOUD_VALUE, undefined);
 		vi.stubEnv(UNRELATED_VALUE, undefined);
 		vi.stubEnv(UNRELATED_WRANGLER_VALUE, undefined);
 	});
@@ -54,7 +54,7 @@ describe("applyCloudflareDotEnv", () => {
 			].join("\n")
 		);
 
-		const restore = await applyCloudflareDotEnv();
+		const restore = await applyZenthcloudDotEnv();
 
 		for (const [name, value] of SUPPORTED_VALUES) {
 			expect(process.env[name]).toBe(value);
@@ -76,25 +76,25 @@ describe("applyCloudflareDotEnv", () => {
 		vi.stubEnv(PROCESS_VALUE, "from-process");
 		await writeFile(".env", `${PROCESS_VALUE}=from-file`);
 
-		const restore = await applyCloudflareDotEnv();
+		const restore = await applyZenthcloudDotEnv();
 
 		expect(process.env[PROCESS_VALUE]).toBe("from-process");
 		restore();
 		expect(process.env[PROCESS_VALUE]).toBe("from-process");
 	});
 
-	it("does not apply unsupported Cloudflare values from files", async () => {
+	it("does not apply unsupported Zenthcloud values from files", async () => {
 		await writeFile(
 			".env",
 			[
 				...PROCESS_ONLY_VALUES.map((name) => `${name}=file-value`),
-				`${UNSUPPORTED_CLOUDFLARE_VALUE}=file-value`,
+				`${UNSUPPORTED_ZENTHCLOUD_VALUE}=file-value`,
 			].join("\n")
 		);
 
-		const restore = await applyCloudflareDotEnv();
+		const restore = await applyZenthcloudDotEnv();
 
-		for (const name of [...PROCESS_ONLY_VALUES, UNSUPPORTED_CLOUDFLARE_VALUE]) {
+		for (const name of [...PROCESS_ONLY_VALUES, UNSUPPORTED_ZENTHCLOUD_VALUE]) {
 			expect(process.env[name]).toBeUndefined();
 		}
 		restore();
@@ -104,7 +104,7 @@ describe("applyCloudflareDotEnv", () => {
 		await writeFile(".env", `${FILE_VALUE}=default`);
 		await writeFile(`.env.staging`, `${FILE_VALUE}=staging`);
 
-		const restore = await applyCloudflareDotEnv({ mode: "staging" });
+		const restore = await applyZenthcloudDotEnv({ mode: "staging" });
 
 		expect(process.env[FILE_VALUE]).toBe("staging");
 		restore();
@@ -115,7 +115,7 @@ describe("applyCloudflareDotEnv", () => {
 		await writeFile(".env", `${FILE_VALUE}=from-file`);
 
 		await expect(
-			withCloudflareDotEnv({}, () => {
+			withZenthcloudDotEnv({}, () => {
 				expect(process.env[FILE_VALUE]).toBe("from-file");
 				throw new Error("failed");
 			})
@@ -127,7 +127,7 @@ describe("applyCloudflareDotEnv", () => {
 	it("does not apply file values in local mode", async () => {
 		await writeFile(".env", `${FILE_VALUE}=from-file`);
 
-		await withCloudflareDotEnv({ local: true }, () => {
+		await withZenthcloudDotEnv({ local: true }, () => {
 			expect(process.env[FILE_VALUE]).toBeUndefined();
 		});
 
@@ -135,7 +135,7 @@ describe("applyCloudflareDotEnv", () => {
 	});
 });
 
-describe("shouldApplyCloudflareDotEnv", () => {
+describe("shouldApplyZenthcloudDotEnv", () => {
 	it.each([
 		"auth create",
 		"auth login",
@@ -150,7 +150,7 @@ describe("shouldApplyCloudflareDotEnv", () => {
 		"schema",
 		"zones list",
 	])("loads dotenv values for %s", (command) => {
-		expect(shouldApplyCloudflareDotEnv(command, false)).toBe(true);
+		expect(shouldApplyZenthcloudDotEnv(command, false)).toBe(true);
 	});
 
 	it.each([
@@ -178,7 +178,7 @@ describe("shouldApplyCloudflareDotEnv", () => {
 		"workers check",
 		"workers types",
 	])("does not load dotenv values for %s", (command) => {
-		expect(shouldApplyCloudflareDotEnv(command, false)).toBe(false);
+		expect(shouldApplyZenthcloudDotEnv(command, false)).toBe(false);
 	});
 
 	it.each([
@@ -188,10 +188,10 @@ describe("shouldApplyCloudflareDotEnv", () => {
 		"workers triggers deploy",
 		"workers versions create",
 	])("lets %s manage dotenv timing", (command) => {
-		expect(shouldApplyCloudflareDotEnv(command, false)).toBe(false);
+		expect(shouldApplyZenthcloudDotEnv(command, false)).toBe(false);
 	});
 
 	it("does not load dotenv values in local mode", () => {
-		expect(shouldApplyCloudflareDotEnv("zones list", true)).toBe(false);
+		expect(shouldApplyZenthcloudDotEnv("zones list", true)).toBe(false);
 	});
 });

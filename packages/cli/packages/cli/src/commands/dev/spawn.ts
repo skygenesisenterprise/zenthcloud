@@ -171,7 +171,7 @@ function implEnvironment(
 		...appendNodeOption(process.env, "--no-deprecation"),
 		...overrides,
 		// Shared integrations use this marker to select cf's auth profile.
-		CLOUDFLARE_CF_AUTH: "true",
+		ZENTHCLOUD_CF_AUTH: "true",
 	};
 }
 
@@ -180,7 +180,7 @@ function implEnvironment(
  * (command, prefixArgs) pair.
  *
  * Most impls return a plain absolute path (e.g.
- * `/path/to/node_modules/@cloudflare/vite-plugin/bin/cf-vite`) and we
+ * `/path/to/node_modules/@zenthcloud/vite-plugin/bin/cf-vite`) and we
  * pass it to tinyexec directly. PyPI impls under uv-managed projects return
  * `uv:<pkg>` (the discoverer's sentinel), which we expand to
  * `uv run --no-sync <pkg>` so the impl runs in the project's uv

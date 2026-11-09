@@ -1,4 +1,4 @@
-resource "cloudflare_custom_hostname" "%s" {
+resource "zenthcloud_custom_hostname" "%s" {
   zone_id  = "%s"
   hostname = "%s.%s"
 

@@ -1,28 +1,28 @@
 ---
-page_title: "cloudflare_firewall_rule Resource - Cloudflare"
+page_title: "zenthcloud_firewall_rule Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Firewall Services ReadFirewall Services Write
 ---
 
-# cloudflare_firewall_rule (Resource)
+# zenthcloud_firewall_rule (Resource)
 
 Accepted Permissions
 
 - `Firewall Services Read`
 - `Firewall Services Write`
 
-~> `cloudflare_firewall_rule` is in a deprecation phase until June 15th, 2025.
+~> `zenthcloud_firewall_rule` is in a deprecation phase until June 15th, 2025.
   During this time period, this resource is still
   fully supported but you are strongly advised  to move to the
-  `cloudflare_ruleset` resource. Full details can be found in the
-  [developer documentation](https://developers.cloudflare.com/waf/reference/migration-guides/firewall-rules-to-custom-rules/#relevant-changes-for-terraform-users).
+  `zenthcloud_ruleset` resource. Full details can be found in the
+  [developer documentation](https://github.com/skygenesisenterprise/zenthcloud).
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_firewall_rule" "example_firewall_rule" {
+resource "zenthcloud_firewall_rule" "example_firewall_rule" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   action = {
     mode = "challenge"
@@ -66,9 +66,9 @@ Optional:
 - `mode` (String) The action to perform.
 Available values: "simulate", "ban", "challenge", "js_challenge", "managed_challenge".
 - `response` (Attributes) A custom content type and reponse to return when the threshold is exceeded. The custom response configured in this object will override the custom error for the zone. This object is optional.
-Notes: If you omit this object, Cloudflare will use the default HTML error page. If "mode" is "challenge", "managed_challenge", or "js_challenge", Cloudflare will use the zone challenge pages and you should not provide the "response" object. (see [below for nested schema](#nestedatt--action--response))
-- `timeout` (Number) The time in seconds during which Cloudflare will perform the mitigation action. Must be an integer value greater than or equal to the period.
-Notes: If "mode" is "challenge", "managed_challenge", or "js_challenge", Cloudflare will use the zone's Challenge Passage time and you should not provide this value.
+Notes: If you omit this object, Zenthcloud will use the default HTML error page. If "mode" is "challenge", "managed_challenge", or "js_challenge", Zenthcloud will use the zone challenge pages and you should not provide the "response" object. (see [below for nested schema](#nestedatt--action--response))
+- `timeout` (Number) The time in seconds during which Zenthcloud will perform the mitigation action. Must be an integer value greater than or equal to the period.
+Notes: If "mode" is "challenge", "managed_challenge", or "js_challenge", Zenthcloud will use the zone's Challenge Passage time and you should not provide this value.
 
 <a id="nestedatt--action--response"></a>
 ### Nested Schema for `action.response`
@@ -86,7 +86,7 @@ Optional:
 Optional:
 
 - `description` (String) An informative summary of the filter.
-- `expression` (String) The filter expression. For more information, refer to [Expressions](https://developers.cloudflare.com/ruleset-engine/rules-language/expressions/).
+- `expression` (String) The filter expression. For more information, refer to [Expressions](https://github.com/skygenesisenterprise/zenthcloud).
 - `paused` (Boolean) When true, indicates that the filter is currently paused.
 - `ref` (String) A short reference tag. Allows you to select related filters.
 
@@ -99,5 +99,5 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_firewall_rule.example '<zone_id>/<rule_id>'
+$ terraform import zenthcloud_firewall_rule.example '<zone_id>/<rule_id>'
 ```

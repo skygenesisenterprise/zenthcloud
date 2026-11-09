@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -639,7 +639,7 @@ using WontImplement = Unimplemented;
 // This is needed because ES module namespaces have read-only properties, but
 // CommonJS require() is expected to return objects with mutable properties.
 // This matches Node.js behavior when requiring an ESM module from CJS.
-// See: https://github.com/cloudflare/workerd/issues/5844
+// See: https://github.com/skygenesisenterprise/zenthcloud
 JsObject createMutableModuleExports(Lock& js, JsObject moduleNamespace);
 
 // ======================================================================================

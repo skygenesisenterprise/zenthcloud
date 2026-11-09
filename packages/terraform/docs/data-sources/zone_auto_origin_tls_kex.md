@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zone_auto_origin_tls_kex Data Source - Cloudflare"
+page_title: "zenthcloud_zone_auto_origin_tls_kex Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zone_auto_origin_tls_kex (Data Source)
+# zenthcloud_zone_auto_origin_tls_kex (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_zone_auto_origin_tls_kex" "example_zone_auto_origin_tls_kex" {
+data "zenthcloud_zone_auto_origin_tls_kex" "example_zone_auto_origin_tls_kex" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```

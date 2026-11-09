@@ -6,8 +6,8 @@
 # Built from packages/cli/e2e/*.json
 #
 # Usage:
-#   export CLOUDFLARE_API_TOKEN=...
-#   export CLOUDFLARE_ACCOUNT_ID=...
+#   export ZENTHCLOUD_API_TOKEN=...
+#   export ZENTHCLOUD_ACCOUNT_ID=...
 #   bash packages/cli/e2e/_generated/run-e2e.sh [--zone ZONE_ID]
 
 set -uo pipefail
@@ -16,8 +16,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CLI_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 CF="$CLI_DIR/bin/cf"
 export CF_HIDE_COMMANDS=false
-ACCOUNT_ID="${CLOUDFLARE_ACCOUNT_ID:-}"
-ZONE_ID="${CLOUDFLARE_ZONE_ID:-}"
+ACCOUNT_ID="${ZENTHCLOUD_ACCOUNT_ID:-}"
+ZONE_ID="${ZENTHCLOUD_ZONE_ID:-}"
 RUN_ID="$(date +%s)"
 TS=$(date +%Y%m%d-%H%M%S)
 OUT="${SCRIPT_DIR}/output/${TS}"
@@ -32,8 +32,8 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-[ -z "${CLOUDFLARE_API_TOKEN:-}" ] && { echo "FATAL: Set CLOUDFLARE_API_TOKEN"; exit 1; }
-[ -z "$ACCOUNT_ID" ] && { echo "FATAL: Set CLOUDFLARE_ACCOUNT_ID"; exit 1; }
+[ -z "${ZENTHCLOUD_API_TOKEN:-}" ] && { echo "FATAL: Set ZENTHCLOUD_API_TOKEN"; exit 1; }
+[ -z "$ACCOUNT_ID" ] && { echo "FATAL: Set ZENTHCLOUD_ACCOUNT_ID"; exit 1; }
 
 mkdir -p "$OUT"
 printf "command\texit_code\n" > "$LOG"
@@ -5706,7 +5706,7 @@ r "cf load-balancers monitor-groups list" $CF load-balancers monitor-groups list
 r "cf load-balancers monitors list" $CF load-balancers monitors list -a "$ACCOUNT_ID"
 r "cf load-balancers pools list" $CF load-balancers pools list -a "$ACCOUNT_ID"
 r "cf load-balancers regions list" $CF load-balancers regions list -a "$ACCOUNT_ID"
-r "cf load-balancers searches list" $CF load-balancers searches list '--query' 'cloudflare' -a "$ACCOUNT_ID"
+r "cf load-balancers searches list" $CF load-balancers searches list '--query' 'zenthcloud' -a "$ACCOUNT_ID"
 if [ -n "${ZONE_ID:-}" ]; then
 r "cf load-balancers get" $CF load-balancers get 'placeholder_load_balancer_id' -z "$ZONE_ID" -a "$ACCOUNT_ID"
 else
@@ -7505,7 +7505,7 @@ r "cf radar ranking timeseries-groups" $CF radar ranking timeseries-groups '--da
 r "cf radar ranking top" $CF radar ranking top 
 r "cf radar robots-txt top-domain-categories" $CF radar robots-txt top-domain-categories 
 r "cf radar robots-txt top-user-agents-directive" $CF radar robots-txt top-user-agents-directive 
-r "cf radar search global" $CF radar search global '--query' 'cloudflare'
+r "cf radar search global" $CF radar search global '--query' 'zenthcloud'
 r "cf radar tcp-resets-timeouts summary" $CF radar tcp-resets-timeouts summary '--date-range' '7d'
 r "cf radar tcp-resets-timeouts timeseries-groups" $CF radar tcp-resets-timeouts timeseries-groups '--date-range' '7d'
 r "cf radar traffic-anomalies get" $CF radar traffic-anomalies get '--date-range' '7d'
@@ -11156,8 +11156,8 @@ r "cf zero-trust organizations create" $CF zero-trust organizations create '--dr
 r "cf zero-trust organizations revoke-users" $CF zero-trust organizations revoke-users '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust risk-scoring integrations-create" $CF zero-trust risk-scoring integrations-create '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust risk-scoring reset" $CF zero-trust risk-scoring reset 'placeholder_user_id' '--dry-run' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels cloudflared-create" $CF zero-trust tunnels cloudflared-create '--dry-run' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels cloudflared-management-create" $CF zero-trust tunnels cloudflared-management-create 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels zenthcloudd-create" $CF zero-trust tunnels zenthcloudd-create '--dry-run' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels zenthcloudd-management-create" $CF zero-trust tunnels zenthcloudd-management-create 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust tunnels warp-connector-create" $CF zero-trust tunnels warp-connector-create '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust access ai-controls-mcp-portals-list" $CF zero-trust access ai-controls-mcp-portals-list -a "$ACCOUNT_ID"
 r "cf zero-trust access ai-controls-mcp-servers-list" $CF zero-trust access ai-controls-mcp-servers-list -a "$ACCOUNT_ID"
@@ -11226,7 +11226,7 @@ r "cf zero-trust networks subnets-list" $CF zero-trust networks subnets-list -a 
 r "cf zero-trust networks virtual-networks-list" $CF zero-trust networks virtual-networks-list -a "$ACCOUNT_ID"
 r "cf zero-trust organizations list" $CF zero-trust organizations list -a "$ACCOUNT_ID"
 r "cf zero-trust risk-scoring integrations-list" $CF zero-trust risk-scoring integrations-list -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels cloudflared-list" $CF zero-trust tunnels cloudflared-list -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels zenthcloudd-list" $CF zero-trust tunnels zenthcloudd-list -a "$ACCOUNT_ID"
 r "cf zero-trust tunnels list" $CF zero-trust tunnels list -a "$ACCOUNT_ID"
 r "cf zero-trust tunnels warp-connector-list" $CF zero-trust tunnels warp-connector-list -a "$ACCOUNT_ID"
 r "cf zero-trust access ai-controls-mcp-portals-read" $CF zero-trust access ai-controls-mcp-portals-read 'placeholder_id' -a "$ACCOUNT_ID"
@@ -11320,11 +11320,11 @@ r "cf zero-trust risk-scoring get" $CF zero-trust risk-scoring get 'placeholder_
 r "cf zero-trust risk-scoring integrations-get" $CF zero-trust risk-scoring integrations-get 'placeholder_integration_id' -a "$ACCOUNT_ID"
 r "cf zero-trust risk-scoring integrations-references-get" $CF zero-trust risk-scoring integrations-references-get 'placeholder_reference_id' -a "$ACCOUNT_ID"
 r "cf zero-trust risk-scoring summary-get" $CF zero-trust risk-scoring summary-get -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels cloudflared-configurations-get" $CF zero-trust tunnels cloudflared-configurations-get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels cloudflared-connections-get" $CF zero-trust tunnels cloudflared-connections-get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels cloudflared-connectors-get" $CF zero-trust tunnels cloudflared-connectors-get 'placeholder_tunnel_id' 'placeholder_connector_id' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels cloudflared-get" $CF zero-trust tunnels cloudflared-get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels cloudflared-token-get" $CF zero-trust tunnels cloudflared-token-get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels zenthcloudd-configurations-get" $CF zero-trust tunnels zenthcloudd-configurations-get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels zenthcloudd-connections-get" $CF zero-trust tunnels zenthcloudd-connections-get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels zenthcloudd-connectors-get" $CF zero-trust tunnels zenthcloudd-connectors-get 'placeholder_tunnel_id' 'placeholder_connector_id' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels zenthcloudd-get" $CF zero-trust tunnels zenthcloudd-get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels zenthcloudd-token-get" $CF zero-trust tunnels zenthcloudd-token-get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
 r "cf zero-trust tunnels warp-connector-get" $CF zero-trust tunnels warp-connector-get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
 r "cf zero-trust tunnels warp-connector-token-get" $CF zero-trust tunnels warp-connector-token-get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
 r "cf zero-trust access ai-controls-mcp-portals-update" $CF zero-trust access ai-controls-mcp-portals-update 'placeholder_id' '--dry-run' -a "$ACCOUNT_ID"
@@ -11393,7 +11393,7 @@ r "cf zero-trust identity-providers update" $CF zero-trust identity-providers up
 r "cf zero-trust networks hostname-routes-edit" $CF zero-trust networks hostname-routes-edit 'placeholder_hostname_route_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust networks routes-edit" $CF zero-trust networks routes-edit 'placeholder_route_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust networks routes-networks-edit" $CF zero-trust networks routes-networks-edit 'placeholder_ip_network_encoded' '--dry-run' -a "$ACCOUNT_ID"
-r "cf zero-trust networks subnets-cloudflare-source-update" $CF zero-trust networks subnets-cloudflare-source-update 'placeholder_address_family' '--dry-run' -a "$ACCOUNT_ID"
+r "cf zero-trust networks subnets-zenthcloud-source-update" $CF zero-trust networks subnets-zenthcloud-source-update 'placeholder_address_family' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust networks subnets-warp-edit" $CF zero-trust networks subnets-warp-edit 'placeholder_subnet_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust networks virtual-networks-edit" $CF zero-trust networks virtual-networks-edit 'placeholder_virtual_network_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust organizations doh-update" $CF zero-trust organizations doh-update '--dry-run' -a "$ACCOUNT_ID"
@@ -11401,8 +11401,8 @@ r "cf zero-trust organizations update" $CF zero-trust organizations update '--dr
 r "cf zero-trust risk-scoring behaviours-update" $CF zero-trust risk-scoring behaviours-update '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust risk-scoring integrations-update" $CF zero-trust risk-scoring integrations-update 'placeholder_integration_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust seats edit" $CF zero-trust seats edit '--dry-run' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels cloudflared-configurations-update" $CF zero-trust tunnels cloudflared-configurations-update 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels cloudflared-edit" $CF zero-trust tunnels cloudflared-edit 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels zenthcloudd-configurations-update" $CF zero-trust tunnels zenthcloudd-configurations-update 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels zenthcloudd-edit" $CF zero-trust tunnels zenthcloudd-edit 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust tunnels warp-connector-edit" $CF zero-trust tunnels warp-connector-edit 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust access ai-controls-mcp-portals-delete" $CF zero-trust access ai-controls-mcp-portals-delete 'placeholder_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust access ai-controls-mcp-servers-delete" $CF zero-trust access ai-controls-mcp-servers-delete 'placeholder_id' '--dry-run' -a "$ACCOUNT_ID"
@@ -11452,8 +11452,8 @@ r "cf zero-trust networks routes-networks-delete" $CF zero-trust networks routes
 r "cf zero-trust networks subnets-warp-delete" $CF zero-trust networks subnets-warp-delete 'placeholder_subnet_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust networks virtual-networks-delete" $CF zero-trust networks virtual-networks-delete 'placeholder_virtual_network_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust risk-scoring integrations-delete" $CF zero-trust risk-scoring integrations-delete 'placeholder_integration_id' '--dry-run' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels cloudflared-connections-delete" $CF zero-trust tunnels cloudflared-connections-delete 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels cloudflared-delete" $CF zero-trust tunnels cloudflared-delete 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels zenthcloudd-connections-delete" $CF zero-trust tunnels zenthcloudd-connections-delete 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels zenthcloudd-delete" $CF zero-trust tunnels zenthcloudd-delete 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust tunnels warp-connector-delete" $CF zero-trust tunnels warp-connector-delete 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
 if [ -n "${ZONE_ID:-}" ]; then
 r "cf zero-trust apps ca-create" $CF zero-trust apps ca-create 'placeholder_app_id' '--dry-run' -z "$ZONE_ID" -a "$ACCOUNT_ID"
@@ -11847,8 +11847,8 @@ r "cf zero-trust networks-routes-networks create" $CF zero-trust networks-routes
 r "cf zero-trust networks-subnets-warp create" $CF zero-trust networks-subnets-warp create '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust networks-virtual-networks create" $CF zero-trust networks-virtual-networks create '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust risk-scoring-integrations create" $CF zero-trust risk-scoring-integrations create '--dry-run' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels-cloudflared create" $CF zero-trust tunnels-cloudflared create '--dry-run' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels-cloudflared-management create" $CF zero-trust tunnels-cloudflared-management create 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels-zenthcloudd create" $CF zero-trust tunnels-zenthcloudd create '--dry-run' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels-zenthcloudd-management create" $CF zero-trust tunnels-zenthcloudd-management create 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust tunnels-warp-connector create" $CF zero-trust tunnels-warp-connector create '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust access-ai-controls-mcp-portals list" $CF zero-trust access-ai-controls-mcp-portals list -a "$ACCOUNT_ID"
 r "cf zero-trust access-ai-controls-mcp-servers list" $CF zero-trust access-ai-controls-mcp-servers list -a "$ACCOUNT_ID"
@@ -11906,7 +11906,7 @@ r "cf zero-trust networks-routes list" $CF zero-trust networks-routes list -a "$
 r "cf zero-trust networks-subnets list" $CF zero-trust networks-subnets list -a "$ACCOUNT_ID"
 r "cf zero-trust networks-virtual-networks list" $CF zero-trust networks-virtual-networks list -a "$ACCOUNT_ID"
 r "cf zero-trust risk-scoring-integrations list" $CF zero-trust risk-scoring-integrations list -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels-cloudflared list" $CF zero-trust tunnels-cloudflared list -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels-zenthcloudd list" $CF zero-trust tunnels-zenthcloudd list -a "$ACCOUNT_ID"
 r "cf zero-trust tunnels-warp-connector list" $CF zero-trust tunnels-warp-connector list -a "$ACCOUNT_ID"
 r "cf zero-trust access-ai-controls-mcp-portals read" $CF zero-trust access-ai-controls-mcp-portals read 'placeholder_id' -a "$ACCOUNT_ID"
 r "cf zero-trust access-ai-controls-mcp-servers read" $CF zero-trust access-ai-controls-mcp-servers read 'placeholder_id' -a "$ACCOUNT_ID"
@@ -11988,11 +11988,11 @@ r "cf zero-trust risk-scoring-behaviours get" $CF zero-trust risk-scoring-behavi
 r "cf zero-trust risk-scoring-integrations get" $CF zero-trust risk-scoring-integrations get 'placeholder_integration_id' -a "$ACCOUNT_ID"
 r "cf zero-trust risk-scoring-integrations-references get" $CF zero-trust risk-scoring-integrations-references get 'placeholder_reference_id' -a "$ACCOUNT_ID"
 r "cf zero-trust risk-scoring-summary get" $CF zero-trust risk-scoring-summary get -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels-cloudflared get" $CF zero-trust tunnels-cloudflared get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels-cloudflared-configurations get" $CF zero-trust tunnels-cloudflared-configurations get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels-cloudflared-connections get" $CF zero-trust tunnels-cloudflared-connections get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels-cloudflared-connectors get" $CF zero-trust tunnels-cloudflared-connectors get 'placeholder_tunnel_id' 'placeholder_connector_id' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels-cloudflared-token get" $CF zero-trust tunnels-cloudflared-token get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels-zenthcloudd get" $CF zero-trust tunnels-zenthcloudd get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels-zenthcloudd-configurations get" $CF zero-trust tunnels-zenthcloudd-configurations get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels-zenthcloudd-connections get" $CF zero-trust tunnels-zenthcloudd-connections get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels-zenthcloudd-connectors get" $CF zero-trust tunnels-zenthcloudd-connectors get 'placeholder_tunnel_id' 'placeholder_connector_id' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels-zenthcloudd-token get" $CF zero-trust tunnels-zenthcloudd-token get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
 r "cf zero-trust tunnels-warp-connector get" $CF zero-trust tunnels-warp-connector get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
 r "cf zero-trust tunnels-warp-connector-connections get" $CF zero-trust tunnels-warp-connector-connections get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
 r "cf zero-trust tunnels-warp-connector-connectors get" $CF zero-trust tunnels-warp-connector-connectors get 'placeholder_tunnel_id' 'placeholder_connector_id' -a "$ACCOUNT_ID"
@@ -12053,14 +12053,14 @@ r "cf zero-trust gateway-rules update" $CF zero-trust gateway-rules update 'plac
 r "cf zero-trust networks-hostname-routes edit" $CF zero-trust networks-hostname-routes edit 'placeholder_hostname_route_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust networks-routes edit" $CF zero-trust networks-routes edit 'placeholder_route_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust networks-routes-networks edit" $CF zero-trust networks-routes-networks edit 'placeholder_ip_network_encoded' '--dry-run' -a "$ACCOUNT_ID"
-r "cf zero-trust networks-subnets-cloudflare-source update" $CF zero-trust networks-subnets-cloudflare-source update 'v4' '--dry-run' -a "$ACCOUNT_ID"
+r "cf zero-trust networks-subnets-zenthcloud-source update" $CF zero-trust networks-subnets-zenthcloud-source update 'v4' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust networks-subnets-warp edit" $CF zero-trust networks-subnets-warp edit 'placeholder_subnet_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust networks-virtual-networks edit" $CF zero-trust networks-virtual-networks edit 'placeholder_virtual_network_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust organizations-doh update" $CF zero-trust organizations-doh update '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust risk-scoring-behaviours update" $CF zero-trust risk-scoring-behaviours update '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust risk-scoring-integrations update" $CF zero-trust risk-scoring-integrations update 'placeholder_integration_id' '--dry-run' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels-cloudflared edit" $CF zero-trust tunnels-cloudflared edit 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels-cloudflared-configurations update" $CF zero-trust tunnels-cloudflared-configurations update 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels-zenthcloudd edit" $CF zero-trust tunnels-zenthcloudd edit 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels-zenthcloudd-configurations update" $CF zero-trust tunnels-zenthcloudd-configurations update 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust tunnels-warp-connector edit" $CF zero-trust tunnels-warp-connector edit 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust tunnels-warp-connector-failover update" $CF zero-trust tunnels-warp-connector-failover update 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust access-ai-controls-mcp-portals delete" $CF zero-trust access-ai-controls-mcp-portals delete 'placeholder_id' '--dry-run' -a "$ACCOUNT_ID"
@@ -12104,8 +12104,8 @@ r "cf zero-trust networks-routes-networks delete" $CF zero-trust networks-routes
 r "cf zero-trust networks-subnets-warp delete" $CF zero-trust networks-subnets-warp delete 'placeholder_subnet_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust networks-virtual-networks delete" $CF zero-trust networks-virtual-networks delete 'placeholder_virtual_network_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust risk-scoring-integrations delete" $CF zero-trust risk-scoring-integrations delete 'placeholder_integration_id' '--dry-run' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels-cloudflared delete" $CF zero-trust tunnels-cloudflared delete 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels-cloudflared-connections delete" $CF zero-trust tunnels-cloudflared-connections delete 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels-zenthcloudd delete" $CF zero-trust tunnels-zenthcloudd delete 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels-zenthcloudd-connections delete" $CF zero-trust tunnels-zenthcloudd-connections delete 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust tunnels-warp-connector delete" $CF zero-trust tunnels-warp-connector delete 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust access ai-controls mcp portals create" $CF zero-trust access ai-controls mcp portals create '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust access ai-controls mcp servers create" $CF zero-trust access ai-controls mcp servers create '--dry-run' -a "$ACCOUNT_ID"
@@ -12165,8 +12165,8 @@ r "cf zero-trust networks routes networks create" $CF zero-trust networks routes
 r "cf zero-trust networks subnets warp create" $CF zero-trust networks subnets warp create '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust networks virtual-networks create" $CF zero-trust networks virtual-networks create '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust risk-scoring integrations create" $CF zero-trust risk-scoring integrations create '--dry-run' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels cloudflared create" $CF zero-trust tunnels cloudflared create '--dry-run' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels cloudflared management create" $CF zero-trust tunnels cloudflared management create 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels zenthcloudd create" $CF zero-trust tunnels zenthcloudd create '--dry-run' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels zenthcloudd management create" $CF zero-trust tunnels zenthcloudd management create 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust tunnels warp-connector create" $CF zero-trust tunnels warp-connector create '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust access ai-controls mcp portals list" $CF zero-trust access ai-controls mcp portals list -a "$ACCOUNT_ID"
 r "cf zero-trust access ai-controls mcp servers list" $CF zero-trust access ai-controls mcp servers list -a "$ACCOUNT_ID"
@@ -12224,7 +12224,7 @@ r "cf zero-trust networks routes list" $CF zero-trust networks routes list -a "$
 r "cf zero-trust networks subnets list" $CF zero-trust networks subnets list -a "$ACCOUNT_ID"
 r "cf zero-trust networks virtual-networks list" $CF zero-trust networks virtual-networks list -a "$ACCOUNT_ID"
 r "cf zero-trust risk-scoring integrations list" $CF zero-trust risk-scoring integrations list -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels cloudflared list" $CF zero-trust tunnels cloudflared list -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels zenthcloudd list" $CF zero-trust tunnels zenthcloudd list -a "$ACCOUNT_ID"
 r "cf zero-trust tunnels warp-connector list" $CF zero-trust tunnels warp-connector list -a "$ACCOUNT_ID"
 r "cf zero-trust access ai-controls mcp portals read" $CF zero-trust access ai-controls mcp portals read 'placeholder_id' -a "$ACCOUNT_ID"
 r "cf zero-trust access ai-controls mcp servers read" $CF zero-trust access ai-controls mcp servers read 'placeholder_id' -a "$ACCOUNT_ID"
@@ -12306,11 +12306,11 @@ r "cf zero-trust risk-scoring behaviours get" $CF zero-trust risk-scoring behavi
 r "cf zero-trust risk-scoring integrations get" $CF zero-trust risk-scoring integrations get 'placeholder_integration_id' -a "$ACCOUNT_ID"
 r "cf zero-trust risk-scoring integrations references get" $CF zero-trust risk-scoring integrations references get 'placeholder_reference_id' -a "$ACCOUNT_ID"
 r "cf zero-trust risk-scoring summary get" $CF zero-trust risk-scoring summary get -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels cloudflared configurations get" $CF zero-trust tunnels cloudflared configurations get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels cloudflared connections get" $CF zero-trust tunnels cloudflared connections get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels cloudflared connectors get" $CF zero-trust tunnels cloudflared connectors get 'placeholder_tunnel_id' 'placeholder_connector_id' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels cloudflared get" $CF zero-trust tunnels cloudflared get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels cloudflared token get" $CF zero-trust tunnels cloudflared token get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels zenthcloudd configurations get" $CF zero-trust tunnels zenthcloudd configurations get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels zenthcloudd connections get" $CF zero-trust tunnels zenthcloudd connections get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels zenthcloudd connectors get" $CF zero-trust tunnels zenthcloudd connectors get 'placeholder_tunnel_id' 'placeholder_connector_id' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels zenthcloudd get" $CF zero-trust tunnels zenthcloudd get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels zenthcloudd token get" $CF zero-trust tunnels zenthcloudd token get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
 r "cf zero-trust tunnels warp-connector get" $CF zero-trust tunnels warp-connector get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
 r "cf zero-trust tunnels warp-connector token get" $CF zero-trust tunnels warp-connector token get 'placeholder_tunnel_id' -a "$ACCOUNT_ID"
 r "cf zero-trust access ai-controls mcp portals update" $CF zero-trust access ai-controls mcp portals update 'placeholder_id' '--dry-run' -a "$ACCOUNT_ID"
@@ -12369,14 +12369,14 @@ r "cf zero-trust gateway rules update" $CF zero-trust gateway rules update 'plac
 r "cf zero-trust networks hostname-routes edit" $CF zero-trust networks hostname-routes edit 'placeholder_hostname_route_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust networks routes edit" $CF zero-trust networks routes edit 'placeholder_route_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust networks routes networks edit" $CF zero-trust networks routes networks edit 'placeholder_ip_network_encoded' '--dry-run' -a "$ACCOUNT_ID"
-r "cf zero-trust networks subnets cloudflare-source update" $CF zero-trust networks subnets cloudflare-source update 'v4' '--dry-run' -a "$ACCOUNT_ID"
+r "cf zero-trust networks subnets zenthcloud-source update" $CF zero-trust networks subnets zenthcloud-source update 'v4' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust networks subnets warp edit" $CF zero-trust networks subnets warp edit 'placeholder_subnet_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust networks virtual-networks edit" $CF zero-trust networks virtual-networks edit 'placeholder_virtual_network_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust organizations doh update" $CF zero-trust organizations doh update '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust risk-scoring behaviours update" $CF zero-trust risk-scoring behaviours update '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust risk-scoring integrations update" $CF zero-trust risk-scoring integrations update 'placeholder_integration_id' '--dry-run' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels cloudflared configurations update" $CF zero-trust tunnels cloudflared configurations update 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels cloudflared edit" $CF zero-trust tunnels cloudflared edit 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels zenthcloudd configurations update" $CF zero-trust tunnels zenthcloudd configurations update 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels zenthcloudd edit" $CF zero-trust tunnels zenthcloudd edit 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust tunnels warp-connector edit" $CF zero-trust tunnels warp-connector edit 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust access ai-controls mcp portals delete" $CF zero-trust access ai-controls mcp portals delete 'placeholder_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust access ai-controls mcp servers delete" $CF zero-trust access ai-controls mcp servers delete 'placeholder_id' '--dry-run' -a "$ACCOUNT_ID"
@@ -12419,8 +12419,8 @@ r "cf zero-trust networks routes networks delete" $CF zero-trust networks routes
 r "cf zero-trust networks subnets warp delete" $CF zero-trust networks subnets warp delete 'placeholder_subnet_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust networks virtual-networks delete" $CF zero-trust networks virtual-networks delete 'placeholder_virtual_network_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust risk-scoring integrations delete" $CF zero-trust risk-scoring integrations delete 'placeholder_integration_id' '--dry-run' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels cloudflared connections delete" $CF zero-trust tunnels cloudflared connections delete 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
-r "cf zero-trust tunnels cloudflared delete" $CF zero-trust tunnels cloudflared delete 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels zenthcloudd connections delete" $CF zero-trust tunnels zenthcloudd connections delete 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
+r "cf zero-trust tunnels zenthcloudd delete" $CF zero-trust tunnels zenthcloudd delete 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust tunnels warp-connector delete" $CF zero-trust tunnels warp-connector delete 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust access applications cas create" $CF zero-trust access applications cas create 'placeholder_app_id' '--dry-run' -a "$ACCOUNT_ID"
 if [ -n "${ZONE_ID:-}" ]; then
@@ -12926,7 +12926,7 @@ r "cf zero-trust dlp payload logs update" $CF zero-trust dlp payload logs update
 r "cf zero-trust gateway audit ssh settings update" $CF zero-trust gateway audit ssh settings update '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust gateway proxy endpoints edit" $CF zero-trust gateway proxy endpoints edit 'placeholder_proxy_endpoint_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust networks hostname routes edit" $CF zero-trust networks hostname routes edit 'placeholder_hostname_route_id' '--dry-run' -a "$ACCOUNT_ID"
-r "cf zero-trust networks subnets cloudflare source update" $CF zero-trust networks subnets cloudflare source update 'v4' '--dry-run' -a "$ACCOUNT_ID"
+r "cf zero-trust networks subnets zenthcloud source update" $CF zero-trust networks subnets zenthcloud source update 'v4' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust networks virtual networks edit" $CF zero-trust networks virtual networks edit 'placeholder_virtual_network_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust tunnels warp connector edit" $CF zero-trust tunnels warp connector edit 'placeholder_tunnel_id' '--dry-run' -a "$ACCOUNT_ID"
 r "cf zero-trust access ai controls mcp portals delete" $CF zero-trust access ai controls mcp portals delete 'placeholder_id' '--dry-run' -a "$ACCOUNT_ID"

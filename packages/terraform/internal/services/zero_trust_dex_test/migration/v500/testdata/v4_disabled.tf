@@ -1,4 +1,4 @@
-resource "cloudflare_device_dex_test" "%s" {
+resource "zenthcloud_device_dex_test" "%s" {
   account_id  = "%s"
   name        = "%s"
   description = "Currently disabled for maintenance"

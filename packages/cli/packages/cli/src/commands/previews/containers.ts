@@ -1,21 +1,21 @@
-import { getLogLevel, setLogLevel } from "@cloudflare/cli-shared-helpers";
+import { getLogLevel, setLogLevel } from "@zenthcloud/cli-shared-helpers";
 import {
 	apply,
 	cleanupBuiltImages,
 	listDurableObjects,
 	pushBuiltContainerImage,
 	pushImageIfChanged,
-} from "@cloudflare/containers-shared";
-import { getDockerPath } from "@cloudflare/workers-utils";
+} from "@zenthcloud/containers-shared";
+import { getDockerPath } from "@zenthcloud/workers-utils";
 import type {
 	ContainerNormalizedConfig,
 	ImageRef,
-} from "@cloudflare/containers-shared";
+} from "@zenthcloud/containers-shared";
 import type {
 	ContainerDeployConfig,
 	PreviewOptions,
-} from "@cloudflare/deploy-helpers";
-import type { Config } from "@cloudflare/workers-utils";
+} from "@zenthcloud/deploy-helpers";
+import type { Config } from "@zenthcloud/workers-utils";
 
 export function createPreviewContainerCallbacks(
 	containerDeployConfig: ContainerDeployConfig
@@ -83,7 +83,7 @@ export function createPreviewContainerCallbacks(
 						{
 							imageRef,
 							durable_object_namespace_id: namespaceId,
-							configFileName: "cloudflare.config.ts",
+							configFileName: "zenthcloud.config.ts",
 							observabilityTargetPercentageField: "targetInstancePercentage",
 							observabilityTargetCountField: "targetInstanceCount",
 						},

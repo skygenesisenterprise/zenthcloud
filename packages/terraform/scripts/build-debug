@@ -5,4 +5,4 @@ set -e
 cd "$(dirname "$0")/.."
 
 echo "==> Building provider with debug symbols and no optimisations. Hang tight, this takes a while..."
-go build -gcflags="all=-N -l" -o terraform-provider-cloudflare
+go build -gcflags="all=-N -l" -o terraform-provider-zenthcloud

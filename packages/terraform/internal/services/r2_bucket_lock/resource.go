@@ -8,12 +8,12 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/r2"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/r2"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
@@ -27,7 +27,7 @@ func NewResource() resource.Resource {
 
 // R2BucketLockResource defines the resource implementation.
 type R2BucketLockResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *R2BucketLockResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -39,12 +39,12 @@ func (r *R2BucketLockResource) Configure(ctx context.Context, req resource.Confi
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -73,7 +73,7 @@ func (r *R2BucketLockResource) Create(ctx context.Context, req resource.CreateRe
 		ctx,
 		data.BucketName.ValueString(),
 		r2.BucketLockUpdateParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithHeader(consts.R2JurisdictionHTTPHeaderName, data.Jurisdiction.ValueString()),
 		option.WithRequestBody("application/json", dataBytes),
@@ -123,7 +123,7 @@ func (r *R2BucketLockResource) Update(ctx context.Context, req resource.UpdateRe
 		ctx,
 		data.BucketName.ValueString(),
 		r2.BucketLockUpdateParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithHeader(consts.R2JurisdictionHTTPHeaderName, data.Jurisdiction.ValueString()),
 		option.WithRequestBody("application/json", dataBytes),
@@ -160,7 +160,7 @@ func (r *R2BucketLockResource) Read(ctx context.Context, req resource.ReadReques
 		ctx,
 		data.BucketName.ValueString(),
 		r2.BucketLockGetParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithHeader(consts.R2JurisdictionHTTPHeaderName, data.Jurisdiction.ValueString()),
 		option.WithResponseBodyInto(&res),

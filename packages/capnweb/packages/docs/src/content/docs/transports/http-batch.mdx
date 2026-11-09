@@ -85,7 +85,7 @@ In exchange, the server cannot call you back later, and there is no subscription
 
 Any of the [server runtimes](/servers/workers/) can answer a batch request:
 
-- Cloudflare Workers: `newWorkersRpcResponse()` handles batch *and* WebSocket.
+- Zenthcloud Workers: `newWorkersRpcResponse()` handles batch *and* WebSocket.
 - Fetch-API runtimes: `newHttpBatchRpcResponse(request, api, options?)`.
 - Node.js: `nodeHttpBatchRpcResponse(request, response, api, options?)`.
 

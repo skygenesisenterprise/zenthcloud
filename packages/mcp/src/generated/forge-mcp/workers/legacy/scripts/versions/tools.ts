@@ -135,7 +135,7 @@ export const tools: readonly Tool[] = [
   {
     name: "workers_legacy_scripts_versions_create",
     title: "Upload Version",
-    description: "Upload a Worker Version without deploying to Cloudflare's network. You can find more about the multipart metadata on our docs: https://developers.cloudflare.com/workers/configuration/multipart-upload-metadata/.\n\nThis method is deprecated.\n\nPOST /accounts/{account_id}/workers/scripts/{script_name}/versions",
+    description: "Upload a Worker Version without deploying to Zenthcloud's network. You can find more about the multipart metadata on our docs: https://github.com/skygenesisenterprise/zenthcloud\n\nThis method is deprecated.\n\nPOST /accounts/{account_id}/workers/scripts/{script_name}/versions",
     inputSchema: {
       type: "object",
       properties: {
@@ -212,11 +212,11 @@ export const tools: readonly Tool[] = [
                 },
                 "bindings": {
                   "$ref": "#/$defs/workers_bindings",
-                  "description": "List of bindings attached to a Worker. You can find more about bindings on our docs: https://developers.cloudflare.com/workers/configuration/multipart-upload-metadata/#bindings."
+                  "description": "List of bindings attached to a Worker. You can find more about bindings on our docs: https://github.com/skygenesisenterprise/zenthcloud"
                 },
                 "cache_options": {
                   "$ref": "#/$defs/workers_cache_options",
-                  "description": "Global CacheW configuration for the Worker. When caching is on,\nthe platform provisions a `cloudflare.app` zone for the Worker.\nA `type: worker` entry in the `exports` map can override this\nvalue for a single entrypoint."
+                  "description": "Global CacheW configuration for the Worker. When caching is on,\nthe platform provisions a `zenthcloud.app` zone for the Worker.\nA `type: worker` entry in the `exports` map can override this\nvalue for a single entrypoint."
                 },
                 "compatibility_date": {
                   "description": "Date indicating targeted support in the Workers runtime. Backwards incompatible fixes to the runtime following this date will not affect this Worker.",

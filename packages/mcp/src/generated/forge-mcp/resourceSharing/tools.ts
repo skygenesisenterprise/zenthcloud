@@ -318,7 +318,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "#com.cloudflare.api.account.share.read"
+            "#com.zenthcloud.api.account.share.read"
           ]
         },
         "x-cfPlanAvailability": {
@@ -529,8 +529,8 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "#com.cloudflare.api.account.share.list",
-            "#com.cloudflare.api.account.share.read"
+            "#com.zenthcloud.api.account.share.list",
+            "#com.zenthcloud.api.account.share.read"
           ]
         },
         "x-cfPlanAvailability": {

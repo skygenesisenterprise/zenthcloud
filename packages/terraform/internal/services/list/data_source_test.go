@@ -5,22 +5,22 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccCloudflareListWithItems_IP_Datasource(t *testing.T) {
+func TestAccZenthcloudListWithItems_IP_Datasource(t *testing.T) {
 
 	rndIP := utils.GenerateRandomResourceName()
 
-	datasourceName := fmt.Sprintf("data.cloudflare_list.%s", rndIP)
+	datasourceName := fmt.Sprintf("data.zenthcloud_list.%s", rndIP)
 
 	descriptionIP := fmt.Sprintf("description.%s", rndIP)
 
 	listNameIP := fmt.Sprintf("%s%s", listTestPrefix, rndIP)
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -30,7 +30,7 @@ func TestAccCloudflareListWithItems_IP_Datasource(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareListWithIPItemsDataSource(rndIP, listNameIP, descriptionIP, accountID, "ip", ""),
+				Config: testAccCheckZenthcloudListWithIPItemsDataSource(rndIP, listNameIP, descriptionIP, accountID, "ip", ""),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(datasourceName, "name", listNameIP),
 					resource.TestCheckResourceAttr(datasourceName, "account_id", accountID),
@@ -47,7 +47,7 @@ func TestAccCloudflareListWithItems_IP_Datasource(t *testing.T) {
 			},
 
 			{
-				Config: testAccCheckCloudflareListWithIPItemsDataSource(rndIP, listNameIP, descriptionIP, accountID, "ip", "1.1.1.1"),
+				Config: testAccCheckZenthcloudListWithIPItemsDataSource(rndIP, listNameIP, descriptionIP, accountID, "ip", "1.1.1.1"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(datasourceName, "name", listNameIP),
 					resource.TestCheckResourceAttr(datasourceName, "account_id", accountID),
@@ -63,6 +63,6 @@ func TestAccCloudflareListWithItems_IP_Datasource(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareListWithIPItemsDataSource(resourceName, listName, description, accountID, kind, search string) string {
+func testAccCheckZenthcloudListWithIPItemsDataSource(resourceName, listName, description, accountID, kind, search string) string {
 	return acctest.LoadTestCase("listwithipitems_datasource.tf", resourceName, listName, description, accountID, kind, search)
 }

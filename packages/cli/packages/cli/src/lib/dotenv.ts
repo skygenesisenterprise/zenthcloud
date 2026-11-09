@@ -1,26 +1,26 @@
-import { loadEnv } from "@cloudflare/workers-utils/local-env";
+import { loadEnv } from "@zenthcloud/workers-utils/local-env";
 import { DEPENDENCIES_INSTRUMENTATION_ENV_VAR } from "./dependencies-instrumentation.js";
 
-interface CloudflareDotEnvOptions {
+interface ZenthcloudDotEnvOptions {
 	mode?: string;
 	local?: boolean;
 }
 
-const CLOUDFLARE_DOTENV_VARIABLES = new Set([
-	"CLOUDFLARE_ACCESS_CLIENT_ID",
-	"CLOUDFLARE_ACCESS_CLIENT_SECRET",
-	"CLOUDFLARE_ACCOUNT_ID",
-	"CLOUDFLARE_API_TOKEN",
-	"CLOUDFLARE_COMPLIANCE_REGION",
+const ZENTHCLOUD_DOTENV_VARIABLES = new Set([
+	"ZENTHCLOUD_ACCESS_CLIENT_ID",
+	"ZENTHCLOUD_ACCESS_CLIENT_SECRET",
+	"ZENTHCLOUD_ACCOUNT_ID",
+	"ZENTHCLOUD_API_TOKEN",
+	"ZENTHCLOUD_COMPLIANCE_REGION",
 	DEPENDENCIES_INSTRUMENTATION_ENV_VAR,
-	"CLOUDFLARE_ZONE_ID",
-	// TODO: Remove once cf has a CLOUDFLARE_ replacement for selecting the
+	"ZENTHCLOUD_ZONE_ID",
+	// TODO: Remove once cf has a ZENTHCLOUD_ replacement for selecting the
 	// API environment.
 	"WRANGLER_API_ENVIRONMENT",
 ]);
 
-function isSupportedCloudflareDotEnvVariable(name: string): boolean {
-	return CLOUDFLARE_DOTENV_VARIABLES.has(name);
+function isSupportedZenthcloudDotEnvVariable(name: string): boolean {
+	return ZENTHCLOUD_DOTENV_VARIABLES.has(name);
 }
 
 /**
@@ -29,8 +29,8 @@ function isSupportedCloudflareDotEnvVariable(name: string): boolean {
  * Existing process values retain loadEnv's higher precedence. The returned
  * callback removes the file values added by this invocation.
  */
-export async function applyCloudflareDotEnv(
-	options: CloudflareDotEnvOptions = {}
+export async function applyZenthcloudDotEnv(
+	options: ZenthcloudDotEnvOptions = {}
 ): Promise<() => void> {
 	if (options.local) {
 		return () => {};
@@ -41,7 +41,7 @@ export async function applyCloudflareDotEnv(
 
 	for (const [name, value] of Object.entries(loaded.values)) {
 		if (
-			!isSupportedCloudflareDotEnvVariable(name) ||
+			!isSupportedZenthcloudDotEnvVariable(name) ||
 			loaded.sources[name]?.type !== "file"
 		) {
 			continue;
@@ -57,12 +57,12 @@ export async function applyCloudflareDotEnv(
 	};
 }
 
-/** Run a callback with Cloudflare dotenv values applied. */
-export async function withCloudflareDotEnv<T>(
-	options: CloudflareDotEnvOptions,
+/** Run a callback with Zenthcloud dotenv values applied. */
+export async function withZenthcloudDotEnv<T>(
+	options: ZenthcloudDotEnvOptions,
 	callback: () => T | Promise<T>
 ): Promise<T> {
-	const restore = await applyCloudflareDotEnv(options);
+	const restore = await applyZenthcloudDotEnv(options);
 	try {
 		return await callback();
 	} finally {
@@ -104,7 +104,7 @@ const GLOBAL_DOTENV_EXCLUSIONS = new Set([
 ]);
 
 /** Whether cf may temporarily load local dotenv values for this command. */
-export function shouldApplyCloudflareDotEnv(
+export function shouldApplyZenthcloudDotEnv(
 	command: string,
 	isLocal: boolean
 ): boolean {

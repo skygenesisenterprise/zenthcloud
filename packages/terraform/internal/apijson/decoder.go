@@ -19,8 +19,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/tidwall/gjson"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	type_helpers "github.com/cloudflare/terraform-provider-cloudflare/internal/types"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	type_helpers "github.com/zenthcloud/terraform-provider-zenthcloud/internal/types"
 )
 
 // decoders is a synchronized map with roughly the following type:

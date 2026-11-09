@@ -5,7 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceAccessIdentityProviderSchema returns the legacy cloudflare_access_identity_provider schema (schema_version=0).
+// SourceAccessIdentityProviderSchema returns the legacy zenthcloud_access_identity_provider schema (schema_version=0).
 // This is used by MoveState and UpgradeFromV4 to parse state from the legacy SDKv2 provider.
 // Only Required/Optional/Computed/ElementType are included — no validators, descriptions, or plan modifiers.
 func SourceAccessIdentityProviderSchema() schema.Schema {

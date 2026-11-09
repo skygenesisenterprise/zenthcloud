@@ -328,13 +328,13 @@ describe("kv", () => {
 
 					Global flags
 					  -q, --quiet       Suppress non-essential output     [boolean] [default: false]
-					  -z, --zone        Zone ID or domain name (overrides CLOUDFLARE_ZONE_ID)
+					  -z, --zone        Zone ID or domain name (overrides ZENTHCLOUD_ZONE_ID)
 					                                                                        [string]
 					      --profile     Use a specific auth profile                         [string]
 					  -m, --mode        Mode used to evaluate project configuration         [string]
 					      --local       Use local resource simulations    [boolean] [default: false]
 					      --persist-to  Directory holding local persisted state (default:
-					                    .cloudflare/state next to cloudflare.config.ts)     [string]
+					                    .zenthcloud/state next to zenthcloud.config.ts)     [string]
 					  -h, --help        Show help                                          [boolean]
 					  -v, --version     Show version number                                [boolean]
 

@@ -30,8 +30,8 @@ import {
 export const tools: readonly Tool[] = [
   {
     name: "pages_create",
-    title: "Create a Cloudflare Pages project",
-    description: "Create a Cloudflare Pages project for configuring and deploying a site or application.\n\nPOST /accounts/{account_id}/pages/projects",
+    title: "Create a Zenthcloud Pages project",
+    description: "Create a Zenthcloud Pages project for configuring and deploying a site or application.\n\nPOST /accounts/{account_id}/pages/projects",
     inputSchema: {
       type: "object",
       properties: {
@@ -265,7 +265,7 @@ export const tools: readonly Tool[] = [
       "idempotentHint": false,
       "openWorldHint": true,
       "readOnlyHint": false,
-      "title": "Create a Cloudflare Pages project"
+      "title": "Create a Zenthcloud Pages project"
     },
     [OPERATION]: {
       method: "POST",
@@ -321,8 +321,8 @@ export const tools: readonly Tool[] = [
   },
   {
     name: "pages_delete",
-    title: "Delete a Cloudflare Pages project",
-    description: "Permanently delete a Cloudflare Pages project and its deployments.\n\nDELETE /accounts/{account_id}/pages/projects/{project_name}",
+    title: "Delete a Zenthcloud Pages project",
+    description: "Permanently delete a Zenthcloud Pages project and its deployments.\n\nDELETE /accounts/{account_id}/pages/projects/{project_name}",
     inputSchema: {
       type: "object",
       properties: {
@@ -384,7 +384,7 @@ export const tools: readonly Tool[] = [
       "idempotentHint": true,
       "openWorldHint": true,
       "readOnlyHint": false,
-      "title": "Delete a Cloudflare Pages project"
+      "title": "Delete a Zenthcloud Pages project"
     },
     [OPERATION]: {
       method: "DELETE",
@@ -436,8 +436,8 @@ export const tools: readonly Tool[] = [
   },
   {
     name: "pages_edit",
-    title: "Update a Cloudflare Pages project",
-    description: "Update the build, deployment, source, or environment settings for a Cloudflare Pages project. To delete an environment variable, set its key to `null`.\n\nPATCH /accounts/{account_id}/pages/projects/{project_name}",
+    title: "Update a Zenthcloud Pages project",
+    description: "Update the build, deployment, source, or environment settings for a Zenthcloud Pages project. To delete an environment variable, set its key to `null`.\n\nPATCH /accounts/{account_id}/pages/projects/{project_name}",
     inputSchema: {
       type: "object",
       properties: {
@@ -672,7 +672,7 @@ export const tools: readonly Tool[] = [
       "idempotentHint": false,
       "openWorldHint": true,
       "readOnlyHint": false,
-      "title": "Update a Cloudflare Pages project"
+      "title": "Update a Zenthcloud Pages project"
     },
     [OPERATION]: {
       method: "PATCH",
@@ -728,8 +728,8 @@ export const tools: readonly Tool[] = [
   },
   {
     name: "pages_get",
-    title: "Get a Cloudflare Pages project",
-    description: "Retrieve the configuration and deployment settings for a Cloudflare Pages project.\n\nGET /accounts/{account_id}/pages/projects/{project_name}",
+    title: "Get a Zenthcloud Pages project",
+    description: "Retrieve the configuration and deployment settings for a Zenthcloud Pages project.\n\nGET /accounts/{account_id}/pages/projects/{project_name}",
     inputSchema: {
       type: "object",
       properties: {
@@ -794,7 +794,7 @@ export const tools: readonly Tool[] = [
       "idempotentHint": true,
       "openWorldHint": true,
       "readOnlyHint": true,
-      "title": "Get a Cloudflare Pages project"
+      "title": "Get a Zenthcloud Pages project"
     },
     [OPERATION]: {
       method: "GET",
@@ -850,8 +850,8 @@ export const tools: readonly Tool[] = [
   },
   {
     name: "pages_list",
-    title: "List Cloudflare Pages projects",
-    description: "List the Cloudflare Pages projects in an account.\n\nGET /accounts/{account_id}/pages/projects",
+    title: "List Zenthcloud Pages projects",
+    description: "List the Zenthcloud Pages projects in an account.\n\nGET /accounts/{account_id}/pages/projects",
     inputSchema: {
       type: "object",
       properties: {
@@ -929,7 +929,7 @@ export const tools: readonly Tool[] = [
       "idempotentHint": true,
       "openWorldHint": true,
       "readOnlyHint": true,
-      "title": "List Cloudflare Pages projects"
+      "title": "List Zenthcloud Pages projects"
     },
     [OPERATION]: {
       method: "GET",

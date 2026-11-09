@@ -59,7 +59,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf pay-per-use usage-reports submit",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/pay-per-use/usage-reports`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/pay-per-use/usage-reports`,
 						pathParams: {},
 						bodyKind: "octet-stream",
 						body: argv.file !== undefined ? { file: argv.file } : argv.body,

@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -21,13 +21,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_schema_validation_schemas", &resource.Sweeper{
-		Name: "cloudflare_schema_validation_schemas",
-		F:    testSweepCloudflareSchemaValidationSchemas,
+	resource.AddTestSweepers("zenthcloud_schema_validation_schemas", &resource.Sweeper{
+		Name: "zenthcloud_schema_validation_schemas",
+		F:    testSweepZenthcloudSchemaValidationSchemas,
 	})
 }
 
-func testSweepCloudflareSchemaValidationSchemas(r string) error {
+func testSweepZenthcloudSchemaValidationSchemas(r string) error {
 	ctx := context.Background()
 	// Schema Validation Schemas are API Shield schema uploads.
 	// These are managed as part of API Shield configuration.
@@ -36,12 +36,12 @@ func testSweepCloudflareSchemaValidationSchemas(r string) error {
 	return nil
 }
 
-func TestAccCloudflareSchemaValidationSchemas(t *testing.T) {
+func TestAccZenthcloudSchemaValidationSchemas(t *testing.T) {
 	rndResourceName := utils.GenerateRandomResourceName()
 
 	// resourceID is resourceIdentifier . resourceName
-	resourceID := "cloudflare_schema_validation_schemas." + rndResourceName
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceID := "zenthcloud_schema_validation_schemas." + rndResourceName
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		IsUnitTest:               false,
@@ -50,7 +50,7 @@ func TestAccCloudflareSchemaValidationSchemas(t *testing.T) {
 		Steps: []resource.TestStep{
 			// upload a schema but have it disabled
 			{
-				Config: testAccCloudflareSchemaValidation(rndResourceName, zoneID, false),
+				Config: testAccZenthcloudSchemaValidation(rndResourceName, zoneID, false),
 
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceID, consts.ZoneIDSchemaKey, zoneID),
@@ -75,7 +75,7 @@ func TestAccCloudflareSchemaValidationSchemas(t *testing.T) {
 			},
 			// enable validation
 			{
-				Config: testAccCloudflareSchemaValidation(rndResourceName, zoneID, true),
+				Config: testAccZenthcloudSchemaValidation(rndResourceName, zoneID, true),
 
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceID, consts.ZoneIDSchemaKey, zoneID),
@@ -100,7 +100,7 @@ func TestAccCloudflareSchemaValidationSchemas(t *testing.T) {
 			},
 			// plan the same thing again, this should be a noop
 			{
-				Config: testAccCloudflareSchemaValidation(rndResourceName, zoneID, true),
+				Config: testAccZenthcloudSchemaValidation(rndResourceName, zoneID, true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceID, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttrWith(resourceID, "schema_id", func(value string) error {
@@ -140,6 +140,6 @@ func TestAccCloudflareSchemaValidationSchemas(t *testing.T) {
 	})
 }
 
-func testAccCloudflareSchemaValidation(resourceName, zone string, validation_enabled bool) string {
+func testAccZenthcloudSchemaValidation(resourceName, zone string, validation_enabled bool) string {
 	return acctest.LoadTestCase("schema.tf", resourceName, zone, fmt.Sprintf("%v", validation_enabled))
 }

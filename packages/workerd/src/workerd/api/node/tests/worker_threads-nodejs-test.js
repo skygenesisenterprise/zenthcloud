@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import { strictEqual, throws, ok, deepStrictEqual, rejects } from 'node:assert';
@@ -129,7 +129,7 @@ export const testWorkerProperties = {
 export const testMessageChannelAndPort = {
   async test() {
     // Only check reference equality if the global MessageChannel is exposed.
-    // The node:worker_threads module now imports from cloudflare-internal:messagechannel
+    // The node:worker_threads module now imports from zenthcloud-internal:messagechannel
     // so it works independently of the expose_global_message_channel compat flag.
     if (typeof globalThis.MessageChannel !== 'undefined') {
       strictEqual(MessageChannel, globalThis.MessageChannel);

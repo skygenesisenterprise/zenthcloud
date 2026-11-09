@@ -1,6 +1,6 @@
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import {
 	afterEach,
 	beforeEach,
@@ -42,7 +42,7 @@ describe("--mode global flag", () => {
 					"staging",
 					"--dry-run",
 				],
-				{ CLOUDFLARE_ACCOUNT_ID: "account-id", CI: "true" }
+				{ ZENTHCLOUD_ACCOUNT_ID: "account-id", CI: "true" }
 			)
 		).rejects.toThrow("--mode can only be specified once.");
 	});
@@ -51,7 +51,7 @@ describe("--mode global flag", () => {
 		for (const modeArgs of [["--mode", ""], ["--mode="]]) {
 			await expect(
 				runCf(["d1", "list", ...modeArgs, "--dry-run"], {
-					CLOUDFLARE_ACCOUNT_ID: "account-id",
+					ZENTHCLOUD_ACCOUNT_ID: "account-id",
 					CI: "true",
 				})
 			).rejects.toThrow("--mode requires a non-empty value.");
@@ -60,7 +60,7 @@ describe("--mode global flag", () => {
 
 	it("selects the mode used to evaluate project settings", async () => {
 		writeFileSync(
-			join(process.cwd(), "cloudflare.config.ts"),
+			join(process.cwd(), "zenthcloud.config.ts"),
 			`export default ({ mode }) => ({
 	accountId: mode === "staging" ? "staging-account" : "default-account",
 });`
@@ -75,7 +75,7 @@ describe("--mode global flag", () => {
 
 	it("does not reuse the mode from an earlier invocation", async () => {
 		writeFileSync(
-			join(process.cwd(), "cloudflare.config.ts"),
+			join(process.cwd(), "zenthcloud.config.ts"),
 			`export default ({ mode }) => ({
 	accountId: mode ?? "default-account",
 });`
@@ -93,7 +93,7 @@ describe("--mode global flag", () => {
 
 	it("clears the mode before an invocation that fails during parsing", async () => {
 		writeFileSync(
-			join(process.cwd(), "cloudflare.config.ts"),
+			join(process.cwd(), "zenthcloud.config.ts"),
 			`export default ({ mode }) => ({
 	accountId: mode ?? "default-account",
 });`
@@ -114,7 +114,7 @@ describe("--mode global flag", () => {
 					"staging",
 					"--dry-run",
 				],
-				{ CLOUDFLARE_ACCOUNT_ID: "account-id", CI: "true" }
+				{ ZENTHCLOUD_ACCOUNT_ID: "account-id", CI: "true" }
 			)
 		).rejects.toThrow("--mode can only be specified once.");
 

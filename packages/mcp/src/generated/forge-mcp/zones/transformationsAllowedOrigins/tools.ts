@@ -17,7 +17,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zones_transformationsAllowedOrigins_edit",
     title: "Change Image Transformations Allowed Origins setting",
-    description: "Media Transformations Allowed Origins restricts transformations for images and video served through\nCloudflare's network to requests originating from specified domains. Refer to the\nImage Transformations and Video Transformations documentation for more information.\n\nPATCH /zones/{zone_id}/settings/transformations_allowed_origins",
+    description: "Media Transformations Allowed Origins restricts transformations for images and video served through\nZenthcloud's network to requests originating from specified domains. Refer to the\nImage Transformations and Video Transformations documentation for more information.\n\nPATCH /zones/{zone_id}/settings/transformations_allowed_origins",
     inputSchema: {
       type: "object",
       properties: {
@@ -131,7 +131,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zones_transformationsAllowedOrigins_get",
     title: "Get Image Transformations Allowed Origins setting",
-    description: "Media Transformations Allowed Origins restricts transformations for images and video served through\nCloudflare's network to requests originating from specified domains. Refer to the\nImage Transformations and Video Transformations documentation for more information.\n\nGET /zones/{zone_id}/settings/transformations_allowed_origins",
+    description: "Media Transformations Allowed Origins restricts transformations for images and video served through\nZenthcloud's network to requests originating from specified domains. Refer to the\nImage Transformations and Video Transformations documentation for more information.\n\nGET /zones/{zone_id}/settings/transformations_allowed_origins",
     inputSchema: {
       type: "object",
       properties: {

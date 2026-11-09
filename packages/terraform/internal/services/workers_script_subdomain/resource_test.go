@@ -7,11 +7,11 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/workers"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/workers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -25,13 +25,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_workers_script_subdomain", &resource.Sweeper{
-		Name: "cloudflare_workers_script_subdomain",
-		F:    testSweepCloudflareWorkersScriptSubdomain,
+	resource.AddTestSweepers("zenthcloud_workers_script_subdomain", &resource.Sweeper{
+		Name: "zenthcloud_workers_script_subdomain",
+		F:    testSweepZenthcloudWorkersScriptSubdomain,
 	})
 }
 
-func testSweepCloudflareWorkersScriptSubdomain(r string) error {
+func testSweepZenthcloudWorkersScriptSubdomain(r string) error {
 	ctx := context.Background()
 	// Workers Script Subdomain is an account-level subdomain configuration.
 	// It's a singleton setting per account, not something that accumulates.
@@ -40,12 +40,12 @@ func testSweepCloudflareWorkersScriptSubdomain(r string) error {
 	return nil
 }
 
-func TestAccCloudflareWorkersScriptSubdomain_Basic(t *testing.T) {
+func TestAccZenthcloudWorkersScriptSubdomain_Basic(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_workers_script_subdomain." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_workers_script_subdomain." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -53,10 +53,10 @@ func TestAccCloudflareWorkersScriptSubdomain_Basic(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWorkersScriptSubdomainDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWorkersScriptSubdomainDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareWorkersScriptSubdomain(rnd, accountID),
+				Config: testAccCheckZenthcloudWorkersScriptSubdomain(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("script_name"), knownvalue.StringExact(rnd)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("enabled"), knownvalue.Bool(true)),
@@ -75,12 +75,12 @@ func TestAccCloudflareWorkersScriptSubdomain_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareWorkersScriptSubdomain_Update(t *testing.T) {
+func TestAccZenthcloudWorkersScriptSubdomain_Update(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_workers_script_subdomain." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_workers_script_subdomain." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -88,16 +88,16 @@ func TestAccCloudflareWorkersScriptSubdomain_Update(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWorkersScriptSubdomainDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWorkersScriptSubdomainDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareWorkersScriptSubdomain(rnd, accountID),
+				Config: testAccCheckZenthcloudWorkersScriptSubdomain(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("enabled"), knownvalue.Bool(true)),
 				},
 			},
 			{
-				Config: testAccCheckCloudflareWorkersScriptSubdomainDisabled(rnd, accountID),
+				Config: testAccCheckZenthcloudWorkersScriptSubdomainDisabled(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("enabled"), knownvalue.Bool(false)),
 				},
@@ -106,12 +106,12 @@ func TestAccCloudflareWorkersScriptSubdomain_Update(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareWorkersScriptSubdomain_WithPreviews(t *testing.T) {
+func TestAccZenthcloudWorkersScriptSubdomain_WithPreviews(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_workers_script_subdomain." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_workers_script_subdomain." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -119,10 +119,10 @@ func TestAccCloudflareWorkersScriptSubdomain_WithPreviews(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWorkersScriptSubdomainDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWorkersScriptSubdomainDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareWorkersScriptSubdomainWithPreviews(rnd, accountID),
+				Config: testAccCheckZenthcloudWorkersScriptSubdomainWithPreviews(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("script_name"), knownvalue.StringExact(rnd)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("enabled"), knownvalue.Bool(true)),
@@ -141,12 +141,12 @@ func TestAccCloudflareWorkersScriptSubdomain_WithPreviews(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareWorkersScriptSubdomain_InvalidImportID(t *testing.T) {
+func TestAccZenthcloudWorkersScriptSubdomain_InvalidImportID(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_workers_script_subdomain." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_workers_script_subdomain." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -154,10 +154,10 @@ func TestAccCloudflareWorkersScriptSubdomain_InvalidImportID(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWorkersScriptSubdomainDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWorkersScriptSubdomainDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareWorkersScriptSubdomain(rnd, accountID),
+				Config: testAccCheckZenthcloudWorkersScriptSubdomain(rnd, accountID),
 			},
 			{
 				ResourceName:  resourceName,
@@ -175,11 +175,11 @@ func TestAccCloudflareWorkersScriptSubdomain_InvalidImportID(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareWorkersScriptSubdomainDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudWorkersScriptSubdomainDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_workers_script_subdomain" {
+		if rs.Type != "zenthcloud_workers_script_subdomain" {
 			continue
 		}
 
@@ -187,7 +187,7 @@ func testAccCheckCloudflareWorkersScriptSubdomainDestroy(s *terraform.State) err
 		accountID := rs.Primary.Attributes[consts.AccountIDSchemaKey]
 
 		_, err := client.Workers.Scripts.Subdomain.Get(context.Background(), scriptName, workers.ScriptSubdomainGetParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		})
 
 		if err == nil {
@@ -198,14 +198,14 @@ func testAccCheckCloudflareWorkersScriptSubdomainDestroy(s *terraform.State) err
 	return nil
 }
 
-func testAccCheckCloudflareWorkersScriptSubdomain(rnd, accountID string) string {
+func testAccCheckZenthcloudWorkersScriptSubdomain(rnd, accountID string) string {
 	return acctest.LoadTestCase("workersscriptsubdomain.tf", rnd, accountID)
 }
 
-func testAccCheckCloudflareWorkersScriptSubdomainDisabled(rnd, accountID string) string {
+func testAccCheckZenthcloudWorkersScriptSubdomainDisabled(rnd, accountID string) string {
 	return acctest.LoadTestCase("workersscriptsubdomaindisabled.tf", rnd, accountID)
 }
 
-func testAccCheckCloudflareWorkersScriptSubdomainWithPreviews(rnd, accountID string) string {
+func testAccCheckZenthcloudWorkersScriptSubdomainWithPreviews(rnd, accountID string) string {
 	return acctest.LoadTestCase("workersscriptsubdomainwithpreviews.tf", rnd, accountID)
 }

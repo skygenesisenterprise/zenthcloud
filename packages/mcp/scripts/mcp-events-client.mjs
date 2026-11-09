@@ -1,8 +1,8 @@
 const method = process.argv[2] ?? 'list'
 if (!['list', 'subscribe', 'unsubscribe'].includes(method))
   throw new Error('Usage: node scripts/mcp-events-client.mjs list|subscribe|unsubscribe')
-const token = process.env.CLOUDFLARE_API_TOKEN
-if (!token) throw new Error('Set CLOUDFLARE_API_TOKEN')
+const token = process.env.ZENTHCLOUD_API_TOKEN
+if (!token) throw new Error('Set ZENTHCLOUD_API_TOKEN')
 const endpoint = process.env.MCP_URL ?? 'http://localhost:2529/mcp'
 const params = {
   _meta: {
@@ -12,11 +12,11 @@ const params = {
   }
 }
 if (method !== 'list') {
-  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID
+  const accountId = process.env.ZENTHCLOUD_ACCOUNT_ID
   const callbackUrl = process.env.MCP_EVENT_CALLBACK_URL
   if (!accountId || !callbackUrl)
-    throw new Error('Set CLOUDFLARE_ACCOUNT_ID and MCP_EVENT_CALLBACK_URL')
-  params.name = 'cloudflare.alert.workers_observability_real_time_issue'
+    throw new Error('Set ZENTHCLOUD_ACCOUNT_ID and MCP_EVENT_CALLBACK_URL')
+  params.name = 'zenthcloud.alert.workers_observability_real_time_issue'
   params.arguments = {
     account_id: accountId,
     afterOccurrences: 1,

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_workers_deployments Data Source - Cloudflare"
+page_title: "zenthcloud_workers_deployments Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Workers Scripts ReadWorkers Scripts WriteWorkers Tail Read
 ---
 
-# cloudflare_workers_deployments (Data Source)
+# zenthcloud_workers_deployments (Data Source)
 
 Accepted Permissions
 
@@ -17,7 +17,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_workers_deployments" "example_workers_deployments" {
+data "zenthcloud_workers_deployments" "example_workers_deployments" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   script_name = "this-is_my_script-01"
   since = "2019-12-27T18:11:19.117Z"

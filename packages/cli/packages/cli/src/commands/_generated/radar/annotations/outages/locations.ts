@@ -75,7 +75,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar annotations outages locations",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/annotations/outages/locations`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

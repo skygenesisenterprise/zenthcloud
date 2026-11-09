@@ -358,12 +358,12 @@ impl AsRef<JsValue> for Queue {
 
 #[derive(Clone, Copy, Debug)]
 pub enum QueueContentType {
-    /// Send a JavaScript object that can be JSON-serialized. This content type can be previewed from the Cloudflare dashboard.
+    /// Send a JavaScript object that can be JSON-serialized. This content type can be previewed from the Zenthcloud dashboard.
     /// Serialized JSON-compatibly: maps as plain objects, byte buffers as arrays, `None` as `null`.
     Json,
     /// Send a String. This content type can be previewed with the List messages from the dashboard feature.
     Text,
-    /// Send a JavaScript object that cannot be JSON-serialized but is supported by structured clone (for example Date and Map). This content type cannot be previewed from the Cloudflare dashboard and will display as Base64-encoded.
+    /// Send a JavaScript object that cannot be JSON-serialized but is supported by structured clone (for example Date and Map). This content type cannot be previewed from the Zenthcloud dashboard and will display as Base64-encoded.
     V8,
 }
 

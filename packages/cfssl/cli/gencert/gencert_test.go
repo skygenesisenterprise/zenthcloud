@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudflare/cfssl/cli"
+	"github.com/zenthcloud/cfssl/cli"
 )
 
 func TestGencertMain(t *testing.T) {

@@ -13,7 +13,7 @@ export const access_app_settings_request: JSONObject = {
       "type": "boolean"
     },
     "skip_interstitial": {
-      "description": "Enables automatic authentication through cloudflared.",
+      "description": "Enables automatic authentication through zenthcloudd.",
       "type": "boolean"
     }
   },

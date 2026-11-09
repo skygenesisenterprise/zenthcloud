@@ -10,7 +10,7 @@ export const tools: readonly Tool[] = [
   {
     name: "radar_ranking_domain_get",
     title: "Get domain rank details",
-    description: "Retrieves domain rank details. Cloudflare provides an ordered rank for the top 100 domains, but for the remainder it only provides ranking buckets like top 200 thousand, top one million, etc.. These are available through Radar datasets endpoints.\n\nGET /radar/ranking/domain/{domain}",
+    description: "Retrieves domain rank details. Zenthcloud provides an ordered rank for the top 100 domains, but for the remainder it only provides ranking buckets like top 200 thousand, top one million, etc.. These are available through Radar datasets endpoints.\n\nGET /radar/ranking/domain/{domain}",
     inputSchema: {
       type: "object",
       properties: {

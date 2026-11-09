@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_content_scanning Resource - Cloudflare"
+page_title: "zenthcloud_content_scanning Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account WAF ReadAccount WAF WriteZone WAF ReadZone WAF Write
 ---
 
-# cloudflare_content_scanning (Resource)
+# zenthcloud_content_scanning (Resource)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_content_scanning" "example_content_scanning" {
+resource "zenthcloud_content_scanning" "example_content_scanning" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   value = "enabled"
 }

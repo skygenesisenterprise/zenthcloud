@@ -23,7 +23,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 network-interconnects cnis create\n\nCreates a new Cloud Network Interconnect (CNI) for private network connectivity between Cloudflare and your infrastructure. CNIs enable dedicated, high-performance network links."
+			"$0 network-interconnects cnis create\n\nCreates a new Cloud Network Interconnect (CNI) for private network connectivity between Zenthcloud and your infrastructure. CNIs enable dedicated, high-performance network links."
 		)
 		.option("account", { type: "string", description: "Customer account tag" })
 		.option("bgp-customer-asn", {
@@ -104,7 +104,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf network-interconnects cnis create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/cni/cnis`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/cni/cnis`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

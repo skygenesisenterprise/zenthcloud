@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_url_normalization_settings Data Source - Cloudflare"
+page_title: "zenthcloud_url_normalization_settings Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Rulesets ReadAccount Rulesets WriteAccount WAF ReadAccount WAF WriteBot Management ReadBot Management WriteCache Settings ReadCache Settings WriteConfig Settings ReadConfig Settings WriteCustom Errors ReadCustom Errors WriteDynamic URL Redirects ReadDynamic URL Redirects WriteHTTP DDoS Managed Ruleset ReadHTTP DDoS Managed Ruleset WriteL4 DDoS Managed Ruleset ReadL4 DDoS Managed Ruleset WriteLogs ReadLogs WriteMagic Firewall ReadMagic Firewall WriteManaged headers ReadManaged headers WriteMass URL Redirects ReadMass URL Redirects WriteOrigin ReadOrigin WriteResponse Compression ReadResponse Compression WriteSanitize ReadSanitize WriteSelect Configuration ReadSelect Configuration WriteTransform Rules ReadTransform Rules WriteZone Transform Rules ReadZone Transform Rules WriteZone WAF ReadZone WAF Write
 ---
 
-# cloudflare_url_normalization_settings (Data Source)
+# zenthcloud_url_normalization_settings (Data Source)
 
 Accepted Permissions
 
@@ -54,7 +54,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_url_normalization_settings" "example_url_normalization_settings" {
+data "zenthcloud_url_normalization_settings" "example_url_normalization_settings" {
   zone_id = "9f1839b6152d298aca64c4e906b6d074"
 }
 ```
@@ -71,7 +71,7 @@ data "cloudflare_url_normalization_settings" "example_url_normalization_settings
 - `id` (String) The unique ID of the zone.
 - `scope` (String) The scope of the URL normalization.
 Available values: "incoming", "both", "none".
-- `type` (String) The type of URL normalization performed by Cloudflare.
-Available values: "cloudflare", "rfc3986".
+- `type` (String) The type of URL normalization performed by Zenthcloud.
+Available values: "zenthcloud", "rfc3986".
 
 

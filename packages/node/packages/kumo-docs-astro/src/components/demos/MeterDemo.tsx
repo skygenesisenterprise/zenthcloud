@@ -1,4 +1,4 @@
-import { Meter } from "@cloudflare/kumo";
+import { Meter } from "@zenthcloud/kumo";
 
 export function MeterBasicDemo() {
   return <Meter label="Storage used" value={65} />;

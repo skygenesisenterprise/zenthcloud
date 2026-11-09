@@ -129,7 +129,7 @@ func (fs *featureSelector) prechecksSkip() bool {
 	return fs.remoteFeatures.SkipPrechecks
 }
 
-// clientFeatures will return the list of currently available features that cloudflared should provide to the edge.
+// clientFeatures will return the list of currently available features that zenthcloudd should provide to the edge.
 func (fs *featureSelector) clientFeatures() []string {
 	var features []string
 	if fs.datagramVersion() == DatagramV3 {

@@ -68,7 +68,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf builds list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/builds/workers/${argv["external-script-id"] == null ? "<external-script-id>" : encodeURIComponent(String(argv["external-script-id"]))}/builds`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/builds/workers/${argv["external-script-id"] == null ? "<external-script-id>" : encodeURIComponent(String(argv["external-script-id"]))}/builds`,
 						pathParams: {
 							"external-script-id": String(argv["external-script-id"] ?? ""),
 						},

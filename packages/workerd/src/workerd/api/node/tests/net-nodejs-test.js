@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 //
@@ -35,7 +35,7 @@ import { mock } from 'node:test';
 import { once } from 'node:events';
 import * as net from 'node:net';
 import * as tls from 'node:tls';
-import { connectHandler } from 'cloudflare:node';
+import { connectHandler } from 'zenthcloud:node';
 
 // Inbound sockets from env.SELF.connect('host:port') are routed to the
 // net.Server listening on that port.

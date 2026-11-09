@@ -20,7 +20,7 @@ export const tools: readonly Tool[] = [
   {
     name: "addressing_prefixes_serviceBindings_create",
     title: "Create Service Binding",
-    description: "Creates a new Service Binding, routing traffic to IPs within the given CIDR to a service running on Cloudflare's network.\n**NOTE:** The first Service Binding created for an IP Prefix must exactly match the IP Prefix's CIDR. Subsequent Service Bindings may be created with a more-specific CIDR. Refer to the  [Service Bindings Documentation](https://developers.cloudflare.com/byoip/service-bindings/) for compatibility details.\n\nPOST /accounts/{account_id}/addressing/prefixes/{prefix_id}/bindings",
+    description: "Creates a new Service Binding, routing traffic to IPs within the given CIDR to a service running on Zenthcloud's network.\n**NOTE:** The first Service Binding created for an IP Prefix must exactly match the IP Prefix's CIDR. Subsequent Service Bindings may be created with a more-specific CIDR. Refer to the  [Service Bindings Documentation](https://github.com/skygenesisenterprise/zenthcloud) for compatibility details.\n\nPOST /accounts/{account_id}/addressing/prefixes/{prefix_id}/bindings",
     inputSchema: {
       type: "object",
       properties: {
@@ -31,7 +31,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Identifier of a Cloudflare account.",
+              "description": "Identifier of a Zenthcloud account.",
               "type": "string"
             },
             "prefix_id": {
@@ -134,7 +134,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Identifier of a Cloudflare account.",
+              "description": "Identifier of a Zenthcloud account.",
               "type": "string"
             },
             "binding_id": {
@@ -210,7 +210,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Identifier of a Cloudflare account.",
+              "description": "Identifier of a Zenthcloud account.",
               "type": "string"
             },
             "binding_id": {
@@ -307,7 +307,7 @@ export const tools: readonly Tool[] = [
   {
     name: "addressing_prefixes_serviceBindings_list",
     title: "List Service Bindings",
-    description: "List the Cloudflare services this prefix is currently bound to. Traffic sent to an address within an IP prefix will be routed to the Cloudflare service of the most-specific Service Binding matching the address.\n**Example:** binding `192.0.2.0/24` to Cloudflare Magic Transit and `192.0.2.1/32` to the Cloudflare CDN would route traffic for `192.0.2.1` to the CDN, and traffic for all other IPs in the prefix to Cloudflare Magic Transit.\n\nGET /accounts/{account_id}/addressing/prefixes/{prefix_id}/bindings",
+    description: "List the Zenthcloud services this prefix is currently bound to. Traffic sent to an address within an IP prefix will be routed to the Zenthcloud service of the most-specific Service Binding matching the address.\n**Example:** binding `192.0.2.0/24` to Zenthcloud Magic Transit and `192.0.2.1/32` to the Zenthcloud CDN would route traffic for `192.0.2.1` to the CDN, and traffic for all other IPs in the prefix to Zenthcloud Magic Transit.\n\nGET /accounts/{account_id}/addressing/prefixes/{prefix_id}/bindings",
     inputSchema: {
       type: "object",
       properties: {
@@ -315,7 +315,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Identifier of a Cloudflare account.",
+              "description": "Identifier of a Zenthcloud account.",
               "type": "string"
             },
             "prefix_id": {

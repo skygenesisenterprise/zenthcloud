@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_share Resource - Cloudflare"
+page_title: "zenthcloud_share Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_share (Resource)
+# zenthcloud_share (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_share" "example_share" {
+resource "zenthcloud_share" "example_share" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name = "My Shared WAF Managed Rule"
   recipients = [{
@@ -83,7 +83,7 @@ Available values: "custom-ruleset", "gateway-policy", "gateway-destination-ip", 
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_share.example '<account_id>/<share_id>'
+$ terraform import zenthcloud_share.example '<account_id>/<share_id>'
 ```
 
 

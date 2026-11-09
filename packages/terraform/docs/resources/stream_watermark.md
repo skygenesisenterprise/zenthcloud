@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_stream_watermark Resource - Cloudflare"
+page_title: "zenthcloud_stream_watermark Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Stream ReadStream Write
 ---
 
-# cloudflare_stream_watermark (Resource)
+# zenthcloud_stream_watermark (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_stream_watermark" "example_stream_watermark" {
+resource "zenthcloud_stream_watermark" "example_stream_watermark" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name = "Marketing Videos"
   opacity = 0.75

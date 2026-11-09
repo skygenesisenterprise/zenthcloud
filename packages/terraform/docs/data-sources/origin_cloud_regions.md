@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_origin_cloud_regions Data Source - Cloudflare"
+page_title: "zenthcloud_origin_cloud_regions Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_origin_cloud_regions (Data Source)
+# zenthcloud_origin_cloud_regions (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_origin_cloud_regions" "example_origin_cloud_regions" {
+data "zenthcloud_origin_cloud_regions" "example_origin_cloud_regions" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```

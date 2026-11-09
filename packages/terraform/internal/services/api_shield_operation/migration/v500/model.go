@@ -1,7 +1,7 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -11,12 +11,12 @@ import (
 // Source Models (Legacy Provider - v4.x)
 // ============================================================================
 
-// SourceCloudflareAPIShieldOperationModel represents the source cloudflare_api_shield_operation state structure.
-// This corresponds to schema_version=0 from the legacy (SDKv2) cloudflare provider.
+// SourceZenthcloudAPIShieldOperationModel represents the source zenthcloud_api_shield_operation state structure.
+// This corresponds to schema_version=0 from the legacy (SDKv2) zenthcloud provider.
 // Used by UpgradeFromV4 to parse legacy state.
 //
 // Note: This resource was added late to v4 and has a very simple schema with no nested structures.
-type SourceCloudflareAPIShieldOperationModel struct {
+type SourceZenthcloudAPIShieldOperationModel struct {
 	ID       types.String `tfsdk:"id"`
 	ZoneID   types.String `tfsdk:"zone_id"`
 	Method   types.String `tfsdk:"method"`

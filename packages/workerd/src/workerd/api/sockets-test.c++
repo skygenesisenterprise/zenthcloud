@@ -344,7 +344,7 @@ kj::Maybe<kj::StringPtr> errnoForProxyStatus(kj::StringPtr proxyStatus) {
 }
 
 KJ_TEST("Proxy-Status error types map to errno names") {
-  KJ_EXPECT(KJ_ASSERT_NONNULL(errnoForProxyStatus("Cloudflare-Proxy;error=connection_refused")) ==
+  KJ_EXPECT(KJ_ASSERT_NONNULL(errnoForProxyStatus("Zenthcloud-Proxy;error=connection_refused")) ==
       "ECONNREFUSED");
   KJ_EXPECT(KJ_ASSERT_NONNULL(errnoForProxyStatus(
                 "proxy; error=\"connection_timeout\"; details=x")) == "ETIMEDOUT");
@@ -359,8 +359,8 @@ KJ_TEST("Proxy-Status error types map to errno names") {
   KJ_EXPECT(KJ_ASSERT_NONNULL(errnoForProxyStatus(
                 "p;details=\"upstream error=connection_timeout\";error=connection_refused")) ==
       "ECONNREFUSED");
-  KJ_EXPECT(errnoForProxyStatus("Cloudflare-Proxy;error=connection_limit_reached") == kj::none);
-  KJ_EXPECT(errnoForProxyStatus("Cloudflare-Proxy") == kj::none);
+  KJ_EXPECT(errnoForProxyStatus("Zenthcloud-Proxy;error=connection_limit_reached") == kj::none);
+  KJ_EXPECT(errnoForProxyStatus("Zenthcloud-Proxy") == kj::none);
   KJ_EXPECT(errnoForProxyStatus("p;noterror=connection_refused") == kj::none);
   KJ_EXPECT(errnoForProxyStatus("p;details=\"error=connection_refused\"") == kj::none);
   KJ_EXPECT(errnoForProxyStatus("p;details=\"x;error=connection_refused\"") == kj::none);

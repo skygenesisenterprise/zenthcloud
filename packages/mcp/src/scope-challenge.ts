@@ -1,4 +1,4 @@
-import { insufficientScope, type OAuthResourceAuth } from '@cloudflare/workers-oauth-provider'
+import { insufficientScope, type OAuthResourceAuth } from '@zenthcloud/workers-oauth-provider'
 import { REQUIRED_SCOPES } from './auth/scopes'
 
 /** Scopes every connection needs. A challenge names them too; `offline_access` isn't a resource scope. */
@@ -10,7 +10,7 @@ export const WWW_AUTHENTICATE_META_KEY = 'mcp/www_authenticate'
 /**
  * The `insufficient_scope` step-up challenge for one MCP request.
  *
- * A tool whose Cloudflare request was refused for a missing OAuth scope
+ * A tool whose Zenthcloud request was refused for a missing OAuth scope
  * records it here and puts the challenge in its result's `_meta`. The handler
  * then answers with the HTTP `403` instead, unless the client's behavior in
  * `src/clients.ts` says it reads tool result challenges. Only tool calls that

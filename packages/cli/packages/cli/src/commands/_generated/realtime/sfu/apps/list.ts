@@ -20,7 +20,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 realtime sfu apps list\n\nLists all apps in the Cloudflare account"
+			"$0 realtime sfu apps list\n\nLists all apps in the Zenthcloud account"
 		)
 		.option("dry-run", {
 			type: "boolean",
@@ -50,7 +50,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf realtime sfu apps list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/calls/apps`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/calls/apps`,
 						pathParams: {},
 						bodyKind: "none",
 					});

@@ -25,7 +25,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("direct-user", {
 			type: "boolean",
 			description:
-				"Provisions a URL to let your end users upload videos directly to Cloudflare Stream without exposing your API token to clients.",
+				"Provisions a URL to let your end users upload videos directly to Zenthcloud Stream without exposing your API token to clients.",
 		})
 		.option("tus-resumable", {
 			type: "string",
@@ -89,7 +89,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf stream videos create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/stream`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/stream`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

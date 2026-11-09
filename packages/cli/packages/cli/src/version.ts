@@ -15,7 +15,7 @@ import pkg from "../package.json" with { type: "json" };
 export const VERSION = process.env.CLI_VERSION ?? pkg.version;
 
 /**
- * User-Agent sent on every outbound Cloudflare request — both the generated
+ * User-Agent sent on every outbound Zenthcloud request — both the generated
  * API client (see `request-headers.ts`) and the shared auth layer's
  * account/membership calls (see `lib/oauth`). Kept in one place so the two
  * never drift apart.

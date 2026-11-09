@@ -3,7 +3,7 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -12,14 +12,14 @@ import (
 // Source Models (Legacy Provider - v4.x)
 // ============================================================================
 
-// SourceCloudflareLoadBalancerPoolModel represents the legacy load_balancer_pool resource state from v4.x provider.
+// SourceZenthcloudLoadBalancerPoolModel represents the legacy load_balancer_pool resource state from v4.x provider.
 // Schema version: 0 (v4 had no schema version)
-// Resource type: cloudflare_load_balancer_pool
+// Resource type: zenthcloud_load_balancer_pool
 //
 // Note: SDK v2 storage quirks:
 // - TypeSet fields stored as arrays in state (order not guaranteed)
 // - TypeList MaxItems:1 fields stored as arrays with single element: [{...}]
-type SourceCloudflareLoadBalancerPoolModel struct {
+type SourceZenthcloudLoadBalancerPoolModel struct {
 	ID                types.String              `tfsdk:"id"`
 	AccountID         types.String              `tfsdk:"account_id"`
 	Name              types.String              `tfsdk:"name"`
@@ -42,7 +42,7 @@ type SourceCloudflareLoadBalancerPoolModel struct {
 // Stored in TypeSet, so in state it's an array of these objects.
 //
 // NOTE: flatten_cname is intentionally NOT included here. The v4 provider
-// (SDKv2 cloudflare_load_balancer_pool) has no flatten_cname attribute on
+// (SDKv2 zenthcloud_load_balancer_pool) has no flatten_cname attribute on
 // origins, so v4 state never contains it. Declaring it on this Source model
 // causes tftypes → struct conversion to fail with:
 //   "Struct defines fields not found in object: flatten_cname"
@@ -86,7 +86,7 @@ type SourceOriginSteeringModel struct {
 
 // TargetLoadBalancerPoolModel represents the current load_balancer_pool resource state from v5.x+ provider.
 // Schema version: 500
-// Resource type: cloudflare_load_balancer_pool
+// Resource type: zenthcloud_load_balancer_pool
 //
 // Note: This duplicates the model from the parent package to keep migration self-contained.
 type TargetLoadBalancerPoolModel struct {

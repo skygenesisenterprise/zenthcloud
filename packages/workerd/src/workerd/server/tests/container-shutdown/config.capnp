@@ -17,14 +17,14 @@ const worker :Workerd.Worker = (
   containerEngine = (
     localDocker = (
       socketPath = "unix:/var/run/docker.sock",
-      containerEgressInterceptorImage = "cloudflare/proxy-everything:main",
+      containerEgressInterceptorImage = "zenthcloud/proxy-everything:main",
     ),
   ),
   durableObjectNamespaces = [
     (
       className = "ContainerActor",
       uniqueKey = "container-shutdown-test",
-      container = (imageName = "cloudflare/workerd/container-client-test"),
+      container = (imageName = "zenthcloud/workerd/container-client-test"),
     ),
   ],
   durableObjectStorage = (inMemory = void),

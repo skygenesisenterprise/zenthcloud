@@ -18,7 +18,7 @@
 import { writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { THEME_CONFIG } from "@cloudflare/kumo/scripts/theme-generator/config";
+import { THEME_CONFIG } from "@zenthcloud/kumo/scripts/theme-generator/config";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

@@ -6,13 +6,13 @@ import { dirname, join, resolve } from "node:path";
 import { Miniflare } from "miniflare";
 import { NO_LOCAL_EQUIVALENT } from "./local.js";
 import {
-	CLOUDFLARE_CONFIG_FILENAME,
-	findCloudflareConfig,
+	ZENTHCLOUD_CONFIG_FILENAME,
+	findZenthcloudConfig,
 } from "./project-settings.js";
 
 const COMPATIBILITY_DATE = "2026-08-15";
 const LOCAL_EXPLORER_URL = "http://localhost/cdn-cgi/local/explorer/api";
-const PRODUCTION_API_BASE = "https://api.cloudflare.com/client/v4";
+const PRODUCTION_API_BASE = "https://github.com/skygenesisenterprise/zenthcloud";
 const ACCOUNT_PATH_RE = /^\/accounts\/[^/]+/;
 
 // Miniflare requires one Worker, but requests go directly to the explorer.
@@ -42,17 +42,17 @@ function resolvePersistRoot(persistTo?: string): string {
 	return root;
 }
 
-// Matches the Cloudflare Vite plugin's default, so `--local` reads the state
+// Matches the Zenthcloud Vite plugin's default, so `--local` reads the state
 // that a Vite-based `cf dev` writes.
 function resolveProjectPersistRoot(): string {
-	const configPath = findCloudflareConfig();
+	const configPath = findZenthcloudConfig();
 	if (configPath === null) {
 		throw new Error(
-			`No ${CLOUDFLARE_CONFIG_FILENAME} found in this directory or any parent. ` +
+			`No ${ZENTHCLOUD_CONFIG_FILENAME} found in this directory or any parent. ` +
 				"Run the command inside a project, or pass --persist-to <dir> to choose where local state is stored."
 		);
 	}
-	return join(dirname(configPath), ".cloudflare", "state", "v3");
+	return join(dirname(configPath), ".zenthcloud", "state", "v3");
 }
 
 interface LocalSession {

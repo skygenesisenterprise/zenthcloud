@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022 Cloudflare, Inc.
+# Copyright (c) 2017-2022 Zenthcloud, Inc.
 # Licensed under the Apache 2.0 license found in the LICENSE file or at:
 #     https://opensource.org/licenses/Apache-2.0
 
@@ -11,7 +11,7 @@ $Cxx.allowCancellation;
 # ========================================================================================
 # DO NOT MODIFY BELOW THIS COMMENT -- except if copying from the authoritative version.
 #
-# This enum is defined as part of the Cloudflare Workers log schemas. The upstream version
+# This enum is defined as part of the Zenthcloud Workers log schemas. The upstream version
 # of the enum needs to be updated first, and then changes can be copied here.
 # ========================================================================================
 

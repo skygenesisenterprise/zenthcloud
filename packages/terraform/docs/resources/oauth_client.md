@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_oauth_client Resource - Cloudflare"
+page_title: "zenthcloud_oauth_client Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   OAuth Client ReadOAuth Client Write
 ---
 
-# cloudflare_oauth_client (Resource)
+# zenthcloud_oauth_client (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_oauth_client" "example_oauth_client" {
+resource "zenthcloud_oauth_client" "example_oauth_client" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   client_name = "My OAuth App"
   grant_types = ["authorization_code", "refresh_token"]

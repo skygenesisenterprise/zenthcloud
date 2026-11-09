@@ -3,10 +3,10 @@ package v500
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 )
 
-// SourceAccessApplicationModel represents the v4 cloudflare_access_application state structure.
+// SourceAccessApplicationModel represents the v4 zenthcloud_access_application state structure.
 // This is used by MoveState and UpgradeFromV4 to parse the source state from v4 provider.
 type SourceAccessApplicationModel struct {
 	ID                       types.String `tfsdk:"id"`
@@ -216,7 +216,7 @@ type SourceTargetAttributesModel struct {
 	Values types.List   `tfsdk:"values"`
 }
 
-// TargetAccessApplicationModel represents the v5 cloudflare_zero_trust_access_application state structure.
+// TargetAccessApplicationModel represents the v5 zenthcloud_zero_trust_access_application state structure.
 // This is a copy of the main model to avoid import cycles.
 type TargetAccessApplicationModel struct {
 	ID                          types.String                                           `tfsdk:"id"`

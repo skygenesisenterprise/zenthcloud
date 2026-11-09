@@ -2,7 +2,7 @@ import {
 	mockConsoleMethods,
 	runInTempDir,
 	seed,
-} from "@cloudflare/workers-utils/test-helpers";
+} from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw/http";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { createMockDeployContext } from "../../helpers/mock-deploy-context.js";
@@ -30,8 +30,8 @@ describe("cf deploy — routes", () => {
 	const std = mockConsoleMethods();
 
 	beforeEach(async () => {
-		vi.stubEnv("CLOUDFLARE_API_TOKEN", "test-api-token");
-		vi.stubEnv("CLOUDFLARE_ACCOUNT_ID", ACCOUNT_ID);
+		vi.stubEnv("ZENTHCLOUD_API_TOKEN", "test-api-token");
+		vi.stubEnv("ZENTHCLOUD_ACCOUNT_ID", ACCOUNT_ID);
 		mockDefaultHandlers();
 		await seedBuildDelegate();
 	});
@@ -41,11 +41,11 @@ describe("cf deploy — routes", () => {
 		const routes = captureRoutes();
 
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				triggers: [{ type: "fetch", pattern: "example.com/*" }],
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export default { fetch() { return new Response('ok'); } }",
 		});
 
@@ -63,14 +63,14 @@ describe("cf deploy — routes", () => {
 		const routes = captureRoutes();
 
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				triggers: [
 					{ type: "fetch", pattern: "api.example.com/*" },
 					{ type: "fetch", pattern: "app.example.com/*" },
 				],
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export default { fetch() { return new Response('ok'); } }",
 		});
 
@@ -91,11 +91,11 @@ describe("cf deploy — routes", () => {
 		const domains = captureCustomDomains();
 
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				domains: ["custom.example.com"],
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export default { fetch() { return new Response('ok'); } }",
 		});
 
@@ -129,15 +129,15 @@ describe("cf deploy — routes", () => {
 			mockWorkerUpload();
 			const domains = captureCustomDomains();
 			await seed({
-				".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-				".cloudflare/output/v0/workers/default/worker.config.json":
+				".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+				".zenthcloud/output/v0/workers/default/worker.config.json":
 					workerConfig({
 						domains: [
 							"example.com",
 							{ hostname: "custom.example.com", ...traffic },
 						],
 					}),
-				".cloudflare/output/v0/workers/default/bundle/index.js":
+				".zenthcloud/output/v0/workers/default/bundle/index.js":
 					"export default { fetch() { return new Response('ok'); } }",
 			});
 
@@ -169,11 +169,11 @@ describe("cf deploy — routes", () => {
 		const upload = mockWorkerUpload();
 		const domains = captureCustomDomains();
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				domains: [domain],
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export default { fetch() { return new Response('ok'); } }",
 		});
 
@@ -191,12 +191,12 @@ describe("cf deploy — routes", () => {
 		const domains = captureCustomDomains();
 
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				domains: ["custom.example.com"],
 				triggers: [{ type: "fetch", pattern: "api.example.com/*" }],
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export default { fetch() { return new Response('ok'); } }",
 		});
 
@@ -224,14 +224,14 @@ describe("cf deploy — routes", () => {
 		);
 
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				triggers: [
 					{ type: "fetch", pattern: "example.com/*" },
 					{ type: "scheduled", schedule: "0 * * * *" },
 				],
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export default { fetch() { return new Response('ok'); } }",
 		});
 

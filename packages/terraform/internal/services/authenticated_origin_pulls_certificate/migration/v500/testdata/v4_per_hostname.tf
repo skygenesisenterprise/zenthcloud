@@ -1,4 +1,4 @@
-resource "cloudflare_authenticated_origin_pulls_certificate" "%s" {
+resource "zenthcloud_authenticated_origin_pulls_certificate" "%s" {
   zone_id     = "%s"
   certificate = <<-EOT
 %s

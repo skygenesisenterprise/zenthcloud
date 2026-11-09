@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/r2_bucket/migration/v500"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/r2_bucket/migration/v500"
 )
 
 var _ resource.ResourceWithUpgradeState = (*R2BucketResource)(nil)

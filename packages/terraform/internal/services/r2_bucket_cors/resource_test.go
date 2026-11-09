@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -20,13 +20,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_r2_bucket_cors", &resource.Sweeper{
-		Name: "cloudflare_r2_bucket_cors",
-		F:    testSweepCloudflareR2BucketCors,
+	resource.AddTestSweepers("zenthcloud_r2_bucket_cors", &resource.Sweeper{
+		Name: "zenthcloud_r2_bucket_cors",
+		F:    testSweepZenthcloudR2BucketCors,
 	})
 }
 
-func testSweepCloudflareR2BucketCors(r string) error {
+func testSweepZenthcloudR2BucketCors(r string) error {
 	ctx := context.Background()
 	// R2 Bucket CORS is a configuration setting for R2 buckets.
 	// It's a singleton configuration per bucket, cleaned up when buckets are swept.
@@ -35,10 +35,10 @@ func testSweepCloudflareR2BucketCors(r string) error {
 	return nil
 }
 
-func TestAccCloudflareR2BucketCors_Basic(t *testing.T) {
+func TestAccZenthcloudR2BucketCors_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_r2_bucket_cors." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_r2_bucket_cors." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -77,10 +77,10 @@ func TestAccCloudflareR2BucketCors_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareR2BucketCors_Update(t *testing.T) {
+func TestAccZenthcloudR2BucketCors_Update(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_r2_bucket_cors." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_r2_bucket_cors." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -126,10 +126,10 @@ func TestAccCloudflareR2BucketCors_Update(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareR2BucketCors_JurisdictionEU(t *testing.T) {
+func TestAccZenthcloudR2BucketCors_JurisdictionEU(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_r2_bucket_cors." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_r2_bucket_cors." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -160,10 +160,10 @@ func TestAccCloudflareR2BucketCors_JurisdictionEU(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareR2BucketCors_JurisdictionFedramp(t *testing.T) {
+func TestAccZenthcloudR2BucketCors_JurisdictionFedramp(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_r2_bucket_cors." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_r2_bucket_cors." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -194,10 +194,10 @@ func TestAccCloudflareR2BucketCors_JurisdictionFedramp(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareR2BucketCors_AllHttpMethods(t *testing.T) {
+func TestAccZenthcloudR2BucketCors_AllHttpMethods(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_r2_bucket_cors." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_r2_bucket_cors." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -247,10 +247,10 @@ func TestAccCloudflareR2BucketCors_AllHttpMethods(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareR2BucketCors_MinimalRules(t *testing.T) {
+func TestAccZenthcloudR2BucketCors_MinimalRules(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_r2_bucket_cors." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_r2_bucket_cors." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -289,10 +289,10 @@ func TestAccCloudflareR2BucketCors_MinimalRules(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareR2BucketCors_CompleteLifecycle(t *testing.T) {
+func TestAccZenthcloudR2BucketCors_CompleteLifecycle(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_r2_bucket_cors." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_r2_bucket_cors." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },

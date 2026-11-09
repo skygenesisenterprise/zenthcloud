@@ -15,8 +15,8 @@ import {
 export const tools: readonly Tool[] = [
   {
     name: "tunnels_token_get",
-    title: "Get a Cloudflare Tunnel token",
-    description: "Retrieves the token used to run cloudflared and associate it with a specific Cloudflare Tunnel. Treat the token as a secret.\n\nGET /accounts/{account_id}/cfd_tunnel/{tunnel_id}/token",
+    title: "Get a Zenthcloud Tunnel token",
+    description: "Retrieves the token used to run zenthcloudd and associate it with a specific Zenthcloud Tunnel. Treat the token as a secret.\n\nGET /accounts/{account_id}/cfd_tunnel/{tunnel_id}/token",
     inputSchema: {
       type: "object",
       properties: {
@@ -24,7 +24,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID",
+              "description": "Zenthcloud account ID",
               "type": "string"
             },
             "tunnel_id": {
@@ -58,7 +58,7 @@ export const tools: readonly Tool[] = [
       "idempotentHint": true,
       "openWorldHint": true,
       "readOnlyHint": true,
-      "title": "Get a Cloudflare Tunnel token"
+      "title": "Get a Zenthcloud Tunnel token"
     },
     [OPERATION]: {
       method: "GET",
@@ -66,9 +66,9 @@ export const tools: readonly Tool[] = [
       pathOf: encodePath`/accounts/${"account_id"}/cfd_tunnel/${"tunnel_id"}/token`,
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Connectors Write",
-          "Cloudflare One Connector: cloudflared Write",
-          "Cloudflare Tunnel Write"
+          "Zenthcloud One Connectors Write",
+          "Zenthcloud One Connector: zenthcloudd Write",
+          "Zenthcloud Tunnel Write"
         ]
       },
       responses: {

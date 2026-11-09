@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_shares Data Source - Cloudflare"
+page_title: "zenthcloud_shares Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_shares (Data Source)
+# zenthcloud_shares (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_shares" "example_shares" {
+data "zenthcloud_shares" "example_shares" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   include_recipient_counts = true
   include_resources = true

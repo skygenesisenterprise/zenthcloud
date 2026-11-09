@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_email_routing_catch_all Resource - Cloudflare"
+page_title: "zenthcloud_email_routing_catch_all Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Email Routing Rules ReadEmail Routing Rules Write
 ---
 
-# cloudflare_email_routing_catch_all (Resource)
+# zenthcloud_email_routing_catch_all (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_email_routing_catch_all" "example_email_routing_catch_all" {
+resource "zenthcloud_email_routing_catch_all" "example_email_routing_catch_all" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   actions = [{
     type = "forward"
@@ -83,7 +83,7 @@ Available values: "all".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_email_routing_catch_all.example '<zone_id>'
+$ terraform import zenthcloud_email_routing_catch_all.example '<zone_id>'
 ```
 
 

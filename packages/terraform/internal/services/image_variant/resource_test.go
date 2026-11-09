@@ -9,12 +9,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/images"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/images"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -26,19 +26,19 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_image_variant", &resource.Sweeper{
-		Name: "cloudflare_image_variant",
-		F:    testSweepCloudflareImageVariant,
+	resource.AddTestSweepers("zenthcloud_image_variant", &resource.Sweeper{
+		Name: "zenthcloud_image_variant",
+		F:    testSweepZenthcloudImageVariant,
 	})
 }
 
-func testSweepCloudflareImageVariant(_ string) error {
+func testSweepZenthcloudImageVariant(_ string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping cloudflare_image_variant sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping zenthcloud_image_variant sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
@@ -46,7 +46,7 @@ func testSweepCloudflareImageVariant(_ string) error {
 	// capture the raw response and decode the full variant map generically.
 	res := new(http.Response)
 	_, err := client.Images.V1.Variants.List(ctx, images.V1VariantListParams{
-		AccountID: cloudflare.F(accountID),
+		AccountID: zenthcloud.F(accountID),
 	}, option.WithResponseBodyInto(&res))
 	if err != nil {
 		return fmt.Errorf("failed to list image variants for sweep: %w", err)
@@ -75,7 +75,7 @@ func testSweepCloudflareImageVariant(_ string) error {
 		}
 		tflog.Info(ctx, fmt.Sprintf("Deleting image variant: %s (account: %s)", id, accountID))
 		_, err := client.Images.V1.Variants.Delete(ctx, id, images.V1VariantDeleteParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete image variant %s: %s", id, err))
@@ -86,17 +86,17 @@ func testSweepCloudflareImageVariant(_ string) error {
 	return nil
 }
 
-func testAccCheckCloudflareImageVariantDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudImageVariantDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_image_variant" {
+		if rs.Type != "zenthcloud_image_variant" {
 			continue
 		}
 
 		_, err := client.Images.V1.Variants.Get(context.Background(), rs.Primary.ID, images.V1VariantGetParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		})
 		if err == nil {
 			return fmt.Errorf("image variant %s still exists", rs.Primary.ID)
@@ -122,12 +122,12 @@ func testAccImageVariantConfigReplace(rnd, accountID, variantID string) string {
 	return acctest.LoadTestCase("replace.tf", rnd, accountID, variantID)
 }
 
-// TestAccCloudflareImageVariant_Basic covers create, read of computed fields,
+// TestAccZenthcloudImageVariant_Basic covers create, read of computed fields,
 // and import.
-func TestAccCloudflareImageVariant_Basic(t *testing.T) {
+func TestAccZenthcloudImageVariant_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_image_variant." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_image_variant." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -135,7 +135,7 @@ func TestAccCloudflareImageVariant_Basic(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareImageVariantDestroy,
+		CheckDestroy:             testAccCheckZenthcloudImageVariantDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccImageVariantConfigBasic(rnd, accountID),
@@ -160,12 +160,12 @@ func TestAccCloudflareImageVariant_Basic(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareImageVariant_Update proves options and
+// TestAccZenthcloudImageVariant_Update proves options and
 // never_require_signed_urls update in place (only id/account_id force replace).
-func TestAccCloudflareImageVariant_Update(t *testing.T) {
+func TestAccZenthcloudImageVariant_Update(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_image_variant." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_image_variant." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -173,7 +173,7 @@ func TestAccCloudflareImageVariant_Update(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareImageVariantDestroy,
+		CheckDestroy:             testAccCheckZenthcloudImageVariantDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccImageVariantConfigBasic(rnd, accountID),
@@ -202,13 +202,13 @@ func TestAccCloudflareImageVariant_Update(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareImageVariant_Idempotency is a regression guard for issue
+// TestAccZenthcloudImageVariant_Idempotency is a regression guard for issue
 // #5448 (refresh failed with "missing required variant_id parameter"). The
 // second identical step forces refresh + plan and asserts an empty plan.
-func TestAccCloudflareImageVariant_Idempotency(t *testing.T) {
+func TestAccZenthcloudImageVariant_Idempotency(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_image_variant." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_image_variant." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -216,7 +216,7 @@ func TestAccCloudflareImageVariant_Idempotency(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareImageVariantDestroy,
+		CheckDestroy:             testAccCheckZenthcloudImageVariantDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccImageVariantConfigBasic(rnd, accountID),
@@ -241,12 +241,12 @@ func TestAccCloudflareImageVariant_Idempotency(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareImageVariant_AltOptions covers create with alternate enums
+// TestAccZenthcloudImageVariant_AltOptions covers create with alternate enums
 // (fit="crop", metadata="keep"), never_require_signed_urls=true, plus import.
-func TestAccCloudflareImageVariant_AltOptions(t *testing.T) {
+func TestAccZenthcloudImageVariant_AltOptions(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_image_variant." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_image_variant." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -254,7 +254,7 @@ func TestAccCloudflareImageVariant_AltOptions(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareImageVariantDestroy,
+		CheckDestroy:             testAccCheckZenthcloudImageVariantDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccImageVariantConfigAlt(rnd, accountID),
@@ -277,12 +277,12 @@ func TestAccCloudflareImageVariant_AltOptions(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareImageVariant_RequiresReplaceOnIDChange proves changing `id`
+// TestAccZenthcloudImageVariant_RequiresReplaceOnIDChange proves changing `id`
 // forces a replace, not an in-place update.
-func TestAccCloudflareImageVariant_RequiresReplaceOnIDChange(t *testing.T) {
+func TestAccZenthcloudImageVariant_RequiresReplaceOnIDChange(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_image_variant." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_image_variant." + rnd
 	firstID := rnd
 	secondID := rnd + "b"
 
@@ -292,7 +292,7 @@ func TestAccCloudflareImageVariant_RequiresReplaceOnIDChange(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareImageVariantDestroy,
+		CheckDestroy:             testAccCheckZenthcloudImageVariantDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccImageVariantConfigReplace(rnd, accountID, firstID),

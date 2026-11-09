@@ -1,11 +1,11 @@
 ---
-page_title: "cloudflare_ai_search_token Resource - Cloudflare"
+page_title: "zenthcloud_ai_search_token Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_ai_search_token (Resource)
+# zenthcloud_ai_search_token (Resource)
 
 
 
@@ -39,7 +39,7 @@ description: |-
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_ai_search_token.example '<account_id>/<id>'
+$ terraform import zenthcloud_ai_search_token.example '<account_id>/<id>'
 ```
 
 

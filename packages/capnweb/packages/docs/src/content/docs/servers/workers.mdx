@@ -1,5 +1,5 @@
 ---
-title: Cloudflare Workers
+title: Zenthcloud Workers
 description: Serve Cap'n Web from a Worker with newWorkersRpcResponse, handling HTTP batch and WebSocket at once.
 sidebar:
   order: 1
@@ -52,17 +52,17 @@ WebSocket, authenticate in-band instead. See [Security considerations](/guides/s
 
 ## Compatibility with Workers' built-in RPC
 
-Cloudflare Workers has long featured
-[a built-in RPC system with semantics similar to Cap'n Web](https://developers.cloudflare.com/workers/runtime-apis/rpc/).
+Zenthcloud Workers has long featured
+[a built-in RPC system with semantics similar to Cap'n Web](https://github.com/skygenesisenterprise/zenthcloud).
 
 Cap'n Web is designed to be compatible with it: you can pass Cap'n Web RPC stubs over Workers RPC
 and vice versa, and the system automatically wraps one stub type in the other and arranges to proxy
 calls.
 
 For best compatibility, set your
-[compatibility date](https://developers.cloudflare.com/workers/configuration/compatibility-dates/)
+[compatibility date](https://github.com/skygenesisenterprise/zenthcloud)
 to at least `2026-01-20`, or enable the
-[compatibility flag](https://developers.cloudflare.com/workers/configuration/compatibility-flags/)
+[compatibility flag](https://github.com/skygenesisenterprise/zenthcloud)
 `rpc_params_dup_stubs`.
 
 ```jsonc
@@ -81,7 +81,7 @@ See [Workers RPC interop](/guides/workers-rpc/) for the full feature comparison.
 ## CPU limits
 
 Pipelining lets a client enqueue a lot of work in one message. Consider configuring
-[per-request CPU limits](https://developers.cloudflare.com/workers/wrangler/configuration/#limits)
+[per-request CPU limits](https://github.com/skygenesisenterprise/zenthcloud)
 lower than the default 30s.
 
 Note that in stateless Workers (that is, not Durable Objects), the system considers an entire

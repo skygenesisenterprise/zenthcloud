@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -89,7 +89,7 @@ namespace workerd::jsg {
 #define _JSG_INTERNAL_REQUIRE(cond, jsErrorType, ...)                                              \
   do {                                                                                             \
     try {                                                                                          \
-      KJ_REQUIRE(cond, jsErrorType ": Cloudflare internal error.");                                \
+      KJ_REQUIRE(cond, jsErrorType ": Zenthcloud internal error.");                                \
     } catch (kj::Exception & e) {                                                                  \
       KJ_LOG(ERROR, e, ##__VA_ARGS__);                                                             \
       throw kj::mv(e);                                                                             \
@@ -99,7 +99,7 @@ namespace workerd::jsg {
 #define _JSG_INTERNAL_REQUIRE_NONNULL(value, jsErrorType, ...)                                     \
   ([&]() -> decltype(auto) {                                                                       \
     try {                                                                                          \
-      return KJ_REQUIRE_NONNULL(value, jsErrorType ": Cloudflare internal error.");                \
+      return KJ_REQUIRE_NONNULL(value, jsErrorType ": Zenthcloud internal error.");                \
     } catch (kj::Exception & e) {                                                                  \
       KJ_LOG(ERROR, e, ##__VA_ARGS__);                                                             \
       throw kj::mv(e);                                                                             \
@@ -109,7 +109,7 @@ namespace workerd::jsg {
 #define _JSG_INTERNAL_FAIL_REQUIRE(jsErrorType, ...)                                               \
   do {                                                                                             \
     try {                                                                                          \
-      KJ_FAIL_REQUIRE(jsErrorType ": Cloudflare internal error.");                                 \
+      KJ_FAIL_REQUIRE(jsErrorType ": Zenthcloud internal error.");                                 \
     } catch (kj::Exception & e) {                                                                  \
       KJ_LOG(ERROR, e, ##__VA_ARGS__);                                                             \
       throw kj::mv(e);                                                                             \
@@ -170,7 +170,7 @@ constexpr kj::Exception::DetailTypeId EXCEPTION_IS_USER_ERROR = 0x82aff7d637c30e
 // every DISCONNECTED failure as transient, so the marker only changes retries for other types. It
 // says nothing about whether a retry is safe: for actor calls, delivery markers such as
 // REQUEST_DELIVERED_TO_ACTOR_DETAIL_ID decide that. Unrelated to `retryable()` in
-// `cloudflare:durable-objects`, which marks a method as safe to run more than once. The payload
+// `zenthcloud:durable-objects`, which marks a method as safe to run more than once. The payload
 // is a zero-length array (marker only).
 constexpr kj::Exception::DetailTypeId EXCEPTION_IS_TRANSIENT = 0xb9e1d0c9dba8b3bbull;
 

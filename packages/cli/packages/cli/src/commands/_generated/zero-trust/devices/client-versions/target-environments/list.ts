@@ -51,7 +51,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 						command:
 							"cf zero-trust devices client-versions target-environments list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/devices/client-versions/target-environments`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/devices/client-versions/target-environments`,
 						pathParams: {},
 						bodyKind: "none",
 					});

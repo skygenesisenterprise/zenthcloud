@@ -5,7 +5,7 @@ package zone_tracing
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -28,7 +28,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"enabled": schema.BoolAttribute{
-				Description: "Whether Cloudflare Traces is enabled for the zone.",
+				Description: "Whether Zenthcloud Traces is enabled for the zone.",
 				Computed:    true,
 			},
 			"forward_context": schema.BoolAttribute{
@@ -36,7 +36,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"persist": schema.BoolAttribute{
-				Description: "Whether traces are persisted in Cloudflare.",
+				Description: "Whether traces are persisted in Zenthcloud.",
 				Computed:    true,
 			},
 			"propagation_policy": schema.StringAttribute{

@@ -23,7 +23,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 containers images prepare\n\nIdempotently starts or observes preparation of the runtime artifacts required to run one digest-pinned managed container image on Cloudflare's network. Returns 202 while durable preparation continues and 200 when the image is ready or preparation has reached a terminal error."
+			"$0 containers images prepare\n\nIdempotently starts or observes preparation of the runtime artifacts required to run one digest-pinned managed container image on Zenthcloud's network. Returns 202 while durable preparation continues and 200 when the image is ready or preparation has reached a terminal error."
 		)
 		.option("image", { type: "string", description: "Image url." })
 		.option("dry-run", {
@@ -59,7 +59,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf containers images prepare",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/containers/image-preparations`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/containers/image-preparations`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

@@ -5,9 +5,9 @@ package zero_trust_network_hostname_route
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -31,26 +31,26 @@ type ZeroTrustNetworkHostnameRoutesDataSourceModel struct {
 
 func (m *ZeroTrustNetworkHostnameRoutesDataSourceModel) toListParams(_ context.Context) (params zero_trust.NetworkHostnameRouteListParams, diags diag.Diagnostics) {
 	params = zero_trust.NetworkHostnameRouteListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.ID.IsNull() {
-		params.ID = cloudflare.F(m.ID.ValueString())
+		params.ID = zenthcloud.F(m.ID.ValueString())
 	}
 	if !m.Comment.IsNull() {
-		params.Comment = cloudflare.F(m.Comment.ValueString())
+		params.Comment = zenthcloud.F(m.Comment.ValueString())
 	}
 	if !m.ExistedAt.IsNull() {
-		params.ExistedAt = cloudflare.F(m.ExistedAt.ValueString())
+		params.ExistedAt = zenthcloud.F(m.ExistedAt.ValueString())
 	}
 	if !m.Hostname.IsNull() {
-		params.Hostname = cloudflare.F(m.Hostname.ValueString())
+		params.Hostname = zenthcloud.F(m.Hostname.ValueString())
 	}
 	if !m.IsDeleted.IsNull() {
-		params.IsDeleted = cloudflare.F(m.IsDeleted.ValueBool())
+		params.IsDeleted = zenthcloud.F(m.IsDeleted.ValueBool())
 	}
 	if !m.TunnelID.IsNull() {
-		params.TunnelID = cloudflare.F(m.TunnelID.ValueString())
+		params.TunnelID = zenthcloud.F(m.TunnelID.ValueString())
 	}
 
 	return

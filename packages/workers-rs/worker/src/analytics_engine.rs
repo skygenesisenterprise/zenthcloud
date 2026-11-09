@@ -16,7 +16,7 @@ impl EnvBinding for AnalyticsEngineDataset {
 
     // Override get to perform an unchecked cast from an object.
     // Miniflare defines the binding as an Object and not a class so its name is not available for checking.
-    // https://github.com/cloudflare/workers-sdk/blob/main/packages/wrangler/templates/middleware/middleware-mock-analytics-engine.ts#L6
+    // https://github.com/skygenesisenterprise/zenthcloud
     fn get(val: JsValue) -> Result<Self> {
         let obj = Object::from(val);
         Ok(obj.unchecked_into())

@@ -17,7 +17,7 @@ resolver = "2"
 
 [workspace.package]
 edition = "2021"
-repository = "https://github.com/cloudflare/quiche"
+repository = "https://github.com/skygenesisenterprise/zenthcloud"
 license = "BSD-2-Clause"
 readme = "README.md"
 keywords = ["quic", "http3"]

@@ -6,8 +6,8 @@ import (
 	"context"
 	"regexp"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customvalidator"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
@@ -793,7 +793,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 									},
 								},
 								"disable_apps": schema.BoolAttribute{
-									Description: "Whether to disable Cloudflare Apps.",
+									Description: "Whether to disable Zenthcloud Apps.",
 									Computed:    true,
 									Validators: []validator.Bool{
 										customvalidator.RequiresOtherStringAttributeToBe(
@@ -836,7 +836,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 									},
 								},
 								"fonts": schema.BoolAttribute{
-									Description: "Whether to enable Cloudflare Fonts.",
+									Description: "Whether to enable Zenthcloud Fonts.",
 									Computed:    true,
 									Validators: []validator.Bool{
 										customvalidator.RequiresOtherStringAttributeToBe(
@@ -1140,7 +1140,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 									ElementType: types.Int64Type,
 								},
 								"browser_ttl": schema.SingleNestedAttribute{
-									Description: "How long client browsers should cache the response. Cloudflare cache purge will not purge content cached on client browsers, so high browser TTLs may lead to stale content.",
+									Description: "How long client browsers should cache the response. Zenthcloud cache purge will not purge content cached on client browsers, so high browser TTLs may lead to stale content.",
 									Computed:    true,
 									Validators: []validator.Object{
 										customvalidator.RequiresOtherStringAttributeToBe(
@@ -1182,7 +1182,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 									},
 								},
 								"cache_key": schema.SingleNestedAttribute{
-									Description: "Which components of the request are included in or excluded from the cache key Cloudflare uses to store the response in cache.",
+									Description: "Which components of the request are included in or excluded from the cache key Zenthcloud uses to store the response in cache.",
 									Computed:    true,
 									Validators: []validator.Object{
 										customvalidator.RequiresOtherStringAttributeToBe(
@@ -1382,7 +1382,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 									CustomType: customfield.NewNestedObjectType[RulesetRulesActionParametersCacheReserveDataSourceModel](ctx),
 									Attributes: map[string]schema.Attribute{
 										"eligible": schema.BoolAttribute{
-											Description: "Whether Cache Reserve is enabled. If this is true and a request meets eligibility criteria, Cloudflare will write the resource to Cache Reserve.",
+											Description: "Whether Cache Reserve is enabled. If this is true and a request meets eligibility criteria, Zenthcloud will write the resource to Cache Reserve.",
 											Computed:    true,
 										},
 										"minimum_file_size": schema.Int64Attribute{
@@ -1395,7 +1395,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 									},
 								},
 								"edge_ttl": schema.SingleNestedAttribute{
-									Description: "How long the Cloudflare edge network should cache the response.",
+									Description: "How long the Zenthcloud edge network should cache the response.",
 									Computed:    true,
 									Validators: []validator.Object{
 										customvalidator.RequiresOtherStringAttributeToBe(
@@ -1474,7 +1474,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 									},
 								},
 								"origin_cache_control": schema.BoolAttribute{
-									Description: "Whether Cloudflare will aim to strictly adhere to RFC 7234.",
+									Description: "Whether Zenthcloud will aim to strictly adhere to RFC 7234.",
 									Computed:    true,
 									Validators: []validator.Bool{
 										customvalidator.RequiresOtherStringAttributeToBe(
@@ -1484,7 +1484,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 									},
 								},
 								"origin_error_page_passthru": schema.BoolAttribute{
-									Description: "Whether to generate Cloudflare error pages for issues from the origin server.",
+									Description: "Whether to generate Zenthcloud error pages for issues from the origin server.",
 									Computed:    true,
 									Validators: []validator.Bool{
 										customvalidator.RequiresOtherStringAttributeToBe(
@@ -1494,7 +1494,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 									},
 								},
 								"read_timeout": schema.Int64Attribute{
-									Description: "A timeout value between two successive read operations to use for your origin server. Historically, the timeout value between two read options from Cloudflare to an origin server is 100 seconds. If you are attempting to reduce HTTP 524 errors because of timeouts from an origin server, try increasing this timeout value.",
+									Description: "A timeout value between two successive read operations to use for your origin server. Historically, the timeout value between two read options from Zenthcloud to an origin server is 100 seconds. If you are attempting to reduce HTTP 524 errors because of timeouts from an origin server, try increasing this timeout value.",
 									Computed:    true,
 									Validators: []validator.Int64{
 										customvalidator.RequiresOtherStringAttributeToBe(
@@ -1505,7 +1505,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 									},
 								},
 								"respect_strong_etags": schema.BoolAttribute{
-									Description: "Whether Cloudflare should respect strong ETag (entity tag) headers. If false, Cloudflare converts strong ETag headers to weak ETag headers.",
+									Description: "Whether Zenthcloud should respect strong ETag (entity tag) headers. If false, Zenthcloud converts strong ETag headers to weak ETag headers.",
 									Computed:    true,
 									Validators: []validator.Bool{
 										customvalidator.RequiresOtherStringAttributeToBe(
@@ -1526,7 +1526,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 									CustomType: customfield.NewNestedObjectType[RulesetRulesActionParametersServeStaleDataSourceModel](ctx),
 									Attributes: map[string]schema.Attribute{
 										"disable_stale_while_updating": schema.BoolAttribute{
-											Description: "Whether Cloudflare should disable serving stale content while getting the latest content from the origin.",
+											Description: "Whether Zenthcloud should disable serving stale content while getting the latest content from the origin.",
 											Computed:    true,
 										},
 									},
@@ -1617,7 +1617,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 									},
 								},
 								"origin_range_requests": schema.SingleNestedAttribute{
-									Description: "Controls whether Cloudflare fetches a large asset from the origin as a series of range requests instead of one whole-body request.",
+									Description: "Controls whether Zenthcloud fetches a large asset from the origin as a series of range requests instead of one whole-body request.",
 									Computed:    true,
 									Validators: []validator.Object{
 										customvalidator.RequiresOtherStringAttributeToBe(
@@ -1817,8 +1817,8 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 												),
 											},
 										},
-										"cloudflare_only": schema.BoolAttribute{
-											Description: "Whether to apply the directive only to Cloudflare's cache.",
+										"zenthcloud_only": schema.BoolAttribute{
+											Description: "Whether to apply the directive only to Zenthcloud's cache.",
 											Computed:    true,
 										},
 									},
@@ -1851,8 +1851,8 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 												),
 											},
 										},
-										"cloudflare_only": schema.BoolAttribute{
-											Description: "Whether to apply the directive only to Cloudflare's cache.",
+										"zenthcloud_only": schema.BoolAttribute{
+											Description: "Whether to apply the directive only to Zenthcloud's cache.",
 											Computed:    true,
 										},
 									},
@@ -1885,8 +1885,8 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 												),
 											},
 										},
-										"cloudflare_only": schema.BoolAttribute{
-											Description: "Whether to apply the directive only to Cloudflare's cache.",
+										"zenthcloud_only": schema.BoolAttribute{
+											Description: "Whether to apply the directive only to Zenthcloud's cache.",
 											Computed:    true,
 										},
 									},
@@ -1919,8 +1919,8 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 												),
 											},
 										},
-										"cloudflare_only": schema.BoolAttribute{
-											Description: "Whether to apply the directive only to Cloudflare's cache.",
+										"zenthcloud_only": schema.BoolAttribute{
+											Description: "Whether to apply the directive only to Zenthcloud's cache.",
 											Computed:    true,
 										},
 									},
@@ -1955,8 +1955,8 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 												),
 											},
 										},
-										"cloudflare_only": schema.BoolAttribute{
-											Description: "Whether to apply the directive only to Cloudflare's cache.",
+										"zenthcloud_only": schema.BoolAttribute{
+											Description: "Whether to apply the directive only to Zenthcloud's cache.",
 											Computed:    true,
 										},
 									},
@@ -1991,8 +1991,8 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 												),
 											},
 										},
-										"cloudflare_only": schema.BoolAttribute{
-											Description: "Whether to apply the directive only to Cloudflare's cache.",
+										"zenthcloud_only": schema.BoolAttribute{
+											Description: "Whether to apply the directive only to Zenthcloud's cache.",
 											Computed:    true,
 										},
 									},
@@ -2015,8 +2015,8 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 												stringvalidator.OneOfCaseInsensitive("set", "remove"),
 											},
 										},
-										"cloudflare_only": schema.BoolAttribute{
-											Description: "Whether to apply the directive only to Cloudflare's cache.",
+										"zenthcloud_only": schema.BoolAttribute{
+											Description: "Whether to apply the directive only to Zenthcloud's cache.",
 											Computed:    true,
 										},
 									},
@@ -2039,8 +2039,8 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 												stringvalidator.OneOfCaseInsensitive("set", "remove"),
 											},
 										},
-										"cloudflare_only": schema.BoolAttribute{
-											Description: "Whether to apply the directive only to Cloudflare's cache.",
+										"zenthcloud_only": schema.BoolAttribute{
+											Description: "Whether to apply the directive only to Zenthcloud's cache.",
 											Computed:    true,
 										},
 									},
@@ -2063,8 +2063,8 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 												stringvalidator.OneOfCaseInsensitive("set", "remove"),
 											},
 										},
-										"cloudflare_only": schema.BoolAttribute{
-											Description: "Whether to apply the directive only to Cloudflare's cache.",
+										"zenthcloud_only": schema.BoolAttribute{
+											Description: "Whether to apply the directive only to Zenthcloud's cache.",
 											Computed:    true,
 										},
 									},
@@ -2087,8 +2087,8 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 												stringvalidator.OneOfCaseInsensitive("set", "remove"),
 											},
 										},
-										"cloudflare_only": schema.BoolAttribute{
-											Description: "Whether to apply the directive only to Cloudflare's cache.",
+										"zenthcloud_only": schema.BoolAttribute{
+											Description: "Whether to apply the directive only to Zenthcloud's cache.",
 											Computed:    true,
 										},
 									},
@@ -2111,8 +2111,8 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 												stringvalidator.OneOfCaseInsensitive("set", "remove"),
 											},
 										},
-										"cloudflare_only": schema.BoolAttribute{
-											Description: "Whether to apply the directive only to Cloudflare's cache.",
+										"zenthcloud_only": schema.BoolAttribute{
+											Description: "Whether to apply the directive only to Zenthcloud's cache.",
 											Computed:    true,
 										},
 									},
@@ -2135,8 +2135,8 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 												stringvalidator.OneOfCaseInsensitive("set", "remove"),
 											},
 										},
-										"cloudflare_only": schema.BoolAttribute{
-											Description: "Whether to apply the directive only to Cloudflare's cache.",
+										"zenthcloud_only": schema.BoolAttribute{
+											Description: "Whether to apply the directive only to Zenthcloud's cache.",
 											Computed:    true,
 										},
 									},
@@ -2159,8 +2159,8 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 												stringvalidator.OneOfCaseInsensitive("set", "remove"),
 											},
 										},
-										"cloudflare_only": schema.BoolAttribute{
-											Description: "Whether to apply the directive only to Cloudflare's cache.",
+										"zenthcloud_only": schema.BoolAttribute{
+											Description: "Whether to apply the directive only to Zenthcloud's cache.",
 											Computed:    true,
 										},
 									},

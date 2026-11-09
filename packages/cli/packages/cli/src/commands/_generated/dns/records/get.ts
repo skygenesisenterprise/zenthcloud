@@ -25,7 +25,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("include-shadow-metadata", {
 			type: "boolean",
 			description:
-				"Whether to include shadow metadata in the `meta` field of each record in the response. See [Shadowed records](https://developers.cloudflare.com/dns/manage-dns-records/reference/shadowed-records).",
+				"Whether to include shadow metadata in the `meta` field of each record in the response. See [Shadowed records](https://github.com/skygenesisenterprise/zenthcloud).",
 		})
 		.option("dry-run", {
 			type: "boolean",
@@ -57,7 +57,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf dns records get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/dns_records/${argv["dns-record-id"] == null ? "<dns-record-id>" : encodeURIComponent(String(argv["dns-record-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/dns_records/${argv["dns-record-id"] == null ? "<dns-record-id>" : encodeURIComponent(String(argv["dns-record-id"]))}`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 							"dns-record-id": String(argv["dns-record-id"] ?? ""),

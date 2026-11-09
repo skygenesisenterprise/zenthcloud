@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_magic_transit_site_wan Data Source - Cloudflare"
+page_title: "zenthcloud_magic_transit_site_wan Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Magic Transit ReadMagic Transit WriteMagic WAN ReadMagic WAN Write
 ---
 
-# cloudflare_magic_transit_site_wan (Data Source)
+# zenthcloud_magic_transit_site_wan (Data Source)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_magic_transit_site_wan" "example_magic_transit_site_wan" {
+data "zenthcloud_magic_transit_site_wan" "example_magic_transit_site_wan" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   site_id = "023e105f4ecef8ad9ca31a8372d0c353"
   wan_id = "023e105f4ecef8ad9ca31a8372d0c353"

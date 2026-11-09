@@ -1,5 +1,5 @@
 
-resource "cloudflare_secrets_store_secret" "%[1]s" {
+resource "zenthcloud_secrets_store_secret" "%[1]s" {
   account_id = "%[2]s"
   store_id   = "%[3]s"
   name       = "%[1]s"

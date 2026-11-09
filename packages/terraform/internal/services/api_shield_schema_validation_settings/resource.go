@@ -8,12 +8,12 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/api_gateway"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/api_gateway"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -29,7 +29,7 @@ func NewResource() resource.Resource {
 
 // APIShieldSchemaValidationSettingsResource defines the resource implementation.
 type APIShieldSchemaValidationSettingsResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *APIShieldSchemaValidationSettingsResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -41,12 +41,12 @@ func (r *APIShieldSchemaValidationSettingsResource) Configure(ctx context.Contex
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -73,7 +73,7 @@ func (r *APIShieldSchemaValidationSettingsResource) Create(ctx context.Context, 
 	_, err = r.client.APIGateway.Settings.SchemaValidation.Update(
 		ctx,
 		api_gateway.SettingSchemaValidationUpdateParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -120,7 +120,7 @@ func (r *APIShieldSchemaValidationSettingsResource) Update(ctx context.Context, 
 	_, err = r.client.APIGateway.Settings.SchemaValidation.Update(
 		ctx,
 		api_gateway.SettingSchemaValidationUpdateParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -154,7 +154,7 @@ func (r *APIShieldSchemaValidationSettingsResource) Read(ctx context.Context, re
 	_, err := r.client.APIGateway.Settings.SchemaValidation.Get(
 		ctx,
 		api_gateway.SettingSchemaValidationGetParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -203,7 +203,7 @@ func (r *APIShieldSchemaValidationSettingsResource) ImportState(ctx context.Cont
 	_, err := r.client.APIGateway.Settings.SchemaValidation.Get(
 		ctx,
 		api_gateway.SettingSchemaValidationGetParams{
-			ZoneID: cloudflare.F(path),
+			ZoneID: zenthcloud.F(path),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),

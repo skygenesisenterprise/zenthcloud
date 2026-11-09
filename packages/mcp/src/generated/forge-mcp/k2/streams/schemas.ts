@@ -4,12 +4,12 @@
 import type { JSONObject } from "@modelcontextprotocol/server";
 
 /**
- * The schema of `cloudflare-k2_CreateK2StreamRequest`.
+ * The schema of `zenthcloud-k2_CreateK2StreamRequest`.
  */
-export const cloudflare$$k2_CreateK2StreamRequest: JSONObject = {
+export const zenthcloud$$k2_CreateK2StreamRequest: JSONObject = {
   "properties": {
     "http": {
-      "$ref": "#/$defs/cloudflare-k2_K2StreamHttpInput",
+      "$ref": "#/$defs/zenthcloud-k2_K2StreamHttpInput",
       "default": {
         "enabled": false
       }
@@ -24,7 +24,7 @@ export const cloudflare$$k2_CreateK2StreamRequest: JSONObject = {
       "type": "integer"
     },
     "worker_binding": {
-      "$ref": "#/$defs/cloudflare-k2_K2StreamWorkerBindingInput",
+      "$ref": "#/$defs/zenthcloud-k2_K2StreamWorkerBindingInput",
       "default": {
         "enabled": true
       }
@@ -37,9 +37,9 @@ export const cloudflare$$k2_CreateK2StreamRequest: JSONObject = {
 };
 
 /**
- * The schema of `cloudflare-k2_K2StreamCorsOptions`.
+ * The schema of `zenthcloud-k2_K2StreamCorsOptions`.
  */
-export const cloudflare$$k2_K2StreamCorsOptions: JSONObject = {
+export const zenthcloud$$k2_K2StreamCorsOptions: JSONObject = {
   "properties": {
     "origins": {
       "description": "Allows browser requests from these HTTP or HTTPS origins. Use a wildcard only as the sole origin. An empty list blocks cross-origin browser requests. Defaults to `['*']` when HTTP is enabled without stored origins.",
@@ -54,9 +54,9 @@ export const cloudflare$$k2_K2StreamCorsOptions: JSONObject = {
 };
 
 /**
- * The schema of `cloudflare-k2_K2StreamHttpInput`.
+ * The schema of `zenthcloud-k2_K2StreamHttpInput`.
  */
-export const cloudflare$$k2_K2StreamHttpInput: JSONObject = {
+export const zenthcloud$$k2_K2StreamHttpInput: JSONObject = {
   "description": "Configures the HTTP endpoint. Disabling HTTP keeps `authentication` and `cors`, so enabling it again restores them.",
   "properties": {
     "authentication": {
@@ -64,7 +64,7 @@ export const cloudflare$$k2_K2StreamHttpInput: JSONObject = {
       "type": "boolean"
     },
     "cors": {
-      "$ref": "#/$defs/cloudflare-k2_K2StreamCorsOptions"
+      "$ref": "#/$defs/zenthcloud-k2_K2StreamCorsOptions"
     },
     "enabled": {
       "description": "Indicates whether the HTTP endpoint accepts records.",
@@ -78,9 +78,9 @@ export const cloudflare$$k2_K2StreamHttpInput: JSONObject = {
 };
 
 /**
- * The schema of `cloudflare-k2_K2StreamWorkerBindingInput`.
+ * The schema of `zenthcloud-k2_K2StreamWorkerBindingInput`.
  */
-export const cloudflare$$k2_K2StreamWorkerBindingInput: JSONObject = {
+export const zenthcloud$$k2_K2StreamWorkerBindingInput: JSONObject = {
   "properties": {
     "enabled": {
       "description": "Indicates whether Workers bindings can produce records to the stream.",
@@ -94,12 +94,12 @@ export const cloudflare$$k2_K2StreamWorkerBindingInput: JSONObject = {
 };
 
 /**
- * The schema of `cloudflare-k2_UpdateK2StreamRequest`.
+ * The schema of `zenthcloud-k2_UpdateK2StreamRequest`.
  */
-export const cloudflare$$k2_UpdateK2StreamRequest: JSONObject = {
+export const zenthcloud$$k2_UpdateK2StreamRequest: JSONObject = {
   "properties": {
     "http": {
-      "$ref": "#/$defs/cloudflare-k2_K2StreamHttpInput",
+      "$ref": "#/$defs/zenthcloud-k2_K2StreamHttpInput",
       "description": "Configures the HTTP endpoint. Disabling HTTP keeps `authentication` and `cors`, so enabling it again restores them."
     },
     "retention_seconds": {
@@ -107,7 +107,7 @@ export const cloudflare$$k2_UpdateK2StreamRequest: JSONObject = {
       "type": "integer"
     },
     "worker_binding": {
-      "$ref": "#/$defs/cloudflare-k2_K2StreamWorkerBindingInput"
+      "$ref": "#/$defs/zenthcloud-k2_K2StreamWorkerBindingInput"
     }
   },
   "type": "object"

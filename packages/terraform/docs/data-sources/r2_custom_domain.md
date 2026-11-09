@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_r2_custom_domain Data Source - Cloudflare"
+page_title: "zenthcloud_r2_custom_domain Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Workers R2 Storage ReadWorkers R2 Storage Write
 ---
 
-# cloudflare_r2_custom_domain (Data Source)
+# zenthcloud_r2_custom_domain (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_r2_custom_domain" "example_r2_custom_domain" {
+data "zenthcloud_r2_custom_domain" "example_r2_custom_domain" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   bucket_name = "example-bucket"
   domain = "example-domain/custom-domain.com"
@@ -28,7 +28,7 @@ data "cloudflare_r2_custom_domain" "example_r2_custom_domain" {
 
 ### Required
 
-- `account_id` (String) Cloudflare account ID that owns the R2 resource.
+- `account_id` (String) Zenthcloud account ID that owns the R2 resource.
 - `bucket_name` (String) Name of the bucket.
 - `domain` (String) Name of the custom domain.
 

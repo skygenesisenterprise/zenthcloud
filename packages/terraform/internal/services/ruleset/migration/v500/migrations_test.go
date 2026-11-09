@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -66,10 +66,10 @@ func TestMigrateRulesetContentConverter(t *testing.T) {
 		{name: "ignored_rules", value: true, ignoredRules: true},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
-			config := fmt.Sprintf(`resource "cloudflare_ruleset" "%s" {
+			config := fmt.Sprintf(`resource "zenthcloud_ruleset" "%s" {
   zone_id = "%s"
   name = "Migration content converter %s"
   kind = "zone"
@@ -84,11 +84,11 @@ func TestMigrateRulesetContentConverter(t *testing.T) {
   }
 }`, rnd, zoneID, rnd, tc.value)
 			external := map[string]resource.ExternalProvider{
-				"cloudflare": {Source: "cloudflare/cloudflare", VersionConstraint: "4.52.9"},
+				"zenthcloud": {Source: "zenthcloud/zenthcloud", VersionConstraint: "4.52.9"},
 			}
 			steps := []resource.TestStep{{ExternalProviders: external, Config: config}}
 			if tc.ignoredRules {
-				config = fmt.Sprintf(`resource "cloudflare_ruleset" "%s" {
+				config = fmt.Sprintf(`resource "zenthcloud_ruleset" "%s" {
   zone_id = "%s"
   name = "Migration content converter %s"
   kind = "zone"
@@ -100,10 +100,10 @@ func TestMigrateRulesetContentConverter(t *testing.T) {
 				steps = append(steps, resource.TestStep{ExternalProviders: external, Config: config})
 			}
 			steps = append(steps, acctest.MigrationV2TestStep(t, config, tmpDir, "4.52.9", "v4", "v5", []statecheck.StateCheck{
-				statecheck.ExpectKnownValue("cloudflare_ruleset."+rnd,
+				statecheck.ExpectKnownValue("zenthcloud_ruleset."+rnd,
 					tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("action_parameters").AtMapKey("content_converter"),
 					knownvalue.Bool(tc.value)),
-				statecheck.ExpectKnownValue("cloudflare_ruleset."+rnd,
+				statecheck.ExpectKnownValue("zenthcloud_ruleset."+rnd,
 					tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("ref"), knownvalue.StringExact("migration-content-converter")),
 			}))
 			resource.Test(t, resource.TestCase{
@@ -140,7 +140,7 @@ func TestMigrateRulesetBasic(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
@@ -155,8 +155,8 @@ func TestMigrateRulesetBasic(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -173,10 +173,10 @@ func TestMigrateRulesetBasic(t *testing.T) {
 				Steps: []resource.TestStep{
 					firstStep,
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
-						statecheck.ExpectKnownValue("cloudflare_ruleset."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
-						statecheck.ExpectKnownValue("cloudflare_ruleset."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("My ruleset %s", rnd))),
-						statecheck.ExpectKnownValue("cloudflare_ruleset."+rnd, tfjsonpath.New("phase"), knownvalue.StringExact("http_request_firewall_custom")),
-						statecheck.ExpectKnownValue("cloudflare_ruleset."+rnd, tfjsonpath.New("kind"), knownvalue.StringExact("zone")),
+						statecheck.ExpectKnownValue("zenthcloud_ruleset."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
+						statecheck.ExpectKnownValue("zenthcloud_ruleset."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("My ruleset %s", rnd))),
+						statecheck.ExpectKnownValue("zenthcloud_ruleset."+rnd, tfjsonpath.New("phase"), knownvalue.StringExact("http_request_firewall_custom")),
+						statecheck.ExpectKnownValue("zenthcloud_ruleset."+rnd, tfjsonpath.New("kind"), knownvalue.StringExact("zone")),
 					}),
 				},
 			})
@@ -206,7 +206,7 @@ func TestMigrateRulesetSimpleRules(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
@@ -221,8 +221,8 @@ func TestMigrateRulesetSimpleRules(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -239,11 +239,11 @@ func TestMigrateRulesetSimpleRules(t *testing.T) {
 				Steps: []resource.TestStep{
 					firstStep,
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
-						statecheck.ExpectKnownValue("cloudflare_ruleset."+rnd, tfjsonpath.New("rules"), knownvalue.ListSizeExact(2)),
-						statecheck.ExpectKnownValue("cloudflare_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("expression"), knownvalue.StringExact("ip.src eq 1.1.1.1")),
-						statecheck.ExpectKnownValue("cloudflare_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("action"), knownvalue.StringExact("block")),
-						statecheck.ExpectKnownValue("cloudflare_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(1).AtMapKey("expression"), knownvalue.StringExact("ip.src eq 2.2.2.2")),
-						statecheck.ExpectKnownValue("cloudflare_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(1).AtMapKey("action"), knownvalue.StringExact("log")),
+						statecheck.ExpectKnownValue("zenthcloud_ruleset."+rnd, tfjsonpath.New("rules"), knownvalue.ListSizeExact(2)),
+						statecheck.ExpectKnownValue("zenthcloud_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("expression"), knownvalue.StringExact("ip.src eq 1.1.1.1")),
+						statecheck.ExpectKnownValue("zenthcloud_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("action"), knownvalue.StringExact("block")),
+						statecheck.ExpectKnownValue("zenthcloud_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(1).AtMapKey("expression"), knownvalue.StringExact("ip.src eq 2.2.2.2")),
+						statecheck.ExpectKnownValue("zenthcloud_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(1).AtMapKey("action"), knownvalue.StringExact("log")),
 					}),
 				},
 			})
@@ -273,7 +273,7 @@ func TestMigrateRulesetHeadersListToMap(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
@@ -288,8 +288,8 @@ func TestMigrateRulesetHeadersListToMap(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -306,10 +306,10 @@ func TestMigrateRulesetHeadersListToMap(t *testing.T) {
 				Steps: []resource.TestStep{
 					firstStep,
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
-						statecheck.ExpectKnownValue("cloudflare_ruleset."+rnd, tfjsonpath.New("rules"), knownvalue.ListSizeExact(2)),
-						statecheck.ExpectKnownValue("cloudflare_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("action_parameters").AtMapKey("headers").AtMapKey("X-Custom-Header").AtMapKey("operation"), knownvalue.StringExact("set")),
-						statecheck.ExpectKnownValue("cloudflare_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("action_parameters").AtMapKey("headers").AtMapKey("X-Custom-Header").AtMapKey("value"), knownvalue.StringExact("custom-value")),
-						statecheck.ExpectKnownValue("cloudflare_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(1).AtMapKey("action_parameters").AtMapKey("headers").AtMapKey("Authorization").AtMapKey("operation"), knownvalue.StringExact("remove")),
+						statecheck.ExpectKnownValue("zenthcloud_ruleset."+rnd, tfjsonpath.New("rules"), knownvalue.ListSizeExact(2)),
+						statecheck.ExpectKnownValue("zenthcloud_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("action_parameters").AtMapKey("headers").AtMapKey("X-Custom-Header").AtMapKey("operation"), knownvalue.StringExact("set")),
+						statecheck.ExpectKnownValue("zenthcloud_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("action_parameters").AtMapKey("headers").AtMapKey("X-Custom-Header").AtMapKey("value"), knownvalue.StringExact("custom-value")),
+						statecheck.ExpectKnownValue("zenthcloud_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(1).AtMapKey("action_parameters").AtMapKey("headers").AtMapKey("Authorization").AtMapKey("operation"), knownvalue.StringExact("remove")),
 					}),
 				},
 			})
@@ -340,7 +340,7 @@ func TestMigrateRulesetLogCustomFields(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
@@ -355,8 +355,8 @@ func TestMigrateRulesetLogCustomFields(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -373,13 +373,13 @@ func TestMigrateRulesetLogCustomFields(t *testing.T) {
 				Steps: []resource.TestStep{
 					firstStep,
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
-						statecheck.ExpectKnownValue("cloudflare_ruleset."+rnd, tfjsonpath.New("rules"), knownvalue.ListSizeExact(3)),
+						statecheck.ExpectKnownValue("zenthcloud_ruleset."+rnd, tfjsonpath.New("rules"), knownvalue.ListSizeExact(3)),
 						// Rule 0: cookie_fields transformed to list of objects (API may return in any order)
-						statecheck.ExpectKnownValue("cloudflare_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("action_parameters").AtMapKey("cookie_fields"), knownvalue.ListSizeExact(3)),
+						statecheck.ExpectKnownValue("zenthcloud_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("action_parameters").AtMapKey("cookie_fields"), knownvalue.ListSizeExact(3)),
 						// Rule 1: request_fields transformed to list of objects (API may return in any order)
-						statecheck.ExpectKnownValue("cloudflare_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(1).AtMapKey("action_parameters").AtMapKey("request_fields"), knownvalue.ListSizeExact(2)),
+						statecheck.ExpectKnownValue("zenthcloud_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(1).AtMapKey("action_parameters").AtMapKey("request_fields"), knownvalue.ListSizeExact(2)),
 						// Rule 2: response_fields transformed to list of objects (API may return in any order)
-						statecheck.ExpectKnownValue("cloudflare_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(2).AtMapKey("action_parameters").AtMapKey("response_fields"), knownvalue.ListSizeExact(2)),
+						statecheck.ExpectKnownValue("zenthcloud_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(2).AtMapKey("action_parameters").AtMapKey("response_fields"), knownvalue.ListSizeExact(2)),
 					}),
 				},
 			})
@@ -409,7 +409,7 @@ func TestMigrateRulesetRateLimit(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
@@ -424,8 +424,8 @@ func TestMigrateRulesetRateLimit(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -442,15 +442,15 @@ func TestMigrateRulesetRateLimit(t *testing.T) {
 				Steps: []resource.TestStep{
 					firstStep,
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
-						statecheck.ExpectKnownValue("cloudflare_ruleset."+rnd, tfjsonpath.New("rules"), knownvalue.ListSizeExact(3)),
+						statecheck.ExpectKnownValue("zenthcloud_ruleset."+rnd, tfjsonpath.New("rules"), knownvalue.ListSizeExact(3)),
 						// Rule 0: ratelimit is now an object (not array), characteristics is a list
-						statecheck.ExpectKnownValue("cloudflare_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("ratelimit").AtMapKey("characteristics"), knownvalue.ListSizeExact(2)),
-						statecheck.ExpectKnownValue("cloudflare_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("ratelimit").AtMapKey("period"), knownvalue.Int64Exact(60)),
-						statecheck.ExpectKnownValue("cloudflare_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("ratelimit").AtMapKey("requests_per_period"), knownvalue.Int64Exact(100)),
-						statecheck.ExpectKnownValue("cloudflare_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("ratelimit").AtMapKey("mitigation_timeout"), knownvalue.Int64Exact(600)),
+						statecheck.ExpectKnownValue("zenthcloud_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("ratelimit").AtMapKey("characteristics"), knownvalue.ListSizeExact(2)),
+						statecheck.ExpectKnownValue("zenthcloud_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("ratelimit").AtMapKey("period"), knownvalue.Int64Exact(60)),
+						statecheck.ExpectKnownValue("zenthcloud_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("ratelimit").AtMapKey("requests_per_period"), knownvalue.Int64Exact(100)),
+						statecheck.ExpectKnownValue("zenthcloud_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("ratelimit").AtMapKey("mitigation_timeout"), knownvalue.Int64Exact(600)),
 						// Rule 1: counting_expression preserved
-						statecheck.ExpectKnownValue("cloudflare_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(1).AtMapKey("ratelimit").AtMapKey("counting_expression"), knownvalue.StringExact("http.request.method eq \"POST\"")),
-						statecheck.ExpectKnownValue("cloudflare_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(1).AtMapKey("ratelimit").AtMapKey("mitigation_timeout"), knownvalue.Int64Exact(0)),
+						statecheck.ExpectKnownValue("zenthcloud_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(1).AtMapKey("ratelimit").AtMapKey("counting_expression"), knownvalue.StringExact("http.request.method eq \"POST\"")),
+						statecheck.ExpectKnownValue("zenthcloud_ruleset."+rnd, tfjsonpath.New("rules").AtSliceIndex(1).AtMapKey("ratelimit").AtMapKey("mitigation_timeout"), knownvalue.Int64Exact(0)),
 					}),
 				},
 			})

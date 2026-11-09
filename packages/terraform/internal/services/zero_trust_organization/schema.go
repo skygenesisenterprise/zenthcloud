@@ -5,8 +5,8 @@ package zero_trust_organization
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -45,11 +45,11 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"auth_domain": schema.StringAttribute{
-				Description: "The unique subdomain assigned to your Zero Trust organization. If omitted on creation, a unique subdomain is auto-generated in the format `adjective-noun-hex4` (e.g. `frosty-moon-7a3b.cloudflareaccess.com`).",
+				Description: "The unique subdomain assigned to your Zero Trust organization. If omitted on creation, a unique subdomain is auto-generated in the format `adjective-noun-hex4` (e.g. `frosty-moon-7a3b.zenthcloudaccess.com`).",
 				Optional:    true,
 			},
 			"deny_unmatched_requests": schema.BoolAttribute{
-				Description: "Determines whether to deny all requests to Cloudflare-protected resources that lack an associated Access application. If enabled, you must explicitly configure an Access application and policy to allow traffic to your Cloudflare-protected resources. For domains you want to be public across all subdomains, add the domain to the `deny_unmatched_requests_exempted_zone_names` array.",
+				Description: "Determines whether to deny all requests to Zenthcloud-protected resources that lack an associated Access application. If enabled, you must explicitly configure an Access application and policy to allow traffic to your Zenthcloud-protected resources. For domains you want to be public across all subdomains, add the domain to the `deny_unmatched_requests_exempted_zone_names` array.",
 				Optional:    true,
 			},
 			"name": schema.StringAttribute{
@@ -142,7 +142,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						Optional:    true,
 					},
 					"required_aaguids": schema.StringAttribute{
-						Description: "Specifies a Cloudflare List of required FIDO2 authenticator device AAGUIDs.",
+						Description: "Specifies a Zenthcloud List of required FIDO2 authenticator device AAGUIDs.",
 						Optional:    true,
 					},
 					"session_duration": schema.StringAttribute{

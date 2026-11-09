@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7/organizations"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7/organizations"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -21,19 +21,19 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_organization", &resource.Sweeper{
-		Name: "cloudflare_organization",
-		F:    testSweepCloudflareOrgs,
+	resource.AddTestSweepers("zenthcloud_organization", &resource.Sweeper{
+		Name: "zenthcloud_organization",
+		F:    testSweepZenthcloudOrgs,
 	})
 }
 
-func testSweepCloudflareOrgs(_ string) error {
+func testSweepZenthcloudOrgs(_ string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
-	orgID := os.Getenv("CLOUDFLARE_ORGANIZATION_ID")
+	orgID := os.Getenv("ZENTHCLOUD_ORGANIZATION_ID")
 
 	if orgID == "" {
-		tflog.Info(ctx, "Skipping organizations sweep: CLOUDFLARE_ORGANIZATION_ID not set")
+		tflog.Info(ctx, "Skipping organizations sweep: ZENTHCLOUD_ORGANIZATION_ID not set")
 		return nil
 	}
 
@@ -43,7 +43,7 @@ func testSweepCloudflareOrgs(_ string) error {
 		return err
 	}
 	if len(orgs.Result) == 0 {
-		tflog.Info(ctx, "No Cloudflare organizations to sweep")
+		tflog.Info(ctx, "No Zenthcloud organizations to sweep")
 		return nil
 	}
 
@@ -62,17 +62,17 @@ func testSweepCloudflareOrgs(_ string) error {
 	return nil
 }
 
-// TestAccCloudflareOrganization_Basic tests the basic CRUD operations for organization resource
-func TestAccCloudflareOrganization_Basic(t *testing.T) {
+// TestAccZenthcloudOrganization_Basic tests the basic CRUD operations for organization resource
+func TestAccZenthcloudOrganization_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_organization." + rnd
+	resourceName := "zenthcloud_organization." + rnd
 	orgName := rnd
 	updatedOrgName := rnd + "-updated"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t); acctest.TestAccPreCheck_Organization(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareOrganizationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudOrganizationDestroy,
 		Steps: []resource.TestStep{
 			// Step 1: Create - Test resource creation with all required attributes
 			{
@@ -110,16 +110,16 @@ func TestAccCloudflareOrganization_Basic(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareOrganization_WithProfile tests organization creation with profile information
-func TestAccCloudflareOrganization_WithProfile(t *testing.T) {
+// TestAccZenthcloudOrganization_WithProfile tests organization creation with profile information
+func TestAccZenthcloudOrganization_WithProfile(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_organization." + rnd
+	resourceName := "zenthcloud_organization." + rnd
 	orgName := rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t); acctest.TestAccPreCheck_Organization(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareOrganizationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudOrganizationDestroy,
 		Steps: []resource.TestStep{
 			// Create organization with profile
 			{
@@ -185,12 +185,12 @@ func testAccOrganizationConfigWithParent(rnd, name, parentID string) string {
 	return acctest.LoadTestCase("with_parent.tf", rnd, name, parentID)
 }
 
-// testAccCheckCloudflareOrganizationDestroy verifies the organization has been destroyed
-func testAccCheckCloudflareOrganizationDestroy(s *terraform.State) error {
+// testAccCheckZenthcloudOrganizationDestroy verifies the organization has been destroyed
+func testAccCheckZenthcloudOrganizationDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_organization" {
+		if rs.Type != "zenthcloud_organization" {
 			continue
 		}
 

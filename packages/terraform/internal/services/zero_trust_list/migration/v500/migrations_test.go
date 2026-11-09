@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -33,8 +33,8 @@ var v5EmptyConfig string
 
 // unsetAPIToken is needed because the Access service does not yet support API tokens
 func unsetAPIToken(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 }
 
@@ -44,7 +44,7 @@ func unsetAPIToken(t *testing.T) {
 
 func TestMigrateZeroTrustList_FromV4_SimpleItems(t *testing.T) {
 	unsetAPIToken(t)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
 	version := acctest.GetLastV4Version()
@@ -60,18 +60,18 @@ func TestMigrateZeroTrustList_FromV4_SimpleItems(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
 				Config: testConfig,
 			},
 			acctest.MigrationV2TestStep(t, testConfig, tmpDir, version, sourceVer, targetVer, []statecheck.StateCheck{
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_list."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_list."+rnd, tfjsonpath.New("name"), knownvalue.StringExact("tf-acc-test-"+rnd)),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_list."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("IP")),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_list."+rnd, tfjsonpath.New("items"), knownvalue.SetSizeExact(2)),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_list."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_list."+rnd, tfjsonpath.New("name"), knownvalue.StringExact("tf-acc-test-"+rnd)),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_list."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("IP")),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_list."+rnd, tfjsonpath.New("items"), knownvalue.SetSizeExact(2)),
 			}),
 		},
 	})
@@ -79,13 +79,13 @@ func TestMigrateZeroTrustList_FromV4_SimpleItems(t *testing.T) {
 
 func TestMigrateZeroTrustList_FromV4_ItemsWithDescription(t *testing.T) {
 	unsetAPIToken(t)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
 	version := acctest.GetLastV4Version()
 
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_teams_list" "%[1]s" {
+resource "zenthcloud_teams_list" "%[1]s" {
   account_id  = "%[2]s"
   name        = "tf-acc-test-%[1]s"
   type        = "DOMAIN"
@@ -112,18 +112,18 @@ resource "cloudflare_teams_list" "%[1]s" {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
 				Config: v4Config,
 			},
 			acctest.MigrationV2TestStep(t, v4Config, tmpDir, version, sourceVer, targetVer, []statecheck.StateCheck{
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_list."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_list."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("DOMAIN")),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_list."+rnd, tfjsonpath.New("description"), knownvalue.StringExact("Test list with descriptions")),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_list."+rnd, tfjsonpath.New("items"), knownvalue.SetSizeExact(2)),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_list."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_list."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("DOMAIN")),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_list."+rnd, tfjsonpath.New("description"), knownvalue.StringExact("Test list with descriptions")),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_list."+rnd, tfjsonpath.New("items"), knownvalue.SetSizeExact(2)),
 			}),
 		},
 	})
@@ -131,13 +131,13 @@ resource "cloudflare_teams_list" "%[1]s" {
 
 func TestMigrateZeroTrustList_FromV4_MixedItems(t *testing.T) {
 	unsetAPIToken(t)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
 	version := acctest.GetLastV4Version()
 
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_teams_list" "%[1]s" {
+resource "zenthcloud_teams_list" "%[1]s" {
   account_id = "%[2]s"
   name       = "tf-acc-test-%[1]s"
   type       = "IP"
@@ -159,17 +159,17 @@ resource "cloudflare_teams_list" "%[1]s" {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
 				Config: v4Config,
 			},
 			acctest.MigrationV2TestStep(t, v4Config, tmpDir, version, sourceVer, targetVer, []statecheck.StateCheck{
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_list."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_list."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("IP")),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_list."+rnd, tfjsonpath.New("items"), knownvalue.SetSizeExact(3)),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_list."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_list."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("IP")),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_list."+rnd, tfjsonpath.New("items"), knownvalue.SetSizeExact(3)),
 			}),
 		},
 	})
@@ -177,7 +177,7 @@ resource "cloudflare_teams_list" "%[1]s" {
 
 func TestMigrateZeroTrustList_FromV4_EmptyList(t *testing.T) {
 	unsetAPIToken(t)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
 	version := acctest.GetLastV4Version()
@@ -193,17 +193,17 @@ func TestMigrateZeroTrustList_FromV4_EmptyList(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
 				Config: testConfig,
 			},
 			acctest.MigrationV2TestStep(t, testConfig, tmpDir, version, sourceVer, targetVer, []statecheck.StateCheck{
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_list."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_list."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("SERIAL")),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_list."+rnd, tfjsonpath.New("items"), knownvalue.Null()),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_list."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_list."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("SERIAL")),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_list."+rnd, tfjsonpath.New("items"), knownvalue.Null()),
 			}),
 		},
 	})
@@ -211,13 +211,13 @@ func TestMigrateZeroTrustList_FromV4_EmptyList(t *testing.T) {
 
 func TestMigrateZeroTrustList_FromV4_EmailList(t *testing.T) {
 	unsetAPIToken(t)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
 	version := acctest.GetLastV4Version()
 
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_teams_list" "%[1]s" {
+resource "zenthcloud_teams_list" "%[1]s" {
   account_id  = "%[2]s"
   name        = "tf-acc-test-%[1]s"
   type        = "EMAIL"
@@ -235,18 +235,18 @@ resource "cloudflare_teams_list" "%[1]s" {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
 				Config: v4Config,
 			},
 			acctest.MigrationV2TestStep(t, v4Config, tmpDir, version, sourceVer, targetVer, []statecheck.StateCheck{
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_list."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_list."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("EMAIL")),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_list."+rnd, tfjsonpath.New("description"), knownvalue.StringExact("Email allowlist for testing")),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_list."+rnd, tfjsonpath.New("items"), knownvalue.SetSizeExact(3)),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_list."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_list."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("EMAIL")),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_list."+rnd, tfjsonpath.New("description"), knownvalue.StringExact("Email allowlist for testing")),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_list."+rnd, tfjsonpath.New("items"), knownvalue.SetSizeExact(3)),
 			}),
 		},
 	})
@@ -254,13 +254,13 @@ resource "cloudflare_teams_list" "%[1]s" {
 
 func TestMigrateZeroTrustList_FromV4_URLList(t *testing.T) {
 	unsetAPIToken(t)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
 	version := acctest.GetLastV4Version()
 
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_teams_list" "%[1]s" {
+resource "zenthcloud_teams_list" "%[1]s" {
   account_id = "%[2]s"
   name       = "tf-acc-test-%[1]s"
   type       = "URL"
@@ -291,17 +291,17 @@ resource "cloudflare_teams_list" "%[1]s" {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
 				Config: v4Config,
 			},
 			acctest.MigrationV2TestStep(t, v4Config, tmpDir, version, sourceVer, targetVer, []statecheck.StateCheck{
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_list."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_list."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("URL")),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_list."+rnd, tfjsonpath.New("items"), knownvalue.SetSizeExact(3)),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_list."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_list."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("URL")),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_list."+rnd, tfjsonpath.New("items"), knownvalue.SetSizeExact(3)),
 			}),
 		},
 	})
@@ -309,13 +309,13 @@ resource "cloudflare_teams_list" "%[1]s" {
 
 func TestMigrateZeroTrustList_FromV4_LargeList(t *testing.T) {
 	unsetAPIToken(t)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
 	version := acctest.GetLastV4Version()
 
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_teams_list" "%[1]s" {
+resource "zenthcloud_teams_list" "%[1]s" {
   account_id = "%[2]s"
   name       = "tf-acc-test-%[1]s"
   type       = "IP"
@@ -347,17 +347,17 @@ resource "cloudflare_teams_list" "%[1]s" {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
 				Config: v4Config,
 			},
 			acctest.MigrationV2TestStep(t, v4Config, tmpDir, version, sourceVer, targetVer, []statecheck.StateCheck{
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_list."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_list."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("IP")),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_list."+rnd, tfjsonpath.New("items"), knownvalue.SetSizeExact(17)),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_list."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_list."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("IP")),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_list."+rnd, tfjsonpath.New("items"), knownvalue.SetSizeExact(17)),
 			}),
 		},
 	})
@@ -365,13 +365,13 @@ resource "cloudflare_teams_list" "%[1]s" {
 
 func TestMigrateZeroTrustList_FromV4_SpecialCharacters(t *testing.T) {
 	unsetAPIToken(t)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
 	version := acctest.GetLastV4Version()
 
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_teams_list" "%[1]s" {
+resource "zenthcloud_teams_list" "%[1]s" {
   account_id = "%[2]s"
   name       = "tf-acc-test-%[1]s"
   type       = "DOMAIN"
@@ -397,17 +397,17 @@ resource "cloudflare_teams_list" "%[1]s" {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
 				Config: v4Config,
 			},
 			acctest.MigrationV2TestStep(t, v4Config, tmpDir, version, sourceVer, targetVer, []statecheck.StateCheck{
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_list."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_list."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("DOMAIN")),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_list."+rnd, tfjsonpath.New("items"), knownvalue.SetSizeExact(4)),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_list."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_list."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("DOMAIN")),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_list."+rnd, tfjsonpath.New("items"), knownvalue.SetSizeExact(4)),
 			}),
 		},
 	})
@@ -438,9 +438,9 @@ func TestMigrateZeroTrustList_SimpleItems(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			unsetAPIToken(t)
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_zero_trust_list." + rnd
+			resourceName := "zenthcloud_zero_trust_list." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -454,8 +454,8 @@ func TestMigrateZeroTrustList_SimpleItems(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -504,9 +504,9 @@ func TestMigrateZeroTrustList_EmptyList(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			unsetAPIToken(t)
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_zero_trust_list." + rnd
+			resourceName := "zenthcloud_zero_trust_list." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -520,8 +520,8 @@ func TestMigrateZeroTrustList_EmptyList(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},

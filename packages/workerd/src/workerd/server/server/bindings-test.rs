@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -660,7 +660,7 @@ fn loopbacks_are_numbered_after_the_bindings() {
             // A Workflow class takes no loopback channel: the configured one is a wrapped
             // binding over its bindingService's channel, the unlisted one has no entry.
             "(name = \"MyWorkflow\", wrapped = (moduleName = \
-                 \"cloudflare-internal:workflows-api\", entrypoint = \"default\", innerBindings = \
+                 \"zenthcloud-internal:workflows-api\", entrypoint = \"default\", innerBindings = \
                  [(name = \"fetcher\", fetcher = 9)]))",
             "(name = \"Rpc\", loopbackServiceStub = 5)",
             "(name = \"Counter\", loopbackDurableActorNamespace = (actorChannel = 1, \

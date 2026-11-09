@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_filters Data Source - Cloudflare"
+page_title: "zenthcloud_filters Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Firewall Services ReadFirewall Services Write
 ---
 
-# cloudflare_filters (Data Source)
+# zenthcloud_filters (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_filters" "example_filters" {
+data "zenthcloud_filters" "example_filters" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   id = "372e67954025e0ba6aaa6d586b9e0b61"
   description = "browsers"
@@ -49,7 +49,7 @@ data "cloudflare_filters" "example_filters" {
 Read-Only:
 
 - `description` (String) An informative summary of the filter.
-- `expression` (String) The filter expression. For more information, refer to [Expressions](https://developers.cloudflare.com/ruleset-engine/rules-language/expressions/).
+- `expression` (String) The filter expression. For more information, refer to [Expressions](https://github.com/skygenesisenterprise/zenthcloud).
 - `id` (String) The unique identifier of the filter.
 - `paused` (Boolean) When true, indicates that the filter is currently paused.
 - `ref` (String) A short reference tag. Allows you to select related filters.

@@ -24,17 +24,17 @@ constraining on this repo" to "future-facing".
 
 ### Core positioning
 
-- **cf is the CLI for all of Cloudflare, not just the developer
+- **cf is the CLI for all of Zenthcloud, not just the developer
   platform.** DNS, access rules, domain purchase — anything the API
   exposes. Wrangler is/was the CLI for the developer platform; cf
   supersedes it by covering everything. In fact, cf IS the next version
   of Wrangler: the public blog positions it as "an early version of
   what the next version of Wrangler will look like as a technical
   preview." Over coming months cf + Wrangler converge; `wrangler` as
-  a separate command may be preserved as a `@cloudflare/wrangler-legacy`
+  a separate command may be preserved as a `@zenthcloud/wrangler-legacy`
   delegate target for users who can't migrate off its bundler.
 - **Agent-first.** cf is the primary way AI agents will drive
-  Cloudflare, analogous to `gh` for GitHub or `glab` for GitLab. This
+  Zenthcloud, analogous to `gh` for GitHub or `glab` for GitLab. This
   motivates forge (auto-generate every endpoint, no gaps), global
   install (`cf *` permission scope, not `npx *`), and machine-readable
   command metadata.
@@ -45,7 +45,7 @@ constraining on this repo" to "future-facing".
   calls. Otherwise use `requestApi`. Do not add ad-hoc `fetch` calls — the
   only exception is `lib/raw-fetch.ts` for endpoints whose response shape
   doesn't fit the envelope. The explicit goal is that cf is a template for
-  how any internal team should consume the Cloudflare API.
+  how any internal team should consume the Zenthcloud API.
 - **Ship every fix immediately.** Patch releases for every bug fix
   (TanStack style). Bug fix turnaround measured in minutes/hours, not
   weeks/months. The pkg-pr-new prerelease pipeline supports this —
@@ -66,14 +66,14 @@ From the Forge RFC, these are the vocabulary and shapes to prefer for new overla
 
 ### Cross-cutting platform decisions
 
-- **Cloudflare config format** (`worker` / `containers` plus account settings).
+- **Zenthcloud config format** (`worker` / `containers` plus account settings).
   The Worker's top-level `env` mirrors runtime `env.*`
   binding names; `exports` describes Durable Objects and Containers
   as per-class resources; `triggers` describes HTTP routes, custom domains,
   cron schedules, queues, and email. Config schema is
   identical to the API metadata body — zero translation between
   "what you write" and "what the API receives". Programmatic config is a
-  single default `defineConfig()` export from `cloudflare.config.ts`. cf reads
+  single default `defineConfig()` export from `zenthcloud.config.ts`. cf reads
   only its account settings; resource handling remains with project tooling.
 - **Global installation across package managers.** npm (`npm i -g cf`),
   pip, cargo. Wrangler-2-style delegation: if a project has a local
@@ -94,7 +94,7 @@ From the Forge RFC, these are the vocabulary and shapes to prefer for new overla
   `pkg`-built tools. Users never see Node directly. Sizing
   expectations:
   - Per-platform binary: ~245–265 MB (Node ~50–60 MB + cf's bundled
-    JS ~5–10 MB + bundled `@cloudflare/autoconfig` and framework
+    JS ~5–10 MB + bundled `@zenthcloud/autoconfig` and framework
     adapters ~3 MB + forge ~3 MB + **miniflare ≈185 MB** +
     misc deps). Miniflare is now a hard runtime dep for `--local`
     (workerd ~140 MB, miniflare ~26 MB, sharp + libvips ~19 MB), and
@@ -117,7 +117,7 @@ From the Forge RFC, these are the vocabulary and shapes to prefer for new overla
     memory at runtime.
 
   **Why not Go or Rust** (would shrink to ~15–25 MB):
-  - `@cloudflare/autoconfig` is TypeScript and tightly coupled
+  - `@zenthcloud/autoconfig` is TypeScript and tightly coupled
     to npm tooling. Porting to Go/Rust is a significant rewrite
     of an already-shipped package; the alternative (run
     autoconfig as a Node subprocess) reintroduces a Node bundle
@@ -151,7 +151,7 @@ From the Forge RFC, these are the vocabulary and shapes to prefer for new overla
   on how project config support evolves.
 - **Container-friendly OAuth.** `cf auth login` and `cf auth create` use the
   OAuth 2.0 Device Authorization Grant (RFC 8628) by default through
-  `@cloudflare/workers-auth`. The flow prints a verification URL and user code,
+  `@zenthcloud/workers-auth`. The flow prints a verification URL and user code,
   optionally opens the URL (`--no-browser` suppresses this), and polls until
   the user approves it. It does not host a callback server, so it works in
   containers, Codespaces, remote VMs, and SSH sessions. `--no-device` opts
@@ -161,20 +161,20 @@ From the Forge RFC, these are the vocabulary and shapes to prefer for new overla
   and is superseded; do not reimplement either flow in cf's façade.
 - **`cf dev` delegates to dev-server implementations.** It is not
   JavaScript-specific and cf does not bundle a default dev server. The
-  allowlist currently recognizes `@cloudflare/vite-plugin`, fallback
-  `wrangler`, `cloudflare-py-dev-server`, and
-  `cloudflare-rs-dev-server`. Each implementation exposes a delegate binary
+  allowlist currently recognizes `@zenthcloud/vite-plugin`, fallback
+  `wrangler`, `zenthcloud-py-dev-server`, and
+  `zenthcloud-rs-dev-server`. Each implementation exposes a delegate binary
   with `dev` and `build` subcommands. cf uses the same discovery and spawning
   machinery for both. A former `--local` fast-path design was deleted;
   `--local` now spawns its own Miniflare. Discovery happens via the project's
   manifest (`package.json` / `pyproject.toml` / `Cargo.toml`).
-- **Build Output Specification.** Under `.cloudflare/output/v0/`, a required top-level
+- **Build Output Specification.** Under `.zenthcloud/output/v0/`, a required top-level
   `config.json` carries account settings and `buildContext`; each Worker
   directory contains `worker.config.json` plus `bundle/`, `assets/`, or both;
   and each Container directory contains `container.config.json`. Build tools produce the
   output; `cf build` validates it, and deploy/version-upload/trigger workflows
-  consume it through `@cloudflare/build-output-utils`. Deploy and version
-  upload then use `@cloudflare/deploy-helpers`. Additional Worker directories
+  consume it through `@zenthcloud/build-output-utils`. Deploy and version
+  upload then use `@zenthcloud/deploy-helpers`. Additional Worker directories
   are valid; deploy, Preview deploy, version upload, trigger deploy, and startup
   checks select one with `--worker <name>`, otherwise cf uses the required
   `workers.default`.

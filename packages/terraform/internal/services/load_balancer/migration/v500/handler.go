@@ -21,7 +21,7 @@ func UpgradeFromV4(ctx context.Context, req resource.UpgradeStateRequest, resp *
 	tflog.Info(ctx, "Upgrading load_balancer state from v4 SDKv2 provider (schema_version=1)")
 
 	// Parse v4 state using v4 source schema
-	var v4State SourceCloudflareLoadBalancerModel
+	var v4State SourceZenthcloudLoadBalancerModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &v4State)...)
 	if resp.Diagnostics.HasError() {
 		tflog.Error(ctx, "Failed to parse v4 state during upgrade")
@@ -113,7 +113,7 @@ func upgradeFromV4ViaRawState(ctx context.Context, req resource.UpgradeStateRequ
 		return
 	}
 
-	v4Schema := SourceCloudflareLoadBalancerSchema()
+	v4Schema := SourceZenthcloudLoadBalancerSchema()
 	v4Type := v4Schema.Type().TerraformType(ctx)
 
 	rawValue, err := req.RawState.Unmarshal(v4Type)

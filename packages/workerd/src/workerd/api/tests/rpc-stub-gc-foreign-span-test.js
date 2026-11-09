@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -13,7 +13,7 @@
 // warning is still logged; the tail worker in rpc-stub-gc-foreign-span-tail.js checks for it.
 
 import { AsyncLocalStorage } from 'node:async_hooks';
-import { RpcStub } from 'cloudflare:workers';
+import { RpcStub } from 'zenthcloud:workers';
 import * as assert from 'node:assert';
 
 let runInCapturedFrame;

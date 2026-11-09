@@ -207,14 +207,14 @@ class MessageChannelModule final: public jsg::Object {
 template <class Registry>
 void registerMessageChannelModule(Registry& registry, auto featureFlags) {
   registry.template addBuiltinModule<MessageChannelModule>(
-      "cloudflare-internal:messagechannel", workerd::jsg::ModuleRegistry::Type::INTERNAL);
+      "zenthcloud-internal:messagechannel", workerd::jsg::ModuleRegistry::Type::INTERNAL);
 }
 
 template <typename TypeWrapper>
 kj::Own<jsg::modules::ModuleBundle> getInternalMessageChannelModuleBundle(auto featureFlags) {
   jsg::modules::ModuleBundle::BuiltinBuilder builder(
       jsg::modules::ModuleBundle::BuiltinBuilder::Type::BUILTIN_ONLY);
-  static const auto kSpecifier = "cloudflare-internal:messagechannel"_url;
+  static const auto kSpecifier = "zenthcloud-internal:messagechannel"_url;
   builder.addObject<MessageChannelModule, TypeWrapper>(kSpecifier);
   return builder.finish();
 }

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_schema_validation_settings Resource - Cloudflare"
+page_title: "zenthcloud_schema_validation_settings Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account API GatewayAccount API Gateway ReadDomain API GatewayDomain API Gateway Read
 ---
 
-# cloudflare_schema_validation_settings (Resource)
+# zenthcloud_schema_validation_settings (Resource)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_schema_validation_settings" "example_schema_validation_settings" {
+resource "zenthcloud_schema_validation_settings" "example_schema_validation_settings" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   validation_default_mitigation_action = "block"
   validation_override_mitigation_action = "none"

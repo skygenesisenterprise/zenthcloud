@@ -1,4 +1,4 @@
-resource "cloudflare_authenticated_origin_pulls_hostname_certificate" "%s" {
+resource "zenthcloud_authenticated_origin_pulls_hostname_certificate" "%s" {
   zone_id     = "%s"
   certificate = <<-EOT
 %s
@@ -9,6 +9,6 @@ resource "cloudflare_authenticated_origin_pulls_hostname_certificate" "%s" {
 }
 
 moved {
-  from = cloudflare_authenticated_origin_pulls_certificate.%s
-  to   = cloudflare_authenticated_origin_pulls_hostname_certificate.%s
+  from = zenthcloud_authenticated_origin_pulls_certificate.%s
+  to   = zenthcloud_authenticated_origin_pulls_hostname_certificate.%s
 }

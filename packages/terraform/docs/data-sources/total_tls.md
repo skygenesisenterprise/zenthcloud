@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_total_tls Data Source - Cloudflare"
+page_title: "zenthcloud_total_tls Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   SSL and Certificates ReadSSL and Certificates Write
 ---
 
-# cloudflare_total_tls (Data Source)
+# zenthcloud_total_tls (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_total_tls" "example_total_tls" {
+data "zenthcloud_total_tls" "example_total_tls" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```

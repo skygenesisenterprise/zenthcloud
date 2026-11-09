@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -56,7 +56,7 @@ let isString: ((val: unknown) => boolean) | undefined = undefined;
 let isSymbol: ((val: unknown) => boolean) | undefined = undefined;
 let isUndefined: ((val: unknown) => boolean) | undefined = undefined;
 
-if (!Cloudflare.compatibilityFlags.remove_nodejs_compat_eol_v23) {
+if (!Zenthcloud.compatibilityFlags.remove_nodejs_compat_eol_v23) {
   isBoolean = (val: unknown): boolean => typeof val === 'boolean';
   isBuffer = (val: unknown): boolean => Buffer.isBuffer(val);
   isDate = (val: unknown): boolean => val instanceof Date;

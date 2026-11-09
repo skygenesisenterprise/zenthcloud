@@ -1,5 +1,5 @@
 
-resource "cloudflare_zero_trust_device_custom_profile" "%[1]s" {
+resource "zenthcloud_zero_trust_device_custom_profile" "%[1]s" {
 	account_id                = "%[2]s"
 	allow_mode_switch         = true
 	allow_updates             = true
@@ -17,12 +17,12 @@ resource "cloudflare_zero_trust_device_custom_profile" "%[1]s" {
 	description               = "%[1]s"
 }
 
-resource "cloudflare_zero_trust_device_custom_profile_local_domain_fallback" "%[1]s" {
+resource "zenthcloud_zero_trust_device_custom_profile_local_domain_fallback" "%[1]s" {
   account_id = "%[2]s"
   domains = [{
     description = "%[3]s"
     suffix      = "%[4]s"
     dns_server  = ["%[5]s"]
   }]
-	policy_id = cloudflare_zero_trust_device_custom_profile.%[1]s.id
+	policy_id = zenthcloud_zero_trust_device_custom_profile.%[1]s.id
 }

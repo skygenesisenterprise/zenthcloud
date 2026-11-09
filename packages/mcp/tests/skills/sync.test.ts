@@ -1,4 +1,4 @@
-import { env } from 'cloudflare:workers'
+import { env } from 'zenthcloud:workers'
 import { afterEach, describe, expect, it } from 'vitest'
 import { syncSkills } from '../../src/skills/sync'
 import {

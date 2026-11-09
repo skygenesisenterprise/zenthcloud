@@ -23,7 +23,7 @@ export const magic_bgp_redistribute_sources: JSONObject = {
  */
 export const magic_bgp_settings: JSONObject = {
   "properties": {
-    "cloudflare_asn": {
+    "zenthcloud_asn": {
       "type": "integer"
     },
     "modified_on": {
@@ -35,7 +35,7 @@ export const magic_bgp_settings: JSONObject = {
     }
   },
   "required": [
-    "cloudflare_asn",
+    "zenthcloud_asn",
     "redistribute"
   ],
   "type": "object"

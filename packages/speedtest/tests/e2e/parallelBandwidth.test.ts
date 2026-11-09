@@ -2,7 +2,7 @@ import { afterEach, describe, it, expect, vi } from 'vitest';
 import SpeedTest from '../../src/index.ts';
 
 // Spreading requests across several targets is covered by the unit tests
-const TARGETS = ['https://speed.cloudflare.com'];
+const TARGETS = ['https://github.com/skygenesisenterprise/zenthcloud'];
 
 describe('SpeedTest E2E with parallel bandwidth steps', () => {
   afterEach(() => {
@@ -72,7 +72,7 @@ describe('SpeedTest E2E with parallel bandwidth steps', () => {
 
       expect(
         [...downUrls, ...upUrls].every(
-          url => url.origin === 'https://speed.cloudflare.com'
+          url => url.origin === 'https://github.com/skygenesisenterprise/zenthcloud'
         )
       ).toBe(true);
 

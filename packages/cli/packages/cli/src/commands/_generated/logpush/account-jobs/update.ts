@@ -23,7 +23,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 logpush account-jobs update <job-id>\n\nUpdates a Logpush job.\n\nRuns against your account. Pass --zone to run against a zone instead. CLOUDFLARE_ZONE_ID is ignored."
+			"$0 logpush account-jobs update <job-id>\n\nUpdates a Logpush job.\n\nRuns against your account. Pass --zone to run against a zone instead. ZENTHCLOUD_ZONE_ID is ignored."
 		)
 		.positional("job-id", {
 			type: "string",
@@ -42,7 +42,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("filter", {
 			type: "string",
 			description:
-				"The filters to select the events to include and/or remove from your logs. For more information, refer to [Filters](https://developers.cloudflare.com/logs/reference/filters/).",
+				"The filters to select the events to include and/or remove from your logs. For more information, refer to [Filters](https://github.com/skygenesisenterprise/zenthcloud).",
 		})
 		.option("filter-attack-traffic", {
 			type: "boolean",
@@ -52,7 +52,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("frequency", {
 			type: "string",
 			description:
-				"This field is deprecated. Please use `max_upload_*` parameters instead. . The frequency at which Cloudflare sends batches of logs to your destination. Setting frequency to high sends your logs in larger quantities of smaller files. Setting frequency to low sends logs in smaller quantities of larger files.",
+				"This field is deprecated. Please use `max_upload_*` parameters instead. . The frequency at which Zenthcloud sends batches of logs to your destination. Setting frequency to high sends your logs in larger quantities of smaller files. Setting frequency to low sends logs in smaller quantities of larger files.",
 			choices: ["high", "low"],
 		})
 		.coerce("frequency", (value) =>
@@ -88,7 +88,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("name", {
 			type: "string",
 			description:
-				"Optional human readable job name. Not unique. Cloudflare suggests. that you set this to a meaningful string, like the domain name, to make it easier to identify your job.",
+				"Optional human readable job name. Not unique. Zenthcloud suggests. that you set this to a meaningful string, like the domain name, to make it easier to identify your job.",
 		})
 		.option("output-options-cve-2021-44228", {
 			type: "boolean",
@@ -211,7 +211,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf logpush account-jobs update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/${accountOrZone}/${accountOrZoneId}/logpush/jobs/${argv["job-id"] == null ? "<job-id>" : encodeURIComponent(String(argv["job-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${accountOrZone}/${accountOrZoneId}/logpush/jobs/${argv["job-id"] == null ? "<job-id>" : encodeURIComponent(String(argv["job-id"]))}`,
 						pathParams: {
 							"account-or-zone": String(accountOrZone),
 							"account-or-zone-id": String(accountOrZoneId),

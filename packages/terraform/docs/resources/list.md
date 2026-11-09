@@ -1,28 +1,28 @@
 ---
-page_title: "cloudflare_list Resource - Cloudflare"
+page_title: "zenthcloud_list Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Filter Lists EditAccount Filter Lists Read
 ---
 
-# cloudflare_list (Resource)
+# zenthcloud_list (Resource)
 
 Accepted Permissions
 
 - `Account Filter Lists Edit`
 - `Account Filter Lists Read`
 
-~> The `cloudflare_list` resource supports defining list items in line with the
-  `items` attribute. The provider also has a `cloudflare_list_item` resource for
+~> The `zenthcloud_list` resource supports defining list items in line with the
+  `items` attribute. The provider also has a `zenthcloud_list_item` resource for
   managing items as independent resources. Using both in line `items` definitions
-  _and_ `cloudflare_list_items` on the same list is not supported and will cause
+  _and_ `zenthcloud_list_items` on the same list is not supported and will cause
   Terraform into an irreconcilable state.
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_list" "example_list" {
+resource "zenthcloud_list" "example_list" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   kind = "ip"
   name = "list1"
@@ -54,7 +54,7 @@ Available values: "ip", "redirect", "hostname", "asn".
 ### Optional
 
 - `description` (String) An informative summary of the list.
-- `items` (Attributes Set) The items in the list. If set, this overwrites all items in the list. Do not use with `cloudflare_list_item`. (see [below for nested schema](#nestedatt--items))
+- `items` (Attributes Set) The items in the list. If set, this overwrites all items in the list. Do not use with `zenthcloud_list_item`. (see [below for nested schema](#nestedatt--items))
 
 ### Read-Only
 
@@ -108,5 +108,5 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_list.example '<account_id>/<list_id>'
+$ terraform import zenthcloud_list.example '<account_id>/<list_id>'
 ```

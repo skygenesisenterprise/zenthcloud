@@ -1,5 +1,5 @@
 
-resource "cloudflare_waiting_room" "%[1]s" {
+resource "zenthcloud_waiting_room" "%[1]s" {
   name                      = "%[4]s"
   zone_id                   = "%[2]s"
   host                      = "www.%[3]s"
@@ -15,9 +15,9 @@ resource "cloudflare_waiting_room" "%[1]s" {
   json_response_enabled     = true
 }
 
-resource "cloudflare_waiting_room_rules" "%[1]s" {
+resource "zenthcloud_waiting_room_rules" "%[1]s" {
   zone_id		  = "%[2]s"
-  waiting_room_id = cloudflare_waiting_room.%[1]s.id
+  waiting_room_id = zenthcloud_waiting_room.%[1]s.id
 
   rules = [{
     action      = "bypass_waiting_room"

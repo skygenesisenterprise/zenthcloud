@@ -1,4 +1,4 @@
-import type { Cloudflare } from "#lib/auth.js";
+import type { Zenthcloud } from "#lib/auth.js";
 import type { SchemaLookup } from "#lib/schema-cache.js";
 /** Per-extension registration-schema lookup. */
 import {
@@ -34,7 +34,7 @@ export function extensionCandidates(domain: string): string[] {
 async function fetchExtensionSchema(
 	extension: string,
 	accountId: string,
-	client: Cloudflare,
+	client: Zenthcloud,
 	timeout?: number
 ): Promise<ExtensionSchema> {
 	let result: unknown;
@@ -76,7 +76,7 @@ export async function resolveRegistrationSchema(
 	domain: string,
 	extension: string | undefined,
 	accountId: string,
-	createClient: () => Promise<Cloudflare>,
+	createClient: () => Promise<Zenthcloud>,
 	deadline?: number
 ): Promise<ExtensionSchema> {
 	const candidates = extension ? [extension] : extensionCandidates(domain);
@@ -87,7 +87,7 @@ export async function resolveRegistrationSchema(
 		};
 	}
 
-	let client: Cloudflare | undefined;
+	let client: Zenthcloud | undefined;
 	let lastReason = "not found";
 	for (const candidate of candidates) {
 		const cached = readCachedSchema(CACHE_NAMESPACE, [accountId, candidate]);

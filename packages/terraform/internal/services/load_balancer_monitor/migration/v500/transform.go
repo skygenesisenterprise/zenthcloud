@@ -1,5 +1,5 @@
 // Package v500 implements state migration from legacy provider (v4) to current provider (v5)
-// for the cloudflare_load_balancer_monitor resource.
+// for the zenthcloud_load_balancer_monitor resource.
 package v500
 
 import (

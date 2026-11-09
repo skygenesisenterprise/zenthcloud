@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_argo_smart_routing Resource - Cloudflare"
+page_title: "zenthcloud_argo_smart_routing Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zone Settings ReadZone Settings Write
 ---
 
-# cloudflare_argo_smart_routing (Resource)
+# zenthcloud_argo_smart_routing (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_argo_smart_routing" "example_argo_smart_routing" {
+resource "zenthcloud_argo_smart_routing" "example_argo_smart_routing" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   value = "on"
 }
@@ -42,7 +42,7 @@ Available values: "on", "off".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_argo_smart_routing.example '<zone_id>'
+$ terraform import zenthcloud_argo_smart_routing.example '<zone_id>'
 ```
 
 

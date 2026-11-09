@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 // Embed migration test configuration files
@@ -64,13 +64,13 @@ var v5ConditionTypesConfig string
 
 // TestMigrateZeroTrustAccessPolicyMigrationFromV4Basic tests basic migration from v4 to v5
 func TestMigrateZeroTrustAccessPolicyMigrationFromV4Basic(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(v4BasicConfig, rnd, accountID)
@@ -85,8 +85,8 @@ func TestMigrateZeroTrustAccessPolicyMigrationFromV4Basic(t *testing.T) {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "~> 4.52.1",
 					},
 				},
@@ -108,13 +108,13 @@ func TestMigrateZeroTrustAccessPolicyMigrationFromV4Basic(t *testing.T) {
 
 // TestMigrateZeroTrustAccessPolicyMigrationFromV4Complex tests migration with complex conditions
 func TestMigrateZeroTrustAccessPolicyMigrationFromV4Complex(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(v4ComplexConfig, rnd, accountID)
@@ -128,8 +128,8 @@ func TestMigrateZeroTrustAccessPolicyMigrationFromV4Complex(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "~> 4.52.1",
 					},
 				},
@@ -155,13 +155,13 @@ func TestMigrateZeroTrustAccessPolicyMigrationFromV4Complex(t *testing.T) {
 
 // TestMigrateZeroTrustAccessPolicyMigrationFromV4OAuthProviders tests array explosion and attribute transformations
 func TestMigrateZeroTrustAccessPolicyMigrationFromV4OAuthProviders(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(v4ArrayExplosionConfig, rnd, accountID)
@@ -175,8 +175,8 @@ func TestMigrateZeroTrustAccessPolicyMigrationFromV4OAuthProviders(t *testing.T)
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "~> 4.52.1",
 					},
 				},
@@ -196,11 +196,11 @@ func TestMigrateZeroTrustAccessPolicyMigrationFromV4OAuthProviders(t *testing.T)
 
 // TestMigrateZeroTrustAccessPolicyMigrationFromV4DecisionTypes tests all decision types
 func TestMigrateZeroTrustAccessPolicyMigrationFromV4DecisionTypes(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	testCases := []struct {
 		decision string
@@ -216,7 +216,7 @@ func TestMigrateZeroTrustAccessPolicyMigrationFromV4DecisionTypes(t *testing.T) 
 		tc := tc
 		t.Run(fmt.Sprintf("Decision_%s", tc.name), func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_zero_trust_access_policy." + rnd
+			resourceName := "zenthcloud_zero_trust_access_policy." + rnd
 			tmpDir := t.TempDir()
 
 			v4Config := fmt.Sprintf(v4DecisionConfig, rnd, accountID, tc.decision)
@@ -230,8 +230,8 @@ func TestMigrateZeroTrustAccessPolicyMigrationFromV4DecisionTypes(t *testing.T) 
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: "~> 4.52.1",
 							},
 						},
@@ -250,11 +250,11 @@ func TestMigrateZeroTrustAccessPolicyMigrationFromV4DecisionTypes(t *testing.T) 
 
 // TestMigrateZeroTrustAccessPolicyMigrationFromV4OptionalBooleans tests boolean to object transformations
 func TestMigrateZeroTrustAccessPolicyMigrationFromV4OptionalBooleans(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	testCases := []struct {
 		boolField string
@@ -269,7 +269,7 @@ func TestMigrateZeroTrustAccessPolicyMigrationFromV4OptionalBooleans(t *testing.
 		tc := tc
 		t.Run(fmt.Sprintf("Boolean_%s", tc.testName), func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_zero_trust_access_policy." + rnd
+			resourceName := "zenthcloud_zero_trust_access_policy." + rnd
 			tmpDir := t.TempDir()
 
 			v4Config := fmt.Sprintf(v4BooleanConfig, rnd, accountID, tc.boolField)
@@ -283,8 +283,8 @@ func TestMigrateZeroTrustAccessPolicyMigrationFromV4OptionalBooleans(t *testing.
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: "~> 4.52.1",
 							},
 						},
@@ -305,13 +305,13 @@ func TestMigrateZeroTrustAccessPolicyMigrationFromV4OptionalBooleans(t *testing.
 
 // TestMigrateZeroTrustAccessPolicyMigrationFromV4UnsupportedFeatures tests basic v4 to v5 migration functionality
 func TestMigrateZeroTrustAccessPolicyMigrationFromV4UnsupportedFeatures(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(v4UnsupportedConfig, rnd, accountID)
@@ -325,8 +325,8 @@ func TestMigrateZeroTrustAccessPolicyMigrationFromV4UnsupportedFeatures(t *testi
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "~> 4.52.1",
 					},
 				},
@@ -347,13 +347,13 @@ func TestMigrateZeroTrustAccessPolicyMigrationFromV4UnsupportedFeatures(t *testi
 
 // TestMigrateZeroTrustAccessPolicyMigrationFromV4ServiceTokens tests service token transformations
 func TestMigrateZeroTrustAccessPolicyMigrationFromV4ServiceTokens(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(v4ServiceTokenConfig, rnd, accountID)
@@ -367,8 +367,8 @@ func TestMigrateZeroTrustAccessPolicyMigrationFromV4ServiceTokens(t *testing.T) 
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "~> 4.52.1",
 					},
 				},
@@ -387,13 +387,13 @@ func TestMigrateZeroTrustAccessPolicyMigrationFromV4ServiceTokens(t *testing.T) 
 
 // TestMigrateZeroTrustAccessPolicyMigrationFromV4RemovedAttributes tests handling of deprecated attributes
 func TestMigrateZeroTrustAccessPolicyMigrationFromV4RemovedAttributes(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(v4UnsupportedConfig, rnd, accountID)
@@ -407,8 +407,8 @@ func TestMigrateZeroTrustAccessPolicyMigrationFromV4RemovedAttributes(t *testing
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "~> 4.52.1",
 					},
 				},
@@ -427,13 +427,13 @@ func TestMigrateZeroTrustAccessPolicyMigrationFromV4RemovedAttributes(t *testing
 
 // TestMigrateZeroTrustAccessPolicyFromV5_12 tests migration from v5.12.0 to latest
 func TestMigrateZeroTrustAccessPolicyFromV5_12(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
 
 	config := fmt.Sprintf(v5BasicConfig, rnd, accountID)
 
@@ -446,8 +446,8 @@ func TestMigrateZeroTrustAccessPolicyFromV5_12(t *testing.T) {
 			{
 				// Step 1: Create with v5.12 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.12.0",
 					},
 				},
@@ -471,13 +471,13 @@ func TestMigrateZeroTrustAccessPolicyFromV5_12(t *testing.T) {
 
 // TestMigrateZeroTrustAccessPolicyFromV5_14 tests migration from v5.14.0 to latest
 func TestMigrateZeroTrustAccessPolicyFromV5_14(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
 
 	config := fmt.Sprintf(v5BasicConfig, rnd, accountID)
 
@@ -490,8 +490,8 @@ func TestMigrateZeroTrustAccessPolicyFromV5_14(t *testing.T) {
 			{
 				// Step 1: Create with v5.14 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.14.0",
 					},
 				},
@@ -515,13 +515,13 @@ func TestMigrateZeroTrustAccessPolicyFromV5_14(t *testing.T) {
 
 // TestMigrateZeroTrustAccessPolicyFromV5_15 tests migration from v5.15.0 to latest
 func TestMigrateZeroTrustAccessPolicyFromV5_15(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
 
 	config := fmt.Sprintf(v5BasicConfig, rnd, accountID)
 
@@ -534,8 +534,8 @@ func TestMigrateZeroTrustAccessPolicyFromV5_15(t *testing.T) {
 			{
 				// Step 1: Create with v5.15 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.15.0",
 					},
 				},
@@ -559,13 +559,13 @@ func TestMigrateZeroTrustAccessPolicyFromV5_15(t *testing.T) {
 
 // TestMigrateZeroTrustAccessPolicyFromV5_12_Complex tests v5.12 to latest with complex conditions
 func TestMigrateZeroTrustAccessPolicyFromV5_12_Complex(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
 
 	config := fmt.Sprintf(v5ComplexConfig, rnd, accountID)
 
@@ -578,8 +578,8 @@ func TestMigrateZeroTrustAccessPolicyFromV5_12_Complex(t *testing.T) {
 			{
 				// Step 1: Create with v5.12 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.12.0",
 					},
 				},
@@ -605,11 +605,11 @@ func TestMigrateZeroTrustAccessPolicyFromV5_12_Complex(t *testing.T) {
 
 // TestMigrateZeroTrustAccessPolicyFromV5_14_WithDecisionTypes tests v5.14 with different decision types
 func TestMigrateZeroTrustAccessPolicyFromV5_14_WithDecisionTypes(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	testCases := []struct {
 		decision string
@@ -625,7 +625,7 @@ func TestMigrateZeroTrustAccessPolicyFromV5_14_WithDecisionTypes(t *testing.T) {
 		tc := tc
 		t.Run(fmt.Sprintf("Decision_%s", tc.name), func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_zero_trust_access_policy." + rnd
+			resourceName := "zenthcloud_zero_trust_access_policy." + rnd
 
 			config := fmt.Sprintf(v5DecisionConfig, rnd, accountID, tc.decision)
 
@@ -637,8 +637,8 @@ func TestMigrateZeroTrustAccessPolicyFromV5_14_WithDecisionTypes(t *testing.T) {
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: "5.14.0",
 							},
 						},
@@ -661,13 +661,13 @@ func TestMigrateZeroTrustAccessPolicyFromV5_14_WithDecisionTypes(t *testing.T) {
 
 // TestMigrateZeroTrustAccessPolicyFromV5_15_WithConditionTypes tests v5.15 with various condition types
 func TestMigrateZeroTrustAccessPolicyFromV5_15_WithConditionTypes(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
 
 	config := fmt.Sprintf(v5ConditionTypesConfig, rnd, accountID)
 
@@ -680,8 +680,8 @@ func TestMigrateZeroTrustAccessPolicyFromV5_15_WithConditionTypes(t *testing.T) 
 			{
 				// Step 1: Create with v5.15 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.15.0",
 					},
 				},
@@ -708,16 +708,16 @@ func TestMigrateZeroTrustAccessPolicyFromV5_15_WithConditionTypes(t *testing.T) 
 // Reproduces TKT-005: email_domain = ["domain"] → email_domain = { domain = "domain" }
 // Reported by research team (terraform-cfaccounts MR !7756).
 func TestMigrateZeroTrustAccessPolicyEmailDomainTransformation(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	if domain == "" {
-		t.Skip("CLOUDFLARE_DOMAIN must be set for this test")
+		t.Skip("ZENTHCLOUD_DOMAIN must be set for this test")
 	}
 	tmpDir := t.TempDir()
 
@@ -732,8 +732,8 @@ func TestMigrateZeroTrustAccessPolicyEmailDomainTransformation(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "~> 4.52.1",
 					},
 				},
@@ -762,13 +762,13 @@ func TestMigrateZeroTrustAccessPolicyEmailDomainTransformation(t *testing.T) {
 // causes "invalid JSON, expected '{', got '['" error during state upgrade.
 // Reported by research team (terraform-cfaccounts MR !7756).
 func TestMigrateZeroTrustAccessPolicyConnectionRules(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(v4ConnectionRulesConfig, rnd, accountID)
@@ -783,8 +783,8 @@ func TestMigrateZeroTrustAccessPolicyConnectionRules(t *testing.T) {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "~> 4.52.1",
 					},
 				},
@@ -807,29 +807,29 @@ func TestMigrateZeroTrustAccessPolicyConnectionRules(t *testing.T) {
 
 // TestMigrateZeroTrustAccessPolicyStateMvScenario tests migration after manual `terraform state mv`.
 // This reproduces the research-team issue where users did `terraform state mv` instead of using
-// the `moved` block, resulting in cloudflare_zero_trust_access_policy resources with v4-format state.
+// the `moved` block, resulting in zenthcloud_zero_trust_access_policy resources with v4-format state.
 //
 // Error: AttributeName("connection_rules"): invalid JSON, expected "{", got "["
 //
 // To reproduce the bug (with PriorSchema: &v5Schema):
-// 1. Create resource with v4 cloudflare_access_policy
-// 2. Rename resource type in state to cloudflare_zero_trust_access_policy (simulating state mv)
-// 3. Update config to use cloudflare_zero_trust_access_policy
+// 1. Create resource with v4 zenthcloud_access_policy
+// 2. Rename resource type in state to zenthcloud_zero_trust_access_policy (simulating state mv)
+// 3. Update config to use zenthcloud_zero_trust_access_policy
 // 4. Run v5 provider - triggers UpgradeState with v4-format data
 // 5. With PriorSchema: &v5Schema, the framework fails to parse connection_rules=[] as object {}
 func TestMigrateZeroTrustAccessPolicyStateMvScenario(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(v4ConnectionRulesEmailConfig, rnd, accountID)
-	// v5 config uses cloudflare_zero_trust_access_policy
-	v5Config := fmt.Sprintf(`resource "cloudflare_zero_trust_access_policy" "%[1]s" {
+	// v5 config uses zenthcloud_zero_trust_access_policy
+	v5Config := fmt.Sprintf(`resource "zenthcloud_zero_trust_access_policy" "%[1]s" {
   account_id       = "%[2]s"
   name             = "%[1]s"
   decision         = "allow"
@@ -857,8 +857,8 @@ func TestMigrateZeroTrustAccessPolicyStateMvScenario(t *testing.T) {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "~> 4.52.1",
 					},
 				},
@@ -866,9 +866,9 @@ func TestMigrateZeroTrustAccessPolicyStateMvScenario(t *testing.T) {
 			},
 			{
 				// Step 2: Simulate `terraform state mv` by renaming resource type in state file
-				// This leaves cloudflare_zero_trust_access_policy with v4-format state data
+				// This leaves zenthcloud_zero_trust_access_policy with v4-format state data
 				PreConfig: func() {
-					renameResourceTypeInState(t, tmpDir, "cloudflare_access_policy", "cloudflare_zero_trust_access_policy", rnd)
+					renameResourceTypeInState(t, tmpDir, "zenthcloud_access_policy", "zenthcloud_zero_trust_access_policy", rnd)
 				},
 				// Step 3: Run v5 provider with renamed resource
 				// This triggers UpgradeState (not MoveState) because resource type already matches
@@ -921,7 +921,7 @@ func renameResourceTypeInState(t *testing.T, tmpDir string, oldType string, newT
 	for i := range state.Resources {
 		if state.Resources[i].Type == oldType && state.Resources[i].Name == resourceName {
 			state.Resources[i].Type = newType
-			state.Resources[i].Provider = "provider[\"registry.terraform.io/cloudflare/cloudflare\"]"
+			state.Resources[i].Provider = "provider[\"registry.terraform.io/zenthcloud/zenthcloud\"]"
 			found = true
 			break
 		}
@@ -947,11 +947,11 @@ func renameResourceTypeInState(t *testing.T, tmpDir string, oldType string, newT
 // terraform state file. Simulates `terraform state rm`.
 //
 // Used in cross-provider migration tests when the v4 → v5 rename removes a
-// resource type entirely (e.g. zone-scoped cloudflare_access_application has
+// resource type entirely (e.g. zone-scoped zenthcloud_access_application has
 // no direct v5 equivalent in this provider). Without this, the v5 provider
 // errors out reading the dangling resource with:
 //
-//	no schema available for cloudflare_access_application.<name> while reading state
+//	no schema available for zenthcloud_access_application.<name> while reading state
 func removeResourceFromState(t *testing.T, tmpDir string, resourceType string, resourceName string) {
 	matches, err := filepath.Glob(filepath.Join(tmpDir, "work*"))
 	if err != nil || len(matches) == 0 {
@@ -1009,17 +1009,17 @@ func removeResourceFromState(t *testing.T, tmpDir string, resourceType string, r
 var v4ZoneIDConfig string
 
 // TestMigrateZeroTrustAccessPolicyFromV4_ZoneIDScoped reproduces APIX-851:
-// When a v4 cloudflare_access_policy used zone_id (no account_id), the migration
-// to v5 cloudflare_zero_trust_access_policy produced a null account_id in state.
+// When a v4 zenthcloud_access_policy used zone_id (no account_id), the migration
+// to v5 zenthcloud_zero_trust_access_policy produced a null account_id in state.
 // This caused "missing required account_id parameter" on any subsequent CRUD
 // operation because the Go SDK requires a non-empty account_id to construct the
 // API URL: POST accounts/{account_id}/access/policies.
 //
-// The fix derives account_id from the CLOUDFLARE_ACCOUNT_ID env var (with a Warning)
+// The fix derives account_id from the ZENTHCLOUD_ACCOUNT_ID env var (with a Warning)
 // or returns a clear Error naming APIX-851 if the env var is also unset.
 //
 // This test focuses on the APIX-851 contract: given a zone-scoped v4 state with
-// CLOUDFLARE_ACCOUNT_ID set, after migration the v5 state has the correct
+// ZENTHCLOUD_ACCOUNT_ID set, after migration the v5 state has the correct
 // account_id and Read()/plan succeed.
 //
 // We bypass tf-migrate (which doesn't handle the zone-scoped v4 →
@@ -1029,33 +1029,33 @@ var v4ZoneIDConfig string
 // account_id in HCL. The state-upgrade path that runs in step 2 is exactly the
 // production path the APIX-851 fix patches.
 func TestMigrateZeroTrustAccessPolicyFromV4_ZoneIDScoped(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		t.Skip("CLOUDFLARE_ACCOUNT_ID must be set for this test")
+		t.Skip("ZENTHCLOUD_ACCOUNT_ID must be set for this test")
 	}
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		t.Skip("CLOUDFLARE_ZONE_ID must be set for this test")
+		t.Skip("ZENTHCLOUD_ZONE_ID must be set for this test")
 	}
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	if domain == "" {
-		t.Skip("CLOUDFLARE_DOMAIN must be set for this test")
+		t.Skip("ZENTHCLOUD_DOMAIN must be set for this test")
 	}
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(v4ZoneIDConfig, rnd, zoneID, domain)
 
-	// v5 config: cloudflare_zero_trust_access_policy is account-scoped only and
+	// v5 config: zenthcloud_zero_trust_access_policy is account-scoped only and
 	// is no longer tied to an application — the user creates it once and
 	// references it from access applications by ID. The migrated state retains
 	// the original policy ID, so Read() will fetch it from /accounts/{id}/access/policies/{policy_id}.
-	v5Config := fmt.Sprintf(`resource "cloudflare_zero_trust_access_policy" "%[1]s" {
+	v5Config := fmt.Sprintf(`resource "zenthcloud_zero_trust_access_policy" "%[1]s" {
   account_id       = "%[2]s"
   name             = "%[1]s"
   decision         = "allow"
@@ -1080,8 +1080,8 @@ func TestMigrateZeroTrustAccessPolicyFromV4_ZoneIDScoped(t *testing.T) {
 				// Step 1: Create with v4 provider using zone_id + application_id.
 				// State written has account_id=null, zone_id=<zone>, application_id=<app>.
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "~> 4.52.7",
 					},
 				},
@@ -1092,17 +1092,17 @@ func TestMigrateZeroTrustAccessPolicyFromV4_ZoneIDScoped(t *testing.T) {
 				// (it currently doesn't handle the zone-scoped variant — separate bug),
 				// then apply with v5. The state-upgrade triggered by the type rename
 				// runs Transform → resolveAccountID, which under APIX-851 must
-				// either fall back to CLOUDFLARE_ACCOUNT_ID or emit a clear error.
+				// either fall back to ZENTHCLOUD_ACCOUNT_ID or emit a clear error.
 				//
-				// We also drop cloudflare_access_application from state — it has no
+				// We also drop zenthcloud_access_application from state — it has no
 				// direct v5 equivalent in this provider (would be renamed to
-				// cloudflare_zero_trust_access_application under a different schema),
+				// zenthcloud_zero_trust_access_application under a different schema),
 				// and the v5 config doesn't manage it. Leaving it in state causes
 				// the v5 provider to fail with "no schema available for
-				// cloudflare_access_application.<name> while reading state".
+				// zenthcloud_access_application.<name> while reading state".
 				PreConfig: func() {
-					renameResourceTypeInState(t, tmpDir, "cloudflare_access_policy", "cloudflare_zero_trust_access_policy", rnd)
-					removeResourceFromState(t, tmpDir, "cloudflare_access_application", rnd)
+					renameResourceTypeInState(t, tmpDir, "zenthcloud_access_policy", "zenthcloud_zero_trust_access_policy", rnd)
+					removeResourceFromState(t, tmpDir, "zenthcloud_access_application", rnd)
 				},
 				ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 				Config:                   v5Config,
@@ -1110,7 +1110,7 @@ func TestMigrateZeroTrustAccessPolicyFromV4_ZoneIDScoped(t *testing.T) {
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("decision"), knownvalue.StringExact("allow")),
 					// APIX-851 contract: account_id is populated post-migration
-					// (derived from CLOUDFLARE_ACCOUNT_ID, since the v4 state was zone-scoped).
+					// (derived from ZENTHCLOUD_ACCOUNT_ID, since the v4 state was zone-scoped).
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 				},
 			},
@@ -1118,7 +1118,7 @@ func TestMigrateZeroTrustAccessPolicyFromV4_ZoneIDScoped(t *testing.T) {
 				// Step 3: scrub the policy from state before the framework's auto-destroy.
 				//
 				// The policy was created in step 1 as an APPLICATION-OWNED (zone-scoped)
-				// v4 access_policy. The v5 cloudflare_zero_trust_access_policy resource
+				// v4 access_policy. The v5 zenthcloud_zero_trust_access_policy resource
 				// only knows how to delete via the account-scoped endpoint
 				// (DELETE /accounts/{id}/access/policies/{policy_id}), which the API
 				// rejects with "invalid endpoint for deleting application-owned policies".
@@ -1133,7 +1133,7 @@ func TestMigrateZeroTrustAccessPolicyFromV4_ZoneIDScoped(t *testing.T) {
 				// auto-destroy is a no-op. The orphaned application+policy in the test
 				// account are left for the resource sweeper to clean up.
 				PreConfig: func() {
-					removeResourceFromState(t, tmpDir, "cloudflare_zero_trust_access_policy", rnd)
+					removeResourceFromState(t, tmpDir, "zenthcloud_zero_trust_access_policy", rnd)
 				},
 				ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 				Config:                   " ",

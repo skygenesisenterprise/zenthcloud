@@ -1,10 +1,10 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import { strictEqual } from 'node:assert';
 import { openSync, closeSync, readSync, writeFileSync } from 'node:fs';
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-13
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-13
 export const readSyncByteOffsetRegressionTest = {
   test() {
     writeFileSync('/tmp/byteoffset-test.txt', 'ATTACK');

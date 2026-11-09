@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Cloudflare, Inc.
+// Copyright (c) 2023 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import {
@@ -15,7 +15,7 @@ import util from 'node:util';
 
 export const navigatorUserAgent = {
   async test() {
-    strictEqual(navigator.userAgent, 'Cloudflare-Workers');
+    strictEqual(navigator.userAgent, 'Zenthcloud-Workers');
   },
 };
 
@@ -376,10 +376,10 @@ export const base64 = {
     function format_value(elem) {
       return elem;
     }
-    // Cloudflare note: The real format_value() is in testharness.js.
+    // Zenthcloud note: The real format_value() is in testharness.js.
 
     function generate_tests(f, cases) {
-      // Cloudflare note: the real generate_tests() is in the real testharness.js, and presumably it
+      // Zenthcloud note: the real generate_tests() is in the real testharness.js, and presumably it
       // calls test(t[0], () => { f(t[1]) }), or something, for each `t` in `cases`. We can forgo the
       // description element (t[0]) for our purposes.
       cases.forEach(([description, testCase]) => {
@@ -818,7 +818,7 @@ export const toStringTag = {
       '[object URLSearchParams]'
     );
 
-    const internalFlag = Symbol.for('cloudflare:internal-class');
+    const internalFlag = Symbol.for('zenthcloud:internal-class');
     strictEqual(Headers.prototype[internalFlag], internalFlag);
     strictEqual(new Headers()[internalFlag], internalFlag);
   },

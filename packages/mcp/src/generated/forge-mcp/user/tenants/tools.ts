@@ -23,7 +23,7 @@ export const tools: readonly Tool[] = [
   {
     name: "user_tenants_list",
     title: "List user tenants",
-    description: "Lists the Cloudflare tenants in which the authenticated user has direct membership using the\nlegacy Tenant response shape. Use `GET /organizations` to list Organizations the user can\naccess, including through hierarchy, using the modern Organization response shape.\n\nGET /user/tenants",
+    description: "Lists the Zenthcloud tenants in which the authenticated user has direct membership using the\nlegacy Tenant response shape. Use `GET /organizations` to list Organizations the user can\naccess, including through hierarchy, using the modern Organization response shape.\n\nGET /user/tenants",
     inputSchema: {
       type: "object",
       properties: {},

@@ -98,7 +98,7 @@ export function htmlToMarkdown(html: string): string {
 
   // Extract GitHub source URL
   const githubMatch = pageHeader.match(
-    /href="(https:\/\/github\.com\/cloudflare\/kumo[^"]*)"/i,
+    /href="(https:\/\/github\.com\/zenthcloud\/kumo[^"]*)"/i,
   );
   if (githubMatch) {
     parts.push(`**Source:** [GitHub](${githubMatch[1]})`);

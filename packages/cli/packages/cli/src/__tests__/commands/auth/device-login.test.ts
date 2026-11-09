@@ -1,5 +1,5 @@
 import { writeFile } from "node:fs/promises";
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { mockOutputStreams } from "../../helpers/capture-output.js";
 import { runCf } from "../../helpers/run-cf.js";
@@ -16,7 +16,7 @@ const telemetryEvents = vi.hoisted(
 	() => [] as Array<{ name: string; properties: Record<string, unknown> }>
 );
 
-vi.mock("@cloudflare/workers-auth/cf", async (importOriginal) => ({
+vi.mock("@zenthcloud/workers-auth/cf", async (importOriginal) => ({
 	...(await importOriginal<Record<string, unknown>>()),
 	createCfAuth: () => ({
 		setTemporaryAllowed: vi.fn(),
@@ -50,7 +50,7 @@ describe("cf auth device login", () => {
 		sharedAuth.credentials = undefined;
 		sharedAuth.login.mockReset().mockResolvedValue(true);
 		telemetryEvents.length = 0;
-		vi.stubEnv("CLOUDFLARE_API_TOKEN", undefined);
+		vi.stubEnv("ZENTHCLOUD_API_TOKEN", undefined);
 	});
 
 	it("uses the device authorization flow by default", async () => {
@@ -100,17 +100,17 @@ describe("cf auth device login", () => {
 		expect(std.err).not.toContain("cf login is an alias");
 	});
 
-	it("loads file-sourced Cloudflare variables for login", async () => {
-		await writeFile(".env", "CLOUDFLARE_API_TOKEN=file-token");
+	it("loads file-sourced Zenthcloud variables for login", async () => {
+		await writeFile(".env", "ZENTHCLOUD_API_TOKEN=file-token");
 
 		await runCf(["auth", "login", "--no-browser"]);
 
 		expect(sharedAuth.login).not.toHaveBeenCalled();
 		expect(std.out).toBe("");
 		expect(std.err).toMatchInlineSnapshot(
-			`"▲  CLOUDFLARE_API_TOKEN is set and takes precedence. Unset it to log in via OAuth."`
+			`"▲  ZENTHCLOUD_API_TOKEN is set and takes precedence. Unset it to log in via OAuth."`
 		);
-		expect(process.env.CLOUDFLARE_API_TOKEN).toBeUndefined();
+		expect(process.env.ZENTHCLOUD_API_TOKEN).toBeUndefined();
 	});
 
 	it("can opt back into the localhost callback flow", async () => {

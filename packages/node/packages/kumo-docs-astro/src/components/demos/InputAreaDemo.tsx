@@ -1,4 +1,4 @@
-import { InputArea } from "@cloudflare/kumo";
+import { InputArea } from "@zenthcloud/kumo";
 
 export function InputAreaBasicDemo() {
   return (
@@ -109,7 +109,7 @@ export function InputAreaLabelTooltipDemo() {
   return (
     <InputArea
       label="Worker Script"
-      labelTooltip="Enter your Cloudflare Worker script code here"
+      labelTooltip="Enter your Zenthcloud Worker script code here"
       placeholder="export default { async fetch(request) { ... } }"
       rows={4}
     />

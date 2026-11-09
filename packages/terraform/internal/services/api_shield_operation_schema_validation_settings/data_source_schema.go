@@ -5,7 +5,7 @@ package api_shield_operation_schema_validation_settings
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -24,7 +24,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				"Domain API Gateway Read",
 			},
 		}.String(),
-		DeprecationMessage: "Please use the `cloudflare_schema_validation_operation_settings` resource instead",
+		DeprecationMessage: "Please use the `zenthcloud_schema_validation_operation_settings` resource instead",
 		Attributes: map[string]schema.Attribute{
 			"operation_id": schema.StringAttribute{
 				Description: "UUID.",

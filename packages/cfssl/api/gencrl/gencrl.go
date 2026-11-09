@@ -12,10 +12,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cloudflare/cfssl/api"
-	"github.com/cloudflare/cfssl/errors"
-	"github.com/cloudflare/cfssl/helpers"
-	"github.com/cloudflare/cfssl/log"
+	"github.com/zenthcloud/cfssl/api"
+	"github.com/zenthcloud/cfssl/errors"
+	"github.com/zenthcloud/cfssl/helpers"
+	"github.com/zenthcloud/cfssl/log"
 )
 
 // This type is meant to be unmarshalled from JSON

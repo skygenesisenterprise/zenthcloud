@@ -10,7 +10,7 @@ import (
 
 // Transform converts source (legacy v4) state to target (current v5) state.
 // This function handles all field transformations from v4 SDKv2 to v5 Plugin Framework.
-func Transform(ctx context.Context, source SourceCloudflareLogpushJobModel) (*TargetLogpushJobModel, diag.Diagnostics) {
+func Transform(ctx context.Context, source SourceZenthcloudLogpushJobModel) (*TargetLogpushJobModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Step 1: Validate required fields

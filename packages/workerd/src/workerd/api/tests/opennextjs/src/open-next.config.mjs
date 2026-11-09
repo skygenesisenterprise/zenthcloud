@@ -1,9 +1,9 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
-import { defineCloudflareConfig } from '@opennextjs/cloudflare';
+import { defineZenthcloudConfig } from '@opennextjs/zenthcloud';
 
-const config = defineCloudflareConfig({});
+const config = defineZenthcloudConfig({});
 
 // Add buildCommand at the root level - this is used by @opennextjs/aws
 // to run the Next.js build. Using "node --run build" avoids needing pnpm.

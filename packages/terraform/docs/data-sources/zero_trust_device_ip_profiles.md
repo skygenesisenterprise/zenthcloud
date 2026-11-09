@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_device_ip_profiles Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_device_ip_profiles Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust ReadZero Trust Write
 ---
 
-# cloudflare_zero_trust_device_ip_profiles (Data Source)
+# zenthcloud_zero_trust_device_ip_profiles (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_device_ip_profiles" "example_zero_trust_device_ip_profiles" {
+data "zenthcloud_zero_trust_device_ip_profiles" "example_zero_trust_device_ip_profiles" {
   account_id = "account_id"
 }
 ```

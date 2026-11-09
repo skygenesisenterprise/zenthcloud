@@ -1,5 +1,5 @@
-import { Button, LayerCard, Text } from "@cloudflare/kumo";
-import { CodeHighlighted } from "@cloudflare/kumo/code";
+import { Button, LayerCard, Text } from "@zenthcloud/kumo";
+import { CodeHighlighted } from "@zenthcloud/kumo/code";
 import { WarningIcon } from "@phosphor-icons/react";
 import type { ReactNode } from "react";
 import { CollapseSizeExample } from "./CollapseSizeExample";

@@ -22,5 +22,5 @@ const mainWorker :Workerd.Worker = (
   compatibilityDate = "2023-12-18",
   compatibilityFlags = ["python_workers", "python_workers_20250116"],
   # Learn more about compatibility dates at:
-  # https://developers.cloudflare.com/workers/platform/compatibility-dates/
+  # https://github.com/skygenesisenterprise/zenthcloud
 );

@@ -25,7 +25,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		)
 		.positional("app-id", {
 			type: "string",
-			description: "A Cloudflare-generated unique identifier for a item.",
+			description: "A Zenthcloud-generated unique identifier for a item.",
 			demandOption: true,
 		})
 		.option("dry-run", {
@@ -63,7 +63,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf realtime sfu apps delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/calls/apps/${argv["app-id"] == null ? "<app-id>" : encodeURIComponent(String(argv["app-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/calls/apps/${argv["app-id"] == null ? "<app-id>" : encodeURIComponent(String(argv["app-id"]))}`,
 						pathParams: { "app-id": String(argv["app-id"] ?? "") },
 						bodyKind: "none",
 					});

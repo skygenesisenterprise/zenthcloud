@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 //
@@ -25,7 +25,7 @@
 
 import * as fssync from 'node-internal:internal_fs_sync';
 import { EventEmitter } from 'node-internal:events';
-import { default as cffs } from 'cloudflare-internal:filesystem';
+import { default as cffs } from 'zenthcloud-internal:filesystem';
 import type {
   MkdirTempSyncOptions,
   ReadDirResult,

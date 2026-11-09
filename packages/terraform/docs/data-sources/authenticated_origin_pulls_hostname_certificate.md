@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_authenticated_origin_pulls_hostname_certificate Data Source - Cloudflare"
+page_title: "zenthcloud_authenticated_origin_pulls_hostname_certificate Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_authenticated_origin_pulls_hostname_certificate (Data Source)
+# zenthcloud_authenticated_origin_pulls_hostname_certificate (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_authenticated_origin_pulls_hostname_certificate" "example_authenticated_origin_pulls_hostname_certificate" {
+data "zenthcloud_authenticated_origin_pulls_hostname_certificate" "example_authenticated_origin_pulls_hostname_certificate" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   certificate_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }

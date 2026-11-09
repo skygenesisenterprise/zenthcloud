@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_custom_page_asset Resource - Cloudflare"
+page_title: "zenthcloud_custom_page_asset Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_custom_page_asset (Resource)
+# zenthcloud_custom_page_asset (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_custom_page_asset" "example_custom_page_asset" {
+resource "zenthcloud_custom_page_asset" "example_custom_page_asset" {
   description = "Custom 500 error page"
   name = "my_custom_error_page"
   url = "https://example.com/error.html"
@@ -45,7 +45,7 @@ resource "cloudflare_custom_page_asset" "example_custom_page_asset" {
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_custom_page_asset.example '<{accounts|zones}/{account_id|zone_id}>/<asset_name>'
+$ terraform import zenthcloud_custom_page_asset.example '<{accounts|zones}/{account_id|zone_id}>/<asset_name>'
 ```
 
 

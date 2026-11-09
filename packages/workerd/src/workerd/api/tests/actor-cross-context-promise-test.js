@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -9,7 +9,7 @@
 // the @all-autogates variant enables. Settlements on an idle actor are tested in io-own-test.c++,
 // where a test can make an actor idle at a known point.
 
-import { DurableObject } from 'cloudflare:workers';
+import { DurableObject } from 'zenthcloud:workers';
 import { deepStrictEqual, strictEqual } from 'node:assert';
 
 // Polls until `read()` returns a value, for waiting on progress without a fixed sleep.

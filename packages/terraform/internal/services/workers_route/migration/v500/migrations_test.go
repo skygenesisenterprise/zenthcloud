@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -38,10 +38,10 @@ var v5NoScriptConfig string
 // TestMigrateWorkersRoute_FromV4Basic tests basic migration: script_name→script.
 // Ported from TestMigrateWorkersRouteMigrationFromV4Basic.
 func TestMigrateWorkersRoute_FromV4Basic(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_workers_route." + rnd
+	resourceName := "zenthcloud_workers_route." + rnd
 	tmpDir := t.TempDir()
 	scriptName := fmt.Sprintf("test-script-%s", rnd)
 	version := acctest.GetLastV4Version()
@@ -58,8 +58,8 @@ func TestMigrateWorkersRoute_FromV4Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
@@ -77,9 +77,9 @@ func TestMigrateWorkersRoute_FromV4Basic(t *testing.T) {
 // TestMigrateWorkersRoute_FromV4NoScript tests migration of route without script.
 // Ported from TestMigrateWorkersRouteMigrationFromV4NoScript.
 func TestMigrateWorkersRoute_FromV4NoScript(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_workers_route." + rnd
+	resourceName := "zenthcloud_workers_route." + rnd
 	tmpDir := t.TempDir()
 	version := acctest.GetLastV4Version()
 	testConfig := fmt.Sprintf(v4NoScriptConfig, rnd, zoneID)
@@ -94,8 +94,8 @@ func TestMigrateWorkersRoute_FromV4NoScript(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
@@ -112,28 +112,28 @@ func TestMigrateWorkersRoute_FromV4NoScript(t *testing.T) {
 
 // TestMigrateWorkersRoute_FromV4SingleResource tests migration using singular resource name.
 // Ported from TestMigrateWorkersRouteMigrationFromV4SingleResource.
-// Uses cloudflare_worker_route (singular) — tests the resource rename path via moved block.
+// Uses zenthcloud_worker_route (singular) — tests the resource rename path via moved block.
 func TestMigrateWorkersRoute_FromV4SingleResource(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_workers_route." + rnd
+	resourceName := "zenthcloud_workers_route." + rnd
 	tmpDir := t.TempDir()
 	scriptName := fmt.Sprintf("test-script-%s", rnd)
 	version := acctest.GetLastV4Version()
 
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_worker_script" "test_script_%[1]s" {
+resource "zenthcloud_worker_script" "test_script_%[1]s" {
   account_id = "%[4]s"
   name       = "%[3]s"
   content    = "addEventListener('fetch', event => { event.respondWith(new Response('Hello World')); });"
 }
 
-resource "cloudflare_worker_route" "%[1]s" {
+resource "zenthcloud_worker_route" "%[1]s" {
   zone_id     = "%[2]s"
   pattern     = "%[1]s.cfapi.net/v1/*"
   script_name = "%[3]s"
-  depends_on  = [cloudflare_worker_script.test_script_%[1]s]
+  depends_on  = [zenthcloud_worker_script.test_script_%[1]s]
 }`, rnd, zoneID, scriptName, accountID)
 
 	sourceVer, targetVer := acctest.InferMigrationVersions(version)
@@ -148,8 +148,8 @@ resource "cloudflare_worker_route" "%[1]s" {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
@@ -189,11 +189,11 @@ func TestMigrateWorkersRoute_Basic(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			scriptName := fmt.Sprintf("test-script-%s", rnd)
-			resourceName := "cloudflare_workers_route." + rnd
+			resourceName := "zenthcloud_workers_route." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID, accountID, scriptName)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -207,8 +207,8 @@ func TestMigrateWorkersRoute_Basic(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -257,9 +257,9 @@ func TestMigrateWorkersRoute_NoScript(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_workers_route." + rnd
+			resourceName := "zenthcloud_workers_route." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -273,8 +273,8 @@ func TestMigrateWorkersRoute_NoScript(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},

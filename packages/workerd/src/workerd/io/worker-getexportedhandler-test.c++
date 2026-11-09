@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Cloudflare, Inc.
+// Copyright (c) 2024 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -23,7 +23,7 @@ namespace {
 KJ_TEST("getExportedHandler: DO class via dynamic dispatch throws JSG TypeError") {
   TestFixture fixture({
     .mainModuleSource = R"(
-      import { DurableObject } from "cloudflare:workers";
+      import { DurableObject } from "zenthcloud:workers";
       export class SomeActor extends DurableObject {}
       export default { async fetch(req) { return new Response("ok"); } }
     )"_kj,
@@ -60,7 +60,7 @@ KJ_TEST("getExportedHandler: missing entrypoint via dynamic dispatch throws JSG 
 KJ_TEST("getExportedHandler: DO class via static dispatch throws internal error") {
   TestFixture fixture({
     .mainModuleSource = R"(
-      import { DurableObject } from "cloudflare:workers";
+      import { DurableObject } from "zenthcloud:workers";
       export class SomeActor extends DurableObject {}
       export default { async fetch(req) { return new Response("ok"); } }
     )"_kj,

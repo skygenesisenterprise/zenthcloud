@@ -1,4 +1,4 @@
-resource "cloudflare_google_tag_gateway" "%[2]s" {
+resource "zenthcloud_google_tag_gateway" "%[2]s" {
   zone_id          = "%[1]s"
   enabled          = true
   endpoint         = "/gtm"

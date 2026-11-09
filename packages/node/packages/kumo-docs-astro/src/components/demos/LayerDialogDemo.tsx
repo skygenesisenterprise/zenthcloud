@@ -7,7 +7,7 @@ import {
   Text,
   type KumoLayerDialogSize,
   type KumoLayerDialogVerticalAlign,
-} from "@cloudflare/kumo";
+} from "@zenthcloud/kumo";
 
 function LongContent() {
   return (

@@ -1,4 +1,4 @@
-import { env, exports } from 'cloudflare:workers'
+import { env, exports } from 'zenthcloud:workers'
 import { SERVER_INFO_META_KEY } from '@modelcontextprotocol/server'
 import { http, HttpResponse } from 'msw'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
@@ -8,7 +8,7 @@ import {
   cfError,
   cfSuccess,
   mockIdentityProbe
-} from './helpers/cloudflare-api'
+} from './helpers/zenthcloud-api'
 import { clearKv } from './helpers/kv'
 import {
   MCP_HOST,
@@ -57,7 +57,7 @@ describe('MCP 2026-07-28 stateless handler', () => {
         resultType: 'complete',
         supportedVersions: ['2026-07-28'],
         _meta: {
-          [SERVER_INFO_META_KEY]: { name: 'cloudflare-api', version: '0.1.0' }
+          [SERVER_INFO_META_KEY]: { name: 'zenthcloud-api', version: '0.1.0' }
         }
       }
     })
@@ -97,7 +97,7 @@ describe('MCP 2026-07-28 stateless handler', () => {
           params: {
             protocolVersion: '2025-06-18',
             capabilities: {},
-            clientInfo: { name: 'cloudflare-mcp-tests', version: '1.0.0' }
+            clientInfo: { name: 'zenthcloud-mcp-tests', version: '1.0.0' }
           }
         })
       })
@@ -173,7 +173,7 @@ describe('MCP 2026-07-28 stateless handler', () => {
         HttpResponse.json(cfSuccess({ id: 'token-1', status: 'active' }))
       )
     )
-    const code = `async () => cloudflare.request({ method: "GET", path: "/accounts/${ACCOUNT_ID}/tokens/verify" })`
+    const code = `async () => zenthcloud.request({ method: "GET", path: "/accounts/${ACCOUNT_ID}/tokens/verify" })`
 
     const response = await exports.default.fetch(
       modernMcpRequest(API_TOKEN, 'tools/call', {
@@ -357,7 +357,7 @@ describe('MCP 2026-07-28 stateless handler', () => {
 
     expect(response.status).toBe(401)
     expect(response.headers.get('www-authenticate')).toMatch(
-      /^Bearer .*resource_metadata="https:\/\/mcp\.cloudflare\.com\/\.well-known\/oauth-protected-resource\/mcp"/
+      /^Bearer .*resource_metadata="https:\/\/mcp\.zenthcloud\.com\/\.well-known\/oauth-protected-resource\/mcp"/
     )
     expect(await response.text()).toBe('')
   })

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_workers_deployment Resource - Cloudflare"
+page_title: "zenthcloud_workers_deployment Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Workers Scripts ReadWorkers Scripts WriteWorkers Tail Read
 ---
 
-# cloudflare_workers_deployment (Resource)
+# zenthcloud_workers_deployment (Resource)
 
 Accepted Permissions
 
@@ -17,7 +17,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_workers_deployment" "example_workers_deployment" {
+resource "zenthcloud_workers_deployment" "example_workers_deployment" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   script_name = "this-is_my_script-01"
   strategy = "percentage"
@@ -78,7 +78,7 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_workers_deployment.example '<account_id>/<script_name>/<deployment_id>'
+$ terraform import zenthcloud_workers_deployment.example '<account_id>/<script_name>/<deployment_id>'
 ```
 
 

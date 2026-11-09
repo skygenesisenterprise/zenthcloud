@@ -8,12 +8,12 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/snippets"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/snippets"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -29,7 +29,7 @@ func NewResource() resource.Resource {
 
 // SnippetRulesResource defines the resource implementation.
 type SnippetRulesResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *SnippetRulesResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -41,12 +41,12 @@ func (r *SnippetRulesResource) Configure(ctx context.Context, req resource.Confi
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -74,7 +74,7 @@ func (r *SnippetRulesResource) Create(ctx context.Context, req resource.CreateRe
 	_, err = r.client.Snippets.Rules.Update(
 		ctx,
 		snippets.RuleUpdateParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -123,7 +123,7 @@ func (r *SnippetRulesResource) Update(ctx context.Context, req resource.UpdateRe
 	_, err = r.client.Snippets.Rules.Update(
 		ctx,
 		snippets.RuleUpdateParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -159,7 +159,7 @@ func (r *SnippetRulesResource) Read(ctx context.Context, req resource.ReadReques
 	_, err := r.client.Snippets.Rules.Get(
 		ctx,
 		snippets.RuleGetParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -197,7 +197,7 @@ func (r *SnippetRulesResource) Delete(ctx context.Context, req resource.DeleteRe
 	_, err := r.client.Snippets.Rules.Delete(
 		ctx,
 		snippets.RuleDeleteParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
@@ -231,7 +231,7 @@ func (r *SnippetRulesResource) ImportState(ctx context.Context, req resource.Imp
 	_, err := r.client.Snippets.Rules.Get(
 		ctx,
 		snippets.RuleGetParams{
-			ZoneID: cloudflare.F(path),
+			ZoneID: zenthcloud.F(path),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),

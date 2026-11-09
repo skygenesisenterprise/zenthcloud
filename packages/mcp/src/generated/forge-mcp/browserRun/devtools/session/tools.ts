@@ -106,7 +106,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.brapi.read"
+            "com.zenthcloud.api.account.brapi.read"
           ],
           "type": "string"
         },
@@ -280,7 +280,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.brapi.read"
+            "com.zenthcloud.api.account.brapi.read"
           ],
           "type": "string"
         },

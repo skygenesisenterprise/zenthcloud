@@ -42,7 +42,7 @@ describe("dry-run redaction", () => {
 		const output = {
 			command: "cf workers secrets update",
 			method: "PUT",
-			url: "https://api.cloudflare.com/client/v4/secrets",
+			url: "https://github.com/skygenesisenterprise/zenthcloud",
 			pathParams: {},
 			body: { text: "hunter2-secret", type: "secret_text" },
 		};

@@ -9,9 +9,9 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/hostname_tls_setting"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/hostname_tls_setting"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 )
@@ -58,7 +58,7 @@ func TestHostnameTLSSettingImport_PreservesIdentityAndRefreshes(t *testing.T) {
 
 			r := hostname_tls_setting.NewResource().(*hostname_tls_setting.HostnameTLSSettingResource)
 			configure := &resource.ConfigureResponse{}
-			r.Configure(ctx, resource.ConfigureRequest{ProviderData: cloudflare.NewClient(
+			r.Configure(ctx, resource.ConfigureRequest{ProviderData: zenthcloud.NewClient(
 				option.WithBaseURL(server.URL), option.WithAPIToken("test-token"),
 			)}, configure)
 			if configure.Diagnostics.HasError() {

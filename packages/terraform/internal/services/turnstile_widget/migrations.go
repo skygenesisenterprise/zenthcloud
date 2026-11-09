@@ -5,7 +5,7 @@ package turnstile_widget
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/turnstile_widget/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/turnstile_widget/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 

@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_r2_bucket Data Source - Cloudflare"
+page_title: "zenthcloud_r2_bucket Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_r2_bucket (Data Source)
+# zenthcloud_r2_bucket (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_r2_bucket" "example_r2_bucket" {
+data "zenthcloud_r2_bucket" "example_r2_bucket" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   bucket_name = "example-bucket"
 }
@@ -27,7 +27,7 @@ data "cloudflare_r2_bucket" "example_r2_bucket" {
 
 ### Optional
 
-- `account_id` (String) Cloudflare account ID that owns the R2 resource.
+- `account_id` (String) Zenthcloud account ID that owns the R2 resource.
 
 ### Read-Only
 

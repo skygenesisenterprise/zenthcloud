@@ -30,7 +30,7 @@ export const tools: readonly Tool[] = [
   {
     name: "workers_legacy_scripts_settings_edit",
     title: "Patch Worker Script Settings",
-    description: "Patch Worker script-level settings when using [Worker Versions](https://developers.cloudflare.com/api/operations/worker-versions-list-versions). Including but not limited to Logpush and Tail Consumers.\n\nThis method is deprecated.\n\nPATCH /accounts/{account_id}/workers/scripts/{script_name}/script-settings",
+    description: "Patch Worker script-level settings when using [Worker Versions](https://github.com/skygenesisenterprise/zenthcloud). Including but not limited to Logpush and Tail Consumers.\n\nThis method is deprecated.\n\nPATCH /accounts/{account_id}/workers/scripts/{script_name}/script-settings",
     inputSchema: {
       type: "object",
       properties: {
@@ -138,7 +138,7 @@ export const tools: readonly Tool[] = [
   {
     name: "workers_legacy_scripts_settings_get",
     title: "Get Worker Script Settings",
-    description: "Get Worker script-level settings when using [Worker Versions](https://developers.cloudflare.com/api/operations/worker-versions-list-versions). Includes Logpush and Tail Consumers.\n\nThis method is deprecated.\n\nGET /accounts/{account_id}/workers/scripts/{script_name}/script-settings",
+    description: "Get Worker script-level settings when using [Worker Versions](https://github.com/skygenesisenterprise/zenthcloud). Includes Logpush and Tail Consumers.\n\nThis method is deprecated.\n\nGET /accounts/{account_id}/workers/scripts/{script_name}/script-settings",
     inputSchema: {
       type: "object",
       properties: {

@@ -1,10 +1,10 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
 // Unflagged era: without expose_global_message_channel the classes are not
 // globals, and are reached through node:worker_threads (which takes them
-// from cloudflare-internal:messagechannel); without set_tostring_tag their
+// from zenthcloud-internal:messagechannel); without set_tostring_tag their
 // instances stringify as [object Object].
 
 import { ok, strictEqual } from 'node:assert';

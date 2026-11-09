@@ -1,7 +1,7 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -9,10 +9,10 @@ import (
 // Source Models (Legacy Provider - v4.x)
 // ============================================================================
 
-// SourceCloudflareDLPProfileModel represents the legacy DLP profile state from v4.x provider.
+// SourceZenthcloudDLPProfileModel represents the legacy DLP profile state from v4.x provider.
 // Schema version: 0 (SDKv2 default)
-// Resource types: cloudflare_dlp_profile, cloudflare_zero_trust_dlp_profile
-type SourceCloudflareDLPProfileModel struct {
+// Resource types: zenthcloud_dlp_profile, zenthcloud_zero_trust_dlp_profile
+type SourceZenthcloudDLPProfileModel struct {
 	ID                types.String                  `tfsdk:"id"`
 	AccountID         types.String                  `tfsdk:"account_id"`
 	Name              types.String                  `tfsdk:"name"`
@@ -55,7 +55,7 @@ type SourceContextAwarenessSkipModel struct {
 
 // TargetZeroTrustDLPPredefinedProfileModel represents the current resource state.
 // Schema version: 500
-// Resource type: cloudflare_zero_trust_dlp_predefined_profile
+// Resource type: zenthcloud_zero_trust_dlp_predefined_profile
 type TargetZeroTrustDLPPredefinedProfileModel struct {
 	ID                  types.String                                                            `tfsdk:"id"`
 	ProfileID           types.String                                                            `tfsdk:"profile_id"`

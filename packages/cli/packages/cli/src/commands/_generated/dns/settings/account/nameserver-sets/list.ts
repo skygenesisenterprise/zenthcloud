@@ -20,7 +20,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 dns settings account nameserver-sets list\n\nLists an account's Custom Nameserver Sets. For details, refer to [Nameserver sets](https://developers.cloudflare.com/dns/nameservers/custom-nameservers/nameserver-sets/)."
+			"$0 dns settings account nameserver-sets list\n\nLists an account's Custom Nameserver Sets. For details, refer to [Nameserver sets](https://github.com/skygenesisenterprise/zenthcloud)."
 		)
 		.option("page", {
 			type: "number",
@@ -62,7 +62,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf dns settings account nameserver-sets list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/dns_settings/nameserver_sets`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/dns_settings/nameserver_sets`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

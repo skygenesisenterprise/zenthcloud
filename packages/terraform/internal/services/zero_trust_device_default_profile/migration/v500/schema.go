@@ -7,7 +7,7 @@ import (
 )
 
 // SourceDeviceProfileSchema returns the minimal v4 schema needed to read legacy state
-// This matches the v4 cloudflare_zero_trust_device_profiles / cloudflare_device_settings_policy resources
+// This matches the v4 zenthcloud_zero_trust_device_profiles / zenthcloud_device_settings_policy resources
 // Schema version: 0 (SDKv2 default)
 func SourceDeviceProfileSchema() schema.Schema {
 	return schema.Schema{

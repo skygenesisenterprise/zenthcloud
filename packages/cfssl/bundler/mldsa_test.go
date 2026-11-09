@@ -18,7 +18,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/cfssl/errors"
+	"github.com/zenthcloud/cfssl/errors"
 )
 
 func TestMLDSABundle(t *testing.T) {

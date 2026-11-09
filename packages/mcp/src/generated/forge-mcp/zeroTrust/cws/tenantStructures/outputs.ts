@@ -119,7 +119,7 @@ export const cws_TenantStructure: JSONObject = {
     "application": {
       "enum": [
         "aws",
-        "cloudflare"
+        "zenthcloud"
       ],
       "type": "string"
     },

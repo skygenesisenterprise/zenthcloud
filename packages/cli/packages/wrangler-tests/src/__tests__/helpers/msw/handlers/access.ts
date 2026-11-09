@@ -4,7 +4,7 @@ export default [
 	http.get("https://access-protected.com/", () => {
 		return HttpResponse.json(null, {
 			status: 302,
-			headers: { location: "access-protected-com.cloudflareaccess.com" },
+			headers: { location: "access-protected-com.zenthcloudaccess.com" },
 		});
 	}),
 	http.get("https://not-access-protected.com/", () => {

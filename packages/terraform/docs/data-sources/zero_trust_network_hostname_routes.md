@@ -1,24 +1,24 @@
 ---
-page_title: "cloudflare_zero_trust_network_hostname_routes Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_network_hostname_routes Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
-  Cloudflare One Networks ReadCloudflare One Networks WriteCloudflare Tunnel ReadCloudflare Tunnel Write
+  Zenthcloud One Networks ReadZenthcloud One Networks WriteZenthcloud Tunnel ReadZenthcloud Tunnel Write
 ---
 
-# cloudflare_zero_trust_network_hostname_routes (Data Source)
+# zenthcloud_zero_trust_network_hostname_routes (Data Source)
 
 Accepted Permissions
 
-- `Cloudflare One Networks Read`
-- `Cloudflare One Networks Write`
-- `Cloudflare Tunnel Read`
-- `Cloudflare Tunnel Write`
+- `Zenthcloud One Networks Read`
+- `Zenthcloud One Networks Write`
+- `Zenthcloud Tunnel Read`
+- `Zenthcloud Tunnel Write`
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_network_hostname_routes" "example_zero_trust_network_hostname_routes" {
+data "zenthcloud_zero_trust_network_hostname_routes" "example_zero_trust_network_hostname_routes" {
   account_id = "699d98642c564d2e855e9661899b7252"
   id = "f70ff985-a4ef-4643-bbbc-4a0ed4fc8415"
   comment = "example%20comment"
@@ -33,7 +33,7 @@ data "cloudflare_zero_trust_network_hostname_routes" "example_zero_trust_network
 
 ### Optional
 
-- `account_id` (String) Cloudflare account ID
+- `account_id` (String) Zenthcloud account ID
 - `comment` (String) If set, only list hostname routes with the given comment.
 - `existed_at` (String) If provided, include only resources that were created (and not deleted) before this time. URL encoded.
 - `hostname` (String) If set, only list hostname routes that contain a substring of the given value, the filter is case-insensitive.

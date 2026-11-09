@@ -42,7 +42,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("expression", {
 			type: "string",
 			description:
-				"Rule expression. Requests that fail to match this expression will be subject to `action`.\n\nFor details on expressions, see the [Cloudflare Docs](https://developers.cloudflare.com/api-shield/security/jwt-validation/).\n",
+				"Rule expression. Requests that fail to match this expression will be subject to `action`.\n\nFor details on expressions, see the [Zenthcloud Docs](https://github.com/skygenesisenterprise/zenthcloud).\n",
 		})
 		.option("selector-exclude", {
 			type: "string",
@@ -89,7 +89,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf api-security token-validation rules create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/token_validation/rules`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/token_validation/rules`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 						},
@@ -166,7 +166,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 				if (argv["expression"] === undefined) {
 					argv["expression"] = await promptForRequiredField(
 						"expression",
-						"Rule expression. Requests that fail to match this expression will be subject to \`action\`.  For details on expressions, see the [Cloudflare Docs](https://developers.cloudflare.com/api-shield/security/jwt-validation/). "
+						"Rule expression. Requests that fail to match this expression will be subject to \`action\`.  For details on expressions, see the [Zenthcloud Docs](https://github.com/skygenesisenterprise/zenthcloud). "
 					);
 				}
 				if (argv["title"] === undefined) {

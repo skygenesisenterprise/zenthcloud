@@ -6,11 +6,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/alerting"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/alerting"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -25,24 +25,24 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_notification_policy_webhooks", &resource.Sweeper{
-		Name: "cloudflare_notification_policy_webhooks",
-		F:    testSweepCloudflareNotificationPolicyWebhooks,
+	resource.AddTestSweepers("zenthcloud_notification_policy_webhooks", &resource.Sweeper{
+		Name: "zenthcloud_notification_policy_webhooks",
+		F:    testSweepZenthcloudNotificationPolicyWebhooks,
 	})
 }
 
-func testSweepCloudflareNotificationPolicyWebhooks(r string) error {
+func testSweepZenthcloudNotificationPolicyWebhooks(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping notification policy webhooks sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping notification policy webhooks sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
 	webhooks, err := client.Alerting.Destinations.Webhooks.List(ctx, alerting.DestinationWebhookListParams{
-		AccountID: cloudflare.F(accountID),
+		AccountID: zenthcloud.F(accountID),
 	})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch notification policy webhooks: %s", err))
@@ -62,7 +62,7 @@ func testSweepCloudflareNotificationPolicyWebhooks(r string) error {
 
 		tflog.Info(ctx, fmt.Sprintf("Deleting notification policy webhook: %s (account: %s)", webhook.Name, accountID))
 		_, err := client.Alerting.Destinations.Webhooks.Delete(ctx, webhook.ID, alerting.DestinationWebhookDeleteParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete notification policy webhook %s: %s", webhook.ID, err))
@@ -74,17 +74,17 @@ func testSweepCloudflareNotificationPolicyWebhooks(r string) error {
 	return nil
 }
 
-func TestAccCloudflareNotificationPolicyWebhooks_Basic(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the notification
+func TestAccZenthcloudNotificationPolicyWebhooks_Basic(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the notification
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_notification_policy_webhooks." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_notification_policy_webhooks." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	webhookName := "my webhook destination for notifications"
 	webhookURL := "https://postman-echo.com/post"
 	webhookSecret := "my-secret"
@@ -94,10 +94,10 @@ func TestAccCloudflareNotificationPolicyWebhooks_Basic(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareNotificationPolicyWebhooksDestroy,
+		CheckDestroy:             testAccCheckZenthcloudNotificationPolicyWebhooksDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareNotificationPolicyWebhooksBasic(rnd, accountID, webhookName, webhookURL),
+				Config: testZenthcloudNotificationPolicyWebhooksBasic(rnd, accountID, webhookName, webhookURL),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(webhookName)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("url"), knownvalue.StringExact(webhookURL)),
@@ -105,7 +105,7 @@ func TestAccCloudflareNotificationPolicyWebhooks_Basic(t *testing.T) {
 				},
 			},
 			{
-				Config: testCloudflareNotificationPolicyWebhooksBasic(rnd, accountID, webhookName+" updated", webhookURL),
+				Config: testZenthcloudNotificationPolicyWebhooksBasic(rnd, accountID, webhookName+" updated", webhookURL),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -119,7 +119,7 @@ func TestAccCloudflareNotificationPolicyWebhooks_Basic(t *testing.T) {
 				},
 			},
 			{
-				Config: testCloudflareNotificationPolicyWebhooksBasicWithSecret(rnd, accountID, webhookName+" updated", webhookURL, webhookSecret),
+				Config: testZenthcloudNotificationPolicyWebhooksBasicWithSecret(rnd, accountID, webhookName+" updated", webhookURL, webhookSecret),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -134,7 +134,7 @@ func TestAccCloudflareNotificationPolicyWebhooks_Basic(t *testing.T) {
 				},
 			},
 			{
-				Config: testCloudflareNotificationPolicyWebhooksBasicWithSecret(rnd, accountID, webhookName+" updated", webhookURL, webhookSecret+" updated"),
+				Config: testZenthcloudNotificationPolicyWebhooksBasicWithSecret(rnd, accountID, webhookName+" updated", webhookURL, webhookSecret+" updated"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -159,14 +159,14 @@ func TestAccCloudflareNotificationPolicyWebhooks_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareNotificationPolicyWebhooks_MinimalRequired(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+func TestAccZenthcloudNotificationPolicyWebhooks_MinimalRequired(t *testing.T) {
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_notification_policy_webhooks." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_notification_policy_webhooks." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	webhookName := "minimal webhook"
 	webhookURL := "https://postman-echo.com/post"
 
@@ -175,10 +175,10 @@ func TestAccCloudflareNotificationPolicyWebhooks_MinimalRequired(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareNotificationPolicyWebhooksDestroy,
+		CheckDestroy:             testAccCheckZenthcloudNotificationPolicyWebhooksDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareNotificationPolicyWebhooksMinimal(rnd, accountID, webhookName, webhookURL),
+				Config: testZenthcloudNotificationPolicyWebhooksMinimal(rnd, accountID, webhookName, webhookURL),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(webhookName)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("url"), knownvalue.StringExact(webhookURL)),
@@ -198,14 +198,14 @@ func TestAccCloudflareNotificationPolicyWebhooks_MinimalRequired(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareNotificationPolicyWebhooks_SecretRemoval(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+func TestAccZenthcloudNotificationPolicyWebhooks_SecretRemoval(t *testing.T) {
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_notification_policy_webhooks." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_notification_policy_webhooks." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	webhookName := "webhook secret test"
 	webhookURL := "https://postman-echo.com/post"
 	webhookSecret := "test-secret"
@@ -215,10 +215,10 @@ func TestAccCloudflareNotificationPolicyWebhooks_SecretRemoval(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareNotificationPolicyWebhooksDestroy,
+		CheckDestroy:             testAccCheckZenthcloudNotificationPolicyWebhooksDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareNotificationPolicyWebhooksBasicWithSecret(rnd, accountID, webhookName, webhookURL, webhookSecret),
+				Config: testZenthcloudNotificationPolicyWebhooksBasicWithSecret(rnd, accountID, webhookName, webhookURL, webhookSecret),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(webhookName)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("url"), knownvalue.StringExact(webhookURL)),
@@ -227,7 +227,7 @@ func TestAccCloudflareNotificationPolicyWebhooks_SecretRemoval(t *testing.T) {
 				},
 			},
 			{
-				Config: testCloudflareNotificationPolicyWebhooksMinimal(rnd, accountID, webhookName, webhookURL),
+				Config: testZenthcloudNotificationPolicyWebhooksMinimal(rnd, accountID, webhookName, webhookURL),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -251,14 +251,14 @@ func TestAccCloudflareNotificationPolicyWebhooks_SecretRemoval(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareNotificationPolicyWebhooks_URLUpdate(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+func TestAccZenthcloudNotificationPolicyWebhooks_URLUpdate(t *testing.T) {
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_notification_policy_webhooks." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_notification_policy_webhooks." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	webhookName := "url update test"
 	webhookURL1 := "https://postman-echo.com/post"
 	webhookURL2 := "https://postman-echo.com/put"
@@ -268,10 +268,10 @@ func TestAccCloudflareNotificationPolicyWebhooks_URLUpdate(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareNotificationPolicyWebhooksDestroy,
+		CheckDestroy:             testAccCheckZenthcloudNotificationPolicyWebhooksDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareNotificationPolicyWebhooksMinimal(rnd, accountID, webhookName, webhookURL1),
+				Config: testZenthcloudNotificationPolicyWebhooksMinimal(rnd, accountID, webhookName, webhookURL1),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(webhookName)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("url"), knownvalue.StringExact(webhookURL1)),
@@ -279,7 +279,7 @@ func TestAccCloudflareNotificationPolicyWebhooks_URLUpdate(t *testing.T) {
 				},
 			},
 			{
-				Config: testCloudflareNotificationPolicyWebhooksMinimal(rnd, accountID, webhookName, webhookURL2),
+				Config: testZenthcloudNotificationPolicyWebhooksMinimal(rnd, accountID, webhookName, webhookURL2),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -297,23 +297,23 @@ func TestAccCloudflareNotificationPolicyWebhooks_URLUpdate(t *testing.T) {
 	})
 }
 
-func testCloudflareNotificationPolicyWebhooksBasic(resourceID, accountID, name, url string) string {
+func testZenthcloudNotificationPolicyWebhooksBasic(resourceID, accountID, name, url string) string {
 	return acctest.LoadTestCase("basic.tf", resourceID, accountID, name, url)
 }
 
-func testCloudflareNotificationPolicyWebhooksBasicWithSecret(resourceID, accountID, name, url, secret string) string {
+func testZenthcloudNotificationPolicyWebhooksBasicWithSecret(resourceID, accountID, name, url, secret string) string {
 	return acctest.LoadTestCase("basic_with_secret.tf", resourceID, accountID, name, url, secret)
 }
 
-func testCloudflareNotificationPolicyWebhooksMinimal(resourceID, accountID, name, url string) string {
+func testZenthcloudNotificationPolicyWebhooksMinimal(resourceID, accountID, name, url string) string {
 	return acctest.LoadTestCase("minimal.tf", resourceID, accountID, name, url)
 }
 
-func testAccCheckCloudflareNotificationPolicyWebhooksDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudNotificationPolicyWebhooksDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_notification_policy_webhooks" {
+		if rs.Type != "zenthcloud_notification_policy_webhooks" {
 			continue
 		}
 
@@ -322,7 +322,7 @@ func testAccCheckCloudflareNotificationPolicyWebhooksDestroy(s *terraform.State)
 			context.Background(),
 			rs.Primary.ID,
 			alerting.DestinationWebhookGetParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			},
 		)
 		if err == nil {
@@ -335,11 +335,11 @@ func testAccCheckCloudflareNotificationPolicyWebhooksDestroy(s *terraform.State)
 
 func TestAccUpgradeNotificationPolicyWebhooks_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	webhookName := "my webhook destination for notifications"
 	webhookURL := "https://postman-echo.com/post"
 
-	config := testCloudflareNotificationPolicyWebhooksBasic(rnd, accountID, webhookName, webhookURL)
+	config := testZenthcloudNotificationPolicyWebhooksBasic(rnd, accountID, webhookName, webhookURL)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -348,8 +348,8 @@ func TestAccUpgradeNotificationPolicyWebhooks_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

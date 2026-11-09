@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_ruleset Data Source - Cloudflare"
+page_title: "zenthcloud_ruleset Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_ruleset (Data Source)
+# zenthcloud_ruleset (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_ruleset" "example_ruleset" {
+data "zenthcloud_ruleset" "example_ruleset" {
   zone_id = "9f1839b6152d298aca64c4e906b6d074"
   id      = "2f2feab2026849078ba485f918791bdc"
 }
@@ -69,22 +69,22 @@ Read-Only:
 - `automatic_https_rewrites` (Boolean) Whether to enable Automatic HTTPS Rewrites.
 - `autominify` (Attributes) Which file extensions to minify automatically. (see [below for nested schema](#nestedatt--rules--action_parameters--autominify))
 - `bic` (Boolean) Whether to enable Browser Integrity Check (BIC).
-- `browser_ttl` (Attributes) How long client browsers should cache the response. Cloudflare cache purge will not purge content cached on client browsers, so high browser TTLs may lead to stale content. (see [below for nested schema](#nestedatt--rules--action_parameters--browser_ttl))
+- `browser_ttl` (Attributes) How long client browsers should cache the response. Zenthcloud cache purge will not purge content cached on client browsers, so high browser TTLs may lead to stale content. (see [below for nested schema](#nestedatt--rules--action_parameters--browser_ttl))
 - `cache` (Boolean) Whether the request's response from the origin is eligible for caching. Caching itself will still depend on the cache control header and your other caching configurations.
-- `cache_key` (Attributes) Which components of the request are included in or excluded from the cache key Cloudflare uses to store the response in cache. (see [below for nested schema](#nestedatt--rules--action_parameters--cache_key))
+- `cache_key` (Attributes) Which components of the request are included in or excluded from the cache key Zenthcloud uses to store the response in cache. (see [below for nested schema](#nestedatt--rules--action_parameters--cache_key))
 - `cache_reserve` (Attributes) Settings to determine whether the request's response from origin is eligible for Cache Reserve (requires a Cache Reserve add-on plan). (see [below for nested schema](#nestedatt--rules--action_parameters--cache_reserve))
 - `content` (String) The response content.
 - `content_converter` (Boolean) Whether to enable content conversion (e.g., HTML to Markdown).
 - `content_type` (String) The content type header to set with the error response.
 Available values: "application/json", "text/html", "text/plain", "text/xml".
 - `cookie_fields` (Attributes List) The cookie fields to log. (see [below for nested schema](#nestedatt--rules--action_parameters--cookie_fields))
-- `disable_apps` (Boolean) Whether to disable Cloudflare Apps.
+- `disable_apps` (Boolean) Whether to disable Zenthcloud Apps.
 - `disable_rum` (Boolean) Whether to disable Real User Monitoring (RUM).
 - `disable_zaraz` (Boolean) Whether to disable Zaraz.
-- `edge_ttl` (Attributes) How long the Cloudflare edge network should cache the response. (see [below for nested schema](#nestedatt--rules--action_parameters--edge_ttl))
+- `edge_ttl` (Attributes) How long the Zenthcloud edge network should cache the response. (see [below for nested schema](#nestedatt--rules--action_parameters--edge_ttl))
 - `email_obfuscation` (Boolean) Whether to enable Email Obfuscation.
 - `expression` (String) An expression to generate cache tags for set_cache_tags action.
-- `fonts` (Boolean) Whether to enable Cloudflare Fonts.
+- `fonts` (Boolean) Whether to enable Zenthcloud Fonts.
 - `from_list` (Attributes) A redirect based on a bulk list lookup. (see [below for nested schema](#nestedatt--rules--action_parameters--from_list))
 - `from_value` (Attributes) A redirect based on the request properties. (see [below for nested schema](#nestedatt--rules--action_parameters--from_value))
 - `headers` (Attributes Map) A map of headers to rewrite. (see [below for nested schema](#nestedatt--rules--action_parameters--headers))
@@ -105,9 +105,9 @@ Available values: "application/json", "text/html", "text/plain", "text/xml".
 Available values: "set", "add", "remove".
 - `opportunistic_encryption` (Boolean) Whether to enable Opportunistic Encryption.
 - `origin` (Attributes) An origin to route to. (see [below for nested schema](#nestedatt--rules--action_parameters--origin))
-- `origin_cache_control` (Boolean) Whether Cloudflare will aim to strictly adhere to RFC 7234.
-- `origin_error_page_passthru` (Boolean) Whether to generate Cloudflare error pages for issues from the origin server.
-- `origin_range_requests` (Attributes) Controls whether Cloudflare fetches a large asset from the origin as a series of range requests instead of one whole-body request. (see [below for nested schema](#nestedatt--rules--action_parameters--origin_range_requests))
+- `origin_cache_control` (Boolean) Whether Zenthcloud will aim to strictly adhere to RFC 7234.
+- `origin_error_page_passthru` (Boolean) Whether to generate Zenthcloud error pages for issues from the origin server.
+- `origin_range_requests` (Attributes) Controls whether Zenthcloud fetches a large asset from the origin as a series of range requests instead of one whole-body request. (see [below for nested schema](#nestedatt--rules--action_parameters--origin_range_requests))
 - `overrides` (Attributes) A set of overrides to apply to the target ruleset. (see [below for nested schema](#nestedatt--rules--action_parameters--overrides))
 - `phases` (List of String) A list of phases to skip the execution of. This option is incompatible with the rulesets option.
 Available values: "ddos_l4", "ddos_l7", "http_config_settings", "http_custom_errors", "http_log_custom_fields", "http_ratelimit", "http_request_cache_settings", "http_request_dynamic_redirect", "http_request_firewall_custom", "http_request_firewall_managed", "http_request_late_transform", "http_request_origin", "http_request_redirect", "http_request_sanitize", "http_request_sbfm", "http_request_transform", "http_response_cache_settings", "http_response_compression", "http_response_firewall_managed", "http_response_headers_transform", "magic_transit", "magic_transit_ids_managed", "magic_transit_managed", "magic_transit_ratelimit".
@@ -119,12 +119,12 @@ Available values: "bic", "hot", "rateLimit", "securityLevel", "uaBlock", "waf", 
 - `proxy_revalidate` (Attributes) Set the proxy-revalidate cache control directive. (see [below for nested schema](#nestedatt--rules--action_parameters--proxy_revalidate))
 - `public` (Attributes) Set the public cache control directive. (see [below for nested schema](#nestedatt--rules--action_parameters--public))
 - `raw_response_fields` (Attributes List) The raw response fields to log. (see [below for nested schema](#nestedatt--rules--action_parameters--raw_response_fields))
-- `read_timeout` (Number) A timeout value between two successive read operations to use for your origin server. Historically, the timeout value between two read options from Cloudflare to an origin server is 100 seconds. If you are attempting to reduce HTTP 524 errors because of timeouts from an origin server, try increasing this timeout value.
+- `read_timeout` (Number) A timeout value between two successive read operations to use for your origin server. Historically, the timeout value between two read options from Zenthcloud to an origin server is 100 seconds. If you are attempting to reduce HTTP 524 errors because of timeouts from an origin server, try increasing this timeout value.
 - `redirects_for_ai_training` (Boolean) Whether to redirect verified AI training crawlers to canonical URLs.
 - `request_body_buffering` (String) The request body buffering mode to configure.
 Available values: "none", "standard", "full".
 - `request_fields` (Attributes List) The raw request fields to log. (see [below for nested schema](#nestedatt--rules--action_parameters--request_fields))
-- `respect_strong_etags` (Boolean) Whether Cloudflare should respect strong ETag (entity tag) headers. If false, Cloudflare converts strong ETag headers to weak ETag headers.
+- `respect_strong_etags` (Boolean) Whether Zenthcloud should respect strong ETag (entity tag) headers. If false, Zenthcloud converts strong ETag headers to weak ETag headers.
 - `response` (Attributes) The response to show when the block is applied. (see [below for nested schema](#nestedatt--rules--action_parameters--response))
 - `response_body_buffering` (String) The response body buffering mode to configure.
 Available values: "none", "standard".
@@ -276,7 +276,7 @@ Read-Only:
 
 Read-Only:
 
-- `eligible` (Boolean) Whether Cache Reserve is enabled. If this is true and a request meets eligibility criteria, Cloudflare will write the resource to Cache Reserve.
+- `eligible` (Boolean) Whether Cache Reserve is enabled. If this is true and a request meets eligibility criteria, Zenthcloud will write the resource to Cache Reserve.
 - `minimum_file_size` (Number) The minimum file size eligible for storage in Cache Reserve.
 
 
@@ -362,7 +362,7 @@ Available values: "add", "set", "remove".
 
 Read-Only:
 
-- `cloudflare_only` (Boolean) Whether to apply the directive only to Cloudflare's cache.
+- `zenthcloud_only` (Boolean) Whether to apply the directive only to Zenthcloud's cache.
 - `operation` (String) The operation to perform.
 Available values: "set", "remove".
 
@@ -380,7 +380,7 @@ Read-Only:
 
 Read-Only:
 
-- `cloudflare_only` (Boolean) Whether to apply the directive only to Cloudflare's cache.
+- `zenthcloud_only` (Boolean) Whether to apply the directive only to Zenthcloud's cache.
 - `operation` (String) The operation to perform.
 Available values: "set", "remove".
 - `value` (Number) The value for the directive in seconds.
@@ -391,7 +391,7 @@ Available values: "set", "remove".
 
 Read-Only:
 
-- `cloudflare_only` (Boolean) Whether to apply the directive only to Cloudflare's cache.
+- `zenthcloud_only` (Boolean) Whether to apply the directive only to Zenthcloud's cache.
 - `operation` (String) The operation to perform.
 Available values: "set", "remove".
 
@@ -401,7 +401,7 @@ Available values: "set", "remove".
 
 Read-Only:
 
-- `cloudflare_only` (Boolean) Whether to apply the directive only to Cloudflare's cache.
+- `zenthcloud_only` (Boolean) Whether to apply the directive only to Zenthcloud's cache.
 - `operation` (String) The operation to perform.
 Available values: "set", "remove".
 
@@ -411,7 +411,7 @@ Available values: "set", "remove".
 
 Read-Only:
 
-- `cloudflare_only` (Boolean) Whether to apply the directive only to Cloudflare's cache.
+- `zenthcloud_only` (Boolean) Whether to apply the directive only to Zenthcloud's cache.
 - `operation` (String) The operation to perform.
 Available values: "set", "remove".
 - `qualifiers` (List of String) The qualifiers for the directive.
@@ -422,7 +422,7 @@ Available values: "set", "remove".
 
 Read-Only:
 
-- `cloudflare_only` (Boolean) Whether to apply the directive only to Cloudflare's cache.
+- `zenthcloud_only` (Boolean) Whether to apply the directive only to Zenthcloud's cache.
 - `operation` (String) The operation to perform.
 Available values: "set", "remove".
 
@@ -432,7 +432,7 @@ Available values: "set", "remove".
 
 Read-Only:
 
-- `cloudflare_only` (Boolean) Whether to apply the directive only to Cloudflare's cache.
+- `zenthcloud_only` (Boolean) Whether to apply the directive only to Zenthcloud's cache.
 - `operation` (String) The operation to perform.
 Available values: "set", "remove".
 
@@ -498,7 +498,7 @@ Available values: "default", "medium", "low", "eoff".
 
 Read-Only:
 
-- `cloudflare_only` (Boolean) Whether to apply the directive only to Cloudflare's cache.
+- `zenthcloud_only` (Boolean) Whether to apply the directive only to Zenthcloud's cache.
 - `operation` (String) The operation to perform.
 Available values: "set", "remove".
 - `qualifiers` (List of String) The qualifiers for the directive.
@@ -509,7 +509,7 @@ Available values: "set", "remove".
 
 Read-Only:
 
-- `cloudflare_only` (Boolean) Whether to apply the directive only to Cloudflare's cache.
+- `zenthcloud_only` (Boolean) Whether to apply the directive only to Zenthcloud's cache.
 - `operation` (String) The operation to perform.
 Available values: "set", "remove".
 
@@ -519,7 +519,7 @@ Available values: "set", "remove".
 
 Read-Only:
 
-- `cloudflare_only` (Boolean) Whether to apply the directive only to Cloudflare's cache.
+- `zenthcloud_only` (Boolean) Whether to apply the directive only to Zenthcloud's cache.
 - `operation` (String) The operation to perform.
 Available values: "set", "remove".
 
@@ -565,7 +565,7 @@ Read-Only:
 
 Read-Only:
 
-- `cloudflare_only` (Boolean) Whether to apply the directive only to Cloudflare's cache.
+- `zenthcloud_only` (Boolean) Whether to apply the directive only to Zenthcloud's cache.
 - `operation` (String) The operation to perform.
 Available values: "set", "remove".
 - `value` (Number) The value for the directive in seconds.
@@ -576,7 +576,7 @@ Available values: "set", "remove".
 
 Read-Only:
 
-- `disable_stale_while_updating` (Boolean) Whether Cloudflare should disable serving stale content while getting the latest content from the origin.
+- `disable_stale_while_updating` (Boolean) Whether Zenthcloud should disable serving stale content while getting the latest content from the origin.
 
 
 <a id="nestedatt--rules--action_parameters--sni"></a>
@@ -592,7 +592,7 @@ Read-Only:
 
 Read-Only:
 
-- `cloudflare_only` (Boolean) Whether to apply the directive only to Cloudflare's cache.
+- `zenthcloud_only` (Boolean) Whether to apply the directive only to Zenthcloud's cache.
 - `operation` (String) The operation to perform.
 Available values: "set", "remove".
 - `value` (Number) The value for the directive in seconds.
@@ -603,7 +603,7 @@ Available values: "set", "remove".
 
 Read-Only:
 
-- `cloudflare_only` (Boolean) Whether to apply the directive only to Cloudflare's cache.
+- `zenthcloud_only` (Boolean) Whether to apply the directive only to Zenthcloud's cache.
 - `operation` (String) The operation to perform.
 Available values: "set", "remove".
 - `value` (Number) The value for the directive in seconds.

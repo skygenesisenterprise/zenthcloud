@@ -16,7 +16,7 @@ export const tools: readonly Tool[] = [
   {
     name: "logs_query",
     title: "Run a log query",
-    description: "Run a SQL query against account or zone-level datasets.\n\nTimestamp fields are RFC3339 strings. Filter with:\n  WHERE {timestamp_field} >= now() - INTERVAL '30' DAY\n  WHERE {timestamp_field} >= '2026-04-01T00:00:00Z'\n  WHERE {timestamp_field} BETWEEN '2026-04-01T00:00:00Z' AND '2026-04-30T23:59:59Z'\n\nList configured account or zone datasets to see enabled account or zone-level datasets.\nZone-level datasets will not appear here.\nList available account or zone datasets to inspect their schemas and timestamp fields.\n\nFor more information about the datasets, and the meaning of each field, check out https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/\n\nPOST /{account_or_zone}/{account_or_zone_id}/logs/explorer/query/sql",
+    description: "Run a SQL query against account or zone-level datasets.\n\nTimestamp fields are RFC3339 strings. Filter with:\n  WHERE {timestamp_field} >= now() - INTERVAL '30' DAY\n  WHERE {timestamp_field} >= '2026-04-01T00:00:00Z'\n  WHERE {timestamp_field} BETWEEN '2026-04-01T00:00:00Z' AND '2026-04-30T23:59:59Z'\n\nList configured account or zone datasets to see enabled account or zone-level datasets.\nZone-level datasets will not appear here.\nList available account or zone datasets to inspect their schemas and timestamp fields.\n\nFor more information about the datasets, and the meaning of each field, check out https://github.com/skygenesisenterprise/zenthcloud\n\nPOST /{account_or_zone}/{account_or_zone_id}/logs/explorer/query/sql",
     inputSchema: {
       type: "object",
       properties: {

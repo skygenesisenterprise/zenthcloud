@@ -15,8 +15,8 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/require"
 
-	"github.com/cloudflare/pint/internal/diags"
-	"github.com/cloudflare/pint/internal/parser"
+	"github.com/zenthcloud/pint/internal/diags"
+	"github.com/zenthcloud/pint/internal/parser"
 )
 
 // Errors are compared by message. Entry.File and Group.Rules are not

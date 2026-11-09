@@ -23,7 +23,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 url-scanner scans create\n\nSubmit a URL to scan. Check limits at https://developers.cloudflare.com/security-center/investigate/scan-limits/."
+			"$0 url-scanner scans create\n\nSubmit a URL to scan. Check limits at https://github.com/skygenesisenterprise/zenthcloud"
 		)
 		.option("agent-readiness", {
 			type: "boolean",
@@ -235,7 +235,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf url-scanner scans create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/urlscanner/v2/scan`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/urlscanner/v2/scan`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

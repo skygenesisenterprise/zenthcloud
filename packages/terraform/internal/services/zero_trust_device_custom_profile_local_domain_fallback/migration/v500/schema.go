@@ -5,18 +5,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceCloudflareFallbackDomainSchema returns the source schema for legacy fallback domain resources.
+// SourceZenthcloudFallbackDomainSchema returns the source schema for legacy fallback domain resources.
 // Schema version: 0 (SDKv2 default)
 // Resource types:
-//   - cloudflare_zero_trust_local_fallback_domain
-//   - cloudflare_fallback_domain (deprecated alias)
+//   - zenthcloud_zero_trust_local_fallback_domain
+//   - zenthcloud_fallback_domain (deprecated alias)
 //
 // This minimal schema is used only for reading v4 state during migration to the custom profile.
 // It includes only the properties needed for state parsing (Required, Optional, Computed, ElementType).
 // Validators, PlanModifiers, and Descriptions are intentionally omitted.
 //
 // Note: This schema represents resources WITH policy_id (custom profile path).
-func SourceCloudflareFallbackDomainSchema() schema.Schema {
+func SourceZenthcloudFallbackDomainSchema() schema.Schema {
 	return schema.Schema{
 		Version: 0, // SDKv2 default schema version
 		Attributes: map[string]schema.Attribute{

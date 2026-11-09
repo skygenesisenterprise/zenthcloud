@@ -15,7 +15,7 @@ import (
 //   - message, valid: set to Null (new computed fields, API will populate)
 //
 // This function is used by UpgradeFromV4 handler.
-func Transform(ctx context.Context, source SourceCloudflareLogpushOwnershipChallengeModel) (*TargetLogpushOwnershipChallengeModel, diag.Diagnostics) {
+func Transform(ctx context.Context, source SourceZenthcloudLogpushOwnershipChallengeModel) (*TargetLogpushOwnershipChallengeModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Validate required fields

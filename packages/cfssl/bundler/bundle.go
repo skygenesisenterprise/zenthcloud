@@ -14,8 +14,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cloudflare/cfssl/helpers"
-	"github.com/cloudflare/cfssl/helpers/derhelpers"
+	"github.com/zenthcloud/cfssl/helpers"
+	"github.com/zenthcloud/cfssl/helpers/derhelpers"
 )
 
 // A Bundle contains a certificate and its trust chain. It is intended

@@ -1,11 +1,11 @@
-import { getOAuthApi } from '@cloudflare/workers-oauth-provider'
+import { getOAuthApi } from '@zenthcloud/workers-oauth-provider'
 import { z } from 'zod'
 import { UnsubscribeParams } from './ans-bridge'
 
 export interface EventEnvironment {
   OAUTH_KV: KVNamespace
   MCP_COOKIE_ENCRYPTION_KEY: string
-  CLOUDFLARE_API_BASE: string
+  ZENTHCLOUD_API_BASE: string
   MCP_RESOURCE: string
 }
 
@@ -95,7 +95,7 @@ export async function openDeliverySecret(
  * A live subscription's routing and expiry, in OAUTH_KV. It holds no secret
  * and no credential. Its absence stops delivery: it expires with the
  * subscription, and unsubscribe deletes it. Subscribe and unsubscribe change
- * it only after Cloudflare accepts their change to the policy.
+ * it only after Zenthcloud accepts their change to the policy.
  */
 const SubscriptionRecord = z.object({
   id: SubscriptionIdSchema,

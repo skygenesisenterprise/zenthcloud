@@ -5,9 +5,9 @@ package ruleset
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/rulesets"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/rulesets"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -35,9 +35,9 @@ func (m *RulesetDataSourceModel) toReadParams(_ context.Context) (params ruleset
 	params = rulesets.RulesetGetParams{}
 
 	if !m.AccountID.IsNull() {
-		params.AccountID = cloudflare.F(m.AccountID.ValueString())
+		params.AccountID = zenthcloud.F(m.AccountID.ValueString())
 	} else {
-		params.ZoneID = cloudflare.F(m.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(m.ZoneID.ValueString())
 	}
 
 	return
@@ -363,18 +363,18 @@ type RulesetRulesRatelimitDataSourceModel struct {
 type RulesetRulesActionParametersSetCacheControlValueDataSourceModel struct {
 	Operation      types.String `tfsdk:"operation" json:"operation,computed"`
 	Value          types.Int64  `tfsdk:"value" json:"value,computed"`
-	CloudflareOnly types.Bool   `tfsdk:"cloudflare_only" json:"cloudflare_only,computed,decode_null_to_zero"`
+	ZenthcloudOnly types.Bool   `tfsdk:"zenthcloud_only" json:"zenthcloud_only,computed,decode_null_to_zero"`
 }
 
 type RulesetRulesActionParametersSetCacheControlQualifiersDataSourceModel struct {
 	Operation      types.String                   `tfsdk:"operation" json:"operation,computed"`
 	Qualifiers     customfield.List[types.String] `tfsdk:"qualifiers" json:"qualifiers,computed"`
-	CloudflareOnly types.Bool                     `tfsdk:"cloudflare_only" json:"cloudflare_only,computed,decode_null_to_zero"`
+	ZenthcloudOnly types.Bool                     `tfsdk:"zenthcloud_only" json:"zenthcloud_only,computed,decode_null_to_zero"`
 }
 
 type RulesetRulesActionParametersSetCacheControlSimpleDataSourceModel struct {
 	Operation      types.String `tfsdk:"operation" json:"operation,computed"`
-	CloudflareOnly types.Bool   `tfsdk:"cloudflare_only" json:"cloudflare_only,computed,decode_null_to_zero"`
+	ZenthcloudOnly types.Bool   `tfsdk:"zenthcloud_only" json:"zenthcloud_only,computed,decode_null_to_zero"`
 }
 
 type RulesetRulesActionParametersVaryDataSourceModel struct {

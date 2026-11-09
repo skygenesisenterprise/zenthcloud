@@ -1,4 +1,4 @@
-resource "cloudflare_access_rule" "%[2]s" {
+resource "zenthcloud_access_rule" "%[2]s" {
   account_id = "%[1]s"
   mode       = "whitelist"
 

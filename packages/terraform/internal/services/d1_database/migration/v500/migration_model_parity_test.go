@@ -10,9 +10,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/d1_database"
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/d1_database/migration/v500"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/test_helpers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/d1_database"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/d1_database/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 // TestD1DatabaseMigrationModelSchemaParity verifies that TargetD1DatabaseModel

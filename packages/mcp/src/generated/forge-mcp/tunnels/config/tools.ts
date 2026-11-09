@@ -27,7 +27,7 @@ export const tools: readonly Tool[] = [
   {
     name: "tunnels_config_get",
     title: "Get Tunnel configuration",
-    description: "Retrieves the configuration for a remotely managed Cloudflare Tunnel.\n\nGET /accounts/{account_id}/cfd_tunnel/{tunnel_id}/configurations",
+    description: "Retrieves the configuration for a remotely managed Zenthcloud Tunnel.\n\nGET /accounts/{account_id}/cfd_tunnel/{tunnel_id}/configurations",
     inputSchema: {
       type: "object",
       properties: {
@@ -81,12 +81,12 @@ export const tools: readonly Tool[] = [
       pathOf: encodePath`/accounts/${"account_id"}/cfd_tunnel/${"tunnel_id"}/configurations`,
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Connectors Write",
-          "Cloudflare One Connectors Read",
-          "Cloudflare One Connector: cloudflared Write",
-          "Cloudflare One Connector: cloudflared Read",
-          "Cloudflare Tunnel Write",
-          "Cloudflare Tunnel Read"
+          "Zenthcloud One Connectors Write",
+          "Zenthcloud One Connectors Read",
+          "Zenthcloud One Connector: zenthcloudd Write",
+          "Zenthcloud One Connector: zenthcloudd Read",
+          "Zenthcloud Tunnel Write",
+          "Zenthcloud Tunnel Read"
         ]
       },
       responses: {
@@ -114,7 +114,7 @@ export const tools: readonly Tool[] = [
   {
     name: "tunnels_config_update",
     title: "Update Tunnel configuration",
-    description: "Replaces the configuration for a remotely managed Cloudflare Tunnel, including its ingress rules and origin request settings.\n\nPUT /accounts/{account_id}/cfd_tunnel/{tunnel_id}/configurations",
+    description: "Replaces the configuration for a remotely managed Zenthcloud Tunnel, including its ingress rules and origin request settings.\n\nPUT /accounts/{account_id}/cfd_tunnel/{tunnel_id}/configurations",
     inputSchema: {
       type: "object",
       properties: {
@@ -183,9 +183,9 @@ export const tools: readonly Tool[] = [
       body: { mediaTypes: ["application/json"] },
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Connectors Write",
-          "Cloudflare One Connector: cloudflared Write",
-          "Cloudflare Tunnel Write"
+          "Zenthcloud One Connectors Write",
+          "Zenthcloud One Connector: zenthcloudd Write",
+          "Zenthcloud Tunnel Write"
         ]
       },
       responses: {

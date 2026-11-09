@@ -5,8 +5,8 @@ import (
 	"io"
 	"strings"
 
-	"github.com/cloudflare/pint/internal/comments"
-	"github.com/cloudflare/pint/internal/diags"
+	"github.com/zenthcloud/pint/internal/comments"
+	"github.com/zenthcloud/pint/internal/diags"
 )
 
 type skipMode uint8

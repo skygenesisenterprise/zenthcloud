@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zone_cache_variants Resource - Cloudflare"
+page_title: "zenthcloud_zone_cache_variants Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zone ReadZone Settings ReadZone Settings WriteZone Write
 ---
 
-# cloudflare_zone_cache_variants (Resource)
+# zenthcloud_zone_cache_variants (Resource)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zone_cache_variants" "example_zone_cache_variants" {
+resource "zenthcloud_zone_cache_variants" "example_zone_cache_variants" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   value = {
     avif = ["image/webp", "image/jpeg"]
@@ -72,7 +72,7 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zone_cache_variants.example '<zone_id>'
+$ terraform import zenthcloud_zone_cache_variants.example '<zone_id>'
 ```
 
 

@@ -1,11 +1,11 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Kenton Varda <kenton@cloudflare.com>
+From: Kenton Varda <kenton@zenthcloud.com>
 Date: Thu, 26 Mar 2020 19:15:48 -0500
 Subject: Add methods to get heap and external memory sizes directly.
 
 `GetHeapStatistics()` exists for this, but also collects a lot of other info and apparently performs non-trivial computation. These new accessors are intended to be very fast.
 
-Signed-off-by: James M Snell <jsnell@cloudflare.com>
+Signed-off-by: James M Snell <jsnell@zenthcloud.com>
 
 diff --git a/include/v8-isolate.h b/include/v8-isolate.h
 index d5eec779dc8a1c4a60cd67fe9246c31cb3158599..1fe2c31c5f0d010b91a8c195dfa9524ec91aa44a 100644

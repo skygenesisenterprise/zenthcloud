@@ -11,9 +11,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	cfv1 "github.com/cloudflare/cloudflare-go"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	cfv1 "github.com/zenthcloud/zenthcloud-go"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -28,18 +28,18 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_r2_managed_domain", &resource.Sweeper{
-		Name: "cloudflare_r2_managed_domain",
-		F:    testSweepCloudflareR2ManagedDomain,
+	resource.AddTestSweepers("zenthcloud_r2_managed_domain", &resource.Sweeper{
+		Name: "zenthcloud_r2_managed_domain",
+		F:    testSweepZenthcloudR2ManagedDomain,
 	})
 	// TODO: fixme - auth error
-	//resource.AddTestSweepers("cloudflare_r2_bucket", &resource.Sweeper{
-	//	Name: "cloudflare_r2_bucket",
-	//	F:    testSweepCloudflareR2Bucket,
+	//resource.AddTestSweepers("zenthcloud_r2_bucket", &resource.Sweeper{
+	//	Name: "zenthcloud_r2_bucket",
+	//	F:    testSweepZenthcloudR2Bucket,
 	//})
 }
 
-func testSweepCloudflareR2ManagedDomain(r string) error {
+func testSweepZenthcloudR2ManagedDomain(r string) error {
 	ctx := context.Background()
 	// R2 Managed Domain is a bucket-level configuration.
 	// When R2 buckets are swept, managed domains are cleaned up automatically.
@@ -48,19 +48,19 @@ func testSweepCloudflareR2ManagedDomain(r string) error {
 	return nil
 }
 
-func testSweepCloudflareR2Bucket(r string) error {
+func testSweepZenthcloudR2Bucket(r string) error {
 	client, err := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
-	accessKeyId := os.Getenv("CLOUDFLARE_R2_ACCESS_KEY_ID")
-	accessKeySecret := os.Getenv("CLOUDFLARE_R2_ACCESS_KEY_SECRET")
+	accessKeyId := os.Getenv("ZENTHCLOUD_R2_ACCESS_KEY_ID")
+	accessKeySecret := os.Getenv("ZENTHCLOUD_R2_ACCESS_KEY_SECRET")
 
 	if accessKeyId == "" {
-		return errors.New("CLOUDFLARE_R2_ACCESS_KEY_ID must be set for this acceptance test")
+		return errors.New("ZENTHCLOUD_R2_ACCESS_KEY_ID must be set for this acceptance test")
 	}
 
 	if accessKeySecret == "" {
-		return errors.New("CLOUDFLARE_R2_ACCESS_KEY_SECRET must be set for this acceptance test")
+		return errors.New("ZENTHCLOUD_R2_ACCESS_KEY_SECRET must be set for this acceptance test")
 	}
 
 	if err != nil {
@@ -82,7 +82,7 @@ func testSweepCloudflareR2Bucket(r string) error {
 
 		r2Resolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
 			return aws.Endpoint{
-				URL: fmt.Sprintf("https://%s.r2.cloudflarestorage.com", accountID),
+				URL: fmt.Sprintf("https://github.com/skygenesisenterprise/zenthcloud", accountID),
 			}, nil
 		})
 
@@ -122,10 +122,10 @@ func testSweepCloudflareR2Bucket(r string) error {
 	return nil
 }
 
-func TestAccCloudflareR2ManagedDomain_Basic(t *testing.T) {
+func TestAccZenthcloudR2ManagedDomain_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_r2_managed_domain." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_r2_managed_domain." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -173,10 +173,10 @@ func TestAccCloudflareR2ManagedDomain_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareR2ManagedDomain_Jurisdiction(t *testing.T) {
+func TestAccZenthcloudR2ManagedDomain_Jurisdiction(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_r2_managed_domain." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_r2_managed_domain." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -207,10 +207,10 @@ func TestAccCloudflareR2ManagedDomain_Jurisdiction(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareR2ManagedDomain_JurisdictionFedramp(t *testing.T) {
+func TestAccZenthcloudR2ManagedDomain_JurisdictionFedramp(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_r2_managed_domain." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_r2_managed_domain." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },

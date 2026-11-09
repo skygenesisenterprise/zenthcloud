@@ -3,7 +3,7 @@ package r2_custom_domain
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 )
 
 // preserveStateOnDegradedResponse preserves certain state values when the API

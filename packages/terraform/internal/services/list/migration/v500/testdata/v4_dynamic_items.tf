@@ -5,7 +5,7 @@ variable "ip_list_%[1]s" {
   ]
 }
 
-resource "cloudflare_list" "%[1]s" {
+resource "zenthcloud_list" "%[1]s" {
   account_id  = "%[2]s"
   name        = "%[3]s"
   kind        = "ip"

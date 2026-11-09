@@ -1,4 +1,4 @@
-resource "cloudflare_workers_custom_domain" "%[1]s" {
+resource "zenthcloud_workers_custom_domain" "%[1]s" {
 	zone_id = "%[4]s"
 	account_id = "%[2]s"
 	hostname = "%[3]s"
@@ -6,8 +6,8 @@ resource "cloudflare_workers_custom_domain" "%[1]s" {
 	environment = "production"
 }
 
-data "cloudflare_workers_custom_domains" "%[1]s" {
+data "zenthcloud_workers_custom_domains" "%[1]s" {
 	account_id = "%[2]s"
-	hostname = cloudflare_workers_custom_domain.%[1]s.hostname
+	hostname = zenthcloud_workers_custom_domain.%[1]s.hostname
 	service = "mute-truth-fdb1"
 }

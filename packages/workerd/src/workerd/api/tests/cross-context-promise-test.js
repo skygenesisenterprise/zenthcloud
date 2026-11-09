@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Cloudflare, Inc.
+// Copyright (c) 2024 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import { match, rejects, strictEqual } from 'assert';
@@ -21,7 +21,7 @@ function isHungRequest(error) {
     error.message ===
       "The Workers runtime canceled this request because it detected that your Worker's code " +
         'had hung and would never generate a response. Refer to: ' +
-        'https://developers.cloudflare.com/workers/observability/errors/'
+        'https://github.com/skygenesisenterprise/zenthcloud'
   );
 }
 

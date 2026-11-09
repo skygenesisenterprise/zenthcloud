@@ -6,11 +6,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/leaked_credential_checks"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/leaked_credential_checks"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -20,16 +20,16 @@ import (
 )
 
 func init() {
-	resource.AddTestSweepers("cloudflare_leaked_credential_check", &resource.Sweeper{
-		Name: "cloudflare_leaked_credential_check",
-		F:    testSweepCloudflareLeakedCredentialCheck,
+	resource.AddTestSweepers("zenthcloud_leaked_credential_check", &resource.Sweeper{
+		Name: "zenthcloud_leaked_credential_check",
+		F:    testSweepZenthcloudLeakedCredentialCheck,
 	})
 }
 
-func TestAccCloudflareLeakedCredentialsCheck_Basic(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudLeakedCredentialsCheck_Basic(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_leaked_credential_check.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_leaked_credential_check.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -40,7 +40,7 @@ func TestAccCloudflareLeakedCredentialsCheck_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Step 1: Create + Read
 			{
-				Config: testAccCloudflareLeakedCredentialsCheckEnabled(zoneID, rnd),
+				Config: testAccZenthcloudLeakedCredentialsCheckEnabled(zoneID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("enabled"), knownvalue.Bool(true)),
@@ -48,7 +48,7 @@ func TestAccCloudflareLeakedCredentialsCheck_Basic(t *testing.T) {
 			},
 			// Step 2: Update + Read
 			{
-				Config: testAccCloudflareLeakedCredentialsCheckDisabled(zoneID, rnd),
+				Config: testAccZenthcloudLeakedCredentialsCheckDisabled(zoneID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("enabled"), knownvalue.Bool(false)),
 				},
@@ -57,10 +57,10 @@ func TestAccCloudflareLeakedCredentialsCheck_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareLeakedCredentialsCheck_StateConsistency(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudLeakedCredentialsCheck_StateConsistency(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_leaked_credential_check.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_leaked_credential_check.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -70,14 +70,14 @@ func TestAccCloudflareLeakedCredentialsCheck_StateConsistency(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareLeakedCredentialsCheckEnabled(zoneID, rnd),
+				Config: testAccZenthcloudLeakedCredentialsCheckEnabled(zoneID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("enabled"), knownvalue.Bool(true)),
 				},
 			},
 			{
-				Config: testAccCloudflareLeakedCredentialsCheckEnabled(zoneID, rnd),
+				Config: testAccZenthcloudLeakedCredentialsCheckEnabled(zoneID, rnd),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -91,10 +91,10 @@ func TestAccCloudflareLeakedCredentialsCheck_StateConsistency(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareLeakedCredentialsCheck_Import(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudLeakedCredentialsCheck_Import(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_leaked_credential_check.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_leaked_credential_check.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -105,7 +105,7 @@ func TestAccCloudflareLeakedCredentialsCheck_Import(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Step 1: Create the resource
 			{
-				Config: testAccCloudflareLeakedCredentialsCheckEnabled(zoneID, rnd),
+				Config: testAccZenthcloudLeakedCredentialsCheckEnabled(zoneID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("enabled"), knownvalue.Bool(true)),
@@ -123,7 +123,7 @@ func TestAccCloudflareLeakedCredentialsCheck_Import(t *testing.T) {
 	})
 }
 
-// testSweepCloudflareLeakedCredentialCheck resets the leaked credential check setting to disabled.
+// testSweepZenthcloudLeakedCredentialCheck resets the leaked credential check setting to disabled.
 //
 // This sweeper:
 // - Resets the zone-level leaked credential check setting to disabled (default state)
@@ -133,15 +133,15 @@ func TestAccCloudflareLeakedCredentialsCheck_Import(t *testing.T) {
 // Run with: go test ./internal/services/leaked_credential_check/ -v -sweep=all
 //
 // Requires:
-// - CLOUDFLARE_ZONE_ID (zone ID to reset the setting for)
-// - CLOUDFLARE_EMAIL + CLOUDFLARE_API_KEY or CLOUDFLARE_API_TOKEN
-func testSweepCloudflareLeakedCredentialCheck(r string) error {
+// - ZENTHCLOUD_ZONE_ID (zone ID to reset the setting for)
+// - ZENTHCLOUD_EMAIL + ZENTHCLOUD_API_KEY or ZENTHCLOUD_API_TOKEN
+func testSweepZenthcloudLeakedCredentialCheck(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping leaked credential check sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping leaked credential check sweep: ZENTHCLOUD_ZONE_ID not set")
 		return nil
 	}
 
@@ -149,7 +149,7 @@ func testSweepCloudflareLeakedCredentialCheck(r string) error {
 
 	// Get current setting
 	setting, err := client.LeakedCredentialChecks.Get(ctx, leaked_credential_checks.LeakedCredentialCheckGetParams{
-		ZoneID: cloudflare.F(zoneID),
+		ZoneID: zenthcloud.F(zoneID),
 	})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to get leaked credential check setting: %s", err))
@@ -166,8 +166,8 @@ func testSweepCloudflareLeakedCredentialCheck(r string) error {
 	// Reset to disabled state
 	tflog.Info(ctx, fmt.Sprintf("Resetting leaked credential check to disabled for zone: %s", zoneID))
 	_, err = client.LeakedCredentialChecks.New(ctx, leaked_credential_checks.LeakedCredentialCheckNewParams{
-		ZoneID:  cloudflare.F(zoneID),
-		Enabled: cloudflare.F(false),
+		ZoneID:  zenthcloud.F(zoneID),
+		Enabled: zenthcloud.F(false),
 	})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to reset leaked credential check: %s", err))
@@ -180,10 +180,10 @@ func testSweepCloudflareLeakedCredentialCheck(r string) error {
 }
 
 // Helper functions to load test case configurations
-func testAccCloudflareLeakedCredentialsCheckEnabled(zoneID, name string) string {
+func testAccZenthcloudLeakedCredentialsCheckEnabled(zoneID, name string) string {
 	return acctest.LoadTestCase("enabled.tf", zoneID, name)
 }
 
-func testAccCloudflareLeakedCredentialsCheckDisabled(zoneID, name string) string {
+func testAccZenthcloudLeakedCredentialsCheckDisabled(zoneID, name string) string {
 	return acctest.LoadTestCase("disabled.tf", zoneID, name)
 }

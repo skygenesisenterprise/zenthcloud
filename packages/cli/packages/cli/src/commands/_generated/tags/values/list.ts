@@ -43,7 +43,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 				"alerting_policy",
 				"alerting_webhook",
 				"api_gateway_operation",
-				"cloudflared_tunnel",
+				"zenthcloudd_tunnel",
 				"custom_certificate",
 				"custom_hostname",
 				"cws_deployment",
@@ -112,7 +112,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf tags values list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/tags/values/${argv["tag-key"] == null ? "<tag-key>" : encodeURIComponent(String(argv["tag-key"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/tags/values/${argv["tag-key"] == null ? "<tag-key>" : encodeURIComponent(String(argv["tag-key"]))}`,
 						pathParams: { "tag-key": String(argv["tag-key"] ?? "") },
 						query: queryParams,
 						bodyKind: "none",

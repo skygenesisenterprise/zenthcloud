@@ -1,12 +1,12 @@
 use wasm_bindgen::prelude::*;
 
-#[wasm_bindgen(module = "cloudflare:sockets")]
+#[wasm_bindgen(module = "zenthcloud:sockets")]
 extern "C" {
     #[wasm_bindgen(catch)]
     pub fn connect(address: JsValue, options: JsValue) -> Result<Socket, JsValue>;
 }
 
-#[wasm_bindgen(module = "cloudflare:node")]
+#[wasm_bindgen(module = "zenthcloud:node")]
 extern "C" {
     /// Routes an inbound socket to the Node-style server listening on its
     /// local port; resolves once the connection closes.

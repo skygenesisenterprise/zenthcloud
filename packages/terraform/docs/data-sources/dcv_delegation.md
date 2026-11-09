@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_dcv_delegation Data Source - Cloudflare"
+page_title: "zenthcloud_dcv_delegation Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   SSL and Certificates ReadSSL and Certificates Write
 ---
 
-# cloudflare_dcv_delegation (Data Source)
+# zenthcloud_dcv_delegation (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_dcv_delegation" "example_dcv_delegation" {
+data "zenthcloud_dcv_delegation" "example_dcv_delegation" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```

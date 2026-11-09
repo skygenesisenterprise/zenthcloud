@@ -60,7 +60,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf connector-telemetry-snapshots get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/magic/connectors/${argv["connector-id"] == null ? "<connector-id>" : encodeURIComponent(String(argv["connector-id"]))}/telemetry/snapshots/${argv["snapshot-t"] == null ? "<snapshot-t>" : encodeURIComponent(String(argv["snapshot-t"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/magic/connectors/${argv["connector-id"] == null ? "<connector-id>" : encodeURIComponent(String(argv["connector-id"]))}/telemetry/snapshots/${argv["snapshot-t"] == null ? "<snapshot-t>" : encodeURIComponent(String(argv["snapshot-t"]))}`,
 						pathParams: {
 							"connector-id": String(argv["connector-id"] ?? ""),
 							"snapshot-t": String(argv["snapshot-t"] ?? ""),

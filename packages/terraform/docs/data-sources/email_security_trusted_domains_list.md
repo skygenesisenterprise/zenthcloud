@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_email_security_trusted_domains_list Data Source - Cloudflare"
+page_title: "zenthcloud_email_security_trusted_domains_list Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Cloud Email Security: ReadCloud Email Security: Write
 ---
 
-# cloudflare_email_security_trusted_domains_list (Data Source)
+# zenthcloud_email_security_trusted_domains_list (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_email_security_trusted_domains_list" "example_email_security_trusted_domains_list" {
+data "zenthcloud_email_security_trusted_domains_list" "example_email_security_trusted_domains_list" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   direction = "asc"
   is_recent = true

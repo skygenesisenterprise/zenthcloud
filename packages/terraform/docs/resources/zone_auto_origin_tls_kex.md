@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zone_auto_origin_tls_kex Resource - Cloudflare"
+page_title: "zenthcloud_zone_auto_origin_tls_kex Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zone_auto_origin_tls_kex (Resource)
+# zenthcloud_zone_auto_origin_tls_kex (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zone_auto_origin_tls_kex" "example_zone_auto_origin_tls_kex" {
+resource "zenthcloud_zone_auto_origin_tls_kex" "example_zone_auto_origin_tls_kex" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   enabled = true
 }
@@ -36,7 +36,7 @@ resource "cloudflare_zone_auto_origin_tls_kex" "example_zone_auto_origin_tls_kex
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zone_auto_origin_tls_kex.example '<zone_id>'
+$ terraform import zenthcloud_zone_auto_origin_tls_kex.example '<zone_id>'
 ```
 
 

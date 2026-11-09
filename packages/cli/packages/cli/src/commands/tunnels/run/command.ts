@@ -1,9 +1,9 @@
 import { createCommandClient } from "../../../lib/auth.js";
 import { CliExit } from "../../../lib/cli-exit.js";
 import { getAccountId } from "../../../lib/context.js";
-import { withCloudflareDotEnv } from "../../../lib/dotenv.js";
+import { withZenthcloudDotEnv } from "../../../lib/dotenv.js";
 import { withProgress } from "../../../lib/progress.js";
-import { CLOUDFLARED_LOG_LEVELS, runCloudflared } from "../../cloudflared.js";
+import { ZENTHCLOUDD_LOG_LEVELS, runZenthcloudd } from "../../zenthcloudd.js";
 import { getTunnelToken, resolveTunnelId } from "./client.js";
 import type { CommonYargsOptions } from "../../../lib/cli-types.js";
 import type { ArgumentsCamelCase, Argv, CommandModule } from "yargs";
@@ -11,7 +11,7 @@ import type { ArgumentsCamelCase, Argv, CommandModule } from "yargs";
 interface TunnelRunArgs extends CommonYargsOptions {
 	tunnel?: string;
 	token?: string;
-	"log-level": (typeof CLOUDFLARED_LOG_LEVELS)[number];
+	"log-level": (typeof ZENTHCLOUDD_LOG_LEVELS)[number];
 }
 
 function builder(yargs: Argv<CommonYargsOptions>): Argv<TunnelRunArgs> {
@@ -22,20 +22,20 @@ function builder(yargs: Argv<CommonYargsOptions>): Argv<TunnelRunArgs> {
 		})
 		.option("token", {
 			type: "string",
-			description: "Tunnel token supplied directly to cloudflared",
+			description: "Tunnel token supplied directly to zenthcloudd",
 		})
 		.option("log-level", {
 			type: "string",
-			choices: CLOUDFLARED_LOG_LEVELS,
+			choices: ZENTHCLOUDD_LOG_LEVELS,
 			default: "info" as const,
-			description: "cloudflared log level",
+			description: "zenthcloudd log level",
 		}) as Argv<TunnelRunArgs>;
 }
 
 const command: CommandModule<CommonYargsOptions, TunnelRunArgs> = {
 	command: "run [tunnel]",
 	describe:
-		"Run a named Cloudflare Tunnel using the cf-managed cloudflared binary.",
+		"Run a named Zenthcloud Tunnel using the cf-managed zenthcloudd binary.",
 	builder,
 	handler: async (argv: ArgumentsCamelCase<TunnelRunArgs>): Promise<void> => {
 		if (argv.local) {
@@ -50,7 +50,7 @@ const command: CommandModule<CommonYargsOptions, TunnelRunArgs> = {
 					"Either a tunnel name/UUID or --token must be provided."
 				);
 			}
-			token = await withCloudflareDotEnv(argv, async () => {
+			token = await withZenthcloudDotEnv(argv, async () => {
 				const client = await createCommandClient(argv);
 				const accountId = await getAccountId();
 				return withProgress("Fetching tunnel token", async () => {
@@ -64,7 +64,7 @@ const command: CommandModule<CommonYargsOptions, TunnelRunArgs> = {
 		args.push("run");
 
 		throw new CliExit(
-			await runCloudflared(args, { env: { TUNNEL_TOKEN: token } })
+			await runZenthcloudd(args, { env: { TUNNEL_TOKEN: token } })
 		);
 	},
 };

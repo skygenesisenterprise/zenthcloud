@@ -2,7 +2,7 @@ import { describe, test } from "vite-plus/test";
 
 describe("cli", () => {
 	describe("spinner", () => {
-		// wrangler-only: tests the @cloudflare/cli-shared-helpers/interactive
+		// wrangler-only: tests the @zenthcloud/cli-shared-helpers/interactive
 		// spinner output (grayBar/leftT characters, TTY-detection codepath).
 		// cf's spinner (packages/cli/src/lib/progress.ts) is structurally
 		// different — braille frames via log-update, no output in non-TTY mode.

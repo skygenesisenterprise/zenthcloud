@@ -17,7 +17,7 @@ export const tools: readonly Tool[] = [
   {
     name: "containers_images_prepare",
     title: "Prepare a container image",
-    description: "Idempotently starts or observes preparation of the runtime artifacts required to run one digest-pinned managed container image on Cloudflare's network. Returns 202 while durable preparation continues and 200 when the image is ready or preparation has reached a terminal error.\n\nPOST /accounts/{account_id}/containers/image-preparations",
+    description: "Idempotently starts or observes preparation of the runtime artifacts required to run one digest-pinned managed container image on Zenthcloud's network. Returns 202 while durable preparation continues and 200 when the image is ready or preparation has reached a terminal error.\n\nPOST /accounts/{account_id}/containers/image-preparations",
     inputSchema: {
       type: "object",
       properties: {

@@ -49,7 +49,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf billing rate-plans get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/billing/rate_plans/${argv["public-key"] == null ? "<public-key>" : encodeURIComponent(String(argv["public-key"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["public-key"] == null ? "<public-key>" : encodeURIComponent(String(argv["public-key"]))}`,
 						pathParams: { "public-key": String(argv["public-key"] ?? "") },
 						bodyKind: "none",
 					});

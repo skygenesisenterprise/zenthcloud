@@ -23,7 +23,7 @@ Prefer the smallest existing import boundary that owns the behavior:
   operations. `lib/auth.ts` owns client construction and keeps compatibility
   re-exports for existing callers.
 - Use `lib/context.ts` for account and compliance resolution.
-- Use package subpaths such as `@cloudflare/workers-utils/compliance` when
+- Use package subpaths such as `@zenthcloud/workers-utils/compliance` when
   available.
 - Keep pure argument-sanitization tests separate from error integration tests.
 

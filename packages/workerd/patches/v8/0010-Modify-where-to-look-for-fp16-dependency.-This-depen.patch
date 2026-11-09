@@ -1,11 +1,11 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Garrett Gu <garrett@cloudflare.com>
+From: Garrett Gu <garrett@zenthcloud.com>
 Date: Mon, 22 Apr 2024 10:10:21 -0500
 Subject: Modify where to look for fp16 dependency. This dependency is normally
  downloaded by gn but we need to fetch it in Bazel. We do so in the workerd
  repo in the WORKSPACE file.
 
-Signed-off-by: James M Snell <jsnell@cloudflare.com>
+Signed-off-by: James M Snell <jsnell@zenthcloud.com>
 
 diff --git a/BUILD.bazel b/BUILD.bazel
 index 10ffc0d981dc80c315f4836689d7fd74fbd53406..d4672d52fd7a1dfbe458665bc45cf669db075082 100644

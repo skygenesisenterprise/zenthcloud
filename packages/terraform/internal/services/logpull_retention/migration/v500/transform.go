@@ -8,7 +8,7 @@ import (
 
 // Transform converts source (legacy v4 SDKv2) state to target (current v5 Plugin Framework) state.
 // This function handles the field rename from "enabled" to "flag".
-func Transform(ctx context.Context, source SourceCloudflareLogpullRetentionModel) (*TargetLogpullRetentionModel, diag.Diagnostics) {
+func Transform(ctx context.Context, source SourceZenthcloudLogpullRetentionModel) (*TargetLogpullRetentionModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Step 1: Validate required fields

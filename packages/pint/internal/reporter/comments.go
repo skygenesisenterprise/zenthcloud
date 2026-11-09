@@ -9,10 +9,10 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/cloudflare/pint/internal/checks"
-	"github.com/cloudflare/pint/internal/diags"
-	"github.com/cloudflare/pint/internal/git"
-	"github.com/cloudflare/pint/internal/output"
+	"github.com/zenthcloud/pint/internal/checks"
+	"github.com/zenthcloud/pint/internal/diags"
+	"github.com/zenthcloud/pint/internal/git"
+	"github.com/zenthcloud/pint/internal/output"
 )
 
 type PendingComment struct {
@@ -98,7 +98,7 @@ func makeComments(summary Summary, showDuplicates bool) (comments []PendingComme
 		buf.WriteString(problemIcon(reports[0].Problem.Severity))
 		buf.WriteString(" **")
 		buf.WriteString(reports[0].Problem.Severity.String())
-		buf.WriteString("** reported by [pint](https://cloudflare.github.io/pint/) **")
+		buf.WriteString("** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **")
 		buf.WriteString(reports[0].Problem.Reporter)
 		buf.WriteString("** check.\n\n")
 		for _, report := range reports {
@@ -175,7 +175,7 @@ func makeComments(summary Summary, showDuplicates bool) (comments []PendingComme
 			buf.WriteString("\n</details>\n\n")
 		}
 		buf.WriteString("------\n\n")
-		buf.WriteString(":information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/")
+		buf.WriteString(":information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud")
 		buf.WriteString(reports[0].Problem.Reporter)
 		buf.WriteString(".html).\n")
 
@@ -560,7 +560,7 @@ Below is the list of checks that were disabled for each Prometheus server define
 			for _, name := range dc.Checks {
 				buf.WriteString("    - [")
 				buf.WriteString(name)
-				buf.WriteString("](https://cloudflare.github.io/pint/checks/")
+				buf.WriteString("](https://github.com/skygenesisenterprise/zenthcloud")
 				buf.WriteString(name)
 				buf.WriteString(".html)\n")
 			}

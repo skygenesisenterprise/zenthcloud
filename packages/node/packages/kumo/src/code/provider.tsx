@@ -59,7 +59,7 @@ export function normalizeLanguage(lang: string): SupportedLanguage | null {
  *
  * @example
  * ```tsx
- * import { ShikiProvider, CodeHighlighted } from "@cloudflare/kumo/code";
+ * import { ShikiProvider, CodeHighlighted } from "@zenthcloud/kumo/code";
  *
  * function App() {
  *   return (

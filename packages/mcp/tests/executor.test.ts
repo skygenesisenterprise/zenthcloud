@@ -1,4 +1,4 @@
-import { env } from 'cloudflare:workers'
+import { env } from 'zenthcloud:workers'
 import { http, HttpResponse } from 'msw'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
@@ -7,7 +7,7 @@ import {
   cfError,
   cfSuccess,
   mockIdentityProbe
-} from './helpers/cloudflare-api'
+} from './helpers/zenthcloud-api'
 import { clearKv } from './helpers/kv'
 import { clearSpec, seedSpec } from './helpers/spec'
 import { callTool, toolText } from './helpers/mcp'
@@ -16,8 +16,8 @@ import { server } from './setup/msw'
 /**
  * Behaviour tests for the code executors, run through the REAL worker: a
  * tools/call for `execute` loads actual code into a Worker Loader isolate whose
- * cloudflare.request() is forwarded by the real GlobalOutbound, and `search`
- * runs against a real seeded SPEC_BUCKET. The only mock is the Cloudflare API
+ * zenthcloud.request() is forwarded by the real GlobalOutbound, and `search`
+ * runs against a real seeded SPEC_BUCKET. The only mock is the Zenthcloud API
  * boundary (MSW). This replaces the old string-grep assertions on the generated
  * worker source, which never compiled or ran the code.
  */
@@ -41,7 +41,7 @@ async function runExecute(path: string, body: unknown, init?: ResponseInit): Pro
     )
   )
   const result = await callTool(API_TOKEN, 'execute', {
-    code: `async () => cloudflare.request({ method: "GET", path: "${path}" })`
+    code: `async () => zenthcloud.request({ method: "GET", path: "${path}" })`
   })
   return toolText(result)
 }
@@ -54,12 +54,12 @@ describe('codemode tool titles', () => {
     const result = await callTool(API_TOKEN, 'execute', null, { method: 'tools/list' })
     const tool = result.result?.tools?.find((t: { name: string }) => t.name === 'execute')
     expect(tool?.annotations).toMatchObject({
-      title: 'Cloudflare API Code Executor',
+      title: 'Zenthcloud API Code Executor',
       readOnlyHint: false,
       openWorldHint: true,
       destructiveHint: true
     })
-    expect(tool?.title).toBe('Cloudflare API Code Executor')
+    expect(tool?.title).toBe('Zenthcloud API Code Executor')
   })
 
   it('exposes a title on the search tool', async () => {
@@ -68,9 +68,9 @@ describe('codemode tool titles', () => {
 
     const result = await callTool(API_TOKEN, 'search', null, { method: 'tools/list' })
     const tool = result.result?.tools?.find((t: { name: string }) => t.name === 'search')
-    expect(tool?.title).toBe('Cloudflare API Spec Search')
+    expect(tool?.title).toBe('Zenthcloud API Spec Search')
     expect(tool?.annotations).toMatchObject({
-      title: 'Cloudflare API Spec Search',
+      title: 'Zenthcloud API Spec Search',
       readOnlyHint: false,
       openWorldHint: false,
       destructiveHint: false
@@ -88,7 +88,7 @@ describe('execute: REST responses', () => {
     expect(text).toContain('"success": true')
   })
 
-  it('surfaces a clean "Cloudflare API error" for a failure envelope with errors', async () => {
+  it('surfaces a clean "Zenthcloud API error" for a failure envelope with errors', async () => {
     const text = await runExecute(
       `/accounts/${ACCOUNT_ID}/tokens/verify`,
       {
@@ -99,7 +99,7 @@ describe('execute: REST responses', () => {
       },
       { status: 403 }
     )
-    expect(text).toContain('Cloudflare API error')
+    expect(text).toContain('Zenthcloud API error')
     expect(text).toContain('"code": 1000')
     expect(text).toContain('"message": "Invalid API Token"')
   })
@@ -113,7 +113,7 @@ describe('execute: REST responses', () => {
       { success: false, result: null },
       { status: 502 }
     )
-    expect(text).toContain('Cloudflare API error')
+    expect(text).toContain('Zenthcloud API error')
     expect(text).not.toContain('undefined')
     expect(text).not.toContain('is not a function')
   })
@@ -135,7 +135,7 @@ describe('execute: REST responses', () => {
     mockIdentityProbe({ accounts: [{ id: ACCOUNT_ID, name: 'Acc' }] })
     server.use(http.all(`${API_BASE}/analytics/sql`, () => HttpResponse.json(body)))
     const result = await callTool(API_TOKEN, 'execute', {
-      code: `async () => cloudflare.request({
+      code: `async () => zenthcloud.request({
         method: ${JSON.stringify(method)}, path: "/analytics/sql",
         ${method === 'POST' ? 'body' : 'query'}: { query: "SELECT 1 AS value" }
       })`
@@ -183,7 +183,7 @@ describe('execute: REST responses', () => {
 
   it('rejects an explicit failure envelope even with HTTP 200', async () => {
     const text = await runExecute('/envelope', cfError([{ code: 1000, message: 'Denied' }]))
-    expect(text).toContain('Cloudflare API error: GET /envelope returned HTTP 200.')
+    expect(text).toContain('Zenthcloud API error: GET /envelope returned HTTP 200.')
     expect(text).toContain('"message": "Denied"')
   })
 
@@ -202,7 +202,7 @@ describe('execute: REST responses', () => {
       headers: { 'cf-ray': '8f2a1b3c4d5e6f70-SJC' }
     })
     expect(text).toBe(
-      'Error: Cloudflare API error: GET /failure returned HTTP 400 (Ray ID 8f2a1b3c4d5e6f70-SJC).\n\n' +
+      'Error: Zenthcloud API error: GET /failure returned HTTP 400 (Ray ID 8f2a1b3c4d5e6f70-SJC).\n\n' +
         JSON.stringify(body, null, 2)
     )
   })
@@ -213,7 +213,7 @@ describe('execute: REST responses', () => {
     { name: 'null', body: null }
   ])('rejects HTTP failures with a $name body', async ({ body }) => {
     const text = await runExecute('/failure', body, { status: 403 })
-    expect(text).toContain('Cloudflare API error: GET /failure returned HTTP 403')
+    expect(text).toContain('Zenthcloud API error: GET /failure returned HTTP 403')
   })
 
   it('preserves the JSONEachRow workaround as text', async () => {
@@ -228,7 +228,7 @@ describe('execute: REST responses', () => {
 describe('execute: request bodies', () => {
   const PATH = '/accounts/' + ACCOUNT_ID + '/body'
 
-  /** Run `request`, the options cloudflare.request() gets, and return what the API received. */
+  /** Run `request`, the options zenthcloud.request() gets, and return what the API received. */
   async function sent(request: string) {
     mockIdentityProbe({ accounts: [{ id: ACCOUNT_ID, name: 'Acc' }] })
     let received: { contentType: string | null; bytes: Uint8Array; form?: FormData } | undefined
@@ -243,7 +243,7 @@ describe('execute: request bodies', () => {
       })
     )
     const result = await callTool(API_TOKEN, 'execute', {
-      code: `async () => cloudflare.request({ method: "POST", path: "${PATH}", ${request} })`
+      code: `async () => zenthcloud.request({ method: "POST", path: "${PATH}", ${request} })`
     })
     expect(result.result?.isError, toolText(result)).toBeFalsy()
     if (!received) throw new Error('The API received no request')
@@ -333,7 +333,7 @@ describe('execute: binary responses', () => {
     async (type) => {
       serve(type)
       const result = await callTool(API_TOKEN, 'execute', {
-        code: `async () => cloudflare.request({ method: "GET", path: "${PATH}" })`
+        code: `async () => zenthcloud.request({ method: "GET", path: "${PATH}" })`
       })
       const bytes = JSON.parse(toolText(result))
       expect(bytes).toEqual({ base64: btoa(String.fromCharCode(...JPEG)), byteLength: JPEG.length })
@@ -344,7 +344,7 @@ describe('execute: binary responses', () => {
     serve('image/jpeg')
     const result = await callTool(API_TOKEN, 'execute', {
       code: `async () => {
-        const result = await cloudflare.request({ method: "GET", path: "${PATH}" });
+        const result = await zenthcloud.request({ method: "GET", path: "${PATH}" });
         return { isBytes: result instanceof Uint8Array, first: result[0], length: result.length };
       }`
     })
@@ -385,7 +385,7 @@ describe('execute: binary responses', () => {
 })
 
 describe('execute: retries', () => {
-  it('resends the request body when the Cloudflare API rate-limits a write', async () => {
+  it('resends the request body when the Zenthcloud API rate-limits a write', async () => {
     mockIdentityProbe({ accounts: [{ id: ACCOUNT_ID, name: 'Acc' }] })
     const path = `/accounts/${ACCOUNT_ID}/workers/scripts/my-worker/secrets`
     const received: string[] = []
@@ -402,7 +402,7 @@ describe('execute: retries', () => {
     )
 
     const result = await callTool(API_TOKEN, 'execute', {
-      code: `async () => cloudflare.request({ method: "PUT", path: "${path}", body: { name: "API_KEY", text: "s3cret", type: "secret_text" } })`
+      code: `async () => zenthcloud.request({ method: "PUT", path: "${path}", body: { name: "API_KEY", text: "s3cret", type: "secret_text" } })`
     })
 
     const text = toolText(result)
@@ -431,7 +431,7 @@ describe('execute: rate-limit waits', () => {
 
     const started = Date.now()
     const result = await callTool(API_TOKEN, 'execute', {
-      code: `async () => cloudflare.request({ method: "GET", path: "${path}" })`
+      code: `async () => zenthcloud.request({ method: "GET", path: "${path}" })`
     })
 
     // Retrying sooner than 30 s would only spend the user's quota on another 429.
@@ -460,7 +460,7 @@ describe('execute: rate-limit waits', () => {
     )
 
     const result = await callTool(API_TOKEN, 'execute', {
-      code: `async () => cloudflare.request({ method: "GET", path: "${path}" })`
+      code: `async () => zenthcloud.request({ method: "GET", path: "${path}" })`
     })
 
     expect(toolText(result)).toContain('"success": true')
@@ -474,7 +474,7 @@ describe('execute: GraphQL responses', () => {
     mockIdentityProbe({ accounts: [{ id: ACCOUNT_ID, name: 'Acc' }] })
     server.use(http.post(`${API_BASE}/graphql`, () => HttpResponse.json(body as object)))
     const result = await callTool(API_TOKEN, 'execute', {
-      code: `async () => cloudflare.request({ method: "POST", path: "/graphql", body: { query: "{ viewer { __typename } }" } })`
+      code: `async () => zenthcloud.request({ method: "POST", path: "/graphql", body: { query: "{ viewer { __typename } }" } })`
     })
     return toolText(result)
   }
@@ -520,7 +520,7 @@ describe('execute: no account resolved (multi-account user token)', () => {
       )
     )
     const result = await callTool(API_TOKEN, 'execute', {
-      code: `async () => cloudflare.request({ method: "GET", path: "/accounts" })`
+      code: `async () => zenthcloud.request({ method: "GET", path: "/accounts" })`
     })
     expect(result.result?.isError).toBeFalsy()
     expect(toolText(result)).toContain('"success": true')
@@ -529,7 +529,7 @@ describe('execute: no account resolved (multi-account user token)', () => {
   it("fails fast with the session's accounts when code reads the unset accountId", async () => {
     mockMultiAccountUser()
     const result = await callTool(API_TOKEN, 'execute', {
-      code: `async () => cloudflare.request({ method: "GET", path: \`/accounts/\${accountId}/workers/scripts\` })`
+      code: `async () => zenthcloud.request({ method: "GET", path: \`/accounts/\${accountId}/workers/scripts\` })`
     })
     const text = toolText(result)
     expect(text).toContain(
@@ -545,7 +545,7 @@ describe('execute: no account resolved (multi-account user token)', () => {
 describe('execute: account resolution', () => {
   const OTHER_ACCOUNT_ID = '00000000000000000000000000000002'
   const listWorkers =
-    'async () => cloudflare.request({ method: "GET", path: `/accounts/${accountId}/workers/scripts` })'
+    'async () => zenthcloud.request({ method: "GET", path: `/accounts/${accountId}/workers/scripts` })'
 
   function mockUnauthorized(accountId: string) {
     server.use(
@@ -637,7 +637,7 @@ describe('search: the pinned spec, in the forge tools service', () => {
 
   it('has no network access (globalOutbound is null for search)', async () => {
     const result = await callTool(API_TOKEN, 'search', {
-      code: `async () => { await fetch("https://api.cloudflare.com/client/v4/user"); return "should not reach" }`
+      code: `async () => { await fetch("https://github.com/skygenesisenterprise/zenthcloud"); return "should not reach" }`
     })
     // The search isolate cannot make outbound requests.
     expect(toolText(result)).not.toContain('should not reach')

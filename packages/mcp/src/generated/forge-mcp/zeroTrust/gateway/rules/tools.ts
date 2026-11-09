@@ -101,7 +101,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "precedence": {
-              "description": "Set the order of your rules. Lower values indicate higher precedence. At each processing phase, evaluate applicable rules in ascending order of this value. Refer to [Order of enforcement](http://developers.cloudflare.com/learning-paths/secure-internet-traffic/understand-policies/order-of-enforcement/#manage-precedence-with-terraform) to manage precedence via Terraform.",
+              "description": "Set the order of your rules. Lower values indicate higher precedence. At each processing phase, evaluate applicable rules in ascending order of this value. Refer to [Order of enforcement](https://github.com/skygenesisenterprise/zenthcloud) to manage precedence via Terraform.",
               "type": "integer"
             },
             "rule_settings": {
@@ -128,7 +128,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Specify the Cloudflare account identifier.",
+              "description": "Specify the Zenthcloud account identifier.",
               "type": "string"
             }
           },
@@ -222,7 +222,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Specify the Cloudflare account identifier.",
+              "description": "Specify the Zenthcloud account identifier.",
               "type": "string"
             },
             "rule_id": {
@@ -298,7 +298,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Specify the Cloudflare account identifier.",
+              "description": "Specify the Zenthcloud account identifier.",
               "type": "string"
             },
             "rule_id": {
@@ -388,7 +388,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Specify the Cloudflare account identifier.",
+              "description": "Specify the Zenthcloud account identifier.",
               "type": "string"
             }
           },
@@ -517,7 +517,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Specify the Cloudflare account identifier.",
+              "description": "Specify the Zenthcloud account identifier.",
               "type": "string"
             }
           },
@@ -605,7 +605,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Specify the Cloudflare account identifier.",
+              "description": "Specify the Zenthcloud account identifier.",
               "type": "string"
             },
             "rule_id": {
@@ -748,7 +748,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "precedence": {
-              "description": "Set the order of your rules. Lower values indicate higher precedence. At each processing phase, evaluate applicable rules in ascending order of this value. Refer to [Order of enforcement](http://developers.cloudflare.com/learning-paths/secure-internet-traffic/understand-policies/order-of-enforcement/#manage-precedence-with-terraform) to manage precedence via Terraform.",
+              "description": "Set the order of your rules. Lower values indicate higher precedence. At each processing phase, evaluate applicable rules in ascending order of this value. Refer to [Order of enforcement](https://github.com/skygenesisenterprise/zenthcloud) to manage precedence via Terraform.",
               "type": "integer"
             },
             "rule_settings": {
@@ -775,7 +775,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Specify the Cloudflare account identifier.",
+              "description": "Specify the Zenthcloud account identifier.",
               "type": "string"
             },
             "rule_id": {

@@ -5,8 +5,8 @@ package observatory_scheduled_test
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/speed"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/speed"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -24,11 +24,11 @@ type ObservatoryScheduledTestDataSourceModel struct {
 
 func (m *ObservatoryScheduledTestDataSourceModel) toReadParams(_ context.Context) (params speed.ScheduleGetParams, diags diag.Diagnostics) {
 	params = speed.ScheduleGetParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	if !m.Region.IsNull() {
-		params.Region = cloudflare.F(speed.ScheduleGetParamsRegion(m.Region.ValueString()))
+		params.Region = zenthcloud.F(speed.ScheduleGetParamsRegion(m.Region.ValueString()))
 	}
 
 	return

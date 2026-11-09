@@ -5,7 +5,7 @@ package zero_trust_device_default_profile
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_device_default_profile/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_device_default_profile/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
@@ -41,7 +41,7 @@ func (r *ZeroTrustDeviceDefaultProfileResource) UpgradeState(ctx context.Context
 
 	return map[int64]resource.StateUpgrader{
 		// Handle state from v4 SDKv2 provider (schema_version=0)
-		// This upgrades legacy cloudflare_zero_trust_device_profiles / cloudflare_device_settings_policy
+		// This upgrades legacy zenthcloud_zero_trust_device_profiles / zenthcloud_device_settings_policy
 		// resources WITHOUT match+precedence (or WITH default=true) to this default profile resource
 		0: {
 			PriorSchema:   &sourceSchema,

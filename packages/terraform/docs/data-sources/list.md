@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_list Data Source - Cloudflare"
+page_title: "zenthcloud_list Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Filter Lists Read
 ---
 
-# cloudflare_list (Data Source)
+# zenthcloud_list (Data Source)
 
 Accepted Permissions
 
@@ -15,7 +15,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_list" "example_list" {
+data "zenthcloud_list" "example_list" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   list_id = "2c0fc9fa937b11eaa1b71c4d701ab86e"
 }
@@ -38,7 +38,7 @@ data "cloudflare_list" "example_list" {
 - `created_on` (String) The RFC 3339 timestamp of when the list was created.
 - `description` (String) An informative summary of the list.
 - `id` (String) The unique ID of the list.
-- `items` (Attributes Set) The items in the list. If set, this overwrites all items in the list. Do not use with `cloudflare_list_item`. (see [below for nested schema](#nestedatt--items))
+- `items` (Attributes Set) The items in the list. If set, this overwrites all items in the list. Do not use with `zenthcloud_list_item`. (see [below for nested schema](#nestedatt--items))
 - `kind` (String) The type of the list. Each type supports specific list items (IP addresses, ASNs, hostnames or redirects).
 Available values: "ip", "redirect", "hostname", "asn".
 - `modified_on` (String) The RFC 3339 timestamp of when the list was last modified.

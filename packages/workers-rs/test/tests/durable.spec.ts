@@ -130,7 +130,7 @@ describe("durable", () => {
   });
 
   // The name should be available in the constructor, before any request is
-  // handled (see https://github.com/cloudflare/workerd/issues/2240).
+  // handled (see https://github.com/skygenesisenterprise/zenthcloud).
   test("id-from-name preserves name on state.id() in constructor", async () => {
     const resp = await mf.dispatchFetch(`${mfUrl}durable/ctor-name`);
     expect(resp.status).toBe(200);

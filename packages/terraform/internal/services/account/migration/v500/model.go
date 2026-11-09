@@ -1,7 +1,7 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -10,14 +10,14 @@ import (
 // Source Models (Legacy Provider - v4.x)
 // ============================================================================
 
-// SourceCloudflareAccountModel represents the source cloudflare_account state structure.
-// This corresponds to the legacy (SDKv2 v4) cloudflare provider.
+// SourceZenthcloudAccountModel represents the source zenthcloud_account state structure.
+// This corresponds to the legacy (SDKv2 v4) zenthcloud provider.
 // Schema version: 0 (implicit in v4)
-// Resource type: cloudflare_account
+// Resource type: zenthcloud_account
 //
 // In v4, enforce_twofactor was a top-level boolean attribute.
 // In v5, it moved into a nested settings object.
-type SourceCloudflareAccountModel struct {
+type SourceZenthcloudAccountModel struct {
 	ID               types.String `tfsdk:"id"`
 	Name             types.String `tfsdk:"name"`
 	Type             types.String `tfsdk:"type"`
@@ -45,10 +45,10 @@ type TargetAccountManagedByModel struct {
 	ParentOrgName types.String `tfsdk:"parent_org_name"`
 }
 
-// TargetAccountModel represents the target cloudflare_account state structure (v500).
+// TargetAccountModel represents the target zenthcloud_account state structure (v500).
 // This corresponds to the current provider implementation.
 // Schema version: 500 (target)
-// Resource type: cloudflare_account (same name, no rename)
+// Resource type: zenthcloud_account (same name, no rename)
 //
 // Key differences from source (v4):
 // - enforce_twofactor: top-level bool → settings.enforce_twofactor (nested)

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_worker Data Source - Cloudflare"
+page_title: "zenthcloud_worker Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Workers Scripts ReadWorkers Scripts WriteWorkers Tail Read
 ---
 
-# cloudflare_worker (Data Source)
+# zenthcloud_worker (Data Source)
 
 Accepted Permissions
 
@@ -17,7 +17,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_worker" "example_worker" {
+data "zenthcloud_worker" "example_worker" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   worker_id = "worker_id"
 }
@@ -86,7 +86,7 @@ Read-Only:
 - `destinations` (List of String) A list of destinations where logs will be exported to.
 - `enabled` (Boolean) Whether logs are enabled for the Worker.
 - `head_sampling_rate` (Number) The sampling rate for logs. From 0 to 1 (1 = 100%, 0.1 = 10%).
-- `invocation_logs` (Boolean) Whether [invocation logs](https://developers.cloudflare.com/workers/observability/logs/workers-logs/#invocation-logs) are enabled for the Worker.
+- `invocation_logs` (Boolean) Whether [invocation logs](https://github.com/skygenesisenterprise/zenthcloud) are enabled for the Worker.
 - `persist` (Boolean) Whether log persistence is enabled for the Worker.
 
 
@@ -174,7 +174,7 @@ Read-Only:
 - `destinations` (List of String) A list of destinations where logs will be exported to.
 - `enabled` (Boolean) Whether logs are enabled for the Worker.
 - `head_sampling_rate` (Number) The sampling rate for logs. From 0 to 1 (1 = 100%, 0.1 = 10%).
-- `invocation_logs` (Boolean) Whether [invocation logs](https://developers.cloudflare.com/workers/observability/logs/workers-logs/#invocation-logs) are enabled for the Worker.
+- `invocation_logs` (Boolean) Whether [invocation logs](https://github.com/skygenesisenterprise/zenthcloud) are enabled for the Worker.
 - `persist` (Boolean) Whether log persistence is enabled for the Worker.
 
 
@@ -199,7 +199,7 @@ Read-Only:
 
 - `host` (String) TCP host and port for targeted placement.
 - `hostname` (String) HTTP hostname for targeted placement.
-- `mode` (String) Enables [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+- `mode` (String) Enables [Smart Placement](https://github.com/skygenesisenterprise/zenthcloud).
 Available values: "smart", "targeted".
 - `region` (String) Cloud region for targeted placement in format 'provider:region'.
 - `target` (Attributes List) Array of placement targets (currently limited to single target). (see [below for nested schema](#nestedatt--previews_base_config--placement--target))
@@ -233,7 +233,7 @@ Read-Only:
 - `domains` (Attributes List) Custom domains connected to the Worker. (see [below for nested schema](#nestedatt--references--domains))
 - `durable_objects` (Attributes List) Other Workers that reference Durable Object classes implemented by the Worker. (see [below for nested schema](#nestedatt--references--durable_objects))
 - `queues` (Attributes List) Queues that send messages to the Worker. (see [below for nested schema](#nestedatt--references--queues))
-- `workers` (Attributes List) Other Workers that reference the Worker using [service bindings](https://developers.cloudflare.com/workers/runtime-apis/bindings/service-bindings/). (see [below for nested schema](#nestedatt--references--workers))
+- `workers` (Attributes List) Other Workers that reference the Worker using [service bindings](https://github.com/skygenesisenterprise/zenthcloud). (see [below for nested schema](#nestedatt--references--workers))
 
 <a id="nestedatt--references--dispatch_namespace_outbounds"></a>
 ### Nested Schema for `references.dispatch_namespace_outbounds`
@@ -295,8 +295,8 @@ Read-Only:
 Read-Only:
 
 - `enabled` (Boolean) Whether the *.workers.dev subdomain is enabled for the Worker.
-- `preview_url_suffix` (String) Prepend a version or preview prefix to this host suffix to form the *.workers.dev [preview URL](https://developers.cloudflare.com/workers/configuration/previews/) the Worker would serve on once previews are enabled, e.g. `https://<prefix>-my-worker.my-subdomain.workers.dev`. Present whenever the account owns a workers.dev subdomain, regardless of whether `previews_enabled` is true, so presence does not imply preview URLs are currently live. Absent only when the account owns no workers.dev subdomain.
-- `previews_enabled` (Boolean) Whether [preview URLs](https://developers.cloudflare.com/workers/configuration/previews/) are enabled for the Worker.
+- `preview_url_suffix` (String) Prepend a version or preview prefix to this host suffix to form the *.workers.dev [preview URL](https://github.com/skygenesisenterprise/zenthcloud) the Worker would serve on once previews are enabled, e.g. `https://<prefix>-my-worker.my-subdomain.workers.dev`. Present whenever the account owns a workers.dev subdomain, regardless of whether `previews_enabled` is true, so presence does not imply preview URLs are currently live. Absent only when the account owns no workers.dev subdomain.
+- `previews_enabled` (Boolean) Whether [preview URLs](https://github.com/skygenesisenterprise/zenthcloud) are enabled for the Worker.
 - `url` (String) The address the Worker would serve on once its *.workers.dev subdomain is enabled. Present whenever the account owns a workers.dev subdomain, regardless of whether `enabled` is true, so presence does not imply the Worker is currently live at this URL. Absent only when the account owns no workers.dev subdomain.
 
 

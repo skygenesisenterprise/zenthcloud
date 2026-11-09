@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Select } from "@cloudflare/kumo";
+import { Select } from "@zenthcloud/kumo";
 
 // ============================================================================
 // STRESS TEST: TypeScript Generic Inference

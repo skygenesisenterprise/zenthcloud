@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_access_mtls_hostname_settings Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_access_mtls_hostname_settings Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Access: Mutual TLS Certificates ReadAccess: Mutual TLS Certificates Write
 ---
 
-# cloudflare_zero_trust_access_mtls_hostname_settings (Resource)
+# zenthcloud_zero_trust_access_mtls_hostname_settings (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_access_mtls_hostname_settings" "example_zero_trust_access_mtls_hostname_settings" {
+resource "zenthcloud_zero_trust_access_mtls_hostname_settings" "example_zero_trust_access_mtls_hostname_settings" {
   settings = [{
     china_network = false
     client_certificate_forwarding = true
@@ -58,7 +58,7 @@ Required:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_access_mtls_hostname_settings.example '<{accounts|zones}/{account_id|zone_id}>'
+$ terraform import zenthcloud_zero_trust_access_mtls_hostname_settings.example '<{accounts|zones}/{account_id|zone_id}>'
 ```
 
 

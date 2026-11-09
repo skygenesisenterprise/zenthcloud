@@ -281,4 +281,4 @@ data:
                                         {{ . | first | label "problem" }}
                                       {{ end }}
               help: pint detected a problem with {{ $labels.name }} rule on {{ $externalLabels.prometheus }}, this means that a rule might be trying to query non-existent metrics or deployed to the wrong server
-              docs: https://cloudflare.github.io/pint/checks/{{ $labels.reporter }}.html
+              docs: https://github.com/skygenesisenterprise/zenthcloud{{ $labels.reporter }}.html

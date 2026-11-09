@@ -80,7 +80,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust cws workloads update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/cws/workloads/${argv["workload-id"] == null ? "<workload-id>" : encodeURIComponent(String(argv["workload-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/cws/workloads/${argv["workload-id"] == null ? "<workload-id>" : encodeURIComponent(String(argv["workload-id"]))}`,
 						pathParams: { "workload-id": String(argv["workload-id"] ?? "") },
 						bodyKind: "json",
 						body:

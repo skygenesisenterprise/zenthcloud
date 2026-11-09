@@ -96,7 +96,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf organizations logs audit history",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/organizations/${argv["organization-id"] == null ? "<organization-id>" : encodeURIComponent(String(argv["organization-id"]))}/logs/audit/${argv["id"] == null ? "<id>" : encodeURIComponent(String(argv["id"]))}/history`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["organization-id"] == null ? "<organization-id>" : encodeURIComponent(String(argv["organization-id"]))}/logs/audit/${argv["id"] == null ? "<id>" : encodeURIComponent(String(argv["id"]))}/history`,
 						pathParams: {
 							"organization-id": String(argv["organization-id"] ?? ""),
 							id: String(argv["id"] ?? ""),

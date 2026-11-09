@@ -6,42 +6,42 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/addressing"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/addressing"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-var zoneID = os.Getenv("CLOUDFLARE_ZONE_ID")
+var zoneID = os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 func TestMain(m *testing.M) {
 	resource.TestMain(m)
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_regional_hostname", &resource.Sweeper{
-		Name: "cloudflare_regional_hostname",
-		F:    testSweepCloudflareRegionalHostname,
+	resource.AddTestSweepers("zenthcloud_regional_hostname", &resource.Sweeper{
+		Name: "zenthcloud_regional_hostname",
+		F:    testSweepZenthcloudRegionalHostname,
 	})
 }
 
-func testSweepCloudflareRegionalHostname(r string) error {
+func testSweepZenthcloudRegionalHostname(r string) error {
 	ctx := context.Background()
-	client := cloudflare.NewClient(option.WithAPIKey(os.Getenv("CLOUDFLARE_API_KEY")), option.WithAPIEmail(os.Getenv("CLOUDFLARE_EMAIL")))
+	client := zenthcloud.NewClient(option.WithAPIKey(os.Getenv("ZENTHCLOUD_API_KEY")), option.WithAPIEmail(os.Getenv("ZENTHCLOUD_EMAIL")))
 
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping regional hostnames sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping regional hostnames sweep: ZENTHCLOUD_ZONE_ID not set")
 		return nil
 	}
 
 	// Get all regional hostnames for the test zone
 	hostnames, err := client.Addressing.RegionalHostnames.List(ctx, addressing.RegionalHostnameListParams{
-		ZoneID: cloudflare.F(zoneID),
+		ZoneID: zenthcloud.F(zoneID),
 	})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to list regional hostnames: %s", err))
@@ -61,7 +61,7 @@ func testSweepCloudflareRegionalHostname(r string) error {
 
 		tflog.Info(ctx, fmt.Sprintf("Deleting regional hostname: %s (zone: %s)", hostname.Hostname, zoneID))
 		_, err := client.Addressing.RegionalHostnames.Delete(ctx, hostname.Hostname, addressing.RegionalHostnameDeleteParams{
-			ZoneID: cloudflare.F(zoneID),
+			ZoneID: zenthcloud.F(zoneID),
 		})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete regional hostname %s: %s", hostname.Hostname, err))
@@ -73,16 +73,16 @@ func testSweepCloudflareRegionalHostname(r string) error {
 	return nil
 }
 
-func TestAccCloudflareRegionalHostname_Basic(t *testing.T) {
+func TestAccZenthcloudRegionalHostname_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_regional_hostname." + rnd
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
+	resourceName := "zenthcloud_regional_hostname." + rnd
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
 	hostname := fmt.Sprintf("%s.%s", rnd, zoneName) // Expected hostname
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareRegionalHostnameDestroy,
+		CheckDestroy:             testAccCheckZenthcloudRegionalHostnameDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testRegionalHostnameBasicConfig(rnd, zoneName, "ca"),
@@ -97,23 +97,23 @@ func TestAccCloudflareRegionalHostname_Basic(t *testing.T) {
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateIdFunc:       testAccCloudflareRegionalHostnameImportStateIdFunc(resourceName),
+				ImportStateIdFunc:       testAccZenthcloudRegionalHostnameImportStateIdFunc(resourceName),
 				ImportStateVerifyIgnore: []string{"created_on"},
 			},
 		},
 	})
 }
 
-func TestAccCloudflareRegionalHostname_UpdateRegion(t *testing.T) {
+func TestAccZenthcloudRegionalHostname_UpdateRegion(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_regional_hostname." + rnd
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
+	resourceName := "zenthcloud_regional_hostname." + rnd
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
 	hostname := fmt.Sprintf("%s.%s", rnd, zoneName) // Expected hostname
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareRegionalHostnameDestroy,
+		CheckDestroy:             testAccCheckZenthcloudRegionalHostnameDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testRegionalHostnameConfig(rnd, zoneName, "ca", "dns"),
@@ -135,23 +135,23 @@ func TestAccCloudflareRegionalHostname_UpdateRegion(t *testing.T) {
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateIdFunc:       testAccCloudflareRegionalHostnameImportStateIdFunc(resourceName),
+				ImportStateIdFunc:       testAccZenthcloudRegionalHostnameImportStateIdFunc(resourceName),
 				ImportStateVerifyIgnore: []string{"created_on"},
 			},
 		},
 	})
 }
 
-func TestAccCloudflareRegionalHostname_DifferentRegions(t *testing.T) {
+func TestAccZenthcloudRegionalHostname_DifferentRegions(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_regional_hostname." + rnd
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
+	resourceName := "zenthcloud_regional_hostname." + rnd
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
 	hostname := fmt.Sprintf("%s.%s", rnd, zoneName) // Expected hostname
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareRegionalHostnameDestroy,
+		CheckDestroy:             testAccCheckZenthcloudRegionalHostnameDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testRegionalHostnameConfig(rnd, zoneName, "us", "dns"),
@@ -167,7 +167,7 @@ func TestAccCloudflareRegionalHostname_DifferentRegions(t *testing.T) {
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateIdFunc:       testAccCloudflareRegionalHostnameImportStateIdFunc(resourceName),
+				ImportStateIdFunc:       testAccZenthcloudRegionalHostnameImportStateIdFunc(resourceName),
 				ImportStateVerifyIgnore: []string{"created_on"},
 			},
 		},
@@ -186,7 +186,7 @@ func testRegionalHostnameBasicConfig(name string, zoneName, regionKey string) st
 	return acctest.LoadTestCase("regionalhostname_basic.tf", name, zoneID, hostname, regionKey)
 }
 
-func testAccCloudflareRegionalHostnameImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
+func testAccZenthcloudRegionalHostnameImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -200,11 +200,11 @@ func testAccCloudflareRegionalHostnameImportStateIdFunc(resourceName string) res
 	}
 }
 
-func testAccCheckCloudflareRegionalHostnameDestroy(s *terraform.State) error {
-	client := cloudflare.NewClient(option.WithAPIKey(os.Getenv("CLOUDFLARE_API_KEY")), option.WithAPIEmail(os.Getenv("CLOUDFLARE_EMAIL")))
+func testAccCheckZenthcloudRegionalHostnameDestroy(s *terraform.State) error {
+	client := zenthcloud.NewClient(option.WithAPIKey(os.Getenv("ZENTHCLOUD_API_KEY")), option.WithAPIEmail(os.Getenv("ZENTHCLOUD_EMAIL")))
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_regional_hostname" {
+		if rs.Type != "zenthcloud_regional_hostname" {
 			continue
 		}
 
@@ -215,7 +215,7 @@ func testAccCheckCloudflareRegionalHostnameDestroy(s *terraform.State) error {
 			context.Background(),
 			hostname,
 			addressing.RegionalHostnameGetParams{
-				ZoneID: cloudflare.F(zoneID),
+				ZoneID: zenthcloud.F(zoneID),
 			},
 		)
 		if err == nil {
@@ -228,7 +228,7 @@ func testAccCheckCloudflareRegionalHostnameDestroy(s *terraform.State) error {
 
 func TestAccUpgradeRegionalHostname_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	config := testRegionalHostnameBasicConfig(rnd, zoneName, "ca")
 
@@ -237,8 +237,8 @@ func TestAccUpgradeRegionalHostname_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

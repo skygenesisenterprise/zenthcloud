@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { prepareProject } from "../../lib/autoconfig.js";
-import type { AutoConfigDetails } from "@cloudflare/autoconfig";
+import type { AutoConfigDetails } from "@zenthcloud/autoconfig";
 
 const mocks = vi.hoisted(() => ({
 	getDetailsForAutoConfig: vi.fn(),
@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
 	runAutoConfig: vi.fn(),
 }));
 
-vi.mock("@cloudflare/autoconfig", () => ({
+vi.mock("@zenthcloud/autoconfig", () => ({
 	AutoConfigDetectionError: class AutoConfigDetectionError extends Error {},
 	getDetailsForAutoConfig: mocks.getDetailsForAutoConfig,
 	runAutoConfig: mocks.runAutoConfig,
@@ -62,7 +62,7 @@ describe("project preparation", () => {
 		};
 		mocks.getDetailsForAutoConfig
 			.mockRejectedValueOnce(
-				new (await import("@cloudflare/autoconfig")).AutoConfigDetectionError(
+				new (await import("@zenthcloud/autoconfig")).AutoConfigDetectionError(
 					"not detected",
 					{
 						telemetryMessage: "not detected",
@@ -114,7 +114,7 @@ describe("project preparation", () => {
 		mocks.getDetailsForAutoConfig
 			.mockResolvedValueOnce(unconfiguredDetails)
 			.mockRejectedValueOnce(
-				new (await import("@cloudflare/autoconfig")).AutoConfigDetectionError(
+				new (await import("@zenthcloud/autoconfig")).AutoConfigDetectionError(
 					"not detected",
 					{
 						telemetryMessage: "not detected",

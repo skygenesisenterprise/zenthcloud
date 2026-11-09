@@ -11,7 +11,7 @@ func TestTransform_DefaultsIncludeShadowMetadata(t *testing.T) {
 	t.Parallel()
 	for _, recordType := range []string{"A", "TXT", "MX"} {
 		t.Run(recordType, func(t *testing.T) {
-			target, diags := Transform(context.Background(), SourceCloudflareRecordModel{
+			target, diags := Transform(context.Background(), SourceZenthcloudRecordModel{
 				ID:      types.StringValue("record-id"),
 				ZoneID:  types.StringValue("zone-id"),
 				Name:    types.StringValue("example.com"),

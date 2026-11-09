@@ -1,4 +1,4 @@
-// Generated from cloudflare/workers-sdk@c2bb4c815. Do not rename cases.
+// Generated from zenthcloud/workers-sdk@c2bb4c815. Do not rename cases.
 import { describe, it } from "vite-plus/test";
 
 const groups = [
@@ -111,10 +111,10 @@ const groups = [
 		ancestors: ["getErrorType", "DNS errors"],
 		status: "todo",
 		names: [
-			"should return 'DNSError' for ENOTFOUND to api.cloudflare.com",
-			"should return 'DNSError' for ENOTFOUND to dash.cloudflare.com",
+			"should return 'DNSError' for ENOTFOUND to api.zenthcloud.com",
+			"should return 'DNSError' for ENOTFOUND to dash.zenthcloud.com",
 			"should return 'DNSError' for DNS errors in error cause",
-			"should NOT return 'DNSError' for non-Cloudflare hostnames",
+			"should NOT return 'DNSError' for non-Zenthcloud hostnames",
 		],
 	},
 	{
@@ -122,11 +122,11 @@ const groups = [
 		ancestors: ["getErrorType", "Connection timeout errors"],
 		status: "todo",
 		names: [
-			"should return 'ConnectionTimeout' for api.cloudflare.com timeouts",
-			"should return 'ConnectionTimeout' for dash.cloudflare.com timeouts",
+			"should return 'ConnectionTimeout' for api.zenthcloud.com timeouts",
+			"should return 'ConnectionTimeout' for dash.zenthcloud.com timeouts",
 			"should return 'ConnectionTimeout' for timeout errors in error cause",
-			"should return 'ConnectionTimeout' when Cloudflare URL is in parent message",
-			"should NOT return 'ConnectionTimeout' for non-Cloudflare URLs",
+			"should return 'ConnectionTimeout' when Zenthcloud URL is in parent message",
+			"should NOT return 'ConnectionTimeout' for non-Zenthcloud URLs",
 			"should NOT return 'ConnectionTimeout' for user's dev server timeouts",
 		],
 	},
@@ -201,14 +201,14 @@ const groups = [
 	},
 	{
 		file: "core/handle-errors.test.ts",
-		ancestors: ["handleError", "Cloudflare API connection timeout errors"],
+		ancestors: ["handleError", "Zenthcloud API connection timeout errors"],
 		status: "todo",
 		names: [
-			"should show user-friendly message for api.cloudflare.com timeouts",
-			"should show user-friendly message for dash.cloudflare.com timeouts",
+			"should show user-friendly message for api.zenthcloud.com timeouts",
+			"should show user-friendly message for dash.zenthcloud.com timeouts",
 			"should handle timeout errors in error cause",
-			"should handle timeout when Cloudflare URL is in parent message",
-			"should NOT show timeout message for non-Cloudflare URLs",
+			"should handle timeout when Zenthcloud URL is in parent message",
+			"should NOT show timeout message for non-Zenthcloud URLs",
 			"should NOT show timeout message for user's dev server timeouts",
 		],
 	},
@@ -229,10 +229,10 @@ const groups = [
 		ancestors: ["handleError", "DNS resolution errors (ENOTFOUND)"],
 		status: "todo",
 		names: [
-			"should show user-friendly message for ENOTFOUND to api.cloudflare.com",
-			"should show user-friendly message for ENOTFOUND to dash.cloudflare.com",
+			"should show user-friendly message for ENOTFOUND to api.zenthcloud.com",
+			"should show user-friendly message for ENOTFOUND to dash.zenthcloud.com",
 			"should handle DNS errors in error cause",
-			"should NOT show DNS error for non-Cloudflare hostnames",
+			"should NOT show DNS error for non-Zenthcloud hostnames",
 		],
 	},
 	{
@@ -247,7 +247,7 @@ const groups = [
 	},
 	{
 		file: "core/handle-errors.test.ts",
-		ancestors: ["handleError", "Cloudflare SDK errors"],
+		ancestors: ["handleError", "Zenthcloud SDK errors"],
 		status: "todo",
 		names: [
 			"should surface the Retry-After header from a 429 SDK error",
@@ -341,7 +341,7 @@ const groups = [
 			"merges config vars with .dev.vars without secrets defined",
 			"merges config vars with .dev.vars with secrets defined",
 			"warns about missing required secrets",
-			"falls back to .env files when CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV is not false",
+			"falls back to .env files when ZENTHCLOUD_LOAD_DEV_VARS_FROM_DOT_ENV is not false",
 			"overrides json-typed config vars",
 			"handles undefined loadedSecrets gracefully (no dev var files)",
 		],
@@ -416,7 +416,7 @@ const groups = [
 		file: "pages/deployment-delete.test.ts",
 		ancestors: ["pages deployment delete"],
 		status: "skip",
-		names: ["should prefer CLOUDFLARE_ACCOUNT_ID over cached account id"],
+		names: ["should prefer ZENTHCLOUD_ACCOUNT_ID over cached account id"],
 	},
 	{
 		file: "pages/project-validate.test.ts",

@@ -5,9 +5,9 @@ package zero_trust_tunnel_warp_connector_config
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -29,7 +29,7 @@ type ZeroTrustTunnelWARPConnectorConfigDataSourceModel struct {
 
 func (m *ZeroTrustTunnelWARPConnectorConfigDataSourceModel) toReadParams(_ context.Context) (params zero_trust.TunnelWARPConnectorConfigurationGetParams, diags diag.Diagnostics) {
 	params = zero_trust.TunnelWARPConnectorConfigurationGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return

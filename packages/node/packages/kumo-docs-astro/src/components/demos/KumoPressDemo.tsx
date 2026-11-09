@@ -10,7 +10,7 @@ import {
   Select,
   Table,
   Tooltip,
-} from "@cloudflare/kumo";
+} from "@zenthcloud/kumo";
 import {
   Article,
   ChatCircle,

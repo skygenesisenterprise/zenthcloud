@@ -23,10 +23,10 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.usage(
 			"$0 magic-transit bgp-settings update\n\nModifies the BGP settings for an account, including the default ASN and redistribution configuration."
 		)
-		.option("cloudflare-asn", {
+		.option("zenthcloud-asn", {
 			type: "number",
 			description:
-				"Route advertisements from Cloudflare to ramps in this account will use this ASN.",
+				"Route advertisements from Zenthcloud to ramps in this account will use this ASN.",
 		})
 		.option("redistribute-static:wan", {
 			type: "boolean",
@@ -64,14 +64,14 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf magic-transit bgp-settings update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/magic/bgp/settings`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/magic/bgp/settings`,
 						pathParams: {},
 						bodyKind: "json",
 						body:
 							argv.body !== undefined
 								? parseBody(argv.body)
 								: compactBody({
-										cloudflare_asn: argv["cloudflare-asn"],
+										zenthcloud_asn: argv["zenthcloud-asn"],
 										redistribute: {
 											"static:wan": argv["redistribute-static:wan"],
 										},
@@ -96,7 +96,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 
 				// Assemble request body from individual flags
 				const bodyData = compactBody({
-					cloudflare_asn: argv["cloudflare-asn"],
+					zenthcloud_asn: argv["zenthcloud-asn"],
 					redistribute: {
 						"static:wan": argv["redistribute-static:wan"],
 					},

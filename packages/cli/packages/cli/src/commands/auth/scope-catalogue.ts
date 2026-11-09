@@ -1,10 +1,10 @@
 /**
- * Cloudflare's OAuth scope catalogue (`GET /oauth/scopes`): every scope an
+ * Zenthcloud's OAuth scope catalogue (`GET /oauth/scopes`): every scope an
  * OAuth client can request, with the category the consent screen groups it
  * under. Cached on disk so repeat runs of `cf auth scopes` stay local.
  */
 import { readCached, writeCached } from "../../lib/disk-cache.js";
-import type { Cloudflare } from "#lib/auth.js";
+import type { Zenthcloud } from "#lib/auth.js";
 
 export interface CatalogueScope {
 	id: string;
@@ -17,7 +17,7 @@ export type ScopeCatalogue = ReadonlyMap<string, CatalogueScope>;
 
 const CACHE_NAMESPACE = "oauth-scopes";
 
-// Cloudflare adds scopes rarely; a day keeps repeat runs off the network
+// Zenthcloud adds scopes rarely; a day keeps repeat runs off the network
 // while still picking up a new scope soon after it ships.
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
@@ -52,7 +52,7 @@ function toCatalogue(scopes: CatalogueScope[]): ScopeCatalogue {
  * so a cache hit doesn't resolve credentials. Throws when the fetch fails.
  */
 export async function loadScopeCatalogue(
-	createClient: () => Promise<Cloudflare>
+	createClient: () => Promise<Zenthcloud>
 ): Promise<ScopeCatalogue> {
 	const cached = readCached(CACHE_NAMESPACE, [], CACHE_TTL_MS, parseScopes);
 	if (cached) {

@@ -68,7 +68,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf artifacts namespaces tokens revoke",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/artifacts/namespaces/${argv["namespace"] == null ? "<namespace>" : encodeURIComponent(String(argv["namespace"]))}/tokens/${argv["id"] == null ? "<id>" : encodeURIComponent(String(argv["id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/artifacts/namespaces/${argv["namespace"] == null ? "<namespace>" : encodeURIComponent(String(argv["namespace"]))}/tokens/${argv["id"] == null ? "<id>" : encodeURIComponent(String(argv["id"]))}`,
 						pathParams: {
 							namespace: String(argv["namespace"] ?? ""),
 							id: String(argv["id"] ?? ""),

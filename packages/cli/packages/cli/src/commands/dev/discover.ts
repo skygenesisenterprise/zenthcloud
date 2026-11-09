@@ -23,7 +23,7 @@ import { findKnownImpl, type KnownImpl } from "./known-impls.js";
  * `declared` is always true for entries returned from `discoverImpls`.
  * `binary` is the resolved path to the impl's executable, or null if
  * the impl is declared in the manifest but not installed (e.g.
- * `package.json` mentions `@cloudflare/vite-plugin` but
+ * `package.json` mentions `@zenthcloud/vite-plugin` but
  * `node_modules/` is missing).
  */
 export interface DiscoveredImpl {
@@ -221,7 +221,7 @@ function findAllPyPIImpls(): KnownImpl[] {
  * `[dependency-groups]`, `[tool.uv]`, etc.).
  *
  * False positives are unlikely — known impl names are namespaced
- * enough (`cloudflare-py-dev-server`) that they don't collide with
+ * enough (`zenthcloud-py-dev-server`) that they don't collide with
  * unrelated comments or string literals in practice. False negatives
  * (impl is declared in a non-standard way) are surfaced as "not
  * installed" with the install hint, which is the same UX as a missing

@@ -21,7 +21,7 @@ export const tools: readonly Tool[] = [
   {
     name: "leakedCredentialChecks_get",
     title: "Get the Leaked Credential Checks status for a zone.",
-    description: "Get the current Leaked Credential Checks status for the zone. While enabled, Cloudflare scans incoming requests for usernames and passwords that were exposed in known data breaches.\n\nGET /zones/{zone_id}/leaked-credential-checks",
+    description: "Get the current Leaked Credential Checks status for the zone. While enabled, Zenthcloud scans incoming requests for usernames and passwords that were exposed in known data breaches.\n\nGET /zones/{zone_id}/leaked-credential-checks",
     inputSchema: {
       type: "object",
       properties: {

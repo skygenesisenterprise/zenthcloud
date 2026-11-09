@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -18,13 +18,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_schema_validation_settings", &resource.Sweeper{
-		Name: "cloudflare_schema_validation_settings",
-		F:    testSweepCloudflareSchemaValidationSettings,
+	resource.AddTestSweepers("zenthcloud_schema_validation_settings", &resource.Sweeper{
+		Name: "zenthcloud_schema_validation_settings",
+		F:    testSweepZenthcloudSchemaValidationSettings,
 	})
 }
 
-func testSweepCloudflareSchemaValidationSettings(r string) error {
+func testSweepZenthcloudSchemaValidationSettings(r string) error {
 	ctx := context.Background()
 	// Schema Validation Settings is a zone-level configuration setting.
 	// It's a singleton setting per zone, not something that accumulates.
@@ -33,12 +33,12 @@ func testSweepCloudflareSchemaValidationSettings(r string) error {
 	return nil
 }
 
-func TestAccCloudflareSchemaValidationZoneSettings(t *testing.T) {
+func TestAccZenthcloudSchemaValidationZoneSettings(t *testing.T) {
 	rndResourceName := utils.GenerateRandomResourceName()
 
 	// resourceID is resourceIdentifier . resourceName
-	resourceID := "cloudflare_schema_validation_settings." + rndResourceName
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceID := "zenthcloud_schema_validation_settings." + rndResourceName
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		IsUnitTest:               false,
@@ -47,7 +47,7 @@ func TestAccCloudflareSchemaValidationZoneSettings(t *testing.T) {
 		Steps: []resource.TestStep{
 			// this sets up a schema and a zone-level block mitigation action
 			{
-				Config: testAccCloudflareSchemaValidationSettings(rndResourceName, zoneID, "block", nil),
+				Config: testAccZenthcloudSchemaValidationSettings(rndResourceName, zoneID, "block", nil),
 
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceID, consts.ZoneIDSchemaKey, zoneID),
@@ -57,7 +57,7 @@ func TestAccCloudflareSchemaValidationZoneSettings(t *testing.T) {
 			},
 			// change the default
 			{
-				Config: testAccCloudflareSchemaValidationSettings(rndResourceName, zoneID, "none", nil),
+				Config: testAccZenthcloudSchemaValidationSettings(rndResourceName, zoneID, "none", nil),
 
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceID, consts.ZoneIDSchemaKey, zoneID),
@@ -67,7 +67,7 @@ func TestAccCloudflareSchemaValidationZoneSettings(t *testing.T) {
 			},
 			// add an override and change back default to block
 			{
-				Config: testAccCloudflareSchemaValidationSettings(rndResourceName, zoneID, "block", acctest.PtrTo("none")),
+				Config: testAccZenthcloudSchemaValidationSettings(rndResourceName, zoneID, "block", acctest.PtrTo("none")),
 
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceID, consts.ZoneIDSchemaKey, zoneID),
@@ -77,7 +77,7 @@ func TestAccCloudflareSchemaValidationZoneSettings(t *testing.T) {
 			},
 			// clear the override
 			{
-				Config: testAccCloudflareSchemaValidationSettings(rndResourceName, zoneID, "block", acctest.PtrTo("null")),
+				Config: testAccZenthcloudSchemaValidationSettings(rndResourceName, zoneID, "block", acctest.PtrTo("null")),
 
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceID, consts.ZoneIDSchemaKey, zoneID),
@@ -89,7 +89,7 @@ func TestAccCloudflareSchemaValidationZoneSettings(t *testing.T) {
 	})
 }
 
-func testAccCloudflareSchemaValidationSettings(resourceName string, zone string, validation_default_mitigation_action string, validation_override_mitigation_action *string) string {
+func testAccZenthcloudSchemaValidationSettings(resourceName string, zone string, validation_default_mitigation_action string, validation_override_mitigation_action *string) string {
 	block := fmt.Sprintf(`  validation_default_mitigation_action = "%s"`, validation_default_mitigation_action)
 	if validation_override_mitigation_action != nil {
 		override := *validation_override_mitigation_action

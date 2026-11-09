@@ -8,11 +8,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/field_extractors"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/field_extractors"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -22,10 +22,10 @@ import (
 
 const fieldExtractorType = "llm_prompts"
 
-func TestAccCloudflareFieldExtractor_Basic(t *testing.T) {
+func TestAccZenthcloudFieldExtractor_Basic(t *testing.T) {
 	t.Skip("Skipping: test account does not have permission for this API (403)")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_field_extractor.test"
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_field_extractor.test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -105,10 +105,10 @@ func TestAccCloudflareFieldExtractor_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareFieldExtractor_ExternalDeletion(t *testing.T) {
+func TestAccZenthcloudFieldExtractor_ExternalDeletion(t *testing.T) {
 	t.Skip("Skipping: test account does not have permission for this API (403)")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_field_extractor.test"
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_field_extractor.test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -151,7 +151,7 @@ func testAccDeleteFieldExtractor(t *testing.T, accountID string) {
 	_, err := client.FieldExtractors.Delete(
 		context.Background(),
 		fieldExtractorType,
-		field_extractors.FieldExtractorDeleteParams{AccountID: cloudflare.F(accountID)},
+		field_extractors.FieldExtractorDeleteParams{AccountID: zenthcloud.F(accountID)},
 	)
 	if err != nil {
 		t.Fatalf("failed to delete field extractor outside Terraform: %v", err)
@@ -162,7 +162,7 @@ func testAccCheckFieldExtractorDestroy(s *terraform.State) error {
 	client := testAccClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_field_extractor" {
+		if rs.Type != "zenthcloud_field_extractor" {
 			continue
 		}
 
@@ -170,14 +170,14 @@ func testAccCheckFieldExtractorDestroy(s *terraform.State) error {
 			context.Background(),
 			rs.Primary.ID,
 			field_extractors.FieldExtractorGetParams{
-				AccountID: cloudflare.F(rs.Primary.Attributes["account_id"]),
+				AccountID: zenthcloud.F(rs.Primary.Attributes["account_id"]),
 			},
 		)
 		if err == nil {
 			return fmt.Errorf("field extractor %s still exists", rs.Primary.ID)
 		}
 
-		var apiErr *cloudflare.Error
+		var apiErr *zenthcloud.Error
 		if !errors.As(err, &apiErr) || apiErr.StatusCode != http.StatusNotFound {
 			return fmt.Errorf("error checking if field extractor %s was destroyed: %w", rs.Primary.ID, err)
 		}
@@ -186,7 +186,7 @@ func testAccCheckFieldExtractorDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccClient() *cloudflare.Client {
+func testAccClient() *zenthcloud.Client {
 	var opts []option.RequestOption
 	if apiToken := os.Getenv(consts.APITokenEnvVarKey); apiToken != "" {
 		opts = append(opts, option.WithAPIToken(apiToken))
@@ -199,5 +199,5 @@ func testAccClient() *cloudflare.Client {
 		)
 	}
 
-	return cloudflare.NewClient(opts...)
+	return zenthcloud.NewClient(opts...)
 }

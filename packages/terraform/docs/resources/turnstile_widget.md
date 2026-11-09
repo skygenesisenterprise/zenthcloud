@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_turnstile_widget Resource - Cloudflare"
+page_title: "zenthcloud_turnstile_widget Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Settings ReadAccount Settings WriteTurnstile Sites ReadTurnstile Sites Write
 ---
 
-# cloudflare_turnstile_widget (Resource)
+# zenthcloud_turnstile_widget (Resource)
 
 Accepted Permissions
 
@@ -18,11 +18,11 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_turnstile_widget" "example_turnstile_widget" {
+resource "zenthcloud_turnstile_widget" "example_turnstile_widget" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
-  domains = ["203.0.113.1", "cloudflare.com", "blog.example.com"]
+  domains = ["203.0.113.1", "zenthcloud.com", "blog.example.com"]
   mode = "invisible"
-  name = "blog.cloudflare.com login form"
+  name = "blog.zenthcloud.com login form"
   bot_fight_mode = false
   clearance_level = "interactive"
   ephemeral_id = false
@@ -40,15 +40,15 @@ resource "cloudflare_turnstile_widget" "example_turnstile_widget" {
 - `domains` (List of String)
 - `mode` (String) Widget Mode
 Available values: "non-interactive", "invisible", "managed".
-- `name` (String) Human readable widget name. Not unique. Cloudflare suggests that you
+- `name` (String) Human readable widget name. Not unique. Zenthcloud suggests that you
 set this to a meaningful string to make it easier to identify your
 widget, and where it is used.
 
 ### Optional
 
-- `bot_fight_mode` (Boolean) If bot_fight_mode is set to `true`, Cloudflare issues computationally
+- `bot_fight_mode` (Boolean) If bot_fight_mode is set to `true`, Zenthcloud issues computationally
 expensive challenges in response to malicious bots (ENT only).
-- `clearance_level` (String) If Turnstile is embedded on a Cloudflare site and the widget should grant challenge clearance,
+- `clearance_level` (String) If Turnstile is embedded on a Zenthcloud site and the widget should grant challenge clearance,
 this setting can determine the clearance level to be set
 Available values: "no_clearance", "jschallenge", "managed", "interactive".
 - `direction` (String) Direction to order widgets.
@@ -64,7 +64,7 @@ Supported fields:
 
 Returns 400 Bad Request if the field is unsupported or format is invalid.
 An empty filter value returns all results.
-- `offlabel` (Boolean) Do not show any Cloudflare branding on the widget (ENT only).
+- `offlabel` (Boolean) Do not show any Zenthcloud branding on the widget (ENT only).
 - `order` (String) Field to order widgets by.
 Available values: "id", "sitekey", "name", "created_on", "modified_on".
 - `page` (Number) Page number of paginated results.
@@ -94,7 +94,7 @@ Available values: "wrangler", "dashboard", "spin", "api", "unknown".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_turnstile_widget.example '<account_id>/<sitekey>'
+$ terraform import zenthcloud_turnstile_widget.example '<account_id>/<sitekey>'
 ```
 
 

@@ -4,7 +4,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-// SourceMTLSHostnameSettingsSchema returns the minimal schema for v4 cloudflare_zero_trust_access_mtls_hostname_settings.
+// SourceMTLSHostnameSettingsSchema returns the minimal schema for v4 zenthcloud_zero_trust_access_mtls_hostname_settings.
 // Schema version: 0 (SDKv2 default)
 //
 // This minimal schema is used only for reading v4 state during migration.

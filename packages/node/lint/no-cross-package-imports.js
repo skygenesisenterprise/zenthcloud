@@ -91,7 +91,7 @@ export const noCrossPackageImportsRule = defineRule({
     },
     messages: {
       [RULE_NAME]:
-        "Cross-package relative import detected. Import from '{{packageName}}' using its package name (e.g., '@cloudflare/{{packageName}}') instead of relative paths ('{{importPath}}').",
+        "Cross-package relative import detected. Import from '{{packageName}}' using its package name (e.g., '@zenthcloud/{{packageName}}') instead of relative paths ('{{importPath}}').",
     },
     schema: [],
   },

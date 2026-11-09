@@ -4,10 +4,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceCloudflareDeviceManagedNetworksModel represents the source cloudflare_device_managed_networks state structure.
-// This corresponds to schema_version=0 from the legacy (SDKv2) cloudflare provider.
+// SourceZenthcloudDeviceManagedNetworksModel represents the source zenthcloud_device_managed_networks state structure.
+// This corresponds to schema_version=0 from the legacy (SDKv2) zenthcloud provider.
 // Used by both MoveState (Terraform 1.8+) and UpgradeFromLegacyV0 (Terraform < 1.8) to parse legacy state.
-type SourceCloudflareDeviceManagedNetworksModel struct {
+type SourceZenthcloudDeviceManagedNetworksModel struct {
 	ID        types.String        `tfsdk:"id"`
 	AccountID types.String        `tfsdk:"account_id"`
 	Name      types.String        `tfsdk:"name"`
@@ -22,7 +22,7 @@ type SourceConfigModel struct {
 	Sha256      types.String `tfsdk:"sha256"`
 }
 
-// TargetZeroTrustDeviceManagedNetworksModel represents the target cloudflare_zero_trust_device_managed_networks state structure (v500).
+// TargetZeroTrustDeviceManagedNetworksModel represents the target zenthcloud_zero_trust_device_managed_networks state structure (v500).
 // Must match zero_trust_device_managed_networks.ZeroTrustDeviceManagedNetworksModel structure exactly.
 type TargetZeroTrustDeviceManagedNetworksModel struct {
 	ID        types.String       `tfsdk:"id"`

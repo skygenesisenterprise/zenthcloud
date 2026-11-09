@@ -553,7 +553,7 @@ export const zero$$trust$$gateway_rule$$settings: JSONObject = {
         }
       ]
     },
-    "resolve_dns_through_cloudflare": {
+    "resolve_dns_through_zenthcloud": {
       "oneOf": [
         {
           "type": "boolean"

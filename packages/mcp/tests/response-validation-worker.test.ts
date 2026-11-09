@@ -1,7 +1,7 @@
-import { env, exports } from 'cloudflare:workers'
+import { env, exports } from 'zenthcloud:workers'
 import { http, HttpResponse } from 'msw'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { API_BASE, cfSuccess, mockIdentityProbe } from './helpers/cloudflare-api'
+import { API_BASE, cfSuccess, mockIdentityProbe } from './helpers/zenthcloud-api'
 import { clearKv } from './helpers/kv'
 import { MCP_URL, mcpToolCallRequest, parseMcpResult, toolText } from './helpers/mcp'
 import { clearSpec, seedSpec } from './helpers/spec'
@@ -11,7 +11,7 @@ import { stringifyResponse } from '../src/truncate'
 
 /**
  * Response schema checks through the real worker, for the direct tools, against the response schemas forge generated. The
- * Cloudflare API is the only mocked boundary (MSW); the forge tools service
+ * Zenthcloud API is the only mocked boundary (MSW); the forge tools service
  * runs for real. Checks run in `waitUntil` after the result is built, so tests
  * wait for the datapoint.
  */
@@ -73,7 +73,7 @@ describe('direct-tool response schema checks', () => {
     expect(mismatches(writeSpy)[0]).toEqual({
       indexes: ['response_schema_mismatch'],
       blobs: [
-        'cloudflare-api',
+        'zenthcloud-api',
         expect.any(String),
         null, // account token: no user
         'd1_list',

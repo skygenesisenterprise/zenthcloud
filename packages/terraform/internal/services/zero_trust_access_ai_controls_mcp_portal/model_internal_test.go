@@ -5,7 +5,7 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
 )
 
 func TestMcpPortalReadPopulatesServerIDs(t *testing.T) {

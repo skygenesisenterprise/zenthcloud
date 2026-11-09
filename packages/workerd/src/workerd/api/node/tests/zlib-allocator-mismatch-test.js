@@ -1,8 +1,8 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-356:
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-356:
 // Process abort via allocator mismatch in node:zlib ZlibStream when
 // params()/reset()/write() is called before initialize().
 //

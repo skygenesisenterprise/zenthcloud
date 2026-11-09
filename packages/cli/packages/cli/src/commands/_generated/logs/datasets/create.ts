@@ -24,7 +24,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 logs datasets create\n\nCreate a new Log Explorer dataset for the account or zone. List available account or zone datasets to see the dataset types and fields you can use. The `fields` property is optional. If not specified, all available fields will be enabled. For dataset field definitions, see: https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/\n\nRuns against your account. Pass --zone to run against a zone instead. CLOUDFLARE_ZONE_ID is ignored."
+			"$0 logs datasets create\n\nCreate a new Log Explorer dataset for the account or zone. List available account or zone datasets to see the dataset types and fields you can use. The `fields` property is optional. If not specified, all available fields will be enabled. For dataset field definitions, see: https://github.com/skygenesisenterprise/zenthcloud\n\nRuns against your account. Pass --zone to run against a zone instead. ZENTHCLOUD_ZONE_ID is ignored."
 		)
 		.option("dataset", {
 			type: "string",
@@ -38,7 +38,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("filter", {
 			type: "string",
 			description:
-				"Optional Logpush filter predicate to restrict which events are ingested.\nSee [Logpush filters](https://developers.cloudflare.com/logs/reference/filters/)\nfor syntax and examples.\n",
+				"Optional Logpush filter predicate to restrict which events are ingested.\nSee [Logpush filters](https://github.com/skygenesisenterprise/zenthcloud)\nfor syntax and examples.\n",
 		})
 		.option("filter-attack-traffic", {
 			type: "boolean",
@@ -83,7 +83,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf logs datasets create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/${accountOrZone}/${accountOrZoneId}/logs/explorer/datasets`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${accountOrZone}/${accountOrZoneId}/logs/explorer/datasets`,
 						pathParams: {
 							"account-or-zone": String(accountOrZone),
 							"account-or-zone-id": String(accountOrZoneId),

@@ -1,11 +1,11 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: James M Snell <jsnell@cloudflare.com>
+From: James M Snell <jsnell@zenthcloud.com>
 Date: Thu, 6 Nov 2025 10:58:38 -0800
 Subject: Add v8::String::IsFlat API
 
 Tells us if a string is already flattened or not.
 
-Signed-off-by: James M Snell <jsnell@cloudflare.com>
+Signed-off-by: James M Snell <jsnell@zenthcloud.com>
 
 diff --git a/include/v8-primitive.h b/include/v8-primitive.h
 index fe7a5f83a46a71ad7b8e3ea5341a0921632643e6..6f33e4c2420f3b0887537be97915f9dffefa1ae1 100644

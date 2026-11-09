@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -29,7 +29,7 @@ var (
 // Key changes for workers_for_platforms_dispatch_namespace:
 //   - namespace_name field added (v5 uses it for Read/Delete; migration copies id → namespace_name)
 //   - Multiple new computed fields added (created_by, created_on, modified_by, modified_on, etc.)
-//   - cloudflare_workers_for_platforms_namespace (deprecated) renamed to cloudflare_workers_for_platforms_dispatch_namespace
+//   - zenthcloud_workers_for_platforms_namespace (deprecated) renamed to zenthcloud_workers_for_platforms_dispatch_namespace
 
 // Embed migration test configuration files
 
@@ -68,11 +68,11 @@ func TestMigrateWorkersForPlatformsDispatchNamespaceBasic(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := fmt.Sprintf("test-namespace-%s", rnd)
 			tmpDir := t.TempDir()
-			resourceName := "cloudflare_workers_for_platforms_dispatch_namespace." + rnd
+			resourceName := "zenthcloud_workers_for_platforms_dispatch_namespace." + rnd
 			testConfig := tc.configFn(rnd, accountID, name)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
 
@@ -86,8 +86,8 @@ func TestMigrateWorkersForPlatformsDispatchNamespaceBasic(t *testing.T) {
 					{
 						// Step 1: Create with specific version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -108,17 +108,17 @@ func TestMigrateWorkersForPlatformsDispatchNamespaceBasic(t *testing.T) {
 }
 
 // TestMigrateWorkersForPlatformsNamespaceDeprecated tests migration from the deprecated
-// cloudflare_workers_for_platforms_namespace resource type (v4) to
-// cloudflare_workers_for_platforms_dispatch_namespace (v5).
+// zenthcloud_workers_for_platforms_namespace resource type (v4) to
+// zenthcloud_workers_for_platforms_dispatch_namespace (v5).
 // This covers the MoveState path (resource rename triggered by `moved` block).
 func TestMigrateWorkersForPlatformsNamespaceDeprecated(t *testing.T) {
 	t.Skip("Migration not enabled yet")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	name := fmt.Sprintf("test-namespace-%s", rnd)
 	tmpDir := t.TempDir()
-	// After migration, resource is referenced as cloudflare_workers_for_platforms_dispatch_namespace
-	resourceName := "cloudflare_workers_for_platforms_dispatch_namespace." + rnd
+	// After migration, resource is referenced as zenthcloud_workers_for_platforms_dispatch_namespace
+	resourceName := "zenthcloud_workers_for_platforms_dispatch_namespace." + rnd
 	v4Config := fmt.Sprintf(v4DeprecatedConfig, rnd, accountID, name)
 	v4Version := acctest.GetLastV4Version()
 	sourceVer, targetVer := acctest.InferMigrationVersions(v4Version)
@@ -133,8 +133,8 @@ func TestMigrateWorkersForPlatformsNamespaceDeprecated(t *testing.T) {
 			{
 				// Step 1: Create with v4 provider using deprecated resource type
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: v4Version,
 					},
 				},

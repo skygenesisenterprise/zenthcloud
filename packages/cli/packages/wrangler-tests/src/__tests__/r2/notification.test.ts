@@ -14,7 +14,7 @@ import { describe, it } from "vite-plus/test";
 //     bespoke request headers (`X-Auth-Key`/`X-Auth-Email` for global
 //     API key, `Authorization: Bearer …` for token, optional
 //     `cf-r2-jurisdiction`). cf delegates auth + jurisdiction headers
-//     to `@cloudflare/forge-sdk-ts` (and `--cf-r2-jurisdiction` is a
+//     to `@zenthcloud/forge-sdk-ts` (and `--cf-r2-jurisdiction` is a
 //     generated flag on each event-notifications command) — none of
 //     it is exposed as a unit-testable helper.
 //

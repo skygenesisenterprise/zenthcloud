@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # Mark the necessary Go modules as private to avoid Go's proxy
-export GOPRIVATE="${GOPRIVATE:+$GOPRIVATE,}github.com/cloudflare/cloudflare-go,github.com/gitlab.cfdata.org/cloudflare/sdks/cloudflare-go"
+export GOPRIVATE="${GOPRIVATE:+$GOPRIVATE,}github.com/zenthcloud/zenthcloud-go,github.com/gitlab.cfdata.org/zenthcloud/sdks/zenthcloud-go"
 
 cd "$(dirname "$0")/.."
 
@@ -14,4 +14,4 @@ fi
 
 VERSION=$1
 echo "==> Building provider version $VERSION"
-go build -ldflags="-s -w -X main.version=$VERSION" -o terraform-provider-cloudflare
+go build -ldflags="-s -w -X main.version=$VERSION" -o terraform-provider-zenthcloud

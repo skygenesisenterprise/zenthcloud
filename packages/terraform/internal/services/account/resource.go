@@ -8,11 +8,11 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/accounts"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/accounts"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -28,7 +28,7 @@ func NewResource() resource.Resource {
 
 // AccountResource defines the resource implementation.
 type AccountResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *AccountResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -40,12 +40,12 @@ func (r *AccountResource) Configure(ctx context.Context, req resource.ConfigureR
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -116,7 +116,7 @@ func (r *AccountResource) Update(ctx context.Context, req resource.UpdateRequest
 	_, err = r.client.Accounts.Update(
 		ctx,
 		accounts.AccountUpdateParams{
-			AccountID: cloudflare.F(data.ID.ValueString()),
+			AccountID: zenthcloud.F(data.ID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -149,7 +149,7 @@ func (r *AccountResource) Read(ctx context.Context, req resource.ReadRequest, re
 	_, err := r.client.Accounts.Get(
 		ctx,
 		accounts.AccountGetParams{
-			AccountID: cloudflare.F(data.ID.ValueString()),
+			AccountID: zenthcloud.F(data.ID.ValueString()),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -185,7 +185,7 @@ func (r *AccountResource) Delete(ctx context.Context, req resource.DeleteRequest
 	_, err := r.client.Accounts.Delete(
 		ctx,
 		accounts.AccountDeleteParams{
-			AccountID: cloudflare.F(data.ID.ValueString()),
+			AccountID: zenthcloud.F(data.ID.ValueString()),
 		},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
@@ -217,7 +217,7 @@ func (r *AccountResource) ImportState(ctx context.Context, req resource.ImportSt
 	_, err := r.client.Accounts.Get(
 		ctx,
 		accounts.AccountGetParams{
-			AccountID: cloudflare.F(path),
+			AccountID: zenthcloud.F(path),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),

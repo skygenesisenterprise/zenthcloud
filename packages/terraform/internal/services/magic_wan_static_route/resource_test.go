@@ -6,12 +6,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
-	"github.com/cloudflare/cloudflare-go"
+	"github.com/zenthcloud/zenthcloud-go"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 )
@@ -21,23 +21,23 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_magic_wan_static_route", &resource.Sweeper{
-		Name: "cloudflare_magic_wan_static_route",
-		F:    testSweepCloudflareMagicWanStaticRoute,
+	resource.AddTestSweepers("zenthcloud_magic_wan_static_route", &resource.Sweeper{
+		Name: "zenthcloud_magic_wan_static_route",
+		F:    testSweepZenthcloudMagicWanStaticRoute,
 	})
 }
 
-func testSweepCloudflareMagicWanStaticRoute(r string) error {
+func testSweepZenthcloudMagicWanStaticRoute(r string) error {
 	ctx := context.Background()
 	client, clientErr := acctest.SharedV1Client()
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
-		return fmt.Errorf("failed to create Cloudflare client: %w", clientErr)
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
+		return fmt.Errorf("failed to create Zenthcloud client: %w", clientErr)
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping static routes sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping static routes sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
@@ -81,18 +81,18 @@ func testSweepCloudflareMagicWanStaticRoute(r string) error {
 	return nil
 }
 
-func TestAccCloudflareStaticRoute_Exists(t *testing.T) {
+func TestAccZenthcloudStaticRoute_Exists(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_magic_wan_static_route.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_magic_wan_static_route.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	cfIP := utils.LookupMagicWanCfIP(t, accountID)
 	// Generate unique interface address and corresponding nexthop to avoid conflicts
 	subnetBase := utils.RandIntRange(1, 254)
 	interfaceAddr := fmt.Sprintf("10.214.%d.9/31", subnetBase)
 	nexthop := fmt.Sprintf("10.214.%d.8", subnetBase) // Peer IP in /31 subnet
-	config := testAccCheckCloudflareStaticRouteSimple(rnd, rnd, accountID, 100, cfIP, interfaceAddr, nexthop)
+	config := testAccCheckZenthcloudStaticRouteSimple(rnd, rnd, accountID, 100, cfIP, interfaceAddr, nexthop)
 
-	var StaticRoute cloudflare.MagicTransitStaticRoute
+	var StaticRoute zenthcloud.MagicTransitStaticRoute
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck_AccountID(t) },
@@ -101,7 +101,7 @@ func TestAccCloudflareStaticRoute_Exists(t *testing.T) {
 			{
 				Config: config,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareStaticRouteExists(name, &StaticRoute),
+					testAccCheckZenthcloudStaticRouteExists(name, &StaticRoute),
 					resource.TestCheckResourceAttr(name, "description", rnd),
 					resource.TestCheckResourceAttr(name, "prefix", "10.100.0.0/24"),
 					resource.TestCheckResourceAttr(name, "nexthop", nexthop),
@@ -131,9 +131,9 @@ func TestAccCloudflareStaticRoute_Exists(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareStaticRouteExists(n string, route *cloudflare.MagicTransitStaticRoute) resource.TestCheckFunc {
+func testAccCheckZenthcloudStaticRouteExists(n string, route *zenthcloud.MagicTransitStaticRoute) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+		accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
 			return fmt.Errorf("not found: %s", n)
@@ -145,7 +145,7 @@ func testAccCheckCloudflareStaticRouteExists(n string, route *cloudflare.MagicTr
 
 		client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 		if clientErr != nil {
-			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 		}
 		foundStaticRoute, err := client.GetMagicTransitStaticRoute(context.Background(), accountID, rs.Primary.ID)
 		if err != nil {
@@ -158,40 +158,40 @@ func testAccCheckCloudflareStaticRouteExists(n string, route *cloudflare.MagicTr
 	}
 }
 
-func TestAccCloudflareStaticRoute_UpdateDescription(t *testing.T) {
+func TestAccZenthcloudStaticRoute_UpdateDescription(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_magic_wan_static_route.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_magic_wan_static_route.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	cfIP := utils.LookupMagicWanCfIP(t, accountID)
 	// Generate unique interface address and corresponding nexthop to avoid conflicts
 	subnetBase := utils.RandIntRange(1, 254)
 	interfaceAddr := fmt.Sprintf("10.214.%d.9/31", subnetBase)
 	nexthop := fmt.Sprintf("10.214.%d.8", subnetBase) // Peer IP in /31 subnet
 
-	var StaticRoute cloudflare.MagicTransitStaticRoute
+	var StaticRoute zenthcloud.MagicTransitStaticRoute
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck_AccountID(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareStaticRouteSimple(rnd, rnd, accountID, 100, cfIP, interfaceAddr, nexthop),
+				Config: testAccCheckZenthcloudStaticRouteSimple(rnd, rnd, accountID, 100, cfIP, interfaceAddr, nexthop),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareStaticRouteExists(name, &StaticRoute),
+					testAccCheckZenthcloudStaticRouteExists(name, &StaticRoute),
 					resource.TestCheckResourceAttr(name, "description", rnd),
 				),
 			},
 			{
-				Config: testAccCheckCloudflareStaticRouteSimple(rnd, rnd+"-updated", accountID, 100, cfIP, interfaceAddr, nexthop),
+				Config: testAccCheckZenthcloudStaticRouteSimple(rnd, rnd+"-updated", accountID, 100, cfIP, interfaceAddr, nexthop),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareStaticRouteExists(name, &StaticRoute),
+					testAccCheckZenthcloudStaticRouteExists(name, &StaticRoute),
 					resource.TestCheckResourceAttr(name, "description", rnd+"-updated"),
 				),
 			},
 			{
-				Config: testAccCheckCloudflareStaticRouteNoDescription(rnd, accountID, 100, cfIP, interfaceAddr, nexthop),
+				Config: testAccCheckZenthcloudStaticRouteNoDescription(rnd, accountID, 100, cfIP, interfaceAddr, nexthop),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareStaticRouteExists(name, &StaticRoute),
+					testAccCheckZenthcloudStaticRouteExists(name, &StaticRoute),
 					resource.TestCheckResourceAttr(name, "description", rnd+"-updated"),
 				),
 			},
@@ -199,17 +199,17 @@ func TestAccCloudflareStaticRoute_UpdateDescription(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareStaticRoute_UpdateWeight(t *testing.T) {
+func TestAccZenthcloudStaticRoute_UpdateWeight(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_magic_wan_static_route.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_magic_wan_static_route.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	cfIP := utils.LookupMagicWanCfIP(t, accountID)
 	// Generate unique interface address and corresponding nexthop to avoid conflicts
 	subnetBase := utils.RandIntRange(1, 254)
 	interfaceAddr := fmt.Sprintf("10.214.%d.9/31", subnetBase)
 	nexthop := fmt.Sprintf("10.214.%d.8", subnetBase) // Peer IP in /31 subnet
 
-	var StaticRoute cloudflare.MagicTransitStaticRoute
+	var StaticRoute zenthcloud.MagicTransitStaticRoute
 	var initialID string
 
 	resource.Test(t, resource.TestCase{
@@ -217,9 +217,9 @@ func TestAccCloudflareStaticRoute_UpdateWeight(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareStaticRouteSimple(rnd, rnd, accountID, 100, cfIP, interfaceAddr, nexthop),
+				Config: testAccCheckZenthcloudStaticRouteSimple(rnd, rnd, accountID, 100, cfIP, interfaceAddr, nexthop),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareStaticRouteExists(name, &StaticRoute),
+					testAccCheckZenthcloudStaticRouteExists(name, &StaticRoute),
 					resource.TestCheckResourceAttr(name, "weight", "100"),
 				),
 			},
@@ -227,9 +227,9 @@ func TestAccCloudflareStaticRoute_UpdateWeight(t *testing.T) {
 				PreConfig: func() {
 					initialID = StaticRoute.ID
 				},
-				Config: testAccCheckCloudflareStaticRouteSimple(rnd, rnd+"-updated", accountID, 200, cfIP, interfaceAddr, nexthop),
+				Config: testAccCheckZenthcloudStaticRouteSimple(rnd, rnd+"-updated", accountID, 200, cfIP, interfaceAddr, nexthop),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareStaticRouteExists(name, &StaticRoute),
+					testAccCheckZenthcloudStaticRouteExists(name, &StaticRoute),
 					func(state *terraform.State) error {
 						if initialID != StaticRoute.ID {
 							return fmt.Errorf("Static Route should be updated but foreced created instead (id %q -> %q)", initialID, StaticRoute.ID)
@@ -244,30 +244,30 @@ func TestAccCloudflareStaticRoute_UpdateWeight(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareStaticRouteSimple(ID, description, accountID string, weight int, cfIP, interfaceAddr, nexthop string) string {
+func testAccCheckZenthcloudStaticRouteSimple(ID, description, accountID string, weight int, cfIP, interfaceAddr, nexthop string) string {
 	return acctest.LoadTestCase("staticroutesimple.tf", ID, description, accountID, weight, cfIP, interfaceAddr, nexthop)
 }
 
-func testAccCheckCloudflareStaticRouteNoDescription(ID, accountID string, weight int, cfIP, interfaceAddr, nexthop string) string {
+func testAccCheckZenthcloudStaticRouteNoDescription(ID, accountID string, weight int, cfIP, interfaceAddr, nexthop string) string {
 	return acctest.LoadTestCase("staticroutenodescription.tf", ID, accountID, weight, cfIP, interfaceAddr, nexthop)
 }
 
 func TestAccUpgradeMagicWanStaticRoute_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	cfIP := utils.LookupMagicWanCfIP(t, accountID)
 	subnetBase := utils.RandIntRange(1, 254)
 	interfaceAddr := fmt.Sprintf("10.214.%d.9/31", subnetBase)
 	nexthop := fmt.Sprintf("10.214.%d.8", subnetBase)
-	config := testAccCheckCloudflareStaticRouteSimple(rnd, rnd, accountID, 100, cfIP, interfaceAddr, nexthop)
+	config := testAccCheckZenthcloudStaticRouteSimple(rnd, rnd, accountID, 100, cfIP, interfaceAddr, nexthop)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck_AccountID(t) },
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

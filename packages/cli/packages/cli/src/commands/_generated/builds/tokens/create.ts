@@ -31,9 +31,9 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 			type: "string",
 			description: "The build_token_secret field",
 		})
-		.option("cloudflare-token-id", {
+		.option("zenthcloud-token-id", {
 			type: "string",
-			description: "The cloudflare_token_id field",
+			description: "The zenthcloud_token_id field",
 		})
 		.option("dry-run", {
 			type: "boolean",
@@ -67,7 +67,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf builds tokens create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/builds/tokens`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/builds/tokens`,
 						pathParams: {},
 						bodyKind: "json",
 						body:
@@ -84,9 +84,9 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 											"build-token-secret",
 											"text"
 										),
-										cloudflare_token_id: resolveFileToken(
-											argv["cloudflare-token-id"] as string | undefined,
-											"cloudflare-token-id",
+										zenthcloud_token_id: resolveFileToken(
+											argv["zenthcloud-token-id"] as string | undefined,
+											"zenthcloud-token-id",
 											"text"
 										),
 									}),
@@ -119,10 +119,10 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 						"The build_token_secret field"
 					);
 				}
-				if (argv["cloudflare-token-id"] === undefined) {
-					argv["cloudflare-token-id"] = await promptForRequiredField(
-						"cloudflare-token-id",
-						"The cloudflare_token_id field"
+				if (argv["zenthcloud-token-id"] === undefined) {
+					argv["zenthcloud-token-id"] = await promptForRequiredField(
+						"zenthcloud-token-id",
+						"The zenthcloud_token_id field"
 					);
 				}
 
@@ -138,9 +138,9 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 						"build-token-secret",
 						"text"
 					),
-					cloudflare_token_id: resolveFileToken(
-						argv["cloudflare-token-id"] as string | undefined,
-						"cloudflare-token-id",
+					zenthcloud_token_id: resolveFileToken(
+						argv["zenthcloud-token-id"] as string | undefined,
+						"zenthcloud-token-id",
 						"text"
 					),
 				});

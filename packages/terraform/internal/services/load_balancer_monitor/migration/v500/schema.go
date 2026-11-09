@@ -1,5 +1,5 @@
 // Package v500 implements state migration from legacy provider (v4) to current provider (v5)
-// for the cloudflare_load_balancer_monitor resource.
+// for the zenthcloud_load_balancer_monitor resource.
 package v500
 
 import (
@@ -9,7 +9,7 @@ import (
 
 // SourceLoadBalancerMonitorSchema returns the source schema for the legacy load_balancer_monitor resource.
 // Schema version: 0 (implicit in SDKv2, no explicit version field)
-// Resource type: cloudflare_load_balancer_monitor
+// Resource type: zenthcloud_load_balancer_monitor
 //
 // This minimal schema is used only for reading v4 state during migration.
 // It includes only the properties needed for state parsing (Required, Optional, Computed, ElementType).

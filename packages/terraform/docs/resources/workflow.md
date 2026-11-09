@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_workflow Resource - Cloudflare"
+page_title: "zenthcloud_workflow Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Workers Scripts ReadWorkers Scripts WriteWorkers Tail Read
 ---
 
-# cloudflare_workflow (Resource)
+# zenthcloud_workflow (Resource)
 
 Accepted Permissions
 
@@ -17,7 +17,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_workflow" "example_workflow" {
+resource "zenthcloud_workflow" "example_workflow" {
   account_id = "account_id"
   workflow_name = "x"
   class_name = "x"
@@ -105,7 +105,7 @@ Required:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_workflow.example '<account_id>/<workflow_name>'
+$ terraform import zenthcloud_workflow.example '<account_id>/<workflow_name>'
 ```
 
 

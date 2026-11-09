@@ -22,7 +22,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("notification-email", {
 			type: "string",
 			description:
-				'The email address to send health status notifications to. This field is now deprecated in favor of Cloudflare Notifications for Load Balancing, so only resetting this field with an empty string `""` is accepted.',
+				'The email address to send health status notifications to. This field is now deprecated in favor of Zenthcloud Notifications for Load Balancing, so only resetting this field with an empty string `""` is accepted.',
 		})
 		.option("dry-run", {
 			type: "boolean",
@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf user load-balancers pools edit pools pools",
 						method: "PATCH",
-						url: `https://api.cloudflare.com/client/v4/user/load_balancers/pools`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

@@ -144,7 +144,7 @@ export const access_org_mfa_config: JSONObject = {
       "type": "string"
     },
     "required_aaguids": {
-      "description": "Specifies a Cloudflare List of required FIDO2 authenticator device AAGUIDs.",
+      "description": "Specifies a Zenthcloud List of required FIDO2 authenticator device AAGUIDs.",
       "format": "uuid",
       "type": "string"
     },

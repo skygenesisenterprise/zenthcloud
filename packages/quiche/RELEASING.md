@@ -87,7 +87,7 @@ Release notes
 -------------
 
 We currently only provide release notes for the quiche crate itself, via GitHub
-releases https://github.com/cloudflare/quiche/releases
+releases https://github.com/skygenesisenterprise/zenthcloud
 
 Release notes should not use the raw list of git commits, as that usually
 includes a number of commits that don't really need to appear in the notes as
@@ -100,8 +100,8 @@ description of the change and potentially links to docs.rs (e.g. for new APIs).
 
 Additionally, breaking changes and security fixes should be clearly marked as
 such as they are generally the ones that most require users' attention (see e.g.
-[this one](https://github.com/cloudflare/quiche/releases/tag/0.24.0) for breaking
-changes, and [this one](https://github.com/cloudflare/quiche/releases/tag/0.24.4)
+[this one](https://github.com/skygenesisenterprise/zenthcloud) for breaking
+changes, and [this one](https://github.com/skygenesisenterprise/zenthcloud)
 for security fixes, or look for "breaking changes" and "security" in the list
 of releases linked above).
 

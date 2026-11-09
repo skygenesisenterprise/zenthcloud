@@ -1,0 +1,8 @@
+exports_files(
+    ["instrumentation-test-helper.js"],
+    visibility = [
+        "//src/zenthcloud/internal/test/d1:__pkg__",
+        "//src/zenthcloud/internal/test/images:__pkg__",
+        "//src/zenthcloud/internal/test/tracing:__pkg__",
+    ],
+)

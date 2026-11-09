@@ -1,4 +1,4 @@
-import { cloudflare } from "@cloudflare/vite-plugin";
+import { zenthcloud } from "@zenthcloud/vite-plugin";
 
 export default {
 	run: {
@@ -13,7 +13,7 @@ export default {
 		},
 	},
 	plugins: [
-		cloudflare({
+		zenthcloud({
 			inspectorPort: false,
 			persistState: false,
 			types: { includeRuntime: false },

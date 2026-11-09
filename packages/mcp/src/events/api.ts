@@ -6,10 +6,10 @@ export class EventApiError extends Error {
   constructor(readonly status: number) {
     super(
       status === 401 || status === 403
-        ? 'Cloudflare permission required: allow Notifications Edit and Workers Observability Edit for the selected account.'
+        ? 'Zenthcloud permission required: allow Notifications Edit and Workers Observability Edit for the selected account.'
         : status === 404
           ? 'Issue automations are unavailable for this account.'
-          : 'Cloudflare could not complete the subscription operation. Retry the request.'
+          : 'Zenthcloud could not complete the subscription operation. Retry the request.'
     )
   }
 }
@@ -112,7 +112,7 @@ export class EventApi {
   }
 }
 
-/** How a Cloudflare list endpoint pages its results and where it nests them. */
+/** How a Zenthcloud list endpoint pages its results and where it nests them. */
 export interface Listing {
   readonly pagination: 'paged' | 'unpaged'
   readonly collection?: string

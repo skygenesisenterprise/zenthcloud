@@ -65,7 +65,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("private-key", {
 			type: "string",
 			description:
-				"The zone's private key. Not required if custom_csr_id is provided, in which case the private key is retrieved from the CSR record held by Cloudflare.",
+				"The zone's private key. Not required if custom_csr_id is provided, in which case the private key is retrieved from the CSR record held by Zenthcloud.",
 		})
 		.option("dry-run", {
 			type: "boolean",
@@ -103,7 +103,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf ssl custom-certificates edit",
 						method: "PATCH",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/custom_certificates/${argv["custom-certificate-id"] == null ? "<custom-certificate-id>" : encodeURIComponent(String(argv["custom-certificate-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/custom_certificates/${argv["custom-certificate-id"] == null ? "<custom-certificate-id>" : encodeURIComponent(String(argv["custom-certificate-id"]))}`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 							"custom-certificate-id": String(

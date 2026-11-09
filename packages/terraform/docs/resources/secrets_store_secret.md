@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_secrets_store_secret Resource - Cloudflare"
+page_title: "zenthcloud_secrets_store_secret Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Secrets Store ReadSecrets Store Write
 ---
 
-# cloudflare_secrets_store_secret (Resource)
+# zenthcloud_secrets_store_secret (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_secrets_store_secret" "example_secrets_store_secret" {
+resource "zenthcloud_secrets_store_secret" "example_secrets_store_secret" {
   account_id = "985e105f4ecef8ad9ca31a8372d0c353"
   store_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name = "MY_API_KEY"
@@ -52,7 +52,7 @@ resource "cloudflare_secrets_store_secret" "example_secrets_store_secret" {
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_secrets_store_secret.example '<account_id>/<store_id>/<secret_id>'
+$ terraform import zenthcloud_secrets_store_secret.example '<account_id>/<store_id>/<secret_id>'
 ```
 
 

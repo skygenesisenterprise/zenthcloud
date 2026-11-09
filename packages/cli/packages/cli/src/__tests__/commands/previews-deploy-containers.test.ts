@@ -1,9 +1,9 @@
-import { getLogLevel } from "@cloudflare/cli-shared-helpers";
+import { getLogLevel } from "@zenthcloud/cli-shared-helpers";
 import {
 	mockConsoleMethods,
 	runInTempDir,
 	seed,
-} from "@cloudflare/workers-utils/test-helpers";
+} from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw/http";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { createMockDeployContext } from "../helpers/mock-deploy-context.js";
@@ -44,8 +44,8 @@ describe("cf previews deploy Containers", () => {
 	const std = mockConsoleMethods();
 
 	beforeEach(() => {
-		vi.stubEnv("CLOUDFLARE_API_TOKEN", "test-api-token");
-		vi.stubEnv("CLOUDFLARE_ACCOUNT_ID", ACCOUNT_ID);
+		vi.stubEnv("ZENTHCLOUD_API_TOKEN", "test-api-token");
+		vi.stubEnv("ZENTHCLOUD_ACCOUNT_ID", ACCOUNT_ID);
 	});
 
 	it("deploys only live Containers belonging to the selected Worker", async () => {
@@ -118,10 +118,10 @@ describe("cf previews deploy Containers", () => {
 		);
 
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig({
 				buildContext: { isPreview: true },
 			}),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				exports: {
 					ContainerDO: {
 						type: "durable-object",
@@ -134,24 +134,24 @@ describe("cf previews deploy Containers", () => {
 					},
 				},
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export class ContainerDO {}; export default {};",
-			".cloudflare/output/v0/containers/api/container.config.json":
+			".zenthcloud/output/v0/containers/api/container.config.json":
 				JSON.stringify({
 					name: "api-container",
-					image: { reference: "registry.cloudflare.com/api:latest" },
+					image: { reference: "registry.zenthcloud.com/api:latest" },
 					maxInstances: 2,
 				}),
-			".cloudflare/output/v0/containers/other/container.config.json":
+			".zenthcloud/output/v0/containers/other/container.config.json":
 				JSON.stringify({
 					name: "other-worker-container",
-					image: { reference: "registry.cloudflare.com/other:latest" },
+					image: { reference: "registry.zenthcloud.com/other:latest" },
 					maxInstances: 1,
 				}),
-			".cloudflare/output/v0/containers/deleted/container.config.json":
+			".zenthcloud/output/v0/containers/deleted/container.config.json":
 				JSON.stringify({
 					name: "deleted-container",
-					image: { reference: "registry.cloudflare.com/deleted:latest" },
+					image: { reference: "registry.zenthcloud.com/deleted:latest" },
 					maxInstances: 1,
 				}),
 		});
@@ -173,7 +173,7 @@ describe("cf previews deploy Containers", () => {
 			name: "test-worker_feature_ContainerDO",
 			max_instances: 2,
 			configuration: {
-				image: "registry.cloudflare.com/test-account-id/api:latest",
+				image: "registry.zenthcloud.com/test-account-id/api:latest",
 			},
 			durable_objects: { namespace_id: "preview-namespace-id" },
 		});
@@ -241,7 +241,7 @@ describe("cf previews deploy Containers", () => {
 				HttpResponse.json(
 					createFetchResult({
 						account_id: ACCOUNT_ID,
-						registry_host: "registry.cloudflare.com",
+						registry_host: "registry.zenthcloud.com",
 						username: "v1",
 						password: "test-password",
 					})
@@ -257,10 +257,10 @@ describe("cf previews deploy Containers", () => {
 		);
 
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig({
 				buildContext: { isPreview: true },
 			}),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				exports: {
 					ContainerDO: {
 						type: "durable-object",
@@ -269,9 +269,9 @@ describe("cf previews deploy Containers", () => {
 					},
 				},
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export class ContainerDO {}; export default {};",
-			".cloudflare/output/v0/containers/api/container.config.json":
+			".zenthcloud/output/v0/containers/api/container.config.json":
 				JSON.stringify({
 					name: "api-container",
 					image: { localReference: "api-container:built-by-wrangler" },
@@ -298,8 +298,8 @@ describe("cf previews deploy Containers", () => {
 		expect(readDockerCommands()).toEqual(
 			expect.arrayContaining([
 				"image inspect api-container:built-by-wrangler --format {{ json .RepoDigests }}",
-				`tag api-container:built-by-wrangler registry.cloudflare.com/${ACCOUNT_ID}/api-container:built-by-wrangler`,
-				`push registry.cloudflare.com/${ACCOUNT_ID}/api-container:built-by-wrangler`,
+				`tag api-container:built-by-wrangler registry.zenthcloud.com/${ACCOUNT_ID}/api-container:built-by-wrangler`,
+				`push registry.zenthcloud.com/${ACCOUNT_ID}/api-container:built-by-wrangler`,
 			])
 		);
 		expect(readDockerCommands()).not.toContain(
@@ -307,7 +307,7 @@ describe("cf previews deploy Containers", () => {
 		);
 		expect(application).toMatchObject({
 			configuration: {
-				image: `registry.cloudflare.com/${ACCOUNT_ID}/api-container@sha256:${"d".repeat(64)}`,
+				image: `registry.zenthcloud.com/${ACCOUNT_ID}/api-container@sha256:${"d".repeat(64)}`,
 			},
 			durable_objects: { namespace_id: "preview-namespace-id" },
 		});
@@ -361,10 +361,10 @@ describe("cf previews deploy Containers", () => {
 		);
 
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig({
 				buildContext: { isPreview: true },
 			}),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				exports: {
 					ContainerDO: {
 						type: "durable-object",
@@ -373,12 +373,12 @@ describe("cf previews deploy Containers", () => {
 					},
 				},
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export class ContainerDO {}; export default {};",
-			".cloudflare/output/v0/containers/api/container.config.json":
+			".zenthcloud/output/v0/containers/api/container.config.json":
 				JSON.stringify({
 					name: "api-container",
-					image: { reference: "registry.cloudflare.com/api:latest" },
+					image: { reference: "registry.zenthcloud.com/api:latest" },
 					maxInstances: 2,
 				}),
 		});
@@ -403,10 +403,10 @@ describe("cf previews deploy Containers", () => {
 		);
 
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig({
 				buildContext: { isPreview: true },
 			}),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				exports: {
 					ContainerDO: {
 						type: "durable-object",
@@ -415,13 +415,13 @@ describe("cf previews deploy Containers", () => {
 					},
 				},
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export class ContainerDO {}; export default {};",
-			".cloudflare/output/v0/containers/api/container.config.json":
+			".zenthcloud/output/v0/containers/api/container.config.json":
 				JSON.stringify({
 					name: "api-container",
 					schedulingPolicy: "durable-object",
-					images: { app: { reference: "registry.cloudflare.com/api:latest" } },
+					images: { app: { reference: "registry.zenthcloud.com/api:latest" } },
 				}),
 		});
 

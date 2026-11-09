@@ -33,7 +33,7 @@ export const client$$side$$security_get$$zone$$settings$$response: JSONObject = 
     "updated_at": {
       "type": "string"
     },
-    "use_cloudflare_reporting_endpoint": {
+    "use_zenthcloud_reporting_endpoint": {
       "type": "boolean"
     },
     "use_connection_url_path": {
@@ -43,7 +43,7 @@ export const client$$side$$security_get$$zone$$settings$$response: JSONObject = 
   "required": [
     "enabled",
     "updated_at",
-    "use_cloudflare_reporting_endpoint",
+    "use_zenthcloud_reporting_endpoint",
     "use_connection_url_path"
   ],
   "type": "object"
@@ -61,7 +61,7 @@ export const client$$side$$security_update$$zone$$settings$$response: JSONObject
     "updated_at": {
       "type": "string"
     },
-    "use_cloudflare_reporting_endpoint": {
+    "use_zenthcloud_reporting_endpoint": {
       "type": "boolean"
     },
     "use_connection_url_path": {
@@ -71,7 +71,7 @@ export const client$$side$$security_update$$zone$$settings$$response: JSONObject
   "required": [
     "enabled",
     "updated_at",
-    "use_cloudflare_reporting_endpoint",
+    "use_zenthcloud_reporting_endpoint",
     "use_connection_url_path"
   ],
   "type": "object"

@@ -6,11 +6,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/images"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/images"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -21,22 +21,22 @@ import (
 const tinyPNGBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR42mP4z8AAAAMBAQD3A0FDAAAAAElFTkSuQmCC"
 
 // defaultTestImageURL is the upload source for tests (fetched server-side).
-// Override with CLOUDFLARE_IMAGE_URL.
+// Override with ZENTHCLOUD_IMAGE_URL.
 const defaultTestImageURL = "https://www.gstatic.com/webp/gallery/1.jpg"
 
 func testImageURL() string {
-	if v := os.Getenv("CLOUDFLARE_IMAGE_URL"); v != "" {
+	if v := os.Getenv("ZENTHCLOUD_IMAGE_URL"); v != "" {
 		return v
 	}
 	return defaultTestImageURL
 }
 
 // defaultTestImageURLAlt is a second source to prove url changes force replace.
-// Override with CLOUDFLARE_IMAGE_URL_ALT.
+// Override with ZENTHCLOUD_IMAGE_URL_ALT.
 const defaultTestImageURLAlt = "https://www.gstatic.com/webp/gallery/2.jpg"
 
 func testImageURLAlt() string {
-	if v := os.Getenv("CLOUDFLARE_IMAGE_URL_ALT"); v != "" {
+	if v := os.Getenv("ZENTHCLOUD_IMAGE_URL_ALT"); v != "" {
 		return v
 	}
 	return defaultTestImageURLAlt
@@ -47,24 +47,24 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_image", &resource.Sweeper{
-		Name: "cloudflare_image",
-		F:    testSweepCloudflareImage,
+	resource.AddTestSweepers("zenthcloud_image", &resource.Sweeper{
+		Name: "zenthcloud_image",
+		F:    testSweepZenthcloudImage,
 	})
 }
 
-func testSweepCloudflareImage(_ string) error {
+func testSweepZenthcloudImage(_ string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping cloudflare_image sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping zenthcloud_image sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
 	iter := client.Images.V1.ListAutoPaging(ctx, images.V1ListParams{
-		AccountID: cloudflare.F(accountID),
+		AccountID: zenthcloud.F(accountID),
 	})
 	for iter.Next() {
 		page := iter.Current()
@@ -75,7 +75,7 @@ func testSweepCloudflareImage(_ string) error {
 			}
 			tflog.Info(ctx, fmt.Sprintf("Deleting image: %s (account: %s)", img.ID, accountID))
 			_, err := client.Images.V1.Delete(ctx, img.ID, images.V1DeleteParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			})
 			if err != nil {
 				tflog.Error(ctx, fmt.Sprintf("Failed to delete image %s: %s", img.ID, err))
@@ -90,17 +90,17 @@ func testSweepCloudflareImage(_ string) error {
 	return nil
 }
 
-func testAccCheckCloudflareImageDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudImageDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_image" {
+		if rs.Type != "zenthcloud_image" {
 			continue
 		}
 
 		_, err := client.Images.V1.Get(context.Background(), rs.Primary.ID, images.V1GetParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		})
 		if err == nil {
 			return fmt.Errorf("image %s still exists", rs.Primary.ID)
@@ -130,12 +130,12 @@ func testAccImageConfigNoMetadata(rnd, accountID, url string) string {
 	return acctest.LoadTestCase("no_metadata.tf", rnd, accountID, url)
 }
 
-// TestAccCloudflareImage_NoMetadataCreate covers create via URL with no metadata.
+// TestAccZenthcloudImage_NoMetadataCreate covers create via URL with no metadata.
 // Regression guard for Bug A (empty metadata part → API code 5400).
-func TestAccCloudflareImage_NoMetadataCreate(t *testing.T) {
+func TestAccZenthcloudImage_NoMetadataCreate(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_image." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_image." + rnd
 	url := testImageURL()
 
 	resource.Test(t, resource.TestCase{
@@ -144,7 +144,7 @@ func TestAccCloudflareImage_NoMetadataCreate(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareImageDestroy,
+		CheckDestroy:             testAccCheckZenthcloudImageDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccImageConfigNoMetadata(rnd, accountID, url),
@@ -158,13 +158,13 @@ func TestAccCloudflareImage_NoMetadataCreate(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareImage_FileUpload covers create via the base64 `file` input.
+// TestAccZenthcloudImage_FileUpload covers create via the base64 `file` input.
 // Regression guard for Bug B / issue #6176 (file sent without image
 // content-type → HTTP 415 / code 5455).
-func TestAccCloudflareImage_FileUpload(t *testing.T) {
+func TestAccZenthcloudImage_FileUpload(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_image." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_image." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -172,7 +172,7 @@ func TestAccCloudflareImage_FileUpload(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareImageDestroy,
+		CheckDestroy:             testAccCheckZenthcloudImageDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccImageConfigFileUpload(rnd, accountID, tinyPNGBase64),
@@ -188,12 +188,12 @@ func TestAccCloudflareImage_FileUpload(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareImage_Basic covers create (upload by URL), read of computed
+// TestAccZenthcloudImage_Basic covers create (upload by URL), read of computed
 // fields, and import.
-func TestAccCloudflareImage_Basic(t *testing.T) {
+func TestAccZenthcloudImage_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_image." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_image." + rnd
 	url := testImageURL()
 
 	resource.Test(t, resource.TestCase{
@@ -202,7 +202,7 @@ func TestAccCloudflareImage_Basic(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareImageDestroy,
+		CheckDestroy:             testAccCheckZenthcloudImageDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccImageConfigBasic(rnd, accountID, url),
@@ -229,14 +229,14 @@ func TestAccCloudflareImage_Basic(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareImage_Update updates `metadata` in place and asserts Update,
+// TestAccZenthcloudImage_Update updates `metadata` in place and asserts Update,
 // not replace. Regression guard for Bug C (multipart sent to JSON PATCH → code
 // 5400). Note: require_signed_urls can't be toggled true — custom `id` + private
 // is rejected (5410), and `id` is Required.
-func TestAccCloudflareImage_Update(t *testing.T) {
+func TestAccZenthcloudImage_Update(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_image." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_image." + rnd
 	url := testImageURL()
 
 	resource.Test(t, resource.TestCase{
@@ -245,7 +245,7 @@ func TestAccCloudflareImage_Update(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareImageDestroy,
+		CheckDestroy:             testAccCheckZenthcloudImageDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccImageConfigBasic(rnd, accountID, url),
@@ -269,12 +269,12 @@ func TestAccCloudflareImage_Update(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareImage_Metadata covers create with `creator` and `metadata`
+// TestAccZenthcloudImage_Metadata covers create with `creator` and `metadata`
 // set. metadata is write-only; the stored value surfaces on computed `meta`.
-func TestAccCloudflareImage_Metadata(t *testing.T) {
+func TestAccZenthcloudImage_Metadata(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_image." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_image." + rnd
 	url := testImageURL()
 
 	resource.Test(t, resource.TestCase{
@@ -283,7 +283,7 @@ func TestAccCloudflareImage_Metadata(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareImageDestroy,
+		CheckDestroy:             testAccCheckZenthcloudImageDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccImageConfigMetadata(rnd, accountID, url),
@@ -299,12 +299,12 @@ func TestAccCloudflareImage_Metadata(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareImage_RequiresReplaceOnURLChange proves changing `url` forces
+// TestAccZenthcloudImage_RequiresReplaceOnURLChange proves changing `url` forces
 // a replace, not an in-place update.
-func TestAccCloudflareImage_RequiresReplaceOnURLChange(t *testing.T) {
+func TestAccZenthcloudImage_RequiresReplaceOnURLChange(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_image." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_image." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -312,7 +312,7 @@ func TestAccCloudflareImage_RequiresReplaceOnURLChange(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareImageDestroy,
+		CheckDestroy:             testAccCheckZenthcloudImageDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccImageConfigBasic(rnd, accountID, testImageURL()),

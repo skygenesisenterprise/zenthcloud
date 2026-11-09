@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_calls_sfu_app Data Source - Cloudflare"
+page_title: "zenthcloud_calls_sfu_app Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Calls ReadCalls Write
 ---
 
-# cloudflare_calls_sfu_app (Data Source)
+# zenthcloud_calls_sfu_app (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_calls_sfu_app" "example_calls_sfu_app" {
+data "zenthcloud_calls_sfu_app" "example_calls_sfu_app" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   app_id = "2a95132c15732412d22c1476fa83f27a"
 }
@@ -28,13 +28,13 @@ data "cloudflare_calls_sfu_app" "example_calls_sfu_app" {
 ### Required
 
 - `account_id` (String) The account identifier tag.
-- `app_id` (String) A Cloudflare-generated unique identifier for a item.
+- `app_id` (String) A Zenthcloud-generated unique identifier for a item.
 
 ### Read-Only
 
 - `created` (String) The date and time the item was created.
 - `modified` (String) The date and time the item was last modified.
 - `name` (String) A short description of a Realtime SFU app, not shown to end users.
-- `uid` (String) A Cloudflare-generated unique identifier for a item.
+- `uid` (String) A Zenthcloud-generated unique identifier for a item.
 
 

@@ -7,10 +7,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-// SourceCloudflareAuthenticatedOriginPullsCertificateSchema returns the v4 schema for
-// cloudflare_authenticated_origin_pulls_certificate resource (the unified certificate resource)
+// SourceZenthcloudAuthenticatedOriginPullsCertificateSchema returns the v4 schema for
+// zenthcloud_authenticated_origin_pulls_certificate resource (the unified certificate resource)
 // This represents the source schema for MoveState operations from v4 per-hostname certificates
-func SourceCloudflareAuthenticatedOriginPullsCertificateSchema() schema.Schema {
+func SourceZenthcloudAuthenticatedOriginPullsCertificateSchema() schema.Schema {
 	return schema.Schema{
 		Version: 0, // v4 schema version
 		Attributes: map[string]schema.Attribute{

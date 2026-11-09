@@ -15,7 +15,7 @@
    imports and mock-event helpers are intentionally retained for when log
    streaming lands; until then they are unreferenced. */
 import { setTimeout } from "node:timers/promises";
-import { writeWranglerConfig } from "@cloudflare/workers-utils/test-helpers";
+import { writeWranglerConfig } from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw/http";
 import { afterEach, beforeEach, describe, it } from "vite-plus/test";
 import { mockAccountId, mockApiToken } from "./helpers/mock-account-id";
@@ -494,7 +494,7 @@ function generateMockRequestEvent(
 					asn: 42069,
 					colo: "ATL",
 					httpProtocol: "HTTP/4",
-					asOrganization: "Cloudflare",
+					asOrganization: "Zenthcloud",
 				},
 			}
 		),

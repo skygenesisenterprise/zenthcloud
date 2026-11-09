@@ -1,4 +1,4 @@
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import {
 	afterEach,
 	beforeEach,
@@ -33,7 +33,7 @@ describe("telemetry dispatcher", () => {
 
 		expect(fetch).toHaveBeenCalledOnce();
 		const [url, init] = vi.mocked(fetch).mock.calls[0] as [string, RequestInit];
-		expect(url).toBe("https://sparrow.cloudflare.com/api/v1/event");
+		expect(url).toBe("https://github.com/skygenesisenterprise/zenthcloud");
 		expect(init.headers).toMatchObject({
 			"Sparrow-Source-Key": "test-key",
 		});

@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zero_trust_gateway_policy Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_gateway_policy Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zero_trust_gateway_policy (Resource)
+# zenthcloud_zero_trust_gateway_policy (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_gateway_policy" "example_zero_trust_gateway_policy" {
+resource "zenthcloud_zero_trust_gateway_policy" "example_zero_trust_gateway_policy" {
   account_id = "699d98642c564d2e855e9661899b7252"
   action = "allow"
   name = "block bad websites"
@@ -115,7 +115,7 @@ resource "cloudflare_zero_trust_gateway_policy" "example_zero_trust_gateway_poli
       fallback = "none"
       view_id = "view_id"
     }
-    resolve_dns_through_cloudflare = true
+    resolve_dns_through_zenthcloud = true
     set_headers = {
       X-User-Identity = ["user=@{identity.name}"]
     }
@@ -142,7 +142,7 @@ resource "cloudflare_zero_trust_gateway_policy" "example_zero_trust_gateway_poli
 
 ### Required
 
-- `account_id` (String) Specify the Cloudflare account identifier.
+- `account_id` (String) Specify the Zenthcloud account identifier.
 - `action` (String) Specify the action to perform when the associated traffic, identity, and device posture expressions either absent or evaluate to `true`.
 Available values: "on", "off", "allow", "block", "scan", "noscan", "safesearch", "ytrestricted", "isolate", "noisolate", "override", "l4_override", "egress", "resolve", "quarantine", "redirect".
 - `name` (String) Specify the rule name.
@@ -155,7 +155,7 @@ Available values: "on", "off", "allow", "block", "scan", "noscan", "safesearch",
 - `expiration` (Attributes) Defines the expiration time stamp and default duration of a DNS policy. Takes precedence over the policy's `schedule` configuration, if any. This  does not apply to HTTP or network policies. Settable only for `dns` rules. (see [below for nested schema](#nestedatt--expiration))
 - `filters` (List of String) Specify the protocol or layer to evaluate the traffic, identity, and device posture expressions. Can only contain a single value.
 - `identity` (String) Specify the wirefilter expression used for identity matching. The API automatically formats and sanitizes expressions before storing them. To prevent Terraform state drift, use the formatted expression returned in the API response.
-- `precedence` (Number) Set the order of your rules. Lower values indicate higher precedence. At each processing phase, evaluate applicable rules in ascending order of this value. Refer to [Order of enforcement](http://developers.cloudflare.com/learning-paths/secure-internet-traffic/understand-policies/order-of-enforcement/#manage-precedence-with-terraform) to manage precedence via Terraform.
+- `precedence` (Number) Set the order of your rules. Lower values indicate higher precedence. At each processing phase, evaluate applicable rules in ascending order of this value. Refer to [Order of enforcement](https://github.com/skygenesisenterprise/zenthcloud) to manage precedence via Terraform.
 - `rule_settings` (Attributes) Defines settings for this rule. Settings apply only to specific rule types and must use compatible selectors. If Terraform detects drift, confirm the setting supports your rule type and check whether the API modifies the value. Use API-returned values in your configuration to prevent drift. (see [below for nested schema](#nestedatt--rule_settings))
 - `schedule` (Attributes) Defines the schedule for activating DNS policies. Settable only for `dns` and `dns_resolver` rules. (see [below for nested schema](#nestedatt--schedule))
 - `traffic` (String) Specify the wirefilter expression used for traffic matching. The API automatically formats and sanitizes expressions before storing them. To prevent Terraform state drift, use the formatted expression returned in the API response.
@@ -203,7 +203,7 @@ Optional:
 - `bypass_parent_rule` (Boolean) Set to enable MSP accounts to bypass their parent's rules. Only MSP child accounts can set this. Settable for all types of rules.
 - `check_session` (Attributes) Configure session check behavior. Settable only for `l4` and `http` rules with the action set to `allow`. (see [below for nested schema](#nestedatt--rule_settings--check_session))
 - `delete_headers` (List of String) Remove headers from allowed requests by name. A maximum of 20 header operations (add + set + delete) is allowed per policy. Each header name may not exceed 256 bytes. Settable only for `http` rules with the action set to `allow`.
-- `dns_resolvers` (Attributes) Configure custom resolvers to route queries that match the resolver policy. Unused with 'resolve_dns_through_cloudflare' or 'resolve_dns_internally' settings. DNS queries get routed to the address closest to their origin. Only valid when a rule's action set to 'resolve'. Settable only for `dns_resolver` rules. (see [below for nested schema](#nestedatt--rule_settings--dns_resolvers))
+- `dns_resolvers` (Attributes) Configure custom resolvers to route queries that match the resolver policy. Unused with 'resolve_dns_through_zenthcloud' or 'resolve_dns_internally' settings. DNS queries get routed to the address closest to their origin. Only valid when a rule's action set to 'resolve'. Settable only for `dns_resolver` rules. (see [below for nested schema](#nestedatt--rule_settings--dns_resolvers))
 - `egress` (Attributes) Configure how Gateway Proxy traffic egresses. You can enable this setting for rules with Egress actions and filters, or omit it to indicate local egress via WARP IPs. Settable only for `egress` rules. (see [below for nested schema](#nestedatt--rule_settings--egress))
 - `forensic_copy` (Attributes) Configure whether a copy of the HTTP request will be sent to storage when the rule matches. (see [below for nested schema](#nestedatt--rule_settings--forensic_copy))
 - `ignore_cname_category_matches` (Boolean) Ignore category matches at CNAME domains in a response. When off, evaluate categories in this rule against all CNAME domain categories in the response. Settable only for `dns` and `dns_resolver` rules.
@@ -217,8 +217,8 @@ Optional:
 - `payload_log` (Attributes) Configure DLP payload logging. Settable only for `http` rules. (see [below for nested schema](#nestedatt--rule_settings--payload_log))
 - `quarantine` (Attributes) Configure settings that apply to quarantine rules. Settable only for `http` rules. (see [below for nested schema](#nestedatt--rule_settings--quarantine))
 - `redirect` (Attributes) Apply settings to redirect rules. Settable only for `http` rules with the action set to `redirect`. (see [below for nested schema](#nestedatt--rule_settings--redirect))
-- `resolve_dns_internally` (Attributes) Configure to forward the query to the internal DNS service, passing the specified 'view_id' as input. Not used when 'dns_resolvers' is specified or 'resolve_dns_through_cloudflare' is set. Only valid when a rule's action set to 'resolve'. Settable only for `dns_resolver` rules. (see [below for nested schema](#nestedatt--rule_settings--resolve_dns_internally))
-- `resolve_dns_through_cloudflare` (Boolean) Enable to send queries that match the policy to Cloudflare's default 1.1.1.1 DNS resolver. Cannot set when 'dns_resolvers' specified or 'resolve_dns_internally' is set. Only valid when a rule's action set to 'resolve'. Settable only for `dns_resolver` rules.
+- `resolve_dns_internally` (Attributes) Configure to forward the query to the internal DNS service, passing the specified 'view_id' as input. Not used when 'dns_resolvers' is specified or 'resolve_dns_through_zenthcloud' is set. Only valid when a rule's action set to 'resolve'. Settable only for `dns_resolver` rules. (see [below for nested schema](#nestedatt--rule_settings--resolve_dns_internally))
+- `resolve_dns_through_zenthcloud` (Boolean) Enable to send queries that match the policy to Zenthcloud's default 1.1.1.1 DNS resolver. Cannot set when 'dns_resolvers' specified or 'resolve_dns_internally' is set. Only valid when a rule's action set to 'resolve'. Settable only for `dns_resolver` rules.
 - `set_headers` (Map of List of String) Replace existing headers on allowed requests with the specified key-value pairs. If a header does not exist, it is added. Header values may contain `@{selector.name}` variable references that are interpolated at the edge. Use `@@{` to escape a literal `@{`. A maximum of 20 header operations (add + set + delete) is allowed per policy. Each header name may not exceed 256 bytes and each header value may not exceed 4 KB. Settable only for `http` rules with the action set to `allow`.
 - `untrusted_cert` (Attributes) Configure behavior when an upstream certificate is invalid or an SSL error occurs. Settable only for `http` rules with the action set to `allow`. (see [below for nested schema](#nestedatt--rule_settings--untrusted_cert))
 
@@ -421,7 +421,7 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_gateway_policy.example '<account_id>/<rule_id>'
+$ terraform import zenthcloud_zero_trust_gateway_policy.example '<account_id>/<rule_id>'
 ```
 
 

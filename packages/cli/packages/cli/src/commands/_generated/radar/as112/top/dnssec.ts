@@ -103,7 +103,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar as112 top dnssec",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/as112/top/locations/dnssec/${argv["dnssec"] == null ? "<dnssec>" : encodeURIComponent(String(argv["dnssec"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["dnssec"] == null ? "<dnssec>" : encodeURIComponent(String(argv["dnssec"]))}`,
 						pathParams: { dnssec: String(argv["dnssec"] ?? "") },
 						query: queryParams,
 						bodyKind: "none",

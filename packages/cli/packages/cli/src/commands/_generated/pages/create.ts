@@ -23,7 +23,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 pages create\n\nCreate a Cloudflare Pages project for configuring and deploying a site or application."
+			"$0 pages create\n\nCreate a Zenthcloud Pages project for configuring and deploying a site or application."
 		)
 		.option("build-config-build-caching", {
 			type: "boolean",
@@ -407,7 +407,7 @@ type Args = InferArgs<typeof builder>;
 
 const command: CommandModule<CommonYargsOptions, Args> = {
 	command: "create",
-	describe: "Create a Cloudflare Pages project",
+	describe: "Create a Zenthcloud Pages project",
 	builder,
 	handler: async (argv): Promise<void> =>
 		runWithTelemetry(
@@ -438,7 +438,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf pages create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/pages/projects`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/pages/projects`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

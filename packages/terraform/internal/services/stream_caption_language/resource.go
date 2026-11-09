@@ -8,11 +8,11 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/stream"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/stream"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
@@ -26,7 +26,7 @@ func NewResource() resource.Resource {
 
 // StreamCaptionLanguageResource defines the resource implementation.
 type StreamCaptionLanguageResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *StreamCaptionLanguageResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -38,12 +38,12 @@ func (r *StreamCaptionLanguageResource) Configure(ctx context.Context, req resou
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -68,7 +68,7 @@ func (r *StreamCaptionLanguageResource) Create(ctx context.Context, req resource
 		data.Identifier.ValueString(),
 		data.Language.ValueString(),
 		stream.CaptionLanguageNewParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -117,7 +117,7 @@ func (r *StreamCaptionLanguageResource) Update(ctx context.Context, req resource
 		data.Identifier.ValueString(),
 		data.Language.ValueString(),
 		stream.CaptionLanguageUpdateParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -154,7 +154,7 @@ func (r *StreamCaptionLanguageResource) Read(ctx context.Context, req resource.R
 		data.Identifier.ValueString(),
 		data.Language.ValueString(),
 		stream.CaptionLanguageGetParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -193,7 +193,7 @@ func (r *StreamCaptionLanguageResource) Delete(ctx context.Context, req resource
 		data.Identifier.ValueString(),
 		data.Language.ValueString(),
 		stream.CaptionLanguageDeleteParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)

@@ -16,7 +16,7 @@ export const tools: readonly Tool[] = [
   {
     name: "hyperdrive_integration_planetscale_signature",
     title: "Create Database Signature",
-    description: "Returns a short-lived signed authorization for creating a database that is billed through Cloudflare. The caller passes these values to the integration partner's own CLI, which verifies the signature before creating the database. Requires the account to be entitled to Cloudflare-billed databases for the integration.\n\nThis method is beta.\n\nPOST /accounts/{account_id}/hyperdrive/integrationsOperations/planetScale/createDatabaseSignature",
+    description: "Returns a short-lived signed authorization for creating a database that is billed through Zenthcloud. The caller passes these values to the integration partner's own CLI, which verifies the signature before creating the database. Requires the account to be entitled to Zenthcloud-billed databases for the integration.\n\nThis method is beta.\n\nPOST /accounts/{account_id}/hyperdrive/integrationsOperations/planetScale/createDatabaseSignature",
     inputSchema: {
       type: "object",
       properties: {
@@ -24,7 +24,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "The Cloudflare account ID.",
+              "description": "The Zenthcloud account ID.",
               "type": "string"
             }
           },

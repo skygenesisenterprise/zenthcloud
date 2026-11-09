@@ -25,7 +25,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		)
 		.positional("member-account-id", {
 			type: "string",
-			description: "Identifier of a Cloudflare account.",
+			description: "Identifier of a Zenthcloud account.",
 			demandOption: true,
 		})
 		.option("address-map-id", {
@@ -68,7 +68,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf addressing address-maps accounts delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/addressing/address_maps/${argv["address-map-id"] == null ? "<address-map-id>" : encodeURIComponent(String(argv["address-map-id"]))}/accounts/${argv["member-account-id"] == null ? "<member-account-id>" : encodeURIComponent(String(argv["member-account-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/addressing/address_maps/${argv["address-map-id"] == null ? "<address-map-id>" : encodeURIComponent(String(argv["address-map-id"]))}/accounts/${argv["member-account-id"] == null ? "<member-account-id>" : encodeURIComponent(String(argv["member-account-id"]))}`,
 						pathParams: {
 							"address-map-id": String(argv["address-map-id"] ?? ""),
 							"member-account-id": String(argv["member-account-id"] ?? ""),

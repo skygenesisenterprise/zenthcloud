@@ -15,7 +15,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 radar entities asns botnet-threat-feed\n\nRetrieves a ranked list of Autonomous Systems based on their presence in the Cloudflare Botnet Threat Feed. Rankings can be sorted by offense count or number of bad IPs. Optionally compare to a previous date to see rank changes."
+			"$0 radar entities asns botnet-threat-feed\n\nRetrieves a ranked list of Autonomous Systems based on their presence in the Zenthcloud Botnet Threat Feed. Rankings can be sorted by offense count or number of bad IPs. Optionally compare to a previous date to see rank changes."
 		)
 		.option("limit", {
 			type: "number",
@@ -100,7 +100,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar entities asns botnet-threat-feed",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/entities/asns/botnet_threat_feed`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

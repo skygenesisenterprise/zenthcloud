@@ -5,9 +5,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -22,13 +22,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_regional_tiered_cache", &resource.Sweeper{
-		Name: "cloudflare_regional_tiered_cache",
-		F:    testSweepCloudflareRegionalTieredCache,
+	resource.AddTestSweepers("zenthcloud_regional_tiered_cache", &resource.Sweeper{
+		Name: "zenthcloud_regional_tiered_cache",
+		F:    testSweepZenthcloudRegionalTieredCache,
 	})
 }
 
-func testSweepCloudflareRegionalTieredCache(r string) error {
+func testSweepZenthcloudRegionalTieredCache(r string) error {
 	ctx := context.Background()
 	// Regional Tiered Cache is a zone-level configuration setting.
 	// It's a singleton setting per zone, not something that accumulates.
@@ -37,17 +37,17 @@ func testSweepCloudflareRegionalTieredCache(r string) error {
 	return nil
 }
 
-func TestAccCloudflareRegionalTieredCache_Basic(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudRegionalTieredCache_Basic(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_regional_tiered_cache." + rnd
+	resourceName := "zenthcloud_regional_tiered_cache." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareRegionalTieredCache(rnd, zoneID, "off"),
+				Config: testAccZenthcloudRegionalTieredCache(rnd, zoneID, "off"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					// Required attributes
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
@@ -59,7 +59,7 @@ func TestAccCloudflareRegionalTieredCache_Basic(t *testing.T) {
 				},
 			},
 			{
-				Config: testAccCloudflareRegionalTieredCache(rnd, zoneID, "off"),
+				Config: testAccZenthcloudRegionalTieredCache(rnd, zoneID, "off"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -75,17 +75,17 @@ func TestAccCloudflareRegionalTieredCache_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRegionalTieredCache_Update(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudRegionalTieredCache_Update(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_regional_tiered_cache." + rnd
+	resourceName := "zenthcloud_regional_tiered_cache." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareRegionalTieredCache(rnd, zoneID, "on"),
+				Config: testAccZenthcloudRegionalTieredCache(rnd, zoneID, "on"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					// Required attributes
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
@@ -97,7 +97,7 @@ func TestAccCloudflareRegionalTieredCache_Update(t *testing.T) {
 				},
 			},
 			{
-				Config: testAccCloudflareRegionalTieredCache(rnd, zoneID, "off"),
+				Config: testAccZenthcloudRegionalTieredCache(rnd, zoneID, "off"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -121,17 +121,17 @@ func TestAccCloudflareRegionalTieredCache_Update(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRegionalTieredCache_Default(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudRegionalTieredCache_Default(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_regional_tiered_cache." + rnd
+	resourceName := "zenthcloud_regional_tiered_cache." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareRegionalTieredCacheDefault(rnd, zoneID),
+				Config: testAccZenthcloudRegionalTieredCacheDefault(rnd, zoneID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					// Required attributes
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
@@ -152,8 +152,8 @@ func TestAccCloudflareRegionalTieredCache_Default(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRegionalTieredCache_InvalidValue(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudRegionalTieredCache_InvalidValue(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 
 	resource.Test(t, resource.TestCase{
@@ -161,21 +161,21 @@ func TestAccCloudflareRegionalTieredCache_InvalidValue(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCloudflareRegionalTieredCacheInvalid(rnd, zoneID),
+				Config:      testAccZenthcloudRegionalTieredCacheInvalid(rnd, zoneID),
 				ExpectError: regexp.MustCompile(`Attribute value .*must be one of: \["on" "off"\]`),
 			},
 		},
 	})
 }
 
-func testAccCloudflareRegionalTieredCache(resourceName, zoneID, value string) string {
+func testAccZenthcloudRegionalTieredCache(resourceName, zoneID, value string) string {
 	return acctest.LoadTestCase("regionaltieredcache.tf", resourceName, zoneID, value)
 }
 
-func testAccCloudflareRegionalTieredCacheDefault(resourceName, zoneID string) string {
+func testAccZenthcloudRegionalTieredCacheDefault(resourceName, zoneID string) string {
 	return acctest.LoadTestCase("regionaltieredcache_default.tf", resourceName, zoneID)
 }
 
-func testAccCloudflareRegionalTieredCacheInvalid(resourceName, zoneID string) string {
+func testAccZenthcloudRegionalTieredCacheInvalid(resourceName, zoneID string) string {
 	return acctest.LoadTestCase("regionaltieredcache_invalid.tf", resourceName, zoneID)
 }

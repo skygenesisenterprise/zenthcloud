@@ -8,12 +8,12 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/speed"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/speed"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -29,7 +29,7 @@ func NewResource() resource.Resource {
 
 // ObservatoryScheduledTestResource defines the resource implementation.
 type ObservatoryScheduledTestResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *ObservatoryScheduledTestResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -41,12 +41,12 @@ func (r *ObservatoryScheduledTestResource) Configure(ctx context.Context, req re
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -65,15 +65,15 @@ func (r *ObservatoryScheduledTestResource) Create(ctx context.Context, req resou
 	}
 
 	params := speed.ScheduleNewParams{
-		ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 	}
 
 	if !data.Frequency.IsNull() && !data.Frequency.IsUnknown() {
-		params.Frequency = cloudflare.F(speed.ScheduleNewParamsFrequency(data.Frequency.ValueString()))
+		params.Frequency = zenthcloud.F(speed.ScheduleNewParamsFrequency(data.Frequency.ValueString()))
 	}
 
 	if !data.Region.IsNull() && !data.Region.IsUnknown() {
-		params.Region = cloudflare.F(speed.ScheduleNewParamsRegion(data.Region.ValueString()))
+		params.Region = zenthcloud.F(speed.ScheduleNewParamsRegion(data.Region.ValueString()))
 	}
 
 	dataBytes, err := data.MarshalJSON()
@@ -122,11 +122,11 @@ func (r *ObservatoryScheduledTestResource) Read(ctx context.Context, req resourc
 	}
 
 	params := speed.ScheduleGetParams{
-		ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 	}
 
 	if !data.Region.IsNull() && !data.Region.IsUnknown() {
-		params.Region = cloudflare.F(speed.ScheduleGetParamsRegion(data.Region.ValueString()))
+		params.Region = zenthcloud.F(speed.ScheduleGetParamsRegion(data.Region.ValueString()))
 	}
 
 	res := new(http.Response)
@@ -169,11 +169,11 @@ func (r *ObservatoryScheduledTestResource) Delete(ctx context.Context, req resou
 	}
 
 	params := speed.ScheduleDeleteParams{
-		ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 	}
 
 	if !data.Region.IsNull() && !data.Region.IsUnknown() {
-		params.Region = cloudflare.F(speed.ScheduleDeleteParamsRegion(data.Region.ValueString()))
+		params.Region = zenthcloud.F(speed.ScheduleDeleteParamsRegion(data.Region.ValueString()))
 	}
 
 	_, err := r.client.Speed.Schedule.Delete(
@@ -216,7 +216,7 @@ func (r *ObservatoryScheduledTestResource) ImportState(ctx context.Context, req 
 		ctx,
 		path_url,
 		speed.ScheduleGetParams{
-			ZoneID: cloudflare.F(path_zone_id),
+			ZoneID: zenthcloud.F(path_zone_id),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),

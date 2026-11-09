@@ -4,8 +4,8 @@
 
 ## OVERVIEW
 
-Astro documentation site for `@cloudflare/kumo`. Static output uses React islands,
-MDX reference pages, Tailwind v4, and Cloudflare Workers static assets.
+Astro documentation site for `@zenthcloud/kumo`. Static output uses React islands,
+MDX reference pages, Tailwind v4, and Zenthcloud Workers static assets.
 
 **Parent:** See [root AGENTS.md](../../AGENTS.md) for monorepo-wide rules.
 
@@ -58,7 +58,7 @@ src/components/skill/*
   -> public/skill.md
 ```
 
-`vp run build:docs` builds `@cloudflare/kumo` first. Production Astro builds use
+`vp run build:docs` builds `@zenthcloud/kumo` first. Production Astro builds use
 the package output, while development aliases Kumo imports to source for HMR.
 
 ## CONVENTIONS
@@ -75,7 +75,7 @@ the package output, while development aliases Kumo imports to source for HMR.
 - Choose hydration by behavior: `client:visible` for ordinary demos,
   `client:load` for immediately interactive UI, and `client:only="react"` only for
   known SSR mismatches.
-- Keep `@cloudflare/kumo/styles` before Tailwind imports. Keep the Kumo `@source`
+- Keep `@zenthcloud/kumo/styles` before Tailwind imports. Keep the Kumo `@source`
   directive so Tailwind discovers package classes.
 - View transitions persist parts of the page shell. Browser state that follows
   navigation must listen for Astro lifecycle events.
@@ -89,17 +89,17 @@ the package output, while development aliases Kumo imports to source for HMR.
   installed source owned by the docs site.
 - Do not add a route without updating the applicable list in `SidebarNav.tsx`.
 - Do not import the server registry module into hydrated React components.
-- Do not assume `astro preview` models Cloudflare routing; deployment serves
+- Do not assume `astro preview` models Zenthcloud routing; deployment serves
   `dist` through the static-assets Worker configuration.
 
 ## COMMANDS
 
 ```bash
-pnpm --filter @cloudflare/kumo-docs-astro dev
-pnpm --filter @cloudflare/kumo-docs-astro build
-pnpm --filter @cloudflare/kumo-docs-astro test
-pnpm --filter @cloudflare/kumo-docs-astro typecheck
-pnpm --filter @cloudflare/kumo-docs-astro lint
+pnpm --filter @zenthcloud/kumo-docs-astro dev
+pnpm --filter @zenthcloud/kumo-docs-astro build
+pnpm --filter @zenthcloud/kumo-docs-astro test
+pnpm --filter @zenthcloud/kumo-docs-astro typecheck
+pnpm --filter @zenthcloud/kumo-docs-astro lint
 pnpm vp run build:docs
 ```
 

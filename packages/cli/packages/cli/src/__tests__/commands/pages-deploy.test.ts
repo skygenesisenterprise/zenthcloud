@@ -3,7 +3,7 @@ import { join } from "node:path";
 import {
 	mockConsoleMethods,
 	runInTempDir,
-} from "@cloudflare/workers-utils/test-helpers";
+} from "@zenthcloud/workers-utils/test-helpers";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { generateResourceIndexFile } from "../helpers/forge-cli.js";
 import {

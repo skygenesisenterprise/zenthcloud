@@ -15,8 +15,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/cfssl/helpers"
-	"github.com/cloudflare/cfssl/ubiquity"
+	"github.com/zenthcloud/cfssl/helpers"
+	"github.com/zenthcloud/cfssl/ubiquity"
 )
 
 const (
@@ -107,8 +107,8 @@ func TestBundleFromRemoteDialErrors(t *testing.T) {
 	}{
 		{
 			name:         "invalid host",
-			hostname:     "cloudflare1337.invalid",
-			wantDialName: "cloudflare1337.invalid:443",
+			hostname:     "zenthcloud1337.invalid",
+			wantDialName: "zenthcloud1337.invalid:443",
 		},
 		{
 			name:         "invalid address as hostname",

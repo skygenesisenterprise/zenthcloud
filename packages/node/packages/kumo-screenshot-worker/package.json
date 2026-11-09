@@ -1,8 +1,8 @@
 {
-  "name": "@cloudflare/kumo-screenshot-worker",
+  "name": "@zenthcloud/kumo-screenshot-worker",
   "version": "0.1.0",
   "private": true,
-  "description": "Cloudflare Worker for capturing screenshots of Kumo docs pages (visual regression testing)",
+  "description": "Zenthcloud Worker for capturing screenshots of Kumo docs pages (visual regression testing)",
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -13,7 +13,7 @@
     "lint": "vp lint src/"
   },
   "dependencies": {
-    "@cloudflare/puppeteer": "^1.0.0",
+    "@zenthcloud/puppeteer": "^1.0.0",
     "hono": "^4.13.5"
   },
   "devDependencies": {

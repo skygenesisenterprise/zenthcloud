@@ -5,8 +5,8 @@ package stream_audio_track
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -34,7 +34,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"identifier": schema.StringAttribute{
-				Description:   "A Cloudflare-generated unique identifier for a media item.",
+				Description:   "A Zenthcloud-generated unique identifier for a media item.",
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
@@ -65,7 +65,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"uid": schema.StringAttribute{
-				Description: "A Cloudflare-generated unique identifier for a media item.",
+				Description: "A Zenthcloud-generated unique identifier for a media item.",
 				Computed:    true,
 			},
 			"audio": schema.ListNestedAttribute{
@@ -95,7 +95,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 							},
 						},
 						"uid": schema.StringAttribute{
-							Description: "A Cloudflare-generated unique identifier for a media item.",
+							Description: "A Zenthcloud-generated unique identifier for a media item.",
 							Computed:    true,
 						},
 					},

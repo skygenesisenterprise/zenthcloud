@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -66,7 +66,7 @@ func TestMigrateLoadBalancerMonitor_V4ToV5_Basic(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Test setup
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
@@ -82,8 +82,8 @@ func TestMigrateLoadBalancerMonitor_V4ToV5_Basic(t *testing.T) {
 					{
 						// Step 1: Create with specific provider version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -94,56 +94,56 @@ func TestMigrateLoadBalancerMonitor_V4ToV5_Basic(t *testing.T) {
 						[]statecheck.StateCheck{
 							// Critical identifiers
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("account_id"),
 								knownvalue.StringExact(accountID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("type"),
 								knownvalue.StringExact("http"),
 							),
 
 							// Verify default values were added by migration
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("description"),
 								knownvalue.StringExact(""),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("expected_body"),
 								knownvalue.StringExact(""),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("expected_codes"),
 								knownvalue.StringExact("200"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("probe_zone"),
 								knownvalue.StringExact(""),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("allow_insecure"),
 								knownvalue.Bool(false),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("follow_redirects"),
 								knownvalue.Bool(false),
 							),
 
 							// Verify computed fields exist
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("id"),
 								knownvalue.NotNull(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("created_on"),
 								knownvalue.NotNull(),
 							),
@@ -189,8 +189,8 @@ func TestMigrateLoadBalancerMonitor_V4ToV5_WithHeaders(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Test setup
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-			zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+			zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
 			rnd := utils.GenerateRandomResourceName()
 			hostname := "health-check." + zoneName
 			tmpDir := t.TempDir()
@@ -207,8 +207,8 @@ func TestMigrateLoadBalancerMonitor_V4ToV5_WithHeaders(t *testing.T) {
 					{
 						// Step 1: Create with specific provider version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -219,17 +219,17 @@ func TestMigrateLoadBalancerMonitor_V4ToV5_WithHeaders(t *testing.T) {
 						[]statecheck.StateCheck{
 							// Verify basic fields
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("type"),
 								knownvalue.StringExact("https"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("method"),
 								knownvalue.StringExact("GET"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("path"),
 								knownvalue.StringExact("/health"),
 							),
@@ -238,7 +238,7 @@ func TestMigrateLoadBalancerMonitor_V4ToV5_WithHeaders(t *testing.T) {
 							// v4: header { header = "Host" values = ["hostname"] }
 							// v5: header = { "Host" = ["hostname"] }
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("header").AtMapKey("Host").AtSliceIndex(0),
 								knownvalue.StringExact(hostname),
 							),
@@ -277,8 +277,8 @@ func TestMigrateLoadBalancerMonitor_V4ToV5_Full(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Test setup
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-			zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+			zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
 			rnd := utils.GenerateRandomResourceName()
 			hostname := "api." + zoneName
 			probeZone := zoneName
@@ -296,8 +296,8 @@ func TestMigrateLoadBalancerMonitor_V4ToV5_Full(t *testing.T) {
 					{
 						// Step 1: Create with specific provider version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -308,84 +308,84 @@ func TestMigrateLoadBalancerMonitor_V4ToV5_Full(t *testing.T) {
 						[]statecheck.StateCheck{
 							// Verify all configured values are preserved
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("type"),
 								knownvalue.StringExact("https"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("method"),
 								knownvalue.StringExact("GET"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("path"),
 								knownvalue.StringExact("/api/health"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("port"),
 								knownvalue.Int64Exact(8443),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("interval"),
 								knownvalue.Int64Exact(60),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("retries"),
 								knownvalue.Int64Exact(3),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("timeout"),
 								knownvalue.Int64Exact(10),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("allow_insecure"),
 								knownvalue.Bool(true),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("follow_redirects"),
 								knownvalue.Bool(true),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("expected_codes"),
 								knownvalue.StringExact("2xx"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("expected_body"),
 								knownvalue.StringExact("OK"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("description"),
 								knownvalue.StringExact("Production API health check"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("consecutive_up"),
 								knownvalue.Int64Exact(2),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("consecutive_down"),
 								knownvalue.Int64Exact(3),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("probe_zone"),
 								knownvalue.StringExact(probeZone),
 							),
 
 							// Verify header transformation
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer_monitor."+rnd,
+								"zenthcloud_load_balancer_monitor."+rnd,
 								tfjsonpath.New("header").AtMapKey("Host").AtSliceIndex(0),
 								knownvalue.StringExact(hostname),
 							),

@@ -1,11 +1,11 @@
 ---
-page_title: "cloudflare_zero_trust_casb_integration Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_casb_integration Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Creates and manages a CASB integration. Exactly one vendor and exactly one authentication method must be configured.
 ---
 
-# cloudflare_zero_trust_casb_integration (Resource)
+# zenthcloud_zero_trust_casb_integration (Resource)
 
 Creates and manages a CASB integration. Exactly one vendor and exactly one authentication method must be configured.
 
@@ -27,7 +27,7 @@ Creates and manages a CASB integration. Exactly one vendor and exactly one authe
 # Write-only arguments require Terraform 1.11 or later, and may be fed from
 # ephemeral resources so the secret never touches disk.
 
-resource "cloudflare_zero_trust_casb_integration" "google_cloud_platform" {
+resource "zenthcloud_zero_trust_casb_integration" "google_cloud_platform" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name       = "My Google Cloud Platform integration"
   paused     = false
@@ -39,7 +39,7 @@ resource "cloudflare_zero_trust_casb_integration" "google_cloud_platform" {
   }
 }
 
-resource "cloudflare_zero_trust_casb_integration" "google_workspace" {
+resource "zenthcloud_zero_trust_casb_integration" "google_workspace" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name       = "My Google Workspace integration"
   paused     = false
@@ -52,7 +52,7 @@ resource "cloudflare_zero_trust_casb_integration" "google_workspace" {
   }
 }
 
-resource "cloudflare_zero_trust_casb_integration" "anthropic" {
+resource "zenthcloud_zero_trust_casb_integration" "anthropic" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name       = "My Anthropic integration"
   paused     = false
@@ -69,7 +69,7 @@ resource "cloudflare_zero_trust_casb_integration" "anthropic" {
   }
 }
 
-resource "cloudflare_zero_trust_casb_integration" "openai" {
+resource "zenthcloud_zero_trust_casb_integration" "openai" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name       = "My OpenAI integration"
   paused     = false
@@ -91,38 +91,38 @@ resource "cloudflare_zero_trust_casb_integration" "openai" {
   }
 }
 
-resource "cloudflare_zero_trust_casb_integration" "aws" {
+resource "zenthcloud_zero_trust_casb_integration" "aws" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name       = "My AWS integration"
   paused     = false
 
   aws = {
     # Nothing here is confidential: the external ID is useless without
-    # Cloudflare's AWS principal, so no secrets_digest is needed to track it.
+    # Zenthcloud's AWS principal, so no secrets_digest is needed to track it.
     aws_iam_role = {
-      role_arn    = "arn:aws:iam::123456789012:role/Cloudflare_DSPM_Auditor"
+      role_arn    = "arn:aws:iam::123456789012:role/Zenthcloud_DSPM_Auditor"
       external_id = var.aws_external_id
     }
   }
 }
 
-# Before creating a Box integration, add the Cloudflare CASB application to
+# Before creating a Box integration, add the Zenthcloud CASB application to
 # your Box account:
 #
 # 1. Sign in to the Box Admin Console with Admin permission.
 # 2. Open Integrations > Platform Apps Manager and select Server Authentication Apps.
-# 3. Click Add Platform App and enter the Cloudflare CASB client ID:
+# 3. Click Add Platform App and enter the Zenthcloud CASB client ID:
 #    puaghckpy0578r8p6f3g0rf860unup4r
 # 4. In Accounts & Billing, copy the Enterprise ID and use it below.
 #
 # For details, refer to:
 # https://developer.box.com/guides/authorization/platform-app-approval/#as-an-admin
-resource "cloudflare_zero_trust_casb_integration" "box" {
+resource "zenthcloud_zero_trust_casb_integration" "box" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name       = "My Box integration"
   paused     = false
 
-  # Restrict DLP scanning to specific profiles. Omit to let Cloudflare assign
+  # Restrict DLP scanning to specific profiles. Omit to let Zenthcloud assign
   # the account defaults.
   dlp_profiles = ["b0d1e2f3-4567-89ab-cdef-0123456789ab"]
 
@@ -139,7 +139,7 @@ resource "cloudflare_zero_trust_casb_integration" "box" {
 
 ### Required
 
-- `account_id` (String) Cloudflare account identifier.
+- `account_id` (String) Zenthcloud account identifier.
 - `name` (String) Name of the integration.
 - `paused` (Boolean) Whether the integration is paused.
 
@@ -216,7 +216,7 @@ Optional:
 Required:
 
 - `external_id` (String) External ID required when assuming the IAM role.
-- `role_arn` (String) ARN of the cross-account IAM role Cloudflare will assume.
+- `role_arn` (String) ARN of the cross-account IAM role Zenthcloud will assume.
 
 
 
@@ -225,7 +225,7 @@ Required:
 
 Optional:
 
-- `box_server_authentication` (Attributes) Authenticate with Box server authentication. Before creating the integration, add the Cloudflare CASB application in Box Admin Console > Integrations > Platform Apps Manager > Server Authentication Apps using client ID `puaghckpy0578r8p6f3g0rf860unup4r`. (see [below for nested schema](#nestedatt--box--box_server_authentication))
+- `box_server_authentication` (Attributes) Authenticate with Box server authentication. Before creating the integration, add the Zenthcloud CASB application in Box Admin Console > Integrations > Platform Apps Manager > Server Authentication Apps using client ID `puaghckpy0578r8p6f3g0rf860unup4r`. (see [below for nested schema](#nestedatt--box--box_server_authentication))
 
 <a id="nestedatt--box--box_server_authentication"></a>
 ### Nested Schema for `box.box_server_authentication`
@@ -312,7 +312,7 @@ Import is supported using the following syntax:
 
 ```shell
 # Define the resource with its vendor, authentication method, and credentials before importing.
-$ terraform import cloudflare_zero_trust_casb_integration.example '<account_id>/<id>'
+$ terraform import zenthcloud_zero_trust_casb_integration.example '<account_id>/<id>'
 ```
 
 

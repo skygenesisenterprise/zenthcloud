@@ -88,7 +88,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 						command:
 							"cf magic-transit advanced-dns-protection configs dns protection rules update",
 						method: "PATCH",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/magic/advanced_dns_protection/configs/dns_protection/rules/${argv["rule-id"] == null ? "<rule-id>" : encodeURIComponent(String(argv["rule-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/magic/advanced_dns_protection/configs/dns_protection/rules/${argv["rule-id"] == null ? "<rule-id>" : encodeURIComponent(String(argv["rule-id"]))}`,
 						pathParams: { "rule-id": String(argv["rule-id"] ?? "") },
 						bodyKind: "json",
 						body:

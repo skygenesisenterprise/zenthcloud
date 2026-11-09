@@ -77,7 +77,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf cloudforce-one threat-intel events categories update",
 						method: "PATCH",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/cloudforce-one/events/event-categories/by-id/${argv["category-id"] == null ? "<category-id>" : encodeURIComponent(String(argv["category-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/cloudforce-one/events/event-categories/by-id/${argv["category-id"] == null ? "<category-id>" : encodeURIComponent(String(argv["category-id"]))}`,
 						pathParams: { "category-id": String(argv["category-id"] ?? "") },
 						bodyKind: "json",
 						body:

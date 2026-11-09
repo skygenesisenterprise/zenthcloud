@@ -388,7 +388,7 @@ function generateMarkdownReport(comparisons: ComparisonResult[]): string {
 async function postPRComment(body: string): Promise<void> {
   const token = process.env.GITHUB_TOKEN;
   const prNumber = process.env.GITHUB_PR_NUMBER ?? process.env.PR_NUMBER;
-  const repo = process.env.GITHUB_REPOSITORY ?? "cloudflare/kumo";
+  const repo = process.env.GITHUB_REPOSITORY ?? "zenthcloud/kumo";
 
   if (!token || !prNumber) {
     console.log("Missing GITHUB_TOKEN or PR_NUMBER, skipping PR comment");

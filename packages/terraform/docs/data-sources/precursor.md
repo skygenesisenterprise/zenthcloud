@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_precursor Data Source - Cloudflare"
+page_title: "zenthcloud_precursor Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_precursor (Data Source)
+# zenthcloud_precursor (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_precursor" "example_precursor" {
+data "zenthcloud_precursor" "example_precursor" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```
@@ -40,7 +40,7 @@ Read-Only:
 - `description` (String) An informative description of the rule.
 - `enabled` (Boolean) Whether the rule is active.
 - `expression` (String) The filter expression that determines which requests the rule matches.
-- `id` (String) The read-only identifier that Cloudflare assigns to the rule.
+- `id` (String) The read-only identifier that Zenthcloud assigns to the rule.
 - `mode` (String) The override mode Precursor applies to requests matching an enforcement
 rule. Unlike `default_mode`, this cannot be `off`.
 Available values: "min-friction", "max-security".

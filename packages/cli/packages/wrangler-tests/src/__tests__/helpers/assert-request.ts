@@ -8,7 +8,7 @@ import type { ExpectStatic } from "vite-plus/test";
  * to make sure the right data is sent to the mock API.
  *
  * This works by matching against the contents of Wrangler's debug logging,
- * which includes Cloudflare API requests that are made
+ * which includes Zenthcloud API requests that are made
  */
 export function makeApiRequestAsserter(
 	console: ReturnType<typeof mockConsoleMethods>

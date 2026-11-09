@@ -4,9 +4,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-// SourceCloudflareAuthenticatedOriginPullsSchema returns the source schema for legacy resource.
+// SourceZenthcloudAuthenticatedOriginPullsSchema returns the source schema for legacy resource.
 // Schema version: 0 (default, not explicitly specified in v4)
-// Resource type: cloudflare_authenticated_origin_pulls
+// Resource type: zenthcloud_authenticated_origin_pulls
 //
 // This minimal schema is used only for reading v4 state during migration.
 // It includes only the properties needed for state parsing (Required, Optional, Computed).
@@ -18,8 +18,8 @@ import (
 // 3. Per-Hostname AOP: zone_id + hostname + authenticated_origin_pulls_certificate + enabled
 //
 // Only mode 3 (Per-Hostname) resources migrate to this v5 resource.
-// Modes 1 and 2 migrate to cloudflare_authenticated_origin_pulls_settings instead.
-func SourceCloudflareAuthenticatedOriginPullsSchema() schema.Schema {
+// Modes 1 and 2 migrate to zenthcloud_authenticated_origin_pulls_settings instead.
+func SourceZenthcloudAuthenticatedOriginPullsSchema() schema.Schema {
 	return schema.Schema{
 		Version: 0,
 		Attributes: map[string]schema.Attribute{

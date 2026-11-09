@@ -5,9 +5,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -15,10 +15,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
-func TestAccCloudflareGoogleTagGateway_Basic(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudGoogleTagGateway_Basic(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_google_tag_gateway.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_google_tag_gateway.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -159,10 +159,10 @@ func TestAccCloudflareGoogleTagGateway_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareGoogleTagGateway_Minimal(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudGoogleTagGateway_Minimal(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_google_tag_gateway.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_google_tag_gateway.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -192,10 +192,10 @@ func TestAccCloudflareGoogleTagGateway_Minimal(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareGoogleTagGateway_UpdateIndividualFields(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudGoogleTagGateway_UpdateIndividualFields(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_google_tag_gateway.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_google_tag_gateway.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -280,10 +280,10 @@ func TestAccCloudflareGoogleTagGateway_UpdateIndividualFields(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareGoogleTagGateway_RefreshPlanEmpty(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudGoogleTagGateway_RefreshPlanEmpty(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_google_tag_gateway.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_google_tag_gateway.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {

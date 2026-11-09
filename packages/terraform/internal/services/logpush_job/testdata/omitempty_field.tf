@@ -1,4 +1,4 @@
-resource "cloudflare_logpush_job" "%s" {
+resource "zenthcloud_logpush_job" "%s" {
   zone_id            = "%s"
   dataset            = "%s"
   destination_conf   = "%s"

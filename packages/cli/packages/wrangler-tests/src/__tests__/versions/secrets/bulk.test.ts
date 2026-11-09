@@ -77,7 +77,7 @@ describe.skip("versions secret bulk", () => {
 			"should not warn if the wrangler config doesn't contain environments and none was specified in the command"
 		);
 		it.skip(
-			"should not warn if the wrangler config contains environments and CLOUDFLARE_ENV is set"
+			"should not warn if the wrangler config contains environments and ZENTHCLOUD_ENV is set"
 		);
 		it.skip(
 			'should not warn if --env="" is passed to explicitly target the top-level environment'

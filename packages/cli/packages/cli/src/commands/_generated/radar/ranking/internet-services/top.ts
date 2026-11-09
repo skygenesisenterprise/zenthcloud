@@ -75,7 +75,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar ranking internet-services top",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/ranking/internet_services/top`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

@@ -5,9 +5,9 @@ package origin_ca_certificate
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/origin_ca_certificates"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/origin_ca_certificates"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -30,14 +30,14 @@ type OriginCACertificateDataSourceModel struct {
 
 func (m *OriginCACertificateDataSourceModel) toListParams(_ context.Context) (params origin_ca_certificates.OriginCACertificateListParams, diags diag.Diagnostics) {
 	params = origin_ca_certificates.OriginCACertificateListParams{
-		ZoneID: cloudflare.F(m.Filter.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.Filter.ZoneID.ValueString()),
 	}
 
 	if !m.Filter.Limit.IsNull() {
-		params.Limit = cloudflare.F(m.Filter.Limit.ValueInt64())
+		params.Limit = zenthcloud.F(m.Filter.Limit.ValueInt64())
 	}
 	if !m.Filter.Offset.IsNull() {
-		params.Offset = cloudflare.F(m.Filter.Offset.ValueInt64())
+		params.Offset = zenthcloud.F(m.Filter.Offset.ValueInt64())
 	}
 
 	return

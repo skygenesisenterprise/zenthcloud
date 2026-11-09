@@ -7,11 +7,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/origin_tls_client_auth"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/origin_tls_client_auth"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -25,13 +25,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_authenticated_origin_pulls", &resource.Sweeper{
-		Name: "cloudflare_authenticated_origin_pulls",
-		F:    testSweepCloudflareAuthenticatedOriginPulls,
+	resource.AddTestSweepers("zenthcloud_authenticated_origin_pulls", &resource.Sweeper{
+		Name: "zenthcloud_authenticated_origin_pulls",
+		F:    testSweepZenthcloudAuthenticatedOriginPulls,
 	})
 }
 
-func testSweepCloudflareAuthenticatedOriginPulls(r string) error {
+func testSweepZenthcloudAuthenticatedOriginPulls(r string) error {
 	ctx := context.Background()
 	// Authenticated Origin Pulls hostname associations are voided by setting enabled: null.
 	// The test framework handles cleanup via CheckDestroy. Sweeping is informational only.
@@ -39,11 +39,11 @@ func testSweepCloudflareAuthenticatedOriginPulls(r string) error {
 	return nil
 }
 
-func testAccCheckCloudflareAuthenticatedOriginPullsDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudAuthenticatedOriginPullsDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_authenticated_origin_pulls" {
+		if rs.Type != "zenthcloud_authenticated_origin_pulls" {
 			continue
 		}
 
@@ -58,7 +58,7 @@ func testAccCheckCloudflareAuthenticatedOriginPullsDestroy(s *terraform.State) e
 			context.Background(),
 			hostname,
 			origin_tls_client_auth.HostnameGetParams{
-				ZoneID: cloudflare.F(zoneID),
+				ZoneID: zenthcloud.F(zoneID),
 			},
 		)
 		if err != nil {
@@ -92,7 +92,7 @@ func testAccAuthenticatedOriginPullsImportStateIdFunc(resourceName string) resou
 
 func testAccAuthenticatedOriginPullsConfig(rnd, zoneID, cert, key, hostname string, enabled bool) string {
 	return fmt.Sprintf(`
-resource "cloudflare_authenticated_origin_pulls_hostname_certificate" "%[1]s" {
+resource "zenthcloud_authenticated_origin_pulls_hostname_certificate" "%[1]s" {
   zone_id     = "%[2]s"
   certificate = <<EOT
 %[3]s
@@ -102,10 +102,10 @@ EOT
 EOT
 }
 
-resource "cloudflare_authenticated_origin_pulls" "%[1]s" {
+resource "zenthcloud_authenticated_origin_pulls" "%[1]s" {
   zone_id = "%[2]s"
   config = [{
-    cert_id  = cloudflare_authenticated_origin_pulls_hostname_certificate.%[1]s.id
+    cert_id  = zenthcloud_authenticated_origin_pulls_hostname_certificate.%[1]s.id
     enabled  = %[6]t
     hostname = "%[5]s"
   }]
@@ -127,9 +127,9 @@ resource "cloudflare_authenticated_origin_pulls" "%[1]s" {
 // 4. Delete: Voiding the association (enabled=null) happens automatically during destroy
 func TestAccAuthenticatedOriginPulls_FullLifecycle(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_authenticated_origin_pulls." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	resourceName := "zenthcloud_authenticated_origin_pulls." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	// Generate ephemeral certificate for testing
 	expiry := time.Now().Add(time.Hour * 24 * 365)
@@ -145,7 +145,7 @@ func TestAccAuthenticatedOriginPulls_FullLifecycle(t *testing.T) {
 			acctest.TestAccPreCheck_Domain(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAuthenticatedOriginPullsDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAuthenticatedOriginPullsDestroy,
 		Steps: []resource.TestStep{
 			// Step 1: Create with enabled = true
 			{

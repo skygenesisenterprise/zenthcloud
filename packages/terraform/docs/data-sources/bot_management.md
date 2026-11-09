@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_bot_management Data Source - Cloudflare"
+page_title: "zenthcloud_bot_management Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Bot Management ReadBot Management Write
 ---
 
-# cloudflare_bot_management (Data Source)
+# zenthcloud_bot_management (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_bot_management" "example_bot_management" {
+data "zenthcloud_bot_management" "example_bot_management" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```
@@ -39,19 +39,19 @@ Available values: "disabled", "disallow", "block", "only_on_ad_pages".
 Available values: "disabled", "block", "only_on_ad_pages".
 - `aisearch` (String) Configure robots.txt policy for AI search bots.
 Available values: "disabled", "block", "only_on_ad_pages".
-- `auto_update_model` (Boolean) Automatically update to the newest bot detection models created by Cloudflare as they are released. [Learn more.](https://developers.cloudflare.com/bots/reference/machine-learning-models#model-versions-and-release-notes)
+- `auto_update_model` (Boolean) Automatically update to the newest bot detection models created by Zenthcloud as they are released. [Learn more.](https://github.com/skygenesisenterprise/zenthcloud)
 - `bm_cookie_enabled` (Boolean) Indicates that the bot management cookie can be placed on end user devices accessing the site. Defaults to true
-- `bot_preference_sync_enabled` (Boolean) Enable Bot Preference Sync for this zone. When enabled, Cloudflare can serve robots.txt content derived from the zone's AI Search, AI User, and AI Training preferences.
+- `bot_preference_sync_enabled` (Boolean) Enable Bot Preference Sync for this zone. When enabled, Zenthcloud can serve robots.txt content derived from the zone's AI Search, AI User, and AI Training preferences.
 - `cf_robots_variant` (String) Specifies the Robots Access Control License variant to use.
 Available values: "off", "policy_only".
 - `content_bots_protection` (String) Enable rule to block content bots. When enabled, blocks automated traffic with low bot scores, excluding safe verified bot categories. Exceptions should be managed via skip rules.
 Available values: "block", "disabled".
 - `crawler_protection` (String) Enable rule to punish AI Scrapers and Crawlers via a link maze.
 Available values: "enabled", "disabled".
-- `enable_js` (Boolean) Use lightweight, invisible JavaScript detections to improve Bot Management. [Learn more about JavaScript Detections](https://developers.cloudflare.com/bots/reference/javascript-detections/).
+- `enable_js` (Boolean) Use lightweight, invisible JavaScript detections to improve Bot Management. [Learn more about JavaScript Detections](https://github.com/skygenesisenterprise/zenthcloud).
 - `fight_mode` (Boolean) Whether to enable Bot Fight Mode.
 - `id` (String) Identifier.
-- `is_robots_txt_managed` (Boolean) Enable cloudflare managed robots.txt. If an existing robots.txt is detected, then managed robots.txt will be prepended to the existing robots.txt.
+- `is_robots_txt_managed` (Boolean) Enable zenthcloud managed robots.txt. If an existing robots.txt is detected, then managed robots.txt will be prepended to the existing robots.txt.
 - `jsd_api_results_enabled` (Boolean) Whether to use JavaScript Detection results submitted through the API for this zone.
 - `optimize_wordpress` (Boolean) Whether to optimize Super Bot Fight Mode protections for Wordpress.
 - `sbfm_definitely_automated` (String) Super Bot Fight Mode (SBFM) action to take on definitely automated requests.

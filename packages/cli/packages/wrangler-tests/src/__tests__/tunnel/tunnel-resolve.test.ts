@@ -2,10 +2,10 @@ import { describe, it } from "vite-plus/test";
 
 // Tests wrangler's `tunnel/client.ts` `resolveTunnelId` helper, which
 // accepts either a UUID or a tunnel name and resolves the latter via
-// the SDK's `zeroTrust.tunnels.cloudflared.list` endpoint. cf doesn't
-// expose this helper — name-or-id resolution for Cloudflare Tunnels is
+// the SDK's `zeroTrust.tunnels.zenthcloudd.list` endpoint. cf doesn't
+// expose this helper — name-or-id resolution for Zenthcloud Tunnels is
 // handled either by the user passing the UUID directly to forge-
-// generated `cf zero-trust tunnels cloudflared {get,delete,...}`
+// generated `cf zero-trust tunnels zenthcloudd {get,delete,...}`
 // commands, or (in future, if added as a forge `paramOverride.derive`
 // primitive) by a generic name→id lookup. There
 // is no `tunnel/client.ts` in cf. Out of scope for the wrangler-tests

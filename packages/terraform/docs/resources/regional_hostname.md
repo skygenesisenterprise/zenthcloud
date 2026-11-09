@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_regional_hostname Resource - Cloudflare"
+page_title: "zenthcloud_regional_hostname Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   DNS ReadDNS Write
 ---
 
-# cloudflare_regional_hostname (Resource)
+# zenthcloud_regional_hostname (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_regional_hostname" "example_regional_hostname" {
+resource "zenthcloud_regional_hostname" "example_regional_hostname" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   hostname = "foo.example.com"
   region_key = "ca"
@@ -47,7 +47,7 @@ resource "cloudflare_regional_hostname" "example_regional_hostname" {
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_regional_hostname.example '<zone_id>/<hostname>'
+$ terraform import zenthcloud_regional_hostname.example '<zone_id>/<hostname>'
 ```
 
 

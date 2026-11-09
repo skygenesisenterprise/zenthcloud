@@ -5,8 +5,8 @@ package zero_trust_device_ip_profile
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -32,7 +32,7 @@ type ZeroTrustDeviceIPProfileDataSourceModel struct {
 
 func (m *ZeroTrustDeviceIPProfileDataSourceModel) toReadParams(_ context.Context) (params zero_trust.DeviceIPProfileGetParams, diags diag.Diagnostics) {
 	params = zero_trust.DeviceIPProfileGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -40,11 +40,11 @@ func (m *ZeroTrustDeviceIPProfileDataSourceModel) toReadParams(_ context.Context
 
 func (m *ZeroTrustDeviceIPProfileDataSourceModel) toListParams(_ context.Context) (params zero_trust.DeviceIPProfileListParams, diags diag.Diagnostics) {
 	params = zero_trust.DeviceIPProfileListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Filter.PerPage.IsNull() {
-		params.PerPage = cloudflare.F(m.Filter.PerPage.ValueInt64())
+		params.PerPage = zenthcloud.F(m.Filter.PerPage.ValueInt64())
 	}
 
 	return

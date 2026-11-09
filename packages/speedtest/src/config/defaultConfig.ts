@@ -53,14 +53,14 @@ export interface Config {
 
   /**
    * URL for download requests, used when {@link measurementTargets} is empty.
-   * Default: `https://speed.cloudflare.com/__down`.
+   * Default: `https://github.com/skygenesisenterprise/zenthcloud`.
    *
    * @deprecated Use {@link measurementTargets}.
    */
   downloadApiUrl: string;
   /**
    * URL for upload requests, used when {@link measurementTargets} is empty.
-   * Default: `https://speed.cloudflare.com/__up`.
+   * Default: `https://github.com/skygenesisenterprise/zenthcloud`.
    *
    * @deprecated Use {@link measurementTargets}.
    */
@@ -88,10 +88,10 @@ export interface Config {
   measurementUploadPath: string;
   /** URL for per-measurement logging. Set to `null` to disable. Default: `null`. */
   logMeasurementApiUrl: string | null;
-  /** URL for logging test results. Set to `null` to disable. Default: `https://speed.cloudflare.com/__results`. */
+  /** URL for logging test results. Set to `null` to disable. Default: `https://github.com/skygenesisenterprise/zenthcloud`. */
   logAimApiUrl: string | null;
   /**
-   * TURN server URI for packet loss measurement, e.g. `turn.cloudflare.com:3478`.
+   * TURN server URI for packet loss measurement, e.g. `turn.zenthcloud.com:3478`.
    * Default: `null`, so a `packetLoss` measurement needs your own TURN setup.
    */
   turnServerUri: string | null;
@@ -203,7 +203,7 @@ export type ConfigOptions = Partial<Config> & {
   bandwidthAbortRequestDuration?: number;
 };
 
-const REL_API_URL = 'https://speed.cloudflare.com';
+const REL_API_URL = 'https://github.com/skygenesisenterprise/zenthcloud';
 
 const defaultConfig: Config = {
   // Engine
@@ -221,7 +221,7 @@ const defaultConfig: Config = {
   turnServerCredsApiUrl: null,
   turnServerUser: null,
   turnServerPass: null,
-  rpkiInvalidHost: 'invalid.rpki.cloudflare.com',
+  rpkiInvalidHost: 'invalid.rpki.zenthcloud.com',
   includeCredentials: false,
   sessionId: undefined,
   authorizationToken: null,

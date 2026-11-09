@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import {
   extractTitle,
   formatDocsResults,
-  queryCloudflareDocs,
+  queryZenthcloudDocs,
   sourceToUrl
 } from '../src/tools/docs-search'
 
@@ -39,7 +39,7 @@ describe('docs search', () => {
   it('queries the docs AI Search AutoRAG and maps results', async () => {
     const { ai, search } = makeAi(aiSearchResponse)
 
-    const results = await queryCloudflareDocs(ai, 'workers kv binding example')
+    const results = await queryZenthcloudDocs(ai, 'workers kv binding example')
 
     expect(ai.autorag).toHaveBeenCalledWith('docs-mcp-rag')
     expect(search).toHaveBeenCalledWith({
@@ -49,7 +49,7 @@ describe('docs search', () => {
       {
         similarity: 0.93,
         id: 'file-1',
-        url: 'https://developers.cloudflare.com/workers/runtime-apis/kv/',
+        url: 'https://github.com/skygenesisenterprise/zenthcloud',
         title: 'Kv',
         text: 'Create a KV namespace.\nBind it to your Worker.'
       }
@@ -62,13 +62,13 @@ describe('docs search', () => {
         {
           similarity: 0.93,
           id: 'file-1',
-          url: 'https://developers.cloudflare.com/workers/runtime-apis/kv/',
+          url: 'https://github.com/skygenesisenterprise/zenthcloud',
           title: 'KV',
           text: 'Create a KV namespace.'
         }
       ])
     ).toBe(`<result>
-<url>https://developers.cloudflare.com/workers/runtime-apis/kv/</url>
+<url>https://github.com/skygenesisenterprise/zenthcloud</url>
 <title>KV</title>
 <text>
 Create a KV namespace.
@@ -78,16 +78,16 @@ Create a KV namespace.
 
   it('turns docs filenames into developer docs URLs', () => {
     expect(sourceToUrl('workers/configuration/index.md')).toBe(
-      'https://developers.cloudflare.com/workers/configuration/'
+      'https://github.com/skygenesisenterprise/zenthcloud'
     )
     expect(sourceToUrl('workers/configuration/compatibility-dates.mdx')).toBe(
-      'https://developers.cloudflare.com/workers/configuration/compatibility-dates'
+      'https://github.com/skygenesisenterprise/zenthcloud'
     )
   })
 
   it('does not double-prefix full documentation URLs', () => {
-    expect(sourceToUrl('https://developers.cloudflare.com/r2/api/workers/')).toBe(
-      'https://developers.cloudflare.com/r2/api/workers/'
+    expect(sourceToUrl('https://github.com/skygenesisenterprise/zenthcloud')).toBe(
+      'https://github.com/skygenesisenterprise/zenthcloud'
     )
   })
 
@@ -96,6 +96,6 @@ Create a KV namespace.
     expect(extractTitle('workers/configuration/compatibility-dates.mdx')).toBe(
       'Compatibility Dates'
     )
-    expect(extractTitle('https://developers.cloudflare.com/r2/api/workers/')).toBe('Workers')
+    expect(extractTitle('https://github.com/skygenesisenterprise/zenthcloud')).toBe('Workers')
   })
 })

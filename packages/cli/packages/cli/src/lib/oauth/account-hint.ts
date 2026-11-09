@@ -6,8 +6,8 @@
 import { relative } from "node:path";
 import * as clack from "@clack/prompts";
 import {
-	CLOUDFLARE_CONFIG_FILENAME,
-	findCloudflareConfig,
+	ZENTHCLOUD_CONFIG_FILENAME,
+	findZenthcloudConfig,
 } from "../project-settings.js";
 import { wrapPlain } from "../ui/blocks.js";
 import { GUIDE_WIDTH } from "../ui/log.js";
@@ -24,10 +24,10 @@ export function printAccountConfigHint(
 ): void {
 	const { cwd = process.cwd(), output = process.stderr } = options;
 	const columns = options.columns ?? (output.columns || 80);
-	const configPath = findCloudflareConfig(cwd);
+	const configPath = findZenthcloudConfig(cwd);
 	const target = configPath
 		? relative(cwd, configPath)
-		: CLOUDFLARE_CONFIG_FILENAME;
+		: ZENTHCLOUD_CONFIG_FILENAME;
 
 	const sentence = configPath
 		? `To make this the project's default account, add accountId to ${target}:`

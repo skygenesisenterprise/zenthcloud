@@ -15,7 +15,7 @@ from retrying import retry
 
 from constants import METRICS_PORT, MAX_RETRIES, BACKOFF_SECS, DNS_BACKOFF_SECS, GRACEFUL_SHUTDOWN_TIMEOUT, READER_THREAD_JOIN_TIMEOUT
 
-class CloudflaredProcess:
+class ZenthclouddProcess:
     """
     Wrapper around a Popen process that continuously drains stdout and stderr
     in background threads to prevent OS pipe buffers from filling up and
@@ -62,7 +62,7 @@ class CloudflaredProcess:
         if self._capture_output:
             stdout = b"".join(self._stdout_lines).decode("utf-8", errors="replace")
             if stdout:
-                LOGGER.info(f"cloudflared stdout:\n{stdout}")
+                LOGGER.info(f"zenthcloudd stdout:\n{stdout}")
 
     @property
     def stdout_lines(self):
@@ -106,25 +106,25 @@ def write_config(directory, config):
     return config_path
 
 
-def start_cloudflared(directory, config, cfd_args=["run"], cfd_pre_args=["tunnel"], new_process=False,
+def start_zenthcloudd(directory, config, cfd_args=["run"], cfd_pre_args=["tunnel"], new_process=False,
                       allow_input=False, capture_output=True, root=False, skip_config_flag=False, expect_success=True):
 
     config_path = None
     if not skip_config_flag:
         config_path = write_config(directory, config.full_config)
 
-    cmd = cloudflared_cmd(config, config_path, cfd_args, cfd_pre_args, root)
+    cmd = zenthcloudd_cmd(config, config_path, cfd_args, cfd_pre_args, root)
 
     if new_process:
-        return run_cloudflared_background(cmd, allow_input, capture_output)
+        return run_zenthcloudd_background(cmd, allow_input, capture_output)
     # By setting check=True, it will raise an exception if the process exits with non-zero exit code
     return subprocess.run(cmd, check=expect_success, capture_output=capture_output)
 
-def cloudflared_cmd(config, config_path, cfd_args, cfd_pre_args, root):
+def zenthcloudd_cmd(config, config_path, cfd_args, cfd_pre_args, root):
     cmd = []
     if root:
         cmd += ["sudo"]
-    cmd += [config.cloudflared_binary]
+    cmd += [config.zenthcloudd_binary]
     cmd += cfd_pre_args
 
     if config_path is not None:
@@ -135,10 +135,10 @@ def cloudflared_cmd(config, config_path, cfd_args, cfd_pre_args, root):
     return cmd
 
 @contextmanager
-def run_cloudflared_background(cmd, allow_input, capture_output):
+def run_zenthcloudd_background(cmd, allow_input, capture_output):
     cfd = None
     try:
-        cfd = CloudflaredProcess(cmd, allow_input, capture_output)
+        cfd = ZenthclouddProcess(cmd, allow_input, capture_output)
         yield cfd
     finally:
         if cfd:
@@ -174,7 +174,7 @@ def wait_tunnel_ready(tunnel_url=None, require_min_connections=1, cfd_logs=None)
         inner_wait_tunnel_ready(tunnel_url, require_min_connections)
     except Exception as e:
         if cfd_logs is not None:
-            _log_cloudflared_logs(cfd_logs)
+            _log_zenthcloudd_logs(cfd_logs)
         raise e
 
 
@@ -194,7 +194,7 @@ def inner_wait_tunnel_ready(tunnel_url=None, require_min_connections=1):
         if tunnel_url is not None:
             send_request(s, tunnel_url, True)
 
-def _log_cloudflared_logs(cfd_logs):
+def _log_zenthcloudd_logs(cfd_logs):
     log_file = cfd_logs
     if os.path.isdir(cfd_logs):
         files = os.listdir(cfd_logs)
@@ -202,7 +202,7 @@ def _log_cloudflared_logs(cfd_logs):
             return
         log_file = os.path.join(cfd_logs, files[0])
     with open(log_file, "r") as f:
-        LOGGER.warning("Cloudflared Tunnel was not ready:")
+        LOGGER.warning("Zenthcloudd Tunnel was not ready:")
         for line in f.readlines():
             LOGGER.warning(line)
 
@@ -216,7 +216,7 @@ def check_tunnel_not_connected():
         assert resp.status_code == 503, f"Expect {url} returns 503, got {resp.status_code}"
         assert resp.json()[
             "readyConnections"] == 0, "Expected all connections to be terminated (pending reconnect)"
-    # cloudflared might already terminate
+    # zenthcloudd might already terminate
     except requests.exceptions.ConnectionError as e:
         LOGGER.warning(f"Failed to connect to {url}, error: {e}")
 
@@ -227,7 +227,7 @@ def get_tunnel_connector_id():
     try:
         resp = requests.get(url, timeout=1)
         return resp.json()["connectorId"]
-    # cloudflared might already terminated
+    # zenthcloudd might already terminated
     except requests.exceptions.ConnectionError as e:
         LOGGER.warning(f"Failed to connect to {url}, error: {e}")
 

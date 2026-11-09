@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { isDoNotTrackEnabled } from "@cloudflare/workers-utils";
+import { isDoNotTrackEnabled } from "@zenthcloud/workers-utils";
 import { readState, updateState } from "../state.js";
 
 export const TELEMETRY_POLICY_DATE = new Date("2026-01-01T00:00:00.000Z");

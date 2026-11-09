@@ -50,44 +50,44 @@
 
 - f1e1d11: Update dependencies published from the Workers SDK repository:
 
-  - `@cloudflare/autoconfig`: `0.9.2` → `0.9.3`
-  - `@cloudflare/build-output-utils`: `0.9.9` → `0.9.10`
-  - `@cloudflare/cli-shared-helpers`: `0.3.3` → `0.3.4`
-  - `@cloudflare/codemods`: `0.7.3` → `0.7.4`
-  - `@cloudflare/config`: `0.30.1` → `0.30.2`
-  - `@cloudflare/containers-shared`: `0.23.8` → `0.23.9`
-  - `@cloudflare/deploy-helpers`: `0.25.0` → `0.26.0`
-  - `@cloudflare/runtime-types`: `0.1.22` → `0.1.23`
-  - `@cloudflare/workers-auth`: `0.15.6` → `0.16.0`
-  - `@cloudflare/workers-utils`: `0.51.1` → `0.52.0`
+  - `@zenthcloud/autoconfig`: `0.9.2` → `0.9.3`
+  - `@zenthcloud/build-output-utils`: `0.9.9` → `0.9.10`
+  - `@zenthcloud/cli-shared-helpers`: `0.3.3` → `0.3.4`
+  - `@zenthcloud/codemods`: `0.7.3` → `0.7.4`
+  - `@zenthcloud/config`: `0.30.1` → `0.30.2`
+  - `@zenthcloud/containers-shared`: `0.23.8` → `0.23.9`
+  - `@zenthcloud/deploy-helpers`: `0.25.0` → `0.26.0`
+  - `@zenthcloud/runtime-types`: `0.1.22` → `0.1.23`
+  - `@zenthcloud/workers-auth`: `0.15.6` → `0.16.0`
+  - `@zenthcloud/workers-utils`: `0.51.1` → `0.52.0`
   - `miniflare`: `5.20261103.0-beta` → `5.20261104.0-beta`
 
 - 3f3a6af: Update dependencies published from the Workers SDK repository:
 
-  - `@cloudflare/autoconfig`: `0.9.1` → `0.9.2`
-  - `@cloudflare/build-output-utils`: `0.9.8` → `0.9.9`
-  - `@cloudflare/cli-shared-helpers`: `0.3.2` → `0.3.3`
-  - `@cloudflare/codemods`: `0.7.2` → `0.7.3`
-  - `@cloudflare/config`: `0.30.0` → `0.30.1`
-  - `@cloudflare/containers-shared`: `0.23.7` → `0.23.8`
-  - `@cloudflare/deploy-helpers`: `0.24.5` → `0.25.0`
-  - `@cloudflare/runtime-types`: `0.1.21` → `0.1.22`
-  - `@cloudflare/workers-auth`: `0.15.5` → `0.15.6`
-  - `@cloudflare/workers-utils`: `0.51.0` → `0.51.1`
+  - `@zenthcloud/autoconfig`: `0.9.1` → `0.9.2`
+  - `@zenthcloud/build-output-utils`: `0.9.8` → `0.9.9`
+  - `@zenthcloud/cli-shared-helpers`: `0.3.2` → `0.3.3`
+  - `@zenthcloud/codemods`: `0.7.2` → `0.7.3`
+  - `@zenthcloud/config`: `0.30.0` → `0.30.1`
+  - `@zenthcloud/containers-shared`: `0.23.7` → `0.23.8`
+  - `@zenthcloud/deploy-helpers`: `0.24.5` → `0.25.0`
+  - `@zenthcloud/runtime-types`: `0.1.21` → `0.1.22`
+  - `@zenthcloud/workers-auth`: `0.15.5` → `0.15.6`
+  - `@zenthcloud/workers-utils`: `0.51.0` → `0.51.1`
   - `miniflare`: `5.20261102.0-beta` → `5.20261103.0-beta`
 
 - 5953756: Update dependencies published from the Workers SDK repository:
 
-  - `@cloudflare/autoconfig`: `0.9.0` → `0.9.1`
-  - `@cloudflare/build-output-utils`: `0.9.7` → `0.9.8`
-  - `@cloudflare/cli-shared-helpers`: `0.3.1` → `0.3.2`
-  - `@cloudflare/codemods`: `0.7.1` → `0.7.2`
-  - `@cloudflare/config`: `0.29.1` → `0.30.0`
-  - `@cloudflare/containers-shared`: `0.23.6` → `0.23.7`
-  - `@cloudflare/deploy-helpers`: `0.24.4` → `0.24.5`
-  - `@cloudflare/runtime-types`: `0.1.20` → `0.1.21`
-  - `@cloudflare/workers-auth`: `0.15.4` → `0.15.5`
-  - `@cloudflare/workers-utils`: `0.50.2` → `0.51.0`
+  - `@zenthcloud/autoconfig`: `0.9.0` → `0.9.1`
+  - `@zenthcloud/build-output-utils`: `0.9.7` → `0.9.8`
+  - `@zenthcloud/cli-shared-helpers`: `0.3.1` → `0.3.2`
+  - `@zenthcloud/codemods`: `0.7.1` → `0.7.2`
+  - `@zenthcloud/config`: `0.29.1` → `0.30.0`
+  - `@zenthcloud/containers-shared`: `0.23.6` → `0.23.7`
+  - `@zenthcloud/deploy-helpers`: `0.24.4` → `0.24.5`
+  - `@zenthcloud/runtime-types`: `0.1.20` → `0.1.21`
+  - `@zenthcloud/workers-auth`: `0.15.4` → `0.15.5`
+  - `@zenthcloud/workers-utils`: `0.50.2` → `0.51.0`
   - `miniflare`: `5.20261101.0-beta` → `5.20261102.0-beta`
 
 - 12fddf0: Require input for mandatory plain-text request bodies
@@ -143,7 +143,7 @@
   Commands that serve either an account or a zone, such as `cf rulesets list`
   and `cf load-balancers account list`, now say in `--help` that they run
   against your account unless you pass `--zone`, and that they ignore
-  `CLOUDFLARE_ZONE_ID`.
+  `ZENTHCLOUD_ZONE_ID`.
 
 - edc13df: Prepare generated commands to preserve audio API responses
 
@@ -156,7 +156,7 @@
 
 - cde5fa3: Reject `--zone` without a value
 
-  An empty `--zone` used to fall back to `CLOUDFLARE_ZONE_ID`, and `--dry-run`
+  An empty `--zone` used to fall back to `ZENTHCLOUD_ZONE_ID`, and `--dry-run`
   previewed a `/zones//` path. On commands that serve both an account and a
   zone, it also switched to zone scope. cf now stops with
   `--zone requires a non-empty value.` and, as with `--mode`, rejects a repeated
@@ -181,16 +181,16 @@
 
 - 3043819: Update dependencies published from the Workers SDK repository:
 
-  - `@cloudflare/autoconfig`: `0.8.3` → `0.9.0`
-  - `@cloudflare/build-output-utils`: `0.9.6` → `0.9.7`
-  - `@cloudflare/cli-shared-helpers`: `0.3.0` → `0.3.1`
-  - `@cloudflare/codemods`: `0.7.0` → `0.7.1`
-  - `@cloudflare/config`: `0.29.0` → `0.29.1`
-  - `@cloudflare/containers-shared`: `0.23.5` → `0.23.6`
-  - `@cloudflare/deploy-helpers`: `0.24.3` → `0.24.4`
-  - `@cloudflare/runtime-types`: `0.1.19` → `0.1.20`
-  - `@cloudflare/workers-auth`: `0.15.3` → `0.15.4`
-  - `@cloudflare/workers-utils`: `0.50.1` → `0.50.2`
+  - `@zenthcloud/autoconfig`: `0.8.3` → `0.9.0`
+  - `@zenthcloud/build-output-utils`: `0.9.6` → `0.9.7`
+  - `@zenthcloud/cli-shared-helpers`: `0.3.0` → `0.3.1`
+  - `@zenthcloud/codemods`: `0.7.0` → `0.7.1`
+  - `@zenthcloud/config`: `0.29.0` → `0.29.1`
+  - `@zenthcloud/containers-shared`: `0.23.5` → `0.23.6`
+  - `@zenthcloud/deploy-helpers`: `0.24.3` → `0.24.4`
+  - `@zenthcloud/runtime-types`: `0.1.19` → `0.1.20`
+  - `@zenthcloud/workers-auth`: `0.15.3` → `0.15.4`
+  - `@zenthcloud/workers-utils`: `0.50.1` → `0.50.2`
   - `miniflare`: `5.20261023.3-beta` → `5.20261101.0-beta`
 
 - aa0ee04: Correct generated validation for nested optional request-body objects.
@@ -220,13 +220,13 @@
 
 - 0569848: Update dependencies published from the Workers SDK repository:
 
-  - `@cloudflare/autoconfig`: `0.8.2` → `0.8.3`
-  - `@cloudflare/cli-shared-helpers`: `0.2.10` → `0.3.0`
-  - `@cloudflare/containers-shared`: `0.23.4` → `0.23.5`
-  - `@cloudflare/deploy-helpers`: `0.24.2` → `0.24.3`
-  - `@cloudflare/runtime-types`: `0.1.18` → `0.1.19`
-  - `@cloudflare/workers-auth`: `0.15.2` → `0.15.3`
-  - `@cloudflare/workers-utils`: `0.50.0` → `0.50.1`
+  - `@zenthcloud/autoconfig`: `0.8.2` → `0.8.3`
+  - `@zenthcloud/cli-shared-helpers`: `0.2.10` → `0.3.0`
+  - `@zenthcloud/containers-shared`: `0.23.4` → `0.23.5`
+  - `@zenthcloud/deploy-helpers`: `0.24.2` → `0.24.3`
+  - `@zenthcloud/runtime-types`: `0.1.18` → `0.1.19`
+  - `@zenthcloud/workers-auth`: `0.15.2` → `0.15.3`
+  - `@zenthcloud/workers-utils`: `0.50.0` → `0.50.1`
   - `miniflare`: `5.20261023.2-beta` → `5.20261023.3-beta`
 
 ## 1.0.0-beta.25
@@ -235,7 +235,7 @@
 
 - 24e9142: Group OAuth scopes by product
 
-  `cf auth login` now summarizes granted scopes instead of hinting at the full list, and the new `cf auth scopes` command shows them in the product categories of Cloudflare's OAuth scope catalogue, which it caches for a day. Scopes the catalogue does not categorize are listed under Uncategorized. Pass a product name, `--all`, or `--filter <term>` to list the permissions, with non-read access highlighted and non-default scopes marked as custom. `cf auth whoami` is unchanged.
+  `cf auth login` now summarizes granted scopes instead of hinting at the full list, and the new `cf auth scopes` command shows them in the product categories of Zenthcloud's OAuth scope catalogue, which it caches for a day. Scopes the catalogue does not categorize are listed under Uncategorized. Pass a product name, `--all`, or `--filter <term>` to list the permissions, with non-read access highlighted and non-default scopes marked as custom. `cf auth whoami` is unchanged.
 
 - d11af6b: Update the generated command surface for Forge OpenAPI release
   `c4fbef6545cc3ae3ef7724398dc12e1fecbd9183`.
@@ -252,22 +252,22 @@
 
 - 5db5ab3: Update dependencies published from the Workers SDK repository:
 
-  - `@cloudflare/autoconfig`: `0.8.1` → `0.8.2`
-  - `@cloudflare/build-output-utils`: `0.9.5` → `0.9.6`
-  - `@cloudflare/cli-shared-helpers`: `0.2.9` → `0.2.10`
-  - `@cloudflare/codemods`: `0.6.1` → `0.7.0`
-  - `@cloudflare/config`: `0.28.1` → `0.29.0`
-  - `@cloudflare/containers-shared`: `0.23.3` → `0.23.4`
-  - `@cloudflare/deploy-helpers`: `0.24.1` → `0.24.2`
-  - `@cloudflare/runtime-types`: `0.1.17` → `0.1.18`
-  - `@cloudflare/workers-auth`: `0.15.1` → `0.15.2`
-  - `@cloudflare/workers-utils`: `0.49.0` → `0.50.0`
+  - `@zenthcloud/autoconfig`: `0.8.1` → `0.8.2`
+  - `@zenthcloud/build-output-utils`: `0.9.5` → `0.9.6`
+  - `@zenthcloud/cli-shared-helpers`: `0.2.9` → `0.2.10`
+  - `@zenthcloud/codemods`: `0.6.1` → `0.7.0`
+  - `@zenthcloud/config`: `0.28.1` → `0.29.0`
+  - `@zenthcloud/containers-shared`: `0.23.3` → `0.23.4`
+  - `@zenthcloud/deploy-helpers`: `0.24.1` → `0.24.2`
+  - `@zenthcloud/runtime-types`: `0.1.17` → `0.1.18`
+  - `@zenthcloud/workers-auth`: `0.15.1` → `0.15.2`
+  - `@zenthcloud/workers-utils`: `0.49.0` → `0.50.0`
   - `miniflare`: `5.20261023.1-beta` → `5.20261023.2-beta`
 
 - 119b2a4: Update dependencies published from the Workers SDK repository:
 
-  - `@cloudflare/deploy-helpers`: `0.24.0` → `0.24.1`
-  - `@cloudflare/runtime-types`: `0.1.16` → `0.1.17`
+  - `@zenthcloud/deploy-helpers`: `0.24.0` → `0.24.1`
+  - `@zenthcloud/runtime-types`: `0.1.16` → `0.1.17`
 
 ## 1.0.0-beta.24
 
@@ -276,13 +276,13 @@
 - 014eadd: Delegate development registry resolution to Miniflare
 
   During the cf beta, stop overriding registry paths for `cf dev` and `--local`.
-  Miniflare v5 owns the default `<Cloudflare config directory>/dev-registry/v5`
-  and the `CLOUDFLARE_DEV_REGISTRY_PATH` override. cf no longer interprets
-  `CLOUDFLARE_REGISTRY_PATH` or translates registry settings for child processes;
+  Miniflare v5 owns the default `<Zenthcloud config directory>/dev-registry/v5`
+  and the `ZENTHCLOUD_DEV_REGISTRY_PATH` override. cf no longer interprets
+  `ZENTHCLOUD_REGISTRY_PATH` or translates registry settings for child processes;
   exported environment variables reach the selected project tooling unchanged.
 
   Wrangler retains its own default registry for compatibility. Set the same
-  `CLOUDFLARE_DEV_REGISTRY_PATH` for cf and compatible Wrangler/Vite processes when
+  `ZENTHCLOUD_DEV_REGISTRY_PATH` for cf and compatible Wrangler/Vite processes when
   they need to share development resources.
 
 - 6b19d0c: Upload every binary multipart field from a file
@@ -325,16 +325,16 @@
 
 - 255cd26: Update dependencies published from the Workers SDK repository:
 
-  - `@cloudflare/autoconfig`: `0.8.0` → `0.8.1`
-  - `@cloudflare/build-output-utils`: `0.9.4` → `0.9.5`
-  - `@cloudflare/cli-shared-helpers`: `0.2.8` → `0.2.9`
-  - `@cloudflare/codemods`: `0.6.0` → `0.6.1`
-  - `@cloudflare/config`: `0.28.0` → `0.28.1`
-  - `@cloudflare/containers-shared`: `0.23.2` → `0.23.3`
-  - `@cloudflare/deploy-helpers`: `0.23.0` → `0.24.0`
-  - `@cloudflare/runtime-types`: `0.1.15` → `0.1.16`
-  - `@cloudflare/workers-auth`: `0.15.0` → `0.15.1`
-  - `@cloudflare/workers-utils`: `0.48.0` → `0.49.0`
+  - `@zenthcloud/autoconfig`: `0.8.0` → `0.8.1`
+  - `@zenthcloud/build-output-utils`: `0.9.4` → `0.9.5`
+  - `@zenthcloud/cli-shared-helpers`: `0.2.8` → `0.2.9`
+  - `@zenthcloud/codemods`: `0.6.0` → `0.6.1`
+  - `@zenthcloud/config`: `0.28.0` → `0.28.1`
+  - `@zenthcloud/containers-shared`: `0.23.2` → `0.23.3`
+  - `@zenthcloud/deploy-helpers`: `0.23.0` → `0.24.0`
+  - `@zenthcloud/runtime-types`: `0.1.15` → `0.1.16`
+  - `@zenthcloud/workers-auth`: `0.15.0` → `0.15.1`
+  - `@zenthcloud/workers-utils`: `0.48.0` → `0.49.0`
   - `miniflare`: `5.20261019.2-beta` → `5.20261023.0-beta`
 
 ## 1.0.0-beta.22
@@ -460,21 +460,21 @@
 
 - 09c9303: Update dependencies published from the Workers SDK repository:
 
-  - `@cloudflare/autoconfig`: `0.7.11` → `0.8.0`
-  - `@cloudflare/build-output-utils`: `0.9.3` → `0.9.4`
-  - `@cloudflare/cli-shared-helpers`: `0.2.7` → `0.2.8`
-  - `@cloudflare/codemods`: `0.5.1` → `0.6.0`
-  - `@cloudflare/config`: `0.27.0` → `0.28.0`
-  - `@cloudflare/containers-shared`: `0.23.1` → `0.23.2`
-  - `@cloudflare/deploy-helpers`: `0.22.1` → `0.23.0`
-  - `@cloudflare/runtime-types`: `0.1.14` → `0.1.15`
-  - `@cloudflare/workers-auth`: `0.14.1` → `0.15.0`
-  - `@cloudflare/workers-utils`: `0.47.3` → `0.48.0`
+  - `@zenthcloud/autoconfig`: `0.7.11` → `0.8.0`
+  - `@zenthcloud/build-output-utils`: `0.9.3` → `0.9.4`
+  - `@zenthcloud/cli-shared-helpers`: `0.2.7` → `0.2.8`
+  - `@zenthcloud/codemods`: `0.5.1` → `0.6.0`
+  - `@zenthcloud/config`: `0.27.0` → `0.28.0`
+  - `@zenthcloud/containers-shared`: `0.23.1` → `0.23.2`
+  - `@zenthcloud/deploy-helpers`: `0.22.1` → `0.23.0`
+  - `@zenthcloud/runtime-types`: `0.1.14` → `0.1.15`
+  - `@zenthcloud/workers-auth`: `0.14.1` → `0.15.0`
+  - `@zenthcloud/workers-utils`: `0.47.3` → `0.48.0`
   - `miniflare`: `5.20261019.1-beta` → `5.20261019.2-beta`
 
 - d4a5d17: Skip reading the compliance region from the config file when it is set in the environment
 
-  Resolve `CLOUDFLARE_COMPLIANCE_REGION` before project settings, matching the existing account ID priority. Commands with both `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_COMPLIANCE_REGION` no longer evaluate a `cloudflare.config.ts` file solely to establish API context.
+  Resolve `ZENTHCLOUD_COMPLIANCE_REGION` before project settings, matching the existing account ID priority. Commands with both `ZENTHCLOUD_ACCOUNT_ID` and `ZENTHCLOUD_COMPLIANCE_REGION` no longer evaluate a `zenthcloud.config.ts` file solely to establish API context.
 
 ## 1.0.0-beta.20
 
@@ -489,9 +489,9 @@
   and telemetry commands use clack's log lines and the `✓` success line, which,
   as with generated commands, appears only when stderr is a terminal. A command
   to run next is printed on its own line so it copies cleanly. `cf auth login`
-  with `CLOUDFLARE_API_TOKEN` set now warns once that the token takes
+  with `ZENTHCLOUD_API_TOKEN` set now warns once that the token takes
   precedence, and `cf auth logout` no longer reports removing OAuth tokens that
-  it keeps while `CLOUDFLARE_API_TOKEN` is set.
+  it keeps while `ZENTHCLOUD_API_TOKEN` is set.
 
 - 1dc3664: Require the latest minor releases of supported Node.js majors
 
@@ -501,7 +501,7 @@
 
 - 116bcf4: Support temporary accounts with `--temporary-account`
 
-  Create or reuse a short-lived Cloudflare account without signing in. cf prints
+  Create or reuse a short-lived Zenthcloud account without signing in. cf prints
   a claim URL; use `--event-code` to redeem an event code during account creation.
 
   Help, authentication checks, and dry runs never create accounts. `cf auth logout`
@@ -516,13 +516,13 @@
 
 - 02663da: Update dependencies published from the Workers SDK repository:
 
-  - `@cloudflare/autoconfig`: `0.7.10` → `0.7.11`
-  - `@cloudflare/cli-shared-helpers`: `0.2.6` → `0.2.7`
-  - `@cloudflare/containers-shared`: `0.23.0` → `0.23.1`
-  - `@cloudflare/deploy-helpers`: `0.22.0` → `0.22.1`
-  - `@cloudflare/runtime-types`: `0.1.13` → `0.1.14`
-  - `@cloudflare/workers-auth`: `0.14.0` → `0.14.1`
-  - `@cloudflare/workers-utils`: `0.47.2` → `0.47.3`
+  - `@zenthcloud/autoconfig`: `0.7.10` → `0.7.11`
+  - `@zenthcloud/cli-shared-helpers`: `0.2.6` → `0.2.7`
+  - `@zenthcloud/containers-shared`: `0.23.0` → `0.23.1`
+  - `@zenthcloud/deploy-helpers`: `0.22.0` → `0.22.1`
+  - `@zenthcloud/runtime-types`: `0.1.13` → `0.1.14`
+  - `@zenthcloud/workers-auth`: `0.14.0` → `0.14.1`
+  - `@zenthcloud/workers-utils`: `0.47.2` → `0.47.3`
   - `miniflare`: `5.20261019.0-beta` → `5.20261019.1-beta`
 
 ## 1.0.0-beta.19
@@ -558,10 +558,10 @@
 - 526debf: Send header flags on bodyless raw-response commands, including the jurisdiction and conditional headers for `cf r2 objects get`.
 - 768a01d: Update dependencies published from the Workers SDK repository:
 
-  - `@cloudflare/codemods`: `0.5.0` → `0.5.1`
-  - `@cloudflare/containers-shared`: `0.22.1` → `0.23.0`
-  - `@cloudflare/deploy-helpers`: `0.21.0` → `0.22.0`
-  - `@cloudflare/runtime-types`: `0.1.12` → `0.1.13`
+  - `@zenthcloud/codemods`: `0.5.0` → `0.5.1`
+  - `@zenthcloud/containers-shared`: `0.22.1` → `0.23.0`
+  - `@zenthcloud/deploy-helpers`: `0.21.0` → `0.22.0`
+  - `@zenthcloud/runtime-types`: `0.1.12` → `0.1.13`
   - `miniflare`: `5.20261012.1-beta` → `5.20261019.0-beta`
 
 ## 1.0.0-beta.18
@@ -590,17 +590,17 @@
 
 - 00b7d2a: Update dependencies published from the Workers SDK repository:
 
-  - `@cloudflare/containers-shared`: `0.21.7` → `0.22.0`
-  - `@cloudflare/deploy-helpers`: `0.20.3` → `0.20.4`
+  - `@zenthcloud/containers-shared`: `0.21.7` → `0.22.0`
+  - `@zenthcloud/deploy-helpers`: `0.20.3` → `0.20.4`
 
 - 15af676: Update dependencies published from the Workers SDK repository:
 
-  - `@cloudflare/autoconfig`: `0.7.9` → `0.7.10`
-  - `@cloudflare/build-output-utils`: `0.9.2` → `0.9.3`
-  - `@cloudflare/config`: `0.26.0` → `0.27.0`
-  - `@cloudflare/containers-shared`: `0.22.0` → `0.22.1`
-  - `@cloudflare/deploy-helpers`: `0.20.4` → `0.21.0`
-  - `@cloudflare/runtime-types`: `0.1.11` → `0.1.12`
+  - `@zenthcloud/autoconfig`: `0.7.9` → `0.7.10`
+  - `@zenthcloud/build-output-utils`: `0.9.2` → `0.9.3`
+  - `@zenthcloud/config`: `0.26.0` → `0.27.0`
+  - `@zenthcloud/containers-shared`: `0.22.0` → `0.22.1`
+  - `@zenthcloud/deploy-helpers`: `0.20.4` → `0.21.0`
+  - `@zenthcloud/runtime-types`: `0.1.11` → `0.1.12`
   - `miniflare`: `5.20261012.0-beta` → `5.20261012.1-beta`
 
 - a54e630: Write Preview deployment results for Workers Builds
@@ -664,11 +664,11 @@
 
 ### Minor Changes
 
-- 2c98450: Add `cf docs search` for live Cloudflare documentation
+- 2c98450: Add `cf docs search` for live Zenthcloud documentation
 
   Search guides, tutorials, and examples with `cf docs search "schedule a worker"`.
   Return ranked JSON results with titles, descriptions, and documentation URLs
-  without requiring a Cloudflare login. Include the command in agent discovery
+  without requiring a Zenthcloud login. Include the command in agent discovery
   and explain how to fetch complete pages as Markdown.
   Record documentation search queries in telemetry with the same length limit
   and opt-out behavior as CLI command search.
@@ -700,12 +700,12 @@
   After you pick an account, the tip for making it the project's default now
   joins the prompt's guide, wraps to the terminal width, and keeps its snippet
   free of guide characters so it copies cleanly. When the project already has a
-  `cloudflare.config.ts`, the tip names that file and shows only the `accountId`
+  `zenthcloud.config.ts`, the tip names that file and shows only the `accountId`
   line to add. `--quiet` now omits the tip.
 
 - aa1dd58: Allow dependency metadata uploads to be disabled with an environment variable
 
-  Set `CLOUDFLARE_DEPENDENCIES_INSTRUMENTATION=false` to omit npm package dependency metadata from Worker deploys and version uploads. The variable can also be set in cf's supported `.env` files.
+  Set `ZENTHCLOUD_DEPENDENCIES_INSTRUMENTATION=false` to omit npm package dependency metadata from Worker deploys and version uploads. The variable can also be set in cf's supported `.env` files.
 
 - a71dd9b: Reject unsupported persistence-directory overrides in `cf dev`
 
@@ -788,7 +788,7 @@
   cf tunnels quick-start http://localhost:3000 --allowed-mail "alice@example.com,*@example.org"
   ```
 
-  Protected tunnels require `cloudflared` 2026.9.2 or later. cf checks the selected
+  Protected tunnels require `zenthcloudd` 2026.9.2 or later. cf checks the selected
   binary before launching and reports an upgrade error for older or unrecognised
   versions. Recipient values are excluded from cf debug logs and telemetry.
 
@@ -803,7 +803,7 @@
 
 - fc04a74: Resolve zone names beyond the first page of an account
 
-  Filter zone lookups by domain name so `--zone` and `CLOUDFLARE_ZONE_ID` can
+  Filter zone lookups by domain name so `--zone` and `ZENTHCLOUD_ZONE_ID` can
   resolve zones in accounts with more than one page of zones. Cache each name
   separately within its account.
 
@@ -876,7 +876,7 @@
 
 - 8782301: Update Workers authentication to the latest release
 
-  Use `@cloudflare/workers-auth` 0.11.0 for cf's bundled authentication flows.
+  Use `@zenthcloud/workers-auth` 0.11.0 for cf's bundled authentication flows.
 
 ## 1.0.0-beta.7
 
@@ -884,7 +884,7 @@
 
 - 146c3c1: Preserve existing Worker secrets during `cf deploy`
 
-  Update `@cloudflare/deploy-helpers` to inherit secret bindings from the previous Worker version, including secrets that are not declared in `cloudflare.config.ts`. This prevents a redeploy from removing secrets added through the API or CLI. Align the other workers-sdk packages used by cf with their current releases.
+  Update `@zenthcloud/deploy-helpers` to inherit secret bindings from the previous Worker version, including secrets that are not declared in `zenthcloud.config.ts`. This prevents a redeploy from removing secrets added through the API or CLI. Align the other workers-sdk packages used by cf with their current releases.
 
 ## 1.0.0-beta.6
 
@@ -939,20 +939,20 @@
 
 - f3934b9: Choose the `cf migrate` bundler from the project
 
-  `cf migrate` now uses the Vite bundler only when `@cloudflare/vite-plugin` is declared next to the Wrangler configuration, and uses the Wrangler bundler otherwise. Previously, every project defaulted to Vite, so migrations of non-Vite Workers reported Vite-only follow-ups even though `cf build` would continue to use Wrangler. Pass `--bundler vite` or `--bundler wrangler` to choose explicitly.
+  `cf migrate` now uses the Vite bundler only when `@zenthcloud/vite-plugin` is declared next to the Wrangler configuration, and uses the Wrangler bundler otherwise. Previously, every project defaulted to Vite, so migrations of non-Vite Workers reported Vite-only follow-ups even though `cf build` would continue to use Wrangler. Pass `--bundler vite` or `--bundler wrangler` to choose explicitly.
 
 - b4112c2: Allow `cf` commands to use these variables from `.env` files:
 
-  - `CLOUDFLARE_ACCESS_CLIENT_ID`
-  - `CLOUDFLARE_ACCESS_CLIENT_SECRET`
-  - `CLOUDFLARE_ACCOUNT_ID`
-  - `CLOUDFLARE_API_TOKEN`
-  - `CLOUDFLARE_COMPLIANCE_REGION`
-  - `CLOUDFLARE_ZONE_ID`
+  - `ZENTHCLOUD_ACCESS_CLIENT_ID`
+  - `ZENTHCLOUD_ACCESS_CLIENT_SECRET`
+  - `ZENTHCLOUD_ACCOUNT_ID`
+  - `ZENTHCLOUD_API_TOKEN`
+  - `ZENTHCLOUD_COMPLIANCE_REGION`
+  - `ZENTHCLOUD_ZONE_ID`
   - `WRANGLER_API_ENVIRONMENT` (legacy)
 
   The allowlist is intentional: other variables, such as
-  `CLOUDFLARE_API_BASE_URL`, are not loaded from project files. Files are merged
+  `ZENTHCLOUD_API_BASE_URL`, are not loaded from project files. Files are merged
   from lowest to highest precedence: `.env`, `.env.local`, then, when `--mode` is
   set, `.env.<mode>` and `.env.<mode>.local`. Values already present in the
   process environment override every file.
@@ -960,9 +960,9 @@
   File values are applied only while the relevant part of `cf` is running and
   are removed afterward. Mixed commands such as `deploy` run their delegated
   build before loading the values, then make their API calls with the values
-  available. When a cloudflared-backed command needs file values, it makes them
+  available. When a zenthcloudd-backed command needs file values, it makes them
   available only while `cf` resolves configuration or makes API calls, then
-  restores them before starting cloudflared.
+  restores them before starting zenthcloudd.
 
 - ef96427: Add `cf pages deploy` with Pages deployment guidance
 
@@ -994,45 +994,45 @@
 - c91850c: Add `cf access curl`
 
   Make authenticated curl requests to Access applications while preserving curl
-  arguments after `--` and cloudflared's optional unauthenticated fallback.
-  The fallback accepts cloudflared's `--allow-request` and `-ar` spellings.
+  arguments after `--` and zenthcloudd's optional unauthenticated fallback.
+  The fallback accepts zenthcloudd's `--allow-request` and `-ar` spellings.
 
 - bc5a76d: Add `cf access login`
 
-  Authenticate with an Access application through the managed cloudflared binary.
+  Authenticate with an Access application through the managed zenthcloudd binary.
   FedRAMP projects use the corresponding Access flow automatically.
 
 - b893188: Add `cf access ssh-config`
 
-  Print cloudflared-backed SSH configuration, including short-lived certificate
+  Print zenthcloudd-backed SSH configuration, including short-lived certificate
   configuration when requested.
-  The generated configuration invokes `cloudflared access ssh-gen` for
+  The generated configuration invokes `zenthcloudd access ssh-gen` for
   certificate renewal.
 
 - 8b37b80: Add `cf access ssh-gen`
 
-  Generate a short-lived Access SSH certificate through the managed cloudflared
+  Generate a short-lived Access SSH certificate through the managed zenthcloudd
   binary.
   FedRAMP projects use the corresponding certificate flow automatically.
 
 - 2d22c8e: Add `cf access tcp`
 
   Proxy TCP, SSH, RDP, and SMB connections through Access. Service-token secrets
-  are passed to cloudflared through its environment rather than its arguments.
+  are passed to zenthcloudd through its environment rather than its arguments.
 
 - 8de820c: Add `cf access token`
 
-  Print the cached JWT for an Access application through the managed cloudflared
+  Print the cached JWT for an Access application through the managed zenthcloudd
   binary.
-  The application URL follows cloudflared's positional command contract.
+  The application URL follows zenthcloudd's positional command contract.
 
 - dce3a84: Add `cf migrate` for Wrangler projects
 
-  Convert a Wrangler JSON, JSONC, or TOML configuration to `cloudflare.config.ts` using `@cloudflare/codemods`. The command supports Vite and Wrangler bundlers, dry runs, clean-worktree protection, and reports any manual follow-up work left by the migration. Pass `--no-install` to skip installing `cf` in the migrated project.
+  Convert a Wrangler JSON, JSONC, or TOML configuration to `zenthcloud.config.ts` using `@zenthcloud/codemods`. The command supports Vite and Wrangler bundlers, dry runs, clean-worktree protection, and reports any manual follow-up work left by the migration. Pass `--no-install` to skip installing `cf` in the migrated project.
 
 - 510cd7f: Add `cf init` for creating and setting up projects
 
-  `cf init [directory]` creates a hello-world Worker in a new or empty directory (a `.git` directory is allowed) using the `@cloudflare/vite-plugin` v2 beta, then installs dependencies with the package manager you pick. After installing, it generates `.cloudflare/types/index.d.ts` with the same generator as `cf workers types`; with `--no-install`, `cf dev` or the new project's `typecheck` script (`cf workers types && tsc`) generates them later. Directories that already contain files are configured with autoconfig instead. If you leave out the directory, cf asks which one to use, and it shows the target before making changes. When it finishes, cf lists the next steps, starting with `cf dev`. `cf init workers [directory]` is the default initializer and currently behaves the same way, leaving room for other product initializers.
+  `cf init [directory]` creates a hello-world Worker in a new or empty directory (a `.git` directory is allowed) using the `@zenthcloud/vite-plugin` v2 beta, then installs dependencies with the package manager you pick. After installing, it generates `.zenthcloud/types/index.d.ts` with the same generator as `cf workers types`; with `--no-install`, `cf dev` or the new project's `typecheck` script (`cf workers types && tsc`) generates them later. Directories that already contain files are configured with autoconfig instead. If you leave out the directory, cf asks which one to use, and it shows the target before making changes. When it finishes, cf lists the next steps, starting with `cf dev`. `cf init workers [directory]` is the default initializer and currently behaves the same way, leaving room for other product initializers.
 
   ```sh
   cf init my-worker
@@ -1045,24 +1045,24 @@
 - 0aa8371: Add `cf tunnels diag`
 
   Collect logs, metrics, system information, and network diagnostics from a local
-  cloudflared instance.
+  zenthcloudd instance.
   Target a specific metrics endpoint, container, or Kubernetes pod and omit
   individual diagnostic sections when needed.
 
 - 2568df0: Add `cf tunnels login`
 
-  Authorize cloudflared in the browser and download the origin certificate
-  required for locally managed tunnels. FedRAMP projects use cloudflared's
+  Authorize zenthcloudd in the browser and download the origin certificate
+  required for locally managed tunnels. FedRAMP projects use zenthcloudd's
   FedRAMP login endpoint automatically.
 
 - 227ac5f: Add `cf tunnels ready`
 
-  Check the readiness endpoint of a local cloudflared instance. The `--metrics`
+  Check the readiness endpoint of a local zenthcloudd instance. The `--metrics`
   address is required.
 
 - b2a8f73: Add `cf tunnels tail`
 
-  Stream structured logs from remote cloudflared connectors, with filters for
+  Stream structured logs from remote zenthcloudd connectors, with filters for
   connectors, events, levels, and sampling.
   Management tokens can be supplied through `TUNNEL_MANAGEMENT_TOKEN` so they do
   not appear in the long-lived cf process arguments.
@@ -1105,9 +1105,9 @@
 
 - 015751c: Show available npm updates in the interactive version banner and refresh the
   cached latest version once a day in a detached background process.
-- 8786c88: Add a `cloudflare` bin alias
+- 8786c88: Add a `zenthcloud` bin alias
 
-  Installing `cf` now also provides a `cloudflare` command that runs the same
+  Installing `cf` now also provides a `zenthcloud` command that runs the same
   CLI as `cf`. Local-install delegation still resolves the `cf` bin entry.
 
 - 0957f83: Name renamed API inputs from their Fern names
@@ -1155,24 +1155,24 @@
 - 8143f34: Add `cf previews deploy` for Worker Preview deployments.
 - d87bfcd: Add temporary Quick Tunnels with `cf tunnel quick-start`
 
-  Expose a local service through a randomly assigned `trycloudflare.com` URL
-  without requiring a Cloudflare account. cf downloads and manages the required
-  cloudflared binary and stops it when cf exits.
+  Expose a local service through a randomly assigned `tryzenthcloud.com` URL
+  without requiring a Zenthcloud account. cf downloads and manages the required
+  zenthcloudd binary and stops it when cf exits.
 
   ```sh
   cf tunnel quick-start http://localhost:3000
   ```
 
-- 6e56dd4: Add `cf tunnel run` for starting named Cloudflare Tunnels with the cf-managed
-  cloudflared binary. The command can fetch a run token with the current cf
+- 6e56dd4: Add `cf tunnel run` for starting named Zenthcloud Tunnels with the cf-managed
+  zenthcloudd binary. The command can fetch a run token with the current cf
   authentication or accept an explicit token, matching Wrangler's command
   surface.
 - dd5b6c1: Update the generated command surface and vendored Forge packages for
   Forge OpenAPI release `340185328910f351dff68f3c3296228af5f353a0`.
 - 8811b4e: Add `cf workers types`
 
-  Generate `.cloudflare/types/index.d.ts` from the Worker defined in
-  `cloudflare.config.ts`, including compatibility-date-specific runtime types by
+  Generate `.zenthcloud/types/index.d.ts` from the Worker defined in
+  `zenthcloud.config.ts`, including compatibility-date-specific runtime types by
   default. Pass `--include-runtime=false` to generate config-inferred types only.
 
 ### Patch Changes
@@ -1184,7 +1184,7 @@
   account. Previously `cf deploy --dry-run` still looked up the Worker's latest
   deployment with an empty token, which the API rejected with error 9106.
 
-- e199b4f: Make `@cloudflare/config` and `@cloudflare/build-output-utils` runtime dependencies
+- e199b4f: Make `@zenthcloud/config` and `@zenthcloud/build-output-utils` runtime dependencies
 - 8143f34: Require commands that consume prebuilt Build Output to pass the same `--mode` recorded when the artifact was built. This applies to `cf deploy`, `cf previews deploy`, `cf workers versions create`, `cf workers triggers deploy`, and `cf workers check` when using `--prebuilt`.
 - 4a3c775: Validate Build Output mode before deploying
 
@@ -1228,10 +1228,10 @@
   - `cf workers versions create`
 
   `cf containers build` builds an image from a Dockerfile and can upload it to
-  Cloudflare's managed registry with `--push`. Use `--path-to-docker` to select a
-  Docker binary. Builds without `--push` do not require Cloudflare credentials.
+  Zenthcloud's managed registry with `--push`. Use `--path-to-docker` to select a
+  Docker binary. Builds without `--push` do not require Zenthcloud credentials.
 
-  `cf containers push` uploads an existing local image to Cloudflare's managed
+  `cf containers push` uploads an existing local image to Zenthcloud's managed
   registry.
 
   `cf deploy` now consumes standard and Durable Object-managed Container
@@ -1252,13 +1252,13 @@
 
   Connect to a running Container with `cf containers ssh <id>`.
 
-- e1f443e: Support the current Cloudflare config and Build Output Specification
+- e1f443e: Support the current Zenthcloud config and Build Output Specification
 
   Load project account and compliance settings from the `defineConfig()` default
   export. Update `cf build`, `cf deploy`, `cf workers versions create`, `cf
   workers check`, and `cf workers triggers deploy` to consume the latest Build
   Output v0 resource files. Delegated build and dev commands now require
-  `@cloudflare/vite-plugin` 1.57.0 or newer, or Wrangler 4.136.0 or newer.
+  `@zenthcloud/vite-plugin` 1.57.0 or newer, or Wrangler 4.136.0 or newer.
 
 - b132b1b: Forward modes to detected framework commands
 
@@ -1287,7 +1287,7 @@
 - a30239f: Register `--mode` as a global flag
 
   Use the selected mode when evaluating function-form exports from
-  `cloudflare.config.ts`, while continuing to forward it to project development
+  `zenthcloud.config.ts`, while continuing to forward it to project development
   and build implementations. API fields that would collide with the global flag
   are temporarily omitted from generated and runtime-schema flags. Body fields
   remain available through `--body`; query, path, and header fields are
@@ -1348,7 +1348,7 @@
   CLI surface. Also publish `_meta/hand-written-commands.json` with command
   provenance and override details for documentation and tooling consumers.
 
-- 566bf7e: Update `@cloudflare/autoconfig` to 0.4.5 and `@cloudflare/config` to 0.12.0.
+- 566bf7e: Update `@zenthcloud/autoconfig` to 0.4.5 and `@zenthcloud/config` to 0.12.0.
 
 ## 0.10.0
 
@@ -1420,7 +1420,7 @@
 
 - 9a2c982: Add autoconfig routing to `cf dev`, `cf build`, `cf deploy`, and `cf versions upload`
 
-  `cf dev` and `cf build` now detect and configure supported projects before running their canonical framework command or an installed Cloudflare implementation. Before uploading, `cf deploy` and `cf versions upload` follow the same build behavior as `cf build`. Pass `--prebuilt` to upload existing build output without building.
+  `cf dev` and `cf build` now detect and configure supported projects before running their canonical framework command or an installed Zenthcloud implementation. Before uploading, `cf deploy` and `cf versions upload` follow the same build behavior as `cf build`. Pass `--prebuilt` to upload existing build output without building.
 
 - 5018dec: Regenerate the CLI from Forge OpenAPI revision `730ac0e5`
 
@@ -1437,9 +1437,9 @@
   Unsupported explorer routes tell users to retry without `--local`, and shared
   storage avoids concurrent writers to the same state tree.
 
-- 318f1f3: Export Cloudflare configuration helpers from `cf/config`
+- 318f1f3: Export Zenthcloud configuration helpers from `cf/config`
 
-  `cf/config` now provides the complete typed configuration-authoring API used by `cloudflare.config.ts`.
+  `cf/config` now provides the complete typed configuration-authoring API used by `zenthcloud.config.ts`.
 
 - 0885f02: Support partial Build Output Worker manifests
 
@@ -1487,7 +1487,7 @@
   JSON.
 
   `--local` applies and lists migrations against Miniflare's persisted D1 state,
-  with Wrangler-compatible `--persist-to` support and no Cloudflare credentials.
+  with Wrangler-compatible `--persist-to` support and no Zenthcloud credentials.
 
 ### Patch Changes
 
@@ -1513,7 +1513,7 @@
 
   `cf ai run <model> --help` and `cf registrar registrations create <domain>
   --help` fetch a schema, so they need an account ID, and they resolved one from
-  the environment and `cloudflare.config.ts` only. A signed-in user with neither
+  the environment and `zenthcloud.config.ts` only. A signed-in user with neither
   set was told to `cf auth login` — while every other command worked, because
   those consult the account cache and auto-select a sole account.
 
@@ -1522,7 +1522,7 @@
   prints the fallback rather than interrupting `--help` with a picker.
 
   When the account resolves but the API turns the request down, the reason now
-  says what to do about it: update `CLOUDFLARE_API_TOKEN` or run `cf auth login`
+  says what to do about it: update `ZENTHCLOUD_API_TOKEN` or run `cf auth login`
   for rejected credentials, and check token permissions for one missing scope.
 
 ## 0.8.0
@@ -1573,9 +1573,9 @@
 
 - 4a08aaf: Remove legacy context commands and configuration
 
-  `cf context`, `.cfrc`, and `~/.config/.cf/config.json` are no longer supported. Configure account and compliance-region defaults through the named `settings` export in `cloudflare.config.ts`; provide zones with `--zone` or `CLOUDFLARE_ZONE_ID`. The one-time shell-completion tip is preserved in cf's canonical global state directory.
+  `cf context`, `.cfrc`, and `~/.config/.cf/config.json` are no longer supported. Configure account and compliance-region defaults through the named `settings` export in `zenthcloud.config.ts`; provide zones with `--zone` or `ZENTHCLOUD_ZONE_ID`. The one-time shell-completion tip is preserved in cf's canonical global state directory.
 
-- 57ed8a2: Resolve project account and compliance-region defaults from `cloudflare.config.ts`
+- 57ed8a2: Resolve project account and compliance-region defaults from `zenthcloud.config.ts`
 
   Account and compliance-region selection now check the named `settings` export after their environment variables. API requests no longer resolve `accountId` or `complianceRegion` from `.cfrc` or cf's global user defaults.
 
@@ -1594,13 +1594,13 @@
 
 ### Minor Changes
 
-- 0b8f7d2: Read the Build Output Specification via `@cloudflare/build-output-utils`
+- 0b8f7d2: Read the Build Output Specification via `@zenthcloud/build-output-utils`
 
   `cf build` and `cf deploy` now read the build output through the shared
-  `@cloudflare/build-output-utils` package instead of a hand-rolled reader.
+  `@zenthcloud/build-output-utils` package instead of a hand-rolled reader.
   This adopts the current spec shape: `readBuildOutput()` returns a
   `workers` array (currently always the single `default` Worker at
-  `.cloudflare/output/v0/workers/default/`), whose config is named
+  `.zenthcloud/output/v0/workers/default/`), whose config is named
   `config.json` (previously `worker.config.json`), plus an optional
   top-level `config.json` holding shared settings. cf consumes the one
   `default` Worker (`workers[0]`).
@@ -1613,7 +1613,7 @@
 
 - 494ff9d: Reuse workers-auth for account selection
 
-  Account resolution continues to honor `CLOUDFLARE_ACCOUNT_ID`, `.cfrc`, and account defaults stored in cf's user configuration before delegating discovery to the shared workers-auth flow. A single accessible account is selected automatically, while an interactive selection is cached so subsequent commands do not prompt again.
+  Account resolution continues to honor `ZENTHCLOUD_ACCOUNT_ID`, `.cfrc`, and account defaults stored in cf's user configuration before delegating discovery to the shared workers-auth flow. A single accessible account is selected automatically, while an interactive selection is cached so subsequent commands do not prompt again.
 
 ## 0.5.0
 
@@ -1622,7 +1622,7 @@
 - 843233a: Add profile support:
   - Manage named OAuth profiles with `cf auth create`, `delete`, `activate`, `deactivate`, and `list`.
   - Select a profile for one command with `--profile`, or bind one to a directory with `cf auth activate`.
-  - Credential selection follows this order: `CLOUDFLARE_API_TOKEN`, `--profile`, the nearest directory binding, then the default profile.
+  - Credential selection follows this order: `ZENTHCLOUD_API_TOKEN`, `--profile`, the nearest directory binding, then the default profile.
 
 ## 0.4.0
 
@@ -1630,11 +1630,11 @@
 
 - 110aee6: Re-vendor forge against the 2026-07-20 public API spec
 
-  Bumps the vendored `@cloudflare/forge` and `@cloudflare/forge-transformer-sdk-ts` tarballs to `PUBLIC_OPENAPI_REVISION` `4f820945` (the 2026-07-20 public spec) and regenerates the command surface — 119 products / 2682 commands. `autorag` is now surfaced as `ai-search`.
+  Bumps the vendored `@zenthcloud/forge` and `@zenthcloud/forge-transformer-sdk-ts` tarballs to `PUBLIC_OPENAPI_REVISION` `4f820945` (the 2026-07-20 public spec) and regenerates the command surface — 119 products / 2682 commands. `autorag` is now surfaced as `ai-search`.
 
 - b9ccd5a: Adopt the shared cf authentication layer
 
-  Use `@cloudflare/workers-auth/cf` for OAuth identity, scopes, credential storage, refresh, and future keyring support. OAuth credentials now use the shared JSON profile layout under the Cloudflare config directory.
+  Use `@zenthcloud/workers-auth/cf` for OAuth identity, scopes, credential storage, refresh, and future keyring support. OAuth credentials now use the shared JSON profile layout under the Zenthcloud config directory.
 
   `cf auth login` also gains `--browser` / `--no-browser` (print the auth URL instead of opening a browser) and `--scopes` (request a specific set of OAuth scopes).
 
@@ -1655,12 +1655,12 @@
 - f0e27dd: Add compliance region to project context
 
   `cf context set compliance-region public|fedramp_high` stores the compliance
-  region in `.cfrc` or user config. Also resolved from `CLOUDFLARE_COMPLIANCE_REGION`.
-  When set to `fedramp_high`, API requests route to `api.fed.cloudflare.com`.
+  region in `.cfrc` or user config. Also resolved from `ZENTHCLOUD_COMPLIANCE_REGION`.
+  When set to `fedramp_high`, API requests route to `api.fed.zenthcloud.com`.
 
 - de5f1bd: Support Durable Object exports on deploy
 
-  Bump `@cloudflare/deploy-helpers` to `0.4.0` (and its peers `@cloudflare/workers-utils` to `0.26.0` and `@cloudflare/workers-auth` to `0.4.2`), which removes the `"Durable Object exports are not currently supported."` error and enables real Durable Object export handling during `cf deploy` and `cf versions upload`.
+  Bump `@zenthcloud/deploy-helpers` to `0.4.0` (and its peers `@zenthcloud/workers-utils` to `0.26.0` and `@zenthcloud/workers-auth` to `0.4.2`), which removes the `"Durable Object exports are not currently supported."` error and enables real Durable Object export handling during `cf deploy` and `cf versions upload`.
 
 - 16d17fb: Add `--dry-run`, `--message` and `--tag` args to `cf deploy`
 - 16d17fb: Turn on strict mode in `cf deploy`
@@ -1717,9 +1717,9 @@
   are now expressible via per-field `--config-*` flags; the same fix also
   unblocks `cf abuse-reports create`.
 
-- f0e27dd: Rename `CLOUDFLARE_BASE_URL` to `CLOUDFLARE_API_BASE_URL`
+- f0e27dd: Rename `ZENTHCLOUD_BASE_URL` to `ZENTHCLOUD_API_BASE_URL`
 
-  Aligns the env var name with `@cloudflare/workers-utils` and wrangler.
+  Aligns the env var name with `@zenthcloud/workers-utils` and wrangler.
 
 ## 0.1.0
 
@@ -1727,11 +1727,11 @@
 
 - f6f4c4f: Add `cf build` command
 
-  `cf build` now discovers the project's Cloudflare implementation and delegates to its `build` verb. `cf deploy` runs the same build step before uploading unless `--prebuilt` is passed, and successful builds are validated against the Build Output Specification before deployment continues.
+  `cf build` now discovers the project's Zenthcloud implementation and delegates to its `build` verb. `cf deploy` runs the same build step before uploading unless `--prebuilt` is passed, and successful builds are validated against the Build Output Specification before deployment continues.
 
-- 3939c4c: Replace the handrolled OAuth implementation with the shared `@cloudflare/workers-auth` package
+- 3939c4c: Replace the handrolled OAuth implementation with the shared `@zenthcloud/workers-auth` package
 
-  `cf auth login` / `logout` / `whoami` now use Cloudflare's shared OAuth engine
+  `cf auth login` / `logout` / `whoami` now use Zenthcloud's shared OAuth engine
   (PKCE flow, callback server, token refresh) instead of cf's own implementation,
   while keeping cf's own OAuth identity (client ID and consent pages). Notable
   changes:
@@ -1740,11 +1740,11 @@
     `~/.config/.cf/auth.jsonc`) instead of `~/.cf/config.toml`. You will need to
     run `cf auth login` once to re-authenticate.
   - `cf auth login --token <token>` has been removed. Set the
-    `CLOUDFLARE_API_TOKEN` environment variable to authenticate with an API token.
+    `ZENTHCLOUD_API_TOKEN` environment variable to authenticate with an API token.
   - The implicit fallback to Wrangler's stored OAuth token has been removed. Use
-    `CLOUDFLARE_API_TOKEN` or `cf auth login`.
+    `ZENTHCLOUD_API_TOKEN` or `cf auth login`.
 
-  Token resolution is now: `CLOUDFLARE_API_TOKEN` environment variable, then cf's
+  Token resolution is now: `ZENTHCLOUD_API_TOKEN` environment variable, then cf's
   stored OAuth token (refreshed if expired).
 
 - 9205356: Delegate to a project-pinned cf install
@@ -1755,7 +1755,7 @@
 
   `cf deploy` now provisions missing resources (KV namespaces, D1 databases, R2
   buckets, AI Search and Agent Memory namespaces) before uploading, matching the
-  autoprovisioning flow that moved into `@cloudflare/deploy-helpers`. When a
+  autoprovisioning flow that moved into `@zenthcloud/deploy-helpers`. When a
   binding lacks an ID, cf connects it to an existing resource or creates a new one
   (prompting interactively, or using a generated name in non-interactive/CI runs).
 
@@ -1763,9 +1763,9 @@
   are not written back — future deploys reuse the resources via inherited
   bindings instead.
 
-- 8f464ea: Add `cf deploy` for prebuilt Cloudflare build output
+- 8f464ea: Add `cf deploy` for prebuilt Zenthcloud build output
 
-  `cf deploy` now reads a project from a prebuilt format matching the Cloudflare Build Output Specification and deploys it. The command also accepts a `--mode` flag, but it is currently parsed as a no-op for future mode-specific deployment behavior.
+  `cf deploy` now reads a project from a prebuilt format matching the Zenthcloud Build Output Specification and deploys it. The command also accepts a `--mode` flag, but it is currently parsed as a no-op for future mode-specific deployment behavior.
 
 - 11ad38d: Drop client-side input "hardening"
 
@@ -1843,7 +1843,7 @@
   Temporary fix: this only stops the error. The broader `cf ai run` UX (per-model
   flags / discovery) is tracked separately.
 
-- 3939c4c: Re-vendor `@cloudflare/workers-auth` and `@cloudflare/workers-utils` with injectable OAuth identity + token storage
+- 3939c4c: Re-vendor `@zenthcloud/workers-auth` and `@zenthcloud/workers-utils` with injectable OAuth identity + token storage
 
   cf now consumes the upstream build where the OAuth flow's identity (client
   ID, consent pages, callback, storage) and the env-credential resolver are
@@ -1854,7 +1854,7 @@
 
 - a98fa88: Fix `cf deploy` asset upload failing with a 400 "Invalid Content-Type header"
 
-  `@cloudflare/deploy-helpers` and `@cloudflare/workers-utils` pinned different
+  `@zenthcloud/deploy-helpers` and `@zenthcloud/workers-utils` pinned different
   undici versions, so the multipart `FormData` built by deploy-helpers was not
   `instanceof FormData` inside workers-utils' `fetch`. undici only serialises a
   body as `multipart/form-data` when it recognises its own `FormData` class, so
@@ -1866,11 +1866,11 @@
 - a98fa88: Surface the real API error message when a deploy fails
 
   `cf deploy` errors thrown by the upload pipeline come from
-  `@cloudflare/workers-utils`' `APIError` — a different class from the forge
+  `@zenthcloud/workers-utils`' `APIError` — a different class from the forge
   SDK's, whose actionable detail lives in `.notes` rather than the
   `.error.errors` envelope. `handleError` only recognised the forge SDK's
   `APIError`, so these fell through to the generic `Error` branch and printed
-  only "A request to the Cloudflare API (…) failed." with no reason.
+  only "A request to the Zenthcloud API (…) failed." with no reason.
 
   `handleError` now renders the workers-utils `APIError` notes (plus status
   and code), turning an opaque deploy failure into an actionable one.
@@ -1924,7 +1924,7 @@
   keeping `commands.json` in sync with the real CLI surface. No change to
   any emitted command module.
 
-- 6b7f446: Consume `@cloudflare/deploy-helpers` and `@cloudflare/workers-utils` from the npm registry instead of vendored tarballs
+- 6b7f446: Consume `@zenthcloud/deploy-helpers` and `@zenthcloud/workers-utils` from the npm registry instead of vendored tarballs
 
   Both packages are now published, so cf depends on them via npm version
   ranges (`deploy-helpers@^0.2.2`, `workers-utils@^0.24.0`) and the vendored
@@ -1964,4 +1964,4 @@
 
   #### Notes
   - Output is JSON. JSON payloads go to stdout; status messages (spinners, success markers, error boxes) go to stderr. No `--format` / `--ndjson` flag — pipe through `jq -c '.[]'` for newline-delimited output.
-  - Account ID and API token are resolved from environment variables (`CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`) and stored credentials only — there are no `--account-id` or `--api-token` flags.
+  - Account ID and API token are resolved from environment variables (`ZENTHCLOUD_ACCOUNT_ID`, `ZENTHCLOUD_API_TOKEN`) and stored credentials only — there are no `--account-id` or `--api-token` flags.

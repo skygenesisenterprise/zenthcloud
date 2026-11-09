@@ -18,7 +18,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			'$0 zones origin-max-http-version edit\n\nOrigin Max HTTP Setting Version sets the highest HTTP version Cloudflare will attempt to use with your origin. This setting allows Cloudflare to make HTTP/2 requests to your origin. (Refer to [Enable HTTP/2 to Origin](https://developers.cloudflare.com/cache/how-to/enable-http2-to-origin/), for more information.). The default value is "2" for all plan types except Enterprise where it is "1".'
+			'$0 zones origin-max-http-version edit\n\nOrigin Max HTTP Setting Version sets the highest HTTP version Zenthcloud will attempt to use with your origin. This setting allows Zenthcloud to make HTTP/2 requests to your origin. (Refer to [Enable HTTP/2 to Origin](https://github.com/skygenesisenterprise/zenthcloud), for more information.). The default value is "2" for all plan types except Enterprise where it is "1".'
 		)
 		.option("value", {
 			type: "string",
@@ -57,7 +57,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zones origin-max-http-version edit",
 						method: "PATCH",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/settings/origin_max_http_version`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/settings/origin_max_http_version`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 						},

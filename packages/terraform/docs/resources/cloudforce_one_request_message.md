@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_cloudforce_one_request_message Resource - Cloudflare"
+page_title: "zenthcloud_cloudforce_one_request_message Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Cloudforce One Write
 ---
 
-# cloudflare_cloudforce_one_request_message (Resource)
+# zenthcloud_cloudforce_one_request_message (Resource)
 
 Accepted Permissions
 
@@ -15,7 +15,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_cloudforce_one_request_message" "example_cloudforce_one_request_message" {
+resource "zenthcloud_cloudforce_one_request_message" "example_cloudforce_one_request_message" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   request_id = "f174e90a-fafe-4643-bbbc-4a0ed4fc8415"
   content = "Can you elaborate on the type of DoS that occurred?"
@@ -47,7 +47,7 @@ resource "cloudflare_cloudforce_one_request_message" "example_cloudforce_one_req
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_cloudforce_one_request_message.example '<account_id>/<request_id>/<page>/<per_page>'
+$ terraform import zenthcloud_cloudforce_one_request_message.example '<account_id>/<request_id>/<page>/<per_page>'
 ```
 
 

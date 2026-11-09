@@ -10,7 +10,7 @@ describe("deploy context pagination", () => {
 	setupMsw();
 
 	beforeEach(() => {
-		vi.stubEnv("CLOUDFLARE_API_BASE_URL", TEST_BASE_URL);
+		vi.stubEnv("ZENTHCLOUD_API_BASE_URL", TEST_BASE_URL);
 	});
 
 	it("finds namespaces beyond the first 1000 without mutating query parameters", async () => {

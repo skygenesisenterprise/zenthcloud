@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -20,13 +20,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_r2_custom_domain", &resource.Sweeper{
-		Name: "cloudflare_r2_custom_domain",
-		F:    testSweepCloudflareR2CustomDomain,
+	resource.AddTestSweepers("zenthcloud_r2_custom_domain", &resource.Sweeper{
+		Name: "zenthcloud_r2_custom_domain",
+		F:    testSweepZenthcloudR2CustomDomain,
 	})
 }
 
-func testSweepCloudflareR2CustomDomain(r string) error {
+func testSweepZenthcloudR2CustomDomain(r string) error {
 	ctx := context.Background()
 	// R2 Custom Domain is a bucket-level configuration.
 	// When R2 buckets are swept, custom domains are cleaned up automatically.
@@ -35,12 +35,12 @@ func testSweepCloudflareR2CustomDomain(r string) error {
 	return nil
 }
 
-func TestAccCloudflareR2CustomDomain_Basic(t *testing.T) {
+func TestAccZenthcloudR2CustomDomain_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domainName := rnd + "." + os.Getenv("CLOUDFLARE_DOMAIN")
-	resourceName := "cloudflare_r2_custom_domain." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domainName := rnd + "." + os.Getenv("ZENTHCLOUD_DOMAIN")
+	resourceName := "zenthcloud_r2_custom_domain." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -89,12 +89,12 @@ func TestAccCloudflareR2CustomDomain_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareR2CustomDomain_Update(t *testing.T) {
+func TestAccZenthcloudR2CustomDomain_Update(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domainName := rnd + "." + os.Getenv("CLOUDFLARE_DOMAIN")
-	resourceName := "cloudflare_r2_custom_domain." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domainName := rnd + "." + os.Getenv("ZENTHCLOUD_DOMAIN")
+	resourceName := "zenthcloud_r2_custom_domain." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -149,12 +149,12 @@ func TestAccCloudflareR2CustomDomain_Update(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareR2CustomDomain_JurisdictionEU(t *testing.T) {
+func TestAccZenthcloudR2CustomDomain_JurisdictionEU(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domainName := rnd + "." + os.Getenv("CLOUDFLARE_DOMAIN")
-	resourceName := "cloudflare_r2_custom_domain." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domainName := rnd + "." + os.Getenv("ZENTHCLOUD_DOMAIN")
+	resourceName := "zenthcloud_r2_custom_domain." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -182,12 +182,12 @@ func TestAccCloudflareR2CustomDomain_JurisdictionEU(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareR2CustomDomain_JurisdictionFedramp(t *testing.T) {
+func TestAccZenthcloudR2CustomDomain_JurisdictionFedramp(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domainName := rnd + "." + os.Getenv("CLOUDFLARE_DOMAIN")
-	resourceName := "cloudflare_r2_custom_domain." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domainName := rnd + "." + os.Getenv("ZENTHCLOUD_DOMAIN")
+	resourceName := "zenthcloud_r2_custom_domain." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -215,12 +215,12 @@ func TestAccCloudflareR2CustomDomain_JurisdictionFedramp(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareR2CustomDomain_Minimal(t *testing.T) {
+func TestAccZenthcloudR2CustomDomain_Minimal(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domainName := rnd + "." + os.Getenv("CLOUDFLARE_DOMAIN")
-	resourceName := "cloudflare_r2_custom_domain." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domainName := rnd + "." + os.Getenv("ZENTHCLOUD_DOMAIN")
+	resourceName := "zenthcloud_r2_custom_domain." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },

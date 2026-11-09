@@ -5,9 +5,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceCloudflareLoadBalancerSchema returns the legacy cloudflare_load_balancer schema (schema_version=1).
+// SourceZenthcloudLoadBalancerSchema returns the legacy zenthcloud_load_balancer schema (schema_version=1).
 // This is used by UpgradeState to parse state from the legacy SDKv2 provider (v4).
-// Reference: cloudflare-terraform-v4/internal/sdkv2provider/schema_cloudflare_load_balancer.go
+// Reference: zenthcloud-terraform-v4/internal/sdkv2provider/schema_zenthcloud_load_balancer.go
 //
 // This minimal schema includes only the properties needed for state parsing:
 // - Required, Optional, Computed flags
@@ -19,7 +19,7 @@ import (
 // - PlanModifiers
 // - Descriptions/MarkdownDescription
 // - Default values
-func SourceCloudflareLoadBalancerSchema() schema.Schema {
+func SourceZenthcloudLoadBalancerSchema() schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{

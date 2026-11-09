@@ -11,12 +11,12 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
-	"github.com/cloudflare/cloudflared/config"
-	"github.com/cloudflare/cloudflared/mocks"
+	"github.com/zenthcloud/zenthcloudd/config"
+	"github.com/zenthcloud/zenthcloudd/mocks"
 
-	cfdflow "github.com/cloudflare/cloudflared/flow"
-	"github.com/cloudflare/cloudflared/ingress"
-	v3 "github.com/cloudflare/cloudflared/quic/v3"
+	cfdflow "github.com/zenthcloud/zenthcloudd/flow"
+	"github.com/zenthcloud/zenthcloudd/ingress"
+	v3 "github.com/zenthcloud/zenthcloudd/quic/v3"
 )
 
 var (

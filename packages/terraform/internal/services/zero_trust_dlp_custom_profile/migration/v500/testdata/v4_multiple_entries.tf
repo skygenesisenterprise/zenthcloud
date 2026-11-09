@@ -1,4 +1,4 @@
-resource "cloudflare_dlp_profile" "%[1]s" {
+resource "zenthcloud_dlp_profile" "%[1]s" {
   account_id          = "%[2]s"
   name                = "multi-pattern-%[1]s"
   type                = "custom"

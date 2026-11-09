@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -23,13 +23,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_token_validation_config", &resource.Sweeper{
-		Name: "cloudflare_token_validation_config",
-		F:    testSweepCloudflareTokenValidationConfig,
+	resource.AddTestSweepers("zenthcloud_token_validation_config", &resource.Sweeper{
+		Name: "zenthcloud_token_validation_config",
+		F:    testSweepZenthcloudTokenValidationConfig,
 	})
 }
 
-func testSweepCloudflareTokenValidationConfig(r string) error {
+func testSweepZenthcloudTokenValidationConfig(r string) error {
 	ctx := context.Background()
 	// Token Validation Config is API Shield JWT validation configuration.
 	// These are managed as part of API Shield configuration.
@@ -67,13 +67,13 @@ func (jwks *JWKS) CloneFiltered(algs ...string) JWKS {
 	return JWKS{Keys: filteredKeys}
 }
 
-func TestAccCloudflareTokenValidationConfig(t *testing.T) {
+func TestAccZenthcloudTokenValidationConfig(t *testing.T) {
 	t.Skip(`Skipped: 403 Forbidden {"success":false,"errors":[{"code":1002,"message":"Forbidden. Account creation is not allowed"}],"messages":[],"result":null}`)
 	rndResourceName := utils.GenerateRandomResourceName()
 
 	// resourceName is resourceIdentifier . resourceName
-	resourceName := "cloudflare_token_validation_config." + rndResourceName
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_token_validation_config." + rndResourceName
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	// load a series of test keys
 	var jwks JWKS
@@ -86,7 +86,7 @@ func TestAccCloudflareTokenValidationConfig(t *testing.T) {
 		Steps: []resource.TestStep{
 			// create a new token config
 			{
-				Config: testAccCloudflareTokenConfig(rndResourceName, zoneID, "title", "description", []string{`http.request.headers["x-auth"][0]`}, jwks.CloneFiltered("ES256")),
+				Config: testAccZenthcloudTokenConfig(rndResourceName, zoneID, "title", "description", []string{`http.request.headers["x-auth"][0]`}, jwks.CloneFiltered("ES256")),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(resourceName, "title", "title"),
@@ -106,7 +106,7 @@ func TestAccCloudflareTokenValidationConfig(t *testing.T) {
 			},
 			// edit that config
 			{
-				Config: testAccCloudflareTokenConfig(rndResourceName, zoneID, "title2", "description2", []string{`http.request.headers["x-auth"][0]`, `http.request.cookies["auth"][0]`}, jwks.CloneFiltered("ES256", "PS256")),
+				Config: testAccZenthcloudTokenConfig(rndResourceName, zoneID, "title2", "description2", []string{`http.request.headers["x-auth"][0]`, `http.request.cookies["auth"][0]`}, jwks.CloneFiltered("ES256", "PS256")),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(resourceName, "title", "title2"),
@@ -134,7 +134,7 @@ func TestAccCloudflareTokenValidationConfig(t *testing.T) {
 
 			// ensure all other supported keys are accepted, above already tested es256 and ps256, we can at most supply 4 keys per config
 			{
-				Config: testAccCloudflareTokenConfig(rndResourceName, zoneID, "title", "description", []string{`http.request.headers["x-auth"][0]`}, jwks.CloneFiltered("ES384", "PS384", "PS512", "RS256")),
+				Config: testAccZenthcloudTokenConfig(rndResourceName, zoneID, "title", "description", []string{`http.request.headers["x-auth"][0]`}, jwks.CloneFiltered("ES384", "PS384", "PS512", "RS256")),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(resourceName, "title", "title"),
@@ -174,7 +174,7 @@ func TestAccCloudflareTokenValidationConfig(t *testing.T) {
 
 			// ensure all other supported keys are accepted
 			{
-				Config: testAccCloudflareTokenConfig(rndResourceName, zoneID, "title", "description", []string{`http.request.headers["x-auth"][0]`}, jwks.CloneFiltered("RS384", "RS512")),
+				Config: testAccZenthcloudTokenConfig(rndResourceName, zoneID, "title", "description", []string{`http.request.headers["x-auth"][0]`}, jwks.CloneFiltered("RS384", "RS512")),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(resourceName, "title", "title"),
@@ -218,7 +218,7 @@ func TestAccCloudflareTokenValidationConfig(t *testing.T) {
 	})
 }
 
-func testAccCloudflareTokenConfig(resourceName, zone string, title string, description string, tokenSources []string, credentials JWKS) string {
+func testAccZenthcloudTokenConfig(resourceName, zone string, title string, description string, tokenSources []string, credentials JWKS) string {
 	tokenSourcesStrings := make([]string, 0, len(tokenSources))
 	for _, tokenSource := range tokenSources {
 		tokenSourcesStrings = append(tokenSourcesStrings, fmt.Sprintf(`"%s"`, strings.ReplaceAll(tokenSource, `"`, `\"`)))

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_stream Resource - Cloudflare"
+page_title: "zenthcloud_stream Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Stream ReadStream Write
 ---
 
-# cloudflare_stream (Resource)
+# zenthcloud_stream (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_stream" "example_stream" {
+resource "zenthcloud_stream" "example_stream" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```
@@ -32,8 +32,8 @@ resource "cloudflare_stream" "example_stream" {
 
 - `allowed_origins` (List of String) Lists the origins allowed to display the video. Enter allowed origin domains in an array and use `*` for wildcard subdomains. Empty arrays allow the video to be viewed on any origin.
 - `creator` (String) A user-defined identifier for the media creator.
-- `direct_user` (Boolean) Provisions a URL to let your end users upload videos directly to Cloudflare Stream without exposing your API token to clients.
-- `identifier` (String) A Cloudflare-generated unique identifier for a media item.
+- `direct_user` (Boolean) Provisions a URL to let your end users upload videos directly to Zenthcloud Stream without exposing your API token to clients.
+- `identifier` (String) A Zenthcloud-generated unique identifier for a media item.
 - `max_duration_seconds` (Number) The maximum duration in seconds for a video upload. Can be set for a video that is not yet uploaded to limit its duration. Uploads that exceed the specified duration will fail during processing. A value of `-1` means the value is unknown.
 - `meta` (String) A user modifiable key-value store used to reference other systems of record for managing videos.
 - `public_details` (Attributes) Public details for the video including title, share link, channel link, and logo. (see [below for nested schema](#nestedatt--public_details))

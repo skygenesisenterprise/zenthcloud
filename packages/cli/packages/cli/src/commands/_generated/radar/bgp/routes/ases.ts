@@ -83,7 +83,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar bgp routes ases",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/bgp/routes/ases`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

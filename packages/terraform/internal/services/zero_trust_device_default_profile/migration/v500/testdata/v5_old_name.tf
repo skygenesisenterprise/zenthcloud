@@ -1,4 +1,4 @@
-resource "cloudflare_zero_trust_device_default_profile" "%s" {
+resource "zenthcloud_zero_trust_device_default_profile" "%s" {
   account_id                     = "%s"
   register_interface_ip_with_dns = true
   sccm_vpn_boundary_support      = false

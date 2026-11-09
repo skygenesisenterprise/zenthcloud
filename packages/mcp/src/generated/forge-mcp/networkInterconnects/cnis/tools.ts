@@ -22,7 +22,7 @@ export const tools: readonly Tool[] = [
   {
     name: "networkInterconnects_cnis_create",
     title: "Create a new CNI object",
-    description: "Creates a new Cloud Network Interconnect (CNI) for private network connectivity between\nCloudflare and your infrastructure. CNIs enable dedicated, high-performance network links.\n\nPOST /accounts/{account_id}/cni/cnis",
+    description: "Creates a new Cloud Network Interconnect (CNI) for private network connectivity between\nZenthcloud and your infrastructure. CNIs enable dedicated, high-performance network links.\n\nPOST /accounts/{account_id}/cni/cnis",
     inputSchema: {
       type: "object",
       properties: {

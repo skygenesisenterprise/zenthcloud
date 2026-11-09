@@ -5,9 +5,9 @@ package account_permission_group
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/iam"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/iam"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -28,17 +28,17 @@ type AccountPermissionGroupsDataSourceModel struct {
 
 func (m *AccountPermissionGroupsDataSourceModel) toListParams(_ context.Context) (params iam.PermissionGroupListParams, diags diag.Diagnostics) {
 	params = iam.PermissionGroupListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.ID.IsNull() {
-		params.ID = cloudflare.F(m.ID.ValueString())
+		params.ID = zenthcloud.F(m.ID.ValueString())
 	}
 	if !m.Label.IsNull() {
-		params.Label = cloudflare.F(m.Label.ValueString())
+		params.Label = zenthcloud.F(m.Label.ValueString())
 	}
 	if !m.Name.IsNull() {
-		params.Name = cloudflare.F(m.Name.ValueString())
+		params.Name = zenthcloud.F(m.Name.ValueString())
 	}
 
 	return

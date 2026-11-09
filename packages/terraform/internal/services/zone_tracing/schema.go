@@ -32,7 +32,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown(), stringplanmodifier.RequiresReplace()},
 			},
 			"enabled": schema.BoolAttribute{
-				Description: "Whether Cloudflare Traces is enabled for the zone.",
+				Description: "Whether Zenthcloud Traces is enabled for the zone.",
 				Optional:    true,
 			},
 			"forward_context": schema.BoolAttribute{
@@ -40,7 +40,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"persist": schema.BoolAttribute{
-				Description: "Whether traces are persisted in Cloudflare.",
+				Description: "Whether traces are persisted in Zenthcloud.",
 				Optional:    true,
 			},
 			"propagation_policy": schema.StringAttribute{

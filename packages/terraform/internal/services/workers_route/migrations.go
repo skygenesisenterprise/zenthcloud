@@ -4,14 +4,14 @@ import (
 	"context"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/workers_route/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_route/migration/v500"
 )
 
 var _ resource.ResourceWithUpgradeState = (*WorkersRouteResource)(nil)
 var _ resource.ResourceWithMoveState = (*WorkersRouteResource)(nil)
 
-// MoveState handles moves from cloudflare_worker_route (v4 singular) to
-// cloudflare_workers_route (v5 plural).
+// MoveState handles moves from zenthcloud_worker_route (v4 singular) to
+// zenthcloud_workers_route (v5 plural).
 func (r *WorkersRouteResource) MoveState(ctx context.Context) []resource.StateMover {
 	sourceSchema := v500.SourceWorkerRouteSchema()
 	return []resource.StateMover{

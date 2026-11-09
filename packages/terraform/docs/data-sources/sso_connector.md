@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_sso_connector Data Source - Cloudflare"
+page_title: "zenthcloud_sso_connector Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   SSO Connector Read
 ---
 
-# cloudflare_sso_connector (Data Source)
+# zenthcloud_sso_connector (Data Source)
 
 Accepted Permissions
 
@@ -15,7 +15,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_sso_connector" "example_sso_connector" {
+data "zenthcloud_sso_connector" "example_sso_connector" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   sso_connector_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }

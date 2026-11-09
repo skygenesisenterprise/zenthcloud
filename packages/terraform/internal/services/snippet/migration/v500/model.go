@@ -9,16 +9,16 @@ import (
 // Source Models (Legacy Provider - v4.x)
 // ============================================================================
 
-// SourceCloudflareSnippetModel represents the legacy cloudflare_snippet state from v4.x provider.
+// SourceZenthcloudSnippetModel represents the legacy zenthcloud_snippet state from v4.x provider.
 // Schema version: 0 (SDKv2 default)
-// Resource type: cloudflare_snippet
+// Resource type: zenthcloud_snippet
 //
 // In v4, the snippet resource had:
 // - name: The snippet name (renamed to snippet_name in v5)
 // - main_module: Top-level attribute (moved to metadata.main_module in v5)
 // - files: Block-style nested resources (converted to list attribute in v5)
 // - created_on, modified_on: Computed timestamp strings
-type SourceCloudflareSnippetModel struct {
+type SourceZenthcloudSnippetModel struct {
 	ZoneID     types.String             `tfsdk:"zone_id"`
 	Name       types.String             `tfsdk:"name"`
 	MainModule types.String             `tfsdk:"main_module"`
@@ -37,9 +37,9 @@ type SourceSnippetFileModel struct {
 // Target Models (Current Provider - v5.x+)
 // ============================================================================
 
-// TargetSnippetModel represents the current cloudflare_snippet state from v5.x+ provider.
+// TargetSnippetModel represents the current zenthcloud_snippet state from v5.x+ provider.
 // Schema version: 500
-// Resource type: cloudflare_snippet
+// Resource type: zenthcloud_snippet
 //
 // Types must match the v5 schema exactly so that resp.State.Set() succeeds:
 // - Files uses *[]TargetSnippetFileModel (framework converts to SnippetFileType via reflection)

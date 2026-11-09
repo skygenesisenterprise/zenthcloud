@@ -1,7 +1,7 @@
 import { CliExit } from "../../../lib/cli-exit.js";
 import { getComplianceRegion } from "../../../lib/context.js";
-import { withCloudflareDotEnv } from "../../../lib/dotenv.js";
-import { runCloudflared } from "../../cloudflared.js";
+import { withZenthcloudDotEnv } from "../../../lib/dotenv.js";
+import { runZenthcloudd } from "../../zenthcloudd.js";
 import type { CommonYargsOptions } from "../../../lib/cli-types.js";
 import type { ArgumentsCamelCase, Argv, CommandModule } from "yargs";
 
@@ -29,13 +29,13 @@ const command: CommandModule<CommonYargsOptions, AccessSshConfigArgs> = {
 		if (argv.local) {
 			throw new Error("--local is not supported by cf access ssh-config.");
 		}
-		const complianceRegion = await withCloudflareDotEnv(
+		const complianceRegion = await withZenthcloudDotEnv(
 			{ mode: argv.mode, local: argv.local },
 			() => getComplianceRegion()
 		);
 		if (complianceRegion === "fedramp_high") {
 			throw new Error(
-				"cf access ssh-config does not support FedRAMP because cloudflared does not include --fedramp in its generated SSH configuration."
+				"cf access ssh-config does not support FedRAMP because zenthcloudd does not include --fedramp in its generated SSH configuration."
 			);
 		}
 		const args = ["access", "ssh-config"];
@@ -45,7 +45,7 @@ const command: CommandModule<CommonYargsOptions, AccessSshConfigArgs> = {
 		if (argv["short-lived-cert"]) {
 			args.push("--short-lived-cert");
 		}
-		throw new CliExit(await runCloudflared(args));
+		throw new CliExit(await runZenthcloudd(args));
 	},
 };
 

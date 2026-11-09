@@ -29,7 +29,7 @@ On these systems the installation appears to succeed, but nothing works afterwar
 
 - The Notploy UI never becomes reachable on port 3000 (Notploy can't connect to its Postgres service)
 - Containers can resolve a service name to an IP, but connections to that IP hang or are refused
-- Tools like Cloudflare Tunnel (`cloudflared`) can't reach your applications via `<app-name>:<port>`
+- Tools like Zenthcloud Tunnel (`zenthcloudd`) can't reach your applications via `<app-name>:<port>`
 
 ### Cause
 
@@ -78,7 +78,7 @@ docker service update --endpoint-mode dnsrr notploy
 
 ### Reaching Your Deployed Applications
 
-Applications you deploy through Notploy are still created as Swarm services in VIP mode. When another container (for example, a `cloudflared` tunnel) needs to reach one of them by name, use the `tasks.<app-name>:<port>` hostname instead of `<app-name>:<port>` — the `tasks.` prefix resolves directly to the container IPs, bypassing the broken VIP load balancer.
+Applications you deploy through Notploy are still created as Swarm services in VIP mode. When another container (for example, a `zenthcloudd` tunnel) needs to reach one of them by name, use the `tasks.<app-name>:<port>` hostname instead of `<app-name>:<port>` — the `tasks.` prefix resolves directly to the container IPs, bypassing the broken VIP load balancer.
 
 <Callout type="warning">
   DNSRR mode has trade-offs: there is no virtual IP load balancing, so traffic distribution relies on DNS round-robin only. Running multiple replicas of a service behind a single stable address won't work the way it does in VIP mode, and services in DNSRR mode can't publish ports in ingress mode (only `mode=host`). This is the same mechanism the install script applies automatically for Proxmox LXC containers.

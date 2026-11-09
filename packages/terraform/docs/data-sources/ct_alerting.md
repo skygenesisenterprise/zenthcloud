@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_ct_alerting Data Source - Cloudflare"
+page_title: "zenthcloud_ct_alerting Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   SSL and Certificates ReadSSL and Certificates Write
 ---
 
-# cloudflare_ct_alerting (Data Source)
+# zenthcloud_ct_alerting (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_ct_alerting" "example_ct_alerting" {
+data "zenthcloud_ct_alerting" "example_ct_alerting" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```

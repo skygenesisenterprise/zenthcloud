@@ -9,7 +9,7 @@ import type { JSONObject } from "@modelcontextprotocol/server";
 export const access_idp_federation_grant_create_request: JSONObject = {
   "properties": {
     "idp_id": {
-      "description": "UID of the identity provider to federate. Must be an existing identity provider in this account. One-time pin and Cloudflare-managed identity providers cannot be federated.",
+      "description": "UID of the identity provider to federate. Must be an existing identity provider in this account. One-time pin and Zenthcloud-managed identity providers cannot be federated.",
       "format": "uuid",
       "type": "string"
     }

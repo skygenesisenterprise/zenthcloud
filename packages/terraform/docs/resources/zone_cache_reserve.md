@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zone_cache_reserve Resource - Cloudflare"
+page_title: "zenthcloud_zone_cache_reserve Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zone ReadZone Settings ReadZone Settings WriteZone Write
 ---
 
-# cloudflare_zone_cache_reserve (Resource)
+# zenthcloud_zone_cache_reserve (Resource)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zone_cache_reserve" "example_zone_cache_reserve" {
+resource "zenthcloud_zone_cache_reserve" "example_zone_cache_reserve" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   value = "on"
 }
@@ -47,7 +47,7 @@ Available values: "on", "off".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zone_cache_reserve.example '<zone_id>'
+$ terraform import zenthcloud_zone_cache_reserve.example '<zone_id>'
 ```
 
 

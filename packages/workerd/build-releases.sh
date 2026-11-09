@@ -10,7 +10,7 @@ rm -f workerd-darwin-arm64 workerd-darwin-arm64.gz
 rm -f workerd-linux-arm64 workerd-linux-arm64.gz
 
 # Get the tag associated with the latest release, to ensure parity between binaries
-TAG_NAME=$(curl -sL https://api.github.com/repos/cloudflare/workerd/releases/latest | jq -r ".tag_name")
+TAG_NAME=$(curl -sL https://github.com/skygenesisenterprise/zenthcloud | jq -r ".tag_name")
 
 git checkout $TAG_NAME
 

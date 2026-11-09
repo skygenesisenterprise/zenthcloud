@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf alerting silences get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/alerting/v3/silences/${argv["silence-id"] == null ? "<silence-id>" : encodeURIComponent(String(argv["silence-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/alerting/v3/silences/${argv["silence-id"] == null ? "<silence-id>" : encodeURIComponent(String(argv["silence-id"]))}`,
 						pathParams: { "silence-id": String(argv["silence-id"] ?? "") },
 						bodyKind: "none",
 					});

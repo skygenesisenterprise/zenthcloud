@@ -1,5 +1,5 @@
-// Package v500 handles state migration from cloudflare_api_shield v4 (schema_version=0)
-// to cloudflare_api_shield v5 (version=500).
+// Package v500 handles state migration from zenthcloud_api_shield v4 (schema_version=0)
+// to zenthcloud_api_shield v5 (version=500).
 package v500
 
 import (
@@ -10,9 +10,9 @@ import (
 // Source Models (Legacy Provider - v4.x SDKv2)
 // ============================================================================
 
-// SourceAPIShieldModel represents the legacy cloudflare_api_shield resource state from v4.x provider.
+// SourceAPIShieldModel represents the legacy zenthcloud_api_shield resource state from v4.x provider.
 // Schema version: 0 (implicit in SDKv2)
-// Resource type: cloudflare_api_shield
+// Resource type: zenthcloud_api_shield
 //
 // Key differences from v5:
 //   - auth_id_characteristics is Optional (v5: Required)
@@ -39,9 +39,9 @@ type SourceAuthIDCharacteristicsModel struct {
 // Target Models (Current Provider - v5.x+ Framework)
 // ============================================================================
 
-// TargetAPIShieldModel represents the current cloudflare_api_shield resource state from v5.x+ provider.
+// TargetAPIShieldModel represents the current zenthcloud_api_shield resource state from v5.x+ provider.
 // Schema version: 500 (when TF_MIG_TEST=1, otherwise version 1)
-// Resource type: cloudflare_api_shield
+// Resource type: zenthcloud_api_shield
 //
 // Note: This matches the APIShieldModel in the parent package's model.go file.
 // We duplicate it here to keep the migration package self-contained.

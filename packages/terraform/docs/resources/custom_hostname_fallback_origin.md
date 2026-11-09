@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_custom_hostname_fallback_origin Resource - Cloudflare"
+page_title: "zenthcloud_custom_hostname_fallback_origin Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   SSL and Certificates ReadSSL and Certificates Write
 ---
 
-# cloudflare_custom_hostname_fallback_origin (Resource)
+# zenthcloud_custom_hostname_fallback_origin (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_custom_hostname_fallback_origin" "example_custom_hostname_fallback_origin" {
+resource "zenthcloud_custom_hostname_fallback_origin" "example_custom_hostname_fallback_origin" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   origin = "fallback.example.com"
 }
@@ -44,7 +44,7 @@ Available values: "initializing", "pending_deployment", "pending_deletion", "act
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_custom_hostname_fallback_origin.example '<zone_id>'
+$ terraform import zenthcloud_custom_hostname_fallback_origin.example '<zone_id>'
 ```
 
 

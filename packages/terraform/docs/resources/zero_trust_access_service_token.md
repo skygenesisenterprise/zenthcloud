@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_access_service_token Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_access_service_token Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Access: Service Tokens ReadAccess: Service Tokens Write
 ---
 
-# cloudflare_zero_trust_access_service_token (Resource)
+# zenthcloud_zero_trust_access_service_token (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_access_service_token" "example_zero_trust_access_service_token" {
+resource "zenthcloud_zero_trust_access_service_token" "example_zero_trust_access_service_token" {
   name = "CI/CD token"
   zone_id = "zone_id"
   client_secret_version = 0
@@ -54,7 +54,7 @@ resource "cloudflare_zero_trust_access_service_token" "example_zero_trust_access
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_access_service_token.example '<{accounts|zones}/{account_id|zone_id}>/<service_token_id>'
+$ terraform import zenthcloud_zero_trust_access_service_token.example '<{accounts|zones}/{account_id|zone_id}>/<service_token_id>'
 ```
 
 

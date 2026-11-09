@@ -9,12 +9,12 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/cache"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/cache"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -30,7 +30,7 @@ func NewResource() resource.Resource {
 
 // TieredCacheResource defines the resource implementation.
 type TieredCacheResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *TieredCacheResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -42,12 +42,12 @@ func (r *TieredCacheResource) Configure(ctx context.Context, req resource.Config
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -75,7 +75,7 @@ func (r *TieredCacheResource) Create(ctx context.Context, req resource.CreateReq
 	_, err = r.client.Cache.SmartTieredCache.New(
 		ctx,
 		cache.SmartTieredCacheNewParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -124,7 +124,7 @@ func (r *TieredCacheResource) Update(ctx context.Context, req resource.UpdateReq
 	_, err = r.client.Cache.SmartTieredCache.Edit(
 		ctx,
 		cache.SmartTieredCacheEditParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -160,7 +160,7 @@ func (r *TieredCacheResource) Read(ctx context.Context, req resource.ReadRequest
 	_, err := r.client.Cache.SmartTieredCache.Get(
 		ctx,
 		cache.SmartTieredCacheGetParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -198,7 +198,7 @@ func (r *TieredCacheResource) Delete(ctx context.Context, req resource.DeleteReq
 	_, err := r.client.Cache.SmartTieredCache.Delete(
 		ctx,
 		cache.SmartTieredCacheDeleteParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
@@ -237,7 +237,7 @@ func (r *TieredCacheResource) ImportState(ctx context.Context, req resource.Impo
 	_, err := r.client.Cache.SmartTieredCache.Get(
 		ctx,
 		cache.SmartTieredCacheGetParams{
-			ZoneID: cloudflare.F(path),
+			ZoneID: zenthcloud.F(path),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),

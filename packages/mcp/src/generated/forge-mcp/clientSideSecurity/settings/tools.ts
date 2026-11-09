@@ -137,8 +137,8 @@ export const tools: readonly Tool[] = [
               "description": "When true, indicates that Client-Side Security is enabled.",
               "type": "boolean"
             },
-            "use_cloudflare_reporting_endpoint": {
-              "description": "When true, CSP reports will be sent to https://csp-reporting.cloudflare.com/cdn-cgi/script_monitor/report",
+            "use_zenthcloud_reporting_endpoint": {
+              "description": "When true, CSP reports will be sent to https://github.com/skygenesisenterprise/zenthcloud",
               "type": "boolean"
             },
             "use_connection_url_path": {

@@ -9,12 +9,12 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/firewall"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/firewall"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -30,7 +30,7 @@ func NewResource() resource.Resource {
 
 // AccessRuleResource defines the resource implementation.
 type AccessRuleResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *AccessRuleResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -42,12 +42,12 @@ func (r *AccessRuleResource) Configure(ctx context.Context, req resource.Configu
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -75,9 +75,9 @@ func (r *AccessRuleResource) Create(ctx context.Context, req resource.CreateRequ
 	params := firewall.AccessRuleNewParams{}
 
 	if !data.AccountID.IsNull() {
-		params.AccountID = cloudflare.F(data.AccountID.ValueString())
+		params.AccountID = zenthcloud.F(data.AccountID.ValueString())
 	} else {
-		params.ZoneID = cloudflare.F(data.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(data.ZoneID.ValueString())
 	}
 
 	_, err = r.client.Firewall.AccessRules.New(
@@ -129,9 +129,9 @@ func (r *AccessRuleResource) Update(ctx context.Context, req resource.UpdateRequ
 	params := firewall.AccessRuleEditParams{}
 
 	if !data.AccountID.IsNull() {
-		params.AccountID = cloudflare.F(data.AccountID.ValueString())
+		params.AccountID = zenthcloud.F(data.AccountID.ValueString())
 	} else {
-		params.ZoneID = cloudflare.F(data.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(data.ZoneID.ValueString())
 	}
 
 	_, err = r.client.Firewall.AccessRules.Edit(
@@ -171,9 +171,9 @@ func (r *AccessRuleResource) Read(ctx context.Context, req resource.ReadRequest,
 	params := firewall.AccessRuleGetParams{}
 
 	if !data.AccountID.IsNull() {
-		params.AccountID = cloudflare.F(data.AccountID.ValueString())
+		params.AccountID = zenthcloud.F(data.AccountID.ValueString())
 	} else {
-		params.ZoneID = cloudflare.F(data.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(data.ZoneID.ValueString())
 	}
 
 	_, err := r.client.Firewall.AccessRules.Get(
@@ -220,9 +220,9 @@ func (r *AccessRuleResource) Delete(ctx context.Context, req resource.DeleteRequ
 	params := firewall.AccessRuleDeleteParams{}
 
 	if !data.AccountID.IsNull() {
-		params.AccountID = cloudflare.F(data.AccountID.ValueString())
+		params.AccountID = zenthcloud.F(data.AccountID.ValueString())
 	} else {
-		params.ZoneID = cloudflare.F(data.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(data.ZoneID.ValueString())
 	}
 
 	_, err := r.client.Firewall.AccessRules.Delete(
@@ -255,10 +255,10 @@ func (r *AccessRuleResource) ImportState(ctx context.Context, req resource.Impor
 	resp.Diagnostics.Append(diags...)
 	switch path_accounts_or_zones {
 	case "accounts":
-		params.AccountID = cloudflare.F(path_account_id_or_zone_id)
+		params.AccountID = zenthcloud.F(path_account_id_or_zone_id)
 		data.AccountID = types.StringValue(path_account_id_or_zone_id)
 	case "zones":
-		params.ZoneID = cloudflare.F(path_account_id_or_zone_id)
+		params.ZoneID = zenthcloud.F(path_account_id_or_zone_id)
 		data.ZoneID = types.StringValue(path_account_id_or_zone_id)
 	default:
 		resp.Diagnostics.AddError("invalid discriminator segment - <{accounts|zones}/{account_id|zone_id}>", "expected discriminator to be one of {accounts|zones}")

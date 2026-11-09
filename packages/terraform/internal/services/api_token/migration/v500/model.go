@@ -11,7 +11,7 @@ import (
 
 // SourceAPITokenModel represents the v4 SDKv2 state structure.
 // Schema version: 0 (SDKv2 default)
-// Resource type: cloudflare_api_token
+// Resource type: zenthcloud_api_token
 //
 // Key differences from v5:
 //   - "policy" field (not "policies")
@@ -57,7 +57,7 @@ type SourceRequestIPModel struct {
 
 // TargetAPITokenModel represents the current v5 state structure.
 // Schema version: 500
-// Resource type: cloudflare_api_token
+// Resource type: zenthcloud_api_token
 //
 // Note: This must match the APITokenModel in the parent package's model.go file.
 type TargetAPITokenModel struct {

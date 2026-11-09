@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -57,9 +57,9 @@ var v4EmptyConfig string
 // - Single array element transformation
 // - Type and name field preservation
 func TestMigrateAPIShield_V4ToV5_SingleHeader(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_api_shield." + rnd
+	resourceName := "zenthcloud_api_shield." + rnd
 	tmpDir := t.TempDir()
 
 	configFn := func(config string) string {
@@ -78,8 +78,8 @@ func TestMigrateAPIShield_V4ToV5_SingleHeader(t *testing.T) {
 			{
 				// Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: legacyProviderVersion,
 					},
 				},
@@ -107,9 +107,9 @@ func TestMigrateAPIShield_V4ToV5_SingleHeader(t *testing.T) {
 //
 // Validates alternative type value (cookie instead of header).
 func TestMigrateAPIShield_V4ToV5_SingleCookie(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_api_shield." + rnd
+	resourceName := "zenthcloud_api_shield." + rnd
 	tmpDir := t.TempDir()
 
 	configFn := func(config string) string {
@@ -127,8 +127,8 @@ func TestMigrateAPIShield_V4ToV5_SingleCookie(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: legacyProviderVersion,
 					},
 				},
@@ -156,9 +156,9 @@ func TestMigrateAPIShield_V4ToV5_SingleCookie(t *testing.T) {
 // - Mixed types (headers + cookies)
 // - Ordering preservation
 func TestMigrateAPIShield_V4ToV5_MultipleMixed(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_api_shield." + rnd
+	resourceName := "zenthcloud_api_shield." + rnd
 	tmpDir := t.TempDir()
 
 	configFn := func(config string) string {
@@ -176,8 +176,8 @@ func TestMigrateAPIShield_V4ToV5_MultipleMixed(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: legacyProviderVersion,
 					},
 				},
@@ -222,9 +222,9 @@ func TestMigrateAPIShield_V4ToV5_MultipleMixed(t *testing.T) {
 //
 // Critical because HTTP headers often use hyphens and mixed case.
 func TestMigrateAPIShield_V4ToV5_SpecialChars(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_api_shield." + rnd
+	resourceName := "zenthcloud_api_shield." + rnd
 	tmpDir := t.TempDir()
 
 	configFn := func(config string) string {
@@ -242,8 +242,8 @@ func TestMigrateAPIShield_V4ToV5_SpecialChars(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: legacyProviderVersion,
 					},
 				},
@@ -278,9 +278,9 @@ func TestMigrateAPIShield_V4ToV5_SpecialChars(t *testing.T) {
 // - OAuth state cookie
 // - Various naming patterns
 func TestMigrateAPIShield_V4ToV5_OAuthFlow(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_api_shield." + rnd
+	resourceName := "zenthcloud_api_shield." + rnd
 	tmpDir := t.TempDir()
 
 	configFn := func(config string) string {
@@ -298,8 +298,8 @@ func TestMigrateAPIShield_V4ToV5_OAuthFlow(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: legacyProviderVersion,
 					},
 				},
@@ -339,9 +339,9 @@ func TestMigrateAPIShield_V4ToV5_OAuthFlow(t *testing.T) {
 //
 // Validates the Optional → Required field migration pattern.
 func TestMigrateAPIShield_V4ToV5_Empty(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_api_shield." + rnd
+	resourceName := "zenthcloud_api_shield." + rnd
 	tmpDir := t.TempDir()
 
 	configFn := func(config string) string {
@@ -359,8 +359,8 @@ func TestMigrateAPIShield_V4ToV5_Empty(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: legacyProviderVersion,
 					},
 				},

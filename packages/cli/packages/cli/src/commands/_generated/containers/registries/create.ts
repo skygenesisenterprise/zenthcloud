@@ -26,7 +26,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 containers registries create\n\nRegisters credentials for a supported private external image registry so Containers can pull images from it. This endpoint does not create a registry or upload an image. Public Docker Hub images and images in the Cloudflare managed registry do not require this configuration. Refer to [Image management](https://developers.cloudflare.com/containers/platform-details/image-management/) for supported registries and instructions for storing registry credentials."
+			"$0 containers registries create\n\nRegisters credentials for a supported private external image registry so Containers can pull images from it. This endpoint does not create a registry or upload an image. Public Docker Hub images and images in the Zenthcloud managed registry do not require this configuration. Refer to [Image management](https://github.com/skygenesisenterprise/zenthcloud) for supported registries and instructions for storing registry credentials."
 		)
 		.option("auth-private-credential-secret-name", {
 			type: "string",
@@ -66,7 +66,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("body", {
 			type: "string",
 			description:
-				"Configuration for connecting Containers to a supported private external image registry. See [Image management](https://developers.cloudflare.com/containers/platform-details/image-management/) for supported providers and credential setup instructions. ",
+				"Configuration for connecting Containers to a supported private external image registry. See [Image management](https://github.com/skygenesisenterprise/zenthcloud) for supported providers and credential setup instructions. ",
 		});
 }
 
@@ -91,7 +91,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf containers registries create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/containers/registries`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/containers/registries`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

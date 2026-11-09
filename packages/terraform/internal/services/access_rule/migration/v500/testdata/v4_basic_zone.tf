@@ -1,4 +1,4 @@
-resource "cloudflare_access_rule" "%s" {
+resource "zenthcloud_access_rule" "%s" {
   zone_id = "%s"
   mode    = "block"
   notes   = "Test access rule"

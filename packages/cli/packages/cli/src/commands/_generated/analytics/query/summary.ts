@@ -90,7 +90,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf analytics query summary",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/analytics/query/${argv["dataset"] == null ? "<dataset>" : encodeURIComponent(String(argv["dataset"]))}/summary`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/analytics/query/${argv["dataset"] == null ? "<dataset>" : encodeURIComponent(String(argv["dataset"]))}/summary`,
 						pathParams: { dataset: String(argv["dataset"] ?? "") },
 						bodyKind: "json",
 						body:

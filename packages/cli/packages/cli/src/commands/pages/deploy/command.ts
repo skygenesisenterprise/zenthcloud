@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { createConfigCache } from "@cloudflare/workers-utils";
+import { createConfigCache } from "@zenthcloud/workers-utils";
 import type { CommonYargsOptions } from "#lib/cli-types.js";
 import type { CommandModule } from "yargs";
 import { CliExit } from "#lib/cli-exit.js";

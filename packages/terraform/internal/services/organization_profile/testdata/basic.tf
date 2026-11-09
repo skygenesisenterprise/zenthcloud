@@ -1,4 +1,4 @@
-resource "cloudflare_organization_profile" "%[1]s" {
+resource "zenthcloud_organization_profile" "%[1]s" {
   organization_id   = "%[2]s"
   business_name     = "%[3]s"
   business_email    = "%[4]s"

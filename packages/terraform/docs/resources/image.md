@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_image Resource - Cloudflare"
+page_title: "zenthcloud_image Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Images ReadImages Write
 ---
 
-# cloudflare_image (Resource)
+# zenthcloud_image (Resource)
 
 Accepted Permissions
 
@@ -24,7 +24,7 @@ Accepted Permissions
 
 ```terraform
 # Upload from a local file.
-resource "cloudflare_image" "example_image" {
+resource "zenthcloud_image" "example_image" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   id         = "my-image"
   file       = filebase64("${path.module}/logo.png")
@@ -34,7 +34,7 @@ resource "cloudflare_image" "example_image" {
 }
 
 # Alternatively, fetch from a URL server-side.
-resource "cloudflare_image" "example_image_from_url" {
+resource "zenthcloud_image" "example_image_from_url" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   id         = "my-image-from-url"
   url        = "https://example.com/path/to/logo.png"
@@ -69,7 +69,7 @@ resource "cloudflare_image" "example_image_from_url" {
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_image.example '<account_id>/<image_id>'
+$ terraform import zenthcloud_image.example '<account_id>/<image_id>'
 ```
 
 

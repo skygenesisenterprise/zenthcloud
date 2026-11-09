@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zero_trust_device_default_profile_local_domain_fallback Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_device_default_profile_local_domain_fallback Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zero_trust_device_default_profile_local_domain_fallback (Data Source)
+# zenthcloud_zero_trust_device_default_profile_local_domain_fallback (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_device_default_profile_local_domain_fallback" "example_zero_trust_device_default_profile_local_domain_fallback" {
+data "zenthcloud_zero_trust_device_default_profile_local_domain_fallback" "example_zero_trust_device_default_profile_local_domain_fallback" {
   account_id = "699d98642c564d2e855e9661899b7252"
 }
 ```

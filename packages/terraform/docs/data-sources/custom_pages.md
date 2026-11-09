@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_custom_pages Data Source - Cloudflare"
+page_title: "zenthcloud_custom_pages Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Custom Pages ReadAccount Custom Pages WriteAccount Settings ReadAccount Settings WriteZero Trust: PII Read
 ---
 
-# cloudflare_custom_pages (Data Source)
+# zenthcloud_custom_pages (Data Source)
 
 Accepted Permissions
 
@@ -19,7 +19,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_custom_pages" "example_custom_pages" {
+data "zenthcloud_custom_pages" "example_custom_pages" {
   identifier = "ratelimit_block"
   account_id = "account_id"
   zone_id = "zone_id"

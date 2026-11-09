@@ -1,4 +1,4 @@
-resource "cloudflare_zero_trust_device_profiles" "%s" {
+resource "zenthcloud_zero_trust_device_profiles" "%s" {
   account_id  = "%s"
   name        = "Custom Profile with Service Mode"
   description = "Test custom profile with service_mode_v2 fields"

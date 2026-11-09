@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_email_security_allow_policies Data Source - Cloudflare"
+page_title: "zenthcloud_email_security_allow_policies Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Cloud Email Security: ReadCloud Email Security: Write
 ---
 
-# cloudflare_email_security_allow_policies (Data Source)
+# zenthcloud_email_security_allow_policies (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_email_security_allow_policies" "example_email_security_allow_policies" {
+data "zenthcloud_email_security_allow_policies" "example_email_security_allow_policies" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   direction = "asc"
   is_acceptable_sender = true

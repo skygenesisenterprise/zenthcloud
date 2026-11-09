@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -148,11 +148,11 @@ class ContainerClient final: public rpc::Container::Server, public kj::Refcounte
   // via containerCleanupCanceler, in which case the .catch_() resolves it immediately).
   kj::ForkedPromise<void> pendingCleanup;
 
-  static constexpr kj::StringPtr defaultEnv[] = {"CLOUDFLARE_COUNTRY_A2=XX"_kj,
-    "CLOUDFLARE_DEPLOYMENT_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"_kj,
-    "CLOUDFLARE_LOCATION=loc01"_kj, "CLOUDFLARE_REGION=REGN"_kj,
-    "CLOUDFLARE_APPLICATION_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"_kj,
-    "CLOUDFLARE_DURABLE_OBJECT_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"_kj};
+  static constexpr kj::StringPtr defaultEnv[] = {"ZENTHCLOUD_COUNTRY_A2=XX"_kj,
+    "ZENTHCLOUD_DEPLOYMENT_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"_kj,
+    "ZENTHCLOUD_LOCATION=loc01"_kj, "ZENTHCLOUD_REGION=REGN"_kj,
+    "ZENTHCLOUD_APPLICATION_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"_kj,
+    "ZENTHCLOUD_DURABLE_OBJECT_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"_kj};
 
   // Docker-specific Port implementation
   class DockerPort;

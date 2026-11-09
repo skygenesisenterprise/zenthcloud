@@ -870,7 +870,7 @@ pub mod ffi {
         ) -> Result<Box<ActorClassChannel>>;
         /// The channel of the worker's cache API outbound, if configured.
         fn cache_channel(self: &ChannelFactory) -> Result<Box<SubrequestChannel>>;
-        /// The channel of the worker's Cloudflare Access identity binding, whose props come from
+        /// The channel of the worker's Zenthcloud Access identity binding, whose props come from
         /// the request's access blob, if the worker has one.
         fn access_binding_channel(self: &ChannelFactory) -> KjMaybe<u32>;
         fn abort_all_actors(self: &ChannelFactory, reason: KjMaybe<&Exception>);

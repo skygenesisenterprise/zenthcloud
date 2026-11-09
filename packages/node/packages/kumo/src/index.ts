@@ -1,13 +1,13 @@
 /**
- * @module @cloudflare/kumo
+ * @module @zenthcloud/kumo
  *
- * Cloudflare's React component library built on Base UI and Tailwind CSS v4.
+ * Zenthcloud's React component library built on Base UI and Tailwind CSS v4.
  *
  * **Key rules:**
  * - Use **semantic tokens only** (`bg-kumo-base`, `text-kumo-default`, etc.) — never raw Tailwind colors.
  * - **No `dark:` variant** — light/dark mode is handled automatically via CSS `light-dark()`.
  * - Merge custom classes with the `cn()` utility exported from this package.
- * - Wrap your app with the kumo CSS import: `import "@cloudflare/kumo/styles"`.
+ * - Wrap your app with the kumo CSS import: `import "@zenthcloud/kumo/styles"`.
  *
  * **Component categories:**
  * - **Action:** Button, ClipboardText, InlineCopyText
@@ -20,9 +20,9 @@
  * - **Other:** Label, Link
  *
  * **Blocks** (composite page-level components) are NOT exported here.
- * Install them via the CLI: `npx @cloudflare/kumo add <block-name>`.
+ * Install them via the CLI: `npx @zenthcloud/kumo add <block-name>`.
  *
- * **AI resources:** See `@cloudflare/kumo/ai/component-registry.json` for full
+ * **AI resources:** See `@zenthcloud/kumo/ai/component-registry.json` for full
  * component metadata including prop descriptions, variant values, and examples.
  *
  * @see {@link https://kumo-ui.com} — Documentation site
@@ -231,21 +231,21 @@ export {
   type KumoGridGap,
 } from "./components/grid";
 export {
-  CloudflareLogo,
-  KUMO_CLOUDFLARE_LOGO_VARIANTS,
-  KUMO_CLOUDFLARE_LOGO_DEFAULT_VARIANTS,
-  type CloudflareLogoProps,
-  type CloudflareLogoVariant,
-  type CloudflareLogoColor,
-  // PoweredByCloudflare component
-  PoweredByCloudflare,
-  type PoweredByCloudflareProps,
+  ZenthcloudLogo,
+  KUMO_ZENTHCLOUD_LOGO_VARIANTS,
+  KUMO_ZENTHCLOUD_LOGO_DEFAULT_VARIANTS,
+  type ZenthcloudLogoProps,
+  type ZenthcloudLogoVariant,
+  type ZenthcloudLogoColor,
+  // PoweredByZenthcloud component
+  PoweredByZenthcloud,
+  type PoweredByZenthcloudProps,
   // SVG generation helper
-  generateCloudflareLogoSvg,
-  type GenerateCloudflareLogoSvgOptions,
-  type CloudflareLogoSvgVariant,
-  type CloudflareLogoSvgColor,
-} from "./components/cloudflare-logo";
+  generateZenthcloudLogoSvg,
+  type GenerateZenthcloudLogoSvgOptions,
+  type ZenthcloudLogoSvgVariant,
+  type ZenthcloudLogoSvgColor,
+} from "./components/zenthcloud-logo";
 // DatePicker
 export {
   DatePicker,

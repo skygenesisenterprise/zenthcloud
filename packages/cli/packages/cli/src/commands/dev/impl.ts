@@ -68,7 +68,7 @@ function requiredVersionMessage(d: DiscoveredImpl): string {
 function noImplError(cwd: string): void {
 	console.error(
 		errorBlock(
-			`No Cloudflare dev server is installed in ${cwd}.`,
+			`No Zenthcloud dev server is installed in ${cwd}.`,
 			"Checked package.json, pyproject.toml and Cargo.toml."
 		)
 	);
@@ -84,7 +84,7 @@ function noImplError(cwd: string): void {
 function multipleImplsError(discovered: DiscoveredImpl[]): void {
 	console.error(
 		errorBlock(
-			"Multiple Cloudflare dev-server implementations are configured.",
+			"Multiple Zenthcloud dev-server implementations are configured.",
 			[
 				...discovered.map((d) => `${d.impl.pkg} (${d.manifestPath})`),
 				"",

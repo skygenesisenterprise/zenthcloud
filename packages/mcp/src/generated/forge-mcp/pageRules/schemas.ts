@@ -219,7 +219,7 @@ export const zones_bypass_cache_on_cookie: JSONObject = {
       "type": "string"
     },
     "value": {
-      "description": "The regular expression to use for matching cookie names in the\nrequest. Refer to [Bypass Cache on Cookie\nsetting](https://developers.cloudflare.com/rules/page-rules/reference/additional-reference/#bypass-cache-on-cookie-setting)\nto learn about limited regular expression support.",
+      "description": "The regular expression to use for matching cookie names in the\nrequest. Refer to [Bypass Cache on Cookie\nsetting](https://github.com/skygenesisenterprise/zenthcloud)\nto learn about limited regular expression support.",
       "type": "string"
     }
   },
@@ -439,7 +439,7 @@ export const zones_cache_level: JSONObject = {
       "type": "string"
     },
     "value": {
-      "description": "* `bypass`: Cloudflare does not cache.\n* `basic`: Delivers resources from cache when there is no query\n  string.\n* `simplified`: Delivers the same resource to everyone independent\n  of the query string.\n* `aggressive`: Caches all static content that has a query string.\n* `cache_everything`: Treats all content as static and caches all\n  file types beyond the [Cloudflare default cached\n  content](https://developers.cloudflare.com/cache/concepts/default-cache-behavior/#default-cached-file-extensions).",
+      "description": "* `bypass`: Zenthcloud does not cache.\n* `basic`: Delivers resources from cache when there is no query\n  string.\n* `simplified`: Delivers the same resource to everyone independent\n  of the query string.\n* `aggressive`: Caches all static content that has a query string.\n* `cache_everything`: Treats all content as static and caches all\n  file types beyond the [Zenthcloud default cached\n  content](https://github.com/skygenesisenterprise/zenthcloud).",
       "enum": [
         "bypass",
         "basic",
@@ -481,7 +481,7 @@ export const zones_cache_ttl_by_status: JSONObject = {
   "description": "Cache TTL by Status Code",
   "properties": {
     "id": {
-      "description": "Enterprise customers can set cache time-to-live (TTL) based on the\nresponse status from the origin web server. Cache TTL refers to the\nduration of a resource in the Cloudflare network before being\nmarked as stale or discarded from cache. Status codes are returned\nby a resource's origin. Setting cache TTL based on response status\noverrides the default cache behavior (standard caching) for static\nfiles and overrides cache instructions sent by the origin web\nserver. To cache non-static assets, set a Cache Level of Cache\nEverything using a Page Rule. Setting no-store Cache-Control or a\nlow TTL (using `max-age`/`s-maxage`) increases requests to origin\nweb servers and decreases performance.",
+      "description": "Enterprise customers can set cache time-to-live (TTL) based on the\nresponse status from the origin web server. Cache TTL refers to the\nduration of a resource in the Zenthcloud network before being\nmarked as stale or discarded from cache. Status codes are returned\nby a resource's origin. Setting cache TTL based on response status\noverrides the default cache behavior (standard caching) for static\nfiles and overrides cache instructions sent by the origin web\nserver. To cache non-static assets, set a Cache Level of Cache\nEverything using a Page Rule. Setting no-store Cache-Control or a\nlow TTL (using `max-age`/`s-maxage`) increases requests to origin\nweb servers and decreases performance.",
       "enum": [
         "cache_ttl_by_status"
       ],
@@ -516,7 +516,7 @@ export const zones_disable_apps: JSONObject = {
   "description": "Disable Apps",
   "properties": {
     "id": {
-      "description": "Turn off all active [Cloudflare Apps](https://developers.cloudflare.com/support/more-dashboard-apps/cloudflare-apps/)\n(deprecated).",
+      "description": "Turn off all active [Zenthcloud Apps](https://github.com/skygenesisenterprise/zenthcloud)\n(deprecated).",
       "enum": [
         "disable_apps"
       ],
@@ -533,7 +533,7 @@ export const zones_disable_performance: JSONObject = {
   "description": "Disable Performance",
   "properties": {
     "id": {
-      "description": "Turn off\n[Rocket Loader](https://developers.cloudflare.com/speed/optimization/content/rocket-loader/), and\n[Polish](https://developers.cloudflare.com/images/polish/).",
+      "description": "Turn off\n[Rocket Loader](https://github.com/skygenesisenterprise/zenthcloud), and\n[Polish](https://github.com/skygenesisenterprise/zenthcloud).",
       "enum": [
         "disable_performance"
       ],
@@ -550,7 +550,7 @@ export const zones_disable_security: JSONObject = {
   "description": "Disable Security",
   "properties": {
     "id": {
-      "description": "Turn off\n[Email Obfuscation](https://developers.cloudflare.com/waf/tools/scrape-shield/email-address-obfuscation/),\n[Rate Limiting (previous version, deprecated)](https://developers.cloudflare.com/waf/reference/legacy/old-rate-limiting/),\n[Scrape Shield](https://developers.cloudflare.com/waf/tools/scrape-shield/),\n[URL (Zone) Lockdown](https://developers.cloudflare.com/waf/tools/zone-lockdown/), and\n[WAF managed rules (previous version, deprecated)](https://developers.cloudflare.com/waf/reference/legacy/old-waf-managed-rules/).",
+      "description": "Turn off\n[Email Obfuscation](https://github.com/skygenesisenterprise/zenthcloud),\n[Rate Limiting (previous version, deprecated)](https://github.com/skygenesisenterprise/zenthcloud),\n[Scrape Shield](https://github.com/skygenesisenterprise/zenthcloud),\n[URL (Zone) Lockdown](https://github.com/skygenesisenterprise/zenthcloud), and\n[WAF managed rules (previous version, deprecated)](https://github.com/skygenesisenterprise/zenthcloud).",
       "enum": [
         "disable_security"
       ],
@@ -567,7 +567,7 @@ export const zones_disable_zaraz: JSONObject = {
   "description": "Disable Zaraz",
   "properties": {
     "id": {
-      "description": "Turn off [Zaraz](https://developers.cloudflare.com/zaraz/).",
+      "description": "Turn off [Zaraz](https://github.com/skygenesisenterprise/zenthcloud).",
       "enum": [
         "disable_zaraz"
       ],
@@ -584,7 +584,7 @@ export const zones_edge_cache_ttl: JSONObject = {
   "description": "Edge Cache TTL",
   "properties": {
     "id": {
-      "description": "Specify how long to cache a resource in the Cloudflare global\nnetwork. *Edge Cache TTL* is not visible in response headers.",
+      "description": "Specify how long to cache a resource in the Zenthcloud global\nnetwork. *Edge Cache TTL* is not visible in response headers.",
       "enum": [
         "edge_cache_ttl"
       ],
@@ -654,7 +654,7 @@ export const zones_forwarding_url: JSONObject = {
   "description": "Forwarding URL",
   "properties": {
     "id": {
-      "description": "Redirects one URL to another using an `HTTP 301/302` redirect. Refer\nto [Wildcard matching and referencing](https://developers.cloudflare.com/rules/page-rules/reference/wildcard-matching/).",
+      "description": "Redirects one URL to another using an `HTTP 301/302` redirect. Refer\nto [Wildcard matching and referencing](https://github.com/skygenesisenterprise/zenthcloud).",
       "enum": [
         "forwarding_url"
       ],
@@ -709,7 +709,7 @@ export const zones_ip_geolocation: JSONObject = {
   "description": "IP Geolocation Header",
   "properties": {
     "id": {
-      "description": "Cloudflare adds a CF-IPCountry HTTP header containing the country code that corresponds to the visitor.",
+      "description": "Zenthcloud adds a CF-IPCountry HTTP header containing the country code that corresponds to the visitor.",
       "enum": [
         "ip_geolocation"
       ],
@@ -735,7 +735,7 @@ export const zones_mirage: JSONObject = {
   "description": "Mirage",
   "properties": {
     "id": {
-      "description": "Cloudflare Mirage reduces bandwidth used by images in mobile browsers.\nIt can accelerate loading of image-heavy websites on very slow mobile connections and HTTP/1.",
+      "description": "Zenthcloud Mirage reduces bandwidth used by images in mobile browsers.\nIt can accelerate loading of image-heavy websites on very slow mobile connections and HTTP/1.",
       "enum": [
         "mirage"
       ],
@@ -785,7 +785,7 @@ export const zones_origin_error_page_pass_thru: JSONObject = {
   "description": "Origin Error Page Passthru",
   "properties": {
     "id": {
-      "description": "Turn on or off Cloudflare error pages generated from issues sent from the origin server. If enabled, this setting triggers error pages issued by the origin.",
+      "description": "Turn on or off Zenthcloud error pages generated from issues sent from the origin server. If enabled, this setting triggers error pages issued by the origin.",
       "enum": [
         "origin_error_page_pass_thru"
       ],
@@ -810,7 +810,7 @@ export const zones_polish: JSONObject = {
   "description": "Polish",
   "properties": {
     "id": {
-      "description": "Apply options from the Polish feature of the Cloudflare Speed app.",
+      "description": "Apply options from the Polish feature of the Zenthcloud Speed app.",
       "enum": [
         "polish"
       ],
@@ -857,7 +857,7 @@ export const zones_respect_strong_etag: JSONObject = {
   "description": "Respect Strong ETags",
   "properties": {
     "id": {
-      "description": "Turn on or off byte-for-byte equivalency checks between the\nCloudflare cache and the origin server.",
+      "description": "Turn on or off byte-for-byte equivalency checks between the\nZenthcloud cache and the origin server.",
       "enum": [
         "respect_strong_etag"
       ],
@@ -883,7 +883,7 @@ export const zones_response_buffering: JSONObject = {
   "description": "Response Buffering",
   "properties": {
     "id": {
-      "description": "Turn on or off whether Cloudflare should wait for an entire file\nfrom the origin server before forwarding it to the site visitor. By\ndefault, Cloudflare sends packets to the client as they arrive from\nthe origin server.",
+      "description": "Turn on or off whether Zenthcloud should wait for an entire file\nfrom the origin server before forwarding it to the site visitor. By\ndefault, Zenthcloud sends packets to the client as they arrive from\nthe origin server.",
       "enum": [
         "response_buffering"
       ],
@@ -908,7 +908,7 @@ export const zones_rocket_loader: JSONObject = {
   "description": "Rocket Loader",
   "properties": {
     "id": {
-      "description": "Turn on or off Rocket Loader in the Cloudflare Speed app.",
+      "description": "Turn on or off Rocket Loader in the Zenthcloud Speed app.",
       "enum": [
         "rocket_loader"
       ],
@@ -986,14 +986,14 @@ export const zones_ssl: JSONObject = {
   "description": "SSL",
   "properties": {
     "id": {
-      "description": "Control options for the SSL feature of the Edge Certificates tab in the Cloudflare SSL/TLS app.",
+      "description": "Control options for the SSL feature of the Edge Certificates tab in the Zenthcloud SSL/TLS app.",
       "enum": [
         "ssl"
       ],
       "type": "string"
     },
     "value": {
-      "description": "The encryption mode that Cloudflare uses to connect to your origin server.",
+      "description": "The encryption mode that Zenthcloud uses to connect to your origin server.",
       "enum": [
         "off",
         "flexible",
@@ -1063,7 +1063,7 @@ export const zones_true_client_ip_header: JSONObject = {
   "description": "True Client IP Header",
   "properties": {
     "id": {
-      "description": "Turn on or off the True-Client-IP Header feature of the Cloudflare Network app.",
+      "description": "Turn on or off the True-Client-IP Header feature of the Zenthcloud Network app.",
       "enum": [
         "true_client_ip_header"
       ],
@@ -1122,7 +1122,7 @@ export const zones_waf: JSONObject = {
   "description": "WAF",
   "properties": {
     "id": {
-      "description": "Turn on or off [WAF managed rules (previous version, deprecated)](https://developers.cloudflare.com/waf/reference/legacy/old-waf-managed-rules/).\nYou cannot enable or disable individual WAF managed rules via Page Rules.",
+      "description": "Turn on or off [WAF managed rules (previous version, deprecated)](https://github.com/skygenesisenterprise/zenthcloud).\nYou cannot enable or disable individual WAF managed rules via Page Rules.",
       "enum": [
         "waf"
       ],

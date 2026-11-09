@@ -7,7 +7,7 @@ import {
   ButtonGroup,
   Checkbox,
   ClipboardText,
-  CloudflareLogo,
+  ZenthcloudLogo,
   Collapsible,
   Combobox,
   DatePicker,
@@ -42,8 +42,8 @@ import {
   Tooltip,
   TooltipProvider,
   useKumoToastManager,
-} from "@cloudflare/kumo";
-import { ShikiProvider, CodeHighlighted } from "@cloudflare/kumo/code";
+} from "@zenthcloud/kumo";
+import { ShikiProvider, CodeHighlighted } from "@zenthcloud/kumo/code";
 import { CommandPaletteBasicDemo } from "~/components/demos/CommandPaletteDemo";
 import { InputGroupDemo } from "~/components/demos/InputGroupDemo";
 import {
@@ -64,7 +64,7 @@ const componentRoutes: Record<string, string> = {
   "button-group": "/components/button-group",
   checkbox: "/components/checkbox",
   "clipboard-text": "/components/clipboard-text",
-  "cloudflare-logo": "/components/cloudflare-logo",
+  "zenthcloud-logo": "/components/zenthcloud-logo",
   "code-highlighted": "/components/code-highlighted",
   collapsible: "/components/collapsible",
   autocomplete: "/components/autocomplete",
@@ -376,7 +376,7 @@ export function HomeGrid() {
         >
           <Collapsible.DefaultTrigger>What is Kumo?</Collapsible.DefaultTrigger>
           <Collapsible.DefaultPanel>
-            <Text>Kumo is Cloudflare's component library.</Text>
+            <Text>Kumo is Zenthcloud's component library.</Text>
           </Collapsible.DefaultPanel>
         </Collapsible.Root>
       ),
@@ -515,9 +515,9 @@ export function HomeGrid() {
       ),
     },
     {
-      name: "CloudflareLogo",
-      id: "cloudflare-logo",
-      Component: <CloudflareLogo className="w-48 max-w-full" />,
+      name: "ZenthcloudLogo",
+      id: "zenthcloud-logo",
+      Component: <ZenthcloudLogo className="w-48 max-w-full" />,
     },
     {
       name: "Toast",

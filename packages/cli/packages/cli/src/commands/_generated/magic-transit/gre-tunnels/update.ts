@@ -40,10 +40,10 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 			description:
 				"True if automatic stateful return routing should be enabled for a tunnel, false otherwise. Requires the `coupler_integration` account flag to be enabled; requests setting this to `true` without that flag will be rejected.",
 		})
-		.option("cloudflare-gre-endpoint", {
+		.option("zenthcloud-gre-endpoint", {
 			type: "string",
 			description:
-				"The IP address assigned to the Cloudflare side of the GRE tunnel.",
+				"The IP address assigned to the Zenthcloud side of the GRE tunnel.",
 		})
 		.option("customer-gre-endpoint", {
 			type: "string",
@@ -84,7 +84,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("health-check-direction", {
 			type: "string",
 			description:
-				"The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Cloudflare via the open Internet, or bidirectional where both the probe and result come and go via the tunnel.",
+				"The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Zenthcloud via the open Internet, or bidirectional where both the probe and result come and go via the tunnel.",
 			choices: ["unidirectional", "bidirectional"],
 		})
 		.coerce("health-check-direction", (value) =>
@@ -158,7 +158,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf magic-transit gre-tunnels update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/magic/gre_tunnels/${argv["gre-tunnel-id"] == null ? "<gre-tunnel-id>" : encodeURIComponent(String(argv["gre-tunnel-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/magic/gre_tunnels/${argv["gre-tunnel-id"] == null ? "<gre-tunnel-id>" : encodeURIComponent(String(argv["gre-tunnel-id"]))}`,
 						pathParams: {
 							"gre-tunnel-id": String(argv["gre-tunnel-id"] ?? ""),
 						},
@@ -168,9 +168,9 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 								? parseBody(argv.body)
 								: compactBody({
 										automatic_return_routing: argv["automatic-return-routing"],
-										cloudflare_gre_endpoint: resolveFileToken(
-											argv["cloudflare-gre-endpoint"] as string | undefined,
-											"cloudflare-gre-endpoint",
+										zenthcloud_gre_endpoint: resolveFileToken(
+											argv["zenthcloud-gre-endpoint"] as string | undefined,
+											"zenthcloud-gre-endpoint",
 											"text"
 										),
 										customer_gre_endpoint: resolveFileToken(
@@ -241,10 +241,10 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatOutput(result, { successLabel: `Updated` });
 					return;
 				}
-				if (argv["cloudflare-gre-endpoint"] === undefined) {
-					argv["cloudflare-gre-endpoint"] = await promptForRequiredField(
-						"cloudflare-gre-endpoint",
-						"The IP address assigned to the Cloudflare side of the GRE tunnel."
+				if (argv["zenthcloud-gre-endpoint"] === undefined) {
+					argv["zenthcloud-gre-endpoint"] = await promptForRequiredField(
+						"zenthcloud-gre-endpoint",
+						"The IP address assigned to the Zenthcloud side of the GRE tunnel."
 					);
 				}
 				if (argv["customer-gre-endpoint"] === undefined) {
@@ -274,13 +274,13 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 						["automatic_return_routing"],
 						argv["automatic-return-routing"]
 					);
-				if (argv["cloudflare-gre-endpoint"] !== undefined)
+				if (argv["zenthcloud-gre-endpoint"] !== undefined)
 					setNestedValue(
 						bodyData,
-						["cloudflare_gre_endpoint"],
+						["zenthcloud_gre_endpoint"],
 						resolveFileToken(
-							argv["cloudflare-gre-endpoint"] as string | undefined,
-							"cloudflare-gre-endpoint",
+							argv["zenthcloud-gre-endpoint"] as string | undefined,
+							"zenthcloud-gre-endpoint",
 							"text"
 						)
 					);

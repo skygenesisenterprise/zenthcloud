@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 //
@@ -8,7 +8,7 @@
 // request is the newest one, so the exception must not be attributed to the
 // IoContext's current request.
 import * as assert from 'node:assert';
-import { DurableObject } from 'cloudflare:workers';
+import { DurableObject } from 'zenthcloud:workers';
 
 // Summaries of the fetch traces received by the tail handler, keyed by URL.
 const traces = new Map();

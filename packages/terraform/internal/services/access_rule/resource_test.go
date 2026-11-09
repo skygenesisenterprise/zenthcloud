@@ -7,10 +7,10 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -22,24 +22,24 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_access_rule", &resource.Sweeper{
-		Name: "cloudflare_access_rule",
-		F:    testSweepCloudflareAccessRules,
+	resource.AddTestSweepers("zenthcloud_access_rule", &resource.Sweeper{
+		Name: "zenthcloud_access_rule",
+		F:    testSweepZenthcloudAccessRules,
 	})
 }
 
-func testSweepCloudflareAccessRules(r string) error {
+func testSweepZenthcloudAccessRules(r string) error {
 	ctx := context.Background()
 	client, clientErr := acctest.SharedV1Client()
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 		return clientErr
 	}
 
 	// Sweep account-level access rules
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID != "" {
-		accountRulesResp, err := client.ListAccountAccessRules(ctx, accountID, cloudflare.AccessRule{}, 1)
+		accountRulesResp, err := client.ListAccountAccessRules(ctx, accountID, zenthcloud.AccessRule{}, 1)
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to fetch account access rules: %s", err))
 			return fmt.Errorf("failed to fetch account access rules: %w", err)
@@ -62,9 +62,9 @@ func testSweepCloudflareAccessRules(r string) error {
 	}
 
 	// Sweep zone-level access rules
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID != "" {
-		zoneRulesResp, err := client.ListZoneAccessRules(ctx, zoneID, cloudflare.AccessRule{}, 1)
+		zoneRulesResp, err := client.ListZoneAccessRules(ctx, zoneID, zenthcloud.AccessRule{}, 1)
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to fetch zone access rules: %s", err))
 			return fmt.Errorf("failed to fetch zone access rules: %w", err)
@@ -89,43 +89,43 @@ func testSweepCloudflareAccessRules(r string) error {
 	return nil
 }
 
-func testAccCheckCloudflareAccessRuleDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudAccessRuleDestroy(s *terraform.State) error {
 	client, clientErr := acctest.SharedV1Client()
 	if clientErr != nil {
-		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_access_rule" {
+		if rs.Type != "zenthcloud_access_rule" {
 			continue
 		}
 
 		_, err := client.AccountAccessRule(context.Background(), rs.Primary.Attributes[consts.AccountIDSchemaKey], rs.Primary.ID)
 		if err == nil {
-			return fmt.Errorf("cloudflare_access_rule still exists")
+			return fmt.Errorf("zenthcloud_access_rule still exists")
 		}
 
 		_, err = client.ZoneAccessRule(context.Background(), rs.Primary.Attributes[consts.ZoneIDSchemaKey], rs.Primary.ID)
 		if err == nil {
-			return fmt.Errorf("cloudflare_access_rule still exists")
+			return fmt.Errorf("zenthcloud_access_rule still exists")
 		}
 	}
 
 	return nil
 }
 
-func TestAccCloudflareAccessRule_AccountASN(t *testing.T) {
+func TestAccZenthcloudAccessRule_AccountASN(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_access_rule." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_access_rule." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	testASN(t, testAccessRuleAccountConfig, accountID, consts.AccountIDSchemaKey, rnd, name)
 }
 
-func TestAccCloudflareAccessRule_ZoneASN(t *testing.T) {
+func TestAccZenthcloudAccessRule_ZoneASN(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_access_rule." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	name := "zenthcloud_access_rule." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	testASN(t, testAccessRuleZoneConfig, zoneID, consts.ZoneIDSchemaKey, rnd, name)
 }
@@ -139,7 +139,7 @@ func testASN(t *testing.T, configFn configFunc, configKey, schemaKey, rnd, name 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessRuleDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: configFn(configKey, "challenge", "this is notes", "asn", "AS112", rnd),
@@ -179,18 +179,18 @@ func testASN(t *testing.T, configFn configFunc, configKey, schemaKey, rnd, name 
 	})
 }
 
-func TestAccCloudflareAccessRule_AccountIPRange(t *testing.T) {
+func TestAccZenthcloudAccessRule_AccountIPRange(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_access_rule." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_access_rule." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	testIPRange(t, testAccessRuleAccountConfig, accountID, consts.AccountIDSchemaKey, rnd, name)
 }
 
-func TestAccCloudflareAccessRule_ZoneIPRange(t *testing.T) {
+func TestAccZenthcloudAccessRule_ZoneIPRange(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_access_rule." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	name := "zenthcloud_access_rule." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	testIPRange(t, testAccessRuleZoneConfig, zoneID, consts.ZoneIDSchemaKey, rnd, name)
 }
@@ -204,7 +204,7 @@ func testIPRange(t *testing.T, configFn configFunc, configKey, schemaKey, rnd, n
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessRuleDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config:      configFn(configKey, "block", "this is notes", "ip_range", "104.16.0.0/25", rnd),
@@ -252,18 +252,18 @@ func testIPRange(t *testing.T, configFn configFunc, configKey, schemaKey, rnd, n
 	})
 }
 
-func TestAccCloudflareAccessRule_AccountIPv6(t *testing.T) {
+func TestAccZenthcloudAccessRule_AccountIPv6(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_access_rule." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_access_rule." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	testIPv6(t, testAccessRuleAccountConfig, accountID, consts.AccountIDSchemaKey, rnd, name)
 }
 
-func TestAccCloudflareAccessRule_ZoneIPv6(t *testing.T) {
+func TestAccZenthcloudAccessRule_ZoneIPv6(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_access_rule." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	name := "zenthcloud_access_rule." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	testIPv6(t, testAccessRuleZoneConfig, zoneID, consts.ZoneIDSchemaKey, rnd, name)
 }
@@ -277,7 +277,7 @@ func testIPv6(t *testing.T, configFn configFunc, configKey, schemaKey, rnd, name
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessRuleDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config:      configFn(configKey, "block", "this is notes", "ip6", "2001:0db8::", rnd),
@@ -320,18 +320,18 @@ func testIPv6(t *testing.T, configFn configFunc, configKey, schemaKey, rnd, name
 	})
 }
 
-func TestAccCloudflareAccessRule_AccountIPv4(t *testing.T) {
+func TestAccZenthcloudAccessRule_AccountIPv4(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_access_rule." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_access_rule." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	testIPv4(t, testAccessRuleAccountConfig, accountID, consts.AccountIDSchemaKey, rnd, name)
 }
 
-func TestAccCloudflareAccessRule_ZoneIPv4(t *testing.T) {
+func TestAccZenthcloudAccessRule_ZoneIPv4(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_access_rule." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	name := "zenthcloud_access_rule." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	testIPv4(t, testAccessRuleZoneConfig, zoneID, consts.ZoneIDSchemaKey, rnd, name)
 }
@@ -345,7 +345,7 @@ func testIPv4(t *testing.T, configFn configFunc, configKey, schemaKey, rnd, name
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessRuleDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: configFn(configKey, "challenge", "this is notes", "ip", "192.0.2.1", rnd),
@@ -384,18 +384,18 @@ func testIPv4(t *testing.T, configFn configFunc, configKey, schemaKey, rnd, name
 	})
 }
 
-func TestAccCloudflareAccessRule_AccountCountry(t *testing.T) {
+func TestAccZenthcloudAccessRule_AccountCountry(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_access_rule." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_access_rule." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	testCountry(t, testAccessRuleAccountConfig, accountID, consts.AccountIDSchemaKey, rnd, name)
 }
 
-func TestAccCloudflareAccessRule_ZoneCountry(t *testing.T) {
+func TestAccZenthcloudAccessRule_ZoneCountry(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_access_rule." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	name := "zenthcloud_access_rule." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	testCountry(t, testAccessRuleZoneConfig, zoneID, consts.ZoneIDSchemaKey, rnd, name)
 }
@@ -409,7 +409,7 @@ func testCountry(t *testing.T, configFn configFunc, configKey, schemaKey, rnd, n
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessRuleDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: configFn(configKey, "challenge", "this is notes", "country", "US", rnd),
@@ -460,7 +460,7 @@ func testAccessRuleZoneConfig(zoneID, mode, notes, target, value, rnd string) st
 
 func TestAccUpgradeAccessRule_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	config := testAccessRuleAccountConfig(accountID, "challenge", "this is notes", "asn", "AS112", rnd)
 
@@ -469,8 +469,8 @@ func TestAccUpgradeAccessRule_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

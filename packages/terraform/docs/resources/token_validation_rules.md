@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_token_validation_rules Resource - Cloudflare"
+page_title: "zenthcloud_token_validation_rules Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account API GatewayAccount API Gateway ReadDomain API GatewayDomain API Gateway Read
 ---
 
-# cloudflare_token_validation_rules (Resource)
+# zenthcloud_token_validation_rules (Resource)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_token_validation_rules" "example_token_validation_rules" {
+resource "zenthcloud_token_validation_rules" "example_token_validation_rules" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   action = "log"
   description = "Long description for Token Validation Rule"
@@ -47,10 +47,10 @@ Available values: "log", "block".
 - `enabled` (Boolean) Toggle rule on or off.
 - `expression` (String) Rule expression. Requests that fail to match this expression will be subject to `action`.
 
-For details on expressions, see the [Cloudflare Docs](https://developers.cloudflare.com/api-shield/security/jwt-validation/).
+For details on expressions, see the [Zenthcloud Docs](https://github.com/skygenesisenterprise/zenthcloud).
 - `selector` (Attributes) Select operations covered by this rule.
 
-For details on selectors, see the [Cloudflare Docs](https://developers.cloudflare.com/api-shield/security/jwt-validation/). (see [below for nested schema](#nestedatt--selector))
+For details on selectors, see the [Zenthcloud Docs](https://github.com/skygenesisenterprise/zenthcloud). (see [below for nested schema](#nestedatt--selector))
 - `title` (String) A human-readable name for the rule.
 - `zone_id` (String) Identifier.
 
@@ -103,7 +103,7 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_token_validation_rules.example '<zone_id>/<rule_id>'
+$ terraform import zenthcloud_token_validation_rules.example '<zone_id>/<rule_id>'
 ```
 
 

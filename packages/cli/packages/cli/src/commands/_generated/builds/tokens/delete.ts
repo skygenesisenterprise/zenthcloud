@@ -63,7 +63,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf builds tokens delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/builds/tokens/${argv["build-token-uuid"] == null ? "<build-token-uuid>" : encodeURIComponent(String(argv["build-token-uuid"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/builds/tokens/${argv["build-token-uuid"] == null ? "<build-token-uuid>" : encodeURIComponent(String(argv["build-token-uuid"]))}`,
 						pathParams: {
 							"build-token-uuid": String(argv["build-token-uuid"] ?? ""),
 						},

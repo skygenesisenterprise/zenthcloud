@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import {
 	afterEach,
 	beforeEach,
@@ -40,7 +40,7 @@ describe("cf d1 migrations create", () => {
 	it("writes a numbered file and needs no network or credentials", async () => {
 		const { exitCode } = await runCf(
 			["d1", "migrations", "create", "add users table"],
-			// No CLOUDFLARE_API_TOKEN — this must not need one.
+			// No ZENTHCLOUD_API_TOKEN — this must not need one.
 			{}
 		);
 

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_r2_data_catalog Data Source - Cloudflare"
+page_title: "zenthcloud_r2_data_catalog Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Workers R2 Data Catalog ReadWorkers R2 Data Catalog Write
 ---
 
-# cloudflare_r2_data_catalog (Data Source)
+# zenthcloud_r2_data_catalog (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_r2_data_catalog" "example_r2_data_catalog" {
+data "zenthcloud_r2_data_catalog" "example_r2_data_catalog" {
   account_id = "0123456789abcdef0123456789abcdef"
   bucket_name = "my-data-bucket"
 }

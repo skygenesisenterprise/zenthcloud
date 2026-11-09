@@ -42,7 +42,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID for the user making the request.",
+              "description": "Zenthcloud account ID for the user making the request.",
               "type": "string"
             }
           },
@@ -160,7 +160,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID for the user making the request.",
+              "description": "Zenthcloud account ID for the user making the request.",
               "type": "string"
             },
             "policy_id": {
@@ -270,7 +270,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID for the user making the request.",
+              "description": "Zenthcloud account ID for the user making the request.",
               "type": "string"
             },
             "policy_id": {
@@ -387,7 +387,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID for the user making the request.",
+              "description": "Zenthcloud account ID for the user making the request.",
               "type": "string"
             }
           },
@@ -520,7 +520,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID for the user making the request.",
+              "description": "Zenthcloud account ID for the user making the request.",
               "type": "string"
             },
             "policy_id": {

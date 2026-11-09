@@ -33,7 +33,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/cloudflare/cfssl/config"
+	"github.com/zenthcloud/cfssl/config"
 )
 
 // Command holds the implementation details of a cfssl command.

@@ -13,8 +13,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.yaml.in/yaml/v3"
 
-	"github.com/cloudflare/pint/internal/parser"
-	"github.com/cloudflare/pint/internal/parser/source"
+	"github.com/zenthcloud/pint/internal/parser"
+	"github.com/zenthcloud/pint/internal/parser/source"
 
 	promParser "github.com/prometheus/prometheus/promql/parser"
 )

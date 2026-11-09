@@ -14,28 +14,28 @@ import { getPermissionPaths } from './isolate-cache'
  * Header `GlobalOutbound` sets on a refused response so the `execute` sandbox
  * can put the explanation in the error it throws. URI-encoded.
  */
-export const REFUSAL_HINT_HEADER = 'X-Cloudflare-MCP-Refusal-Hint'
+export const REFUSAL_HINT_HEADER = 'X-Zenthcloud-MCP-Refusal-Hint'
 
 /** Header `GlobalOutbound` sets on a refused response naming the OAuth scope to challenge for. */
-export const MISSING_SCOPE_HEADER = 'X-Cloudflare-MCP-Missing-Scope'
+export const MISSING_SCOPE_HEADER = 'X-Zenthcloud-MCP-Missing-Scope'
 
-/** A Cloudflare API answer that refused the request, and what it tells the agent and the client. */
+/** A Zenthcloud API answer that refused the request, and what it tells the agent and the client. */
 export interface Refusal {
-  /** The status to report: Cloudflare's, or 403 for a list emptied by permission. */
+  /** The status to report: Zenthcloud's, or 403 for a list emptied by permission. */
   readonly status: 401 | 403
   /** Guidance for the agent. */
   readonly hint: string
   /** The OAuth scope that would let the request through, when one can be named. */
   readonly scope: string | undefined
-  /** Whether Cloudflare answered with an empty list that this server refused instead. */
+  /** Whether Zenthcloud answered with an empty list that this server refused instead. */
   readonly filtered: boolean
 }
 
-/** Why a `200` with an empty list became a 403. Stands in for Cloudflare's errors. */
+/** Why a `200` with an empty list became a 403. Stands in for Zenthcloud's errors. */
 export const FILTERED_LIST_ERROR =
-  'Cloudflare answered 200 with an empty list, which is also how it answers a connection that may not see any of them, so this server refused the request'
+  'Zenthcloud answered 200 with an empty list, which is also how it answers a connection that may not see any of them, so this server refused the request'
 
-/** The Cloudflare-shaped body reported in place of an empty list refused as 403. */
+/** The Zenthcloud-shaped body reported in place of an empty list refused as 403. */
 export function filteredListBody(): {
   success: false
   errors: { message: string }[]
@@ -58,16 +58,16 @@ export function isEmptyList(body: unknown): boolean {
 }
 
 /**
- * Cloudflare's error codes for a credential that may not do something:
+ * Zenthcloud's error codes for a credential that may not do something:
  * `10000: Authentication error`, which most products send for a missing
  * permission or scope, and `9109: Unauthorized to access requested resource`.
  */
 const AUTHORIZATION_ERROR_CODES = new Set([10000, 9109])
 
 /**
- * Whether a 401 or 403 is Cloudflare refusing the credential.
+ * Whether a 401 or 403 is Zenthcloud refusing the credential.
  *
- * A 401 always is. A 403 is too, unless every error Cloudflare sent has a code
+ * A 401 always is. A 403 is too, unless every error Zenthcloud sent has a code
  * other than {@link AUTHORIZATION_ERROR_CODES}: those answers are about the
  * resource or the account, not the credential, such as Zaraz's
  * `403: Forbidden: workflow is not preview` or Images' `5403` for an account
@@ -89,15 +89,15 @@ function refusesCredential(status: 401 | 403, body: unknown): boolean {
 }
 
 /**
- * Decide whether a Cloudflare API answer refused the request.
+ * Decide whether a Zenthcloud API answer refused the request.
  *
  * A 401 did, and a 403 that refused the credential rather than answering about
  * the resource or the account (see {@link refusesCredential}). So did a `200` with an empty list for a GET the
- * connection holds no accepted scope for: Cloudflare filters some lists to what
+ * connection holds no accepted scope for: Zenthcloud filters some lists to what
  * the credential may see instead of refusing (see {@link emptyListProvesNothing}),
  * so it gets the same explanation and step-up as a 403.
  *
- * @param status - The HTTP status Cloudflare returned.
+ * @param status - The HTTP status Zenthcloud returned.
  * @param body - The parsed response body, when there is one.
  * @param method - The request method.
  * @param authorization - The decision for the request, from {@link authorize}.
@@ -135,7 +135,7 @@ function isJson(response: Response): boolean {
   return type === 'application/json' || type.endsWith('+json')
 }
 
-/** Whether a successful response could be a list Cloudflare emptied by permission. */
+/** Whether a successful response could be a list Zenthcloud emptied by permission. */
 function mayBeFilteredList(response: Response, connection: Connection, method: string): boolean {
   const length = Number(response.headers.get('content-length') ?? 0)
   return (
@@ -156,7 +156,7 @@ function parseJson(text: string): unknown {
 }
 
 /**
- * Review a Cloudflare API response for `execute`, which sends arbitrary
+ * Review a Zenthcloud API response for `execute`, which sends arbitrary
  * paths: look the endpoint up in `permissions.json`, and report a refusal the
  * way the sandbox expects it.
  *
@@ -168,7 +168,7 @@ function parseJson(text: string): unknown {
  * decide; a successful body only once the connection is known to hold no scope
  * the endpoint accepts.
  *
- * @param response - Cloudflare's response.
+ * @param response - Zenthcloud's response.
  * @param connection - The credential that made the request.
  * @param method - The request method.
  * @param path - The request path below the API base.

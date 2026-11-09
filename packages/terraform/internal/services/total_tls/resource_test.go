@@ -5,9 +5,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -18,13 +18,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_total_tls", &resource.Sweeper{
-		Name: "cloudflare_total_tls",
-		F:    testSweepCloudflareTotalTLS,
+	resource.AddTestSweepers("zenthcloud_total_tls", &resource.Sweeper{
+		Name: "zenthcloud_total_tls",
+		F:    testSweepZenthcloudTotalTLS,
 	})
 }
 
-func testSweepCloudflareTotalTLS(r string) error {
+func testSweepZenthcloudTotalTLS(r string) error {
 	ctx := context.Background()
 	// Total TLS is a zone-level TLS/SSL configuration setting.
 	// It's a singleton setting per zone, not something that accumulates.
@@ -41,10 +41,10 @@ func testTotalTLS_Disable(rnd, zoneID string) string {
 	return acctest.LoadTestCase("totaltls_disable.tf", rnd, zoneID)
 }
 
-func TestAccCloudflareTotalTLS_Enable(t *testing.T) {
+func TestAccZenthcloudTotalTLS_Enable(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_total_tls." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	name := "zenthcloud_total_tls." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -67,10 +67,10 @@ func TestAccCloudflareTotalTLS_Enable(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareTotalTLS_Disable(t *testing.T) {
+func TestAccZenthcloudTotalTLS_Disable(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_total_tls." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	name := "zenthcloud_total_tls." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -95,7 +95,7 @@ func TestAccCloudflareTotalTLS_Disable(t *testing.T) {
 
 func TestAccUpgradeTotalTls_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	config := testTotalTLS_Enable(rnd, zoneID)
 
@@ -104,8 +104,8 @@ func TestAccUpgradeTotalTls_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

@@ -952,7 +952,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "aggInterval": {
-              "description": "Aggregation interval of the results (e.g., in 15 minutes or 1 hour intervals). Refer to [Aggregation intervals](https://developers.cloudflare.com/radar/concepts/aggregation-intervals/). When omitted, the interval is auto-selected from the requested date range; finer intervals are only available for shorter ranges. If the requested interval is too granular for the date range, the request is rejected.",
+              "description": "Aggregation interval of the results (e.g., in 15 minutes or 1 hour intervals). Refer to [Aggregation intervals](https://github.com/skygenesisenterprise/zenthcloud). When omitted, the interval is auto-selected from the requested date range; finer intervals are only available for shorter ranges. If the requested interval is too granular for the date range, the request is rejected.",
               "enum": [
                 "15m",
                 "1h",
@@ -1568,7 +1568,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "aggInterval": {
-              "description": "Aggregation interval of the results (e.g., in 15 minutes or 1 hour intervals). Refer to [Aggregation intervals](https://developers.cloudflare.com/radar/concepts/aggregation-intervals/). When omitted, the interval is auto-selected from the requested date range; finer intervals are only available for shorter ranges. If the requested interval is too granular for the date range, the request is rejected.",
+              "description": "Aggregation interval of the results (e.g., in 15 minutes or 1 hour intervals). Refer to [Aggregation intervals](https://github.com/skygenesisenterprise/zenthcloud). When omitted, the interval is auto-selected from the requested date range; finer intervals are only available for shorter ranges. If the requested interval is too granular for the date range, the request is rejected.",
               "enum": [
                 "15m",
                 "1h",
@@ -1633,7 +1633,7 @@ export const tools: readonly Tool[] = [
             },
             "normalization": {
               "default": "PERCENTAGE",
-              "description": "Normalization method applied to the results. Refer to [Normalization methods](https://developers.cloudflare.com/radar/concepts/normalization/).",
+              "description": "Normalization method applied to the results. Refer to [Normalization methods](https://github.com/skygenesisenterprise/zenthcloud).",
               "enum": [
                 "PERCENTAGE",
                 "MIN0_MAX"

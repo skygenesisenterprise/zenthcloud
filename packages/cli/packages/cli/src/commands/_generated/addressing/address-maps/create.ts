@@ -32,7 +32,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("enabled", {
 			type: "boolean",
 			description:
-				"Whether the Address Map is enabled or not. Cloudflare's DNS will not respond with IP addresses on an Address Map until the map is enabled.",
+				"Whether the Address Map is enabled or not. Zenthcloud's DNS will not respond with IP addresses on an Address Map until the map is enabled.",
 			default: false,
 		})
 		.option("ips", {
@@ -77,7 +77,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf addressing address-maps create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/addressing/address_maps`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/addressing/address_maps`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

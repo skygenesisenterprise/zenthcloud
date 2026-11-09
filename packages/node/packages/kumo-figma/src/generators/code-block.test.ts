@@ -16,7 +16,7 @@ import { describe, it, expect } from "vite-plus/test";
 import { parseTailwindClasses } from "../parsers/tailwind-to-figma";
 
 // Import registry as source of truth
-import registry from "@cloudflare/kumo/ai/component-registry.json";
+import registry from "@zenthcloud/kumo/ai/component-registry.json";
 
 const codeComponent = registry.components.Code as any;
 const codeBlockSubComponent = codeComponent.subComponents?.Block;

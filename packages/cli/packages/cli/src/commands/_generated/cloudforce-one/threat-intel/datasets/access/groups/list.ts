@@ -51,7 +51,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 						command:
 							"cf cloudforce-one threat-intel datasets access groups list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/cloudforce-one/events/dataset/-/groups`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/cloudforce-one/events/dataset/-/groups`,
 						pathParams: {},
 						bodyKind: "none",
 					});

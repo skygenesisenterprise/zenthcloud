@@ -10,7 +10,7 @@ import {
   DurableObject,
   WorkerEntrypoint,
   WorkflowEntrypoint,
-} from 'cloudflare:workers';
+} from 'zenthcloud:workers';
 
 // The creation of `pythonDurableObjects` et al. has to be done here because
 // python-entrypoint-helper is a BUILTIN and so cannot import `DurableObject` et al.

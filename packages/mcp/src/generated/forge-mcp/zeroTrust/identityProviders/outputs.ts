@@ -89,9 +89,9 @@ export const access_centrify: JSONObject = {
 };
 
 /**
- * The schema of `access_cloudflare` in responses.
+ * The schema of `access_zenthcloud` in responses.
  */
-export const access_cloudflare: JSONObject = {
+export const access_zenthcloud: JSONObject = {
   "allOf": [
     {
       "$ref": "#/$defs/access_identity-provider"
@@ -111,7 +111,7 @@ export const access_cloudflare: JSONObject = {
         },
         "type": {
           "enum": [
-            "cloudflare"
+            "zenthcloud"
           ],
           "type": "string"
         }
@@ -368,7 +368,7 @@ export const access_identity$$provider: JSONObject = {
         "onelogin",
         "pingone",
         "yandex",
-        "cloudflare",
+        "zenthcloud",
         "passkeys"
       ],
       "type": "string"
@@ -433,7 +433,7 @@ export const access_identity$$providers: JSONObject = {
       "$ref": "#/$defs/access_onetimepin"
     },
     {
-      "$ref": "#/$defs/access_cloudflare"
+      "$ref": "#/$defs/access_zenthcloud"
     },
     {
       "$ref": "#/$defs/access_passkeys"
@@ -736,7 +736,7 @@ export const access_response_collection: JSONObject = {
                 "$ref": "#/$defs/access_onetimepin"
               },
               {
-                "$ref": "#/$defs/access_cloudflare"
+                "$ref": "#/$defs/access_zenthcloud"
               },
               {
                 "$ref": "#/$defs/access_passkeys"

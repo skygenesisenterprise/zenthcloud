@@ -8,11 +8,11 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/dns"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/dns"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
@@ -26,7 +26,7 @@ func NewResource() resource.Resource {
 
 // AccountDNSSettingsResource defines the resource implementation.
 type AccountDNSSettingsResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *AccountDNSSettingsResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -38,12 +38,12 @@ func (r *AccountDNSSettingsResource) Configure(ctx context.Context, req resource
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -71,7 +71,7 @@ func (r *AccountDNSSettingsResource) Create(ctx context.Context, req resource.Cr
 	_, err = r.client.DNS.Settings.Account.Edit(
 		ctx,
 		dns.SettingAccountEditParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -119,7 +119,7 @@ func (r *AccountDNSSettingsResource) Update(ctx context.Context, req resource.Up
 	_, err = r.client.DNS.Settings.Account.Edit(
 		ctx,
 		dns.SettingAccountEditParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -154,7 +154,7 @@ func (r *AccountDNSSettingsResource) Read(ctx context.Context, req resource.Read
 	_, err := r.client.DNS.Settings.Account.Get(
 		ctx,
 		dns.SettingAccountGetParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),

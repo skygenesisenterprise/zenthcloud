@@ -5,7 +5,7 @@ package zero_trust_risk_scoring_integration
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -34,7 +34,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"account_tag": schema.StringAttribute{
-				Description: "The Cloudflare account tag.",
+				Description: "The Zenthcloud account tag.",
 				Computed:    true,
 			},
 			"active": schema.BoolAttribute{

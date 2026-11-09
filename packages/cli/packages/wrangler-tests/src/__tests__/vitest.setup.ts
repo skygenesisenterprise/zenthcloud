@@ -55,7 +55,7 @@ vi.mock("child_process", async (importOriginal) => {
 		...cp,
 		default: cp,
 		spawnSync: vi.fn().mockImplementation((binary, ...args) => {
-			if (binary === "cloudflared") {
+			if (binary === "zenthcloudd") {
 				return { error: true };
 			}
 			return cp.spawnSync(binary, ...args);
@@ -167,10 +167,10 @@ vi.mock("../user/generate-auth-url", async (importOriginal) => {
 // bind to the factory return value and cannot be reassigned — an ESLint rule in
 // eslint.config.mjs enforces this.
 vi.mock("ci-info", () => ({
-	default: { isCI: false, CLOUDFLARE_PAGES: false, CLOUDFLARE_WORKERS: false },
+	default: { isCI: false, ZENTHCLOUD_PAGES: false, ZENTHCLOUD_WORKERS: false },
 	isCI: false,
-	CLOUDFLARE_PAGES: false,
-	CLOUDFLARE_WORKERS: false,
+	ZENTHCLOUD_PAGES: false,
+	ZENTHCLOUD_WORKERS: false,
 }));
 
 // Reset `ci-info` mock after every test so individual overrides
@@ -178,8 +178,8 @@ vi.mock("ci-info", () => ({
 const _ci = await import("ci-info");
 afterEach(() => {
 	vi.mocked(_ci.default).isCI = false;
-	vi.mocked(_ci.default).CLOUDFLARE_PAGES = false;
-	vi.mocked(_ci.default).CLOUDFLARE_WORKERS = false;
+	vi.mocked(_ci.default).ZENTHCLOUD_PAGES = false;
+	vi.mocked(_ci.default).ZENTHCLOUD_WORKERS = false;
 });
 
 vi.mock("../user/generate-random-state", () => {
@@ -288,7 +288,7 @@ afterEach(() => {
 	vi.clearAllMocks();
 });
 
-vi.mock("@cloudflare/cli-shared-helpers/streams", async () => {
+vi.mock("@zenthcloud/cli-shared-helpers/streams", async () => {
 	const stdout = new PassThrough();
 	const stderr = new PassThrough();
 

@@ -10,22 +10,22 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 // TestMigrateCertificatePack_V4ToV5_Basic tests basic migration with minimal required fields
 func TestMigrateCertificatePack_V4ToV5_Basic(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_certificate_pack." + rnd
+	resourceName := "zenthcloud_certificate_pack." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config with minimal required fields
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_certificate_pack" "%[1]s" {
+resource "zenthcloud_certificate_pack" "%[1]s" {
 	zone_id               = "%[2]s"
 	type                  = "advanced"
 	hosts                 = ["%[3]s", "*.%[3]s"]
@@ -44,8 +44,8 @@ resource "cloudflare_certificate_pack" "%[1]s" {
 			{
 				// Step 1: Create resource with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -72,22 +72,22 @@ resource "cloudflare_certificate_pack" "%[1]s" {
 
 // TestMigrateCertificatePack_V4ToV5_AllFields tests migration with all optional fields
 func TestMigrateCertificatePack_V4ToV5_AllFields(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_certificate_pack." + rnd
+	resourceName := "zenthcloud_certificate_pack." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config with all optional fields (use TXT validation for wildcard support)
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_certificate_pack" "%[1]s" {
+resource "zenthcloud_certificate_pack" "%[1]s" {
 	zone_id               = "%[2]s"
 	type                  = "advanced"
 	hosts                 = ["%[3]s", "*.%[3]s", "www.%[3]s"]
 	validation_method     = "txt"
 	validity_days         = 90
 	certificate_authority = "google"
-	cloudflare_branding   = false
+	zenthcloud_branding   = false
 }`, rnd, zoneID, domain)
 
 	resource.Test(t, resource.TestCase{
@@ -100,8 +100,8 @@ resource "cloudflare_certificate_pack" "%[1]s" {
 			{
 				// Step 1: Create resource with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -117,7 +117,7 @@ resource "cloudflare_certificate_pack" "%[1]s" {
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("validation_method"), knownvalue.StringExact("txt")),
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("validity_days"), knownvalue.Int64Exact(90)),
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("certificate_authority"), knownvalue.StringExact("google")),
-				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cloudflare_branding"), knownvalue.Bool(false)),
+				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("zenthcloud_branding"), knownvalue.Bool(false)),
 				// Verify hosts array with multiple entries
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("hosts"), knownvalue.ListSizeExact(3)),
 				// Verify computed fields
@@ -129,16 +129,16 @@ resource "cloudflare_certificate_pack" "%[1]s" {
 
 // TestMigrateCertificatePack_V4ToV5_WaitForActiveStatusRemoved tests that wait_for_active_status is removed
 func TestMigrateCertificatePack_V4ToV5_WaitForActiveStatusRemoved(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_certificate_pack." + rnd
+	resourceName := "zenthcloud_certificate_pack." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config with wait_for_active_status = false (removed in v5)
 	// Using false to avoid timeout - the point is to test removal, not waiting
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_certificate_pack" "%[1]s" {
+resource "zenthcloud_certificate_pack" "%[1]s" {
 	zone_id                = "%[2]s"
 	type                   = "advanced"
 	hosts                  = ["%[3]s", "*.%[3]s"]
@@ -158,8 +158,8 @@ resource "cloudflare_certificate_pack" "%[1]s" {
 			{
 				// Step 1: Create resource with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -182,22 +182,22 @@ resource "cloudflare_certificate_pack" "%[1]s" {
 
 // TestMigrateCertificatePack_V4ToV5_GoogleCA tests migration with Google certificate authority
 func TestMigrateCertificatePack_V4ToV5_GoogleCA(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_certificate_pack." + rnd
+	resourceName := "zenthcloud_certificate_pack." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config with Google CA
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_certificate_pack" "%[1]s" {
+resource "zenthcloud_certificate_pack" "%[1]s" {
 	zone_id               = "%[2]s"
 	type                  = "advanced"
 	hosts                 = ["%[3]s", "*.%[3]s"]
 	validation_method     = "txt"
 	validity_days         = 90
 	certificate_authority = "google"
-	cloudflare_branding   = false
+	zenthcloud_branding   = false
 }`, rnd, zoneID, domain)
 
 	resource.Test(t, resource.TestCase{
@@ -210,8 +210,8 @@ resource "cloudflare_certificate_pack" "%[1]s" {
 			{
 				// Step 1: Create resource with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -226,7 +226,7 @@ resource "cloudflare_certificate_pack" "%[1]s" {
 				// Verify other fields
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("validity_days"), knownvalue.Int64Exact(90)),
-				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cloudflare_branding"), knownvalue.Bool(false)),
+				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("zenthcloud_branding"), knownvalue.Bool(false)),
 			}),
 		},
 	})
@@ -234,22 +234,22 @@ resource "cloudflare_certificate_pack" "%[1]s" {
 
 // TestMigrateCertificatePack_V4ToV5_SSLComCA tests migration with SSL.com certificate authority
 func TestMigrateCertificatePack_V4ToV5_SSLComCA(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_certificate_pack." + rnd
+	resourceName := "zenthcloud_certificate_pack." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config with SSL.com CA and 30-day validity
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_certificate_pack" "%[1]s" {
+resource "zenthcloud_certificate_pack" "%[1]s" {
 	zone_id               = "%[2]s"
 	type                  = "advanced"
 	hosts                 = ["%[3]s", "*.%[3]s"]
 	validation_method     = "txt"
 	validity_days         = 30
 	certificate_authority = "ssl_com"
-	cloudflare_branding   = false
+	zenthcloud_branding   = false
 }`, rnd, zoneID, domain)
 
 	resource.Test(t, resource.TestCase{
@@ -262,8 +262,8 @@ resource "cloudflare_certificate_pack" "%[1]s" {
 			{
 				// Step 1: Create resource with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -286,22 +286,22 @@ resource "cloudflare_certificate_pack" "%[1]s" {
 
 // TestMigrateCertificatePack_V4ToV5_HttpValidation tests migration with HTTP validation
 func TestMigrateCertificatePack_V4ToV5_HttpValidation(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_certificate_pack." + rnd
+	resourceName := "zenthcloud_certificate_pack." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config with HTTP validation (no wildcard - HTTP doesn't support wildcards)
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_certificate_pack" "%[1]s" {
+resource "zenthcloud_certificate_pack" "%[1]s" {
 	zone_id               = "%[2]s"
 	type                  = "advanced"
 	hosts                 = ["%[3]s"]
 	validation_method     = "http"
 	validity_days         = 90
 	certificate_authority = "lets_encrypt"
-	cloudflare_branding   = false
+	zenthcloud_branding   = false
 }`, rnd, zoneID, domain)
 
 	resource.Test(t, resource.TestCase{
@@ -314,8 +314,8 @@ resource "cloudflare_certificate_pack" "%[1]s" {
 			{
 				// Step 1: Create resource with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -337,22 +337,22 @@ resource "cloudflare_certificate_pack" "%[1]s" {
 
 // TestMigrateCertificatePack_V4ToV5_Validity14Days tests validity_days = 14
 func TestMigrateCertificatePack_V4ToV5_Validity14Days(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_certificate_pack." + rnd
+	resourceName := "zenthcloud_certificate_pack." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config with 14-day validity (requires Google or SSL.com CA)
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_certificate_pack" "%[1]s" {
+resource "zenthcloud_certificate_pack" "%[1]s" {
 	zone_id               = "%[2]s"
 	type                  = "advanced"
 	hosts                 = ["%[3]s", "*.%[3]s"]
 	validation_method     = "txt"
 	validity_days         = 14
 	certificate_authority = "google"
-	cloudflare_branding   = false
+	zenthcloud_branding   = false
 }`, rnd, zoneID, domain)
 
 	resource.Test(t, resource.TestCase{
@@ -365,8 +365,8 @@ resource "cloudflare_certificate_pack" "%[1]s" {
 			{
 				// Step 1: Create resource with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -388,22 +388,22 @@ resource "cloudflare_certificate_pack" "%[1]s" {
 
 // TestMigrateCertificatePack_V4ToV5_Validity30Days tests validity_days = 30
 func TestMigrateCertificatePack_V4ToV5_Validity30Days(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_certificate_pack." + rnd
+	resourceName := "zenthcloud_certificate_pack." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config with 30-day validity
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_certificate_pack" "%[1]s" {
+resource "zenthcloud_certificate_pack" "%[1]s" {
 	zone_id               = "%[2]s"
 	type                  = "advanced"
 	hosts                 = ["%[3]s", "*.%[3]s"]
 	validation_method     = "txt"
 	validity_days         = 30
 	certificate_authority = "google"
-	cloudflare_branding   = false
+	zenthcloud_branding   = false
 }`, rnd, zoneID, domain)
 
 	resource.Test(t, resource.TestCase{
@@ -416,8 +416,8 @@ resource "cloudflare_certificate_pack" "%[1]s" {
 			{
 				// Step 1: Create resource with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -438,22 +438,22 @@ resource "cloudflare_certificate_pack" "%[1]s" {
 
 // TestMigrateCertificatePack_V4ToV5_Validity365Days tests validity_days = 365
 func TestMigrateCertificatePack_V4ToV5_Validity365Days(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_certificate_pack." + rnd
+	resourceName := "zenthcloud_certificate_pack." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config with 365-day validity
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_certificate_pack" "%[1]s" {
+resource "zenthcloud_certificate_pack" "%[1]s" {
 	zone_id               = "%[2]s"
 	type                  = "advanced"
 	hosts                 = ["%[3]s", "*.%[3]s"]
 	validation_method     = "txt"
 	validity_days         = 365
 	certificate_authority = "ssl_com"
-	cloudflare_branding   = false
+	zenthcloud_branding   = false
 }`, rnd, zoneID, domain)
 
 	resource.Test(t, resource.TestCase{
@@ -466,8 +466,8 @@ resource "cloudflare_certificate_pack" "%[1]s" {
 			{
 				// Step 1: Create resource with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},

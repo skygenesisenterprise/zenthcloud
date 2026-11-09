@@ -7,11 +7,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/origin_tls_client_auth"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/origin_tls_client_auth"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -25,13 +25,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_authenticated_origin_pulls_hostname_certificate", &resource.Sweeper{
-		Name: "cloudflare_authenticated_origin_pulls_hostname_certificate",
-		F:    testSweepCloudflareAuthenticatedOriginPullsHostnameCertificate,
+	resource.AddTestSweepers("zenthcloud_authenticated_origin_pulls_hostname_certificate", &resource.Sweeper{
+		Name: "zenthcloud_authenticated_origin_pulls_hostname_certificate",
+		F:    testSweepZenthcloudAuthenticatedOriginPullsHostnameCertificate,
 	})
 }
 
-func testSweepCloudflareAuthenticatedOriginPullsHostnameCertificate(r string) error {
+func testSweepZenthcloudAuthenticatedOriginPullsHostnameCertificate(r string) error {
 	ctx := context.Background()
 	// Hostname certificates have API-generated UUIDs as IDs, so we cannot
 	// reliably identify which ones were created by tests vs manually.
@@ -40,11 +40,11 @@ func testSweepCloudflareAuthenticatedOriginPullsHostnameCertificate(r string) er
 	return nil
 }
 
-func testAccCheckCloudflareAuthenticatedOriginPullsHostnameCertificateDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudAuthenticatedOriginPullsHostnameCertificateDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_authenticated_origin_pulls_hostname_certificate" {
+		if rs.Type != "zenthcloud_authenticated_origin_pulls_hostname_certificate" {
 			continue
 		}
 
@@ -55,7 +55,7 @@ func testAccCheckCloudflareAuthenticatedOriginPullsHostnameCertificateDestroy(s 
 			context.Background(),
 			certID,
 			origin_tls_client_auth.HostnameCertificateGetParams{
-				ZoneID: cloudflare.F(zoneID),
+				ZoneID: zenthcloud.F(zoneID),
 			},
 		)
 		if err != nil {
@@ -87,7 +87,7 @@ func testAccAuthenticatedOriginPullsHostnameCertificateImportStateIdFunc(resourc
 
 func testAccAuthenticatedOriginPullsHostnameCertificateConfig(rnd, zoneID, cert, key string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_authenticated_origin_pulls_hostname_certificate" "%[1]s" {
+resource "zenthcloud_authenticated_origin_pulls_hostname_certificate" "%[1]s" {
   zone_id     = "%[2]s"
   certificate = <<EOT
 %[3]s
@@ -107,8 +107,8 @@ EOT
 // This test covers certificate received with trailing new line (ideal state).
 func TestAccAuthenticatedOriginPullsHostnameCertificate_FullLifecycle(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_authenticated_origin_pulls_hostname_certificate." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_authenticated_origin_pulls_hostname_certificate." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	// Generate ephemeral certificate for testing
 	expiry := time.Now().Add(time.Hour * 24 * 365)
@@ -123,7 +123,7 @@ func TestAccAuthenticatedOriginPullsHostnameCertificate_FullLifecycle(t *testing
 			acctest.TestAccPreCheck_Credentials(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAuthenticatedOriginPullsHostnameCertificateDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAuthenticatedOriginPullsHostnameCertificateDestroy,
 		Steps: []resource.TestStep{
 			// Step 1: Create
 			{
@@ -167,8 +167,8 @@ func TestAccAuthenticatedOriginPullsHostnameCertificate_CertificateNewlineNormal
 	t.Skip("This certificate already exists for this zone.")
 	t.Parallel()
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_authenticated_origin_pulls_hostname_certificate." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_authenticated_origin_pulls_hostname_certificate." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -176,11 +176,11 @@ func TestAccAuthenticatedOriginPullsHostnameCertificate_CertificateNewlineNormal
 			acctest.TestAccPreCheck_Credentials(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAuthenticatedOriginPullsHostnameCertificateDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAuthenticatedOriginPullsHostnameCertificateDestroy,
 		Steps: []resource.TestStep{
 			{
 				// Create with config normalized (no trailing newlines)
-				Config: testAccCheckCloudflareAuthenticatedOriginPullsHostnameCertificateConfigNormalized(zoneID, rnd),
+				Config: testAccCheckZenthcloudAuthenticatedOriginPullsHostnameCertificateConfigNormalized(zoneID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.NotNull()),
@@ -194,7 +194,7 @@ func TestAccAuthenticatedOriginPullsHostnameCertificate_CertificateNewlineNormal
 			},
 			{
 				// Refresh with config normalized - should not detect drift
-				Config: testAccCheckCloudflareAuthenticatedOriginPullsHostnameCertificateConfigNormalized(zoneID, rnd),
+				Config: testAccCheckZenthcloudAuthenticatedOriginPullsHostnameCertificateConfigNormalized(zoneID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.NotNull()),
@@ -213,6 +213,6 @@ func TestAccAuthenticatedOriginPullsHostnameCertificate_CertificateNewlineNormal
 	})
 }
 
-func testAccCheckCloudflareAuthenticatedOriginPullsHostnameCertificateConfigNormalized(zoneID, name string) string {
+func testAccCheckZenthcloudAuthenticatedOriginPullsHostnameCertificateConfigNormalized(zoneID, name string) string {
 	return acctest.LoadTestCase("aophostnamecertificatenormalize.tf", zoneID, name)
 }

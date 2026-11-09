@@ -27,7 +27,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Specify the Cloudflare account identifier.",
+              "description": "Specify the Zenthcloud account identifier.",
               "type": "string"
             }
           },
@@ -91,7 +91,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zeroTrust_access_infrastructure_auditSshSettings_rotateSeed",
     title: "Rotate Zero Trust SSH account seed",
-    description: "Rotate the SSH account seed that generates the host key identity when connecting through the Cloudflare SSH Proxy.\n\nPOST /accounts/{account_id}/gateway/audit_ssh_settings/rotate_seed",
+    description: "Rotate the SSH account seed that generates the host key identity when connecting through the Zenthcloud SSH Proxy.\n\nPOST /accounts/{account_id}/gateway/audit_ssh_settings/rotate_seed",
     inputSchema: {
       type: "object",
       properties: {
@@ -99,7 +99,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Specify the Cloudflare account identifier.",
+              "description": "Specify the Zenthcloud account identifier.",
               "type": "string"
             }
           },
@@ -170,7 +170,7 @@ export const tools: readonly Tool[] = [
         "body": {
           "properties": {
             "public_key": {
-              "description": "Provide the Base64-encoded HPKE public key that encrypts SSH session logs. See https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/use-cases/ssh/ssh-infrastructure-access/#enable-ssh-command-logging.",
+              "description": "Provide the Base64-encoded HPKE public key that encrypts SSH session logs. See https://github.com/skygenesisenterprise/zenthcloud",
               "type": "string"
             }
           },
@@ -183,7 +183,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Specify the Cloudflare account identifier.",
+              "description": "Specify the Zenthcloud account identifier.",
               "type": "string"
             }
           },

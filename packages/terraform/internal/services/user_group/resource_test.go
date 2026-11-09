@@ -8,11 +8,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/iam"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/iam"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -28,8 +28,8 @@ func getPermissionGroupId(t *testing.T, accountID, label string) string {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 	res, err := client.IAM.PermissionGroups.List(ctx, iam.PermissionGroupListParams{
-		AccountID: cloudflare.F(accountID),
-		Label:     cloudflare.F(label),
+		AccountID: zenthcloud.F(accountID),
+		Label:     zenthcloud.F(label),
 	})
 	if err != nil {
 		t.Fatalf("Failed to list permission groups: %v", err)
@@ -46,7 +46,7 @@ func getResourceGroupId(t *testing.T, accountID string) string {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 	res, err := client.IAM.ResourceGroups.List(ctx, iam.ResourceGroupListParams{
-		AccountID: cloudflare.F(accountID),
+		AccountID: zenthcloud.F(accountID),
 	})
 	if err != nil {
 		t.Fatalf("Failed to list resource groups: %v", err)
@@ -62,19 +62,19 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_user_group", &resource.Sweeper{
-		Name: "cloudflare_user_group",
-		F:    testSweepCloudflareUserGroups,
+	resource.AddTestSweepers("zenthcloud_user_group", &resource.Sweeper{
+		Name: "zenthcloud_user_group",
+		F:    testSweepZenthcloudUserGroups,
 	})
 }
 
-func testSweepCloudflareUserGroups(r string) error {
+func testSweepZenthcloudUserGroups(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping user groups sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping user groups sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
@@ -82,7 +82,7 @@ func testSweepCloudflareUserGroups(r string) error {
 	groups, err := client.IAM.UserGroups.List(
 		ctx,
 		iam.UserGroupListParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		},
 	)
 	if err != nil {
@@ -101,7 +101,7 @@ func testSweepCloudflareUserGroups(r string) error {
 			ctx,
 			group.ID,
 			iam.UserGroupDeleteParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			},
 		)
 		if err != nil {
@@ -112,22 +112,22 @@ func testSweepCloudflareUserGroups(r string) error {
 	return nil
 }
 
-// TestAccCloudflareUserGroup_Basic tests basic create, update, and destroy of a user group.
-func TestAccCloudflareUserGroup_Basic(t *testing.T) {
+// TestAccZenthcloudUserGroup_Basic tests basic create, update, and destroy of a user group.
+func TestAccZenthcloudUserGroup_Basic(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_user_group." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_user_group." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck_AccountID(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareUserGroupDestroy,
+		CheckDestroy:             testAccCheckZenthcloudUserGroupDestroy,
 		Steps: []resource.TestStep{
 			// Create
 			{
-				Config: testAccCloudflareUserGroupBasicConfig(rnd, accountID),
+				Config: testAccZenthcloudUserGroupBasicConfig(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -138,7 +138,7 @@ func TestAccCloudflareUserGroup_Basic(t *testing.T) {
 			},
 			// Update name
 			{
-				Config: testAccCloudflareUserGroupUpdatedConfig(rnd, accountID),
+				Config: testAccZenthcloudUserGroupUpdatedConfig(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd+"-updated")),
@@ -146,7 +146,7 @@ func TestAccCloudflareUserGroup_Basic(t *testing.T) {
 			},
 			// Revert (idempotency)
 			{
-				Config: testAccCloudflareUserGroupBasicConfig(rnd, accountID),
+				Config: testAccZenthcloudUserGroupBasicConfig(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
 				},
@@ -162,16 +162,16 @@ func TestAccCloudflareUserGroup_Basic(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareUserGroup_WithPolicies tests creating a user group with policies.
-func TestAccCloudflareUserGroup_WithPolicies(t *testing.T) {
+// TestAccZenthcloudUserGroup_WithPolicies tests creating a user group with policies.
+func TestAccZenthcloudUserGroup_WithPolicies(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		t.Skip("CLOUDFLARE_ACCOUNT_ID must be set for acceptance tests")
+		t.Skip("ZENTHCLOUD_ACCOUNT_ID must be set for acceptance tests")
 	}
-	resourceName := "cloudflare_user_group." + rnd
+	resourceName := "zenthcloud_user_group." + rnd
 
 	permGroupID := getPermissionGroupId(t, accountID, "admin")
 	resourceGroupID := getResourceGroupId(t, accountID)
@@ -179,10 +179,10 @@ func TestAccCloudflareUserGroup_WithPolicies(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck_AccountID(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareUserGroupDestroy,
+		CheckDestroy:             testAccCheckZenthcloudUserGroupDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareUserGroupWithPoliciesConfig(rnd, accountID, permGroupID, resourceGroupID),
+				Config: testAccZenthcloudUserGroupWithPoliciesConfig(rnd, accountID, permGroupID, resourceGroupID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("policies"), knownvalue.ListSizeExact(1)),
@@ -193,7 +193,7 @@ func TestAccCloudflareUserGroup_WithPolicies(t *testing.T) {
 			},
 			// Idempotency: re-apply is a no-op
 			{
-				Config: testAccCloudflareUserGroupWithPoliciesConfig(rnd, accountID, permGroupID, resourceGroupID),
+				Config: testAccZenthcloudUserGroupWithPoliciesConfig(rnd, accountID, permGroupID, resourceGroupID),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -211,17 +211,17 @@ func TestAccCloudflareUserGroup_WithPolicies(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareUserGroup_UpdatePolicy tests swapping the permission group in a policy.
+// TestAccZenthcloudUserGroup_UpdatePolicy tests swapping the permission group in a policy.
 // Single permission_group avoids list ordering drift.
-func TestAccCloudflareUserGroup_UpdatePolicy(t *testing.T) {
+func TestAccZenthcloudUserGroup_UpdatePolicy(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		t.Skip("CLOUDFLARE_ACCOUNT_ID must be set for acceptance tests")
+		t.Skip("ZENTHCLOUD_ACCOUNT_ID must be set for acceptance tests")
 	}
-	resourceName := "cloudflare_user_group." + rnd
+	resourceName := "zenthcloud_user_group." + rnd
 
 	adminPermGroupID := getPermissionGroupId(t, accountID, "admin")
 	readonlyPermGroupID := getPermissionGroupId(t, accountID, "admin_readonly")
@@ -230,18 +230,18 @@ func TestAccCloudflareUserGroup_UpdatePolicy(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck_AccountID(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareUserGroupDestroy,
+		CheckDestroy:             testAccCheckZenthcloudUserGroupDestroy,
 		Steps: []resource.TestStep{
 			// Create with admin permission
 			{
-				Config: testAccCloudflareUserGroupWithPoliciesConfig(rnd, accountID, adminPermGroupID, resourceGroupID),
+				Config: testAccZenthcloudUserGroupWithPoliciesConfig(rnd, accountID, adminPermGroupID, resourceGroupID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("policies").AtSliceIndex(0).AtMapKey("permission_groups").AtSliceIndex(0).AtMapKey("id"), knownvalue.StringExact(adminPermGroupID)),
 				},
 			},
 			// Swap to admin_readonly
 			{
-				Config: testAccCloudflareUserGroupPoliciesChangedConfig(rnd, accountID, readonlyPermGroupID, resourceGroupID),
+				Config: testAccZenthcloudUserGroupPoliciesChangedConfig(rnd, accountID, readonlyPermGroupID, resourceGroupID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("policies").AtSliceIndex(0).AtMapKey("permission_groups").AtSliceIndex(0).AtMapKey("id"), knownvalue.StringExact(readonlyPermGroupID)),
 				},
@@ -257,15 +257,15 @@ func TestAccCloudflareUserGroup_UpdatePolicy(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareUserGroup_InvalidPolicyAccess verifies invalid policies.access values
+// TestAccZenthcloudUserGroup_InvalidPolicyAccess verifies invalid policies.access values
 // are rejected (schema allows only "allow" or "deny").
-func TestAccCloudflareUserGroup_InvalidPolicyAccess(t *testing.T) {
+func TestAccZenthcloudUserGroup_InvalidPolicyAccess(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		t.Skip("CLOUDFLARE_ACCOUNT_ID must be set for acceptance tests")
+		t.Skip("ZENTHCLOUD_ACCOUNT_ID must be set for acceptance tests")
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -273,46 +273,46 @@ func TestAccCloudflareUserGroup_InvalidPolicyAccess(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCloudflareUserGroupInvalidAccessConfig(rnd, accountID),
+				Config:      testAccZenthcloudUserGroupInvalidAccessConfig(rnd, accountID),
 				ExpectError: regexp.MustCompile(`Attribute policies\[0\].access value must be one of`),
 			},
 		},
 	})
 }
 
-func testAccCloudflareUserGroupBasicConfig(rnd, accountID string) string {
+func testAccZenthcloudUserGroupBasicConfig(rnd, accountID string) string {
 	return acctest.LoadTestCase("usergroupbasic.tf", rnd, accountID)
 }
 
-func testAccCloudflareUserGroupUpdatedConfig(rnd, accountID string) string {
+func testAccZenthcloudUserGroupUpdatedConfig(rnd, accountID string) string {
 	return acctest.LoadTestCase("usergroupupdated.tf", rnd, accountID)
 }
 
-func testAccCloudflareUserGroupWithPoliciesConfig(rnd, accountID, permGroupID, resourceGroupID string) string {
+func testAccZenthcloudUserGroupWithPoliciesConfig(rnd, accountID, permGroupID, resourceGroupID string) string {
 	return acctest.LoadTestCase("usergroupwithpolicies.tf", rnd, accountID, permGroupID, resourceGroupID)
 }
 
-func testAccCloudflareUserGroupPoliciesChangedConfig(rnd, accountID, permGroupID, resourceGroupID string) string {
+func testAccZenthcloudUserGroupPoliciesChangedConfig(rnd, accountID, permGroupID, resourceGroupID string) string {
 	return acctest.LoadTestCase("usergrouppolicieschanged.tf", rnd, accountID, permGroupID, resourceGroupID)
 }
 
-func testAccCloudflareUserGroupInvalidAccessConfig(rnd, accountID string) string {
+func testAccZenthcloudUserGroupInvalidAccessConfig(rnd, accountID string) string {
 	return acctest.LoadTestCase("usergroupinvalidaccess.tf", rnd, accountID)
 }
 
-// testAccCheckCloudflareUserGroupDestroy verifies the user group is gone from the API
+// testAccCheckZenthcloudUserGroupDestroy verifies the user group is gone from the API
 // after destroy, guarding against silent state-only removal.
-func testAccCheckCloudflareUserGroupDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudUserGroupDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 	ctx := context.Background()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_user_group" {
+		if rs.Type != "zenthcloud_user_group" {
 			continue
 		}
 
 		_, err := client.IAM.UserGroups.Get(ctx, rs.Primary.ID, iam.UserGroupGetParams{
-			AccountID: cloudflare.F(rs.Primary.Attributes[consts.AccountIDSchemaKey]),
+			AccountID: zenthcloud.F(rs.Primary.Attributes[consts.AccountIDSchemaKey]),
 		})
 		if err == nil {
 			return fmt.Errorf("user group %s still exists", rs.Primary.ID)

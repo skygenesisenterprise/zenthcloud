@@ -24,7 +24,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zeroTrust_riskScoring_integrations_create",
     title: "Create new risk score integration.",
-    description: "Creates a new Zero Trust risk score integration, connecting external risk signals to Cloudflare's risk scoring system.\n\nPOST /accounts/{account_id}/zt_risk_scoring/integrations",
+    description: "Creates a new Zero Trust risk score integration, connecting external risk signals to Zenthcloud's risk scoring system.\n\nPOST /accounts/{account_id}/zt_risk_scoring/integrations",
     inputSchema: {
       type: "object",
       properties: {

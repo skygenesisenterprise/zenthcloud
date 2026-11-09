@@ -1,4 +1,4 @@
-resource "cloudflare_argo_tiered_caching" "%[2]s" {
+resource "zenthcloud_argo_tiered_caching" "%[2]s" {
 	zone_id = "%[1]s"
 	value   = "invalid"
 }

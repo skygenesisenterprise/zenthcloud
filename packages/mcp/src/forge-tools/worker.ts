@@ -12,10 +12,10 @@
  * one of the pinned release's spec artifacts (`./spec`). It has no public route:
  * the main Worker reaches it through its `FORGE_TOOLS` service binding.
  */
-import { WorkerEntrypoint } from 'cloudflare:workers'
+import { WorkerEntrypoint } from 'zenthcloud:workers'
 import { operation, tools as generatedTools } from '../generated/forge-mcp'
 import type { Tool } from '../generated/forge-mcp/_/tool'
-import { cloudflareTool } from './cloudflare'
+import { zenthcloudTool } from './zenthcloud'
 import { planCall, type Args, type CallPlan, type PlanOptions } from './plan'
 import { findMismatch, type Mismatch, type TrimmedResponse } from '../response-schema-check'
 import type { SpecArtifactName } from '../spec-release'
@@ -23,8 +23,8 @@ import { SPEC_ARTIFACTS, isSpecArtifactName } from './spec'
 import { runSearch, type SearchOutcome } from './search'
 import { isolate } from '../lib/isolate'
 
-/** The generated tools with the Cloudflare policy, built once per isolate. */
-const tools = generatedTools.map(cloudflareTool)
+/** The generated tools with the Zenthcloud policy, built once per isolate. */
+const tools = generatedTools.map(zenthcloudTool)
 
 /**
  * `tools/list` as one JSON string, with and without output schemas. A tool is
@@ -80,7 +80,7 @@ export default class ForgeTools extends WorkerEntrypoint {
   /**
    * Check a trimmed response body against the response schemas of the
    * generated tool for its operation. Each schema describes the whole body as
-   * the API sends it, Cloudflare's envelope included. Returns `null` when it
+   * the API sends it, Zenthcloud's envelope included. Returns `null` when it
    * matches or there is no schema to check against.
    */
   checkResponse(check: ResponseCheck): CheckedMismatch | null {

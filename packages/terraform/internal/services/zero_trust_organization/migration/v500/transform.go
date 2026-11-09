@@ -9,9 +9,9 @@ import (
 
 // Transform converts source v4 state to target v5 state.
 // Handles BOTH v4 resource names (they share identical schemas):
-//   - cloudflare_access_organization
-//   - cloudflare_zero_trust_access_organization
-func Transform(ctx context.Context, source SourceCloudflareAccessOrganizationModel) (*TargetZeroTrustOrganizationModel, diag.Diagnostics) {
+//   - zenthcloud_access_organization
+//   - zenthcloud_zero_trust_access_organization
+func Transform(ctx context.Context, source SourceZenthcloudAccessOrganizationModel) (*TargetZeroTrustOrganizationModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	target := &TargetZeroTrustOrganizationModel{

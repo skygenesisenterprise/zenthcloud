@@ -20,7 +20,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 ssl mtls-certificates associations list\n\nLists all active associations between the certificate and Cloudflare services."
+			"$0 ssl mtls-certificates associations list\n\nLists all active associations between the certificate and Zenthcloud services."
 		)
 		.option("mtls-certificate-id", {
 			type: "string",
@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf ssl mtls-certificates associations list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/mtls_certificates/${argv["mtls-certificate-id"] == null ? "<mtls-certificate-id>" : encodeURIComponent(String(argv["mtls-certificate-id"]))}/associations`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/mtls_certificates/${argv["mtls-certificate-id"] == null ? "<mtls-certificate-id>" : encodeURIComponent(String(argv["mtls-certificate-id"]))}/associations`,
 						pathParams: {
 							"mtls-certificate-id": String(argv["mtls-certificate-id"] ?? ""),
 						},

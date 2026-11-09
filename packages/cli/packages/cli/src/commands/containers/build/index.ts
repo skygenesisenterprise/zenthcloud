@@ -2,8 +2,8 @@ import {
 	buildCommand,
 	configureOpenAPIForContainerPull,
 	initContainersSharedContext,
-} from "@cloudflare/containers-shared";
-import { getCloudflareApiBaseUrl } from "@cloudflare/workers-utils";
+} from "@zenthcloud/containers-shared";
+import { getZenthcloudApiBaseUrl } from "@zenthcloud/workers-utils";
 import type { CommonYargsOptions, InferArgs } from "#lib/cli-types.js";
 import type { Argv, CommandModule } from "yargs";
 import { getAuthToken } from "#lib/auth-token.js";
@@ -28,7 +28,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 			alias: "p",
 			type: "boolean",
 			default: false,
-			description: "Push the built image to Cloudflare's managed registry",
+			description: "Push the built image to Zenthcloud's managed registry",
 		})
 		.option("path-to-docker", {
 			type: "string",
@@ -62,7 +62,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 			configureOpenAPIForContainerPull(
 				await getAccountId(),
 				authToken,
-				getCloudflareApiBaseUrl(complianceConfig)
+				getZenthcloudApiBaseUrl(complianceConfig)
 			);
 		}
 

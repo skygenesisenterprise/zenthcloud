@@ -5,9 +5,9 @@ package zero_trust_risk_behavior
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -23,7 +23,7 @@ type ZeroTrustRiskBehaviorDataSourceModel struct {
 
 func (m *ZeroTrustRiskBehaviorDataSourceModel) toReadParams(_ context.Context) (params zero_trust.RiskScoringBehaviourGetParams, diags diag.Diagnostics) {
 	params = zero_trust.RiskScoringBehaviourGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return

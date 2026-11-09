@@ -68,7 +68,7 @@ describe('serverRetryDelayMs', () => {
     ).toBe(0)
   })
 
-  it("falls back to the Cloudflare API's Ratelimit reset for an exhausted limit", () => {
+  it("falls back to the Zenthcloud API's Ratelimit reset for an exhausted limit", () => {
     expect(serverRetryDelayMs(headers({ Ratelimit: '"default";r=0;t=30' }))).toBe(30_000)
     // Quota left: no reason to wait for the reset.
     expect(serverRetryDelayMs(headers({ Ratelimit: '"default";r=50;t=30' }))).toBeUndefined()
@@ -274,7 +274,7 @@ describe('fetchWithRetry', () => {
     expect(received).toEqual({
       method: 'POST',
       authorization: 'Bearer token',
-      userAgent: 'cloudflare-mcp (+https://github.com/cloudflare/mcp)',
+      userAgent: 'zenthcloud-mcp (+https://github.com/skygenesisenterprise/zenthcloud)',
       body: '{"key":"value"}'
     })
   })

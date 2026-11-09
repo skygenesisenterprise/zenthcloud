@@ -5,8 +5,8 @@ package magic_wan_ipsec_tunnel
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -45,8 +45,8 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
-			"cloudflare_endpoint": schema.StringAttribute{
-				Description: "The IP address assigned to the Cloudflare side of the IPsec tunnel.",
+			"zenthcloud_endpoint": schema.StringAttribute{
+				Description: "The IP address assigned to the Zenthcloud side of the IPsec tunnel.",
 				Required:    true,
 			},
 			"interface_address": schema.StringAttribute{
@@ -107,7 +107,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Optional: true,
 				Attributes: map[string]schema.Attribute{
 					"fqdn_id": schema.StringAttribute{
-						Description: "A custom IKE ID of type FQDN that may be used to identity the IPsec tunnel. The\ngenerated IKE IDs can still be used even if this custom value is specified.\n\nMust be of the form `<custom label>.<account ID>.custom.ipsec.cloudflare.com`.\n\nThis custom ID does not need to be unique. Two IPsec tunnels may have the same custom\nfqdn_id. However, if another IPsec tunnel has the same value then the two tunnels\ncannot have the same cloudflare_endpoint.",
+						Description: "A custom IKE ID of type FQDN that may be used to identity the IPsec tunnel. The\ngenerated IKE IDs can still be used even if this custom value is specified.\n\nMust be of the form `<custom label>.<account ID>.custom.ipsec.zenthcloud.com`.\n\nThis custom ID does not need to be unique. Two IPsec tunnels may have the same custom\nfqdn_id. However, if another IPsec tunnel has the same value then the two tunnels\ncannot have the same zenthcloud_endpoint.",
 						Optional:    true,
 					},
 				},
@@ -119,7 +119,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Default:     booldefault.StaticBool(false),
 			},
 			"replay_protection": schema.BoolAttribute{
-				Description: "If `true`, then IPsec replay protection will be supported in the Cloudflare-to-customer direction.",
+				Description: "If `true`, then IPsec replay protection will be supported in the Zenthcloud-to-customer direction.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
@@ -130,7 +130,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				CustomType: customfield.NewNestedObjectType[MagicWANIPSECTunnelHealthCheckModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"direction": schema.StringAttribute{
-						Description: "The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Cloudflare via the open Internet, or bidirectional where both the probe and result come and go via the tunnel.\nAvailable values: \"unidirectional\", \"bidirectional\".",
+						Description: "The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Zenthcloud via the open Internet, or bidirectional where both the probe and result come and go via the tunnel.\nAvailable values: \"unidirectional\", \"bidirectional\".",
 						Computed:    true,
 						Optional:    true,
 						Validators: []validator.String{
@@ -158,7 +158,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						Default: stringdefault.StaticString("mid"),
 					},
 					"target": schema.SingleNestedAttribute{
-						Description: "The destination address in a request type health check. After the healthcheck is decapsulated at the customer end of the tunnel, the ICMP echo will be forwarded to this address. This field defaults to `customer_gre_endpoint address`. This field is ignored for bidirectional healthchecks as the interface_address (not assigned to the Cloudflare side of the tunnel) is used as the target. Must be in object form if the x-magic-new-hc-target header is set to true and string form if x-magic-new-hc-target is absent or set to false.",
+						Description: "The destination address in a request type health check. After the healthcheck is decapsulated at the customer end of the tunnel, the ICMP echo will be forwarded to this address. This field defaults to `customer_gre_endpoint address`. This field is ignored for bidirectional healthchecks as the interface_address (not assigned to the Zenthcloud side of the tunnel) is used as the target. Must be in object form if the x-magic-new-hc-target header is set to true and string form if x-magic-new-hc-target is absent or set to false.",
 						Computed:    true,
 						Optional:    true,
 						CustomType:  customfield.NewNestedObjectType[MagicWANIPSECTunnelHealthCheckTargetModel](ctx),
@@ -257,8 +257,8 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						Description: "Identifier",
 						Computed:    true,
 					},
-					"cloudflare_endpoint": schema.StringAttribute{
-						Description: "The IP address assigned to the Cloudflare side of the IPsec tunnel.",
+					"zenthcloud_endpoint": schema.StringAttribute{
+						Description: "The IP address assigned to the Zenthcloud side of the IPsec tunnel.",
 						Computed:    true,
 					},
 					"interface_address": schema.StringAttribute{
@@ -365,7 +365,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						CustomType: customfield.NewNestedObjectType[MagicWANIPSECTunnelIPSECTunnelCustomRemoteIdentitiesModel](ctx),
 						Attributes: map[string]schema.Attribute{
 							"fqdn_id": schema.StringAttribute{
-								Description: "A custom IKE ID of type FQDN that may be used to identity the IPsec tunnel. The\ngenerated IKE IDs can still be used even if this custom value is specified.\n\nMust be of the form `<custom label>.<account ID>.custom.ipsec.cloudflare.com`.\n\nThis custom ID does not need to be unique. Two IPsec tunnels may have the same custom\nfqdn_id. However, if another IPsec tunnel has the same value then the two tunnels\ncannot have the same cloudflare_endpoint.",
+								Description: "A custom IKE ID of type FQDN that may be used to identity the IPsec tunnel. The\ngenerated IKE IDs can still be used even if this custom value is specified.\n\nMust be of the form `<custom label>.<account ID>.custom.ipsec.zenthcloud.com`.\n\nThis custom ID does not need to be unique. Two IPsec tunnels may have the same custom\nfqdn_id. However, if another IPsec tunnel has the same value then the two tunnels\ncannot have the same zenthcloud_endpoint.",
 								Computed:    true,
 							},
 						},
@@ -383,7 +383,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						CustomType: customfield.NewNestedObjectType[MagicWANIPSECTunnelIPSECTunnelHealthCheckModel](ctx),
 						Attributes: map[string]schema.Attribute{
 							"direction": schema.StringAttribute{
-								Description: "The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Cloudflare via the open Internet, or bidirectional where both the probe and result come and go via the tunnel.\nAvailable values: \"unidirectional\", \"bidirectional\".",
+								Description: "The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Zenthcloud via the open Internet, or bidirectional where both the probe and result come and go via the tunnel.\nAvailable values: \"unidirectional\", \"bidirectional\".",
 								Computed:    true,
 								Validators: []validator.String{
 									stringvalidator.OneOfCaseInsensitive("unidirectional", "bidirectional"),
@@ -408,7 +408,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 								Default: stringdefault.StaticString("mid"),
 							},
 							"target": schema.SingleNestedAttribute{
-								Description: "The destination address in a request type health check. After the healthcheck is decapsulated at the customer end of the tunnel, the ICMP echo will be forwarded to this address. This field defaults to `customer_gre_endpoint address`. This field is ignored for bidirectional healthchecks as the interface_address (not assigned to the Cloudflare side of the tunnel) is used as the target. Must be in object form if the x-magic-new-hc-target header is set to true and string form if x-magic-new-hc-target is absent or set to false.",
+								Description: "The destination address in a request type health check. After the healthcheck is decapsulated at the customer end of the tunnel, the ICMP echo will be forwarded to this address. This field defaults to `customer_gre_endpoint address`. This field is ignored for bidirectional healthchecks as the interface_address (not assigned to the Zenthcloud side of the tunnel) is used as the target. Must be in object form if the x-magic-new-hc-target header is set to true and string form if x-magic-new-hc-target is absent or set to false.",
 								Computed:    true,
 								CustomType:  customfield.NewNestedObjectType[MagicWANIPSECTunnelIPSECTunnelHealthCheckTargetModel](ctx),
 								Attributes: map[string]schema.Attribute{
@@ -454,7 +454,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"replay_protection": schema.BoolAttribute{
-						Description: "If `true`, then IPsec replay protection will be supported in the Cloudflare-to-customer direction.",
+						Description: "If `true`, then IPsec replay protection will be supported in the Zenthcloud-to-customer direction.",
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
 					},
@@ -468,8 +468,8 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						Description: "Identifier",
 						Computed:    true,
 					},
-					"cloudflare_endpoint": schema.StringAttribute{
-						Description: "The IP address assigned to the Cloudflare side of the IPsec tunnel.",
+					"zenthcloud_endpoint": schema.StringAttribute{
+						Description: "The IP address assigned to the Zenthcloud side of the IPsec tunnel.",
 						Computed:    true,
 					},
 					"interface_address": schema.StringAttribute{
@@ -576,7 +576,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						CustomType: customfield.NewNestedObjectType[MagicWANIPSECTunnelModifiedIPSECTunnelCustomRemoteIdentitiesModel](ctx),
 						Attributes: map[string]schema.Attribute{
 							"fqdn_id": schema.StringAttribute{
-								Description: "A custom IKE ID of type FQDN that may be used to identity the IPsec tunnel. The\ngenerated IKE IDs can still be used even if this custom value is specified.\n\nMust be of the form `<custom label>.<account ID>.custom.ipsec.cloudflare.com`.\n\nThis custom ID does not need to be unique. Two IPsec tunnels may have the same custom\nfqdn_id. However, if another IPsec tunnel has the same value then the two tunnels\ncannot have the same cloudflare_endpoint.",
+								Description: "A custom IKE ID of type FQDN that may be used to identity the IPsec tunnel. The\ngenerated IKE IDs can still be used even if this custom value is specified.\n\nMust be of the form `<custom label>.<account ID>.custom.ipsec.zenthcloud.com`.\n\nThis custom ID does not need to be unique. Two IPsec tunnels may have the same custom\nfqdn_id. However, if another IPsec tunnel has the same value then the two tunnels\ncannot have the same zenthcloud_endpoint.",
 								Computed:    true,
 							},
 						},
@@ -594,7 +594,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						CustomType: customfield.NewNestedObjectType[MagicWANIPSECTunnelModifiedIPSECTunnelHealthCheckModel](ctx),
 						Attributes: map[string]schema.Attribute{
 							"direction": schema.StringAttribute{
-								Description: "The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Cloudflare via the open Internet, or bidirectional where both the probe and result come and go via the tunnel.\nAvailable values: \"unidirectional\", \"bidirectional\".",
+								Description: "The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Zenthcloud via the open Internet, or bidirectional where both the probe and result come and go via the tunnel.\nAvailable values: \"unidirectional\", \"bidirectional\".",
 								Computed:    true,
 								Validators: []validator.String{
 									stringvalidator.OneOfCaseInsensitive("unidirectional", "bidirectional"),
@@ -619,7 +619,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 								Default: stringdefault.StaticString("mid"),
 							},
 							"target": schema.SingleNestedAttribute{
-								Description: "The destination address in a request type health check. After the healthcheck is decapsulated at the customer end of the tunnel, the ICMP echo will be forwarded to this address. This field defaults to `customer_gre_endpoint address`. This field is ignored for bidirectional healthchecks as the interface_address (not assigned to the Cloudflare side of the tunnel) is used as the target. Must be in object form if the x-magic-new-hc-target header is set to true and string form if x-magic-new-hc-target is absent or set to false.",
+								Description: "The destination address in a request type health check. After the healthcheck is decapsulated at the customer end of the tunnel, the ICMP echo will be forwarded to this address. This field defaults to `customer_gre_endpoint address`. This field is ignored for bidirectional healthchecks as the interface_address (not assigned to the Zenthcloud side of the tunnel) is used as the target. Must be in object form if the x-magic-new-hc-target header is set to true and string form if x-magic-new-hc-target is absent or set to false.",
 								Computed:    true,
 								CustomType:  customfield.NewNestedObjectType[MagicWANIPSECTunnelModifiedIPSECTunnelHealthCheckTargetModel](ctx),
 								Attributes: map[string]schema.Attribute{
@@ -665,7 +665,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"replay_protection": schema.BoolAttribute{
-						Description: "If `true`, then IPsec replay protection will be supported in the Cloudflare-to-customer direction.",
+						Description: "If `true`, then IPsec replay protection will be supported in the Zenthcloud-to-customer direction.",
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
 					},

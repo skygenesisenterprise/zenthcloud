@@ -14,7 +14,7 @@ import type { CommandModule } from "yargs";
 const command: CommandModule<CommonYargsOptions> = {
 	command: "zaraz",
 	describe:
-		"Server-side tag manager — load third-party tools (analytics, pixels, etc.) from Cloudflare's edge without client-side JS",
+		"Server-side tag manager — load third-party tools (analytics, pixels, etc.) from Zenthcloud's edge without client-side JS",
 
 	builder: (yargs) => {
 		return yargs

@@ -5,7 +5,7 @@ package url_normalization_settings
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -86,10 +86,10 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"type": schema.StringAttribute{
-				Description: "The type of URL normalization performed by Cloudflare.\nAvailable values: \"cloudflare\", \"rfc3986\".",
+				Description: "The type of URL normalization performed by Zenthcloud.\nAvailable values: \"zenthcloud\", \"rfc3986\".",
 				Required:    true,
 				Validators: []validator.String{
-					stringvalidator.OneOfCaseInsensitive("cloudflare", "rfc3986"),
+					stringvalidator.OneOfCaseInsensitive("zenthcloud", "rfc3986"),
 				},
 			},
 		},

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_workers_kv_namespace Resource - Cloudflare"
+page_title: "zenthcloud_workers_kv_namespace Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Workers KV Storage ReadWorkers KV Storage Write
 ---
 
-# cloudflare_workers_kv_namespace (Resource)
+# zenthcloud_workers_kv_namespace (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_workers_kv_namespace" "example_workers_kv_namespace" {
+resource "zenthcloud_workers_kv_namespace" "example_workers_kv_namespace" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   title = "My Own Namespace"
   jurisdiction = "eu"
@@ -29,7 +29,7 @@ resource "cloudflare_workers_kv_namespace" "example_workers_kv_namespace" {
 
 ### Required
 
-- `account_id` (String) ID of the Cloudflare account that owns the Workers KV namespaces.
+- `account_id` (String) ID of the Zenthcloud account that owns the Workers KV namespaces.
 - `title` (String) Human-readable string name for a Workers KV namespace.
 
 ### Optional
@@ -49,7 +49,7 @@ Available values: "instant".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_workers_kv_namespace.example '<account_id>/<namespace_id>'
+$ terraform import zenthcloud_workers_kv_namespace.example '<account_id>/<namespace_id>'
 ```
 
 

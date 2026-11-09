@@ -818,7 +818,7 @@ export const dns$$records_TXTRecord: JSONObject = {
     {
       "properties": {
         "content": {
-          "description": "Text content for the record. The content must consist of quoted \"character strings\" (RFC 1035), each with a length of up to 255 bytes. Strings exceeding this allowed maximum length are automatically split.\n\nLearn more at <https://www.cloudflare.com/learning/dns/dns-records/dns-txt-record/>.",
+          "description": "Text content for the record. The content must consist of quoted \"character strings\" (RFC 1035), each with a length of up to 255 bytes. Strings exceeding this allowed maximum length are automatically split.\n\nLearn more at <https://github.com/skygenesisenterprise/zenthcloud>.",
           "type": "string"
         },
         "type": {
@@ -1006,7 +1006,7 @@ export const dns$$records_dns$$record$$shared$$fields: JSONObject = {
     },
     "proxied": {
       "default": false,
-      "description": "Whether the record is receiving the performance and security benefits of Cloudflare.",
+      "description": "Whether the record is receiving the performance and security benefits of Zenthcloud.",
       "type": "boolean"
     },
     "settings": {
@@ -1178,12 +1178,12 @@ export const dns$$records_settings: JSONObject = {
   "properties": {
     "ipv4_only": {
       "default": false,
-      "description": "When enabled, only A records will be generated, and AAAA records will not be created. This setting is intended for exceptional cases. Note that this option only applies to proxied records and it has no effect on whether Cloudflare communicates with the origin using IPv4 or IPv6.",
+      "description": "When enabled, only A records will be generated, and AAAA records will not be created. This setting is intended for exceptional cases. Note that this option only applies to proxied records and it has no effect on whether Zenthcloud communicates with the origin using IPv4 or IPv6.",
       "type": "boolean"
     },
     "ipv6_only": {
       "default": false,
-      "description": "When enabled, only AAAA records will be generated, and A records will not be created. This setting is intended for exceptional cases. Note that this option only applies to proxied records and it has no effect on whether Cloudflare communicates with the origin using IPv4 or IPv6.",
+      "description": "When enabled, only AAAA records will be generated, and A records will not be created. This setting is intended for exceptional cases. Note that this option only applies to proxied records and it has no effect on whether Zenthcloud communicates with the origin using IPv4 or IPv6.",
       "type": "boolean"
     }
   },

@@ -7,10 +7,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -22,34 +22,34 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_spectrum_applications", &resource.Sweeper{
-		Name: "cloudflare_spectrum_applications",
-		F:    testSweepCloudflareSpectrumApplications,
+	resource.AddTestSweepers("zenthcloud_spectrum_applications", &resource.Sweeper{
+		Name: "zenthcloud_spectrum_applications",
+		F:    testSweepZenthcloudSpectrumApplications,
 	})
 }
 
-func testSweepCloudflareSpectrumApplications(r string) error {
+func testSweepZenthcloudSpectrumApplications(r string) error {
 	ctx := context.Background()
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 	}
 
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
 	zones, zoneErr := client.ListZones(context.Background(), zone)
 
 	if zoneErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Cloudflare zones: %s", zoneErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Zenthcloud zones: %s", zoneErr))
 	}
 
 	for _, zone := range zones {
 		spectrumApps, spectrumErr := client.SpectrumApplications(context.Background(), zone.ID)
 		if spectrumErr != nil {
-			tflog.Error(ctx, fmt.Sprintf("Failed to fetch Cloudflare spectrum applications: %s", zoneErr))
+			tflog.Error(ctx, fmt.Sprintf("Failed to fetch Zenthcloud spectrum applications: %s", zoneErr))
 		}
 
 		if len(spectrumApps) == 0 {
-			tflog.Info(ctx, "No Cloudflare spectrum applications to sweep")
+			tflog.Info(ctx, "No Zenthcloud spectrum applications to sweep")
 			continue
 		}
 
@@ -59,7 +59,7 @@ func testSweepCloudflareSpectrumApplications(r string) error {
 				continue
 			}
 
-			tflog.Info(ctx, fmt.Sprintf("Deleting Cloudflare Spectrum Application: %s (%s)", application.DNS.Name, application.ID))
+			tflog.Info(ctx, fmt.Sprintf("Deleting Zenthcloud Spectrum Application: %s (%s)", application.DNS.Name, application.ID))
 			err := client.DeleteSpectrumApplication(context.Background(), zone.ID, application.ID)
 
 			if err != nil {
@@ -73,23 +73,23 @@ func testSweepCloudflareSpectrumApplications(r string) error {
 	return nil
 }
 
-func TestAccCloudflareSpectrumApplication_Basic(t *testing.T) {
-	var spectrumApp cloudflare.SpectrumApplication
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudSpectrumApplication_Basic(t *testing.T) {
+	var spectrumApp zenthcloud.SpectrumApplication
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_spectrum_application." + rnd
+	name := "zenthcloud_spectrum_application." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareSpectrumApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudSpectrumApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareSpectrumApplicationConfigBasic(zoneID, domain, rnd),
+				Config: testAccCheckZenthcloudSpectrumApplicationConfigBasic(zoneID, domain, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareSpectrumApplicationExists(name, &spectrumApp),
-					testAccCheckCloudflareSpectrumApplicationIDIsValid(name),
+					testAccCheckZenthcloudSpectrumApplicationExists(name, &spectrumApp),
+					testAccCheckZenthcloudSpectrumApplicationIDIsValid(name),
 					resource.TestCheckResourceAttr(name, "protocol", "tcp/22"),
 					resource.TestCheckResourceAttr(name, "origin_direct.#", "1"),
 					resource.TestCheckResourceAttr(name, "origin_direct.0", "tcp://128.66.0.1:23"),
@@ -103,31 +103,31 @@ func TestAccCloudflareSpectrumApplication_Basic(t *testing.T) {
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"argo_smart_routing"},
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareSpectrumApplicationExists(name, &spectrumApp),
-					testAccCheckCloudflareSpectrumApplicationIDIsValid(name),
+					testAccCheckZenthcloudSpectrumApplicationExists(name, &spectrumApp),
+					testAccCheckZenthcloudSpectrumApplicationIDIsValid(name),
 				),
 			},
 		},
 	})
 }
 
-func TestAccCloudflareSpectrumApplication_OriginDNS(t *testing.T) {
-	var spectrumApp cloudflare.SpectrumApplication
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudSpectrumApplication_OriginDNS(t *testing.T) {
+	var spectrumApp zenthcloud.SpectrumApplication
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_spectrum_application." + rnd
+	name := "zenthcloud_spectrum_application." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareSpectrumApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudSpectrumApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareSpectrumApplicationConfigOriginDNS(zoneID, domain, rnd),
+				Config: testAccCheckZenthcloudSpectrumApplicationConfigOriginDNS(zoneID, domain, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareSpectrumApplicationExists(name, &spectrumApp),
-					testAccCheckCloudflareSpectrumApplicationIDIsValid(name),
+					testAccCheckZenthcloudSpectrumApplicationExists(name, &spectrumApp),
+					testAccCheckZenthcloudSpectrumApplicationIDIsValid(name),
 					resource.TestCheckResourceAttr(name, "protocol", "tcp/22"),
 					resource.TestCheckResourceAttr(name, "origin_dns.name", fmt.Sprintf("%s.origin.%s", rnd, domain)),
 					resource.TestCheckResourceAttr(name, "origin_port", "22"),
@@ -137,23 +137,23 @@ func TestAccCloudflareSpectrumApplication_OriginDNS(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareSpectrumApplication_PortRange(t *testing.T) {
-	var spectrumApp cloudflare.SpectrumApplication
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudSpectrumApplication_PortRange(t *testing.T) {
+	var spectrumApp zenthcloud.SpectrumApplication
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_spectrum_application." + rnd
+	name := "zenthcloud_spectrum_application." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareSpectrumApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudSpectrumApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareSpectrumApplicationConfigOriginPortRange(zoneID, domain, rnd),
+				Config: testAccCheckZenthcloudSpectrumApplicationConfigOriginPortRange(zoneID, domain, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareSpectrumApplicationExists(name, &spectrumApp),
-					testAccCheckCloudflareSpectrumApplicationIDIsValid(name),
+					testAccCheckZenthcloudSpectrumApplicationExists(name, &spectrumApp),
+					testAccCheckZenthcloudSpectrumApplicationIDIsValid(name),
 					resource.TestCheckResourceAttr(name, "protocol", "tcp/8080-8081"),
 					resource.TestCheckResourceAttr(name, "origin_dns.name", fmt.Sprintf("%s.origin.%s", rnd, domain)),
 					resource.TestCheckResourceAttr(name, "origin_port", "8080-8081"),
@@ -163,24 +163,24 @@ func TestAccCloudflareSpectrumApplication_PortRange(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareSpectrumApplication_Update(t *testing.T) {
-	var spectrumApp cloudflare.SpectrumApplication
+func TestAccZenthcloudSpectrumApplication_Update(t *testing.T) {
+	var spectrumApp zenthcloud.SpectrumApplication
 	var initialID string
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_spectrum_application." + rnd
+	name := "zenthcloud_spectrum_application." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareSpectrumApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudSpectrumApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareSpectrumApplicationConfigBasic(zoneID, domain, rnd),
+				Config: testAccCheckZenthcloudSpectrumApplicationConfigBasic(zoneID, domain, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareSpectrumApplicationExists(name, &spectrumApp),
-					testAccCheckCloudflareSpectrumApplicationIDIsValid(name),
+					testAccCheckZenthcloudSpectrumApplicationExists(name, &spectrumApp),
+					testAccCheckZenthcloudSpectrumApplicationIDIsValid(name),
 					resource.TestCheckResourceAttr(name, "origin_direct.0", "tcp://128.66.0.1:23"),
 				),
 			},
@@ -188,10 +188,10 @@ func TestAccCloudflareSpectrumApplication_Update(t *testing.T) {
 				PreConfig: func() {
 					initialID = spectrumApp.ID
 				},
-				Config: testAccCheckCloudflareSpectrumApplicationConfigBasicUpdated(zoneID, domain, rnd),
+				Config: testAccCheckZenthcloudSpectrumApplicationConfigBasicUpdated(zoneID, domain, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareSpectrumApplicationExists(name, &spectrumApp),
-					testAccCheckCloudflareSpectrumApplicationIDIsValid(name),
+					testAccCheckZenthcloudSpectrumApplicationExists(name, &spectrumApp),
+					testAccCheckZenthcloudSpectrumApplicationIDIsValid(name),
 					func(state *terraform.State) error {
 						if initialID != spectrumApp.ID {
 							// want in place update
@@ -206,14 +206,14 @@ func TestAccCloudflareSpectrumApplication_Update(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareSpectrumApplicationDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudSpectrumApplicationDestroy(s *terraform.State) error {
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_spectrum_application" {
+		if rs.Type != "zenthcloud_spectrum_application" {
 			continue
 		}
 
@@ -226,22 +226,22 @@ func testAccCheckCloudflareSpectrumApplicationDestroy(s *terraform.State) error 
 	return nil
 }
 
-func TestAccCloudflareSpectrumApplication_EdgeIPConnectivity(t *testing.T) {
-	var spectrumApp cloudflare.SpectrumApplication
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudSpectrumApplication_EdgeIPConnectivity(t *testing.T) {
+	var spectrumApp zenthcloud.SpectrumApplication
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_spectrum_application." + rnd
+	name := "zenthcloud_spectrum_application." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareSpectrumApplicationConfigEdgeIPConnectivity(zoneID, domain, rnd),
+				Config: testAccCheckZenthcloudSpectrumApplicationConfigEdgeIPConnectivity(zoneID, domain, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareSpectrumApplicationExists(name, &spectrumApp),
-					testAccCheckCloudflareSpectrumApplicationIDIsValid(name),
+					testAccCheckZenthcloudSpectrumApplicationExists(name, &spectrumApp),
+					testAccCheckZenthcloudSpectrumApplicationIDIsValid(name),
 					resource.TestCheckResourceAttr(name, "edge_ips.connectivity", "ipv4"),
 				),
 			},
@@ -249,31 +249,31 @@ func TestAccCloudflareSpectrumApplication_EdgeIPConnectivity(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareSpectrumApplication_EdgeIPsMultiple(t *testing.T) {
-	var spectrumApp cloudflare.SpectrumApplication
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudSpectrumApplication_EdgeIPsMultiple(t *testing.T) {
+	var spectrumApp zenthcloud.SpectrumApplication
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_spectrum_application." + rnd
+	name := "zenthcloud_spectrum_application." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareSpectrumApplicationConfigMultipleEdgeIPs(zoneID, domain, rnd, `"172.65.64.13", "172.65.64.49"`),
+				Config: testAccCheckZenthcloudSpectrumApplicationConfigMultipleEdgeIPs(zoneID, domain, rnd, `"172.65.64.13", "172.65.64.49"`),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareSpectrumApplicationExists(name, &spectrumApp),
-					testAccCheckCloudflareSpectrumApplicationIDIsValid(name),
+					testAccCheckZenthcloudSpectrumApplicationExists(name, &spectrumApp),
+					testAccCheckZenthcloudSpectrumApplicationIDIsValid(name),
 					resource.TestCheckTypeSetElemAttr(name, "edge_ips.ips.*", "172.65.64.13"),
 					resource.TestCheckTypeSetElemAttr(name, "edge_ips.ips.*", "172.65.64.49"),
 				),
 			},
 			{
-				Config: testAccCheckCloudflareSpectrumApplicationConfigMultipleEdgeIPs(zoneID, domain, rnd, `"172.65.64.49", "172.65.64.13"`),
+				Config: testAccCheckZenthcloudSpectrumApplicationConfigMultipleEdgeIPs(zoneID, domain, rnd, `"172.65.64.49", "172.65.64.13"`),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareSpectrumApplicationExists(name, &spectrumApp),
-					testAccCheckCloudflareSpectrumApplicationIDIsValid(name),
+					testAccCheckZenthcloudSpectrumApplicationExists(name, &spectrumApp),
+					testAccCheckZenthcloudSpectrumApplicationIDIsValid(name),
 					resource.TestCheckTypeSetElemAttr(name, "edge_ips.ips.*", "172.65.64.13"),
 					resource.TestCheckTypeSetElemAttr(name, "edge_ips.ips.*", "172.65.64.49"),
 				),
@@ -282,22 +282,22 @@ func TestAccCloudflareSpectrumApplication_EdgeIPsMultiple(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareSpectrumApplication_BasicSSH(t *testing.T) {
-	var spectrumApp cloudflare.SpectrumApplication
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudSpectrumApplication_BasicSSH(t *testing.T) {
+	var spectrumApp zenthcloud.SpectrumApplication
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_spectrum_application." + rnd
+	name := "zenthcloud_spectrum_application." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareSpectrumApplicationConfigBasicTypes(zoneID, domain, rnd, "ssh", 22),
+				Config: testAccCheckZenthcloudSpectrumApplicationConfigBasicTypes(zoneID, domain, rnd, "ssh", 22),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareSpectrumApplicationExists(name, &spectrumApp),
-					testAccCheckCloudflareSpectrumApplicationIDIsValid(name),
+					testAccCheckZenthcloudSpectrumApplicationExists(name, &spectrumApp),
+					testAccCheckZenthcloudSpectrumApplicationIDIsValid(name),
 					resource.TestCheckResourceAttr(name, "protocol", "ssh"),
 				),
 			},
@@ -305,22 +305,22 @@ func TestAccCloudflareSpectrumApplication_BasicSSH(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareSpectrumApplication_BasicRDP(t *testing.T) {
-	var spectrumApp cloudflare.SpectrumApplication
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudSpectrumApplication_BasicRDP(t *testing.T) {
+	var spectrumApp zenthcloud.SpectrumApplication
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_spectrum_application." + rnd
+	name := "zenthcloud_spectrum_application." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareSpectrumApplicationConfigBasicTypes(zoneID, domain, rnd, "rdp", 3389),
+				Config: testAccCheckZenthcloudSpectrumApplicationConfigBasicTypes(zoneID, domain, rnd, "rdp", 3389),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareSpectrumApplicationExists(name, &spectrumApp),
-					testAccCheckCloudflareSpectrumApplicationIDIsValid(name),
+					testAccCheckZenthcloudSpectrumApplicationExists(name, &spectrumApp),
+					testAccCheckZenthcloudSpectrumApplicationIDIsValid(name),
 					resource.TestCheckResourceAttr(name, "protocol", "rdp"),
 				),
 			},
@@ -328,38 +328,38 @@ func TestAccCloudflareSpectrumApplication_BasicRDP(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareSpectrumApplication_TLS(t *testing.T) {
-	var spectrumApp cloudflare.SpectrumApplication
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudSpectrumApplication_TLS(t *testing.T) {
+	var spectrumApp zenthcloud.SpectrumApplication
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_spectrum_application." + rnd
+	name := "zenthcloud_spectrum_application." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareSpectrumApplicationConfigTLS(zoneID, domain, rnd, "flexible"),
+				Config: testAccCheckZenthcloudSpectrumApplicationConfigTLS(zoneID, domain, rnd, "flexible"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareSpectrumApplicationExists(name, &spectrumApp),
-					testAccCheckCloudflareSpectrumApplicationIDIsValid(name),
+					testAccCheckZenthcloudSpectrumApplicationExists(name, &spectrumApp),
+					testAccCheckZenthcloudSpectrumApplicationIDIsValid(name),
 					resource.TestCheckResourceAttr(name, "tls", "flexible"),
 				),
 			},
 			{
-				Config: testAccCheckCloudflareSpectrumApplicationConfigTLS(zoneID, domain, rnd, "full"),
+				Config: testAccCheckZenthcloudSpectrumApplicationConfigTLS(zoneID, domain, rnd, "full"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareSpectrumApplicationExists(name, &spectrumApp),
-					testAccCheckCloudflareSpectrumApplicationIDIsValid(name),
+					testAccCheckZenthcloudSpectrumApplicationExists(name, &spectrumApp),
+					testAccCheckZenthcloudSpectrumApplicationIDIsValid(name),
 					resource.TestCheckResourceAttr(name, "tls", "full"),
 				),
 			},
 			{
-				Config: testAccCheckCloudflareSpectrumApplicationConfigTLS(zoneID, domain, rnd, "strict"),
+				Config: testAccCheckZenthcloudSpectrumApplicationConfigTLS(zoneID, domain, rnd, "strict"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareSpectrumApplicationExists(name, &spectrumApp),
-					testAccCheckCloudflareSpectrumApplicationIDIsValid(name),
+					testAccCheckZenthcloudSpectrumApplicationExists(name, &spectrumApp),
+					testAccCheckZenthcloudSpectrumApplicationIDIsValid(name),
 					resource.TestCheckResourceAttr(name, "tls", "strict"),
 				),
 			},
@@ -367,30 +367,30 @@ func TestAccCloudflareSpectrumApplication_TLS(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareSpectrumApplication_ProxyProtocol(t *testing.T) {
-	var spectrumApp cloudflare.SpectrumApplication
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudSpectrumApplication_ProxyProtocol(t *testing.T) {
+	var spectrumApp zenthcloud.SpectrumApplication
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_spectrum_application." + rnd
+	name := "zenthcloud_spectrum_application." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareSpectrumApplicationConfigProxyProtocol(zoneID, domain, rnd, "v1"),
+				Config: testAccCheckZenthcloudSpectrumApplicationConfigProxyProtocol(zoneID, domain, rnd, "v1"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareSpectrumApplicationExists(name, &spectrumApp),
-					testAccCheckCloudflareSpectrumApplicationIDIsValid(name),
+					testAccCheckZenthcloudSpectrumApplicationExists(name, &spectrumApp),
+					testAccCheckZenthcloudSpectrumApplicationIDIsValid(name),
 					resource.TestCheckResourceAttr(name, "proxy_protocol", "v1"),
 				),
 			},
 			{
-				Config: testAccCheckCloudflareSpectrumApplicationConfigProxyProtocol(zoneID, domain, rnd, "v2"),
+				Config: testAccCheckZenthcloudSpectrumApplicationConfigProxyProtocol(zoneID, domain, rnd, "v2"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareSpectrumApplicationExists(name, &spectrumApp),
-					testAccCheckCloudflareSpectrumApplicationIDIsValid(name),
+					testAccCheckZenthcloudSpectrumApplicationExists(name, &spectrumApp),
+					testAccCheckZenthcloudSpectrumApplicationIDIsValid(name),
 					resource.TestCheckResourceAttr(name, "proxy_protocol", "v2"),
 				),
 			},
@@ -398,30 +398,30 @@ func TestAccCloudflareSpectrumApplication_ProxyProtocol(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareSpectrumApplication_IPFirewall(t *testing.T) {
-	var spectrumApp cloudflare.SpectrumApplication
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudSpectrumApplication_IPFirewall(t *testing.T) {
+	var spectrumApp zenthcloud.SpectrumApplication
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_spectrum_application." + rnd
+	name := "zenthcloud_spectrum_application." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareSpectrumApplicationConfigIPFirewall(zoneID, domain, rnd, "true"),
+				Config: testAccCheckZenthcloudSpectrumApplicationConfigIPFirewall(zoneID, domain, rnd, "true"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareSpectrumApplicationExists(name, &spectrumApp),
-					testAccCheckCloudflareSpectrumApplicationIDIsValid(name),
+					testAccCheckZenthcloudSpectrumApplicationExists(name, &spectrumApp),
+					testAccCheckZenthcloudSpectrumApplicationIDIsValid(name),
 					resource.TestCheckResourceAttr(name, "ip_firewall", "true"),
 				),
 			},
 			{
-				Config: testAccCheckCloudflareSpectrumApplicationConfigIPFirewall(zoneID, domain, rnd, "false"),
+				Config: testAccCheckZenthcloudSpectrumApplicationConfigIPFirewall(zoneID, domain, rnd, "false"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareSpectrumApplicationExists(name, &spectrumApp),
-					testAccCheckCloudflareSpectrumApplicationIDIsValid(name),
+					testAccCheckZenthcloudSpectrumApplicationExists(name, &spectrumApp),
+					testAccCheckZenthcloudSpectrumApplicationIDIsValid(name),
 					resource.TestCheckResourceAttr(name, "ip_firewall", "false"),
 				),
 			},
@@ -429,31 +429,31 @@ func TestAccCloudflareSpectrumApplication_IPFirewall(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareSpectrumApplication_ArgoSmartRouting(t *testing.T) {
-	var spectrumApp cloudflare.SpectrumApplication
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudSpectrumApplication_ArgoSmartRouting(t *testing.T) {
+	var spectrumApp zenthcloud.SpectrumApplication
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_spectrum_application." + rnd
+	name := "zenthcloud_spectrum_application." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareSpectrumApplicationConfigArgoSmartRouting(zoneID, domain, rnd, "true"),
+				Config: testAccCheckZenthcloudSpectrumApplicationConfigArgoSmartRouting(zoneID, domain, rnd, "true"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareSpectrumApplicationExists(name, &spectrumApp),
-					testAccCheckCloudflareSpectrumApplicationIDIsValid(name),
+					testAccCheckZenthcloudSpectrumApplicationExists(name, &spectrumApp),
+					testAccCheckZenthcloudSpectrumApplicationIDIsValid(name),
 					resource.TestCheckResourceAttr(name, "argo_smart_routing", "true"),
 					resource.TestCheckResourceAttr(name, "traffic_type", "direct"),
 				),
 			},
 			{
-				Config: testAccCheckCloudflareSpectrumApplicationConfigArgoSmartRouting(zoneID, domain, rnd, "false"),
+				Config: testAccCheckZenthcloudSpectrumApplicationConfigArgoSmartRouting(zoneID, domain, rnd, "false"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareSpectrumApplicationExists(name, &spectrumApp),
-					testAccCheckCloudflareSpectrumApplicationIDIsValid(name),
+					testAccCheckZenthcloudSpectrumApplicationExists(name, &spectrumApp),
+					testAccCheckZenthcloudSpectrumApplicationIDIsValid(name),
 					resource.TestCheckResourceAttr(name, "argo_smart_routing", "false"),
 					resource.TestCheckResourceAttr(name, "traffic_type", "direct"),
 				),
@@ -462,38 +462,38 @@ func TestAccCloudflareSpectrumApplication_ArgoSmartRouting(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareSpectrumApplication_TrafficType(t *testing.T) {
-	var spectrumApp cloudflare.SpectrumApplication
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudSpectrumApplication_TrafficType(t *testing.T) {
+	var spectrumApp zenthcloud.SpectrumApplication
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_spectrum_application." + rnd
+	name := "zenthcloud_spectrum_application." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareSpectrumApplicationConfigTrafficType(zoneID, domain, rnd, "http"),
+				Config: testAccCheckZenthcloudSpectrumApplicationConfigTrafficType(zoneID, domain, rnd, "http"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareSpectrumApplicationExists(name, &spectrumApp),
-					testAccCheckCloudflareSpectrumApplicationIDIsValid(name),
+					testAccCheckZenthcloudSpectrumApplicationExists(name, &spectrumApp),
+					testAccCheckZenthcloudSpectrumApplicationIDIsValid(name),
 					resource.TestCheckResourceAttr(name, "traffic_type", "http"),
 				),
 			},
 			{
-				Config: testAccCheckCloudflareSpectrumApplicationConfigTrafficType(zoneID, domain, rnd, "https"),
+				Config: testAccCheckZenthcloudSpectrumApplicationConfigTrafficType(zoneID, domain, rnd, "https"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareSpectrumApplicationExists(name, &spectrumApp),
-					testAccCheckCloudflareSpectrumApplicationIDIsValid(name),
+					testAccCheckZenthcloudSpectrumApplicationExists(name, &spectrumApp),
+					testAccCheckZenthcloudSpectrumApplicationIDIsValid(name),
 					resource.TestCheckResourceAttr(name, "traffic_type", "https"),
 				),
 			},
 			{
-				Config: testAccCheckCloudflareSpectrumApplicationConfigTrafficType(zoneID, domain, rnd, "direct"),
+				Config: testAccCheckZenthcloudSpectrumApplicationConfigTrafficType(zoneID, domain, rnd, "direct"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareSpectrumApplicationExists(name, &spectrumApp),
-					testAccCheckCloudflareSpectrumApplicationIDIsValid(name),
+					testAccCheckZenthcloudSpectrumApplicationExists(name, &spectrumApp),
+					testAccCheckZenthcloudSpectrumApplicationIDIsValid(name),
 					resource.TestCheckResourceAttr(name, "traffic_type", "direct"),
 				),
 			},
@@ -501,22 +501,22 @@ func TestAccCloudflareSpectrumApplication_TrafficType(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareSpectrumApplication_IPv6Connectivity(t *testing.T) {
-	var spectrumApp cloudflare.SpectrumApplication
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudSpectrumApplication_IPv6Connectivity(t *testing.T) {
+	var spectrumApp zenthcloud.SpectrumApplication
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_spectrum_application." + rnd
+	name := "zenthcloud_spectrum_application." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareSpectrumApplicationConfigIPv6(zoneID, domain, rnd),
+				Config: testAccCheckZenthcloudSpectrumApplicationConfigIPv6(zoneID, domain, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareSpectrumApplicationExists(name, &spectrumApp),
-					testAccCheckCloudflareSpectrumApplicationIDIsValid(name),
+					testAccCheckZenthcloudSpectrumApplicationExists(name, &spectrumApp),
+					testAccCheckZenthcloudSpectrumApplicationIDIsValid(name),
 					resource.TestCheckResourceAttr(name, "edge_ips.connectivity", "ipv6"),
 				),
 			},
@@ -524,31 +524,31 @@ func TestAccCloudflareSpectrumApplication_IPv6Connectivity(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareSpectrumApplication_UDP(t *testing.T) {
-	var spectrumApp cloudflare.SpectrumApplication
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudSpectrumApplication_UDP(t *testing.T) {
+	var spectrumApp zenthcloud.SpectrumApplication
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_spectrum_application." + rnd
+	name := "zenthcloud_spectrum_application." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareSpectrumApplicationConfigUDP(zoneID, domain, rnd),
+				Config: testAccCheckZenthcloudSpectrumApplicationConfigUDP(zoneID, domain, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareSpectrumApplicationExists(name, &spectrumApp),
-					testAccCheckCloudflareSpectrumApplicationIDIsValid(name),
+					testAccCheckZenthcloudSpectrumApplicationExists(name, &spectrumApp),
+					testAccCheckZenthcloudSpectrumApplicationIDIsValid(name),
 					resource.TestCheckResourceAttr(name, "protocol", "udp/53"),
 					resource.TestCheckResourceAttr(name, "traffic_type", "direct"),
 				),
 			},
 			{
-				Config: testAccCheckCloudflareSpectrumApplicationConfigSimpleProxyProtocol(zoneID, domain, rnd),
+				Config: testAccCheckZenthcloudSpectrumApplicationConfigSimpleProxyProtocol(zoneID, domain, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareSpectrumApplicationExists(name, &spectrumApp),
-					testAccCheckCloudflareSpectrumApplicationIDIsValid(name),
+					testAccCheckZenthcloudSpectrumApplicationExists(name, &spectrumApp),
+					testAccCheckZenthcloudSpectrumApplicationIDIsValid(name),
 					resource.TestCheckResourceAttr(name, "proxy_protocol", "simple"),
 				),
 			},
@@ -556,7 +556,7 @@ func TestAccCloudflareSpectrumApplication_UDP(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareSpectrumApplicationExists(n string, spectrumApp *cloudflare.SpectrumApplication) resource.TestCheckFunc {
+func testAccCheckZenthcloudSpectrumApplicationExists(n string, spectrumApp *zenthcloud.SpectrumApplication) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -569,7 +569,7 @@ func testAccCheckCloudflareSpectrumApplicationExists(n string, spectrumApp *clou
 
 		client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 		if clientErr != nil {
-			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 		}
 		foundSpectrumApplication, err := client.SpectrumApplication(context.Background(), rs.Primary.Attributes[consts.ZoneIDSchemaKey], rs.Primary.ID)
 		if err != nil {
@@ -582,7 +582,7 @@ func testAccCheckCloudflareSpectrumApplicationExists(n string, spectrumApp *clou
 	}
 }
 
-func testAccCheckCloudflareSpectrumApplicationIDIsValid(n string) resource.TestCheckFunc {
+func testAccCheckZenthcloudSpectrumApplicationIDIsValid(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -604,12 +604,12 @@ func testAccCheckCloudflareSpectrumApplicationIDIsValid(n string) resource.TestC
 	}
 }
 
-func testAccManuallyDeleteSpectrumApplication(name string, spectrumApp *cloudflare.SpectrumApplication, initialID *string) resource.TestCheckFunc {
+func testAccManuallyDeleteSpectrumApplication(name string, spectrumApp *zenthcloud.SpectrumApplication, initialID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, _ := s.RootModule().Resources[name]
 		client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 		if clientErr != nil {
-			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 		}
 		*initialID = spectrumApp.ID
 		err := client.DeleteSpectrumApplication(context.Background(), rs.Primary.Attributes[consts.ZoneIDSchemaKey], rs.Primary.ID)
@@ -620,76 +620,76 @@ func testAccManuallyDeleteSpectrumApplication(name string, spectrumApp *cloudfla
 	}
 }
 
-func testAccCheckCloudflareSpectrumApplicationConfigBasic(zoneID, zoneName, ID string) string {
+func testAccCheckZenthcloudSpectrumApplicationConfigBasic(zoneID, zoneName, ID string) string {
 	return acctest.LoadTestCase("spectrumapplicationconfigbasic.tf", zoneID, zoneName, ID)
 }
 
-func testAccCheckCloudflareSpectrumApplicationConfigOriginDNS(zoneID, zoneName, ID string) string {
+func testAccCheckZenthcloudSpectrumApplicationConfigOriginDNS(zoneID, zoneName, ID string) string {
 	return acctest.LoadTestCase("spectrumapplicationconfigorigindns.tf", zoneID, zoneName, ID)
 }
 
-func testAccCheckCloudflareSpectrumApplicationConfigOriginPortRange(zoneID, zoneName, ID string) string {
+func testAccCheckZenthcloudSpectrumApplicationConfigOriginPortRange(zoneID, zoneName, ID string) string {
 	return acctest.LoadTestCase("spectrumapplicationconfigoriginportrange.tf", zoneID, zoneName, ID)
 }
 
-func testAccCheckCloudflareSpectrumApplicationConfigBasicUpdated(zoneID, zoneName, ID string) string {
+func testAccCheckZenthcloudSpectrumApplicationConfigBasicUpdated(zoneID, zoneName, ID string) string {
 	return acctest.LoadTestCase("spectrumapplicationconfigbasicupdated.tf", zoneID, zoneName, ID)
 }
 
-func testAccCheckCloudflareSpectrumApplicationConfigEdgeIPConnectivity(zoneID, zoneName, ID string) string {
+func testAccCheckZenthcloudSpectrumApplicationConfigEdgeIPConnectivity(zoneID, zoneName, ID string) string {
 	return acctest.LoadTestCase("spectrumapplicationconfigedgeipconnectivity.tf", zoneID, zoneName, ID)
 }
 
-func testAccCheckCloudflareSpectrumApplicationConfigEdgeIPsWithoutConnectivity(zoneID, zoneName, ID string) string {
+func testAccCheckZenthcloudSpectrumApplicationConfigEdgeIPsWithoutConnectivity(zoneID, zoneName, ID string) string {
 	return acctest.LoadTestCase("spectrumapplicationconfigedgeipswithoutconnectivity.tf", zoneID, zoneName, ID)
 }
 
-func testAccCheckCloudflareSpectrumApplicationConfigMultipleEdgeIPs(zoneID, zoneName, ID, IPs string) string {
+func testAccCheckZenthcloudSpectrumApplicationConfigMultipleEdgeIPs(zoneID, zoneName, ID, IPs string) string {
 	return acctest.LoadTestCase("spectrumapplicationconfigmultipleedgeips.tf", zoneID, zoneName, ID, IPs)
 }
 
-func testAccCheckCloudflareSpectrumApplicationConfigBasicTypes(zoneID, zoneName, ID, protocol string, port int) string {
+func testAccCheckZenthcloudSpectrumApplicationConfigBasicTypes(zoneID, zoneName, ID, protocol string, port int) string {
 	return acctest.LoadTestCase("spectrumapplicationconfigbasictypes.tf", zoneID, zoneName, ID, protocol, port)
 }
 
-func testAccCheckCloudflareSpectrumApplicationConfigTLS(zoneID, zoneName, ID, tls string) string {
+func testAccCheckZenthcloudSpectrumApplicationConfigTLS(zoneID, zoneName, ID, tls string) string {
 	return acctest.LoadTestCase("spectrumapplicationconfigtls.tf", zoneID, zoneName, ID, tls)
 }
 
-func testAccCheckCloudflareSpectrumApplicationConfigProxyProtocol(zoneID, zoneName, ID, proxyProtocol string) string {
+func testAccCheckZenthcloudSpectrumApplicationConfigProxyProtocol(zoneID, zoneName, ID, proxyProtocol string) string {
 	return acctest.LoadTestCase("spectrumapplicationconfigproxyprotocol.tf", zoneID, zoneName, ID, proxyProtocol)
 }
 
-func testAccCheckCloudflareSpectrumApplicationConfigSimpleProxyProtocol(zoneID, zoneName, ID string) string {
+func testAccCheckZenthcloudSpectrumApplicationConfigSimpleProxyProtocol(zoneID, zoneName, ID string) string {
 	return acctest.LoadTestCase("spectrumapplicationconfigsimpleproxyprotocol.tf", zoneID, zoneName, ID)
 }
 
-func testAccCheckCloudflareSpectrumApplicationConfigIPFirewall(zoneID, zoneName, ID, ipFirewall string) string {
+func testAccCheckZenthcloudSpectrumApplicationConfigIPFirewall(zoneID, zoneName, ID, ipFirewall string) string {
 	return acctest.LoadTestCase("spectrumapplicationconfigipfirewall.tf", zoneID, zoneName, ID, ipFirewall)
 }
 
-func testAccCheckCloudflareSpectrumApplicationConfigArgoSmartRouting(zoneID, zoneName, ID, argoSmartRouting string) string {
+func testAccCheckZenthcloudSpectrumApplicationConfigArgoSmartRouting(zoneID, zoneName, ID, argoSmartRouting string) string {
 	return acctest.LoadTestCase("spectrumapplicationconfigargosmartrouting.tf", zoneID, zoneName, ID, argoSmartRouting)
 }
 
-func testAccCheckCloudflareSpectrumApplicationConfigTrafficType(zoneID, zoneName, ID, trafficType string) string {
+func testAccCheckZenthcloudSpectrumApplicationConfigTrafficType(zoneID, zoneName, ID, trafficType string) string {
 	return acctest.LoadTestCase("spectrumapplicationconfigtraffictype.tf", zoneID, zoneName, ID, trafficType)
 }
 
-func testAccCheckCloudflareSpectrumApplicationConfigIPv6(zoneID, zoneName, ID string) string {
+func testAccCheckZenthcloudSpectrumApplicationConfigIPv6(zoneID, zoneName, ID string) string {
 	return acctest.LoadTestCase("spectrumapplicationconfigipv6.tf", zoneID, zoneName, ID)
 }
 
-func testAccCheckCloudflareSpectrumApplicationConfigUDP(zoneID, zoneName, ID string) string {
+func testAccCheckZenthcloudSpectrumApplicationConfigUDP(zoneID, zoneName, ID string) string {
 	return acctest.LoadTestCase("spectrumapplicationconfigudp.tf", zoneID, zoneName, ID)
 }
 
 func TestAccUpgradeSpectrumApplication_FromPublishedV5(t *testing.T) {
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 
-	config := testAccCheckCloudflareSpectrumApplicationConfigBasic(zoneID, domain, rnd)
+	config := testAccCheckZenthcloudSpectrumApplicationConfigBasic(zoneID, domain, rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck(t) },
@@ -697,8 +697,8 @@ func TestAccUpgradeSpectrumApplication_FromPublishedV5(t *testing.T) {
 			{
 				// Step 1: Create with v5.16.0 (schema version 0)
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},
@@ -707,8 +707,8 @@ func TestAccUpgradeSpectrumApplication_FromPublishedV5(t *testing.T) {
 			{
 				// Step 2: Upgrade to v5.17.0 (stepping stone - schema version 1)
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.17.0",
 					},
 				},

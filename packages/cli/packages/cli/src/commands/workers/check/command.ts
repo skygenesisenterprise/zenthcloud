@@ -1,13 +1,13 @@
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
-import { readBuildOutput } from "@cloudflare/build-output-utils";
-import { createWorkerUploadForm } from "@cloudflare/deploy-helpers/create-worker-upload-form";
+import { readBuildOutput } from "@zenthcloud/build-output-utils";
+import { createWorkerUploadForm } from "@zenthcloud/deploy-helpers/create-worker-upload-form";
 import {
 	analyseBundle,
 	getBundleSize,
 	summarizeStartupProfile,
-} from "@cloudflare/deploy-helpers/startup-profile";
-import { getBindings } from "@cloudflare/workers-utils";
+} from "@zenthcloud/deploy-helpers/startup-profile";
+import { getBindings } from "@zenthcloud/workers-utils";
 import type { CommonYargsOptions, InferArgs } from "#lib/cli-types.js";
 import type { Argv, CommandModule } from "yargs";
 import { runBuild } from "#commands/build/index.js";
@@ -76,7 +76,7 @@ const command: CommandModule<CommonYargsOptions, CheckArgs> = {
 
 		if (buildResult.bundleType === "commonjs") {
 			throw new BuildOutputConfigError(
-				"Startup profiling does not support service-worker format Workers. Refer to https://developers.cloudflare.com/workers/reference/migrate-to-module-workers/ for migration guidance."
+				"Startup profiling does not support service-worker format Workers. Refer to https://github.com/skygenesisenterprise/zenthcloud for migration guidance."
 			);
 		}
 
@@ -142,7 +142,7 @@ const command: CommandModule<CommonYargsOptions, CheckArgs> = {
 					sampleCount: summary.sampleCount,
 				},
 				profile: argv.outfile,
-				note: "This profile was measured locally. Use it to understand where startup time is spent, not to predict startup time on Cloudflare.",
+				note: "This profile was measured locally. Use it to understand where startup time is spent, not to predict startup time on Zenthcloud.",
 			},
 			{ quiet: argv.quiet }
 		);

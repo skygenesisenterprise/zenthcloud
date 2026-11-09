@@ -13,7 +13,7 @@ import {
 	setKeyringPreference as setSharedKeyringPreference,
 	validateScopeKeys,
 	type AuthContext,
-} from "@cloudflare/workers-auth/cf";
+} from "@zenthcloud/workers-auth/cf";
 import { USER_AGENT, VERSION } from "../../version.js";
 import { hasQuietFlag } from "../args.js";
 import { CliExit } from "../cli-exit.js";
@@ -23,7 +23,7 @@ import { MissingCredentialsError } from "../errors.js";
 import { isNonInteractiveOrCI } from "../interactive.js";
 import { openSession } from "../session.js";
 import { printAccountConfigHint } from "./account-hint.js";
-import type { TemporaryAccountRequest } from "@cloudflare/workers-auth";
+import type { TemporaryAccountRequest } from "@zenthcloud/workers-auth";
 
 const logger: AuthContext["logger"] = {
 	debug: (...args) => {

@@ -3,8 +3,8 @@
 package zero_trust_gateway_policy
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -78,7 +78,7 @@ type ZeroTrustGatewayPolicyRuleSettingsModel struct {
 	Quarantine                      *ZeroTrustGatewayPolicyRuleSettingsQuarantineModel           `tfsdk:"quarantine" json:"quarantine,optional"`
 	Redirect                        *ZeroTrustGatewayPolicyRuleSettingsRedirectModel             `tfsdk:"redirect" json:"redirect,optional"`
 	ResolveDNSInternally            *ZeroTrustGatewayPolicyRuleSettingsResolveDNSInternallyModel `tfsdk:"resolve_dns_internally" json:"resolve_dns_internally,optional"`
-	ResolveDNSThroughCloudflare     types.Bool                                                   `tfsdk:"resolve_dns_through_cloudflare" json:"resolve_dns_through_cloudflare,optional"`
+	ResolveDNSThroughZenthcloud     types.Bool                                                   `tfsdk:"resolve_dns_through_zenthcloud" json:"resolve_dns_through_zenthcloud,optional"`
 	SetHeaders                      *map[string]*[]types.String                                  `tfsdk:"set_headers" json:"set_headers,optional"`
 	UntrustedCERT                   *ZeroTrustGatewayPolicyRuleSettingsUntrustedCERTModel        `tfsdk:"untrusted_cert" json:"untrusted_cert,optional"`
 }

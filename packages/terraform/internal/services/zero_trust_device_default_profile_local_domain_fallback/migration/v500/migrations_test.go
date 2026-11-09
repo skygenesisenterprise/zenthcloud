@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -56,13 +56,13 @@ var v5MultipleDomainsConfig string
 // TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_Basic tests basic migration with minimal config
 func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_Basic(t *testing.T) {
 	// Zero Trust resources require API_KEY + EMAIL, not API_TOKEN
-	originalToken := os.Getenv("CLOUDFLARE_API_TOKEN")
+	originalToken := os.Getenv("ZENTHCLOUD_API_TOKEN")
 	if originalToken != "" {
-		os.Unsetenv("CLOUDFLARE_API_TOKEN")
-		defer os.Setenv("CLOUDFLARE_API_TOKEN", originalToken)
+		os.Unsetenv("ZENTHCLOUD_API_TOKEN")
+		defer os.Setenv("ZENTHCLOUD_API_TOKEN", originalToken)
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
 
@@ -70,9 +70,9 @@ func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_Basic(t *testin
 
 	stateChecks := []statecheck.StateCheck{
 		// Verify fallback domain migrated correctly
-		statecheck.ExpectKnownValue("cloudflare_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-		statecheck.ExpectKnownValue("cloudflare_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
-		statecheck.ExpectKnownValue("cloudflare_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("domains"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+		statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("domains"), knownvalue.NotNull()),
 	}
 
 	// Use MigrationV2TestStepWithStateNormalization for consistent migration testing
@@ -89,8 +89,8 @@ func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_Basic(t *testin
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: acctest.GetLastV4Version(),
 					},
 				},
@@ -103,13 +103,13 @@ func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_Basic(t *testin
 // TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_BasicFromV5 tests v5 to v5 version bump
 func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_BasicFromV5(t *testing.T) {
 	// Zero Trust resources require API_KEY + EMAIL, not API_TOKEN
-	originalToken := os.Getenv("CLOUDFLARE_API_TOKEN")
+	originalToken := os.Getenv("ZENTHCLOUD_API_TOKEN")
 	if originalToken != "" {
-		os.Unsetenv("CLOUDFLARE_API_TOKEN")
-		defer os.Setenv("CLOUDFLARE_API_TOKEN", originalToken)
+		os.Unsetenv("ZENTHCLOUD_API_TOKEN")
+		defer os.Setenv("ZENTHCLOUD_API_TOKEN", originalToken)
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
 
@@ -148,8 +148,8 @@ func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_BasicFromV5(t *
 					},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue("cloudflare_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue("cloudflare_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+					statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 				},
 			},
 		},
@@ -159,13 +159,13 @@ func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_BasicFromV5(t *
 // TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_Full tests migration with all fields
 func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_Full(t *testing.T) {
 	// Zero Trust resources require API_KEY + EMAIL, not API_TOKEN
-	originalToken := os.Getenv("CLOUDFLARE_API_TOKEN")
+	originalToken := os.Getenv("ZENTHCLOUD_API_TOKEN")
 	if originalToken != "" {
-		os.Unsetenv("CLOUDFLARE_API_TOKEN")
-		defer os.Setenv("CLOUDFLARE_API_TOKEN", originalToken)
+		os.Unsetenv("ZENTHCLOUD_API_TOKEN")
+		defer os.Setenv("ZENTHCLOUD_API_TOKEN", originalToken)
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
 
@@ -173,9 +173,9 @@ func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_Full(t *testing
 
 	stateChecks := []statecheck.StateCheck{
 		// Verify fallback domain migrated correctly with all fields
-		statecheck.ExpectKnownValue("cloudflare_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-		statecheck.ExpectKnownValue("cloudflare_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
-		statecheck.ExpectKnownValue("cloudflare_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("domains"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+		statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("domains"), knownvalue.NotNull()),
 		// Note: Can't easily test exact values due to Set ordering
 	}
 
@@ -193,8 +193,8 @@ func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_Full(t *testing
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: acctest.GetLastV4Version(),
 					},
 				},
@@ -204,25 +204,25 @@ func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_Full(t *testing
 	})
 }
 
-// TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_DeprecatedName tests migration from the deprecated cloudflare_fallback_domain resource name
+// TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_DeprecatedName tests migration from the deprecated zenthcloud_fallback_domain resource name
 func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_DeprecatedName(t *testing.T) {
 	// Zero Trust resources require API_KEY + EMAIL, not API_TOKEN
-	originalToken := os.Getenv("CLOUDFLARE_API_TOKEN")
+	originalToken := os.Getenv("ZENTHCLOUD_API_TOKEN")
 	if originalToken != "" {
-		os.Unsetenv("CLOUDFLARE_API_TOKEN")
-		defer os.Setenv("CLOUDFLARE_API_TOKEN", originalToken)
+		os.Unsetenv("ZENTHCLOUD_API_TOKEN")
+		defer os.Setenv("ZENTHCLOUD_API_TOKEN", originalToken)
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(v4DeprecatedNameConfig, rnd, accountID)
 
 	stateChecks := []statecheck.StateCheck{
-		statecheck.ExpectKnownValue("cloudflare_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-		statecheck.ExpectKnownValue("cloudflare_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
-		statecheck.ExpectKnownValue("cloudflare_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("domains"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+		statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("domains"), knownvalue.NotNull()),
 	}
 
 	migrationSteps := acctest.MigrationV2TestStepWithStateNormalization(t, v4Config, tmpDir, acctest.GetLastV4Version(), "v4", "v5", stateChecks)
@@ -238,8 +238,8 @@ func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_DeprecatedName(
 			{
 				// Step 1: Create with v4 provider using deprecated resource name
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: acctest.GetLastV4Version(),
 					},
 				},
@@ -252,13 +252,13 @@ func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_DeprecatedName(
 // TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_DeprecatedNameFromV5 tests v5 to v5 version bump with deprecated name migration
 func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_DeprecatedNameFromV5(t *testing.T) {
 	// Zero Trust resources require API_KEY + EMAIL, not API_TOKEN
-	originalToken := os.Getenv("CLOUDFLARE_API_TOKEN")
+	originalToken := os.Getenv("ZENTHCLOUD_API_TOKEN")
 	if originalToken != "" {
-		os.Unsetenv("CLOUDFLARE_API_TOKEN")
-		defer os.Setenv("CLOUDFLARE_API_TOKEN", originalToken)
+		os.Unsetenv("ZENTHCLOUD_API_TOKEN")
+		defer os.Setenv("ZENTHCLOUD_API_TOKEN", originalToken)
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
 
@@ -297,8 +297,8 @@ func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_DeprecatedNameF
 					},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue("cloudflare_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue("cloudflare_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+					statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 				},
 			},
 		},
@@ -308,22 +308,22 @@ func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_DeprecatedNameF
 // TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_NullPolicyID tests migration where policy_id = null is treated as the default profile
 func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_NullPolicyID(t *testing.T) {
 	// Zero Trust resources require API_KEY + EMAIL, not API_TOKEN
-	originalToken := os.Getenv("CLOUDFLARE_API_TOKEN")
+	originalToken := os.Getenv("ZENTHCLOUD_API_TOKEN")
 	if originalToken != "" {
-		os.Unsetenv("CLOUDFLARE_API_TOKEN")
-		defer os.Setenv("CLOUDFLARE_API_TOKEN", originalToken)
+		os.Unsetenv("ZENTHCLOUD_API_TOKEN")
+		defer os.Setenv("ZENTHCLOUD_API_TOKEN", originalToken)
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(v4NullPolicyIDConfig, rnd, accountID)
 
 	stateChecks := []statecheck.StateCheck{
-		statecheck.ExpectKnownValue("cloudflare_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-		statecheck.ExpectKnownValue("cloudflare_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
-		statecheck.ExpectKnownValue("cloudflare_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("domains"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+		statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("domains"), knownvalue.NotNull()),
 	}
 
 	migrationSteps := acctest.MigrationV2TestStepWithStateNormalization(t, v4Config, tmpDir, acctest.GetLastV4Version(), "v4", "v5", stateChecks)
@@ -339,8 +339,8 @@ func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_NullPolicyID(t 
 			{
 				// Step 1: Create with v4 provider using explicit policy_id = null
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: acctest.GetLastV4Version(),
 					},
 				},
@@ -353,13 +353,13 @@ func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_NullPolicyID(t 
 // TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_NullPolicyIDFromV5 tests v5 to v5 version bump where policy_id was null
 func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_NullPolicyIDFromV5(t *testing.T) {
 	// Zero Trust resources require API_KEY + EMAIL, not API_TOKEN
-	originalToken := os.Getenv("CLOUDFLARE_API_TOKEN")
+	originalToken := os.Getenv("ZENTHCLOUD_API_TOKEN")
 	if originalToken != "" {
-		os.Unsetenv("CLOUDFLARE_API_TOKEN")
-		defer os.Setenv("CLOUDFLARE_API_TOKEN", originalToken)
+		os.Unsetenv("ZENTHCLOUD_API_TOKEN")
+		defer os.Setenv("ZENTHCLOUD_API_TOKEN", originalToken)
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
 
@@ -398,8 +398,8 @@ func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_NullPolicyIDFro
 					},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue("cloudflare_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue("cloudflare_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+					statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 				},
 			},
 		},
@@ -409,23 +409,23 @@ func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_NullPolicyIDFro
 // TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_MultipleDomains tests migration with 3 domains (Set → List)
 func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_MultipleDomains(t *testing.T) {
 	// Zero Trust resources require API_KEY + EMAIL, not API_TOKEN
-	originalToken := os.Getenv("CLOUDFLARE_API_TOKEN")
+	originalToken := os.Getenv("ZENTHCLOUD_API_TOKEN")
 	if originalToken != "" {
-		os.Unsetenv("CLOUDFLARE_API_TOKEN")
-		defer os.Setenv("CLOUDFLARE_API_TOKEN", originalToken)
+		os.Unsetenv("ZENTHCLOUD_API_TOKEN")
+		defer os.Setenv("ZENTHCLOUD_API_TOKEN", originalToken)
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(v4MultipleDomainsConfig, rnd, accountID)
 
 	stateChecks := []statecheck.StateCheck{
-		statecheck.ExpectKnownValue("cloudflare_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-		statecheck.ExpectKnownValue("cloudflare_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
+		statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+		statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
 		// Verify all 3 domains were preserved; exact ordering not checked due to Set → List conversion
-		statecheck.ExpectKnownValue("cloudflare_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("domains"), knownvalue.ListSizeExact(3)),
+		statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("domains"), knownvalue.ListSizeExact(3)),
 	}
 
 	migrationSteps := acctest.MigrationV2TestStepWithStateNormalization(t, v4Config, tmpDir, acctest.GetLastV4Version(), "v4", "v5", stateChecks)
@@ -441,8 +441,8 @@ func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_MultipleDomains
 			{
 				// Step 1: Create with v4 provider with 3 domains
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: acctest.GetLastV4Version(),
 					},
 				},
@@ -455,13 +455,13 @@ func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_MultipleDomains
 // TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_MultipleDomainsFromV5 tests v5 to v5 version bump with multiple domains
 func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_MultipleDomainsFromV5(t *testing.T) {
 	// Zero Trust resources require API_KEY + EMAIL, not API_TOKEN
-	originalToken := os.Getenv("CLOUDFLARE_API_TOKEN")
+	originalToken := os.Getenv("ZENTHCLOUD_API_TOKEN")
 	if originalToken != "" {
-		os.Unsetenv("CLOUDFLARE_API_TOKEN")
-		defer os.Setenv("CLOUDFLARE_API_TOKEN", originalToken)
+		os.Unsetenv("ZENTHCLOUD_API_TOKEN")
+		defer os.Setenv("ZENTHCLOUD_API_TOKEN", originalToken)
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
 
@@ -500,9 +500,9 @@ func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_MultipleDomains
 					},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue("cloudflare_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue("cloudflare_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-					statecheck.ExpectKnownValue("cloudflare_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("domains"), knownvalue.ListSizeExact(3)),
+					statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+					statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("domains"), knownvalue.ListSizeExact(3)),
 				},
 			},
 		},
@@ -512,13 +512,13 @@ func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_MultipleDomains
 // TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_FullFromV5 tests v5 to v5 version bump with all fields
 func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_FullFromV5(t *testing.T) {
 	// Zero Trust resources require API_KEY + EMAIL, not API_TOKEN
-	originalToken := os.Getenv("CLOUDFLARE_API_TOKEN")
+	originalToken := os.Getenv("ZENTHCLOUD_API_TOKEN")
 	if originalToken != "" {
-		os.Unsetenv("CLOUDFLARE_API_TOKEN")
-		defer os.Setenv("CLOUDFLARE_API_TOKEN", originalToken)
+		os.Unsetenv("ZENTHCLOUD_API_TOKEN")
+		defer os.Setenv("ZENTHCLOUD_API_TOKEN", originalToken)
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
 
@@ -557,8 +557,8 @@ func TestMigrateZeroTrustDeviceDefaultProfileLocalDomainFallback_FullFromV5(t *t
 					},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue("cloudflare_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue("cloudflare_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+					statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_default_profile_local_domain_fallback."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 				},
 			},
 		},

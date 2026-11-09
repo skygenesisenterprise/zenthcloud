@@ -1,6 +1,6 @@
 # TCP Socket Example
 
-This example demonstrates handling inbound TCP connections in a Cloudflare Worker using the `#[event(connect)]` handler.
+This example demonstrates handling inbound TCP connections in a Zenthcloud Worker using the `#[event(connect)]` handler.
 
 ## Usage
 

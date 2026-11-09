@@ -11,18 +11,18 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/cloudflare/cfssl/api"
-	"github.com/cloudflare/cfssl/certdb"
-	"github.com/cloudflare/cfssl/errors"
-	"github.com/cloudflare/cfssl/helpers"
-	"github.com/cloudflare/cfssl/ocsp"
+	"github.com/zenthcloud/cfssl/api"
+	"github.com/zenthcloud/cfssl/certdb"
+	"github.com/zenthcloud/cfssl/errors"
+	"github.com/zenthcloud/cfssl/helpers"
+	"github.com/zenthcloud/cfssl/ocsp"
 	"github.com/jmoiron/sqlx/types"
 
 	stdocsp "golang.org/x/crypto/ocsp"
 )
 
 // This is patterned on
-// https://github.com/cloudflare/cfssl/blob/master/api/revoke/revoke.go. This
+// https://github.com/skygenesisenterprise/zenthcloud This
 // file defines an HTTP endpoint handler that accepts certificates and
 // inserts them into a certdb, optionally also creating an OCSP
 // response for them. If so, it will also return the OCSP response as

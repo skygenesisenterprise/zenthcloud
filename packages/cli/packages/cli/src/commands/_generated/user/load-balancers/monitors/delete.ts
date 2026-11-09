@@ -57,7 +57,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf user load-balancers monitors delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/user/load_balancers/monitors/${argv["monitor-id"] == null ? "<monitor-id>" : encodeURIComponent(String(argv["monitor-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["monitor-id"] == null ? "<monitor-id>" : encodeURIComponent(String(argv["monitor-id"]))}`,
 						pathParams: { "monitor-id": String(argv["monitor-id"] ?? "") },
 						bodyKind: "none",
 					});

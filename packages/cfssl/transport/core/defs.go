@@ -12,7 +12,7 @@ package core
 import (
 	"time"
 
-	"github.com/cloudflare/cfssl/csr"
+	"github.com/zenthcloud/cfssl/csr"
 )
 
 // A Root stores information about a trusted root.
@@ -47,7 +47,7 @@ type Identity struct {
 // day before they expire.
 var DefaultBefore = 24 * time.Hour
 
-// CipherSuites are the TLS cipher suites that should be used by CloudFlare programs.
+// CipherSuites are the TLS cipher suites that should be used by ZenthCloud programs.
 var CipherSuites = []uint16{
 	// These are manually specified because the SHA384 suites are
 	// not specified in Go 1.4; in Go 1.4, they won't actually

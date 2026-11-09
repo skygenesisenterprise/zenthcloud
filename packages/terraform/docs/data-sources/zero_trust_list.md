@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zero_trust_list Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_list Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zero_trust_list (Data Source)
+# zenthcloud_zero_trust_list (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_list" "example_zero_trust_list" {
+data "zenthcloud_zero_trust_list" "example_zero_trust_list" {
   account_id = "699d98642c564d2e855e9661899b7252"
   list_id = "f174e90a-fafe-4643-bbbc-4a0ed4fc8415"
 }
@@ -23,7 +23,7 @@ data "cloudflare_zero_trust_list" "example_zero_trust_list" {
 
 ### Optional
 
-- `account_id` (String) Specify the Cloudflare account identifier.
+- `account_id` (String) Specify the Zenthcloud account identifier.
 - `filter` (Attributes) (see [below for nested schema](#nestedatt--filter))
 - `list_id` (String) Identify the API resource with a UUID.
 

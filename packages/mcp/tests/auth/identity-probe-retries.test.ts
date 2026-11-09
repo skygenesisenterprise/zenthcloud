@@ -1,13 +1,13 @@
-// No fetch-retry mock here, unlike cloudflare-identity.test.ts: these tests check how many
+// No fetch-retry mock here, unlike zenthcloud-identity.test.ts: these tests check how many
 // requests the real fetchWithRetry sends for each kind of identity probe.
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
 
 import {
-  getCloudflareOAuthUser,
-  resolveCloudflareCredential
-} from '../../src/auth/cloudflare-identity'
-import { API_BASE, cfAccountsSuccess, cfSuccess } from '../helpers/cloudflare-api'
+  getZenthcloudOAuthUser,
+  resolveZenthcloudCredential
+} from '../../src/auth/zenthcloud-identity'
+import { API_BASE, cfAccountsSuccess, cfSuccess } from '../helpers/zenthcloud-api'
 import { server } from '../setup/msw'
 
 const USER = { id: 'user-1', email: 'user@example.com' }
@@ -29,11 +29,11 @@ function countRequests(responses: { user: () => Response; accounts: () => Respon
 }
 
 describe('identity probe retries', () => {
-  it('sends a direct credential probe once when Cloudflare rate-limits it', async () => {
+  it('sends a direct credential probe once when Zenthcloud rate-limits it', async () => {
     const rateLimited = () => new HttpResponse('rate limited', { status: 429 })
     const calls = countRequests({ user: rateLimited, accounts: rateLimited })
 
-    await expect(resolveCloudflareCredential('cfut_rate-limited', 'user')).rejects.toMatchObject({
+    await expect(resolveZenthcloudCredential('cfut_rate-limited', 'user')).rejects.toMatchObject({
       code: 'temporarily_unavailable',
       statusCode: 429
     })
@@ -50,7 +50,7 @@ describe('identity probe retries', () => {
       accounts: () => HttpResponse.json(cfAccountsSuccess([ACCOUNT]))
     })
 
-    await expect(getCloudflareOAuthUser('upstream-oauth-token')).resolves.toMatchObject({
+    await expect(getZenthcloudOAuthUser('upstream-oauth-token')).resolves.toMatchObject({
       type: 'user',
       user: USER
     })

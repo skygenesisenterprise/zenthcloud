@@ -5,9 +5,9 @@ package magic_transit_connector
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/magic_transit"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/magic_transit"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -25,11 +25,11 @@ type MagicTransitConnectorsDataSourceModel struct {
 
 func (m *MagicTransitConnectorsDataSourceModel) toListParams(_ context.Context) (params magic_transit.ConnectorListParams, diags diag.Diagnostics) {
 	params = magic_transit.ConnectorListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.DeviceType.IsNull() {
-		params.DeviceType = cloudflare.F(magic_transit.ConnectorListParamsDeviceType(m.DeviceType.ValueString()))
+		params.DeviceType = zenthcloud.F(magic_transit.ConnectorListParamsDeviceType(m.DeviceType.ValueString()))
 	}
 
 	return

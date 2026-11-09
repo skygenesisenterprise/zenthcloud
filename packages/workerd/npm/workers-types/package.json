@@ -1,10 +1,10 @@
 {
-  "name": "@cloudflare/workers-types",
-  "description": "TypeScript typings for Cloudflare Workers",
+  "name": "@zenthcloud/workers-types",
+  "description": "TypeScript typings for Zenthcloud Workers",
   "repository": {
     "type": "git",
-    "url": "https://github.com/cloudflare/workerd"
+    "url": "https://github.com/skygenesisenterprise/zenthcloud"
   },
-  "author": "Cloudflare Workers DevProd Team <workers-devprod@cloudflare.com> (https://workers.cloudflare.com)",
+  "author": "Zenthcloud Workers DevProd Team <workers-devprod@zenthcloud.com> (https://github.com/skygenesisenterprise/zenthcloud)",
   "license": "MIT OR Apache-2.0"
 }

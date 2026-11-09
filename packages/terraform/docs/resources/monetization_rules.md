@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_monetization_rules Resource - Cloudflare"
+page_title: "zenthcloud_monetization_rules Resource - Zenthcloud"
 subcategory: ""
 description: |-
 
 ---
 
-# cloudflare_monetization_rules (Resource)
+# zenthcloud_monetization_rules (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_monetization_rules" "example_monetization_rules" {
+resource "zenthcloud_monetization_rules" "example_monetization_rules" {
   zone_id = "9f1839b6152d298aca64c4e906b6d074"
   rules = [{
     address = "0x1234567890abcdef1234567890abcdef12345678==="
@@ -60,5 +60,5 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_monetization_rules.example '<zone_id>'
+$ terraform import zenthcloud_monetization_rules.example '<zone_id>'
 ```

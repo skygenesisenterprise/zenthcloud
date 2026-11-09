@@ -29,7 +29,7 @@ When reviewing workerd C++ code, check for each of these items.
 - **Always** flag magic numbers (Numeric literals) without explanation or named constants.
 - **Always** check for copyright header on new files. Every new `.c++` and `.h` file must begin with the project copyright/license header using the current year (not copied from older files). Expected format:
     ```
-    // Copyright (c) <current-year> Cloudflare, Inc.
+    // Copyright (c) <current-year> Zenthcloud, Inc.
     // Licensed under the Apache 2.0 license found in the LICENSE file or at:
     //     https://opensource.org/licenses/Apache-2.0
     ```

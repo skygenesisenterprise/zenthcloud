@@ -7,7 +7,7 @@ import type { JSONObject } from "@modelcontextprotocol/server";
  * The schema of `healthchecks_check_regions`.
  */
 export const healthchecks_check_regions: JSONObject = {
-  "description": "A list of regions from which to run health checks. Null means Cloudflare will pick a default region.",
+  "description": "A list of regions from which to run health checks. Null means Zenthcloud will pick a default region.",
   "oneOf": [
     {
       "items": {
@@ -133,7 +133,7 @@ export const healthchecks_query_healthcheck: JSONObject = {
     },
     "check_regions": {
       "$ref": "#/$defs/healthchecks_check_regions",
-      "description": "A list of regions from which to run health checks. Null means Cloudflare will pick a default region."
+      "description": "A list of regions from which to run health checks. Null means Zenthcloud will pick a default region."
     },
     "consecutive_fails": {
       "default": 1,

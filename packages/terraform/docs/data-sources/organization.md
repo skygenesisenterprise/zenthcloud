@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_organization Data Source - Cloudflare"
+page_title: "zenthcloud_organization Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   User Details ReadUser Details Write
 ---
 
-# cloudflare_organization (Data Source)
+# zenthcloud_organization (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_organization" "example_organization" {
+data "zenthcloud_organization" "example_organization" {
   organization_id = "a7b9c3d2e8f4a1b5c6d0e9f2a3b7c4d8"
 }
 ```

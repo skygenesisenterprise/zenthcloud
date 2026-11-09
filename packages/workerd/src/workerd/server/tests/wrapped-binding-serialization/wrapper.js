@@ -1,11 +1,11 @@
-// Copyright (c) 2017-2026 Cloudflare, Inc.
+// Copyright (c) 2017-2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
-import wrappedBinding from 'cloudflare-internal:wrapped-binding';
+import wrappedBinding from 'zenthcloud-internal:wrapped-binding';
 
 // A minimal wrapped-binding wrapper module, modeled after real wrapped bindings (e.g. D1's
-// `cloudflare-internal:d1-api`): the default export receives `env` containing the inner stub and
+// `zenthcloud-internal:d1-api`): the default export receives `env` containing the inner stub and
 // returns the user-facing class instance.
 //
 class Door extends wrappedBinding.WrappedBinding {

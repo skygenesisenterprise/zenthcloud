@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zero_trust_device_deployment_groups Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_device_deployment_groups Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zero_trust_device_deployment_groups (Data Source)
+# zenthcloud_zero_trust_device_deployment_groups (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_device_deployment_groups" "example_zero_trust_device_deployment_groups" {
+data "zenthcloud_zero_trust_device_deployment_groups" "example_zero_trust_device_deployment_groups" {
   account_id = "account_id"
   group_id = "group_id"
 }

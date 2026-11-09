@@ -10,7 +10,7 @@ export const GLOBAL_OPTIONS = {
 	zone: {
 		type: "string",
 		alias: "z",
-		description: "Zone ID or domain name (overrides CLOUDFLARE_ZONE_ID)",
+		description: "Zone ID or domain name (overrides ZENTHCLOUD_ZONE_ID)",
 		global: true,
 		// Passing --zone switches account-or-zone commands to zone scope, so a
 		// missing value must fail here rather than leave a scope without an ID.
@@ -49,7 +49,7 @@ export const GLOBAL_OPTIONS = {
 	"temporary-account": {
 		type: "boolean",
 		description:
-			"Create or reuse a temporary account when no Cloudflare credentials are available",
+			"Create or reuse a temporary account when no Zenthcloud credentials are available",
 		global: true,
 		default: false,
 		hidden: true,
@@ -75,8 +75,8 @@ export const GLOBAL_OPTIONS = {
 	},
 	// `--local` runs the command against the project's on-disk Miniflare
 	// state instead of the production API: cf spawns its own Miniflare over
-	// `--persist-to` (default `.cloudflare/state/v3` next to the nearest
-	// `cloudflare.config.ts`), dispatches to the local-explorer worker, and
+	// `--persist-to` (default `.zenthcloud/state/v3` next to the nearest
+	// `zenthcloud.config.ts`), dispatches to the local-explorer worker, and
 	// disposes it before exiting. No dev session needs to be running.
 	// Endpoints the explorer doesn't implement surface as a "no local
 	// equivalent" error.
@@ -89,7 +89,7 @@ export const GLOBAL_OPTIONS = {
 	"persist-to": {
 		type: "string",
 		description:
-			"Directory holding local persisted state (default: .cloudflare/state next to cloudflare.config.ts)",
+			"Directory holding local persisted state (default: .zenthcloud/state next to zenthcloud.config.ts)",
 		requiresArg: true,
 		global: true,
 	},
@@ -115,7 +115,7 @@ export const GLOBAL_OPTION_NAMES: readonly string[] = Object.entries<{
  *
  * - `remote`: force production-API routing if local ever becomes the default.
  * - `cwd`: run as if from a different working directory, like Wrangler's.
- * - `config` / `c`: an explicit Cloudflare config-file path.
+ * - `config` / `c`: an explicit Zenthcloud config-file path.
  * - `json`, `ndjson`, `pretty`: output-format toggles.
  *
  * Every `--experimental-*` name is reserved too, for opt-in feature gates.

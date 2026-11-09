@@ -3,7 +3,7 @@ package v500
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/migrations"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/migrations"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -12,20 +12,20 @@ import (
 // This is triggered by Terraform 1.8+ when it encounters a `moved` block:
 //
 //	moved {
-//	  from = cloudflare_authenticated_origin_pulls.example
-//	  to   = cloudflare_authenticated_origin_pulls_settings.example
+//	  from = zenthcloud_authenticated_origin_pulls.example
+//	  to   = zenthcloud_authenticated_origin_pulls_settings.example
 //	}
 //
 // For Terraform < 1.8, users must manually run:
 //
-//	terraform state mv cloudflare_authenticated_origin_pulls.example cloudflare_authenticated_origin_pulls_settings.example
+//	terraform state mv zenthcloud_authenticated_origin_pulls.example zenthcloud_authenticated_origin_pulls_settings.example
 //
 // which will preserve the source schema_version and trigger UpgradeFromLegacyV0 instead.
 func MoveState(ctx context.Context, req resource.MoveStateRequest, resp *resource.MoveStateResponse) {
-	tflog.Info(ctx, "Moving state from legacy cloudflare_authenticated_origin_pulls to cloudflare_authenticated_origin_pulls_settings")
+	tflog.Info(ctx, "Moving state from legacy zenthcloud_authenticated_origin_pulls to zenthcloud_authenticated_origin_pulls_settings")
 
 	// Parse the source state (legacy v4 format)
-	var sourceState SourceCloudflareAuthenticatedOriginPullsModel
+	var sourceState SourceZenthcloudAuthenticatedOriginPullsModel
 	if migrations.DiagnoseMoveStateNilSourceState(req, resp) {
 		return
 	}
@@ -44,5 +44,5 @@ func MoveState(ctx context.Context, req resource.MoveStateRequest, resp *resourc
 	// Set the moved state
 	resp.Diagnostics.Append(resp.TargetState.Set(ctx, targetState)...)
 
-	tflog.Info(ctx, "State move from legacy cloudflare_authenticated_origin_pulls completed successfully")
+	tflog.Info(ctx, "State move from legacy zenthcloud_authenticated_origin_pulls completed successfully")
 }

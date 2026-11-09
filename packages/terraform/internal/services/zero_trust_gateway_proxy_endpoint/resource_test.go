@@ -7,9 +7,9 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -21,20 +21,20 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zero_trust_gateway_proxy_endpoint", &resource.Sweeper{
-		Name: "cloudflare_zero_trust_gateway_proxy_endpoint",
-		F:    testSweepCloudflareZeroTrustGatewayProxyEndpoint,
+	resource.AddTestSweepers("zenthcloud_zero_trust_gateway_proxy_endpoint", &resource.Sweeper{
+		Name: "zenthcloud_zero_trust_gateway_proxy_endpoint",
+		F:    testSweepZenthcloudZeroTrustGatewayProxyEndpoint,
 	})
 }
 
-func testSweepCloudflareZeroTrustGatewayProxyEndpoint(r string) error {
+func testSweepZenthcloudZeroTrustGatewayProxyEndpoint(r string) error {
 	ctx := context.Background()
 	client, clientErr := acctest.SharedV1Client()
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 		return clientErr
 	}
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	endpoints, _, err := client.TeamsProxyEndpoints(ctx, accountID)
 	if err != nil {
@@ -57,27 +57,27 @@ func testSweepCloudflareZeroTrustGatewayProxyEndpoint(r string) error {
 	return nil
 }
 
-func TestAccCloudflareTeamsProxyEndpoint_Basic(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudTeamsProxyEndpoint_Basic(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_gateway_proxy_endpoint.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_gateway_proxy_endpoint.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareTeamsProxyEndpointDestroy,
+		CheckDestroy:             testAccCheckZenthcloudTeamsProxyEndpointDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareTeamsProxyEndpointConfigBasic(rnd, accountID),
+				Config: testAccZenthcloudTeamsProxyEndpointConfigBasic(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(name, "name", rnd),
@@ -89,18 +89,18 @@ func TestAccCloudflareTeamsProxyEndpoint_Basic(t *testing.T) {
 	})
 }
 
-func testAccCloudflareTeamsProxyEndpointConfigBasic(rnd, accountID string) string {
+func testAccZenthcloudTeamsProxyEndpointConfigBasic(rnd, accountID string) string {
 	return acctest.LoadTestCase("teamsproxyendpointconfigbasic.tf", rnd, accountID)
 }
 
-func testAccCheckCloudflareTeamsProxyEndpointDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudTeamsProxyEndpointDestroy(s *terraform.State) error {
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_zero_trust_gateway_proxy_endpoint" {
+		if rs.Type != "zenthcloud_zero_trust_gateway_proxy_endpoint" {
 			continue
 		}
 
@@ -115,9 +115,9 @@ func testAccCheckCloudflareTeamsProxyEndpointDestroy(s *terraform.State) error {
 
 func TestAccUpgradeZeroTrustGatewayProxyEndpoint_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
-	config := testAccCloudflareTeamsProxyEndpointConfigBasic(rnd, accountID)
+	config := testAccZenthcloudTeamsProxyEndpointConfigBasic(rnd, accountID)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -126,8 +126,8 @@ func TestAccUpgradeZeroTrustGatewayProxyEndpoint_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

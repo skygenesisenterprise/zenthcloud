@@ -63,7 +63,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust access custom-pages delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/access/custom_pages/${argv["custom-page-id"] == null ? "<custom-page-id>" : encodeURIComponent(String(argv["custom-page-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/access/custom_pages/${argv["custom-page-id"] == null ? "<custom-page-id>" : encodeURIComponent(String(argv["custom-page-id"]))}`,
 						pathParams: {
 							"custom-page-id": String(argv["custom-page-id"] ?? ""),
 						},

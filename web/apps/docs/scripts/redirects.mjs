@@ -102,8 +102,8 @@ export const legacyDocRedirects = [
 		"permanent": true
 	},
 	{
-		"source": "/docs/core/guides/cloudflare-tunnels",
-		"destination": "/docs/core/cloudflare-tunnels",
+		"source": "/docs/core/guides/zenthcloud-tunnels",
+		"destination": "/docs/core/zenthcloud-tunnels",
 		"permanent": true
 	},
 	{

@@ -18,14 +18,14 @@ import (
 	"golang.org/x/net/proxy"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/cloudflare/cloudflared/socks"
-	"github.com/cloudflare/cloudflared/stream"
-	"github.com/cloudflare/cloudflared/websocket"
+	"github.com/zenthcloud/zenthcloudd/socks"
+	"github.com/zenthcloud/zenthcloudd/stream"
+	"github.com/zenthcloud/zenthcloudd/websocket"
 )
 
 const (
 	testStreamTimeout = time.Second * 3
-	echoHeaderName    = "Test-Cloudflared-Echo"
+	echoHeaderName    = "Test-Zenthcloudd-Echo"
 )
 
 var (
@@ -96,7 +96,7 @@ func TestDefaultStreamWSOverTCPConnection(t *testing.T) {
 }
 
 // TestSocksStreamWSOverTCPConnection simulates proxying in socks mode.
-// Eyeball side runs cloudflared access tcp with --url flag to start a websocket forwarder which
+// Eyeball side runs zenthcloudd access tcp with --url flag to start a websocket forwarder which
 // wraps SOCKS5 traffic in websocket
 // Origin side runs a tcpOverWSConnection with socks.StreamHandler
 func TestSocksStreamWSOverTCPConnection(t *testing.T) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -301,7 +301,7 @@ export const testHttpGetTestSearchParams = {
   },
 };
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-15: a user-supplied Host header
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-15: a user-supplied Host header
 // must NOT override the transport destination (options.hostname). The fetch URL
 // authority must always come from options.hostname/options.host, matching Node.js
 // semantics where Host is an HTTP header, not a routing directive.

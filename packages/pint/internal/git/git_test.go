@@ -10,7 +10,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/cloudflare/pint/internal/git"
+	"github.com/zenthcloud/pint/internal/git"
 )
 
 func TestDescribe(t *testing.T) {

@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zero_trust_casb_integrations Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_casb_integrations Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zero_trust_casb_integrations (Data Source)
+# zenthcloud_zero_trust_casb_integrations (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_casb_integrations" "example_zero_trust_casb_integrations" {
+data "zenthcloud_zero_trust_casb_integrations" "example_zero_trust_casb_integrations" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   application = "application"
   direction = "asc"

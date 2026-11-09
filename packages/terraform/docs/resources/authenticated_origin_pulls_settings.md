@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_authenticated_origin_pulls_settings Resource - Cloudflare"
+page_title: "zenthcloud_authenticated_origin_pulls_settings Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   SSL and Certificates ReadSSL and Certificates Write
 ---
 
-# cloudflare_authenticated_origin_pulls_settings (Resource)
+# zenthcloud_authenticated_origin_pulls_settings (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_authenticated_origin_pulls_settings" "example_authenticated_origin_pulls_settings" {
+resource "zenthcloud_authenticated_origin_pulls_settings" "example_authenticated_origin_pulls_settings" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   enabled = true
 }
@@ -39,7 +39,7 @@ resource "cloudflare_authenticated_origin_pulls_settings" "example_authenticated
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_authenticated_origin_pulls_settings.example '<zone_id>'
+$ terraform import zenthcloud_authenticated_origin_pulls_settings.example '<zone_id>'
 ```
 
 

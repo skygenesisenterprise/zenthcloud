@@ -5,9 +5,9 @@ package zone
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zones"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zones"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -38,33 +38,33 @@ func (m *ZonesDataSourceModel) toListParams(_ context.Context) (params zones.Zon
 	}
 
 	params = zones.ZoneListParams{
-		Type: cloudflare.F(mType),
+		Type: zenthcloud.F(mType),
 	}
 
 	if m.Account != nil {
 		paramsAccount := zones.ZoneListParamsAccount{}
 		if !m.Account.ID.IsNull() {
-			paramsAccount.ID = cloudflare.F(m.Account.ID.ValueString())
+			paramsAccount.ID = zenthcloud.F(m.Account.ID.ValueString())
 		}
 		if !m.Account.Name.IsNull() {
-			paramsAccount.Name = cloudflare.F(m.Account.Name.ValueString())
+			paramsAccount.Name = zenthcloud.F(m.Account.Name.ValueString())
 		}
-		params.Account = cloudflare.F(paramsAccount)
+		params.Account = zenthcloud.F(paramsAccount)
 	}
 	if !m.Direction.IsNull() {
-		params.Direction = cloudflare.F(zones.ZoneListParamsDirection(m.Direction.ValueString()))
+		params.Direction = zenthcloud.F(zones.ZoneListParamsDirection(m.Direction.ValueString()))
 	}
 	if !m.Match.IsNull() {
-		params.Match = cloudflare.F(zones.ZoneListParamsMatch(m.Match.ValueString()))
+		params.Match = zenthcloud.F(zones.ZoneListParamsMatch(m.Match.ValueString()))
 	}
 	if !m.Name.IsNull() {
-		params.Name = cloudflare.F(m.Name.ValueString())
+		params.Name = zenthcloud.F(m.Name.ValueString())
 	}
 	if !m.Order.IsNull() {
-		params.Order = cloudflare.F(zones.ZoneListParamsOrder(m.Order.ValueString()))
+		params.Order = zenthcloud.F(zones.ZoneListParamsOrder(m.Order.ValueString()))
 	}
 	if !m.Status.IsNull() {
-		params.Status = cloudflare.F(zones.ZoneListParamsStatus(m.Status.ValueString()))
+		params.Status = zenthcloud.F(zones.ZoneListParamsStatus(m.Status.ValueString()))
 	}
 
 	return

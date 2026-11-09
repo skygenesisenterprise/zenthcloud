@@ -8,9 +8,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/leaked_credential_check"
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/leaked_credential_check/migration/v500"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/test_helpers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/leaked_credential_check"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/leaked_credential_check/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 // TestLeakedCredentialCheckMigrationModelSchemaParity verifies that TargetLeakedCredentialCheckModel

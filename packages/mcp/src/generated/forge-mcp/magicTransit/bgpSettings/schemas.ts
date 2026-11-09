@@ -22,8 +22,8 @@ export const magic_update_bgp_settings_redistribute_sources: JSONObject = {
  */
 export const magic_update_bgp_settings_request: JSONObject = {
   "properties": {
-    "cloudflare_asn": {
-      "description": "Route advertisements from Cloudflare to ramps in this account will use this ASN.",
+    "zenthcloud_asn": {
+      "description": "Route advertisements from Zenthcloud to ramps in this account will use this ASN.",
       "type": "integer"
     },
     "redistribute": {

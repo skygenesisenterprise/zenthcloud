@@ -1,21 +1,21 @@
 import { writeFile } from "node:fs/promises";
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw/http";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import { runCloudflared } from "../../../commands/cloudflared.js";
+import { runZenthcloudd } from "../../../commands/zenthcloudd.js";
 import { server, setupMsw, TEST_BASE_URL } from "../../helpers/msw.js";
 import { runCf } from "../../helpers/run-cf.js";
 
-vi.mock("../../../commands/cloudflared.js", async (importOriginal) => ({
+vi.mock("../../../commands/zenthcloudd.js", async (importOriginal) => ({
 	...(await importOriginal<Record<string, unknown>>()),
-	runCloudflared: vi.fn(),
+	runZenthcloudd: vi.fn(),
 }));
 
 const UUID = "f70ff985-a4ef-4643-bbbc-4a0ed4fc8415";
 const API_ENV = {
-	CLOUDFLARE_ACCOUNT_ID: "account-id",
-	CLOUDFLARE_API_BASE_URL: TEST_BASE_URL,
-	CLOUDFLARE_API_TOKEN: "api-token",
+	ZENTHCLOUD_ACCOUNT_ID: "account-id",
+	ZENTHCLOUD_API_BASE_URL: TEST_BASE_URL,
+	ZENTHCLOUD_API_TOKEN: "api-token",
 };
 
 describe("cf tunnels run", () => {
@@ -23,8 +23,8 @@ describe("cf tunnels run", () => {
 	setupMsw();
 
 	beforeEach(() => {
-		vi.mocked(runCloudflared).mockReset();
-		vi.mocked(runCloudflared).mockResolvedValue(0);
+		vi.mocked(runZenthcloudd).mockReset();
+		vi.mocked(runZenthcloudd).mockResolvedValue(0);
 	});
 
 	it("resolves a tunnel name and fetches its token", async () => {
@@ -44,18 +44,18 @@ describe("cf tunnels run", () => {
 		const result = await runCf(["tunnels", "run", "production"], API_ENV);
 
 		expect(result.exitCode).toBe(0);
-		expect(runCloudflared).toHaveBeenCalledWith(
+		expect(runZenthcloudd).toHaveBeenCalledWith(
 			["tunnel", "--loglevel", "info", "run"],
 			{ env: { TUNNEL_TOKEN: "run-token" } }
 		);
 	});
 
-	it("restores dotenv values before starting cloudflared", async () => {
+	it("restores dotenv values before starting zenthcloudd", async () => {
 		await writeFile(
 			".env",
 			[
-				"CLOUDFLARE_ACCOUNT_ID=account-id",
-				"CLOUDFLARE_API_TOKEN=file-token",
+				"ZENTHCLOUD_ACCOUNT_ID=account-id",
+				"ZENTHCLOUD_API_TOKEN=file-token",
 			].join("\n")
 		);
 		let valueDuringApiRequest: string | undefined;
@@ -64,7 +64,7 @@ describe("cf tunnels run", () => {
 			http.get(
 				`${TEST_BASE_URL}/accounts/account-id/cfd_tunnel`,
 				({ request }) => {
-					valueDuringApiRequest = process.env.CLOUDFLARE_ACCOUNT_ID;
+					valueDuringApiRequest = process.env.ZENTHCLOUD_ACCOUNT_ID;
 					authorizationDuringApiRequest = request.headers.get("authorization");
 					return HttpResponse.json({
 						success: true,
@@ -78,22 +78,22 @@ describe("cf tunnels run", () => {
 			)
 		);
 		let observedAccountId: string | undefined;
-		vi.mocked(runCloudflared).mockImplementationOnce(async () => {
-			observedAccountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+		vi.mocked(runZenthcloudd).mockImplementationOnce(async () => {
+			observedAccountId = process.env.ZENTHCLOUD_ACCOUNT_ID;
 			return 0;
 		});
 
 		const result = await runCf(["tunnels", "run", "production"], {
-			CLOUDFLARE_ACCOUNT_ID: undefined,
-			CLOUDFLARE_API_BASE_URL: TEST_BASE_URL,
-			CLOUDFLARE_API_TOKEN: undefined,
+			ZENTHCLOUD_ACCOUNT_ID: undefined,
+			ZENTHCLOUD_API_BASE_URL: TEST_BASE_URL,
+			ZENTHCLOUD_API_TOKEN: undefined,
 		});
 
 		expect(result.exitCode).toBe(0);
 		expect(valueDuringApiRequest).toBe("account-id");
 		expect(authorizationDuringApiRequest).toBe("Bearer file-token");
 		expect(observedAccountId).toBeUndefined();
-		expect(process.env.CLOUDFLARE_ACCOUNT_ID).toBeUndefined();
+		expect(process.env.ZENTHCLOUD_ACCOUNT_ID).toBeUndefined();
 	});
 
 	it("uses a literal token without an API request", async () => {
@@ -107,7 +107,7 @@ describe("cf tunnels run", () => {
 		]);
 
 		expect(result.exitCode).toBe(0);
-		expect(runCloudflared).toHaveBeenCalledWith(
+		expect(runZenthcloudd).toHaveBeenCalledWith(
 			["tunnel", "--loglevel", "disabled", "run"],
 			{ env: { TUNNEL_TOKEN: "literal-token" } }
 		);
@@ -129,6 +129,6 @@ describe("cf tunnels run", () => {
 		await expect(runCf(["tunnel", "run", UUID])).rejects.toThrow(
 			/Unknown commands: tunnel, run|Did you mean tunnels\?/
 		);
-		expect(runCloudflared).not.toHaveBeenCalled();
+		expect(runZenthcloudd).not.toHaveBeenCalled();
 	});
 });

@@ -23,7 +23,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 zero-trust casb remediations jobs create\n\nCreate one or more remediation jobs tied to a specific Cloudflare Account."
+			"$0 zero-trust casb remediations jobs create\n\nCreate one or more remediation jobs tied to a specific Zenthcloud Account."
 		)
 		.option("finding-instance-ids", {
 			type: "string",
@@ -66,7 +66,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust casb remediations jobs create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/data-security/posture/remediations/jobs`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/data-security/posture/remediations/jobs`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

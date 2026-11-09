@@ -5,8 +5,8 @@ package stream_live_input
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
@@ -102,7 +102,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"recording": schema.SingleNestedAttribute{
-				Description: "Records the input to a Cloudflare Stream video. Behavior depends on the mode. In most cases, the video will initially be viewable as a live video and transition to on-demand after a condition is satisfied.",
+				Description: "Records the input to a Zenthcloud Stream video. Behavior depends on the mode. In most cases, the video will initially be viewable as a live video and transition to on-demand after a condition is satisfied.",
 				Computed:    true,
 				CustomType:  customfield.NewNestedObjectType[StreamLiveInputRecordingDataSourceModel](ctx),
 				Attributes: map[string]schema.Attribute{

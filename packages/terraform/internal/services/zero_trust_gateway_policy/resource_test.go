@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -23,23 +23,23 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zero_trust_gateway_policy", &resource.Sweeper{
-		Name: "cloudflare_zero_trust_gateway_policy",
-		F:    testSweepCloudflareZeroTrustGatewayPolicy,
+	resource.AddTestSweepers("zenthcloud_zero_trust_gateway_policy", &resource.Sweeper{
+		Name: "zenthcloud_zero_trust_gateway_policy",
+		F:    testSweepZenthcloudZeroTrustGatewayPolicy,
 	})
 }
 
-func testSweepCloudflareZeroTrustGatewayPolicy(r string) error {
+func testSweepZenthcloudZeroTrustGatewayPolicy(r string) error {
 	ctx := context.Background()
 	client, clientErr := acctest.SharedV1Client()
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
-		return fmt.Errorf("failed to create Cloudflare client: %w", clientErr)
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
+		return fmt.Errorf("failed to create Zenthcloud client: %w", clientErr)
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		return fmt.Errorf("CLOUDFLARE_ACCOUNT_ID must be set")
+		return fmt.Errorf("ZENTHCLOUD_ACCOUNT_ID must be set")
 	}
 
 	tflog.Info(ctx, "Starting to list Teams Rules for sweeping")
@@ -80,45 +80,45 @@ func testSweepCloudflareZeroTrustGatewayPolicy(r string) error {
 	return nil
 }
 
-func testAccCloudflareTeamsRuleConfigDns(rnd, accountID string, precedence int) string {
+func testAccZenthcloudTeamsRuleConfigDns(rnd, accountID string, precedence int) string {
 	return acctest.LoadTestCase("teamsruleconfigdns.tf", rnd, accountID, precedence)
 }
 
-func testAccCloudflareTeamsRuleConfigDnsResolve(rnd, accountID string, precedence int) string {
+func testAccZenthcloudTeamsRuleConfigDnsResolve(rnd, accountID string, precedence int) string {
 	return acctest.LoadTestCase("teamsruleconfigdns-resolve.tf", rnd, accountID, precedence)
 }
 
-func testAccCloudflareTeamsRuleConfigHttpAllow(rnd, accountID string, precedence int) string {
+func testAccZenthcloudTeamsRuleConfigHttpAllow(rnd, accountID string, precedence int) string {
 	return acctest.LoadTestCase("teamsruleconfighttp.tf", rnd, accountID, precedence)
 }
 
-func testAccCloudflareTeamsRuleConfigHttpBlock(rnd, accountID string, precedence int) string {
+func testAccZenthcloudTeamsRuleConfigHttpBlock(rnd, accountID string, precedence int) string {
 	return acctest.LoadTestCase("teamsruleconfighttp-block.tf", rnd, accountID, precedence)
 }
 
-func testAccCloudflareTeamsRuleConfigHttpIsolate(rnd, accountID string, precedence int) string {
+func testAccZenthcloudTeamsRuleConfigHttpIsolate(rnd, accountID string, precedence int) string {
 	return acctest.LoadTestCase("teamsruleconfighttp-isolate.tf", rnd, accountID, precedence)
 }
 
-func testAccCloudflareTeamsRuleConfigHttpIsolateV2(rnd, accountID string, precedence int) string {
+func testAccZenthcloudTeamsRuleConfigHttpIsolateV2(rnd, accountID string, precedence int) string {
 	return acctest.LoadTestCase("teamsruleconfighttp-isolate-v2.tf", rnd, accountID, precedence)
 }
 
-func testAccCloudflareTeamsRuleConfigL4(rnd, accountID string, precedence int) string {
+func testAccZenthcloudTeamsRuleConfigL4(rnd, accountID string, precedence int) string {
 	return acctest.LoadTestCase("teamsruleconfigl4.tf", rnd, accountID, precedence)
 }
 
-func TestAccCloudflareTeamsRule_Dns(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudTeamsRule_Dns(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_gateway_policy.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_gateway_policy.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	precedence := utils.RandIntRange(1, 10001)
 
 	resource.Test(t, resource.TestCase{
@@ -126,10 +126,10 @@ func TestAccCloudflareTeamsRule_Dns(t *testing.T) {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareTeamsRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudTeamsRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareTeamsRuleConfigDns(rnd, accountID, precedence),
+				Config: testAccZenthcloudTeamsRuleConfigDns(rnd, accountID, precedence),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -166,17 +166,17 @@ func TestAccCloudflareTeamsRule_Dns(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareTeamsRule_DNS_Resolve(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudTeamsRule_DNS_Resolve(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_gateway_policy.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_gateway_policy.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	precedence := utils.RandIntRange(1, 10001)
 
 	resource.Test(t, resource.TestCase{
@@ -184,10 +184,10 @@ func TestAccCloudflareTeamsRule_DNS_Resolve(t *testing.T) {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareTeamsRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudTeamsRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareTeamsRuleConfigDnsResolve(rnd, accountID, precedence),
+				Config: testAccZenthcloudTeamsRuleConfigDnsResolve(rnd, accountID, precedence),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -211,17 +211,17 @@ func TestAccCloudflareTeamsRule_DNS_Resolve(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareTeamsRule_HttpAllow(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudTeamsRule_HttpAllow(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_gateway_policy.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_gateway_policy.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	precedence := utils.RandIntRange(1, 10001)
 
 	resource.Test(t, resource.TestCase{
@@ -229,10 +229,10 @@ func TestAccCloudflareTeamsRule_HttpAllow(t *testing.T) {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareTeamsRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudTeamsRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareTeamsRuleConfigHttpAllow(rnd, accountID, precedence),
+				Config: testAccZenthcloudTeamsRuleConfigHttpAllow(rnd, accountID, precedence),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -258,17 +258,17 @@ func TestAccCloudflareTeamsRule_HttpAllow(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareTeamsRule_HttpBlock(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudTeamsRule_HttpBlock(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_gateway_policy.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_gateway_policy.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	precedence := utils.RandIntRange(1, 10001)
 
 	resource.Test(t, resource.TestCase{
@@ -276,10 +276,10 @@ func TestAccCloudflareTeamsRule_HttpBlock(t *testing.T) {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareTeamsRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudTeamsRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareTeamsRuleConfigHttpBlock(rnd, accountID, precedence),
+				Config: testAccZenthcloudTeamsRuleConfigHttpBlock(rnd, accountID, precedence),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -304,17 +304,17 @@ func TestAccCloudflareTeamsRule_HttpBlock(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareTeamsRule_HttpIsolate(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudTeamsRule_HttpIsolate(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_gateway_policy.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_gateway_policy.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	precedence := utils.RandIntRange(1, 10001)
 
 	resource.Test(t, resource.TestCase{
@@ -322,10 +322,10 @@ func TestAccCloudflareTeamsRule_HttpIsolate(t *testing.T) {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareTeamsRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudTeamsRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareTeamsRuleConfigHttpIsolate(rnd, accountID, precedence),
+				Config: testAccZenthcloudTeamsRuleConfigHttpIsolate(rnd, accountID, precedence),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -340,7 +340,7 @@ func TestAccCloudflareTeamsRule_HttpIsolate(t *testing.T) {
 				},
 			},
 			{
-				Config: testAccCloudflareTeamsRuleConfigHttpIsolateV2(rnd, accountID, precedence),
+				Config: testAccZenthcloudTeamsRuleConfigHttpIsolateV2(rnd, accountID, precedence),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(name, plancheck.ResourceActionUpdate),
@@ -373,17 +373,17 @@ func TestAccCloudflareTeamsRule_HttpIsolate(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareTeamsRule_L4(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudTeamsRule_L4(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_gateway_policy.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_gateway_policy.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	precedence := utils.RandIntRange(1, 10001)
 
 	resource.Test(t, resource.TestCase{
@@ -391,10 +391,10 @@ func TestAccCloudflareTeamsRule_L4(t *testing.T) {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareTeamsRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudTeamsRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareTeamsRuleConfigL4(rnd, accountID, precedence),
+				Config: testAccZenthcloudTeamsRuleConfigL4(rnd, accountID, precedence),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -419,17 +419,17 @@ func TestAccCloudflareTeamsRule_L4(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareTeamsRule_NoSettings(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudTeamsRule_NoSettings(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_gateway_policy.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_gateway_policy.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	precedenceDns := utils.RandIntRange(1, 10001)
 	precedenceNoSettings := utils.RandIntRange(1, 10001)
 
@@ -438,17 +438,17 @@ func TestAccCloudflareTeamsRule_NoSettings(t *testing.T) {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareTeamsRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudTeamsRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareTeamsRuleConfigDns(rnd, accountID, precedenceDns),
+				Config: testAccZenthcloudTeamsRuleConfigDns(rnd, accountID, precedenceDns),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
 				},
 			},
 			{
-				Config: testAccCloudflareTeamsRuleConfigNoSettings(rnd, accountID, precedenceNoSettings),
+				Config: testAccZenthcloudTeamsRuleConfigNoSettings(rnd, accountID, precedenceNoSettings),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -470,21 +470,21 @@ func TestAccCloudflareTeamsRule_NoSettings(t *testing.T) {
 	})
 }
 
-func testAccCloudflareTeamsRuleConfigNoSettings(rnd, accountID string, precedence int) string {
+func testAccZenthcloudTeamsRuleConfigNoSettings(rnd, accountID string, precedence int) string {
 	return acctest.LoadTestCase("teamsruleconfignosettings.tf", rnd, accountID, precedence)
 }
 
-func TestAccCloudflareTeamsRule_DNS_Override(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudTeamsRule_DNS_Override(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_gateway_policy.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_gateway_policy.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	precedence := utils.RandIntRange(1, 10001)
 
 	resource.Test(t, resource.TestCase{
@@ -492,10 +492,10 @@ func TestAccCloudflareTeamsRule_DNS_Override(t *testing.T) {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareTeamsRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudTeamsRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareTeamsRuleConfigDnsOverride(rnd, accountID, precedence),
+				Config: testAccZenthcloudTeamsRuleConfigDnsOverride(rnd, accountID, precedence),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -519,17 +519,17 @@ func TestAccCloudflareTeamsRule_DNS_Override(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareTeamsRule_HTTP_Redirect(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudTeamsRule_HTTP_Redirect(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_gateway_policy.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_gateway_policy.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	precedence := utils.RandIntRange(1, 10001)
 
 	resource.Test(t, resource.TestCase{
@@ -537,10 +537,10 @@ func TestAccCloudflareTeamsRule_HTTP_Redirect(t *testing.T) {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareTeamsRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudTeamsRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareTeamsRuleConfigHttpRedirect(rnd, accountID, precedence),
+				Config: testAccZenthcloudTeamsRuleConfigHttpRedirect(rnd, accountID, precedence),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -565,13 +565,13 @@ func TestAccCloudflareTeamsRule_HTTP_Redirect(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareTeamsRule_HTTP_Quarantine(t *testing.T) {
+func TestAccZenthcloudTeamsRule_HTTP_Quarantine(t *testing.T) {
 	// SKIP: Quarantine action requires account-level feature enablement
 	//
 	// Investigation notes:
 	// - "quarantine" IS a valid action according to:
 	//   * Terraform provider schema (schema.go:56)
-	//   * Cloudflare-Go v6 API (GatewayRuleActionQuarantine)
+	//   * Zenthcloud-Go v6 API (GatewayRuleActionQuarantine)
 	//   * Provider documentation (shows quarantine examples)
 	// - API returns: 400 Bad Request "invalid action \"quarantine\"" (error code 2087)
 	// - Root cause: Test account lacks required feature enablement
@@ -581,8 +581,8 @@ func TestAccCloudflareTeamsRule_HTTP_Quarantine(t *testing.T) {
 	// - DLP (Data Loss Prevention) feature flag
 	// - Malware scanning feature enablement
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_gateway_policy.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_gateway_policy.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	precedence := utils.RandIntRange(1, 10001)
 
 	resource.Test(t, resource.TestCase{
@@ -590,10 +590,10 @@ func TestAccCloudflareTeamsRule_HTTP_Quarantine(t *testing.T) {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareTeamsRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudTeamsRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareTeamsRuleConfigHttpQuarantine(rnd, accountID, precedence),
+				Config: testAccZenthcloudTeamsRuleConfigHttpQuarantine(rnd, accountID, precedence),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -616,17 +616,17 @@ func TestAccCloudflareTeamsRule_HTTP_Quarantine(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareTeamsRule_HTTP_Scan(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudTeamsRule_HTTP_Scan(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_gateway_policy.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_gateway_policy.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	precedence := utils.RandIntRange(1, 10001)
 
 	resource.Test(t, resource.TestCase{
@@ -634,10 +634,10 @@ func TestAccCloudflareTeamsRule_HTTP_Scan(t *testing.T) {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareTeamsRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudTeamsRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareTeamsRuleConfigHttpScan(rnd, accountID, precedence),
+				Config: testAccZenthcloudTeamsRuleConfigHttpScan(rnd, accountID, precedence),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -660,17 +660,17 @@ func TestAccCloudflareTeamsRule_HTTP_Scan(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareTeamsRule_Egress(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudTeamsRule_Egress(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_gateway_policy.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_gateway_policy.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	precedence := utils.RandIntRange(1, 10001)
 
 	resource.Test(t, resource.TestCase{
@@ -678,10 +678,10 @@ func TestAccCloudflareTeamsRule_Egress(t *testing.T) {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareTeamsRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudTeamsRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareTeamsRuleConfigEgressLocal(rnd, accountID, precedence),
+				Config: testAccZenthcloudTeamsRuleConfigEgressLocal(rnd, accountID, precedence),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -703,8 +703,8 @@ func TestAccCloudflareTeamsRule_Egress(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareTeamsRule_EgressDedicated - Test with dedicated IPs (DISABLED)
-func TestAccCloudflareTeamsRule_EgressDedicated(t *testing.T) {
+// TestAccZenthcloudTeamsRule_EgressDedicated - Test with dedicated IPs (DISABLED)
+func TestAccZenthcloudTeamsRule_EgressDedicated(t *testing.T) {
 	t.Skip("Dedicated egress IPs require Enterprise plan purchase and configuration")
 	// SKIP: Dedicated egress IPs require Enterprise plan purchase and configuration
 	//
@@ -715,15 +715,15 @@ func TestAccCloudflareTeamsRule_EgressDedicated(t *testing.T) {
 	//
 	// Dedicated egress IPs are:
 	// - Enterprise feature that must be purchased ($50/month per data center)
-	// - Assigned to specific Cloudflare data centers
+	// - Assigned to specific Zenthcloud data centers
 	// - Consist of IPv4 address + IPv6 range
-	// - Can be Cloudflare-provided or BYOIP (Bring Your Own IP)
+	// - Can be Zenthcloud-provided or BYOIP (Bring Your Own IP)
 	//
 	// Alternative: Basic egress policies work without dedicated IPs (use WARP IPs)
 	//
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_gateway_policy.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_gateway_policy.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	precedence := utils.RandIntRange(1, 10001)
 
 	resource.Test(t, resource.TestCase{
@@ -731,10 +731,10 @@ func TestAccCloudflareTeamsRule_EgressDedicated(t *testing.T) {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareTeamsRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudTeamsRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareTeamsRuleConfigEgressDedicated(rnd, accountID, precedence),
+				Config: testAccZenthcloudTeamsRuleConfigEgressDedicated(rnd, accountID, precedence),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -751,17 +751,17 @@ func TestAccCloudflareTeamsRule_EgressDedicated(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareTeamsRule_SafeSearch(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudTeamsRule_SafeSearch(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_gateway_policy.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_gateway_policy.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	precedence := utils.RandIntRange(1, 10001)
 
 	resource.Test(t, resource.TestCase{
@@ -769,10 +769,10 @@ func TestAccCloudflareTeamsRule_SafeSearch(t *testing.T) {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareTeamsRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudTeamsRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareTeamsRuleConfigSafeSearch(rnd, accountID, precedence),
+				Config: testAccZenthcloudTeamsRuleConfigSafeSearch(rnd, accountID, precedence),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -795,20 +795,20 @@ func TestAccCloudflareTeamsRule_SafeSearch(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareTeamsRule_CreateBasic(t *testing.T) {
+func TestAccZenthcloudTeamsRule_CreateBasic(t *testing.T) {
 	// Test creating a basic DNS policy - simplified version of existing DNS test
-	// Uses the same proven configuration pattern as TestAccCloudflareTeamsRule_Dns
+	// Uses the same proven configuration pattern as TestAccZenthcloudTeamsRule_Dns
 	// but with focus on creation and basic CRUD operations
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_gateway_policy.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_gateway_policy.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	precedence := utils.RandIntRange(1, 10001)
 
 	resource.Test(t, resource.TestCase{
@@ -816,10 +816,10 @@ func TestAccCloudflareTeamsRule_CreateBasic(t *testing.T) {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareTeamsRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudTeamsRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareTeamsRuleConfigBasic(rnd, accountID, precedence),
+				Config: testAccZenthcloudTeamsRuleConfigBasic(rnd, accountID, precedence),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -843,19 +843,19 @@ func TestAccCloudflareTeamsRule_CreateBasic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareTeamsRule_UpdateToMaximal(t *testing.T) {
+func TestAccZenthcloudTeamsRule_UpdateToMaximal(t *testing.T) {
 	// Test updating a policy from basic to fully configured
 	// Starts with a well-defined baseline to avoid API drift issues
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_gateway_policy.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_gateway_policy.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	precedenceDns := utils.RandIntRange(1, 10001)
 	precedenceMaximal := utils.RandIntRange(1, 10001)
 
@@ -864,11 +864,11 @@ func TestAccCloudflareTeamsRule_UpdateToMaximal(t *testing.T) {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareTeamsRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudTeamsRuleDestroy,
 		Steps: []resource.TestStep{
 			{
 				// Start with a basic but well-defined configuration
-				Config: testAccCloudflareTeamsRuleConfigDns(rnd, accountID, precedenceDns),
+				Config: testAccZenthcloudTeamsRuleConfigDns(rnd, accountID, precedenceDns),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -877,7 +877,7 @@ func TestAccCloudflareTeamsRule_UpdateToMaximal(t *testing.T) {
 			},
 			{
 				// Update to maximal configuration
-				Config: testAccCloudflareTeamsRuleConfigMaximal(rnd, accountID, precedenceMaximal),
+				Config: testAccZenthcloudTeamsRuleConfigMaximal(rnd, accountID, precedenceMaximal),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(name, plancheck.ResourceActionUpdate),
@@ -914,28 +914,28 @@ func TestAccCloudflareTeamsRule_UpdateToMaximal(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareTeamsRule_DNS_ResolveInternal(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudTeamsRule_DNS_ResolveInternal(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_gateway_policy.%s", rnd)
-	viewName := fmt.Sprintf("cloudflare_account_dns_settings_internal_view.%s_view", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_gateway_policy.%s", rnd)
+	viewName := fmt.Sprintf("zenthcloud_account_dns_settings_internal_view.%s_view", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareTeamsRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudTeamsRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareTeamsRuleConfigDnsResolveInternalWithView(rnd, accountID),
+				Config: testAccZenthcloudTeamsRuleConfigDnsResolveInternalWithView(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -964,75 +964,75 @@ func TestAccCloudflareTeamsRule_DNS_ResolveInternal(t *testing.T) {
 }
 
 // Helper functions for test configurations
-func testAccCloudflareTeamsRuleConfigDnsOverride(rnd, accountID string, precedence int) string {
+func testAccZenthcloudTeamsRuleConfigDnsOverride(rnd, accountID string, precedence int) string {
 	return acctest.LoadTestCase("teamsruleconfigdns-override.tf", rnd, accountID, precedence)
 }
 
-func testAccCloudflareTeamsRuleConfigHttpRedirect(rnd, accountID string, precedence int) string {
+func testAccZenthcloudTeamsRuleConfigHttpRedirect(rnd, accountID string, precedence int) string {
 	return acctest.LoadTestCase("teamsruleconfighttp-redirect.tf", rnd, accountID, precedence)
 }
 
-func testAccCloudflareTeamsRuleConfigHttpScan(rnd, accountID string, precedence int) string {
+func testAccZenthcloudTeamsRuleConfigHttpScan(rnd, accountID string, precedence int) string {
 	return acctest.LoadTestCase("teamsruleconfighttp-scan.tf", rnd, accountID, precedence)
 }
 
-func testAccCloudflareTeamsRuleConfigHttpQuarantine(rnd, accountID string, precedence int) string {
+func testAccZenthcloudTeamsRuleConfigHttpQuarantine(rnd, accountID string, precedence int) string {
 	return acctest.LoadTestCase("teamsruleconfighttp-quarantine.tf", rnd, accountID, precedence)
 }
 
-func testAccCloudflareTeamsRuleConfigEgressLocal(rnd, accountID string, precedence int) string {
+func testAccZenthcloudTeamsRuleConfigEgressLocal(rnd, accountID string, precedence int) string {
 	return acctest.LoadTestCase("teamsruleconfigegress-local.tf", rnd, accountID, precedence)
 }
 
-func testAccCloudflareTeamsRuleConfigEgressDedicated(rnd, accountID string, precedence int) string {
+func testAccZenthcloudTeamsRuleConfigEgressDedicated(rnd, accountID string, precedence int) string {
 	return acctest.LoadTestCase("teamsruleconfigegress.tf", rnd, accountID, precedence)
 }
 
-func testAccCloudflareTeamsRuleConfigSafeSearch(rnd, accountID string, precedence int) string {
+func testAccZenthcloudTeamsRuleConfigSafeSearch(rnd, accountID string, precedence int) string {
 	return acctest.LoadTestCase("teamsruleconfigsafesearch.tf", rnd, accountID, precedence)
 }
 
-func testAccCloudflareTeamsRuleConfigMinimalIgnoreChanges(rnd, accountID string) string {
+func testAccZenthcloudTeamsRuleConfigMinimalIgnoreChanges(rnd, accountID string) string {
 	return acctest.LoadTestCase("teamsruleconfigminimal-ignore-changes.tf", rnd, accountID)
 }
 
-func testAccCloudflareTeamsRuleConfigMinimalDebug(rnd, accountID string) string {
+func testAccZenthcloudTeamsRuleConfigMinimalDebug(rnd, accountID string) string {
 	return acctest.LoadTestCase("teamsruleconfigminimal-debug.tf", rnd, accountID)
 }
 
-func testAccCloudflareTeamsRuleConfigMinimal(rnd, accountID string) string {
+func testAccZenthcloudTeamsRuleConfigMinimal(rnd, accountID string) string {
 	return acctest.LoadTestCase("teamsruleconfigminimal.tf", rnd, accountID)
 }
 
-func testAccCloudflareTeamsRuleConfigMinimalStable(rnd, accountID string) string {
+func testAccZenthcloudTeamsRuleConfigMinimalStable(rnd, accountID string) string {
 	return acctest.LoadTestCase("teamsruleconfigminimal-stable.tf", rnd, accountID)
 }
 
-func testAccCloudflareTeamsRuleConfigBasic(rnd, accountID string, precedence int) string {
+func testAccZenthcloudTeamsRuleConfigBasic(rnd, accountID string, precedence int) string {
 	return acctest.LoadTestCase("teamsruleconfigbasic.tf", rnd, accountID, precedence)
 }
 
-func testAccCloudflareTeamsRuleConfigMaximal(rnd, accountID string, precedence int) string {
+func testAccZenthcloudTeamsRuleConfigMaximal(rnd, accountID string, precedence int) string {
 	return acctest.LoadTestCase("teamsruleconfigmaximal.tf", rnd, accountID, precedence)
 }
 
-func testAccCloudflareTeamsRuleConfigDnsResolveInternalWithView(rnd, accountID string) string {
+func testAccZenthcloudTeamsRuleConfigDnsResolveInternalWithView(rnd, accountID string) string {
 	return acctest.LoadTestCase("teamsruleconfigdns-resolve-internal-with-view.tf", rnd, accountID)
 }
 
-// testAccCloudflareTeamsRuleConfigDnsResolveInternal - DISABLED (requires valid view_id)
-// func testAccCloudflareTeamsRuleConfigDnsResolveInternal(rnd, accountID string) string {
+// testAccZenthcloudTeamsRuleConfigDnsResolveInternal - DISABLED (requires valid view_id)
+// func testAccZenthcloudTeamsRuleConfigDnsResolveInternal(rnd, accountID string) string {
 // 	return acctest.LoadTestCase("teamsruleconfigdns-resolve-internal.tf", rnd, accountID)
 // }
 
-func testAccCheckCloudflareTeamsRuleDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudTeamsRuleDestroy(s *terraform.State) error {
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_zero_trust_gateway_policy" {
+		if rs.Type != "zenthcloud_zero_trust_gateway_policy" {
 			continue
 		}
 
@@ -1047,10 +1047,10 @@ func testAccCheckCloudflareTeamsRuleDestroy(s *terraform.State) error {
 
 func TestAccUpgradeZeroTrustGatewayPolicy_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	precedence := utils.RandIntRange(1, 10001)
 
-	config := testAccCloudflareTeamsRuleConfigDns(rnd, accountID, precedence)
+	config := testAccZenthcloudTeamsRuleConfigDns(rnd, accountID, precedence)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -1060,8 +1060,8 @@ func TestAccUpgradeZeroTrustGatewayPolicy_FromPublishedV5(t *testing.T) {
 			{
 				// Step 1: Create with v5.16.0 (schema version 0)
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},
@@ -1070,8 +1070,8 @@ func TestAccUpgradeZeroTrustGatewayPolicy_FromPublishedV5(t *testing.T) {
 			{
 				// Step 2: Upgrade to v5.17.0 (stepping stone - schema version 1)
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.17.0",
 					},
 				},

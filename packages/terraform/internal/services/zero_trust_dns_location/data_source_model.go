@@ -5,9 +5,9 @@ package zero_trust_dns_location
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -40,7 +40,7 @@ type ZeroTrustDNSLocationDataSourceModel struct {
 
 func (m *ZeroTrustDNSLocationDataSourceModel) toReadParams(_ context.Context) (params zero_trust.GatewayLocationGetParams, diags diag.Diagnostics) {
 	params = zero_trust.GatewayLocationGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -55,18 +55,18 @@ func (m *ZeroTrustDNSLocationDataSourceModel) toListParams(_ context.Context) (p
 	}
 
 	params = zero_trust.GatewayLocationListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
-		Filter:    cloudflare.F(mFilterFilter),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
+		Filter:    zenthcloud.F(mFilterFilter),
 	}
 
 	if !m.Filter.Direction.IsNull() {
-		params.Direction = cloudflare.F(zero_trust.GatewayLocationListParamsDirection(m.Filter.Direction.ValueString()))
+		params.Direction = zenthcloud.F(zero_trust.GatewayLocationListParamsDirection(m.Filter.Direction.ValueString()))
 	}
 	if !m.Filter.OrderBy.IsNull() {
-		params.OrderBy = cloudflare.F(zero_trust.GatewayLocationListParamsOrderBy(m.Filter.OrderBy.ValueString()))
+		params.OrderBy = zenthcloud.F(zero_trust.GatewayLocationListParamsOrderBy(m.Filter.OrderBy.ValueString()))
 	}
 	if !m.Filter.Search.IsNull() {
-		params.Search = cloudflare.F(m.Filter.Search.ValueString())
+		params.Search = zenthcloud.F(m.Filter.Search.ValueString())
 	}
 
 	return

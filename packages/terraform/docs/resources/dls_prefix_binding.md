@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_dls_prefix_binding Resource - Cloudflare"
+page_title: "zenthcloud_dls_prefix_binding Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   DLS: ReadDLS: WriteIP Prefixes: Write
 ---
 
-# cloudflare_dls_prefix_binding (Resource)
+# zenthcloud_dls_prefix_binding (Resource)
 
 Accepted Permissions
 
@@ -17,7 +17,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_dls_prefix_binding" "example_dls_prefix_binding" {
+resource "zenthcloud_dls_prefix_binding" "example_dls_prefix_binding" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   cidr = "10.0.1.0/24"
   prefix_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
@@ -30,7 +30,7 @@ resource "cloudflare_dls_prefix_binding" "example_dls_prefix_binding" {
 
 ### Required
 
-- `account_id` (String) Identifier of a Cloudflare account.
+- `account_id` (String) Identifier of a Zenthcloud account.
 - `cidr` (String) IP prefix in CIDR notation to bind.
 - `prefix_id` (String) The ID of the parent IP prefix that contains the CIDR.
 - `region_key` (String) Region key from managed regions (e.g., "us", "eu").
@@ -44,7 +44,7 @@ resource "cloudflare_dls_prefix_binding" "example_dls_prefix_binding" {
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_dls_prefix_binding.example '<account_id>/<binding_id>'
+$ terraform import zenthcloud_dls_prefix_binding.example '<account_id>/<binding_id>'
 ```
 
 

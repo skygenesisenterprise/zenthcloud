@@ -12,8 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 //go:embed testdata/v501_multi_policy.tf
@@ -57,7 +57,7 @@ func TestMigrateAPITokenFromV1_MultiPolicy(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			tmpDir := t.TempDir()
 
 			config := fmt.Sprintf(v501MultiPolicyConfig, rnd, accountID)
@@ -71,8 +71,8 @@ func TestMigrateAPITokenFromV1_MultiPolicy(t *testing.T) {
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -88,12 +88,12 @@ func TestMigrateAPITokenFromV1_MultiPolicy(t *testing.T) {
 						},
 						ConfigStateChecks: []statecheck.StateCheck{
 							statecheck.ExpectKnownValue(
-								fmt.Sprintf("cloudflare_api_token.%s", rnd),
+								fmt.Sprintf("zenthcloud_api_token.%s", rnd),
 								tfjsonpath.New("name"),
 								knownvalue.StringExact(rnd),
 							),
 							statecheck.ExpectKnownValue(
-								fmt.Sprintf("cloudflare_api_token.%s", rnd),
+								fmt.Sprintf("zenthcloud_api_token.%s", rnd),
 								tfjsonpath.New("policies"),
 								knownvalue.ListSizeExact(2),
 							),
@@ -126,7 +126,7 @@ func TestMigrateAPITokenFromV1_MultiPermGroups(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			tmpDir := t.TempDir()
 
 			config := fmt.Sprintf(v501MultiPermgroupsConfig, rnd, accountID)
@@ -140,8 +140,8 @@ func TestMigrateAPITokenFromV1_MultiPermGroups(t *testing.T) {
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -157,12 +157,12 @@ func TestMigrateAPITokenFromV1_MultiPermGroups(t *testing.T) {
 						},
 						ConfigStateChecks: []statecheck.StateCheck{
 							statecheck.ExpectKnownValue(
-								fmt.Sprintf("cloudflare_api_token.%s", rnd),
+								fmt.Sprintf("zenthcloud_api_token.%s", rnd),
 								tfjsonpath.New("name"),
 								knownvalue.StringExact(rnd),
 							),
 							statecheck.ExpectKnownValue(
-								fmt.Sprintf("cloudflare_api_token.%s", rnd),
+								fmt.Sprintf("zenthcloud_api_token.%s", rnd),
 								tfjsonpath.New("policies").AtSliceIndex(0).AtMapKey("permission_groups"),
 								knownvalue.ListSizeExact(3),
 							),
@@ -197,12 +197,12 @@ func TestMigrateAPITokenFromV1_Basic(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			tmpDir := t.TempDir()
 
 			// Single-policy token with one permission group — simplest possible case
 			config := fmt.Sprintf(`
-resource "cloudflare_api_token" "%[1]s" {
+resource "zenthcloud_api_token" "%[1]s" {
   name = "%[1]s"
 
   policies = [
@@ -212,7 +212,7 @@ resource "cloudflare_api_token" "%[1]s" {
         id = "82e64a83756745bbbb1c9c2701bf816b"
       }]
       resources = jsonencode({
-        "com.cloudflare.api.account.%[2]s" = "*"
+        "com.zenthcloud.api.account.%[2]s" = "*"
       })
     }
   ]
@@ -228,8 +228,8 @@ resource "cloudflare_api_token" "%[1]s" {
 					{
 						// Step 1: Create with v5.16/v5.18 (stores schema_version=1, Set-based)
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -249,17 +249,17 @@ resource "cloudflare_api_token" "%[1]s" {
 						},
 						ConfigStateChecks: []statecheck.StateCheck{
 							statecheck.ExpectKnownValue(
-								fmt.Sprintf("cloudflare_api_token.%s", rnd),
+								fmt.Sprintf("zenthcloud_api_token.%s", rnd),
 								tfjsonpath.New("name"),
 								knownvalue.StringExact(rnd),
 							),
 							statecheck.ExpectKnownValue(
-								fmt.Sprintf("cloudflare_api_token.%s", rnd),
+								fmt.Sprintf("zenthcloud_api_token.%s", rnd),
 								tfjsonpath.New("policies"),
 								knownvalue.ListSizeExact(1),
 							),
 							statecheck.ExpectKnownValue(
-								fmt.Sprintf("cloudflare_api_token.%s", rnd),
+								fmt.Sprintf("zenthcloud_api_token.%s", rnd),
 								tfjsonpath.New("policies").AtSliceIndex(0).AtMapKey("effect"),
 								knownvalue.StringExact("allow"),
 							),

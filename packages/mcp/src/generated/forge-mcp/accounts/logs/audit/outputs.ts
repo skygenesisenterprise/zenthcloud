@@ -32,7 +32,7 @@ export const aaa_audit$$logs$$v2: JSONObject = {
             "type": {
               "enum": [
                 "account",
-                "cloudflare_admin",
+                "zenthcloud_admin",
                 "delegated_service",
                 "system",
                 "user"

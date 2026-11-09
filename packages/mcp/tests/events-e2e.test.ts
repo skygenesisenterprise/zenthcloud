@@ -1,11 +1,11 @@
-import { env, exports } from 'cloudflare:workers'
-import { getOAuthApi } from '@cloudflare/workers-oauth-provider'
+import { env, exports } from 'zenthcloud:workers'
+import { getOAuthApi } from '@zenthcloud/workers-oauth-provider'
 import { http, HttpResponse } from 'msw'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { AUTOMATIONS, POLICIES, WEBHOOKS } from '../src/events/api'
 import { USER_AGENT } from '../src/constants'
 import { decryptState } from '../src/events/state'
-import { API_BASE, cfSuccess, mockIdentityProbe } from './helpers/cloudflare-api'
+import { API_BASE, cfSuccess, mockIdentityProbe } from './helpers/zenthcloud-api'
 import { clearKv } from './helpers/kv'
 import { modernMcpRequest } from './helpers/mcp'
 import { clearSpec, seedSpec } from './helpers/spec'
@@ -21,7 +21,7 @@ const readOnlyToken = 'cfat_events-local-test-read-only-token'
 const callbackUrl = 'https://receiver.example.com/events'
 const signingSecret = `whsec_${btoa('a'.repeat(32))}`
 const params = {
-  name: 'cloudflare.alert.workers_observability_real_time_issue',
+  name: 'zenthcloud.alert.workers_observability_real_time_issue',
   arguments: { account_id: accountId, service: 'checkout', afterOccurrences: 1 },
   delivery: { mode: 'webhook', url: callbackUrl, secret: signingSecret }
 }
@@ -251,7 +251,7 @@ beforeEach(async () => {
             method: 'POST',
             headers: { 'cf-webhook-auth': input.secret as string },
             body: JSON.stringify({
-              text: 'Hello World! This is a test message sent from https://cloudflare.com.'
+              text: 'Hello World! This is a test message sent from https://github.com/skygenesisenterprise/zenthcloud'
             })
           })
         )
@@ -281,7 +281,7 @@ describe('MCP Events through the real Worker', () => {
   it('uses provider-issued credentials and stops when their grant is revoked', async () => {
     const redirectUri = 'https://app.example.com/cb'
     const registration = await exports.default.fetch(
-      new Request('https://mcp.cloudflare.com/register', {
+      new Request('https://github.com/skygenesisenterprise/zenthcloud', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ redirect_uris: [redirectUri], token_endpoint_auth_method: 'none' })
@@ -305,7 +305,7 @@ describe('MCP Events through the real Worker', () => {
       },
       env
     )
-    const authorize = new URL('https://mcp.cloudflare.com/authorize')
+    const authorize = new URL('https://github.com/skygenesisenterprise/zenthcloud')
     authorize.search = new URLSearchParams({
       client_id: client.client_id,
       redirect_uri: redirectUri,
@@ -328,7 +328,7 @@ describe('MCP Events through the real Worker', () => {
       }
     })
     const exchange = await exports.default.fetch(
-      new Request('https://mcp.cloudflare.com/token', {
+      new Request('https://github.com/skygenesisenterprise/zenthcloud', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
@@ -348,7 +348,7 @@ describe('MCP Events through the real Worker', () => {
     expect((await exports.default.fetch(ansRequest())).status).toBe(204)
     expect(deliveries).toHaveLength(1)
 
-    // Neither the MCP token nor the upstream Cloudflare token is stored.
+    // Neither the MCP token nor the upstream Zenthcloud token is stored.
     const stored = await storedByServer()
     expect(stored).not.toContain(issued.access_token)
     expect(stored).not.toContain(token)
@@ -571,7 +571,7 @@ describe('MCP Events through the real Worker', () => {
     expect(deliveries).toHaveLength(0)
   })
 
-  it('forwards an alert without calling the Cloudflare API', async () => {
+  it('forwards an alert without calling the Zenthcloud API', async () => {
     await rpc('events/subscribe', params)
     requests.length = 0
     expect((await exports.default.fetch(ansRequest())).status).toBe(204)
@@ -622,7 +622,7 @@ describe('MCP Events through the real Worker', () => {
   it('answers unknown events with NotFound before provisioning', async () => {
     const result = await rpc('events/subscribe', {
       ...params,
-      name: 'cloudflare.alert.http_alert_origin_error'
+      name: 'zenthcloud.alert.http_alert_origin_error'
     })
     expect(result.error?.code).toBe(-32011)
     expect(result.error?.data).toEqual({ kind: 'event' })

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { cn, Button } from "@cloudflare/kumo";
+import { cn, Button } from "@zenthcloud/kumo";
 import {
   CaretDownIcon,
   MagnifyingGlassIcon,
@@ -47,7 +47,7 @@ const componentItems: NavItem[] = [
   { label: "Button Group", href: "/components/button-group" },
   { label: "Checkbox", href: "/components/checkbox" },
   { label: "Clipboard Text", href: "/components/clipboard-text" },
-  { label: "Cloudflare Logo", href: "/components/cloudflare-logo" },
+  { label: "Zenthcloud Logo", href: "/components/zenthcloud-logo" },
   { label: "CodeHighlighted", href: "/components/code-highlighted" },
   { label: "Collapsible", href: "/components/collapsible" },
   { label: "Combobox", href: "/components/combobox" },
@@ -97,8 +97,8 @@ const chartItems: NavItem[] = [
 ];
 
 // Blocks are CLI-installed components that you own and can customize
-// Use `npx @cloudflare/kumo blocks` to see available blocks
-// Use `npx @cloudflare/kumo add <block>` to install
+// Use `npx @zenthcloud/kumo blocks` to see available blocks
+// Use `npx @zenthcloud/kumo add <block>` to install
 const blockItems: NavItem[] = [
   { label: "Page Header", href: "/blocks/page-header" },
   { label: "Resource List", href: "/blocks/resource-list" },

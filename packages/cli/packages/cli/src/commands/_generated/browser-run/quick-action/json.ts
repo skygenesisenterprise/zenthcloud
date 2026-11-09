@@ -125,7 +125,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("response-format-json-schema", {
 			type: "string",
 			description:
-				'Schema for the response format. More information here: https://developers.cloudflare.com/workers-ai/json-mode/. Provide as a JSON object or @path/to/file.json. Shape: {"<key>": unknown}.',
+				'Schema for the response format. More information here: https://github.com/skygenesisenterprise/zenthcloud Provide as a JSON object or @path/to/file.json. Shape: {"<key>": unknown}.',
 		})
 		.option("response-format-type", {
 			type: "string",
@@ -314,7 +314,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf browser-run quick-action json",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/browser-rendering/json`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/browser-rendering/json`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "json",

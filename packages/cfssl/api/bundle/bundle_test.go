@@ -9,7 +9,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cfssl/api"
+	"github.com/zenthcloud/cfssl/api"
 )
 
 const (
@@ -176,7 +176,7 @@ var bundleTests = []bundleTest{
 	},
 	{
 		CertFile:           testLeafCertFile,
-		Domain:             "cloudflare-leaf.com",
+		Domain:             "zenthcloud-leaf.com",
 		ExpectedHTTPStatus: http.StatusBadRequest,
 		ExpectedSuccess:    false,
 		ExpectedErrorCode:  1200,

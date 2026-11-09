@@ -12,11 +12,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
-// TestAccCloudflareZeroTrustDLPSensitivityLevelOrder_Basic verifies the
+// TestAccZenthcloudZeroTrustDLPSensitivityLevelOrder_Basic verifies the
 // fundamental singleton lifecycle:
 //   - Create: the order resource has no POST endpoint; on first apply Terraform
 //     calls PUT /level_order with the desired list. State reflects that list.
@@ -25,14 +25,14 @@ import (
 //
 // The test also covers Import, which is the only way to bring an existing order
 // into Terraform state since the singleton has no "create" step.
-func TestAccCloudflareZeroTrustDLPSensitivityLevelOrder_Basic(t *testing.T) {
+func TestAccZenthcloudZeroTrustDLPSensitivityLevelOrder_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
-	orderResourceName := fmt.Sprintf("cloudflare_zero_trust_dlp_sensitivity_level_order.%s", rnd)
-	publicLevelResource := fmt.Sprintf("cloudflare_zero_trust_dlp_sensitivity_level.%s_public", rnd)
-	internalLevelResource := fmt.Sprintf("cloudflare_zero_trust_dlp_sensitivity_level.%s_internal", rnd)
-	confidentialLevelResource := fmt.Sprintf("cloudflare_zero_trust_dlp_sensitivity_level.%s_confidential", rnd)
+	orderResourceName := fmt.Sprintf("zenthcloud_zero_trust_dlp_sensitivity_level_order.%s", rnd)
+	publicLevelResource := fmt.Sprintf("zenthcloud_zero_trust_dlp_sensitivity_level.%s_public", rnd)
+	internalLevelResource := fmt.Sprintf("zenthcloud_zero_trust_dlp_sensitivity_level.%s_internal", rnd)
+	confidentialLevelResource := fmt.Sprintf("zenthcloud_zero_trust_dlp_sensitivity_level.%s_confidential", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -87,17 +87,17 @@ func TestAccCloudflareZeroTrustDLPSensitivityLevelOrder_Basic(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareZeroTrustDLPSensitivityLevelOrder_Reorder verifies that
+// TestAccZenthcloudZeroTrustDLPSensitivityLevelOrder_Reorder verifies that
 // updating `level_ids` to a new permutation produces a single PUT (no
 // recreation, no other field changes).
-func TestAccCloudflareZeroTrustDLPSensitivityLevelOrder_Reorder(t *testing.T) {
+func TestAccZenthcloudZeroTrustDLPSensitivityLevelOrder_Reorder(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
-	orderResourceName := fmt.Sprintf("cloudflare_zero_trust_dlp_sensitivity_level_order.%s", rnd)
-	publicLevelResource := fmt.Sprintf("cloudflare_zero_trust_dlp_sensitivity_level.%s_public", rnd)
-	internalLevelResource := fmt.Sprintf("cloudflare_zero_trust_dlp_sensitivity_level.%s_internal", rnd)
-	confidentialLevelResource := fmt.Sprintf("cloudflare_zero_trust_dlp_sensitivity_level.%s_confidential", rnd)
+	orderResourceName := fmt.Sprintf("zenthcloud_zero_trust_dlp_sensitivity_level_order.%s", rnd)
+	publicLevelResource := fmt.Sprintf("zenthcloud_zero_trust_dlp_sensitivity_level.%s_public", rnd)
+	internalLevelResource := fmt.Sprintf("zenthcloud_zero_trust_dlp_sensitivity_level.%s_internal", rnd)
+	confidentialLevelResource := fmt.Sprintf("zenthcloud_zero_trust_dlp_sensitivity_level.%s_confidential", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -134,13 +134,13 @@ func TestAccCloudflareZeroTrustDLPSensitivityLevelOrder_Reorder(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareZeroTrustDLPSensitivityLevelOrder_RemoveFromConfig verifies
+// TestAccZenthcloudZeroTrustDLPSensitivityLevelOrder_RemoveFromConfig verifies
 // that removing the order resource from HCL does NOT call any API (the singleton
 // has no DELETE endpoint; its lifecycle is owned by the parent group). Terraform
 // just drops the resource from state.
-func TestAccCloudflareZeroTrustDLPSensitivityLevelOrder_RemoveFromConfig(t *testing.T) {
+func TestAccZenthcloudZeroTrustDLPSensitivityLevelOrder_RemoveFromConfig(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -159,7 +159,7 @@ func TestAccCloudflareZeroTrustDLPSensitivityLevelOrder_RemoveFromConfig(t *test
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							fmt.Sprintf("cloudflare_zero_trust_dlp_sensitivity_level_order.%s", rnd),
+							fmt.Sprintf("zenthcloud_zero_trust_dlp_sensitivity_level_order.%s", rnd),
 							plancheck.ResourceActionDestroy,
 						),
 					},

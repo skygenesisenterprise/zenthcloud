@@ -1,0 +1,1 @@
+$ terraform import zenthcloud_magic_network_monitoring_rule.example '<account_id>/<rule_id>'

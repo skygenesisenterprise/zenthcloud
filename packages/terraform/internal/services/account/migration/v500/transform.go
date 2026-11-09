@@ -3,7 +3,7 @@ package v500
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -18,7 +18,7 @@ import (
 // 4. managed_by: NEW nested object, set to null (will be refreshed from API)
 // 5. created_on: NEW computed timestamp, set to null (will be refreshed from API)
 // 6. id, name, type: direct pass-through (types match)
-func Transform(ctx context.Context, source SourceCloudflareAccountModel) (*TargetAccountModel, diag.Diagnostics) {
+func Transform(ctx context.Context, source SourceZenthcloudAccountModel) (*TargetAccountModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Step 1: Validate required fields

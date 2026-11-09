@@ -33,19 +33,19 @@ import (
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/nettest"
 
-	"github.com/cloudflare/cloudflared/connection/dialopts"
+	"github.com/zenthcloud/zenthcloudd/connection/dialopts"
 
-	"github.com/cloudflare/cloudflared/client"
-	"github.com/cloudflare/cloudflared/config"
-	cfdflow "github.com/cloudflare/cloudflared/flow"
+	"github.com/zenthcloud/zenthcloudd/client"
+	"github.com/zenthcloud/zenthcloudd/config"
+	cfdflow "github.com/zenthcloud/zenthcloudd/flow"
 
-	"github.com/cloudflare/cloudflared/datagramsession"
-	"github.com/cloudflare/cloudflared/ingress"
-	"github.com/cloudflare/cloudflared/packet"
-	cfdquic "github.com/cloudflare/cloudflared/quic"
-	"github.com/cloudflare/cloudflared/tracing"
-	"github.com/cloudflare/cloudflared/tunnelrpc/pogs"
-	rpcquic "github.com/cloudflare/cloudflared/tunnelrpc/quic"
+	"github.com/zenthcloud/zenthcloudd/datagramsession"
+	"github.com/zenthcloud/zenthcloudd/ingress"
+	"github.com/zenthcloud/zenthcloudd/packet"
+	cfdquic "github.com/zenthcloud/zenthcloudd/quic"
+	"github.com/zenthcloud/zenthcloudd/tracing"
+	"github.com/zenthcloud/zenthcloudd/tunnelrpc/pogs"
+	rpcquic "github.com/zenthcloud/zenthcloudd/tunnelrpc/quic"
 )
 
 var (
@@ -60,7 +60,7 @@ var (
 var _ ReadWriteAcker = (*streamReadWriteAcker)(nil)
 
 // TestQUICServer tests if a quic server accepts and responds to a quic client with the acceptance protocol.
-// It also serves as a demonstration for communication with the QUIC connection started by a cloudflared.
+// It also serves as a demonstration for communication with the QUIC connection started by a zenthcloudd.
 func TestQUICServer(t *testing.T) {
 	// This is simply a sample websocket frame message.
 	wsBuf := &bytes.Buffer{}
@@ -126,7 +126,7 @@ func TestQUICServer(t *testing.T) {
 			connectionType: pogs.ConnectionTypeWebsocket,
 			metadata: []pogs.Metadata{
 				{
-					Key: "HttpHeader:Cf-Cloudflared-Proxy-Connection-Upgrade",
+					Key: "HttpHeader:Cf-Zenthcloudd-Proxy-Connection-Upgrade",
 					Val: "Websocket",
 				},
 				{
@@ -213,13 +213,13 @@ func TestRequestBodyCloseReleasesQUICFlowControl(t *testing.T) {
 	require.NoError(t, err)
 	defer func() { _ = quicListener.Close() }()
 
-	cloudflaredFrames := newQUICFrameRecorder()
-	cloudflaredConfig := testQUICConfig.Clone()
-	cloudflaredConfig.InitialStreamReceiveWindow = receiveWindow
-	cloudflaredConfig.MaxStreamReceiveWindow = receiveWindow
-	cloudflaredConfig.InitialConnectionReceiveWindow = receiveWindow
-	cloudflaredConfig.MaxConnectionReceiveWindow = receiveWindow
-	cloudflaredConfig.Tracer = cloudflaredFrames.traceForConnection
+	zenthclouddFrames := newQUICFrameRecorder()
+	zenthclouddConfig := testQUICConfig.Clone()
+	zenthclouddConfig.InitialStreamReceiveWindow = receiveWindow
+	zenthclouddConfig.MaxStreamReceiveWindow = receiveWindow
+	zenthclouddConfig.InitialConnectionReceiveWindow = receiveWindow
+	zenthclouddConfig.MaxConnectionReceiveWindow = receiveWindow
+	zenthclouddConfig.Tracer = zenthclouddFrames.traceForConnection
 
 	releaseBody := make(chan struct{})
 	bodyCloseResult := make(chan error, 1)
@@ -232,7 +232,7 @@ func TestRequestBodyCloseReleasesQUICFlowControl(t *testing.T) {
 		t,
 		netip.MustParseAddrPort(udpListener.LocalAddr().String()),
 		31,
-		cloudflaredConfig,
+		zenthclouddConfig,
 		originProxy,
 	)
 
@@ -274,7 +274,7 @@ func TestRequestBodyCloseReleasesQUICFlowControl(t *testing.T) {
 	close(releaseBody)
 	require.NoError(t, waitForTestResult(t, bodyCloseResult))
 
-	maxData := waitForCloudflaredCancellationFrames(t, cloudflaredFrames.frames, firstStreamID)
+	maxData := waitForZenthclouddCancellationFrames(t, zenthclouddFrames.frames, firstStreamID)
 	waitForEdgeCancellationFrames(t, edgeFrames.frames, firstStreamID)
 	require.Greater(t, int64(maxData.MaximumData), int64(receiveWindow))
 
@@ -681,7 +681,7 @@ func TestBuildHTTPRequest(t *testing.T) {
 				Dest: "http://test.com",
 				Metadata: []pogs.Metadata{
 					{
-						Key: "HttpHeader:Cf-Cloudflared-Proxy-Connection-Upgrade",
+						Key: "HttpHeader:Cf-Zenthcloudd-Proxy-Connection-Upgrade",
 						Val: "Websocket",
 					},
 					{
@@ -727,7 +727,7 @@ func TestBuildHTTPRequest(t *testing.T) {
 				Dest: "http://test.com",
 				Metadata: []pogs.Metadata{
 					{
-						Key: "HttpHeader:Cf-Cloudflared-Proxy-Connection-Upgrade",
+						Key: "HttpHeader:Cf-Zenthcloudd-Proxy-Connection-Upgrade",
 						Val: "Websocket",
 					},
 					{
@@ -1298,7 +1298,7 @@ func runRPCServer(ctx context.Context, session cfdquic.QUICConnection, sessionRP
 		stream, err = session.AcceptStream(ctx)
 		require.NoError(t, err)
 	}
-	ss := rpcquic.NewCloudflaredServer(
+	ss := rpcquic.NewZenthclouddServer(
 		func(_ context.Context, _ *rpcquic.RequestServerStream) error {
 			return nil
 		},
@@ -1548,7 +1548,7 @@ func waitForQUICFrame(t *testing.T, frames <-chan recordedQUICFrame, matches fun
 	}
 }
 
-func waitForCloudflaredCancellationFrames(
+func waitForZenthclouddCancellationFrames(
 	t *testing.T,
 	frames <-chan recordedQUICFrame,
 	streamID quic.StreamID,
@@ -1579,7 +1579,7 @@ func waitForCloudflaredCancellationFrames(
 				return maxData
 			}
 		case <-timer.C:
-			t.Fatal("timed out waiting for cloudflared QUIC cancellation frames")
+			t.Fatal("timed out waiting for zenthcloudd QUIC cancellation frames")
 		}
 	}
 }

@@ -3,7 +3,7 @@ import {
 	mockConsoleMethods,
 	runInTempDir,
 	seed,
-} from "@cloudflare/workers-utils/test-helpers";
+} from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw/http";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { createMockDeployContext } from "../helpers/mock-deploy-context.js";
@@ -34,8 +34,8 @@ describe("cf workers triggers deploy", () => {
 	const std = mockConsoleMethods();
 
 	beforeEach(async () => {
-		vi.stubEnv("CLOUDFLARE_API_TOKEN", "test-api-token");
-		vi.stubEnv("CLOUDFLARE_ACCOUNT_ID", ACCOUNT_ID);
+		vi.stubEnv("ZENTHCLOUD_API_TOKEN", "test-api-token");
+		vi.stubEnv("ZENTHCLOUD_ACCOUNT_ID", ACCOUNT_ID);
 		mockDefaultHandlers();
 		await seedBuildDelegate();
 	});
@@ -50,12 +50,12 @@ describe("cf workers triggers deploy", () => {
 		async ({ flags }) => {
 			const requests = recordRequests();
 			await seed({
-				".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-				".cloudflare/output/v0/workers/default/worker.config.json":
+				".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+				".zenthcloud/output/v0/workers/default/worker.config.json":
 					workerConfig({
 						triggers: [{ type: "scheduled", schedule: "*/5 * * * *" }],
 					}),
-				".cloudflare/output/v0/workers/default/bundle/index.js":
+				".zenthcloud/output/v0/workers/default/bundle/index.js":
 					"export default { fetch() { return new Response('ok'); } }",
 			});
 
@@ -128,13 +128,13 @@ describe("cf workers triggers deploy", () => {
 			)
 		);
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig({
 				buildContext: { isPreview: false, mode: "staging" },
 			}),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				triggers: [{ type: "scheduled", schedule: "*/5 * * * *" }],
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export default { fetch() { return new Response('ok'); } }",
 		});
 
@@ -152,15 +152,15 @@ describe("cf workers triggers deploy", () => {
 	});
 
 	it("loads dotenv values after the delegated build", async () => {
-		vi.stubEnv("CLOUDFLARE_API_TOKEN", undefined);
-		vi.stubEnv("CLOUDFLARE_ACCOUNT_ID", undefined);
+		vi.stubEnv("ZENTHCLOUD_API_TOKEN", undefined);
+		vi.stubEnv("ZENTHCLOUD_ACCOUNT_ID", undefined);
 		let valueDuringApiRequest: string | undefined;
 		let authorizationDuringApiRequest: string | null = null;
 		msw.use(
 			http.put(
 				"*/accounts/:accountId/workers/scripts/:scriptName/schedules",
 				({ request }) => {
-					valueDuringApiRequest = process.env.CLOUDFLARE_ACCOUNT_ID;
+					valueDuringApiRequest = process.env.ZENTHCLOUD_ACCOUNT_ID;
 					authorizationDuringApiRequest = request.headers.get("authorization");
 					return HttpResponse.json(createFetchResult({ schedules: [] }));
 				},
@@ -169,14 +169,14 @@ describe("cf workers triggers deploy", () => {
 		);
 		await seed({
 			".env": [
-				"CLOUDFLARE_API_TOKEN=file-token",
-				`CLOUDFLARE_ACCOUNT_ID=${ACCOUNT_ID}`,
+				"ZENTHCLOUD_API_TOKEN=file-token",
+				`ZENTHCLOUD_ACCOUNT_ID=${ACCOUNT_ID}`,
 			].join("\n"),
-			".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				triggers: [{ type: "scheduled", schedule: "*/5 * * * *" }],
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export default { fetch() { return new Response('ok'); } }",
 		});
 
@@ -186,7 +186,7 @@ describe("cf workers triggers deploy", () => {
 		expect(readBuildDelegateEnvironment()).toBe("");
 		expect(valueDuringApiRequest).toBe(ACCOUNT_ID);
 		expect(authorizationDuringApiRequest).toBe("Bearer file-token");
-		expect(process.env.CLOUDFLARE_ACCOUNT_ID).toBeUndefined();
+		expect(process.env.ZENTHCLOUD_ACCOUNT_ID).toBeUndefined();
 	});
 
 	it("skips the build and deploys existing triggers with --prebuilt", async () => {
@@ -204,15 +204,15 @@ describe("cf workers triggers deploy", () => {
 			)
 		);
 		await seed({
-			"cloudflare.config.ts": `export default () => { throw new Error("Project config should not be reevaluated"); };`,
-			".cloudflare/output/v0/config.json": buildOutputRootConfig({
+			"zenthcloud.config.ts": `export default () => { throw new Error("Project config should not be reevaluated"); };`,
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig({
 				accountId: "built-account",
 				complianceRegion: "fedramp-high",
 			}),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				triggers: [{ type: "scheduled", schedule: "*/5 * * * *" }],
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export default { fetch() { return new Response('ok'); } }",
 		});
 
@@ -240,17 +240,17 @@ describe("cf workers triggers deploy", () => {
 				}
 			)
 		);
-		vi.stubEnv("CLOUDFLARE_ACCOUNT_ID", "env-account");
+		vi.stubEnv("ZENTHCLOUD_ACCOUNT_ID", "env-account");
 		await seed({
-			"cloudflare.config.ts": `export default () => { throw new Error("Project config should not be reevaluated"); };`,
-			".cloudflare/output/v0/config.json": buildOutputRootConfig({
+			"zenthcloud.config.ts": `export default () => { throw new Error("Project config should not be reevaluated"); };`,
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig({
 				complianceRegion: "fedramp-high",
 				buildContext: { isPreview: false, mode: "staging" },
 			}),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				triggers: [{ type: "scheduled", schedule: "*/5 * * * *" }],
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export default { fetch() { return new Response('ok'); } }",
 		});
 
@@ -281,17 +281,17 @@ describe("cf workers triggers deploy", () => {
 			)
 		);
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				triggers: [{ type: "scheduled", schedule: "*/5 * * * *" }],
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export default { fetch() { return new Response('ok'); } }",
-			".cloudflare/output/v0/workers/api/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/workers/api/worker.config.json": workerConfig({
 				name: "api",
 				triggers: [{ type: "scheduled", schedule: "0 * * * *" }],
 			}),
-			".cloudflare/output/v0/workers/api/bundle/index.js":
+			".zenthcloud/output/v0/workers/api/bundle/index.js":
 				"export default { fetch() { return new Response('api'); } }",
 		});
 
@@ -322,13 +322,13 @@ describe("cf workers triggers deploy", () => {
 			)
 		);
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig({
 				buildContext: { isPreview: false, mode: "production" },
 			}),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				triggers: [{ type: "scheduled", schedule: "*/5 * * * *" }],
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export default { fetch() { return new Response('ok'); } }",
 		});
 
@@ -343,12 +343,12 @@ describe("cf workers triggers deploy", () => {
 
 	it("rejects Preview Build Output", async () => {
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig({
 				buildContext: { isPreview: true, mode: "staging" },
 			}),
-			".cloudflare/output/v0/workers/default/worker.config.json":
+			".zenthcloud/output/v0/workers/default/worker.config.json":
 				workerConfig(),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export default {};",
 		});
 
@@ -361,15 +361,15 @@ describe("cf workers triggers deploy", () => {
 	});
 
 	it("makes no API requests and needs no credentials during a dry run", async () => {
-		vi.stubEnv("CLOUDFLARE_API_TOKEN", undefined);
-		vi.stubEnv("CLOUDFLARE_ACCOUNT_ID", undefined);
+		vi.stubEnv("ZENTHCLOUD_API_TOKEN", undefined);
+		vi.stubEnv("ZENTHCLOUD_ACCOUNT_ID", undefined);
 		const requests = recordRequests();
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				triggers: [{ type: "scheduled", schedule: "*/5 * * * *" }],
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export default { fetch() { return new Response('ok'); } }",
 		});
 

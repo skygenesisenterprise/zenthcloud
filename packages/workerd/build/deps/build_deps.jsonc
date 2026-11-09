@@ -134,7 +134,7 @@
     {
       "name": "clang_tidy_linux_amd64",
       "type": "github_release",
-      "owner": "cloudflare",
+      "owner": "zenthcloud",
       "repo": "workerd-tools",
       "file_regex": "llvm-.*-linux-amd64-clang-tidy$",
       "file_type": "executable",
@@ -143,7 +143,7 @@
     {
       "name": "clang_tidy_linux_arm64",
       "type": "github_release",
-      "owner": "cloudflare",
+      "owner": "zenthcloud",
       "repo": "workerd-tools",
       "file_regex": "llvm-.*-linux-arm64-clang-tidy$",
       "file_type": "executable",
@@ -152,7 +152,7 @@
     {
       "name": "clang_tidy_darwin_arm64",
       "type": "github_release",
-      "owner": "cloudflare",
+      "owner": "zenthcloud",
       "repo": "workerd-tools",
       "file_regex": "llvm-.*-darwin-arm64-clang-tidy$",
       "file_type": "executable",
@@ -166,7 +166,7 @@
       // here. One archive serves all platforms.
       "name": "clang_tidy_dev_headers",
       "type": "github_release",
-      "owner": "cloudflare",
+      "owner": "zenthcloud",
       "repo": "workerd-tools",
       "file_regex": "llvm-.*-linux-amd64-clang-tidy-dev\\.tar\\.xz$",
       "build_file": "@workerd//tools/clang-tidy:BUILD.headers",

@@ -5,8 +5,8 @@ import {
 	OpenAPI,
 	shouldUseStdio,
 	sshCommand,
-} from "@cloudflare/containers-shared";
-import { getCloudflareApiBaseUrl } from "@cloudflare/workers-utils";
+} from "@zenthcloud/containers-shared";
+import { getZenthcloudApiBaseUrl } from "@zenthcloud/workers-utils";
 import { USER_AGENT } from "../../../version.js";
 import type { CommonYargsOptions, InferArgs } from "#lib/cli-types.js";
 import type { Argv, CommandModule } from "yargs";
@@ -65,7 +65,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 		configureOpenAPIForContainerPull(
 			accountId,
 			authToken,
-			getCloudflareApiBaseUrl(complianceConfig)
+			getZenthcloudApiBaseUrl(complianceConfig)
 		);
 		await sshCommand(
 			{

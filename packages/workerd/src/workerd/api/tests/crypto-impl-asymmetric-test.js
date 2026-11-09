@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Cloudflare, Inc.
+// Copyright (c) 2023 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -84,7 +84,7 @@ export const ecdhJwkTest = {
     };
 
     // The import should succeed with no errors.
-    // Refs: https://github.com/cloudflare/workerd/issues/1403
+    // Refs: https://github.com/skygenesisenterprise/zenthcloud
     await crypto.subtle.importKey(
       'jwk',
       publicJwk,

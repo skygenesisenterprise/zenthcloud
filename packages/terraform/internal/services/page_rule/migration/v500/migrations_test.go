@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -62,7 +62,7 @@ func TestMigratePageRule_V4ToV5_Basic(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Test setup
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			target := "tf-test-" + rnd
 			tmpDir := t.TempDir()
@@ -81,8 +81,8 @@ func TestMigratePageRule_V4ToV5_Basic(t *testing.T) {
 				// Use external v4 provider (will create version=0 state)
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -99,25 +99,25 @@ func TestMigratePageRule_V4ToV5_Basic(t *testing.T) {
 						[]statecheck.StateCheck{
 							// Verify zone_id preserved
 							statecheck.ExpectKnownValue(
-								"cloudflare_page_rule."+rnd,
+								"zenthcloud_page_rule."+rnd,
 								tfjsonpath.New("zone_id"),
 								knownvalue.StringExact(zoneID),
 							),
 							// Verify target preserved
 							statecheck.ExpectKnownValue(
-								"cloudflare_page_rule."+rnd,
+								"zenthcloud_page_rule."+rnd,
 								tfjsonpath.New("target"),
 								knownvalue.StringExact(target+".example.com/*"),
 							),
 							// CRITICAL: Verify status is "active" (v4 default preserved, not v5 default "disabled")
 							statecheck.ExpectKnownValue(
-								"cloudflare_page_rule."+rnd,
+								"zenthcloud_page_rule."+rnd,
 								tfjsonpath.New("status"),
 								knownvalue.StringExact("active"),
 							),
 							// Verify actions.cache_level (tests actions extraction from array)
 							statecheck.ExpectKnownValue(
-								"cloudflare_page_rule."+rnd,
+								"zenthcloud_page_rule."+rnd,
 								tfjsonpath.New("actions").AtMapKey("cache_level"),
 								knownvalue.StringExact("bypass"),
 							),
@@ -159,7 +159,7 @@ func TestMigratePageRule_V4ToV5_CacheKeyFields(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Test setup
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			target := "tf-test-" + rnd
 			tmpDir := t.TempDir()
@@ -178,8 +178,8 @@ func TestMigratePageRule_V4ToV5_CacheKeyFields(t *testing.T) {
 				// Use external v4 provider (will create version=0 state)
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -195,31 +195,31 @@ func TestMigratePageRule_V4ToV5_CacheKeyFields(t *testing.T) {
 						[]statecheck.StateCheck{
 							// Verify cache_key_fields.host.resolved
 							statecheck.ExpectKnownValue(
-								"cloudflare_page_rule."+rnd,
+								"zenthcloud_page_rule."+rnd,
 								tfjsonpath.New("actions").AtMapKey("cache_key_fields").AtMapKey("host").AtMapKey("resolved"),
 								knownvalue.Bool(true),
 							),
 							// Verify cache_key_fields.query_string.exclude
 							statecheck.ExpectKnownValue(
-								"cloudflare_page_rule."+rnd,
+								"zenthcloud_page_rule."+rnd,
 								tfjsonpath.New("actions").AtMapKey("cache_key_fields").AtMapKey("query_string").AtMapKey("exclude").AtSliceIndex(0),
 								knownvalue.StringExact("utm_source"),
 							),
 							// Verify cache_key_fields.user.device_type
 							statecheck.ExpectKnownValue(
-								"cloudflare_page_rule."+rnd,
+								"zenthcloud_page_rule."+rnd,
 								tfjsonpath.New("actions").AtMapKey("cache_key_fields").AtMapKey("user").AtMapKey("device_type"),
 								knownvalue.Bool(true),
 							),
 							// Verify cache_key_fields.user.geo
 							statecheck.ExpectKnownValue(
-								"cloudflare_page_rule."+rnd,
+								"zenthcloud_page_rule."+rnd,
 								tfjsonpath.New("actions").AtMapKey("cache_key_fields").AtMapKey("user").AtMapKey("geo"),
 								knownvalue.Bool(false),
 							),
 							// CRITICAL: Verify cache_key_fields.user.lang = false (added during migration)
 							statecheck.ExpectKnownValue(
-								"cloudflare_page_rule."+rnd,
+								"zenthcloud_page_rule."+rnd,
 								tfjsonpath.New("actions").AtMapKey("cache_key_fields").AtMapKey("user").AtMapKey("lang"),
 								knownvalue.Bool(false),
 							),

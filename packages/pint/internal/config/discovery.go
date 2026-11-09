@@ -14,8 +14,8 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/cloudflare/pint/internal/parser"
-	"github.com/cloudflare/pint/internal/promapi"
+	"github.com/zenthcloud/pint/internal/parser"
+	"github.com/zenthcloud/pint/internal/promapi"
 )
 
 type Discoverer interface {

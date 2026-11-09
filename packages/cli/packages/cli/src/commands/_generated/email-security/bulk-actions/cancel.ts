@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf email-security bulk-actions cancel",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/email-security/investigate/bulk/${argv["job-id"] == null ? "<job-id>" : encodeURIComponent(String(argv["job-id"]))}/cancel`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/email-security/investigate/bulk/${argv["job-id"] == null ? "<job-id>" : encodeURIComponent(String(argv["job-id"]))}/cancel`,
 						pathParams: { "job-id": String(argv["job-id"] ?? "") },
 						bodyKind: "none",
 					});

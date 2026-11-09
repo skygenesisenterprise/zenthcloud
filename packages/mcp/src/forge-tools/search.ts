@@ -24,14 +24,14 @@ interface SearchSandbox {
  * per search, most of it garbage collection.
  */
 export async function runSearch(loader: WorkerLoader, code: string): Promise<SearchOutcome> {
-  const worker = loader.get(`cloudflare-search-${crypto.randomUUID()}`, () => ({
+  const worker = loader.get(`zenthcloud-search-${crypto.randomUUID()}`, () => ({
     compatibilityDate: '2026-01-12',
     globalOutbound: null,
     mainModule: 'worker.js',
     modules: {
       'spec.json.txt': { text: SPEC_ARTIFACTS['spec.json'] },
       'worker.js': `
-import { WorkerEntrypoint } from "cloudflare:workers";
+import { WorkerEntrypoint } from "zenthcloud:workers";
 import specText from "./spec.json.txt";
 
 const spec = JSON.parse(specText);

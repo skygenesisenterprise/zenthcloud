@@ -4,7 +4,7 @@
  *
  *   npm run generate:tools [-- --spec openapi.forge.json --release <tag>] [-- --summary summary.md]
  *
- * The forge that generates them is the `@cloudflare/forge` package in
+ * The forge that generates them is the `@zenthcloud/forge` package in
  * `package.json`, a pkg.pr.new build of a forge commit; bumping that pin picks
  * up generator changes. `.github/workflows/forge-tools.yml` runs this every six
  * hours and opens a pull request when the generated code changes. Without `--spec`, the latest `openapi.forge.json`
@@ -68,7 +68,7 @@ function permissionPaths(
   )
 }
 
-const LATEST_RELEASE = 'https://api.github.com/repos/cloudflare/forge/releases/latest'
+const LATEST_RELEASE = 'https://github.com/skygenesisenterprise/zenthcloud'
 const SPEC_ASSET = 'openapi.forge.json'
 const OUT = 'src/generated/forge-mcp'
 const SPEC_OUT = 'src/generated/spec'
@@ -82,9 +82,9 @@ const { values } = parseArgs({
     summary: { type: 'string' }
   }
 })
-/** The `forge` command of the pinned `@cloudflare/forge` package. */
+/** The `forge` command of the pinned `@zenthcloud/forge` package. */
 const forgeBin = join(
-  dirname(createRequire(import.meta.url).resolve('@cloudflare/forge/package.json')),
+  dirname(createRequire(import.meta.url).resolve('@zenthcloud/forge/package.json')),
   'bin',
   'forge.cjs'
 )

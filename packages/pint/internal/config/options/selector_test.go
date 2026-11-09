@@ -7,8 +7,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/cloudflare/pint/internal/checks"
-	"github.com/cloudflare/pint/internal/config/options"
+	"github.com/zenthcloud/pint/internal/checks"
+	"github.com/zenthcloud/pint/internal/config/options"
 )
 
 func TestSelectorSettings(t *testing.T) {

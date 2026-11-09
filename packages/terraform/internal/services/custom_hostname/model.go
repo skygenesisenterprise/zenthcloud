@@ -3,8 +3,8 @@
 package custom_hostname
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -34,7 +34,7 @@ func (m CustomHostnameModel) MarshalJSON() (data []byte, err error) {
 
 func (m CustomHostnameModel) MarshalJSONForUpdate(state CustomHostnameModel) (data []byte, err error) {
 	// Custom marshaling for updates to handle SSL field requirements
-	// The Cloudflare API requires both validation type and method for SSL updates
+	// The Zenthcloud API requires both validation type and method for SSL updates
 	// Issue #3012: Use full marshaling for SSL to ensure all required fields are present
 	if m.SSL != nil {
 		// For SSL updates, use full marshaling instead of patch to include all required fields
@@ -46,7 +46,7 @@ func (m CustomHostnameModel) MarshalJSONForUpdate(state CustomHostnameModel) (da
 type CustomHostnameSSLModel struct {
 	BundleMethod         types.String                               `tfsdk:"bundle_method" json:"bundle_method,computed_optional"`
 	CertificateAuthority types.String                               `tfsdk:"certificate_authority" json:"certificate_authority,computed_optional"`
-	CloudflareBranding   types.Bool                                 `tfsdk:"cloudflare_branding" json:"cloudflare_branding,optional,no_refresh"`
+	ZenthcloudBranding   types.Bool                                 `tfsdk:"zenthcloud_branding" json:"zenthcloud_branding,optional,no_refresh"`
 	CustomCERTBundle     *[]*CustomHostnameSSLCustomCERTBundleModel `tfsdk:"custom_cert_bundle" json:"custom_cert_bundle,optional,no_refresh"`
 	CustomCertificate    types.String                               `tfsdk:"custom_certificate" json:"custom_certificate,optional"`
 	CustomCsrID          types.String                               `tfsdk:"custom_csr_id" json:"custom_csr_id,optional"`

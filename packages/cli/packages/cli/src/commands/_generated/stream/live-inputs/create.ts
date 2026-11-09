@@ -27,7 +27,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 stream live-inputs create\n\nCreates a live input, and returns credentials that you or your users can use to stream live video to Cloudflare Stream."
+			"$0 stream live-inputs create\n\nCreates a live input, and returns credentials that you or your users can use to stream live video to Zenthcloud Stream."
 		)
 		.option("idempotency-key", {
 			type: "string",
@@ -132,7 +132,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf stream live-inputs create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/stream/live_inputs`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/stream/live_inputs`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

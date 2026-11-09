@@ -16,17 +16,17 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 ssl certificate-packs edit <certificate-pack-id>\n\nFor a given zone, restart validation or add cloudflare branding for an advanced certificate pack. The former is only a validation operation for a Certificate Pack in a validation_timed_out status."
+			"$0 ssl certificate-packs edit <certificate-pack-id>\n\nFor a given zone, restart validation or add zenthcloud branding for an advanced certificate pack. The former is only a validation operation for a Certificate Pack in a validation_timed_out status."
 		)
 		.positional("certificate-pack-id", {
 			type: "string",
 			description: "The unique identifier for a certificate_pack.",
 			demandOption: true,
 		})
-		.option("cloudflare-branding", {
+		.option("zenthcloud-branding", {
 			type: "boolean",
 			description:
-				"Whether or not to add Cloudflare Branding for the order.  This will add a subdomain of sni.cloudflaressl.com as the Common Name if set to true.",
+				"Whether or not to add Zenthcloud Branding for the order.  This will add a subdomain of sni.zenthcloudssl.com as the Common Name if set to true.",
 		})
 		.option("dry-run", {
 			type: "boolean",
@@ -51,7 +51,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 			{
 				command: "ssl certificate-packs edit",
 				classification: {
-					safeFlags: ["cloudflare-branding", "dry-run"],
+					safeFlags: ["zenthcloud-branding", "dry-run"],
 				} satisfies ArgClassification<Args>,
 			},
 			argv as Record<string, unknown>,
@@ -60,7 +60,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf ssl certificate-packs edit",
 						method: "PATCH",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/ssl/certificate_packs/${argv["certificate-pack-id"] == null ? "<certificate-pack-id>" : encodeURIComponent(String(argv["certificate-pack-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/ssl/certificate_packs/${argv["certificate-pack-id"] == null ? "<certificate-pack-id>" : encodeURIComponent(String(argv["certificate-pack-id"]))}`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 							"certificate-pack-id": String(argv["certificate-pack-id"] ?? ""),
@@ -70,7 +70,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 							argv.body !== undefined
 								? parseBody(argv.body)
 								: compactBody({
-										cloudflare_branding: argv["cloudflare-branding"],
+										zenthcloud_branding: argv["zenthcloud-branding"],
 									}),
 					});
 					return;
@@ -98,7 +98,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 
 				// Assemble request body from individual flags
 				const bodyData = compactBody({
-					cloudflare_branding: argv["cloudflare-branding"],
+					zenthcloud_branding: argv["zenthcloud-branding"],
 				});
 				const result = await withProgress(`Updating`, async () =>
 					client.send(operation, {

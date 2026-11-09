@@ -19,7 +19,7 @@ const unitTests :Workerd.Config = (
       name = "compat",
       worker = (
         modules = [
-          (name = "worker", esModule = "export default {fetch() {return new Response(`${JSON.stringify(globalThis.Cloudflare.compatibilityFlags.nodejs_zlib)}`);}}")
+          (name = "worker", esModule = "export default {fetch() {return new Response(`${JSON.stringify(globalThis.Zenthcloud.compatibilityFlags.nodejs_zlib)}`);}}")
         ],
         compatibilityFlags = ["nodejs_compat", "nodejs_zlib"],
       )
@@ -28,7 +28,7 @@ const unitTests :Workerd.Config = (
       name = "compatv2",
       worker = (
         modules = [
-          (name = "worker", esModule = "export default {fetch() {return new Response(`${JSON.stringify(globalThis.Cloudflare.compatibilityFlags.nodejs_zlib)}`);}}")
+          (name = "worker", esModule = "export default {fetch() {return new Response(`${JSON.stringify(globalThis.Zenthcloud.compatibilityFlags.nodejs_zlib)}`);}}")
         ],
         compatibilityFlags = ["nodejs_compat_v2", "nodejs_zlib"],
       )
@@ -37,7 +37,7 @@ const unitTests :Workerd.Config = (
       name = "compatNoV2",
       worker = (
         modules = [
-          (name = "worker", esModule = "export default {fetch() {return new Response(`${JSON.stringify(globalThis.Cloudflare.compatibilityFlags.nodejs_zlib)}`);}}")
+          (name = "worker", esModule = "export default {fetch() {return new Response(`${JSON.stringify(globalThis.Zenthcloud.compatibilityFlags.nodejs_zlib)}`);}}")
         ],
         compatibilityFlags = ["nodejs_compat", "no_nodejs_compat_v2", "nodejs_zlib"],
       )

@@ -1,6 +1,6 @@
 /**
  * For more details on how to configure Wrangler, refer to:
- * https://developers.cloudflare.com/workers/wrangler/configuration/
+ * https://github.com/skygenesisenterprise/zenthcloud
  */
 {
   "$schema": "node_modules/wrangler/config-schema.json",
@@ -14,13 +14,13 @@
   },
   "images": {
     // Enable image optimization
-    // see https://opennext.js.org/cloudflare/howtos/image
+    // see https://github.com/skygenesisenterprise/zenthcloud
     "binding": "IMAGES",
   },
   "services": [
     {
       // Self-reference service binding, the service name must match the worker name
-      // see https://opennext.js.org/cloudflare/caching
+      // see https://github.com/skygenesisenterprise/zenthcloud
       "binding": "WORKER_SELF_REFERENCE",
       "service": "opennextjs-ssr-test",
     },

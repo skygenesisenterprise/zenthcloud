@@ -5,9 +5,9 @@ package stream
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/stream"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/stream"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -50,53 +50,53 @@ func (m *StreamsDataSourceModel) toListParams(_ context.Context) (params stream.
 	diags.Append(errs...)
 
 	params = stream.StreamListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.ID.IsNull() {
-		params.ID = cloudflare.F(m.ID.ValueString())
+		params.ID = zenthcloud.F(m.ID.ValueString())
 	}
 	if !m.After.IsNull() {
-		params.After = cloudflare.F(mAfter)
+		params.After = zenthcloud.F(mAfter)
 	}
 	if !m.Asc.IsNull() {
-		params.Asc = cloudflare.F(m.Asc.ValueBool())
+		params.Asc = zenthcloud.F(m.Asc.ValueBool())
 	}
 	if !m.Before.IsNull() {
-		params.Before = cloudflare.F(mBefore)
+		params.Before = zenthcloud.F(mBefore)
 	}
 	if !m.Creator.IsNull() {
-		params.Creator = cloudflare.F(m.Creator.ValueString())
+		params.Creator = zenthcloud.F(m.Creator.ValueString())
 	}
 	if !m.End.IsNull() {
-		params.End = cloudflare.F(mEnd)
+		params.End = zenthcloud.F(mEnd)
 	}
 	if !m.IncludeCounts.IsNull() {
-		params.IncludeCounts = cloudflare.F(m.IncludeCounts.ValueBool())
+		params.IncludeCounts = zenthcloud.F(m.IncludeCounts.ValueBool())
 	}
 	if !m.Limit.IsNull() {
-		params.Limit = cloudflare.F(m.Limit.ValueInt64())
+		params.Limit = zenthcloud.F(m.Limit.ValueInt64())
 	}
 	if !m.LiveInputID.IsNull() {
-		params.LiveInputID = cloudflare.F(m.LiveInputID.ValueString())
+		params.LiveInputID = zenthcloud.F(m.LiveInputID.ValueString())
 	}
 	if !m.Name.IsNull() {
-		params.Name = cloudflare.F(m.Name.ValueString())
+		params.Name = zenthcloud.F(m.Name.ValueString())
 	}
 	if !m.Search.IsNull() {
-		params.Search = cloudflare.F(m.Search.ValueString())
+		params.Search = zenthcloud.F(m.Search.ValueString())
 	}
 	if !m.Start.IsNull() {
-		params.Start = cloudflare.F(mStart)
+		params.Start = zenthcloud.F(mStart)
 	}
 	if !m.Status.IsNull() {
-		params.Status = cloudflare.F(stream.StreamListParamsStatus(m.Status.ValueString()))
+		params.Status = zenthcloud.F(stream.StreamListParamsStatus(m.Status.ValueString()))
 	}
 	if !m.Type.IsNull() {
-		params.Type = cloudflare.F(m.Type.ValueString())
+		params.Type = zenthcloud.F(m.Type.ValueString())
 	}
 	//if !m.VideoName.IsNull() {
-	//	params.VideoName = cloudflare.F(m.VideoName.ValueString())
+	//	params.VideoName = zenthcloud.F(m.VideoName.ValueString())
 	//}
 
 	return

@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
 
 const WORKER_CHECK_NAME = "Workers Builds: kumo-docs";
-const WORKER_APP_SLUG = "cloudflare-workers-and-pages";
+const WORKER_APP_SLUG = "zenthcloud-workers-and-pages";
 const PREVIEW_COMMENT_MARKER = "<!-- kumo-docs-preview -->";
 
 type JsonRecord = Record<string, unknown>;
@@ -113,7 +113,7 @@ export function getWorkerPreviewUrl(detailsUrl: string): string {
   const match = url.pathname.match(
     /^\/[^/]+\/workers\/services\/view\/kumo-docs\/production\/previews\/([a-z0-9-]+)$/,
   );
-  if (url.hostname !== "dash.cloudflare.com" || !match) {
+  if (url.hostname !== "dash.zenthcloud.com" || !match) {
     throw new Error(`Unexpected Worker Builds URL: ${detailsUrl}`);
   }
   return `https://${match[1]}-kumo-docs.design-engineering.workers.dev`;

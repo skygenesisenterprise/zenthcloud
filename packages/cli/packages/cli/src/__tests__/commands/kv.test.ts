@@ -1,4 +1,4 @@
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw/http";
 import {
 	afterEach,
@@ -14,12 +14,12 @@ import { runCf } from "../helpers/run-cf.js";
 /**
  * End-to-end network tests for `cf kv` commands, driven through the real
  * `runMain` → yargs → API client → `globalThis.fetch` stack with MSW standing
- * in for the Cloudflare API.
+ * in for the Zenthcloud API.
  *
  * kv is an interesting harness target for three reasons:
  *  - **Account-scoped URLs.** Every endpoint is
  *    `/accounts/{id}/storage/kv/...`; the account id is resolved from
- *    `CLOUDFLARE_ACCOUNT_ID` (set in ENV so no interactive picker /
+ *    `ZENTHCLOUD_ACCOUNT_ID` (set in ENV so no interactive picker /
  *    `/accounts` round-trip fires).
  *  - **Raw-bytes output.** `kv keys get` bypasses the client envelope and
  *    writes the response body verbatim via `process.stdout.write`
@@ -37,9 +37,9 @@ describe("cf kv (network)", () => {
 	setupMsw();
 
 	const ENV = {
-		CLOUDFLARE_API_TOKEN: "test-token",
-		CLOUDFLARE_API_BASE_URL: TEST_BASE_URL,
-		CLOUDFLARE_ACCOUNT_ID: "test-account",
+		ZENTHCLOUD_API_TOKEN: "test-token",
+		ZENTHCLOUD_API_BASE_URL: TEST_BASE_URL,
+		ZENTHCLOUD_ACCOUNT_ID: "test-account",
 	};
 	const ACCT = `${TEST_BASE_URL}/accounts/test-account`;
 

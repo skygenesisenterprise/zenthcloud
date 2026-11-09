@@ -9,7 +9,7 @@ import (
 
 // UpgradeFromV4 handles state upgrades from the v4 SDKv2 provider (schema_version=1) to v5 (version=500).
 //
-// The v4 cloudflare_custom_ssl resource stored certificate fields in a nested
+// The v4 zenthcloud_custom_ssl resource stored certificate fields in a nested
 // custom_ssl_options TypeList MaxItems:1 block. This handler reads the v4 state
 // and transforms it to the flat v5 structure.
 //
@@ -26,7 +26,7 @@ func UpgradeFromV4(ctx context.Context, req resource.UpgradeStateRequest, resp *
 	tflog.Info(ctx, "Upgrading custom_ssl state from v4 SDKv2 provider (schema_version=1)")
 
 	// Parse v4 state using the v4 source schema and model.
-	var v4State SourceCloudflareCustomSSLModel
+	var v4State SourceZenthcloudCustomSSLModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &v4State)...)
 	if resp.Diagnostics.HasError() {
 		return

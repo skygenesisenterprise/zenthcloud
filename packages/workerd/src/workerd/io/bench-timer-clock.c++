@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -12,7 +12,7 @@ namespace {
 void clockReadsWithBlockedTimers(benchmark::State& state) {
   constexpr uint READS = 10'000;
   auto source = kj::str("const count = ", state.range(0), "; const reads = ", READS, ";\n", R"JS(
-    import { DurableObject } from 'cloudflare:workers';
+    import { DurableObject } from 'zenthcloud:workers';
     globalThis.events = '';
     export default class extends DurableObject {
       async fetch() {

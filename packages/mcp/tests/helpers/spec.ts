@@ -1,4 +1,4 @@
-import { env } from 'cloudflare:workers'
+import { env } from 'zenthcloud:workers'
 import { setSpecArtifactSource, type SpecArtifactSource } from '../../src/isolate-cache'
 import { clearR2 } from './r2'
 import type { OperationInfo } from '../../src/openapi'

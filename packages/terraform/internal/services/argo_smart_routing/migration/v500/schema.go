@@ -4,14 +4,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-// SourceCloudflareArgoSchema returns the source schema for legacy cloudflare_argo resource.
+// SourceZenthcloudArgoSchema returns the source schema for legacy zenthcloud_argo resource.
 // Schema version: 0 (SDK v2 default)
-// Resource type: cloudflare_argo
+// Resource type: zenthcloud_argo
 //
 // This minimal schema is used only for reading v4 state during migration.
 // It includes only the properties needed for state parsing (Required, Optional, Computed).
 // Validators, PlanModifiers, and Descriptions are intentionally omitted.
-func SourceCloudflareArgoSchema() schema.Schema {
+func SourceZenthcloudArgoSchema() schema.Schema {
 	return schema.Schema{
 		Version: 0, // SDK v2 default version
 		Attributes: map[string]schema.Attribute{

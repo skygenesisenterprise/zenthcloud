@@ -1,24 +1,24 @@
 ---
-page_title: "cloudflare_zero_trust_device_subnet Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_device_subnet Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
-  Cloudflare One Networks ReadCloudflare One Networks Write
+  Zenthcloud One Networks ReadZenthcloud One Networks Write
 ---
 
-# cloudflare_zero_trust_device_subnet (Resource)
+# zenthcloud_zero_trust_device_subnet (Resource)
 
 Accepted Permissions
 
-- `Cloudflare One Networks Read`
-- `Cloudflare One Networks Write`
+- `Zenthcloud One Networks Read`
+- `Zenthcloud One Networks Write`
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_device_subnet" "example_zero_trust_device_subnet" {
+resource "zenthcloud_zero_trust_device_subnet" "example_zero_trust_device_subnet" {
   account_id = "699d98642c564d2e855e9661899b7252"
-  name = "IPv4 Cloudflare Source IPs"
+  name = "IPv4 Zenthcloud Source IPs"
   network = "100.64.0.0/12"
   comment = "example comment"
   is_default_network = true
@@ -30,7 +30,7 @@ resource "cloudflare_zero_trust_device_subnet" "example_zero_trust_device_subnet
 
 ### Required
 
-- `account_id` (String) Cloudflare account ID
+- `account_id` (String) Zenthcloud account ID
 - `name` (String) A user-friendly name for the subnet.
 - `network` (String) The private IPv4 or IPv6 range defining the subnet, in CIDR notation.
 
@@ -46,7 +46,7 @@ resource "cloudflare_zero_trust_device_subnet" "example_zero_trust_device_subnet
 - `deleted_at` (String) Timestamp of when the resource was deleted. If `null`, the resource has not been deleted.
 - `id` (String) The UUID of the subnet.
 - `subnet_type` (String) The type of subnet.
-Available values: "cloudflare_source", "initial_resolved_ip", "warp".
+Available values: "zenthcloud_source", "initial_resolved_ip", "warp".
 
 <a id="nestedatt--capacity"></a>
 ### Nested Schema for `capacity`
@@ -61,7 +61,7 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_device_subnet.example '<account_id>/<subnet_id>'
+$ terraform import zenthcloud_zero_trust_device_subnet.example '<account_id>/<subnet_id>'
 ```
 
 

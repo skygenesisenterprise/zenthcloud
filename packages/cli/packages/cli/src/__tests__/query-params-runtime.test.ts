@@ -1,4 +1,4 @@
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw/http";
 import { setupServer } from "msw/node";
 import {
@@ -28,7 +28,7 @@ import { runCf } from "./helpers/run-cf.js";
  * lookup), so the only outbound request is the list call we intercept.
  */
 const ZONE_ID = "023e105f4ecef8ad9ca31a8372d0c353";
-const DNS_RECORDS_URL = `https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records`;
+const DNS_RECORDS_URL = `https://github.com/skygenesisenterprise/zenthcloud${ZONE_ID}/dns_records`;
 
 describe("query params on the wire", () => {
 	// Isolate cf's global config dir so a developer's stored OAuth token
@@ -64,7 +64,7 @@ describe("query params on the wire", () => {
 
 		const { exitCode } = await runCf(
 			["dns", "records", "list", "--zone", ZONE_ID, "--quiet"],
-			{ CLOUDFLARE_API_TOKEN: "test-token" }
+			{ ZENTHCLOUD_API_TOKEN: "test-token" }
 		);
 
 		expect(exitCode).toBe(0);
@@ -90,7 +90,7 @@ describe("query params on the wire", () => {
 				"5",
 				"--quiet",
 			],
-			{ CLOUDFLARE_API_TOKEN: "test-token" }
+			{ ZENTHCLOUD_API_TOKEN: "test-token" }
 		);
 
 		expect(exitCode).toBe(0);

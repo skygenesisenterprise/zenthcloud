@@ -5,9 +5,9 @@ package moq_relay
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/moq"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/moq"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -32,7 +32,7 @@ type MoQRelayDataSourceModel struct {
 
 func (m *MoQRelayDataSourceModel) toReadParams(_ context.Context) (params moq.RelayGetParams, diags diag.Diagnostics) {
 	params = moq.RelayGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -45,20 +45,20 @@ func (m *MoQRelayDataSourceModel) toListParams(_ context.Context) (params moq.Re
 	diags.Append(errs...)
 
 	params = moq.RelayListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Filter.Asc.IsNull() {
-		params.Asc = cloudflare.F(m.Filter.Asc.ValueBool())
+		params.Asc = zenthcloud.F(m.Filter.Asc.ValueBool())
 	}
 	if !m.Filter.CreatedAfter.IsNull() {
-		params.CreatedAfter = cloudflare.F(mFilterCreatedAfter)
+		params.CreatedAfter = zenthcloud.F(mFilterCreatedAfter)
 	}
 	if !m.Filter.CreatedBefore.IsNull() {
-		params.CreatedBefore = cloudflare.F(mFilterCreatedBefore)
+		params.CreatedBefore = zenthcloud.F(mFilterCreatedBefore)
 	}
 	if !m.Filter.PerPage.IsNull() {
-		params.PerPage = cloudflare.F(m.Filter.PerPage.ValueInt64())
+		params.PerPage = zenthcloud.F(m.Filter.PerPage.ValueInt64())
 	}
 
 	return

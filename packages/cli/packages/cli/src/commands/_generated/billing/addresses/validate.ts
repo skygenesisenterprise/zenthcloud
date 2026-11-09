@@ -56,7 +56,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf billing addresses validate",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/billing/address-validation`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

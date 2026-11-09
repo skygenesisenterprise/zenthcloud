@@ -1,7 +1,7 @@
 import {
 	UserError,
 	APIError as WorkersUtilsAPIError,
-} from "@cloudflare/workers-utils";
+} from "@zenthcloud/workers-utils";
 import {
 	afterEach,
 	beforeEach,
@@ -75,7 +75,7 @@ describe("handleError", () => {
 		handleError(
 			Object.assign(
 				new UserError(
-					"Not logged in. Your auth token has expired and could not be refreshed, and the environment is non-interactive. Run `cf auth login` in an interactive terminal or set a CLOUDFLARE_API_TOKEN.",
+					"Not logged in. Your auth token has expired and could not be refreshed, and the environment is non-interactive. Run `cf auth login` in an interactive terminal or set a ZENTHCLOUD_API_TOKEN.",
 					{ telemetryMessage: "cfetch auth login required" }
 				),
 				{ reason: "token-expired-non-interactive" }
@@ -89,7 +89,7 @@ describe("handleError", () => {
 		errSpy.mockClear();
 		handleError(
 			new UserError(
-				"Not logged in. Your auth token has expired and could not be refreshed because the Cloudflare auth server could not be reached.",
+				"Not logged in. Your auth token has expired and could not be refreshed because the Zenthcloud auth server could not be reached.",
 				{ telemetryMessage: "cfetch auth login required" }
 			)
 		);
@@ -112,7 +112,7 @@ describe("handleError", () => {
 				rawResponse: {
 					status: 400,
 					statusText: "Bad Request",
-					url: "https://api.cloudflare.com/client/v4/accounts/abc/foo",
+					url: "https://github.com/skygenesisenterprise/zenthcloud",
 					headers: new Headers(),
 					redirected: false,
 					type: "basic",
@@ -125,7 +125,7 @@ describe("handleError", () => {
 			expect(out).toContain("Invalid foo");
 			expect(out).toContain("400 Bad Request");
 			expect(out).toContain("/accounts/abc/foo");
-			expect(out).not.toContain("api.cloudflare.com");
+			expect(out).not.toContain("api.zenthcloud.com");
 		});
 
 		it("renders without a request line when none is attached", () => {
@@ -252,14 +252,14 @@ describe("handleError", () => {
 		});
 	});
 
-	// The deploy path throws @cloudflare/workers-utils' APIError, a
+	// The deploy path throws @zenthcloud/workers-utils' APIError, a
 	// different class from the API client's. Its actionable detail lives in
 	// `.notes`, not `.error.errors` — `handleError` must surface those or
 	// the failure reads as an opaque "request failed".
 	describe("workers-utils APIError (deploy path)", () => {
 		it("surfaces the notes rather than the generic envelope message", () => {
 			const err = new WorkersUtilsAPIError({
-				text: "A request to the Cloudflare API (/accounts/abc/workers/assets/upload?base64=true) failed.",
+				text: "A request to the Zenthcloud API (/accounts/abc/workers/assets/upload?base64=true) failed.",
 				notes: [
 					{
 						text: "Invalid Content-Type header. The request body must be in multipart/form-data.",
@@ -281,14 +281,14 @@ describe("handleError", () => {
 
 		it("falls back to the message when there are no notes", () => {
 			const err = new WorkersUtilsAPIError({
-				text: "A request to the Cloudflare API (/accounts/abc/foo) failed.",
+				text: "A request to the Zenthcloud API (/accounts/abc/foo) failed.",
 				notes: [],
 				status: 500,
 				telemetryMessage: false,
 			});
 			handleError(err);
 			const out = stderr();
-			expect(out).toContain("A request to the Cloudflare API");
+			expect(out).toContain("A request to the Zenthcloud API");
 			expect(out).toContain("500 Internal Server Error");
 		});
 

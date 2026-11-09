@@ -16,7 +16,7 @@ export const tools: readonly Tool[] = [
   {
     name: "emailSecurity_domains_verification_get",
     title: "Get domain verification details",
-    description: "Returns the DNS TXT record information when the domain ownership isn't\nverified through Cloudflare zone ownership or CASB integration.\n\nThis method is beta.\n\nGET /accounts/{account_id}/email-security/settings/domains/{domain_id}/verification",
+    description: "Returns the DNS TXT record information when the domain ownership isn't\nverified through Zenthcloud zone ownership or CASB integration.\n\nThis method is beta.\n\nGET /accounts/{account_id}/email-security/settings/domains/{domain_id}/verification",
     inputSchema: {
       type: "object",
       properties: {

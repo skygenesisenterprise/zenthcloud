@@ -13,15 +13,15 @@ export const abuse$$reports_BaseReportFields: JSONObject = {
       "type": "string"
     },
     "comments": {
-      "description": "Any additional comments about the infringement not exceeding 2000 characters. Comments are kept internal to Cloudflare and not shared with the host or customer as part of regular processing. For delegated reports, comments may be shared in full.",
+      "description": "Any additional comments about the infringement not exceeding 2000 characters. Comments are kept internal to Zenthcloud and not shared with the host or customer as part of regular processing. For delegated reports, comments may be shared in full.",
       "type": "string"
     },
     "company": {
-      "description": "Text not exceeding 100 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/).",
+      "description": "Text not exceeding 100 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/).",
       "type": "string"
     },
     "email": {
-      "description": "A valid email of the abuse reporter. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/).",
+      "description": "A valid email of the abuse reporter. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/).",
       "type": "string"
     },
     "email2": {
@@ -29,7 +29,7 @@ export const abuse$$reports_BaseReportFields: JSONObject = {
       "type": "string"
     },
     "name": {
-      "description": "Text not exceeding 255 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/).",
+      "description": "Text not exceeding 255 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/).",
       "type": "string"
     },
     "reported_country": {
@@ -41,7 +41,7 @@ export const abuse$$reports_BaseReportFields: JSONObject = {
       "type": "string"
     },
     "tele": {
-      "description": "Text not exceeding 20 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/).",
+      "description": "Text not exceeding 20 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/).",
       "type": "string"
     },
     "title": {
@@ -49,7 +49,7 @@ export const abuse$$reports_BaseReportFields: JSONObject = {
       "type": "string"
     },
     "urls": {
-      "description": "A list of valid URLs separated by ‘\\n’ (new line character). The list of the URLs should not exceed 250 URLs. All URLs should have the same hostname. Each URL should be unique. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/).",
+      "description": "A list of valid URLs separated by ‘\\n’ (new line character). The list of the URLs should not exceed 250 URLs. All URLs should have the same hostname. Each URL should be unique. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/).",
       "type": "string"
     }
   },
@@ -80,7 +80,7 @@ export const abuse$$reports_CSAMReport: JSONObject = {
           "type": "string"
         },
         "country": {
-          "description": "Text not exceeding 255 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/).",
+          "description": "Text not exceeding 255 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/).",
           "type": "string"
         },
         "host_notification": {
@@ -141,11 +141,11 @@ export const abuse$$reports_DMCAReport: JSONObject = {
           "type": "string"
         },
         "address1": {
-          "description": "Text not exceeding 100 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/).",
+          "description": "Text not exceeding 100 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/).",
           "type": "string"
         },
         "agent_name": {
-          "description": "The name of the copyright holder. Text not exceeding 60 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/).",
+          "description": "The name of the copyright holder. Text not exceeding 60 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/).",
           "type": "string"
         },
         "agree": {
@@ -156,11 +156,11 @@ export const abuse$$reports_DMCAReport: JSONObject = {
           "type": "integer"
         },
         "city": {
-          "description": "Text not exceeding 255 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/).",
+          "description": "Text not exceeding 255 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/).",
           "type": "string"
         },
         "country": {
-          "description": "Text not exceeding 255 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/).",
+          "description": "Text not exceeding 255 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/).",
           "type": "string"
         },
         "host_notification": {
@@ -171,7 +171,7 @@ export const abuse$$reports_DMCAReport: JSONObject = {
           "type": "string"
         },
         "original_work": {
-          "description": "Text not exceeding 255 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/).",
+          "description": "Text not exceeding 255 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/).",
           "type": "string"
         },
         "owner_notification": {
@@ -182,11 +182,11 @@ export const abuse$$reports_DMCAReport: JSONObject = {
           "type": "string"
         },
         "signature": {
-          "description": "Required for DMCA reports, should be same as Name. An affirmation that all information in the report is true and accurate while agreeing to the policies of Cloudflare's abuse reports",
+          "description": "Required for DMCA reports, should be same as Name. An affirmation that all information in the report is true and accurate while agreeing to the policies of Zenthcloud's abuse reports",
           "type": "string"
         },
         "state": {
-          "description": "Text not exceeding 255 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/).",
+          "description": "Text not exceeding 255 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/).",
           "type": "string"
         }
       },
@@ -283,7 +283,7 @@ export const abuse$$reports_NCSEIReport: JSONObject = {
           "type": "string"
         },
         "country": {
-          "description": "Text not exceeding 255 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/).",
+          "description": "Text not exceeding 255 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/).",
           "type": "string"
         },
         "host_notification": {
@@ -347,7 +347,7 @@ export const abuse$$reports_PhishingReport: JSONObject = {
           "type": "string"
         },
         "original_work": {
-          "description": "Text not exceeding 255 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/).",
+          "description": "Text not exceeding 255 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/).",
           "type": "string"
         },
         "owner_notification": {

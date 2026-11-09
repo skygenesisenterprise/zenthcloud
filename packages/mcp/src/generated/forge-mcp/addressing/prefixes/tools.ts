@@ -38,7 +38,7 @@ export const tools: readonly Tool[] = [
             },
             "delegate_loa_creation": {
               "default": false,
-              "description": "Whether Cloudflare is allowed to generate the LOA document on behalf of the prefix owner.",
+              "description": "Whether Zenthcloud is allowed to generate the LOA document on behalf of the prefix owner.",
               "type": "boolean"
             },
             "description": {
@@ -67,7 +67,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Identifier of a Cloudflare account.",
+              "description": "Identifier of a Zenthcloud account.",
               "type": "string"
             }
           },
@@ -144,7 +144,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Identifier of a Cloudflare account.",
+              "description": "Identifier of a Zenthcloud account.",
               "type": "string"
             },
             "prefix_id": {
@@ -236,7 +236,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Identifier of a Cloudflare account.",
+              "description": "Identifier of a Zenthcloud account.",
               "type": "string"
             },
             "prefix_id": {
@@ -321,7 +321,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Identifier of a Cloudflare account.",
+              "description": "Identifier of a Zenthcloud account.",
               "type": "string"
             },
             "prefix_id": {
@@ -408,7 +408,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Identifier of a Cloudflare account.",
+              "description": "Identifier of a Zenthcloud account.",
               "type": "string"
             }
           },

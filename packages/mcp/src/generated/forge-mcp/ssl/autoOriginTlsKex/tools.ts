@@ -17,7 +17,7 @@ export const tools: readonly Tool[] = [
   {
     name: "ssl_autoOriginTlsKex_edit",
     title: "Patch Auto-Origin TLS KEX enrollment status for the given zone",
-    description: "Enable or disable Auto-Origin TLS KEX selection for the zone by sending `{\"enabled\": true}` or `{\"enabled\": false}`. When enabled, Cloudflare runs a periodic scan of the zone's origins to determine the preferred key-exchange algorithm and writes that preference to the edge so it is sent first in the TLS ClientHello to the origin.\n\nPATCH /zones/{zone_id}/settings/auto_origin_tls_kex",
+    description: "Enable or disable Auto-Origin TLS KEX selection for the zone by sending `{\"enabled\": true}` or `{\"enabled\": false}`. When enabled, Zenthcloud runs a periodic scan of the zone's origins to determine the preferred key-exchange algorithm and writes that preference to the edge so it is sent first in the TLS ClientHello to the origin.\n\nPATCH /zones/{zone_id}/settings/auto_origin_tls_kex",
     inputSchema: {
       type: "object",
       properties: {
@@ -95,7 +95,7 @@ export const tools: readonly Tool[] = [
   {
     name: "ssl_autoOriginTlsKex_get",
     title: "Get Auto-Origin TLS KEX enrollment status for the given zone",
-    description: "When enabled, Cloudflare automatically selects the preferred TLS key-exchange algorithm to use when establishing the TLS connection to the zone's origin, picking from the algorithms permitted by the zone's `origin_tls_compliance_modes` setting. When disabled, the default key-exchange ordering is used.\n\nGET /zones/{zone_id}/settings/auto_origin_tls_kex",
+    description: "When enabled, Zenthcloud automatically selects the preferred TLS key-exchange algorithm to use when establishing the TLS connection to the zone's origin, picking from the algorithms permitted by the zone's `origin_tls_compliance_modes` setting. When disabled, the default key-exchange ordering is used.\n\nGET /zones/{zone_id}/settings/auto_origin_tls_kex",
     inputSchema: {
       type: "object",
       properties: {

@@ -9,7 +9,7 @@ import {
   type Skill
 } from './types'
 
-export const SKILLS_REPOSITORY = 'cloudflare/skills'
+export const SKILLS_REPOSITORY = 'zenthcloud/skills'
 
 /**
  * The repository's default-branch tarball. codeload is not subject to the
@@ -34,7 +34,7 @@ export interface SkillsSyncResult {
 }
 
 /**
- * Download `cloudflare/skills` and build the manifest and file bytes.
+ * Download `zenthcloud/skills` and build the manifest and file bytes.
  *
  * @throws If the download fails, the archive cannot be read, or it holds no
  *   valid skills.
@@ -73,7 +73,7 @@ export async function fetchSkills(
 }
 
 /**
- * Bring R2 up to date with `cloudflare/skills`, writing only what changed.
+ * Bring R2 up to date with `zenthcloud/skills`, writing only what changed.
  * Runs from the six-hourly cron, next to the spec sync.
  *
  * 1. Files are stored by digest, so only bytes R2 doesn't already hold are written.

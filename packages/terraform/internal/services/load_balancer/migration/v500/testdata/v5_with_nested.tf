@@ -1,4 +1,4 @@
-resource "cloudflare_load_balancer" "%s" {
+resource "zenthcloud_load_balancer" "%s" {
   zone_id              = "%s"
   name                 = "%s"
   fallback_pool        = "%s"

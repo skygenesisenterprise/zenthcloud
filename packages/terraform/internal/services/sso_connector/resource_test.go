@@ -6,10 +6,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/iam"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/iam"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -23,24 +23,24 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_sso_connector", &resource.Sweeper{
-		Name: "cloudflare_sso_connector",
-		F:    testSweepCloudflareSSOConnectors,
+	resource.AddTestSweepers("zenthcloud_sso_connector", &resource.Sweeper{
+		Name: "zenthcloud_sso_connector",
+		F:    testSweepZenthcloudSSOConnectors,
 	})
 }
 
-func testSweepCloudflareSSOConnectors(r string) error {
+func testSweepZenthcloudSSOConnectors(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping SSO connectors sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping SSO connectors sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
 	connectors, err := client.IAM.SSO.List(ctx, iam.SSOListParams{
-		AccountID: cloudflare.F(accountID),
+		AccountID: zenthcloud.F(accountID),
 	})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch SSO connectors: %s", err))
@@ -60,7 +60,7 @@ func testSweepCloudflareSSOConnectors(r string) error {
 
 		tflog.Info(ctx, fmt.Sprintf("Deleting SSO connector: %s (email_domain: %s, account: %s)", connector.ID, connector.EmailDomain, accountID))
 		_, err := client.IAM.SSO.Delete(ctx, connector.ID, iam.SSODeleteParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete SSO connector %s: %s", connector.ID, err))
@@ -72,11 +72,11 @@ func testSweepCloudflareSSOConnectors(r string) error {
 	return nil
 }
 
-func TestAccCloudflareSsoConnector_Basic(t *testing.T) {
+func TestAccZenthcloudSsoConnector_Basic(t *testing.T) {
 	t.Skip("Skipping: SSO connector resource requires specific account configuration not available in the test account")
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_sso_connector." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_sso_connector." + rnd
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },

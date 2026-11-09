@@ -5,8 +5,8 @@ package workers_route
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/workers"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/workers"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -25,7 +25,7 @@ type WorkersRouteDataSourceModel struct {
 
 func (m *WorkersRouteDataSourceModel) toReadParams(_ context.Context) (params workers.RouteGetParams, diags diag.Diagnostics) {
 	params = workers.RouteGetParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	return

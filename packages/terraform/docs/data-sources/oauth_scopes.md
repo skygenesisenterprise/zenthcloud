@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_oauth_scopes Data Source - Cloudflare"
+page_title: "zenthcloud_oauth_scopes Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_oauth_scopes (Data Source)
+# zenthcloud_oauth_scopes (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_oauth_scopes" "example_oauth_scopes" {
+data "zenthcloud_oauth_scopes" "example_oauth_scopes" {
 
 }
 ```

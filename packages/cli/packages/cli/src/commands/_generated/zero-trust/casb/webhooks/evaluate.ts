@@ -26,7 +26,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			'$0 zero-trust casb webhooks evaluate\n\nSends a test webhook event to the specified destination URL to verify the webhook endpoint is reachable and properly configured. This allows customers to validate their webhook configuration before creating the actual webhook resource. The test payload includes: - event_type: "webhook.test" - timestamp: Current UTC timestamp - message: Test message indicating this is from Cloudflare CASB - data: Object with test: true'
+			'$0 zero-trust casb webhooks evaluate\n\nSends a test webhook event to the specified destination URL to verify the webhook endpoint is reachable and properly configured. This allows customers to validate their webhook configuration before creating the actual webhook resource. The test payload includes: - event_type: "webhook.test" - timestamp: Current UTC timestamp - message: Test message indicating this is from Zenthcloud CASB - data: Object with test: true'
 		)
 		.option("authentication-type", {
 			type: "string",
@@ -90,7 +90,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust casb webhooks evaluate",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/data-security/posture/webhooks/evaluate`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/data-security/posture/webhooks/evaluate`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

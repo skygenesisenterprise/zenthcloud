@@ -87,7 +87,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar robots-txt top user-agents directive",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/robots_txt/top/user_agents/directive`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

@@ -1,8 +1,8 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-337:
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-337:
 // Deserializer::ReadHostObject used obj.set() (ordinary [[Set]]) to restore
 // serialized Error own-properties. A tenant-installed setter on
 // Error.prototype would be invoked inside V8's DisallowJavascriptExecution

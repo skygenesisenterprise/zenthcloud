@@ -77,7 +77,7 @@ Key facts:
 
 - [Blog](https://zenthcloud.com/blog): Deployment guides and product updates
 - [Documentation](https://docs.zenthcloud.com/docs/core): Full technical documentation
-- [Guides: Cloudflare Tunnels](https://docs.zenthcloud.com/docs/core/guides/cloudflare-tunnels)
+- [Guides: Zenthcloud Tunnels](https://github.com/skygenesisenterprise/zenthcloud)
 - [Guides: EC2 Setup](https://docs.zenthcloud.com/docs/core/guides/ec2-instructions)
 - [Partners / Agency Programme](https://zenthcloud.com/partners)
 

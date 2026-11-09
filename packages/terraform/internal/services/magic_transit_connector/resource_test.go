@@ -7,11 +7,11 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/magic_transit"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/magic_transit"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -25,24 +25,24 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_magic_transit_connector", &resource.Sweeper{
-		Name: "cloudflare_magic_transit_connector",
-		F:    testSweepCloudflareMagicTransitConnectors,
+	resource.AddTestSweepers("zenthcloud_magic_transit_connector", &resource.Sweeper{
+		Name: "zenthcloud_magic_transit_connector",
+		F:    testSweepZenthcloudMagicTransitConnectors,
 	})
 }
 
-func testSweepCloudflareMagicTransitConnectors(r string) error {
+func testSweepZenthcloudMagicTransitConnectors(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping magic transit connectors sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping magic transit connectors sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
 	connectors, err := client.MagicTransit.Connectors.List(ctx, magic_transit.ConnectorListParams{
-		AccountID: cloudflare.F(accountID),
+		AccountID: zenthcloud.F(accountID),
 	})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch magic transit connectors: %s", err))
@@ -62,7 +62,7 @@ func testSweepCloudflareMagicTransitConnectors(r string) error {
 
 		tflog.Info(ctx, fmt.Sprintf("Deleting magic transit connector: %s (account: %s)", connector.ID, accountID))
 		_, err := client.MagicTransit.Connectors.Delete(ctx, connector.ID, magic_transit.ConnectorDeleteParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete magic transit connector %s: %s", connector.ID, err))
@@ -74,16 +74,16 @@ func testSweepCloudflareMagicTransitConnectors(r string) error {
 	return nil
 }
 
-func TestAccCloudflareMagicTransitConnectorItWorks(t *testing.T) {
+func TestAccZenthcloudMagicTransitConnectorItWorks(t *testing.T) {
 	resourceName := utils.GenerateRandomResourceName()
-	tfstateName := fmt.Sprintf("cloudflare_magic_transit_connector.%s", resourceName)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	tfstateName := fmt.Sprintf("zenthcloud_magic_transit_connector.%s", resourceName)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	// This is a serial number and device id that's dedicated for testing purposes
-	serialNumber := "cloudflare-tfprovider-acceptance-test"
+	serialNumber := "zenthcloud-tfprovider-acceptance-test"
 	deviceId := "e71bc6786bed11f087b582b621cd4455"
 	// Basic lifecycle, create, plan, import, destroy.
 	{
-		config := testAccCheckCloudflareMCONNSimple(resourceName, accountID, serialNumber, "false", resourceName, "4", "0")
+		config := testAccCheckZenthcloudMCONNSimple(resourceName, accountID, serialNumber, "false", resourceName, "4", "0")
 
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acctest.TestAccPreCheck_AccountID(t) },
@@ -102,7 +102,7 @@ func TestAccCloudflareMagicTransitConnectorItWorks(t *testing.T) {
 						statecheck.ExpectKnownValue(tfstateName, tfjsonpath.New("interrupt_window_hour_of_day"), knownvalue.Float64Exact(0)),
 					},
 					Check: resource.ComposeTestCheckFunc(
-						testAccCheckCloudflareConnectorExists(tfstateName),
+						testAccCheckZenthcloudConnectorExists(tfstateName),
 					),
 				},
 				// Plan again to make sure the tf plan is clean
@@ -127,7 +127,7 @@ func TestAccCloudflareMagicTransitConnectorItWorks(t *testing.T) {
 				},
 				// Update the resource that should cause a in-place update
 				{
-					Config: testAccCheckCloudflareMCONNSimple(resourceName, accountID, serialNumber, "true", resourceName+"-updated", "4", "0"),
+					Config: testAccCheckZenthcloudMCONNSimple(resourceName, accountID, serialNumber, "true", resourceName+"-updated", "4", "0"),
 					ConfigStateChecks: []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(tfstateName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 						statecheck.ExpectKnownValue(tfstateName, tfjsonpath.New("notes"), knownvalue.StringExact(resourceName+"-updated")),
@@ -138,28 +138,28 @@ func TestAccCloudflareMagicTransitConnectorItWorks(t *testing.T) {
 						statecheck.ExpectKnownValue(tfstateName, tfjsonpath.New("interrupt_window_hour_of_day"), knownvalue.Float64Exact(0)),
 					},
 					Check: resource.ComposeTestCheckFunc(
-						testAccCheckCloudflareConnectorExists(tfstateName),
+						testAccCheckZenthcloudConnectorExists(tfstateName),
 					),
 				},
 				// Plan again to expect the plan needs to change
 				{
-					Config:             testAccCheckCloudflareMCONNSimple(resourceName, accountID, serialNumber, "true", resourceName, "4", "0"),
+					Config:             testAccCheckZenthcloudMCONNSimple(resourceName, accountID, serialNumber, "true", resourceName, "4", "0"),
 					PlanOnly:           true,
 					ExpectNonEmptyPlan: true, // expect change
 				},
 			},
-			CheckDestroy: testAccCheckCloudflareMCONNCheckDestroy(accountID),
+			CheckDestroy: testAccCheckZenthcloudMCONNCheckDestroy(accountID),
 		})
 	}
 
 	////
 	// Testing the create and destroy of different configurations
 	configurations := []string{
-		testAccCheckCloudflareMCONNSimple(resourceName, accountID, serialNumber, "false", resourceName, "4", "0"),
-		testAccCheckCloudflareMCONNSimple(resourceName, accountID, serialNumber, "true", resourceName, "5", "1"),
-		testAccCheckCloudflareMCONNSimple(resourceName, accountID, serialNumber, "true", "some random notes", "4", "0"),
-		testAccCheckCloudflareMCONNSimpleWithDeviceID(resourceName, accountID, deviceId, "true", resourceName, "5", "1"),
-		testAccCheckCloudflareMCONNSimpleWithProvisionLicense(resourceName, accountID, "true", resourceName, "5", "1"),
+		testAccCheckZenthcloudMCONNSimple(resourceName, accountID, serialNumber, "false", resourceName, "4", "0"),
+		testAccCheckZenthcloudMCONNSimple(resourceName, accountID, serialNumber, "true", resourceName, "5", "1"),
+		testAccCheckZenthcloudMCONNSimple(resourceName, accountID, serialNumber, "true", "some random notes", "4", "0"),
+		testAccCheckZenthcloudMCONNSimpleWithDeviceID(resourceName, accountID, deviceId, "true", resourceName, "5", "1"),
+		testAccCheckZenthcloudMCONNSimpleWithProvisionLicense(resourceName, accountID, "true", resourceName, "5", "1"),
 	}
 
 	for _, config := range configurations {
@@ -171,7 +171,7 @@ func TestAccCloudflareMagicTransitConnectorItWorks(t *testing.T) {
 				{
 					Config: config,
 					Check: resource.ComposeTestCheckFunc(
-						testAccCheckCloudflareConnectorExists(tfstateName),
+						testAccCheckZenthcloudConnectorExists(tfstateName),
 					),
 				},
 				// Plan again to make sure the tf plan is clean
@@ -195,13 +195,13 @@ func TestAccCloudflareMagicTransitConnectorItWorks(t *testing.T) {
 					ImportStateVerifyIgnore: []string{"license_key", "device.provision_license"}, // Write-only fields
 				},
 			},
-			CheckDestroy: testAccCheckCloudflareMCONNCheckDestroy(accountID),
+			CheckDestroy: testAccCheckZenthcloudMCONNCheckDestroy(accountID),
 		})
 	}
 
 }
 
-func testAccCheckCloudflareConnectorExists(name string) resource.TestCheckFunc {
+func testAccCheckZenthcloudConnectorExists(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -214,7 +214,7 @@ func testAccCheckCloudflareConnectorExists(name string) resource.TestCheckFunc {
 
 		client := acctest.SharedClient()
 		resp, err := client.MagicTransit.Connectors.Get(context.Background(), rs.Primary.ID, magic_transit.ConnectorGetParams{
-			AccountID: cloudflare.F(rs.Primary.Attributes[consts.AccountIDSchemaKey]),
+			AccountID: zenthcloud.F(rs.Primary.Attributes[consts.AccountIDSchemaKey]),
 		})
 		if err != nil {
 			return err
@@ -248,15 +248,15 @@ func testAccCheckCloudflareConnectorExists(name string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckCloudflareMCONNCheckDestroy(accountID string) resource.TestCheckFunc {
+func testAccCheckZenthcloudMCONNCheckDestroy(accountID string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := acctest.SharedClient()
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "cloudflare_magic_transit_connector" {
+			if rs.Type != "zenthcloud_magic_transit_connector" {
 				continue
 			}
 			_, err := client.MagicTransit.Connectors.Get(context.Background(), rs.Primary.ID, magic_transit.ConnectorGetParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			})
 			if err == nil {
 				return fmt.Errorf("connector %s still exists", rs.Primary.ID)
@@ -266,14 +266,14 @@ func testAccCheckCloudflareMCONNCheckDestroy(accountID string) resource.TestChec
 	}
 }
 
-func testAccCheckCloudflareMCONNSimple(name, accountID, serialNumber, activated, notes, interruptWindowDurationHours, interruptWindowHourOfDay string) string {
+func testAccCheckZenthcloudMCONNSimple(name, accountID, serialNumber, activated, notes, interruptWindowDurationHours, interruptWindowHourOfDay string) string {
 	return acctest.LoadTestCase("basic.tf", name, accountID, serialNumber, activated, notes, interruptWindowDurationHours, interruptWindowHourOfDay)
 }
 
-func testAccCheckCloudflareMCONNSimpleWithDeviceID(name, accountID, deviceID, activated, notes, interruptWindowDurationHours, interruptWindowHourOfDay string) string {
+func testAccCheckZenthcloudMCONNSimpleWithDeviceID(name, accountID, deviceID, activated, notes, interruptWindowDurationHours, interruptWindowHourOfDay string) string {
 	return acctest.LoadTestCase("basic_with_device_id.tf", name, accountID, deviceID, activated, notes, interruptWindowDurationHours, interruptWindowHourOfDay)
 }
 
-func testAccCheckCloudflareMCONNSimpleWithProvisionLicense(name, accountID, activated, notes, interruptWindowDurationHours, interruptWindowHourOfDay string) string {
+func testAccCheckZenthcloudMCONNSimpleWithProvisionLicense(name, accountID, activated, notes, interruptWindowDurationHours, interruptWindowHourOfDay string) string {
 	return acctest.LoadTestCase("basic_with_provision_license.tf", name, accountID, activated, notes, interruptWindowDurationHours, interruptWindowHourOfDay)
 }

@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zone_tracing_rules Data Source - Cloudflare"
+page_title: "zenthcloud_zone_tracing_rules Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zone_tracing_rules (Data Source)
+# zenthcloud_zone_tracing_rules (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_zone_tracing_rules" "example_zone_tracing_rules" {
+data "zenthcloud_zone_tracing_rules" "example_zone_tracing_rules" {
   zone_id = "zone_id"
 }
 ```

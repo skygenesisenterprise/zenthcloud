@@ -1,5 +1,5 @@
 /**
- * `cf containers push` uploads an existing local Docker image to Cloudflare's
+ * `cf containers push` uploads an existing local Docker image to Zenthcloud's
  * managed registry. This has no OpenAPI operation: the shared Containers
  * helper obtains registry credentials and performs the Docker login/tag/push
  * sequence, so the command is spliced into the generated Containers tree.
@@ -8,8 +8,8 @@ import {
 	configureOpenAPIForContainerPull,
 	initContainersSharedContext,
 	pushCommand,
-} from "@cloudflare/containers-shared";
-import { getCloudflareApiBaseUrl } from "@cloudflare/workers-utils";
+} from "@zenthcloud/containers-shared";
+import { getZenthcloudApiBaseUrl } from "@zenthcloud/workers-utils";
 import type { CommonYargsOptions, InferArgs } from "#lib/cli-types.js";
 import type { Argv, CommandModule } from "yargs";
 import { getAuthToken } from "#lib/auth-token.js";
@@ -35,7 +35,7 @@ type Args = InferArgs<typeof builder>;
 
 const command: CommandModule<CommonYargsOptions, Args> = {
 	command: "push",
-	describe: "Push a local image to the Cloudflare managed registry",
+	describe: "Push a local image to the Zenthcloud managed registry",
 	builder,
 	handler: async (argv): Promise<void> => {
 		if (argv.local) {
@@ -56,7 +56,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 		configureOpenAPIForContainerPull(
 			accountId,
 			authToken,
-			getCloudflareApiBaseUrl(complianceConfig)
+			getZenthcloudApiBaseUrl(complianceConfig)
 		);
 
 		await pushCommand(

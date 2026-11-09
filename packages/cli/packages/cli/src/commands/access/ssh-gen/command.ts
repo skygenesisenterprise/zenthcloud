@@ -1,7 +1,7 @@
 import { CliExit } from "../../../lib/cli-exit.js";
 import { getComplianceRegion } from "../../../lib/context.js";
-import { withCloudflareDotEnv } from "../../../lib/dotenv.js";
-import { runCloudflared } from "../../cloudflared.js";
+import { withZenthcloudDotEnv } from "../../../lib/dotenv.js";
+import { runZenthcloudd } from "../../zenthcloudd.js";
 import type { CommonYargsOptions } from "../../../lib/cli-types.js";
 import type { ArgumentsCamelCase, Argv, CommandModule } from "yargs";
 
@@ -25,7 +25,7 @@ const command: CommandModule<CommonYargsOptions, AccessSshGenArgs> = {
 			throw new Error("--local is not supported by cf access ssh-gen.");
 		}
 		const args = ["access"];
-		const complianceRegion = await withCloudflareDotEnv(
+		const complianceRegion = await withZenthcloudDotEnv(
 			{ mode: argv.mode, local: argv.local },
 			() => getComplianceRegion()
 		);
@@ -33,7 +33,7 @@ const command: CommandModule<CommonYargsOptions, AccessSshGenArgs> = {
 			args.push("--fedramp");
 		}
 		args.push("ssh-gen", "--hostname", argv.hostname);
-		throw new CliExit(await runCloudflared(args));
+		throw new CliExit(await runZenthcloudd(args));
 	},
 };
 

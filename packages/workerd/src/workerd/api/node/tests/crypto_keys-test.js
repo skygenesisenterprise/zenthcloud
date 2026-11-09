@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Cloudflare, Inc.
+// Copyright (c) 2023 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import { deepStrictEqual, strictEqual, ok, rejects, throws } from 'node:assert';
@@ -2272,7 +2272,7 @@ export const export_encrypted_ec_private_key = {
   },
 };
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-30:
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-30:
 // createSecretKey() must correctly copy DataView key material.
 // Previously, Buffer.from(dataView) produced an empty Buffer because
 // DataView has no .length property, causing the key material to be lost.

@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/hyperdrive_config/migration/v500"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/hyperdrive_config/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -14,11 +14,11 @@ func TestTransform_Basic(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 
-	source := v500.SourceCloudflareHyperdriveConfigModel{
+	source := v500.SourceZenthcloudHyperdriveConfigModel{
 		ID:        types.StringValue("test-id-123"),
 		AccountID: types.StringValue("account-id-456"),
 		Name:      types.StringValue("my-hyperdrive"),
-		Origin: &v500.SourceCloudflareHyperdriveConfigOriginModel{
+		Origin: &v500.SourceZenthcloudHyperdriveConfigOriginModel{
 			Database: types.StringValue("mydb"),
 			Password: types.StringValue("secret"),
 			Host:     types.StringValue("db.example.com"),
@@ -79,11 +79,11 @@ func TestTransform_WithCaching(t *testing.T) {
 		"stale_while_revalidate": types.Int64Type,
 	}
 
-	source := v500.SourceCloudflareHyperdriveConfigModel{
+	source := v500.SourceZenthcloudHyperdriveConfigModel{
 		ID:        types.StringValue("test-id-123"),
 		AccountID: types.StringValue("account-id-456"),
 		Name:      types.StringValue("my-hyperdrive"),
-		Origin: &v500.SourceCloudflareHyperdriveConfigOriginModel{
+		Origin: &v500.SourceZenthcloudHyperdriveConfigOriginModel{
 			Database: types.StringValue("mydb"),
 			Password: types.StringValue("secret"),
 			Host:     types.StringValue("db.example.com"),
@@ -116,11 +116,11 @@ func TestTransform_WithAccessOrigin(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 
-	source := v500.SourceCloudflareHyperdriveConfigModel{
+	source := v500.SourceZenthcloudHyperdriveConfigModel{
 		ID:        types.StringValue("test-id-123"),
 		AccountID: types.StringValue("account-id-456"),
 		Name:      types.StringValue("my-hyperdrive-access"),
-		Origin: &v500.SourceCloudflareHyperdriveConfigOriginModel{
+		Origin: &v500.SourceZenthcloudHyperdriveConfigOriginModel{
 			Database:           types.StringValue("mydb"),
 			Password:           types.StringValue("secret"),
 			Host:               types.StringValue("db.internal.example.com"),
@@ -153,7 +153,7 @@ func TestTransform_MissingAccountID(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 
-	source := v500.SourceCloudflareHyperdriveConfigModel{
+	source := v500.SourceZenthcloudHyperdriveConfigModel{
 		ID:        types.StringValue("test-id"),
 		AccountID: types.StringNull(),
 		Name:      types.StringValue("test"),
@@ -169,7 +169,7 @@ func TestTransform_MissingName(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 
-	source := v500.SourceCloudflareHyperdriveConfigModel{
+	source := v500.SourceZenthcloudHyperdriveConfigModel{
 		ID:        types.StringValue("test-id"),
 		AccountID: types.StringValue("account-id"),
 		Name:      types.StringNull(),
@@ -191,11 +191,11 @@ func TestTransform_CachingDisabledOnly(t *testing.T) {
 		"stale_while_revalidate": types.Int64Type,
 	}
 
-	source := v500.SourceCloudflareHyperdriveConfigModel{
+	source := v500.SourceZenthcloudHyperdriveConfigModel{
 		ID:        types.StringValue("test-id"),
 		AccountID: types.StringValue("account-id"),
 		Name:      types.StringValue("test"),
-		Origin: &v500.SourceCloudflareHyperdriveConfigOriginModel{
+		Origin: &v500.SourceZenthcloudHyperdriveConfigOriginModel{
 			Database: types.StringValue("mydb"),
 			Password: types.StringValue("secret"),
 			Host:     types.StringValue("db.example.com"),

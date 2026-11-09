@@ -1,8 +1,8 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-369: process abort via
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-369: process abort via
 // prototype-polluted getter during Request host-object deserialization.
 // Pre-fix: V8_Fatal("Invoke in DisallowJavascriptExecutionScope") -> abort.
 // Post-fix: structuredClone succeeds normally.

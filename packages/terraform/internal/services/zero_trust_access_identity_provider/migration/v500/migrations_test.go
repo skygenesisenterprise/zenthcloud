@@ -13,10 +13,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -29,7 +29,7 @@ var (
 // - Last stable v4 release: default 4.52.5
 // - Current v5 release: auto-updates with releases (internal.PackageVersion)
 //
-// Key changes: cloudflare_access_identity_provider → cloudflare_zero_trust_access_identity_provider
+// Key changes: zenthcloud_access_identity_provider → zenthcloud_zero_trust_access_identity_provider
 // - Config block to attribute conversion
 // - scim_config block to attribute conversion
 // - idp_public_cert → idp_public_certs (string → list)
@@ -82,8 +82,8 @@ var v5SamlConfig string
 
 // TestMigrateAccessIdentityProvider_OneTimePin_Basic tests basic OneTimePin migration
 func TestMigrateAccessIdentityProvider_OneTimePin_Basic(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	testCases := []struct {
@@ -109,9 +109,9 @@ func TestMigrateAccessIdentityProvider_OneTimePin_Basic(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_zero_trust_access_identity_provider." + rnd
+			resourceName := "zenthcloud_zero_trust_access_identity_provider." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -125,8 +125,8 @@ func TestMigrateAccessIdentityProvider_OneTimePin_Basic(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -162,8 +162,8 @@ func TestMigrateAccessIdentityProvider_OneTimePin_Basic(t *testing.T) {
 
 // TestMigrateAccessIdentityProvider_OneTimePin_Zone tests zone-scoped OneTimePin migration
 func TestMigrateAccessIdentityProvider_OneTimePin_Zone(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	testCases := []struct {
@@ -189,9 +189,9 @@ func TestMigrateAccessIdentityProvider_OneTimePin_Zone(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_zero_trust_access_identity_provider." + rnd
+			resourceName := "zenthcloud_zero_trust_access_identity_provider." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -205,8 +205,8 @@ func TestMigrateAccessIdentityProvider_OneTimePin_Zone(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -265,9 +265,9 @@ func TestMigrateAccessIdentityProvider_GitHub_OAuth(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_zero_trust_access_identity_provider." + rnd
+			resourceName := "zenthcloud_zero_trust_access_identity_provider." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -281,8 +281,8 @@ func TestMigrateAccessIdentityProvider_GitHub_OAuth(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -320,8 +320,8 @@ func TestMigrateAccessIdentityProvider_GitHub_OAuth(t *testing.T) {
 
 // TestMigrateAccessIdentityProvider_AzureAD_SCIM tests AzureAD with SCIM migration
 func TestMigrateAccessIdentityProvider_AzureAD_SCIM(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	testCases := []struct {
@@ -347,9 +347,9 @@ func TestMigrateAccessIdentityProvider_AzureAD_SCIM(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_zero_trust_access_identity_provider." + rnd
+			resourceName := "zenthcloud_zero_trust_access_identity_provider." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -363,8 +363,8 @@ func TestMigrateAccessIdentityProvider_AzureAD_SCIM(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -427,9 +427,9 @@ func TestMigrateAccessIdentityProvider_SAML(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_zero_trust_access_identity_provider." + rnd
+			resourceName := "zenthcloud_zero_trust_access_identity_provider." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -443,8 +443,8 @@ func TestMigrateAccessIdentityProvider_SAML(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -466,7 +466,7 @@ func TestMigrateAccessIdentityProvider_SAML(t *testing.T) {
 						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("config"), knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"issuer_url":     knownvalue.StringExact("jumpcloud"),
-							"sso_target_url": knownvalue.StringExact("https://sso.myexample.jumpcloud.com/saml2/cloudflareaccess"),
+							"sso_target_url": knownvalue.StringExact("https://github.com/skygenesisenterprise/zenthcloud"),
 							"attributes": knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.StringExact("email"),
 								knownvalue.StringExact("username"),
@@ -513,9 +513,9 @@ func TestMigrateAccessIdentityProvider_LinkedIn_OAuth(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_zero_trust_access_identity_provider." + rnd
+			resourceName := "zenthcloud_zero_trust_access_identity_provider." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -529,8 +529,8 @@ func TestMigrateAccessIdentityProvider_LinkedIn_OAuth(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -568,8 +568,8 @@ func TestMigrateAccessIdentityProvider_LinkedIn_OAuth(t *testing.T) {
 
 // TestMigrateAccessIdentityProvider_AzureAD_Basic tests basic AzureAD migration (no SCIM)
 func TestMigrateAccessIdentityProvider_AzureAD_Basic(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	testCases := []struct {
@@ -595,9 +595,9 @@ func TestMigrateAccessIdentityProvider_AzureAD_Basic(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_zero_trust_access_identity_provider." + rnd
+			resourceName := "zenthcloud_zero_trust_access_identity_provider." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -611,8 +611,8 @@ func TestMigrateAccessIdentityProvider_AzureAD_Basic(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -654,9 +654,9 @@ func TestMigrateAccessIdentityProvider_AzureAD_Basic(t *testing.T) {
 // Since the v4 API doesn't return idp_public_cert in reads, the migrated state has idp_public_certs=nil,
 // causing a legitimate Update action when applied with the v5 config that specifies the cert.
 func TestMigrateAccessIdentityProvider_SAML_V4_CertRename(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_identity_provider." + rnd
+	resourceName := "zenthcloud_zero_trust_access_identity_provider." + rnd
 	tmpDir := t.TempDir()
 	testConfig := fmt.Sprintf(v4SamlConfig, rnd, accountID)
 
@@ -669,8 +669,8 @@ func TestMigrateAccessIdentityProvider_SAML_V4_CertRename(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: acctest.GetLastV4Version(),
 					},
 				},
@@ -694,7 +694,7 @@ func TestMigrateAccessIdentityProvider_SAML_V4_CertRename(t *testing.T) {
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("config"), knownvalue.ObjectPartial(map[string]knownvalue.Check{
 						"issuer_url":     knownvalue.StringExact("jumpcloud"),
-						"sso_target_url": knownvalue.StringExact("https://sso.myexample.jumpcloud.com/saml2/cloudflareaccess"),
+						"sso_target_url": knownvalue.StringExact("https://github.com/skygenesisenterprise/zenthcloud"),
 						"sign_request":   knownvalue.Bool(true),
 						"idp_public_certs": knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.StringExact("MIIDpDCCAoygAwIBAgIGAV2ka+55MA0GCSqGSIb3DQEBCwUAMIGSMQswCQYDVQQGEwJVUzETMBEGA1UEC.....GF/Q2/MHadws97cZguTnQyuOqPuHbnN83d/2l1NSYKCbHt24o"),

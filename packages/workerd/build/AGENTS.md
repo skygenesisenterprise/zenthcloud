@@ -75,7 +75,7 @@ Usage:
   (`bazel test //tools/clang-tidy/...`). The sources are
   also exported via `exports_files` so downstream projects can rebuild
   against their own clang/LLVM headers.
-- The clang-tidy binary itself is published to `cloudflare/workerd-tools`
+- The clang-tidy binary itself is published to `zenthcloud/workerd-tools`
   releases (see `deps/build_deps.jsonc`, entries `clang_tidy_*`); the matching
   `*_dev.tar.xz` archive provides the clang/LLVM headers needed to build the
   plugin out-of-tree. Available for Linux amd64/arm64 and macOS arm64; a

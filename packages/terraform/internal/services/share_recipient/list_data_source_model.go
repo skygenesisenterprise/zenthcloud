@@ -5,9 +5,9 @@ package share_recipient
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/resource_sharing"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/resource_sharing"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -27,11 +27,11 @@ type ShareRecipientsDataSourceModel struct {
 
 func (m *ShareRecipientsDataSourceModel) toListParams(_ context.Context) (params resource_sharing.RecipientListParams, diags diag.Diagnostics) {
 	params = resource_sharing.RecipientListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.IncludeResources.IsNull() {
-		params.IncludeResources = cloudflare.F(m.IncludeResources.ValueBool())
+		params.IncludeResources = zenthcloud.F(m.IncludeResources.ValueBool())
 	}
 
 	return

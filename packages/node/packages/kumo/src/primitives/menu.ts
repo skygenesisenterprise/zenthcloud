@@ -6,7 +6,7 @@
  *
  * @example
  * ```tsx
- * import { Menu } from '@cloudflare/kumo/primitives/menu';
+ * import { Menu } from '@zenthcloud/kumo/primitives/menu';
  * ```
  */
 

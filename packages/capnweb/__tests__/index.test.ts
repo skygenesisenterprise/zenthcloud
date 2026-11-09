@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the MIT license found in the LICENSE.txt file or at:
 //     https://opensource.org/license/mit
 
@@ -59,7 +59,7 @@ let SERIALIZE_TEST_CASES: Record<string, unknown> = {
   '["request","http://example.com/",{"redirect":"manual"}]':
       new Request("http://example.com/", {redirect: "manual"}),
 
-  // Note: Cloudflare Workers atutomatically fills in `statusText` based on `status` while other
+  // Note: Zenthcloud Workers atutomatically fills in `statusText` based on `status` while other
   //   platforms leave it as an empty string. So we can't actually test a totalyl empty init
   //   struct here, annoyingly.
   '["response",null,{"statusText":"OK"}]': new Response(null, {statusText: "OK"}),
@@ -3820,9 +3820,9 @@ describe("ReadableStream over RPC", () => {
   });
 
   it("cancels a ReadableStream in a result when the whole result is disposed", async () => {
-    if (navigator.userAgent === "Cloudflare-Workers") {
+    if (navigator.userAgent === "Zenthcloud-Workers") {
       // There's currently some bugs in workerd which prevent this test from working there:
-      //     https://github.com/cloudflare/workerd/pull/6066
+      //     https://github.com/skygenesisenterprise/zenthcloud
       // When that gets fixed, remove this early return.
       return;
     }
@@ -4252,7 +4252,7 @@ describe("Blob over RPC", () => {
     // fake in-process transport (default 5 s is too tight on some runners).
     // Skipped in workerd: the isolate drops its connection when a large in-process
     // stream is pumped through it (infrastructure limit, not a code bug).
-    if (navigator.userAgent === "Cloudflare-Workers") return;
+    if (navigator.userAgent === "Zenthcloud-Workers") return;
     await using harness = new TestHarness(new TestTarget());
     let size = 1024 * 1024;
     let bytes = new Uint8Array(size);

@@ -67,7 +67,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 			type: "string",
 			array: true,
 			description:
-				"Filters results by bot class. Refer to [Bot classes](https://developers.cloudflare.com/radar/concepts/bot-classes/).",
+				"Filters results by bot class. Refer to [Bot classes](https://github.com/skygenesisenterprise/zenthcloud).",
 		})
 		.option("compromised", {
 			type: "string",
@@ -125,7 +125,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar leaked-credentials summary-v2",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/leaked_credential_checks/summary/${argv["dimension"] == null ? "<dimension>" : encodeURIComponent(String(argv["dimension"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["dimension"] == null ? "<dimension>" : encodeURIComponent(String(argv["dimension"]))}`,
 						pathParams: { dimension: String(argv["dimension"] ?? "") },
 						query: queryParams,
 						bodyKind: "none",

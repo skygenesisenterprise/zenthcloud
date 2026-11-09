@@ -22,7 +22,7 @@ mod glue {
 pub trait WebSocketExt {
     /// Accepts the server side of the WebSocket.
     ///
-    /// [CF Documentation](https://developers.cloudflare.com/workers/runtime-apis/websockets#accept)
+    /// [CF Documentation](https://github.com/skygenesisenterprise/zenthcloud)
     fn accept(&self) -> Result<(), JsValue>;
 
     fn serialize_attachment(&self, value: JsValue) -> Result<(), JsValue>;

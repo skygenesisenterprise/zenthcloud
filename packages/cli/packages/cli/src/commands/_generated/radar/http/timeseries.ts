@@ -18,7 +18,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("agg-interval", {
 			type: "string",
 			description:
-				"Aggregation interval of the results (e.g., in 15 minutes or 1 hour intervals). Refer to [Aggregation intervals](https://developers.cloudflare.com/radar/concepts/aggregation-intervals/). When omitted, the interval is auto-selected from the requested date range; finer intervals are only available for shorter ranges. If the requested interval is too granular for the date range, the request is rejected.",
+				"Aggregation interval of the results (e.g., in 15 minutes or 1 hour intervals). Refer to [Aggregation intervals](https://github.com/skygenesisenterprise/zenthcloud). When omitted, the interval is auto-selected from the requested date range; finer intervals are only available for shorter ranges. If the requested interval is too granular for the date range, the request is rejected.",
 			choices: ["15m", "1h", "1d", "1w"],
 		})
 		.option("name", {
@@ -71,7 +71,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("normalization", {
 			type: "string",
 			description:
-				"Normalization method applied to the results. Refer to [Normalization methods](https://developers.cloudflare.com/radar/concepts/normalization/). `PERCENTAGE_CHANGE` requires exactly one comparison series (e.g. a `control` date range).",
+				"Normalization method applied to the results. Refer to [Normalization methods](https://github.com/skygenesisenterprise/zenthcloud). `PERCENTAGE_CHANGE` requires exactly one comparison series (e.g. a `control` date range).",
 			choices: ["PERCENTAGE_CHANGE", "MIN0_MAX"],
 		})
 		.option("api-traffic", {
@@ -84,7 +84,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 			type: "string",
 			array: true,
 			description:
-				"Filters results by bot class. Refer to [Bot classes](https://developers.cloudflare.com/radar/concepts/bot-classes/).",
+				"Filters results by bot class. Refer to [Bot classes](https://github.com/skygenesisenterprise/zenthcloud).",
 		})
 		.option("content-type", {
 			type: "string",
@@ -182,7 +182,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar http timeseries",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/http/timeseries`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

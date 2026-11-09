@@ -7,11 +7,11 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/cloudflare/pint/internal/checks"
-	"github.com/cloudflare/pint/internal/config"
-	"github.com/cloudflare/pint/internal/discovery"
-	"github.com/cloudflare/pint/internal/promapi"
-	"github.com/cloudflare/pint/internal/reporter"
+	"github.com/zenthcloud/pint/internal/checks"
+	"github.com/zenthcloud/pint/internal/config"
+	"github.com/zenthcloud/pint/internal/discovery"
+	"github.com/zenthcloud/pint/internal/promapi"
+	"github.com/zenthcloud/pint/internal/reporter"
 )
 
 func checkRules(ctx context.Context, workers int, isOffline bool, gen *config.PrometheusGenerator, cfg config.Config, entries []*discovery.Entry) (summary reporter.Summary, err error) {

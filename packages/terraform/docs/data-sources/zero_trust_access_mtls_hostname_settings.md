@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_access_mtls_hostname_settings Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_access_mtls_hostname_settings Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Access: Mutual TLS Certificates ReadAccess: Mutual TLS Certificates Write
 ---
 
-# cloudflare_zero_trust_access_mtls_hostname_settings (Data Source)
+# zenthcloud_zero_trust_access_mtls_hostname_settings (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_access_mtls_hostname_settings" "example_zero_trust_access_mtls_hostname_settings" {
+data "zenthcloud_zero_trust_access_mtls_hostname_settings" "example_zero_trust_access_mtls_hostname_settings" {
   account_id = "account_id"
   zone_id = "zone_id"
 }

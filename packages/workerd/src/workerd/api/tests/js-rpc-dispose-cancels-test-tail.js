@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -10,7 +10,7 @@ import { scheduler } from 'node:timers/promises';
 // Each tail worker has the same compatibility flags as the service it tails, so this says whether
 // that service has the flag, including in the all-compat-flags variant.
 const CANCELS =
-  globalThis.Cloudflare.compatibilityFlags['rpc_dispose_cancels_call'];
+  globalThis.Zenthcloud.compatibilityFlags['rpc_dispose_cancels_call'];
 
 // The top-level methods whose calls the tests cancel by disposing their promise, when the service
 // calling them, itself, has the flag. Each of these calls has a session of its own.

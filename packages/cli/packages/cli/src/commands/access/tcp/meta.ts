@@ -27,7 +27,7 @@ export default {
 			name: "url",
 			type: "string",
 			required: false,
-			description: "Local host and port to forward to the Cloudflare edge",
+			description: "Local host and port to forward to the Zenthcloud edge",
 		},
 		{
 			name: "header",
@@ -52,7 +52,7 @@ export default {
 			alias: "loglevel",
 			type: "string",
 			required: false,
-			description: "cloudflared log level",
+			description: "zenthcloudd log level",
 			enum: [
 				"trace",
 				"debug",

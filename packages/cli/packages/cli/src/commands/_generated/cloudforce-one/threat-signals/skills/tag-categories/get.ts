@@ -57,7 +57,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 						command:
 							"cf cloudforce-one threat-signals skills tag-categories get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/cloudforce-one/v2/threat-signals/skills/${argv["skill-id"] == null ? "<skill-id>" : encodeURIComponent(String(argv["skill-id"]))}/tag-categories`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/cloudforce-one/v2/threat-signals/skills/${argv["skill-id"] == null ? "<skill-id>" : encodeURIComponent(String(argv["skill-id"]))}/tag-categories`,
 						pathParams: { "skill-id": String(argv["skill-id"] ?? "") },
 						bodyKind: "none",
 					});

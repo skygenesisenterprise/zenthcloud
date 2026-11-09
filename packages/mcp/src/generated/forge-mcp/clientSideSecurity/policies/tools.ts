@@ -385,7 +385,7 @@ export const tools: readonly Tool[] = [
               "type": "boolean"
             },
             "expression": {
-              "description": "The expression which must match for the policy to be applied, using the Cloudflare Firewall rule expression syntax",
+              "description": "The expression which must match for the policy to be applied, using the Zenthcloud Firewall rule expression syntax",
               "type": "string"
             },
             "value": {

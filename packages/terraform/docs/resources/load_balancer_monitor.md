@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_load_balancer_monitor Resource - Cloudflare"
+page_title: "zenthcloud_load_balancer_monitor Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Load Balancing: Monitors and Pools ReadLoad Balancing: Monitors and Pools Write
 ---
 
-# cloudflare_load_balancer_monitor (Resource)
+# zenthcloud_load_balancer_monitor (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_load_balancer_monitor" "example_load_balancer_monitor" {
+resource "zenthcloud_load_balancer_monitor" "example_load_balancer_monitor" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   allow_insecure = true
   consecutive_down = 0
@@ -78,7 +78,7 @@ Available values: "http", "https", "tcp", "udp_icmp", "icmp_ping", "smtp".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_load_balancer_monitor.example '<account_id>/<monitor_id>'
+$ terraform import zenthcloud_load_balancer_monitor.example '<account_id>/<monitor_id>'
 ```
 
 

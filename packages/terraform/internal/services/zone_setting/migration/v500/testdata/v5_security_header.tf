@@ -1,4 +1,4 @@
-resource "cloudflare_zone_setting" "%[1]s_security_header" {
+resource "zenthcloud_zone_setting" "%[1]s_security_header" {
   zone_id    = "%[2]s"
   setting_id = "security_header"
   value = {
@@ -13,12 +13,12 @@ resource "cloudflare_zone_setting" "%[1]s_security_header" {
 }
 
 import {
-  to = cloudflare_zone_setting.%[1]s_security_header
+  to = zenthcloud_zone_setting.%[1]s_security_header
   id = "%[2]s/security_header"
 }
 
 removed {
-  from = cloudflare_zone_settings_override.%[1]s
+  from = zenthcloud_zone_settings_override.%[1]s
   lifecycle {
     destroy = false
   }

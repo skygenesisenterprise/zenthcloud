@@ -1,8 +1,8 @@
-// Copyright (c) 2024 Cloudflare, Inc.
+// Copyright (c) 2024 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import assert from 'node:assert';
-import { waitUntil } from 'cloudflare:workers';
+import { waitUntil } from 'zenthcloud:workers';
 import {
   WorkerEntrypoint,
   DurableObject,
@@ -11,8 +11,8 @@ import {
   RpcStub,
   RpcTarget,
   ServiceStub,
-} from 'cloudflare:workers';
-import { connect } from 'cloudflare:sockets';
+} from 'zenthcloud:workers';
+import { connect } from 'zenthcloud:sockets';
 
 try {
   waitUntil(null);
@@ -997,7 +997,7 @@ export let namedServiceBinding = {
       message:
         "The Workers runtime canceled this request because it detected that your Worker's code " +
         'had hung and would never generate a response. Refer to: ' +
-        'https://developers.cloudflare.com/workers/observability/errors/',
+        'https://github.com/skygenesisenterprise/zenthcloud',
     });
 
     {
@@ -1039,7 +1039,7 @@ export let actorWithoutExtendsRejectsRpc = {
         'The receiving Durable Object does not support RPC, because its class was not declared ' +
         'with `extends DurableObject`. In order to enable RPC, make sure your class ' +
         'extends the special class `DurableObject`, which can be imported from the module ' +
-        '"cloudflare:workers".',
+        '"zenthcloud:workers".',
     });
   },
 };
@@ -1386,7 +1386,7 @@ export let crossContextSharingDoesntWork = {
         'Cannot perform I/O on behalf of a different request. I/O objects (such as streams, ' +
         'request/response bodies, and others) created in the context of one request handler ' +
         "cannot be accessed from a different request's handler. This is a limitation of " +
-        'Cloudflare Workers which allows us to improve overall performance.',
+        'Zenthcloud Workers which allows us to improve overall performance.',
     };
 
     // A promise which resolves to a value that contains a stub. The stub cannot be used from a
@@ -1403,7 +1403,7 @@ export let crossContextSharingDoesntWork = {
         'Cannot perform I/O on behalf of a different request. I/O objects (such as streams, ' +
         'request/response bodies, and others) created in the context of one request handler ' +
         "cannot be accessed from a different request's handler. This is a limitation of " +
-        'Cloudflare Workers which allows us to improve overall performance. (I/O type: Client)',
+        'Zenthcloud Workers which allows us to improve overall performance. (I/O type: Client)',
     });
 
     // Pipelining on someone else's promise straight-up doesn't work.
@@ -1415,7 +1415,7 @@ export let crossContextSharingDoesntWork = {
           'Cannot perform I/O on behalf of a different request. I/O objects (such as streams, ' +
           'request/response bodies, and others) created in the context of one request handler ' +
           "cannot be accessed from a different request's handler. This is a limitation of " +
-          'Cloudflare Workers which allows us to improve overall performance. ' +
+          'Zenthcloud Workers which allows us to improve overall performance. ' +
           '(I/O type: JsRpcPromise)',
       }
     );
@@ -1432,7 +1432,7 @@ export let crossContextSharingDoesntWork = {
           'Cannot perform I/O on behalf of a different request. I/O objects (such as streams, ' +
           'request/response bodies, and others) created in the context of one request handler ' +
           "cannot be accessed from a different request's handler. This is a limitation of " +
-          'Cloudflare Workers which allows us to improve overall performance. ' +
+          'Zenthcloud Workers which allows us to improve overall performance. ' +
           '(I/O type: JsRpcPromise)',
       }
     );
@@ -1449,7 +1449,7 @@ export let crossContextSharingDoesntWork = {
         'Cannot perform I/O on behalf of a different request. I/O objects (such as streams, ' +
         'request/response bodies, and others) created in the context of one request handler ' +
         "cannot be accessed from a different request's handler. This is a limitation of " +
-        'Cloudflare Workers which allows us to improve overall performance. (I/O type: Pipeline)',
+        'Zenthcloud Workers which allows us to improve overall performance. (I/O type: Pipeline)',
     });
 
     await assert.rejects(
@@ -1460,7 +1460,7 @@ export let crossContextSharingDoesntWork = {
           'Cannot perform I/O on behalf of a different request. I/O objects (such as streams, ' +
           'request/response bodies, and others) created in the context of one request handler ' +
           "cannot be accessed from a different request's handler. This is a limitation of " +
-          'Cloudflare Workers which allows us to improve overall performance. ' +
+          'Zenthcloud Workers which allows us to improve overall performance. ' +
           '(I/O type: JsRpcPromise)',
       }
     );
@@ -1478,7 +1478,7 @@ export let waitUntilWorks = {
       await globalWaitUntilPromise;
     }
 
-    // Tests `import { waitUntil } from 'cloudflare:workers` on WorkerEntrypoint
+    // Tests `import { waitUntil } from 'zenthcloud:workers` on WorkerEntrypoint
     {
       globalWaitUntilPromise = null;
       await env.MyServiceLocal.testImportedWaitUntil();
@@ -2400,7 +2400,7 @@ export let eOrderTest = {
   },
 };
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-297:
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-297:
 // Unbounded JsRpcProperty parent chain causes native stack overflow
 // (SIGSEGV) on destruction. Building a deep chain of pipelined
 // property accesses must be rejected once the depth exceeds

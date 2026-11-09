@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_sso_connector Resource - Cloudflare"
+page_title: "zenthcloud_sso_connector Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   SSO Connector ReadSSO Connector Write
 ---
 
-# cloudflare_sso_connector (Resource)
+# zenthcloud_sso_connector (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_sso_connector" "example_sso_connector" {
+resource "zenthcloud_sso_connector" "example_sso_connector" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   email_domain = "example.com"
   begin_verification = true
@@ -59,7 +59,7 @@ Available values: "awaiting", "pending", "failed", "verified".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_sso_connector.example '<account_id>/<sso_connector_id>'
+$ terraform import zenthcloud_sso_connector.example '<account_id>/<sso_connector_id>'
 ```
 
 

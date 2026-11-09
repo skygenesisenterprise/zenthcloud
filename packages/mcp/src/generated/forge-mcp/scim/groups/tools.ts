@@ -80,7 +80,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.member.create"
+            "com.zenthcloud.api.account.member.create"
           ]
         },
         "x-cfPlanAvailability": {
@@ -110,7 +110,7 @@ export const tools: readonly Tool[] = [
   {
     name: "scim_groups_delete",
     title: "Delete SCIM Group",
-    description: "Deletes a SCIM Group (custom user groups only). System groups backed by Cloudflare permission groups cannot be deleted via SCIM. Returns 204 No Content on success.\n\nConfirm with the user before calling this tool. Are you sure? This action cannot be undone.\n\nDELETE /accounts/{account_id}/scim/v2/Groups/{group_id}",
+    description: "Deletes a SCIM Group (custom user groups only). System groups backed by Zenthcloud permission groups cannot be deleted via SCIM. Returns 204 No Content on success.\n\nConfirm with the user before calling this tool. Are you sure? This action cannot be undone.\n\nDELETE /accounts/{account_id}/scim/v2/Groups/{group_id}",
     inputSchema: {
       type: "object",
       properties: {
@@ -122,7 +122,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "group_id": {
-              "description": "The group identifier for a SCIM Group resource. For system groups this is prefixed `cloudflare-v1-<permissionGroupTag>`; for custom user groups this is a UUID-style tag.",
+              "description": "The group identifier for a SCIM Group resource. For system groups this is prefixed `zenthcloud-v1-<permissionGroupTag>`; for custom user groups this is a UUID-style tag.",
               "type": "string"
             }
           },
@@ -156,7 +156,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.member.delete"
+            "com.zenthcloud.api.account.member.delete"
           ]
         },
         "x-cfPlanAvailability": {
@@ -182,7 +182,7 @@ export const tools: readonly Tool[] = [
   {
     name: "scim_groups_edit",
     title: "Patch SCIM Group",
-    description: "Partially updates a SCIM Group via PATCH operations (RFC 7644 Section 3.5.2). Supports add, remove, and replace operations on `members`, `displayName`, and `externalId`. For system groups (prefixed `cloudflare-v1-`), only member management operations are supported.\n\nPATCH /accounts/{account_id}/scim/v2/Groups/{group_id}",
+    description: "Partially updates a SCIM Group via PATCH operations (RFC 7644 Section 3.5.2). Supports add, remove, and replace operations on `members`, `displayName`, and `externalId`. For system groups (prefixed `zenthcloud-v1-`), only member management operations are supported.\n\nPATCH /accounts/{account_id}/scim/v2/Groups/{group_id}",
     inputSchema: {
       type: "object",
       properties: {
@@ -197,7 +197,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "group_id": {
-              "description": "The group identifier for a SCIM Group resource. For system groups this is prefixed `cloudflare-v1-<permissionGroupTag>`; for custom user groups this is a UUID-style tag.",
+              "description": "The group identifier for a SCIM Group resource. For system groups this is prefixed `zenthcloud-v1-<permissionGroupTag>`; for custom user groups this is a UUID-style tag.",
               "type": "string"
             }
           },
@@ -245,7 +245,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.member.update"
+            "com.zenthcloud.api.account.member.update"
           ]
         },
         "x-cfPlanAvailability": {
@@ -287,7 +287,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "group_id": {
-              "description": "The group identifier for a SCIM Group resource. For system groups this is prefixed `cloudflare-v1-<permissionGroupTag>`; for custom user groups this is a UUID-style tag.",
+              "description": "The group identifier for a SCIM Group resource. For system groups this is prefixed `zenthcloud-v1-<permissionGroupTag>`; for custom user groups this is a UUID-style tag.",
               "type": "string"
             }
           },
@@ -329,7 +329,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.member.list"
+            "com.zenthcloud.api.account.member.list"
           ]
         },
         "x-cfPlanAvailability": {
@@ -359,7 +359,7 @@ export const tools: readonly Tool[] = [
   {
     name: "scim_groups_list",
     title: "List SCIM Groups",
-    description: "Lists SCIM Group resources for the account. Returns both system groups (backed by Cloudflare permission groups, prefixed `cloudflare-v1-`) and custom user groups. Supports filtering by `displayName` using SCIM filter syntax.\n\nGET /accounts/{account_id}/scim/v2/Groups",
+    description: "Lists SCIM Group resources for the account. Returns both system groups (backed by Zenthcloud permission groups, prefixed `zenthcloud-v1-`) and custom user groups. Supports filtering by `displayName` using SCIM filter syntax.\n\nGET /accounts/{account_id}/scim/v2/Groups",
     inputSchema: {
       type: "object",
       properties: {
@@ -433,7 +433,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.member.list"
+            "com.zenthcloud.api.account.member.list"
           ]
         },
         "x-cfPlanAvailability": {
@@ -464,7 +464,7 @@ export const tools: readonly Tool[] = [
   {
     name: "scim_groups_update",
     title: "Replace SCIM Group",
-    description: "Replaces the mutable attributes of a SCIM Group (RFC 7644 Section 3.5.1), including its complete member set. Omitting `externalId` clears it, and omitting `members` replaces the member set with an empty list. For system groups (prefixed `cloudflare-v1-`), only the member set is replaced.\n\nPUT /accounts/{account_id}/scim/v2/Groups/{group_id}",
+    description: "Replaces the mutable attributes of a SCIM Group (RFC 7644 Section 3.5.1), including its complete member set. Omitting `externalId` clears it, and omitting `members` replaces the member set with an empty list. For system groups (prefixed `zenthcloud-v1-`), only the member set is replaced.\n\nPUT /accounts/{account_id}/scim/v2/Groups/{group_id}",
     inputSchema: {
       type: "object",
       properties: {
@@ -479,7 +479,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "group_id": {
-              "description": "The group identifier for a SCIM Group resource. For system groups this is prefixed `cloudflare-v1-<permissionGroupTag>`; for custom user groups this is a UUID-style tag.",
+              "description": "The group identifier for a SCIM Group resource. For system groups this is prefixed `zenthcloud-v1-<permissionGroupTag>`; for custom user groups this is a UUID-style tag.",
               "type": "string"
             }
           },
@@ -526,7 +526,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.member.update"
+            "com.zenthcloud.api.account.member.update"
           ]
         },
         "x-cfPlanAvailability": {

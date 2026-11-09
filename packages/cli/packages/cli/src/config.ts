@@ -1,1 +1,1 @@
-export * from "@cloudflare/config/public";
+export * from "@zenthcloud/config/public";

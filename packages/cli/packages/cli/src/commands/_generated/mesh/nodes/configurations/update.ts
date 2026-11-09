@@ -38,7 +38,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("mesh-config-vips", {
 			type: "string",
 			description:
-				'VIPs to assign on the CloudflareWARP interface. Provide as a JSON array of objects or @path/to/file.json. Shape: [{"address": string}].',
+				'VIPs to assign on the ZenthcloudWARP interface. Provide as a JSON array of objects or @path/to/file.json. Shape: [{"address": string}].',
 		})
 		.option("mesh-config-vips-previous", {
 			type: "string",
@@ -91,7 +91,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf mesh nodes configurations update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/warp_connector/${argv["tunnel-id"] == null ? "<tunnel-id>" : encodeURIComponent(String(argv["tunnel-id"]))}/configurations`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/warp_connector/${argv["tunnel-id"] == null ? "<tunnel-id>" : encodeURIComponent(String(argv["tunnel-id"]))}/configurations`,
 						pathParams: { "tunnel-id": String(argv["tunnel-id"] ?? "") },
 						bodyKind: "json",
 						body:

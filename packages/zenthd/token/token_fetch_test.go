@@ -68,7 +68,7 @@ func TestFetchTokenWithRedirectAllowsSameProcessReauthentication(t *testing.T) {
 	assert.NoFileExists(t, appTokenPath+".lock")
 
 	// This mirrors the WebSocket 302 retry path, which removes the app token
-	// before fetching a replacement in the same cloudflared process.
+	// before fetching a replacement in the same zenthcloudd process.
 	require.NoError(t, RemoveTokenIfExists(appInfo))
 
 	done := make(chan struct{})
@@ -91,7 +91,7 @@ func TestFetchTokenWithRedirectAllowsSameProcessReauthentication(t *testing.T) {
 
 // relayRecorder stands in for the token transfer relay. It records every
 // polled URL and answers with the app and org tokens encrypted to the
-// cloudflared public key embedded in the polling path.
+// zenthcloudd public key embedded in the polling path.
 type relayRecorder struct {
 	appToken string
 	orgToken string
@@ -203,58 +203,58 @@ func TestFetchTokenSelectsTransferRelay(t *testing.T) {
 	}{
 		{
 			name:       "fed auth domain without flag",
-			authDomain: "team.fed.cloudflareaccess.com",
+			authDomain: "team.fed.zenthcloudaccess.com",
 			fetch:      FetchTokenWithRedirect,
 			wantRelay:  fedStoreURL,
 		},
 		{
 			name:       "fed auth domain without flag via FetchToken",
-			authDomain: "team.fed.cloudflareaccess.com",
+			authDomain: "team.fed.zenthcloudaccess.com",
 			fetch:      FetchToken,
 			wantRelay:  fedStoreURL,
 		},
 		{
 			name:       "fed auth domain normalized",
-			authDomain: "Team.FED.CloudflareAccess.com:443",
+			authDomain: "Team.FED.ZenthcloudAccess.com:443",
 			fetch:      FetchTokenWithRedirect,
 			wantRelay:  fedStoreURL,
 		},
 		{
 			name:       "retail auth domain without flag",
-			authDomain: "team.cloudflareaccess.com",
+			authDomain: "team.zenthcloudaccess.com",
 			fetch:      FetchTokenWithRedirect,
 			wantRelay:  baseStoreURL,
 		},
 		{
 			name:       "retail auth domain via FetchToken",
-			authDomain: "team.cloudflareaccess.com",
+			authDomain: "team.zenthcloudaccess.com",
 			fetch:      FetchToken,
 			wantRelay:  baseStoreURL,
 		},
 		{
 			name:         "retail auth domain with flag",
-			authDomain:   "team.cloudflareaccess.com",
+			authDomain:   "team.zenthcloudaccess.com",
 			forceFedramp: true,
 			fetch:        FetchTokenWithRedirect,
 			wantRelay:    fedStoreURL,
 		},
 		{
 			name:         "fed auth domain with flag",
-			authDomain:   "team.fed.cloudflareaccess.com",
+			authDomain:   "team.fed.zenthcloudaccess.com",
 			forceFedramp: true,
 			fetch:        FetchToken,
 			wantRelay:    fedStoreURL,
 		},
 		{
 			name:        "retail auth domain with fed-looking app hostname",
-			authDomain:  "team.cloudflareaccess.com",
-			appHostname: "app.fed.cloudflareaccess.com",
+			authDomain:  "team.zenthcloudaccess.com",
+			appHostname: "app.fed.zenthcloudaccess.com",
 			fetch:       FetchTokenWithRedirect,
 			wantRelay:   baseStoreURL,
 		},
 		{
 			name:       "retail team named fed",
-			authDomain: "fed.cloudflareaccess.com",
+			authDomain: "fed.zenthcloudaccess.com",
 			fetch:      FetchTokenWithRedirect,
 			wantRelay:  baseStoreURL,
 		},
@@ -301,7 +301,7 @@ func TestFetchTokenFedAuthDomainSkipsRelayWhenTokensCached(t *testing.T) {
 	relay := &relayRecorder{}
 	stubTransfer(t, relay)
 
-	_, appInfo := discoverTestApp(t, "team.fed.cloudflareaccess.com", "")
+	_, appInfo := discoverTestApp(t, "team.fed.zenthcloudaccess.com", "")
 	appToken := signedAccessToken(t, key, "app-aud", time.Now().Add(time.Hour))
 	orgToken := signedAccessToken(t, key, "org-aud", time.Now().Add(time.Hour))
 

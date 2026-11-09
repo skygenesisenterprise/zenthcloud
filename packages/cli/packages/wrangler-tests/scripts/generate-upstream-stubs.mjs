@@ -231,26 +231,26 @@ const skippedCases = new Map([
 	],
 	[
 		"pages/deployment-delete.test.ts",
-		new Set(["should prefer CLOUDFLARE_ACCOUNT_ID over cached account id"]),
+		new Set(["should prefer ZENTHCLOUD_ACCOUNT_ID over cached account id"]),
 	],
 	[
 		"pages/deployment-list.test.ts",
 		new Set([
 			"should make request to list deployments and return result as json",
-			"should prefer CLOUDFLARE_ACCOUNT_ID over cached account id",
+			"should prefer ZENTHCLOUD_ACCOUNT_ID over cached account id",
 		]),
 	],
 	[
 		"pages/project-list.test.ts",
 		new Set([
-			"should override cached accountId with CLOUDFLARE_ACCOUNT_ID environmental variable if provided",
+			"should override cached accountId with ZENTHCLOUD_ACCOUNT_ID environmental variable if provided",
 		]),
 	],
 	[
 		"pages/secret.test.ts",
 		new Set([
 			"should error if request for available memberships fails",
-			"should prefer CLOUDFLARE_ACCOUNT_ID over cached account id",
+			"should prefer ZENTHCLOUD_ACCOUNT_ID over cached account id",
 		]),
 	],
 	[
@@ -264,7 +264,7 @@ const skippedCases = new Map([
 	[
 		"secret.test.ts",
 		new Set([
-			"should not warn if the wrangler config contains environments and CLOUDFLARE_ENV is set",
+			"should not warn if the wrangler config contains environments and ZENTHCLOUD_ENV is set",
 			'should not warn if --env="" is passed to explicitly target the top-level environment',
 		]),
 	],
@@ -282,10 +282,10 @@ const skippedCases = new Map([
 			"should send the `login user` metric when `--scopes` is provided",
 			"--use-keyring stores credentials in an encrypted file with a key in the OS keyring",
 			"--no-use-keyring scrubs encrypted credentials without writing them to plaintext, then the fresh login uses the file store",
-			"--no-use-keyring still scrubs the encrypted credentials and keyring entry when CLOUDFLARE_AUTH_USE_KEYRING=false is set (the env var must not defeat the opt-out scrub)",
+			"--no-use-keyring still scrubs the encrypted credentials and keyring entry when ZENTHCLOUD_AUTH_USE_KEYRING=false is set (the env var must not defeat the opt-out scrub)",
 			"--use-keyring rolls the keyring_enabled preference back when eager credential-store validation throws",
 			"--use-keyring rolls the keyring_enabled preference back when the resolver soft-falls-back to the file store",
-			"--use-keyring persists the preference and skips the misleading rollback when CLOUDFLARE_AUTH_USE_KEYRING=false overrides for this command",
+			"--use-keyring persists the preference and skips the misleading rollback when ZENTHCLOUD_AUTH_USE_KEYRING=false overrides for this command",
 			"`auth keyring enable` persists the preference without requiring a login",
 			"`auth keyring enable` rolls the preference back when the keyring backend is unavailable",
 			"`auth keyring disable` scrubs the default profile's encrypted credentials",
@@ -359,11 +359,11 @@ function isPatternSkip(file, name) {
 		return !new Set([
 			"should not deploy if there's any other kind of error when checking deployment source",
 			"drops a user into the login flow if they're unauthenticated",
-			"should not throw an error in non-TTY if 'CLOUDFLARE_API_TOKEN' & 'account_id' are in scope",
-			"should not throw an error if 'CLOUDFLARE_ACCOUNT_ID' & 'CLOUDFLARE_API_TOKEN' are in scope",
+			"should not throw an error in non-TTY if 'ZENTHCLOUD_API_TOKEN' & 'account_id' are in scope",
+			"should not throw an error if 'ZENTHCLOUD_ACCOUNT_ID' & 'ZENTHCLOUD_API_TOKEN' are in scope",
 			"should throw an error in non-TTY & there is more than one account associated with API token",
 			"should redact account names in CI even when non-interactive",
-			"should throw error in non-TTY if 'CLOUDFLARE_API_TOKEN' is missing",
+			"should throw error in non-TTY if 'ZENTHCLOUD_API_TOKEN' is missing",
 			"should throw error with no account ID provided and no members retrieved",
 			"should warn user when worker was last deployed from api",
 		]).has(name);
@@ -485,7 +485,7 @@ function isPatternSkip(file, name) {
 			name ===
 				"should suggest `wrangler deploy` if a Workers config is detected when deploying to a non-existent Pages project" ||
 			name ===
-				"should prefer the CLOUDFLARE_ACCOUNT_ID environment variable over a stale cached account id in pages.json" ||
+				"should prefer the ZENTHCLOUD_ACCOUNT_ID environment variable over a stale cached account id in pages.json" ||
 			/\b(bundle|bundling|no-bundle|no_bundle)\b/.test(name) ||
 			/custom config file path|warn and ignore the config file/.test(name) ||
 			/^should support wrangler\.(json|toml)$/.test(name) ||
@@ -619,7 +619,7 @@ const groups = [...missingByFile]
 	});
 
 const source =
-	"// Generated from cloudflare/workers-sdk@c2bb4c815. Do not rename cases.\n" +
+	"// Generated from zenthcloud/workers-sdk@c2bb4c815. Do not rename cases.\n" +
 	'import { describe, it } from "vite-plus/test";\n\n' +
 	`const groups = ${JSON.stringify(groups, null, "\t")} as const;\n\n` +
 	"function register(group: (typeof groups)[number], depth = 0): void {\n" +
@@ -669,7 +669,7 @@ if (manifestFile) {
 	});
 	const manifest = `# Wrangler compatibility manifest
 
-Generated from \`cloudflare/workers-sdk@c2bb4c815f8a6af2ebea17ab6dd4f612c7b1e8eb\`.
+Generated from \`zenthcloud/workers-sdk@c2bb4c815f8a6af2ebea17ab6dd4f612c7b1e8eb\`.
 Test names and ancestry are canonical Wrangler identities. Statuses describe
 their representation in cf: \`passing\`, \`todo\`, or \`skip\`.
 

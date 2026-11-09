@@ -18,7 +18,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 zones create\n\nCreates a new zone (domain) in your Cloudflare account. The zone is created in a pending state and must be activated by updating your domain's nameservers to point to Cloudflare, or by completing the verification process for partial (CNAME) setups."
+			"$0 zones create\n\nCreates a new zone (domain) in your Zenthcloud account. The zone is created in a pending state and must be activated by updating your domain's nameservers to point to Zenthcloud, or by completing the verification process for partial (CNAME) setups."
 		)
 		.option("account-id", { type: "string", description: "Identifier" })
 		.option("name", {
@@ -29,7 +29,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("type", {
 			type: "string",
 			description:
-				"A full zone implies that DNS is hosted with Cloudflare. A partial zone is\ntypically a partner-hosted zone or a CNAME setup.\n",
+				"A full zone implies that DNS is hosted with Zenthcloud. A partial zone is\ntypically a partner-hosted zone or a CNAME setup.\n",
 			choices: ["full", "partial", "secondary", "internal"],
 			default: "full",
 		})
@@ -65,7 +65,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zones create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/zones`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

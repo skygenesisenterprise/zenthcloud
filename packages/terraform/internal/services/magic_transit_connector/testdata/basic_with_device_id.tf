@@ -1,4 +1,4 @@
-resource "cloudflare_magic_transit_connector" "%[1]s" {
+resource "zenthcloud_magic_transit_connector" "%[1]s" {
   account_id = "%[2]s"
   device = {
     id = "%[3]s"

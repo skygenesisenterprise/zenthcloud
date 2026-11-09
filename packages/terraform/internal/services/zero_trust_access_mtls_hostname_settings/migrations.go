@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_access_mtls_hostname_settings/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_access_mtls_hostname_settings/migration/v500"
 )
 
 var _ resource.ResourceWithUpgradeState = (*ZeroTrustAccessMTLSHostnameSettingsResource)(nil)

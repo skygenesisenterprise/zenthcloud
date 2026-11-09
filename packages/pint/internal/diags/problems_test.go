@@ -10,7 +10,7 @@ import (
 	promParser "github.com/prometheus/prometheus/promql/parser"
 	"github.com/stretchr/testify/require"
 
-	"github.com/cloudflare/pint/internal/output"
+	"github.com/zenthcloud/pint/internal/output"
 )
 
 func TestInjectDiagnostics(t *testing.T) {

@@ -6,7 +6,7 @@ nav_exclude: true
 
 pint is a Prometheus rule linter.
 
-You can find [online docs](https://cloudflare.github.io/pint/) on GitHub Pages.
+You can find [online docs](https://github.com/skygenesisenterprise/zenthcloud) on GitHub Pages.
 
 Alternatively you can read raw Markdown documentation [here](/docs/index.md):
 
@@ -17,7 +17,7 @@ Check [examples](/docs/examples) dir for sample config files.
 ## License
 
 ```text
-Copyright (c) Cloudflare, Inc.
+Copyright (c) Zenthcloud, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

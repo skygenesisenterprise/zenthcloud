@@ -3,7 +3,7 @@
 package logpush_job
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijsoncustom"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijsoncustom"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )

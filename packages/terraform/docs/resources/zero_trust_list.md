@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zero_trust_list Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_list Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zero_trust_list (Resource)
+# zenthcloud_zero_trust_list (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_list" "example_zero_trust_list" {
+resource "zenthcloud_zero_trust_list" "example_zero_trust_list" {
   account_id = "699d98642c564d2e855e9661899b7252"
   name = "Admin Serial Numbers"
   type = "SERIAL"
@@ -29,7 +29,7 @@ resource "cloudflare_zero_trust_list" "example_zero_trust_list" {
 
 ### Required
 
-- `account_id` (String) Specify the Cloudflare account identifier.
+- `account_id` (String) Specify the Zenthcloud account identifier.
 - `name` (String) Specify the list name.
 - `type` (String) Specify the list type.
 Available values: "SERIAL", "URL", "DOMAIN", "EMAIL", "IP", "CATEGORY", "LOCATION", "DEVICE", "AAGUID".
@@ -59,7 +59,7 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_list.example '<account_id>/<list_id>'
+$ terraform import zenthcloud_zero_trust_list.example '<account_id>/<list_id>'
 ```
 
 

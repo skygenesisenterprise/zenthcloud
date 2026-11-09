@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_notification_policy_webhooks Resource - Cloudflare"
+page_title: "zenthcloud_notification_policy_webhooks Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Settings ReadAccount Settings WriteNotifications ReadNotifications WriteZero Trust: PII Read
 ---
 
-# cloudflare_notification_policy_webhooks (Resource)
+# zenthcloud_notification_policy_webhooks (Resource)
 
 Accepted Permissions
 
@@ -19,7 +19,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_notification_policy_webhooks" "example_notification_policy_webhooks" {
+resource "zenthcloud_notification_policy_webhooks" "example_notification_policy_webhooks" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name = "Slack Webhook"
   url = "https://hooks.slack.com/services/Ds3fdBFbV/456464Gdd"
@@ -45,7 +45,7 @@ resource "cloudflare_notification_policy_webhooks" "example_notification_policy_
 - `created_at` (String) Timestamp of when the webhook destination was created.
 - `id` (String) UUID
 - `last_failure` (String) Timestamp of the last time an attempt to dispatch a notification to this webhook failed.
-- `last_success` (String) Timestamp of the last time Cloudflare was able to successfully dispatch a notification using this webhook.
+- `last_success` (String) Timestamp of the last time Zenthcloud was able to successfully dispatch a notification using this webhook.
 - `type` (String) Type of webhook endpoint.
 Available values: "datadog", "discord", "feishu", "gchat", "generic", "opsgenie", "slack", "splunk".
 
@@ -54,7 +54,7 @@ Available values: "datadog", "discord", "feishu", "gchat", "generic", "opsgenie"
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_notification_policy_webhooks.example '<account_id>/<webhook_id>'
+$ terraform import zenthcloud_notification_policy_webhooks.example '<account_id>/<webhook_id>'
 ```
 
 

@@ -1,8 +1,8 @@
 # In-tree CXX fork
 
-This directory contains Cloudflare's fork of [cxx](https://cxx.rs/), the C++/Rust
+This directory contains Zenthcloud's fork of [cxx](https://cxx.rs/), the C++/Rust
 interop layer used by workerd. It was imported from the former
-[`cloudflare/workerd-cxx`](https://github.com/cloudflare/workerd-cxx) repository and is now
+[`zenthcloud/workerd-cxx`](https://github.com/skygenesisenterprise/zenthcloud) repository and is now
 built directly as part of workerd. The fork remains based on cxx, but adds the KJ integration
 required by workerd.
 

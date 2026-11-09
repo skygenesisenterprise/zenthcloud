@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -83,8 +83,8 @@ function patchWaitUntil(ctx: {
 
 export type PyodideEntrypointHelper = {
   doAnImport: (mod: string) => Promise<any>;
-  cloudflareWorkersModule: { env: any };
-  cloudflareSocketsModule: any;
+  zenthcloudWorkersModule: { env: any };
+  zenthcloudSocketsModule: any;
   workerEntrypoint: any;
   patchWaitUntil: typeof patchWaitUntil;
   TEST_ONLY_THROW_PYTHON_WORKERS_INTERNAL_ERROR: (message: string) => never;
@@ -102,16 +102,16 @@ function get_pyodide_entrypoint_helper(): PyodideEntrypointHelper {
   return _pyodide_entrypoint_helper;
 }
 
-async function getCloudflareWorkersModule(
+async function getZenthcloudWorkersModule(
   doAnImport: (mod: string) => Promise<any>
 ): Promise<{ env: any }> {
-  const cloudflareWorkersModule = await doAnImport('cloudflare:workers');
+  const zenthcloudWorkersModule = await doAnImport('zenthcloud:workers');
   const waitUntil = createImportProxy(
-    'cloudflare:workers',
-    getPatchedWaitUntil(cloudflareWorkersModule),
+    'zenthcloud:workers',
+    getPatchedWaitUntil(zenthcloudWorkersModule),
     ['waitUntil']
   );
-  return new Proxy(cloudflareWorkersModule, {
+  return new Proxy(zenthcloudWorkersModule, {
     get(_target: any, prop: string | symbol): any {
       if (prop === 'waitUntil') {
         return waitUntil;
@@ -127,11 +127,11 @@ export async function setDoAnImport(
   doAnImport: (mod: string) => Promise<any>,
   workerEntrypoint: any
 ): Promise<void> {
-  const cloudflareWorkersModule = await getCloudflareWorkersModule(doAnImport);
+  const zenthcloudWorkersModule = await getZenthcloudWorkersModule(doAnImport);
   _pyodide_entrypoint_helper = {
     doAnImport,
-    cloudflareWorkersModule,
-    cloudflareSocketsModule: await doAnImport('cloudflare:sockets'),
+    zenthcloudWorkersModule,
+    zenthcloudSocketsModule: await doAnImport('zenthcloud:sockets'),
     workerEntrypoint,
     patchWaitUntil,
     TEST_ONLY_THROW_PYTHON_WORKERS_INTERNAL_ERROR(message: string): never {
@@ -144,8 +144,8 @@ export async function setDoAnImport(
     },
   };
   await fillSnapshotJsModules(async (mod: string): Promise<any> => {
-    if (mod === 'cloudflare:workers') {
-      return cloudflareWorkersModule;
+    if (mod === 'zenthcloud:workers') {
+      return zenthcloudWorkersModule;
     }
     return await doAnImport(mod);
   });
@@ -197,7 +197,7 @@ async function getPyodide(): Promise<Pyodide> {
     pyodidePromise = (async function (): Promise<Pyodide> {
       const pyodide = await loadPyodide({
         pyodide_entrypoint_helper: get_pyodide_entrypoint_helper(),
-        cloudflare_compat_flags: COMPATIBILITY_FLAGS,
+        zenthcloud_compat_flags: COMPATIBILITY_FLAGS,
       });
       await setupPatches(pyodide);
       return pyodide;
@@ -244,20 +244,20 @@ async function injectWorkersApi(pyodide: Pyodide): Promise<void> {
 
   const sitePackages = pyodide.FS.sitePackages;
   if (pyodide.version === PyodideVersion.V0_26_0a2) {
-    // Inject at cloudflare.workers for backwards compatibility
-    pyodide.FS.mkdirTree(`${sitePackages}/cloudflare/workers`);
+    // Inject at zenthcloud.workers for backwards compatibility
+    pyodide.FS.mkdirTree(`${sitePackages}/zenthcloud/workers`);
     await injectSitePackagesModule(
       pyodide,
       'workers-api/src/workers/__init__',
-      'cloudflare/workers/__init__'
+      'zenthcloud/workers/__init__'
     );
     await injectSitePackagesModule(
       pyodide,
       'workers-api/src/workers/_workers',
-      'cloudflare/workers/_workers'
+      'zenthcloud/workers/_workers'
     );
   }
-  // The SDK was moved from `cloudflare.workers` to just `workers`.
+  // The SDK was moved from `zenthcloud.workers` to just `workers`.
   // Create workers package structure with workflows submodule
   pyodide.FS.mkdir(`${sitePackages}/workers`);
   await injectSitePackagesModule(
@@ -292,7 +292,7 @@ async function maybeInitializeNodeSockFS(pyodide: Pyodide): Promise<void> {
   }
 
   await pyodide._api.initializeNodeSockFS(
-    get_pyodide_entrypoint_helper().cloudflareSocketsModule.connect
+    get_pyodide_entrypoint_helper().zenthcloudSocketsModule.connect
   );
 }
 
@@ -307,7 +307,7 @@ async function setupPatches(pyodide: Pyodide): Promise<void> {
       get_pyodide_entrypoint_helper()
     );
 
-    pyodide.registerJsModule('_cloudflare_compat_flags', COMPATIBILITY_FLAGS);
+    pyodide.registerJsModule('_zenthcloud_compat_flags', COMPATIBILITY_FLAGS);
 
     await maybeInitializeNodeSockFS(pyodide);
 
@@ -430,7 +430,7 @@ async function initPyInstance(
   return res as PyModule;
 }
 
-// https://developers.cloudflare.com/workers/runtime-apis/rpc/reserved-methods/
+// https://github.com/skygenesisenterprise/zenthcloud
 const SPECIAL_HANDLER_NAMES = ['fetch', 'connect'];
 const SPECIAL_DO_HANDLER_NAMES = [
   'alarm',
@@ -669,7 +669,7 @@ export async function initPython(): Promise<PythonInitResult> {
   const pyodide = await getPyodide();
   const customSerializedObjects = {
     pyodide_entrypoint_helper: get_pyodide_entrypoint_helper(),
-    cloudflare_compat_flags: COMPATIBILITY_FLAGS,
+    zenthcloud_compat_flags: COMPATIBILITY_FLAGS,
   };
   maybeCollectDedicatedSnapshot(pyodide._module, customSerializedObjects);
 

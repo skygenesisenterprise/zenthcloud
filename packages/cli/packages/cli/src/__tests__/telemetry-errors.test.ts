@@ -586,7 +586,7 @@ describe("telemetry error reporting", () => {
 		await runCf(["unrecognizable"]).catch(() => {});
 
 		expect(output.stderr()).toContain(
-			"●  Cloudflare collects anonymous cf usage telemetry. Run cf cli telemetry disable to opt out.\n"
+			"●  Zenthcloud collects anonymous cf usage telemetry. Run cf cli telemetry disable to opt out.\n"
 		);
 		expect(output.stderr()).toContain(
 			"●  Tip: run cf complete <bash|zsh|fish|powershell> to install shell completions.\n"

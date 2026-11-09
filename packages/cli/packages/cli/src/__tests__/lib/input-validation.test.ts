@@ -1,4 +1,4 @@
-import { runInTempDir, seed } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir, seed } from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw/http";
 import {
 	afterEach,
@@ -52,8 +52,8 @@ describe("the API client URL-encodes positional path params", () => {
 	];
 
 	beforeEach(() => {
-		vi.stubEnv("CLOUDFLARE_API_TOKEN", "test-token");
-		vi.stubEnv("CLOUDFLARE_API_BASE_URL", TEST_BASE_URL);
+		vi.stubEnv("ZENTHCLOUD_API_TOKEN", "test-token");
+		vi.stubEnv("ZENTHCLOUD_API_BASE_URL", TEST_BASE_URL);
 	});
 
 	/**
@@ -69,9 +69,9 @@ describe("the API client URL-encodes positional path params", () => {
 			})
 		);
 		await runCf(["kv", "namespaces", "get", namespaceId], {
-			CLOUDFLARE_API_TOKEN: "test-token",
-			CLOUDFLARE_BASE_URL: TEST_BASE_URL,
-			CLOUDFLARE_ACCOUNT_ID: SAFE_ACCOUNT,
+			ZENTHCLOUD_API_TOKEN: "test-token",
+			ZENTHCLOUD_BASE_URL: TEST_BASE_URL,
+			ZENTHCLOUD_ACCOUNT_ID: SAFE_ACCOUNT,
 		});
 		if (captured === undefined) {
 			throw new Error("the client issued no request");
@@ -158,7 +158,7 @@ describe("generated enum file flags", () => {
 		errSpy.mockRestore();
 	});
 
-	const ENV = { CLOUDFLARE_ACCOUNT_ID: "test-account" };
+	const ENV = { ZENTHCLOUD_ACCOUNT_ID: "test-account" };
 	const args = ["r2", "buckets", "create", "--name", "example", "--dry-run"];
 
 	it("validates the resolved value and passes it to the generated handler", async () => {

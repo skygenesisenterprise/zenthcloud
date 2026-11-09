@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Transform converts a source cloudflare_hyperdrive_config state (v4) to target cloudflare_hyperdrive_config state (v500).
-func Transform(ctx context.Context, source SourceCloudflareHyperdriveConfigModel) (*TargetHyperdriveConfigModel, diag.Diagnostics) {
+// Transform converts a source zenthcloud_hyperdrive_config state (v4) to target zenthcloud_hyperdrive_config state (v500).
+func Transform(ctx context.Context, source SourceZenthcloudHyperdriveConfigModel) (*TargetHyperdriveConfigModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Validate required fields
@@ -50,7 +50,7 @@ func Transform(ctx context.Context, source SourceCloudflareHyperdriveConfigModel
 }
 
 // transformOrigin converts the v4 origin to v5 origin, adding the new service_id field as null.
-func transformOrigin(source *SourceCloudflareHyperdriveConfigOriginModel) *TargetHyperdriveConfigOriginModel {
+func transformOrigin(source *SourceZenthcloudHyperdriveConfigOriginModel) *TargetHyperdriveConfigOriginModel {
 	return &TargetHyperdriveConfigOriginModel{
 		// Direct copies - all existing fields pass through unchanged
 		Database:           source.Database,

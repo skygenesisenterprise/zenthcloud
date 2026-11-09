@@ -23,7 +23,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 accounts subscriptions create\n\nCreates an account or zone subscription.\n\nRuns against your account. Pass --zone to run against a zone instead. CLOUDFLARE_ZONE_ID is ignored."
+			"$0 accounts subscriptions create\n\nCreates an account or zone subscription.\n\nRuns against your account. Pass --zone to run against a zone instead. ZENTHCLOUD_ZONE_ID is ignored."
 		)
 		.option("app-install-id", {
 			type: "string",
@@ -49,7 +49,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("rate-plan-externally-managed", {
 			type: "boolean",
 			description:
-				"Whether this rate plan is managed externally from Cloudflare.",
+				"Whether this rate plan is managed externally from Zenthcloud.",
 		})
 		.option("rate-plan-id", {
 			type: "string",
@@ -117,7 +117,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf accounts subscriptions create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/${accountOrZone}/${accountOrZoneId}/subscriptions`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${accountOrZone}/${accountOrZoneId}/subscriptions`,
 						pathParams: {
 							"account-or-zone": String(accountOrZone),
 							"account-or-zone-id": String(accountOrZoneId),

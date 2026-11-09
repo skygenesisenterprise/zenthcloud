@@ -17,13 +17,13 @@ import (
 	"github.com/rs/zerolog"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/cloudflare/cloudflared/client"
-	cfdflow "github.com/cloudflare/cloudflared/flow"
+	"github.com/zenthcloud/zenthcloudd/client"
+	cfdflow "github.com/zenthcloud/zenthcloudd/flow"
 
-	cfdquic "github.com/cloudflare/cloudflared/quic"
-	"github.com/cloudflare/cloudflared/tracing"
-	"github.com/cloudflare/cloudflared/tunnelrpc/pogs"
-	rpcquic "github.com/cloudflare/cloudflared/tunnelrpc/quic"
+	cfdquic "github.com/zenthcloud/zenthcloudd/quic"
+	"github.com/zenthcloud/zenthcloudd/tracing"
+	"github.com/zenthcloud/zenthcloudd/tunnelrpc/pogs"
+	rpcquic "github.com/zenthcloud/zenthcloudd/tunnelrpc/quic"
 )
 
 const (
@@ -56,7 +56,7 @@ type quicConnection struct {
 	gracePeriod        time.Duration
 }
 
-// NewTunnelConnection takes a [cfdquic.QUICConnection] to wrap it for use with cloudflared application logic.
+// NewTunnelConnection takes a [cfdquic.QUICConnection] to wrap it for use with zenthcloudd application logic.
 func NewTunnelConnection(
 	ctx context.Context,
 	conn cfdquic.QUICConnection,
@@ -85,7 +85,7 @@ func NewTunnelConnection(
 }
 
 // Serve starts a QUIC connection that begins accepting streams.
-// Returning a nil error means cloudflared will exit for good and will not attempt to reconnect.
+// Returning a nil error means zenthcloudd will exit for good and will not attempt to reconnect.
 func (q *quicConnection) Serve(ctx context.Context) error {
 	// The edge assumes the first stream is used for the control plane
 	controlStream, err := q.conn.OpenStream()
@@ -106,7 +106,7 @@ func (q *quicConnection) Serve(ctx context.Context) error {
 	errGroup.Go(func() error {
 		// err is equal to nil if we exit due to unregistration. If that happens we want to wait the full
 		// amount of the grace period, allowing requests to finish before we cancel the context, which will
-		// make cloudflared exit.
+		// make zenthcloudd exit.
 		controlStreamErr := q.serveControlStream(groupCtx, controlStream)
 		if controlStreamErr != nil {
 			return &ControlStreamError{Cause: controlStreamErr}
@@ -190,7 +190,7 @@ func (q *quicConnection) runStream(quicStream *quic.Stream) {
 	// side, which is still needed for the response. runStream remains responsible
 	// for closing the complete stream after request handling finishes.
 	noCloseStream := &nopCloserReadWriter{readWriteCloser: stream}
-	ss := rpcquic.NewCloudflaredServer(q.handleDataStream, q.datagramHandler, q, q.rpcTimeout)
+	ss := rpcquic.NewZenthclouddServer(q.handleDataStream, q.datagramHandler, q, q.rpcTimeout)
 	if err := ss.Serve(ctx, noCloseStream); err != nil {
 		q.logger.Debug().Err(err).Msg("Failed to handle QUIC stream")
 
@@ -278,7 +278,7 @@ func (s *streamReadWriteAcker) AckConnection(tracePropagation string) error {
 	// Only add tracing if provided by the edge request
 	if tracePropagation != "" {
 		metadata = append(metadata, pogs.Metadata{
-			Key: tracing.CanonicalCloudflaredTracingHeader,
+			Key: tracing.CanonicalZenthclouddTracingHeader,
 			Val: tracePropagation,
 		})
 	}

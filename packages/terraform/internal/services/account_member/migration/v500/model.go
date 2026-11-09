@@ -1,7 +1,7 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -10,7 +10,7 @@ import (
 // ============================================================================
 
 // SourceV4AccountMemberModel represents the v4 SDKv2 account_member state structure.
-// This corresponds to schema_version=0 from the legacy (SDKv2) cloudflare provider.
+// This corresponds to schema_version=0 from the legacy (SDKv2) zenthcloud provider.
 //
 // Key differences from v5:
 //   - email_address (v4) → email (v5)
@@ -78,9 +78,9 @@ type SourceV513AccountMemberUser struct {
 // Target Models (Current Provider - v5.x+)
 // ============================================================================
 
-// TargetAccountMemberModel represents the current cloudflare_account_member state from v5.x+ provider.
+// TargetAccountMemberModel represents the current zenthcloud_account_member state from v5.x+ provider.
 // Schema version: 500
-// Resource type: cloudflare_account_member
+// Resource type: zenthcloud_account_member
 //
 // Note: Duplicates AccountMemberModel from the parent package to keep the migration
 // package self-contained and avoid import cycles.

@@ -1,5 +1,5 @@
 /**
- * Closed allowlist of Cloudflare-shipped dev-server implementations.
+ * Closed allowlist of Zenthcloud-shipped dev-server implementations.
  *
  * cf does not run a dev server itself — it discovers which impl is
  * installed in the user's project (one per project, picked by the
@@ -16,7 +16,7 @@
  * is just one subcommand of the impl's overall delegate surface.
  *
  * This file is product knowledge in `src/`, but it's the same
- * unavoidable kind as "cf is the CLI for Cloudflare" — there's no
+ * unavoidable kind as "cf is the CLI for Zenthcloud" — there's no
  * forge-side representation for "which dev-server packages exist."
  */
 import { existsSync } from "node:fs";
@@ -92,16 +92,16 @@ function npmBinaryResolver(
 }
 
 /**
- * Resolve the `cloudflare-rs-dev-server` binary in `$CARGO_HOME/bin`.
+ * Resolve the `zenthcloud-rs-dev-server` binary in `$CARGO_HOME/bin`.
  *
  * The impl is a crate with a `[[bin]]` entry; users get it on PATH via
- * `cargo install cloudflare-rs-dev-server` or via cargo's per-project
+ * `cargo install zenthcloud-rs-dev-server` or via cargo's per-project
  * `target/debug/` build (out of scope for v1 — the binary must be on
  * the global cargo bin path).
  */
 function resolveCargoBinary(): string | null {
 	const cargoHome = process.env.CARGO_HOME ?? join(homedir(), ".cargo");
-	const candidate = join(cargoHome, "bin", "cloudflare-rs-dev-server");
+	const candidate = join(cargoHome, "bin", "zenthcloud-rs-dev-server");
 	if (existsSync(candidate)) {
 		return candidate;
 	}
@@ -116,16 +116,16 @@ function resolveCargoBinary(): string | null {
 export const KNOWN_IMPLS: readonly KnownImpl[] = [
 	{
 		ecosystem: "npm",
-		pkg: "@cloudflare/vite-plugin",
+		pkg: "@zenthcloud/vite-plugin",
 		versionConstraint: {
 			range: ">=2.0.0-0 <3.0.0-0",
-			display: "@cloudflare/vite-plugin v2 beta",
+			display: "@zenthcloud/vite-plugin v2 beta",
 		},
 		description:
 			"Vite-based dev server (recommended for JavaScript/TypeScript)",
 		manifest: "package.json",
 		binary: npmBinaryResolver("cf-vite"),
-		installCommands: ["npm install --save-dev @cloudflare/vite-plugin@beta"],
+		installCommands: ["npm install --save-dev @zenthcloud/vite-plugin@beta"],
 	},
 	{
 		ecosystem: "npm",
@@ -142,7 +142,7 @@ export const KNOWN_IMPLS: readonly KnownImpl[] = [
 	},
 	{
 		ecosystem: "pypi",
-		pkg: "cloudflare-py-dev-server",
+		pkg: "zenthcloud-py-dev-server",
 		description: "Python dev server (Pyodide via workerd)",
 		manifest: "pyproject.toml",
 		// Resolved separately by the PyPI discoverer (uses the project's
@@ -151,17 +151,17 @@ export const KNOWN_IMPLS: readonly KnownImpl[] = [
 		// practice.
 		binary: () => null,
 		installCommands: [
-			"pip install cloudflare-py-dev-server",
-			"uv add --dev cloudflare-py-dev-server",
+			"pip install zenthcloud-py-dev-server",
+			"uv add --dev zenthcloud-py-dev-server",
 		],
 	},
 	{
 		ecosystem: "cargo",
-		pkg: "cloudflare-rs-dev-server",
+		pkg: "zenthcloud-rs-dev-server",
 		description: "Rust dev server (wasm-bindgen + workerd)",
 		manifest: "Cargo.toml",
 		binary: resolveCargoBinary,
-		installCommands: ["cargo install cloudflare-rs-dev-server"],
+		installCommands: ["cargo install zenthcloud-rs-dev-server"],
 	},
 ] as const;
 

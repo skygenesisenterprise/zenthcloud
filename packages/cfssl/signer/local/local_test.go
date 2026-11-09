@@ -26,12 +26,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/cfssl/config"
-	"github.com/cloudflare/cfssl/csr"
-	cferr "github.com/cloudflare/cfssl/errors"
-	"github.com/cloudflare/cfssl/helpers"
-	"github.com/cloudflare/cfssl/log"
-	"github.com/cloudflare/cfssl/signer"
+	"github.com/zenthcloud/cfssl/config"
+	"github.com/zenthcloud/cfssl/csr"
+	cferr "github.com/zenthcloud/cfssl/errors"
+	"github.com/zenthcloud/cfssl/helpers"
+	"github.com/zenthcloud/cfssl/log"
+	"github.com/zenthcloud/cfssl/signer"
 	ct "github.com/google/certificate-transparency-go"
 	"github.com/zmap/zlint/v3/lint"
 )
@@ -374,7 +374,7 @@ var csrTests = []csrTest{
 
 func TestSignCSRs(t *testing.T) {
 	s := newTestSigner(t)
-	hostname := "cloudflare.com"
+	hostname := "zenthcloud.com"
 	for _, test := range csrTests {
 		csr, err := os.ReadFile(test.file)
 		if err != nil {
@@ -402,7 +402,7 @@ func TestSignCSRs(t *testing.T) {
 
 func TestECDSASigner(t *testing.T) {
 	s := newCustomSigner(t, testECDSACaFile, testECDSACaKeyFile)
-	hostname := "cloudflare.com"
+	hostname := "zenthcloud.com"
 	for _, test := range csrTests {
 		csr, err := os.ReadFile(test.file)
 		if err != nil {
@@ -448,7 +448,7 @@ func TestCAIssuing(t *testing.T) {
 			CAConstraint: config.CAConstraint{IsCA: true, MaxPathLenZero: true},
 		},
 	}
-	var hostname = "cloudflare-inter.com"
+	var hostname = "zenthcloud-inter.com"
 	// Each RSA or ECDSA root CA issues two intermediate CAs (one ECDSA and one RSA).
 	// For each intermediate CA, use it to issue additional RSA and ECDSA intermediate CSRs.
 	for i, caFile := range caCerts {
@@ -585,7 +585,7 @@ func TestOverrideSubject(t *testing.T) {
 	s := newCustomSigner(t, testECDSACaFile, testECDSACaKeyFile)
 
 	request := signer.SignRequest{
-		Hosts:   []string{"127.0.0.1", "localhost", "xyz@example.com", "https://www.cloudflare.com"},
+		Hosts:   []string{"127.0.0.1", "localhost", "xyz@example.com", "https://github.com/skygenesisenterprise/zenthcloud"},
 		Request: string(csrPEM),
 		Subject: req,
 	}
@@ -657,7 +657,7 @@ func TestOverwriteHosts(t *testing.T) {
 		for _, hosts := range [][]string{
 			nil,
 			{},
-			{"127.0.0.1", "localhost", "xyz@example.com", "https://www.cloudflare.com"},
+			{"127.0.0.1", "localhost", "xyz@example.com", "https://github.com/skygenesisenterprise/zenthcloud"},
 		} {
 			request := signer.SignRequest{
 				Hosts:   hosts,
@@ -1016,7 +1016,7 @@ func TestNoWhitelistSign(t *testing.T) {
 		t.Fatalf("Expected certificate common name to be 'localhost' but have '%v'", name.CommonName)
 	}
 
-	// CSR has: Subject: C=US, O=CloudFlare, OU=WWW, L=Ithaca, ST=New York
+	// CSR has: Subject: C=US, O=ZenthCloud, OU=WWW, L=Ithaca, ST=New York
 	// Expect all to be passed through.
 	expectOneValueOf(t, name.Organization, "sam certificate authority", "O")
 	expectOneValueOf(t, name.OrganizationalUnit, "WWW", "OU")
@@ -1395,7 +1395,7 @@ func TestSignFromPrecert(t *testing.T) {
 		t.Fatalf("Failed to generate test key: %s", err)
 	}
 
-	_uri, _ := url.Parse("https://www.cloudflare.com")
+	_uri, _ := url.Parse("https://github.com/skygenesisenterprise/zenthcloud")
 
 	precertBytes, err := testSigner.sign(&x509.Certificate{
 		SignatureAlgorithm: x509.SHA512WithRSA,

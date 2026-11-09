@@ -8,9 +8,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -180,7 +180,7 @@ func TestMigrateHealthcheck_V4ToV5_HTTPBasic(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := "tf-test-" + rnd
 			tmpDir := t.TempDir()
@@ -191,8 +191,8 @@ func TestMigrateHealthcheck_V4ToV5_HTTPBasic(t *testing.T) {
 			step1 := resource.TestStep{
 				// Step 1: Create with specific provider version
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: tc.version,
 					},
 				},
@@ -220,51 +220,51 @@ func TestMigrateHealthcheck_V4ToV5_HTTPBasic(t *testing.T) {
 						ConfigStateChecks: []statecheck.StateCheck{
 							// Verify core fields
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("zone_id"),
 								knownvalue.StringExact(zoneID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("name"),
 								knownvalue.StringExact(name),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("address"),
 								knownvalue.StringExact("example.com"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("type"),
 								knownvalue.StringExact("HTTP"),
 							),
 
 							// Verify HTTP config nested object exists
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("http_config"),
 								knownvalue.NotNull(),
 							),
 
 							// Verify HTTP config fields (flat → nested transformation)
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("http_config").AtMapKey("method"),
 								knownvalue.StringExact("GET"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("http_config").AtMapKey("port"),
 								knownvalue.Int64Exact(80),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("http_config").AtMapKey("path"),
 								knownvalue.StringExact("/health"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("http_config").AtMapKey("expected_body"),
 								knownvalue.StringExact("OK"),
 							),
@@ -274,7 +274,7 @@ func TestMigrateHealthcheck_V4ToV5_HTTPBasic(t *testing.T) {
 
 							// Verify TCP config doesn't exist (HTTP type)
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("tcp_config"),
 								knownvalue.Null(),
 							),
@@ -311,7 +311,7 @@ func TestMigrateHealthcheck_V4ToV5_HTTPHeaders(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := "tf-test-" + rnd
 			tmpDir := t.TempDir()
@@ -321,8 +321,8 @@ func TestMigrateHealthcheck_V4ToV5_HTTPHeaders(t *testing.T) {
 			// Build Step 1
 			step1 := resource.TestStep{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: tc.version,
 					},
 				},
@@ -350,7 +350,7 @@ func TestMigrateHealthcheck_V4ToV5_HTTPHeaders(t *testing.T) {
 						ConfigStateChecks: []statecheck.StateCheck{
 							// Verify http_config.header exists as map
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("http_config").AtMapKey("header"),
 								knownvalue.NotNull(),
 							),
@@ -359,17 +359,17 @@ func TestMigrateHealthcheck_V4ToV5_HTTPHeaders(t *testing.T) {
 							// v4: header { header = "Host" values = ["example.com"] }
 							// v5: header = { "Host" = ["example.com"] }
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("http_config").AtMapKey("header").AtMapKey("Host"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.StringExact("example.com"),
 								}),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("http_config").AtMapKey("header").AtMapKey("User-Agent"),
 								knownvalue.ListExact([]knownvalue.Check{
-									knownvalue.StringExact("Cloudflare-Healthcheck/1.0"),
+									knownvalue.StringExact("Zenthcloud-Healthcheck/1.0"),
 								}),
 							),
 
@@ -408,7 +408,7 @@ func TestMigrateHealthcheck_V4ToV5_TCP(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := "tf-test-" + rnd
 			tmpDir := t.TempDir()
@@ -418,8 +418,8 @@ func TestMigrateHealthcheck_V4ToV5_TCP(t *testing.T) {
 			// Build Step 1
 			step1 := resource.TestStep{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: tc.version,
 					},
 				},
@@ -447,26 +447,26 @@ func TestMigrateHealthcheck_V4ToV5_TCP(t *testing.T) {
 						ConfigStateChecks: []statecheck.StateCheck{
 							// Verify type is TCP
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("type"),
 								knownvalue.StringExact("TCP"),
 							),
 
 							// Verify tcp_config nested object exists
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("tcp_config"),
 								knownvalue.NotNull(),
 							),
 
 							// Verify TCP config fields (flat → nested transformation)
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("tcp_config").AtMapKey("method"),
 								knownvalue.StringExact("connection_established"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("tcp_config").AtMapKey("port"),
 								knownvalue.Int64Exact(443),
 							),
@@ -476,7 +476,7 @@ func TestMigrateHealthcheck_V4ToV5_TCP(t *testing.T) {
 
 							// Verify HTTP config doesn't exist (TCP type)
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("http_config"),
 								knownvalue.Null(),
 							),
@@ -513,7 +513,7 @@ func TestMigrateHealthcheck_V4ToV5_HTTPSFull(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := "tf-test-" + rnd
 			tmpDir := t.TempDir()
@@ -525,8 +525,8 @@ func TestMigrateHealthcheck_V4ToV5_HTTPSFull(t *testing.T) {
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -536,19 +536,19 @@ func TestMigrateHealthcheck_V4ToV5_HTTPSFull(t *testing.T) {
 						[]statecheck.StateCheck{
 							// Verify core fields
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("type"),
 								knownvalue.StringExact("HTTPS"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("description"),
 								knownvalue.StringExact("Full HTTPS healthcheck"),
 							),
 
 							// Verify check_regions (List conversion)
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("check_regions"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.StringExact("WNAM"),
@@ -558,64 +558,64 @@ func TestMigrateHealthcheck_V4ToV5_HTTPSFull(t *testing.T) {
 
 							// Verify http_config with all HTTPS fields
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("http_config").AtMapKey("method"),
 								knownvalue.StringExact("GET"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("http_config").AtMapKey("port"),
 								knownvalue.Int64Exact(443),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("http_config").AtMapKey("path"),
 								knownvalue.StringExact("/api/health"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("http_config").AtMapKey("expected_body"),
 								knownvalue.StringExact("healthy"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("http_config").AtMapKey("follow_redirects"),
 								knownvalue.Bool(true),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("http_config").AtMapKey("allow_insecure"),
 								knownvalue.Bool(true),
 							),
 
 							// Verify config values
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("interval"),
 								knownvalue.Int64Exact(60),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("retries"),
 								knownvalue.Int64Exact(2),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("timeout"),
 								knownvalue.Int64Exact(10),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("consecutive_fails"),
 								knownvalue.Int64Exact(2),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("consecutive_successes"),
 								knownvalue.Int64Exact(2),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_healthcheck."+rnd,
+								"zenthcloud_healthcheck."+rnd,
 								tfjsonpath.New("suspended"),
 								knownvalue.Bool(false),
 							),

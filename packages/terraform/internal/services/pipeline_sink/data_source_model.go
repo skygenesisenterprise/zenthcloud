@@ -5,9 +5,9 @@ package pipeline_sink
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/pipelines"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/pipelines"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -33,7 +33,7 @@ type PipelineSinkDataSourceModel struct {
 
 func (m *PipelineSinkDataSourceModel) toReadParams(_ context.Context) (params pipelines.SinkGetParams, diags diag.Diagnostics) {
 	params = pipelines.SinkGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -41,14 +41,14 @@ func (m *PipelineSinkDataSourceModel) toReadParams(_ context.Context) (params pi
 
 func (m *PipelineSinkDataSourceModel) toListParams(_ context.Context) (params pipelines.SinkListParams, diags diag.Diagnostics) {
 	params = pipelines.SinkListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Filter.Name.IsNull() {
-		params.Name = cloudflare.F(m.Filter.Name.ValueString())
+		params.Name = zenthcloud.F(m.Filter.Name.ValueString())
 	}
 	if !m.Filter.PipelineID.IsNull() {
-		params.PipelineID = cloudflare.F(m.Filter.PipelineID.ValueString())
+		params.PipelineID = zenthcloud.F(m.Filter.PipelineID.ValueString())
 	}
 
 	return

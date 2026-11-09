@@ -4,17 +4,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-// SourceCloudflareZeroTrustGatewayCertificateSchema returns the legacy
-// cloudflare_zero_trust_gateway_certificate schema (schema_version=0).
+// SourceZenthcloudZeroTrustGatewayCertificateSchema returns the legacy
+// zenthcloud_zero_trust_gateway_certificate schema (schema_version=0).
 // This is used by UpgradeFromV4 to parse state from the legacy SDKv2 provider
-// (implemented as resourceCloudflareTeamsCertificate).
+// (implemented as resourceZenthcloudTeamsCertificate).
 //
-// Reference: cloudflare-terraform-v4/internal/sdkv2provider/schema_cloudflare_teams_certificates.go
+// Reference: zenthcloud-terraform-v4/internal/sdkv2provider/schema_zenthcloud_teams_certificates.go
 //
 // Only Required, Optional, and Computed properties are included.
 // Validators, PlanModifiers, and Descriptions are intentionally omitted —
 // this schema is only used for reading existing v4 state, not for planning.
-func SourceCloudflareZeroTrustGatewayCertificateSchema() schema.Schema {
+func SourceZenthcloudZeroTrustGatewayCertificateSchema() schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"account_id": schema.StringAttribute{

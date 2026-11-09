@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_r2_bucket_event_notification Resource - Cloudflare"
+page_title: "zenthcloud_r2_bucket_event_notification Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Workers R2 Storage ReadWorkers R2 Storage Write
 ---
 
-# cloudflare_r2_bucket_event_notification (Resource)
+# zenthcloud_r2_bucket_event_notification (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_r2_bucket_event_notification" "example_r2_bucket_event_notification" {
+resource "zenthcloud_r2_bucket_event_notification" "example_r2_bucket_event_notification" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   bucket_name = "example-bucket"
   queue_id = "queue_id"
@@ -34,9 +34,9 @@ resource "cloudflare_r2_bucket_event_notification" "example_r2_bucket_event_noti
 
 ### Required
 
-- `account_id` (String) Cloudflare account ID that owns the R2 resource.
+- `account_id` (String) Zenthcloud account ID that owns the R2 resource.
 - `bucket_name` (String) Name of the bucket.
-- `queue_id` (String) ID of the Cloudflare Queue that receives notifications for matching R2 object events.
+- `queue_id` (String) ID of the Zenthcloud Queue that receives notifications for matching R2 object events.
 - `rules` (Attributes List) Array of rules to drive notifications. (see [below for nested schema](#nestedatt--rules))
 
 ### Optional

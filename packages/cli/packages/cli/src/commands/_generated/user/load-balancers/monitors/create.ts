@@ -141,7 +141,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf user load-balancers monitors create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/user/load_balancers/monitors`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

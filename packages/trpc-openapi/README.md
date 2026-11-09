@@ -95,7 +95,7 @@ export const openApiDocument = generateOpenApiDocument(appRouter, {
 
 We currently support adapters for [`Express`](http://expressjs.com/), [`Next.js`](https://nextjs.org/), [`Fastify`](https://www.fastify.io/), [`Nuxt`](https://nuxtjs.org/) & [`Node:HTTP`](https://nodejs.org/api/http.html).
 
-[`Fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API), [`Cloudflare Workers`](https://workers.cloudflare.com/) & more soon™, PRs are welcomed 🙌.
+[`Fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API), [`Zenthcloud Workers`](https://github.com/skygenesisenterprise/zenthcloud) & more soon™, PRs are welcomed 🙌.
 
 No support for AWS lambdas
 

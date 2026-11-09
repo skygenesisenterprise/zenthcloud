@@ -28,7 +28,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("public-key", {
 			type: "string",
 			description:
-				"Provide the Base64-encoded HPKE public key that encrypts SSH session logs. See https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/use-cases/ssh/ssh-infrastructure-access/#enable-ssh-command-logging.",
+				"Provide the Base64-encoded HPKE public key that encrypts SSH session logs. See https://github.com/skygenesisenterprise/zenthcloud",
 		})
 		.option("dry-run", {
 			type: "boolean",
@@ -63,7 +63,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 						command:
 							"cf zero-trust access infrastructure audit-ssh-settings update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/gateway/audit_ssh_settings`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/gateway/audit_ssh_settings`,
 						pathParams: {},
 						bodyKind: "json",
 						body:
@@ -96,7 +96,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 				if (argv["public-key"] === undefined) {
 					argv["public-key"] = await promptForRequiredField(
 						"public-key",
-						"Provide the Base64-encoded HPKE public key that encrypts SSH session logs. See https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/use-cases/ssh/ssh-infrastructure-access/#enable-ssh-command-logging."
+						"Provide the Base64-encoded HPKE public key that encrypts SSH session logs. See https://github.com/skygenesisenterprise/zenthcloud"
 					);
 				}
 

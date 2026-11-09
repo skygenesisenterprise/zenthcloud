@@ -7,8 +7,8 @@ from pyodide.ffi import create_once_callable
 
 
 def test_import_from_javascript():
-    # Import the workers module from cloudflare:workers
-    workers_module = import_from_javascript("cloudflare:workers")
+    # Import the workers module from zenthcloud:workers
+    workers_module = import_from_javascript("zenthcloud:workers")
 
     # Test that we can access the imported module's exports
     assert hasattr(workers_module, "env"), "env property should exist"
@@ -21,7 +21,7 @@ def test_import_from_javascript():
     )
 
     # Test sockets module
-    sockets_module = import_from_javascript("cloudflare:sockets")
+    sockets_module = import_from_javascript("zenthcloud:sockets")
     assert hasattr(sockets_module, "connect"), (
         "sockets_module should have 'connect' attribute"
     )
@@ -35,7 +35,7 @@ def test_import_from_javascript():
 @pytest.mark.skipif(__version__ == "0.26.0a2", reason="Requires JSPI")
 def test_import_vectorize():
     # Assert that imports that depend on JSPI work as expected
-    vectorize = import_from_javascript("cloudflare:vectorize")
+    vectorize = import_from_javascript("zenthcloud:vectorize")
     assert hasattr(vectorize, "DistanceMetric")
 
 

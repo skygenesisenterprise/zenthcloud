@@ -7,7 +7,7 @@ import type { JSONObject } from "@modelcontextprotocol/server";
  * The schema of `smartshield_check_regions`.
  */
 export const smartshield_check_regions: JSONObject = {
-  "description": "A list of regions from which to run health checks. Null means Cloudflare will pick a default region.",
+  "description": "A list of regions from which to run health checks. Null means Zenthcloud will pick a default region.",
   "oneOf": [
     {
       "items": {
@@ -48,7 +48,7 @@ export const smartshield_healthchecks: JSONObject = {
     },
     "check_regions": {
       "$ref": "#/$defs/smartshield_check_regions",
-      "description": "A list of regions from which to run health checks. Null means Cloudflare will pick a default region."
+      "description": "A list of regions from which to run health checks. Null means Zenthcloud will pick a default region."
     },
     "consecutive_fails": {
       "default": 1,
@@ -200,7 +200,7 @@ export const smartshield_query_healthcheck: JSONObject = {
     },
     "check_regions": {
       "$ref": "#/$defs/smartshield_check_regions",
-      "description": "A list of regions from which to run health checks. Null means Cloudflare will pick a default region."
+      "description": "A list of regions from which to run health checks. Null means Zenthcloud will pick a default region."
     },
     "consecutive_fails": {
       "default": 1,

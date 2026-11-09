@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -1724,7 +1724,7 @@ jsg::Promise<jsg::Ref<Response>> handleHttpFetchResponse(jsg::Lock& js,
     }
     auto headerIds = IoContext::current().getHeaderIds();
     KJ_IF_SOME(cfRay, response.headers->get(headerIds.cfRay)) {
-      ctx.setTag("cloudflare.ray_id"_kjc, cfRay);
+      ctx.setTag("zenthcloud.ray_id"_kjc, cfRay);
     }
   }
   return handleHttpResponse(
@@ -2373,7 +2373,7 @@ void Fetcher::registerOverride(jsg::Lock& js, uint16_t overridePort) {
   workerd::getEntropy(randomBytes);
   host = kj::str(kj::encodeHex(randomBytes), ".workers.alt");
 
-  // Register an entry in the global scope connectOverrides HashMap so that cloudflare:sockets's
+  // Register an entry in the global scope connectOverrides HashMap so that zenthcloud:sockets's
   // connect() will route connections to this magic hostname through the fetcher. The global scope
   // is per-isolate, so this also works outside of a request, e.g. while constructing bindings.
   auto context = js.v8Context();
@@ -2432,7 +2432,7 @@ kj::Maybe<jsg::Ref<JsRpcProperty>> Fetcher::getRpcMethod(jsg::Lock& js, kj::Stri
           "' on a Service Binding or "
           "Durable Object stub. Are you trying to use RPC? If so, please enable the 'rpc' compat "
           "flag or update your compat date to 2024-04-03 or later (see "
-          "https://developers.cloudflare.com/workers/configuration/compatibility-dates/ ). If you "
+          "https://github.com/skygenesisenterprise/zenthcloud ). If you "
           "are not trying to use RPC, please note that in the future, this property (and all other "
           "property names) will appear to be present as an RPC method."));
     }

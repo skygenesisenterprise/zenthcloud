@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_dns_zone_transfers_incoming Data Source - Cloudflare"
+page_title: "zenthcloud_dns_zone_transfers_incoming Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   DNS ReadDNS WriteZone Settings ReadZone Settings WriteZone Write
 ---
 
-# cloudflare_dns_zone_transfers_incoming (Data Source)
+# zenthcloud_dns_zone_transfers_incoming (Data Source)
 
 Accepted Permissions
 
@@ -19,7 +19,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_dns_zone_transfers_incoming" "example_dns_zone_transfers_incoming" {
+data "zenthcloud_dns_zone_transfers_incoming" "example_dns_zone_transfers_incoming" {
   zone_id = "269d8f4853475ca241c4e730be286b20"
 }
 ```

@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_argo_tiered_caching Resource - Cloudflare"
+page_title: "zenthcloud_argo_tiered_caching Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_argo_tiered_caching (Resource)
+# zenthcloud_argo_tiered_caching (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_argo_tiered_caching" "example_argo_tiered_caching" {
+resource "zenthcloud_argo_tiered_caching" "example_argo_tiered_caching" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   value = "on"
 }
@@ -38,7 +38,7 @@ Available values: "on", "off".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_argo_tiered_caching.example '<zone_id>'
+$ terraform import zenthcloud_argo_tiered_caching.example '<zone_id>'
 ```
 
 

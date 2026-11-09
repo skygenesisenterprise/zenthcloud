@@ -6,9 +6,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
-// SourceManagedHeadersSchema returns the source schema for legacy cloudflare_managed_headers resource.
+// SourceManagedHeadersSchema returns the source schema for legacy zenthcloud_managed_headers resource.
 // Schema version: 0 (v4 provider default - managed_headers didn't set explicit version)
-// Resource type: cloudflare_managed_headers
+// Resource type: zenthcloud_managed_headers
 //
 // This minimal schema is used only for reading v4 state during migration.
 // Both managed_request_headers and managed_response_headers were optional in v4

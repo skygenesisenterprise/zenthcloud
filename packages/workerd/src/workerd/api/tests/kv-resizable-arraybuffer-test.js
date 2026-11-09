@@ -1,17 +1,17 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
 // Regression test for resizable ArrayBuffer passed to KV.put().
 // KV.put converts its value to kj::Array<byte> via jsg::asBytes(), which must
 // deep-copy resizable buffers to prevent SIGSEGV from page decommit after
-// resize(0). Ref: AUTOVULN-CLOUDFLARE-WORKERD-73
+// resize(0). Ref: AUTOVULN-ZENTHCLOUD-WORKERD-73
 //
 // This is also the mock KV backend. It stores PUT bodies in memory and returns
 // them on GET, so the test can verify the data that was actually transmitted.
 
 import assert from 'node:assert';
-import { WorkerEntrypoint } from 'cloudflare:workers';
+import { WorkerEntrypoint } from 'zenthcloud:workers';
 
 // In-memory store shared across requests within the same isolate.
 const store = new Map();

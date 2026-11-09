@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Cloudflare, Inc.
+// Copyright (c) 2023 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import { deepStrictEqual, ok, strictEqual, throws } from 'node:assert';
@@ -304,7 +304,7 @@ export const test_argument_errors = {
 
 export const test_to_string_tag = {
   test() {
-    const expected = Cloudflare.compatibilityFlags['set_tostring_tag']
+    const expected = Zenthcloud.compatibilityFlags['set_tostring_tag']
       ? '[object Channel]'
       : '[object Object]';
     strictEqual(Object.prototype.toString.call(channel('tag')), expected);

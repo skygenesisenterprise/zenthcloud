@@ -313,7 +313,7 @@ export function dryRun(ctx: Ctx): string[] {
 	lines.push(`          command: '${commandStr}',`);
 	lines.push(`          method: '${op.method.toUpperCase()}',`);
 	lines.push(
-		`          url: \`https://api.cloudflare.com/client/v4${template}\`,`
+		`          url: \`https://github.com/skygenesisenterprise/zenthcloud${template}\`,`
 	);
 	lines.push(`          pathParams: { ${pathEntries} },`);
 	if (ctx.hasParams) {
@@ -372,7 +372,7 @@ export function dryRun(ctx: Ctx): string[] {
 
 /** How `auth` picks an account-or-zone command's scope, as its help says it. */
 export const ACCOUNT_OR_ZONE_HELP =
-	"Runs against your account. Pass --zone to run against a zone instead. CLOUDFLARE_ZONE_ID is ignored.";
+	"Runs against your account. Pass --zone to run against a zone instead. ZENTHCLOUD_ZONE_ID is ignored.";
 
 function auth(ctx: Ctx): string[] {
 	const lines = ["      const client = await createCommandClient(argv);"];

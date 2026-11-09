@@ -1,4 +1,4 @@
-import { env as cloudflareEnv } from 'cloudflare:workers'
+import { env as zenthcloudEnv } from 'zenthcloud:workers'
 import { Hono } from 'hono'
 
 import {
@@ -6,7 +6,7 @@ import {
   getAuthorizationURL,
   getAuthToken,
   refreshAuthToken
-} from './cloudflare-auth'
+} from './zenthcloud-auth'
 import {
   ALL_SCOPES,
   DEFAULT_TEMPLATE,
@@ -21,7 +21,7 @@ import {
   renderErrorPage,
   OAuthError
 } from './workers-oauth-utils'
-import { getCloudflareOAuthUser } from './cloudflare-identity'
+import { getZenthcloudOAuthUser } from './zenthcloud-identity'
 import { withRefreshAdmission } from './refresh-admission-gate'
 import { MetricsTracker, AuthUser } from '../metrics'
 import { SERVER_INFO } from '../constants'
@@ -33,13 +33,13 @@ import {
   type OAuthHelpers,
   type TokenExchangeCallbackOptions,
   type TokenExchangeCallbackResult
-} from '@cloudflare/workers-oauth-provider'
+} from '@zenthcloud/workers-oauth-provider'
 
 interface AuthEnv extends Env {
   OAUTH_PROVIDER: OAuthHelpers
 }
 
-const env = cloudflareEnv as AuthEnv
+const env = zenthcloudEnv as AuthEnv
 const ALLOWED_SCOPES = new Set<string>(ALL_SCOPES)
 const metrics = new MetricsTracker(env.MCP_METRICS, SERVER_INFO)
 
@@ -57,7 +57,7 @@ function authErrorMessage(prefix: string, e: unknown): string {
 }
 
 /**
- * The scopes an MCP token may claim: those requested that Cloudflare actually granted. Cloudflare can
+ * The scopes an MCP token may claim: those requested that Zenthcloud actually granted. Zenthcloud can
  * grant fewer than requested (the account can't grant one, or the user narrows them on its consent);
  * the MCP token must not claim more than the upstream token can do. Without an upstream `scope`,
  * keep the requested scopes.
@@ -72,7 +72,7 @@ export function grantedScopes(
 }
 
 /**
- * Refresh the upstream Cloudflare grant when workers-oauth-provider refreshes
+ * Refresh the upstream Zenthcloud grant when workers-oauth-provider refreshes
  * its downstream access token. The per-grant admission gate rejects competing
  * provider exchanges so they cannot independently rotate downstream tokens.
  *
@@ -101,7 +101,7 @@ export async function handleTokenExchangeCallback(
       client_id: clientId,
       client_secret: clientSecret,
       refresh_token: upstreamRefreshToken,
-      oauthDomain: env.CLOUDFLARE_OAUTH_DOMAIN
+      oauthDomain: env.ZENTHCLOUD_OAUTH_DOMAIN
     })
 
     return {
@@ -118,9 +118,9 @@ export async function handleTokenExchangeCallback(
 }
 
 /**
- * Redirect to Cloudflare OAuth with selected scopes
+ * Redirect to Zenthcloud OAuth with selected scopes
  */
-async function redirectToCloudflare(
+async function redirectToZenthcloud(
   requestUrl: string,
   stateToken: string,
   codeChallenge: string,
@@ -128,12 +128,12 @@ async function redirectToCloudflare(
   additionalHeaders: Record<string, string> = {}
 ): Promise<Response> {
   const { authUrl } = await getAuthorizationURL({
-    client_id: env.CLOUDFLARE_CLIENT_ID,
+    client_id: env.ZENTHCLOUD_CLIENT_ID,
     redirect_uri: new URL('/oauth/callback', requestUrl).href,
     stateToken,
     scopes,
     codeChallenge,
-    oauthDomain: env.CLOUDFLARE_OAUTH_DOMAIN
+    oauthDomain: env.ZENTHCLOUD_OAUTH_DOMAIN
   })
 
   return new Response(null, {
@@ -219,9 +219,9 @@ export function createAuthHandlers() {
       return renderApprovalDialog(c.req.raw, {
         consent: await env.OAUTH_PROVIDER.describeConsent(oauthReqInfo),
         server: {
-          name: 'Cloudflare API MCP',
-          logo: 'https://www.cloudflare.com/favicon.ico',
-          description: 'Access the Cloudflare API through the Model Context Protocol.'
+          name: 'Zenthcloud API MCP',
+          logo: 'https://github.com/skygenesisenterprise/zenthcloud',
+          description: 'Access the Zenthcloud API through the Model Context Protocol.'
         },
         handle: consent.handle,
         headers: consent.headers,
@@ -272,7 +272,7 @@ export function createAuthHandlers() {
         headers: approved.headers
       })
 
-      const redirectResponse = await redirectToCloudflare(
+      const redirectResponse = await redirectToZenthcloud(
         c.req.url,
         upstream.state,
         codeChallenge,
@@ -300,7 +300,7 @@ export function createAuthHandlers() {
     }
   })
 
-  // GET /oauth/callback - Handle Cloudflare OAuth redirect
+  // GET /oauth/callback - Handle Zenthcloud OAuth redirect
   app.get('/oauth/callback', async (c) => {
     try {
       // Recover the approved request (single use, bound to this browser by its cookie).
@@ -310,7 +310,7 @@ export function createAuthHandlers() {
         headers
       } = await env.OAUTH_PROVIDER.finishUpstream<{ codeVerifier: string }>(c.req.raw)
 
-      // The user declined (or sign-in failed) at Cloudflare: tell the MCP client.
+      // The user declined (or sign-in failed) at Zenthcloud: tell the MCP client.
       if (c.req.query('error')) {
         const redirect = new URL(oauthReqInfo.redirectUri)
         redirect.searchParams.set('error', 'access_denied')
@@ -334,15 +334,15 @@ export function createAuthHandlers() {
         refresh_token,
         scope: upstreamScope
       } = await getAuthToken({
-        client_id: env.CLOUDFLARE_CLIENT_ID,
-        client_secret: env.CLOUDFLARE_CLIENT_SECRET,
+        client_id: env.ZENTHCLOUD_CLIENT_ID,
+        client_secret: env.ZENTHCLOUD_CLIENT_SECRET,
         redirect_uri: new URL('/oauth/callback', c.req.url).href,
         code,
         code_verifier: codeVerifier,
-        oauthDomain: env.CLOUDFLARE_OAUTH_DOMAIN
+        oauthDomain: env.ZENTHCLOUD_OAUTH_DOMAIN
       })
 
-      const identity = await getCloudflareOAuthUser(access_token)
+      const identity = await getZenthcloudOAuthUser(access_token)
 
       // Complete authorization
       const { redirectTo } = await env.OAUTH_PROVIDER.completeAuthorization({

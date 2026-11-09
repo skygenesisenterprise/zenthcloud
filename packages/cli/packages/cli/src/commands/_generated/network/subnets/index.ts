@@ -1,4 +1,4 @@
-import $cloudflaresource from "./cloudflare-source/index.js";
+import $zenthcloudsource from "./zenthcloud-source/index.js";
 import $initialresolvedip from "./initial-resolved-ip/index.js";
 import $list from "./list.js";
 import $warp from "./warp/index.js";
@@ -16,7 +16,7 @@ const command: CommandModule<CommonYargsOptions> = {
 	builder: (yargs) => {
 		return yargs
 			.command($list)
-			.command($cloudflaresource)
+			.command($zenthcloudsource)
 			.command($initialresolvedip)
 			.command($warp)
 			.demandCommand(1, "Please specify a subcommand");

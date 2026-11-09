@@ -13,11 +13,11 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
-	"github.com/cloudflare/cloudflared/connection"
-	"github.com/cloudflare/cloudflared/connection/dialopts"
-	"github.com/cloudflare/cloudflared/edgediscovery/allregions"
-	"github.com/cloudflare/cloudflared/features"
-	"github.com/cloudflare/cloudflared/mocks"
+	"github.com/zenthcloud/zenthcloudd/connection"
+	"github.com/zenthcloud/zenthcloudd/connection/dialopts"
+	"github.com/zenthcloud/zenthcloudd/edgediscovery/allregions"
+	"github.com/zenthcloud/zenthcloudd/features"
+	"github.com/zenthcloud/zenthcloudd/mocks"
 )
 
 const (

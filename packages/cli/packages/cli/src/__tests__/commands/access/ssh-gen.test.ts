@@ -1,21 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import { runCloudflared } from "../../../commands/cloudflared.js";
+import { runZenthcloudd } from "../../../commands/zenthcloudd.js";
 import { runCf } from "../../helpers/run-cf.js";
 
-vi.mock("../../../commands/cloudflared.js", async (importOriginal) => ({
+vi.mock("../../../commands/zenthcloudd.js", async (importOriginal) => ({
 	...(await importOriginal<Record<string, unknown>>()),
-	runCloudflared: vi.fn(),
+	runZenthcloudd: vi.fn(),
 }));
 
 describe("cf access ssh-gen", () => {
 	beforeEach(() => {
-		vi.stubEnv("CLOUDFLARE_COMPLIANCE_REGION", undefined);
-		vi.mocked(runCloudflared).mockReset();
-		vi.mocked(runCloudflared).mockResolvedValue(0);
+		vi.stubEnv("ZENTHCLOUD_COMPLIANCE_REGION", undefined);
+		vi.mocked(runZenthcloudd).mockReset();
+		vi.mocked(runZenthcloudd).mockResolvedValue(0);
 	});
 
 	it("uses the FedRAMP Access flow for FedRAMP projects", async () => {
-		vi.stubEnv("CLOUDFLARE_COMPLIANCE_REGION", "fedramp_high");
+		vi.stubEnv("ZENTHCLOUD_COMPLIANCE_REGION", "fedramp_high");
 
 		const result = await runCf([
 			"access",
@@ -25,7 +25,7 @@ describe("cf access ssh-gen", () => {
 		]);
 
 		expect(result.exitCode).toBe(0);
-		expect(runCloudflared).toHaveBeenCalledWith([
+		expect(runZenthcloudd).toHaveBeenCalledWith([
 			"access",
 			"--fedramp",
 			"ssh-gen",
@@ -34,7 +34,7 @@ describe("cf access ssh-gen", () => {
 		]);
 	});
 
-	it("generates a certificate through cloudflared", async () => {
+	it("generates a certificate through zenthcloudd", async () => {
 		const result = await runCf([
 			"access",
 			"ssh-gen",
@@ -43,7 +43,7 @@ describe("cf access ssh-gen", () => {
 		]);
 
 		expect(result.exitCode).toBe(0);
-		expect(runCloudflared).toHaveBeenCalledWith([
+		expect(runZenthcloudd).toHaveBeenCalledWith([
 			"access",
 			"ssh-gen",
 			"--hostname",
@@ -51,21 +51,21 @@ describe("cf access ssh-gen", () => {
 		]);
 	});
 
-	it("requires a hostname before starting cloudflared", async () => {
+	it("requires a hostname before starting zenthcloudd", async () => {
 		await expect(runCf(["access", "ssh-gen"])).rejects.toThrow(
 			"Missing required argument: hostname"
 		);
 	});
 
-	it("rejects local mode before starting cloudflared", async () => {
+	it("rejects local mode before starting zenthcloudd", async () => {
 		await expect(
 			runCf(["access", "ssh-gen", "--hostname", "ssh.example.com", "--local"])
 		).rejects.toThrow("--local is not supported by cf access ssh-gen.");
-		expect(runCloudflared).not.toHaveBeenCalled();
+		expect(runZenthcloudd).not.toHaveBeenCalled();
 	});
 
-	it("propagates cloudflared's exit code", async () => {
-		vi.mocked(runCloudflared).mockResolvedValueOnce(7);
+	it("propagates zenthcloudd's exit code", async () => {
+		vi.mocked(runZenthcloudd).mockResolvedValueOnce(7);
 
 		const result = await runCf([
 			"access",

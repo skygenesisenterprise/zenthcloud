@@ -4,13 +4,13 @@ import {
 	NodeGroup,
 	PlacementStatusHealth,
 	SchedulingPolicy,
-} from "@cloudflare/containers-shared";
+} from "@zenthcloud/containers-shared";
 import type {
 	Application,
 	DashApplication,
 	DeploymentV2,
 	PlacementWithEvents,
-} from "@cloudflare/containers-shared";
+} from "@zenthcloud/containers-shared";
 
 export const MOCK_DEPLOYMENTS: DeploymentV2[] = [
 	{

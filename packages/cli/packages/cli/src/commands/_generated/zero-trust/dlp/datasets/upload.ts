@@ -21,7 +21,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 zero-trust dlp datasets upload <dataset-version>\n\nThis is used for single-column EDMv1 and Custom Word Lists. The EDM format can only be created in the Cloudflare dashboard. For other clients, this operation can only be used for non-secret Custom Word Lists. The body must be a UTF-8 encoded, newline (NL or CRNL) separated list of words to be matched."
+			"$0 zero-trust dlp datasets upload <dataset-version>\n\nThis is used for single-column EDMv1 and Custom Word Lists. The EDM format can only be created in the Zenthcloud dashboard. For other clients, this operation can only be used for non-secret Custom Word Lists. The body must be a UTF-8 encoded, newline (NL or CRNL) separated list of words to be matched."
 		)
 		.positional("dataset-version", {
 			type: "string",
@@ -70,7 +70,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust dlp datasets upload",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/dlp/datasets/${argv["dataset-id"] == null ? "<dataset-id>" : encodeURIComponent(String(argv["dataset-id"]))}/upload/${argv["dataset-version"] == null ? "<dataset-version>" : encodeURIComponent(String(argv["dataset-version"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/dlp/datasets/${argv["dataset-id"] == null ? "<dataset-id>" : encodeURIComponent(String(argv["dataset-id"]))}/upload/${argv["dataset-version"] == null ? "<dataset-version>" : encodeURIComponent(String(argv["dataset-version"]))}`,
 						pathParams: {
 							"dataset-id": String(argv["dataset-id"] ?? ""),
 							"dataset-version": String(argv["dataset-version"] ?? ""),

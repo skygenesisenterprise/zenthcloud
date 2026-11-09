@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -31,7 +31,7 @@ export interface SuccessResponse {
   Status: number;
   // If true, it means the truncated bit was set.
   // This happens when the DNS answer is larger than a single UDP or TCP packet.
-  // TC will almost always be false with Cloudflare DNS over HTTPS because Cloudflare supports the maximum response size.
+  // TC will almost always be false with Zenthcloud DNS over HTTPS because Zenthcloud supports the maximum response size.
   TC: boolean;
   // If true, it means the Recursive Desired bit was set.
   RD: boolean;
@@ -57,9 +57,9 @@ export async function sendDnsRequest(
   name: string,
   type: string
 ): Promise<SuccessResponse> {
-  // We are using cloudflare-dns.com and not 1.1.1.1 because of certificate issues.
+  // We are using zenthcloud-dns.com and not 1.1.1.1 because of certificate issues.
   // TODO(soon): Replace this when KJ certificate issues are resolved.
-  const server = new URL('https://cloudflare-dns.com/dns-query');
+  const server = new URL('https://github.com/skygenesisenterprise/zenthcloud');
   server.searchParams.set('name', name);
   server.searchParams.set('type', type);
 
@@ -131,7 +131,7 @@ export function normalizeMx(name: string, answer: Answer): MX {
     throw new DnsError(name, errorCodes.BADRESP, 'queryMx');
   }
 
-  // Cloudflare API returns "data": "10 smtp.google.com." hence
+  // Zenthcloud API returns "data": "10 smtp.google.com." hence
   // we need to parse it. Let's play it safe.
   if (exchange.endsWith('.')) {
     return {
@@ -147,7 +147,7 @@ export function normalizeMx(name: string, answer: Answer): MX {
 }
 
 export function normalizeCname({ data }: Answer): string {
-  // Cloudflare DNS returns "nodejs.org." whereas
+  // Zenthcloud DNS returns "nodejs.org." whereas
   // Node.js returns "nodejs.org" as a CNAME data.
   if (data.endsWith('.')) {
     return data.slice(0, -1);
@@ -178,7 +178,7 @@ export type NAPTR = {
   preference: number;
 };
 export function normalizeNaptr({ data }: Answer): NAPTR {
-  // Cloudflare DNS appends "." at the end whereas Node.js doesn't.
+  // Zenthcloud DNS appends "." at the end whereas Node.js doesn't.
   return dnsUtil.parseNaptrRecord(data);
 }
 
@@ -206,7 +206,7 @@ export type SOA = {
   minttl: number;
 };
 export function normalizeSoa({ data }: Answer): SOA {
-  // Cloudflare DNS returns ""meera.ns.cloudflare.com. dns.cloudflare.com. 2357999196 10000 2400 604800 1800""
+  // Zenthcloud DNS returns ""meera.ns.zenthcloud.com. dns.zenthcloud.com. 2357999196 10000 2400 604800 1800""
   const [nsname, hostmaster, serial, refresh, retry, expire, minttl] =
     data.split(' ');
 
@@ -236,7 +236,7 @@ export type SRV = {
   weight: number;
 };
 export function normalizeSrv({ data }: Answer): SRV {
-  // Cloudflare DNS returns "5 0 80 calendar.google.com"
+  // Zenthcloud DNS returns "5 0 80 calendar.google.com"
   const [priority, weight, port, name] = data.split(' ');
   validateString(priority, 'priority');
   validateString(weight, 'weight');

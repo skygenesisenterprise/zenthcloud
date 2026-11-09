@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -15,7 +15,7 @@ export default {
   },
   'constructor/compile.any.js': {
     comment:
-      'WebAssembly.compile() and instantiate() of bytes finish on a V8 foreground task, which workerd only runs when other work wakes the isolate, so these promises never settle (https://github.com/cloudflare/workerd/issues/7930)',
+      'WebAssembly.compile() and instantiate() of bytes finish on a V8 foreground task, which workerd only runs when other work wakes the isolate, so these promises never settle (https://github.com/skygenesisenterprise/zenthcloud)',
     disabledTests: [
       'Branding',
       'Empty buffer',
@@ -27,12 +27,12 @@ export default {
   },
   'constructor/instantiate-bad-imports.any.js': {
     comment:
-      'WebAssembly.compile() and instantiate() of bytes finish on a V8 foreground task, which workerd only runs when other work wakes the isolate, so these promises never settle (https://github.com/cloudflare/workerd/issues/7930)',
+      'WebAssembly.compile() and instantiate() of bytes finish on a V8 foreground task, which workerd only runs when other work wakes the isolate, so these promises never settle (https://github.com/skygenesisenterprise/zenthcloud)',
     disabledTests: [/^WebAssembly\.instantiate\(buffer\): /],
   },
   'constructor/instantiate.any.js': {
     comment:
-      'WebAssembly.compile() and instantiate() of bytes finish on a V8 foreground task, which workerd only runs when other work wakes the isolate, so these promises never settle (https://github.com/cloudflare/workerd/issues/7930)',
+      'WebAssembly.compile() and instantiate() of bytes finish on a V8 foreground task, which workerd only runs when other work wakes the isolate, so these promises never settle (https://github.com/skygenesisenterprise/zenthcloud)',
     disabledTests: [
       'Branding',
       /: BufferSource argument$/,
@@ -44,7 +44,7 @@ export default {
   },
   'constructor/multi-value.any.js': {
     comment:
-      'WebAssembly.compile() and instantiate() of bytes finish on a V8 foreground task, which workerd only runs when other work wakes the isolate, so these promises never settle (https://github.com/cloudflare/workerd/issues/7930)',
+      'WebAssembly.compile() and instantiate() of bytes finish on a V8 foreground task, which workerd only runs when other work wakes the isolate, so these promises never settle (https://github.com/skygenesisenterprise/zenthcloud)',
     disabledTests: true,
   },
   'constructor/toStringTag.any.js': {},
@@ -60,8 +60,8 @@ export default {
   'global/valueOf.any.js': {},
   'idlharness.any.js': {
     comment:
-      'idl_test setup compiles /wasm/incrementer.wasm in a promise continuation, where workerd disallows Wasm code generation; where allowed, the compile would never settle (https://github.com/cloudflare/workerd/issues/7930). ' +
-      'V8 makes WebAssembly.Module extend AbstractModuleSource (source phase imports), which wasm-js-api.idl does not describe (https://github.com/cloudflare/workerd/issues/7931)',
+      'idl_test setup compiles /wasm/incrementer.wasm in a promise continuation, where workerd disallows Wasm code generation; where allowed, the compile would never settle (https://github.com/skygenesisenterprise/zenthcloud). ' +
+      'V8 makes WebAssembly.Module extend AbstractModuleSource (source phase imports), which wasm-js-api.idl does not describe (https://github.com/skygenesisenterprise/zenthcloud)',
     expectedFailures: [
       'idl_test setup',
       'Module interface: existence and properties of interface object',

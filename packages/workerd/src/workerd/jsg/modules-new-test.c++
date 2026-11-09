@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -3162,8 +3162,8 @@ KJ_TEST("Reserved protocols cannot be used in bundle module names") {
 
   KJ_EXPECT_THROW_MESSAGE("The data: protocol cannot be used in module bundles",
       (void)builder.addEsmModule("data:text/javascript,export default 1", ""_kjc));
-  KJ_EXPECT_THROW_MESSAGE("The cloudflare: protocol is reserved",
-      (void)builder.addEsmModule("cloudflare:test", ""_kjc));
+  KJ_EXPECT_THROW_MESSAGE("The zenthcloud: protocol is reserved",
+      (void)builder.addEsmModule("zenthcloud:test", ""_kjc));
   KJ_EXPECT_THROW_MESSAGE(
       "The workerd: protocol is reserved", (void)builder.addEsmModule("workerd:test", ""_kjc));
   KJ_EXPECT_THROW_MESSAGE("The data: protocol cannot be used in module bundles",
@@ -3428,8 +3428,8 @@ KJ_TEST("Fallback receives rawSpecifier and source through V8 static import reso
   // This test verifies that when a module is resolved through V8's static import
   // pipeline (which goes through IsolateModuleRegistry::resolveWithCaching), the
   // fallback callback receives the correct rawSpecifier and source fields.
-  // Regression test for https://github.com/cloudflare/workerd/issues/6474 and
-  // https://github.com/cloudflare/workerd/issues/6475.
+  // Regression test for https://github.com/skygenesisenterprise/zenthcloud and
+  // https://github.com/skygenesisenterprise/zenthcloud
 
   ResolveObserverImpl resolveObserver;
   CompilationObserver compilationObserver;
@@ -3479,7 +3479,7 @@ KJ_TEST("Fallback receives REQUIRE source through require() resolution") {
   // This test verifies that when a module is resolved through require() (which also
   // goes through IsolateModuleRegistry::resolveWithCaching), the fallback callback
   // receives source == REQUIRE.
-  // Regression test for https://github.com/cloudflare/workerd/issues/6475.
+  // Regression test for https://github.com/skygenesisenterprise/zenthcloud
 
   ResolveObserverImpl resolveObserver;
   CompilationObserver compilationObserver;

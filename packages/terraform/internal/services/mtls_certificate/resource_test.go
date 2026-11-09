@@ -7,11 +7,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/mtls_certificates"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/mtls_certificates"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -26,24 +26,24 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_mtls_certificate", &resource.Sweeper{
-		Name: "cloudflare_mtls_certificate",
-		F:    testSweepCloudflareMTLSCertificates,
+	resource.AddTestSweepers("zenthcloud_mtls_certificate", &resource.Sweeper{
+		Name: "zenthcloud_mtls_certificate",
+		F:    testSweepZenthcloudMTLSCertificates,
 	})
 }
 
-func testSweepCloudflareMTLSCertificates(r string) error {
+func testSweepZenthcloudMTLSCertificates(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping MTLS certificates sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping MTLS certificates sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
 	certs, err := client.MTLSCertificates.List(ctx, mtls_certificates.MTLSCertificateListParams{
-		AccountID: cloudflare.F(accountID),
+		AccountID: zenthcloud.F(accountID),
 	})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch MTLS certificates: %s", err))
@@ -57,7 +57,7 @@ func testSweepCloudflareMTLSCertificates(r string) error {
 
 		tflog.Info(ctx, fmt.Sprintf("Deleting MTLS certificate: %s", cert.ID))
 		_, err := client.MTLSCertificates.Delete(ctx, cert.ID, mtls_certificates.MTLSCertificateDeleteParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete MTLS certificate %s: %s", cert.ID, err))
@@ -67,17 +67,17 @@ func testSweepCloudflareMTLSCertificates(r string) error {
 	return nil
 }
 
-func testAccCheckCloudflareMTLSCertificateDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudMTLSCertificateDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_mtls_certificate" {
+		if rs.Type != "zenthcloud_mtls_certificate" {
 			continue
 		}
 
 		accountID := rs.Primary.Attributes[consts.AccountIDSchemaKey]
 		_, err := client.MTLSCertificates.Get(context.Background(), rs.Primary.ID, mtls_certificates.MTLSCertificateGetParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		})
 		if err != nil {
 			continue
@@ -96,8 +96,8 @@ func testAccCheckCloudflareMTLSCertificateDestroy(s *terraform.State) error {
 // and the resource has RequiresReplace on all input fields.
 func TestAccMTLSCertificate_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_mtls_certificate." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_mtls_certificate." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	expiry := time.Now().Add(time.Hour * 24 * 365)
 	cert, key, err := utils.GenerateEphemeralCertAndKey([]string{"example.com"}, expiry)
@@ -116,7 +116,7 @@ func TestAccMTLSCertificate_Basic(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareMTLSCertificateDestroy,
+		CheckDestroy:             testAccCheckZenthcloudMTLSCertificateDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccMTLSCertificateBasicConfig(accountID, rnd, cert, key),
@@ -144,7 +144,7 @@ func TestAccMTLSCertificate_Basic(t *testing.T) {
 
 func testAccMTLSCertificateBasicConfig(accountID, rnd, cert, key string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_mtls_certificate" "%[2]s" {
+resource "zenthcloud_mtls_certificate" "%[2]s" {
   account_id   = "%[1]s"
   name         = "%[2]s"
   certificates = <<EOT
@@ -159,7 +159,7 @@ EOT
 
 func testAccMTLSCertificateUpdatedConfig(accountID, rnd, cert, key string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_mtls_certificate" "%[2]s" {
+resource "zenthcloud_mtls_certificate" "%[2]s" {
   account_id   = "%[1]s"
   name         = "%[2]s_updated"
   certificates = <<EOT
@@ -172,11 +172,11 @@ EOT
 }`, accountID, rnd, cert, key)
 }
 
-func TestAccCloudflareMTLSCertificate_CertificateNewlineNormalization(t *testing.T) {
+func TestAccZenthcloudMTLSCertificate_CertificateNewlineNormalization(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
-	name := "cloudflare_mtls_certificate." + rnd
+	name := "zenthcloud_mtls_certificate." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -184,11 +184,11 @@ func TestAccCloudflareMTLSCertificate_CertificateNewlineNormalization(t *testing
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareMTLSCertificateDestroy,
+		CheckDestroy:             testAccCheckZenthcloudMTLSCertificateDestroy,
 		Steps: []resource.TestStep{
 			{
 				// Refresh with config trimmed
-				Config: testAccCheckCloudflareMTLSCertificateConfigNormalized(accountID, rnd),
+				Config: testAccCheckZenthcloudMTLSCertificateConfigNormalized(accountID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -196,7 +196,7 @@ func TestAccCloudflareMTLSCertificate_CertificateNewlineNormalization(t *testing
 			},
 			{
 				// Refresh with config trimmed - should not detect drift
-				Config: testAccCheckCloudflareMTLSCertificateConfigNormalized(accountID, rnd),
+				Config: testAccCheckZenthcloudMTLSCertificateConfigNormalized(accountID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -205,7 +205,7 @@ func TestAccCloudflareMTLSCertificate_CertificateNewlineNormalization(t *testing
 			},
 			{
 				// Create with trailing newlines - should not detect drift
-				Config: testAccCheckCloudflareMTLSCertificateConfigWithNewline(accountID, rnd),
+				Config: testAccCheckZenthcloudMTLSCertificateConfigWithNewline(accountID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -215,11 +215,11 @@ func TestAccCloudflareMTLSCertificate_CertificateNewlineNormalization(t *testing
 	})
 }
 
-func TestAccCloudflareMTLSCertificate_CertificateChainNewlineNormalization(t *testing.T) {
+func TestAccZenthcloudMTLSCertificate_CertificateChainNewlineNormalization(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
-	name := "cloudflare_mtls_certificate." + rnd
+	name := "zenthcloud_mtls_certificate." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -227,11 +227,11 @@ func TestAccCloudflareMTLSCertificate_CertificateChainNewlineNormalization(t *te
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareMTLSCertificateDestroy,
+		CheckDestroy:             testAccCheckZenthcloudMTLSCertificateDestroy,
 		Steps: []resource.TestStep{
 			{
 				// Refresh with config trimmed - should not detect drift
-				Config: testAccCheckCloudflareMTLSCertificateChainConfigNormalized(accountID, rnd),
+				Config: testAccCheckZenthcloudMTLSCertificateChainConfigNormalized(accountID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -239,7 +239,7 @@ func TestAccCloudflareMTLSCertificate_CertificateChainNewlineNormalization(t *te
 			},
 			{
 				// Refresh with config trimmed - should not detect drift
-				Config: testAccCheckCloudflareMTLSCertificateChainConfigNormalized(accountID, rnd),
+				Config: testAccCheckZenthcloudMTLSCertificateChainConfigNormalized(accountID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -248,7 +248,7 @@ func TestAccCloudflareMTLSCertificate_CertificateChainNewlineNormalization(t *te
 			},
 			{
 				// Create with certificate chain with trailing newlines
-				Config: testAccCheckCloudflareMTLSCertificateChainConfigWithNewline(accountID, rnd),
+				Config: testAccCheckZenthcloudMTLSCertificateChainConfigWithNewline(accountID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -258,25 +258,25 @@ func TestAccCloudflareMTLSCertificate_CertificateChainNewlineNormalization(t *te
 	})
 }
 
-func testAccCheckCloudflareMTLSCertificateConfigWithNewline(accountID, name string) string {
+func testAccCheckZenthcloudMTLSCertificateConfigWithNewline(accountID, name string) string {
 	return acctest.LoadTestCase("mtlscertificateconfigwithnewline.tf", accountID, name)
 }
 
-func testAccCheckCloudflareMTLSCertificateConfigNormalized(accountID, name string) string {
+func testAccCheckZenthcloudMTLSCertificateConfigNormalized(accountID, name string) string {
 	return acctest.LoadTestCase("mtlscertificateconfignormalized.tf", accountID, name)
 }
 
-func testAccCheckCloudflareMTLSCertificateChainConfigWithNewline(accountID, name string) string {
+func testAccCheckZenthcloudMTLSCertificateChainConfigWithNewline(accountID, name string) string {
 	return acctest.LoadTestCase("mtlscertificatechainwithnewline.tf", accountID, name)
 }
 
-func testAccCheckCloudflareMTLSCertificateChainConfigNormalized(accountID, name string) string {
+func testAccCheckZenthcloudMTLSCertificateChainConfigNormalized(accountID, name string) string {
 	return acctest.LoadTestCase("mtlscertificatechainnormalized.tf", accountID, name)
 }
 
 func TestAccUpgradeMtlsCertificate_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	expiry := time.Now().Add(time.Hour * 24 * 365)
 	cert, key, err := utils.GenerateEphemeralCertAndKey([]string{"example.com"}, expiry)
 	if err != nil {
@@ -296,8 +296,8 @@ func TestAccUpgradeMtlsCertificate_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

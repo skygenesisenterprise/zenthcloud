@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_total_tls Resource - Cloudflare"
+page_title: "zenthcloud_total_tls Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   SSL and Certificates ReadSSL and Certificates Write
 ---
 
-# cloudflare_total_tls (Resource)
+# zenthcloud_total_tls (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_total_tls" "example_total_tls" {
+resource "zenthcloud_total_tls" "example_total_tls" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   enabled = true
   certificate_authority = "google"
@@ -47,7 +47,7 @@ Available values: 90.
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_total_tls.example '<zone_id>'
+$ terraform import zenthcloud_total_tls.example '<zone_id>'
 ```
 
 

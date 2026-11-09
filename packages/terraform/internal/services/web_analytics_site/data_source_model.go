@@ -5,9 +5,9 @@ package web_analytics_site
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/rum"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/rum"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -33,7 +33,7 @@ type WebAnalyticsSiteDataSourceModel struct {
 
 func (m *WebAnalyticsSiteDataSourceModel) toReadParams(_ context.Context) (params rum.SiteInfoGetParams, diags diag.Diagnostics) {
 	params = rum.SiteInfoGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -41,11 +41,11 @@ func (m *WebAnalyticsSiteDataSourceModel) toReadParams(_ context.Context) (param
 
 func (m *WebAnalyticsSiteDataSourceModel) toListParams(_ context.Context) (params rum.SiteInfoListParams, diags diag.Diagnostics) {
 	params = rum.SiteInfoListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Filter.OrderBy.IsNull() {
-		params.OrderBy = cloudflare.F(rum.SiteInfoListParamsOrderBy(m.Filter.OrderBy.ValueString()))
+		params.OrderBy = zenthcloud.F(rum.SiteInfoListParamsOrderBy(m.Filter.OrderBy.ValueString()))
 	}
 
 	return

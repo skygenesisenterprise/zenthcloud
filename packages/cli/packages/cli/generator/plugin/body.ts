@@ -1,7 +1,7 @@
 /**
  * Flattens a JSON request body into flags.
  *
- * A port of `extractBodyProperties` from `@cloudflare/forge`'s
+ * A port of `extractBodyProperties` from `@zenthcloud/forge`'s
  * `openapi-resolver.ts` and the functions it calls. They read raw schemas,
  * and merged them into new ones, so they read forge's types through
  * `Schema`: a view of a type that answers what they asked of a schema, such
@@ -39,7 +39,7 @@ import {
 	renamed,
 	unwrapNull,
 } from "./operation.js";
-import type { Model, Type } from "@cloudflare/forge/plugin";
+import type { Model, Type } from "@zenthcloud/forge/plugin";
 
 /** The JSON `type` of a schema. */
 type Kind = "string" | "number" | "boolean" | "array" | "object";

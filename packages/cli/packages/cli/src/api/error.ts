@@ -99,7 +99,7 @@ export class ApiError extends Error {
 	}
 
 	/**
-	 * The ID Cloudflare gave the request, from the `x-request-id` header.
+	 * The ID Zenthcloud gave the request, from the `x-request-id` header.
 	 */
 	get requestId(): string | undefined {
 		return this.rawResponse?.headers?.get("x-request-id") ?? undefined;

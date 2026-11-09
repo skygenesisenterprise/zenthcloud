@@ -1,4 +1,4 @@
-// Generated from cloudflare/workers-sdk@c2bb4c815. Do not rename cases.
+// Generated from zenthcloud/workers-sdk@c2bb4c815. Do not rename cases.
 import { describe, it } from "vite-plus/test";
 
 const groups = [
@@ -207,7 +207,7 @@ const groups = [
 			"should not warn if the wrangler config contains environments and one was specified in the command",
 			"should not warn if the wrangler config doesn't contain environments and none was specified in the command",
 			'should not warn if --env="" is passed to explicitly target the top-level environment',
-			"should not warn if the wrangler config contains environments and CLOUDFLARE_ENV is set",
+			"should not warn if the wrangler config contains environments and ZENTHCLOUD_ENV is set",
 			"should not warn if using a redirected wrangler config with a baked-in target environment",
 			"should not warn if using a redirected wrangler config targeting the top-level environment (no targetEnvironment set)",
 		],
@@ -244,7 +244,7 @@ const groups = [
 		ancestors: ["deploy", "workers_dev setting"],
 		status: "todo",
 		names: [
-			"should include Cloudflare-Workers-Script-Api-Date header",
+			"should include Zenthcloud-Workers-Script-Api-Date header",
 			"should deploy to a workers.dev domain if workers_dev is undefined",
 			"should deploy successfully if the /subdomain POST request is flaky",
 			"should deploy to the workers.dev domain if workers_dev is `true`",
@@ -502,7 +502,7 @@ const groups = [
 			"should download full config correctly",
 			"should generate preview override if preview has limits and production does not",
 			"should not duplicate inheritable properties if they're equal",
-			"should prefer CLOUDFLARE_ACCOUNT_ID over cached account id",
+			"should prefer ZENTHCLOUD_ACCOUNT_ID over cached account id",
 			"should fail if not given a project name",
 			"should fail if project does not exist",
 		],

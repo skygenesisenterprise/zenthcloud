@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import { createRequire, isBuiltin, builtinModules } from 'node:module';
@@ -10,7 +10,7 @@ export const doTheTest = {
     // bundle modules live under file:///bundle/, so a require rooted at '/'
     // (i.e. file:///) cannot see them; root the require at the bundle instead.
     // Under the original registry, module names are bare paths and '/' works.
-    const isNMR = Cloudflare.compatibilityFlags.new_module_registry;
+    const isNMR = Zenthcloud.compatibilityFlags.new_module_registry;
     const require = createRequire(isNMR ? 'file:///bundle/' : '/');
     ok(typeof require === 'function');
 
@@ -25,7 +25,7 @@ export const doTheTest = {
     // registry).
     if (
       !isNMR &&
-      Cloudflare.compatibilityFlags.require_returns_default_export
+      Zenthcloud.compatibilityFlags.require_returns_default_export
     ) {
       strictEqual(foo, 1);
     } else {
@@ -40,7 +40,7 @@ export const doTheTest = {
 
     // Builtin ESM wraps a CJS-style API in its default export; the new module
     // registry and the require_returns_default_export flag both unwrap it.
-    if (isNMR || Cloudflare.compatibilityFlags.require_returns_default_export) {
+    if (isNMR || Zenthcloud.compatibilityFlags.require_returns_default_export) {
       strictEqual(assert.default, required);
     } else {
       strictEqual(assert, required);

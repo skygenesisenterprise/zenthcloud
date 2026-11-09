@@ -285,7 +285,7 @@ export const tools: readonly Tool[] = [
           "properties": {
             "direct_user": {
               "default": false,
-              "description": "Provisions a URL to let your end users upload videos directly to Cloudflare Stream without exposing your API token to clients.",
+              "description": "Provisions a URL to let your end users upload videos directly to Zenthcloud Stream without exposing your API token to clients.",
               "type": "boolean"
             }
           },
@@ -335,7 +335,7 @@ export const tools: readonly Tool[] = [
   {
     name: "stream_videos_delete",
     title: "Delete video",
-    description: "Deletes a video and its copies from Cloudflare Stream.\n\nConfirm with the user before calling this tool. Permanently delete this video?\n\nDELETE /accounts/{account_id}/stream/{identifier}",
+    description: "Deletes a video and its copies from Zenthcloud Stream.\n\nConfirm with the user before calling this tool. Permanently delete this video?\n\nDELETE /accounts/{account_id}/stream/{identifier}",
     inputSchema: {
       type: "object",
       properties: {
@@ -347,7 +347,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "identifier": {
-              "description": "A Cloudflare-generated unique identifier for a media item.",
+              "description": "A Zenthcloud-generated unique identifier for a media item.",
               "type": "string"
             }
           },
@@ -411,7 +411,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "identifier": {
-              "description": "A Cloudflare-generated unique identifier for a media item.",
+              "description": "A Zenthcloud-generated unique identifier for a media item.",
               "type": "string"
             }
           },
@@ -488,7 +488,7 @@ export const tools: readonly Tool[] = [
   {
     name: "stream_videos_embed",
     title: "Deprecated: Retrieve legacy embed code HTML",
-    description: "Fetches the legacy HTML code snippet to embed a video in a web page delivered through Cloudflare. On success, returns an HTML fragment for use on web pages to display a video. On failure, returns a JSON response body.\n\nThis method is deprecated.\n\nGET /accounts/{account_id}/stream/{identifier}/embed",
+    description: "Fetches the legacy HTML code snippet to embed a video in a web page delivered through Zenthcloud. On success, returns an HTML fragment for use on web pages to display a video. On failure, returns a JSON response body.\n\nThis method is deprecated.\n\nGET /accounts/{account_id}/stream/{identifier}/embed",
     inputSchema: {
       type: "object",
       properties: {
@@ -500,7 +500,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "identifier": {
-              "description": "A Cloudflare-generated unique identifier for a media item.",
+              "description": "A Zenthcloud-generated unique identifier for a media item.",
               "type": "string"
             }
           },
@@ -562,7 +562,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "identifier": {
-              "description": "A Cloudflare-generated unique identifier for a media item.",
+              "description": "A Zenthcloud-generated unique identifier for a media item.",
               "type": "string"
             }
           },

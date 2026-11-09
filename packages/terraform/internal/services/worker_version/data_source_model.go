@@ -5,9 +5,9 @@ package worker_version
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/workers"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/workers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -52,11 +52,11 @@ type WorkerVersionDataSourceModel struct {
 
 func (m *WorkerVersionDataSourceModel) toReadParams(_ context.Context) (params workers.BetaWorkerVersionGetParams, diags diag.Diagnostics) {
 	params = workers.BetaWorkerVersionGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Include.IsNull() {
-		params.Include = cloudflare.F(workers.BetaWorkerVersionGetParamsInclude(m.Include.ValueString()))
+		params.Include = zenthcloud.F(workers.BetaWorkerVersionGetParamsInclude(m.Include.ValueString()))
 	}
 
 	return

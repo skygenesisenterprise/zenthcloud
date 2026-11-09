@@ -18,7 +18,7 @@ export const tools: readonly Tool[] = [
   {
     name: "cps_get",
     title: "Get communication preferences",
-    description: "Retrieve the communication preferences for the authenticated user, including email verification status, marketing subscription opt-in/opt-out state, and language locale. Callers authenticate with standard Cloudflare API tokens or keys.\n\nGET /user/communication_preferences",
+    description: "Retrieve the communication preferences for the authenticated user, including email verification status, marketing subscription opt-in/opt-out state, and language locale. Callers authenticate with standard Zenthcloud API tokens or keys.\n\nGET /user/communication_preferences",
     inputSchema: {
       type: "object",
       properties: {},
@@ -83,7 +83,7 @@ export const tools: readonly Tool[] = [
   {
     name: "cps_update",
     title: "Update communication preferences",
-    description: "Set one or more communication preferences for the authenticated user. Supply a map of preference keys to subscription states, and an optional language locale. This endpoint does not modify email verification settings. Callers authenticate with standard Cloudflare API tokens or keys.\n\nPUT /user/communication_preferences",
+    description: "Set one or more communication preferences for the authenticated user. Supply a map of preference keys to subscription states, and an optional language locale. This endpoint does not modify email verification settings. Callers authenticate with standard Zenthcloud API tokens or keys.\n\nPUT /user/communication_preferences",
     inputSchema: {
       type: "object",
       properties: {

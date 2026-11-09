@@ -6,10 +6,10 @@ import (
 	"os"
 	"testing"
 
-	cfv1 "github.com/cloudflare/cloudflare-go"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	cfv1 "github.com/zenthcloud/zenthcloud-go"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -20,20 +20,20 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_turnstile_widget", &resource.Sweeper{
-		Name: "cloudflare_turnstile_widget",
+	resource.AddTestSweepers("zenthcloud_turnstile_widget", &resource.Sweeper{
+		Name: "zenthcloud_turnstile_widget",
 		F: func(region string) error {
 			ctx := context.Background()
 			client, err := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 			if err != nil {
-				tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", err))
+				tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", err))
 				return fmt.Errorf("error establishing client: %w", err)
 			}
 
 			if accountID == "" {
-				tflog.Info(ctx, "Skipping turnstile widgets sweep: CLOUDFLARE_ACCOUNT_ID not set")
+				tflog.Info(ctx, "Skipping turnstile widgets sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 				return nil
 			}
 
@@ -66,17 +66,17 @@ func init() {
 	})
 }
 
-func TestAccCloudflareTurnstileWidget_Basic(t *testing.T) {
+func TestAccZenthcloudTurnstileWidget_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_turnstile_widget." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_turnstile_widget." + rnd
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareTurnstileWidgetBasic(rnd, accountID),
+				Config: testAccCheckZenthcloudTurnstileWidgetBasic(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", rnd),
 					resource.TestCheckResourceAttr(resourceName, consts.AccountIDSchemaKey, accountID),
@@ -98,17 +98,17 @@ func TestAccCloudflareTurnstileWidget_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareTurnstileWidget_Minimum(t *testing.T) {
+func TestAccZenthcloudTurnstileWidget_Minimum(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_turnstile_widget." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_turnstile_widget." + rnd
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareTurnstileWidgetMinimum(rnd, accountID),
+				Config: testAccCheckZenthcloudTurnstileWidgetMinimum(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", rnd),
 					resource.TestCheckResourceAttr(resourceName, consts.AccountIDSchemaKey, accountID),
@@ -130,17 +130,17 @@ func TestAccCloudflareTurnstileWidget_Minimum(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareTurnstileWidget_NoDomains(t *testing.T) {
+func TestAccZenthcloudTurnstileWidget_NoDomains(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_turnstile_widget." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_turnstile_widget." + rnd
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareTurnstileWidgetNoDomains(rnd, accountID),
+				Config: testAccCheckZenthcloudTurnstileWidgetNoDomains(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", rnd),
 					resource.TestCheckResourceAttr(resourceName, consts.AccountIDSchemaKey, accountID),
@@ -161,17 +161,17 @@ func TestAccCloudflareTurnstileWidget_NoDomains(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareTurnstileWidget_Update(t *testing.T) {
+func TestAccZenthcloudTurnstileWidget_Update(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_turnstile_widget." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_turnstile_widget." + rnd
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareTurnstileWidgetBasic(rnd, accountID),
+				Config: testAccCheckZenthcloudTurnstileWidgetBasic(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", rnd),
 					resource.TestCheckResourceAttr(resourceName, consts.AccountIDSchemaKey, accountID),
@@ -181,7 +181,7 @@ func TestAccCloudflareTurnstileWidget_Update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckCloudflareTurnstileWidgetUpdated(rnd, accountID),
+				Config: testAccCheckZenthcloudTurnstileWidgetUpdated(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", rnd+"-updated"),
 					resource.TestCheckResourceAttr(resourceName, consts.AccountIDSchemaKey, accountID),
@@ -201,17 +201,17 @@ func TestAccCloudflareTurnstileWidget_Update(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareTurnstileWidget_NonInteractiveMode(t *testing.T) {
+func TestAccZenthcloudTurnstileWidget_NonInteractiveMode(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_turnstile_widget." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_turnstile_widget." + rnd
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareTurnstileWidgetNonInteractive(rnd, accountID),
+				Config: testAccCheckZenthcloudTurnstileWidgetNonInteractive(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", rnd),
 					resource.TestCheckResourceAttr(resourceName, consts.AccountIDSchemaKey, accountID),
@@ -231,17 +231,17 @@ func TestAccCloudflareTurnstileWidget_NonInteractiveMode(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareTurnstileWidget_DomainsOrderNoDrift verifies that a widget
+// TestAccZenthcloudTurnstileWidget_DomainsOrderNoDrift verifies that a widget
 // whose domains are declared in a non-alphabetical order does NOT produce drift
 // on a no-op re-apply. The Turnstile API canonically returns domains sorted
 // alphabetically; without reordering the API response back to the planned
 // order, Terraform sees the reordered list as a change on every plan
 // (GitHub #7028).
-func TestAccCloudflareTurnstileWidget_DomainsOrderNoDrift(t *testing.T) {
+func TestAccZenthcloudTurnstileWidget_DomainsOrderNoDrift(t *testing.T) {
 	t.Parallel()
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_turnstile_widget." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_turnstile_widget." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -249,7 +249,7 @@ func TestAccCloudflareTurnstileWidget_DomainsOrderNoDrift(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				// Step 1: create a widget with domains in non-alphabetical order.
-				Config: testAccCheckCloudflareTurnstileWidgetConfigDomainsOrder(rnd, accountID),
+				Config: testAccCheckZenthcloudTurnstileWidgetConfigDomainsOrder(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "domains.#", "3"),
 					// Planned (non-alphabetical) order must be preserved in state.
@@ -262,7 +262,7 @@ func TestAccCloudflareTurnstileWidget_DomainsOrderNoDrift(t *testing.T) {
 				// Step 2: re-apply identical config. Must be a no-op. Without
 				// the response reordering, this would plan an in-place update
 				// because the API returns domains sorted alphabetically.
-				Config: testAccCheckCloudflareTurnstileWidgetConfigDomainsOrder(rnd, accountID),
+				Config: testAccCheckZenthcloudTurnstileWidgetConfigDomainsOrder(rnd, accountID),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(name, plancheck.ResourceActionNoop),
@@ -273,26 +273,26 @@ func TestAccCloudflareTurnstileWidget_DomainsOrderNoDrift(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareTurnstileWidgetConfigDomainsOrder(rnd, accountID string) string {
+func testAccCheckZenthcloudTurnstileWidgetConfigDomainsOrder(rnd, accountID string) string {
 	return acctest.LoadTestCase("turnstilewidgetconfigdomainsorder.tf", rnd, accountID)
 }
 
-func testAccCheckCloudflareTurnstileWidgetBasic(rnd, accountID string) string {
+func testAccCheckZenthcloudTurnstileWidgetBasic(rnd, accountID string) string {
 	return acctest.LoadTestCase("turnstilewidgetbasic.tf", rnd, accountID)
 }
 
-func testAccCheckCloudflareTurnstileWidgetMinimum(rnd, accountID string) string {
+func testAccCheckZenthcloudTurnstileWidgetMinimum(rnd, accountID string) string {
 	return acctest.LoadTestCase("turnstilewidgetminimum.tf", rnd, accountID)
 }
 
-func testAccCheckCloudflareTurnstileWidgetNoDomains(rnd, accountID string) string {
+func testAccCheckZenthcloudTurnstileWidgetNoDomains(rnd, accountID string) string {
 	return acctest.LoadTestCase("turnstilewidgetnodomains.tf", rnd, accountID)
 }
 
-func testAccCheckCloudflareTurnstileWidgetUpdated(rnd, accountID string) string {
+func testAccCheckZenthcloudTurnstileWidgetUpdated(rnd, accountID string) string {
 	return acctest.LoadTestCase("turnstilewidgetupdated.tf", rnd, accountID)
 }
 
-func testAccCheckCloudflareTurnstileWidgetNonInteractive(rnd, accountID string) string {
+func testAccCheckZenthcloudTurnstileWidgetNonInteractive(rnd, accountID string) string {
 	return acctest.LoadTestCase("turnstilewidgetnoninteractive.tf", rnd, accountID)
 }

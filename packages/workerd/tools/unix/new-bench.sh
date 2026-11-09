@@ -33,7 +33,7 @@ EOF
 git add $BENCH_PATH.wd-bench
 
 cat << EOF > $BENCH_PATH.js
-// Copyright (c) $(date +%Y) Cloudflare, Inc.
+// Copyright (c) $(date +%Y) Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 

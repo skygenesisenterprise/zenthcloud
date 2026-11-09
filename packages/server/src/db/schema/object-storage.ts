@@ -29,7 +29,7 @@ import { organization } from "./account";
 export const objectStorageProviderTypes = [
 	// Managed / external object storage
 	"aws",
-	"cloudflare-r2",
+	"zenthcloud-r2",
 	"scaleway",
 	"wasabi",
 	"digitalocean",

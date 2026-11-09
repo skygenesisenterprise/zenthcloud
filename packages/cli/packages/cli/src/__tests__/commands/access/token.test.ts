@@ -1,24 +1,24 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import { runCloudflared } from "../../../commands/cloudflared.js";
+import { runZenthcloudd } from "../../../commands/zenthcloudd.js";
 import { runCf } from "../../helpers/run-cf.js";
 
-vi.mock("../../../commands/cloudflared.js", async (importOriginal) => ({
+vi.mock("../../../commands/zenthcloudd.js", async (importOriginal) => ({
 	...(await importOriginal<Record<string, unknown>>()),
-	runCloudflared: vi.fn(),
+	runZenthcloudd: vi.fn(),
 }));
 
 describe("cf access token", () => {
 	beforeEach(() => {
-		vi.stubEnv("CLOUDFLARE_COMPLIANCE_REGION", undefined);
-		vi.mocked(runCloudflared).mockReset();
-		vi.mocked(runCloudflared).mockResolvedValue(0);
+		vi.stubEnv("ZENTHCLOUD_COMPLIANCE_REGION", undefined);
+		vi.mocked(runZenthcloudd).mockReset();
+		vi.mocked(runZenthcloudd).mockResolvedValue(0);
 	});
 
-	it("prints a token through cloudflared", async () => {
+	it("prints a token through zenthcloudd", async () => {
 		const result = await runCf(["access", "token", "https://app.example.com"]);
 
 		expect(result.exitCode).toBe(0);
-		expect(runCloudflared).toHaveBeenCalledWith([
+		expect(runZenthcloudd).toHaveBeenCalledWith([
 			"access",
 			"token",
 			"https://app.example.com",
@@ -29,16 +29,16 @@ describe("cf access token", () => {
 		await expect(runCf(["access", "token"])).rejects.toThrow(
 			"Not enough non-option arguments"
 		);
-		expect(runCloudflared).not.toHaveBeenCalled();
+		expect(runZenthcloudd).not.toHaveBeenCalled();
 	});
 
 	it("uses the FedRAMP Access flow from the compliance context", async () => {
-		vi.stubEnv("CLOUDFLARE_COMPLIANCE_REGION", "fedramp_high");
+		vi.stubEnv("ZENTHCLOUD_COMPLIANCE_REGION", "fedramp_high");
 
 		const result = await runCf(["access", "token", "https://app.example.com"]);
 
 		expect(result.exitCode).toBe(0);
-		expect(runCloudflared).toHaveBeenCalledWith([
+		expect(runZenthcloudd).toHaveBeenCalledWith([
 			"access",
 			"--fedramp",
 			"token",
@@ -46,10 +46,10 @@ describe("cf access token", () => {
 		]);
 	});
 
-	it("rejects local mode before starting cloudflared", async () => {
+	it("rejects local mode before starting zenthcloudd", async () => {
 		await expect(
 			runCf(["access", "token", "https://app.example.com", "--local"])
 		).rejects.toThrow("--local is not supported by cf access token.");
-		expect(runCloudflared).not.toHaveBeenCalled();
+		expect(runZenthcloudd).not.toHaveBeenCalled();
 	});
 });

@@ -15,7 +15,7 @@ import { domain$$connect_PostData } from "./schemas.js";
 export const tools: readonly Tool[] = [
   {
     name: "dns_domainconnect_getDomainSettings",
-    title: "Provide settings if domain is served by Cloudflare",
+    title: "Provide settings if domain is served by Zenthcloud",
     description: "Checks whether a domain is in Quicksilver and returns its settings.\n\nGET /v2/{domain}/settings",
     inputSchema: {
       type: "object",
@@ -47,7 +47,7 @@ export const tools: readonly Tool[] = [
       "idempotentHint": true,
       "openWorldHint": true,
       "readOnlyHint": true,
-      "title": "Provide settings if domain is served by Cloudflare"
+      "title": "Provide settings if domain is served by Zenthcloud"
     },
     [OPERATION]: {
       method: "GET",
@@ -185,7 +185,7 @@ export const tools: readonly Tool[] = [
   {
     name: "dns_domainconnect_getProviderTemplate",
     title: "Serve a provider template",
-    description: "Providers are the external parties that are configured to interact with Cloudflare.\n\nGET /v2/domainTemplates/providers/{provider}/services/{service}",
+    description: "Providers are the external parties that are configured to interact with Zenthcloud.\n\nGET /v2/domainTemplates/providers/{provider}/services/{service}",
     inputSchema: {
       type: "object",
       properties: {

@@ -3,11 +3,11 @@ import {
 	DeploymentsService,
 	initContainersSharedContext,
 	sshCommand,
-} from "@cloudflare/containers-shared";
+} from "@zenthcloud/containers-shared";
 import {
 	mockConsoleMethods,
 	runInTempDir,
-} from "@cloudflare/workers-utils/test-helpers";
+} from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw/http";
 import {
 	afterEach,
@@ -28,7 +28,7 @@ import {
 import { server, setupMsw, TEST_BASE_URL } from "../helpers/msw.js";
 import { runCf } from "../helpers/run-cf.js";
 import type * as InteractiveModule from "../../lib/interactive.js";
-import type * as ContainersShared from "@cloudflare/containers-shared";
+import type * as ContainersShared from "@zenthcloud/containers-shared";
 
 vi.mock("../../lib/session.js", async (importOriginal) => ({
 	...(await importOriginal<Record<string, unknown>>()),
@@ -61,7 +61,7 @@ vi.mock("../../lib/agent-context.js", () => ({
 	}),
 }));
 
-vi.mock("@cloudflare/containers-shared", async (importOriginal) => {
+vi.mock("@zenthcloud/containers-shared", async (importOriginal) => {
 	const original = await importOriginal<typeof ContainersShared>();
 	return {
 		...original,
@@ -84,10 +84,10 @@ describe("cf containers ssh", () => {
 		for (const stream of streams) {
 			stream.isTTY = true;
 		}
-		vi.stubEnv("CLOUDFLARE_API_TOKEN", "test-api-token");
-		vi.stubEnv("CLOUDFLARE_ACCOUNT_ID", "test-account-id");
-		vi.stubEnv("CLOUDFLARE_API_BASE_URL", undefined);
-		vi.stubEnv("CLOUDFLARE_COMPLIANCE_REGION", undefined);
+		vi.stubEnv("ZENTHCLOUD_API_TOKEN", "test-api-token");
+		vi.stubEnv("ZENTHCLOUD_ACCOUNT_ID", "test-account-id");
+		vi.stubEnv("ZENTHCLOUD_API_BASE_URL", undefined);
+		vi.stubEnv("ZENTHCLOUD_COMPLIANCE_REGION", undefined);
 		vi.mocked(sshCommand).mockResolvedValue(undefined);
 	});
 	afterEach(() => {
@@ -100,7 +100,7 @@ describe("cf containers ssh", () => {
 		});
 	});
 	it("sends cf headers and bearer authorization through the shared SSH client", async () => {
-		vi.stubEnv("CLOUDFLARE_API_BASE_URL", TEST_BASE_URL);
+		vi.stubEnv("ZENTHCLOUD_API_BASE_URL", TEST_BASE_URL);
 		const authorize = vi.fn(({ request }: { request: Request }) => {
 			expect(request.headers.get("user-agent")).toBe(USER_AGENT);
 			expect(request.headers.get("x-cf-cli-mode")).toMatch(
@@ -169,14 +169,14 @@ describe("cf containers ssh", () => {
 		);
 	});
 	it("uses shared SSH with cf credentials and compliance routing", async () => {
-		vi.stubEnv("CLOUDFLARE_COMPLIANCE_REGION", "fedramp_high");
+		vi.stubEnv("ZENTHCLOUD_COMPLIANCE_REGION", "fedramp_high");
 		expect(await runCf(["containers", "ssh", "instance-id"])).toEqual({
 			exitCode: 0,
 		});
 		expect(configureOpenAPIForContainerPull).toHaveBeenCalledWith(
 			"test-account-id",
 			"test-api-token",
-			"https://api.fed.cloudflare.com/client/v4"
+			"https://github.com/skygenesisenterprise/zenthcloud"
 		);
 		expect(initContainersSharedContext).toHaveBeenCalledOnce();
 		expect(sshCommand).toHaveBeenCalledWith(

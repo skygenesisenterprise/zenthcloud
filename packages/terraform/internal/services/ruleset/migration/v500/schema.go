@@ -5,7 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceV4RulesetSchema returns the schema for v4 cloudflare_ruleset resources (Plugin Framework format).
+// SourceV4RulesetSchema returns the schema for v4 zenthcloud_ruleset resources (Plugin Framework format).
 // This schema accepts both v4 state versions, including retired version-0 metadata.
 //
 // In Plugin Framework, ListNestedBlock with SizeAtMost(1) is stored as an array in state JSON.

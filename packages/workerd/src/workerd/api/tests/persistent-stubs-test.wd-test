@@ -42,7 +42,7 @@ const unitTests :Workerd.Config = (
         modules = [
           ( name = "worker",
             esModule =
-                "import { WorkerEntrypoint } from 'cloudflare:workers';\n"
+                "import { WorkerEntrypoint } from 'zenthcloud:workers';\n"
                 "export class Target extends WorkerEntrypoint {\n"
                 "  ping(value) { return `noflag:${value}`; }\n"
                 "}\n"
@@ -67,7 +67,7 @@ const unitTests :Workerd.Config = (
         modules = [
           ( name = "worker",
             esModule =
-                "import { WorkerEntrypoint } from 'cloudflare:workers';\n"
+                "import { WorkerEntrypoint } from 'zenthcloud:workers';\n"
                 "export class Named extends WorkerEntrypoint {\n"
                 "  ping(value) { return `withflag:${value}`; }\n"
                 "}\n"

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_email_security_block_sender Resource - Cloudflare"
+page_title: "zenthcloud_email_security_block_sender Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Cloud Email Security: ReadCloud Email Security: Write
 ---
 
-# cloudflare_email_security_block_sender (Resource)
+# zenthcloud_email_security_block_sender (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_email_security_block_sender" "example_email_security_block_sender" {
+resource "zenthcloud_email_security_block_sender" "example_email_security_block_sender" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   is_regex = false
   pattern = "test@example.com"
@@ -56,7 +56,7 @@ Available values: "EMAIL", "DOMAIN", "IP", "UNKNOWN".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_email_security_block_sender.example '<account_id>/<pattern_id>'
+$ terraform import zenthcloud_email_security_block_sender.example '<account_id>/<pattern_id>'
 ```
 
 

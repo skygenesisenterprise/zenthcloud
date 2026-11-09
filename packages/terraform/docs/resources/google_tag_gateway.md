@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_google_tag_gateway Resource - Cloudflare"
+page_title: "zenthcloud_google_tag_gateway Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zaraz AdminZaraz EditZaraz Read
 ---
 
-# cloudflare_google_tag_gateway (Resource)
+# zenthcloud_google_tag_gateway (Resource)
 
 Accepted Permissions
 
@@ -17,7 +17,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_google_tag_gateway" "example_google_tag_gateway" {
+resource "zenthcloud_google_tag_gateway" "example_google_tag_gateway" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   enabled = true
   endpoint = "/metrics"
@@ -51,7 +51,7 @@ resource "cloudflare_google_tag_gateway" "example_google_tag_gateway" {
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_google_tag_gateway.example '<zone_id>'
+$ terraform import zenthcloud_google_tag_gateway.example '<zone_id>'
 ```
 
 

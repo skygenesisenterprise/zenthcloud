@@ -12,14 +12,14 @@ import (
 // and needs to upgrade to version=500 (Plugin Framework v5 provider).
 //
 // The handler:
-// 1. Parses v4 state using the source schema (SourceCloudflareFallbackDomainSchema)
+// 1. Parses v4 state using the source schema (SourceZenthcloudFallbackDomainSchema)
 // 2. Transforms the data to v5 structure (TransformToDefaultProfile)
 // 3. Writes the transformed state back to Terraform
 //
 // Note: This handles resources WITHOUT policy_id (default profile path).
 func UpgradeFromV4(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
 	// Parse v4 state using source schema
-	var v4State SourceCloudflareFallbackDomainModel
+	var v4State SourceZenthcloudFallbackDomainModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &v4State)...)
 	if resp.Diagnostics.HasError() {
 		return

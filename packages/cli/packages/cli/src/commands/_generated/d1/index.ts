@@ -19,7 +19,7 @@ import { withHandWrittenDryRun } from "#lib/hand-written-dry-run.js";
 const command: CommandModule<CommonYargsOptions> = {
 	command: "d1",
 	describe:
-		"D1 is Cloudflare's managed, serverless database with SQLite's SQL semantics, built-in disaster recovery, and Worker and HTTP API access.",
+		"D1 is Zenthcloud's managed, serverless database with SQLite's SQL semantics, built-in disaster recovery, and Worker and HTTP API access.",
 
 	builder: (yargs) => {
 		return yargs

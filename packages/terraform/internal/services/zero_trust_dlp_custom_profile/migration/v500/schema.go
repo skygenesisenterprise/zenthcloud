@@ -4,13 +4,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-// SourceCloudflareDLPProfileSchema returns the source schema for the legacy DLP profile resource.
-// Schema version: 0 (SDKv2 default — neither cloudflare_dlp_profile nor cloudflare_zero_trust_dlp_profile set an explicit SchemaVersion)
-// Resource types: cloudflare_dlp_profile, cloudflare_zero_trust_dlp_profile
+// SourceZenthcloudDLPProfileSchema returns the source schema for the legacy DLP profile resource.
+// Schema version: 0 (SDKv2 default — neither zenthcloud_dlp_profile nor zenthcloud_zero_trust_dlp_profile set an explicit SchemaVersion)
+// Resource types: zenthcloud_dlp_profile, zenthcloud_zero_trust_dlp_profile
 //
 // This minimal schema is used only for reading v4 state during migration.
 // Validators, PlanModifiers, and Descriptions are intentionally omitted.
-func SourceCloudflareDLPProfileSchema() schema.Schema {
+func SourceZenthcloudDLPProfileSchema() schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{

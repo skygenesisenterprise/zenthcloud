@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -33,7 +33,7 @@ var v5BasicConfig string
 // 2. All required fields are preserved (name)
 // 3. Migration works from both v4 and v5
 //
-// Note: We test with enforce_twofactor=false only because the Cloudflare API
+// Note: We test with enforce_twofactor=false only because the Zenthcloud API
 // ignores enforce_twofactor on the POST (create) endpoint. Testing with
 // enforce_twofactor=true would require a create-then-update flow which is
 // outside the scope of migration testing. See PT-792.
@@ -81,8 +81,8 @@ func TestMigrateAccount_V4ToV5_Basic(t *testing.T) {
 				// Use external v4 provider (will create version=0 state)
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -101,18 +101,18 @@ func TestMigrateAccount_V4ToV5_Basic(t *testing.T) {
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer,
 						[]statecheck.StateCheck{
 							statecheck.ExpectKnownValue(
-								"cloudflare_account."+rnd,
+								"zenthcloud_account."+rnd,
 								tfjsonpath.New("id"),
 								knownvalue.NotNull(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_account."+rnd,
+								"zenthcloud_account."+rnd,
 								tfjsonpath.New("name"),
 								knownvalue.StringExact(name),
 							),
 							// Verify enforce_twofactor is now in settings
 							statecheck.ExpectKnownValue(
-								"cloudflare_account."+rnd,
+								"zenthcloud_account."+rnd,
 								tfjsonpath.New("settings").AtMapKey("enforce_twofactor"),
 								knownvalue.Bool(false),
 							),
@@ -139,7 +139,7 @@ func TestMigrateAccount_V4ToV5_SpecificVersions(t *testing.T) {
 	// V5 config - enforce_twofactor is nested in settings
 	v5Config := fmt.Sprintf(v5BasicConfig, rnd, name)
 
-	_ = os.Getenv("CLOUDFLARE_ACCOUNT_ID") // ensure env is available
+	_ = os.Getenv("ZENTHCLOUD_ACCOUNT_ID") // ensure env is available
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -150,8 +150,8 @@ func TestMigrateAccount_V4ToV5_SpecificVersions(t *testing.T) {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: acctest.GetLastV4Version(),
 					},
 				},
@@ -164,13 +164,13 @@ func TestMigrateAccount_V4ToV5_SpecificVersions(t *testing.T) {
 				ConfigStateChecks: []statecheck.StateCheck{
 					// Verify name is preserved
 					statecheck.ExpectKnownValue(
-						fmt.Sprintf("cloudflare_account.%s", rnd),
+						fmt.Sprintf("zenthcloud_account.%s", rnd),
 						tfjsonpath.New("name"),
 						knownvalue.StringExact(name),
 					),
 					// Verify enforce_twofactor moved to settings
 					statecheck.ExpectKnownValue(
-						fmt.Sprintf("cloudflare_account.%s", rnd),
+						fmt.Sprintf("zenthcloud_account.%s", rnd),
 						tfjsonpath.New("settings").AtMapKey("enforce_twofactor"),
 						knownvalue.Bool(false),
 					),

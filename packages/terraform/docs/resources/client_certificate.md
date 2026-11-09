@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_client_certificate Resource - Cloudflare"
+page_title: "zenthcloud_client_certificate Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   SSL and Certificates ReadSSL and Certificates Write
 ---
 
-# cloudflare_client_certificate (Resource)
+# zenthcloud_client_certificate (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_client_certificate" "example_client_certificate" {
+resource "zenthcloud_client_certificate" "example_client_certificate" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   csr = <<EOT
   -----BEGIN CERTIFICATE REQUEST-----
@@ -73,7 +73,7 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_client_certificate.example '<zone_id>/<client_certificate_id>'
+$ terraform import zenthcloud_client_certificate.example '<zone_id>/<client_certificate_id>'
 ```
 
 

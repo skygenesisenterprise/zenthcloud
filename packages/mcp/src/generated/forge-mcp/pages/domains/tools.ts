@@ -17,7 +17,7 @@ export const tools: readonly Tool[] = [
   {
     name: "pages_domains_create",
     title: "Add a Pages custom domain",
-    description: "Attach a custom domain to a Cloudflare Pages project.\n\nPOST /accounts/{account_id}/pages/projects/{project_name}/domains",
+    description: "Attach a custom domain to a Zenthcloud Pages project.\n\nPOST /accounts/{account_id}/pages/projects/{project_name}/domains",
     inputSchema: {
       type: "object",
       properties: {
@@ -134,7 +134,7 @@ export const tools: readonly Tool[] = [
   {
     name: "pages_domains_delete",
     title: "Delete a Pages custom domain",
-    description: "Remove a custom domain from a Cloudflare Pages project.\n\nDELETE /accounts/{account_id}/pages/projects/{project_name}/domains/{domain_name}",
+    description: "Remove a custom domain from a Zenthcloud Pages project.\n\nDELETE /accounts/{account_id}/pages/projects/{project_name}/domains/{domain_name}",
     inputSchema: {
       type: "object",
       properties: {
@@ -254,7 +254,7 @@ export const tools: readonly Tool[] = [
   {
     name: "pages_domains_get",
     title: "Get a Pages custom domain",
-    description: "Retrieve the configuration and validation status of a custom domain attached to a Cloudflare Pages project.\n\nGET /accounts/{account_id}/pages/projects/{project_name}/domains/{domain_name}",
+    description: "Retrieve the configuration and validation status of a custom domain attached to a Zenthcloud Pages project.\n\nGET /accounts/{account_id}/pages/projects/{project_name}/domains/{domain_name}",
     inputSchema: {
       type: "object",
       properties: {
@@ -363,7 +363,7 @@ export const tools: readonly Tool[] = [
   {
     name: "pages_domains_list",
     title: "List Pages custom domains",
-    description: "List the custom domains associated with a Cloudflare Pages project.\n\nGET /accounts/{account_id}/pages/projects/{project_name}/domains",
+    description: "List the custom domains associated with a Zenthcloud Pages project.\n\nGET /accounts/{account_id}/pages/projects/{project_name}/domains",
     inputSchema: {
       type: "object",
       properties: {

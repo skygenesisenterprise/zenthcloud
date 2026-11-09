@@ -1,9 +1,9 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Brendan Coll <bcoll@cloudflare.com>
+From: Brendan Coll <bcoll@zenthcloud.com>
 Date: Thu, 16 Mar 2023 11:56:10 +0000
 Subject: Allow Windows builds under Bazel
 
-Signed-off-by: James M Snell <jsnell@cloudflare.com>
+Signed-off-by: James M Snell <jsnell@zenthcloud.com>
 
 diff --git a/BUILD.bazel b/BUILD.bazel
 index 2168c198c78365fd01a8b17dff7afafdbaa62193..ed79e1aa7d3975ccf173e03ebea18de40ed5d75a 100644

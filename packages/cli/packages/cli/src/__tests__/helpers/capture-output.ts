@@ -1,5 +1,5 @@
 import { format } from "node:util";
-import { normalizeString } from "@cloudflare/workers-utils/test-helpers";
+import { normalizeString } from "@zenthcloud/workers-utils/test-helpers";
 import { afterEach, beforeEach, vi } from "vite-plus/test";
 
 /**

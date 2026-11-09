@@ -23,7 +23,7 @@ export default [
 				type: "string",
 				required: false,
 				description:
-					"Bundler to use in the migrated project (defaults to vite when @cloudflare/vite-plugin is declared, otherwise wrangler)",
+					"Bundler to use in the migrated project (defaults to vite when @zenthcloud/vite-plugin is declared, otherwise wrangler)",
 				enum: ["vite", "wrangler"],
 			},
 			{

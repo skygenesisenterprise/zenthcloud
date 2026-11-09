@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_notification_policy Resource - Cloudflare"
+page_title: "zenthcloud_notification_policy Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Settings ReadAccount Settings WriteNotifications ReadNotifications WriteZero Trust: PII Read
 ---
 
-# cloudflare_notification_policy (Resource)
+# zenthcloud_notification_policy (Resource)
 
 Accepted Permissions
 
@@ -19,7 +19,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_notification_policy" "example_notification_policy" {
+resource "zenthcloud_notification_policy" "example_notification_policy" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   alert_type = "universal_ssl_event_type"
   enabled = true
@@ -199,7 +199,7 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_notification_policy.example '<account_id>/<policy_id>'
+$ terraform import zenthcloud_notification_policy.example '<account_id>/<policy_id>'
 ```
 
 

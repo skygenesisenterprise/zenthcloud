@@ -11,14 +11,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 // TestMigrateZeroTrustGatewaySettings_V4ToV5_Minimal tests minimal configuration migration
 // Validates:
-// - Resource type rename: cloudflare_teams_account → cloudflare_zero_trust_gateway_settings
+// - Resource type rename: zenthcloud_teams_account → zenthcloud_zero_trust_gateway_settings
 // - Basic structure transformation
 //
 // IMPORTANT: This test expects a non-empty plan after migration because:
@@ -31,20 +31,20 @@ import (
 // This is EXPECTED BEHAVIOR, not a bug. The migration reveals implicit configuration.
 func TestMigrateZeroTrustGatewaySettings_V4ToV5_Minimal(t *testing.T) {
 	// Zero Trust/Teams resources don't support API tokens yet
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_gateway_settings." + rnd
+	resourceName := "zenthcloud_zero_trust_gateway_settings." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config with minimal required fields
 	// Note: Not including deprecated fields (logging, proxy, ssh_session_log, payload_log)
 	// These fields get migrated to separate resources and would cause plan changes
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_teams_account" "%[1]s" {
+resource "zenthcloud_teams_account" "%[1]s" {
   account_id                 = "%[2]s"
   activity_log_enabled       = true
   tls_decrypt_enabled        = false
@@ -63,8 +63,8 @@ resource "cloudflare_teams_account" "%[1]s" {
 				// The test account has pre-existing deprecated settings (logging, proxy, etc.)
 				// that aren't in our minimal config, so we expect a non-empty plan
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -123,17 +123,17 @@ resource "cloudflare_teams_account" "%[1]s" {
 // - tls_decrypt_enabled → settings.tls_decrypt.enabled
 // - protocol_detection_enabled → settings.protocol_detection.enabled
 func TestMigrateZeroTrustGatewaySettings_V4ToV5_FlatBooleans(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_gateway_settings." + rnd
+	resourceName := "zenthcloud_zero_trust_gateway_settings." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_teams_account" "%[1]s" {
+resource "zenthcloud_teams_account" "%[1]s" {
   account_id                 = "%[2]s"
   activity_log_enabled       = true
   tls_decrypt_enabled        = false
@@ -149,8 +149,8 @@ resource "cloudflare_teams_account" "%[1]s" {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -175,18 +175,18 @@ resource "cloudflare_teams_account" "%[1]s" {
 // - block_page block → settings.block_page attribute
 // - Nested fields preserved
 func TestMigrateZeroTrustGatewaySettings_V4ToV5_BlockPage(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_gateway_settings." + rnd
+	resourceName := "zenthcloud_zero_trust_gateway_settings." + rnd
 	tmpDir := t.TempDir()
 
 	blockPageName := fmt.Sprintf("test-block-%s", rnd)
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_teams_account" "%[1]s" {
+resource "zenthcloud_teams_account" "%[1]s" {
   account_id                 = "%[2]s"
   activity_log_enabled       = false
   protocol_detection_enabled = false
@@ -213,8 +213,8 @@ resource "cloudflare_teams_account" "%[1]s" {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -279,17 +279,17 @@ resource "cloudflare_teams_account" "%[1]s" {
 // - notification_settings nested block → notification_settings attribute
 // - Field rename: message → msg
 func TestMigrateZeroTrustGatewaySettings_V4ToV5_Antivirus(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_gateway_settings." + rnd
+	resourceName := "zenthcloud_zero_trust_gateway_settings." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_teams_account" "%[1]s" {
+resource "zenthcloud_teams_account" "%[1]s" {
   account_id                 = "%[2]s"
   activity_log_enabled       = false
   protocol_detection_enabled = false
@@ -317,8 +317,8 @@ resource "cloudflare_teams_account" "%[1]s" {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -373,17 +373,17 @@ resource "cloudflare_teams_account" "%[1]s" {
 // - url_browser_isolation_enabled → settings.browser_isolation.url_browser_isolation_enabled
 // - non_identity_browser_isolation_enabled → settings.browser_isolation.non_identity_enabled
 func TestMigrateZeroTrustGatewaySettings_V4ToV5_BrowserIsolation(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_gateway_settings." + rnd
+	resourceName := "zenthcloud_zero_trust_gateway_settings." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_teams_account" "%[1]s" {
+resource "zenthcloud_teams_account" "%[1]s" {
   account_id                             = "%[2]s"
   activity_log_enabled                   = false
   protocol_detection_enabled             = false
@@ -401,8 +401,8 @@ resource "cloudflare_teams_account" "%[1]s" {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -427,17 +427,17 @@ resource "cloudflare_teams_account" "%[1]s" {
 // - Multiple MaxItems:1 blocks converted to attributes
 // - block_page, fips, body_scanning all under settings
 func TestMigrateZeroTrustGatewaySettings_V4ToV5_MultipleMaxItems1(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_gateway_settings." + rnd
+	resourceName := "zenthcloud_zero_trust_gateway_settings." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_teams_account" "%[1]s" {
+resource "zenthcloud_teams_account" "%[1]s" {
   account_id                 = "%[2]s"
   activity_log_enabled       = false
   protocol_detection_enabled = false
@@ -470,8 +470,8 @@ resource "cloudflare_teams_account" "%[1]s" {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -524,18 +524,18 @@ resource "cloudflare_teams_account" "%[1]s" {
 // - All transformation patterns work together
 // - Flat booleans + MaxItems:1 blocks + field renames
 func TestMigrateZeroTrustGatewaySettings_V4ToV5_Comprehensive(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_gateway_settings." + rnd
+	resourceName := "zenthcloud_zero_trust_gateway_settings." + rnd
 	tmpDir := t.TempDir()
 
 	blockPageName := fmt.Sprintf("comprehensive-%s", rnd)
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_teams_account" "%[1]s" {
+resource "zenthcloud_teams_account" "%[1]s" {
   account_id                             = "%[2]s"
   activity_log_enabled                   = true
   tls_decrypt_enabled                    = false
@@ -586,8 +586,8 @@ resource "cloudflare_teams_account" "%[1]s" {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},

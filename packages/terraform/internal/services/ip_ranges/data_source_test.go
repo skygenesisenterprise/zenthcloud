@@ -6,19 +6,19 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-func TestAccCloudflareIPRange_Networks(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+func TestAccZenthcloudIPRange_Networks(t *testing.T) {
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("data.cloudflare_ip_ranges.%s", rnd)
+	name := fmt.Sprintf("data.zenthcloud_ip_ranges.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -27,20 +27,20 @@ func TestAccCloudflareIPRange_Networks(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareIPRangesNetworks(rnd),
+				Config: testAccCheckZenthcloudIPRangesNetworks(rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareIPRangeCount(name),
+					testAccCheckZenthcloudIPRangeCount(name),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckCloudflareIPRangesNetworks(rnd string) string {
+func testAccCheckZenthcloudIPRangesNetworks(rnd string) string {
 	return acctest.LoadTestCase("networks.tf", rnd)
 }
 
-func testAccCheckCloudflareIPRangeCount(resourceName string) resource.TestCheckFunc {
+func testAccCheckZenthcloudIPRangeCount(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {

@@ -5,7 +5,7 @@ package ip_ranges
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -25,13 +25,13 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"ipv4_cidrs": schema.ListAttribute{
-				Description: "List of Cloudflare IPv4 CIDR addresses.",
+				Description: "List of Zenthcloud IPv4 CIDR addresses.",
 				Computed:    true,
 				CustomType:  customfield.NewListType[types.String](ctx),
 				ElementType: types.StringType,
 			},
 			"ipv6_cidrs": schema.ListAttribute{
-				Description: "List of Cloudflare IPv6 CIDR addresses.",
+				Description: "List of Zenthcloud IPv6 CIDR addresses.",
 				Computed:    true,
 				CustomType:  customfield.NewListType[types.String](ctx),
 				ElementType: types.StringType,

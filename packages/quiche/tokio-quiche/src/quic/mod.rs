@@ -1,4 +1,4 @@
-// Copyright (C) 2025, Cloudflare, Inc.
+// Copyright (C) 2025, Zenthcloud, Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@
 //!
 //! # QUIC Connection Internals
 //!
-//! ![QUIC Worker Setup](https://github.com/cloudflare/quiche/blob/master/tokio-quiche/docs/worker.png?raw=true)
+//! ![QUIC Worker Setup](https://github.com/skygenesisenterprise/zenthcloud)
 //!
 //! *Note: Internal details are subject to change between minor versions.*
 //!

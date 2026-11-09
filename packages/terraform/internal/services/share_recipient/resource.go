@@ -8,12 +8,12 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/resource_sharing"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/resource_sharing"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -29,7 +29,7 @@ func NewResource() resource.Resource {
 
 // ShareRecipientResource defines the resource implementation.
 type ShareRecipientResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *ShareRecipientResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -41,12 +41,12 @@ func (r *ShareRecipientResource) Configure(ctx context.Context, req resource.Con
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -75,7 +75,7 @@ func (r *ShareRecipientResource) Create(ctx context.Context, req resource.Create
 		ctx,
 		data.ShareID.ValueString(),
 		resource_sharing.RecipientNewParams{
-			PathAccountID: cloudflare.F(data.AccountID.ValueString()),
+			PathAccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -110,11 +110,11 @@ func (r *ShareRecipientResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	params := resource_sharing.RecipientGetParams{
-		AccountID: cloudflare.F(data.AccountID.ValueString()),
+		AccountID: zenthcloud.F(data.AccountID.ValueString()),
 	}
 
 	if !data.IncludeResources.IsNull() && !data.IncludeResources.IsUnknown() {
-		params.IncludeResources = cloudflare.F(data.IncludeResources.ValueBool())
+		params.IncludeResources = zenthcloud.F(data.IncludeResources.ValueBool())
 	}
 
 	res := new(http.Response)
@@ -161,7 +161,7 @@ func (r *ShareRecipientResource) Delete(ctx context.Context, req resource.Delete
 		data.ShareID.ValueString(),
 		data.ID.ValueString(),
 		resource_sharing.RecipientDeleteParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
@@ -202,7 +202,7 @@ func (r *ShareRecipientResource) ImportState(ctx context.Context, req resource.I
 		path_share_id,
 		path_recipient_id,
 		resource_sharing.RecipientGetParams{
-			AccountID: cloudflare.F(path_account_id),
+			AccountID: zenthcloud.F(path_account_id),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),

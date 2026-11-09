@@ -13,11 +13,11 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.yaml.in/yaml/v3"
 
-	"github.com/cloudflare/pint/internal/checks"
-	"github.com/cloudflare/pint/internal/comments"
-	"github.com/cloudflare/pint/internal/config"
-	"github.com/cloudflare/pint/internal/discovery"
-	"github.com/cloudflare/pint/internal/parser"
+	"github.com/zenthcloud/pint/internal/checks"
+	"github.com/zenthcloud/pint/internal/comments"
+	"github.com/zenthcloud/pint/internal/config"
+	"github.com/zenthcloud/pint/internal/discovery"
+	"github.com/zenthcloud/pint/internal/parser"
 )
 
 func TestMain(t *testing.M) {

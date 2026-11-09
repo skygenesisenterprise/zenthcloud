@@ -6,10 +6,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -24,21 +24,21 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zero_trust_access_ai_controls_mcp_portal", &resource.Sweeper{
-		Name: "cloudflare_zero_trust_access_ai_controls_mcp_portal",
-		F:    testSweepCloudflareZeroTrustAccessAIControlsMcpPortal,
+	resource.AddTestSweepers("zenthcloud_zero_trust_access_ai_controls_mcp_portal", &resource.Sweeper{
+		Name: "zenthcloud_zero_trust_access_ai_controls_mcp_portal",
+		F:    testSweepZenthcloudZeroTrustAccessAIControlsMcpPortal,
 	})
 }
 
-func testSweepCloudflareZeroTrustAccessAIControlsMcpPortal(r string) error {
+func testSweepZenthcloudZeroTrustAccessAIControlsMcpPortal(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	portalsResp, err := client.ZeroTrust.Access.AIControls.Mcp.Portals.List(
 		ctx,
 		zero_trust.AccessAIControlMcpPortalListParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		},
 	)
 	if err != nil {
@@ -56,7 +56,7 @@ func testSweepCloudflareZeroTrustAccessAIControlsMcpPortal(r string) error {
 			ctx,
 			portal.ID,
 			zero_trust.AccessAIControlMcpPortalDeleteParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			},
 		)
 		if err != nil {
@@ -68,16 +68,16 @@ func testSweepCloudflareZeroTrustAccessAIControlsMcpPortal(r string) error {
 }
 
 func TestAccZeroTrustAccessAIControlsMcpPortal_basic(t *testing.T) {
-	resourceName := "cloudflare_zero_trust_access_ai_controls_mcp_portal.tf-test"
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	resourceName := "zenthcloud_zero_trust_access_ai_controls_mcp_portal.tf-test"
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	name1 := "Test Portal"
 	name2 := "Updated Test Portal"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustAccessAIControlsMcpPortalDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustAccessAIControlsMcpPortalDestroy,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
@@ -120,15 +120,15 @@ func TestAccZeroTrustAccessAIControlsMcpPortal_basic(t *testing.T) {
 // that reordering servers in configuration produces no diff. The backend ignores
 // client write order and returns a canonical order, so a List would churn.
 func TestAccZeroTrustAccessAIControlsMcpPortal_serversSetOrderIndependent(t *testing.T) {
-	resourceName := "cloudflare_zero_trust_access_ai_controls_mcp_portal.tf-test"
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	resourceName := "zenthcloud_zero_trust_access_ai_controls_mcp_portal.tf-test"
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	name := utils.GenerateRandomResourceName()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustAccessAIControlsMcpPortalDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustAccessAIControlsMcpPortalDestroy,
 		Steps: []resource.TestStep{
 			// Create with two servers in order [a, b].
 			{
@@ -168,12 +168,12 @@ func TestAccZeroTrustAccessAIControlsMcpPortal_serversSetOrderIndependent(t *tes
 	})
 }
 
-func testAccCheckCloudflareZeroTrustAccessAIControlsMcpPortalDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudZeroTrustAccessAIControlsMcpPortalDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_zero_trust_access_ai_controls_mcp_portal" {
+		if rs.Type != "zenthcloud_zero_trust_access_ai_controls_mcp_portal" {
 			continue
 		}
 
@@ -181,7 +181,7 @@ func testAccCheckCloudflareZeroTrustAccessAIControlsMcpPortalDestroy(s *terrafor
 			context.Background(),
 			rs.Primary.ID,
 			zero_trust.AccessAIControlMcpPortalReadParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			},
 		)
 

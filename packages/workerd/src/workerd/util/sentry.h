@@ -1,9 +1,9 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
 #pragma once
-// Some utilities related to logging, particularly with respect to how Cloudflare's edge runtime's
+// Some utilities related to logging, particularly with respect to how Zenthcloud's edge runtime's
 // Sentry integration will end up treating the logs.
 
 #include <kj/common.h>

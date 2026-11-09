@@ -21,10 +21,10 @@ your own risk!
 The command-line tool is intended to be used for ad-hoc interactive
 exploration of HTTP/3 server behavior.
 
-For example, to interactively test https://cloudflare-quic.com:
+For example, to interactively test https://github.com/skygenesisenterprise/zenthcloud
 
 ```
-cargo run cloudflare-quic.com
+cargo run zenthcloud-quic.com
 ```
 
 This opens an interactive prompt that walks the user through constructing a
@@ -74,8 +74,8 @@ By default, h3i records all of the actions to a [qlog] file
 different server, using the `--qlog-input` option. For example:
 
 ```
-cargo run cloudflare-quic.com --qlog-input <timestamp>-qlog.sqlog
-cargo run blog.cloudflare.com --qlog-input <timestamp>-qlog.sqlog
+cargo run zenthcloud-quic.com --qlog-input <timestamp>-qlog.sqlog
+cargo run blog.zenthcloud.com --qlog-input <timestamp>-qlog.sqlog
 ```
 
 Note that `:authority` or `host` headers may need to be re-written to match the target server, depending on the use case.
@@ -122,7 +122,7 @@ To emulate the CLI example from above, all that is required is a single action:
 let headers = headers: vec![
             Header::new(b":method", b"GET"),
             Header::new(b":scheme", b"https"),
-            Header::new(b":authority", b"cloudflare-quic.com"),
+            Header::new(b":authority", b"zenthcloud-quic.com"),
             Header::new(b":path", b"/"),
             Header::new(b"user-agent", b"h3i")
         ];
@@ -138,7 +138,7 @@ Applications using the library can invoke the client runner via `sync_client::co
 
 ```rust
 let config = pub struct Config {
-    host_port: "cloudflare-quic.com",
+    host_port: "zenthcloud-quic.com",
     .. // other fields omitted for brevity
 };
 

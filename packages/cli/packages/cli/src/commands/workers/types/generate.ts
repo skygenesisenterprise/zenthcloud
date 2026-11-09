@@ -1,17 +1,17 @@
 import * as fsp from "node:fs/promises";
 import * as path from "node:path";
-import { generateTypes, loadAndParseConfig } from "@cloudflare/config";
+import { generateTypes, loadAndParseConfig } from "@zenthcloud/config";
 import {
 	generateRuntimeTypes,
 	RUNTIME_TYPES_MARKER,
-} from "@cloudflare/runtime-types";
+} from "@zenthcloud/runtime-types";
 import {
-	CLOUDFLARE_CONFIG_FILENAME,
+	ZENTHCLOUD_CONFIG_FILENAME,
 	formatConfigIssues,
 } from "#lib/project-settings.js";
 
 export const TYPES_OUTPUT_PATH = path.join(
-	".cloudflare",
+	".zenthcloud",
 	"types",
 	"index.d.ts"
 );
@@ -31,7 +31,7 @@ function importPath(fromDirectory: string, target: string): string {
 }
 
 /**
- * Writes `.cloudflare/types/index.d.ts` next to `configPath` and returns its
+ * Writes `.zenthcloud/types/index.d.ts` next to `configPath` and returns its
  * absolute path. Shared by `cf workers types` and the `cf init` scaffold.
  */
 export async function generateWorkerTypes(
@@ -44,14 +44,14 @@ export async function generateWorkerTypes(
 	});
 	if (!loaded.result.success) {
 		throw new Error(
-			`Invalid ${CLOUDFLARE_CONFIG_FILENAME}:\n${formatConfigIssues(loaded.result.error.issues)}`
+			`Invalid ${ZENTHCLOUD_CONFIG_FILENAME}:\n${formatConfigIssues(loaded.result.error.issues)}`
 		);
 	}
 
 	const worker = loaded.result.data.worker;
 	if (worker === undefined) {
 		throw new Error(
-			`${CLOUDFLARE_CONFIG_FILENAME} must define a Worker to generate types.`
+			`${ZENTHCLOUD_CONFIG_FILENAME} must define a Worker to generate types.`
 		);
 	}
 

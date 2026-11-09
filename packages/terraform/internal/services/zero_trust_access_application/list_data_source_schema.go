@@ -5,7 +5,7 @@ package zero_trust_access_application
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
@@ -214,7 +214,7 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 										},
 									},
 									"uri": schema.StringAttribute{
-										Description: "The URI of the destination. Public destinations' URIs can include a domain and path with [wildcards](https://developers.cloudflare.com/cloudflare-one/policies/access/app-paths/).",
+										Description: "The URI of the destination. Public destinations' URIs can include a domain and path with [wildcards](https://github.com/skygenesisenterprise/zenthcloud).",
 										Computed:    true,
 									},
 									"cidr": schema.StringAttribute{
@@ -245,7 +245,7 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 										Optional:    true,
 									},
 									"worker_id": schema.StringAttribute{
-										Description: "The ID of the Cloudflare Worker to protect with Access. Required when type is `worker` or `preview_worker`.",
+										Description: "The ID of the Zenthcloud Worker to protect with Access. Required when type is `worker` or `preview_worker`.",
 										Computed:    true,
 									},
 								},
@@ -1411,7 +1411,7 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 							Computed:    true,
 						},
 						"skip_interstitial": schema.BoolAttribute{
-							Description: "Enables automatic authentication through cloudflared.",
+							Description: "Enables automatic authentication through zenthcloudd.",
 							Computed:    true,
 						},
 						"tags": schema.SetAttribute{
@@ -1611,7 +1611,7 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 									ElementType: types.StringType,
 								},
 								"group_filter_regex": schema.StringAttribute{
-									Description: "A regex to filter Cloudflare groups returned in ID token and userinfo endpoint",
+									Description: "A regex to filter Zenthcloud groups returned in ID token and userinfo endpoint",
 									Computed:    true,
 								},
 								"hybrid_and_implicit_options": schema.SingleNestedAttribute{
@@ -1629,7 +1629,7 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 									},
 								},
 								"redirect_uris": schema.ListAttribute{
-									Description: "The permitted URL's for Cloudflare to return Authorization codes and Access/ID tokens",
+									Description: "The permitted URL's for Zenthcloud to return Authorization codes and Access/ID tokens",
 									Computed:    true,
 									CustomType:  customfield.NewListType[types.String](ctx),
 									ElementType: types.StringType,

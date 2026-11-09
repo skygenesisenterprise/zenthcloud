@@ -19,7 +19,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
-		.usage("$0 pages list\n\nList the Cloudflare Pages projects in an account.")
+		.usage("$0 pages list\n\nList the Zenthcloud Pages projects in an account.")
 		.option("page", {
 			type: "number",
 			description: "Page number of results to return.",
@@ -39,7 +39,7 @@ type Args = InferArgs<typeof builder>;
 
 const command: CommandModule<CommonYargsOptions, Args> = {
 	command: "list",
-	describe: "List Cloudflare Pages projects",
+	describe: "List Zenthcloud Pages projects",
 	builder,
 	handler: async (argv): Promise<void> =>
 		runWithTelemetry(
@@ -60,7 +60,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf pages list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/pages/projects`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/pages/projects`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

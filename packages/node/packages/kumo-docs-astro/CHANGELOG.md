@@ -1,4 +1,4 @@
-# @cloudflare/kumo-docs-astro
+# @zenthcloud/kumo-docs-astro
 
 ## 1.5.25
 
@@ -12,7 +12,7 @@
 - Updated dependencies [3aa0d59]
 - Updated dependencies [890a6ab]
 - Updated dependencies [4185bb1]
-  - @cloudflare/kumo@2.17.0
+  - @zenthcloud/kumo@2.17.0
 
 ## 1.5.24
 
@@ -24,7 +24,7 @@
 - Updated dependencies [fedc8a7]
 - Updated dependencies [947065a]
 - Updated dependencies [810d820]
-  - @cloudflare/kumo@2.16.0
+  - @zenthcloud/kumo@2.16.0
 
 ## 1.5.23
 
@@ -63,7 +63,7 @@
 - Updated dependencies [7d91721]
 - Updated dependencies [828866a]
 - Updated dependencies [f46e8bc]
-  - @cloudflare/kumo@2.15.0
+  - @zenthcloud/kumo@2.15.0
 
 ## 1.5.22
 
@@ -86,21 +86,21 @@
 - Updated dependencies [78d05b6]
 - Updated dependencies [86029e4]
 - Updated dependencies [d4a3e71]
-  - @cloudflare/kumo@2.14.0
+  - @zenthcloud/kumo@2.14.0
 
 ## 1.5.21
 
 ### Patch Changes
 
 - Updated dependencies [36fc155]
-  - @cloudflare/kumo@2.13.2
+  - @zenthcloud/kumo@2.13.2
 
 ## 1.5.20
 
 ### Patch Changes
 
 - Updated dependencies [7d5241d]
-  - @cloudflare/kumo@2.13.1
+  - @zenthcloud/kumo@2.13.1
 
 ## 1.5.19
 
@@ -115,7 +115,7 @@
 - Updated dependencies [7526a6a]
 - Updated dependencies [b094a5a]
 - Updated dependencies [20b7880]
-  - @cloudflare/kumo@2.13.0
+  - @zenthcloud/kumo@2.13.0
 
 ## 1.5.18
 
@@ -131,7 +131,7 @@
 - Updated dependencies [ef13cb4]
 - Updated dependencies [51d0f03]
 - Updated dependencies [d586bf3]
-  - @cloudflare/kumo@2.12.0
+  - @zenthcloud/kumo@2.12.0
 
 ## 1.5.17
 
@@ -141,7 +141,7 @@
 - Updated dependencies [aa6edff]
 - Updated dependencies [c2c8d42]
 - Updated dependencies [0ad1926]
-  - @cloudflare/kumo@2.11.0
+  - @zenthcloud/kumo@2.11.0
 
 ## 1.5.16
 
@@ -154,7 +154,7 @@
 - Updated dependencies [528d5ff]
 - Updated dependencies [75c3b14]
 - Updated dependencies [1d9b588]
-  - @cloudflare/kumo@2.10.0
+  - @zenthcloud/kumo@2.10.0
 
 ## 1.5.15
 
@@ -162,7 +162,7 @@
 
 - Updated dependencies [188a82c]
 - Updated dependencies [c5ad709]
-  - @cloudflare/kumo@2.9.2
+  - @zenthcloud/kumo@2.9.2
 
 ## 1.5.14
 
@@ -173,7 +173,7 @@
 - Updated dependencies [7468623]
 - Updated dependencies [d7639f2]
 - Updated dependencies [c599590]
-  - @cloudflare/kumo@2.9.1
+  - @zenthcloud/kumo@2.9.1
 
 ## 1.5.13
 
@@ -236,7 +236,7 @@
 - Updated dependencies [24149b9]
 - Updated dependencies [8de0551]
 - Updated dependencies [60f5bfa]
-  - @cloudflare/kumo@2.9.0
+  - @zenthcloud/kumo@2.9.0
 
 ## 1.5.12
 
@@ -250,7 +250,7 @@
 - Updated dependencies [b05ea3f]
 - Updated dependencies [33cb988]
 - Updated dependencies [0562dd1]
-  - @cloudflare/kumo@2.8.0
+  - @zenthcloud/kumo@2.8.0
 
 ## 1.5.11
 
@@ -266,7 +266,7 @@
 - Updated dependencies [6d366d9]
 - Updated dependencies [4dd1398]
 - Updated dependencies [ebc5cf8]
-  - @cloudflare/kumo@2.7.0
+  - @zenthcloud/kumo@2.7.0
 
 ## 1.5.10
 
@@ -281,7 +281,7 @@
 - Updated dependencies [116e0de]
 - Updated dependencies [bdd890c]
 - Updated dependencies [815628f]
-  - @cloudflare/kumo@2.6.0
+  - @zenthcloud/kumo@2.6.0
 
 ## 1.5.9
 
@@ -290,14 +290,14 @@
 - Updated dependencies [9a13576]
 - Updated dependencies [b18837c]
 - Updated dependencies [595d10e]
-  - @cloudflare/kumo@2.5.2
+  - @zenthcloud/kumo@2.5.2
 
 ## 1.5.8
 
 ### Patch Changes
 
 - Updated dependencies [b06e35b]
-  - @cloudflare/kumo@2.5.1
+  - @zenthcloud/kumo@2.5.1
 
 ## 1.5.7
 
@@ -310,14 +310,14 @@
 - Updated dependencies [d3feec0]
 - Updated dependencies [f831482]
 - Updated dependencies [4a8b992]
-  - @cloudflare/kumo@2.5.0
+  - @zenthcloud/kumo@2.5.0
 
 ## 1.5.6
 
 ### Patch Changes
 
 - Updated dependencies [2daa237]
-  - @cloudflare/kumo@2.4.1
+  - @zenthcloud/kumo@2.4.1
 
 ## 1.5.5
 
@@ -337,7 +337,7 @@
 - Updated dependencies [1585bfe]
 - Updated dependencies [6e9b524]
 - Updated dependencies [729caa3]
-  - @cloudflare/kumo@2.4.0
+  - @zenthcloud/kumo@2.4.0
 
 ## 1.5.4
 
@@ -352,14 +352,14 @@
 - Updated dependencies [0003bf5]
 - Updated dependencies [4f2b47c]
 - Updated dependencies [0e79214]
-  - @cloudflare/kumo@2.3.0
+  - @zenthcloud/kumo@2.3.0
 
 ## 1.5.3
 
 ### Patch Changes
 
 - Updated dependencies [94d0c22]
-  - @cloudflare/kumo@2.2.2
+  - @zenthcloud/kumo@2.2.2
 
 ## 1.5.2
 
@@ -368,7 +368,7 @@
 - Updated dependencies [57bbe62]
 - Updated dependencies [3d80fe7]
 - Updated dependencies [194aea8]
-  - @cloudflare/kumo@2.2.1
+  - @zenthcloud/kumo@2.2.1
 
 ## 1.5.1
 
@@ -384,7 +384,7 @@
 - Updated dependencies [da502ce]
 - Updated dependencies [59b6590]
 - Updated dependencies [798c2da]
-  - @cloudflare/kumo@2.2.0
+  - @zenthcloud/kumo@2.2.0
 
 ## 1.5.0
 
@@ -399,14 +399,14 @@
 - Updated dependencies [8b12a4c]
 - Updated dependencies [7d8ec27]
 - Updated dependencies [8a33813]
-  - @cloudflare/kumo@2.1.0
+  - @zenthcloud/kumo@2.1.0
 
 ## 1.4.5
 
 ### Patch Changes
 
 - Updated dependencies [8f8a55d]
-  - @cloudflare/kumo@2.0.5
+  - @zenthcloud/kumo@2.0.5
 
 ## 1.4.4
 
@@ -415,7 +415,7 @@
 - Updated dependencies [8926ee7]
 - Updated dependencies [75d4f4d]
 - Updated dependencies [f2d356d]
-  - @cloudflare/kumo@2.0.4
+  - @zenthcloud/kumo@2.0.4
 
 ## 1.4.3
 
@@ -424,7 +424,7 @@
 - Updated dependencies [3b36e21]
 - Updated dependencies [5d5d810]
 - Updated dependencies [62e093c]
-  - @cloudflare/kumo@2.0.3
+  - @zenthcloud/kumo@2.0.3
 
 ## 1.4.2
 
@@ -433,7 +433,7 @@
 - Updated dependencies [fbf3eef]
 - Updated dependencies [40491c2]
 - Updated dependencies [3427221]
-  - @cloudflare/kumo@2.0.2
+  - @zenthcloud/kumo@2.0.2
 
 ## 1.4.1
 
@@ -445,7 +445,7 @@
   - Synced token usage in docs and Figma code generators with the updated semantic text mapping.
 
 - Updated dependencies [e53bd68]
-  - @cloudflare/kumo@2.0.1
+  - @zenthcloud/kumo@2.0.1
 
 ## 1.4.0
 
@@ -539,7 +539,7 @@
 - Updated dependencies [c1c60c8]
 - Updated dependencies [267ba7a]
 - Updated dependencies [6765526]
-  - @cloudflare/kumo@2.0.0
+  - @zenthcloud/kumo@2.0.0
 
 ## 1.3.18
 
@@ -566,7 +566,7 @@
 - Updated dependencies [58b5777]
 - Updated dependencies [460a603]
 - Updated dependencies [0cae077]
-  - @cloudflare/kumo@1.19.0
+  - @zenthcloud/kumo@1.19.0
 
 ## 1.3.17
 
@@ -591,7 +591,7 @@
 - Updated dependencies [6458fae]
 - Updated dependencies [cf6b917]
 - Updated dependencies [a685953]
-  - @cloudflare/kumo@1.18.0
+  - @zenthcloud/kumo@1.18.0
 
 ## 1.3.16
 
@@ -627,7 +627,7 @@
 - Updated dependencies [56e3640]
 - Updated dependencies [dcbf185]
 - Updated dependencies [f0c8952]
-  - @cloudflare/kumo@1.17.0
+  - @zenthcloud/kumo@1.17.0
 
 ## 1.3.15
 
@@ -640,7 +640,7 @@
 - Updated dependencies [15a344e]
 - Updated dependencies [5d8d3a9]
 - Updated dependencies [7e82920]
-  - @cloudflare/kumo@1.16.0
+  - @zenthcloud/kumo@1.16.0
 
 ## 1.3.14
 
@@ -649,7 +649,7 @@
 - Updated dependencies [9fbf3a8]
 - Updated dependencies [3430785]
 - Updated dependencies [73f554a]
-  - @cloudflare/kumo@1.15.0
+  - @zenthcloud/kumo@1.15.0
 
 ## 1.3.13
 
@@ -658,7 +658,7 @@
 - 839b0cb: fix: update styling for mostly-used components with new greyscale tokens (combobox, dialog, input, layerCard, select & tabs) as well as homegrid and component preview backgrounds.
 - Updated dependencies [839b0cb]
 - Updated dependencies [7083a17]
-  - @cloudflare/kumo@1.14.1
+  - @zenthcloud/kumo@1.14.1
 
 ## 1.3.12
 
@@ -676,7 +676,7 @@
 - Updated dependencies [e8acdd8]
 - Updated dependencies [abbf586]
 - Updated dependencies [c6aa554]
-  - @cloudflare/kumo@1.14.0
+  - @zenthcloud/kumo@1.14.0
 
 ## 1.3.11
 
@@ -684,21 +684,21 @@
 
 - Updated dependencies [c272f6a]
 - Updated dependencies [5e12c15]
-  - @cloudflare/kumo@1.13.1
+  - @zenthcloud/kumo@1.13.1
 
 ## 1.3.10
 
 ### Patch Changes
 
 - Updated dependencies [56a8b35]
-  - @cloudflare/kumo@1.13.0
+  - @zenthcloud/kumo@1.13.0
 
 ## 1.3.9
 
 ### Patch Changes
 
 - Updated dependencies [eda8362]
-  - @cloudflare/kumo@1.12.1
+  - @zenthcloud/kumo@1.12.1
 
 ## 1.3.8
 
@@ -708,7 +708,7 @@
 - Updated dependencies [4d6de27]
 - Updated dependencies [59f7935]
 - Updated dependencies [9eaf584]
-  - @cloudflare/kumo@1.12.0
+  - @zenthcloud/kumo@1.12.0
 
 ## 1.3.7
 
@@ -728,7 +728,7 @@
 - Updated dependencies [ee1099d]
 - Updated dependencies [6dc952f]
 - Updated dependencies [2352344]
-  - @cloudflare/kumo@1.11.0
+  - @zenthcloud/kumo@1.11.0
 
 ## 1.3.6
 
@@ -754,7 +754,7 @@
 - Updated dependencies [abb7f8c]
 - Updated dependencies [8972cc4]
 - Updated dependencies [bb49d4b]
-  - @cloudflare/kumo@1.10.0
+  - @zenthcloud/kumo@1.10.0
 
 ## 1.3.5
 
@@ -763,7 +763,7 @@
 - Updated dependencies [23865db]
 - Updated dependencies [89cb5ec]
 - Updated dependencies [68c2f0d]
-  - @cloudflare/kumo@1.9.0
+  - @zenthcloud/kumo@1.9.0
 
 ## 1.3.4
 
@@ -772,7 +772,7 @@
 - Updated dependencies [0ca3b05]
 - Updated dependencies [f69df6d]
 - Updated dependencies [cf4ff38]
-  - @cloudflare/kumo@1.8.0
+  - @zenthcloud/kumo@1.8.0
 
 ## 1.3.3
 
@@ -782,7 +782,7 @@
 - Updated dependencies [835a7c0]
 - Updated dependencies [391f13a]
 - Updated dependencies [d0e1d29]
-  - @cloudflare/kumo@1.7.0
+  - @zenthcloud/kumo@1.7.0
 
 ## 1.3.2
 
@@ -794,7 +794,7 @@
 - Updated dependencies [46ecf42]
 - Updated dependencies [a9167fa]
 - Updated dependencies [f02494d]
-  - @cloudflare/kumo@1.6.0
+  - @zenthcloud/kumo@1.6.0
 
 ## 1.3.1
 
@@ -807,7 +807,7 @@
 - Updated dependencies [fa3eba3]
 - Updated dependencies [3bc976e]
 - Updated dependencies [752fdf1]
-  - @cloudflare/kumo@1.5.1
+  - @zenthcloud/kumo@1.5.1
 
 ## 1.3.0
 
@@ -824,7 +824,7 @@
 ### Patch Changes
 
 - Updated dependencies [d7a6da3]
-  - @cloudflare/kumo@1.5.0
+  - @zenthcloud/kumo@1.5.0
 
 ## 1.2.2
 
@@ -832,7 +832,7 @@
 
 - Updated dependencies [b64847d]
 - Updated dependencies [ea583d8]
-  - @cloudflare/kumo@1.4.1
+  - @zenthcloud/kumo@1.4.1
 
 ## 1.2.1
 
@@ -840,7 +840,7 @@
 
 - Updated dependencies [71d667b]
 - Updated dependencies [262e0e6]
-  - @cloudflare/kumo@1.4.0
+  - @zenthcloud/kumo@1.4.0
 
 ## 1.2.0
 
@@ -851,7 +851,7 @@
 ### Patch Changes
 
 - Updated dependencies [6a40edf]
-  - @cloudflare/kumo@1.3.0
+  - @zenthcloud/kumo@1.3.0
 
 ## 1.1.0
 
@@ -863,7 +863,7 @@
 
 - Updated dependencies [d10c711]
 - Updated dependencies [833ce8b]
-  - @cloudflare/kumo@1.2.0
+  - @zenthcloud/kumo@1.2.0
 
 ## 1.0.1
 
@@ -871,7 +871,7 @@
 
 - Updated dependencies [6dc9a73]
 - Updated dependencies [001f9e7]
-  - @cloudflare/kumo@1.1.0
+  - @zenthcloud/kumo@1.1.0
 
 ## 1.0.0
 
@@ -879,20 +879,20 @@
 
 - 11e62a2: # Kumo 1.0.0 Release
 
-  The first stable release of Kumo, Cloudflare's component library.
+  The first stable release of Kumo, Zenthcloud's component library.
 
   ## Breaking Changes
 
   ### Blocks Distribution via CLI
 
-  Blocks (`PageHeader`, `ResourceListPage`) are no longer exported from `@cloudflare/kumo`. They must now be installed via the CLI:
+  Blocks (`PageHeader`, `ResourceListPage`) are no longer exported from `@zenthcloud/kumo`. They must now be installed via the CLI:
 
   ```bash
-  npx @cloudflare/kumo init        # Initialize kumo.json
-  npx @cloudflare/kumo add PageHeader
+  npx @zenthcloud/kumo init        # Initialize kumo.json
+  npx @zenthcloud/kumo add PageHeader
   ```
 
-  Blocks are copied to your project for full customization with imports automatically transformed to `@cloudflare/kumo`.
+  Blocks are copied to your project for full customization with imports automatically transformed to `@zenthcloud/kumo`.
 
   ### Checkbox API Changes
   - **Ref type changed**: `HTMLInputElement` → `HTMLButtonElement`
@@ -933,11 +933,11 @@
 
   ```bash
   # 1. Initialize configuration
-  npx @cloudflare/kumo init
+  npx @zenthcloud/kumo init
 
   # 2. Install blocks
-  npx @cloudflare/kumo add PageHeader
-  npx @cloudflare/kumo add ResourceListPage
+  npx @zenthcloud/kumo add PageHeader
+  npx @zenthcloud/kumo add ResourceListPage
 
   # 3. Update imports to the local path shown after installation
   ```
@@ -991,13 +991,13 @@
 - Updated dependencies [2de0c7b]
 - Updated dependencies [e9fe499]
 - Updated dependencies [7d4a4e0]
-  - @cloudflare/kumo@1.0.0
+  - @zenthcloud/kumo@1.0.0
 
 ## 0.5.0
 
 ### Minor Changes
 
-- d04c91f: Ship component registry with @cloudflare/kumo module
+- d04c91f: Ship component registry with @zenthcloud/kumo module
 - d04c91f: Migrate documentation site from React Router (`kumo-docs`) to Astro (`kumo-docs-astro`) as the primary docs platform, consolidate CI/CD pipelines, and add version display features.
 
   Bump node to v24.12.0
@@ -1007,7 +1007,7 @@
 - Updated dependencies [d04c91f]
 - Updated dependencies [0e246bf]
 - Updated dependencies [d04c91f]
-  - @cloudflare/kumo@0.7.0
+  - @zenthcloud/kumo@0.7.0
 
 ## 0.4.2
 
@@ -1018,7 +1018,7 @@
 - Updated dependencies [4266f72]
 - Updated dependencies [4ac5fbe]
 - Updated dependencies [009097d]
-  - @cloudflare/kumo@0.6.0
+  - @zenthcloud/kumo@0.6.0
 
 ## 0.4.1
 
@@ -1039,4 +1039,4 @@
 - Updated dependencies [872ef11]
 - Updated dependencies [d998518]
 - Updated dependencies [9537114]
-  - @cloudflare/kumo@0.5.0
+  - @zenthcloud/kumo@0.5.0

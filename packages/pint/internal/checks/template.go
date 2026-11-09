@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"text/template"
 
-	"github.com/cloudflare/pint/internal/parser"
+	"github.com/zenthcloud/pint/internal/parser"
 )
 
 var aliases = "{{ $alert := .Alert }}{{ $record := .Record }}{{ $for := .For }}{{ $labels := .Labels }}{{ $annotations := .Annotations }}"

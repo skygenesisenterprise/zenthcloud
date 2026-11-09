@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import {
@@ -8,7 +8,7 @@ import {
   ok,
   rejects,
 } from 'node:assert';
-import { env, withEnv } from 'cloudflare:workers';
+import { env, withEnv } from 'zenthcloud:workers';
 
 import { AsyncLocalStorage } from 'node:async_hooks';
 

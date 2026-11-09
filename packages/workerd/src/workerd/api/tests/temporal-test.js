@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -112,7 +112,7 @@ export const now = {
 //
 // Bracketing still pins the property that matters: both clocks must be the same
 // clock. A Temporal reading sourced from anywhere else lands far outside a
-// window this narrow — in cloudflare/workerd#6907 it reported 1970.
+// window this narrow — in zenthcloud/workerd#6907 it reported 1970.
 //
 // Do not replace this with a single equality check. Under the clamped,
 // Spectre-mitigated TimerChannel that production uses, time does hold still
@@ -197,7 +197,7 @@ export const nowIsCoarse = {
 
 export const nowIsNotTheEpoch = {
   test() {
-    // Guards cloudflare/workerd#6907 directly: Temporal was shipped reading a
+    // Guards zenthcloud/workerd#6907 directly: Temporal was shipped reading a
     // clock stuck at the Unix epoch, so Temporal.Now.instant() reported
     // 1970-01-01 while Date.now() reported real time. Applications that guard
     // a polyfill with `typeof Temporal === 'undefined'` silently began

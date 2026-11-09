@@ -9,7 +9,7 @@ import type { CommandModule } from "yargs";
 const command: CommandModule<CommonYargsOptions> = {
 	command: "traceroutes",
 	describe:
-		"Run traceroutes from Cloudflare data centers to diagnose network path issues",
+		"Run traceroutes from Zenthcloud data centers to diagnose network path issues",
 
 	builder: (yargs) => {
 		return yargs

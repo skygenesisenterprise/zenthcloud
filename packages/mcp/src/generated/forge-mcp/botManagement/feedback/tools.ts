@@ -28,7 +28,7 @@ export const tools: readonly Tool[] = [
   {
     name: "botManagement_feedback_create",
     title: "Submit a feedback report",
-    description: "Submit a feedback report for the specified zone. Use `type` to indicate whether the report is a false positive (good traffic flagged as bot) or a false negative (bot traffic missed). Furthermore, you can also use `expression` as a wirefilter to identify the affected traffic sample.\n\nSee more accepted API fields and expression types at https://developers.cloudflare.com/bots/concepts/feedback-loop/#api-fields and https://developers.cloudflare.com/bots/concepts/feedback-loop/#expression-fields, respectively.\n\nPOST /zones/{zone_id}/bot_management/feedback",
+    description: "Submit a feedback report for the specified zone. Use `type` to indicate whether the report is a false positive (good traffic flagged as bot) or a false negative (bot traffic missed). Furthermore, you can also use `expression` as a wirefilter to identify the affected traffic sample.\n\nSee more accepted API fields and expression types at https://github.com/skygenesisenterprise/zenthcloud and https://github.com/skygenesisenterprise/zenthcloud, respectively.\n\nPOST /zones/{zone_id}/bot_management/feedback",
     inputSchema: {
       type: "object",
       properties: {

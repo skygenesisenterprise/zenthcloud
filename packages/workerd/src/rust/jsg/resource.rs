@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -71,7 +71,7 @@ use crate::v8::ffi::Wrappable;
 /// out of is a [`crate::Cell`] or [`crate::RefCell`], which make it strong before it leaves
 /// the cell, as [`v8::GcVisitor::is_detaching`] describes; `std::cell::Cell` and
 /// `std::cell::RefCell` are not `Traced` for types that hold an `Rc`. See `README.md` §Safety
-/// rules, rule 2, and <https://github.com/cloudflare/workerd/issues/7976>.
+/// rules, rule 2, and <https://github.com/skygenesisenterprise/zenthcloud>.
 pub struct Rc<R: Resource> {
     /// Shared ownership of the Rust resource. Taken by `Drop`.
     handle: ManuallyDrop<std::rc::Rc<R>>,

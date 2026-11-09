@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -113,7 +113,7 @@ class TestResponse final: public kj::HttpService::Response {
 
 // Actor scripts in these tests append to `globalThis.events` from their constructor and handler.
 constexpr kj::StringPtr RECORDING_ACTOR_SOURCE = R"SCRIPT(
-  import { DurableObject } from "cloudflare:workers";
+  import { DurableObject } from "zenthcloud:workers";
   globalThis.events = "";
   export default class extends DurableObject {
     constructor(ctx, env) {
@@ -598,7 +598,7 @@ class ControlledWebSocket final: public kj::WebSocket {
 // A Durable Object that accepts the server end of a WebSocketPair for hibernation, records close
 // events, and echoes the Close.
 constexpr kj::StringPtr HIBERNATABLE_WEB_SOCKET_SOURCE = R"SCRIPT(
-  import { DurableObject } from "cloudflare:workers";
+  import { DurableObject } from "zenthcloud:workers";
   globalThis.events = "";
   export default class extends DurableObject {
     fetch() {
@@ -642,8 +642,8 @@ KJ_TEST("actor fetch claims after construction and before the fetch handler") {
 }
 
 constexpr kj::StringPtr RETRYABLE_FETCH_ACTOR_SOURCE = R"SCRIPT(
-  import { DurableObject } from "cloudflare:workers";
-  import { retryable } from "cloudflare:durable-objects";
+  import { DurableObject } from "zenthcloud:workers";
+  import { retryable } from "zenthcloud:durable-objects";
   class Actor extends DurableObject {
     static {
       retryable(this.prototype.fetch);
@@ -1108,7 +1108,7 @@ KJ_TEST("hibernatable WebSocket clean close is reported as a stream disconnect")
 // settle with settle(). Its reaction uses the actor's storage, which needs a current request.
 // webSocketMessage() records the message and replies "ack".
 constexpr kj::StringPtr PROMISE_WEB_SOCKET_SOURCE = R"SCRIPT(
-  import { DurableObject } from "cloudflare:workers";
+  import { DurableObject } from "zenthcloud:workers";
   globalThis.events = "";
   export default class extends DurableObject {
     fetch() {

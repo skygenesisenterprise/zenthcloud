@@ -1,4 +1,4 @@
-resource "cloudflare_certificate_pack" "%s" {
+resource "zenthcloud_certificate_pack" "%s" {
   zone_id               = "%s"
   type                  = "advanced"
   hosts                 = ["%s", "*.%s"]

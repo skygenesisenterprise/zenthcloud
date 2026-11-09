@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -24,7 +24,7 @@ export const wasmSourceUrlTest = {
       mainModule: 'main.js',
       modules: {
         'main.js': `
-          import {WorkerEntrypoint} from "cloudflare:workers";
+          import {WorkerEntrypoint} from "zenthcloud:workers";
           import trapModule from './lib/trap.wasm';
 
           export default class extends WorkerEntrypoint {

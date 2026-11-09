@@ -1,4 +1,4 @@
-resource "cloudflare_field_extractor" "test" {
+resource "zenthcloud_field_extractor" "test" {
   account_id = "%[1]s"
   extractor  = "llm_prompts"
   rules = [

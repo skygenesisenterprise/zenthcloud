@@ -20,7 +20,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 addressing services list\n\nBring-Your-Own IP (BYOIP) prefixes onboarded to Cloudflare must be bound to a service running on the Cloudflare network to enable a Cloudflare product on the IP addresses. This endpoint can be used as a reference of available services on the Cloudflare network, and their service IDs."
+			"$0 addressing services list\n\nBring-Your-Own IP (BYOIP) prefixes onboarded to Zenthcloud must be bound to a service running on the Zenthcloud network to enable a Zenthcloud product on the IP addresses. This endpoint can be used as a reference of available services on the Zenthcloud network, and their service IDs."
 		)
 		.option("dry-run", {
 			type: "boolean",
@@ -50,7 +50,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf addressing services list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/addressing/services`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/addressing/services`,
 						pathParams: {},
 						bodyKind: "none",
 					});

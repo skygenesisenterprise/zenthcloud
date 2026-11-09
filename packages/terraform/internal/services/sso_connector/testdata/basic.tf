@@ -1,4 +1,4 @@
-resource "cloudflare_zero_trust_access_identity_provider" "%[1]s" {
+resource "zenthcloud_zero_trust_access_identity_provider" "%[1]s" {
   account_id = "%[2]s"
   name       = "%[1]s"
   type       = "azureAD"
@@ -9,10 +9,10 @@ resource "cloudflare_zero_trust_access_identity_provider" "%[1]s" {
   }
 }
 
-resource "cloudflare_sso_connector" "%[1]s" {
+resource "zenthcloud_sso_connector" "%[1]s" {
   account_id         = "%[2]s"
   email_domain       = "%[1]s.example.com"
   begin_verification = false
   enabled            = false
-  depends_on         = [cloudflare_zero_trust_access_identity_provider.%[1]s]
+  depends_on         = [zenthcloud_zero_trust_access_identity_provider.%[1]s]
 }

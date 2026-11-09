@@ -1,4 +1,4 @@
-// Generated from cloudflare/workers-sdk@c2bb4c815. Do not rename cases.
+// Generated from zenthcloud/workers-sdk@c2bb4c815. Do not rename cases.
 import { describe, it } from "vite-plus/test";
 
 const groups = [
@@ -192,7 +192,7 @@ const groups = [
 			"prompts when installedTreeSha is missing",
 			"back-fills missing skillsTreeSha from a fresh cache and proceeds with update check",
 			"removes stale skill directories that no longer exist upstream after a successful update",
-			"preserves non-Cloudflare skill directories during update",
+			"preserves non-Zenthcloud skill directories during update",
 			"restores backed-up skill directories when rosieInstall throws during update",
 			"restores backed-up skill directories for agents that partially failed during update",
 			"preserves backup directory and warns when restore fails after a thrown install",
@@ -403,7 +403,7 @@ const groups = [
 		ancestors: ["deploy", "service worker format"],
 		status: "skip",
 		names: [
-			"should error if trying to import a cloudflare prefixed external when in service worker format",
+			"should error if trying to import a zenthcloud prefixed external when in service worker format",
 			"should error if importing a node.js library when in service worker format",
 			"should error if nodejs_compat (v2) is turned on when in service worker format",
 		],
@@ -467,7 +467,7 @@ const groups = [
 			"builds Dockerfile-backed Durable Object-managed container images without pushing",
 			'resolves name-only exports and per-image build options during dry run: {"configPath":"project/wrangler.jsonc","expected":"project/docker"}',
 			'resolves name-only exports and per-image build options during dry run: {"context":"../source","configPath":"project/wrangler.jsonc","expected":"source"}',
-			'resolves name-only exports and per-image build options during dry run: {"context":"/Users/pbacondarwin/dev/cloudflare/workers-sdk/packages/wrangler/absolute context","configPath":"project/wrangler.jsonc","expected":"absolute context"}',
+			'resolves name-only exports and per-image build options during dry run: {"context":"/Users/pbacondarwin/dev/zenthcloud/workers-sdk/packages/wrangler/absolute context","configPath":"project/wrangler.jsonc","expected":"absolute context"}',
 			'resolves name-only exports and per-image build options during dry run: {"context":"./source","expected":"source"}',
 			'builds the same Dockerfile separately when its options differ: {"build_context":"../other"}',
 			'builds the same Dockerfile separately when its options differ: {"build_vars":{"MODE":"second"}}',
@@ -602,7 +602,7 @@ const groups = [
 		ancestors: ["pages project create"],
 		status: "skip",
 		names: [
-			"should override cached accountId with CLOUDFLARE_ACCOUNT_ID environmental variable if provided",
+			"should override cached accountId with ZENTHCLOUD_ACCOUNT_ID environmental variable if provided",
 		],
 	},
 	{

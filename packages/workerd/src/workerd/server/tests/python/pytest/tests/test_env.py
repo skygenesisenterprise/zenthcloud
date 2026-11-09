@@ -32,11 +32,11 @@ async def test_memory_cache():
 
 @pytest.mark.asyncio
 async def test_with_env():
-    workers_module = import_from_javascript("cloudflare:workers")
+    workers_module = import_from_javascript("zenthcloud:workers")
 
     # Test withEnv
     async def import_with_env():
-        workers_module = import_from_javascript("cloudflare:workers")
+        workers_module = import_from_javascript("zenthcloud:workers")
         env = workers_module.env
         return env.FOO
 

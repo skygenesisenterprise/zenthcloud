@@ -72,7 +72,7 @@ func detectV4State(req resource.UpgradeStateRequest) (bool, error) {
 func upgradeFromV4Internal(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
 	tflog.Info(ctx, "Upgrading zero_trust_dlp_custom_profile state from v4 SDKv2 provider (schema_version=0)")
 
-	var v4State SourceCloudflareDLPProfileModel
+	var v4State SourceZenthcloudDLPProfileModel
 	diags := unmarshalV4State(ctx, req.RawState, &v4State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -94,10 +94,10 @@ func upgradeFromV4Internal(ctx context.Context, req resource.UpgradeStateRequest
 }
 
 // unmarshalV4State parses raw state using v4 schema.
-func unmarshalV4State(ctx context.Context, rawState *tfprotov6.RawState, target *SourceCloudflareDLPProfileModel) diag.Diagnostics {
+func unmarshalV4State(ctx context.Context, rawState *tfprotov6.RawState, target *SourceZenthcloudDLPProfileModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	sourceSchema := SourceCloudflareDLPProfileSchema()
+	sourceSchema := SourceZenthcloudDLPProfileSchema()
 	sourceType := sourceSchema.Type().TerraformType(ctx)
 
 	rawValue, err := rawState.Unmarshal(sourceType)

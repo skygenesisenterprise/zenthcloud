@@ -263,7 +263,7 @@ describe("workers secrets", () => {
 				// reads `~/.config/cf/config.json` from the developer's
 				// real home directory regardless of the `runInTempDir()`
 				// HOME stub, so when a stored `defaults.accountId` exists
-				// the env-cleared `CLOUDFLARE_ACCOUNT_ID` fallback never
+				// the env-cleared `ZENTHCLOUD_ACCOUNT_ID` fallback never
 				// kicks in and the tests don't see the 0-account / N-
 				// account / fetch-fail surfaces. See
 				// `test_bugs/auth-paths-resolved-at-import.md`.
@@ -679,7 +679,7 @@ describe("workers secrets", () => {
 			it("should warn if the wrangler config contains environments but none was specified in the command", async () => {});
 			it("should not warn if the wrangler config contains environments and one was specified in the command", async () => {});
 			it("should not warn if the wrangler config doesn't contain environments and none was specified in the command", async () => {});
-			it("should not warn if the wrangler config contains environments and CLOUDFLARE_ENV is set", async () => {});
+			it("should not warn if the wrangler config contains environments and ZENTHCLOUD_ENV is set", async () => {});
 			it('should not warn if --env="" is passed to explicitly target the top-level environment', async () => {});
 		});
 	});

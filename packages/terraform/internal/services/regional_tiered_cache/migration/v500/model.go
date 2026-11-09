@@ -9,15 +9,15 @@ import (
 // Source Models (Legacy Provider - v4.x)
 // ============================================================================
 
-// SourceCloudflareRegionalTieredCacheModel represents the source cloudflare_regional_tiered_cache state structure.
-// This corresponds to schema_version=0 from the legacy (SDKv2) cloudflare provider.
+// SourceZenthcloudRegionalTieredCacheModel represents the source zenthcloud_regional_tiered_cache state structure.
+// This corresponds to schema_version=0 from the legacy (SDKv2) zenthcloud provider.
 // Used by UpgradeFromLegacyV0 to parse legacy state.
 //
-// Resource type: cloudflare_regional_tiered_cache (NOT renamed in v5)
+// Resource type: zenthcloud_regional_tiered_cache (NOT renamed in v5)
 // Schema version: 0 (default SDKv2 schema version)
 //
 // Note: This resource has a very simple structure with only two configurable fields.
-type SourceCloudflareRegionalTieredCacheModel struct {
+type SourceZenthcloudRegionalTieredCacheModel struct {
 	// Core identifier
 	// Note: In v4, ID is set to zone_id by the provider (see v4 resource.go line 42)
 	ID types.String `tfsdk:"id"`
@@ -35,10 +35,10 @@ type SourceCloudflareRegionalTieredCacheModel struct {
 // Target Models (Current Provider - v5.x+)
 // ============================================================================
 
-// TargetRegionalTieredCacheModel represents the target cloudflare_regional_tiered_cache state structure (v500).
+// TargetRegionalTieredCacheModel represents the target zenthcloud_regional_tiered_cache state structure (v500).
 // This corresponds to schema_version=500 in the current (Framework) provider.
 //
-// Resource type: cloudflare_regional_tiered_cache (same as v4, NOT renamed)
+// Resource type: zenthcloud_regional_tiered_cache (same as v4, NOT renamed)
 // Schema version: 500
 //
 // Note: This should match the model in ../../model.go (parent package).

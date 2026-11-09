@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 /* Migration tests don't include every possible permutation, but do cover:
@@ -27,13 +27,13 @@ import (
 
 func TestMigrateCustomPagesMigrationFromV4(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	tmpDir := t.TempDir()
 
 	// V4 config using old "type" attribute
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_custom_pages" "%[1]s" {
+resource "zenthcloud_custom_pages" "%[1]s" {
   account_id = "%[2]s"
   type       = "500_errors"
   state      = "customized"
@@ -50,8 +50,8 @@ resource "cloudflare_custom_pages" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -74,9 +74,9 @@ resource "cloudflare_custom_pages" "%[1]s" {
 // this test ensures the upgrade is a no-op for these resources
 func TestMigrateCustomPagesMigrationFromV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
+	resourceName := "zenthcloud_custom_pages." + rnd
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -87,9 +87,9 @@ func TestMigrateCustomPagesMigrationFromV5(t *testing.T) {
 			// Step 1: Create a custom_pages resource with 5.2.0 version constraint
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
+					"zenthcloud": {
 						VersionConstraint: "= 5.2.0", // custom_pages didn't exist in 5.2.0 and 5.1.0
-						Source:            "cloudflare/cloudflare",
+						Source:            "zenthcloud/zenthcloud",
 					},
 				},
 				Config: testAccCustomPagesAccountConfig(rnd, accountID, "500_errors", "customized", "https://custom-pages-basic.terraform-provider-acceptance-testing.workers.dev/"),
@@ -125,9 +125,9 @@ func TestMigrateCustomPagesMigrationFromV5(t *testing.T) {
 
 func TestMigrateCustomPagesMigrationFromV5Default(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
+	resourceName := "zenthcloud_custom_pages." + rnd
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -138,9 +138,9 @@ func TestMigrateCustomPagesMigrationFromV5Default(t *testing.T) {
 			// Step 1: Create a custom_pages resource with 5.2.0 version constraint
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
+					"zenthcloud": {
 						VersionConstraint: "= 5.2.0", // custom_pages didn't exist in 5.2.0 and 5.1.0
-						Source:            "cloudflare/cloudflare",
+						Source:            "zenthcloud/zenthcloud",
 					},
 				},
 				// Work around known drift in v5.2.0 provider
@@ -180,13 +180,13 @@ func TestMigrateCustomPagesMigrationFromV5Default(t *testing.T) {
 
 func TestMigrateCustomPagesMigrationFromV4BasicChallengeCustomized(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	tmpDir := t.TempDir()
 
 	// V4 config using old "type" attribute
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_custom_pages" "%[1]s" {
+resource "zenthcloud_custom_pages" "%[1]s" {
   account_id = "%[2]s"
   type       = "basic_challenge"
   state      = "customized"
@@ -203,8 +203,8 @@ resource "cloudflare_custom_pages" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -223,8 +223,8 @@ resource "cloudflare_custom_pages" "%[1]s" {
 
 func TestMigrateCustomPagesMigrationFromV5BasicChallengeCustomized(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -234,9 +234,9 @@ func TestMigrateCustomPagesMigrationFromV5BasicChallengeCustomized(t *testing.T)
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
+					"zenthcloud": {
 						VersionConstraint: "= 5.2.0",
-						Source:            "cloudflare/cloudflare",
+						Source:            "zenthcloud/zenthcloud",
 					},
 				},
 				Config: testAccCustomPagesAccountConfig(rnd, accountID, "basic_challenge", "customized", "https://custom-pages-waf-challenge.terraform-provider-acceptance-testing.workers.dev/"),
@@ -262,8 +262,8 @@ func TestMigrateCustomPagesMigrationFromV5BasicChallengeCustomized(t *testing.T)
 
 func TestMigrateCustomPagesMigrationFromV5BasicChallengeDefault(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -273,9 +273,9 @@ func TestMigrateCustomPagesMigrationFromV5BasicChallengeDefault(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
+					"zenthcloud": {
 						VersionConstraint: "= 5.2.0",
-						Source:            "cloudflare/cloudflare",
+						Source:            "zenthcloud/zenthcloud",
 					},
 				},
 				// Work around known drift in v5.2.0 provider
@@ -304,13 +304,13 @@ func TestMigrateCustomPagesMigrationFromV5BasicChallengeDefault(t *testing.T) {
 // Account-level country_challenge tests
 func TestMigrateCustomPagesMigrationFromV4AccountCountryChallengeCustomized(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	tmpDir := t.TempDir()
 
 	// V4 config using old "type" attribute
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_custom_pages" "%[1]s" {
+resource "zenthcloud_custom_pages" "%[1]s" {
   account_id = "%[2]s"
   type       = "country_challenge"
   state      = "customized"
@@ -327,8 +327,8 @@ resource "cloudflare_custom_pages" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -347,8 +347,8 @@ resource "cloudflare_custom_pages" "%[1]s" {
 
 func TestMigrateCustomPagesMigrationFromV5AccountCountryChallengeCustomized(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -358,9 +358,9 @@ func TestMigrateCustomPagesMigrationFromV5AccountCountryChallengeCustomized(t *t
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
+					"zenthcloud": {
 						VersionConstraint: "= 5.2.0",
-						Source:            "cloudflare/cloudflare",
+						Source:            "zenthcloud/zenthcloud",
 					},
 				},
 				Config: testAccCustomPagesAccountConfig(rnd, accountID, "country_challenge", "customized", "https://custom-pages-waf-challenge.terraform-provider-acceptance-testing.workers.dev/"),
@@ -388,13 +388,13 @@ func TestMigrateCustomPagesMigrationFromV5AccountCountryChallengeCustomized(t *t
 
 func TestMigrateCustomPagesMigrationFromV4WafBlockCustomized(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	tmpDir := t.TempDir()
 
 	// V4 config using old "type" attribute (account-level)
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_custom_pages" "%[1]s" {
+resource "zenthcloud_custom_pages" "%[1]s" {
   account_id = "%[2]s"
   type       = "waf_block"
   state      = "customized"
@@ -411,8 +411,8 @@ resource "cloudflare_custom_pages" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -431,8 +431,8 @@ resource "cloudflare_custom_pages" "%[1]s" {
 
 func TestMigrateCustomPagesMigrationFromV5WafBlockCustomized(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -442,9 +442,9 @@ func TestMigrateCustomPagesMigrationFromV5WafBlockCustomized(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
+					"zenthcloud": {
 						VersionConstraint: "= 5.2.0",
-						Source:            "cloudflare/cloudflare",
+						Source:            "zenthcloud/zenthcloud",
 					},
 				},
 				Config: testAccCustomPagesAccountConfig(rnd, accountID, "waf_block", "customized", "https://custom-pages-waf-challenge.terraform-provider-acceptance-testing.workers.dev/"),
@@ -472,13 +472,13 @@ func TestMigrateCustomPagesMigrationFromV5WafBlockCustomized(t *testing.T) {
 
 func TestMigrateCustomPagesMigrationFromV4IpBlockCustomized(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	tmpDir := t.TempDir()
 
 	// V4 config using old "type" attribute (zone-level)
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_custom_pages" "%[1]s" {
+resource "zenthcloud_custom_pages" "%[1]s" {
   zone_id = "%[2]s"
   type    = "ip_block"
   state   = "customized"
@@ -494,8 +494,8 @@ resource "cloudflare_custom_pages" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -522,8 +522,8 @@ resource "cloudflare_custom_pages" "%[1]s" {
 
 func TestMigrateCustomPagesMigrationFromV5IpBlockCustomized(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -532,9 +532,9 @@ func TestMigrateCustomPagesMigrationFromV5IpBlockCustomized(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
+					"zenthcloud": {
 						VersionConstraint: "= 5.2.0",
-						Source:            "cloudflare/cloudflare",
+						Source:            "zenthcloud/zenthcloud",
 					},
 				},
 				Config: testAccCustomPagesZoneConfig(rnd, zoneID, "ip_block", "customized", "https://custom-pages-waf-challenge.terraform-provider-acceptance-testing.workers.dev/"),
@@ -570,13 +570,13 @@ func TestMigrateCustomPagesMigrationFromV5IpBlockCustomized(t *testing.T) {
 
 func TestMigrateCustomPagesMigrationFromV4CountryChallengeCustomized(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	tmpDir := t.TempDir()
 
 	// V4 config using old "type" attribute (zone-level)
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_custom_pages" "%[1]s" {
+resource "zenthcloud_custom_pages" "%[1]s" {
   zone_id = "%[2]s"
   type    = "country_challenge"
   state   = "customized"
@@ -592,8 +592,8 @@ resource "cloudflare_custom_pages" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -620,8 +620,8 @@ resource "cloudflare_custom_pages" "%[1]s" {
 
 func TestMigrateCustomPagesMigrationFromV5CountryChallengeCustomized(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -630,9 +630,9 @@ func TestMigrateCustomPagesMigrationFromV5CountryChallengeCustomized(t *testing.
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
+					"zenthcloud": {
 						VersionConstraint: "= 5.2.0",
-						Source:            "cloudflare/cloudflare",
+						Source:            "zenthcloud/zenthcloud",
 					},
 				},
 				Config: testAccCustomPagesZoneConfig(rnd, zoneID, "country_challenge", "customized", "https://custom-pages-waf-challenge.terraform-provider-acceptance-testing.workers.dev/"),
@@ -658,8 +658,8 @@ func TestMigrateCustomPagesMigrationFromV5CountryChallengeCustomized(t *testing.
 
 func TestMigrateCustomPagesMigrationFromV5CountryChallengeDefault(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -668,9 +668,9 @@ func TestMigrateCustomPagesMigrationFromV5CountryChallengeDefault(t *testing.T) 
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
+					"zenthcloud": {
 						VersionConstraint: "= 5.2.0",
-						Source:            "cloudflare/cloudflare",
+						Source:            "zenthcloud/zenthcloud",
 					},
 				},
 				// Work around known drift in v5.2.0 provider
@@ -700,13 +700,13 @@ func TestMigrateCustomPagesMigrationFromV5CountryChallengeDefault(t *testing.T) 
 
 func TestMigrateCustomPagesMigrationFromV41000ErrorsCustomized(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	tmpDir := t.TempDir()
 
 	// V4 config using old "type" attribute (zone-level)
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_custom_pages" "%[1]s" {
+resource "zenthcloud_custom_pages" "%[1]s" {
   zone_id = "%[2]s"
   type    = "1000_errors"
   state   = "customized"
@@ -722,8 +722,8 @@ resource "cloudflare_custom_pages" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -742,8 +742,8 @@ resource "cloudflare_custom_pages" "%[1]s" {
 
 func TestMigrateCustomPagesMigrationFromV51000ErrorsCustomized(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -752,9 +752,9 @@ func TestMigrateCustomPagesMigrationFromV51000ErrorsCustomized(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
+					"zenthcloud": {
 						VersionConstraint: "= 5.2.0",
-						Source:            "cloudflare/cloudflare",
+						Source:            "zenthcloud/zenthcloud",
 					},
 				},
 				Config: testAccCustomPagesZoneConfig(rnd, zoneID, "1000_errors", "customized", "https://custom-pages-1000-errors.terraform-provider-acceptance-testing.workers.dev/"),
@@ -780,8 +780,8 @@ func TestMigrateCustomPagesMigrationFromV51000ErrorsCustomized(t *testing.T) {
 
 func TestMigrateCustomPagesMigrationFromV51000ErrorsDefault(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -790,9 +790,9 @@ func TestMigrateCustomPagesMigrationFromV51000ErrorsDefault(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
+					"zenthcloud": {
 						VersionConstraint: "= 5.2.0",
-						Source:            "cloudflare/cloudflare",
+						Source:            "zenthcloud/zenthcloud",
 					},
 				},
 				// Work around known drift in v5.2.0 provider
@@ -819,13 +819,13 @@ func TestMigrateCustomPagesMigrationFromV51000ErrorsDefault(t *testing.T) {
 }
 func TestMigrateCustomPagesMigrationFromV4ManagedChallengeCustomized(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	tmpDir := t.TempDir()
 
 	// V4 config using old "type" attribute (zone-level)
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_custom_pages" "%[1]s" {
+resource "zenthcloud_custom_pages" "%[1]s" {
   zone_id = "%[2]s"
   type    = "managed_challenge"
   state   = "customized"
@@ -841,8 +841,8 @@ resource "cloudflare_custom_pages" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -861,8 +861,8 @@ resource "cloudflare_custom_pages" "%[1]s" {
 
 func TestMigrateCustomPagesMigrationFromV57ManagedChallengeCustomized(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -871,9 +871,9 @@ func TestMigrateCustomPagesMigrationFromV57ManagedChallengeCustomized(t *testing
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
+					"zenthcloud": {
 						VersionConstraint: "= 5.7.1",
-						Source:            "cloudflare/cloudflare",
+						Source:            "zenthcloud/zenthcloud",
 					},
 				},
 				Config: testAccCustomPagesZoneConfig(rnd, zoneID, "managed_challenge", "customized", "https://custom-pages-waf-challenge.terraform-provider-acceptance-testing.workers.dev/"),
@@ -908,13 +908,13 @@ func TestMigrateCustomPagesMigrationFromV57ManagedChallengeCustomized(t *testing
 
 func TestMigrateCustomPagesMigrationFromV4RatelimitBlockCustomized(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	tmpDir := t.TempDir()
 
 	// V4 config using old "type" attribute (zone-level)
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_custom_pages" "%[1]s" {
+resource "zenthcloud_custom_pages" "%[1]s" {
   zone_id = "%[2]s"
   type    = "ratelimit_block"
   state   = "customized"
@@ -930,8 +930,8 @@ resource "cloudflare_custom_pages" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -950,8 +950,8 @@ resource "cloudflare_custom_pages" "%[1]s" {
 
 func TestMigrateCustomPagesMigrationFromV5RatelimitBlockCustomized(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -960,9 +960,9 @@ func TestMigrateCustomPagesMigrationFromV5RatelimitBlockCustomized(t *testing.T)
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
+					"zenthcloud": {
 						VersionConstraint: "= 5.2.0",
-						Source:            "cloudflare/cloudflare",
+						Source:            "zenthcloud/zenthcloud",
 					},
 				},
 				Config: testAccCustomPagesZoneConfig(rnd, zoneID, "ratelimit_block", "customized", "https://custom-pages-waf-challenge.terraform-provider-acceptance-testing.workers.dev/"),
@@ -988,13 +988,13 @@ func TestMigrateCustomPagesMigrationFromV5RatelimitBlockCustomized(t *testing.T)
 
 func TestMigrateCustomPagesMigrationFromV4UnderAttackCustomized(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	tmpDir := t.TempDir()
 
 	// V4 config using old "type" attribute (zone-level)
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_custom_pages" "%[1]s" {
+resource "zenthcloud_custom_pages" "%[1]s" {
   zone_id = "%[2]s"
   type    = "under_attack"
   state   = "customized"
@@ -1010,8 +1010,8 @@ resource "cloudflare_custom_pages" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -1045,8 +1045,8 @@ resource "cloudflare_custom_pages" "%[1]s" {
 
 func TestMigrateCustomPagesMigrationFromV5UnderAttackCustomized(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -1055,9 +1055,9 @@ func TestMigrateCustomPagesMigrationFromV5UnderAttackCustomized(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
+					"zenthcloud": {
 						VersionConstraint: "= 5.2.0",
-						Source:            "cloudflare/cloudflare",
+						Source:            "zenthcloud/zenthcloud",
 					},
 				},
 				Config: testAccCustomPagesZoneConfig(rnd, zoneID, "under_attack", "customized", "https://custom-pages-waf-challenge.terraform-provider-acceptance-testing.workers.dev/"),
@@ -1084,13 +1084,13 @@ func TestMigrateCustomPagesMigrationFromV5UnderAttackCustomized(t *testing.T) {
 // TestMigrateCustomPagesMigrationFromV4WafChallenge tests the critical missing identifier: waf_challenge
 func TestMigrateCustomPagesMigrationFromV4WafChallenge(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	tmpDir := t.TempDir()
 
 	// V4 config using "type" for waf_challenge
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_custom_pages" "%[1]s" {
+resource "zenthcloud_custom_pages" "%[1]s" {
   account_id = "%[2]s"
   type       = "waf_challenge"
   state      = "customized"
@@ -1107,8 +1107,8 @@ resource "cloudflare_custom_pages" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -1128,8 +1128,8 @@ resource "cloudflare_custom_pages" "%[1]s" {
 // TestMigrateCustomPagesMigrationFromV5WafChallengeZone tests waf_challenge at zone level
 func TestMigrateCustomPagesMigrationFromV5WafChallengeZone(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -1139,9 +1139,9 @@ func TestMigrateCustomPagesMigrationFromV5WafChallengeZone(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
+					"zenthcloud": {
 						VersionConstraint: "= 5.2.0",
-						Source:            "cloudflare/cloudflare",
+						Source:            "zenthcloud/zenthcloud",
 					},
 				},
 				Config: testAccCustomPagesZoneConfig(rnd, zoneID, "waf_challenge", "customized", "https://custom-pages-waf-challenge.terraform-provider-acceptance-testing.workers.dev/"),
@@ -1168,12 +1168,12 @@ func TestMigrateCustomPagesMigrationFromV5WafChallengeZone(t *testing.T) {
 // TestMigrateCustomPagesMigrationFromV4IpBlockAccount tests ip_block at account level (was only zone-level)
 func TestMigrateCustomPagesMigrationFromV4IpBlockAccount(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_custom_pages" "%[1]s" {
+resource "zenthcloud_custom_pages" "%[1]s" {
   account_id = "%[2]s"
   type       = "ip_block"
   state      = "customized"
@@ -1189,8 +1189,8 @@ resource "cloudflare_custom_pages" "%[1]s" {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -1209,8 +1209,8 @@ resource "cloudflare_custom_pages" "%[1]s" {
 // TestMigrateCustomPagesMigrationFromV5BasicChallengeZone tests basic_challenge at zone level (was only account-level)
 func TestMigrateCustomPagesMigrationFromV5BasicChallengeZone(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -1220,9 +1220,9 @@ func TestMigrateCustomPagesMigrationFromV5BasicChallengeZone(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
+					"zenthcloud": {
 						VersionConstraint: "= 5.2.0",
-						Source:            "cloudflare/cloudflare",
+						Source:            "zenthcloud/zenthcloud",
 					},
 				},
 				Config: testAccCustomPagesZoneConfig(rnd, zoneID, "basic_challenge", "customized", "https://custom-pages-basic-challenge.terraform-provider-acceptance-testing.workers.dev/"),
@@ -1249,12 +1249,12 @@ func TestMigrateCustomPagesMigrationFromV5BasicChallengeZone(t *testing.T) {
 // TestMigrateCustomPagesMigrationFromV4ManagedChallengeAccount tests managed_challenge at account level (was only zone-level)
 func TestMigrateCustomPagesMigrationFromV4ManagedChallengeAccount(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_pages." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_custom_pages" "%[1]s" {
+resource "zenthcloud_custom_pages" "%[1]s" {
   account_id = "%[2]s"
   type       = "managed_challenge"
   state      = "customized"
@@ -1270,8 +1270,8 @@ resource "cloudflare_custom_pages" "%[1]s" {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},

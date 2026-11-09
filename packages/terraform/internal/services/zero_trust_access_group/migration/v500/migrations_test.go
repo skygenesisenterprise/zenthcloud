@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/compare"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -57,7 +57,7 @@ var v5MultiListConfig string
 
 // TestMigrateZeroTrustAccessGroup_V4ToV5_Basic tests basic field migrations with DUAL test cases.
 // This test validates:
-// - Resource rename: cloudflare_access_group → cloudflare_zero_trust_access_group (v4 test only)
+// - Resource rename: zenthcloud_access_group → zenthcloud_zero_trust_access_group (v4 test only)
 // - Basic field preservation (account_id, name)
 // - Simple include block transformation
 func TestMigrateZeroTrustAccessGroup_V4ToV5_Basic(t *testing.T) {
@@ -85,7 +85,7 @@ func TestMigrateZeroTrustAccessGroup_V4ToV5_Basic(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Test setup
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := "tf-test-" + rnd
 			tmpDir := t.TempDir()
@@ -98,8 +98,8 @@ func TestMigrateZeroTrustAccessGroup_V4ToV5_Basic(t *testing.T) {
 					{
 						// Step 1: Create with specific provider version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -110,19 +110,19 @@ func TestMigrateZeroTrustAccessGroup_V4ToV5_Basic(t *testing.T) {
 						[]statecheck.StateCheck{
 							// Verify account_id preserved
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_access_group."+rnd,
+								"zenthcloud_zero_trust_access_group."+rnd,
 								tfjsonpath.New("account_id"),
 								knownvalue.StringExact(accountID),
 							),
 							// Verify name preserved
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_access_group."+rnd,
+								"zenthcloud_zero_trust_access_group."+rnd,
 								tfjsonpath.New("name"),
 								knownvalue.StringExact(name),
 							),
 							// Verify include block exists
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_access_group."+rnd,
+								"zenthcloud_zero_trust_access_group."+rnd,
 								tfjsonpath.New("include").AtSliceIndex(0).AtMapKey("email").AtMapKey("email"),
 								knownvalue.StringExact("user@example.com"),
 							),
@@ -163,7 +163,7 @@ func TestMigrateZeroTrustAccessGroup_V4ToV5_ListExplosion(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Test setup
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := "tf-test-" + rnd
 			tmpDir := t.TempDir()
@@ -176,8 +176,8 @@ func TestMigrateZeroTrustAccessGroup_V4ToV5_ListExplosion(t *testing.T) {
 					{
 						// Step 1: Create with specific provider version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -188,17 +188,17 @@ func TestMigrateZeroTrustAccessGroup_V4ToV5_ListExplosion(t *testing.T) {
 						[]statecheck.StateCheck{
 							// CRITICAL: Verify list explosion - 3 emails become 3 separate include blocks
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_access_group."+rnd,
+								"zenthcloud_zero_trust_access_group."+rnd,
 								tfjsonpath.New("include").AtSliceIndex(0).AtMapKey("email").AtMapKey("email"),
 								knownvalue.StringExact("user1@example.com"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_access_group."+rnd,
+								"zenthcloud_zero_trust_access_group."+rnd,
 								tfjsonpath.New("include").AtSliceIndex(1).AtMapKey("email").AtMapKey("email"),
 								knownvalue.StringExact("user2@example.com"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_access_group."+rnd,
+								"zenthcloud_zero_trust_access_group."+rnd,
 								tfjsonpath.New("include").AtSliceIndex(2).AtMapKey("email").AtMapKey("email"),
 								knownvalue.StringExact("user3@example.com"),
 							),
@@ -216,12 +216,12 @@ func TestMigrateZeroTrustAccessGroup_V4ToV5_ListExplosion(t *testing.T) {
 // - Nested list explosion: teams = ["team1", "team2"] → two separate github_organization blocks
 // - Field rename within nested object: teams → team (singular)
 //
-// TODO: This test is currently skipped because it requires cloudflare_access_identity_provider
+// TODO: This test is currently skipped because it requires zenthcloud_access_identity_provider
 // migration to be implemented first. Once that migration is complete, remove the Skip and enable this test.
 func TestMigrateZeroTrustAccessGroup_V4ToV5_GitHub(t *testing.T) {
 	t.Run("from_v4_latest", func(t *testing.T) {
 		// Test setup
-		accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+		accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 		rnd := utils.GenerateRandomResourceName()
 		name := "tf-test-" + rnd
 		tmpDir := t.TempDir()
@@ -235,8 +235,8 @@ func TestMigrateZeroTrustAccessGroup_V4ToV5_GitHub(t *testing.T) {
 				{
 					// Step 1: Create with v4 external provider
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: version,
 						},
 					},
@@ -247,26 +247,26 @@ func TestMigrateZeroTrustAccessGroup_V4ToV5_GitHub(t *testing.T) {
 					[]statecheck.StateCheck{
 						// CRITICAL: Verify field rename github → github_organization
 						statecheck.ExpectKnownValue(
-							"cloudflare_zero_trust_access_group."+rnd,
+							"zenthcloud_zero_trust_access_group."+rnd,
 							tfjsonpath.New("include").AtSliceIndex(0).AtMapKey("github_organization").AtMapKey("name"),
 							knownvalue.StringExact("my-org"),
 						),
 						// CRITICAL: Verify teams list explosion - 2 teams → 2 github_organization blocks
 						statecheck.ExpectKnownValue(
-							"cloudflare_zero_trust_access_group."+rnd,
+							"zenthcloud_zero_trust_access_group."+rnd,
 							tfjsonpath.New("include").AtSliceIndex(0).AtMapKey("github_organization").AtMapKey("team"),
 							knownvalue.StringExact("team1"),
 						),
 						statecheck.ExpectKnownValue(
-							"cloudflare_zero_trust_access_group."+rnd,
+							"zenthcloud_zero_trust_access_group."+rnd,
 							tfjsonpath.New("include").AtSliceIndex(1).AtMapKey("github_organization").AtMapKey("team"),
 							knownvalue.StringExact("team2"),
 						),
 						// Verify identity_provider_id preserved in both blocks (must match actual IDP resource)
 						statecheck.CompareValuePairs(
-							"cloudflare_zero_trust_access_group."+rnd,
+							"zenthcloud_zero_trust_access_group."+rnd,
 							tfjsonpath.New("include").AtSliceIndex(0).AtMapKey("github_organization").AtMapKey("identity_provider_id"),
-							"cloudflare_zero_trust_access_identity_provider."+rnd+"_idp",
+							"zenthcloud_zero_trust_access_identity_provider."+rnd+"_idp",
 							tfjsonpath.New("id"),
 							compare.ValuesSame(),
 						),
@@ -285,7 +285,7 @@ func TestMigrateZeroTrustAccessGroup_V4ToV5_GitHub(t *testing.T) {
 func TestMigrateZeroTrustAccessGroup_V4ToV5_Boolean(t *testing.T) {
 	t.Run("from_v4_latest", func(t *testing.T) {
 		// Test setup
-		accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+		accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 		rnd := utils.GenerateRandomResourceName()
 		name := "tf-test-" + rnd
 		tmpDir := t.TempDir()
@@ -298,7 +298,7 @@ func TestMigrateZeroTrustAccessGroup_V4ToV5_Boolean(t *testing.T) {
 			// In v5, everyone is an empty object (no fields inside)
 			// We verify the everyone key exists in the include block
 			statecheck.ExpectKnownValue(
-				"cloudflare_zero_trust_access_group."+rnd,
+				"zenthcloud_zero_trust_access_group."+rnd,
 				tfjsonpath.New("include").AtSliceIndex(0).AtMapKey("everyone"),
 				knownvalue.MapExact(map[string]knownvalue.Check{}),
 			),
@@ -314,8 +314,8 @@ func TestMigrateZeroTrustAccessGroup_V4ToV5_Boolean(t *testing.T) {
 				{
 					// Step 1: Create with v4 external provider
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: version,
 						},
 					},
@@ -337,7 +337,7 @@ func TestMigrateZeroTrustAccessGroup_V4ToV5_Boolean(t *testing.T) {
 func TestMigrateZeroTrustAccessGroup_V4ToV5_ServiceTokenBoolean(t *testing.T) {
 	t.Run("from_v4_latest", func(t *testing.T) {
 		// Test setup
-		accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+		accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 		rnd := utils.GenerateRandomResourceName()
 		name := "tf-test-" + rnd
 		tmpDir := t.TempDir()
@@ -349,13 +349,13 @@ func TestMigrateZeroTrustAccessGroup_V4ToV5_ServiceTokenBoolean(t *testing.T) {
 			// CRITICAL: Verify any_valid_service_token boolean → empty object transformation
 			// This is the exact field that causes the APIX-741 error
 			statecheck.ExpectKnownValue(
-				"cloudflare_zero_trust_access_group."+rnd,
+				"zenthcloud_zero_trust_access_group."+rnd,
 				tfjsonpath.New("include").AtSliceIndex(0).AtMapKey("any_valid_service_token"),
 				knownvalue.MapExact(map[string]knownvalue.Check{}),
 			),
 			// Verify exclude block email is preserved
 			statecheck.ExpectKnownValue(
-				"cloudflare_zero_trust_access_group."+rnd,
+				"zenthcloud_zero_trust_access_group."+rnd,
 				tfjsonpath.New("exclude").AtSliceIndex(0).AtMapKey("email").AtMapKey("email"),
 				knownvalue.StringExact("blocked@example.com"),
 			),
@@ -371,8 +371,8 @@ func TestMigrateZeroTrustAccessGroup_V4ToV5_ServiceTokenBoolean(t *testing.T) {
 				{
 					// Step 1: Create with v4 external provider
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: version,
 						},
 					},
@@ -414,7 +414,7 @@ func TestMigrateZeroTrustAccessGroup_V4ToV5_MultiList(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Test setup
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := "tf-test-" + rnd
 			tmpDir := t.TempDir()
@@ -428,38 +428,38 @@ func TestMigrateZeroTrustAccessGroup_V4ToV5_MultiList(t *testing.T) {
 
 				// Email 1
 				statecheck.ExpectKnownValue(
-					"cloudflare_zero_trust_access_group."+rnd,
+					"zenthcloud_zero_trust_access_group."+rnd,
 					tfjsonpath.New("include").AtSliceIndex(0).AtMapKey("email").AtMapKey("email"),
 					knownvalue.StringExact("user1@example.com"),
 				),
 				// Email 2
 				statecheck.ExpectKnownValue(
-					"cloudflare_zero_trust_access_group."+rnd,
+					"zenthcloud_zero_trust_access_group."+rnd,
 					tfjsonpath.New("include").AtSliceIndex(1).AtMapKey("email").AtMapKey("email"),
 					knownvalue.StringExact("user2@example.com"),
 				),
 				// IP 1
 				statecheck.ExpectKnownValue(
-					"cloudflare_zero_trust_access_group."+rnd,
+					"zenthcloud_zero_trust_access_group."+rnd,
 					tfjsonpath.New("include").AtSliceIndex(2).AtMapKey("ip").AtMapKey("ip"),
 					knownvalue.StringExact("192.168.1.0/24"),
 				),
 				// IP 2
 				statecheck.ExpectKnownValue(
-					"cloudflare_zero_trust_access_group."+rnd,
+					"zenthcloud_zero_trust_access_group."+rnd,
 					tfjsonpath.New("include").AtSliceIndex(3).AtMapKey("ip").AtMapKey("ip"),
 					knownvalue.StringExact("10.0.0.0/8"),
 				),
 				// Verify exclude block explosions - 2 total (2 geos)
 				// Geo 1 (verify field rename: geo → country_code)
 				statecheck.ExpectKnownValue(
-					"cloudflare_zero_trust_access_group."+rnd,
+					"zenthcloud_zero_trust_access_group."+rnd,
 					tfjsonpath.New("exclude").AtSliceIndex(0).AtMapKey("geo").AtMapKey("country_code"),
 					knownvalue.StringExact("US"),
 				),
 				// Geo 2
 				statecheck.ExpectKnownValue(
-					"cloudflare_zero_trust_access_group."+rnd,
+					"zenthcloud_zero_trust_access_group."+rnd,
 					tfjsonpath.New("exclude").AtSliceIndex(1).AtMapKey("geo").AtMapKey("country_code"),
 					knownvalue.StringExact("CA"),
 				),
@@ -475,8 +475,8 @@ func TestMigrateZeroTrustAccessGroup_V4ToV5_MultiList(t *testing.T) {
 					{
 						// Step 1: Create with specific provider version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},

@@ -1,8 +1,8 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-110:
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-110:
 // Dropping the only JS reference to an unnamed WorkerStub during the getCode
 // callback and forcing GC must not crash the process. Before the fix,
 // synchronous destruction of WorkerStubImpl via DeleteQueue's fast path would
@@ -27,7 +27,7 @@ export let unnamedStubGcDuringGetCode = {
         mainModule: 'main.js',
         modules: {
           'main.js': `
-            import {WorkerEntrypoint} from "cloudflare:workers";
+            import {WorkerEntrypoint} from "zenthcloud:workers";
             export default class extends WorkerEntrypoint {
               ping() { return 'pong'; }
             }

@@ -1,5 +1,5 @@
 
-resource "cloudflare_load_balancer_monitor" "%[1]s" {
+resource "zenthcloud_load_balancer_monitor" "%[1]s" {
   account_id = "%[3]s"
   expected_body = "dead"
   expected_codes = "5xx"

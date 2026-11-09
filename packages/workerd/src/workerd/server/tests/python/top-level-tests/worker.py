@@ -16,21 +16,21 @@ def f():
 
 def top_level_test():
     # Test the regular import function
-    workers_module = import_from_javascript("cloudflare:workers")
+    workers_module = import_from_javascript("zenthcloud:workers")
     env = workers_module.env
     assert env.FOO == "BAR", "env.FOO should be 'BAR'"
-    sockets_module = import_from_javascript("cloudflare:sockets")
+    sockets_module = import_from_javascript("zenthcloud:sockets")
 
     vectorize = None
     threw = False
     try:
-        vectorize = import_from_javascript("cloudflare:vectorize")
+        vectorize = import_from_javascript("zenthcloud:vectorize")
     except ImportError:
         threw = True
 
     if __version__ == "0.26.0a2":
-        # Should have thrown throw "ImportError: Failed to import 'cloudflare:vectorize': Only 'cloudflare:workers' and 'cloudflare:sockets' are available until the next python runtime version."
-        msg = 'import_from_javascript("cloudflare:vectorize") not expected to work in the global scope in 0.26.0a2'
+        # Should have thrown throw "ImportError: Failed to import 'zenthcloud:vectorize': Only 'zenthcloud:workers' and 'zenthcloud:sockets' are available until the next python runtime version."
+        msg = 'import_from_javascript("zenthcloud:vectorize") not expected to work in the global scope in 0.26.0a2'
         assert threw, msg
         assert vectorize is None, msg
     else:

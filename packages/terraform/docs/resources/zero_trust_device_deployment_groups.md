@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zero_trust_device_deployment_groups Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_device_deployment_groups Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zero_trust_device_deployment_groups (Resource)
+# zenthcloud_zero_trust_device_deployment_groups (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_device_deployment_groups" "example_zero_trust_device_deployment_groups" {
+resource "zenthcloud_zero_trust_device_deployment_groups" "example_zero_trust_device_deployment_groups" {
   account_id = "account_id"
   name = "Engineering Ring 0"
   version_config = [{
@@ -55,7 +55,7 @@ Required:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_device_deployment_groups.example '<account_id>/<group_id>'
+$ terraform import zenthcloud_zero_trust_device_deployment_groups.example '<account_id>/<group_id>'
 ```
 
 

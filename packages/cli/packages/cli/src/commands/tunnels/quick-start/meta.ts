@@ -6,7 +6,7 @@ export default {
 	fullPath: ["tunnels", "quick-start"],
 	category: "action",
 	description:
-		"Expose a local URL with a temporary trycloudflare.com tunnel. The tunnel remains active until cf exits.",
+		"Expose a local URL with a temporary tryzenthcloud.com tunnel. The tunnel remains active until cf exits.",
 	usage:
 		"cf tunnels quick-start <url> [--allowed-mail <recipient>] [--log-level <level>]",
 	arguments: [
@@ -24,14 +24,14 @@ export default {
 			type: "string",
 			required: false,
 			description:
-				"Require email authentication (cloudflared 2026.9.2 or later). Accepts an exact address or domain wildcard such as user@example.com or *@example.org. May be repeated or comma-separated.",
+				"Require email authentication (zenthcloudd 2026.9.2 or later). Accepts an exact address or domain wildcard such as user@example.com or *@example.org. May be repeated or comma-separated.",
 		},
 		{
 			name: "log-level",
 			type: "string",
 			required: false,
 			default: "info",
-			description: "cloudflared log level",
+			description: "zenthcloudd log level",
 			enum: [
 				"trace",
 				"debug",

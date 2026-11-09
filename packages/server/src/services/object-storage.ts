@@ -54,15 +54,15 @@ export const OBJECT_STORAGE_PROVIDER_META: Record<
 		rcloneProvider: "AWS",
 		docsUrl: "https://docs.aws.amazon.com/s3/",
 	},
-	"cloudflare-r2": {
-		providerType: "cloudflare-r2",
+	"zenthcloud-r2": {
+		providerType: "zenthcloud-r2",
 		category: "external",
-		label: "Cloudflare R2",
-		endpointTemplate: "https://<accountid>.r2.cloudflarestorage.com",
+		label: "Zenthcloud R2",
+		endpointTemplate: "https://<accountid>.r2.zenthcloudstorage.com",
 		defaultRegion: "auto",
 		pathStyle: true,
-		rcloneProvider: "Cloudflare",
-		docsUrl: "https://developers.cloudflare.com/r2/",
+		rcloneProvider: "Zenthcloud",
+		docsUrl: "https://github.com/skygenesisenterprise/zenthcloud",
 	},
 	scaleway: {
 		providerType: "scaleway",

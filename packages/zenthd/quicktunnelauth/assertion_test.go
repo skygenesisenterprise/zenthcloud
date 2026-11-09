@@ -21,7 +21,7 @@ func TestQuickTunnelAuthAssertionValidatorValidateRejectsInvalidInput(t *testing
 	validator, err := NewQuickTunnelAuthAssertionValidator()
 	require.NoError(t, err)
 	validState := base64.RawURLEncoding.EncodeToString(make([]byte, quickTunnelAuthStateSize))
-	validHostname := "test-tunnel.trycloudflare.com"
+	validHostname := "test-tunnel.tryzenthcloud.com"
 
 	tests := []struct {
 		name             string
@@ -57,7 +57,7 @@ func TestQuickTunnelAuthAssertionValidatorValidateAcceptsValidAssertion(t *testi
 
 	now := time.Date(2026, time.September, 9, 10, 0, 0, 0, time.UTC)
 	state := base64.RawURLEncoding.EncodeToString(make([]byte, quickTunnelAuthStateSize))
-	hostname := "test-tunnel.trycloudflare.com"
+	hostname := "test-tunnel.tryzenthcloud.com"
 	privateKey, verificationKey := newTestQuickTunnelAuthBrokerKeyPair(t, "test-key")
 	validator := newTestQuickTunnelAuthAssertionValidatorWithKey(t, now, verificationKey)
 	claims := newTestQuickTunnelAuthBrokerClaims(now, hostname, state)
@@ -76,7 +76,7 @@ func TestQuickTunnelAuthAssertionValidatorValidateAcceptsAllowedClockSkew(t *tes
 
 	now := time.Date(2026, time.September, 9, 10, 0, 0, 0, time.UTC)
 	state := base64.RawURLEncoding.EncodeToString(make([]byte, quickTunnelAuthStateSize))
-	hostname := "test-tunnel.trycloudflare.com"
+	hostname := "test-tunnel.tryzenthcloud.com"
 	privateKey, verificationKey := newTestQuickTunnelAuthBrokerKeyPair(t, "test-key")
 	validator := newTestQuickTunnelAuthAssertionValidatorWithKey(t, now, verificationKey)
 	claims := newTestQuickTunnelAuthBrokerClaims(now, hostname, state)
@@ -93,7 +93,7 @@ func TestQuickTunnelAuthAssertionValidatorValidateAcceptsEqualIssuedAtAndExpiry(
 
 	now := time.Date(2026, time.September, 9, 10, 0, 0, 0, time.UTC)
 	state := base64.RawURLEncoding.EncodeToString(make([]byte, quickTunnelAuthStateSize))
-	hostname := "test-tunnel.trycloudflare.com"
+	hostname := "test-tunnel.tryzenthcloud.com"
 	privateKey, verificationKey := newTestQuickTunnelAuthBrokerKeyPair(t, "test-key")
 	validator := newTestQuickTunnelAuthAssertionValidatorWithKey(t, now, verificationKey)
 	claims := newTestQuickTunnelAuthBrokerClaims(now, hostname, state)
@@ -112,7 +112,7 @@ func TestQuickTunnelAuthAssertionValidatorValidateRejectsInvalidHeader(t *testin
 
 	now := time.Date(2026, time.September, 9, 10, 0, 0, 0, time.UTC)
 	state := base64.RawURLEncoding.EncodeToString(make([]byte, quickTunnelAuthStateSize))
-	hostname := "test-tunnel.trycloudflare.com"
+	hostname := "test-tunnel.tryzenthcloud.com"
 	privateKey, verificationKey := newTestQuickTunnelAuthBrokerKeyPair(t, "test-key")
 	claims := newTestQuickTunnelAuthBrokerClaims(now, hostname, state)
 
@@ -152,7 +152,7 @@ func TestQuickTunnelAuthAssertionValidatorValidateRejectsInvalidSignature(t *tes
 
 	now := time.Date(2026, time.September, 9, 10, 0, 0, 0, time.UTC)
 	state := base64.RawURLEncoding.EncodeToString(make([]byte, quickTunnelAuthStateSize))
-	hostname := "test-tunnel.trycloudflare.com"
+	hostname := "test-tunnel.tryzenthcloud.com"
 	_, trustedVerificationKey := newTestQuickTunnelAuthBrokerKeyPair(t, "test-key")
 	untrustedPrivateKey, _ := newTestQuickTunnelAuthBrokerKeyPair(t, "other-key")
 	validator := newTestQuickTunnelAuthAssertionValidatorWithKey(t, now, trustedVerificationKey)
@@ -169,7 +169,7 @@ func TestQuickTunnelAuthAssertionValidatorValidateRejectsInvalidClaims(t *testin
 	now := time.Date(2026, time.September, 9, 10, 0, 0, 0, time.UTC)
 	state := base64.RawURLEncoding.EncodeToString(make([]byte, quickTunnelAuthStateSize))
 	otherState := base64.RawURLEncoding.EncodeToString(bytes.Repeat([]byte{1}, quickTunnelAuthStateSize))
-	hostname := "test-tunnel.trycloudflare.com"
+	hostname := "test-tunnel.tryzenthcloud.com"
 	privateKey, verificationKey := newTestQuickTunnelAuthBrokerKeyPair(t, "test-key")
 
 	tests := []struct {
@@ -196,7 +196,7 @@ func TestQuickTunnelAuthAssertionValidatorValidateRejectsInvalidClaims(t *testin
 		}, expectedError: "broker assertion lifetime exceeds the maximum"},
 		{name: "wrong assertion type", mutate: func(c *quickTunnelAuthBrokerAssertionClaims) { c.Type = "other" }, expectedError: "broker assertion has an invalid type"},
 		{name: "invalid callback hostname", mutate: func(c *quickTunnelAuthBrokerAssertionClaims) { c.CallbackHostname = "example.com" }, expectedError: "broker assertion callback hostname does not match"},
-		{name: "mismatched callback hostname", mutate: func(c *quickTunnelAuthBrokerAssertionClaims) { c.CallbackHostname = "other.trycloudflare.com" }, expectedError: "broker assertion callback hostname does not match"},
+		{name: "mismatched callback hostname", mutate: func(c *quickTunnelAuthBrokerAssertionClaims) { c.CallbackHostname = "other.tryzenthcloud.com" }, expectedError: "broker assertion callback hostname does not match"},
 		{name: "invalid state", mutate: func(c *quickTunnelAuthBrokerAssertionClaims) { c.State = "not-base64!" }, expectedError: "broker assertion state does not match"},
 		{name: "mismatched state", mutate: func(c *quickTunnelAuthBrokerAssertionClaims) { c.State = otherState }, expectedError: "broker assertion state does not match"},
 		{name: "invalid email", mutate: func(c *quickTunnelAuthBrokerAssertionClaims) { c.Email = "not-an-email" }, expectedError: "broker assertion contains an invalid email"},

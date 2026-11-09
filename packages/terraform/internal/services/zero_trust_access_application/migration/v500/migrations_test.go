@@ -12,10 +12,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -30,7 +30,7 @@ var (
 //
 // Based on breaking changes analysis:
 // - All breaking changes happened between 4.x and 5.0.0
-// - Key changes: cloudflare_access_application → cloudflare_zero_trust_access_application
+// - Key changes: zenthcloud_access_application → zenthcloud_zero_trust_access_application
 // - Block to attribute conversions (cors_headers, saas_app, landing_page_design, scim_config)
 
 // Embed migration test configuration files
@@ -91,14 +91,14 @@ var v5WithPoliciesConfig string
 
 // TestMigrateZeroTrustAccessApplication_Basic tests basic state schema migration within v5 provider
 func TestMigrateZeroTrustAccessApplication_Basic(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_application." + rnd
+	resourceName := "zenthcloud_zero_trust_access_application." + rnd
 
 	testConfig := fmt.Sprintf(v5BasicConfig, rnd, accountID, domain)
 
@@ -125,14 +125,14 @@ func TestMigrateZeroTrustAccessApplication_Basic(t *testing.T) {
 
 // TestMigrateZeroTrustAccessApplication_ZoneScope tests zone-scoped application functionality
 func TestMigrateZeroTrustAccessApplication_ZoneScope(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_application." + rnd
+	resourceName := "zenthcloud_zero_trust_access_application." + rnd
 
 	testConfig := fmt.Sprintf(v5ZoneScopeConfig, rnd, zoneID, domain)
 
@@ -160,14 +160,14 @@ func TestMigrateZeroTrustAccessApplication_ZoneScope(t *testing.T) {
 
 // TestMigrateZeroTrustAccessApplication_CORSHeaders tests CORS headers functionality
 func TestMigrateZeroTrustAccessApplication_CORSHeaders(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_application." + rnd
+	resourceName := "zenthcloud_zero_trust_access_application." + rnd
 
 	testConfig := fmt.Sprintf(v5CORSHeadersConfig, rnd, accountID, domain)
 
@@ -195,14 +195,14 @@ func TestMigrateZeroTrustAccessApplication_CORSHeaders(t *testing.T) {
 
 // TestMigrateZeroTrustAccessApplication_AllowedIDPs tests allowed_idps functionality
 func TestMigrateZeroTrustAccessApplication_AllowedIDPs(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_application." + rnd
+	resourceName := "zenthcloud_zero_trust_access_application." + rnd
 
 	// Test config without allowed_idps (requires valid IDP resources)
 	testConfig := fmt.Sprintf(v5BasicConfig, rnd, accountID, domain)
@@ -230,14 +230,14 @@ func TestMigrateZeroTrustAccessApplication_AllowedIDPs(t *testing.T) {
 
 // TestMigrateZeroTrustAccessApplication_SelfHostedDomains tests self_hosted_domains functionality
 func TestMigrateZeroTrustAccessApplication_SelfHostedDomains(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_application." + rnd
+	resourceName := "zenthcloud_zero_trust_access_application." + rnd
 
 	testConfig := fmt.Sprintf(v5SelfHostedDomainsConfig, rnd, accountID, domain)
 
@@ -263,14 +263,14 @@ func TestMigrateZeroTrustAccessApplication_SelfHostedDomains(t *testing.T) {
 
 // TestMigrateZeroTrustAccessApplication_CustomPages tests custom_pages functionality
 func TestMigrateZeroTrustAccessApplication_CustomPages(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_application." + rnd
+	resourceName := "zenthcloud_zero_trust_access_application." + rnd
 
 	// Test config without custom_pages (requires valid custom page resources)
 	testConfig := fmt.Sprintf(v5BasicConfig, rnd, accountID, domain)
@@ -298,14 +298,14 @@ func TestMigrateZeroTrustAccessApplication_CustomPages(t *testing.T) {
 
 // TestMigrateZeroTrustAccessApplication_Tags tests tags functionality
 func TestMigrateZeroTrustAccessApplication_Tags(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_application." + rnd
+	resourceName := "zenthcloud_zero_trust_access_application." + rnd
 
 	// Test config without tags (requires pre-created tag resources)
 	testConfig := fmt.Sprintf(v5BasicConfig, rnd, accountID, domain)
@@ -333,13 +333,13 @@ func TestMigrateZeroTrustAccessApplication_Tags(t *testing.T) {
 
 // TestMigrateZeroTrustAccessApplication_SAASAppBasic tests SAAS app functionality
 func TestMigrateZeroTrustAccessApplication_SAASAppBasic(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_application." + rnd
+	resourceName := "zenthcloud_zero_trust_access_application." + rnd
 
 	testConfig := fmt.Sprintf(v5SAASAppConfig, rnd, accountID)
 
@@ -365,14 +365,14 @@ func TestMigrateZeroTrustAccessApplication_SAASAppBasic(t *testing.T) {
 
 // TestMigrateZeroTrustAccessApplication_V4toV5_Basic tests the actual v4 to v5 migration using tf-migrate
 func TestMigrateZeroTrustAccessApplication_V4toV5_Basic(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_application." + rnd
+	resourceName := "zenthcloud_zero_trust_access_application." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(v4BasicConfig, rnd, accountID, domain)
@@ -388,8 +388,8 @@ func TestMigrateZeroTrustAccessApplication_V4toV5_Basic(t *testing.T) {
 			// Step 1: Create with v4 provider
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.0",
 					},
 				},
@@ -410,15 +410,15 @@ func TestMigrateZeroTrustAccessApplication_V4toV5_Basic(t *testing.T) {
 
 // TestMigrateZeroTrustAccessApplication_V4toV5_WithPolicies tests migration with policies using v2 migrator
 func TestMigrateZeroTrustAccessApplication_V4toV5_WithPolicies(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	appResourceName := "cloudflare_zero_trust_access_application." + rnd
-	policyResourceName := "cloudflare_zero_trust_access_policy." + rnd
+	appResourceName := "zenthcloud_zero_trust_access_application." + rnd
+	policyResourceName := "zenthcloud_zero_trust_access_policy." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(v4WithPoliciesConfig, rnd, accountID, domain)
@@ -434,8 +434,8 @@ func TestMigrateZeroTrustAccessApplication_V4toV5_WithPolicies(t *testing.T) {
 			// Step 1: Create with v4 provider
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.0",
 					},
 				},
@@ -456,13 +456,13 @@ func TestMigrateZeroTrustAccessApplication_V4toV5_WithPolicies(t *testing.T) {
 
 // TestMigrateZeroTrustAccessApplication_SAASAppOIDC tests OIDC SAAS app functionality
 func TestMigrateZeroTrustAccessApplication_SAASAppOIDC(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_application." + rnd
+	resourceName := "zenthcloud_zero_trust_access_application." + rnd
 
 	testConfig := fmt.Sprintf(v5SAASAppOIDCConfig, rnd, accountID)
 
@@ -488,14 +488,14 @@ func TestMigrateZeroTrustAccessApplication_SAASAppOIDC(t *testing.T) {
 
 // TestMigrateZeroTrustAccessApplication_LandingPageDesign tests landing_page_design functionality
 func TestMigrateZeroTrustAccessApplication_LandingPageDesign(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_application." + rnd
+	resourceName := "zenthcloud_zero_trust_access_application." + rnd
 
 	// Test basic self_hosted app (app_launcher has naming conflicts)
 	testConfig := fmt.Sprintf(v5BasicConfig, rnd, accountID, domain)
@@ -523,14 +523,14 @@ func TestMigrateZeroTrustAccessApplication_LandingPageDesign(t *testing.T) {
 
 // TestMigrateZeroTrustAccessApplication_FooterLinks tests footer_links functionality
 func TestMigrateZeroTrustAccessApplication_FooterLinks(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_application." + rnd
+	resourceName := "zenthcloud_zero_trust_access_application." + rnd
 
 	// Test basic self_hosted app (app_launcher has naming conflicts)
 	testConfig := fmt.Sprintf(v5BasicConfig, rnd, accountID, domain)
@@ -558,13 +558,13 @@ func TestMigrateZeroTrustAccessApplication_FooterLinks(t *testing.T) {
 
 // TestMigrateZeroTrustAccessApplication_SCIMConfig tests SCIM config functionality (simplified)
 func TestMigrateZeroTrustAccessApplication_SCIMConfig(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_application." + rnd
+	resourceName := "zenthcloud_zero_trust_access_application." + rnd
 
 	// Test basic SAAS app without SCIM (SCIM requires complex IDP setup)
 	testConfig := fmt.Sprintf(v5SAASAppConfig, rnd, accountID)
@@ -591,14 +591,14 @@ func TestMigrateZeroTrustAccessApplication_SCIMConfig(t *testing.T) {
 
 // TestMigrateZeroTrustAccessApplication_CORSHeaders_Manual tests that cors_headers works correctly as an object
 func TestMigrateZeroTrustAccessApplication_CORSHeaders_Manual(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_application." + rnd
+	resourceName := "zenthcloud_zero_trust_access_application." + rnd
 
 	testConfig := fmt.Sprintf(v5CORSHeadersConfig, rnd, accountID, domain)
 
@@ -631,14 +631,14 @@ func TestMigrateZeroTrustAccessApplication_CORSHeaders_Manual(t *testing.T) {
 
 // TestMigrateZeroTrustAccessApplication_V4toV5_CORSHeaders tests CORS headers migration (array → object)
 func TestMigrateZeroTrustAccessApplication_V4toV5_CORSHeaders(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_application." + rnd
+	resourceName := "zenthcloud_zero_trust_access_application." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(v4CORSHeadersConfig, rnd, accountID, domain)
@@ -654,8 +654,8 @@ func TestMigrateZeroTrustAccessApplication_V4toV5_CORSHeaders(t *testing.T) {
 			// Step 1: Create with v4 provider
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.0",
 					},
 				},
@@ -677,13 +677,13 @@ func TestMigrateZeroTrustAccessApplication_V4toV5_CORSHeaders(t *testing.T) {
 
 // TestMigrateZeroTrustAccessApplication_V4toV5_SAASApp tests SAAS app migration (array → object with nested)
 func TestMigrateZeroTrustAccessApplication_V4toV5_SAASApp(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_application." + rnd
+	resourceName := "zenthcloud_zero_trust_access_application." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(v4SAASAppConfig, rnd, accountID)
@@ -698,8 +698,8 @@ func TestMigrateZeroTrustAccessApplication_V4toV5_SAASApp(t *testing.T) {
 			// Step 1: Create with v4 provider
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.0",
 					},
 				},
@@ -721,14 +721,14 @@ func TestMigrateZeroTrustAccessApplication_V4toV5_SAASApp(t *testing.T) {
 
 // TestMigrateZeroTrustAccessApplication_V4toV5_Minimal tests migration with minimal config (null fields)
 func TestMigrateZeroTrustAccessApplication_V4toV5_Minimal(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_application." + rnd
+	resourceName := "zenthcloud_zero_trust_access_application." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(v4MinimalConfig, rnd, accountID, domain)
@@ -744,8 +744,8 @@ func TestMigrateZeroTrustAccessApplication_V4toV5_Minimal(t *testing.T) {
 			// Step 1: Create with v4 provider
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.0",
 					},
 				},
@@ -766,13 +766,13 @@ func TestMigrateZeroTrustAccessApplication_V4toV5_Minimal(t *testing.T) {
 
 // TestMigrateZeroTrustAccessApplication_V4toV5_LandingPageDesign tests landing_page_design migration
 func TestMigrateZeroTrustAccessApplication_V4toV5_LandingPageDesign(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_application." + rnd
+	resourceName := "zenthcloud_zero_trust_access_application." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(v4LandingPageDesignConfig, rnd, accountID)
@@ -787,8 +787,8 @@ func TestMigrateZeroTrustAccessApplication_V4toV5_LandingPageDesign(t *testing.T
 			// Step 1: Create with v4 provider
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.0",
 					},
 				},
@@ -819,14 +819,14 @@ func TestMigrateZeroTrustAccessApplication_V4toV5_LandingPageDesign(t *testing.T
 
 // TestMigrateZeroTrustAccessApplication_V4toV5_SelfHostedDomains tests self_hosted_domains migration
 func TestMigrateZeroTrustAccessApplication_V4toV5_SelfHostedDomains(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_application." + rnd
+	resourceName := "zenthcloud_zero_trust_access_application." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(v4SelfHostedDomainsConfig, rnd, accountID, domain)
@@ -842,8 +842,8 @@ func TestMigrateZeroTrustAccessApplication_V4toV5_SelfHostedDomains(t *testing.T
 			// Step 1: Create with v4 provider
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.0",
 					},
 				},
@@ -862,14 +862,14 @@ func TestMigrateZeroTrustAccessApplication_V4toV5_SelfHostedDomains(t *testing.T
 
 // TestMigrateZeroTrustAccessApplication_FromV5_12 tests migration from v5.12.0 to latest
 func TestMigrateZeroTrustAccessApplication_FromV5_12(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_application." + rnd
+	resourceName := "zenthcloud_zero_trust_access_application." + rnd
 
 	testConfig := fmt.Sprintf(v5BasicConfig, rnd, accountID, domain)
 
@@ -883,8 +883,8 @@ func TestMigrateZeroTrustAccessApplication_FromV5_12(t *testing.T) {
 			{
 				// Step 1: Create with v5.12 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.12.0",
 					},
 				},
@@ -908,14 +908,14 @@ func TestMigrateZeroTrustAccessApplication_FromV5_12(t *testing.T) {
 
 // TestMigrateZeroTrustAccessApplication_FromV5_14 tests migration from v5.14.0 to latest
 func TestMigrateZeroTrustAccessApplication_FromV5_14(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_application." + rnd
+	resourceName := "zenthcloud_zero_trust_access_application." + rnd
 
 	testConfig := fmt.Sprintf(v5BasicConfig, rnd, accountID, domain)
 
@@ -929,8 +929,8 @@ func TestMigrateZeroTrustAccessApplication_FromV5_14(t *testing.T) {
 			{
 				// Step 1: Create with v5.14 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.14.0",
 					},
 				},
@@ -954,14 +954,14 @@ func TestMigrateZeroTrustAccessApplication_FromV5_14(t *testing.T) {
 
 // TestMigrateZeroTrustAccessApplication_FromV5_15 tests migration from v5.15.0 to latest
 func TestMigrateZeroTrustAccessApplication_FromV5_15(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_application." + rnd
+	resourceName := "zenthcloud_zero_trust_access_application." + rnd
 
 	testConfig := fmt.Sprintf(v5BasicConfig, rnd, accountID, domain)
 
@@ -975,8 +975,8 @@ func TestMigrateZeroTrustAccessApplication_FromV5_15(t *testing.T) {
 			{
 				// Step 1: Create with v5.15 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.15.0",
 					},
 				},
@@ -1000,14 +1000,14 @@ func TestMigrateZeroTrustAccessApplication_FromV5_15(t *testing.T) {
 
 // TestMigrateZeroTrustAccessApplication_FromV5_12_WithCORSHeaders tests v5.12 to latest with CORS headers
 func TestMigrateZeroTrustAccessApplication_FromV5_12_WithCORSHeaders(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_application." + rnd
+	resourceName := "zenthcloud_zero_trust_access_application." + rnd
 
 	testConfig := fmt.Sprintf(v5CORSHeadersConfig, rnd, accountID, domain)
 
@@ -1021,8 +1021,8 @@ func TestMigrateZeroTrustAccessApplication_FromV5_12_WithCORSHeaders(t *testing.
 			{
 				// Step 1: Create with v5.12 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.12.0",
 					},
 				},
@@ -1046,14 +1046,14 @@ func TestMigrateZeroTrustAccessApplication_FromV5_12_WithCORSHeaders(t *testing.
 
 // TestMigrateZeroTrustAccessApplication_FromV5_14_WithSelfHostedDomains tests v5.14 with self_hosted_domains
 func TestMigrateZeroTrustAccessApplication_FromV5_14_WithSelfHostedDomains(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_application." + rnd
+	resourceName := "zenthcloud_zero_trust_access_application." + rnd
 
 	testConfig := fmt.Sprintf(v5SelfHostedDomainsConfig, rnd, accountID, domain)
 
@@ -1067,8 +1067,8 @@ func TestMigrateZeroTrustAccessApplication_FromV5_14_WithSelfHostedDomains(t *te
 			{
 				// Step 1: Create with v5.14 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.14.0",
 					},
 				},
@@ -1090,13 +1090,13 @@ func TestMigrateZeroTrustAccessApplication_FromV5_14_WithSelfHostedDomains(t *te
 
 // TestMigrateZeroTrustAccessApplication_FromV5_15_SAASApp tests v5.15 with SAAS app configuration
 func TestMigrateZeroTrustAccessApplication_FromV5_15_SAASApp(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_application." + rnd
+	resourceName := "zenthcloud_zero_trust_access_application." + rnd
 
 	testConfig := fmt.Sprintf(v5SAASAppOIDCConfig, rnd, accountID)
 
@@ -1109,8 +1109,8 @@ func TestMigrateZeroTrustAccessApplication_FromV5_15_SAASApp(t *testing.T) {
 			{
 				// Step 1: Create with v5.15 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.15.0",
 					},
 				},

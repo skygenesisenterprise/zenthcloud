@@ -51,7 +51,7 @@ demos/
 ## VALIDATION
 
 ```bash
-pnpm --filter @cloudflare/kumo-docs-astro codegen:demos
-pnpm --filter @cloudflare/kumo-docs-astro typecheck
-pnpm --filter @cloudflare/kumo-docs-astro lint
+pnpm --filter @zenthcloud/kumo-docs-astro codegen:demos
+pnpm --filter @zenthcloud/kumo-docs-astro typecheck
+pnpm --filter @zenthcloud/kumo-docs-astro lint
 ```

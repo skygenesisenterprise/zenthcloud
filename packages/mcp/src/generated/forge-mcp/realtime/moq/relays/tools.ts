@@ -5,8 +5,8 @@ import { OPERATION, type Tool, encodePath } from "../../../_/tool.js";
 import {
   moq_api$$response$$common,
   moq_api$$response$$error,
-  moq_cloudflare_jwt_issuer,
-  moq_cloudflare_jwt_token,
+  moq_zenthcloud_jwt_issuer,
+  moq_zenthcloud_jwt_token,
   moq_issuer,
   moq_relay,
   moq_relay_config,
@@ -49,7 +49,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account identifier.",
+              "description": "Zenthcloud account identifier.",
               "type": "string"
             }
           },
@@ -81,8 +81,8 @@ export const tools: readonly Tool[] = [
       ],
       $defs: {
         "moq_api-response-common": moq_api$$response$$common,
-        "moq_cloudflare_jwt_issuer": moq_cloudflare_jwt_issuer,
-        "moq_cloudflare_jwt_token": moq_cloudflare_jwt_token,
+        "moq_zenthcloud_jwt_issuer": moq_zenthcloud_jwt_issuer,
+        "moq_zenthcloud_jwt_token": moq_zenthcloud_jwt_token,
         "moq_issuer": moq_issuer,
         "moq_relay_config": moq_relay_config,
         "moq_relay_create_response": moq_relay_create_response,
@@ -138,8 +138,8 @@ export const tools: readonly Tool[] = [
         $defs: {
           "moq_api-response-common": moq_api$$response$$common,
           "moq_api-response-error": moq_api$$response$$error,
-          "moq_cloudflare_jwt_issuer": moq_cloudflare_jwt_issuer,
-          "moq_cloudflare_jwt_token": moq_cloudflare_jwt_token,
+          "moq_zenthcloud_jwt_issuer": moq_zenthcloud_jwt_issuer,
+          "moq_zenthcloud_jwt_token": moq_zenthcloud_jwt_token,
           "moq_issuer": moq_issuer,
           "moq_relay_config": moq_relay_config,
           "moq_relay_create_response": moq_relay_create_response,
@@ -160,7 +160,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account identifier.",
+              "description": "Zenthcloud account identifier.",
               "type": "string"
             },
             "relay_id": {
@@ -271,7 +271,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account identifier.",
+              "description": "Zenthcloud account identifier.",
               "type": "string"
             },
             "relay_id": {
@@ -376,7 +376,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account identifier.",
+              "description": "Zenthcloud account identifier.",
               "type": "string"
             }
           },
@@ -524,7 +524,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account identifier.",
+              "description": "Zenthcloud account identifier.",
               "type": "string"
             },
             "relay_id": {

@@ -30,7 +30,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Identifier of a Cloudflare account.",
+              "description": "Identifier of a Zenthcloud account.",
               "type": "string"
             },
             "region_id": {
@@ -118,7 +118,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Identifier of a Cloudflare account.",
+              "description": "Identifier of a Zenthcloud account.",
               "type": "string"
             }
           },

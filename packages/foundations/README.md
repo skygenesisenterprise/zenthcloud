@@ -1,7 +1,7 @@
 # Foundations
 
 <p align="center">
-    <a href="https://github.com/cloudflare/foundations">
+    <a href="https://github.com/skygenesisenterprise/zenthcloud">
         <img src="media/banner.png" alt="banner" style="width:472px; height: 375px" />
     </a>
 </p>
@@ -28,7 +28,7 @@ https://docs.rs/foundations/
 
 ## Examples
 
-https://github.com/cloudflare/foundations/tree/main/examples
+https://github.com/skygenesisenterprise/zenthcloud
 
 ## License
 

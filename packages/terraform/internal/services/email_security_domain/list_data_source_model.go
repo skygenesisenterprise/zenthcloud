@@ -5,9 +5,9 @@ package email_security_domain
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/email_security"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/email_security"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -40,30 +40,30 @@ func (m *EmailSecurityDomainsDataSourceModel) toListParams(_ context.Context) (p
 	}
 
 	params = email_security.SettingDomainListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
-		Domain:    cloudflare.F(mDomain),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
+		Domain:    zenthcloud.F(mDomain),
 	}
 
 	if !m.ActiveDeliveryMode.IsNull() {
-		params.ActiveDeliveryMode = cloudflare.F(email_security.SettingDomainListParamsActiveDeliveryMode(m.ActiveDeliveryMode.ValueString()))
+		params.ActiveDeliveryMode = zenthcloud.F(email_security.SettingDomainListParamsActiveDeliveryMode(m.ActiveDeliveryMode.ValueString()))
 	}
 	if !m.AllowedDeliveryMode.IsNull() {
-		params.AllowedDeliveryMode = cloudflare.F(email_security.SettingDomainListParamsAllowedDeliveryMode(m.AllowedDeliveryMode.ValueString()))
+		params.AllowedDeliveryMode = zenthcloud.F(email_security.SettingDomainListParamsAllowedDeliveryMode(m.AllowedDeliveryMode.ValueString()))
 	}
 	if !m.Direction.IsNull() {
-		params.Direction = cloudflare.F(email_security.SettingDomainListParamsDirection(m.Direction.ValueString()))
+		params.Direction = zenthcloud.F(email_security.SettingDomainListParamsDirection(m.Direction.ValueString()))
 	}
 	if !m.IntegrationID.IsNull() {
-		params.IntegrationID = cloudflare.F(m.IntegrationID.ValueString())
+		params.IntegrationID = zenthcloud.F(m.IntegrationID.ValueString())
 	}
 	if !m.Order.IsNull() {
-		params.Order = cloudflare.F(email_security.SettingDomainListParamsOrder(m.Order.ValueString()))
+		params.Order = zenthcloud.F(email_security.SettingDomainListParamsOrder(m.Order.ValueString()))
 	}
 	if !m.Search.IsNull() {
-		params.Search = cloudflare.F(m.Search.ValueString())
+		params.Search = zenthcloud.F(m.Search.ValueString())
 	}
 	if !m.Status.IsNull() {
-		params.Status = cloudflare.F(email_security.SettingDomainListParamsStatus(m.Status.ValueString()))
+		params.Status = zenthcloud.F(email_security.SettingDomainListParamsStatus(m.Status.ValueString()))
 	}
 
 	return

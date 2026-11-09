@@ -6,7 +6,7 @@
 import { type Operation, path } from "#api";
 
 /**
- * Lists Cloudflare Tunnels. The spec's GET of this path is not in the cf-cli
+ * Lists Zenthcloud Tunnels. The spec's GET of this path is not in the cf-cli
  * audience, so no command is generated for it.
  */
 export const listTunnels: Operation = {

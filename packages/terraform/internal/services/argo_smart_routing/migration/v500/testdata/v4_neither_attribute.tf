@@ -1,3 +1,3 @@
-resource "cloudflare_argo" "%s" {
+resource "zenthcloud_argo" "%s" {
   zone_id = "%s"
 }

@@ -4,14 +4,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-// SourceCloudflareDevicePostureIntegrationSchema returns the source schema for legacy resource.
+// SourceZenthcloudDevicePostureIntegrationSchema returns the source schema for legacy resource.
 // Schema version: 0 (SDKv2 implicit)
-// Resource type: cloudflare_device_posture_integration
+// Resource type: zenthcloud_device_posture_integration
 //
 // This minimal schema is used only for reading v4 state during migration.
 // It includes only the properties needed for state parsing (Required, Optional, Computed).
 // Validators, PlanModifiers, and Descriptions are intentionally omitted.
-func SourceCloudflareDevicePostureIntegrationSchema() schema.Schema {
+func SourceZenthcloudDevicePostureIntegrationSchema() schema.Schema {
 	return schema.Schema{
 		Version: 0, // SDKv2 implicit version
 		Attributes: map[string]schema.Attribute{

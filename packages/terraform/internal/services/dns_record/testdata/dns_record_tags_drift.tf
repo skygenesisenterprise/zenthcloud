@@ -1,4 +1,4 @@
-resource "cloudflare_dns_record" "%[1]s" {
+resource "zenthcloud_dns_record" "%[1]s" {
   zone_id = "%[2]s"
   name    = "tf-acctest-tags-drift.%[1]s.%[3]s"
   type    = "A"
@@ -10,7 +10,7 @@ resource "cloudflare_dns_record" "%[1]s" {
   tags = []
 }
 
-resource "cloudflare_dns_record" "%[1]s_with_tags" {
+resource "zenthcloud_dns_record" "%[1]s_with_tags" {
   zone_id = "%[2]s"
   name    = "tf-acctest-tags-with.%[1]s.%[3]s"
   type    = "A"
@@ -22,7 +22,7 @@ resource "cloudflare_dns_record" "%[1]s_with_tags" {
   tags = ["test:tag1", "env:test"]
 }
 
-resource "cloudflare_dns_record" "%[1]s_with_settings" {
+resource "zenthcloud_dns_record" "%[1]s_with_settings" {
   zone_id = "%[2]s"
   name    = "tf-acctest-settings.%[1]s.%[3]s"
   type    = "CNAME"
@@ -38,7 +38,7 @@ resource "cloudflare_dns_record" "%[1]s_with_settings" {
   tags = []
 }
 
-resource "cloudflare_dns_record" "%[1]s_no_tags" {
+resource "zenthcloud_dns_record" "%[1]s_no_tags" {
   zone_id = "%[2]s"
   name    = "tf-acctest-no-tags.%[1]s.%[3]s"
   type    = "A"

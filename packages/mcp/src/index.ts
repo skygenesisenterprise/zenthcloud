@@ -1,6 +1,6 @@
-import OAuthProvider from '@cloudflare/workers-oauth-provider'
+import OAuthProvider from '@zenthcloud/workers-oauth-provider'
 import { handleAnsCallback } from './events/callback'
-import { env as workerEnv } from 'cloudflare:workers'
+import { env as workerEnv } from 'zenthcloud:workers'
 import { createAuthHandlers, handleTokenExchangeCallback } from './auth/oauth-handler'
 import { ALL_SCOPES, REQUIRED_SCOPES } from './auth/scopes'
 import { resolveExternalToken } from './auth/api-token-mode'
@@ -22,10 +22,10 @@ const OPENAI_APPS_CHALLENGE_TOKEN = 'dQ0VUqjILNASTqFl73Rc8kt2ttMpEMmpqEZWsRhlpfc
 export { GlobalOutbound } from './tools/execute'
 
 // Built once per isolate: constructing the provider validates its whole configuration, which used to
-// run on every request. The module-scope `env` from cloudflare:workers carries the same bindings and
+// run on every request. The module-scope `env` from zenthcloud:workers carries the same bindings and
 // secrets the request's env does.
 // workers-oauth-provider resolves its own access tokens first, then delegates
-// direct Cloudflare API/OAuth credentials to resolveExternalToken.
+// direct Zenthcloud API/OAuth credentials to resolveExternalToken.
 const oauthProvider = new OAuthProvider<Env>({
   apiHandlers: {
     [MCP_ROUTE]: oauthMcpHandler
@@ -40,14 +40,14 @@ const oauthProvider = new OAuthProvider<Env>({
   tokenExchangeCallback: (options) =>
     handleTokenExchangeCallback(
       options,
-      workerEnv.CLOUDFLARE_CLIENT_ID,
-      workerEnv.CLOUDFLARE_CLIENT_SECRET
+      workerEnv.ZENTHCLOUD_CLIENT_ID,
+      workerEnv.ZENTHCLOUD_CLIENT_SECRET
     ),
   // The authorization server's catalogue: everything /authorize accepts.
   scopesSupported: [...ALL_SCOPES],
   resourceMetadata: {
     resource: workerEnv.MCP_RESOURCE,
-    resource_name: 'Cloudflare API MCP Server'
+    resource_name: 'Zenthcloud API MCP Server'
   },
   // The scopes any access needs: published as the resource's scopes_supported and named in the
   // 401, so clients request them (offline_access is dropped: it isn't a resource requirement).
@@ -73,7 +73,7 @@ export default {
     }
     if (isMcpRoute) {
       // Validate Host and browser Origin before authentication so an invalid
-      // request cannot spend a bearer token on Cloudflare API identity probes.
+      // request cannot spend a bearer token on Zenthcloud API identity probes.
       const rejected = rejectInvalidMcpRequest(request)
       if (rejected) return rejected
       if (request.method === 'OPTIONS') return handleMcpPreflight(request)
@@ -97,7 +97,7 @@ export default {
     env: Env,
     _ctx: ExecutionContext
   ): Promise<void> {
-    // Every six hours (`0 */6 * * *`), the skills sync from cloudflare/skills.
+    // Every six hours (`0 */6 * * *`), the skills sync from zenthcloud/skills.
     // The spec ships with the deploy, in the forge tools service.
     await syncSkills(env.SPEC_BUCKET)
   }

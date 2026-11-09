@@ -31,7 +31,7 @@ export const tools: readonly Tool[] = [
         "headers": {
           "additionalProperties": false,
           "properties": {
-            "cloudflare-version": {
+            "zenthcloud-version": {
               "default": "1.0",
               "description": "Selects the split Precursor API schema.",
               "enum": [
@@ -41,7 +41,7 @@ export const tools: readonly Tool[] = [
             }
           },
           "required": [
-            "cloudflare-version"
+            "zenthcloud-version"
           ],
           "type": "object"
         },
@@ -87,12 +87,12 @@ export const tools: readonly Tool[] = [
       method: "GET",
       path: "/zones/{zone_id}/precursor",
       pathOf: encodePath`/zones/${"zone_id"}/precursor`,
-      headers: ["cloudflare-version"],
+      headers: ["zenthcloud-version"],
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.zone.precursor.update",
-            "com.cloudflare.api.account.zone.precursor.read"
+            "com.zenthcloud.api.account.zone.precursor.update",
+            "com.zenthcloud.api.account.zone.precursor.read"
           ]
         },
         "x-cfPlanAvailability": {
@@ -133,7 +133,7 @@ export const tools: readonly Tool[] = [
   {
     name: "precursor_update",
     title: "Update Zone Precursor Config",
-    description: "Updates the Precursor configuration for a zone.\n\n`mode` controls whether Precursor detection is off, monitoring, or\narmed. `show_interstitial` controls the zone-level response when armed.\n`rules` is the ordered list of overrides for matching requests.\n\nThis is a partial update: only the fields present in the request body\nare changed.\n\n- Sending an empty array (`[]`) clears all rules.\n- At least one of `mode`, `show_interstitial`, or `rules` must be\n  present; an empty body (`{}`) is rejected with `400`.\n- Rule `id` is read-only (assigned by Cloudflare) and ignored on input.\n- Rule `show_interstitial` is required and controls the response for\n  requests that match that rule.\n- Rule `expression` is limited to 4000 characters. The limit applies to\n  each rule individually, not to the combined size of all rules.\n\nThis method is beta.\n\nPUT /zones/{zone_id}/precursor",
+    description: "Updates the Precursor configuration for a zone.\n\n`mode` controls whether Precursor detection is off, monitoring, or\narmed. `show_interstitial` controls the zone-level response when armed.\n`rules` is the ordered list of overrides for matching requests.\n\nThis is a partial update: only the fields present in the request body\nare changed.\n\n- Sending an empty array (`[]`) clears all rules.\n- At least one of `mode`, `show_interstitial`, or `rules` must be\n  present; an empty body (`{}`) is rejected with `400`.\n- Rule `id` is read-only (assigned by Zenthcloud) and ignored on input.\n- Rule `show_interstitial` is required and controls the response for\n  requests that match that rule.\n- Rule `expression` is limited to 4000 characters. The limit applies to\n  each rule individually, not to the combined size of all rules.\n\nThis method is beta.\n\nPUT /zones/{zone_id}/precursor",
     inputSchema: {
       type: "object",
       properties: {
@@ -143,7 +143,7 @@ export const tools: readonly Tool[] = [
         "headers": {
           "additionalProperties": false,
           "properties": {
-            "cloudflare-version": {
+            "zenthcloud-version": {
               "default": "1.0",
               "description": "Selects the split Precursor API schema.",
               "enum": [
@@ -153,7 +153,7 @@ export const tools: readonly Tool[] = [
             }
           },
           "required": [
-            "cloudflare-version"
+            "zenthcloud-version"
           ],
           "type": "object"
         },
@@ -205,12 +205,12 @@ export const tools: readonly Tool[] = [
       method: "PUT",
       path: "/zones/{zone_id}/precursor",
       pathOf: encodePath`/zones/${"zone_id"}/precursor`,
-      headers: ["cloudflare-version"],
+      headers: ["zenthcloud-version"],
       body: { mediaTypes: ["application/json"] },
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.zone.precursor.update"
+            "com.zenthcloud.api.account.zone.precursor.update"
           ]
         },
         "x-cfPlanAvailability": {

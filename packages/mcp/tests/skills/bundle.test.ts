@@ -158,7 +158,7 @@ describe('buildSkillsManifest', () => {
         { path: 'skills/broken/notes.md', bytes: bytes('no skill file') },
         { path: 'skills/wrangler/../escape.md', bytes: bytes('x') }
       ],
-      { repository: 'cloudflare/skills', commit: null },
+      { repository: 'zenthcloud/skills', commit: null },
       new Date('2026-10-08T00:00:00Z')
     )
 

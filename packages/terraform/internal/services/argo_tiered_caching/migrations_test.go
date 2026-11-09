@@ -10,20 +10,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
-// TestMigrateArgoTieredCachingOnly tests migration from cloudflare_argo with only tiered_caching attribute
+// TestMigrateArgoTieredCachingOnly tests migration from zenthcloud_argo with only tiered_caching attribute
 func TestMigrateArgoTieredCachingOnly(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_argo_tiered_caching." + rnd
+	resourceName := "zenthcloud_argo_tiered_caching." + rnd
 	tmpDir := t.TempDir()
 
-	// V4 config - cloudflare_argo with tiered_caching only
+	// V4 config - zenthcloud_argo with tiered_caching only
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_argo" "%[1]s" {
+resource "zenthcloud_argo" "%[1]s" {
   zone_id        = "%[2]s"
   tiered_caching = "on"
 }`, rnd, zoneID)
@@ -38,8 +38,8 @@ resource "cloudflare_argo" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -47,7 +47,7 @@ resource "cloudflare_argo" "%[1]s" {
 			},
 			// Step 2: Run migration and verify state
 			acctest.MigrationV2TestStep(t, v4Config, tmpDir, "4.52.1", "v4", "v5", []statecheck.StateCheck{
-				// Verify resource migrated to cloudflare_argo_tiered_caching
+				// Verify resource migrated to zenthcloud_argo_tiered_caching
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.StringExact(zoneID)),
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("value"), knownvalue.StringExact("on")),
@@ -60,14 +60,14 @@ resource "cloudflare_argo" "%[1]s" {
 
 // TestMigrateArgoTieredCachingOff tests migration with tiered_caching set to off
 func TestMigrateArgoTieredCachingOff(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_argo_tiered_caching." + rnd
+	resourceName := "zenthcloud_argo_tiered_caching." + rnd
 	tmpDir := t.TempDir()
 
-	// V4 config - cloudflare_argo with tiered_caching off
+	// V4 config - zenthcloud_argo with tiered_caching off
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_argo" "%[1]s" {
+resource "zenthcloud_argo" "%[1]s" {
   zone_id        = "%[2]s"
   tiered_caching = "off"
 }`, rnd, zoneID)
@@ -82,8 +82,8 @@ resource "cloudflare_argo" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -102,9 +102,9 @@ resource "cloudflare_argo" "%[1]s" {
 
 // TestMigrateArgoTieredCachingWithVariables tests migration with variable references
 func TestMigrateArgoTieredCachingWithVariables(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_argo_tiered_caching." + rnd
+	resourceName := "zenthcloud_argo_tiered_caching." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config with variable reference
@@ -114,7 +114,7 @@ variable "zone_id" {
   default = "%[2]s"
 }
 
-resource "cloudflare_argo" "%[1]s" {
+resource "zenthcloud_argo" "%[1]s" {
   zone_id        = var.zone_id
   tiered_caching = "on"
 }`, rnd, zoneID)
@@ -129,8 +129,8 @@ resource "cloudflare_argo" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -149,14 +149,14 @@ resource "cloudflare_argo" "%[1]s" {
 
 // TestMigrateArgoTieredCachingWithLifecycle tests migration with lifecycle meta-argument
 func TestMigrateArgoTieredCachingWithLifecycle(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_argo_tiered_caching." + rnd
+	resourceName := "zenthcloud_argo_tiered_caching." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config with lifecycle block to test preservation
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_argo" "%[1]s" {
+resource "zenthcloud_argo" "%[1]s" {
   zone_id        = "%[2]s"
   tiered_caching = "on"
 
@@ -175,8 +175,8 @@ resource "cloudflare_argo" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},

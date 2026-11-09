@@ -5,8 +5,8 @@ package zero_trust_network_hostname_route
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -32,7 +32,7 @@ type ZeroTrustNetworkHostnameRouteDataSourceModel struct {
 
 func (m *ZeroTrustNetworkHostnameRouteDataSourceModel) toReadParams(_ context.Context) (params zero_trust.NetworkHostnameRouteGetParams, diags diag.Diagnostics) {
 	params = zero_trust.NetworkHostnameRouteGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -40,26 +40,26 @@ func (m *ZeroTrustNetworkHostnameRouteDataSourceModel) toReadParams(_ context.Co
 
 func (m *ZeroTrustNetworkHostnameRouteDataSourceModel) toListParams(_ context.Context) (params zero_trust.NetworkHostnameRouteListParams, diags diag.Diagnostics) {
 	params = zero_trust.NetworkHostnameRouteListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Filter.ID.IsNull() {
-		params.ID = cloudflare.F(m.Filter.ID.ValueString())
+		params.ID = zenthcloud.F(m.Filter.ID.ValueString())
 	}
 	if !m.Filter.Comment.IsNull() {
-		params.Comment = cloudflare.F(m.Filter.Comment.ValueString())
+		params.Comment = zenthcloud.F(m.Filter.Comment.ValueString())
 	}
 	if !m.Filter.ExistedAt.IsNull() {
-		params.ExistedAt = cloudflare.F(m.Filter.ExistedAt.ValueString())
+		params.ExistedAt = zenthcloud.F(m.Filter.ExistedAt.ValueString())
 	}
 	if !m.Filter.Hostname.IsNull() {
-		params.Hostname = cloudflare.F(m.Filter.Hostname.ValueString())
+		params.Hostname = zenthcloud.F(m.Filter.Hostname.ValueString())
 	}
 	if !m.Filter.IsDeleted.IsNull() {
-		params.IsDeleted = cloudflare.F(m.Filter.IsDeleted.ValueBool())
+		params.IsDeleted = zenthcloud.F(m.Filter.IsDeleted.ValueBool())
 	}
 	if !m.Filter.TunnelID.IsNull() {
-		params.TunnelID = cloudflare.F(m.Filter.TunnelID.ValueString())
+		params.TunnelID = zenthcloud.F(m.Filter.TunnelID.ValueString())
 	}
 
 	return

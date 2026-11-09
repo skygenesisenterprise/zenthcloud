@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -21,23 +21,23 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_waiting_room_event", &resource.Sweeper{
-		Name: "cloudflare_waiting_room_event",
-		F:    testSweepCloudflareWaitingRoomEvents,
+	resource.AddTestSweepers("zenthcloud_waiting_room_event", &resource.Sweeper{
+		Name: "zenthcloud_waiting_room_event",
+		F:    testSweepZenthcloudWaitingRoomEvents,
 	})
 }
 
-func testSweepCloudflareWaitingRoomEvents(r string) error {
+func testSweepZenthcloudWaitingRoomEvents(r string) error {
 	ctx := context.Background()
 	client, clientErr := acctest.SharedV1Client()
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 		return clientErr
 	}
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping waiting room events sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping waiting room events sweep: ZENTHCLOUD_ZONE_ID not set")
 		return nil
 	}
 
@@ -80,13 +80,13 @@ func testSweepCloudflareWaitingRoomEvents(r string) error {
 	return nil
 }
 
-func TestAccCloudflareWaitingRoomEvent_Create(t *testing.T) {
+func TestAccZenthcloudWaitingRoomEvent_Create(t *testing.T) {
 	t.Parallel()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
 	waitingRoomID := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_waiting_room_event.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_waiting_room_event.%s", rnd)
 	waitingRoomEventName := fmt.Sprintf("waiting_room_event_%s", rnd)
 	waitingRoomName := fmt.Sprintf("waiting_room_%s", rnd)
 	eventStartTime := time.Now().UTC()
@@ -95,10 +95,10 @@ func TestAccCloudflareWaitingRoomEvent_Create(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWaitingRoomEventDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWaitingRoomEventDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareWaitingRoomEvent(rnd, waitingRoomEventName, zoneID, waitingRoomID, eventStartTime, eventEndTime, domain, waitingRoomName),
+				Config: testAccZenthcloudWaitingRoomEvent(rnd, waitingRoomEventName, zoneID, waitingRoomID, eventStartTime, eventEndTime, domain, waitingRoomName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(name, "name", waitingRoomEventName),
@@ -121,14 +121,14 @@ func TestAccCloudflareWaitingRoomEvent_Create(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareWaitingRoomEventDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudWaitingRoomEventDestroy(s *terraform.State) error {
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_waiting_room_event" {
+		if rs.Type != "zenthcloud_waiting_room_event" {
 			continue
 		}
 
@@ -141,13 +141,13 @@ func testAccCheckCloudflareWaitingRoomEventDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCloudflareWaitingRoomEvent(resourceName, waitingRoomEventName, zoneID, waitingRoomID string, startTime, endTime time.Time, domain, waitingRoomName string) string {
+func testAccZenthcloudWaitingRoomEvent(resourceName, waitingRoomEventName, zoneID, waitingRoomID string, startTime, endTime time.Time, domain, waitingRoomName string) string {
 	return acctest.LoadTestCase("waitingroomevent.tf", resourceName, waitingRoomEventName, zoneID, waitingRoomID, startTime.Format(time.RFC3339), endTime.Format(time.RFC3339), domain, waitingRoomName)
 }
 
 func TestAccUpgradeWaitingRoomEvent_FromPublishedV5(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
 	waitingRoomID := utils.GenerateRandomResourceName()
 	waitingRoomEventName := fmt.Sprintf("waiting_room_event_%s", rnd)
@@ -155,15 +155,15 @@ func TestAccUpgradeWaitingRoomEvent_FromPublishedV5(t *testing.T) {
 	eventStartTime := time.Now().UTC()
 	eventEndTime := eventStartTime.Add(5 * time.Minute).UTC()
 
-	config := testAccCloudflareWaitingRoomEvent(rnd, waitingRoomEventName, zoneID, waitingRoomID, eventStartTime, eventEndTime, domain, waitingRoomName)
+	config := testAccZenthcloudWaitingRoomEvent(rnd, waitingRoomEventName, zoneID, waitingRoomID, eventStartTime, eventEndTime, domain, waitingRoomName)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

@@ -22,7 +22,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 zero-trust access applications settings update <app-id>\n\nUpdates Access application settings.\n\nRuns against your account. Pass --zone to run against a zone instead. CLOUDFLARE_ZONE_ID is ignored."
+			"$0 zero-trust access applications settings update <app-id>\n\nUpdates Access application settings.\n\nRuns against your account. Pass --zone to run against a zone instead. ZENTHCLOUD_ZONE_ID is ignored."
 		)
 		.positional("app-id", {
 			type: "string",
@@ -35,7 +35,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		})
 		.option("skip-interstitial", {
 			type: "boolean",
-			description: "Enables automatic authentication through cloudflared.",
+			description: "Enables automatic authentication through zenthcloudd.",
 		})
 		.option("dry-run", {
 			type: "boolean",
@@ -75,7 +75,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust access applications settings update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/${accountOrZone}/${accountOrZoneId}/access/apps/${argv["app-id"] == null ? "<app-id>" : encodeURIComponent(String(argv["app-id"]))}/settings`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${accountOrZone}/${accountOrZoneId}/access/apps/${argv["app-id"] == null ? "<app-id>" : encodeURIComponent(String(argv["app-id"]))}/settings`,
 						pathParams: {
 							"account-or-zone": String(accountOrZone),
 							"account-or-zone-id": String(accountOrZoneId),

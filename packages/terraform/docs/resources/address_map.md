@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_address_map Resource - Cloudflare"
+page_title: "zenthcloud_address_map Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Address Maps ReadAddress Maps Write
 ---
 
-# cloudflare_address_map (Resource)
+# zenthcloud_address_map (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_address_map" "example_address_map" {
+resource "zenthcloud_address_map" "example_address_map" {
   account_id = "258def64c72dae45f3e4c8516e2111f2"
   description = "My Ecommerce zones"
   enabled = true
@@ -33,20 +33,20 @@ resource "cloudflare_address_map" "example_address_map" {
 
 ### Required
 
-- `account_id` (String) Identifier of a Cloudflare account.
+- `account_id` (String) Identifier of a Zenthcloud account.
 
 ### Optional
 
-- `default_sni` (String) If you have legacy TLS clients which do not send the TLS server name indicator, then you can specify one default SNI on the map. If Cloudflare receives a TLS handshake from a client without an SNI, it will respond with the default SNI on those IPs. The default SNI can be any valid zone or subdomain owned by the account.
+- `default_sni` (String) If you have legacy TLS clients which do not send the TLS server name indicator, then you can specify one default SNI on the map. If Zenthcloud receives a TLS handshake from a client without an SNI, it will respond with the default SNI on those IPs. The default SNI can be any valid zone or subdomain owned by the account.
 - `description` (String) An optional description field which may be used to describe the types of IPs or zones on the map.
-- `enabled` (Boolean) Whether the Address Map is enabled or not. Cloudflare's DNS will not respond with IP addresses on an Address Map until the map is enabled.
+- `enabled` (Boolean) Whether the Address Map is enabled or not. Zenthcloud's DNS will not respond with IP addresses on an Address Map until the map is enabled.
 - `ips` (List of String)
 - `memberships` (Attributes List) Zones and Accounts which will be assigned IPs on this Address Map. A zone membership will take priority over an account membership. (see [below for nested schema](#nestedatt--memberships))
 
 ### Read-Only
 
-- `can_delete` (Boolean) If set to false, then the Address Map cannot be deleted via API. This is true for Cloudflare-managed maps.
-- `can_modify_ips` (Boolean) If set to false, then the IPs on the Address Map cannot be modified via the API. This is true for Cloudflare-managed maps.
+- `can_delete` (Boolean) If set to false, then the Address Map cannot be deleted via API. This is true for Zenthcloud-managed maps.
+- `can_modify_ips` (Boolean) If set to false, then the IPs on the Address Map cannot be modified via the API. This is true for Zenthcloud-managed maps.
 - `created_at` (String)
 - `id` (String) Identifier of an Address Map.
 - `modified_at` (String)
@@ -65,7 +65,7 @@ Available values: "zone", "account".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_address_map.example '<account_id>/<address_map_id>'
+$ terraform import zenthcloud_address_map.example '<account_id>/<address_map_id>'
 ```
 
 

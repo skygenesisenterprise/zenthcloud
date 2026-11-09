@@ -5,8 +5,8 @@ package zero_trust_access_short_lived_certificate
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -28,9 +28,9 @@ func (m *ZeroTrustAccessShortLivedCertificateDataSourceModel) toReadParams(_ con
 	params = zero_trust.AccessApplicationCAGetParams{}
 
 	if !m.AccountID.IsNull() {
-		params.AccountID = cloudflare.F(m.AccountID.ValueString())
+		params.AccountID = zenthcloud.F(m.AccountID.ValueString())
 	} else {
-		params.ZoneID = cloudflare.F(m.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(m.ZoneID.ValueString())
 	}
 
 	return

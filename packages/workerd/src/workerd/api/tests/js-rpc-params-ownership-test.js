@@ -1,8 +1,8 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import assert from 'node:assert';
-import { WorkerEntrypoint, RpcTarget, RpcStub } from 'cloudflare:workers';
+import { WorkerEntrypoint, RpcTarget, RpcStub } from 'zenthcloud:workers';
 
 class Counter extends RpcTarget {
   count = { value: 0 };

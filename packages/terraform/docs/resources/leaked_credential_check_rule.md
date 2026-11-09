@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_leaked_credential_check_rule Resource - Cloudflare"
+page_title: "zenthcloud_leaked_credential_check_rule Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account WAF ReadAccount WAF WriteZone WAF ReadZone WAF Write
 ---
 
-# cloudflare_leaked_credential_check_rule (Resource)
+# zenthcloud_leaked_credential_check_rule (Resource)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_leaked_credential_check_rule" "example_leaked_credential_check_rule" {
+resource "zenthcloud_leaked_credential_check_rule" "example_leaked_credential_check_rule" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   password = "lookup_json_string(http.request.body.raw, \"secret\")"
   username = "lookup_json_string(http.request.body.raw, \"user\")"
@@ -46,7 +46,7 @@ resource "cloudflare_leaked_credential_check_rule" "example_leaked_credential_ch
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_leaked_credential_check_rule.example '<zone_id>/<detection_id>'
+$ terraform import zenthcloud_leaked_credential_check_rule.example '<zone_id>/<detection_id>'
 ```
 
 

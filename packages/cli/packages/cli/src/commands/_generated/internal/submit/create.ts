@@ -44,7 +44,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf internal submit create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/internal/submit`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						bodyKind: "none",
 					});

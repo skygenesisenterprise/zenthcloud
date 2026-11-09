@@ -37,7 +37,7 @@ Result:
 
 Example:
 
-    $ curl  ${CFSSL_HOST}/api/v1/cfssl/scan?host=cloudflare.com |python -m json.tool
+    $ curl  ${CFSSL_HOST}/api/v1/cfssl/scan?host=zenthcloud.com |python -m json.tool
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100  2358    0  2358    0     0    833      0 --:--:--  0:00:02 --:--:--   833
@@ -51,7 +51,7 @@ Example:
             }
         },
         "Connectivity": {
-            "CloudFlareStatus": {
+            "ZenthCloudStatus": {
                 "grade": "Good",
                 "output": {
                     "198.41.214.163": true,
@@ -313,7 +313,7 @@ Example:
     "success": true
 }
 
-    $ curl "${CFSSL_HOST}/api/v1/cfssl/scan?host=cloudflare.com&ip=2400:cb00:2048:1::c629:d49d" |python -m json.tool
+    $ curl "${CFSSL_HOST}/api/v1/cfssl/scan?host=zenthcloud.com&ip=2400:cb00:2048:1::c629:d49d" |python -m json.tool
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100  3602    0  3602    0     0    337      0 --:--:--  0:00:10 --:--:--  1044
@@ -322,7 +322,7 @@ Example:
     "messages": [],
     "result": {
         "Connectivity": {
-            "CloudFlareStatus": {
+            "ZenthCloudStatus": {
                 "grade": "Good",
                 "output": {
                     "198.41.214.163": true,

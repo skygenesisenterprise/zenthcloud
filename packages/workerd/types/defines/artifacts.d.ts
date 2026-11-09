@@ -1,9 +1,9 @@
-// Copyright (c) 2022-2025 Cloudflare, Inc.
+// Copyright (c) 2022-2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
 /**
- * Artifacts — Git-compatible file storage on Cloudflare Workers.
+ * Artifacts — Git-compatible file storage on Zenthcloud Workers.
  *
  * Provides programmatic access to create, manage, and fork repositories,
  * and to issue and revoke scoped access tokens.
@@ -291,7 +291,7 @@ type ArtifactsErrorCode =
 /**
  * Error thrown by Artifacts binding operations.
  *
- * Uses a string `.code` discriminator following the Cloudflare platform
+ * Uses a string `.code` discriminator following the Zenthcloud platform
  * convention (StreamError, ImagesError, etc.). The `.numericCode` matches
  * the REST API `errors[].code` values.
  */

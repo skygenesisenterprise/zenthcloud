@@ -30,7 +30,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zeroTrust_access_logs_scim_updates_list",
     title: "List Access SCIM update logs",
-    description: "Lists Access SCIM update logs that maintain a record of updates made to User and Group resources synced to Cloudflare via the System for Cross-domain Identity Management (SCIM).\n\nGET /accounts/{account_id}/access/logs/scim/updates",
+    description: "Lists Access SCIM update logs that maintain a record of updates made to User and Group resources synced to Zenthcloud via the System for Cross-domain Identity Management (SCIM).\n\nGET /accounts/{account_id}/access/logs/scim/updates",
     inputSchema: {
       type: "object",
       properties: {
@@ -52,7 +52,7 @@ export const tools: readonly Tool[] = [
           "properties": {
             "cf_resource_id": {
               "$ref": "#/$defs/access_cf_resource_id-3",
-              "description": "The unique Cloudflare-generated Id of the SCIM resource. Pass once for\na single lookup (`?cf_resource_id=A`) or repeat the parameter\n(`?cf_resource_id=A&cf_resource_id=B`) to filter by multiple resources\nin one request."
+              "description": "The unique Zenthcloud-generated Id of the SCIM resource. Pass once for\na single lookup (`?cf_resource_id=A`) or repeat the parameter\n(`?cf_resource_id=A&cf_resource_id=B`) to filter by multiple resources\nin one request."
             },
             "direction": {
               "default": "desc",

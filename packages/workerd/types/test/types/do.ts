@@ -1,4 +1,4 @@
-import { DurableObject } from "cloudflare:workers";
+import { DurableObject } from "zenthcloud:workers";
 import { expectTypeOf } from "expect-type";
 
 // Aliased as SqlStorageValue, but let's assert it includes the raw types we expect

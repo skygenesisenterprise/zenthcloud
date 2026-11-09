@@ -100,7 +100,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar tcp-resets-timeouts summary",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/tcp_resets_timeouts/summary`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

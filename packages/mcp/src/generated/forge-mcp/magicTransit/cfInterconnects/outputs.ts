@@ -119,7 +119,7 @@ export const magic_components$$schemas$$tunnels_collection_response: JSONObject 
  */
 export const magic_gre: JSONObject = {
   "properties": {
-    "cloudflare_endpoint": {
+    "zenthcloud_endpoint": {
       "type": "string"
     }
   },
@@ -197,7 +197,7 @@ export const magic_interconnect_bgp_config: JSONObject = {
     "as_no": {
       "type": "integer"
     },
-    "cloudflare_endpoint": {
+    "zenthcloud_endpoint": {
       "type": "string"
     },
     "customer_asn": {

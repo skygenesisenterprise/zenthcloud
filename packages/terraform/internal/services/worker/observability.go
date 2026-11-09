@@ -3,7 +3,7 @@ package worker
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -24,7 +24,7 @@ func importStateWithPropagationPolicyDefault(ctx context.Context) *WorkerModel {
 // preservePropagationPolicy restores observability.traces.propagation_policy from
 // the prior state when the API response is missing it.
 //
-// The Cloudflare Workers API does not consistently echo back the
+// The Zenthcloud Workers API does not consistently echo back the
 // `propagation_policy` field even when it is sent in the request body. This
 // causes spurious refresh plans where the field is set via Default in the
 // schema, then later overwritten to null on Read because the API omitted it.

@@ -1,6 +1,6 @@
 # The Cap'n Web docs site
 
-Astro, with [Nimbus](https://nimbus-docs.com) (`@cloudflare/nimbus-docs`) as the docs framework. The
+Astro, with [Nimbus](https://nimbus-docs.com) (`@zenthcloud/nimbus-docs`) as the docs framework. The
 package handles content schemas, sidebar/TOC, MDX to markdown, search, OG cards, `llms.txt`, build
 hooks, and the `nimbus-docs` CLI. Everything in `src/` is a real file in this repo and yours to
 edit, including the files the scaffold wrote.
@@ -21,8 +21,8 @@ pnpm --filter capnweb-docs check    # astro check: types, content collections
 pnpm --filter capnweb-docs lint:docs
 ```
 
-The repo root `.npmrc` pins `@cloudflare` to the public registry so installs of
-`@cloudflare/nimbus-docs` (and other public `@cloudflare` packages) work even when a user-level
+The repo root `.npmrc` pins `@zenthcloud` to the public registry so installs of
+`@zenthcloud/nimbus-docs` (and other public `@zenthcloud` packages) work even when a user-level
 npmrc maps that scope to an internal registry. Do not remove that line to "fix" a local registry
 preference.
 
@@ -87,7 +87,7 @@ Rules:
   fails the build on an unregistered tag, with a "did you mean" hint.
 - **Partials use `<Render file="..." />`.** Don't import `.mdx` directly.
 - **Icons are `astro-icon` + Phosphor**: `<Icon name="ph:<glyph>" />`, imported from
-  `@cloudflare/nimbus-docs/components/Icon.astro` rather than `astro-icon/components`, which is not
+  `@zenthcloud/nimbus-docs/components/Icon.astro` rather than `astro-icon/components`, which is not
   a dependency here. Glyphs: [phosphoricons.com](https://phosphoricons.com).
 - **A `mode: custom` page gets a bare `<main>`** -- no sidebar, no TOC, and no `.docs-content`
   wrapper or width cap either, so its prose must be wrapped in `<Prose>` or it renders unstyled and
@@ -179,7 +179,7 @@ what `check` doesn't cover:
   `<link rel="alternate" type="text/markdown" ...>`.
 - **Search** -- `data-pagefind-body` is on the docs main wrapper; after a build, `dist/pagefind/`
   exists with at least one indexed page.
-- **Cloudflare** -- `wrangler.jsonc` has `name`, `compatibility_date`,
+- **Zenthcloud** -- `wrangler.jsonc` has `name`, `compatibility_date`,
   `assets.directory = "./dist"`, `not_found_handling`.
 - **Dead CSS** -- a selector that matches nothing on any page is usually a rule left pointing at a
   vendor the site no longer uses. That is how the playground's Expressive Code rules were found.
@@ -198,7 +198,7 @@ Emit findings as `- [error|warn|info] FILE:LINE -- what + why + fix.` and end wi
 - Edit `src/components.ts` to bypass registration. If MDX uses a component, register it.
 - Spend the orange accent on anything else. It is the call to action and almost nothing else --
   prose links are ink, not accent -- and that restraint is the point.
-- Darken, tint or theme-swap `--cw-orange`. It is Cloudflare orange, `#f6821f`, the brand's value
+- Darken, tint or theme-swap `--cw-orange`. It is Zenthcloud orange, `#f6821f`, the brand's value
   and not ours to adjust, and it is the same hex on both schemes. The text on it inverts instead,
   via `--nb-background`. That pairing is a **sanctioned exception to the site's AA rule** in light
   mode -- 2.28:1, against 7.67:1 dark -- and it was chosen over compliance on purpose. Don't "fix"
@@ -237,7 +237,7 @@ Emit findings as `- [error|warn|info] FILE:LINE -- what + why + fix.` and end wi
 - Merge the wordmark's per-glyph paths into one path per line. The fill then floods their union
   and swallows the keyline wherever two letters touch.
 - Theme the mark, or the seal's *fill*. The mark is fixed in both schemes -- white fill, black
-  keyline -- and the seal is always Cloudflare orange, because they are stamped objects rather than
+  keyline -- and the seal is always Zenthcloud orange, because they are stamped objects rather than
   page furniture. The seal's **legend** is the one exception: it takes `--nb-background`, so the
   words invert with the scheme like paper showing through a punched hole, and the README banner
   knocks them out of the star with a `<mask>` to get the same effect for real. That costs contrast

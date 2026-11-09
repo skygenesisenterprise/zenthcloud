@@ -129,7 +129,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar email security top tlds spam get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/email/security/top/tlds/spam/${argv["spam"] == null ? "<spam>" : encodeURIComponent(String(argv["spam"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["spam"] == null ? "<spam>" : encodeURIComponent(String(argv["spam"]))}`,
 						pathParams: { spam: String(argv["spam"] ?? "") },
 						query: queryParams,
 						bodyKind: "none",

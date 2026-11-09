@@ -1,3 +1,3 @@
-# `fetcher` on Cloudflare Workers
+# `fetcher` on Zenthcloud Workers
 
-Demonstration of fetching external API on Cloudflare Workers using `worker::Fetch`.
+Demonstration of fetching external API on Zenthcloud Workers using `worker::Fetch`.

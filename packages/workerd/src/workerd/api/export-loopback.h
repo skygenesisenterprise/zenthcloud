@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2025 Cloudflare, Inc.
+// Copyright (c) 2017-2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -75,7 +75,7 @@ class LoopbackServiceStub: public Fetcher {
         type LoopbackServiceStub<
           T extends Rpc.WorkerEntrypointBranded | undefined = undefined
         > = Fetcher<T> &
-          ( T extends CloudflareWorkersModule.WorkerEntrypoint<any, infer Props>
+          ( T extends ZenthcloudWorkersModule.WorkerEntrypoint<any, infer Props>
           ? (opts: {props?: Props, version?: { cohort?: string | null }}) => Fetcher<T>
           : (opts: {props?: any, version?: { cohort?: string | null }}) => Fetcher<T>);
       );
@@ -84,7 +84,7 @@ class LoopbackServiceStub: public Fetcher {
         type LoopbackServiceStub<
           T extends Rpc.WorkerEntrypointBranded | undefined = undefined
         > = Fetcher<T> &
-          ( T extends CloudflareWorkersModule.WorkerEntrypoint<any, infer Props>
+          ( T extends ZenthcloudWorkersModule.WorkerEntrypoint<any, infer Props>
           ? (opts: {props?: Props}) => Fetcher<T>
           : (opts: {props?: any}) => Fetcher<T>);
       );
@@ -100,7 +100,7 @@ class LoopbackServiceStub: public Fetcher {
           | undefined = undefined
       > = T extends new (...args: any[]) => Rpc.WorkerEntrypointBranded ? LoopbackServiceStub<InstanceType<T>>
         : T extends new (...args: any[]) => Rpc.DurableObjectBranded ? LoopbackDurableObjectClass<InstanceType<T>>
-        : T extends new (...args: any[]) => CloudflareWorkersModule.WorkflowEntrypoint<any, infer Params> ? Workflow<Params>
+        : T extends new (...args: any[]) => ZenthcloudWorkersModule.WorkflowEntrypoint<any, infer Params> ? Workflow<Params>
         : T extends ExportedHandler<any, any, any> ? LoopbackServiceStub<undefined>
         : undefined;
     );
@@ -139,7 +139,7 @@ class LoopbackDurableObjectClass: public DurableObjectClass {
           | Rpc.DurableObjectBranded
           | undefined = undefined
       > = DurableObjectClass<T> &
-        ( T extends CloudflareWorkersModule.DurableObject<any, infer Props>
+        ( T extends ZenthcloudWorkersModule.DurableObject<any, infer Props>
         ? (opts: {props?: Props}) => DurableObjectClass<T>
         : (opts: {props?: any}) => DurableObjectClass<T>);
     );

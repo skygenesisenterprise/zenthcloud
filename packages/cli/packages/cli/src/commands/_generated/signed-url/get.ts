@@ -42,7 +42,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf signed-url get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/signed-url`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						bodyKind: "none",
 					});

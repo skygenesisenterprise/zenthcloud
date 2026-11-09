@@ -94,7 +94,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 						command:
 							"cf magic-transit advanced-dns-protection configs dns protection rules create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/magic/advanced_dns_protection/configs/dns_protection/rules`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/magic/advanced_dns_protection/configs/dns_protection/rules`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"nhooyr.io/websocket"
 
-	"github.com/cloudflare/cloudflared/internal/test"
+	"github.com/zenthcloud/zenthcloudd/internal/test"
 )
 
 var infoLevel = func() *LogLevel {
@@ -46,7 +46,7 @@ func TestIntoClientEvent_StartStreaming(t *testing.T) {
 			expected: EventStartStreaming{
 				ClientEvent: ClientEvent{Type: StartStreaming},
 				Filters: &StreamingFilters{
-					Events: []LogEventType{Cloudflared, HTTP},
+					Events: []LogEventType{Zenthcloudd, HTTP},
 				},
 			},
 		},
@@ -65,7 +65,7 @@ func TestIntoClientEvent_StartStreaming(t *testing.T) {
 				ClientEvent: ClientEvent{Type: StartStreaming},
 				Filters: &StreamingFilters{
 					Level:    infoLevel,
-					Events:   []LogEventType{Cloudflared},
+					Events:   []LogEventType{Zenthcloudd},
 					Sampling: 0.5,
 				},
 			},

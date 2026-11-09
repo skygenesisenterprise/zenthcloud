@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_share_resource Resource - Cloudflare"
+page_title: "zenthcloud_share_resource Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_share_resource (Resource)
+# zenthcloud_share_resource (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_share_resource" "example_share_resource" {
+resource "zenthcloud_share_resource" "example_share_resource" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   share_id = "3fd85f74b32742f1bff64a85009dda07"
   meta = jsonencode({})
@@ -49,7 +49,7 @@ Available values: "active", "deleting", "deleted".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_share_resource.example '<account_id>/<share_id>/<share_resource_id>'
+$ terraform import zenthcloud_share_resource.example '<account_id>/<share_id>/<share_resource_id>'
 ```
 
 

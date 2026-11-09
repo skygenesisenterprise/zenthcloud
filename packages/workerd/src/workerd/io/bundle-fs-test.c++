@@ -1,4 +1,4 @@
-// Copyright (c) 2024-2029 Cloudflare, Inc.
+// Copyright (c) 2024-2029 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -196,7 +196,7 @@ KJ_TEST("Guarding against deep non-circular symlink chains works") {
 }
 
 KJ_TEST("Module names exceeding max bundle path depth are skipped") {
-  // Regression test for AUTOVULN-CLOUDFLARE-WORKERD-104: an attacker-controlled
+  // Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-104: an attacker-controlled
   // module name with deeply nested path segments (e.g. "a/".repeat(100000) + "x.txt")
   // could cause stack exhaustion via recursive directory building.
   TestFixture fixture;

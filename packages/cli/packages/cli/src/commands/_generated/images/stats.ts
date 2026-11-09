@@ -20,7 +20,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 images stats\n\nFetch image statistics details for Cloudflare Images. The returned statistics detail storage usage, including the current image count vs this account's allowance."
+			"$0 images stats\n\nFetch image statistics details for Zenthcloud Images. The returned statistics detail storage usage, including the current image count vs this account's allowance."
 		)
 		.option("dry-run", {
 			type: "boolean",
@@ -50,7 +50,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf images stats",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/images/v1/stats`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/images/v1/stats`,
 						pathParams: {},
 						bodyKind: "none",
 					});

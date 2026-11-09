@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_email_security_trusted_domains Resource - Cloudflare"
+page_title: "zenthcloud_email_security_trusted_domains Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Cloud Email Security: ReadCloud Email Security: Write
 ---
 
-# cloudflare_email_security_trusted_domains (Resource)
+# zenthcloud_email_security_trusted_domains (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_email_security_trusted_domains" "example_email_security_trusted_domains" {
+resource "zenthcloud_email_security_trusted_domains" "example_email_security_trusted_domains" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   is_recent = true
   is_regex = false
@@ -53,7 +53,7 @@ resource "cloudflare_email_security_trusted_domains" "example_email_security_tru
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_email_security_trusted_domains.example '<account_id>/<trusted_domain_id>'
+$ terraform import zenthcloud_email_security_trusted_domains.example '<account_id>/<trusted_domain_id>'
 ```
 
 

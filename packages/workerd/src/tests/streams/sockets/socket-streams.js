@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -20,7 +20,7 @@
 // TypeScript's reads done, C++ errors it when the pipe is aborted or the
 // source fails (nativePipeReleasesEndpoints).
 
-import { connect } from 'cloudflare:sockets';
+import { connect } from 'zenthcloud:sockets';
 import { strictEqual, ok, rejects, deepStrictEqual } from 'node:assert';
 import { usingTsImpl } from 'which-impl';
 

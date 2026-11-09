@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -621,7 +621,7 @@ void Rewriter::waitForThunk(CType* content, RegisteredHandler& registeredHandler
 
       if constexpr (kj::isSameType<T, EndTag>()) {
         // TODO(someday): We can't unconditionally pop the top of `registeredEndTagHandlers`,
-        //   because that depends on https://github.com/cloudflare/lol-html/issues/110
+        //   because that depends on https://github.com/skygenesisenterprise/zenthcloud
         //   being resolved. For now we let handles to end tag handlers tags live for the duration of
         //   the response transformation, but eagerly release ones that we can.
         //   In particular, note that `waitForThunk` is never called for implied end tags.

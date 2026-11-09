@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -18,13 +18,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_workers_cron_trigger", &resource.Sweeper{
-		Name: "cloudflare_workers_cron_trigger",
-		F:    testSweepCloudflareWorkersCronTrigger,
+	resource.AddTestSweepers("zenthcloud_workers_cron_trigger", &resource.Sweeper{
+		Name: "zenthcloud_workers_cron_trigger",
+		F:    testSweepZenthcloudWorkersCronTrigger,
 	})
 }
 
-func testSweepCloudflareWorkersCronTrigger(r string) error {
+func testSweepZenthcloudWorkersCronTrigger(r string) error {
 	ctx := context.Background()
 	// Workers Cron Trigger is a worker script-level configuration.
 	// When worker scripts are swept, cron triggers are cleaned up automatically.
@@ -33,10 +33,10 @@ func testSweepCloudflareWorkersCronTrigger(r string) error {
 	return nil
 }
 
-func TestAccCloudflareWorkerCronTrigger_Basic(t *testing.T) {
+func TestAccZenthcloudWorkerCronTrigger_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_workers_cron_trigger.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_workers_cron_trigger.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -45,7 +45,7 @@ func TestAccCloudflareWorkerCronTrigger_Basic(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareWorkerCronTriggerConfigBasic(rnd, accountID),
+				Config: testAccZenthcloudWorkerCronTriggerConfigBasic(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "script_name", "mute-truth-fdb1"),
 					resource.TestCheckResourceAttr(name, "schedules.#", "2"),
@@ -55,15 +55,15 @@ func TestAccCloudflareWorkerCronTrigger_Basic(t *testing.T) {
 	})
 }
 
-func testAccCloudflareWorkerCronTriggerConfigBasic(rnd, accountID string) string {
+func testAccZenthcloudWorkerCronTriggerConfigBasic(rnd, accountID string) string {
 	return acctest.LoadTestCase("workercrontriggerconfigbasic.tf", rnd, accountID)
 }
 
 func TestAccUpgradeWorkersCronTrigger_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
-	config := testAccCloudflareWorkerCronTriggerConfigBasic(rnd, accountID)
+	config := testAccZenthcloudWorkerCronTriggerConfigBasic(rnd, accountID)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -72,8 +72,8 @@ func TestAccUpgradeWorkersCronTrigger_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

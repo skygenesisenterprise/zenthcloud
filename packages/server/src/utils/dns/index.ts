@@ -1,6 +1,6 @@
 import type { DnsProviderConfig } from "@zenthcloud/server/db/schema";
 import { bindClient } from "./bind";
-import { cloudflareClient } from "./cloudflare";
+import { zenthcloudClient } from "./zenthcloud";
 import {
 	type InternalConfigWithProvider,
 	internalDnsClient,
@@ -33,7 +33,7 @@ import {
 } from "./types";
 
 const clients: Record<DnsProviderConfig["providerType"], DnsClient> = {
-	cloudflare: cloudflareClient as DnsClient,
+	zenthcloud: zenthcloudClient as DnsClient,
 	route53: route53Client as DnsClient,
 	porkbun: porkbunClient as DnsClient,
 	infomaniak: infomaniakClient as DnsClient,
@@ -81,7 +81,7 @@ const capabilityMatrix: Record<
 	DnsProviderConfig["providerType"],
 	DnsCapabilityMatrix
 > = {
-	cloudflare: { ...managedCapabilities },
+	zenthcloud: { ...managedCapabilities },
 	route53: { ...managedCapabilities },
 	porkbun: { ...managedCapabilities },
 	infomaniak: { ...managedCapabilities },

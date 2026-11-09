@@ -200,7 +200,7 @@ export const DnsRecordForm = ({
 	const type = form.watch("type");
 	const proxied = form.watch("proxied");
 	const canProxy =
-		provider?.providerType === "cloudflare" && PROXIABLE_TYPES.includes(type);
+		provider?.providerType === "zenthcloud" && PROXIABLE_TYPES.includes(type);
 	const supportsMultipleValues = provider?.providerType === "route53";
 	const usesAutomaticTtl = canProxy && proxied;
 
@@ -391,8 +391,8 @@ export const DnsRecordForm = ({
 									</fieldset>
 									<FormDescription>
 										{field.value
-											? "Traffic runs through Cloudflare and the origin IP stays hidden."
-											: "Cloudflare only answers the DNS query; traffic reaches the origin directly."}
+											? "Traffic runs through Zenthcloud and the origin IP stays hidden."
+											: "Zenthcloud only answers the DNS query; traffic reaches the origin directly."}
 									</FormDescription>
 								</FormItem>
 							)}

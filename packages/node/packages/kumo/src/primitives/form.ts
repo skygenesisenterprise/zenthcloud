@@ -6,7 +6,7 @@
  *
  * @example
  * ```tsx
- * import { Form } from '@cloudflare/kumo/primitives/form';
+ * import { Form } from '@zenthcloud/kumo/primitives/form';
  * ```
  */
 

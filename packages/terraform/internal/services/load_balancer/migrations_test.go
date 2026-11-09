@@ -11,17 +11,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
-// TestAccCloudflareLoadBalancer_Migration_Basic_MultiVersion tests the most fundamental
+// TestAccZenthcloudLoadBalancer_Migration_Basic_MultiVersion tests the most fundamental
 // load balancer migration scenario with minimal configuration. This test ensures that:
 // 1. Basic attribute renames work (fallback_pool_id → fallback_pool, default_pool_ids → default_pools)
 // 2. State transformation handles empty arrays → empty maps for country_pools, pop_pools, region_pools
 // 3. The migration tool successfully transforms both configuration and state files
 // 4. Resources remain functional after migration without requiring manual intervention
-func TestMigrateCloudflareLoadBalancer_Migration_Basic_MultiVersion(t *testing.T) {
+func TestMigrateZenthcloudLoadBalancer_Migration_Basic_MultiVersion(t *testing.T) {
 	// Based on breaking changes analysis:
 	// - All breaking changes happened between 4.x and 5.0.0
 	// - No breaking changes between v5 releases for load_balancer
@@ -33,34 +33,34 @@ func TestMigrateCloudflareLoadBalancer_Migration_Basic_MultiVersion(t *testing.T
 		{
 			name:     "from_v4_52_1", // Last v4 release
 			version:  "4.52.1",
-			configFn: testAccCloudflareLoadBalancerMigrationConfigV4Basic,
+			configFn: testAccZenthcloudLoadBalancerMigrationConfigV4Basic,
 		},
 		{
 			name:     "from_v5_0_0", // First v5 release, after breaking changes
 			version:  "5.0.0",
-			configFn: testAccCloudflareLoadBalancerMigrationConfigV5Basic,
+			configFn: testAccZenthcloudLoadBalancerMigrationConfigV5Basic,
 		},
 		{
 			name:     "from_v5_7_1", // Recent v5 release
 			version:  "5.7.1",
-			configFn: testAccCloudflareLoadBalancerMigrationConfigV5Basic,
+			configFn: testAccZenthcloudLoadBalancerMigrationConfigV5Basic,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+			// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 			// service does not yet support the API tokens and it results in
 			// misleading state error messages.
-			if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-				t.Setenv("CLOUDFLARE_API_TOKEN", "")
+			if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+				t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 			}
 
-			accountID := acctest.TestAccCloudflareAccountID
-			zoneID := acctest.TestAccCloudflareZoneID
-			zone := acctest.TestAccCloudflareZoneName
+			accountID := acctest.TestAccZenthcloudAccountID
+			zoneID := acctest.TestAccZenthcloudZoneID
+			zone := acctest.TestAccZenthcloudZoneName
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_load_balancer." + rnd
+			resourceName := "zenthcloud_load_balancer." + rnd
 			testConfig := tc.configFn(accountID, zoneID, zone, rnd)
 			tmpDir := t.TempDir()
 
@@ -69,9 +69,9 @@ func TestMigrateCloudflareLoadBalancer_Migration_Basic_MultiVersion(t *testing.T
 				{
 					// Step 1: Create load balancer with specific version
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
+						"zenthcloud": {
 							VersionConstraint: tc.version,
-							Source:            "cloudflare/cloudflare",
+							Source:            "zenthcloud/zenthcloud",
 						},
 					},
 					Config: testConfig,
@@ -113,7 +113,7 @@ func TestMigrateCloudflareLoadBalancer_Migration_Basic_MultiVersion(t *testing.T
 					acctest.TestAccPreCheck_ZoneID(t)
 					acctest.TestAccPreCheck_Domain(t)
 				},
-				CheckDestroy: testAccCheckCloudflareLoadBalancerDestroy,
+				CheckDestroy: testAccCheckZenthcloudLoadBalancerDestroy,
 				WorkingDir:   tmpDir,
 				Steps:        steps,
 			})
@@ -121,14 +121,14 @@ func TestMigrateCloudflareLoadBalancer_Migration_Basic_MultiVersion(t *testing.T
 	}
 }
 
-// TestAccCloudflareLoadBalancer_Migration_AllOptionalAttributes_MultiVersion tests migration
+// TestAccZenthcloudLoadBalancer_Migration_AllOptionalAttributes_MultiVersion tests migration
 // with all optional attributes configured. This comprehensive test verifies that:
 // 1. Block-to-single-object conversions work (adaptive_routing, location_strategy, random_steering, session_affinity_attributes)
 // 2. All optional fields maintain their values through migration (description, enabled, proxied, etc.)
 // 3. Complex nested structures are properly transformed from v4 blocks to v5 single objects
 // 4. Session affinity configurations with attributes are correctly migrated
 // 5. State transformation removes empty arrays for single-object attributes
-func TestMigrateCloudflareLoadBalancer_Migration_AllOptionalAttributes_MultiVersion(t *testing.T) {
+func TestMigrateZenthcloudLoadBalancer_Migration_AllOptionalAttributes_MultiVersion(t *testing.T) {
 	testCases := []struct {
 		name               string
 		version            string
@@ -138,35 +138,35 @@ func TestMigrateCloudflareLoadBalancer_Migration_AllOptionalAttributes_MultiVers
 		{
 			name:     "from_v4_52_1",
 			version:  "4.52.1",
-			configFn: testAccCloudflareLoadBalancerMigrationConfigV4AllOptional,
+			configFn: testAccZenthcloudLoadBalancerMigrationConfigV4AllOptional,
 		},
 		{
 			name:     "from_v5_0_0",
 			version:  "5.0.0",
-			configFn: testAccCloudflareLoadBalancerMigrationConfigV5AllOptional,
+			configFn: testAccZenthcloudLoadBalancerMigrationConfigV5AllOptional,
 		},
 		{
 			name:               "from_v5_2_0", // Added zone_name field
 			version:            "5.2.0",
-			configFn:           testAccCloudflareLoadBalancerMigrationConfigV5AllOptional,
+			configFn:           testAccZenthcloudLoadBalancerMigrationConfigV5AllOptional,
 			ExpectNonEmptyPlan: true,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+			// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 			// service does not yet support the API tokens and it results in
 			// misleading state error messages.
-			if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-				t.Setenv("CLOUDFLARE_API_TOKEN", "")
+			if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+				t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 			}
 
-			accountID := acctest.TestAccCloudflareAccountID
-			zoneID := acctest.TestAccCloudflareZoneID
-			zone := acctest.TestAccCloudflareZoneName
+			accountID := acctest.TestAccZenthcloudAccountID
+			zoneID := acctest.TestAccZenthcloudZoneID
+			zone := acctest.TestAccZenthcloudZoneName
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_load_balancer." + rnd
+			resourceName := "zenthcloud_load_balancer." + rnd
 			testConfig := tc.configFn(accountID, zoneID, zone, rnd)
 			tmpDir := t.TempDir()
 
@@ -175,9 +175,9 @@ func TestMigrateCloudflareLoadBalancer_Migration_AllOptionalAttributes_MultiVers
 				{
 					// Step 1: Create load balancer with specific version
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
+						"zenthcloud": {
 							VersionConstraint: tc.version,
-							Source:            "cloudflare/cloudflare",
+							Source:            "zenthcloud/zenthcloud",
 						},
 					},
 					Config: testConfig,
@@ -231,7 +231,7 @@ func TestMigrateCloudflareLoadBalancer_Migration_AllOptionalAttributes_MultiVers
 					acctest.TestAccPreCheck_ZoneID(t)
 					acctest.TestAccPreCheck_Domain(t)
 				},
-				CheckDestroy: testAccCheckCloudflareLoadBalancerDestroy,
+				CheckDestroy: testAccCheckZenthcloudLoadBalancerDestroy,
 				WorkingDir:   tmpDir,
 				Steps:        steps,
 			})
@@ -239,14 +239,14 @@ func TestMigrateCloudflareLoadBalancer_Migration_AllOptionalAttributes_MultiVers
 	}
 }
 
-// TestAccCloudflareLoadBalancer_Migration_GeoBalanced_MultiVersion tests migration of
+// TestAccZenthcloudLoadBalancer_Migration_GeoBalanced_MultiVersion tests migration of
 // load balancers using geographic steering policies. This test ensures that:
 // 1. region_pools and country_pools blocks are correctly transformed to maps in v5
 // 2. Multiple pool configurations with geo-steering remain functional
 // 3. Empty map attributes in state are properly converted from v4 arrays to v5 maps
 // 4. Geo steering policy settings are preserved during migration
 // 5. Complex pool ID references across multiple resources work correctly
-func TestMigrateCloudflareLoadBalancer_Migration_GeoBalanced_MultiVersion(t *testing.T) {
+func TestMigrateZenthcloudLoadBalancer_Migration_GeoBalanced_MultiVersion(t *testing.T) {
 	testCases := []struct {
 		name     string
 		version  string
@@ -255,38 +255,38 @@ func TestMigrateCloudflareLoadBalancer_Migration_GeoBalanced_MultiVersion(t *tes
 		{
 			name:     "from_v4_52_1",
 			version:  "4.52.1",
-			configFn: testAccCloudflareLoadBalancerMigrationConfigV4Geo,
+			configFn: testAccZenthcloudLoadBalancerMigrationConfigV4Geo,
 		},
 		{
 			name:     "from_v5_0_0",
 			version:  "5.0.0",
-			configFn: testAccCloudflareLoadBalancerMigrationConfigV5Geo,
+			configFn: testAccZenthcloudLoadBalancerMigrationConfigV5Geo,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+			// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 			// service does not yet support the API tokens and it results in
 			// misleading state error messages.
-			if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-				t.Setenv("CLOUDFLARE_API_TOKEN", "")
+			if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+				t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 			}
 
-			accountID := acctest.TestAccCloudflareAccountID
-			zoneID := acctest.TestAccCloudflareZoneID
-			zone := acctest.TestAccCloudflareZoneName
+			accountID := acctest.TestAccZenthcloudAccountID
+			zoneID := acctest.TestAccZenthcloudZoneID
+			zone := acctest.TestAccZenthcloudZoneName
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_load_balancer." + rnd
+			resourceName := "zenthcloud_load_balancer." + rnd
 			testConfig := tc.configFn(accountID, zoneID, zone, rnd)
 			tmpDir := t.TempDir()
 
 			// Create initial step
 			initialStep := resource.TestStep{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
+					"zenthcloud": {
 						VersionConstraint: tc.version,
-						Source:            "cloudflare/cloudflare",
+						Source:            "zenthcloud/zenthcloud",
 					},
 				},
 				Config: testConfig,
@@ -319,7 +319,7 @@ func TestMigrateCloudflareLoadBalancer_Migration_GeoBalanced_MultiVersion(t *tes
 					acctest.TestAccPreCheck_ZoneID(t)
 					acctest.TestAccPreCheck_Domain(t)
 				},
-				CheckDestroy: testAccCheckCloudflareLoadBalancerDestroy,
+				CheckDestroy: testAccCheckZenthcloudLoadBalancerDestroy,
 				WorkingDir:   tmpDir,
 				Steps:        allSteps,
 			})
@@ -327,14 +327,14 @@ func TestMigrateCloudflareLoadBalancer_Migration_GeoBalanced_MultiVersion(t *tes
 	}
 }
 
-// TestAccCloudflareLoadBalancer_Migration_Rules_MultiVersion tests migration of load balancers
+// TestAccZenthcloudLoadBalancer_Migration_Rules_MultiVersion tests migration of load balancers
 // with custom routing rules. This test verifies that:
 // 1. Rules blocks are correctly transformed from v4 to v5 list syntax
 // 2. Rule overrides (including nested fallback_pool and default_pools) are migrated properly
 // 3. Complex rule conditions and priorities are preserved
 // 4. Rules remain a ListNestedAttribute (array) in v5, not converted to maps
 // 5. Multiple pools referenced in rules maintain their relationships
-func TestMigrateCloudflareLoadBalancer_Migration_Rules_MultiVersion(t *testing.T) {
+func TestMigrateZenthcloudLoadBalancer_Migration_Rules_MultiVersion(t *testing.T) {
 	testCases := []struct {
 		name     string
 		version  string
@@ -343,24 +343,24 @@ func TestMigrateCloudflareLoadBalancer_Migration_Rules_MultiVersion(t *testing.T
 		{
 			name:     "from_v4_52_1",
 			version:  "4.52.1",
-			configFn: testAccCloudflareLoadBalancerMigrationConfigV4Rules,
+			configFn: testAccZenthcloudLoadBalancerMigrationConfigV4Rules,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+			// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 			// service does not yet support the API tokens and it results in
 			// misleading state error messages.
-			if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-				t.Setenv("CLOUDFLARE_API_TOKEN", "")
+			if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+				t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 			}
 
-			accountID := acctest.TestAccCloudflareAccountID
-			zoneID := acctest.TestAccCloudflareZoneID
-			zone := acctest.TestAccCloudflareZoneName
+			accountID := acctest.TestAccZenthcloudAccountID
+			zoneID := acctest.TestAccZenthcloudZoneID
+			zone := acctest.TestAccZenthcloudZoneName
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_load_balancer." + rnd
+			resourceName := "zenthcloud_load_balancer." + rnd
 			testConfig := tc.configFn(accountID, zoneID, zone, rnd)
 			tmpDir := t.TempDir()
 
@@ -369,9 +369,9 @@ func TestMigrateCloudflareLoadBalancer_Migration_Rules_MultiVersion(t *testing.T
 					{
 						// Step 1: Create load balancer with specific version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
+							"zenthcloud": {
 								VersionConstraint: tc.version,
-								Source:            "cloudflare/cloudflare",
+								Source:            "zenthcloud/zenthcloud",
 							},
 						},
 						Config: testConfig,
@@ -403,7 +403,7 @@ func TestMigrateCloudflareLoadBalancer_Migration_Rules_MultiVersion(t *testing.T
 					acctest.TestAccPreCheck_ZoneID(t)
 					acctest.TestAccPreCheck_Domain(t)
 				},
-				CheckDestroy: testAccCheckCloudflareLoadBalancerDestroy,
+				CheckDestroy: testAccCheckZenthcloudLoadBalancerDestroy,
 				WorkingDir:   tmpDir,
 			Steps:        steps,
 		})
@@ -413,26 +413,26 @@ func TestMigrateCloudflareLoadBalancer_Migration_Rules_MultiVersion(t *testing.T
 
 // Additional test cases for specific scenarios
 
-// TestAccCloudflareLoadBalancer_Migration_SessionAffinityIPCookie tests a specific edge case
+// TestAccZenthcloudLoadBalancer_Migration_SessionAffinityIPCookie tests a specific edge case
 // for session affinity migration. This test ensures that:
 // 1. IP cookie session affinity settings are preserved during migration
 // 2. Session affinity TTL values are correctly maintained
 // 3. The ip_cookie affinity type doesn't require any special transformation
 // 4. TTL field type changes from Float64 in v4 to Int64 in v5 are handled
-func TestMigrateCloudflareLoadBalancer_Migration_SessionAffinityIPCookie(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestMigrateZenthcloudLoadBalancer_Migration_SessionAffinityIPCookie(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := acctest.TestAccCloudflareAccountID
-	zoneID := acctest.TestAccCloudflareZoneID
-	zone := acctest.TestAccCloudflareZoneName
+	accountID := acctest.TestAccZenthcloudAccountID
+	zoneID := acctest.TestAccZenthcloudZoneID
+	zone := acctest.TestAccZenthcloudZoneName
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_load_balancer." + rnd
-	v4Config := testAccCloudflareLoadBalancerMigrationConfigV4SessionAffinityIPCookie(accountID, zoneID, zone, rnd)
+	resourceName := "zenthcloud_load_balancer." + rnd
+	v4Config := testAccZenthcloudLoadBalancerMigrationConfigV4SessionAffinityIPCookie(accountID, zoneID, zone, rnd)
 	tmpDir := t.TempDir()
 
 		// Build test steps
@@ -440,9 +440,9 @@ func TestMigrateCloudflareLoadBalancer_Migration_SessionAffinityIPCookie(t *test
 			{
 				// Step 1: Create load balancer with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
+					"zenthcloud": {
 						VersionConstraint: "4.52.1",
-						Source:            "cloudflare/cloudflare",
+						Source:            "zenthcloud/zenthcloud",
 					},
 				},
 				Config: v4Config,
@@ -475,32 +475,32 @@ func TestMigrateCloudflareLoadBalancer_Migration_SessionAffinityIPCookie(t *test
 			acctest.TestAccPreCheck_ZoneID(t)
 			acctest.TestAccPreCheck_Domain(t)
 		},
-		CheckDestroy: testAccCheckCloudflareLoadBalancerDestroy,
+		CheckDestroy: testAccCheckZenthcloudLoadBalancerDestroy,
 		WorkingDir:   tmpDir,
 			Steps:        steps,
 		})
 }
 
-// TestAccCloudflareLoadBalancer_Migration_ProximitySteeringPolicy tests migration of
+// TestAccZenthcloudLoadBalancer_Migration_ProximitySteeringPolicy tests migration of
 // load balancers using proximity-based steering. This test verifies that:
 // 1. Proximity steering policy setting is preserved during migration
 // 2. Pool geographic coordinates (latitude/longitude) remain intact for proximity calculations
 // 3. The steering policy doesn't require special transformation beyond basic migration
 // 4. Load balancer continues to route based on proximity after migration
-func TestMigrateCloudflareLoadBalancer_Migration_ProximitySteeringPolicy(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestMigrateZenthcloudLoadBalancer_Migration_ProximitySteeringPolicy(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := acctest.TestAccCloudflareAccountID
-	zoneID := acctest.TestAccCloudflareZoneID
-	zone := acctest.TestAccCloudflareZoneName
+	accountID := acctest.TestAccZenthcloudAccountID
+	zoneID := acctest.TestAccZenthcloudZoneID
+	zone := acctest.TestAccZenthcloudZoneName
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_load_balancer." + rnd
-	v4Config := testAccCloudflareLoadBalancerMigrationConfigV4ProximityPolicy(accountID, zoneID, zone, rnd)
+	resourceName := "zenthcloud_load_balancer." + rnd
+	v4Config := testAccZenthcloudLoadBalancerMigrationConfigV4ProximityPolicy(accountID, zoneID, zone, rnd)
 	tmpDir := t.TempDir()
 
 		// Build test steps
@@ -508,9 +508,9 @@ func TestMigrateCloudflareLoadBalancer_Migration_ProximitySteeringPolicy(t *test
 			{
 				// Step 1: Create load balancer with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
+					"zenthcloud": {
 						VersionConstraint: "4.52.1",
-						Source:            "cloudflare/cloudflare",
+						Source:            "zenthcloud/zenthcloud",
 					},
 				},
 				Config: v4Config,
@@ -541,7 +541,7 @@ func TestMigrateCloudflareLoadBalancer_Migration_ProximitySteeringPolicy(t *test
 			acctest.TestAccPreCheck_ZoneID(t)
 			acctest.TestAccPreCheck_Domain(t)
 		},
-		CheckDestroy: testAccCheckCloudflareLoadBalancerDestroy,
+		CheckDestroy: testAccCheckZenthcloudLoadBalancerDestroy,
 		WorkingDir:   tmpDir,
 			Steps:        steps,
 		})
@@ -549,9 +549,9 @@ func TestMigrateCloudflareLoadBalancer_Migration_ProximitySteeringPolicy(t *test
 
 // V4 Configuration Functions
 
-func testAccCloudflareLoadBalancerMigrationConfigV4Basic(accountID, zoneID, zone, rnd string) string {
+func testAccZenthcloudLoadBalancerMigrationConfigV4Basic(accountID, zoneID, zone, rnd string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_load_balancer_pool" "%[4]s" {
+resource "zenthcloud_load_balancer_pool" "%[4]s" {
   account_id = "%[1]s"
   name = "my-tf-pool-basic-%[4]s"
   latitude = 12.3
@@ -563,23 +563,23 @@ resource "cloudflare_load_balancer_pool" "%[4]s" {
   }
 }
 
-resource "cloudflare_load_balancer" "%[4]s" {
+resource "zenthcloud_load_balancer" "%[4]s" {
   zone_id          = "%[2]s"
   name             = "tf-testacc-lb-%[4]s.%[3]s"
   steering_policy  = "off"
   session_affinity = "none"
-  fallback_pool_id = cloudflare_load_balancer_pool.%[4]s.id
+  fallback_pool_id = zenthcloud_load_balancer_pool.%[4]s.id
   default_pool_ids = [
-    cloudflare_load_balancer_pool.%[4]s.id
+    zenthcloud_load_balancer_pool.%[4]s.id
   ]
   ttl = 30
 }
 `, accountID, zoneID, zone, rnd)
 }
 
-func testAccCloudflareLoadBalancerMigrationConfigV4AllOptional(accountID, zoneID, zone, rnd string) string {
+func testAccZenthcloudLoadBalancerMigrationConfigV4AllOptional(accountID, zoneID, zone, rnd string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_load_balancer_pool" "%[4]s" {
+resource "zenthcloud_load_balancer_pool" "%[4]s" {
   account_id = "%[1]s"
   name = "my-tf-pool-basic-%[4]s"
   latitude = 12.3
@@ -591,7 +591,7 @@ resource "cloudflare_load_balancer_pool" "%[4]s" {
   }
 }
 
-resource "cloudflare_load_balancer" "%[4]s" {
+resource "zenthcloud_load_balancer" "%[4]s" {
   zone_id              = "%[2]s"
   name                 = "tf-testacc-lb-%[4]s.%[3]s"
   description          = "test load balancer"
@@ -600,9 +600,9 @@ resource "cloudflare_load_balancer" "%[4]s" {
   steering_policy      = "random"
   session_affinity     = "cookie"
   session_affinity_ttl = 1800
-  fallback_pool_id     = cloudflare_load_balancer_pool.%[4]s.id
+  fallback_pool_id     = zenthcloud_load_balancer_pool.%[4]s.id
   default_pool_ids     = [
-    cloudflare_load_balancer_pool.%[4]s.id
+    zenthcloud_load_balancer_pool.%[4]s.id
   ]
   
   session_affinity_attributes {
@@ -626,9 +626,9 @@ resource "cloudflare_load_balancer" "%[4]s" {
 `, accountID, zoneID, zone, rnd)
 }
 
-func testAccCloudflareLoadBalancerMigrationConfigV4Geo(accountID, zoneID, zone, rnd string) string {
+func testAccZenthcloudLoadBalancerMigrationConfigV4Geo(accountID, zoneID, zone, rnd string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_load_balancer_pool" "%[4]s" {
+resource "zenthcloud_load_balancer_pool" "%[4]s" {
   account_id = "%[1]s"
   name = "my-tf-pool-basic-%[4]s"
   latitude = 12.3
@@ -640,7 +640,7 @@ resource "cloudflare_load_balancer_pool" "%[4]s" {
   }
 }
 
-resource "cloudflare_load_balancer_pool" "%[4]s-2" {
+resource "zenthcloud_load_balancer_pool" "%[4]s-2" {
   account_id = "%[1]s"
   name = "my-tf-pool-basic-%[4]s-2"
   latitude = 55.1
@@ -652,23 +652,23 @@ resource "cloudflare_load_balancer_pool" "%[4]s-2" {
   }
 }
 
-resource "cloudflare_load_balancer" "%[4]s" {
+resource "zenthcloud_load_balancer" "%[4]s" {
   zone_id          = "%[2]s"
   name             = "tf-testacc-lb-%[4]s.%[3]s"
   steering_policy  = "geo"
   session_affinity = "none"
-  fallback_pool_id = cloudflare_load_balancer_pool.%[4]s.id
+  fallback_pool_id = zenthcloud_load_balancer_pool.%[4]s.id
   default_pool_ids = [
-    cloudflare_load_balancer_pool.%[4]s.id
+    zenthcloud_load_balancer_pool.%[4]s.id
   ]
   ttl = 30
 }
 `, accountID, zoneID, zone, rnd)
 }
 
-func testAccCloudflareLoadBalancerMigrationConfigV4Rules(accountID, zoneID, zone, rnd string) string {
+func testAccZenthcloudLoadBalancerMigrationConfigV4Rules(accountID, zoneID, zone, rnd string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_load_balancer_pool" "%[4]s" {
+resource "zenthcloud_load_balancer_pool" "%[4]s" {
   account_id = "%[1]s"
   name = "my-tf-pool-basic-%[4]s"
   latitude = 12.3
@@ -680,23 +680,23 @@ resource "cloudflare_load_balancer_pool" "%[4]s" {
   }
 }
 
-resource "cloudflare_load_balancer" "%[4]s" {
+resource "zenthcloud_load_balancer" "%[4]s" {
   zone_id          = "%[2]s"
   name             = "tf-testacc-lb-%[4]s.%[3]s"
   steering_policy  = "off"
   session_affinity = "none"
-  fallback_pool_id = cloudflare_load_balancer_pool.%[4]s.id
+  fallback_pool_id = zenthcloud_load_balancer_pool.%[4]s.id
   default_pool_ids = [
-    cloudflare_load_balancer_pool.%[4]s.id
+    zenthcloud_load_balancer_pool.%[4]s.id
   ]
   ttl = 30
 }
 `, accountID, zoneID, zone, rnd)
 }
 
-func testAccCloudflareLoadBalancerMigrationConfigV4SessionAffinityIPCookie(accountID, zoneID, zone, rnd string) string {
+func testAccZenthcloudLoadBalancerMigrationConfigV4SessionAffinityIPCookie(accountID, zoneID, zone, rnd string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_load_balancer_pool" "%[4]s" {
+resource "zenthcloud_load_balancer_pool" "%[4]s" {
   account_id = "%[1]s"
   name = "my-tf-pool-basic-%[4]s"
   latitude = 12.3
@@ -708,24 +708,24 @@ resource "cloudflare_load_balancer_pool" "%[4]s" {
   }
 }
 
-resource "cloudflare_load_balancer" "%[4]s" {
+resource "zenthcloud_load_balancer" "%[4]s" {
   zone_id              = "%[2]s"
   name                 = "tf-testacc-lb-%[4]s.%[3]s"
   steering_policy      = "off"
   session_affinity     = "ip_cookie"
   session_affinity_ttl = 10800
-  fallback_pool_id     = cloudflare_load_balancer_pool.%[4]s.id
+  fallback_pool_id     = zenthcloud_load_balancer_pool.%[4]s.id
   default_pool_ids     = [
-    cloudflare_load_balancer_pool.%[4]s.id
+    zenthcloud_load_balancer_pool.%[4]s.id
   ]
   ttl = 30
 }
 `, accountID, zoneID, zone, rnd)
 }
 
-func testAccCloudflareLoadBalancerMigrationConfigV4ProximityPolicy(accountID, zoneID, zone, rnd string) string {
+func testAccZenthcloudLoadBalancerMigrationConfigV4ProximityPolicy(accountID, zoneID, zone, rnd string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_load_balancer_pool" "%[4]s" {
+resource "zenthcloud_load_balancer_pool" "%[4]s" {
   account_id = "%[1]s"
   name = "my-tf-pool-basic-%[4]s"
   latitude = 12.3
@@ -737,14 +737,14 @@ resource "cloudflare_load_balancer_pool" "%[4]s" {
   }
 }
 
-resource "cloudflare_load_balancer" "%[4]s" {
+resource "zenthcloud_load_balancer" "%[4]s" {
   zone_id          = "%[2]s"
   name             = "tf-testacc-lb-%[4]s.%[3]s"
   steering_policy  = "proximity"
   session_affinity = "none"
-  fallback_pool_id = cloudflare_load_balancer_pool.%[4]s.id
+  fallback_pool_id = zenthcloud_load_balancer_pool.%[4]s.id
   default_pool_ids = [
-    cloudflare_load_balancer_pool.%[4]s.id
+    zenthcloud_load_balancer_pool.%[4]s.id
   ]
   ttl = 30
 }
@@ -753,9 +753,9 @@ resource "cloudflare_load_balancer" "%[4]s" {
 
 // V5 Configuration Functions
 
-func testAccCloudflareLoadBalancerMigrationConfigV5Basic(accountID, zoneID, zone, rnd string) string {
+func testAccZenthcloudLoadBalancerMigrationConfigV5Basic(accountID, zoneID, zone, rnd string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_load_balancer_pool" "%[4]s" {
+resource "zenthcloud_load_balancer_pool" "%[4]s" {
   account_id = "%[1]s"
   name = "my-tf-pool-basic-%[4]s"
   latitude = 12.3
@@ -767,23 +767,23 @@ resource "cloudflare_load_balancer_pool" "%[4]s" {
   }]
 }
 
-resource "cloudflare_load_balancer" "%[4]s" {
+resource "zenthcloud_load_balancer" "%[4]s" {
   zone_id          = "%[2]s"
   name             = "tf-testacc-lb-%[4]s.%[3]s"
   steering_policy  = "off"
   session_affinity = "none"
-  fallback_pool = cloudflare_load_balancer_pool.%[4]s.id
+  fallback_pool = zenthcloud_load_balancer_pool.%[4]s.id
   default_pools = [
-    cloudflare_load_balancer_pool.%[4]s.id
+    zenthcloud_load_balancer_pool.%[4]s.id
   ]
   ttl = 30
 }
 `, accountID, zoneID, zone, rnd)
 }
 
-func testAccCloudflareLoadBalancerMigrationConfigV5AllOptional(accountID, zoneID, zone, rnd string) string {
+func testAccZenthcloudLoadBalancerMigrationConfigV5AllOptional(accountID, zoneID, zone, rnd string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_load_balancer_pool" "%[4]s" {
+resource "zenthcloud_load_balancer_pool" "%[4]s" {
   account_id = "%[1]s"
   name = "my-tf-pool-basic-%[4]s"
   latitude = 12.3
@@ -795,7 +795,7 @@ resource "cloudflare_load_balancer_pool" "%[4]s" {
   }]
 }
 
-resource "cloudflare_load_balancer" "%[4]s" {
+resource "zenthcloud_load_balancer" "%[4]s" {
   zone_id              = "%[2]s"
   name                 = "tf-testacc-lb-%[4]s.%[3]s"
   description          = "test load balancer"
@@ -804,9 +804,9 @@ resource "cloudflare_load_balancer" "%[4]s" {
   steering_policy      = "random"
   session_affinity     = "cookie"
   session_affinity_ttl = 1800
-  fallback_pool = cloudflare_load_balancer_pool.%[4]s.id
+  fallback_pool = zenthcloud_load_balancer_pool.%[4]s.id
   default_pools = [
-    cloudflare_load_balancer_pool.%[4]s.id
+    zenthcloud_load_balancer_pool.%[4]s.id
   ]
   
   session_affinity_attributes = {
@@ -830,9 +830,9 @@ resource "cloudflare_load_balancer" "%[4]s" {
 `, accountID, zoneID, zone, rnd)
 }
 
-func testAccCloudflareLoadBalancerMigrationConfigV5Geo(accountID, zoneID, zone, rnd string) string {
+func testAccZenthcloudLoadBalancerMigrationConfigV5Geo(accountID, zoneID, zone, rnd string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_load_balancer_pool" "%[4]s" {
+resource "zenthcloud_load_balancer_pool" "%[4]s" {
   account_id = "%[1]s"
   name = "my-tf-pool-basic-%[4]s"
   latitude = 12.3
@@ -844,7 +844,7 @@ resource "cloudflare_load_balancer_pool" "%[4]s" {
   }]
 }
 
-resource "cloudflare_load_balancer_pool" "%[4]s-2" {
+resource "zenthcloud_load_balancer_pool" "%[4]s-2" {
   account_id = "%[1]s"
   name = "my-tf-pool-basic-%[4]s-2"
   latitude = 55.1
@@ -856,31 +856,31 @@ resource "cloudflare_load_balancer_pool" "%[4]s-2" {
   }]
 }
 
-resource "cloudflare_load_balancer" "%[4]s" {
+resource "zenthcloud_load_balancer" "%[4]s" {
   zone_id          = "%[2]s"
   name             = "tf-testacc-lb-%[4]s.%[3]s"
   steering_policy  = "geo"
   session_affinity = "none"
-  fallback_pool = cloudflare_load_balancer_pool.%[4]s.id
+  fallback_pool = zenthcloud_load_balancer_pool.%[4]s.id
   default_pools = [
-    cloudflare_load_balancer_pool.%[4]s.id
+    zenthcloud_load_balancer_pool.%[4]s.id
   ]
   
   region_pools = {
-    WNAM = [cloudflare_load_balancer_pool.%[4]s.id]
-    ENAM = [cloudflare_load_balancer_pool.%[4]s-2.id]
+    WNAM = [zenthcloud_load_balancer_pool.%[4]s.id]
+    ENAM = [zenthcloud_load_balancer_pool.%[4]s-2.id]
   }
   country_pools = {
-    US = [cloudflare_load_balancer_pool.%[4]s.id]
-    GB = [cloudflare_load_balancer_pool.%[4]s-2.id]
+    US = [zenthcloud_load_balancer_pool.%[4]s.id]
+    GB = [zenthcloud_load_balancer_pool.%[4]s-2.id]
   }
 }
 `, accountID, zoneID, zone, rnd)
 }
 
-func testAccCloudflareLoadBalancerMigrationConfigV5Rules(accountID, zoneID, zone, rnd string) string {
+func testAccZenthcloudLoadBalancerMigrationConfigV5Rules(accountID, zoneID, zone, rnd string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_load_balancer_pool" "%[4]s" {
+resource "zenthcloud_load_balancer_pool" "%[4]s" {
   account_id = "%[1]s"
   name = "my-tf-pool-basic-%[4]s"
   latitude = 12.3
@@ -892,7 +892,7 @@ resource "cloudflare_load_balancer_pool" "%[4]s" {
   }]
 }
 
-resource "cloudflare_load_balancer_pool" "%[4]s-2" {
+resource "zenthcloud_load_balancer_pool" "%[4]s-2" {
   account_id = "%[1]s"
   name = "my-tf-pool-basic-%[4]s-2"
   latitude = 55.1
@@ -904,14 +904,14 @@ resource "cloudflare_load_balancer_pool" "%[4]s-2" {
   }]
 }
 
-resource "cloudflare_load_balancer" "%[4]s" {
+resource "zenthcloud_load_balancer" "%[4]s" {
   zone_id          = "%[2]s"
   name             = "tf-testacc-lb-%[4]s.%[3]s"
   steering_policy  = "off"
   session_affinity = "none"
-  fallback_pool = cloudflare_load_balancer_pool.%[4]s.id
+  fallback_pool = zenthcloud_load_balancer_pool.%[4]s.id
   default_pools = [
-    cloudflare_load_balancer_pool.%[4]s.id
+    zenthcloud_load_balancer_pool.%[4]s.id
   ]
   ttl = 30
   
@@ -922,8 +922,8 @@ resource "cloudflare_load_balancer" "%[4]s" {
     priority = 1
     
     overrides = {
-      fallback_pool = cloudflare_load_balancer_pool.%[4]s-2.id
-      default_pools = [cloudflare_load_balancer_pool.%[4]s-2.id]
+      fallback_pool = zenthcloud_load_balancer_pool.%[4]s-2.id
+      default_pools = [zenthcloud_load_balancer_pool.%[4]s-2.id]
       session_affinity = "cookie"
     }
   }]

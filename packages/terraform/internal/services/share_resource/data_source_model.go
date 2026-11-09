@@ -5,8 +5,8 @@ package share_resource
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/resource_sharing"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/resource_sharing"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -35,7 +35,7 @@ type ShareResourceDataSourceModel struct {
 
 func (m *ShareResourceDataSourceModel) toReadParams(_ context.Context) (params resource_sharing.ResourceGetParams, diags diag.Diagnostics) {
 	params = resource_sharing.ResourceGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -43,14 +43,14 @@ func (m *ShareResourceDataSourceModel) toReadParams(_ context.Context) (params r
 
 func (m *ShareResourceDataSourceModel) toListParams(_ context.Context) (params resource_sharing.ResourceListParams, diags diag.Diagnostics) {
 	params = resource_sharing.ResourceListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Filter.ResourceType.IsNull() {
-		params.ResourceType = cloudflare.F(resource_sharing.ResourceListParamsResourceType(m.Filter.ResourceType.ValueString()))
+		params.ResourceType = zenthcloud.F(resource_sharing.ResourceListParamsResourceType(m.Filter.ResourceType.ValueString()))
 	}
 	if !m.Filter.Status.IsNull() {
-		params.Status = cloudflare.F(resource_sharing.ResourceListParamsStatus(m.Filter.Status.ValueString()))
+		params.Status = zenthcloud.F(resource_sharing.ResourceListParamsStatus(m.Filter.Status.ValueString()))
 	}
 
 	return

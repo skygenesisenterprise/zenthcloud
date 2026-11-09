@@ -5,9 +5,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceDevicePostureRuleSchema returns the minimal schema for the legacy cloudflare_device_posture_rule resource.
+// SourceDevicePostureRuleSchema returns the minimal schema for the legacy zenthcloud_device_posture_rule resource.
 // Schema version: 0 (SDKv2 default)
-// Resource type: cloudflare_device_posture_rule
+// Resource type: zenthcloud_device_posture_rule
 //
 // This schema is used only for reading v4 state during migration.
 // It includes only the properties needed for state parsing (Required, Optional, Computed, ElementType).

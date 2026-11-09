@@ -60,7 +60,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf resource-sharing excluded-recipients get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/shares/${argv["share-id"] == null ? "<share-id>" : encodeURIComponent(String(argv["share-id"]))}/excluded-recipients/${argv["excluded-recipient-id"] == null ? "<excluded-recipient-id>" : encodeURIComponent(String(argv["excluded-recipient-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/shares/${argv["share-id"] == null ? "<share-id>" : encodeURIComponent(String(argv["share-id"]))}/excluded-recipients/${argv["excluded-recipient-id"] == null ? "<excluded-recipient-id>" : encodeURIComponent(String(argv["excluded-recipient-id"]))}`,
 						pathParams: {
 							"share-id": String(argv["share-id"] ?? ""),
 							"excluded-recipient-id": String(

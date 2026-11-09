@@ -3,7 +3,7 @@ package v500
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -12,7 +12,7 @@ import (
 //
 // For bot_management, v4 and v5 share the same field names and types for all v4 fields.
 // The transformation is a direct copy of all v4 fields, with new v5-only fields set to null.
-func Transform(ctx context.Context, source SourceCloudflareBotManagementModel) (*TargetBotManagementModel, diag.Diagnostics) {
+func Transform(ctx context.Context, source SourceZenthcloudBotManagementModel) (*TargetBotManagementModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Validate required fields

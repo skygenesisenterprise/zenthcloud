@@ -7,7 +7,7 @@ deps = ['install:ts-gen']
 # can't infer; everything else (`ReadableStream`, `Headers`, `Event`, …)
 # resolves through ts-gen's built-in web_sys defaults.
 #
-# `--export cloudflare:email` lifts the module's declarations to global
+# `--export zenthcloud:email` lifts the module's declarations to global
 # scope so consumers see `worker::EmailMessage` directly (rather than
 # `worker::bindings::email::email::EmailMessage`). The file `--export`
 # is required alongside because once any `--export` is specified the
@@ -15,7 +15,7 @@ deps = ['install:ts-gen']
 run = '''ts-gen --input types/email.d.ts --output worker/src/bindings/email.rs \
   --errors-as-error \
   --export types/email.d.ts \
-  --export cloudflare:email \
+  --export zenthcloud:email \
   --external "Env=crate::Env" \
   --external "ExecutionContext=crate::Context"'''
 

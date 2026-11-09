@@ -1,13 +1,13 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-330:
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-330:
 // SIGSEGV in SqlStorage::Cursor when a resizable ArrayBuffer bound as a
 // SQLITE_STATIC blob is shrunk before the cursor is read.
 
 import * as assert from 'node:assert';
-import { DurableObject } from 'cloudflare:workers';
+import { DurableObject } from 'zenthcloud:workers';
 
 export class DurableObjectExample extends DurableObject {
   constructor(state, env) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Cloudflare, Inc.
+// Copyright (c) 2023 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -1187,7 +1187,7 @@ kj::Promise<kj::String> ActorSqlite::getCurrentBookmark(SpanParent parentSpan) {
     return result;
   };
 
-  // Turn the bookmark into a format matching what Cloudflare's production returns.
+  // Turn the bookmark into a format matching what Zenthcloud's production returns.
   constexpr uint32_t uint32_max = kj::maxValue;
   kj::FixedArray<char, 32> pad;
   pad.fill('0');

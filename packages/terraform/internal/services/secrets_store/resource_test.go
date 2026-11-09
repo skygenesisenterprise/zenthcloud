@@ -6,15 +6,15 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/secrets_store"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/secrets_store"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
 )
 
 func TestMain(m *testing.M) {
@@ -25,10 +25,10 @@ func TestMain(m *testing.M) {
 // Secrets Store currently has a one-store-per-account limit.
 func getExistingStore(t *testing.T) (storeID, storeName string) {
 	t.Helper()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	client := acctest.SharedClient()
 	stores, err := client.SecretsStore.Stores.List(context.Background(), secrets_store.StoreListParams{
-		AccountID: cloudflare.F(accountID),
+		AccountID: zenthcloud.F(accountID),
 	})
 	if err != nil {
 		t.Fatalf("listing stores: %s", err)
@@ -39,21 +39,21 @@ func getExistingStore(t *testing.T) (storeID, storeName string) {
 	return stores.Result[0].ID, stores.Result[0].Name
 }
 
-// TestAccCloudflareSecretsStore_Import tests importing an existing secrets
+// TestAccZenthcloudSecretsStore_Import tests importing an existing secrets
 // store into Terraform state and verifying all fields are populated correctly.
 // Due to the one-store-per-account limit, this test uses the pre-existing store.
-func TestAccCloudflareSecretsStore_Import(t *testing.T) {
+func TestAccZenthcloudSecretsStore_Import(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("acceptance tests skipped unless TF_ACC is set")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		t.Skip("acceptance test requires CLOUDFLARE_ACCOUNT_ID")
+		t.Skip("acceptance test requires ZENTHCLOUD_ACCOUNT_ID")
 	}
 
 	storeID, storeName := getExistingStore(t)
-	resourceName := "cloudflare_secrets_store.test"
+	resourceName := "zenthcloud_secrets_store.test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -94,19 +94,19 @@ func TestAccCloudflareSecretsStore_Import(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareSecretsStore_Workflow tests the full lifecycle by creating
+// TestAccZenthcloudSecretsStore_Workflow tests the full lifecycle by creating
 // a store with a config, verifying computed fields, and importing. This test
 // requires an account with no existing store (due to the one-store-per-account
 // limit) and is skipped when a store already exists.
-func TestAccCloudflareSecretsStore_Workflow(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_secrets_store.test"
+func TestAccZenthcloudSecretsStore_Workflow(t *testing.T) {
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_secrets_store.test"
 	storeName := "cftftest-store"
 
 	// Skip if account already has a store.
 	client := acctest.SharedClient()
 	stores, err := client.SecretsStore.Stores.List(context.Background(), secrets_store.StoreListParams{
-		AccountID: cloudflare.F(accountID),
+		AccountID: zenthcloud.F(accountID),
 	})
 	if err == nil && len(stores.Result) > 0 {
 		t.Skip("skipping store create/delete test — account already has a store (1-store limit)")
@@ -135,7 +135,7 @@ func TestAccCloudflareSecretsStore_Workflow(t *testing.T) {
 
 func testAccSecretsStoreConfig(accountID, storeName string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_secrets_store" "test" {
+resource "zenthcloud_secrets_store" "test" {
   account_id = "%s"
   name       = "%s"
 }

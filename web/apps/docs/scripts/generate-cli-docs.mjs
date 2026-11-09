@@ -210,7 +210,7 @@ const GROUPS = {
 	"dns-provider": {
 		title: "DNS providers",
 		section: "Domains & networking",
-		blurb: "Zones and records for connected DNS providers such as Cloudflare and Route 53.",
+		blurb: "Zones and records for connected DNS providers such as Zenthcloud and Route 53.",
 	},
 	github: {
 		title: "GitHub",

@@ -33,5 +33,5 @@ const mainWorker :Workerd.Worker = (
     ),
   ],
   # Learn more about compatibility dates at:
-  # https://developers.cloudflare.com/workers/platform/compatibility-dates/
+  # https://github.com/skygenesisenterprise/zenthcloud
 );

@@ -13,9 +13,9 @@ from github import Github, UnknownObjectException
 FORMAT = "%(levelname)s - %(asctime)s: %(message)s"
 logging.basicConfig(format=FORMAT, level=logging.INFO)
 
-CLOUDFLARED_REPO = os.environ.get("GITHUB_REPO", "cloudflare/cloudflared")
+ZENTHCLOUDD_REPO = os.environ.get("GITHUB_REPO", "zenthcloud/zenthcloudd")
 GITHUB_CONFLICT_CODE = "already_exists"
-BASE_KV_URL = 'https://api.cloudflare.com/client/v4/accounts/'
+BASE_KV_URL = 'https://github.com/skygenesisenterprise/zenthcloud'
 
 
 def kv_get_keys(prefix, account, namespace, api_token):
@@ -141,7 +141,7 @@ def main():
     try:
         args = parse_args()
         client = Github(args.api_key)
-        repo = client.get_repo(CLOUDFLARED_REPO)
+        repo = client.get_repo(ZENTHCLOUDD_REPO)
         release = get_release(repo, args.release_version)
 
         msg = ""

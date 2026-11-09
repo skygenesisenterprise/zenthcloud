@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_workers_routes Data Source - Cloudflare"
+page_title: "zenthcloud_workers_routes Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Workers Routes ReadWorkers Routes Write
 ---
 
-# cloudflare_workers_routes (Data Source)
+# zenthcloud_workers_routes (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_workers_routes" "example_workers_routes" {
+data "zenthcloud_workers_routes" "example_workers_routes" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```
@@ -39,7 +39,7 @@ data "cloudflare_workers_routes" "example_workers_routes" {
 Read-Only:
 
 - `id` (String) Identifier.
-- `pattern` (String) Pattern to match incoming requests against. [Learn more](https://developers.cloudflare.com/workers/configuration/routing/routes/#matching-behavior).
+- `pattern` (String) Pattern to match incoming requests against. [Learn more](https://github.com/skygenesisenterprise/zenthcloud).
 - `script` (String) Name of the script to run if the route matches.
 
 

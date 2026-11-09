@@ -15,7 +15,7 @@ import (
 // - min_days_for_renewal: Dropped (removed in v5)
 //
 // All other fields are direct copies.
-func Transform(ctx context.Context, source SourceCloudflareOriginCACertificateModel) (*TargetOriginCACertificateModel, diag.Diagnostics) {
+func Transform(ctx context.Context, source SourceZenthcloudOriginCACertificateModel) (*TargetOriginCACertificateModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Initialize target model

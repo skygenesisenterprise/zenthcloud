@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_load_balancer_monitor Data Source - Cloudflare"
+page_title: "zenthcloud_load_balancer_monitor Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Load Balancing: Monitors and Pools ReadLoad Balancing: Monitors and Pools Write
 ---
 
-# cloudflare_load_balancer_monitor (Data Source)
+# zenthcloud_load_balancer_monitor (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_load_balancer_monitor" "example_load_balancer_monitor" {
+data "zenthcloud_load_balancer_monitor" "example_load_balancer_monitor" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   monitor_id = "f1aba936b94213e5b8dca0c0dbf1f9cc"
 }

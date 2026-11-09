@@ -21,17 +21,17 @@ func UpgradeFromV0(
 	resp.State.Raw = req.State.Raw
 }
 
-// UpgradeFromLegacyV3 handles state upgrades from the legacy cloudflare_record resource to cloudflare_dns_record.
-// This is triggered when users manually run `terraform state mv cloudflare_record.x cloudflare_dns_record.x`
+// UpgradeFromLegacyV3 handles state upgrades from the legacy zenthcloud_record resource to zenthcloud_dns_record.
+// This is triggered when users manually run `terraform state mv zenthcloud_record.x zenthcloud_dns_record.x`
 // (Terraform < 1.8), which preserves the source schema_version=3 from the legacy provider.
 //
-// Note: schema_version=3 was the final schema version of cloudflare_record in the legacy (SDKv2) provider
-// before it was deprecated. The state structure matches SourceCloudflareRecordModel.
+// Note: schema_version=3 was the final schema version of zenthcloud_record in the legacy (SDKv2) provider
+// before it was deprecated. The state structure matches SourceZenthcloudRecordModel.
 func UpgradeFromLegacyV3(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
-	tflog.Info(ctx, "Upgrading DNS record state from legacy cloudflare_record (schema_version=3)")
+	tflog.Info(ctx, "Upgrading DNS record state from legacy zenthcloud_record (schema_version=3)")
 
 	// Parse the state (schema_version=3, source resource type)
-	var sourceState SourceCloudflareRecordModel
+	var sourceState SourceZenthcloudRecordModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &sourceState)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -47,5 +47,5 @@ func UpgradeFromLegacyV3(ctx context.Context, req resource.UpgradeStateRequest, 
 	// Set the upgraded state
 	resp.Diagnostics.Append(resp.State.Set(ctx, targetState)...)
 
-	tflog.Info(ctx, "State upgrade from legacy cloudflare_record completed successfully")
+	tflog.Info(ctx, "State upgrade from legacy zenthcloud_record completed successfully")
 }

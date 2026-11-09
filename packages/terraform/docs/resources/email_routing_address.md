@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_email_routing_address Resource - Cloudflare"
+page_title: "zenthcloud_email_routing_address Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Email Routing Addresses ReadEmail Routing Addresses Write
 ---
 
-# cloudflare_email_routing_address (Resource)
+# zenthcloud_email_routing_address (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_email_routing_address" "example_email_routing_address" {
+resource "zenthcloud_email_routing_address" "example_email_routing_address" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   email = "user@example.com"
 }
@@ -48,7 +48,7 @@ Available values: "unverified", "verified".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_email_routing_address.example '<account_id>/<destination_address_identifier>'
+$ terraform import zenthcloud_email_routing_address.example '<account_id>/<destination_address_identifier>'
 ```
 
 

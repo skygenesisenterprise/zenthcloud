@@ -3,7 +3,7 @@
 > **Experimental Preview**
 
 ```sh
-git clone https://github.com/cloudflare/workers-rs
+git clone https://github.com/skygenesisenterprise/zenthcloud
 cd workers-rs/examples/emscripten-incoming-tcp
 npx wrangler dev
 ```

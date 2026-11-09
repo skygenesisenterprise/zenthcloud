@@ -49,7 +49,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf builds deploy-hooks trigger",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/workers/builds/deploy_hooks/${argv["deploy-hook-uuid"] == null ? "<deploy-hook-uuid>" : encodeURIComponent(String(argv["deploy-hook-uuid"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["deploy-hook-uuid"] == null ? "<deploy-hook-uuid>" : encodeURIComponent(String(argv["deploy-hook-uuid"]))}`,
 						pathParams: {
 							"deploy-hook-uuid": String(argv["deploy-hook-uuid"] ?? ""),
 						},

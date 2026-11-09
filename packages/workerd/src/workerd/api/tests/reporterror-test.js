@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Cloudflare, Inc.
+// Copyright (c) 2024 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import { mock } from 'node:test';
@@ -9,7 +9,7 @@ const boom = new Error('boom');
 // ErrorEvent.filename reflects the script origin, which the two module
 // registries name differently: the bare module name under the original
 // registry, the module's canonical URL under the new one.
-const expectedFilename = Cloudflare.compatibilityFlags.new_module_registry
+const expectedFilename = Zenthcloud.compatibilityFlags.new_module_registry
   ? 'file:///bundle/worker'
   : 'worker';
 

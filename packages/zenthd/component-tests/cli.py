@@ -3,13 +3,13 @@ import subprocess
 
 from constants import MANAGEMENT_HOST_NAME
 from setup import get_config_from_file
-from util import get_tunnel_connector_id, CloudflaredProcess
+from util import get_tunnel_connector_id, ZenthclouddProcess
 
 SINGLE_CASE_TIMEOUT = 600
 
-class CloudflaredCli:
+class ZenthclouddCli:
     def __init__(self, config, config_path, logger):
-        self.basecmd = [config.cloudflared_binary, "tunnel"]
+        self.basecmd = [config.zenthcloudd_binary, "tunnel"]
         if config_path is not None:
             self.basecmd += ["--config", str(config_path)]
         origincert = get_config_from_file()["origincert"]
@@ -30,7 +30,7 @@ class CloudflaredCli:
         return json.loads(listed.stdout)
 
     def get_management_token(self, config, config_path, resource):
-        basecmd = [config.cloudflared_binary]
+        basecmd = [config.zenthcloudd_binary]
         if config_path is not None:
             basecmd += ["--config", str(config_path)]
         origincert = get_config_from_file()["origincert"]
@@ -47,7 +47,7 @@ class CloudflaredCli:
         Get management token using the 'tail token' command.
         Returns a token scoped for 'logs' resource.
         """
-        basecmd = [config.cloudflared_binary]
+        basecmd = [config.zenthcloudd_binary]
         if config_path is not None:
             basecmd += ["--config", str(config_path)]
         origincert = get_config_from_file()["origincert"]
@@ -83,7 +83,7 @@ class CloudflaredCli:
     def __enter__(self):
         self.basecmd += ["run"]
         self.logger.info(f"Run cmd {self.basecmd}")
-        self.cfd = CloudflaredProcess(self.basecmd, allow_input=False, capture_output=True)
+        self.cfd = ZenthclouddProcess(self.basecmd, allow_input=False, capture_output=True)
         return self.cfd
 
     def __exit__(self, exc_type, exc_value, exc_traceback):

@@ -42,7 +42,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf user tokens verify",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/user/tokens/verify`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						bodyKind: "none",
 					});

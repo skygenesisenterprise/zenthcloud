@@ -5,7 +5,7 @@ package zero_trust_connectivity_settings
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
@@ -23,11 +23,11 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 		}.String(),
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "Cloudflare account ID",
+				Description: "Zenthcloud account ID",
 				Computed:    true,
 			},
 			"account_id": schema.StringAttribute{
-				Description: "Cloudflare account ID",
+				Description: "Zenthcloud account ID",
 				Required:    true,
 			},
 			"icmp_proxy_enabled": schema.BoolAttribute{

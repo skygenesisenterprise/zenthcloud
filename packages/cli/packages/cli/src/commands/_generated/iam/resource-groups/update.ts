@@ -70,7 +70,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf iam resource-groups update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/iam/resource_groups/${argv["resource-group-id"] == null ? "<resource-group-id>" : encodeURIComponent(String(argv["resource-group-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/iam/resource_groups/${argv["resource-group-id"] == null ? "<resource-group-id>" : encodeURIComponent(String(argv["resource-group-id"]))}`,
 						pathParams: {
 							"resource-group-id": String(argv["resource-group-id"] ?? ""),
 						},

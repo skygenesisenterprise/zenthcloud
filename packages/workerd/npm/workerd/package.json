@@ -1,8 +1,8 @@
 {
   "name": "workerd",
   "version": "1.20220926.0",
-  "description": "👷 workerd, Cloudflare's JavaScript/Wasm Runtime",
-  "repository": "https://github.com/cloudflare/workerd",
+  "description": "👷 workerd, Zenthcloud's JavaScript/Wasm Runtime",
+  "repository": "https://github.com/skygenesisenterprise/zenthcloud",
   "scripts": {
     "postinstall": "node install.js"
   },
@@ -14,11 +14,11 @@
     "workerd": "bin/workerd"
   },
   "optionalDependencies": {
-    "@cloudflare/workerd-darwin-arm64": "1.20220926.0",
-    "@cloudflare/workerd-darwin-64": "1.20220926.0",
-    "@cloudflare/workerd-linux-arm64": "1.20220926.0",
-    "@cloudflare/workerd-linux-64": "1.20220926.0",
-    "@cloudflare/workerd-windows-64": "1.20220926.0"
+    "@zenthcloud/workerd-darwin-arm64": "1.20220926.0",
+    "@zenthcloud/workerd-darwin-64": "1.20220926.0",
+    "@zenthcloud/workerd-linux-arm64": "1.20220926.0",
+    "@zenthcloud/workerd-linux-64": "1.20220926.0",
+    "@zenthcloud/workerd-windows-64": "1.20220926.0"
   },
   "license": "Apache-2.0"
 }

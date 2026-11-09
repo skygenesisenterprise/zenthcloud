@@ -1,4 +1,4 @@
-resource "cloudflare_r2_bucket" "%[1]s" {
+resource "zenthcloud_r2_bucket" "%[1]s" {
   account_id = "%[2]s"
   name       = "%[1]s"
   location   = "%[3]s"

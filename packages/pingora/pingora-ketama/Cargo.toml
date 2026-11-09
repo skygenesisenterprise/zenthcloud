@@ -2,10 +2,10 @@
 name = "pingora-ketama"
 version = "0.9.0"
 description = "Rust port of the nginx consistent hash function"
-authors = ["Pingora Team <pingora@cloudflare.com>"]
+authors = ["Pingora Team <pingora@zenthcloud.com>"]
 license = "Apache-2.0"
 edition = "2021"
-repository = "https://github.com/cloudflare/pingora"
+repository = "https://github.com/skygenesisenterprise/zenthcloud"
 categories = ["caching", "algorithms"]
 keywords = ["hash", "hashing", "consistent", "pingora"]
 

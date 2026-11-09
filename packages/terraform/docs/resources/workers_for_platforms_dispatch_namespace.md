@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_workers_for_platforms_dispatch_namespace Resource - Cloudflare"
+page_title: "zenthcloud_workers_for_platforms_dispatch_namespace Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Workers Scripts ReadWorkers Scripts WriteWorkers Tail Read
 ---
 
-# cloudflare_workers_for_platforms_dispatch_namespace (Resource)
+# zenthcloud_workers_for_platforms_dispatch_namespace (Resource)
 
 Accepted Permissions
 
@@ -17,7 +17,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_workers_for_platforms_dispatch_namespace" "example_workers_for_platforms_dispatch_namespace" {
+resource "zenthcloud_workers_for_platforms_dispatch_namespace" "example_workers_for_platforms_dispatch_namespace" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name = "my-dispatch-namespace"
 }
@@ -51,7 +51,7 @@ resource "cloudflare_workers_for_platforms_dispatch_namespace" "example_workers_
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_workers_for_platforms_dispatch_namespace.example '<account_id>/<dispatch_namespace>'
+$ terraform import zenthcloud_workers_for_platforms_dispatch_namespace.example '<account_id>/<dispatch_namespace>'
 ```
 
 

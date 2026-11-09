@@ -5,9 +5,9 @@ package custom_ssl
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/custom_certificates"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/custom_certificates"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -39,7 +39,7 @@ type CustomSSLDataSourceModel struct {
 
 func (m *CustomSSLDataSourceModel) toReadParams(_ context.Context) (params custom_certificates.CustomCertificateGetParams, diags diag.Diagnostics) {
 	params = custom_certificates.CustomCertificateGetParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	return
@@ -47,14 +47,14 @@ func (m *CustomSSLDataSourceModel) toReadParams(_ context.Context) (params custo
 
 func (m *CustomSSLDataSourceModel) toListParams(_ context.Context) (params custom_certificates.CustomCertificateListParams, diags diag.Diagnostics) {
 	params = custom_certificates.CustomCertificateListParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	if !m.Filter.Match.IsNull() {
-		params.Match = cloudflare.F(custom_certificates.CustomCertificateListParamsMatch(m.Filter.Match.ValueString()))
+		params.Match = zenthcloud.F(custom_certificates.CustomCertificateListParamsMatch(m.Filter.Match.ValueString()))
 	}
 	if !m.Filter.Status.IsNull() {
-		params.Status = cloudflare.F(custom_certificates.CustomCertificateListParamsStatus(m.Filter.Status.ValueString()))
+		params.Status = zenthcloud.F(custom_certificates.CustomCertificateListParamsStatus(m.Filter.Status.ValueString()))
 	}
 
 	return

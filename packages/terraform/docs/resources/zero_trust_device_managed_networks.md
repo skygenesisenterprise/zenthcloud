@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_device_managed_networks Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_device_managed_networks Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust Write
 ---
 
-# cloudflare_zero_trust_device_managed_networks (Resource)
+# zenthcloud_zero_trust_device_managed_networks (Resource)
 
 Accepted Permissions
 
@@ -15,7 +15,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_device_managed_networks" "example_zero_trust_device_managed_networks" {
+resource "zenthcloud_zero_trust_device_managed_networks" "example_zero_trust_device_managed_networks" {
   account_id = "699d98642c564d2e855e9661899b7252"
   config = {
     tls_sockaddr = "foo.bar:1234"
@@ -58,7 +58,7 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_device_managed_networks.example '<account_id>/<network_id>'
+$ terraform import zenthcloud_zero_trust_device_managed_networks.example '<account_id>/<network_id>'
 ```
 
 

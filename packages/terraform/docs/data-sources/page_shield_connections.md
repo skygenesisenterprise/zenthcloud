@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_page_shield_connections Data Source - Cloudflare"
+page_title: "zenthcloud_page_shield_connections Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Domain Page ShieldDomain Page Shield ReadPage ShieldPage Shield ReadZone Settings ReadZone Settings Write
 ---
 
-# cloudflare_page_shield_connections (Data Source)
+# zenthcloud_page_shield_connections (Data Source)
 
 Accepted Permissions
 
@@ -20,7 +20,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_page_shield_connections" "example_page_shield_connections" {
+data "zenthcloud_page_shield_connections" "example_page_shield_connections" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   connection_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }

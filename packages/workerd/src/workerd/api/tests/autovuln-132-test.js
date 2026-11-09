@@ -1,10 +1,10 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
 import { rejects } from 'node:assert';
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-132.
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-132.
 // ReaderImpl::read() holds only a raw ReadableStreamController& across the
 // synchronous pull() callback. If pull() calls reader.releaseLock(), the
 // jsg::Ref<ReadableStream> in the Attached state is destroyed. gc() then

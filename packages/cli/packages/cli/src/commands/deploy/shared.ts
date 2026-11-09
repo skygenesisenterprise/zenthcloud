@@ -1,19 +1,19 @@
-import { readBuildOutput } from "@cloudflare/build-output-utils";
+import { readBuildOutput } from "@zenthcloud/build-output-utils";
 import {
 	cleanupBuiltImages,
 	configureOpenAPIForContainerPull,
 	initContainersSharedContext,
-} from "@cloudflare/containers-shared";
+} from "@zenthcloud/containers-shared";
 import {
 	deploy,
 	versionsUpload,
 	initDeployHelpersContext,
-} from "@cloudflare/deploy-helpers";
+} from "@zenthcloud/deploy-helpers";
 import {
-	getCloudflareApiBaseUrl,
-	getCloudflareComplianceRegion,
+	getZenthcloudApiBaseUrl,
+	getZenthcloudComplianceRegion,
 	getDockerPath,
-} from "@cloudflare/workers-utils";
+} from "@zenthcloud/workers-utils";
 import { resolveBuildOutputAuth } from "../../lib/build-output-auth.js";
 import {
 	buildOutputWorkerOption,
@@ -30,7 +30,7 @@ import {
 	createDeployProps,
 	createVersionsUploadProps,
 } from "../../lib/deploy-input.js";
-import { withCloudflareDotEnv } from "../../lib/dotenv.js";
+import { withZenthcloudDotEnv } from "../../lib/dotenv.js";
 import { log } from "../../lib/ui/log.js";
 import { runBuild } from "../build/index.js";
 import { createContainerDeployConfig } from "./containers.js";
@@ -108,7 +108,7 @@ export async function runUpload(argv: UploadArgs, ctx: UploadCommand) {
 		log.message("");
 	}
 
-	return withCloudflareDotEnv(argv, () => uploadBuildOutput(argv, ctx));
+	return withZenthcloudDotEnv(argv, () => uploadBuildOutput(argv, ctx));
 }
 
 async function uploadBuildOutput(argv: UploadArgs, ctx: UploadCommand) {
@@ -142,7 +142,7 @@ async function uploadBuildOutput(argv: UploadArgs, ctx: UploadCommand) {
 	);
 	const buildResult = assembleBuildResult(worker, parsedWorker.builtConfig);
 
-	const complianceRegion = getCloudflareComplianceRegion(wranglerConfig);
+	const complianceRegion = getZenthcloudComplianceRegion(wranglerConfig);
 	const { authToken, accountId } = await resolveBuildOutputAuth({
 		accountId: rootConfig.accountId,
 		complianceRegion,
@@ -161,7 +161,7 @@ async function uploadBuildOutput(argv: UploadArgs, ctx: UploadCommand) {
 		configureOpenAPIForContainerPull(
 			accountId,
 			authToken,
-			getCloudflareApiBaseUrl(wranglerConfig)
+			getZenthcloudApiBaseUrl(wranglerConfig)
 		);
 	}
 	const containerDeployConfig = createContainerDeployConfig(
@@ -204,7 +204,7 @@ async function uploadBuildOutput(argv: UploadArgs, ctx: UploadCommand) {
 				workersDevConfigAssignment: (value) => `workersDev: ${value}`,
 				previewUrlsConfigFieldName: "previewUrls",
 				previewUrlsConfigAssignment: (value) => `previewUrls: ${value}`,
-				configFileName: "cloudflare.config.ts",
+				configFileName: "zenthcloud.config.ts",
 				observabilityTargetPercentageField: "targetInstancePercentage",
 				observabilityTargetCountField: "targetInstanceCount",
 				syncWorkersSite: undefined,

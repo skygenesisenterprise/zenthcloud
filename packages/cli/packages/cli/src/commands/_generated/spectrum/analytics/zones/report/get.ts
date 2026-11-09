@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf spectrum analytics zones report get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/user/spectrum_analytics/zones/report`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

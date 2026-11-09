@@ -618,18 +618,18 @@ type TargetV5OriginRangeRequestsModel struct {
 type TargetV5CacheControlValueModel struct {
 	Operation      types.String `tfsdk:"operation"`
 	Value          types.Int64  `tfsdk:"value"`
-	CloudflareOnly types.Bool   `tfsdk:"cloudflare_only"`
+	ZenthcloudOnly types.Bool   `tfsdk:"zenthcloud_only"`
 }
 
 type TargetV5CacheControlSimpleModel struct {
 	Operation      types.String `tfsdk:"operation"`
-	CloudflareOnly types.Bool   `tfsdk:"cloudflare_only"`
+	ZenthcloudOnly types.Bool   `tfsdk:"zenthcloud_only"`
 }
 
 type TargetV5CacheControlQualifiersModel struct {
 	Operation      types.String   `tfsdk:"operation"`
 	Qualifiers     []types.String `tfsdk:"qualifiers"`
-	CloudflareOnly types.Bool     `tfsdk:"cloudflare_only"`
+	ZenthcloudOnly types.Bool     `tfsdk:"zenthcloud_only"`
 }
 
 // TargetV5FieldNameModel is used for cookie_fields, request_fields, transformed_request_fields.

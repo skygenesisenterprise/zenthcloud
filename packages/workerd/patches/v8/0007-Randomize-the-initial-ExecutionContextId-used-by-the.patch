@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Orion Hodson <orion@cloudflare.com>
+From: Orion Hodson <orion@zenthcloud.com>
 Date: Wed, 13 Sep 2023 15:38:15 +0100
 Subject: Randomize the initial ExecutionContextId used by the inspector
 
@@ -7,7 +7,7 @@ This is to help the devtools sources panel when workerd is re-started
 by miniflare. This happens because workerd does not support re-loading
 live workers (https://chat.google.com/room/AAAAnS2bXT4/GX5-pa8O0ts).
 
-Signed-off-by: James M Snell <jsnell@cloudflare.com>
+Signed-off-by: James M Snell <jsnell@zenthcloud.com>
 
 diff --git a/src/inspector/v8-inspector-impl.cc b/src/inspector/v8-inspector-impl.cc
 index 5f89266767ba0126d694700d12154e11b07849d8..ce1eae3c0c3cfabaeb8d1ac016cccd41010586e4 100644

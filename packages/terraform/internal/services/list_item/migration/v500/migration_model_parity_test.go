@@ -8,9 +8,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/list_item"
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/list_item/migration/v500"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/test_helpers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/list_item"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/list_item/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 // TestListItemMigrationModelSchemaParity verifies that TargetListItemModel

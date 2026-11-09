@@ -9,11 +9,11 @@ import (
 // Source Models (Legacy Provider - v4.x SDKv2)
 // ============================================================================
 
-// SourceCloudflareLogpushJobModel represents the source cloudflare_logpush_job state structure.
+// SourceZenthcloudLogpushJobModel represents the source zenthcloud_logpush_job state structure.
 // This corresponds to version 0 state in the raw v4 SDKv2 format.
 // Also handles early v5 releases like v5.16.0 that use version 0.
 // Used by UpgradeFromV4 to parse version 0 state.
-type SourceCloudflareLogpushJobModel struct {
+type SourceZenthcloudLogpushJobModel struct {
 	ID                       types.String                         `tfsdk:"id"`
 	AccountID                types.String                         `tfsdk:"account_id"`
 	ZoneID                   types.String                         `tfsdk:"zone_id"`
@@ -53,7 +53,7 @@ type SourceLogpushJobOutputOptionsModel struct {
 // Target Models (Current Provider - v5.x+ Plugin Framework)
 // ============================================================================
 
-// TargetLogpushJobModel represents the target cloudflare_logpush_job state structure (v500).
+// TargetLogpushJobModel represents the target zenthcloud_logpush_job state structure (v500).
 // This matches the model in the parent package (internal/services/logpush_job/model.go).
 type TargetLogpushJobModel struct {
 	ID                       types.Int64                         `tfsdk:"id"`

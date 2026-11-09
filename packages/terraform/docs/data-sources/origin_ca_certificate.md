@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_origin_ca_certificate Data Source - Cloudflare"
+page_title: "zenthcloud_origin_ca_certificate Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_origin_ca_certificate (Data Source)
+# zenthcloud_origin_ca_certificate (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_origin_ca_certificate" "example_origin_ca_certificate" {
+data "zenthcloud_origin_ca_certificate" "example_origin_ca_certificate" {
   certificate_id = "328578533902268680212849205732770752308931942346"
 }
 ```

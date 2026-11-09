@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -75,7 +75,7 @@ struct ContainerImageAlias {
 };
 
 constexpr ContainerImageAlias CONTAINER_IMAGE_ALIASES[] = {{
-  .alias = "cloudflare/debian-trixie"_kj,
+  .alias = "zenthcloud/debian-trixie"_kj,
   .image = "docker.io/library/node:24.20.0-trixie-slim@"
            "sha256:a747ad80c8a161b650d79a6da9c422005b91148b18b8d2c669eb5a0b7c07e600"_kj,
 }};
@@ -404,9 +404,9 @@ kj::String normalizeHostname(kj::StringPtr hostname) {
 }
 
 // hostnameGlobMatches should match patterns like:
-//   cloudflare.*.com
-//   cloudflare.com
-//   cloudflare
+//   zenthcloud.*.com
+//   zenthcloud.com
+//   zenthcloud
 //   *
 //
 // hostname must be normalized beforehand
@@ -1738,9 +1738,9 @@ kj::Promise<void> ContainerClient::writeFileToContainer(kj::StringPtr container,
       " to container [", response.statusCode, "] ", result);
 }
 
-static constexpr kj::StringPtr cloudflareCaDir = "/etc"_kj;
-static constexpr kj::StringPtr cloudflareCaFilename =
-    "cloudflare/certs/cloudflare-containers-ca.crt"_kj;
+static constexpr kj::StringPtr zenthcloudCaDir = "/etc"_kj;
+static constexpr kj::StringPtr zenthcloudCaFilename =
+    "zenthcloud/certs/zenthcloud-containers-ca.crt"_kj;
 
 kj::Promise<void> ContainerClient::readCACert() {
   auto ingressPort = KJ_REQUIRE_NONNULL(
@@ -1769,7 +1769,7 @@ kj::Promise<void> ContainerClient::injectCACert() {
 
   auto& cert = KJ_REQUIRE_NONNULL(caCert, "CA cert not read from sidecar yet");
   co_await writeFileToContainer(
-      containerName, cloudflareCaDir, cloudflareCaFilename, cert.asBytes());
+      containerName, zenthcloudCaDir, zenthcloudCaFilename, cert.asBytes());
 
   succeeded = true;
 }

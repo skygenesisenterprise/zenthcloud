@@ -7,14 +7,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceCloudflareNotificationPolicySchema returns the source schema for legacy resource.
+// SourceZenthcloudNotificationPolicySchema returns the source schema for legacy resource.
 // Schema version: 0 (SDK v2 implicit version)
-// Resource type: cloudflare_notification_policy
+// Resource type: zenthcloud_notification_policy
 //
 // This minimal schema is used only for reading v4 state during migration.
 // It includes only the properties needed for state parsing (Required, Optional, Computed, ElementType).
 // Validators, PlanModifiers, and Descriptions are intentionally omitted.
-func SourceCloudflareNotificationPolicySchema() schema.Schema {
+func SourceZenthcloudNotificationPolicySchema() schema.Schema {
 	return schema.Schema{
 		Version: 0, // SDK v2 implicit version
 		Attributes: map[string]schema.Attribute{

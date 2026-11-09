@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudflare/pint/internal/parser"
+	"github.com/zenthcloud/pint/internal/parser"
 )
 
 func FuzzParse(f *testing.F) {

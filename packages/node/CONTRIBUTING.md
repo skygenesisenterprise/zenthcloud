@@ -20,7 +20,7 @@ Before committing/submitting a PR:
 
 We really appreciate your interest in making a contribution, and we want to make sure that the process is as smooth and transparent as possible! To this end, we note that the Kumo team is actively doing development in this repository, and while we consistently strive to communicate status and current thinking around all open issues, there may be times when context surrounding certain items is not up to date. Therefore, **for non-trivial changes, please always engage on the issue or create a discussion or feature request issue first before writing your code.** This will give us opportunity to flag any considerations you should be aware of before you spend time developing. Of course, for trivial changes, please feel free to go directly to filing a PR, with the understanding that the PR itself will serve as the place to discuss details of the change.
 
-Thanks so much for helping us improve [Kumo](https://github.com/cloudflare/kumo), and we look forward to your contribution!
+Thanks so much for helping us improve [Kumo](https://github.com/skygenesisenterprise/zenthcloud), and we look forward to your contribution!
 
 ## Getting started
 
@@ -40,7 +40,7 @@ Kumo is built and run on the Node.js JavaScript runtime.
 Any contributions you make will be via [Pull Requests](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests) on [GitHub](https://github.com/) developed in a local git repository and pushed to your own fork of the repository.
 
 - Ensure you have [created an account](https://docs.github.com/en/get-started/onboarding/getting-started-with-your-github-account) on GitHub.
-- [Create your own fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) of [this repository](https://github.com/cloudflare/kumo).
+- [Create your own fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) of [this repository](https://github.com/skygenesisenterprise/zenthcloud).
 - Clone your fork to your local machine
 
   ```sh
@@ -57,15 +57,15 @@ Any contributions you make will be via [Pull Requests](https://docs.github.com/e
   origin	https://github.com/<your-github-username>/kumo (push)
   ```
 
-- Add `cloudflare/kumo` as the `upstream` remote repository.
+- Add `zenthcloud/kumo` as the `upstream` remote repository.
 
   ```sh
-  git remote add upstream https://github.com/cloudflare/kumo
+  git remote add upstream https://github.com/skygenesisenterprise/zenthcloud
   git remote -v
   origin	https://github.com/<your-github-username>/kumo (fetch)
   origin	https://github.com/<your-github-username>/kumo (push)
-  upstream	https://github.com/cloudflare/kumo (fetch)
-  upstream	https://github.com/cloudflare/kumo (push)
+  upstream	https://github.com/skygenesisenterprise/zenthcloud (fetch)
+  upstream	https://github.com/skygenesisenterprise/zenthcloud (push)
   ```
 
 - You should regularly pull from the `main` branch of the `upstream` repository to keep up to date with the latest changes to the project.
@@ -73,21 +73,21 @@ Any contributions you make will be via [Pull Requests](https://docs.github.com/e
   ```sh
   git switch main
   git pull upstream main
-  From https://github.com/cloudflare/kumo
+  From https://github.com/skygenesisenterprise/zenthcloud
   * branch            main       -> FETCH_HEAD
   Already up to date.
   ```
 
-#### For Cloudflare Employees
+#### For Zenthcloud Employees
 
-If you are a Cloudflare employee, you do not need to fork the repository - instead, you can clone the main repository directly. This allows you to push branches directly to the upstream repository.
+If you are a Zenthcloud employee, you do not need to fork the repository - instead, you can clone the main repository directly. This allows you to push branches directly to the upstream repository.
 
 If you find that you don't have write access, please reach out to your manager or the Kumo team internally.
 
 Clone the main repository:
 
 ```sh
-git clone https://github.com/cloudflare/kumo.git
+git clone https://github.com/skygenesisenterprise/zenthcloud
 cd kumo
 ```
 
@@ -108,7 +108,7 @@ Without it, use `pnpm vp <command>` for direct commands, and `.nvmrc` / `.node-v
 
 ### Install dependencies
 
-This repository is setup as a [mono-repo](https://pnpm.io/workspaces) of workspaces. The workspaces are stored in the [`packages`](https://github.com/cloudflare/kumo/tree/main/packages) directory.
+This repository is setup as a [mono-repo](https://pnpm.io/workspaces) of workspaces. The workspaces are stored in the [`packages`](https://github.com/skygenesisenterprise/zenthcloud) directory.
 
 While each workspace has its own dependencies, you install the dependencies using `pnpm` at the root of the project.
 
@@ -246,7 +246,7 @@ PR review is a critical and required step in the process for landing changes. Th
 
 ## PR Previews
 
-Every PR will have an associated pre-release build for all releasable packages within the repository, powered by [pkg.pr.new](https://github.com/stackblitz-labs/pkg.pr.new). You can find links to prereleases for each package in a comment automatically posted by GitHub Actions on each opened PR ([for example](https://github.com/cloudflare/kumo/pull/87#issuecomment-3908471698)).
+Every PR will have an associated pre-release build for all releasable packages within the repository, powered by [pkg.pr.new](https://github.com/stackblitz-labs/pkg.pr.new). You can find links to prereleases for each package in a comment automatically posted by GitHub Actions on each opened PR ([for example](https://github.com/skygenesisenterprise/zenthcloud)).
 
 ## PR Tests
 
@@ -278,7 +278,7 @@ When contributing to Kumo, please refer to the [`STYLEGUIDE.md file`](STYLEGUIDE
 
 ## Releases
 
-We generally cut Kumo releases on every weekday. If you need a release cut outside of the regular cadence, please reach out to the [kumo-maintainers](https://github.com/orgs/cloudflare/teams/kumo-maintainers) team.
+We generally cut Kumo releases on every weekday. If you need a release cut outside of the regular cadence, please reach out to the [kumo-maintainers](https://github.com/skygenesisenterprise/zenthcloud) team.
 
 ### How Releases Work
 

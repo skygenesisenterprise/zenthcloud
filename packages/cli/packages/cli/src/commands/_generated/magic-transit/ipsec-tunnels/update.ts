@@ -65,15 +65,15 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 			description:
 				"MD5 key to use for session authentication.\n\nNote that *this is not a security measure*. MD5 is not a valid security mechanism, and the\nkey is not treated as a secret value. This is *only* supported for preventing\nmisconfiguration, not for defending against malicious attacks.\n\nThe MD5 key, if set, must be of non-zero length and consist only of the following types of\ncharacter:\n\n* ASCII alphanumerics: `[a-zA-Z0-9]`\n* Special characters in the set `'!@#$%^&*()+[]{}<>/.,;:_-~`= \\|`\n\nIn other words, MD5 keys may contain any printable ASCII character aside from newline (0x0A),\nquotation mark (`\"`), vertical tab (0x0B), carriage return (0x0D), tab (0x09), form feed\n(0x0C), and the question mark (`?`). Requests specifying an MD5 key with one or more of\nthese disallowed characters will be rejected.",
 		})
-		.option("cloudflare-endpoint", {
+		.option("zenthcloud-endpoint", {
 			type: "string",
 			description:
-				"The IP address assigned to the Cloudflare side of the IPsec tunnel.",
+				"The IP address assigned to the Zenthcloud side of the IPsec tunnel.",
 		})
 		.option("custom-remote-identities-fqdn-id", {
 			type: "string",
 			description:
-				"A custom IKE ID of type FQDN that may be used to identity the IPsec tunnel. The\ngenerated IKE IDs can still be used even if this custom value is specified.\n\nMust be of the form `<custom label>.<account ID>.custom.ipsec.cloudflare.com`.\n\nThis custom ID does not need to be unique. Two IPsec tunnels may have the same custom\nfqdn_id. However, if another IPsec tunnel has the same value then the two tunnels\ncannot have the same cloudflare_endpoint.",
+				"A custom IKE ID of type FQDN that may be used to identity the IPsec tunnel. The\ngenerated IKE IDs can still be used even if this custom value is specified.\n\nMust be of the form `<custom label>.<account ID>.custom.ipsec.zenthcloud.com`.\n\nThis custom ID does not need to be unique. Two IPsec tunnels may have the same custom\nfqdn_id. However, if another IPsec tunnel has the same value then the two tunnels\ncannot have the same zenthcloud_endpoint.",
 		})
 		.option("customer-endpoint", {
 			type: "string",
@@ -114,7 +114,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("health-check-direction", {
 			type: "string",
 			description:
-				"The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Cloudflare via the open Internet, or bidirectional where both the probe and result come and go via the tunnel.",
+				"The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Zenthcloud via the open Internet, or bidirectional where both the probe and result come and go via the tunnel.",
 			choices: ["unidirectional", "bidirectional"],
 		})
 		.coerce("health-check-direction", (value) =>
@@ -143,7 +143,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("replay-protection", {
 			type: "boolean",
 			description:
-				"If `true`, then IPsec replay protection will be supported in the Cloudflare-to-customer direction.",
+				"If `true`, then IPsec replay protection will be supported in the Zenthcloud-to-customer direction.",
 		})
 		.option("dry-run", {
 			type: "boolean",
@@ -210,7 +210,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf magic-transit ipsec-tunnels update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/magic/ipsec_tunnels/${argv["ipsec-tunnel-id"] == null ? "<ipsec-tunnel-id>" : encodeURIComponent(String(argv["ipsec-tunnel-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/magic/ipsec_tunnels/${argv["ipsec-tunnel-id"] == null ? "<ipsec-tunnel-id>" : encodeURIComponent(String(argv["ipsec-tunnel-id"]))}`,
 						pathParams: {
 							"ipsec-tunnel-id": String(argv["ipsec-tunnel-id"] ?? ""),
 						},
@@ -239,9 +239,9 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 												"text"
 											),
 										},
-										cloudflare_endpoint: resolveFileToken(
-											argv["cloudflare-endpoint"] as string | undefined,
-											"cloudflare-endpoint",
+										zenthcloud_endpoint: resolveFileToken(
+											argv["zenthcloud-endpoint"] as string | undefined,
+											"zenthcloud-endpoint",
 											"text"
 										),
 										custom_remote_identities: {
@@ -326,10 +326,10 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatOutput(result, { successLabel: `Updated` });
 					return;
 				}
-				if (argv["cloudflare-endpoint"] === undefined) {
-					argv["cloudflare-endpoint"] = await promptForRequiredField(
-						"cloudflare-endpoint",
-						"The IP address assigned to the Cloudflare side of the IPsec tunnel."
+				if (argv["zenthcloud-endpoint"] === undefined) {
+					argv["zenthcloud-endpoint"] = await promptForRequiredField(
+						"zenthcloud-endpoint",
+						"The IP address assigned to the Zenthcloud side of the IPsec tunnel."
 					);
 				}
 				if (argv["interface-address"] === undefined) {
@@ -395,13 +395,13 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 							"text"
 						)
 					);
-				if (argv["cloudflare-endpoint"] !== undefined)
+				if (argv["zenthcloud-endpoint"] !== undefined)
 					setNestedValue(
 						bodyData,
-						["cloudflare_endpoint"],
+						["zenthcloud_endpoint"],
 						resolveFileToken(
-							argv["cloudflare-endpoint"] as string | undefined,
-							"cloudflare-endpoint",
+							argv["zenthcloud-endpoint"] as string | undefined,
+							"zenthcloud-endpoint",
 							"text"
 						)
 					);

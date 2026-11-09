@@ -1,4 +1,4 @@
-import { env } from 'cloudflare:workers'
+import { env } from 'zenthcloud:workers'
 import { isolate } from './lib/isolate'
 import type { Tool } from '@modelcontextprotocol/server'
 import type { SpecArtifactName } from './spec-release'

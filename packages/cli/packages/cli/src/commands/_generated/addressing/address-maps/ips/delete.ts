@@ -68,7 +68,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf addressing address-maps ips delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/addressing/address_maps/${argv["address-map-id"] == null ? "<address-map-id>" : encodeURIComponent(String(argv["address-map-id"]))}/ips/${argv["ip-address"] == null ? "<ip-address>" : encodeURIComponent(String(argv["ip-address"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/addressing/address_maps/${argv["address-map-id"] == null ? "<address-map-id>" : encodeURIComponent(String(argv["address-map-id"]))}/ips/${argv["ip-address"] == null ? "<ip-address>" : encodeURIComponent(String(argv["ip-address"]))}`,
 						pathParams: {
 							"address-map-id": String(argv["address-map-id"] ?? ""),
 							"ip-address": String(argv["ip-address"] ?? ""),

@@ -2,11 +2,11 @@ import {
 	configureOpenAPIForContainerPull,
 	initContainersSharedContext,
 	pushCommand,
-} from "@cloudflare/containers-shared";
+} from "@zenthcloud/containers-shared";
 import {
 	mockConsoleMethods,
 	runInTempDir,
-} from "@cloudflare/workers-utils/test-helpers";
+} from "@zenthcloud/workers-utils/test-helpers";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { generateResourceIndexFile } from "../helpers/forge-cli.js";
 import {
@@ -15,7 +15,7 @@ import {
 } from "../helpers/forge-cli.js";
 import { runCf } from "../helpers/run-cf.js";
 
-vi.mock("@cloudflare/containers-shared", async (importOriginal) => {
+vi.mock("@zenthcloud/containers-shared", async (importOriginal) => {
 	const actual = (await importOriginal()) as Record<string, unknown>;
 	return {
 		...actual,
@@ -31,10 +31,10 @@ describe("cf containers push", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		vi.stubEnv("CLOUDFLARE_API_TOKEN", "test-api-token");
-		vi.stubEnv("CLOUDFLARE_ACCOUNT_ID", "test-account-id");
-		vi.stubEnv("CLOUDFLARE_API_BASE_URL", undefined);
-		vi.stubEnv("CLOUDFLARE_COMPLIANCE_REGION", undefined);
+		vi.stubEnv("ZENTHCLOUD_API_TOKEN", "test-api-token");
+		vi.stubEnv("ZENTHCLOUD_ACCOUNT_ID", "test-account-id");
+		vi.stubEnv("ZENTHCLOUD_API_BASE_URL", undefined);
+		vi.stubEnv("ZENTHCLOUD_COMPLIANCE_REGION", undefined);
 		vi.mocked(pushCommand).mockResolvedValue(undefined);
 	});
 
@@ -51,7 +51,7 @@ describe("cf containers push", () => {
 		expect(configureOpenAPIForContainerPull).toHaveBeenCalledWith(
 			"test-account-id",
 			"test-api-token",
-			"https://api.cloudflare.com/client/v4"
+			"https://github.com/skygenesisenterprise/zenthcloud"
 		);
 		expect(pushCommand).toHaveBeenCalledWith(
 			{ TAG: "example/image:tag", pathToDocker: undefined },

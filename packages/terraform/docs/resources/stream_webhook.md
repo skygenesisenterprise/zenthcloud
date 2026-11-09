@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_stream_webhook Resource - Cloudflare"
+page_title: "zenthcloud_stream_webhook Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Stream ReadStream Write
 ---
 
-# cloudflare_stream_webhook (Resource)
+# zenthcloud_stream_webhook (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_stream_webhook" "example_stream_webhook" {
+resource "zenthcloud_stream_webhook" "example_stream_webhook" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   notification_url = "https://example.com"
 }

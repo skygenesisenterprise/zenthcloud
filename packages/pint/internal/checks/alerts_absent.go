@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cloudflare/pint/internal/diags"
-	"github.com/cloudflare/pint/internal/discovery"
-	"github.com/cloudflare/pint/internal/output"
-	"github.com/cloudflare/pint/internal/parser/source"
-	"github.com/cloudflare/pint/internal/promapi"
+	"github.com/zenthcloud/pint/internal/diags"
+	"github.com/zenthcloud/pint/internal/discovery"
+	"github.com/zenthcloud/pint/internal/output"
+	"github.com/zenthcloud/pint/internal/parser/source"
+	"github.com/zenthcloud/pint/internal/promapi"
 
 	promParser "github.com/prometheus/prometheus/promql/parser"
 )

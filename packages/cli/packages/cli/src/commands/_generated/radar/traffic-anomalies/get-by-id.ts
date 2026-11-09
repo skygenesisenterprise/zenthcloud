@@ -57,7 +57,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar traffic-anomalies get-by-id",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/traffic_anomalies/${argv["uuid"] == null ? "<uuid>" : encodeURIComponent(String(argv["uuid"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["uuid"] == null ? "<uuid>" : encodeURIComponent(String(argv["uuid"]))}`,
 						pathParams: { uuid: String(argv["uuid"] ?? "") },
 						query: queryParams,
 						bodyKind: "none",

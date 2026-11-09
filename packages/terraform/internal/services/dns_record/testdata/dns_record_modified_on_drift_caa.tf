@@ -1,4 +1,4 @@
-resource "cloudflare_dns_record" "%[1]s_caa" {
+resource "zenthcloud_dns_record" "%[1]s_caa" {
   zone_id = "%[2]s"
   name    = "tf-acctest-caa.%[1]s.%[3]s"
   type    = "CAA"
@@ -12,7 +12,7 @@ resource "cloudflare_dns_record" "%[1]s_caa" {
 }
 
 # Also test LOC record with data field
-resource "cloudflare_dns_record" "%[1]s_loc" {
+resource "zenthcloud_dns_record" "%[1]s_loc" {
   zone_id = "%[2]s"
   name    = "tf-acctest-loc.%[1]s.%[3]s"
   type    = "LOC"

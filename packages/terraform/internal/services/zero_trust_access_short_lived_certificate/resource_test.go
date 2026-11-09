@@ -6,12 +6,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go"
-	cloudflare_v6 "github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go"
+	zenthcloud_v6 "github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -23,22 +23,22 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zero_trust_access_short_lived_certificate", &resource.Sweeper{
-		Name: "cloudflare_zero_trust_access_short_lived_certificate",
-		F:    testSweepCloudflareZeroTrustAccessShortLivedCertificate,
+	resource.AddTestSweepers("zenthcloud_zero_trust_access_short_lived_certificate", &resource.Sweeper{
+		Name: "zenthcloud_zero_trust_access_short_lived_certificate",
+		F:    testSweepZenthcloudZeroTrustAccessShortLivedCertificate,
 	})
 }
 
-func testSweepCloudflareZeroTrustAccessShortLivedCertificate(r string) error {
+func testSweepZenthcloudZeroTrustAccessShortLivedCertificate(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	// List all applications to get app names for filtering
 	appsResp, err := client.ZeroTrust.Access.Applications.List(
 		ctx,
 		zero_trust.AccessApplicationListParams{
-			AccountID: cloudflare_v6.F(accountID),
+			AccountID: zenthcloud_v6.F(accountID),
 		},
 	)
 	if err != nil {
@@ -63,7 +63,7 @@ func testSweepCloudflareZeroTrustAccessShortLivedCertificate(r string) error {
 	casResp, err := client.ZeroTrust.Access.Applications.CAs.List(
 		ctx,
 		zero_trust.AccessApplicationCAListParams{
-			AccountID: cloudflare_v6.F(accountID),
+			AccountID: zenthcloud_v6.F(accountID),
 		},
 	)
 	if err != nil {
@@ -83,7 +83,7 @@ func testSweepCloudflareZeroTrustAccessShortLivedCertificate(r string) error {
 			ctx,
 			ca.AUD,
 			zero_trust.AccessApplicationCADeleteParams{
-				AccountID: cloudflare_v6.F(accountID),
+				AccountID: zenthcloud_v6.F(accountID),
 			},
 		)
 		if err != nil {
@@ -94,11 +94,11 @@ func testSweepCloudflareZeroTrustAccessShortLivedCertificate(r string) error {
 	return nil
 }
 
-func TestAccCloudflareAccessCACertificate_AccountLevel(t *testing.T) {
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+func TestAccZenthcloudAccessCACertificate_AccountLevel(t *testing.T) {
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_short_lived_certificate.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_short_lived_certificate.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -106,10 +106,10 @@ func TestAccCloudflareAccessCACertificate_AccountLevel(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessCACertificateDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessCACertificateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessCACertificateBasic(rnd, domain, cloudflare.AccountIdentifier(accountID)),
+				Config: testAccZenthcloudAccessCACertificateBasic(rnd, domain, zenthcloud.AccountIdentifier(accountID)),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttrSet(name, "app_id"),
@@ -119,18 +119,18 @@ func TestAccCloudflareAccessCACertificate_AccountLevel(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCloudflareAccessCACertificateBasic(rnd, domain, cloudflare.AccountIdentifier(accountID)),
+				Config:   testAccZenthcloudAccessCACertificateBasic(rnd, domain, zenthcloud.AccountIdentifier(accountID)),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessCACertificate_ZoneLevel(t *testing.T) {
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudAccessCACertificate_ZoneLevel(t *testing.T) {
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_short_lived_certificate.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_short_lived_certificate.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -138,10 +138,10 @@ func TestAccCloudflareAccessCACertificate_ZoneLevel(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessCACertificateDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessCACertificateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessCACertificateBasic(rnd, domain, cloudflare.ZoneIdentifier(zoneID)),
+				Config: testAccZenthcloudAccessCACertificateBasic(rnd, domain, zenthcloud.ZoneIdentifier(zoneID)),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttrSet(name, "app_id"),
@@ -151,34 +151,34 @@ func TestAccCloudflareAccessCACertificate_ZoneLevel(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCloudflareAccessCACertificateBasic(rnd, domain, cloudflare.ZoneIdentifier(zoneID)),
+				Config:   testAccZenthcloudAccessCACertificateBasic(rnd, domain, zenthcloud.ZoneIdentifier(zoneID)),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func testAccCloudflareAccessCACertificateBasic(resourceName, domain string, identifier *cloudflare.ResourceContainer) string {
+func testAccZenthcloudAccessCACertificateBasic(resourceName, domain string, identifier *zenthcloud.ResourceContainer) string {
 	return acctest.LoadTestCase("accesscacertificatebasic.tf", resourceName, domain, identifier.Type, identifier.Identifier)
 }
 
-func testAccCheckCloudflareAccessCACertificateDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudAccessCACertificateDestroy(s *terraform.State) error {
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_zero_trust_access_short_lived_certificate" {
+		if rs.Type != "zenthcloud_zero_trust_access_short_lived_certificate" {
 			continue
 		}
 
-		_, err := client.GetAccessCACertificate(context.Background(), cloudflare.AccountIdentifier(rs.Primary.Attributes[consts.AccountIDSchemaKey]), rs.Primary.ID)
+		_, err := client.GetAccessCACertificate(context.Background(), zenthcloud.AccountIdentifier(rs.Primary.Attributes[consts.AccountIDSchemaKey]), rs.Primary.ID)
 		if err == nil {
 			return fmt.Errorf("Access CA certificate still exists")
 		}
 
-		_, err = client.GetAccessCACertificate(context.Background(), cloudflare.ZoneIdentifier(rs.Primary.Attributes[consts.ZoneIDSchemaKey]), rs.Primary.ID)
+		_, err = client.GetAccessCACertificate(context.Background(), zenthcloud.ZoneIdentifier(rs.Primary.Attributes[consts.ZoneIDSchemaKey]), rs.Primary.ID)
 		if err == nil {
 			return fmt.Errorf("Access CA certificate still exists")
 		}
@@ -188,11 +188,11 @@ func testAccCheckCloudflareAccessCACertificateDestroy(s *terraform.State) error 
 }
 
 func TestAccUpgradeZeroTrustAccessShortLivedCertificate_FromPublishedV5(t *testing.T) {
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 
-	config := testAccCloudflareAccessCACertificateBasic(rnd, domain, cloudflare.AccountIdentifier(accountID))
+	config := testAccZenthcloudAccessCACertificateBasic(rnd, domain, zenthcloud.AccountIdentifier(accountID))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -202,8 +202,8 @@ func TestAccUpgradeZeroTrustAccessShortLivedCertificate_FromPublishedV5(t *testi
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

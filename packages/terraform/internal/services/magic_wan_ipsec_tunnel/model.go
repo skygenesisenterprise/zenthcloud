@@ -3,8 +3,8 @@
 package magic_wan_ipsec_tunnel
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -16,7 +16,7 @@ type MagicWANIPSECTunnelResultEnvelope struct {
 type MagicWANIPSECTunnelModel struct {
 	ID                     types.String                                                          `tfsdk:"id" json:"id,computed"`
 	AccountID              types.String                                                          `tfsdk:"account_id" path:"account_id,required"`
-	CloudflareEndpoint     types.String                                                          `tfsdk:"cloudflare_endpoint" json:"cloudflare_endpoint,required,no_refresh"`
+	ZenthcloudEndpoint     types.String                                                          `tfsdk:"zenthcloud_endpoint" json:"zenthcloud_endpoint,required,no_refresh"`
 	InterfaceAddress       types.String                                                          `tfsdk:"interface_address" json:"interface_address,required,no_refresh"`
 	Name                   types.String                                                          `tfsdk:"name" json:"name,required,no_refresh"`
 	CustomerEndpoint       types.String                                                          `tfsdk:"customer_endpoint" json:"customer_endpoint,optional,no_refresh"`
@@ -84,7 +84,7 @@ type MagicWANIPSECTunnelBGPStatusModel struct {
 
 type MagicWANIPSECTunnelIPSECTunnelModel struct {
 	ID                     types.String                                                                        `tfsdk:"id" json:"id,computed"`
-	CloudflareEndpoint     types.String                                                                        `tfsdk:"cloudflare_endpoint" json:"cloudflare_endpoint,computed"`
+	ZenthcloudEndpoint     types.String                                                                        `tfsdk:"zenthcloud_endpoint" json:"zenthcloud_endpoint,computed"`
 	InterfaceAddress       types.String                                                                        `tfsdk:"interface_address" json:"interface_address,computed"`
 	Name                   types.String                                                                        `tfsdk:"name" json:"name,computed"`
 	AllowNullCipher        types.Bool                                                                          `tfsdk:"allow_null_cipher" json:"allow_null_cipher,computed"`
@@ -144,7 +144,7 @@ type MagicWANIPSECTunnelIPSECTunnelPSKMetadataModel struct {
 
 type MagicWANIPSECTunnelModifiedIPSECTunnelModel struct {
 	ID                     types.String                                                                                `tfsdk:"id" json:"id,computed"`
-	CloudflareEndpoint     types.String                                                                                `tfsdk:"cloudflare_endpoint" json:"cloudflare_endpoint,computed"`
+	ZenthcloudEndpoint     types.String                                                                                `tfsdk:"zenthcloud_endpoint" json:"zenthcloud_endpoint,computed"`
 	InterfaceAddress       types.String                                                                                `tfsdk:"interface_address" json:"interface_address,computed"`
 	Name                   types.String                                                                                `tfsdk:"name" json:"name,computed"`
 	AllowNullCipher        types.Bool                                                                                  `tfsdk:"allow_null_cipher" json:"allow_null_cipher,computed"`

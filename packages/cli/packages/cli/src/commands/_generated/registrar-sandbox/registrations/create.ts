@@ -28,7 +28,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 registrar-sandbox registrations create\n\nStarts a domain registration workflow. ### Prerequisites - The account must not already be at the maximum supported domain limit. A single account may own up to 500 domains in total across registrations created through either the dashboard or this API. - The domain must be on a supported extension for programmatic registration. - Use `POST /domain-check` immediately before calling this endpoint to confirm real-time availability and pricing. ### Defaults - `years`: defaults to the extension's minimum registration period (1 year for most extensions, but varies — for example, `.ai` (if supported) requires a minimum of 2 years). - `auto_renew`: defaults to `false`. Setting it to `true` is an explicit opt-in authorizing Cloudflare to charge the account's default payment method up to 30 days before domain expiry to renew the registration. Renewal pricing may change over time based on registry pricing. - `privacy_mode`: defaults to `redaction`. ### Premium domains Premium domain registration is not currently supported by this API. If `POST /domain-check` returns `tier: premium`, do not call this endpoint for that domain. ### Response behavior By default, the server holds the connection for a bounded, server-defined amount of time while the registration completes. Most registrations finish within this window and return `201 Created` with a completed workflow status. If the registration is still processing after this synchronous wait window, the server returns `202 Accepted`. Poll the URL in `links.self` to track progress. To skip the wait and receive an immediate `202`, send `Prefer: respond-async`."
+			"$0 registrar-sandbox registrations create\n\nStarts a domain registration workflow. ### Prerequisites - The account must not already be at the maximum supported domain limit. A single account may own up to 500 domains in total across registrations created through either the dashboard or this API. - The domain must be on a supported extension for programmatic registration. - Use `POST /domain-check` immediately before calling this endpoint to confirm real-time availability and pricing. ### Defaults - `years`: defaults to the extension's minimum registration period (1 year for most extensions, but varies — for example, `.ai` (if supported) requires a minimum of 2 years). - `auto_renew`: defaults to `false`. Setting it to `true` is an explicit opt-in authorizing Zenthcloud to charge the account's default payment method up to 30 days before domain expiry to renew the registration. Renewal pricing may change over time based on registry pricing. - `privacy_mode`: defaults to `redaction`. ### Premium domains Premium domain registration is not currently supported by this API. If `POST /domain-check` returns `tier: premium`, do not call this endpoint for that domain. ### Response behavior By default, the server holds the connection for a bounded, server-defined amount of time while the registration completes. Most registrations finish within this window and return `201 Created` with a completed workflow status. If the registration is still processing after this synchronous wait window, the server returns `202 Accepted`. Poll the URL in `links.self` to track progress. To skip the wait and receive an immediate `202`, send `Prefer: respond-async`."
 		)
 		.option("prefer", {
 			type: "string",
@@ -43,7 +43,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("auto-renew", {
 			type: "boolean",
 			description:
-				"Enable or disable automatic renewal. Defaults to `false` if omitted.\nSetting this field to `true` is an explicit opt-in authorizing\nCloudflare to charge the account's default payment method up to 30\ndays before domain expiry to renew the domain automatically.\nRenewal pricing may change over time based on registry pricing.\n",
+				"Enable or disable automatic renewal. Defaults to `false` if omitted.\nSetting this field to `true` is an explicit opt-in authorizing\nZenthcloud to charge the account's default payment method up to 30\ndays before domain expiry to renew the domain automatically.\nRenewal pricing may change over time based on registry pricing.\n",
 			default: false,
 		})
 		.option("contact-extensions", {
@@ -154,7 +154,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("domain-name", {
 			type: "string",
 			description:
-				"Provides a fully qualified domain name (FQDN), including the extension\n(e.g., `example.com`, `mybrand.app`). The domain name uniquely identifies\na registration. Cloudflare permits only one registration per domain, making\nthe domain name a natural idempotency key for registration requests.\n",
+				"Provides a fully qualified domain name (FQDN), including the extension\n(e.g., `example.com`, `mybrand.app`). The domain name uniquely identifies\na registration. Zenthcloud permits only one registration per domain, making\nthe domain name a natural idempotency key for registration requests.\n",
 		})
 		.option("privacy-mode", {
 			type: "string",
@@ -294,7 +294,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf registrar-sandbox registrations create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/registrar-sandbox/registrations`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/registrar-sandbox/registrations`,
 						pathParams: {},
 						bodyKind: "json",
 						body:
@@ -505,7 +505,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 				if (argv["domain-name"] === undefined) {
 					argv["domain-name"] = await promptForRequiredField(
 						"domain-name",
-						"Provides a fully qualified domain name (FQDN), including the extension (e.g., \`example.com\`, \`mybrand.app\`). The domain name uniquely identifies a registration. Cloudflare permits only one registration per domain, making the domain name a natural idempotency key for registration requests. "
+						"Provides a fully qualified domain name (FQDN), including the extension (e.g., \`example.com\`, \`mybrand.app\`). The domain name uniquely identifies a registration. Zenthcloud permits only one registration per domain, making the domain name a natural idempotency key for registration requests. "
 					);
 				}
 

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_magic_transit_site Resource - Cloudflare"
+page_title: "zenthcloud_magic_transit_site Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Magic Transit ReadMagic Transit WriteMagic WAN ReadMagic WAN Write
 ---
 
-# cloudflare_magic_transit_site (Resource)
+# zenthcloud_magic_transit_site (Resource)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_magic_transit_site" "example_magic_transit_site" {
+resource "zenthcloud_magic_transit_site" "example_magic_transit_site" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name = "site_1"
   connector_id = "ac60d3d0435248289d446cedd870bcf4"
@@ -65,7 +65,7 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_magic_transit_site.example '<account_id>/<site_id>'
+$ terraform import zenthcloud_magic_transit_site.example '<account_id>/<site_id>'
 ```
 
 

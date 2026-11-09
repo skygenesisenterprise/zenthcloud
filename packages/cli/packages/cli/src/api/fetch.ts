@@ -160,7 +160,7 @@ export interface NonJsonBody {
 }
 
 /**
- * Unwraps a successful Cloudflare envelope to its result, or to
+ * Unwraps a successful Zenthcloud envelope to its result, or to
  * `{ result, result_info }` for a list. Object results retain metadata
  * through `getResultInfo`. Successful envelopes without
  * `result` are returned unchanged. An envelope with `success: false`
@@ -193,7 +193,7 @@ export function unwrapEnvelope(body: unknown, response?: Response): unknown {
 					(value): value is string =>
 						typeof value === "string" && value.length > 0
 				)
-				.join(", ") || "Cloudflare API request failed";
+				.join(", ") || "Zenthcloud API request failed";
 		const error = new ApiError({
 			message,
 			statusCode: response?.ok === false ? response.status : undefined,

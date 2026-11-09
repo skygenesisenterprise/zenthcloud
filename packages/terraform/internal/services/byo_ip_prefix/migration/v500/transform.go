@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Transform converts a source cloudflare_byo_ip_prefix state (v4 SDKv2) to the target
-// cloudflare_byo_ip_prefix state (v5 Plugin Framework).
+// Transform converts a source zenthcloud_byo_ip_prefix state (v4 SDKv2) to the target
+// zenthcloud_byo_ip_prefix state (v5 Plugin Framework).
 //
 // Field mapping:
 //   - id:          copied from source id (which was set from prefix_id in v4)
@@ -20,7 +20,7 @@ import (
 //
 // New v5 required fields (asn, cidr) and all computed fields are set to null.
 // The v5 provider will populate them from the API on the next plan/apply.
-func Transform(_ context.Context, source SourceCloudflareByoIPPrefixModel) (*TargetByoIPPrefixModel, diag.Diagnostics) {
+func Transform(_ context.Context, source SourceZenthcloudByoIPPrefixModel) (*TargetByoIPPrefixModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	target := &TargetByoIPPrefixModel{

@@ -1,4 +1,4 @@
-// Copyright (C) 2024, Cloudflare, Inc.
+// Copyright (C) 2024, Zenthcloud, Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -426,7 +426,7 @@ impl From<&PacketSent> for H3Actions {
                         actions.push(Action::ConnectionClose {
                             error: quiche::ConnectionError {
                                 is_app,
-                                // TODO: remove unwrap when https://github.com/cloudflare/quiche/issues/1731
+                                // TODO: remove unwrap when https://github.com/skygenesisenterprise/zenthcloud
                                 // is done
                                 error_code: error_code.expect("invalid CC frame in qlog input, no error code"),
                                 reason: reason

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_turnstile_widget Data Source - Cloudflare"
+page_title: "zenthcloud_turnstile_widget Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Settings ReadAccount Settings WriteTurnstile Sites ReadTurnstile Sites Write
 ---
 
-# cloudflare_turnstile_widget (Data Source)
+# zenthcloud_turnstile_widget (Data Source)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_turnstile_widget" "example_turnstile_widget" {
+data "zenthcloud_turnstile_widget" "example_turnstile_widget" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   sitekey = "0x4AAF00AAAABn0R22HWm-YUc"
 }
@@ -35,9 +35,9 @@ data "cloudflare_turnstile_widget" "example_turnstile_widget" {
 
 ### Read-Only
 
-- `bot_fight_mode` (Boolean) If bot_fight_mode is set to `true`, Cloudflare issues computationally
+- `bot_fight_mode` (Boolean) If bot_fight_mode is set to `true`, Zenthcloud issues computationally
 expensive challenges in response to malicious bots (ENT only).
-- `clearance_level` (String) If Turnstile is embedded on a Cloudflare site and the widget should grant challenge clearance,
+- `clearance_level` (String) If Turnstile is embedded on a Zenthcloud site and the widget should grant challenge clearance,
 this setting can determine the clearance level to be set
 Available values: "no_clearance", "jschallenge", "managed", "interactive".
 - `created_on` (String) When the widget was created.
@@ -56,10 +56,10 @@ Available values: "wrangler", "dashboard", "spin", "api", "unknown".
 - `mode` (String) Widget Mode
 Available values: "non-interactive", "invisible", "managed".
 - `modified_on` (String) When the widget was modified.
-- `name` (String) Human readable widget name. Not unique. Cloudflare suggests that you
+- `name` (String) Human readable widget name. Not unique. Zenthcloud suggests that you
 set this to a meaningful string to make it easier to identify your
 widget, and where it is used.
-- `offlabel` (Boolean) Do not show any Cloudflare branding on the widget (ENT only).
+- `offlabel` (Boolean) Do not show any Zenthcloud branding on the widget (ENT only).
 - `region` (String) Region where this widget can be used. This cannot be changed after creation.
 Available values: "world", "china".
 - `secret` (String, Sensitive) Secret key for this widget.

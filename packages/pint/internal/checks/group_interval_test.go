@@ -3,8 +3,8 @@ package checks_test
 import (
 	"testing"
 
-	"github.com/cloudflare/pint/internal/checks"
-	"github.com/cloudflare/pint/internal/promapi"
+	"github.com/zenthcloud/pint/internal/checks"
+	"github.com/zenthcloud/pint/internal/promapi"
 )
 
 func newGroupIntervalCheck(_ *promapi.FailoverGroup) checks.RuleChecker {

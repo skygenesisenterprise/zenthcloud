@@ -31,7 +31,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zeroTrust_casb_remediations_jobs_create",
     title: "Creates remediation jobs",
-    description: "Create one or more remediation jobs tied to a specific Cloudflare Account.\n\nPOST /accounts/{account_id}/data-security/posture/remediations/jobs",
+    description: "Create one or more remediation jobs tied to a specific Zenthcloud Account.\n\nPOST /accounts/{account_id}/data-security/posture/remediations/jobs",
     inputSchema: {
       type: "object",
       properties: {
@@ -42,7 +42,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID for the user making the request.",
+              "description": "Zenthcloud account ID for the user making the request.",
               "type": "string"
             }
           },
@@ -131,7 +131,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID for the user making the request.",
+              "description": "Zenthcloud account ID for the user making the request.",
               "type": "string"
             }
           },
@@ -199,7 +199,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zeroTrust_casb_remediations_jobs_list",
     title: "List remediation jobs",
-    description: "List all remediation jobs tied to a specific Cloudflare Account. Note that `cursor` and `page` are mutually exclusive.\n\nGET /accounts/{account_id}/data-security/posture/remediations/jobs",
+    description: "List all remediation jobs tied to a specific Zenthcloud Account. Note that `cursor` and `page` are mutually exclusive.\n\nGET /accounts/{account_id}/data-security/posture/remediations/jobs",
     inputSchema: {
       type: "object",
       properties: {
@@ -207,7 +207,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID for the user making the request.",
+              "description": "Zenthcloud account ID for the user making the request.",
               "type": "string"
             }
           },

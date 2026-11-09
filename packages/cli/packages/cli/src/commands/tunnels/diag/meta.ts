@@ -5,7 +5,7 @@ export default {
 	name: "diag",
 	fullPath: ["tunnels", "diag"],
 	category: "action",
-	description: "Create a diagnostic report from a local cloudflared instance.",
+	description: "Create a diagnostic report from a local zenthcloudd instance.",
 	usage: "cf tunnels diag [options]",
 	arguments: [],
 	options: [
@@ -13,7 +13,7 @@ export default {
 			name: "metrics",
 			type: "string",
 			required: false,
-			description: "Metrics server address for the cloudflared instance",
+			description: "Metrics server address for the zenthcloudd instance",
 		},
 		{
 			name: "diag-container-id",

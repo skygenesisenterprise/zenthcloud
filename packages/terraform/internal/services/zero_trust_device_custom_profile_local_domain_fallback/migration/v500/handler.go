@@ -17,7 +17,7 @@ func UpgradeFromV4(ctx context.Context, req resource.UpgradeStateRequest, resp *
 	tflog.Info(ctx, "Upgrading fallback domain state from v4 to custom profile (schema_version=0 → version=500)")
 
 	// Parse v4 state using v4 model
-	var v4State SourceCloudflareFallbackDomainModel
+	var v4State SourceZenthcloudFallbackDomainModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &v4State)...)
 	if resp.Diagnostics.HasError() {
 		return

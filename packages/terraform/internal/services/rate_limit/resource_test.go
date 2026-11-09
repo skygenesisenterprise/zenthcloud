@@ -8,10 +8,10 @@ import (
 	"regexp"
 	"testing"
 
-	cloudflare "github.com/cloudflare/cloudflare-go"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	zenthcloud "github.com/zenthcloud/zenthcloud-go"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -22,27 +22,27 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_rate_limit", &resource.Sweeper{
-		Name: "cloudflare_rate_limit",
-		F:    testSweepCloudflareRateLimits,
+	resource.AddTestSweepers("zenthcloud_rate_limit", &resource.Sweeper{
+		Name: "zenthcloud_rate_limit",
+		F:    testSweepZenthcloudRateLimits,
 	})
 }
 
-func testSweepCloudflareRateLimits(r string) error {
+func testSweepZenthcloudRateLimits(r string) error {
 	ctx := context.Background()
 	client, clientErr := acctest.SharedV1Client()
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 		return clientErr
 	}
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping rate limits sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping rate limits sweep: ZENTHCLOUD_ZONE_ID not set")
 		return nil
 	}
 
-	rateLimits, _, err := client.ListRateLimits(ctx, zoneID, cloudflare.PaginationOptions{})
+	rateLimits, _, err := client.ListRateLimits(ctx, zoneID, zenthcloud.PaginationOptions{})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch rate limits: %s", err))
 		return fmt.Errorf("failed to fetch rate limits: %w", err)
@@ -71,24 +71,24 @@ func testSweepCloudflareRateLimits(r string) error {
 	return nil
 }
 
-func TestAccCloudflareRateLimit_Basic(t *testing.T) {
+func TestAccZenthcloudRateLimit_Basic(t *testing.T) {
 	// multiple instances of this config would conflict but we only use it once
 	t.Parallel()
-	var rateLimit cloudflare.RateLimit
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	var rateLimit zenthcloud.RateLimit
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_rate_limit." + rnd
+	name := "zenthcloud_rate_limit." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareRateLimitDestroy,
+		CheckDestroy:             testAccCheckZenthcloudRateLimitDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareRateLimitConfigBasic(zoneID, rnd),
+				Config: testAccCheckZenthcloudRateLimitConfigBasic(zoneID, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareRateLimitExists(name, &rateLimit),
-					testAccCheckCloudflareRateLimitIDIsValid(name, zoneID),
+					testAccCheckZenthcloudRateLimitExists(name, &rateLimit),
+					testAccCheckZenthcloudRateLimitIDIsValid(name, zoneID),
 					// dont check that specified values are set, this will be evident by lack of plan diff
 					// some values will get empty values
 					resource.TestCheckResourceAttr(name, "action.0.response.#", "0"),
@@ -108,23 +108,23 @@ func TestAccCloudflareRateLimit_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRateLimitChallenge_Basic(t *testing.T) {
+func TestAccZenthcloudRateLimitChallenge_Basic(t *testing.T) {
 	t.Parallel()
-	var rateLimit cloudflare.RateLimit
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	var rateLimit zenthcloud.RateLimit
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_rate_limit." + rnd
+	name := "zenthcloud_rate_limit." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareRateLimitDestroy,
+		CheckDestroy:             testAccCheckZenthcloudRateLimitDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareRateLimitChallengeConfigBasic(zoneID, rnd),
+				Config: testAccCheckZenthcloudRateLimitChallengeConfigBasic(zoneID, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareRateLimitExists(name, &rateLimit),
-					testAccCheckCloudflareRateLimitIDIsValid(name, zoneID),
+					testAccCheckZenthcloudRateLimitExists(name, &rateLimit),
+					testAccCheckZenthcloudRateLimitIDIsValid(name, zoneID),
 					// check that the action challenge mode has been set
 					resource.TestCheckResourceAttr(name, "action.0.mode", "challenge"),
 					resource.TestCheckResourceAttr(name, "action.0.response.#", "0"),
@@ -143,24 +143,24 @@ func TestAccCloudflareRateLimitChallenge_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRateLimit_FullySpecified(t *testing.T) {
+func TestAccZenthcloudRateLimit_FullySpecified(t *testing.T) {
 	t.Parallel()
-	var rateLimit cloudflare.RateLimit
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	var rateLimit zenthcloud.RateLimit
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_rate_limit." + rnd
+	name := "zenthcloud_rate_limit." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareRateLimitDestroy,
+		CheckDestroy:             testAccCheckZenthcloudRateLimitDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareRateLimitConfigFullySpecified(zoneID, rnd, zoneName),
+				Config: testAccCheckZenthcloudRateLimitConfigFullySpecified(zoneID, rnd, zoneName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareRateLimitExists(name, &rateLimit),
-					testAccCheckCloudflareRateLimitIDIsValid(name, zoneID),
+					testAccCheckZenthcloudRateLimitExists(name, &rateLimit),
+					testAccCheckZenthcloudRateLimitIDIsValid(name, zoneID),
 					// checking our overrides of default values worked
 					resource.TestCheckResourceAttr(name, "action.0.response.#", "1"),
 					resource.TestCheckResourceAttr(name, "action.0.response.0.content_type", "text/plain"),
@@ -187,35 +187,35 @@ func TestAccCloudflareRateLimit_FullySpecified(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRateLimit_Update(t *testing.T) {
+func TestAccZenthcloudRateLimit_Update(t *testing.T) {
 	t.Parallel()
-	var rateLimit cloudflare.RateLimit
+	var rateLimit zenthcloud.RateLimit
 	var initialRateLimitId string
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_rate_limit." + rnd
+	name := "zenthcloud_rate_limit." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareRateLimitDestroy,
+		CheckDestroy:             testAccCheckZenthcloudRateLimitDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareRateLimitConfigMatchingUrl(zoneID, rnd, domain),
+				Config: testAccCheckZenthcloudRateLimitConfigMatchingUrl(zoneID, rnd, domain),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareRateLimitExists(name, &rateLimit),
-					testAccCheckCloudflareRateLimitIDIsValid(name, zoneID),
+					testAccCheckZenthcloudRateLimitExists(name, &rateLimit),
+					testAccCheckZenthcloudRateLimitIDIsValid(name, zoneID),
 				),
 			},
 			{
 				PreConfig: func() {
 					initialRateLimitId = rateLimit.ID
 				},
-				Config: testAccCheckCloudflareRateLimitConfigFullySpecified(zoneID, rnd, domain),
+				Config: testAccCheckZenthcloudRateLimitConfigFullySpecified(zoneID, rnd, domain),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareRateLimitExists(name, &rateLimit),
-					testAccCheckCloudflareRateLimitIDIsValid(name, zoneID),
+					testAccCheckZenthcloudRateLimitExists(name, &rateLimit),
+					testAccCheckZenthcloudRateLimitIDIsValid(name, zoneID),
 					func(state *terraform.State) error {
 						if initialRateLimitId != rateLimit.ID {
 							// rate limit change shows resource was recreated, we want in place update
@@ -229,34 +229,34 @@ func TestAccCloudflareRateLimit_Update(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRateLimit_CreateAfterManualDestroy(t *testing.T) {
+func TestAccZenthcloudRateLimit_CreateAfterManualDestroy(t *testing.T) {
 	t.Parallel()
-	var rateLimit cloudflare.RateLimit
+	var rateLimit zenthcloud.RateLimit
 	var initialRateLimitId string
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_rate_limit." + rnd
+	name := "zenthcloud_rate_limit." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareRateLimitDestroy,
+		CheckDestroy:             testAccCheckZenthcloudRateLimitDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareRateLimitConfigMatchingUrl(zoneID, rnd, domain),
+				Config: testAccCheckZenthcloudRateLimitConfigMatchingUrl(zoneID, rnd, domain),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareRateLimitExists(name, &rateLimit),
-					testAccCheckCloudflareRateLimitIDIsValid(name, zoneID),
+					testAccCheckZenthcloudRateLimitExists(name, &rateLimit),
+					testAccCheckZenthcloudRateLimitIDIsValid(name, zoneID),
 					testAccManuallyDeleteRateLimit(name, &rateLimit, &initialRateLimitId),
 				),
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				Config: testAccCheckCloudflareRateLimitConfigMatchingUrl(zoneID, rnd, domain),
+				Config: testAccCheckZenthcloudRateLimitConfigMatchingUrl(zoneID, rnd, domain),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareRateLimitExists(name, &rateLimit),
-					testAccCheckCloudflareRateLimitIDIsValid(name, zoneID),
+					testAccCheckZenthcloudRateLimitExists(name, &rateLimit),
+					testAccCheckZenthcloudRateLimitIDIsValid(name, zoneID),
 					func(state *terraform.State) error {
 						if initialRateLimitId == rateLimit.ID {
 							return fmt.Errorf("rate limit id is unchanged even after we thought we deleted it ( %s )", rateLimit.ID)
@@ -269,50 +269,50 @@ func TestAccCloudflareRateLimit_CreateAfterManualDestroy(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRateLimit_WithoutTimeout(t *testing.T) {
+func TestAccZenthcloudRateLimit_WithoutTimeout(t *testing.T) {
 	t.Parallel()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareRateLimitDestroy,
+		CheckDestroy:             testAccCheckZenthcloudRateLimitDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCheckCloudflareRateLimitConfigWithoutTimeout(zoneID, rnd),
+				Config:      testAccCheckZenthcloudRateLimitConfigWithoutTimeout(zoneID, rnd),
 				ExpectError: regexp.MustCompile(regexp.QuoteMeta("rate limit timeout must be set if the 'mode' is simulate or ban")),
 			},
 		},
 	})
 }
 
-func TestAccCloudflareRateLimit_ChallengeWithTimeout(t *testing.T) {
+func TestAccZenthcloudRateLimit_ChallengeWithTimeout(t *testing.T) {
 	t.Parallel()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareRateLimitDestroy,
+		CheckDestroy:             testAccCheckZenthcloudRateLimitDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCheckCloudflareRateLimitChallengeConfigWithTimeout(zoneID, rnd),
+				Config:      testAccCheckZenthcloudRateLimitChallengeConfigWithTimeout(zoneID, rnd),
 				ExpectError: regexp.MustCompile(regexp.QuoteMeta("rate limit timeout must not be set if the 'mode' is challenge or js_challenge")),
 			},
 		},
 	})
 }
 
-func testAccCheckCloudflareRateLimitDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudRateLimitDestroy(s *terraform.State) error {
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_rate_limit" {
+		if rs.Type != "zenthcloud_rate_limit" {
 			continue
 		}
 
@@ -325,7 +325,7 @@ func testAccCheckCloudflareRateLimitDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckCloudflareRateLimitExists(n string, rateLimit *cloudflare.RateLimit) resource.TestCheckFunc {
+func testAccCheckZenthcloudRateLimitExists(n string, rateLimit *zenthcloud.RateLimit) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -338,7 +338,7 @@ func testAccCheckCloudflareRateLimitExists(n string, rateLimit *cloudflare.RateL
 
 		client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 		if clientErr != nil {
-			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 		}
 		foundRateLimit, err := client.RateLimit(context.Background(), rs.Primary.Attributes[consts.ZoneIDSchemaKey], rs.Primary.ID)
 		if err != nil {
@@ -355,7 +355,7 @@ func testAccCheckCloudflareRateLimitExists(n string, rateLimit *cloudflare.RateL
 	}
 }
 
-func testAccCheckCloudflareRateLimitIDIsValid(n, expectedZoneID string) resource.TestCheckFunc {
+func testAccCheckZenthcloudRateLimitIDIsValid(n, expectedZoneID string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -382,11 +382,11 @@ func testAccCheckCloudflareRateLimitIDIsValid(n, expectedZoneID string) resource
 	}
 }
 
-func testAccManuallyDeleteRateLimit(name string, rateLimit *cloudflare.RateLimit, initialRateLimitId *string) resource.TestCheckFunc {
+func testAccManuallyDeleteRateLimit(name string, rateLimit *zenthcloud.RateLimit, initialRateLimitId *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 		if clientErr != nil {
-			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 		}
 		*initialRateLimitId = rateLimit.ID
 		err := client.DeleteRateLimit(context.Background(), s.RootModule().Resources[name].Primary.Attributes[consts.ZoneIDSchemaKey], rateLimit.ID)
@@ -397,26 +397,26 @@ func testAccManuallyDeleteRateLimit(name string, rateLimit *cloudflare.RateLimit
 	}
 }
 
-func testAccCheckCloudflareRateLimitConfigBasic(zoneID, id string) string {
+func testAccCheckZenthcloudRateLimitConfigBasic(zoneID, id string) string {
 	return acctest.LoadTestCase("ratelimitconfigbasic.tf", id, zoneID)
 }
 
-func testAccCheckCloudflareRateLimitConfigMatchingUrl(zoneID, id, zoneName string) string {
+func testAccCheckZenthcloudRateLimitConfigMatchingUrl(zoneID, id, zoneName string) string {
 	return acctest.LoadTestCase("ratelimitconfigmatchingurl.tf", id, zoneID, zoneName)
 }
 
-func testAccCheckCloudflareRateLimitConfigFullySpecified(zoneID, id, zoneName string) string {
+func testAccCheckZenthcloudRateLimitConfigFullySpecified(zoneID, id, zoneName string) string {
 	return acctest.LoadTestCase("ratelimitconfigfullyspecified.tf", id, zoneID, zoneName)
 }
 
-func testAccCheckCloudflareRateLimitChallengeConfigBasic(zoneID, id string) string {
+func testAccCheckZenthcloudRateLimitChallengeConfigBasic(zoneID, id string) string {
 	return acctest.LoadTestCase("ratelimitchallengeconfigbasic.tf", id, zoneID)
 }
 
-func testAccCheckCloudflareRateLimitConfigWithoutTimeout(zoneID, id string) string {
+func testAccCheckZenthcloudRateLimitConfigWithoutTimeout(zoneID, id string) string {
 	return acctest.LoadTestCase("ratelimitconfigwithouttimeout.tf", id, zoneID)
 }
 
-func testAccCheckCloudflareRateLimitChallengeConfigWithTimeout(zoneID, id string) string {
+func testAccCheckZenthcloudRateLimitChallengeConfigWithTimeout(zoneID, id string) string {
 	return acctest.LoadTestCase("ratelimitchallengeconfigwithtimeout.tf", id, zoneID)
 }

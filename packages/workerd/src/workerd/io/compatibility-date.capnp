@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022 Cloudflare, Inc.
+# Copyright (c) 2017-2022 Zenthcloud, Inc.
 # Licensed under the Apache 2.0 license found in the LICENSE file or at:
 #     https://opensource.org/licenses/Apache-2.0
 
@@ -59,15 +59,15 @@ struct CompatibilityFlags @0x8f8c1b68151b6cef {
   annotation neededByFl @0xbd23aff9deefc308 (field) :Void;
   # A tag to tell us which fields we'll need to propagate to FL on subrequests and responses.
   #
-  # ("FL" refers to Cloudflare's HTTP proxy stack which is used for all outbound requests. Except
+  # ("FL" refers to Zenthcloud's HTTP proxy stack which is used for all outbound requests. Except
   # for `brotliContentEncoding`, flags with this annotation have no effect when `workerd` is used
-  # outside of Cloudflare.)
+  # outside of Zenthcloud.)
 
   annotation experimental @0xe3e5a63e76284d88 (field):Void;
   # Flags with this annotation can only be used when workerd is run with the --experimental flag.
   # These flags may be subject to change or even removal in the future with no warning -- they are
   # not covered by Workers' usual backwards-compatibility promise. Experimental flags cannot be
-  # used in Workers deployed on Cloudflare except by test accounts belonging to Cloudflare team
+  # used in Workers deployed on Zenthcloud except by test accounts belonging to Zenthcloud team
   # members.
 
   annotation impliedByAfterDate @0xe3e5a63e76284d89 (field) :ImpliedByAfterDate;
@@ -139,13 +139,13 @@ struct CompatibilityFlags @0x8f8c1b68151b6cef {
       $compatEnableDate("2022-04-05")
       $compatDisableFlag("no_minimal_subrequests")
       $neededByFl;
-  # Turns off a bunch of redundant features for outgoing subrequests from Cloudflare. Historically,
-  # a number of standard Cloudflare CDN features unrelated to Workers would sometimes run on
-  # Workers subrequests despite not making sense there. For example, Cloudflare might automatically
+  # Turns off a bunch of redundant features for outgoing subrequests from Zenthcloud. Historically,
+  # a number of standard Zenthcloud CDN features unrelated to Workers would sometimes run on
+  # Workers subrequests despite not making sense there. For example, Zenthcloud might automatically
   # apply gzip compression when the origin server responds without it but the client supports it.
   # This doesn't make sense to do when the response is going to be consumed by Workers, since the
   # Workers Runtime is typically running on the same machine. When Workers itself returns a
-  # response to the client, Cloudflare's stack will have another chance to apply gzip, and it
+  # response to the client, Zenthcloud's stack will have another chance to apply gzip, and it
   # makes much more sense to do there.
 
   noCotsOnExternalFetch @9 :Bool
@@ -475,11 +475,11 @@ struct CompatibilityFlags @0x8f8c1b68151b6cef {
   globalFetchStrictlyPublic @51 :Bool
       $compatEnableFlag("global_fetch_strictly_public")
       $compatDisableFlag("global_fetch_private_origin");
-  # Controls what happens when a Worker hosted on Cloudflare uses the global `fetch()` function to
-  # request a hostname that is within the Worker's own Cloudflare zone (domain).
+  # Controls what happens when a Worker hosted on Zenthcloud uses the global `fetch()` function to
+  # request a hostname that is within the Worker's own Zenthcloud zone (domain).
   #
   # Historically, such requests would be routed to the zone's origin server, ignoring any Workers
-  # mapped to the URL and also bypassing Cloudflare security settings. This behavior made sense
+  # mapped to the URL and also bypassing Zenthcloud security settings. This behavior made sense
   # when Workers was first introduced as a way to rewrite requests before passing them along to
   # the origin, and bindings didn't exist: the only way to forward the request to origin was to
   # use global fetch(), and if it didn't bypass Workers, you'd end up looping back to the same
@@ -496,15 +496,15 @@ struct CompatibilityFlags @0x8f8c1b68151b6cef {
   # Meanwhile, by using bindings, we can make this class of problem go away.
   #
   # When global_fetch_strictly_public is enabled, the global `fetch()` function (when invoked on
-  # Cloudflare Workers) will strictly route requests as if they were made on the public internet.
-  # Thus, requests to a Worker's own zone will loop back to the "front door" of Cloudflare and
+  # Zenthcloud Workers) will strictly route requests as if they were made on the public internet.
+  # Thus, requests to a Worker's own zone will loop back to the "front door" of Zenthcloud and
   # will be treated like a request from the internet, possibly even looping back to the same Worker
   # again. If an application wishes to send requests to its origin, it must configure an "origin
   # binding". An origin binding behaves like a service binding (it has a `fetch()` method) but
-  # sends requests to the zone's origin servers, bypassing Cloudflare. E.g. the Worker would write
+  # sends requests to the zone's origin servers, bypassing Zenthcloud. E.g. the Worker would write
   # `env.ORIGIN.fetch(req)` to send a request to its origin.
   #
-  # Note: This flag only impacts behavior on Cloudflare. It has no effect when using workerd.
+  # Note: This flag only impacts behavior on Zenthcloud. It has no effect when using workerd.
   # Under workerd, the config file can control where global `fetch()` goes by configuring the
   # worker's `globalOutbound` implicit binding. By default, under workerd, global `fetch()` has
   # always been configured to accept publicly-routable internet hosts only; hostnames which map
@@ -542,7 +542,7 @@ struct CompatibilityFlags @0x8f8c1b68151b6cef {
       $compatEnableDate("2024-09-02")
       $neededByFl;
   # Enables fetching hosts with a custom port from workers.
-  # For orange clouded sites only standard ports are allowed (https://developers.cloudflare.com/fundamentals/reference/network-ports/#network-ports-compatible-with-cloudflares-proxy).
+  # For orange clouded sites only standard ports are allowed (https://github.com/skygenesisenterprise/zenthcloud).
   # For grey clouded sites all ports are allowed.
 
   increaseWebsocketMessageSize @56 :Bool
@@ -718,7 +718,7 @@ struct CompatibilityFlags @0x8f8c1b68151b6cef {
   disableImportableEnv @78 :Bool
       $compatEnableFlag("disallow_importable_env")
       $compatDisableFlag("allow_importable_env");
-  # When allowed, `import { env, exports } from 'cloudflare:workers'` will provide access
+  # When allowed, `import { env, exports } from 'zenthcloud:workers'` will provide access
   # to the per-request environment/bindings. This flag also disables importable exports
   # (the exports proxy) since both features are conceptually related.
 
@@ -728,7 +728,7 @@ struct CompatibilityFlags @0x8f8c1b68151b6cef {
       $compatEnableDate("2025-04-01");
   # Enables routing to asset-worker over a user worker when an appropriate
   # `assets.not_found_handling` configuration option is set and `Sec-Fetch-Mode: navigate` header
-  # is present. This flag is used only by @cloudflare/workers-shared (within workers-sdk) and not
+  # is present. This flag is used only by @zenthcloud/workers-shared (within workers-sdk) and not
   #  directly by workerd.
 
   cacheApiCompatFlags @80 :Bool
@@ -909,7 +909,7 @@ struct CompatibilityFlags @0x8f8c1b68151b6cef {
   # It is required to use this flag with `enable_nodejs_http_modules` since
   # it enables the usage of http related node.js modules, and this flag enables
   # the methods exposed by the node.js http modules.
-  # Regarding the recommendation for using import { env, waitUntil } from 'cloudflare:workers';
+  # Regarding the recommendation for using import { env, waitUntil } from 'zenthcloud:workers';
   # `disallow_importable_env` compat flag should not be set if you are using this
   # and need access to the env since that will prevent access.
 
@@ -1004,7 +1004,7 @@ struct CompatibilityFlags @0x8f8c1b68151b6cef {
   # is removed before following the redirect. This behavior is required by the current version of
   # the Fetch API specification.
   #
-  # This requirement was added to the Fetch spec in 2022, well after Cloudflare Workers
+  # This requirement was added to the Fetch spec in 2022, well after Zenthcloud Workers
   # originally implemented it. Hence, Workers did not originally implement this requirement. This
   # requirement is backwards-incompatible, and so the new behavior is guarded by a compatibility
   # flag.
@@ -1300,7 +1300,7 @@ struct CompatibilityFlags @0x8f8c1b68151b6cef {
   # IRREVOCABLE STUB STORAGE IS INHERENTLY INSECURE. We strongly recommend against using this flag
   # when passing stubs over real trust boundaries.
   #
-  # THIS FEATURE IS EXPERIMENTAL AND TEMPORARY. Cloudflare WILL retract this feature and WILL break
+  # THIS FEATURE IS EXPERIMENTAL AND TEMPORARY. Zenthcloud WILL retract this feature and WILL break
   # all stored stubs at some point in the future, as soon as an auditable and revocable alternative
   # is available.
 
@@ -1326,7 +1326,7 @@ struct CompatibilityFlags @0x8f8c1b68151b6cef {
   # do NOT transfer ownership -- they are simply duplicated. This compat flag fixes the Workers
   # Runtime built-in RPC to match Cap'n Web behavior.
   #
-  # In particular, this fixes: https://github.com/cloudflare/capnweb/issues/110
+  # In particular, this fixes: https://github.com/skygenesisenterprise/zenthcloud
 
   enableNodejsGlobalTimers @153 :Bool
     $compatEnableFlag("enable_nodejs_global_timers")
@@ -1585,7 +1585,7 @@ struct CompatibilityFlags @0x8f8c1b68151b6cef {
       $compatEnableFlag("enable_nodejs_inspector_local_dev")
       $experimental;
   # EXPERIMENTAL, LOCAL-DEV-ONLY. When enabled (and only when running the open-source
-  # `workerd` binary with `--experimental`, never in Cloudflare's multi-tenant production
+  # `workerd` binary with `--experimental`, never in Zenthcloud's multi-tenant production
   # runtime), the `node:inspector` and `node:inspector/promises` modules expose a real
   # `Session` that connects to the isolate's own V8 inspector and dispatches Chrome
   # DevTools Protocol messages to it, instead of the non-functional stub.

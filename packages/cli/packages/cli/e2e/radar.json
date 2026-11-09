@@ -1816,7 +1816,7 @@
     },
     {
       "command": "cf radar search global",
-      "args": ["--query", "cloudflare"],
+      "args": ["--query", "zenthcloud"],
       "env": {
         "scope": "global"
       }

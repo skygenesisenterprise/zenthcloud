@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -22,13 +22,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_custom_pages", &resource.Sweeper{
-		Name: "cloudflare_custom_pages",
-		F:    testSweepCloudflareCustomPages,
+	resource.AddTestSweepers("zenthcloud_custom_pages", &resource.Sweeper{
+		Name: "zenthcloud_custom_pages",
+		F:    testSweepZenthcloudCustomPages,
 	})
 }
 
-func testSweepCloudflareCustomPages(r string) error {
+func testSweepZenthcloudCustomPages(r string) error {
 	ctx := context.Background()
 	// Custom pages are zone/account-level settings for error and challenge pages.
 	// They don't create separate resources that accumulate over time - they just
@@ -42,11 +42,11 @@ func testSweepCloudflareCustomPages(r string) error {
 // that require a ::CF_WIDGET_BOX:: (including country and IP challenges), not just for waf challenges
 
 // Test account-level custom pages with basic configuration
-func TestAccCloudflareCustomPages_AccountBasic(t *testing.T) {
+func TestAccZenthcloudCustomPages_AccountBasic(t *testing.T) {
 	t.Skip(`Skipped: 403 Forbidden {"success":false,"errors":[{"code":1002,"message":"Forbidden. Account creation is not allowed"}],"messages":[],"result":null}`)
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_custom_pages." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -83,10 +83,10 @@ func TestAccCloudflareCustomPages_AccountBasic(t *testing.T) {
 }
 
 // Test zone-level custom pages with basic configuration
-func TestAccCloudflareCustomPages_ZoneBasic(t *testing.T) {
+func TestAccZenthcloudCustomPages_ZoneBasic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	resourceName := "cloudflare_custom_pages." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -122,10 +122,10 @@ func TestAccCloudflareCustomPages_ZoneBasic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareCustomPages_ZoneCustomized(t *testing.T) {
+func TestAccZenthcloudCustomPages_ZoneCustomized(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	resourceName := "cloudflare_custom_pages." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -162,10 +162,10 @@ func TestAccCloudflareCustomPages_ZoneCustomized(t *testing.T) {
 }
 
 // Test account-level custom pages with customized state
-func TestAccCloudflareCustomPages_AccountCustomized(t *testing.T) {
+func TestAccZenthcloudCustomPages_AccountCustomized(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_custom_pages." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -202,11 +202,11 @@ func TestAccCloudflareCustomPages_AccountCustomized(t *testing.T) {
 }
 
 // Test account-level custom pages with multiple page types
-func TestAccCloudflareCustomPages_AccountMultiplePages(t *testing.T) {
+func TestAccZenthcloudCustomPages_AccountMultiplePages(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName1 := "cloudflare_custom_pages." + rnd + "_challenge"
-	resourceName2 := "cloudflare_custom_pages." + rnd + "_block"
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName1 := "zenthcloud_custom_pages." + rnd + "_challenge"
+	resourceName2 := "zenthcloud_custom_pages." + rnd + "_block"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -246,10 +246,10 @@ func TestAccCloudflareCustomPages_AccountMultiplePages(t *testing.T) {
 }
 
 // Test zone-level custom page with ip_block identifier
-func TestAccCloudflareCustomPages_ZoneIpBlock(t *testing.T) {
+func TestAccZenthcloudCustomPages_ZoneIpBlock(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	resourceName := "cloudflare_custom_pages." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -286,10 +286,10 @@ func TestAccCloudflareCustomPages_ZoneIpBlock(t *testing.T) {
 }
 
 // Test zone-level custom page with country_challenge identifier
-func TestAccCloudflareCustomPages_ZoneCountryChallenge(t *testing.T) {
+func TestAccZenthcloudCustomPages_ZoneCountryChallenge(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	resourceName := "cloudflare_custom_pages." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -326,10 +326,10 @@ func TestAccCloudflareCustomPages_ZoneCountryChallenge(t *testing.T) {
 }
 
 // Test zone-level custom page with 1000_errors identifier
-func TestAccCloudflareCustomPages_Zone1000Errors(t *testing.T) {
+func TestAccZenthcloudCustomPages_Zone1000Errors(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	resourceName := "cloudflare_custom_pages." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -366,10 +366,10 @@ func TestAccCloudflareCustomPages_Zone1000Errors(t *testing.T) {
 }
 
 // Test zone-level custom page with managed_challenge identifier
-func TestAccCloudflareCustomPages_ZoneManagedChallenge(t *testing.T) {
+func TestAccZenthcloudCustomPages_ZoneManagedChallenge(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	resourceName := "cloudflare_custom_pages." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -406,10 +406,10 @@ func TestAccCloudflareCustomPages_ZoneManagedChallenge(t *testing.T) {
 }
 
 // Test zone-level custom page with ratelimit_block identifier
-func TestAccCloudflareCustomPages_ZoneRatelimitBlock(t *testing.T) {
+func TestAccZenthcloudCustomPages_ZoneRatelimitBlock(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	resourceName := "cloudflare_custom_pages." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -449,10 +449,10 @@ func TestAccCloudflareCustomPages_ZoneRatelimitBlock(t *testing.T) {
 }
 
 // Test account-level custom page with basic_challenge identifier (customized)
-func TestAccCloudflareCustomPages_AccountBasicChallengeCustomized(t *testing.T) {
+func TestAccZenthcloudCustomPages_AccountBasicChallengeCustomized(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_custom_pages." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -489,10 +489,10 @@ func TestAccCloudflareCustomPages_AccountBasicChallengeCustomized(t *testing.T) 
 }
 
 // Test zone-level custom page with waf_block identifier (customized)
-func TestAccCloudflareCustomPages_ZoneWafBlockCustomized(t *testing.T) {
+func TestAccZenthcloudCustomPages_ZoneWafBlockCustomized(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	resourceName := "cloudflare_custom_pages." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -529,10 +529,10 @@ func TestAccCloudflareCustomPages_ZoneWafBlockCustomized(t *testing.T) {
 }
 
 // Test zone-level custom page with under_attack identifier (customized)
-func TestAccCloudflareCustomPages_ZoneUnderAttackCustomized(t *testing.T) {
+func TestAccZenthcloudCustomPages_ZoneUnderAttackCustomized(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	resourceName := "cloudflare_custom_pages." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	resourceName := "zenthcloud_custom_pages." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -582,7 +582,7 @@ func testAccCustomPagesAccountMultipleConfig(rnd, accountID string) string {
 
 func TestAccUpgradeCustomPages_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	config := testAccCustomPagesAccountConfig(rnd, accountID, "basic_challenge", "default", "")
 
@@ -591,8 +591,8 @@ func TestAccUpgradeCustomPages_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

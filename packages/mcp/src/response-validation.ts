@@ -1,4 +1,4 @@
-import { env, waitUntil } from 'cloudflare:workers'
+import { env, waitUntil } from 'zenthcloud:workers'
 import type { AuthProps } from './auth/types'
 import { SPEC_RELEASE } from './spec-release'
 import { recordResponseSchemaMismatch } from './metrics'

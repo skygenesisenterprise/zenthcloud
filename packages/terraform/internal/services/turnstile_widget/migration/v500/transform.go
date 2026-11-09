@@ -55,7 +55,7 @@ func Transform(ctx context.Context, source SourceCloudfareTurnstileWidgetModel) 
 	}
 
 	// Step 3: Transform domains (Set → *[]types.String with sorting)
-	// CRITICAL: The Cloudflare API returns domains in alphabetical order.
+	// CRITICAL: The Zenthcloud API returns domains in alphabetical order.
 	// Since v5 uses ListAttribute (ordered) instead of SetAttribute (unordered),
 	// we MUST sort domains to prevent drift on every apply.
 	if !source.Domains.IsNull() && !source.Domains.IsUnknown() {
@@ -90,7 +90,7 @@ func Transform(ctx context.Context, source SourceCloudfareTurnstileWidgetModel) 
 // This is critical for turnstile_widget because:
 // - v4 uses SetAttribute (unordered)
 // - v5 uses ListAttribute (ordered)
-// - The Cloudflare API returns domains alphabetically
+// - The Zenthcloud API returns domains alphabetically
 // - Without sorting, every terraform apply would show drift
 func convertSetToSortedStringSlice(ctx context.Context, set types.Set) ([]types.String, diag.Diagnostics) {
 	var diags diag.Diagnostics

@@ -5,9 +5,9 @@ package zero_trust_tunnel_warp_connector
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -40,35 +40,35 @@ func (m *ZeroTrustTunnelWARPConnectorsDataSourceModel) toListParams(_ context.Co
 	diags.Append(errs...)
 
 	params = zero_trust.TunnelWARPConnectorListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.ExcludePrefix.IsNull() {
-		params.ExcludePrefix = cloudflare.F(m.ExcludePrefix.ValueString())
+		params.ExcludePrefix = zenthcloud.F(m.ExcludePrefix.ValueString())
 	}
 	if !m.ExistedAt.IsNull() {
-		params.ExistedAt = cloudflare.F(m.ExistedAt.ValueString())
+		params.ExistedAt = zenthcloud.F(m.ExistedAt.ValueString())
 	}
 	if !m.IncludePrefix.IsNull() {
-		params.IncludePrefix = cloudflare.F(m.IncludePrefix.ValueString())
+		params.IncludePrefix = zenthcloud.F(m.IncludePrefix.ValueString())
 	}
 	if !m.IsDeleted.IsNull() {
-		params.IsDeleted = cloudflare.F(m.IsDeleted.ValueBool())
+		params.IsDeleted = zenthcloud.F(m.IsDeleted.ValueBool())
 	}
 	if !m.Name.IsNull() {
-		params.Name = cloudflare.F(m.Name.ValueString())
+		params.Name = zenthcloud.F(m.Name.ValueString())
 	}
 	if !m.Status.IsNull() {
-		params.Status = cloudflare.F(zero_trust.TunnelWARPConnectorListParamsStatus(m.Status.ValueString()))
+		params.Status = zenthcloud.F(zero_trust.TunnelWARPConnectorListParamsStatus(m.Status.ValueString()))
 	}
 	if !m.UUID.IsNull() {
-		params.UUID = cloudflare.F(m.UUID.ValueString())
+		params.UUID = zenthcloud.F(m.UUID.ValueString())
 	}
 	if !m.WasActiveAt.IsNull() {
-		params.WasActiveAt = cloudflare.F(mWasActiveAt)
+		params.WasActiveAt = zenthcloud.F(mWasActiveAt)
 	}
 	if !m.WasInactiveAt.IsNull() {
-		params.WasInactiveAt = cloudflare.F(mWasInactiveAt)
+		params.WasInactiveAt = zenthcloud.F(mWasInactiveAt)
 	}
 
 	return

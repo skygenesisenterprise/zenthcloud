@@ -3,27 +3,27 @@
 
 import { OPERATION, type Tool, encodePath } from "../../_/tool.js";
 import {
-  cloudflare$$pipelines_ConnectionSchema,
-  cloudflare$$pipelines_FieldType,
-  cloudflare$$pipelines_JsonFormat,
-  cloudflare$$pipelines_ListField,
-  cloudflare$$pipelines_ParquetFormat,
-  cloudflare$$pipelines_SourceField,
-  cloudflare$$pipelines_StructField,
-  cloudflare$$pipelines_TimestampField,
+  zenthcloud$$pipelines_ConnectionSchema,
+  zenthcloud$$pipelines_FieldType,
+  zenthcloud$$pipelines_JsonFormat,
+  zenthcloud$$pipelines_ListField,
+  zenthcloud$$pipelines_ParquetFormat,
+  zenthcloud$$pipelines_SourceField,
+  zenthcloud$$pipelines_StructField,
+  zenthcloud$$pipelines_TimestampField,
 } from "../outputs.js";
 import {
-  cloudflare$$pipelines_ConnectionSchema as cloudflare$$pipelines_ConnectionSchema$,
-  cloudflare$$pipelines_FieldType as cloudflare$$pipelines_FieldType$,
-  cloudflare$$pipelines_JsonFormat as cloudflare$$pipelines_JsonFormat$,
-  cloudflare$$pipelines_ListField as cloudflare$$pipelines_ListField$,
-  cloudflare$$pipelines_ParquetFormat as cloudflare$$pipelines_ParquetFormat$,
-  cloudflare$$pipelines_SourceField as cloudflare$$pipelines_SourceField$,
-  cloudflare$$pipelines_StructField as cloudflare$$pipelines_StructField$,
-  cloudflare$$pipelines_TimestampField as cloudflare$$pipelines_TimestampField$,
+  zenthcloud$$pipelines_ConnectionSchema as zenthcloud$$pipelines_ConnectionSchema$,
+  zenthcloud$$pipelines_FieldType as zenthcloud$$pipelines_FieldType$,
+  zenthcloud$$pipelines_JsonFormat as zenthcloud$$pipelines_JsonFormat$,
+  zenthcloud$$pipelines_ListField as zenthcloud$$pipelines_ListField$,
+  zenthcloud$$pipelines_ParquetFormat as zenthcloud$$pipelines_ParquetFormat$,
+  zenthcloud$$pipelines_SourceField as zenthcloud$$pipelines_SourceField$,
+  zenthcloud$$pipelines_StructField as zenthcloud$$pipelines_StructField$,
+  zenthcloud$$pipelines_TimestampField as zenthcloud$$pipelines_TimestampField$,
 } from "../schemas.js";
-import { cloudflare$$pipelines_Format } from "./outputs.js";
-import { cloudflare$$pipelines_Format as cloudflare$$pipelines_Format$ } from "./schemas.js";
+import { zenthcloud$$pipelines_Format } from "./outputs.js";
+import { zenthcloud$$pipelines_Format as zenthcloud$$pipelines_Format$ } from "./schemas.js";
 
 /**
  * The tools of `pipelines.streams`.
@@ -39,7 +39,7 @@ export const tools: readonly Tool[] = [
         "body": {
           "properties": {
             "format": {
-              "$ref": "#/$defs/cloudflare-pipelines_Format",
+              "$ref": "#/$defs/zenthcloud-pipelines_Format",
               "description": "Defines the data format of the events."
             },
             "http": {
@@ -81,7 +81,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "schema": {
-              "$ref": "#/$defs/cloudflare-pipelines_ConnectionSchema",
+              "$ref": "#/$defs/zenthcloud-pipelines_ConnectionSchema",
               "description": "Defines the schema of the events in the data stream."
             },
             "worker_binding": {
@@ -124,15 +124,15 @@ export const tools: readonly Tool[] = [
       ],
       additionalProperties: false,
       $defs: {
-        "cloudflare-pipelines_ConnectionSchema": cloudflare$$pipelines_ConnectionSchema$,
-        "cloudflare-pipelines_FieldType": cloudflare$$pipelines_FieldType$,
-        "cloudflare-pipelines_Format": cloudflare$$pipelines_Format$,
-        "cloudflare-pipelines_JsonFormat": cloudflare$$pipelines_JsonFormat$,
-        "cloudflare-pipelines_ListField": cloudflare$$pipelines_ListField$,
-        "cloudflare-pipelines_ParquetFormat": cloudflare$$pipelines_ParquetFormat$,
-        "cloudflare-pipelines_SourceField": cloudflare$$pipelines_SourceField$,
-        "cloudflare-pipelines_StructField": cloudflare$$pipelines_StructField$,
-        "cloudflare-pipelines_TimestampField": cloudflare$$pipelines_TimestampField$,
+        "zenthcloud-pipelines_ConnectionSchema": zenthcloud$$pipelines_ConnectionSchema$,
+        "zenthcloud-pipelines_FieldType": zenthcloud$$pipelines_FieldType$,
+        "zenthcloud-pipelines_Format": zenthcloud$$pipelines_Format$,
+        "zenthcloud-pipelines_JsonFormat": zenthcloud$$pipelines_JsonFormat$,
+        "zenthcloud-pipelines_ListField": zenthcloud$$pipelines_ListField$,
+        "zenthcloud-pipelines_ParquetFormat": zenthcloud$$pipelines_ParquetFormat$,
+        "zenthcloud-pipelines_SourceField": zenthcloud$$pipelines_SourceField$,
+        "zenthcloud-pipelines_StructField": zenthcloud$$pipelines_StructField$,
+        "zenthcloud-pipelines_TimestampField": zenthcloud$$pipelines_TimestampField$,
       },
     },
     outputSchema: {
@@ -147,7 +147,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "format": {
-              "$ref": "#/$defs/cloudflare-pipelines_Format"
+              "$ref": "#/$defs/zenthcloud-pipelines_Format"
             },
             "http": {
               "properties": {
@@ -187,7 +187,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "schema": {
-              "$ref": "#/$defs/cloudflare-pipelines_ConnectionSchema"
+              "$ref": "#/$defs/zenthcloud-pipelines_ConnectionSchema"
             },
             "version": {
               "type": "integer"
@@ -225,15 +225,15 @@ export const tools: readonly Tool[] = [
       ],
       "type": "object",
       $defs: {
-        "cloudflare-pipelines_ConnectionSchema": cloudflare$$pipelines_ConnectionSchema,
-        "cloudflare-pipelines_FieldType": cloudflare$$pipelines_FieldType,
-        "cloudflare-pipelines_Format": cloudflare$$pipelines_Format,
-        "cloudflare-pipelines_JsonFormat": cloudflare$$pipelines_JsonFormat,
-        "cloudflare-pipelines_ListField": cloudflare$$pipelines_ListField,
-        "cloudflare-pipelines_ParquetFormat": cloudflare$$pipelines_ParquetFormat,
-        "cloudflare-pipelines_SourceField": cloudflare$$pipelines_SourceField,
-        "cloudflare-pipelines_StructField": cloudflare$$pipelines_StructField,
-        "cloudflare-pipelines_TimestampField": cloudflare$$pipelines_TimestampField,
+        "zenthcloud-pipelines_ConnectionSchema": zenthcloud$$pipelines_ConnectionSchema,
+        "zenthcloud-pipelines_FieldType": zenthcloud$$pipelines_FieldType,
+        "zenthcloud-pipelines_Format": zenthcloud$$pipelines_Format,
+        "zenthcloud-pipelines_JsonFormat": zenthcloud$$pipelines_JsonFormat,
+        "zenthcloud-pipelines_ListField": zenthcloud$$pipelines_ListField,
+        "zenthcloud-pipelines_ParquetFormat": zenthcloud$$pipelines_ParquetFormat,
+        "zenthcloud-pipelines_SourceField": zenthcloud$$pipelines_SourceField,
+        "zenthcloud-pipelines_StructField": zenthcloud$$pipelines_StructField,
+        "zenthcloud-pipelines_TimestampField": zenthcloud$$pipelines_TimestampField,
       },
     },
     annotations: {
@@ -273,7 +273,7 @@ export const tools: readonly Tool[] = [
                     "type": "string"
                   },
                   "format": {
-                    "$ref": "#/$defs/cloudflare-pipelines_Format"
+                    "$ref": "#/$defs/zenthcloud-pipelines_Format"
                   },
                   "http": {
                     "properties": {
@@ -313,7 +313,7 @@ export const tools: readonly Tool[] = [
                     "type": "string"
                   },
                   "schema": {
-                    "$ref": "#/$defs/cloudflare-pipelines_ConnectionSchema"
+                    "$ref": "#/$defs/zenthcloud-pipelines_ConnectionSchema"
                   },
                   "version": {
                     "type": "integer"
@@ -354,15 +354,15 @@ export const tools: readonly Tool[] = [
           "4XX": null
         },
         $defs: {
-          "cloudflare-pipelines_ConnectionSchema": cloudflare$$pipelines_ConnectionSchema,
-          "cloudflare-pipelines_FieldType": cloudflare$$pipelines_FieldType,
-          "cloudflare-pipelines_Format": cloudflare$$pipelines_Format,
-          "cloudflare-pipelines_JsonFormat": cloudflare$$pipelines_JsonFormat,
-          "cloudflare-pipelines_ListField": cloudflare$$pipelines_ListField,
-          "cloudflare-pipelines_ParquetFormat": cloudflare$$pipelines_ParquetFormat,
-          "cloudflare-pipelines_SourceField": cloudflare$$pipelines_SourceField,
-          "cloudflare-pipelines_StructField": cloudflare$$pipelines_StructField,
-          "cloudflare-pipelines_TimestampField": cloudflare$$pipelines_TimestampField,
+          "zenthcloud-pipelines_ConnectionSchema": zenthcloud$$pipelines_ConnectionSchema,
+          "zenthcloud-pipelines_FieldType": zenthcloud$$pipelines_FieldType,
+          "zenthcloud-pipelines_Format": zenthcloud$$pipelines_Format,
+          "zenthcloud-pipelines_JsonFormat": zenthcloud$$pipelines_JsonFormat,
+          "zenthcloud-pipelines_ListField": zenthcloud$$pipelines_ListField,
+          "zenthcloud-pipelines_ParquetFormat": zenthcloud$$pipelines_ParquetFormat,
+          "zenthcloud-pipelines_SourceField": zenthcloud$$pipelines_SourceField,
+          "zenthcloud-pipelines_StructField": zenthcloud$$pipelines_StructField,
+          "zenthcloud-pipelines_TimestampField": zenthcloud$$pipelines_TimestampField,
         },
       },
     },
@@ -497,7 +497,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "format": {
-              "$ref": "#/$defs/cloudflare-pipelines_Format"
+              "$ref": "#/$defs/zenthcloud-pipelines_Format"
             },
             "http": {
               "properties": {
@@ -537,7 +537,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "schema": {
-              "$ref": "#/$defs/cloudflare-pipelines_ConnectionSchema"
+              "$ref": "#/$defs/zenthcloud-pipelines_ConnectionSchema"
             },
             "version": {
               "type": "integer"
@@ -575,15 +575,15 @@ export const tools: readonly Tool[] = [
       ],
       "type": "object",
       $defs: {
-        "cloudflare-pipelines_ConnectionSchema": cloudflare$$pipelines_ConnectionSchema,
-        "cloudflare-pipelines_FieldType": cloudflare$$pipelines_FieldType,
-        "cloudflare-pipelines_Format": cloudflare$$pipelines_Format,
-        "cloudflare-pipelines_JsonFormat": cloudflare$$pipelines_JsonFormat,
-        "cloudflare-pipelines_ListField": cloudflare$$pipelines_ListField,
-        "cloudflare-pipelines_ParquetFormat": cloudflare$$pipelines_ParquetFormat,
-        "cloudflare-pipelines_SourceField": cloudflare$$pipelines_SourceField,
-        "cloudflare-pipelines_StructField": cloudflare$$pipelines_StructField,
-        "cloudflare-pipelines_TimestampField": cloudflare$$pipelines_TimestampField,
+        "zenthcloud-pipelines_ConnectionSchema": zenthcloud$$pipelines_ConnectionSchema,
+        "zenthcloud-pipelines_FieldType": zenthcloud$$pipelines_FieldType,
+        "zenthcloud-pipelines_Format": zenthcloud$$pipelines_Format,
+        "zenthcloud-pipelines_JsonFormat": zenthcloud$$pipelines_JsonFormat,
+        "zenthcloud-pipelines_ListField": zenthcloud$$pipelines_ListField,
+        "zenthcloud-pipelines_ParquetFormat": zenthcloud$$pipelines_ParquetFormat,
+        "zenthcloud-pipelines_SourceField": zenthcloud$$pipelines_SourceField,
+        "zenthcloud-pipelines_StructField": zenthcloud$$pipelines_StructField,
+        "zenthcloud-pipelines_TimestampField": zenthcloud$$pipelines_TimestampField,
       },
     },
     annotations: {
@@ -623,7 +623,7 @@ export const tools: readonly Tool[] = [
                     "type": "string"
                   },
                   "format": {
-                    "$ref": "#/$defs/cloudflare-pipelines_Format"
+                    "$ref": "#/$defs/zenthcloud-pipelines_Format"
                   },
                   "http": {
                     "properties": {
@@ -663,7 +663,7 @@ export const tools: readonly Tool[] = [
                     "type": "string"
                   },
                   "schema": {
-                    "$ref": "#/$defs/cloudflare-pipelines_ConnectionSchema"
+                    "$ref": "#/$defs/zenthcloud-pipelines_ConnectionSchema"
                   },
                   "version": {
                     "type": "integer"
@@ -704,15 +704,15 @@ export const tools: readonly Tool[] = [
           "4XX": null
         },
         $defs: {
-          "cloudflare-pipelines_ConnectionSchema": cloudflare$$pipelines_ConnectionSchema,
-          "cloudflare-pipelines_FieldType": cloudflare$$pipelines_FieldType,
-          "cloudflare-pipelines_Format": cloudflare$$pipelines_Format,
-          "cloudflare-pipelines_JsonFormat": cloudflare$$pipelines_JsonFormat,
-          "cloudflare-pipelines_ListField": cloudflare$$pipelines_ListField,
-          "cloudflare-pipelines_ParquetFormat": cloudflare$$pipelines_ParquetFormat,
-          "cloudflare-pipelines_SourceField": cloudflare$$pipelines_SourceField,
-          "cloudflare-pipelines_StructField": cloudflare$$pipelines_StructField,
-          "cloudflare-pipelines_TimestampField": cloudflare$$pipelines_TimestampField,
+          "zenthcloud-pipelines_ConnectionSchema": zenthcloud$$pipelines_ConnectionSchema,
+          "zenthcloud-pipelines_FieldType": zenthcloud$$pipelines_FieldType,
+          "zenthcloud-pipelines_Format": zenthcloud$$pipelines_Format,
+          "zenthcloud-pipelines_JsonFormat": zenthcloud$$pipelines_JsonFormat,
+          "zenthcloud-pipelines_ListField": zenthcloud$$pipelines_ListField,
+          "zenthcloud-pipelines_ParquetFormat": zenthcloud$$pipelines_ParquetFormat,
+          "zenthcloud-pipelines_SourceField": zenthcloud$$pipelines_SourceField,
+          "zenthcloud-pipelines_StructField": zenthcloud$$pipelines_StructField,
+          "zenthcloud-pipelines_TimestampField": zenthcloud$$pipelines_TimestampField,
         },
       },
     },
@@ -794,7 +794,7 @@ export const tools: readonly Tool[] = [
                 "type": "string"
               },
               "format": {
-                "$ref": "#/$defs/cloudflare-pipelines_Format"
+                "$ref": "#/$defs/zenthcloud-pipelines_Format"
               },
               "http": {
                 "properties": {
@@ -834,7 +834,7 @@ export const tools: readonly Tool[] = [
                 "type": "string"
               },
               "schema": {
-                "$ref": "#/$defs/cloudflare-pipelines_ConnectionSchema"
+                "$ref": "#/$defs/zenthcloud-pipelines_ConnectionSchema"
               },
               "version": {
                 "type": "integer"
@@ -898,15 +898,15 @@ export const tools: readonly Tool[] = [
       ],
       "type": "object",
       $defs: {
-        "cloudflare-pipelines_ConnectionSchema": cloudflare$$pipelines_ConnectionSchema,
-        "cloudflare-pipelines_FieldType": cloudflare$$pipelines_FieldType,
-        "cloudflare-pipelines_Format": cloudflare$$pipelines_Format,
-        "cloudflare-pipelines_JsonFormat": cloudflare$$pipelines_JsonFormat,
-        "cloudflare-pipelines_ListField": cloudflare$$pipelines_ListField,
-        "cloudflare-pipelines_ParquetFormat": cloudflare$$pipelines_ParquetFormat,
-        "cloudflare-pipelines_SourceField": cloudflare$$pipelines_SourceField,
-        "cloudflare-pipelines_StructField": cloudflare$$pipelines_StructField,
-        "cloudflare-pipelines_TimestampField": cloudflare$$pipelines_TimestampField,
+        "zenthcloud-pipelines_ConnectionSchema": zenthcloud$$pipelines_ConnectionSchema,
+        "zenthcloud-pipelines_FieldType": zenthcloud$$pipelines_FieldType,
+        "zenthcloud-pipelines_Format": zenthcloud$$pipelines_Format,
+        "zenthcloud-pipelines_JsonFormat": zenthcloud$$pipelines_JsonFormat,
+        "zenthcloud-pipelines_ListField": zenthcloud$$pipelines_ListField,
+        "zenthcloud-pipelines_ParquetFormat": zenthcloud$$pipelines_ParquetFormat,
+        "zenthcloud-pipelines_SourceField": zenthcloud$$pipelines_SourceField,
+        "zenthcloud-pipelines_StructField": zenthcloud$$pipelines_StructField,
+        "zenthcloud-pipelines_TimestampField": zenthcloud$$pipelines_TimestampField,
       },
     },
     annotations: {
@@ -955,7 +955,7 @@ export const tools: readonly Tool[] = [
                       "type": "string"
                     },
                     "format": {
-                      "$ref": "#/$defs/cloudflare-pipelines_Format"
+                      "$ref": "#/$defs/zenthcloud-pipelines_Format"
                     },
                     "http": {
                       "properties": {
@@ -995,7 +995,7 @@ export const tools: readonly Tool[] = [
                       "type": "string"
                     },
                     "schema": {
-                      "$ref": "#/$defs/cloudflare-pipelines_ConnectionSchema"
+                      "$ref": "#/$defs/zenthcloud-pipelines_ConnectionSchema"
                     },
                     "version": {
                       "type": "integer"
@@ -1062,15 +1062,15 @@ export const tools: readonly Tool[] = [
           "4XX": null
         },
         $defs: {
-          "cloudflare-pipelines_ConnectionSchema": cloudflare$$pipelines_ConnectionSchema,
-          "cloudflare-pipelines_FieldType": cloudflare$$pipelines_FieldType,
-          "cloudflare-pipelines_Format": cloudflare$$pipelines_Format,
-          "cloudflare-pipelines_JsonFormat": cloudflare$$pipelines_JsonFormat,
-          "cloudflare-pipelines_ListField": cloudflare$$pipelines_ListField,
-          "cloudflare-pipelines_ParquetFormat": cloudflare$$pipelines_ParquetFormat,
-          "cloudflare-pipelines_SourceField": cloudflare$$pipelines_SourceField,
-          "cloudflare-pipelines_StructField": cloudflare$$pipelines_StructField,
-          "cloudflare-pipelines_TimestampField": cloudflare$$pipelines_TimestampField,
+          "zenthcloud-pipelines_ConnectionSchema": zenthcloud$$pipelines_ConnectionSchema,
+          "zenthcloud-pipelines_FieldType": zenthcloud$$pipelines_FieldType,
+          "zenthcloud-pipelines_Format": zenthcloud$$pipelines_Format,
+          "zenthcloud-pipelines_JsonFormat": zenthcloud$$pipelines_JsonFormat,
+          "zenthcloud-pipelines_ListField": zenthcloud$$pipelines_ListField,
+          "zenthcloud-pipelines_ParquetFormat": zenthcloud$$pipelines_ParquetFormat,
+          "zenthcloud-pipelines_SourceField": zenthcloud$$pipelines_SourceField,
+          "zenthcloud-pipelines_StructField": zenthcloud$$pipelines_StructField,
+          "zenthcloud-pipelines_TimestampField": zenthcloud$$pipelines_TimestampField,
         },
       },
     },
@@ -1165,7 +1165,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "format": {
-              "$ref": "#/$defs/cloudflare-pipelines_Format"
+              "$ref": "#/$defs/zenthcloud-pipelines_Format"
             },
             "http": {
               "properties": {
@@ -1205,7 +1205,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "schema": {
-              "$ref": "#/$defs/cloudflare-pipelines_ConnectionSchema"
+              "$ref": "#/$defs/zenthcloud-pipelines_ConnectionSchema"
             },
             "version": {
               "type": "integer"
@@ -1243,15 +1243,15 @@ export const tools: readonly Tool[] = [
       ],
       "type": "object",
       $defs: {
-        "cloudflare-pipelines_ConnectionSchema": cloudflare$$pipelines_ConnectionSchema,
-        "cloudflare-pipelines_FieldType": cloudflare$$pipelines_FieldType,
-        "cloudflare-pipelines_Format": cloudflare$$pipelines_Format,
-        "cloudflare-pipelines_JsonFormat": cloudflare$$pipelines_JsonFormat,
-        "cloudflare-pipelines_ListField": cloudflare$$pipelines_ListField,
-        "cloudflare-pipelines_ParquetFormat": cloudflare$$pipelines_ParquetFormat,
-        "cloudflare-pipelines_SourceField": cloudflare$$pipelines_SourceField,
-        "cloudflare-pipelines_StructField": cloudflare$$pipelines_StructField,
-        "cloudflare-pipelines_TimestampField": cloudflare$$pipelines_TimestampField,
+        "zenthcloud-pipelines_ConnectionSchema": zenthcloud$$pipelines_ConnectionSchema,
+        "zenthcloud-pipelines_FieldType": zenthcloud$$pipelines_FieldType,
+        "zenthcloud-pipelines_Format": zenthcloud$$pipelines_Format,
+        "zenthcloud-pipelines_JsonFormat": zenthcloud$$pipelines_JsonFormat,
+        "zenthcloud-pipelines_ListField": zenthcloud$$pipelines_ListField,
+        "zenthcloud-pipelines_ParquetFormat": zenthcloud$$pipelines_ParquetFormat,
+        "zenthcloud-pipelines_SourceField": zenthcloud$$pipelines_SourceField,
+        "zenthcloud-pipelines_StructField": zenthcloud$$pipelines_StructField,
+        "zenthcloud-pipelines_TimestampField": zenthcloud$$pipelines_TimestampField,
       },
     },
     annotations: {
@@ -1288,7 +1288,7 @@ export const tools: readonly Tool[] = [
                     "type": "string"
                   },
                   "format": {
-                    "$ref": "#/$defs/cloudflare-pipelines_Format"
+                    "$ref": "#/$defs/zenthcloud-pipelines_Format"
                   },
                   "http": {
                     "properties": {
@@ -1328,7 +1328,7 @@ export const tools: readonly Tool[] = [
                     "type": "string"
                   },
                   "schema": {
-                    "$ref": "#/$defs/cloudflare-pipelines_ConnectionSchema"
+                    "$ref": "#/$defs/zenthcloud-pipelines_ConnectionSchema"
                   },
                   "version": {
                     "type": "integer"
@@ -1369,15 +1369,15 @@ export const tools: readonly Tool[] = [
           "4XX": null
         },
         $defs: {
-          "cloudflare-pipelines_ConnectionSchema": cloudflare$$pipelines_ConnectionSchema,
-          "cloudflare-pipelines_FieldType": cloudflare$$pipelines_FieldType,
-          "cloudflare-pipelines_Format": cloudflare$$pipelines_Format,
-          "cloudflare-pipelines_JsonFormat": cloudflare$$pipelines_JsonFormat,
-          "cloudflare-pipelines_ListField": cloudflare$$pipelines_ListField,
-          "cloudflare-pipelines_ParquetFormat": cloudflare$$pipelines_ParquetFormat,
-          "cloudflare-pipelines_SourceField": cloudflare$$pipelines_SourceField,
-          "cloudflare-pipelines_StructField": cloudflare$$pipelines_StructField,
-          "cloudflare-pipelines_TimestampField": cloudflare$$pipelines_TimestampField,
+          "zenthcloud-pipelines_ConnectionSchema": zenthcloud$$pipelines_ConnectionSchema,
+          "zenthcloud-pipelines_FieldType": zenthcloud$$pipelines_FieldType,
+          "zenthcloud-pipelines_Format": zenthcloud$$pipelines_Format,
+          "zenthcloud-pipelines_JsonFormat": zenthcloud$$pipelines_JsonFormat,
+          "zenthcloud-pipelines_ListField": zenthcloud$$pipelines_ListField,
+          "zenthcloud-pipelines_ParquetFormat": zenthcloud$$pipelines_ParquetFormat,
+          "zenthcloud-pipelines_SourceField": zenthcloud$$pipelines_SourceField,
+          "zenthcloud-pipelines_StructField": zenthcloud$$pipelines_StructField,
+          "zenthcloud-pipelines_TimestampField": zenthcloud$$pipelines_TimestampField,
         },
       },
     },

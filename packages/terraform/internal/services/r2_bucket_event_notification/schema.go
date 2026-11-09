@@ -5,7 +5,7 @@ package r2_bucket_event_notification
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -30,7 +30,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 		Version: 500,
 		Attributes: map[string]schema.Attribute{
 			"account_id": schema.StringAttribute{
-				Description:   "Cloudflare account ID that owns the R2 resource.",
+				Description:   "Zenthcloud account ID that owns the R2 resource.",
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
@@ -53,7 +53,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"queue_id": schema.StringAttribute{
-				Description:   "ID of the Cloudflare Queue that receives notifications for matching R2 object events.",
+				Description:   "ID of the Zenthcloud Queue that receives notifications for matching R2 object events.",
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},

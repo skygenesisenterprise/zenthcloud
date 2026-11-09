@@ -56,7 +56,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 						command:
 							"cf zero-trust dex test-results traceroute network-path get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/dex/traceroute-test-results/${argv["test-result-id"] == null ? "<test-result-id>" : encodeURIComponent(String(argv["test-result-id"]))}/network-path`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/dex/traceroute-test-results/${argv["test-result-id"] == null ? "<test-result-id>" : encodeURIComponent(String(argv["test-result-id"]))}/network-path`,
 						pathParams: {
 							"test-result-id": String(argv["test-result-id"] ?? ""),
 						},

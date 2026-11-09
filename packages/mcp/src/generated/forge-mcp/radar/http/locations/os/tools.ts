@@ -47,7 +47,7 @@ export const tools: readonly Tool[] = [
               "type": "array"
             },
             "botClass": {
-              "description": "Filters results by bot class. Refer to [Bot classes](https://developers.cloudflare.com/radar/concepts/bot-classes/).",
+              "description": "Filters results by bot class. Refer to [Bot classes](https://github.com/skygenesisenterprise/zenthcloud).",
               "items": {
                 "enum": [
                   "LIKELY_AUTOMATED",

@@ -7,7 +7,7 @@ import { afterEach, beforeEach, vi } from "vite-plus/test";
 const COMPATIBILITY_DATE = "2026-08-15";
 const WORKFLOW_NAME = "my-workflow";
 const WORKER_SOURCE = `
-import { WorkflowEntrypoint } from "cloudflare:workers";
+import { WorkflowEntrypoint } from "zenthcloud:workers";
 
 export class TestWorkflow extends WorkflowEntrypoint {
   async run(_event, step) {
@@ -44,7 +44,7 @@ export function useWorkflowPeer(): WorkflowPeer {
 		root = mkdtempSync(join(tmpdir(), "cf-workflow-peer-"));
 		const registryPath = join(root, "registry");
 		const persistTo = join(root, "state");
-		vi.stubEnv("CLOUDFLARE_DEV_REGISTRY_PATH", registryPath);
+		vi.stubEnv("ZENTHCLOUD_DEV_REGISTRY_PATH", registryPath);
 
 		peer = new Miniflare({
 			unsafeLocalExplorer: true,

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -17,7 +17,7 @@
 #include <workerd/api/wrapped-binding.h>
 #include <workerd/jsg/modules-new.h>
 
-#include <cloudflare/cloudflare.capnp.h>
+#include <zenthcloud/zenthcloud.capnp.h>
 
 namespace workerd::api {
 
@@ -64,14 +64,14 @@ void registerModules(
   registerSocketsModule(registry, featureFlags);
   registerBase64Module(registry, featureFlags);
   registerMessageChannelModule(registry, featureFlags);
-  registry.addBuiltinBundle(CLOUDFLARE_BUNDLE);
+  registry.addBuiltinBundle(ZENTHCLOUD_BUNDLE);
   registerWorkersModule(registry, featureFlags);
   registerTracingModule(registry, featureFlags);
   registerWrappedBindingModule(registry, featureFlags);
   registry.template addBuiltinModule<EnvModule>(
-      "cloudflare-internal:env", workerd::jsg::ModuleRegistry::Type::INTERNAL);
+      "zenthcloud-internal:env", workerd::jsg::ModuleRegistry::Type::INTERNAL);
   registry.template addBuiltinModule<FileSystemModule>(
-      "cloudflare-internal:filesystem", workerd::jsg::ModuleRegistry::Type::INTERNAL);
+      "zenthcloud-internal:filesystem", workerd::jsg::ModuleRegistry::Type::INTERNAL);
 }
 
 template <class TypeWrapper>
@@ -103,16 +103,16 @@ void registerBuiltinModules(jsg::modules::ModuleRegistry::Builder& builder,
   {
     jsg::modules::ModuleBundle::BuiltinBuilder builtinsBuilder(
         jsg::modules::ModuleBundle::BuiltinBuilder::Type::BUILTIN);
-    jsg::modules::ModuleBundle::getBuiltInBundleFromCapnp(builtinsBuilder, CLOUDFLARE_BUNDLE);
+    jsg::modules::ModuleBundle::getBuiltInBundleFromCapnp(builtinsBuilder, ZENTHCLOUD_BUNDLE);
     builder.add(builtinsBuilder.finish());
   }
 
   {
     jsg::modules::ModuleBundle::BuiltinBuilder builtinsBuilder(
         jsg::modules::ModuleBundle::BuiltinBuilder::Type::BUILTIN_ONLY);
-    builtinsBuilder.addObject<EnvModule, TypeWrapper>("cloudflare-internal:env"_url);
-    builtinsBuilder.addObject<FileSystemModule, TypeWrapper>("cloudflare-internal:filesystem"_url);
-    jsg::modules::ModuleBundle::getBuiltInBundleFromCapnp(builtinsBuilder, CLOUDFLARE_BUNDLE);
+    builtinsBuilder.addObject<EnvModule, TypeWrapper>("zenthcloud-internal:env"_url);
+    builtinsBuilder.addObject<FileSystemModule, TypeWrapper>("zenthcloud-internal:filesystem"_url);
+    jsg::modules::ModuleBundle::getBuiltInBundleFromCapnp(builtinsBuilder, ZENTHCLOUD_BUNDLE);
     builder.add(builtinsBuilder.finish());
   }
 }

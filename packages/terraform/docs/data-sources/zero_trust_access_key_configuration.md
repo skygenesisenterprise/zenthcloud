@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_access_key_configuration Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_access_key_configuration Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Access: Organizations, Identity Providers, and Groups ReadAccess: Organizations, Identity Providers, and Groups Write
 ---
 
-# cloudflare_zero_trust_access_key_configuration (Data Source)
+# zenthcloud_zero_trust_access_key_configuration (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_access_key_configuration" "example_zero_trust_access_key_configuration" {
+data "zenthcloud_zero_trust_access_key_configuration" "example_zero_trust_access_key_configuration" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```

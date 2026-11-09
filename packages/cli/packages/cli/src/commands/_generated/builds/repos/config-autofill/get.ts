@@ -80,7 +80,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf builds repos config-autofill get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/builds/repos/${argv["provider-type"] == null ? "<provider-type>" : encodeURIComponent(String(argv["provider-type"]))}/${argv["provider-account-id"] == null ? "<provider-account-id>" : encodeURIComponent(String(argv["provider-account-id"]))}/${argv["repo-id"] == null ? "<repo-id>" : encodeURIComponent(String(argv["repo-id"]))}/config_autofill`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/builds/repos/${argv["provider-type"] == null ? "<provider-type>" : encodeURIComponent(String(argv["provider-type"]))}/${argv["provider-account-id"] == null ? "<provider-account-id>" : encodeURIComponent(String(argv["provider-account-id"]))}/${argv["repo-id"] == null ? "<repo-id>" : encodeURIComponent(String(argv["repo-id"]))}/config_autofill`,
 						pathParams: {
 							"provider-type": String(argv["provider-type"] ?? ""),
 							"provider-account-id": String(argv["provider-account-id"] ?? ""),

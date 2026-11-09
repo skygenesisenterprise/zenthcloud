@@ -8,11 +8,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/kv"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/kv"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -27,25 +27,25 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_workers_kv", &resource.Sweeper{
-		Name: "cloudflare_workers_kv",
-		F:    testSweepCloudflareWorkersKV,
+	resource.AddTestSweepers("zenthcloud_workers_kv", &resource.Sweeper{
+		Name: "zenthcloud_workers_kv",
+		F:    testSweepZenthcloudWorkersKV,
 	})
 }
 
-func testSweepCloudflareWorkersKV(r string) error {
+func testSweepZenthcloudWorkersKV(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping Workers KV sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping Workers KV sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
 	// List all KV namespaces
 	namespaces, err := client.KV.Namespaces.List(ctx, kv.NamespaceListParams{
-		AccountID: cloudflare.F(accountID),
+		AccountID: zenthcloud.F(accountID),
 	})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch KV namespaces: %s", err))
@@ -65,7 +65,7 @@ func testSweepCloudflareWorkersKV(r string) error {
 
 		// List keys in this namespace
 		keys, err := client.KV.Namespaces.Keys.List(ctx, namespace.ID, kv.NamespaceKeyListParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to fetch KV keys for namespace %s (%s): %s", namespace.Title, namespace.ID, err))
@@ -76,7 +76,7 @@ func testSweepCloudflareWorkersKV(r string) error {
 		tflog.Info(ctx, fmt.Sprintf("Deleting %d keys from KV namespace: %s (account: %s)", len(keys.Result), namespace.Title, accountID))
 		for _, key := range keys.Result {
 			_, err := client.KV.Namespaces.Values.Delete(ctx, namespace.ID, key.Name, kv.NamespaceValueDeleteParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			})
 			if err != nil {
 				tflog.Error(ctx, fmt.Sprintf("Failed to delete KV key %s in namespace %s: %s", key.Name, namespace.Title, err))
@@ -89,12 +89,12 @@ func testSweepCloudflareWorkersKV(r string) error {
 	return nil
 }
 
-func TestAccCloudflareWorkersKV_Basic(t *testing.T) {
+func TestAccZenthcloudWorkersKV_Basic(t *testing.T) {
 	name := utils.GenerateRandomResourceName()
 	key := utils.GenerateRandomResourceName()
 	value := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_workers_kv." + name
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_workers_kv." + name
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	var namespaceID string
 
 	resource.Test(t, resource.TestCase{
@@ -103,10 +103,10 @@ func TestAccCloudflareWorkersKV_Basic(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCloudflareWorkersKVDestroy,
+		CheckDestroy:             testAccZenthcloudWorkersKVDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareWorkersKV(name, key, value, accountID),
+				Config: testAccCheckZenthcloudWorkersKV(name, key, value, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("key_name"), knownvalue.StringExact(key)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("value"), knownvalue.StringExact(value)),
@@ -115,7 +115,7 @@ func TestAccCloudflareWorkersKV_Basic(t *testing.T) {
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.StringExact(key)),
 				},
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareWorkersKVExists(key),
+					testAccCheckZenthcloudWorkersKVExists(key),
 					getNamespaceID(resourceName, &namespaceID),
 				),
 			},
@@ -124,7 +124,7 @@ func TestAccCloudflareWorkersKV_Basic(t *testing.T) {
 				ImportStateVerify: true,
 				ResourceName:      resourceName,
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {
-					namespaceResourceName := fmt.Sprintf("cloudflare_workers_kv_namespace.%s", name)
+					namespaceResourceName := fmt.Sprintf("zenthcloud_workers_kv_namespace.%s", name)
 					return fmt.Sprintf("%s/%s/%s", accountID, s.RootModule().Resources[namespaceResourceName].Primary.ID, key), nil
 				},
 			},
@@ -132,12 +132,12 @@ func TestAccCloudflareWorkersKV_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareWorkersKV_NameForcesRecreation(t *testing.T) {
+func TestAccZenthcloudWorkersKV_NameForcesRecreation(t *testing.T) {
 	name := utils.GenerateRandomResourceName()
 	key := utils.GenerateRandomResourceName()
 	value := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_workers_kv." + name
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_workers_kv." + name
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -145,20 +145,20 @@ func TestAccCloudflareWorkersKV_NameForcesRecreation(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCloudflareWorkersKVDestroy,
+		CheckDestroy:             testAccZenthcloudWorkersKVDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareWorkersKV(name, key, value, accountID),
+				Config: testAccCheckZenthcloudWorkersKV(name, key, value, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("key_name"), knownvalue.StringExact(key)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("value"), knownvalue.StringExact(value)),
 				},
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareWorkersKVExists(key),
+					testAccCheckZenthcloudWorkersKVExists(key),
 				),
 			},
 			{
-				Config: testAccCheckCloudflareWorkersKV(name, key+"-updated", value, accountID),
+				Config: testAccCheckZenthcloudWorkersKV(name, key+"-updated", value, accountID),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionDestroyBeforeCreate),
@@ -170,20 +170,20 @@ func TestAccCloudflareWorkersKV_NameForcesRecreation(t *testing.T) {
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("value"), knownvalue.StringExact(value)),
 				},
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareWorkersKVExists(key + "-updated"),
+					testAccCheckZenthcloudWorkersKVExists(key + "-updated"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccCloudflareWorkersKV_ValueUpdate(t *testing.T) {
+func TestAccZenthcloudWorkersKV_ValueUpdate(t *testing.T) {
 	name := utils.GenerateRandomResourceName()
 	key := utils.GenerateRandomResourceName()
 	value := utils.GenerateRandomResourceName()
 	updatedValue := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_workers_kv." + name
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_workers_kv." + name
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -191,10 +191,10 @@ func TestAccCloudflareWorkersKV_ValueUpdate(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCloudflareWorkersKVDestroy,
+		CheckDestroy:             testAccZenthcloudWorkersKVDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareWorkersKV(name, key, value, accountID),
+				Config: testAccCheckZenthcloudWorkersKV(name, key, value, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("value"), knownvalue.StringExact(value)),
 				},
@@ -205,13 +205,13 @@ func TestAccCloudflareWorkersKV_ValueUpdate(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {
-					namespaceResourceName := fmt.Sprintf("cloudflare_workers_kv_namespace.%s", name)
+					namespaceResourceName := fmt.Sprintf("zenthcloud_workers_kv_namespace.%s", name)
 					return fmt.Sprintf("%s/%s/%s", accountID, s.RootModule().Resources[namespaceResourceName].Primary.ID, key), nil
 				},
 			},
 			{
 				// PlanOnly to avoid post-apply refresh issues from KV eventual consistency.
-				Config:             testAccCheckCloudflareWorkersKV(name, key, updatedValue, accountID),
+				Config:             testAccCheckZenthcloudWorkersKV(name, key, updatedValue, accountID),
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			},
@@ -219,11 +219,11 @@ func TestAccCloudflareWorkersKV_ValueUpdate(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareWorkersKV_EmptyValue(t *testing.T) {
+func TestAccZenthcloudWorkersKV_EmptyValue(t *testing.T) {
 	name := utils.GenerateRandomResourceName()
 	key := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_workers_kv." + name
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_workers_kv." + name
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -231,10 +231,10 @@ func TestAccCloudflareWorkersKV_EmptyValue(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCloudflareWorkersKVDestroy,
+		CheckDestroy:             testAccZenthcloudWorkersKVDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareWorkersKV(name, key, "", accountID),
+				Config: testAccCheckZenthcloudWorkersKV(name, key, "", accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("key_name"), knownvalue.StringExact(key)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("value"), knownvalue.StringExact("")),
@@ -242,20 +242,20 @@ func TestAccCloudflareWorkersKV_EmptyValue(t *testing.T) {
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("namespace_id"), knownvalue.NotNull()),
 				},
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareWorkersKVExists(key),
+					testAccCheckZenthcloudWorkersKVExists(key),
 				),
 			},
 		},
 	})
 }
 
-func TestAccCloudflareWorkersKV_LargeValue(t *testing.T) {
+func TestAccZenthcloudWorkersKV_LargeValue(t *testing.T) {
 	name := utils.GenerateRandomResourceName()
 	key := utils.GenerateRandomResourceName()
 	// Create a 1MB value (well within the 25MB limit)
 	largeValue := strings.Repeat("a", 1024*1024)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_workers_kv." + name
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_workers_kv." + name
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -263,28 +263,28 @@ func TestAccCloudflareWorkersKV_LargeValue(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCloudflareWorkersKVDestroy,
+		CheckDestroy:             testAccZenthcloudWorkersKVDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareWorkersKV(name, key, largeValue, accountID),
+				Config: testAccCheckZenthcloudWorkersKV(name, key, largeValue, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("key_name"), knownvalue.StringExact(key)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("value"), knownvalue.StringExact(largeValue)),
 				},
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareWorkersKVExists(key),
+					testAccCheckZenthcloudWorkersKVExists(key),
 				),
 			},
 		},
 	})
 }
 
-func TestAccCloudflareWorkersKV_SpecialCharactersInKey(t *testing.T) {
+func TestAccZenthcloudWorkersKV_SpecialCharactersInKey(t *testing.T) {
 	name := utils.GenerateRandomResourceName()
 	key := "test-key_with.special-chars/" + utils.GenerateRandomResourceName()
 	value := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_workers_kv." + name
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_workers_kv." + name
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -292,28 +292,28 @@ func TestAccCloudflareWorkersKV_SpecialCharactersInKey(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCloudflareWorkersKVDestroy,
+		CheckDestroy:             testAccZenthcloudWorkersKVDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareWorkersKV(name, key, value, accountID),
+				Config: testAccCheckZenthcloudWorkersKV(name, key, value, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("key_name"), knownvalue.StringExact(key)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("value"), knownvalue.StringExact(value)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.StringExact(key)),
 				},
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareWorkersKVExists(key),
+					testAccCheckZenthcloudWorkersKVExists(key),
 				),
 			},
 		},
 	})
 }
 
-func TestAccCloudflareWorkersKV_InvalidJSONMetadata(t *testing.T) {
+func TestAccZenthcloudWorkersKV_InvalidJSONMetadata(t *testing.T) {
 	name := utils.GenerateRandomResourceName()
 	key := utils.GenerateRandomResourceName()
 	value := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	// Invalid JSON - missing closing brace
 	invalidMetadata := `{\"key\": \"value\"`
 
@@ -323,22 +323,22 @@ func TestAccCloudflareWorkersKV_InvalidJSONMetadata(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCloudflareWorkersKVDestroy,
+		CheckDestroy:             testAccZenthcloudWorkersKVDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCheckCloudflareWorkersKVWithMetadata(name, key, value, accountID, invalidMetadata),
+				Config:      testAccCheckZenthcloudWorkersKVWithMetadata(name, key, value, accountID, invalidMetadata),
 				ExpectError: regexp.MustCompile("Invalid JSON String Value|not valid JSON string format"),
 			},
 		},
 	})
 }
 
-func TestAccCloudflareWorkersKV_InvalidImportID(t *testing.T) {
+func TestAccZenthcloudWorkersKV_InvalidImportID(t *testing.T) {
 	name := utils.GenerateRandomResourceName()
 	key := utils.GenerateRandomResourceName()
 	value := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_workers_kv." + name
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_workers_kv." + name
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -346,10 +346,10 @@ func TestAccCloudflareWorkersKV_InvalidImportID(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCloudflareWorkersKVDestroy,
+		CheckDestroy:             testAccZenthcloudWorkersKVDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareWorkersKV(name, key, value, accountID),
+				Config: testAccCheckZenthcloudWorkersKV(name, key, value, accountID),
 			},
 			{
 				ResourceName:  resourceName,
@@ -367,12 +367,12 @@ func TestAccCloudflareWorkersKV_InvalidImportID(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareWorkersKV_MetadataUpdate(t *testing.T) {
+func TestAccZenthcloudWorkersKV_MetadataUpdate(t *testing.T) {
 	name := utils.GenerateRandomResourceName()
 	key := utils.GenerateRandomResourceName()
 	value := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_workers_kv." + name
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_workers_kv." + name
 
 	initialMetadata := `{\"version\": \"1.0\", \"env\": \"test\"}`
 	updatedMetadata := `{\"version\": \"1.1\", \"env\": \"production\", \"tags\": [\"api\", \"v1\"]}`
@@ -383,17 +383,17 @@ func TestAccCloudflareWorkersKV_MetadataUpdate(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCloudflareWorkersKVDestroy,
+		CheckDestroy:             testAccZenthcloudWorkersKVDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareWorkersKVWithMetadata(name, key, value, accountID, initialMetadata),
+				Config: testAccCheckZenthcloudWorkersKVWithMetadata(name, key, value, accountID, initialMetadata),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("metadata"), knownvalue.StringExact(strings.ReplaceAll(initialMetadata, "\\\"", "\""))),
 				},
 			},
 			{
 				// PlanOnly to avoid post-apply refresh issues from KV eventual consistency.
-				Config:             testAccCheckCloudflareWorkersKVWithMetadata(name, key, value, accountID, updatedMetadata),
+				Config:             testAccCheckZenthcloudWorkersKVWithMetadata(name, key, value, accountID, updatedMetadata),
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
 			},
@@ -401,12 +401,12 @@ func TestAccCloudflareWorkersKV_MetadataUpdate(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareWorkersKV_WithMetadata(t *testing.T) {
+func TestAccZenthcloudWorkersKV_WithMetadata(t *testing.T) {
 	name := utils.GenerateRandomResourceName()
 	key := utils.GenerateRandomResourceName()
 	value := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_workers_kv." + name
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_workers_kv." + name
 	metadataKey := utils.GenerateRandomResourceName()
 	metadataValue := utils.GenerateRandomResourceName()
 	metadata := fmt.Sprintf("{\\\"%s\\\": \\\"%s\\\"}", metadataKey, metadataValue)
@@ -417,10 +417,10 @@ func TestAccCloudflareWorkersKV_WithMetadata(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCloudflareWorkersKVDestroy,
+		CheckDestroy:             testAccZenthcloudWorkersKVDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareWorkersKVWithMetadata(name, key, value, accountID, metadata),
+				Config: testAccCheckZenthcloudWorkersKVWithMetadata(name, key, value, accountID, metadata),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("key_name"), knownvalue.StringExact(key)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("value"), knownvalue.StringExact(value)),
@@ -429,18 +429,18 @@ func TestAccCloudflareWorkersKV_WithMetadata(t *testing.T) {
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("namespace_id"), knownvalue.NotNull()),
 				},
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareWorkersKVMetadataExists(key),
+					testAccCheckZenthcloudWorkersKVMetadataExists(key),
 				),
 			},
 		},
 	})
 }
 
-func testAccCloudflareWorkersKVDestroy(s *terraform.State) error {
+func testAccZenthcloudWorkersKVDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_workers_kv" {
+		if rs.Type != "zenthcloud_workers_kv" {
 			continue
 		}
 
@@ -449,7 +449,7 @@ func testAccCloudflareWorkersKVDestroy(s *terraform.State) error {
 
 		accountID := rs.Primary.Attributes[consts.AccountIDSchemaKey]
 
-		_, err := client.KV.Namespaces.Values.Get(context.Background(), namespaceID, key, kv.NamespaceValueGetParams{AccountID: cloudflare.F(accountID)})
+		_, err := client.KV.Namespaces.Values.Get(context.Background(), namespaceID, key, kv.NamespaceValueGetParams{AccountID: zenthcloud.F(accountID)})
 
 		if err == nil {
 			return fmt.Errorf("workers kv pair still exists")
@@ -459,26 +459,26 @@ func testAccCloudflareWorkersKVDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckCloudflareWorkersKV(rName, key, value, accountID string) string {
+func testAccCheckZenthcloudWorkersKV(rName, key, value, accountID string) string {
 	return acctest.LoadTestCase("workerskv.tf", rName, key, value, accountID)
 }
 
-func testAccCheckCloudflareWorkersKVWithMetadata(rName, key, value, accountID, metadata string) string {
+func testAccCheckZenthcloudWorkersKVWithMetadata(rName, key, value, accountID, metadata string) string {
 	return acctest.LoadTestCase("workerskvwithmetadata.tf", rName, key, value, accountID, metadata)
 }
 
-func testAccCheckCloudflareWorkersKVExists(key string) resource.TestCheckFunc {
+func testAccCheckZenthcloudWorkersKVExists(key string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := acctest.SharedClient()
 
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "cloudflare_workers_kv" {
+			if rs.Type != "zenthcloud_workers_kv" {
 				continue
 			}
 
 			accountID := rs.Primary.Attributes[consts.AccountIDSchemaKey]
 			namespaceID := rs.Primary.Attributes["namespace_id"]
-			value, err := client.KV.Namespaces.Values.Get(context.Background(), namespaceID, key, kv.NamespaceValueGetParams{AccountID: cloudflare.F(accountID)})
+			value, err := client.KV.Namespaces.Values.Get(context.Background(), namespaceID, key, kv.NamespaceValueGetParams{AccountID: zenthcloud.F(accountID)})
 			if err != nil {
 				return err
 			}
@@ -492,18 +492,18 @@ func testAccCheckCloudflareWorkersKVExists(key string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckCloudflareWorkersKVMetadataExists(key string) resource.TestCheckFunc {
+func testAccCheckZenthcloudWorkersKVMetadataExists(key string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := acctest.SharedClient()
 
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "cloudflare_workers_kv" {
+			if rs.Type != "zenthcloud_workers_kv" {
 				continue
 			}
 
 			accountID := rs.Primary.Attributes[consts.AccountIDSchemaKey]
 			namespaceID := rs.Primary.Attributes["namespace_id"]
-			value, err := client.KV.Namespaces.Metadata.Get(context.Background(), namespaceID, key, kv.NamespaceMetadataGetParams{AccountID: cloudflare.F(accountID)})
+			value, err := client.KV.Namespaces.Metadata.Get(context.Background(), namespaceID, key, kv.NamespaceMetadataGetParams{AccountID: zenthcloud.F(accountID)})
 			if err != nil {
 				return err
 			}
@@ -536,9 +536,9 @@ func TestAccUpgradeWorkersKv_FromPublishedV5(t *testing.T) {
 	name := utils.GenerateRandomResourceName()
 	key := utils.GenerateRandomResourceName()
 	value := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
-	config := testAccCheckCloudflareWorkersKV(name, key, value, accountID)
+	config := testAccCheckZenthcloudWorkersKV(name, key, value, accountID)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -548,8 +548,8 @@ func TestAccUpgradeWorkersKv_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

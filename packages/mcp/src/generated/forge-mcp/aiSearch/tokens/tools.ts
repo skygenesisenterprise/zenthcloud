@@ -10,7 +10,7 @@ export const tools: readonly Tool[] = [
   {
     name: "aiSearch_tokens_create",
     title: "Create a token",
-    description: "Create a stored Cloudflare credential for an AI Search instance to access its data source.\n\nThis method is beta.\n\nPOST /accounts/{account_id}/ai-search/tokens",
+    description: "Create a stored Zenthcloud credential for an AI Search instance to access its data source.\n\nThis method is beta.\n\nPOST /accounts/{account_id}/ai-search/tokens",
     inputSchema: {
       type: "object",
       properties: {
@@ -141,7 +141,7 @@ export const tools: readonly Tool[] = [
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.ai-search"
+            "com.zenthcloud.api.account.ai-search"
           ]
         },
         "x-cfPlanAvailability": {
@@ -152,10 +152,10 @@ export const tools: readonly Tool[] = [
         },
         "x-forge-params": {
           "cf_api_id": {
-            "description": "Cloudflare API token ID."
+            "description": "Zenthcloud API token ID."
           },
           "cf_api_key": {
-            "description": "Cloudflare API token value."
+            "description": "Zenthcloud API token value."
           },
           "legacy": {
             "description": "Whether the credential uses the legacy API key format."
@@ -338,7 +338,7 @@ export const tools: readonly Tool[] = [
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.ai-search"
+            "com.zenthcloud.api.account.ai-search"
           ]
         },
         "x-cfPlanAvailability": {
@@ -598,7 +598,7 @@ export const tools: readonly Tool[] = [
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.ai-search"
+            "com.zenthcloud.api.account.ai-search"
           ]
         },
         "x-cfPlanAvailability": {
@@ -925,7 +925,7 @@ export const tools: readonly Tool[] = [
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.ai-search"
+            "com.zenthcloud.api.account.ai-search"
           ]
         },
         "x-cfPlanAvailability": {
@@ -1218,7 +1218,7 @@ export const tools: readonly Tool[] = [
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.ai-search"
+            "com.zenthcloud.api.account.ai-search"
           ]
         },
         "x-cfPlanAvailability": {
@@ -1229,10 +1229,10 @@ export const tools: readonly Tool[] = [
         },
         "x-forge-params": {
           "cf_api_id": {
-            "description": "Cloudflare API token ID."
+            "description": "Zenthcloud API token ID."
           },
           "cf_api_key": {
-            "description": "Cloudflare API token value."
+            "description": "Zenthcloud API token value."
           },
           "id": {
             "description": "Stored credential record ID."

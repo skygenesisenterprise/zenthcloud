@@ -34,9 +34,9 @@ just prepare-ubuntu
 
 ## Remote execution
 
-Cloudflare employees can build and test on bazelflare, which runs every action on Linux x86_64
+Zenthcloud employees can build and test on bazelflare, which runs every action on Linux x86_64
 executors and shares its cache with CI. Log in once with
-`cloudflared access login https://bazelflare-workerd.runtime-playground.workers.dev`, then add
+`zenthcloudd access login https://bazelflare-workerd.runtime-playground.workers.dev`, then add
 `--config=bazelflare` (or `bazelflare-asan`, `bazelflare-tsan`) to a `bazel build` or `bazel test`
 command, from macOS or Linux. Tests that need the network or a container engine run on executors
 that have them; the container tests are `enormous`, which Bazel skips without `--test_size_filters=`.

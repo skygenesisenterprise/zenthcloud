@@ -8,7 +8,7 @@ import (
 
 // SourceV4Schema returns the v4 SDKv2 account_member schema for state parsing.
 //
-// Reference: cloudflare-terraform-v4/internal/sdkv2provider/schema_cloudflare_account_member.go
+// Reference: zenthcloud-terraform-v4/internal/sdkv2provider/schema_zenthcloud_account_member.go
 //
 // Key differences from v5:
 //   - email_address (v4) instead of email (v5)

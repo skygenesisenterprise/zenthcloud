@@ -5,9 +5,9 @@ package token_validation_rules
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/token_validation"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/token_validation"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -39,27 +39,27 @@ func (m *TokenValidationRulesListDataSourceModel) toListParams(_ context.Context
 	}
 
 	params = token_validation.RuleListParams{
-		ZoneID:             cloudflare.F(m.ZoneID.ValueString()),
-		TokenConfiguration: cloudflare.F(mTokenConfiguration),
+		ZoneID:             zenthcloud.F(m.ZoneID.ValueString()),
+		TokenConfiguration: zenthcloud.F(mTokenConfiguration),
 	}
 
 	if !m.ID.IsNull() {
-		params.ID = cloudflare.F(m.ID.ValueString())
+		params.ID = zenthcloud.F(m.ID.ValueString())
 	}
 	if !m.Action.IsNull() {
-		params.Action = cloudflare.F(token_validation.RuleListParamsAction(m.Action.ValueString()))
+		params.Action = zenthcloud.F(token_validation.RuleListParamsAction(m.Action.ValueString()))
 	}
 	if !m.Enabled.IsNull() {
-		params.Enabled = cloudflare.F(m.Enabled.ValueBool())
+		params.Enabled = zenthcloud.F(m.Enabled.ValueBool())
 	}
 	if !m.Host.IsNull() {
-		params.Host = cloudflare.F(m.Host.ValueString())
+		params.Host = zenthcloud.F(m.Host.ValueString())
 	}
 	if !m.Hostname.IsNull() {
-		params.Hostname = cloudflare.F(m.Hostname.ValueString())
+		params.Hostname = zenthcloud.F(m.Hostname.ValueString())
 	}
 	if !m.RuleID.IsNull() {
-		params.RuleID = cloudflare.F(m.RuleID.ValueString())
+		params.RuleID = zenthcloud.F(m.RuleID.ValueString())
 	}
 
 	return

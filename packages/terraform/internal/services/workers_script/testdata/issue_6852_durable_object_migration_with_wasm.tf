@@ -1,8 +1,8 @@
-resource "cloudflare_workers_script" "%[1]s" {
+resource "zenthcloud_workers_script" "%[1]s" {
   account_id  = "%[2]s"
   script_name = "%[1]s"
   content = <<-EOT
-    import {DurableObject} from "cloudflare:workers"
+    import {DurableObject} from "zenthcloud:workers"
     import wasm from "./module.wasm"
     export class MyDurableObject extends DurableObject {}
     export default { fetch() {return new Response(wasm instanceof WebAssembly.Module ? "ok" : "error")} }

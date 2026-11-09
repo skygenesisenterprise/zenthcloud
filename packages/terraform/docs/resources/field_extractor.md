@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_field_extractor Resource - Cloudflare"
+page_title: "zenthcloud_field_extractor Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_field_extractor (Resource)
+# zenthcloud_field_extractor (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_field_extractor" "example_field_extractor" {
+resource "zenthcloud_field_extractor" "example_field_extractor" {
   account_id = "123456"
   extractor = "llm_prompts"
   rules = [{
@@ -31,7 +31,7 @@ resource "cloudflare_field_extractor" "example_field_extractor" {
 
 ### Required
 
-- `account_id` (String) Cloudflare account ID.
+- `account_id` (String) Zenthcloud account ID.
 - `extractor` (String) Extractor type.
 - `rules` (Attributes List) (see [below for nested schema](#nestedatt--rules))
 
@@ -64,7 +64,7 @@ Required:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_field_extractor.example '<account_id>/<extractor>'
+$ terraform import zenthcloud_field_extractor.example '<account_id>/<extractor>'
 ```
 
 

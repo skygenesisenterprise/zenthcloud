@@ -1,10 +1,10 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
-import { env, withEnv } from 'cloudflare:workers';
+import { env, withEnv } from 'zenthcloud:workers';
 
 // This test runs with the disallow-importable-env flag set, meaning that
-// the env imported from cloudflare:workers exists but is not-populated
+// the env imported from zenthcloud:workers exists but is not-populated
 // with the primary environment. Using withEnv, however, would still work.
 
 import { strictEqual, notDeepStrictEqual } from 'node:assert';

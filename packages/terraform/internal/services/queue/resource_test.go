@@ -6,15 +6,15 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go"
+	"github.com/zenthcloud/zenthcloud-go"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 func TestMain(m *testing.M) {
@@ -22,27 +22,27 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_queue", &resource.Sweeper{
-		Name: "cloudflare_queue",
-		F:    testSweepCloudflareQueues,
+	resource.AddTestSweepers("zenthcloud_queue", &resource.Sweeper{
+		Name: "zenthcloud_queue",
+		F:    testSweepZenthcloudQueues,
 	})
 }
 
-func testSweepCloudflareQueues(r string) error {
+func testSweepZenthcloudQueues(r string) error {
 	ctx := context.Background()
 	client, clientErr := acctest.SharedV1Client()
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 		return clientErr
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping queues sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping queues sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
-	queues, _, err := client.ListQueues(ctx, cloudflare.AccountIdentifier(accountID), cloudflare.ListQueuesParams{})
+	queues, _, err := client.ListQueues(ctx, zenthcloud.AccountIdentifier(accountID), zenthcloud.ListQueuesParams{})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch queues: %s", err))
 		return fmt.Errorf("failed to fetch queues: %w", err)
@@ -60,7 +60,7 @@ func testSweepCloudflareQueues(r string) error {
 		}
 
 		tflog.Info(ctx, fmt.Sprintf("Deleting queue: %s (account: %s)", queue.Name, accountID))
-		err := client.DeleteQueue(ctx, cloudflare.AccountIdentifier(accountID), queue.Name)
+		err := client.DeleteQueue(ctx, zenthcloud.AccountIdentifier(accountID), queue.Name)
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete queue %s: %s", queue.Name, err))
 			continue
@@ -71,20 +71,20 @@ func testSweepCloudflareQueues(r string) error {
 	return nil
 }
 
-func TestAccCloudflareQueue_Settings_UpdateDeliveryPaused(t *testing.T) {
+func TestAccZenthcloudQueue_Settings_UpdateDeliveryPaused(t *testing.T) {
 	t.Skip(`FIXME: API changes causing state issues with delivery_paused attribute`)
 	t.Parallel()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_queue." + rnd
+	resourceName := "zenthcloud_queue." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t); acctest.TestAccPreCheck_AccountID(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCloudflareQueueDestroy,
+		CheckDestroy:             testAccZenthcloudQueueDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareQueueWithPaused(rnd, accountID, rnd),
+				Config: testAccCheckZenthcloudQueueWithPaused(rnd, accountID, rnd),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "queue_name", rnd),
 					resource.TestCheckResourceAttr(resourceName, consts.AccountIDSchemaKey, accountID),
@@ -92,7 +92,7 @@ func TestAccCloudflareQueue_Settings_UpdateDeliveryPaused(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckCloudflareQueueWithPausedUpdate(rnd, accountID, rnd),
+				Config: testAccCheckZenthcloudQueueWithPausedUpdate(rnd, accountID, rnd),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "queue_name", rnd),
 					resource.TestCheckResourceAttr(resourceName, consts.AccountIDSchemaKey, accountID),
@@ -103,19 +103,19 @@ func TestAccCloudflareQueue_Settings_UpdateDeliveryPaused(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareQueue_Settings_UpdateRetention(t *testing.T) {
+func TestAccZenthcloudQueue_Settings_UpdateRetention(t *testing.T) {
 	t.Parallel()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_queue." + rnd
+	resourceName := "zenthcloud_queue." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t); acctest.TestAccPreCheck_AccountID(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCloudflareQueueDestroy,
+		CheckDestroy:             testAccZenthcloudQueueDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareQueueWithRetention(rnd, accountID, rnd),
+				Config: testAccCheckZenthcloudQueueWithRetention(rnd, accountID, rnd),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "queue_name", rnd),
 					resource.TestCheckResourceAttr(resourceName, consts.AccountIDSchemaKey, accountID),
@@ -123,7 +123,7 @@ func TestAccCloudflareQueue_Settings_UpdateRetention(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckCloudflareQueueWithRetentionUpdate(rnd, accountID, rnd),
+				Config: testAccCheckZenthcloudQueueWithRetentionUpdate(rnd, accountID, rnd),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "queue_name", rnd),
 					resource.TestCheckResourceAttr(resourceName, consts.AccountIDSchemaKey, accountID),
@@ -134,19 +134,19 @@ func TestAccCloudflareQueue_Settings_UpdateRetention(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareQueue_Settings_UpdateDeliveryDelay(t *testing.T) {
+func TestAccZenthcloudQueue_Settings_UpdateDeliveryDelay(t *testing.T) {
 	t.Parallel()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_queue." + rnd
+	resourceName := "zenthcloud_queue." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t); acctest.TestAccPreCheck_AccountID(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCloudflareQueueDestroy,
+		CheckDestroy:             testAccZenthcloudQueueDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareQueueWithDeliveryDelay(rnd, accountID, rnd),
+				Config: testAccCheckZenthcloudQueueWithDeliveryDelay(rnd, accountID, rnd),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "queue_name", rnd),
 					resource.TestCheckResourceAttr(resourceName, consts.AccountIDSchemaKey, accountID),
@@ -154,7 +154,7 @@ func TestAccCloudflareQueue_Settings_UpdateDeliveryDelay(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckCloudflareQueueWithDeliveryDelayUpdate(rnd, accountID, rnd),
+				Config: testAccCheckZenthcloudQueueWithDeliveryDelayUpdate(rnd, accountID, rnd),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "queue_name", rnd),
 					resource.TestCheckResourceAttr(resourceName, consts.AccountIDSchemaKey, accountID),
@@ -167,27 +167,27 @@ func TestAccCloudflareQueue_Settings_UpdateDeliveryDelay(t *testing.T) {
 
 func init() {
 	// TODO: fixme
-	//resource.AddTestSweepers("cloudflare_queue", &resource.Sweeper{
-	//	Name: "cloudflare_queue",
-	//	F:    testSweepCloudflareQueue,
+	//resource.AddTestSweepers("zenthcloud_queue", &resource.Sweeper{
+	//	Name: "zenthcloud_queue",
+	//	F:    testSweepZenthcloudQueue,
 	//})
 }
 
-func testSweepCloudflareQueue(r string) error {
+func testSweepZenthcloudQueue(r string) error {
 	ctx := context.Background()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping queues sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping queues sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 		return clientErr
 	}
 
-	resp, _, err := client.ListQueues(ctx, cloudflare.AccountIdentifier(accountID), cloudflare.ListQueuesParams{})
+	resp, _, err := client.ListQueues(ctx, zenthcloud.AccountIdentifier(accountID), zenthcloud.ListQueuesParams{})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch queues: %s", err))
 		return err
@@ -203,7 +203,7 @@ func testSweepCloudflareQueue(r string) error {
 			continue
 		}
 		tflog.Info(ctx, fmt.Sprintf("Deleting queue: %s (account: %s)", q.Name, accountID))
-		err := client.DeleteQueue(ctx, cloudflare.AccountIdentifier(accountID), q.Name)
+		err := client.DeleteQueue(ctx, zenthcloud.AccountIdentifier(accountID), q.Name)
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete queue %s: %s", q.Name, err))
 			continue
@@ -214,27 +214,27 @@ func testSweepCloudflareQueue(r string) error {
 	return nil
 }
 
-func TestAccCloudflareQueue_Basic(t *testing.T) {
+func TestAccZenthcloudQueue_Basic(t *testing.T) {
 	t.Parallel()
-	var queue cloudflare.Queue
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	var queue zenthcloud.Queue
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_queue." + rnd
+	resourceName := "zenthcloud_queue." + rnd
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t); acctest.TestAccPreCheck_AccountID(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCloudflareQueueDestroy,
+		CheckDestroy:             testAccZenthcloudQueueDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareQueue(rnd, accountID, rnd),
+				Config: testAccCheckZenthcloudQueue(rnd, accountID, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareQueueExists(rnd, &queue),
+					testAccCheckZenthcloudQueueExists(rnd, &queue),
 					resource.TestCheckResourceAttr(resourceName, "queue_name", rnd),
 					resource.TestCheckResourceAttr(resourceName, consts.AccountIDSchemaKey, accountID),
 				),
 			},
 			{
-				Config: testAccCheckCloudflareQueue(rnd, accountID, rnd+"-updated"),
+				Config: testAccCheckZenthcloudQueue(rnd, accountID, rnd+"-updated"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "queue_name", rnd+"-updated"),
 					resource.TestCheckResourceAttr(resourceName, consts.AccountIDSchemaKey, accountID),
@@ -250,19 +250,19 @@ func TestAccCloudflareQueue_Basic(t *testing.T) {
 	})
 }
 
-func testAccCloudflareQueueDestroy(s *terraform.State) error {
+func testAccZenthcloudQueueDestroy(s *terraform.State) error {
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_queue" {
+		if rs.Type != "zenthcloud_queue" {
 			continue
 		}
 
 		accountID := rs.Primary.Attributes[consts.AccountIDSchemaKey]
-		resp, _, err := client.ListQueues(context.Background(), cloudflare.AccountIdentifier(accountID), cloudflare.ListQueuesParams{})
+		resp, _, err := client.ListQueues(context.Background(), zenthcloud.AccountIdentifier(accountID), zenthcloud.ListQueuesParams{})
 		if err != nil {
 			return err
 		}
@@ -277,48 +277,48 @@ func testAccCloudflareQueueDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckCloudflareQueue(rnd, accountID, name string) string {
+func testAccCheckZenthcloudQueue(rnd, accountID, name string) string {
 	return acctest.LoadTestCase("queue.tf", rnd, accountID, name)
 }
 
-func testAccCheckCloudflareQueueWithDeliveryDelay(rnd, accountID, name string) string {
+func testAccCheckZenthcloudQueueWithDeliveryDelay(rnd, accountID, name string) string {
 	return acctest.LoadTestCase("queue_with_delivery_delay.tf", rnd, accountID, name)
 }
 
-func testAccCheckCloudflareQueueWithDeliveryDelayUpdate(rnd, accountID, name string) string {
+func testAccCheckZenthcloudQueueWithDeliveryDelayUpdate(rnd, accountID, name string) string {
 	return acctest.LoadTestCase("queue_with_delivery_delay_update.tf", rnd, accountID, name)
 }
 
-func testAccCheckCloudflareQueueWithPaused(rnd, accountID, name string) string {
+func testAccCheckZenthcloudQueueWithPaused(rnd, accountID, name string) string {
 	return acctest.LoadTestCase("queue_with_paused.tf", rnd, accountID, name)
 }
 
-func testAccCheckCloudflareQueueWithPausedUpdate(rnd, accountID, name string) string {
+func testAccCheckZenthcloudQueueWithPausedUpdate(rnd, accountID, name string) string {
 	return acctest.LoadTestCase("queue_with_paused_update.tf", rnd, accountID, name)
 }
 
-func testAccCheckCloudflareQueueWithRetention(rnd, accountID, name string) string {
+func testAccCheckZenthcloudQueueWithRetention(rnd, accountID, name string) string {
 	return acctest.LoadTestCase("queue_with_retention.tf", rnd, accountID, name)
 }
 
-func testAccCheckCloudflareQueueWithRetentionUpdate(rnd, accountID, name string) string {
+func testAccCheckZenthcloudQueueWithRetentionUpdate(rnd, accountID, name string) string {
 	return acctest.LoadTestCase("queue_with_retention_update.tf", rnd, accountID, name)
 }
 
-func testAccCheckCloudflareQueueExists(name string, queue *cloudflare.Queue) resource.TestCheckFunc {
+func testAccCheckZenthcloudQueueExists(name string, queue *zenthcloud.Queue) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 		if clientErr != nil {
-			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 		}
 
-		rs, ok := s.RootModule().Resources["cloudflare_queue."+name]
+		rs, ok := s.RootModule().Resources["zenthcloud_queue."+name]
 		if !ok {
 			return fmt.Errorf("not found: %s", name)
 		}
 
 		accountID := rs.Primary.Attributes[consts.AccountIDSchemaKey]
-		resp, _, err := client.ListQueues(context.Background(), cloudflare.AccountIdentifier(accountID), cloudflare.ListQueuesParams{})
+		resp, _, err := client.ListQueues(context.Background(), zenthcloud.AccountIdentifier(accountID), zenthcloud.ListQueuesParams{})
 		if err != nil {
 			return err
 		}
@@ -336,18 +336,18 @@ func testAccCheckCloudflareQueueExists(name string, queue *cloudflare.Queue) res
 
 func TestAccUpgradeQueue_FromPublishedV5(t *testing.T) {
 	t.Skip("Failed to marshal state to json: schema version 0 in state does not match version 1 from the provider")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 
-	config := testAccCheckCloudflareQueueWithPaused(rnd, accountID, rnd)
+	config := testAccCheckZenthcloudQueueWithPaused(rnd, accountID, rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck(t); acctest.TestAccPreCheck_AccountID(t) },
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

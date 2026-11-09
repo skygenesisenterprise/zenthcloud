@@ -20,7 +20,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.positional("bot-class", {
 			type: "string",
 			description:
-				"Bot class. Refer to [Bot classes](https://developers.cloudflare.com/radar/concepts/bot-classes/).",
+				"Bot class. Refer to [Bot classes](https://github.com/skygenesisenterprise/zenthcloud).",
 			demandOption: true,
 		})
 		.option("limit", {
@@ -160,7 +160,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar http ases bot-class get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/http/top/ases/bot_class/${argv["bot-class"] == null ? "<bot-class>" : encodeURIComponent(String(argv["bot-class"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["bot-class"] == null ? "<bot-class>" : encodeURIComponent(String(argv["bot-class"]))}`,
 						pathParams: { "bot-class": String(argv["bot-class"] ?? "") },
 						query: queryParams,
 						bodyKind: "none",

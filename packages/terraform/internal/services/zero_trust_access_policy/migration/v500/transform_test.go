@@ -9,7 +9,7 @@ import (
 )
 
 // TestTransform_ZoneIDOnly_AccountIDIsNull reproduces APIX-851:
-// When a v4 cloudflare_access_policy used zone_id (no account_id), the
+// When a v4 zenthcloud_access_policy used zone_id (no account_id), the
 // Transform function used to produce a v5 state with null account_id. This
 // caused "missing required account_id parameter" on any subsequent CRUD
 // operation because the Go SDK requires a non-empty account_id to construct
@@ -17,21 +17,21 @@ import (
 //
 // Customer scenario:
 //  1. v4 config: zone_id + application_id (zone-scoped app policy)
-//  2. Migration to v5: cloudflare_zero_trust_access_policy (reusable policy)
+//  2. Migration to v5: zenthcloud_zero_trust_access_policy (reusable policy)
 //  3. v5 state has null account_id → Read() fails even when config has account_id hardcoded
 //     because Read() sources account_id from state, not config.
 //
 // Fix (APIX-851): Transform must either:
 //
 //	(a) emit a diagnostic error explaining zone_id-only policies require manual account_id, or
-//	(b) resolve account_id from another source (CLOUDFLARE_ACCOUNT_ID env var).
+//	(b) resolve account_id from another source (ZENTHCLOUD_ACCOUNT_ID env var).
 //
 // This test exercises path (a) — no env var set, expect a clear diagnostic error.
 // TestTransform_ZoneIDOnly_AccountIDFromEnvVar covers path (b).
 func TestTransform_ZoneIDOnly_AccountIDIsNull(t *testing.T) {
 	// Defensively clear the env var in case the test runner has it set;
 	// path (a) requires no fallback to be available.
-	t.Setenv("CLOUDFLARE_ACCOUNT_ID", "")
+	t.Setenv("ZENTHCLOUD_ACCOUNT_ID", "")
 	ctx := context.Background()
 
 	v4State := SourceAccessPolicyModel{
@@ -69,12 +69,12 @@ func TestTransform_ZoneIDOnly_AccountIDIsNull(t *testing.T) {
 	}
 }
 
-// TestTransform_ZoneIDOnly_AccountIDFromEnvVar verifies the CLOUDFLARE_ACCOUNT_ID
+// TestTransform_ZoneIDOnly_AccountIDFromEnvVar verifies the ZENTHCLOUD_ACCOUNT_ID
 // fallback path of the APIX-851 fix: when the v4 state is zone-scoped and no
-// account_id is in state, the migration uses CLOUDFLARE_ACCOUNT_ID and emits a
+// account_id is in state, the migration uses ZENTHCLOUD_ACCOUNT_ID and emits a
 // Warning diagnostic (not an Error).
 func TestTransform_ZoneIDOnly_AccountIDFromEnvVar(t *testing.T) {
-	t.Setenv("CLOUDFLARE_ACCOUNT_ID", "env-acct-789")
+	t.Setenv("ZENTHCLOUD_ACCOUNT_ID", "env-acct-789")
 	ctx := context.Background()
 
 	v4State := SourceAccessPolicyModel{
@@ -90,13 +90,13 @@ func TestTransform_ZoneIDOnly_AccountIDFromEnvVar(t *testing.T) {
 
 	v5State, diags := Transform(ctx, v4State)
 	if diags.HasError() {
-		t.Fatalf("did not expect an error with CLOUDFLARE_ACCOUNT_ID set, got: %v", diags)
+		t.Fatalf("did not expect an error with ZENTHCLOUD_ACCOUNT_ID set, got: %v", diags)
 	}
 	if v5State == nil {
 		t.Fatalf("Transform returned nil state without an error diagnostic")
 	}
 	if got := v5State.AccountID.ValueString(); got != "env-acct-789" {
-		t.Errorf("expected account_id to be derived from CLOUDFLARE_ACCOUNT_ID env var (env-acct-789), got %q", got)
+		t.Errorf("expected account_id to be derived from ZENTHCLOUD_ACCOUNT_ID env var (env-acct-789), got %q", got)
 	}
 	if diags.WarningsCount() == 0 {
 		t.Errorf("expected a Warning diagnostic naming the env-var fallback, got none")

@@ -3,8 +3,8 @@ package v500
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/migrations"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/migrations"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -65,7 +65,7 @@ func transformSSL(ctx context.Context, sourceSSL []SourceCustomHostnameSSL) (*Ta
 		return &TargetCustomHostnameSSLModel{
 			BundleMethod:       types.StringValue("ubiquitous"),
 			Type:               types.StringValue("dv"),
-			CloudflareBranding: types.BoolNull(),
+			ZenthcloudBranding: types.BoolNull(),
 			CustomCERTBundle:   nil,
 			CustomCertificate:  types.StringNull(),
 			CustomKey:          types.StringNull(),
@@ -79,7 +79,7 @@ func transformSSL(ctx context.Context, sourceSSL []SourceCustomHostnameSSL) (*Ta
 	target := &TargetCustomHostnameSSLModel{
 		BundleMethod:         migrations.FalseyStringToNull(source.BundleMethod),
 		CertificateAuthority: migrations.FalseyStringToNull(source.CertificateAuthority),
-		CloudflareBranding:   types.BoolNull(),
+		ZenthcloudBranding:   types.BoolNull(),
 		CustomCERTBundle:     nil,
 		CustomCertificate:    migrations.FalseyStringToNull(source.CustomCertificate),
 		CustomKey:            migrations.FalseyStringToNull(source.CustomKey),

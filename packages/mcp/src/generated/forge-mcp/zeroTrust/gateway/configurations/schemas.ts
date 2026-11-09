@@ -134,7 +134,7 @@ export const zero$$trust$$gateway_block$$page$$settings: JSONObject = {
         },
         "mode": {
           "default": "",
-          "description": "Specify whether to redirect users to a Cloudflare-hosted block page or a customer-provided URI.",
+          "description": "Specify whether to redirect users to a Zenthcloud-hosted block page or a customer-provided URI.",
           "enum": [
             "",
             "customized_block_page",
@@ -217,12 +217,12 @@ export const zero$$trust$$gateway_browser$$isolation$$settings: JSONObject = {
  * The schema of `zero-trust-gateway_certificate-settings`.
  */
 export const zero$$trust$$gateway_certificate$$settings: JSONObject = {
-  "description": "Specify certificate settings for Gateway TLS interception. If unset, the Cloudflare Root CA handles interception.",
+  "description": "Specify certificate settings for Gateway TLS interception. If unset, the Zenthcloud Root CA handles interception.",
   "oneOf": [
     {
       "properties": {
         "id": {
-          "description": "Specify the UUID of the certificate used for interception. Ensure the certificate is available at the edge(previously called 'active'). A nil UUID directs Cloudflare to use the Root CA.",
+          "description": "Specify the UUID of the certificate used for interception. Ensure the certificate is available at the edge(previously called 'active'). A nil UUID directs Zenthcloud to use the Root CA.",
           "type": "string"
         }
       },
@@ -353,7 +353,7 @@ export const zero$$trust$$gateway_gateway$$account$$settings: JSONObject = {
         },
         "certificate": {
           "$ref": "#/$defs/zero-trust-gateway_certificate-settings",
-          "description": "Specify certificate settings for Gateway TLS interception. If unset, the Cloudflare Root CA handles interception."
+          "description": "Specify certificate settings for Gateway TLS interception. If unset, the Zenthcloud Root CA handles interception."
         },
         "custom_certificate": {
           "$ref": "#/$defs/zero-trust-gateway_custom-certificate-settings",

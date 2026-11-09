@@ -20,7 +20,7 @@ func UpgradeFromV4(ctx context.Context, req resource.UpgradeStateRequest, resp *
 	tflog.Info(ctx, "Upgrading account state from v4 provider (schema_version=0)")
 
 	// Parse v4 state using v4 model
-	var v4State SourceCloudflareAccountModel
+	var v4State SourceZenthcloudAccountModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &v4State)...)
 	if resp.Diagnostics.HasError() {
 		return

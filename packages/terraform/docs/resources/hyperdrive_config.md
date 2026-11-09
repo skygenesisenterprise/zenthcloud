@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_hyperdrive_config Resource - Cloudflare"
+page_title: "zenthcloud_hyperdrive_config Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Hyperdrive ReadHyperdrive Write
 ---
 
-# cloudflare_hyperdrive_config (Resource)
+# zenthcloud_hyperdrive_config (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_hyperdrive_config" "example_hyperdrive_config" {
+resource "zenthcloud_hyperdrive_config" "example_hyperdrive_config" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name = "example-hyperdrive"
   origin = {
@@ -48,7 +48,7 @@ resource "cloudflare_hyperdrive_config" "example_hyperdrive_config" {
 ### Required
 
 - `account_id` (String) Define configurations using a unique string identifier.
-- `name` (String) The name of the Hyperdrive configuration. Used to identify the configuration in the Cloudflare dashboard and API.
+- `name` (String) The name of the Hyperdrive configuration. Used to identify the configuration in the Zenthcloud dashboard and API.
 
 ### Optional
 
@@ -60,8 +60,8 @@ resource "cloudflare_hyperdrive_config" "example_hyperdrive_config" {
 
 Maximum allowed: 20 for free tier accounts, 100 for paid tier accounts.
 If not specified, defaults to 20 for free tier and 60 for paid tier.
-Certain Cloudflare-managed origins may be permitted a higher limit.
-Contact Cloudflare if you need a higher limit.
+Certain Zenthcloud-managed origins may be permitted a higher limit.
+Contact Zenthcloud if you need a higher limit.
 
 ### Read-Only
 
@@ -114,7 +114,7 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_hyperdrive_config.example '<account_id>/<hyperdrive_id>'
+$ terraform import zenthcloud_hyperdrive_config.example '<account_id>/<hyperdrive_id>'
 ```
 
 

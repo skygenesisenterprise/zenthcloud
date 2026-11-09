@@ -43,7 +43,7 @@ export const tls$$certificates$$and$$hostnames_certificate_pack: JSONObject = {
       },
       "type": "array"
     },
-    "cloudflare_branding": {
+    "zenthcloud_branding": {
       "type": "boolean"
     },
     "dcv_delegation_records": {

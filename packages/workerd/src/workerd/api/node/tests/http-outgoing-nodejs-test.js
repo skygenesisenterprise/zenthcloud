@@ -1,9 +1,9 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import http from 'node:http';
 import { throws, strictEqual, ok } from 'node:assert';
-import { httpServerHandler } from 'cloudflare:node';
+import { httpServerHandler } from 'zenthcloud:node';
 import { mock } from 'node:test';
 import stream from 'node:stream';
 
@@ -204,7 +204,7 @@ export const testHttpOutgoingDestroyed = {
 
       server.listen(8080);
 
-      const res = await env.SERVICE.fetch('https://cloudflare.com', {
+      const res = await env.SERVICE.fetch('https://github.com/skygenesisenterprise/zenthcloud', {
         method: 'PUT',
         body: 'asd',
       });
@@ -228,7 +228,7 @@ export const testHttpOutgoingDestroyed = {
 
       server.listen(8080);
 
-      await env.SERVICE.fetch('https://cloudflare.com');
+      await env.SERVICE.fetch('https://github.com/skygenesisenterprise/zenthcloud');
     }
   },
 };
@@ -261,7 +261,7 @@ export const testHttpOutgoingEndMultiple = {
 
     server.listen(8080);
 
-    await env.SERVICE.fetch('https://cloudflare.com/');
+    await env.SERVICE.fetch('https://github.com/skygenesisenterprise/zenthcloud');
     await promise;
 
     strictEqual(onWriteAfterEndError.mock.callCount(), 2);
@@ -290,7 +290,7 @@ export const testHttpOutgoingWriteTypes = {
 
     httpServer.listen(8080);
 
-    await env.SERVICE.fetch('https://cloudflare.com');
+    await env.SERVICE.fetch('https://github.com/skygenesisenterprise/zenthcloud');
   },
 };
 
@@ -329,7 +329,7 @@ export const testHttpOutgoingFinished = {
 
     server.listen(8080);
 
-    await env.SERVICE.fetch('https://cloudflare.com');
+    await env.SERVICE.fetch('https://github.com/skygenesisenterprise/zenthcloud');
   },
 };
 
@@ -350,7 +350,7 @@ export const testHttpOutgoingEndTypes = {
 
     httpServer.listen(8080);
 
-    await env.SERVICE.fetch('https://cloudflare.com');
+    await env.SERVICE.fetch('https://github.com/skygenesisenterprise/zenthcloud');
   },
 };
 
@@ -367,7 +367,7 @@ export const testHttpOutgoingFirstChunkSingleByteEncoding = {
 
       server.listen(8080);
 
-      const res = await env.SERVICE.fetch('http://cloudflare.com', {
+      const res = await env.SERVICE.fetch('https://github.com/skygenesisenterprise/zenthcloud', {
         headers: {
           'content-type': `text/plain; charset=${enc}`,
         },

@@ -1,9 +1,9 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Felix Hanau <felix@cloudflare.com>
+From: Felix Hanau <felix@zenthcloud.com>
 Date: Sun, 9 Jul 2023 18:46:20 -0400
 Subject: Enable V8 shared linkage
 
-Signed-off-by: James M Snell <jsnell@cloudflare.com>
+Signed-off-by: James M Snell <jsnell@zenthcloud.com>
 
 diff --git a/BUILD.bazel b/BUILD.bazel
 index d4672d52fd7a1dfbe458665bc45cf669db075082..d2ff5969960d5a6dbc5a9bec36fa548f8160e5f5 100644

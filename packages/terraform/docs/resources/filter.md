@@ -1,29 +1,29 @@
 ---
-page_title: "cloudflare_filter Resource - Cloudflare"
+page_title: "zenthcloud_filter Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Firewall Services ReadFirewall Services Write
 ---
 
-# cloudflare_filter (Resource)
+# zenthcloud_filter (Resource)
 
 Accepted Permissions
 
 - `Firewall Services Read`
 - `Firewall Services Write`
 
-~> `cloudflare_filter` is in a deprecation phase until June 15th, 2025.
+~> `zenthcloud_filter` is in a deprecation phase until June 15th, 2025.
   During this time period, this resource is still fully
   supported but you are strongly advised to move to the
-  `cloudflare_ruleset` resource. Full details can be found in the
-  [developer documentation](https://developers.cloudflare.com/waf/reference/migration-guides/firewall-rules-to-custom-rules/#relevant-changes-for-terraform-users).
+  `zenthcloud_ruleset` resource. Full details can be found in the
+  [developer documentation](https://github.com/skygenesisenterprise/zenthcloud).
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_filter" "example_filter" {
+resource "zenthcloud_filter" "example_filter" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   body = [{
     description = "Restrict access from these browsers on this address range."
@@ -44,7 +44,7 @@ resource "cloudflare_filter" "example_filter" {
 ### Optional
 
 - `description` (String) An informative summary of the filter.
-- `expression` (String) The filter expression. For more information, refer to [Expressions](https://developers.cloudflare.com/ruleset-engine/rules-language/expressions/).
+- `expression` (String) The filter expression. For more information, refer to [Expressions](https://github.com/skygenesisenterprise/zenthcloud).
 - `paused` (Boolean) When true, indicates that the filter is currently paused.
 - `ref` (String) A short reference tag. Allows you to select related filters.
 
@@ -58,7 +58,7 @@ resource "cloudflare_filter" "example_filter" {
 Optional:
 
 - `description` (String) An informative summary of the filter.
-- `expression` (String) The filter expression. For more information, refer to [Expressions](https://developers.cloudflare.com/ruleset-engine/rules-language/expressions/).
+- `expression` (String) The filter expression. For more information, refer to [Expressions](https://github.com/skygenesisenterprise/zenthcloud).
 - `paused` (Boolean) When true, indicates that the filter is currently paused.
 - `ref` (String) A short reference tag. Allows you to select related filters.
 
@@ -71,5 +71,5 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_filter.example '<zone_id>/<filter_id>'
+$ terraform import zenthcloud_filter.example '<zone_id>/<filter_id>'
 ```

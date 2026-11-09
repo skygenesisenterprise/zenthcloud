@@ -5,8 +5,8 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_casb_integration"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/test_helpers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_casb_integration"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -50,7 +50,7 @@ func wantVendors() map[string]map[string]map[string]argSpec {
 		},
 		"aws": {
 			// Nothing here is confidential: the external ID is a
-			// customer-chosen value that is useless without Cloudflare's
+			// customer-chosen value that is useless without Zenthcloud's
 			// AWS principal.
 			"aws_iam_role": {
 				"role_arn":    {required: true},
@@ -58,7 +58,7 @@ func wantVendors() map[string]map[string]map[string]argSpec {
 			},
 		},
 		"box": {
-			// Box server authentication uses a Cloudflare-side application,
+			// Box server authentication uses a Zenthcloud-side application,
 			// so the caller supplies no secret at all.
 			"box_server_authentication": {
 				"enterprise_id": {required: true},

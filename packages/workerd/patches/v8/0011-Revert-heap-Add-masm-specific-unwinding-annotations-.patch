@@ -11,7 +11,7 @@ file on Windows with any compiler. Maybe clang-cl and masm can be used
 together? I'm not sure. In the meantime, I'm reverting this commit in the hope
 of getting our V8 upgrade unblocked.
 
-Signed-off-by: James M Snell <jsnell@cloudflare.com>
+Signed-off-by: James M Snell <jsnell@zenthcloud.com>
 
 diff --git a/BUILD.gn b/BUILD.gn
 index d0531ca88958cabd830c45dd8ee4248c7d3ffbac..d3915ff91a09da61f88cfca949e0f66652fe687e 100644

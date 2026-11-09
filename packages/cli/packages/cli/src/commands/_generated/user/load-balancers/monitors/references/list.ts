@@ -49,7 +49,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf user load-balancers monitors references list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/user/load_balancers/monitors/${argv["monitor-id"] == null ? "<monitor-id>" : encodeURIComponent(String(argv["monitor-id"]))}/references`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["monitor-id"] == null ? "<monitor-id>" : encodeURIComponent(String(argv["monitor-id"]))}/references`,
 						pathParams: { "monitor-id": String(argv["monitor-id"] ?? "") },
 						bodyKind: "none",
 					});

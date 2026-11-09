@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import assert from 'node:assert';
@@ -8,7 +8,7 @@ const MAX_CODE_SIZE = 64 * 1024 * 1024; // 64 MiB
 const MAX_ENV_SIZE = 1 * 1024 * 1024; // 1 MiB
 
 const MAIN_MODULE = `
-  import {WorkerEntrypoint} from "cloudflare:workers";
+  import {WorkerEntrypoint} from "zenthcloud:workers";
   export default class extends WorkerEntrypoint {
     ping() { return "pong"; }
     envBigLength() { return this.env.big ? this.env.big.length : 0; }

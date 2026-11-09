@@ -75,7 +75,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf images edit",
 						method: "PATCH",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/images/v1/${argv["image-id"] == null ? "<image-id>" : encodeURIComponent(String(argv["image-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/images/v1/${argv["image-id"] == null ? "<image-id>" : encodeURIComponent(String(argv["image-id"]))}`,
 						pathParams: { "image-id": String(argv["image-id"] ?? "") },
 						bodyKind: "json",
 						body:

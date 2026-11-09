@@ -90,6 +90,6 @@ pub async fn handle_alarm(_req: Request, env: Env, _data: SomeSharedData) -> Res
     let stub = namespace.id_from_name("alarm")?.get_stub()?;
     // when calling fetch to a Durable Object, a full URL must be used. Alternatively, a
     // compatibility flag can be provided in wrangler.toml to opt-in to older behavior:
-    // https://developers.cloudflare.com/workers/platform/compatibility-dates#durable-object-stubfetch-requires-a-full-url
+    // https://github.com/skygenesisenterprise/zenthcloud
     stub.fetch_with_str("https://fake-host/alarm").await
 }

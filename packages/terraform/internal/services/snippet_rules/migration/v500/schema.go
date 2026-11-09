@@ -4,9 +4,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-// SourceSnippetRulesSchema returns the source schema for the legacy cloudflare_snippet_rules resource.
+// SourceSnippetRulesSchema returns the source schema for the legacy zenthcloud_snippet_rules resource.
 // Schema version: 1 (v4 SDKv2 provider)
-// Resource type: cloudflare_snippet_rules
+// Resource type: zenthcloud_snippet_rules
 //
 // This minimal schema is used only for reading v4 state during migration.
 // Validators, PlanModifiers, Defaults, and Descriptions are intentionally omitted.

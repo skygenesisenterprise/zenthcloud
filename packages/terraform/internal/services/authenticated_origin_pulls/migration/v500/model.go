@@ -9,9 +9,9 @@ import (
 // Source Models (Legacy Provider - v4.x)
 // ============================================================================
 
-// SourceCloudflareAuthenticatedOriginPullsModel represents the legacy resource state from v4.x provider.
+// SourceZenthcloudAuthenticatedOriginPullsModel represents the legacy resource state from v4.x provider.
 // Schema version: 0 (default, not specified in v4)
-// Resource type: cloudflare_authenticated_origin_pulls
+// Resource type: zenthcloud_authenticated_origin_pulls
 //
 // The v4 resource handled three modes in one resource:
 // 1. Global AOP: zone_id + enabled
@@ -19,8 +19,8 @@ import (
 // 3. Per-Hostname AOP: zone_id + hostname + authenticated_origin_pulls_certificate + enabled
 //
 // In v5, this resource only handles Per-Hostname AOP mode (mode 3).
-// Modes 1 and 2 migrate to cloudflare_authenticated_origin_pulls_settings instead.
-type SourceCloudflareAuthenticatedOriginPullsModel struct {
+// Modes 1 and 2 migrate to zenthcloud_authenticated_origin_pulls_settings instead.
+type SourceZenthcloudAuthenticatedOriginPullsModel struct {
 	ID                                  types.String `tfsdk:"id"`
 	ZoneID                              types.String `tfsdk:"zone_id"`
 	Hostname                            types.String `tfsdk:"hostname"`
@@ -34,7 +34,7 @@ type SourceCloudflareAuthenticatedOriginPullsModel struct {
 
 // TargetAuthenticatedOriginPullsModel represents the current resource state from v5.x+ provider.
 // Schema version: 500 (after migration)
-// Resource type: cloudflare_authenticated_origin_pulls
+// Resource type: zenthcloud_authenticated_origin_pulls
 //
 // Note: This should match the model in the parent package's model.go file.
 // We duplicate it here to keep the migration package self-contained.

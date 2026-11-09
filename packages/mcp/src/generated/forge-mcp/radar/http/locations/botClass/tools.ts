@@ -18,7 +18,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "bot_class": {
-              "description": "Bot class. Refer to [Bot classes](https://developers.cloudflare.com/radar/concepts/bot-classes/).",
+              "description": "Bot class. Refer to [Bot classes](https://github.com/skygenesisenterprise/zenthcloud).",
               "enum": [
                 "LIKELY_AUTOMATED",
                 "LIKELY_HUMAN"

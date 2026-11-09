@@ -6,8 +6,8 @@ const unitTests :Workerd.Config = (
       worker = (
         modules = [
           (name = "worker", esModule = embed "importable-env-test.js"),
-          (name = "child", esModule = "import {env as live} from 'cloudflare:workers'; export const env = {...live};"),
-          (name = "child2", esModule = "import {env as live} from 'cloudflare:workers'; export const env = {...live};"),
+          (name = "child", esModule = "import {env as live} from 'zenthcloud:workers'; export const env = {...live};"),
+          (name = "child2", esModule = "import {env as live} from 'zenthcloud:workers'; export const env = {...live};"),
         ],
         compatibilityFlags = [
           "nodejs_compat_v2",

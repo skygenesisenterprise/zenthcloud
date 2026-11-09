@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -152,8 +152,8 @@ KJ_TEST("simple") {
       "boolean", "true");
 }
 
-KJ_TEST("regression_AUTOVULN_CLOUDFLARE_WORKERD_143: deep proxy chain in getPrototype") {
-  // Regression test for AUTOVULN-CLOUDFLARE-WORKERD-143: a deeply nested chain of
+KJ_TEST("regression_AUTOVULN_ZENTHCLOUD_WORKERD_143: deep proxy chain in getPrototype") {
+  // Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-143: a deeply nested chain of
   // Proxy objects with no getPrototypeOf trap caused unbounded native recursion in
   // JsObject::getPrototype(), leading to SIGSEGV from stack overflow.
   // After the fix, getPrototype() iterates instead of recursing and throws a

@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -8,7 +8,7 @@
 // a socket from a downstream service over JS RPC and returns it to its own caller. The returned
 // Socket is therefore transferred across TWO RPC hops (backend connect() handler -> interceptor ->
 // client), exercising Socket::serialize()/deserialize() at each hop.
-import { WorkerEntrypoint } from 'cloudflare:workers';
+import { WorkerEntrypoint } from 'zenthcloud:workers';
 import assert from 'node:assert';
 
 // Downstream backend, reached via `env.BACKEND.connect()`. Echoes everything written back to the

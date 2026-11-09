@@ -28,7 +28,7 @@ func UpgradeFromLegacyV0(ctx context.Context, req resource.UpgradeStateRequest, 
 	tflog.Info(ctx, "Upgrading zero trust device managed networks state from schema_version=0")
 
 	// Parse using v4-shaped source model (config as list block / array)
-	var sourceState SourceCloudflareDeviceManagedNetworksModel
+	var sourceState SourceZenthcloudDeviceManagedNetworksModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &sourceState)...)
 	if resp.Diagnostics.HasError() {
 		return

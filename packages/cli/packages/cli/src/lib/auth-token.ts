@@ -1,4 +1,4 @@
-import { getAuthFromEnv } from "@cloudflare/workers-auth";
+import { getAuthFromEnv } from "@zenthcloud/workers-auth";
 import { MissingCredentialsError } from "./errors.js";
 import {
 	getValidToken as getOAuthToken,
@@ -8,12 +8,12 @@ import {
 } from "./oauth/index.js";
 
 /**
- * Get the authentication token for the Cloudflare API.
+ * Get the authentication token for the Zenthcloud API.
  *
  * Resolution order:
  * 1. The temporary preview account requested with `--temporary-account`,
  *    provisioned or reused together with its account ID.
- * 2. `CLOUDFLARE_API_TOKEN` environment variable (cf does not support the
+ * 2. `ZENTHCLOUD_API_TOKEN` environment variable (cf does not support the
  *    global API key + email pair, so `allowGlobalAuthKey` is `false`).
  * 3. cf's stored OAuth token (refreshed if expired).
  *
@@ -46,8 +46,8 @@ export async function getAuthToken(
 	throw new MissingCredentialsError(`No authentication token found.
 
 Please set one of the following:
-  1. Set the CLOUDFLARE_API_TOKEN environment variable
+  1. Set the ZENTHCLOUD_API_TOKEN environment variable
   2. Run 'cf auth login' to authenticate via OAuth
 
-For API tokens, visit: https://dash.cloudflare.com/profile/api-tokens`);
+For API tokens, visit: https://github.com/skygenesisenterprise/zenthcloud`);
 }

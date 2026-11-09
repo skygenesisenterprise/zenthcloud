@@ -10,9 +10,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -22,10 +22,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
-func TestAccCloudflareZeroTrustResourceLibraryApplication_Basic(t *testing.T) {
+func TestAccZenthcloudZeroTrustResourceLibraryApplication_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_zero_trust_resource_library_application." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_zero_trust_resource_library_application." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -33,10 +33,10 @@ func TestAccCloudflareZeroTrustResourceLibraryApplication_Basic(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustResourceLibraryApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustResourceLibraryApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareZeroTrustResourceLibraryApplicationConfig(rnd, accountID, "basic"),
+				Config: testAccZenthcloudZeroTrustResourceLibraryApplicationConfig(rnd, accountID, "basic"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -60,7 +60,7 @@ func TestAccCloudflareZeroTrustResourceLibraryApplication_Basic(t *testing.T) {
 				},
 			},
 			{
-				Config: testAccCloudflareZeroTrustResourceLibraryApplicationConfig(rnd, accountID, "updated"),
+				Config: testAccZenthcloudZeroTrustResourceLibraryApplicationConfig(rnd, accountID, "updated"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -98,19 +98,19 @@ func TestAccCloudflareZeroTrustResourceLibraryApplication_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareZeroTrustResourceLibraryApplicationDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudZeroTrustResourceLibraryApplicationDestroy(s *terraform.State) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	client := &http.Client{Timeout: 10 * time.Second}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_zero_trust_resource_library_application" {
+		if rs.Type != "zenthcloud_zero_trust_resource_library_application" {
 			continue
 		}
 
 		baseURL := os.Getenv(consts.BaseURLEnvVarKey)
 		if baseURL == "" {
-			baseURL = "https://api.cloudflare.com/client/v4"
+			baseURL = "https://github.com/skygenesisenterprise/zenthcloud"
 		}
 		url := fmt.Sprintf(
 			"%s/accounts/%s/resource-library/applications/%s",
@@ -159,7 +159,7 @@ func testAccCheckCloudflareZeroTrustResourceLibraryApplicationDestroy(s *terrafo
 	return nil
 }
 
-func testAccCloudflareZeroTrustResourceLibraryApplicationConfig(rnd, accountID, matcher string) string {
+func testAccZenthcloudZeroTrustResourceLibraryApplicationConfig(rnd, accountID, matcher string) string {
 	subnet := "192.0.2.0/24"
 	portProtocol := "tcp/443"
 	if matcher == "updated" {

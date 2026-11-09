@@ -99,7 +99,7 @@ POST /rest/api/1.0/projects/prometheus/repos/rules/pull-requests/1/comments
   Content-Type: application/json
 --- BODY ---
 text: |-
-    :warning: **Warning** reported by [pint](https://cloudflare.github.io/pint/) **alerts/comparison** check.
+    :warning: **Warning** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **alerts/comparison** check.
 
     <details>
     <summary>always firing alert</summary>
@@ -132,7 +132,7 @@ text: |-
 
     ------
 
-    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/alerts/comparison.html).
+    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 
     <!-- pint -->
 severity: NORMAL
@@ -150,7 +150,7 @@ POST /rest/api/1.0/projects/prometheus/repos/rules/pull-requests/1/comments
   Content-Type: application/json
 --- BODY ---
 text: |-
-    :warning: **Warning** reported by [pint](https://cloudflare.github.io/pint/) **promql/regexp** check.
+    :warning: **Warning** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **promql/regexp** check.
 
     <details>
     <summary>redundant regexp</summary>
@@ -179,7 +179,7 @@ text: |-
 
     ------
 
-    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/promql/regexp.html).
+    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 
     <!-- pint -->
 severity: NORMAL
@@ -197,7 +197,7 @@ POST /rest/api/1.0/projects/prometheus/repos/rules/pull-requests/1/comments
   Content-Type: application/json
 --- BODY ---
 text: |-
-    :information_source: **Information** reported by [pint](https://cloudflare.github.io/pint/) **alerts/for** check.
+    :information_source: **Information** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **alerts/for** check.
 
     <details>
     <summary>redundant field with default value</summary>
@@ -224,7 +224,7 @@ text: |-
 
     ------
 
-    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/alerts/for.html).
+    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 
     <!-- pint -->
 severity: NORMAL

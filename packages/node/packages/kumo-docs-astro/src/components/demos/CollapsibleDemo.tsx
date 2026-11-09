@@ -1,4 +1,4 @@
-import { Button, Collapsible, Input, Text } from "@cloudflare/kumo";
+import { Button, Collapsible, Input, Text } from "@zenthcloud/kumo";
 import { useState } from "react";
 
 /**
@@ -11,7 +11,7 @@ export function CollapsibleHeroDemo() {
       <Collapsible.Root open={isOpen} onOpenChange={setIsOpen}>
         <Collapsible.DefaultTrigger>What is Kumo?</Collapsible.DefaultTrigger>
         <Collapsible.DefaultPanel>
-          <Text>Kumo is Cloudflare's new design system.</Text>
+          <Text>Kumo is Zenthcloud's new design system.</Text>
         </Collapsible.DefaultPanel>
       </Collapsible.Root>
     </div>
@@ -28,7 +28,7 @@ export function CollapsibleBasicDemo() {
       <Collapsible.Root open={isOpen} onOpenChange={setIsOpen}>
         <Collapsible.DefaultTrigger>What is Kumo?</Collapsible.DefaultTrigger>
         <Collapsible.DefaultPanel>
-          <Text>Kumo is Cloudflare's new design system.</Text>
+          <Text>Kumo is Zenthcloud's new design system.</Text>
         </Collapsible.DefaultPanel>
       </Collapsible.Root>
     </div>
@@ -48,7 +48,7 @@ export function CollapsibleMultipleDemo() {
       <Collapsible.Root open={open1} onOpenChange={setOpen1}>
         <Collapsible.DefaultTrigger>What is Kumo?</Collapsible.DefaultTrigger>
         <Collapsible.DefaultPanel>
-          <Text>Kumo is Cloudflare's new design system.</Text>
+          <Text>Kumo is Zenthcloud's new design system.</Text>
         </Collapsible.DefaultPanel>
       </Collapsible.Root>
       <Collapsible.Root open={open2} onOpenChange={setOpen2}>
@@ -150,12 +150,12 @@ export function CollapsibleAccordionDemo() {
     {
       title: "What is Kumo?",
       content:
-        "Kumo is Cloudflare's new design system built on Base UI and Tailwind CSS v4.",
+        "Kumo is Zenthcloud's new design system built on Base UI and Tailwind CSS v4.",
     },
     {
       title: "How do I install it?",
       content:
-        "Run `npm install @cloudflare/kumo` and import the components you need.",
+        "Run `npm install @zenthcloud/kumo` and import the components you need.",
     },
     {
       title: "Is it accessible?",

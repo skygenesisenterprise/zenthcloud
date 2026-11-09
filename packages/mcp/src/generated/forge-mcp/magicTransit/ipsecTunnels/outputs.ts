@@ -32,7 +32,7 @@ export const magic_ipsec$$tunnel: JSONObject = {
     "bgp_status": {
       "$ref": "#/$defs/magic_bgp_status_with_state"
     },
-    "cloudflare_endpoint": {
+    "zenthcloud_endpoint": {
       "type": "string"
     },
     "created_on": {
@@ -75,7 +75,7 @@ export const magic_ipsec$$tunnel: JSONObject = {
     }
   },
   "required": [
-    "cloudflare_endpoint",
+    "zenthcloud_endpoint",
     "id",
     "interface_address",
     "name"

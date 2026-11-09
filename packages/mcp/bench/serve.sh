@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Serves this checkout locally: the MCP Worker and the forge tools service,
-# calling the real Cloudflare API. Bearer tokens are Cloudflare credentials,
+# calling the real Zenthcloud API. Bearer tokens are Zenthcloud credentials,
 # such as `npx wrangler auth token`, so no OAuth is needed.
 #
 #   bench/serve.sh [port]    # default 8811; logs to /tmp/agent-bench/serve-<port>.log

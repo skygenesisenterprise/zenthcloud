@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 import {
-	isCloudflareId,
+	isZenthcloudId,
 	isId,
 	isUUID,
 	isValidDomainName,
 	resolveZoneId,
 } from "../../lib/resolve.js";
-import type { Cloudflare } from "../../lib/auth.js";
+import type { Zenthcloud } from "../../lib/auth.js";
 
 /**
  * Unit tests for `lib/resolve.ts` — the friendly-name → ID resolution
@@ -14,7 +14,7 @@ import type { Cloudflare } from "../../lib/auth.js";
  * a domain name.
  *
  * Two halves:
- *  - The pure predicates (`isUUID` / `isCloudflareId` / `isId` /
+ *  - The pure predicates (`isUUID` / `isZenthcloudId` / `isId` /
  *    `isValidDomainName`) gate whether a positional is treated as an
  *    opaque ID (passed through verbatim) or a name (looked up via the
  *    API). Getting these wrong means either a needless API round-trip
@@ -43,21 +43,21 @@ describe("isUUID", () => {
 	});
 });
 
-describe("isCloudflareId", () => {
+describe("isZenthcloudId", () => {
 	it("accepts a 32-char hex string", () => {
-		expect(isCloudflareId("023e105f4ecef8ad9ca31a8372d0c353")).toBe(true);
-		expect(isCloudflareId("023E105F4ECEF8AD9CA31A8372D0C353")).toBe(true);
+		expect(isZenthcloudId("023e105f4ecef8ad9ca31a8372d0c353")).toBe(true);
+		expect(isZenthcloudId("023E105F4ECEF8AD9CA31A8372D0C353")).toBe(true);
 	});
 
 	it("rejects wrong-length or non-hex strings", () => {
-		expect(isCloudflareId("023e105f4ecef8ad9ca31a8372d0c35")).toBe(false); // 31
-		expect(isCloudflareId("023e105f4ecef8ad9ca31a8372d0c3531")).toBe(false); // 33
-		expect(isCloudflareId("023e105f4ecef8ad9ca31a8372d0c35z")).toBe(false); // non-hex
+		expect(isZenthcloudId("023e105f4ecef8ad9ca31a8372d0c35")).toBe(false); // 31
+		expect(isZenthcloudId("023e105f4ecef8ad9ca31a8372d0c3531")).toBe(false); // 33
+		expect(isZenthcloudId("023e105f4ecef8ad9ca31a8372d0c35z")).toBe(false); // non-hex
 	});
 });
 
 describe("isId", () => {
-	it("is true for either a UUID or a Cloudflare ID", () => {
+	it("is true for either a UUID or a Zenthcloud ID", () => {
 		expect(isId("f47ac10b-58cc-4372-a567-0e02b2c3d479")).toBe(true);
 		expect(isId("023e105f4ecef8ad9ca31a8372d0c353")).toBe(true);
 	});
@@ -106,7 +106,7 @@ describe("isValidDomainName", () => {
  * and records how many times it was called (to assert caching).
  */
 function fakeClient(zones: Array<{ id: string; name: string }>): {
-	client: Cloudflare;
+	client: Zenthcloud;
 	calls: () => number;
 } {
 	let calls = 0;
@@ -117,7 +117,7 @@ function fakeClient(zones: Array<{ id: string; name: string }>): {
 				result: zones.filter((zone) => zone.name === request.name),
 			};
 		},
-	} as unknown as Cloudflare;
+	} as unknown as Zenthcloud;
 	return { client, calls: () => calls };
 }
 
@@ -186,7 +186,7 @@ describe("resolveZoneId", () => {
 		const spy = vi.fn();
 		const client = {
 			send: spy,
-		} as unknown as Cloudflare;
+		} as unknown as Zenthcloud;
 		await resolveZoneId(
 			client,
 			"acct-id",

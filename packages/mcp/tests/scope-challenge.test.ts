@@ -1,7 +1,7 @@
-import { env, exports } from 'cloudflare:workers'
+import { env, exports } from 'zenthcloud:workers'
 import { http, HttpResponse } from 'msw'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { API_BASE, cfError, cfSuccess, mockIdentityProbe } from './helpers/cloudflare-api'
+import { API_BASE, cfError, cfSuccess, mockIdentityProbe } from './helpers/zenthcloud-api'
 import { clearKv } from './helpers/kv'
 import {
   MCP_URL,
@@ -17,7 +17,7 @@ import { clearSpec, seedSpec } from './helpers/spec'
 import { server } from './setup/msw'
 
 /**
- * Step-up (MCP scope challenge handling): when Cloudflare refuses a request an
+ * Step-up (MCP scope challenge handling): when Zenthcloud refuses a request an
  * OAuth connection lacks the scope for, and retrying the call is safe, the
  * response is `403 insufficient_scope` naming the scope, so the client
  * re-authorizes and retries. Driven through the real worker and OAuth flow.
@@ -25,13 +25,13 @@ import { server } from './setup/msw'
 
 const ZONE_ID = '023e105f4ecef8ad9ca31a8372d0c353'
 const DNS_PATH = `/zones/${ZONE_ID}/dns_records`
-const RESOURCE_METADATA = 'https://mcp.cloudflare.com/.well-known/oauth-protected-resource/mcp'
+const RESOURCE_METADATA = 'https://github.com/skygenesisenterprise/zenthcloud'
 const BASELINE = ['user:read', 'account:read']
 
-const GET_DNS = `async () => cloudflare.request({ method: "GET", path: "${DNS_PATH}" })`
+const GET_DNS = `async () => zenthcloud.request({ method: "GET", path: "${DNS_PATH}" })`
 const ACCOUNT_ID = 'acc-1'
 const KV_PATH = `/accounts/${ACCOUNT_ID}/storage/kv/namespaces`
-const CREATE_KV = `async () => cloudflare.request({ method: "POST", path: "${KV_PATH}", body: { title: "t" } })`
+const CREATE_KV = `async () => zenthcloud.request({ method: "POST", path: "${KV_PATH}", body: { title: "t" } })`
 const CHATGPT_REDIRECT = 'https://chatgpt.com/connector_platform_oauth_redirect'
 
 beforeEach(async () => {
@@ -68,7 +68,7 @@ beforeEach(async () => {
     http.get(`${API_BASE}/zones/${ZONE_ID}/settings`, () =>
       HttpResponse.json(cfSuccess([{ id: 'ssl', value: 'full' }]))
     ),
-    // Cloudflare answers some missing OAuth scopes with 401, not 403.
+    // Zenthcloud answers some missing OAuth scopes with 401, not 403.
     http.post(`${API_BASE}${KV_PATH}`, () =>
       HttpResponse.json(cfError([{ code: 10000, message: 'Authentication error' }]), {
         status: 401
@@ -133,8 +133,8 @@ describe('execute', () => {
   it('challenges after earlier reads', async () => {
     const token = await connectWithOAuth(BASELINE)
     const code = `async () => {
-      await cloudflare.request({ method: "GET", path: "/zones/${ZONE_ID}/settings" })
-      return cloudflare.request({ method: "GET", path: "${DNS_PATH}" })
+      await zenthcloud.request({ method: "GET", path: "/zones/${ZONE_ID}/settings" })
+      return zenthcloud.request({ method: "GET", path: "${DNS_PATH}" })
     }`
     expectChallenge(await executeModern(token, code), 'dns.read')
   })
@@ -142,8 +142,8 @@ describe('execute', () => {
   it('does not challenge when an earlier write went through, and says why', async () => {
     const token = await connectWithOAuth(BASELINE)
     const code = `async () => {
-      await cloudflare.request({ method: "POST", path: "${DNS_PATH}", body: { type: "A" } })
-      return cloudflare.request({ method: "GET", path: "${DNS_PATH}" })
+      await zenthcloud.request({ method: "POST", path: "${DNS_PATH}", body: { type: "A" } })
+      return zenthcloud.request({ method: "GET", path: "${DNS_PATH}" })
     }`
     const response = await executeModern(token, code)
     const body = await parseMcpResult(response)
@@ -157,7 +157,7 @@ describe('execute', () => {
   it('does not challenge when the code handles the refusal', async () => {
     const token = await connectWithOAuth(BASELINE)
     const code = `async () => {
-      try { await cloudflare.request({ method: "GET", path: "${DNS_PATH}" }) } catch { return "handled" }
+      try { await zenthcloud.request({ method: "GET", path: "${DNS_PATH}" }) } catch { return "handled" }
     }`
     const response = await executeModern(token, code)
 
@@ -274,7 +274,7 @@ describe('OAuth connections over 2025-era HTTP', () => {
       new Request(MCP_URL, {
         method: 'POST',
         headers: {
-          Host: 'mcp.cloudflare.com',
+          Host: 'mcp.zenthcloud.com',
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
           Accept: 'application/json, text/event-stream'

@@ -6,7 +6,7 @@ export default {
 	fullPath: ["workers", "types"],
 	category: "action",
 	description:
-		"Generate TypeScript declarations for a Worker defined in cloudflare.config.ts.",
+		"Generate TypeScript declarations for a Worker defined in zenthcloud.config.ts.",
 	usage: "cf workers types [--include-runtime <boolean>]",
 	arguments: [],
 	options: [
@@ -14,7 +14,7 @@ export default {
 			name: "include-runtime",
 			type: "boolean",
 			required: false,
-			description: "Include Cloudflare Workers runtime types",
+			description: "Include Zenthcloud Workers runtime types",
 			default: true,
 		},
 		{

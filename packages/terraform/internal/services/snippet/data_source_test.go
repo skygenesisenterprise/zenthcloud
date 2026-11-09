@@ -4,16 +4,16 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-func TestAccCloudflareSnippetsDataSource_Basic(t *testing.T) {
+func TestAccZenthcloudSnippetsDataSource_Basic(t *testing.T) {
 	t.Skip("Not implemented yet")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_snippets." + rnd
+	name := "zenthcloud_snippets." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },

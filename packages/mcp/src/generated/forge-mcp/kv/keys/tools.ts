@@ -29,7 +29,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "ID of the Cloudflare account that owns the Workers KV namespaces.",
+              "description": "ID of the Zenthcloud account that owns the Workers KV namespaces.",
               "type": "string"
             },
             "key_name": {
@@ -107,7 +107,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "ID of the Cloudflare account that owns the Workers KV namespaces.",
+              "description": "ID of the Zenthcloud account that owns the Workers KV namespaces.",
               "type": "string"
             },
             "key_name": {
@@ -174,7 +174,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "ID of the Cloudflare account that owns the Workers KV namespaces.",
+              "description": "ID of the Zenthcloud account that owns the Workers KV namespaces.",
               "type": "string"
             },
             "namespace_id": {
@@ -411,7 +411,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "ID of the Cloudflare account that owns the Workers KV namespaces.",
+              "description": "ID of the Zenthcloud account that owns the Workers KV namespaces.",
               "type": "string"
             },
             "key_name": {

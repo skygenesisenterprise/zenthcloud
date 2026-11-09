@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_api_shield Resource - Cloudflare"
+page_title: "zenthcloud_api_shield Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account API GatewayAccount API Gateway ReadDomain API GatewayDomain API Gateway Read
 ---
 
-# cloudflare_api_shield (Resource)
+# zenthcloud_api_shield (Resource)
 
 Accepted Permissions
 
@@ -24,7 +24,7 @@ The JSONPath expression may be in dot or bracket notation and may only specify l
 ### Header Example
 
 ```terraform
-resource "cloudflare_api_shield" "header_example" {
+resource "zenthcloud_api_shield" "header_example" {
   zone_id = "0da42c8d2132a9ddaf714f9e7c920711"
   auth_id_characteristics = [{
     name = "authorization"
@@ -38,7 +38,7 @@ This configuration uses the `Authorization` header as the session identifier.
 ### Cookie Example
 
 ```terraform
-resource "cloudflare_api_shield" "cookie_example" {
+resource "zenthcloud_api_shield" "cookie_example" {
   zone_id = "0da42c8d2132a9ddaf714f9e7c920711"
   auth_id_characteristics = [{
     name = "session_id"
@@ -52,7 +52,7 @@ This configuration uses a cookie named `session_id` as the session identifier.
 ### JWT Example
 
 ```terraform
-resource "cloudflare_api_shield" "jwt_example" {
+resource "zenthcloud_api_shield" "jwt_example" {
   zone_id = "0da42c8d2132a9ddaf714f9e7c920711"
   auth_id_characteristics = [{
     name = "d5902294-00c3-4aed-b517-57e752e9cd58:$.sub"
@@ -68,7 +68,7 @@ This configuration extracts the `sub` (subject) claim from a JWT token validated
 You can combine multiple session identifiers to handle different authentication methods:
 
 ```terraform
-resource "cloudflare_api_shield" "multiple_identifiers" {
+resource "zenthcloud_api_shield" "multiple_identifiers" {
   zone_id = "0da42c8d2132a9ddaf714f9e7c920711"
   auth_id_characteristics = [
     {
@@ -88,7 +88,7 @@ This configuration identifies API consumers using either the `x-api-key` header 
 ### Combining Header and JWT
 
 ```terraform
-resource "cloudflare_api_shield" "header_and_jwt" {
+resource "zenthcloud_api_shield" "header_and_jwt" {
   zone_id = "0da42c8d2132a9ddaf714f9e7c920711"
   auth_id_characteristics = [
     {
@@ -108,7 +108,7 @@ This configuration uses a custom `x-client-id` header alongside a JWT `email` cl
 ## Example Usage
 
 ```terraform
-resource "cloudflare_api_shield" "example_api_shield" {
+resource "zenthcloud_api_shield" "example_api_shield" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   auth_id_characteristics = [{
     name = "authorization"
@@ -147,5 +147,5 @@ Available values: "header", "cookie", "jwt".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_api_shield.example '<zone_id>'
+$ terraform import zenthcloud_api_shield.example '<zone_id>'
 ```

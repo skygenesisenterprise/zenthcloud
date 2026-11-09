@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_user Resource - Cloudflare"
+page_title: "zenthcloud_user Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   User Details ReadUser Details Write
 ---
 
-# cloudflare_user (Resource)
+# zenthcloud_user (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_user" "example_user" {
+resource "zenthcloud_user" "example_user" {
   country = "US"
   first_name = "John"
   last_name = "Appleseed"

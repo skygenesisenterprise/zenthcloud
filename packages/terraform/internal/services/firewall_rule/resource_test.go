@@ -6,10 +6,10 @@ import (
 	"os"
 	"testing"
 
-	cloudflare "github.com/cloudflare/cloudflare-go"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	zenthcloud "github.com/zenthcloud/zenthcloud-go"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -21,33 +21,33 @@ func TestMain(m *testing.M) {
 
 
 func init() {
-	resource.AddTestSweepers("cloudflare_firewall_rule", &resource.Sweeper{
-		Name: "cloudflare_firewall_rule",
-		F:    testSweepCloudflareFirewallRuleSweeper,
+	resource.AddTestSweepers("zenthcloud_firewall_rule", &resource.Sweeper{
+		Name: "zenthcloud_firewall_rule",
+		F:    testSweepZenthcloudFirewallRuleSweeper,
 	})
 }
 
-func testSweepCloudflareFirewallRuleSweeper(r string) error {
+func testSweepZenthcloudFirewallRuleSweeper(r string) error {
 	ctx := context.Background()
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s",clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s",clientErr))
 		return clientErr
 	}
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping firewall rules sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping firewall rules sweep: ZENTHCLOUD_ZONE_ID not set")
 		return nil
 	}
-	rules, _, rulesErr := client.FirewallRules(ctx, cloudflare.ZoneIdentifier(zoneID), cloudflare.FirewallRuleListParams{})
+	rules, _, rulesErr := client.FirewallRules(ctx, zenthcloud.ZoneIdentifier(zoneID), zenthcloud.FirewallRuleListParams{})
 
 	if rulesErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Cloudflare firewall rules: %s",rulesErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Zenthcloud firewall rules: %s",rulesErr))
 		return rulesErr
 	}
 	if len(rules) == 0 {
-		tflog.Info(ctx, "No Cloudflare firewall rules to sweep")
+		tflog.Info(ctx, "No Zenthcloud firewall rules to sweep")
 		return nil
 	}
 
@@ -58,7 +58,7 @@ func testSweepCloudflareFirewallRuleSweeper(r string) error {
 		}
 
 		tflog.Info(ctx, fmt.Sprintf("Deleting firewall rule: %s (zone: %s)", rule.ID, zoneID))
-		err := client.DeleteFirewallRule(ctx, cloudflare.ZoneIdentifier(zoneID), rule.ID)
+		err := client.DeleteFirewallRule(ctx, zenthcloud.ZoneIdentifier(zoneID), rule.ID)
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete firewall rule %s: %s", rule.ID, err))
 			continue
@@ -71,8 +71,8 @@ func testSweepCloudflareFirewallRuleSweeper(r string) error {
 
 func TestAccFirewallRuleSimple(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_firewall_rule." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	name := "zenthcloud_firewall_rule." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	filterQuoted := `(http.request.uri.path ~ \".*wp-login-` + rnd + `.php\" or http.request.uri.path ~ \".*xmlrpc.php\") and ip.src ne 192.0.2.1`
 
@@ -100,9 +100,9 @@ func testFirewallRuleConfig(resourceID, zoneID, paused, description, expression,
 
 func TestAccFirewallRuleBypass(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_firewall_rule." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	name := "zenthcloud_firewall_rule." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	filterQuoted := `(http.host eq \"` + domain + `\")`
 
@@ -131,9 +131,9 @@ func testFirewallRuleBypassConfig(resourceID, zoneID, paused, description, expre
 
 func TestAccFirewallRuleWithUnicodeAndHTMLEntity(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_firewall_rule." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	name := "zenthcloud_firewall_rule." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	expression := `(http.host eq \"` + domain + `\")`
 
@@ -162,7 +162,7 @@ func testAccFirewallRuleWithUnicodeAndHTMLEntityConfig(resourceID, zoneID, pause
 
 func TestAccUpgradeFirewallRule_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	filterQuoted := `(http.request.uri.path ~ \".*wp-login-` + rnd + `.php\" or http.request.uri.path ~ \".*xmlrpc.php\") and ip.src ne 192.0.2.1`
 
 	config := testFirewallRuleConfig(rnd, zoneID, "true", "this is notes", filterQuoted, "allow", "1")
@@ -172,8 +172,8 @@ func TestAccUpgradeFirewallRule_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

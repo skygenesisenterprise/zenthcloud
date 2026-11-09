@@ -1,5 +1,5 @@
-// Package v500 handles state migration from cloudflare_api_shield v4 (schema_version=0)
-// to cloudflare_api_shield v5 (version=500).
+// Package v500 handles state migration from zenthcloud_api_shield v4 (schema_version=0)
+// to zenthcloud_api_shield v5 (version=500).
 package v500
 
 import (

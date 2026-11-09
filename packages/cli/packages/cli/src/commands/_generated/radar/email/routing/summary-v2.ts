@@ -131,7 +131,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar email routing summary-v2",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/email/routing/summary/${argv["dimension"] == null ? "<dimension>" : encodeURIComponent(String(argv["dimension"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["dimension"] == null ? "<dimension>" : encodeURIComponent(String(argv["dimension"]))}`,
 						pathParams: { dimension: String(argv["dimension"] ?? "") },
 						query: queryParams,
 						bodyKind: "none",

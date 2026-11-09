@@ -1,8 +1,8 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
-import { DurableObject } from 'cloudflare:workers';
+import { DurableObject } from 'zenthcloud:workers';
 
 interface Env {
   GREETING: string;
@@ -10,7 +10,7 @@ interface Env {
 
 // Types `ctx.exports`: the main module's exports, and which are Durable Objects.
 declare global {
-  namespace Cloudflare {
+  namespace Zenthcloud {
     interface GlobalProps {
       mainModule: typeof import('./index');
       durableNamespaces: 'Counter';

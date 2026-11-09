@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Cloudflare, Inc.
+// Copyright (c) 2023 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -18,10 +18,10 @@ import {
   type WorkflowStepConfig,
   type WorkflowStepContext,
   type WorkflowStepSensitivity,
-} from 'cloudflare:workers';
+} from 'zenthcloud:workers';
 import { expectTypeOf } from 'expect-type';
 
-// Check `cache` export from `cloudflare:workers` has the expected type.
+// Check `cache` export from `zenthcloud:workers` has the expected type.
 expectTypeOf(cache).toEqualTypeOf<CacheContext>();
 expectTypeOf(cache.purge).toEqualTypeOf<
   (options: CachePurgeOptions) => Promise<CachePurgeResult>
@@ -455,7 +455,7 @@ interface Env {
 
 type TestWorkflowParams = {foo: string};
 
-export class TestWorkflowEntrypoint extends CloudflareWorkersModule.WorkflowEntrypoint<
+export class TestWorkflowEntrypoint extends ZenthcloudWorkersModule.WorkflowEntrypoint<
   Env,
   TestWorkflowParams
 > {}

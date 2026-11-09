@@ -10,16 +10,16 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/notification_policy_webhooks"
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/notification_policy_webhooks/migration/v500"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/test_helpers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/notification_policy_webhooks"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/notification_policy_webhooks/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
-// TestNotificationPolicyWebhooksMigrationModelSchemaParity verifies that TargetCloudflareNotificationPolicyWebhooksModel
+// TestNotificationPolicyWebhooksMigrationModelSchemaParity verifies that TargetZenthcloudNotificationPolicyWebhooksModel
 // (used in UpgradeFromV4 → resp.State.Set) stays in sync with the live ResourceSchema.
 func TestNotificationPolicyWebhooksMigrationModelSchemaParity(t *testing.T) {
 	t.Parallel()
-	model := (*v500.TargetCloudflareNotificationPolicyWebhooksModel)(nil)
+	model := (*v500.TargetZenthcloudNotificationPolicyWebhooksModel)(nil)
 	schema := notification_policy_webhooks.ResourceSchema(context.TODO())
 	errs := test_helpers.ValidateMigrationModelSchemaIntegrity(model, schema)
 	errs.Report(t)

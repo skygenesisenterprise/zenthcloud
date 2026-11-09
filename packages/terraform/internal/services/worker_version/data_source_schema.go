@@ -5,8 +5,8 @@ package worker_version
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
@@ -90,7 +90,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"startup_time_ms": schema.Int64Attribute{
-				Description: "Time in milliseconds spent on [Worker startup](https://developers.cloudflare.com/workers/platform/limits/#worker-startup-time).",
+				Description: "Time in milliseconds spent on [Worker startup](https://github.com/skygenesisenterprise/zenthcloud).",
 				Computed:    true,
 			},
 			"usage_model": schema.StringAttribute{
@@ -137,7 +137,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"assets": schema.SingleNestedAttribute{
-				Description: "Configuration for assets within a Worker.\n\n[`_headers`](https://developers.cloudflare.com/workers/static-assets/headers/#custom-headers) and\n[`_redirects`](https://developers.cloudflare.com/workers/static-assets/redirects/) files should be\nincluded as modules named `_headers` and `_redirects` with content type `text/plain`.",
+				Description: "Configuration for assets within a Worker.\n\n[`_headers`](https://github.com/skygenesisenterprise/zenthcloud) and\n[`_redirects`](https://github.com/skygenesisenterprise/zenthcloud) files should be\nincluded as modules named `_headers` and `_redirects` with content type `text/plain`.",
 				Computed:    true,
 				CustomType:  customfield.NewNestedObjectType[WorkerVersionAssetsDataSourceModel](ctx),
 				Attributes: map[string]schema.Attribute{
@@ -189,7 +189,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"bindings": schema.ListNestedAttribute{
-				Description: "List of bindings attached to a Worker. You can find more about bindings on our docs: https://developers.cloudflare.com/workers/configuration/multipart-upload-metadata/#bindings.",
+				Description: "List of bindings attached to a Worker. You can find more about bindings on our docs: https://github.com/skygenesisenterprise/zenthcloud",
 				Computed:    true,
 				CustomType:  customfield.NewNestedObjectListType[WorkerVersionBindingsDataSourceModel](ctx),
 				NestedObject: schema.NestedAttributeObject{
@@ -406,7 +406,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 							Computed:    true,
 						},
 						"jurisdiction": schema.StringAttribute{
-							Description: "The [jurisdiction](https://developers.cloudflare.com/r2/reference/data-location/#jurisdictional-restrictions) of the R2 bucket.\nAvailable values: \"eu\", \"fedramp\", \"fedramp-high\", \"us\".",
+							Description: "The [jurisdiction](https://github.com/skygenesisenterprise/zenthcloud) of the R2 bucket.\nAvailable values: \"eu\", \"fedramp\", \"fedramp-high\", \"us\".",
 							Computed:    true,
 							Validators: []validator.String{
 								stringvalidator.OneOfCaseInsensitive(
@@ -511,14 +511,14 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 							Computed:    true,
 						},
 						"tunnel_id": schema.StringAttribute{
-							Description: "UUID of the Cloudflare Tunnel to bind to. Mutually exclusive with network_id.",
+							Description: "UUID of the Zenthcloud Tunnel to bind to. Mutually exclusive with network_id.",
 							Computed:    true,
 						},
 					},
 				},
 			},
 			"cache_options": schema.SingleNestedAttribute{
-				Description: "Global CacheW configuration for the Worker. When caching is on,\nthe platform provisions a `cloudflare.app` zone for the Worker.\nA `type: worker` entry in the `exports` map can override this\nvalue for a single entrypoint.",
+				Description: "Global CacheW configuration for the Worker. When caching is on,\nthe platform provisions a `zenthcloud.app` zone for the Worker.\nA `type: worker` entry in the `exports` map can override this\nvalue for a single entrypoint.",
 				Computed:    true,
 				CustomType:  customfield.NewNestedObjectType[WorkerVersionCacheOptionsDataSourceModel](ctx),
 				Attributes: map[string]schema.Attribute{
@@ -746,7 +746,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"modules": schema.SetNestedAttribute{
-				Description: "Code, sourcemaps, and other content used at runtime.\n\nThis includes [`_headers`](https://developers.cloudflare.com/workers/static-assets/headers/#custom-headers) and\n[`_redirects`](https://developers.cloudflare.com/workers/static-assets/redirects/) files used to configure\n[Static Assets](https://developers.cloudflare.com/workers/static-assets/). `_headers` and `_redirects` files should be\nincluded as modules named `_headers` and `_redirects` with content type `text/plain`.",
+				Description: "Code, sourcemaps, and other content used at runtime.\n\nThis includes [`_headers`](https://github.com/skygenesisenterprise/zenthcloud) and\n[`_redirects`](https://github.com/skygenesisenterprise/zenthcloud) files used to configure\n[Static Assets](https://github.com/skygenesisenterprise/zenthcloud). `_headers` and `_redirects` files should be\nincluded as modules named `_headers` and `_redirects` with content type `text/plain`.",
 				Computed:    true,
 				CustomType:  customfield.NewNestedObjectSetType[WorkerVersionModulesDataSourceModel](ctx),
 				NestedObject: schema.NestedAttributeObject{
@@ -788,12 +788,12 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"placement": schema.SingleNestedAttribute{
-				Description: "Configuration for [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement). Specify mode='smart' for Smart Placement, or one of region/hostname/host.",
+				Description: "Configuration for [Smart Placement](https://github.com/skygenesisenterprise/zenthcloud). Specify mode='smart' for Smart Placement, or one of region/hostname/host.",
 				Computed:    true,
 				CustomType:  customfield.NewNestedObjectType[WorkerVersionPlacementDataSourceModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"mode": schema.StringAttribute{
-						Description: "Enables [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).\nAvailable values: \"smart\", \"targeted\".",
+						Description: "Enables [Smart Placement](https://github.com/skygenesisenterprise/zenthcloud).\nAvailable values: \"smart\", \"targeted\".",
 						Computed:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOfCaseInsensitive("smart", "targeted"),

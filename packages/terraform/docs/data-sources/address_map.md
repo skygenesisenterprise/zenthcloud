@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_address_map Data Source - Cloudflare"
+page_title: "zenthcloud_address_map Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Address Maps ReadAddress Maps Write
 ---
 
-# cloudflare_address_map (Data Source)
+# zenthcloud_address_map (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_address_map" "example_address_map" {
+data "zenthcloud_address_map" "example_address_map" {
   account_id = "258def64c72dae45f3e4c8516e2111f2"
   address_map_id = "055817b111884e0227e1be16a0be6ee0"
 }
@@ -31,16 +31,16 @@ data "cloudflare_address_map" "example_address_map" {
 
 ### Optional
 
-- `account_id` (String) Identifier of a Cloudflare account.
+- `account_id` (String) Identifier of a Zenthcloud account.
 
 ### Read-Only
 
-- `can_delete` (Boolean) If set to false, then the Address Map cannot be deleted via API. This is true for Cloudflare-managed maps.
-- `can_modify_ips` (Boolean) If set to false, then the IPs on the Address Map cannot be modified via the API. This is true for Cloudflare-managed maps.
+- `can_delete` (Boolean) If set to false, then the Address Map cannot be deleted via API. This is true for Zenthcloud-managed maps.
+- `can_modify_ips` (Boolean) If set to false, then the IPs on the Address Map cannot be modified via the API. This is true for Zenthcloud-managed maps.
 - `created_at` (String)
-- `default_sni` (String) If you have legacy TLS clients which do not send the TLS server name indicator, then you can specify one default SNI on the map. If Cloudflare receives a TLS handshake from a client without an SNI, it will respond with the default SNI on those IPs. The default SNI can be any valid zone or subdomain owned by the account.
+- `default_sni` (String) If you have legacy TLS clients which do not send the TLS server name indicator, then you can specify one default SNI on the map. If Zenthcloud receives a TLS handshake from a client without an SNI, it will respond with the default SNI on those IPs. The default SNI can be any valid zone or subdomain owned by the account.
 - `description` (String) An optional description field which may be used to describe the types of IPs or zones on the map.
-- `enabled` (Boolean) Whether the Address Map is enabled or not. Cloudflare's DNS will not respond with IP addresses on an Address Map until the map is enabled.
+- `enabled` (Boolean) Whether the Address Map is enabled or not. Zenthcloud's DNS will not respond with IP addresses on an Address Map until the map is enabled.
 - `id` (String) Identifier of an Address Map.
 - `ips` (Attributes List) The set of IPs on the Address Map. (see [below for nested schema](#nestedatt--ips))
 - `memberships` (Attributes List) Zones and Accounts which will be assigned IPs on this Address Map. A zone membership will take priority over an account membership. (see [below for nested schema](#nestedatt--memberships))

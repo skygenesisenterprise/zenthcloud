@@ -5,36 +5,36 @@ const (
 	APITokenSchemaKey = "api_token"
 
 	// Environment variable key for the API token configuration.
-	APITokenEnvVarKey = "CLOUDFLARE_API_TOKEN"
+	APITokenEnvVarKey = "ZENTHCLOUD_API_TOKEN"
 
 	// Schema key for the API key configuration.
 	APIKeySchemaKey = "api_key"
 
 	// Environment variable key for the API key configuration.
-	APIKeyEnvVarKey = "CLOUDFLARE_API_KEY"
+	APIKeyEnvVarKey = "ZENTHCLOUD_API_KEY"
 
 	// Schema key for the email configuration.
 	EmailSchemaKey = "email"
 
 	// Environment variable key for the email configuration.
-	EmailEnvVarKey = "CLOUDFLARE_EMAIL"
+	EmailEnvVarKey = "ZENTHCLOUD_EMAIL"
 
 	// Schema key for the API user service key configuration.
 	APIUserServiceKeySchemaKey = "api_user_service_key"
 
 	// Environment variable key for the API user service key configuration.
-	APIUserServiceKeyEnvVarKey = "CLOUDFLARE_API_USER_SERVICE_KEY"
+	APIUserServiceKeyEnvVarKey = "ZENTHCLOUD_API_USER_SERVICE_KEY"
 
 	// Schema key for the User Agent operator suffix.
 	UserAgentOperatorSuffixSchemaKey = "user_agent_operator_suffix"
 
 	// Environment variable key for the User Agent operator suffix.
-	UserAgentOperatorSuffixEnvVarKey = "CLOUDFLARE_USER_AGENT_OPERATOR_SUFFIX"
+	UserAgentOperatorSuffixEnvVarKey = "ZENTHCLOUD_USER_AGENT_OPERATOR_SUFFIX"
 
 	// Environment variable key for the account ID configuration.
 	//
 	// Deprecated: Use resource specific account ID values instead.
-	AccountIDEnvVarKey = "CLOUDFLARE_ACCOUNT_ID"
+	AccountIDEnvVarKey = "ZENTHCLOUD_ACCOUNT_ID"
 
 	// Schema key for the account ID configuration.
 	AccountIDSchemaKey = "account_id"
@@ -58,14 +58,14 @@ const (
 	BaseURLSchemaKey = "base_url"
 
 	// Environment variable key for the client base URL.
-	BaseURLEnvVarKey = "CLOUDFLARE_BASE_URL"
+	BaseURLEnvVarKey = "ZENTHCLOUD_BASE_URL"
 
 	R2JurisdictionHTTPHeaderName = "cf-r2-jurisdiction"
 
 	R2StorageClassHTTPHeaderName = "cf-r2-storage-class"
 
 	// Environment variable key for a pre-verified email routing destination address.
-	// The address must already be verified in the Cloudflare account under test before
+	// The address must already be verified in the Zenthcloud account under test before
 	// email routing rule acceptance tests can run.
-	EmailRoutingDestinationAddressEnvVarKey = "CLOUDFLARE_EMAIL_ROUTING_DESTINATION_ADDRESS"
+	EmailRoutingDestinationAddressEnvVarKey = "ZENTHCLOUD_EMAIL_ROUTING_DESTINATION_ADDRESS"
 )

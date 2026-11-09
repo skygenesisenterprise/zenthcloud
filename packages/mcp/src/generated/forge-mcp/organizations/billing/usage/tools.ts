@@ -24,7 +24,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "organization_id": {
-              "description": "Identifies the Cloudflare organization.",
+              "description": "Identifies the Zenthcloud organization.",
               "type": "string"
             }
           },

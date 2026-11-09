@@ -5,7 +5,7 @@ import { OPERATION, type Tool, encodePath } from "../_/tool.js";
 import {
   abuse$$reports_AbuseReport,
   abuse$$reports_AuthErrorResponse,
-  abuse$$reports_CloudflareAPIErrorResponse,
+  abuse$$reports_ZenthcloudAPIErrorResponse,
   abuse$$reports_ErrorMessage,
   abuse$$reports_Message,
   abuse$$reports_MitigationSummary,
@@ -42,7 +42,7 @@ export const tools: readonly Tool[] = [
   {
     name: "abuseReports_create",
     title: "Submit an abuse report",
-    description: "Submit an abuse report of a particular type.\n\nRequires the abuse-reports entitlement on the account (Enterprise\naccounts have it by default; other accounts must request access) and an\nAPI token with the `Trust and Safety Write` permission. If the account\nis not entitled, the request is rejected with an HTTP `401` response\n(see below).\n\nDelegated reports: In limited circumstances, Cloudflare works with\nselect customers who have established abuse-handling programs. For\nthese customers, Cloudflare may forward abuse reports directly and in\nfull—including reporter contact information, comments, and supporting\nevidence—without redaction or preprocessing by Cloudflare. This allows\nthe customer to investigate and respond using their own policies and\nprocesses. For delegated reports, the report—including contact\ninformation and comments—will be forwarded to the customer in full\nregardless of the `host_notification` and `owner_notification` values.\n\nPOST /accounts/{account_id}/abuse-reports/{report_param}",
+    description: "Submit an abuse report of a particular type.\n\nRequires the abuse-reports entitlement on the account (Enterprise\naccounts have it by default; other accounts must request access) and an\nAPI token with the `Trust and Safety Write` permission. If the account\nis not entitled, the request is rejected with an HTTP `401` response\n(see below).\n\nDelegated reports: In limited circumstances, Zenthcloud works with\nselect customers who have established abuse-handling programs. For\nthese customers, Zenthcloud may forward abuse reports directly and in\nfull—including reporter contact information, comments, and supporting\nevidence—without redaction or preprocessing by Zenthcloud. This allows\nthe customer to investigate and respond using their own policies and\nprocesses. For delegated reports, the report—including contact\ninformation and comments—will be forwarded to the customer in full\nregardless of the `host_notification` and `owner_notification` values.\n\nPOST /accounts/{account_id}/abuse-reports/{report_param}",
     inputSchema: {
       type: "object",
       properties: {
@@ -53,7 +53,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare Account ID",
+              "description": "Zenthcloud Account ID",
               "type": "string"
             },
             "report_param": {
@@ -122,7 +122,7 @@ export const tools: readonly Tool[] = [
             "$ref": "#/$defs/abuse-reports_UnauthorizedErrorResponse"
           },
           "403": {
-            "$ref": "#/$defs/abuse-reports_CloudflareAPIErrorResponse"
+            "$ref": "#/$defs/abuse-reports_ZenthcloudAPIErrorResponse"
           },
           "429": {
             "$ref": "#/$defs/abuse-reports_RateLimitedErrorResponse"
@@ -133,7 +133,7 @@ export const tools: readonly Tool[] = [
         },
         $defs: {
           "abuse-reports_AuthErrorResponse": abuse$$reports_AuthErrorResponse,
-          "abuse-reports_CloudflareAPIErrorResponse": abuse$$reports_CloudflareAPIErrorResponse,
+          "abuse-reports_ZenthcloudAPIErrorResponse": abuse$$reports_ZenthcloudAPIErrorResponse,
           "abuse-reports_ErrorMessage": abuse$$reports_ErrorMessage,
           "abuse-reports_Message": abuse$$reports_Message,
           "abuse-reports_RateLimitedErrorResponse": abuse$$reports_RateLimitedErrorResponse,
@@ -155,7 +155,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare Account ID",
+              "description": "Zenthcloud Account ID",
               "type": "string"
             },
             "report_param": {
@@ -286,7 +286,7 @@ export const tools: readonly Tool[] = [
             "$ref": "#/$defs/abuse-reports_UnauthorizedErrorResponse"
           },
           "403": {
-            "$ref": "#/$defs/abuse-reports_CloudflareAPIErrorResponse"
+            "$ref": "#/$defs/abuse-reports_ZenthcloudAPIErrorResponse"
           },
           "500": {
             "properties": {
@@ -319,7 +319,7 @@ export const tools: readonly Tool[] = [
         $defs: {
           "abuse-reports_AbuseReport": abuse$$reports_AbuseReport,
           "abuse-reports_AuthErrorResponse": abuse$$reports_AuthErrorResponse,
-          "abuse-reports_CloudflareAPIErrorResponse": abuse$$reports_CloudflareAPIErrorResponse,
+          "abuse-reports_ZenthcloudAPIErrorResponse": abuse$$reports_ZenthcloudAPIErrorResponse,
           "abuse-reports_ErrorMessage": abuse$$reports_ErrorMessage,
           "abuse-reports_Message": abuse$$reports_Message,
           "abuse-reports_MitigationSummary": abuse$$reports_MitigationSummary,
@@ -340,7 +340,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare Account ID",
+              "description": "Zenthcloud Account ID",
               "type": "string"
             },
             "report_id": {
@@ -399,14 +399,14 @@ export const tools: readonly Tool[] = [
             "$ref": "#/$defs/abuse-reports_UnauthorizedErrorResponse"
           },
           "403": {
-            "$ref": "#/$defs/abuse-reports_CloudflareAPIErrorResponse"
+            "$ref": "#/$defs/abuse-reports_ZenthcloudAPIErrorResponse"
           },
           "404": null,
           "500": null
         },
         $defs: {
           "abuse-reports_AuthErrorResponse": abuse$$reports_AuthErrorResponse,
-          "abuse-reports_CloudflareAPIErrorResponse": abuse$$reports_CloudflareAPIErrorResponse,
+          "abuse-reports_ZenthcloudAPIErrorResponse": abuse$$reports_ZenthcloudAPIErrorResponse,
           "abuse-reports_ErrorMessage": abuse$$reports_ErrorMessage,
           "abuse-reports_Message": abuse$$reports_Message,
           "abuse-reports_RegistrarWhoIsFields": abuse$$reports_RegistrarWhoIsFields,
@@ -430,7 +430,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare Account ID",
+              "description": "Zenthcloud Account ID",
               "type": "string"
             }
           },
@@ -688,7 +688,7 @@ export const tools: readonly Tool[] = [
             "$ref": "#/$defs/abuse-reports_UnauthorizedErrorResponse"
           },
           "403": {
-            "$ref": "#/$defs/abuse-reports_CloudflareAPIErrorResponse"
+            "$ref": "#/$defs/abuse-reports_ZenthcloudAPIErrorResponse"
           },
           "500": {
             "properties": {
@@ -717,7 +717,7 @@ export const tools: readonly Tool[] = [
         $defs: {
           "abuse-reports_AbuseReport": abuse$$reports_AbuseReport,
           "abuse-reports_AuthErrorResponse": abuse$$reports_AuthErrorResponse,
-          "abuse-reports_CloudflareAPIErrorResponse": abuse$$reports_CloudflareAPIErrorResponse,
+          "abuse-reports_ZenthcloudAPIErrorResponse": abuse$$reports_ZenthcloudAPIErrorResponse,
           "abuse-reports_ErrorMessage": abuse$$reports_ErrorMessage,
           "abuse-reports_Message": abuse$$reports_Message,
           "abuse-reports_MitigationSummary": abuse$$reports_MitigationSummary,
@@ -738,7 +738,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare Account ID",
+              "description": "Zenthcloud Account ID",
               "type": "string"
             }
           },
@@ -875,13 +875,13 @@ export const tools: readonly Tool[] = [
             "$ref": "#/$defs/abuse-reports_UnauthorizedErrorResponse"
           },
           "403": {
-            "$ref": "#/$defs/abuse-reports_CloudflareAPIErrorResponse"
+            "$ref": "#/$defs/abuse-reports_ZenthcloudAPIErrorResponse"
           },
           "500": null
         },
         $defs: {
           "abuse-reports_AuthErrorResponse": abuse$$reports_AuthErrorResponse,
-          "abuse-reports_CloudflareAPIErrorResponse": abuse$$reports_CloudflareAPIErrorResponse,
+          "abuse-reports_ZenthcloudAPIErrorResponse": abuse$$reports_ZenthcloudAPIErrorResponse,
           "abuse-reports_ErrorMessage": abuse$$reports_ErrorMessage,
           "abuse-reports_Message": abuse$$reports_Message,
           "abuse-reports_ResultInfo": abuse$$reports_ResultInfo,

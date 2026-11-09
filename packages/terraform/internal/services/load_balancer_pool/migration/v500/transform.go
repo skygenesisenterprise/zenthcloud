@@ -6,7 +6,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -14,8 +14,8 @@ import (
 )
 
 // Transform converts source (legacy SDKv2 v4) state to target (current Plugin Framework v5) state.
-// This function handles the migration from cloudflare_load_balancer_pool in SDKv2 to Plugin Framework.
-func Transform(ctx context.Context, source SourceCloudflareLoadBalancerPoolModel) (interface{}, diag.Diagnostics) {
+// This function handles the migration from zenthcloud_load_balancer_pool in SDKv2 to Plugin Framework.
+func Transform(ctx context.Context, source SourceZenthcloudLoadBalancerPoolModel) (interface{}, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Validate required fields

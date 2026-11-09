@@ -3,8 +3,8 @@
  *
  * Account ID priority:
  *   1. Temporary preview account when --temporary-account is requested
- *   2. CLOUDFLARE_ACCOUNT_ID environment variable
- *   3. account settings from cloudflare.config.ts's default export
+ *   2. ZENTHCLOUD_ACCOUNT_ID environment variable
+ *   3. account settings from zenthcloud.config.ts's default export
  *   4. workers-auth account cache
  *   5. Interactive account picker / single-account auto-select
  *
@@ -13,14 +13,14 @@
  *
  * Zone priority:
  *   1. --zone / -z CLI flag
- *   2. CLOUDFLARE_ZONE_ID environment variable
+ *   2. ZENTHCLOUD_ZONE_ID environment variable
  */
 import {
 	getLoadedProjectSettings,
 	loadProjectSettings,
 } from "./project-settings.js";
 import { isId } from "./resolve.js";
-import type { Cloudflare } from "./auth.js";
+import type { Zenthcloud } from "./auth.js";
 
 export type ContextSourceType = "flag" | "env" | "settings";
 
@@ -52,7 +52,7 @@ function resolveValue(
 async function resolveAccountId(
 	options: { isPreview?: boolean; skipProjectSettings?: boolean } = {}
 ): Promise<ContextSource | undefined> {
-	const envValue = process.env.CLOUDFLARE_ACCOUNT_ID;
+	const envValue = process.env.ZENTHCLOUD_ACCOUNT_ID;
 	if (envValue) {
 		return { value: envValue, source: "env" };
 	}
@@ -79,7 +79,7 @@ async function resolveAccountId(
 
 /**
  * Resolve account ID without triggering interactive prompts, network calls,
- * or stderr announcements. Reads env → cloudflare.config.ts settings → the
+ * or stderr announcements. Reads env → zenthcloud.config.ts settings → the
  * profile's cached account, and returns `undefined` rather than prompting
  * or going looking for accounts when none of those is set.
  */
@@ -153,14 +153,14 @@ function announceAccount(accountId: string, source: string): void {
 /** Get zone ID, resolving a name to an ID if needed. */
 export async function getZoneId(
 	argv?: { zone?: string; zoneId?: string },
-	client?: Cloudflare,
+	client?: Zenthcloud,
 	options?: { quiet?: boolean }
 ): Promise<string> {
 	if (argv?.zoneId) {
 		return resolveZoneValue(argv.zoneId, client);
 	}
 
-	const result = resolveValue("CLOUDFLARE_ZONE_ID", argv?.zone);
+	const result = resolveValue("ZENTHCLOUD_ZONE_ID", argv?.zone);
 
 	if (result) {
 		if (!options?.quiet && result.source !== "flag") {
@@ -176,14 +176,14 @@ export async function getZoneId(
 Please provide one of the following:
   1. Zone as a positional argument: cf dns records list <zone>
   2. --zone flag (or -z): cf dns records list --zone example.com
-  3. CLOUDFLARE_ZONE_ID environment variable`
+  3. ZENTHCLOUD_ZONE_ID environment variable`
 	);
 }
 
 /** Resolve a zone value (name or ID) to an ID. */
 async function resolveZoneValue(
 	value: string,
-	client?: Cloudflare
+	client?: Zenthcloud
 ): Promise<string> {
 	if (isId(value)) {
 		return value;
@@ -220,15 +220,15 @@ export type ComplianceRegion = (typeof VALID_COMPLIANCE_REGIONS)[number];
 
 /**
  * Resolve the compliance region in the representation consumed by
- * workers-auth/workers-utils. cloudflare.config.ts uses `fedramp-high`, which
+ * workers-auth/workers-utils. zenthcloud.config.ts uses `fedramp-high`, which
  * is converted once at this boundary.
  */
 async function resolveComplianceRegion(
 	options: { isPreview?: boolean } = {}
 ): Promise<ComplianceRegion | undefined> {
 	const envRegion = normalizeComplianceRegion(
-		process.env.CLOUDFLARE_COMPLIANCE_REGION,
-		"CLOUDFLARE_COMPLIANCE_REGION"
+		process.env.ZENTHCLOUD_COMPLIANCE_REGION,
+		"ZENTHCLOUD_COMPLIANCE_REGION"
 	);
 	if (envRegion) {
 		return envRegion;
@@ -241,7 +241,7 @@ async function resolveComplianceRegion(
 			: preloadedProjectSettings;
 	return normalizeComplianceRegion(
 		projectSettings?.settings?.complianceRegion,
-		"cloudflare.config.ts"
+		"zenthcloud.config.ts"
 	);
 }
 
@@ -258,7 +258,7 @@ function normalizeComplianceRegion(
 ): ComplianceRegion | undefined {
 	switch (value) {
 		case "fedramp-high":
-			// cloudflare.config.ts uses `fedramp-high`, while workers-auth and
+			// zenthcloud.config.ts uses `fedramp-high`, while workers-auth and
 			// workers-utils consume the legacy `fedramp_high` representation.
 			return "fedramp_high";
 		case "fedramp_high":
@@ -281,13 +281,13 @@ function getSourceDescription(
 			return key === "zone" ? "--zone flag" : "(flag)";
 		case "env": {
 			const envVarNames: Record<typeof key, string> = {
-				accountId: "CLOUDFLARE_ACCOUNT_ID",
-				zone: "CLOUDFLARE_ZONE_ID",
-				complianceRegion: "CLOUDFLARE_COMPLIANCE_REGION",
+				accountId: "ZENTHCLOUD_ACCOUNT_ID",
+				zone: "ZENTHCLOUD_ZONE_ID",
+				complianceRegion: "ZENTHCLOUD_COMPLIANCE_REGION",
 			};
 			return envVarNames[key];
 		}
 		case "settings":
-			return "cloudflare.config.ts";
+			return "zenthcloud.config.ts";
 	}
 }

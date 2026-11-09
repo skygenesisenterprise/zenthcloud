@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"nhooyr.io/websocket"
 
-	"github.com/cloudflare/cloudflared/internal/test"
+	"github.com/zenthcloud/zenthcloudd/internal/test"
 )
 
 var (

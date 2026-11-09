@@ -18,7 +18,7 @@ export const tools: readonly Tool[] = [
   {
     name: "tenants_accounts_list",
     title: "List tenant accounts",
-    description: "Lists all Cloudflare accounts across this tenant's hierarchy using the legacy Account\nresponse shape. Use `GET /organizations/{organization_id}/accounts` to list only accounts\nimmediately attached to a specific Organization using the modern Account response shape.\nUse `page_token` and `page_size` for cursor pagination, or provide `page` and `per_page`\ntogether for legacy offset pagination. Cursor pagination takes precedence when requested.\n\nGET /tenants/{tenant_id}/accounts",
+    description: "Lists all Zenthcloud accounts across this tenant's hierarchy using the legacy Account\nresponse shape. Use `GET /organizations/{organization_id}/accounts` to list only accounts\nimmediately attached to a specific Organization using the modern Account response shape.\nUse `page_token` and `page_size` for cursor pagination, or provide `page` and `per_page`\ntogether for legacy offset pagination. Cursor pagination takes precedence when requested.\n\nGET /tenants/{tenant_id}/accounts",
     inputSchema: {
       type: "object",
       properties: {

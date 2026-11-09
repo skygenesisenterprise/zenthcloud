@@ -5,9 +5,9 @@ package workers_custom_domain
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/workers"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/workers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -29,23 +29,23 @@ type WorkersCustomDomainsDataSourceModel struct {
 
 func (m *WorkersCustomDomainsDataSourceModel) toListParams(_ context.Context) (params workers.DomainListParams, diags diag.Diagnostics) {
 	params = workers.DomainListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Environment.IsNull() {
-		params.Environment = cloudflare.F(m.Environment.ValueString())
+		params.Environment = zenthcloud.F(m.Environment.ValueString())
 	}
 	if !m.Hostname.IsNull() {
-		params.Hostname = cloudflare.F(m.Hostname.ValueString())
+		params.Hostname = zenthcloud.F(m.Hostname.ValueString())
 	}
 	if !m.Service.IsNull() {
-		params.Service = cloudflare.F(m.Service.ValueString())
+		params.Service = zenthcloud.F(m.Service.ValueString())
 	}
 	if !m.ZoneID.IsNull() {
-		params.ZoneID = cloudflare.F(m.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(m.ZoneID.ValueString())
 	}
 	if !m.ZoneName.IsNull() {
-		params.ZoneName = cloudflare.F(m.ZoneName.ValueString())
+		params.ZoneName = zenthcloud.F(m.ZoneName.ValueString())
 	}
 
 	return

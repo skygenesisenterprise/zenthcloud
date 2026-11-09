@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -85,7 +85,7 @@ func TestMigrateArgoSmartRouting_V4ToV5_SmartRoutingOnly(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Test setup
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
@@ -101,8 +101,8 @@ func TestMigrateArgoSmartRouting_V4ToV5_SmartRoutingOnly(t *testing.T) {
 					{
 						// Step 1: Create with specific provider version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -113,25 +113,25 @@ func TestMigrateArgoSmartRouting_V4ToV5_SmartRoutingOnly(t *testing.T) {
 						[]statecheck.StateCheck{
 							// Verify zone_id is preserved
 							statecheck.ExpectKnownValue(
-								"cloudflare_argo_smart_routing."+rnd,
+								"zenthcloud_argo_smart_routing."+rnd,
 								tfjsonpath.New("zone_id"),
 								knownvalue.StringExact(zoneID),
 							),
 							// Verify smart_routing → value transformation
 							statecheck.ExpectKnownValue(
-								"cloudflare_argo_smart_routing."+rnd,
+								"zenthcloud_argo_smart_routing."+rnd,
 								tfjsonpath.New("value"),
 								knownvalue.StringExact("on"),
 							),
 							// Verify id changed from checksum to zone_id
 							statecheck.ExpectKnownValue(
-								"cloudflare_argo_smart_routing."+rnd,
+								"zenthcloud_argo_smart_routing."+rnd,
 								tfjsonpath.New("id"),
 								knownvalue.StringExact(zoneID),
 							),
 							// Verify editable is set (computed field)
 							statecheck.ExpectKnownValue(
-								"cloudflare_argo_smart_routing."+rnd,
+								"zenthcloud_argo_smart_routing."+rnd,
 								tfjsonpath.New("editable"),
 								knownvalue.Bool(true),
 							),
@@ -169,7 +169,7 @@ func TestMigrateArgoSmartRouting_V4ToV5_BothAttributes(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
@@ -184,8 +184,8 @@ func TestMigrateArgoSmartRouting_V4ToV5_BothAttributes(t *testing.T) {
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -194,22 +194,22 @@ func TestMigrateArgoSmartRouting_V4ToV5_BothAttributes(t *testing.T) {
 					argoSmartRoutingMigrationTestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer,
 						[]statecheck.StateCheck{
 							statecheck.ExpectKnownValue(
-								"cloudflare_argo_smart_routing."+rnd,
+								"zenthcloud_argo_smart_routing."+rnd,
 								tfjsonpath.New("zone_id"),
 								knownvalue.StringExact(zoneID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_argo_smart_routing."+rnd,
+								"zenthcloud_argo_smart_routing."+rnd,
 								tfjsonpath.New("value"),
 								knownvalue.StringExact("on"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_argo_smart_routing."+rnd,
+								"zenthcloud_argo_smart_routing."+rnd,
 								tfjsonpath.New("id"),
 								knownvalue.StringExact(zoneID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_argo_smart_routing."+rnd,
+								"zenthcloud_argo_smart_routing."+rnd,
 								tfjsonpath.New("editable"),
 								knownvalue.Bool(true),
 							),
@@ -247,7 +247,7 @@ func TestMigrateArgoSmartRouting_V4ToV5_NeitherAttribute(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
@@ -262,8 +262,8 @@ func TestMigrateArgoSmartRouting_V4ToV5_NeitherAttribute(t *testing.T) {
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -272,23 +272,23 @@ func TestMigrateArgoSmartRouting_V4ToV5_NeitherAttribute(t *testing.T) {
 					argoSmartRoutingMigrationTestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer,
 						[]statecheck.StateCheck{
 							statecheck.ExpectKnownValue(
-								"cloudflare_argo_smart_routing."+rnd,
+								"zenthcloud_argo_smart_routing."+rnd,
 								tfjsonpath.New("zone_id"),
 								knownvalue.StringExact(zoneID),
 							),
 							// Verify default value is "off" when smart_routing not set
 							statecheck.ExpectKnownValue(
-								"cloudflare_argo_smart_routing."+rnd,
+								"zenthcloud_argo_smart_routing."+rnd,
 								tfjsonpath.New("value"),
 								knownvalue.StringExact("off"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_argo_smart_routing."+rnd,
+								"zenthcloud_argo_smart_routing."+rnd,
 								tfjsonpath.New("id"),
 								knownvalue.StringExact(zoneID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_argo_smart_routing."+rnd,
+								"zenthcloud_argo_smart_routing."+rnd,
 								tfjsonpath.New("editable"),
 								knownvalue.Bool(true),
 							),

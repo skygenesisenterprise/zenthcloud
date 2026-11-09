@@ -8,11 +8,11 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
@@ -26,7 +26,7 @@ func NewResource() resource.Resource {
 
 // ZeroTrustDLPDatasetResource defines the resource implementation.
 type ZeroTrustDLPDatasetResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *ZeroTrustDLPDatasetResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -38,12 +38,12 @@ func (r *ZeroTrustDLPDatasetResource) Configure(ctx context.Context, req resourc
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -71,7 +71,7 @@ func (r *ZeroTrustDLPDatasetResource) Create(ctx context.Context, req resource.C
 	_, err = r.client.ZeroTrust.DLP.Datasets.New(
 		ctx,
 		zero_trust.DLPDatasetNewParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -120,7 +120,7 @@ func (r *ZeroTrustDLPDatasetResource) Update(ctx context.Context, req resource.U
 		ctx,
 		data.DatasetID.ValueString(),
 		zero_trust.DLPDatasetUpdateParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -156,7 +156,7 @@ func (r *ZeroTrustDLPDatasetResource) Read(ctx context.Context, req resource.Rea
 		ctx,
 		data.DatasetID.ValueString(),
 		zero_trust.DLPDatasetGetParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -194,7 +194,7 @@ func (r *ZeroTrustDLPDatasetResource) Delete(ctx context.Context, req resource.D
 		ctx,
 		data.DatasetID.ValueString(),
 		zero_trust.DLPDatasetDeleteParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)

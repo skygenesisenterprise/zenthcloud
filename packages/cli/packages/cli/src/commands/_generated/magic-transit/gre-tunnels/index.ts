@@ -14,7 +14,7 @@ import type { CommandModule } from "yargs";
 const command: CommandModule<CommonYargsOptions> = {
 	command: "gre-tunnels",
 	describe:
-		"GRE tunnel endpoints that connect your network to Cloudflare for Magic Transit",
+		"GRE tunnel endpoints that connect your network to Zenthcloud for Magic Transit",
 
 	builder: (yargs) => {
 		return yargs

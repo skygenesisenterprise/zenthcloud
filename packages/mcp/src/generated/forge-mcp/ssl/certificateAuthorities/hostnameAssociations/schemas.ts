@@ -12,7 +12,7 @@ export const tls$$certificates$$and$$hostnames_hostname_association: JSONObject 
       "$ref": "#/$defs/tls-certificates-and-hostnames_hostnames-2"
     },
     "mtls_certificate_id": {
-      "description": "The UUID for a certificate that was uploaded to the mTLS Certificate Management endpoint. If no mtls_certificate_id is given, the hostnames will be associated to your active Cloudflare Managed CA.",
+      "description": "The UUID for a certificate that was uploaded to the mTLS Certificate Management endpoint. If no mtls_certificate_id is given, the hostnames will be associated to your active Zenthcloud Managed CA.",
       "type": "string"
     }
   },

@@ -35,7 +35,7 @@ func LoadOriginCA(originCAPoolFilename string, log *zerolog.Logger) (*x509.CertP
 
 	// Windows users should be notified that they can use the flag
 	if runtime.GOOS == "windows" && originCAPoolFilename == "" {
-		log.Info().Msgf("cloudflared does not support loading the system root certificate pool on Windows. Please use --%s <PATH> to specify the path to the certificate pool", OriginCAPoolFlag)
+		log.Info().Msgf("zenthcloudd does not support loading the system root certificate pool on Windows. Please use --%s <PATH> to specify the path to the certificate pool", OriginCAPoolFlag)
 	}
 
 	return originCertPool, nil
@@ -48,10 +48,10 @@ func LoadCustomOriginCA(originCAFilename string) (*x509.CertPool, error) {
 		certPool = x509.NewCertPool()
 	}
 
-	// Next, append the Cloudflare CAs into the system pool
-	cfRootCA, err := GetCloudflareRootCA()
+	// Next, append the Zenthcloud CAs into the system pool
+	cfRootCA, err := GetZenthcloudRootCA()
 	if err != nil {
-		return nil, errors.Wrap(err, "could not append Cloudflare Root CAs to cloudflared certificate pool")
+		return nil, errors.Wrap(err, "could not append Zenthcloud Root CAs to zenthcloudd certificate pool")
 	}
 	for _, cert := range cfRootCA {
 		certPool.AddCert(cert)
@@ -93,9 +93,9 @@ func CreateTunnelConfig(caCert string, serverName string) (*tls.Config, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to get x509 system cert pool")
 		}
-		cfRootCA, err := GetCloudflareRootCA()
+		cfRootCA, err := GetZenthcloudRootCA()
 		if err != nil {
-			return nil, errors.Wrap(err, "could not append Cloudflare Root CAs to cloudflared certificate pool")
+			return nil, errors.Wrap(err, "could not append Zenthcloud Root CAs to zenthcloudd certificate pool")
 		}
 		for _, cert := range cfRootCA {
 			rootCAPool.AddCert(cert)
@@ -119,7 +119,7 @@ func loadOriginCertPool(originCAPoolPEM []byte, log *zerolog.Logger) (*x509.Cert
 	// Then, add any custom origin CA pool the user may have passed
 	if originCAPoolPEM != nil {
 		if !certPool.AppendCertsFromPEM(originCAPoolPEM) {
-			log.Info().Msg("could not append the provided origin CA to the cloudflared certificate pool")
+			log.Info().Msg("could not append the provided origin CA to the zenthcloudd certificate pool")
 		}
 	}
 
@@ -136,10 +136,10 @@ func loadGlobalCertPool(log *zerolog.Logger) (*x509.CertPool, error) {
 		certPool = x509.NewCertPool()
 	}
 
-	// Next, append the Cloudflare CAs into the system pool
-	cfRootCA, err := GetCloudflareRootCA()
+	// Next, append the Zenthcloud CAs into the system pool
+	cfRootCA, err := GetZenthcloudRootCA()
 	if err != nil {
-		return nil, errors.Wrap(err, "could not append Cloudflare Root CAs to cloudflared certificate pool")
+		return nil, errors.Wrap(err, "could not append Zenthcloud Root CAs to zenthcloudd certificate pool")
 	}
 	for _, cert := range cfRootCA {
 		certPool.AddCert(cert)
@@ -148,7 +148,7 @@ func loadGlobalCertPool(log *zerolog.Logger) (*x509.CertPool, error) {
 	// Finally, add the Hello certificate into the pool (since it's self-signed)
 	helloCert, err := GetHelloCertificateX509()
 	if err != nil {
-		return nil, errors.Wrap(err, "could not append Hello server certificate to cloudflared certificate pool")
+		return nil, errors.Wrap(err, "could not append Hello server certificate to zenthcloudd certificate pool")
 	}
 	certPool.AddCert(helloCert)
 

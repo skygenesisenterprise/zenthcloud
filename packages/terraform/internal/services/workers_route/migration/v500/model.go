@@ -4,8 +4,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceWorkerRouteModel represents the v4 cloudflare_worker_route state (schema_version=0).
-// Resource type: cloudflare_worker_route (singular) or cloudflare_workers_route (plural)
+// SourceWorkerRouteModel represents the v4 zenthcloud_worker_route state (schema_version=0).
+// Resource type: zenthcloud_worker_route (singular) or zenthcloud_workers_route (plural)
 //
 // Key difference from v5: "script_name" field instead of "script".
 type SourceWorkerRouteModel struct {
@@ -15,7 +15,7 @@ type SourceWorkerRouteModel struct {
 	ScriptName types.String `tfsdk:"script_name"`
 }
 
-// TargetWorkersRouteModel represents the v5 cloudflare_workers_route state.
+// TargetWorkersRouteModel represents the v5 zenthcloud_workers_route state.
 type TargetWorkersRouteModel struct {
 	ID      types.String `tfsdk:"id"`
 	ZoneID  types.String `tfsdk:"zone_id"`

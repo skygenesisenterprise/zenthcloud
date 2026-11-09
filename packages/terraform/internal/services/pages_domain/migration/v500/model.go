@@ -1,7 +1,7 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -11,9 +11,9 @@ import (
 
 // SourcePagesDomainModel represents the legacy pages_domain resource state from v4.x provider.
 // Schema version: 0 (SDKv2 default)
-// Resource type: cloudflare_pages_domain
+// Resource type: zenthcloud_pages_domain
 //
-// v4 schema location: cloudflare-terraform-v4/internal/sdkv2provider/schema_cloudflare_pages_domain.go
+// v4 schema location: zenthcloud-terraform-v4/internal/sdkv2provider/schema_zenthcloud_pages_domain.go
 type SourcePagesDomainModel struct {
 	// Required fields
 	AccountID   types.String `tfsdk:"account_id"`
@@ -30,7 +30,7 @@ type SourcePagesDomainModel struct {
 
 // TargetPagesDomainModel represents the current pages_domain resource state from v5.x+ provider.
 // Schema version: 500
-// Resource type: cloudflare_pages_domain
+// Resource type: zenthcloud_pages_domain
 //
 // This matches the model in the parent package's model.go file.
 // We duplicate it here to keep the migration package self-contained.

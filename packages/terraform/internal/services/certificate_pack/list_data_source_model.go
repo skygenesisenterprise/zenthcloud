@@ -5,9 +5,9 @@ package certificate_pack
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/ssl"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/ssl"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -27,14 +27,14 @@ type CertificatePacksDataSourceModel struct {
 
 func (m *CertificatePacksDataSourceModel) toListParams(_ context.Context) (params ssl.CertificatePackListParams, diags diag.Diagnostics) {
 	params = ssl.CertificatePackListParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	if !m.Deploy.IsNull() {
-		params.Deploy = cloudflare.F(ssl.CertificatePackListParamsDeploy(m.Deploy.ValueString()))
+		params.Deploy = zenthcloud.F(ssl.CertificatePackListParamsDeploy(m.Deploy.ValueString()))
 	}
 	if !m.Status.IsNull() {
-		params.Status = cloudflare.F(ssl.CertificatePackListParamsStatus(m.Status.ValueString()))
+		params.Status = zenthcloud.F(ssl.CertificatePackListParamsStatus(m.Status.ValueString()))
 	}
 
 	return
@@ -47,7 +47,7 @@ type CertificatePacksResultDataSourceModel struct {
 	Status               types.String                                                                      `tfsdk:"status" json:"status,computed"`
 	Type                 types.String                                                                      `tfsdk:"type" json:"type,computed"`
 	CertificateAuthority types.String                                                                      `tfsdk:"certificate_authority" json:"certificate_authority,computed"`
-	CloudflareBranding   types.Bool                                                                        `tfsdk:"cloudflare_branding" json:"cloudflare_branding,computed"`
+	ZenthcloudBranding   types.Bool                                                                        `tfsdk:"zenthcloud_branding" json:"zenthcloud_branding,computed"`
 	DCVDelegationRecords customfield.NestedObjectList[CertificatePacksDCVDelegationRecordsDataSourceModel] `tfsdk:"dcv_delegation_records" json:"dcv_delegation_records,computed"`
 	PrimaryCertificate   types.String                                                                      `tfsdk:"primary_certificate" json:"primary_certificate,computed"`
 	ValidationErrors     customfield.NestedObjectList[CertificatePacksValidationErrorsDataSourceModel]     `tfsdk:"validation_errors" json:"validation_errors,computed"`

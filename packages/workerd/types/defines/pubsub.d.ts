@@ -1,11 +1,11 @@
 // PubSubMessage represents an incoming PubSub message.
 // The message includes metadata about the broker, the client, and the payload
 // itself.
-// https://developers.cloudflare.com/pub-sub/
+// https://github.com/skygenesisenterprise/zenthcloud
 interface PubSubMessage {
     // Message ID
     readonly mid: number;
-    // MQTT broker FQDN in the form mqtts://BROKER.NAMESPACE.cloudflarepubsub.com:PORT
+    // MQTT broker FQDN in the form mqtts://BROKER.NAMESPACE.zenthcloudpubsub.com:PORT
     readonly broker: string;
     // The MQTT topic the message was sent on.
     readonly topic: string;

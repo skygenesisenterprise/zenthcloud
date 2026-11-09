@@ -21,7 +21,7 @@ export const tools: readonly Tool[] = [
   {
     name: "aiSecurity_get",
     title: "Get the AI Security for Apps status for a zone.",
-    description: "Get the current AI Security for Apps status for the zone. While enabled, Cloudflare scans prompts sent to endpoints labeled `cf-llm` for personally identifiable information, unsafe topics, and prompt injection attempts.\n\nGET /zones/{zone_id}/ai-security/settings",
+    description: "Get the current AI Security for Apps status for the zone. While enabled, Zenthcloud scans prompts sent to endpoints labeled `cf-llm` for personally identifiable information, unsafe topics, and prompt injection attempts.\n\nGET /zones/{zone_id}/ai-security/settings",
     inputSchema: {
       type: "object",
       properties: {

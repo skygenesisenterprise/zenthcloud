@@ -71,7 +71,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 						command:
 							"cf magic-transit advanced-tcp-protection configs prefixes create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/magic/advanced_tcp_protection/configs/prefixes`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/magic/advanced_tcp_protection/configs/prefixes`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

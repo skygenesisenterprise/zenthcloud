@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Cloudflare, Inc.
+// Copyright (c) 2024 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import { test } from 'node:test';
@@ -51,8 +51,8 @@ async function profileAndExpectDeriveBitsFrames(inspectorClient) {
 }
 
 // Regression test for:
-// - https://github.com/cloudflare/workerd/issues/1754
-// - https://github.com/cloudflare/workerd/issues/2564
+// - https://github.com/skygenesisenterprise/zenthcloud
+// - https://github.com/skygenesisenterprise/zenthcloud
 //
 // At one time, workerd profiling broke, and started producing only "(program)" frames. My original
 // attempt at a fix subsequently caused workerd to segfault on the second inspector connection. This

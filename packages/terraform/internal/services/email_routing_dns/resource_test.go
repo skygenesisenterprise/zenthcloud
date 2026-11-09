@@ -10,11 +10,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/email_routing"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/email_routing"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -47,15 +47,15 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_email_routing_dns", &resource.Sweeper{
-		Name: "cloudflare_email_routing_dns",
+	resource.AddTestSweepers("zenthcloud_email_routing_dns", &resource.Sweeper{
+		Name: "zenthcloud_email_routing_dns",
 		F: func(region string) error {
 			ctx := context.Background()
 			client := acctest.SharedClient()
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 			if zoneID == "" {
-				tflog.Info(ctx, "Skipping email routing DNS sweep: CLOUDFLARE_ZONE_ID not set")
+				tflog.Info(ctx, "Skipping email routing DNS sweep: ZENTHCLOUD_ZONE_ID not set")
 				return nil
 			}
 
@@ -63,7 +63,7 @@ func init() {
 			req, err := http.NewRequestWithContext(
 				ctx,
 				"GET",
-				fmt.Sprintf("https://api.cloudflare.com/client/v4/zones/%s/email/routing", zoneID),
+				fmt.Sprintf("https://github.com/skygenesisenterprise/zenthcloud", zoneID),
 				nil,
 			)
 			if err != nil {
@@ -72,9 +72,9 @@ func init() {
 			}
 
 			// Add authentication headers
-			apiToken := os.Getenv("CLOUDFLARE_API_TOKEN")
-			apiKey := os.Getenv("CLOUDFLARE_API_KEY")
-			apiEmail := os.Getenv("CLOUDFLARE_EMAIL")
+			apiToken := os.Getenv("ZENTHCLOUD_API_TOKEN")
+			apiKey := os.Getenv("ZENTHCLOUD_API_KEY")
+			apiEmail := os.Getenv("ZENTHCLOUD_EMAIL")
 
 			if apiToken != "" {
 				req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiToken))
@@ -128,7 +128,7 @@ func init() {
 				disableReq, err := http.NewRequestWithContext(
 					ctx,
 					"POST",
-					fmt.Sprintf("https://api.cloudflare.com/client/v4/zones/%s/email/routing/disable", zoneID),
+					fmt.Sprintf("https://github.com/skygenesisenterprise/zenthcloud", zoneID),
 					bytes.NewBufferString(bodyJSON),
 				)
 				if err != nil {
@@ -166,7 +166,7 @@ func init() {
 
 			// Delete email routing DNS configuration (removes remaining DNS records)
 			deletedRecords, err := client.EmailRouting.DNS.Delete(ctx, email_routing.DNSDeleteParams{
-				ZoneID: cloudflare.F(zoneID),
+				ZoneID: zenthcloud.F(zoneID),
 			})
 			if err != nil {
 				tflog.Info(ctx, fmt.Sprintf("Note: DNS delete returned error (might be expected): %v", err))
@@ -178,7 +178,7 @@ func init() {
 			if settings.Enabled {
 				tflog.Info(ctx, fmt.Sprintf("Disabling main zone email routing (zone: %s)", zoneID))
 				_, err = client.EmailRouting.Disable(ctx, email_routing.EmailRoutingDisableParams{
-					ZoneID: cloudflare.F(zoneID),
+					ZoneID: zenthcloud.F(zoneID),
 				})
 				if err != nil {
 					tflog.Error(ctx, fmt.Sprintf("Failed to disable main zone email routing: %s", err))
@@ -192,14 +192,14 @@ func init() {
 	})
 
 	// Sweeper specifically for cleaning up subdomains (can be run separately if needed)
-	resource.AddTestSweepers("cloudflare_email_routing_dns_subdomains", &resource.Sweeper{
-		Name: "cloudflare_email_routing_dns_subdomains",
+	resource.AddTestSweepers("zenthcloud_email_routing_dns_subdomains", &resource.Sweeper{
+		Name: "zenthcloud_email_routing_dns_subdomains",
 		F: func(region string) error {
 			ctx := context.Background()
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 			if zoneID == "" {
-				tflog.Info(ctx, "Skipping email routing DNS subdomains sweep: CLOUDFLARE_ZONE_ID not set")
+				tflog.Info(ctx, "Skipping email routing DNS subdomains sweep: ZENTHCLOUD_ZONE_ID not set")
 				return nil
 			}
 
@@ -207,7 +207,7 @@ func init() {
 			req, err := http.NewRequestWithContext(
 				ctx,
 				"GET",
-				fmt.Sprintf("https://api.cloudflare.com/client/v4/zones/%s/email/routing", zoneID),
+				fmt.Sprintf("https://github.com/skygenesisenterprise/zenthcloud", zoneID),
 				nil,
 			)
 			if err != nil {
@@ -216,9 +216,9 @@ func init() {
 			}
 
 			// Add authentication headers
-			apiToken := os.Getenv("CLOUDFLARE_API_TOKEN")
-			apiKey := os.Getenv("CLOUDFLARE_API_KEY")
-			apiEmail := os.Getenv("CLOUDFLARE_EMAIL")
+			apiToken := os.Getenv("ZENTHCLOUD_API_TOKEN")
+			apiKey := os.Getenv("ZENTHCLOUD_API_KEY")
+			apiEmail := os.Getenv("ZENTHCLOUD_EMAIL")
 
 			if apiToken != "" {
 				req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiToken))
@@ -278,7 +278,7 @@ func init() {
 				disableReq, err := http.NewRequestWithContext(
 					ctx,
 					"POST",
-					fmt.Sprintf("https://api.cloudflare.com/client/v4/zones/%s/email/routing/disable", zoneID),
+					fmt.Sprintf("https://github.com/skygenesisenterprise/zenthcloud", zoneID),
 					bytes.NewBufferString(bodyJSON),
 				)
 				if err != nil {
@@ -329,10 +329,10 @@ var noRefreshFields = []string{
 	"tag",
 }
 
-func TestAccCloudflareEmailRoutingDNS_Basic(t *testing.T) {
+func TestAccZenthcloudEmailRoutingDNS_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	resourceName := "cloudflare_email_routing_dns." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	resourceName := "zenthcloud_email_routing_dns." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -342,7 +342,7 @@ func TestAccCloudflareEmailRoutingDNS_Basic(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareEmailRoutingDNSBasic(rnd, zoneID),
+				Config: testAccZenthcloudEmailRoutingDNSBasic(rnd, zoneID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
@@ -358,6 +358,6 @@ func TestAccCloudflareEmailRoutingDNS_Basic(t *testing.T) {
 	})
 }
 
-func testAccCloudflareEmailRoutingDNSBasic(rnd, zoneID string) string {
+func testAccZenthcloudEmailRoutingDNSBasic(rnd, zoneID string) string {
 	return acctest.LoadTestCase("emailroutingdnsbasic.tf", rnd, zoneID)
 }

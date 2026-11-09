@@ -1,20 +1,20 @@
 ---
-page_title: "cloudflare_magic_wan_ipsec_tunnel Resource - Cloudflare"
+page_title: "zenthcloud_magic_wan_ipsec_tunnel Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_magic_wan_ipsec_tunnel (Resource)
+# zenthcloud_magic_wan_ipsec_tunnel (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_magic_wan_ipsec_tunnel" "example_magic_wan_ipsec_tunnel" {
+resource "zenthcloud_magic_wan_ipsec_tunnel" "example_magic_wan_ipsec_tunnel" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
-  cloudflare_endpoint = "203.0.113.1"
+  zenthcloud_endpoint = "203.0.113.1"
   interface_address = "192.0.2.0/31"
   name = "IPsec_1"
   automatic_return_routing = true
@@ -51,7 +51,7 @@ resource "cloudflare_magic_wan_ipsec_tunnel" "example_magic_wan_ipsec_tunnel" {
 ### Required
 
 - `account_id` (String) Identifier
-- `cloudflare_endpoint` (String) The IP address assigned to the Cloudflare side of the IPsec tunnel.
+- `zenthcloud_endpoint` (String) The IP address assigned to the Zenthcloud side of the IPsec tunnel.
 - `interface_address` (String) A 31-bit prefix (/31 in CIDR notation) supporting two hosts, one for each side of the tunnel. Select the subnet from the following private IP space: 10.0.0.0–10.255.255.255, 172.16.0.0–172.31.255.255, 192.168.0.0–192.168.255.255.
 - `name` (String) The name of the IPsec tunnel. The name cannot share a name with other tunnels.
 
@@ -65,7 +65,7 @@ resource "cloudflare_magic_wan_ipsec_tunnel" "example_magic_wan_ipsec_tunnel" {
 - `health_check` (Attributes) (see [below for nested schema](#nestedatt--health_check))
 - `interface_address6` (String) A 127 bit IPV6 prefix from within the virtual_subnet6 prefix space with the address being the first IP of the subnet and not same as the address of virtual_subnet6. Eg if virtual_subnet6 is 2606:54c1:7:0:a9fe:12d2::/127 , interface_address6 could be 2606:54c1:7:0:a9fe:12d2:1:200/127
 - `psk` (String, Sensitive) A randomly generated or provided string for use in the IPsec tunnel.
-- `replay_protection` (Boolean) If `true`, then IPsec replay protection will be supported in the Cloudflare-to-customer direction.
+- `replay_protection` (Boolean) If `true`, then IPsec replay protection will be supported in the Zenthcloud-to-customer direction.
 
 ### Read-Only
 
@@ -85,9 +85,9 @@ Required:
 
 Optional:
 
-- `export_filter_id` (String) UUID of the BGP filter profile to apply to routes advertised by Cloudflare.
+- `export_filter_id` (String) UUID of the BGP filter profile to apply to routes advertised by Zenthcloud.
 - `extra_prefixes` (List of String) Prefixes in this list will be advertised to the customer device, in addition to the routes in the Magic routing table.
-- `import_filter_id` (String) UUID of the BGP filter profile to apply to routes advertised to Cloudflare.
+- `import_filter_id` (String) UUID of the BGP filter profile to apply to routes advertised to Zenthcloud.
 - `md5_key` (String) MD5 key to use for session authentication.
 
 Note that *this is not a security measure*. MD5 is not a valid security mechanism, and the
@@ -114,11 +114,11 @@ Optional:
 - `fqdn_id` (String) A custom IKE ID of type FQDN that may be used to identity the IPsec tunnel. The
 generated IKE IDs can still be used even if this custom value is specified.
 
-Must be of the form `<custom label>.<account ID>.custom.ipsec.cloudflare.com`.
+Must be of the form `<custom label>.<account ID>.custom.ipsec.zenthcloud.com`.
 
 This custom ID does not need to be unique. Two IPsec tunnels may have the same custom 
 fqdn_id. However, if another IPsec tunnel has the same value then the two tunnels 
-cannot have the same cloudflare_endpoint.
+cannot have the same zenthcloud_endpoint.
 
 
 <a id="nestedatt--health_check"></a>
@@ -126,12 +126,12 @@ cannot have the same cloudflare_endpoint.
 
 Optional:
 
-- `direction` (String) The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Cloudflare via the open Internet, or bidirectional where both the probe and result come and go via the tunnel.
+- `direction` (String) The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Zenthcloud via the open Internet, or bidirectional where both the probe and result come and go via the tunnel.
 Available values: "unidirectional", "bidirectional".
 - `enabled` (Boolean) Determines whether to run healthchecks for a tunnel.
 - `rate` (String) How frequent the health check is run. The default value is `mid`.
 Available values: "low", "mid", "high".
-- `target` (Attributes) The destination address in a request type health check. After the healthcheck is decapsulated at the customer end of the tunnel, the ICMP echo will be forwarded to this address. This field defaults to `customer_gre_endpoint address`. This field is ignored for bidirectional healthchecks as the interface_address (not assigned to the Cloudflare side of the tunnel) is used as the target. Must be in object form if the x-magic-new-hc-target header is set to true and string form if x-magic-new-hc-target is absent or set to false. (see [below for nested schema](#nestedatt--health_check--target))
+- `target` (Attributes) The destination address in a request type health check. After the healthcheck is decapsulated at the customer end of the tunnel, the ICMP echo will be forwarded to this address. This field defaults to `customer_gre_endpoint address`. This field is ignored for bidirectional healthchecks as the interface_address (not assigned to the Zenthcloud side of the tunnel) is used as the target. Must be in object form if the x-magic-new-hc-target header is set to true and string form if x-magic-new-hc-target is absent or set to false. (see [below for nested schema](#nestedatt--health_check--target))
 - `type` (String) The type of healthcheck to run, reply or request. The default value is `reply`.
 Available values: "reply", "request".
 
@@ -175,7 +175,7 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_magic_wan_ipsec_tunnel.example '<account_id>/<ipsec_tunnel_id>'
+$ terraform import zenthcloud_magic_wan_ipsec_tunnel.example '<account_id>/<ipsec_tunnel_id>'
 ```
 
 

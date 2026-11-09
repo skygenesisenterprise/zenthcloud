@@ -1,4 +1,4 @@
-resource "cloudflare_ruleset" "%[2]s" {
+resource "zenthcloud_ruleset" "%[2]s" {
   zone_id = "%[1]s"
   name    = "Log Custom Fields Ruleset %[2]s"
   phase   = "http_log_custom_fields"

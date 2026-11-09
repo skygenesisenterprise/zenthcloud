@@ -5,7 +5,7 @@ package r2_bucket_sippy
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -18,7 +18,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"account_id": schema.StringAttribute{
-				Description: "Cloudflare account ID that owns the R2 resource.",
+				Description: "Zenthcloud account ID that owns the R2 resource.",
 				Required:    true,
 			},
 			"bucket_name": schema.StringAttribute{
@@ -35,7 +35,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  customfield.NewNestedObjectType[R2BucketSippyDestinationDataSourceModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"access_key_id": schema.StringAttribute{
-						Description: "ID of the Cloudflare API token used when writing objects to this\nbucket.",
+						Description: "ID of the Zenthcloud API token used when writing objects to this\nbucket.",
 						Computed:    true,
 					},
 					"account": schema.StringAttribute{

@@ -72,7 +72,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 						command:
 							"cf magic-transit advanced-tcp-protection configs allowlist prefix update",
 						method: "PATCH",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/magic/advanced_tcp_protection/configs/allowlist/${argv["prefix-id"] == null ? "<prefix-id>" : encodeURIComponent(String(argv["prefix-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/magic/advanced_tcp_protection/configs/allowlist/${argv["prefix-id"] == null ? "<prefix-id>" : encodeURIComponent(String(argv["prefix-id"]))}`,
 						pathParams: { "prefix-id": String(argv["prefix-id"] ?? "") },
 						bodyKind: "json",
 						body:

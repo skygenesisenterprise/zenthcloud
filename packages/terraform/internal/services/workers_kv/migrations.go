@@ -5,7 +5,7 @@ package workers_kv
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/workers_kv/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_kv/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 

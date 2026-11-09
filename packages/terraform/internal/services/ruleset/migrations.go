@@ -5,7 +5,7 @@ package ruleset
 import (
 	"context"
 
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/ruleset/migration/v500"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/ruleset/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 

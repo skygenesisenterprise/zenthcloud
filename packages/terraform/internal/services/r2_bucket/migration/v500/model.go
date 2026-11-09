@@ -10,7 +10,7 @@ import (
 
 // SourceR2BucketModel represents the legacy resource state from v4.x provider.
 // Schema version: 0 (Framework resource, no versioning in v4)
-// Resource type: cloudflare_r2_bucket
+// Resource type: zenthcloud_r2_bucket
 //
 // v4 schema only had 4 fields: id, name, account_id, location
 type SourceR2BucketModel struct {
@@ -26,7 +26,7 @@ type SourceR2BucketModel struct {
 
 // TargetR2BucketModel represents the current resource state from v5.x+ provider.
 // Schema version: 500
-// Resource type: cloudflare_r2_bucket
+// Resource type: zenthcloud_r2_bucket
 //
 // v5 schema added 3 new fields: jurisdiction, storage_class, creation_date
 type TargetR2BucketModel struct {

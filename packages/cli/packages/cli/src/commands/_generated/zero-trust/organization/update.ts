@@ -23,7 +23,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 zero-trust organization update\n\nUpdates the configuration for your Zero Trust organization.\n\nRuns against your account. Pass --zone to run against a zone instead. CLOUDFLARE_ZONE_ID is ignored."
+			"$0 zero-trust organization update\n\nUpdates the configuration for your Zero Trust organization.\n\nRuns against your account. Pass --zone to run against a zone instead. ZENTHCLOUD_ZONE_ID is ignored."
 		)
 		.option("allow-authenticate-via-warp", {
 			type: "boolean",
@@ -33,7 +33,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("auth-domain", {
 			type: "string",
 			description:
-				"The unique subdomain assigned to your Zero Trust organization. If omitted on creation, a unique subdomain is auto-generated in the format `adjective-noun-hex4` (e.g. `frosty-moon-7a3b.cloudflareaccess.com`).",
+				"The unique subdomain assigned to your Zero Trust organization. If omitted on creation, a unique subdomain is auto-generated in the format `adjective-noun-hex4` (e.g. `frosty-moon-7a3b.zenthcloudaccess.com`).",
 		})
 		.option("auto-redirect-to-identity", {
 			type: "boolean",
@@ -53,7 +53,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("deny-unmatched-requests", {
 			type: "boolean",
 			description:
-				"Determines whether to deny all requests to Cloudflare-protected resources that lack an associated Access application. If enabled, you must explicitly configure an Access application and policy to allow traffic to your Cloudflare-protected resources. For domains you want to be public across all subdomains, add the domain to the `deny_unmatched_requests_exempted_zone_names` array.",
+				"Determines whether to deny all requests to Zenthcloud-protected resources that lack an associated Access application. If enabled, you must explicitly configure an Access application and policy to allow traffic to your Zenthcloud-protected resources. For domains you want to be public across all subdomains, add the domain to the `deny_unmatched_requests_exempted_zone_names` array.",
 		})
 		.option("deny-unmatched-requests-exempted-zone-names", {
 			type: "string",
@@ -105,7 +105,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("mfa-config-required-aaguids", {
 			type: "string",
 			description:
-				"Specifies a Cloudflare List of required FIDO2 authenticator device AAGUIDs.",
+				"Specifies a Zenthcloud List of required FIDO2 authenticator device AAGUIDs.",
 		})
 		.option("mfa-config-session-duration", {
 			type: "string",
@@ -278,7 +278,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust organization update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/${accountOrZone}/${accountOrZoneId}/access/organizations`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${accountOrZone}/${accountOrZoneId}/access/organizations`,
 						pathParams: {
 							"account-or-zone": String(accountOrZone),
 							"account-or-zone-id": String(accountOrZoneId),

@@ -1,4 +1,4 @@
-resource "cloudflare_custom_csr" "%[1]s" {
+resource "zenthcloud_custom_csr" "%[1]s" {
   zone_id      = "%[2]s"
   country      = "US"
   state        = "California"

@@ -1,4 +1,4 @@
-import { lockScroll, mount, unlockScroll } from "@cloudflare/nimbus-docs/client";
+import { lockScroll, mount, unlockScroll } from "@zenthcloud/nimbus-docs/client";
 
 mount("[data-dialog]", (root) => {
   if (!(root instanceof HTMLDialogElement)) return () => {};

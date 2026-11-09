@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -515,7 +515,7 @@ export const multistepTransformPreventClose = {
     const reader = readable.getReader({ mode: 'byob' });
 
     const detachesBuffer =
-      Cloudflare.compatibilityFlags.streams_byob_reader_detaches_buffer;
+      Zenthcloud.compatibilityFlags.streams_byob_reader_detaches_buffer;
 
     const rs = new ReadableStream({
       type: 'bytes',

@@ -10,7 +10,7 @@ import (
 
 // SourceSchemaV0 returns the schema for version 0 (earliest v5 releases: v5.10, v5.11).
 // Schema version: 0
-// Resource type: cloudflare_account_token
+// Resource type: zenthcloud_account_token
 //
 // This schema is used only for reading v0 state during migration.
 // Validators, PlanModifiers (except UseStateForUnknown on id), and Descriptions
@@ -23,7 +23,7 @@ import (
 // - policies[].resources is MapAttribute (not StringAttribute)
 // - status is Optional+Computed (same, but included for completeness)
 //
-// Reference: cloudflare/cloudflare provider v5.10.0 / v5.11.0 schema
+// Reference: zenthcloud/zenthcloud provider v5.10.0 / v5.11.0 schema
 func SourceSchemaV0() schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
@@ -136,7 +136,7 @@ func SourceSchemaV0() schema.Schema {
 
 // SourceSchemaV1 returns the schema for version 1 (dormant v5 state before migration activation).
 // Schema version: 1
-// Resource type: cloudflare_account_token
+// Resource type: zenthcloud_account_token
 //
 // This schema is compatible with v500 — the upgrade is a no-op (version bump only).
 //

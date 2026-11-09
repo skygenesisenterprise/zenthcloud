@@ -6,7 +6,7 @@ import (
 	"context"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zone/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zone/migration/v500"
 )
 
 var _ resource.ResourceWithUpgradeState = (*ZoneResource)(nil)

@@ -42,8 +42,8 @@ use proc_macro::TokenStream;
 /// Arguments may be provided to the macro to only generate the desired events, and reduce the generated JS & Wasm output:
 ///
 /// * `fetch`: simple `fetch` target
-/// * `alarm`: with [Alarms API](https://developers.cloudflare.com/durable-objects/examples/alarms-api/)
-/// * `websocket`: [WebSocket server](https://developers.cloudflare.com/durable-objects/examples/websocket-hibernation-server/)
+/// * `alarm`: with [Alarms API](https://github.com/skygenesisenterprise/zenthcloud)
+/// * `websocket`: [WebSocket server](https://github.com/skygenesisenterprise/zenthcloud)
 ///
 /// ```rust
 /// #[durable_object(fetch)]
@@ -61,15 +61,15 @@ pub fn durable_object(attr: TokenStream, item: TokenStream) -> TokenStream {
         .into()
 }
 
-/// The `event` macro is used to denote a [Worker handler](https://developers.cloudflare.com/workers/runtime-apis/handlers/), essentially binding from
+/// The `event` macro is used to denote a [Worker handler](https://github.com/skygenesisenterprise/zenthcloud), essentially binding from
 /// the JS runtime to a Rust function.
 ///
 /// As of right now, the following attributes are supported:
-/// * `fetch`: [Fetch Handler](https://developers.cloudflare.com/workers/runtime-apis/handlers/fetch/)
-/// * `scheduled`: [Scheduled Handler](https://developers.cloudflare.com/workers/runtime-apis/handlers/scheduled/)
-/// * `queue`: [Queue Handler](https://developers.cloudflare.com/queues/reference/javascript-apis/#consumer)
+/// * `fetch`: [Fetch Handler](https://github.com/skygenesisenterprise/zenthcloud)
+/// * `scheduled`: [Scheduled Handler](https://github.com/skygenesisenterprise/zenthcloud)
+/// * `queue`: [Queue Handler](https://github.com/skygenesisenterprise/zenthcloud)
 ///   * This attribute is only available when the `queue` feature is enabled.
-/// * `connect`: [TCP Socket Connect Handler](https://developers.cloudflare.com/workers/runtime-apis/tcp-sockets/)
+/// * `connect`: [TCP Socket Connect Handler](https://github.com/skygenesisenterprise/zenthcloud)
 /// * `connect(tcp)`: Explicit TCP Socket Connect Handler
 /// * `connect(udp)`: UDP Socket Connect Handler
 /// * `start`: merely creates a [wasm-bindgen start function](https://rustwasm.github.io/wasm-bindgen/reference/attributes/on-rust-exports/start.html)

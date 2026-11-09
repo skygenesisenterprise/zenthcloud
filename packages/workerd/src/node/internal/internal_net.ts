@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 //
@@ -25,14 +25,14 @@
 
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 
-import inner from 'cloudflare-internal:sockets';
+import inner from 'zenthcloud-internal:sockets';
 import {
   tcpPorts,
   HOST_ADDRESS,
   GATEWAY_ADDRESS,
   type ConnectHandler,
   type InboundSocket,
-} from 'cloudflare-internal:http';
+} from 'zenthcloud-internal:http';
 import { EventEmitter } from 'node-internal:events';
 
 import {
@@ -380,7 +380,7 @@ type ListenOptions = {
 
 // A listening server reserves its port in the isolate's TCP port table and
 // installs a connect handler there. Inbound platform sockets are routed to it
-// by local port (see connectHandler in cloudflare:node) and wrapped as
+// by local port (see connectHandler in zenthcloud:node) and wrapped as
 // net.Sockets; the platform owns the local endpoint, so nothing is released
 // per connection.
 export class Server extends EventEmitter {
@@ -1476,7 +1476,7 @@ Socket.prototype.setNoDelay = function (
   _enable?: boolean
 ): Socket {
   // Ignore this for now.
-  // Cloudflare connect() does not support this.
+  // Zenthcloud connect() does not support this.
   return this;
 };
 

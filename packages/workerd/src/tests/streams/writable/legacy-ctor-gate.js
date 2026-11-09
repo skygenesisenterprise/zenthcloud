@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -16,7 +16,7 @@ export const legacyConstructorThrows = {
       message:
         'To use the new WritableStream() constructor, enable the ' +
         'streams_enable_constructors compatibility flag. ' +
-        'Refer to the docs for more information: https://developers.cloudflare.com/workers/platform/compatibility-dates/#compatibility-flags',
+        'Refer to the docs for more information: https://github.com/skygenesisenterprise/zenthcloud',
     });
     throws(() => new WritableStream({}), Error);
   },

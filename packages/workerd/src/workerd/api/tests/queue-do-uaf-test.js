@@ -1,8 +1,8 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-300:
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-300:
 // Heap use-after-free in QueueEvent/QueueMessage via dangling
 // IoPtr<QueueEventResult> on a Durable Object's persistent
 // IoContext.

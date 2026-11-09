@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_origin_ca_certificate Resource - Cloudflare"
+page_title: "zenthcloud_origin_ca_certificate Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_origin_ca_certificate (Resource)
+# zenthcloud_origin_ca_certificate (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_origin_ca_certificate" "example_origin_ca_certificate" {
+resource "zenthcloud_origin_ca_certificate" "example_origin_ca_certificate" {
   csr = <<EOT
   -----BEGIN CERTIFICATE REQUEST-----
   MIICxzCCAa8CAQAwSDELMAkGA1UEBhMCVVMxFjAUBgNVBAgTDVNhbiBGcmFuY2lz
@@ -65,7 +65,7 @@ Available values: 7, 30, 90, 365, 730, 1095, 5475.
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_origin_ca_certificate.example '<certificate_id>'
+$ terraform import zenthcloud_origin_ca_certificate.example '<certificate_id>'
 ```
 
 

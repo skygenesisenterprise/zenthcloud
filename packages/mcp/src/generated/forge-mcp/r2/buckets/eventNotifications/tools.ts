@@ -18,7 +18,7 @@ export const tools: readonly Tool[] = [
   {
     name: "r2_buckets_eventNotifications_delete",
     title: "Delete Event Notification Rules",
-    description: "Deletes the specified event notification rules for an R2 bucket and Cloudflare Queue. Provide ruleIds in the request body to select rules. If no body is provided, all rules for that bucket and queue are deleted.\n\nConfirm with the user before calling this tool. This deletes event notification rules for the selected R2 bucket and queue. Without a request body, all rules for that bucket and queue are deleted.\n\nDELETE /accounts/{account_id}/event_notifications/r2/{bucket_name}/configuration/queues/{queue_id}",
+    description: "Deletes the specified event notification rules for an R2 bucket and Zenthcloud Queue. Provide ruleIds in the request body to select rules. If no body is provided, all rules for that bucket and queue are deleted.\n\nConfirm with the user before calling this tool. This deletes event notification rules for the selected R2 bucket and queue. Without a request body, all rules for that bucket and queue are deleted.\n\nDELETE /accounts/{account_id}/event_notifications/r2/{bucket_name}/configuration/queues/{queue_id}",
     inputSchema: {
       type: "object",
       properties: {
@@ -56,7 +56,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID that owns the R2 resource.",
+              "description": "Zenthcloud account ID that owns the R2 resource.",
               "type": "string"
             },
             "bucket_name": {
@@ -64,7 +64,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "queue_id": {
-              "description": "ID of the Cloudflare Queue that receives notifications for matching R2 object events.",
+              "description": "ID of the Zenthcloud Queue that receives notifications for matching R2 object events.",
               "type": "string"
             }
           },
@@ -128,7 +128,7 @@ export const tools: readonly Tool[] = [
   {
     name: "r2_buckets_eventNotifications_get",
     title: "Get Event Notification Rules for a Queue",
-    description: "Gets the event notification rules for the specified R2 bucket and Cloudflare Queue. The response includes the queue's configuration and its array of rules.\n\nGET /accounts/{account_id}/event_notifications/r2/{bucket_name}/configuration/queues/{queue_id}",
+    description: "Gets the event notification rules for the specified R2 bucket and Zenthcloud Queue. The response includes the queue's configuration and its array of rules.\n\nGET /accounts/{account_id}/event_notifications/r2/{bucket_name}/configuration/queues/{queue_id}",
     inputSchema: {
       type: "object",
       properties: {
@@ -154,7 +154,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID that owns the R2 resource.",
+              "description": "Zenthcloud account ID that owns the R2 resource.",
               "type": "string"
             },
             "bucket_name": {
@@ -162,7 +162,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "queue_id": {
-              "description": "ID of the Cloudflare Queue that receives notifications for matching R2 object events.",
+              "description": "ID of the Zenthcloud Queue that receives notifications for matching R2 object events.",
               "type": "string"
             }
           },
@@ -257,7 +257,7 @@ export const tools: readonly Tool[] = [
   {
     name: "r2_buckets_eventNotifications_list",
     title: "List Event Notification Rules",
-    description: "Lists event notification rules for an R2 bucket, grouped by the Cloudflare Queue that receives matching object events.\n\nGET /accounts/{account_id}/event_notifications/r2/{bucket_name}/configuration",
+    description: "Lists event notification rules for an R2 bucket, grouped by the Zenthcloud Queue that receives matching object events.\n\nGET /accounts/{account_id}/event_notifications/r2/{bucket_name}/configuration",
     inputSchema: {
       type: "object",
       properties: {
@@ -283,7 +283,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID that owns the R2 resource.",
+              "description": "Zenthcloud account ID that owns the R2 resource.",
               "type": "string"
             },
             "bucket_name": {
@@ -383,7 +383,7 @@ export const tools: readonly Tool[] = [
   {
     name: "r2_buckets_eventNotifications_update",
     title: "Create Event Notification Rules",
-    description: "Creates rules that send notifications for matching R2 object events to the specified Cloudflare Queue. Rules can filter objects by key prefix and suffix. New rules are added to any existing rules for the queue; a rule that overlaps an existing rule is rejected.\n\nPUT /accounts/{account_id}/event_notifications/r2/{bucket_name}/configuration/queues/{queue_id}",
+    description: "Creates rules that send notifications for matching R2 object events to the specified Zenthcloud Queue. Rules can filter objects by key prefix and suffix. New rules are added to any existing rules for the queue; a rule that overlaps an existing rule is rejected.\n\nPUT /accounts/{account_id}/event_notifications/r2/{bucket_name}/configuration/queues/{queue_id}",
     inputSchema: {
       type: "object",
       properties: {
@@ -425,7 +425,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID that owns the R2 resource.",
+              "description": "Zenthcloud account ID that owns the R2 resource.",
               "type": "string"
             },
             "bucket_name": {
@@ -433,7 +433,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "queue_id": {
-              "description": "ID of the Cloudflare Queue that receives notifications for matching R2 object events.",
+              "description": "ID of the Zenthcloud Queue that receives notifications for matching R2 object events.",
               "type": "string"
             }
           },

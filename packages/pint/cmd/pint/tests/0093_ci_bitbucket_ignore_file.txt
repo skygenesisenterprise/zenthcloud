@@ -79,7 +79,7 @@ POST /rest/api/1.0/projects/prometheus/repos/rules/pull-requests/1/comments
   Content-Type: application/json
 --- BODY ---
 text: |-
-    :information_source: **Information** reported by [pint](https://cloudflare.github.io/pint/) **ignore/file** check.
+    :information_source: **Information** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **ignore/file** check.
 
     <details>
     <summary>This file was excluded from pint checks.</summary>
@@ -95,7 +95,7 @@ text: |-
 
     ------
 
-    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/ignore/file.html).
+    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 
     <!-- pint -->
 severity: NORMAL

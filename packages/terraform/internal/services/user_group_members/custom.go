@@ -3,11 +3,11 @@ package user_group_members
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/iam"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/iam"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
@@ -17,7 +17,7 @@ import (
 //
 // Used by the Delete implementation to support:
 //
-//	terraform destroy -target cloudflare_user_group_members.xxx
+//	terraform destroy -target zenthcloud_user_group_members.xxx
 //
 // This matches the pattern used by cloud_connector_rules (PR #5559).
 func removeAllMembers(ctx context.Context, r *UserGroupMembersResource, accountID, userGroupID string, resp *resource.DeleteResponse) {
@@ -25,7 +25,7 @@ func removeAllMembers(ctx context.Context, r *UserGroupMembersResource, accountI
 		ctx,
 		userGroupID,
 		iam.UserGroupMemberUpdateParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		},
 		option.WithRequestBody("application/json", []byte(`[]`)),
 		option.WithMiddleware(logging.Middleware(ctx)),

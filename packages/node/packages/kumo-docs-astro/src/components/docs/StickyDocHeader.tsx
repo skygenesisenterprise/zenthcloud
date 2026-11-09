@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { cn } from "@cloudflare/kumo";
+import { cn } from "@zenthcloud/kumo";
 import { GithubLogoIcon } from "@phosphor-icons/react";
 import { ThemeToggle } from "../ThemeToggle";
 import { BaseUIIcon } from "./icons/BaseUIIcon";
@@ -151,12 +151,12 @@ export function StickyDocHeader({
             )}
           </div>
           <a
-            href="https://github.com/cloudflare/kumo"
+            href="https://github.com/skygenesisenterprise/zenthcloud"
             target="_blank"
             rel="noopener noreferrer"
             className="font-mono text-sm text-kumo-subtle transition-colors hover:text-kumo-default"
           >
-            @cloudflare/kumo
+            @zenthcloud/kumo
           </a>
         </div>
         <div className="hidden w-12 shrink-0 items-center justify-center lg:flex">

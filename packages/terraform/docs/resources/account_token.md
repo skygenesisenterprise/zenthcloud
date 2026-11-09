@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_account_token Resource - Cloudflare"
+page_title: "zenthcloud_account_token Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account API Tokens ReadAccount API Tokens Write
 ---
 
-# cloudflare_account_token (Resource)
+# zenthcloud_account_token (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_account_token" "example_account_token" {
+resource "zenthcloud_account_token" "example_account_token" {
   account_id = "b67e14daa5f8dceeb91fe5449ba496eb"
   name       = "workers read-only token"
 
@@ -28,7 +28,7 @@ resource "cloudflare_account_token" "example_account_token" {
       id = "8b47d2786a534c08a1f94ee8f9f599ef"
     }]
     resources = jsonencode({
-      "com.cloudflare.api.account.b67e14daa5f8dceeb91fe5449ba496eb" = "*"
+      "com.zenthcloud.api.account.b67e14daa5f8dceeb91fe5449ba496eb" = "*"
     })
   }]
 
@@ -117,7 +117,7 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_account_token.example '<account_id>/<token_id>'
+$ terraform import zenthcloud_account_token.example '<account_id>/<token_id>'
 ```
 
 

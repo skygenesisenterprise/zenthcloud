@@ -9,7 +9,7 @@ import type { JSONObject } from "@modelcontextprotocol/server";
 export const custom$$indicator$$feeds_permissions_request: JSONObject = {
   "properties": {
     "account_tag": {
-      "description": "The Cloudflare account tag of the account to change permissions on",
+      "description": "The Zenthcloud account tag of the account to change permissions on",
       "type": "string"
     },
     "feed_id": {

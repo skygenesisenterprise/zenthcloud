@@ -13,16 +13,16 @@ locals {
   }
 }
 
-resource "cloudflare_list" "%[2]s" {
+resource "zenthcloud_list" "%[2]s" {
   account_id  = "%[4]s"
   name        = "%[2]s"
   description = "list named %[2]s"
   kind        = "redirect"
 }
 
-resource "cloudflare_list_item" "%[1]s_redirect1" {
+resource "zenthcloud_list_item" "%[1]s_redirect1" {
   account_id = "%[4]s"
-  list_id    = cloudflare_list.%[2]s.id
+  list_id    = zenthcloud_list.%[2]s.id
   comment    = "%[3]s-redirect1"
   redirect = {
     source_url  = local.redirect_items["redirect1"].source_url
@@ -31,9 +31,9 @@ resource "cloudflare_list_item" "%[1]s_redirect1" {
   }
 }
 
-resource "cloudflare_list_item" "%[1]s_redirect2" {
+resource "zenthcloud_list_item" "%[1]s_redirect2" {
   account_id = "%[4]s"
-  list_id    = cloudflare_list.%[2]s.id
+  list_id    = zenthcloud_list.%[2]s.id
   comment    = "%[3]s-redirect2"
   redirect = {
     source_url  = local.redirect_items["redirect2"].source_url

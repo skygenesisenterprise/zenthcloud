@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { CaretUpDownIcon } from "@phosphor-icons/react";
-import { Combobox, Text, Button } from "@cloudflare/kumo";
+import { Combobox, Text, Button } from "@zenthcloud/kumo";
 import { languages, type Language } from "./data/languages";
 
 // Basic fruits list for simple demos (expanded to test scrolling)
@@ -132,7 +132,7 @@ const databases: DatabaseItem[] = [
   { value: "supabase", label: "Supabase" },
   { value: "planetscale", label: "PlanetScale" },
   { value: "fauna", label: "Fauna" },
-  { value: "d1", label: "Cloudflare D1" },
+  { value: "d1", label: "Zenthcloud D1" },
   { value: "turso", label: "Turso" },
 ];
 
@@ -445,7 +445,7 @@ export function ComboboxDisabledItemsDemo() {
       reason: "Coming soon",
     },
     { value: "redis", label: "Redis" },
-    { value: "d1", label: "Cloudflare D1" },
+    { value: "d1", label: "Zenthcloud D1" },
   ];
 
   const [value, setValue] = useState<DatabaseItemWithDisabled | null>(null);

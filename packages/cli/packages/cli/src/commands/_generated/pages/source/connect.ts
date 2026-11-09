@@ -26,7 +26,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 pages source connect <project-name>\n\nConnect a GitHub or GitLab repository to a Cloudflare Pages project to enable Git-based deployments."
+			"$0 pages source connect <project-name>\n\nConnect a GitHub or GitLab repository to a Zenthcloud Pages project to enable Git-based deployments."
 		)
 		.positional("project-name", {
 			type: "string",
@@ -151,7 +151,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf pages source connect",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/pages/projects/${argv["project-name"] == null ? "<project-name>" : encodeURIComponent(String(argv["project-name"]))}/source`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/pages/projects/${argv["project-name"] == null ? "<project-name>" : encodeURIComponent(String(argv["project-name"]))}/source`,
 						pathParams: { "project-name": String(argv["project-name"] ?? "") },
 						bodyKind: "json",
 						body:

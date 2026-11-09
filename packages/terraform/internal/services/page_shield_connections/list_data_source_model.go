@@ -5,9 +5,9 @@ package page_shield_connections
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/page_shield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/page_shield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -37,44 +37,44 @@ type PageShieldConnectionsListDataSourceModel struct {
 
 func (m *PageShieldConnectionsListDataSourceModel) toListParams(_ context.Context) (params page_shield.ConnectionListParams, diags diag.Diagnostics) {
 	params = page_shield.ConnectionListParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	if !m.Direction.IsNull() {
-		params.Direction = cloudflare.F(page_shield.ConnectionListParamsDirection(m.Direction.ValueString()))
+		params.Direction = zenthcloud.F(page_shield.ConnectionListParamsDirection(m.Direction.ValueString()))
 	}
 	if !m.ExcludeCDNCGI.IsNull() {
-		params.ExcludeCDNCGI = cloudflare.F(m.ExcludeCDNCGI.ValueBool())
+		params.ExcludeCDNCGI = zenthcloud.F(m.ExcludeCDNCGI.ValueBool())
 	}
 	if !m.ExcludeURLs.IsNull() {
-		params.ExcludeURLs = cloudflare.F(m.ExcludeURLs.ValueString())
+		params.ExcludeURLs = zenthcloud.F(m.ExcludeURLs.ValueString())
 	}
 	if !m.Export.IsNull() {
-		params.Export = cloudflare.F(page_shield.ConnectionListParamsExport(m.Export.ValueString()))
+		params.Export = zenthcloud.F(page_shield.ConnectionListParamsExport(m.Export.ValueString()))
 	}
 	if !m.Hosts.IsNull() {
-		params.Hosts = cloudflare.F(m.Hosts.ValueString())
+		params.Hosts = zenthcloud.F(m.Hosts.ValueString())
 	}
 	if !m.OrderBy.IsNull() {
-		params.OrderBy = cloudflare.F(page_shield.ConnectionListParamsOrderBy(m.OrderBy.ValueString()))
+		params.OrderBy = zenthcloud.F(page_shield.ConnectionListParamsOrderBy(m.OrderBy.ValueString()))
 	}
 	if !m.Page.IsNull() {
-		params.Page = cloudflare.F(m.Page.ValueString())
+		params.Page = zenthcloud.F(m.Page.ValueString())
 	}
 	if !m.PageURL.IsNull() {
-		params.PageURL = cloudflare.F(m.PageURL.ValueString())
+		params.PageURL = zenthcloud.F(m.PageURL.ValueString())
 	}
 	if !m.PerPage.IsNull() {
-		params.PerPage = cloudflare.F(m.PerPage.ValueFloat64())
+		params.PerPage = zenthcloud.F(m.PerPage.ValueFloat64())
 	}
 	if !m.PrioritizeMalicious.IsNull() {
-		params.PrioritizeMalicious = cloudflare.F(m.PrioritizeMalicious.ValueBool())
+		params.PrioritizeMalicious = zenthcloud.F(m.PrioritizeMalicious.ValueBool())
 	}
 	if !m.Status.IsNull() {
-		params.Status = cloudflare.F(m.Status.ValueString())
+		params.Status = zenthcloud.F(m.Status.ValueString())
 	}
 	if !m.URLs.IsNull() {
-		params.URLs = cloudflare.F(m.URLs.ValueString())
+		params.URLs = zenthcloud.F(m.URLs.ValueString())
 	}
 
 	return

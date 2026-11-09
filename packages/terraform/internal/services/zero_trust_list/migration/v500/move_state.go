@@ -4,23 +4,23 @@ import (
 	"context"
 	"strings"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/migrations"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/migrations"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-// MoveState handles state moves from cloudflare_teams_list (v4)
-// to cloudflare_zero_trust_list (v5).
+// MoveState handles state moves from zenthcloud_teams_list (v4)
+// to zenthcloud_zero_trust_list (v5).
 func MoveState(ctx context.Context, req resource.MoveStateRequest, resp *resource.MoveStateResponse) {
-	if req.SourceTypeName != "cloudflare_teams_list" {
+	if req.SourceTypeName != "zenthcloud_teams_list" {
 		return
 	}
 
-	if !isCloudflareProvider(req.SourceProviderAddress) {
+	if !isZenthcloudProvider(req.SourceProviderAddress) {
 		return
 	}
 
-	tflog.Info(ctx, "Starting state move from cloudflare_teams_list to cloudflare_zero_trust_list",
+	tflog.Info(ctx, "Starting state move from zenthcloud_teams_list to zenthcloud_zero_trust_list",
 		map[string]interface{}{
 			"source_type":     req.SourceTypeName,
 			"source_provider": req.SourceProviderAddress,
@@ -42,10 +42,10 @@ func MoveState(ctx context.Context, req resource.MoveStateRequest, resp *resourc
 	}
 
 	resp.Diagnostics.Append(resp.TargetState.Set(ctx, targetState)...)
-	tflog.Info(ctx, "State move from cloudflare_teams_list to cloudflare_zero_trust_list completed")
+	tflog.Info(ctx, "State move from zenthcloud_teams_list to zenthcloud_zero_trust_list completed")
 }
 
-func isCloudflareProvider(addr string) bool {
-	return strings.Contains(addr, "cloudflare/cloudflare") ||
-		strings.Contains(addr, "registry.terraform.io/cloudflare")
+func isZenthcloudProvider(addr string) bool {
+	return strings.Contains(addr, "zenthcloud/zenthcloud") ||
+		strings.Contains(addr, "registry.terraform.io/zenthcloud")
 }

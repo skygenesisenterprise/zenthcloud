@@ -1,4 +1,4 @@
-resource "cloudflare_zero_trust_gateway_policy" "%[1]s" {
+resource "zenthcloud_zero_trust_gateway_policy" "%[1]s" {
   account_id  = "%[2]s"
   name        = "tf-test-empty-%[1]s"
   description = "Policy without rule settings"

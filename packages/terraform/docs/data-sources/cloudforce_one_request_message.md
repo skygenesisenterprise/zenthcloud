@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_cloudforce_one_request_message Data Source - Cloudflare"
+page_title: "zenthcloud_cloudforce_one_request_message Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Cloudforce One Write
 ---
 
-# cloudflare_cloudforce_one_request_message (Data Source)
+# zenthcloud_cloudforce_one_request_message (Data Source)
 
 Accepted Permissions
 
@@ -15,7 +15,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_cloudforce_one_request_message" "example_cloudforce_one_request_message" {
+data "zenthcloud_cloudforce_one_request_message" "example_cloudforce_one_request_message" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   request_id = "f174e90a-fafe-4643-bbbc-4a0ed4fc8415"
   page = 0

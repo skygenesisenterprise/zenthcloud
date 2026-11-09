@@ -6,8 +6,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -26,10 +26,10 @@ const (
 )
 
 // Basic CRUD: create → read → update region → delete
-func TestAccCloudflareOriginCloudRegion_Basic(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudOriginCloudRegion_Basic(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_origin_cloud_region.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_origin_cloud_region.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -40,7 +40,7 @@ func TestAccCloudflareOriginCloudRegion_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create
 			{
-				Config: testAccCloudflareOriginCloudRegionBasic(rnd, zoneID, testIPv4, testVendor, testRegion),
+				Config: testAccZenthcloudOriginCloudRegionBasic(rnd, zoneID, testIPv4, testVendor, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "zone_id", zoneID),
 					resource.TestCheckResourceAttr(name, "origin_ip", testIPv4),
@@ -51,13 +51,13 @@ func TestAccCloudflareOriginCloudRegion_Basic(t *testing.T) {
 			},
 			// Plan should be empty after apply (round-trip consistency)
 			{
-				Config:             testAccCloudflareOriginCloudRegionBasic(rnd, zoneID, testIPv4, testVendor, testRegion),
+				Config:             testAccZenthcloudOriginCloudRegionBasic(rnd, zoneID, testIPv4, testVendor, testRegion),
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: false,
 			},
 			// Update region (in-place; vendor stays)
 			{
-				Config: testAccCloudflareOriginCloudRegionBasic(rnd, zoneID, testIPv4, testVendor, testRegionUpdate),
+				Config: testAccZenthcloudOriginCloudRegionBasic(rnd, zoneID, testIPv4, testVendor, testRegionUpdate),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "origin_ip", testIPv4),
 					resource.TestCheckResourceAttr(name, "vendor", testVendor),
@@ -86,10 +86,10 @@ func TestAccCloudflareOriginCloudRegion_Basic(t *testing.T) {
 }
 
 // Changing origin_ip should force replace (destroy + recreate)
-func TestAccCloudflareOriginCloudRegion_ChangeOriginIPForcesReplace(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudOriginCloudRegion_ChangeOriginIPForcesReplace(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_origin_cloud_region.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_origin_cloud_region.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -99,13 +99,13 @@ func TestAccCloudflareOriginCloudRegion_ChangeOriginIPForcesReplace(t *testing.T
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareOriginCloudRegionBasic(rnd, zoneID, testIPv4, testVendor, testRegion),
+				Config: testAccZenthcloudOriginCloudRegionBasic(rnd, zoneID, testIPv4, testVendor, testRegion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "origin_ip", testIPv4),
 				),
 			},
 			{
-				Config: testAccCloudflareOriginCloudRegionBasic(rnd, zoneID, testIPv4Other, testVendor, testRegion),
+				Config: testAccZenthcloudOriginCloudRegionBasic(rnd, zoneID, testIPv4Other, testVendor, testRegion),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(name, plancheck.ResourceActionDestroyBeforeCreate),
@@ -120,10 +120,10 @@ func TestAccCloudflareOriginCloudRegion_ChangeOriginIPForcesReplace(t *testing.T
 }
 
 // IPv6 origin
-func TestAccCloudflareOriginCloudRegion_IPv6(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudOriginCloudRegion_IPv6(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_origin_cloud_region.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_origin_cloud_region.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -133,14 +133,14 @@ func TestAccCloudflareOriginCloudRegion_IPv6(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareOriginCloudRegionBasic(rnd, zoneID, testIPv6, "gcp", "us-central1"),
+				Config: testAccZenthcloudOriginCloudRegionBasic(rnd, zoneID, testIPv6, "gcp", "us-central1"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "origin_ip", testIPv6),
 					resource.TestCheckResourceAttr(name, "vendor", "gcp"),
 				),
 			},
 			{
-				Config:             testAccCloudflareOriginCloudRegionBasic(rnd, zoneID, testIPv6, "gcp", "us-central1"),
+				Config:             testAccZenthcloudOriginCloudRegionBasic(rnd, zoneID, testIPv6, "gcp", "us-central1"),
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: false,
 			},
@@ -149,8 +149,8 @@ func TestAccCloudflareOriginCloudRegion_IPv6(t *testing.T) {
 }
 
 // Invalid vendor should fail validation
-func TestAccCloudflareOriginCloudRegion_InvalidVendor(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudOriginCloudRegion_InvalidVendor(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 
 	resource.Test(t, resource.TestCase{
@@ -161,13 +161,13 @@ func TestAccCloudflareOriginCloudRegion_InvalidVendor(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCloudflareOriginCloudRegionBasic(rnd, zoneID, testIPv4, "badvendor", testRegion),
+				Config:      testAccZenthcloudOriginCloudRegionBasic(rnd, zoneID, testIPv4, "badvendor", testRegion),
 				ExpectError: regexp.MustCompile("Invalid Attribute Value Match|Attribute vendor"),
 			},
 		},
 	})
 }
 
-func testAccCloudflareOriginCloudRegionBasic(rnd, zoneID, originIP, vendor, region string) string {
+func testAccZenthcloudOriginCloudRegionBasic(rnd, zoneID, originIP, vendor, region string) string {
 	return acctest.LoadTestCase("basic.tf", rnd, zoneID, originIP, vendor, region)
 }

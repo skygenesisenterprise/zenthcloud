@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -56,8 +56,8 @@ var v5MaximalConfig string
 // Covers: data field transformation (array[0] → pointer), test_id copy, new fields (targeted, target_policies)
 func TestMigrateZeroTrustDEXTest_BasicHTTP(t *testing.T) {
 	// Zero Trust resources don't support API tokens yet
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	testCases := []struct {
@@ -79,7 +79,7 @@ func TestMigrateZeroTrustDEXTest_BasicHTTP(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := rnd
 			tmpDir := t.TempDir()
@@ -98,8 +98,8 @@ func TestMigrateZeroTrustDEXTest_BasicHTTP(t *testing.T) {
 				// Use external v4 provider (will create version=0 state)
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -117,18 +117,18 @@ func TestMigrateZeroTrustDEXTest_BasicHTTP(t *testing.T) {
 					firstStep,
 					// Step 2: Run migration and verify state transformation
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
-						// Resource should be renamed to cloudflare_zero_trust_dex_test
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
+						// Resource should be renamed to zenthcloud_zero_trust_dex_test
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
 						// Verify top-level fields preserved
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(name)),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("description"), knownvalue.StringExact("Test HTTP connectivity")),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("interval"), knownvalue.StringExact("0h30m0s")),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("enabled"), knownvalue.Bool(true)),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(name)),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("description"), knownvalue.StringExact("Test HTTP connectivity")),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("interval"), knownvalue.StringExact("0h30m0s")),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("enabled"), knownvalue.Bool(true)),
 						// Verify data field transformed from block to attribute (single nested object)
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("data").AtMapKey("kind"), knownvalue.StringExact("http")),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("data").AtMapKey("host"), knownvalue.StringExact("https://dash.cloudflare.com")),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("data").AtMapKey("method"), knownvalue.StringExact("GET")),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("data").AtMapKey("kind"), knownvalue.StringExact("http")),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("data").AtMapKey("host"), knownvalue.StringExact("https://github.com/skygenesisenterprise/zenthcloud")),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("data").AtMapKey("method"), knownvalue.StringExact("GET")),
 					}),
 				},
 			})
@@ -139,8 +139,8 @@ func TestMigrateZeroTrustDEXTest_BasicHTTP(t *testing.T) {
 // TestMigrateZeroTrustDEXTest_Traceroute tests traceroute DEX test migration
 // Edge case: method field is absent for traceroute tests (only present for HTTP)
 func TestMigrateZeroTrustDEXTest_Traceroute(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	testCases := []struct {
@@ -162,7 +162,7 @@ func TestMigrateZeroTrustDEXTest_Traceroute(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := rnd
 			tmpDir := t.TempDir()
@@ -178,8 +178,8 @@ func TestMigrateZeroTrustDEXTest_Traceroute(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -196,11 +196,11 @@ func TestMigrateZeroTrustDEXTest_Traceroute(t *testing.T) {
 				Steps: []resource.TestStep{
 					firstStep,
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(name)),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("interval"), knownvalue.StringExact("1h0m0s")),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("data").AtMapKey("kind"), knownvalue.StringExact("traceroute")),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("data").AtMapKey("host"), knownvalue.StringExact("1.1.1.1")),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(name)),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("interval"), knownvalue.StringExact("1h0m0s")),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("data").AtMapKey("kind"), knownvalue.StringExact("traceroute")),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("data").AtMapKey("host"), knownvalue.StringExact("1.1.1.1")),
 						// Note: method field should NOT be present for traceroute
 					}),
 				},
@@ -212,8 +212,8 @@ func TestMigrateZeroTrustDEXTest_Traceroute(t *testing.T) {
 // TestMigrateZeroTrustDEXTest_Disabled tests disabled DEX test migration
 // Covers: enabled=false field value
 func TestMigrateZeroTrustDEXTest_Disabled(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	testCases := []struct {
@@ -235,7 +235,7 @@ func TestMigrateZeroTrustDEXTest_Disabled(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := rnd
 			tmpDir := t.TempDir()
@@ -251,8 +251,8 @@ func TestMigrateZeroTrustDEXTest_Disabled(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -269,9 +269,9 @@ func TestMigrateZeroTrustDEXTest_Disabled(t *testing.T) {
 				Steps: []resource.TestStep{
 					firstStep,
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("enabled"), knownvalue.Bool(false)),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("interval"), knownvalue.StringExact("0h15m0s")),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("enabled"), knownvalue.Bool(false)),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("interval"), knownvalue.StringExact("0h15m0s")),
 					}),
 				},
 			})
@@ -282,8 +282,8 @@ func TestMigrateZeroTrustDEXTest_Disabled(t *testing.T) {
 // TestMigrateZeroTrustDEXTest_MinimalConfig tests minimal required fields only
 // Covers: Minimal field set
 func TestMigrateZeroTrustDEXTest_MinimalConfig(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	testCases := []struct {
@@ -305,7 +305,7 @@ func TestMigrateZeroTrustDEXTest_MinimalConfig(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := rnd
 			tmpDir := t.TempDir()
@@ -321,8 +321,8 @@ func TestMigrateZeroTrustDEXTest_MinimalConfig(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -339,9 +339,9 @@ func TestMigrateZeroTrustDEXTest_MinimalConfig(t *testing.T) {
 				Steps: []resource.TestStep{
 					firstStep,
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("data").AtMapKey("kind"), knownvalue.StringExact("http")),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("data").AtMapKey("host"), knownvalue.StringExact("https://cloudflare.com")),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("data").AtMapKey("kind"), knownvalue.StringExact("http")),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("data").AtMapKey("host"), knownvalue.StringExact("https://github.com/skygenesisenterprise/zenthcloud")),
 					}),
 				},
 			})
@@ -352,8 +352,8 @@ func TestMigrateZeroTrustDEXTest_MinimalConfig(t *testing.T) {
 // TestMigrateZeroTrustDEXTest_MaximalConfig tests all available v4 fields
 // Covers: All fields present
 func TestMigrateZeroTrustDEXTest_MaximalConfig(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	testCases := []struct {
@@ -375,7 +375,7 @@ func TestMigrateZeroTrustDEXTest_MaximalConfig(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := rnd
 			tmpDir := t.TempDir()
@@ -391,8 +391,8 @@ func TestMigrateZeroTrustDEXTest_MaximalConfig(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -410,16 +410,16 @@ func TestMigrateZeroTrustDEXTest_MaximalConfig(t *testing.T) {
 					firstStep,
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
 						// Verify all top-level fields
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(name)),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("description"), knownvalue.StringExact("Comprehensive test with all fields")),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("interval"), knownvalue.StringExact("0h30m0s")),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("enabled"), knownvalue.Bool(true)),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(name)),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("description"), knownvalue.StringExact("Comprehensive test with all fields")),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("interval"), knownvalue.StringExact("0h30m0s")),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("enabled"), knownvalue.Bool(true)),
 						// Verify all data fields
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("data").AtMapKey("kind"), knownvalue.StringExact("http")),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("data").AtMapKey("host"), knownvalue.StringExact("https://dash.cloudflare.com/login")),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_dex_test."+rnd, tfjsonpath.New("data").AtMapKey("method"), knownvalue.StringExact("GET")),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("data").AtMapKey("kind"), knownvalue.StringExact("http")),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("data").AtMapKey("host"), knownvalue.StringExact("https://github.com/skygenesisenterprise/zenthcloud")),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_dex_test."+rnd, tfjsonpath.New("data").AtMapKey("method"), knownvalue.StringExact("GET")),
 					}),
 				},
 			})

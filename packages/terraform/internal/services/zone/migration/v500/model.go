@@ -1,7 +1,7 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -10,10 +10,10 @@ import (
 // Source Models (Legacy Provider - v4.x)
 // ============================================================================
 
-// SourceCloudflareZoneModel represents the legacy cloudflare_zone state from v4.x provider.
+// SourceZenthcloudZoneModel represents the legacy zenthcloud_zone state from v4.x provider.
 // Schema version: 0 (SDKv2 provider; no explicit version set)
-// Resource type: cloudflare_zone
-type SourceCloudflareZoneModel struct {
+// Resource type: zenthcloud_zone
+type SourceZenthcloudZoneModel struct {
 	ID                types.String `tfsdk:"id"`
 	AccountID         types.String `tfsdk:"account_id"`
 	Zone              types.String `tfsdk:"zone"`              // Renamed to name in v5
@@ -32,9 +32,9 @@ type SourceCloudflareZoneModel struct {
 // Target Models (Current Provider - v5.x+)
 // ============================================================================
 
-// TargetZoneModel represents the current cloudflare_zone state from v5.x+ provider.
+// TargetZoneModel represents the current zenthcloud_zone state from v5.x+ provider.
 // Schema version: 500
-// Resource type: cloudflare_zone
+// Resource type: zenthcloud_zone
 //
 // Note: Duplicates ZoneModel from the parent package to keep the migration
 // package self-contained.

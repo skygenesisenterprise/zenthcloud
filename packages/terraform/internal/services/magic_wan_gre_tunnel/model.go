@@ -3,8 +3,8 @@
 package magic_wan_gre_tunnel
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -17,7 +17,7 @@ type MagicWANGRETunnelModel struct {
 	ID                     types.String                                                      `tfsdk:"id" json:"id,computed"`
 	AccountID              types.String                                                      `tfsdk:"account_id" path:"account_id,required"`
 	BGP                    *MagicWANGRETunnelBGPModel                                        `tfsdk:"bgp" json:"bgp,optional,no_refresh"`
-	CloudflareGREEndpoint  types.String                                                      `tfsdk:"cloudflare_gre_endpoint" json:"cloudflare_gre_endpoint,required,no_refresh"`
+	ZenthcloudGREEndpoint  types.String                                                      `tfsdk:"zenthcloud_gre_endpoint" json:"zenthcloud_gre_endpoint,required,no_refresh"`
 	CustomerGREEndpoint    types.String                                                      `tfsdk:"customer_gre_endpoint" json:"customer_gre_endpoint,required,no_refresh"`
 	InterfaceAddress       types.String                                                      `tfsdk:"interface_address" json:"interface_address,required,no_refresh"`
 	Name                   types.String                                                      `tfsdk:"name" json:"name,required,no_refresh"`
@@ -77,7 +77,7 @@ type MagicWANGRETunnelBGPStatusModel struct {
 
 type MagicWANGRETunnelGRETunnelModel struct {
 	ID                     types.String                                                         `tfsdk:"id" json:"id,computed"`
-	CloudflareGREEndpoint  types.String                                                         `tfsdk:"cloudflare_gre_endpoint" json:"cloudflare_gre_endpoint,computed"`
+	ZenthcloudGREEndpoint  types.String                                                         `tfsdk:"zenthcloud_gre_endpoint" json:"zenthcloud_gre_endpoint,computed"`
 	CustomerGREEndpoint    types.String                                                         `tfsdk:"customer_gre_endpoint" json:"customer_gre_endpoint,computed"`
 	InterfaceAddress       types.String                                                         `tfsdk:"interface_address" json:"interface_address,computed"`
 	Name                   types.String                                                         `tfsdk:"name" json:"name,computed"`
@@ -127,7 +127,7 @@ type MagicWANGRETunnelGRETunnelHealthCheckTargetModel struct {
 
 type MagicWANGRETunnelModifiedGRETunnelModel struct {
 	ID                     types.String                                                                 `tfsdk:"id" json:"id,computed"`
-	CloudflareGREEndpoint  types.String                                                                 `tfsdk:"cloudflare_gre_endpoint" json:"cloudflare_gre_endpoint,computed"`
+	ZenthcloudGREEndpoint  types.String                                                                 `tfsdk:"zenthcloud_gre_endpoint" json:"zenthcloud_gre_endpoint,computed"`
 	CustomerGREEndpoint    types.String                                                                 `tfsdk:"customer_gre_endpoint" json:"customer_gre_endpoint,computed"`
 	InterfaceAddress       types.String                                                                 `tfsdk:"interface_address" json:"interface_address,computed"`
 	Name                   types.String                                                                 `tfsdk:"name" json:"name,computed"`

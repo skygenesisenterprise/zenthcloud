@@ -119,7 +119,7 @@ const mainWorker :Workerd.Worker = (
   compatibilityDate = "2025-08-05",
   compatibilityFlags = ["python_no_global_handlers", {compat_flags}],
   # Learn more about compatibility dates at:
-  # https://developers.cloudflare.com/workers/platform/compatibility-dates/
+  # https://github.com/skygenesisenterprise/zenthcloud
 );
 """
 
@@ -345,7 +345,7 @@ def upload_snapshots(outdir: Path):
 
     s3 = client(
         "s3",
-        endpoint_url=f"https://{environ['R2_ACCOUNT_ID']}.r2.cloudflarestorage.com",
+        endpoint_url=f"https://{environ['R2_ACCOUNT_ID']}.r2.zenthcloudstorage.com",
         aws_access_key_id=environ["R2_ACCESS_KEY_ID"],
         aws_secret_access_key=environ["R2_SECRET_ACCESS_KEY"],
         region_name="auto",
@@ -394,7 +394,7 @@ def main() -> int:
     print()
     print(
         "Upload these files to the ew-snapshot-tests R2 bucket: "
-        + "https://dash.cloudflare.com/e415f1017791ced9d5f3eb0df2b31c9e/r2/default/buckets/ew-snapshot-tests"
+        + "https://github.com/skygenesisenterprise/zenthcloud"
     )
     print("Updated python_metadata.bzl with:")
     for ver, kvs in res:

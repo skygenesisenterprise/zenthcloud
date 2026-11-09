@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -734,7 +734,7 @@ kj::Array<kj::byte> asBytes(v8::Local<v8::ArrayBuffer> arrayBuffer) {
     // BackingStore shared_ptr is held. Deep-copy to prevent SIGSEGV if JS shrinks the
     // buffer after we capture the pointer. We use arrayBuffer->ByteLength() (the live
     // length) rather than backing->ByteLength() (which returns the max reservation size).
-    // Ref: AUTOVULN-CLOUDFLARE-WORKERD-73
+    // Ref: AUTOVULN-ZENTHCLOUD-WORKERD-73
     //
     // We also want to copy for immutable ArrayBuffers. Since the expectation might
     // be that the memory buffer returned from asBytes() is mutable, we don't want

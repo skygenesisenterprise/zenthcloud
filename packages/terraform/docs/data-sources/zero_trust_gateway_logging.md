@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zero_trust_gateway_logging Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_gateway_logging Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zero_trust_gateway_logging (Data Source)
+# zenthcloud_zero_trust_gateway_logging (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_gateway_logging" "example_zero_trust_gateway_logging" {
+data "zenthcloud_zero_trust_gateway_logging" "example_zero_trust_gateway_logging" {
   account_id = "699d98642c564d2e855e9661899b7252"
 }
 ```
@@ -22,11 +22,11 @@ data "cloudflare_zero_trust_gateway_logging" "example_zero_trust_gateway_logging
 
 ### Optional
 
-- `account_id` (String) Specify the Cloudflare account identifier.
+- `account_id` (String) Specify the Zenthcloud account identifier.
 
 ### Read-Only
 
-- `id` (String) Specify the Cloudflare account identifier.
+- `id` (String) Specify the Zenthcloud account identifier.
 - `redact_pii` (Boolean) Indicate whether to redact personally identifiable information from activity logging (PII fields include source IP, user email, user ID, device ID, URL, referrer, and user agent).
 - `settings_by_rule_type` (Attributes) Configure logging settings for each rule type. (see [below for nested schema](#nestedatt--settings_by_rule_type))
 

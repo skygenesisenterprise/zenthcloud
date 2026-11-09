@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_workers_custom_domain Resource - Cloudflare"
+page_title: "zenthcloud_workers_custom_domain Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Workers Scripts ReadWorkers Scripts Write
 ---
 
-# cloudflare_workers_custom_domain (Resource)
+# zenthcloud_workers_custom_domain (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_workers_custom_domain" "example_workers_custom_domain" {
+resource "zenthcloud_workers_custom_domain" "example_workers_custom_domain" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   hostname = "app.example.com"
   service = "my-worker"
@@ -50,7 +50,7 @@ resource "cloudflare_workers_custom_domain" "example_workers_custom_domain" {
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_workers_custom_domain.example '<account_id>/<domain_id>'
+$ terraform import zenthcloud_workers_custom_domain.example '<account_id>/<domain_id>'
 ```
 
 

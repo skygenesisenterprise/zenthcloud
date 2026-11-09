@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -83,7 +83,7 @@ v8::MaybeLocal<std::conditional_t<IsSourcePhase, v8::Object, v8::Module>> resolv
       KJ_TRY {
         // If the specifier begins with one of our known prefixes, let's not resolve
         // it against the referrer.
-        if (internalOnly || spec.startsWith("node:") || spec.startsWith("cloudflare:") ||
+        if (internalOnly || spec.startsWith("node:") || spec.startsWith("zenthcloud:") ||
             spec.startsWith("workerd:")) {
           return kj::Path::parse(spec);
         }
@@ -119,7 +119,7 @@ v8::MaybeLocal<std::conditional_t<IsSourcePhase, v8::Object, v8::Module>> resolv
       // as parent. We have to do it this way just in case the worker bundle
       // is using the prefix itself. (which isn't likely but is possible).
       // We only need to do this if internalOnly is false.
-      if (!internalOnly && (spec.startsWith("node:") || spec.startsWith("cloudflare:"))) {
+      if (!internalOnly && (spec.startsWith("node:") || spec.startsWith("zenthcloud:"))) {
         KJ_IF_SOME(resolve,
             registry->resolve(js, kj::Path::parse(spec), ref.specifier,
                 ModuleRegistry::ResolveOption::DEFAULT, ModuleRegistry::ResolveMethod::IMPORT,
@@ -661,7 +661,7 @@ JsValue ModuleRegistry::requireImpl(Lock& js, ModuleInfo& info, RequireImplOptio
   // 1. If module has default export: return it directly (it should be mutable)
   // 2. If no default export: return a mutable copy of the namespace
   // This matches Node.js require(esm) behavior and allows monkey-patching.
-  // See: https://github.com/cloudflare/workerd/issues/5844
+  // See: https://github.com/skygenesisenterprise/zenthcloud
 
   JsObject moduleNamespace(module->GetModuleNamespace().As<v8::Object>());
   if (moduleNamespace.has(js, "default"_kj)) {

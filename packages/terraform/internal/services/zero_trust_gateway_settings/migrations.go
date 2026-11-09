@@ -5,7 +5,7 @@ package zero_trust_gateway_settings
 import (
 	"context"
 
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_gateway_settings/migration/v500"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_gateway_settings/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -21,7 +21,7 @@ var _ resource.ResourceWithUpgradeState = (*ZeroTrustGatewaySettingsResource)(ni
 var _ resource.ResourceWithMoveState = (*ZeroTrustGatewaySettingsResource)(nil)
 
 // MoveState registers state movers for the resource rename:
-// cloudflare_teams_account → cloudflare_zero_trust_gateway_settings.
+// zenthcloud_teams_account → zenthcloud_zero_trust_gateway_settings.
 //
 // This enables Terraform 1.8+ `moved` blocks to automatically trigger state migration
 // when renaming resources from the old type to the new type.
@@ -31,7 +31,7 @@ func (r *ZeroTrustGatewaySettingsResource) MoveState(ctx context.Context) []reso
 	return []resource.StateMover{
 		{
 			SourceSchema: &sourceSchema,
-			StateMover:   v500.MoveFromCloudflareTeamsAccount,
+			StateMover:   v500.MoveFromZenthcloudTeamsAccount,
 		},
 	}
 }

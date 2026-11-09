@@ -28,7 +28,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("mtls-certificate-id", {
 			type: "string",
 			description:
-				"The UUID for a certificate that was uploaded to the mTLS Certificate Management endpoint. If no mtls_certificate_id is given, the hostnames will be associated to your active Cloudflare Managed CA.",
+				"The UUID for a certificate that was uploaded to the mTLS Certificate Management endpoint. If no mtls_certificate_id is given, the hostnames will be associated to your active Zenthcloud Managed CA.",
 		})
 		.option("dry-run", {
 			type: "boolean",
@@ -62,7 +62,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 						command:
 							"cf ssl certificate-authorities hostname-associations update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/certificate_authorities/hostname_associations`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/certificate_authorities/hostname_associations`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 						},

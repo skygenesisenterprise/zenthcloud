@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 // Zone-phase mutexes: each zone can only have one entrypoint ruleset per phase.
@@ -24,15 +24,15 @@ var (
 	muPhaseLateTransform   sync.Mutex // http_request_late_transform
 )
 
-// TestMigrateCloudflareRulesetBasic tests migration of basic ruleset with only required attributes
-func TestMigrateCloudflareRulesetBasic(t *testing.T) {
+// TestMigrateZenthcloudRulesetBasic tests migration of basic ruleset with only required attributes
+func TestMigrateZenthcloudRulesetBasic(t *testing.T) {
 	t.Parallel()
 	muPhaseFirewallCustom.Lock()
 	defer muPhaseFirewallCustom.Unlock()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
-	resourceName := fmt.Sprintf("cloudflare_ruleset.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_ruleset.%s", rnd)
 
 	// V4 config with basic ruleset (no rules)
 	v4Config := acctest.LoadTestCase("migrations/basic_v4.tf", zoneID, rnd)
@@ -52,8 +52,8 @@ func TestMigrateCloudflareRulesetBasic(t *testing.T) {
 		Steps: append([]resource.TestStep{{
 			// Step 1: Create with v4 provider
 			ExternalProviders: map[string]resource.ExternalProvider{
-				"cloudflare": {
-					Source:            "cloudflare/cloudflare",
+				"zenthcloud": {
+					Source:            "zenthcloud/zenthcloud",
 					VersionConstraint: "4.52.1",
 				},
 			},
@@ -62,13 +62,13 @@ func TestMigrateCloudflareRulesetBasic(t *testing.T) {
 	})
 }
 
-// TestMigrateCloudflareRulesetSimpleRules tests migration of rules block to list attribute
-func TestMigrateCloudflareRulesetSimpleRules(t *testing.T) {
+// TestMigrateZenthcloudRulesetSimpleRules tests migration of rules block to list attribute
+func TestMigrateZenthcloudRulesetSimpleRules(t *testing.T) {
 	t.Parallel()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
-	resourceName := fmt.Sprintf("cloudflare_ruleset.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_ruleset.%s", rnd)
 
 	// V4 config with simple rules using block syntax
 	v4Config := acctest.LoadTestCase("migrations/simple_rules_v4.tf", zoneID, rnd)
@@ -89,8 +89,8 @@ func TestMigrateCloudflareRulesetSimpleRules(t *testing.T) {
 		WorkingDir: tmpDir,
 		Steps: append([]resource.TestStep{{
 			ExternalProviders: map[string]resource.ExternalProvider{
-				"cloudflare": {
-					Source:            "cloudflare/cloudflare",
+				"zenthcloud": {
+					Source:            "zenthcloud/zenthcloud",
 					VersionConstraint: "4.52.1",
 				},
 			},
@@ -99,13 +99,13 @@ func TestMigrateCloudflareRulesetSimpleRules(t *testing.T) {
 	})
 }
 
-// TestMigrateCloudflareRulesetRewriteRules tests migration with rewrite action and URI blocks
-func TestMigrateCloudflareRulesetRewriteRules(t *testing.T) {
+// TestMigrateZenthcloudRulesetRewriteRules tests migration with rewrite action and URI blocks
+func TestMigrateZenthcloudRulesetRewriteRules(t *testing.T) {
 	t.Parallel()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
-	resourceName := fmt.Sprintf("cloudflare_ruleset.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_ruleset.%s", rnd)
 
 	v4Config := acctest.LoadTestCase("migrations/rewrite_rules_v4.tf", zoneID, rnd)
 
@@ -122,8 +122,8 @@ func TestMigrateCloudflareRulesetRewriteRules(t *testing.T) {
 		WorkingDir: tmpDir,
 		Steps: append([]resource.TestStep{{
 			ExternalProviders: map[string]resource.ExternalProvider{
-				"cloudflare": {
-					Source:            "cloudflare/cloudflare",
+				"zenthcloud": {
+					Source:            "zenthcloud/zenthcloud",
 					VersionConstraint: "4.52.1",
 				},
 			},
@@ -132,13 +132,13 @@ func TestMigrateCloudflareRulesetRewriteRules(t *testing.T) {
 	})
 }
 
-// TestMigrateCloudflareRulesetDynamicRules tests migration with dynamic rules blocks
-func TestMigrateCloudflareRulesetDynamicRules(t *testing.T) {
+// TestMigrateZenthcloudRulesetDynamicRules tests migration with dynamic rules blocks
+func TestMigrateZenthcloudRulesetDynamicRules(t *testing.T) {
 	t.Parallel()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
-	resourceName := fmt.Sprintf("cloudflare_ruleset.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_ruleset.%s", rnd)
 
 	// V4 config with dynamic rules blocks
 	v4Config := acctest.LoadTestCase("migrations/dynamic_rules_v4.tf", zoneID, rnd)
@@ -161,8 +161,8 @@ func TestMigrateCloudflareRulesetDynamicRules(t *testing.T) {
 		WorkingDir: tmpDir,
 		Steps: append([]resource.TestStep{{
 			ExternalProviders: map[string]resource.ExternalProvider{
-				"cloudflare": {
-					Source:            "cloudflare/cloudflare",
+				"zenthcloud": {
+					Source:            "zenthcloud/zenthcloud",
 					VersionConstraint: "4.52.1",
 				},
 			},
@@ -171,15 +171,15 @@ func TestMigrateCloudflareRulesetDynamicRules(t *testing.T) {
 	})
 }
 
-// TestMigrateCloudflareRulesetRedirectFromValue tests migration with redirect from_value blocks
-func TestMigrateCloudflareRulesetRedirectFromValue(t *testing.T) {
+// TestMigrateZenthcloudRulesetRedirectFromValue tests migration with redirect from_value blocks
+func TestMigrateZenthcloudRulesetRedirectFromValue(t *testing.T) {
 	t.Parallel()
 	muPhaseDynamicRedirect.Lock()
 	defer muPhaseDynamicRedirect.Unlock()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
-	resourceName := fmt.Sprintf("cloudflare_ruleset.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_ruleset.%s", rnd)
 
 	v4Config := acctest.LoadTestCase("migrations/redirect_from_value_v4.tf", zoneID, rnd)
 
@@ -201,8 +201,8 @@ func TestMigrateCloudflareRulesetRedirectFromValue(t *testing.T) {
 		WorkingDir: tmpDir,
 		Steps: append([]resource.TestStep{{
 			ExternalProviders: map[string]resource.ExternalProvider{
-				"cloudflare": {
-					Source:            "cloudflare/cloudflare",
+				"zenthcloud": {
+					Source:            "zenthcloud/zenthcloud",
 					VersionConstraint: "4.52.1",
 				},
 			},
@@ -211,13 +211,13 @@ func TestMigrateCloudflareRulesetRedirectFromValue(t *testing.T) {
 	})
 }
 
-// TestMigrateCloudflareRulesetHeadersListToMap tests migration of headers from list to map format
-func TestMigrateCloudflareRulesetHeadersListToMap(t *testing.T) {
+// TestMigrateZenthcloudRulesetHeadersListToMap tests migration of headers from list to map format
+func TestMigrateZenthcloudRulesetHeadersListToMap(t *testing.T) {
 	t.Parallel()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
-	resourceName := fmt.Sprintf("cloudflare_ruleset.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_ruleset.%s", rnd)
 
 	v4Config := acctest.LoadTestCase("migrations/headers_list_to_map_v4.tf", zoneID, rnd)
 
@@ -237,8 +237,8 @@ func TestMigrateCloudflareRulesetHeadersListToMap(t *testing.T) {
 		WorkingDir: tmpDir,
 		Steps: append([]resource.TestStep{{
 			ExternalProviders: map[string]resource.ExternalProvider{
-				"cloudflare": {
-					Source:            "cloudflare/cloudflare",
+				"zenthcloud": {
+					Source:            "zenthcloud/zenthcloud",
 					VersionConstraint: "4.52.1",
 				},
 			},
@@ -247,15 +247,15 @@ func TestMigrateCloudflareRulesetHeadersListToMap(t *testing.T) {
 	})
 }
 
-// TestMigrateCloudflareRulesetCacheKeyQueryString tests migration of cache_key query_string include from list to object
-func TestMigrateCloudflareRulesetCacheKeyQueryString(t *testing.T) {
+// TestMigrateZenthcloudRulesetCacheKeyQueryString tests migration of cache_key query_string include from list to object
+func TestMigrateZenthcloudRulesetCacheKeyQueryString(t *testing.T) {
 	t.Parallel()
 	muPhaseCacheSettings.Lock()
 	defer muPhaseCacheSettings.Unlock()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
-	resourceName := fmt.Sprintf("cloudflare_ruleset.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_ruleset.%s", rnd)
 
 	v4Config := acctest.LoadTestCase("migrations/cache_key_query_string_v4.tf", zoneID, rnd)
 
@@ -275,8 +275,8 @@ func TestMigrateCloudflareRulesetCacheKeyQueryString(t *testing.T) {
 		WorkingDir: tmpDir,
 		Steps: append([]resource.TestStep{{
 			ExternalProviders: map[string]resource.ExternalProvider{
-				"cloudflare": {
-					Source:            "cloudflare/cloudflare",
+				"zenthcloud": {
+					Source:            "zenthcloud/zenthcloud",
 					VersionConstraint: "4.52.1",
 				},
 			},
@@ -285,13 +285,13 @@ func TestMigrateCloudflareRulesetCacheKeyQueryString(t *testing.T) {
 	})
 }
 
-// TestMigrateCloudflareRulesetLogCustomFields tests migration of log custom fields (cookie_fields, request_fields, response_fields)
-func TestMigrateCloudflareRulesetLogCustomFields(t *testing.T) {
+// TestMigrateZenthcloudRulesetLogCustomFields tests migration of log custom fields (cookie_fields, request_fields, response_fields)
+func TestMigrateZenthcloudRulesetLogCustomFields(t *testing.T) {
 	t.Parallel()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
-	resourceName := fmt.Sprintf("cloudflare_ruleset.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_ruleset.%s", rnd)
 
 	v4Config := acctest.LoadTestCase("migrations/log_custom_fields_v4.tf", zoneID, rnd)
 
@@ -326,8 +326,8 @@ func TestMigrateCloudflareRulesetLogCustomFields(t *testing.T) {
 		WorkingDir: tmpDir,
 		Steps: append([]resource.TestStep{{
 			ExternalProviders: map[string]resource.ExternalProvider{
-				"cloudflare": {
-					Source:            "cloudflare/cloudflare",
+				"zenthcloud": {
+					Source:            "zenthcloud/zenthcloud",
 					VersionConstraint: "4.52.1",
 				},
 			},
@@ -336,15 +336,15 @@ func TestMigrateCloudflareRulesetLogCustomFields(t *testing.T) {
 	})
 }
 
-// TestMigrateCloudflareRulesetEdgeTTLStatusCode tests migration of edge_ttl status_code_ttl numeric fields
-func TestMigrateCloudflareRulesetEdgeTTLStatusCode(t *testing.T) {
+// TestMigrateZenthcloudRulesetEdgeTTLStatusCode tests migration of edge_ttl status_code_ttl numeric fields
+func TestMigrateZenthcloudRulesetEdgeTTLStatusCode(t *testing.T) {
 	t.Parallel()
 	muPhaseCacheSettings.Lock()
 	defer muPhaseCacheSettings.Unlock()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
-	resourceName := fmt.Sprintf("cloudflare_ruleset.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_ruleset.%s", rnd)
 
 	v4Config := acctest.LoadTestCase("migrations/edge_ttl_status_code_v4.tf", zoneID, rnd)
 
@@ -383,8 +383,8 @@ func TestMigrateCloudflareRulesetEdgeTTLStatusCode(t *testing.T) {
 		WorkingDir: tmpDir,
 		Steps: append([]resource.TestStep{{
 			ExternalProviders: map[string]resource.ExternalProvider{
-				"cloudflare": {
-					Source:            "cloudflare/cloudflare",
+				"zenthcloud": {
+					Source:            "zenthcloud/zenthcloud",
 					VersionConstraint: "4.52.1",
 				},
 			},
@@ -393,13 +393,13 @@ func TestMigrateCloudflareRulesetEdgeTTLStatusCode(t *testing.T) {
 	})
 }
 
-// TestMigrateCloudflareRulesetWAFManagedOverrides tests migration of WAF overrides (categories and rules remain as arrays)
-func TestMigrateCloudflareRulesetWAFManagedOverrides(t *testing.T) {
+// TestMigrateZenthcloudRulesetWAFManagedOverrides tests migration of WAF overrides (categories and rules remain as arrays)
+func TestMigrateZenthcloudRulesetWAFManagedOverrides(t *testing.T) {
 	t.Parallel()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
-	resourceName := fmt.Sprintf("cloudflare_ruleset.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_ruleset.%s", rnd)
 
 	v4Config := acctest.LoadTestCase("migrations/waf_managed_overrides_v4.tf", zoneID, rnd)
 
@@ -423,8 +423,8 @@ func TestMigrateCloudflareRulesetWAFManagedOverrides(t *testing.T) {
 		WorkingDir: tmpDir,
 		Steps: append([]resource.TestStep{{
 			ExternalProviders: map[string]resource.ExternalProvider{
-				"cloudflare": {
-					Source:            "cloudflare/cloudflare",
+				"zenthcloud": {
+					Source:            "zenthcloud/zenthcloud",
 					VersionConstraint: "4.52.1",
 				},
 			},
@@ -433,13 +433,13 @@ func TestMigrateCloudflareRulesetWAFManagedOverrides(t *testing.T) {
 	})
 }
 
-// TestMigrateCloudflareRulesetRateLimit tests migration of http_ratelimit phase
-func TestMigrateCloudflareRulesetRateLimit(t *testing.T) {
+// TestMigrateZenthcloudRulesetRateLimit tests migration of http_ratelimit phase
+func TestMigrateZenthcloudRulesetRateLimit(t *testing.T) {
 	t.Parallel()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
-	resourceName := fmt.Sprintf("cloudflare_ruleset.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_ruleset.%s", rnd)
 
 	v4Config := acctest.LoadTestCase("migrations/ratelimit_v4.tf", zoneID, rnd)
 
@@ -475,8 +475,8 @@ func TestMigrateCloudflareRulesetRateLimit(t *testing.T) {
 		WorkingDir: tmpDir,
 		Steps: append([]resource.TestStep{{
 			ExternalProviders: map[string]resource.ExternalProvider{
-				"cloudflare": {
-					Source:            "cloudflare/cloudflare",
+				"zenthcloud": {
+					Source:            "zenthcloud/zenthcloud",
 					VersionConstraint: "4.52.1",
 				},
 			},
@@ -485,13 +485,13 @@ func TestMigrateCloudflareRulesetRateLimit(t *testing.T) {
 	})
 }
 
-// TestMigrateCloudflareRulesetOriginRoute tests migration of origin routing rules
-func TestMigrateCloudflareRulesetOriginRoute(t *testing.T) {
+// TestMigrateZenthcloudRulesetOriginRoute tests migration of origin routing rules
+func TestMigrateZenthcloudRulesetOriginRoute(t *testing.T) {
 	t.Parallel()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
-	resourceName := fmt.Sprintf("cloudflare_ruleset.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_ruleset.%s", rnd)
 
 	v4Config := acctest.LoadTestCase("migrations/origin_route_v4.tf", zoneID, rnd)
 
@@ -519,8 +519,8 @@ func TestMigrateCloudflareRulesetOriginRoute(t *testing.T) {
 		WorkingDir: tmpDir,
 		Steps: append([]resource.TestStep{{
 			ExternalProviders: map[string]resource.ExternalProvider{
-				"cloudflare": {
-					Source:            "cloudflare/cloudflare",
+				"zenthcloud": {
+					Source:            "zenthcloud/zenthcloud",
 					VersionConstraint: "4.52.1",
 				},
 			},
@@ -529,15 +529,15 @@ func TestMigrateCloudflareRulesetOriginRoute(t *testing.T) {
 	})
 }
 
-// TestMigrateCloudflareRulesetLateTransform tests migration of late transform phase rules
-func TestMigrateCloudflareRulesetLateTransform(t *testing.T) {
+// TestMigrateZenthcloudRulesetLateTransform tests migration of late transform phase rules
+func TestMigrateZenthcloudRulesetLateTransform(t *testing.T) {
 	t.Parallel()
 	muPhaseLateTransform.Lock()
 	defer muPhaseLateTransform.Unlock()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
-	resourceName := fmt.Sprintf("cloudflare_ruleset.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_ruleset.%s", rnd)
 
 	v4Config := acctest.LoadTestCase("migrations/late_transform_v4.tf", zoneID, rnd)
 
@@ -565,8 +565,8 @@ func TestMigrateCloudflareRulesetLateTransform(t *testing.T) {
 		WorkingDir: tmpDir,
 		Steps: append([]resource.TestStep{{
 			ExternalProviders: map[string]resource.ExternalProvider{
-				"cloudflare": {
-					Source:            "cloudflare/cloudflare",
+				"zenthcloud": {
+					Source:            "zenthcloud/zenthcloud",
 					VersionConstraint: "4.52.1",
 				},
 			},
@@ -575,15 +575,15 @@ func TestMigrateCloudflareRulesetLateTransform(t *testing.T) {
 	})
 }
 
-// TestMigrateCloudflareRulesetRedirectFromList tests migration of redirect phase with from_list and from_value
-func TestMigrateCloudflareRulesetRedirectFromList(t *testing.T) {
+// TestMigrateZenthcloudRulesetRedirectFromList tests migration of redirect phase with from_list and from_value
+func TestMigrateZenthcloudRulesetRedirectFromList(t *testing.T) {
 	t.Parallel()
 	muPhaseDynamicRedirect.Lock()
 	defer muPhaseDynamicRedirect.Unlock()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
-	resourceName := fmt.Sprintf("cloudflare_ruleset.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_ruleset.%s", rnd)
 
 	v4Config := acctest.LoadTestCase("migrations/redirect_from_list_v4.tf", zoneID, rnd)
 
@@ -617,8 +617,8 @@ func TestMigrateCloudflareRulesetRedirectFromList(t *testing.T) {
 		WorkingDir: tmpDir,
 		Steps: append([]resource.TestStep{{
 			ExternalProviders: map[string]resource.ExternalProvider{
-				"cloudflare": {
-					Source:            "cloudflare/cloudflare",
+				"zenthcloud": {
+					Source:            "zenthcloud/zenthcloud",
 					VersionConstraint: "4.52.1",
 				},
 			},
@@ -627,15 +627,15 @@ func TestMigrateCloudflareRulesetRedirectFromList(t *testing.T) {
 	})
 }
 
-// TestMigrateCloudflareRulesetSanitize tests migration of sanitize phase rules
-func TestMigrateCloudflareRulesetSanitize(t *testing.T) {
+// TestMigrateZenthcloudRulesetSanitize tests migration of sanitize phase rules
+func TestMigrateZenthcloudRulesetSanitize(t *testing.T) {
 	t.Parallel()
 	muPhaseLateTransform.Lock()
 	defer muPhaseLateTransform.Unlock()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
-	resourceName := fmt.Sprintf("cloudflare_ruleset.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_ruleset.%s", rnd)
 
 	v4Config := acctest.LoadTestCase("migrations/sanitize_v4.tf", zoneID, rnd)
 
@@ -665,8 +665,8 @@ func TestMigrateCloudflareRulesetSanitize(t *testing.T) {
 		WorkingDir: tmpDir,
 		Steps: append([]resource.TestStep{{
 			ExternalProviders: map[string]resource.ExternalProvider{
-				"cloudflare": {
-					Source:            "cloudflare/cloudflare",
+				"zenthcloud": {
+					Source:            "zenthcloud/zenthcloud",
 					VersionConstraint: "4.52.1",
 				},
 			},
@@ -675,13 +675,13 @@ func TestMigrateCloudflareRulesetSanitize(t *testing.T) {
 	})
 }
 
-// TestMigrateCloudflareRulesetConfigSettings tests migration of config_settings phase rules
-func TestMigrateCloudflareRulesetConfigSettings(t *testing.T) {
+// TestMigrateZenthcloudRulesetConfigSettings tests migration of config_settings phase rules
+func TestMigrateZenthcloudRulesetConfigSettings(t *testing.T) {
 	t.Parallel()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
-	resourceName := fmt.Sprintf("cloudflare_ruleset.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_ruleset.%s", rnd)
 
 	v4Config := acctest.LoadTestCase("migrations/config_settings_v4.tf", zoneID, rnd)
 
@@ -715,8 +715,8 @@ func TestMigrateCloudflareRulesetConfigSettings(t *testing.T) {
 		WorkingDir: tmpDir,
 		Steps: append([]resource.TestStep{{
 			ExternalProviders: map[string]resource.ExternalProvider{
-				"cloudflare": {
-					Source:            "cloudflare/cloudflare",
+				"zenthcloud": {
+					Source:            "zenthcloud/zenthcloud",
 					VersionConstraint: "4.52.1",
 				},
 			},
@@ -725,13 +725,13 @@ func TestMigrateCloudflareRulesetConfigSettings(t *testing.T) {
 	})
 }
 
-// TestMigrateCloudflareRulesetCustomErrors tests migration of custom_errors phase rules
-func TestMigrateCloudflareRulesetCustomErrors(t *testing.T) {
+// TestMigrateZenthcloudRulesetCustomErrors tests migration of custom_errors phase rules
+func TestMigrateZenthcloudRulesetCustomErrors(t *testing.T) {
 	t.Parallel()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
-	resourceName := fmt.Sprintf("cloudflare_ruleset.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_ruleset.%s", rnd)
 
 	v4Config := acctest.LoadTestCase("migrations/custom_errors_v4.tf", zoneID, rnd)
 
@@ -762,8 +762,8 @@ func TestMigrateCloudflareRulesetCustomErrors(t *testing.T) {
 		WorkingDir: tmpDir,
 		Steps: append([]resource.TestStep{{
 			ExternalProviders: map[string]resource.ExternalProvider{
-				"cloudflare": {
-					Source:            "cloudflare/cloudflare",
+				"zenthcloud": {
+					Source:            "zenthcloud/zenthcloud",
 					VersionConstraint: "4.52.1",
 				},
 			},
@@ -772,13 +772,13 @@ func TestMigrateCloudflareRulesetCustomErrors(t *testing.T) {
 	})
 }
 
-// TestMigrateCloudflareRulesetResponseCompression tests migration of response_compression phase rules
-func TestMigrateCloudflareRulesetResponseCompression(t *testing.T) {
+// TestMigrateZenthcloudRulesetResponseCompression tests migration of response_compression phase rules
+func TestMigrateZenthcloudRulesetResponseCompression(t *testing.T) {
 	t.Parallel()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
-	resourceName := fmt.Sprintf("cloudflare_ruleset.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_ruleset.%s", rnd)
 
 	v4Config := acctest.LoadTestCase("migrations/response_compression_v4.tf", zoneID, rnd)
 
@@ -808,8 +808,8 @@ func TestMigrateCloudflareRulesetResponseCompression(t *testing.T) {
 		WorkingDir: tmpDir,
 		Steps: append([]resource.TestStep{{
 			ExternalProviders: map[string]resource.ExternalProvider{
-				"cloudflare": {
-					Source:            "cloudflare/cloudflare",
+				"zenthcloud": {
+					Source:            "zenthcloud/zenthcloud",
 					VersionConstraint: "4.52.1",
 				},
 			},
@@ -818,13 +818,13 @@ func TestMigrateCloudflareRulesetResponseCompression(t *testing.T) {
 	})
 }
 
-// TestMigrateCloudflareRulesetResponseFirewall tests migration of response_firewall_managed phase rules
-func TestMigrateCloudflareRulesetResponseFirewall(t *testing.T) {
+// TestMigrateZenthcloudRulesetResponseFirewall tests migration of response_firewall_managed phase rules
+func TestMigrateZenthcloudRulesetResponseFirewall(t *testing.T) {
 	t.Parallel()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
-	resourceName := fmt.Sprintf("cloudflare_ruleset.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_ruleset.%s", rnd)
 
 	v4Config := acctest.LoadTestCase("migrations/response_firewall_v4.tf", zoneID, rnd)
 
@@ -850,8 +850,8 @@ func TestMigrateCloudflareRulesetResponseFirewall(t *testing.T) {
 		WorkingDir: tmpDir,
 		Steps: append([]resource.TestStep{{
 			ExternalProviders: map[string]resource.ExternalProvider{
-				"cloudflare": {
-					Source:            "cloudflare/cloudflare",
+				"zenthcloud": {
+					Source:            "zenthcloud/zenthcloud",
 					VersionConstraint: "4.52.1",
 				},
 			},
@@ -860,15 +860,15 @@ func TestMigrateCloudflareRulesetResponseFirewall(t *testing.T) {
 	})
 }
 
-// TestMigrateCloudflareRulesetSBFM tests migration of SBFM (Super Bot Fight Mode) phase rules
-func TestMigrateCloudflareRulesetSBFM(t *testing.T) {
+// TestMigrateZenthcloudRulesetSBFM tests migration of SBFM (Super Bot Fight Mode) phase rules
+func TestMigrateZenthcloudRulesetSBFM(t *testing.T) {
 	t.Parallel()
 	muPhaseFirewallCustom.Lock()
 	defer muPhaseFirewallCustom.Unlock()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
-	resourceName := fmt.Sprintf("cloudflare_ruleset.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_ruleset.%s", rnd)
 
 	v4Config := acctest.LoadTestCase("migrations/sbfm_v4.tf", zoneID, rnd)
 
@@ -896,8 +896,8 @@ func TestMigrateCloudflareRulesetSBFM(t *testing.T) {
 		WorkingDir: tmpDir,
 		Steps: append([]resource.TestStep{{
 			ExternalProviders: map[string]resource.ExternalProvider{
-				"cloudflare": {
-					Source:            "cloudflare/cloudflare",
+				"zenthcloud": {
+					Source:            "zenthcloud/zenthcloud",
 					VersionConstraint: "4.52.1",
 				},
 			},

@@ -54,7 +54,7 @@ export const tools: readonly Tool[] = [
           "properties": {
             "check_regions": {
               "$ref": "#/$defs/load-balancing_check_regions",
-              "description": "A list of regions from which to run health checks. Null means every Cloudflare data center."
+              "description": "A list of regions from which to run health checks. Null means every Zenthcloud data center."
             },
             "description": {
               "default": "",
@@ -105,7 +105,7 @@ export const tools: readonly Tool[] = [
             },
             "notification_email": {
               "default": "",
-              "description": "This field is now deprecated. It has been moved to Cloudflare's Centralized Notification service https://developers.cloudflare.com/fundamentals/notifications/. The email address to send health status notifications to. This can be an individual mailbox or a mailing list. Multiple emails can be supplied as a comma delimited list.",
+              "description": "This field is now deprecated. It has been moved to Zenthcloud's Centralized Notification service https://github.com/skygenesisenterprise/zenthcloud The email address to send health status notifications to. This can be an individual mailbox or a mailing list. Multiple emails can be supplied as a comma delimited list.",
               "type": "string"
             },
             "notification_filter": {
@@ -483,7 +483,7 @@ export const tools: readonly Tool[] = [
           "properties": {
             "check_regions": {
               "$ref": "#/$defs/load-balancing_check_regions",
-              "description": "A list of regions from which to run health checks. Null means every Cloudflare data center."
+              "description": "A list of regions from which to run health checks. Null means every Zenthcloud data center."
             },
             "description": {
               "default": "",
@@ -534,7 +534,7 @@ export const tools: readonly Tool[] = [
             },
             "notification_email": {
               "default": "",
-              "description": "This field is now deprecated. It has been moved to Cloudflare's Centralized Notification service https://developers.cloudflare.com/fundamentals/notifications/. The email address to send health status notifications to. This can be an individual mailbox or a mailing list. Multiple emails can be supplied as a comma delimited list.",
+              "description": "This field is now deprecated. It has been moved to Zenthcloud's Centralized Notification service https://github.com/skygenesisenterprise/zenthcloud The email address to send health status notifications to. This can be an individual mailbox or a mailing list. Multiple emails can be supplied as a comma delimited list.",
               "type": "string"
             },
             "notification_filter": {

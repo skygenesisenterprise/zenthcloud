@@ -7,15 +7,15 @@ import (
 	"os"
 	"testing"
 
-	cfold "github.com/cloudflare/cloudflare-go"
+	cfold "github.com/zenthcloud/zenthcloud-go"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -62,7 +62,7 @@ func TestMigrateLoadBalancer_V4ToV5_Basic(t *testing.T) {
 			name:    "from_v4_latest", // Tests legacy v4 → current v5
 			version: legacyProviderVersion,
 			configFn: func(rnd, zoneID, fallbackPool, defaultPool string) string {
-				domain := os.Getenv("CLOUDFLARE_DOMAIN")
+				domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 				lbName := fmt.Sprintf("tf-lb-%s.%s", rnd, domain)
 				return fmt.Sprintf(v4BasicConfig, rnd, zoneID, lbName, fallbackPool, defaultPool)
 			},
@@ -71,7 +71,7 @@ func TestMigrateLoadBalancer_V4ToV5_Basic(t *testing.T) {
 			name:    "from_v5", // Tests within v5 (version bump)
 			version: currentProviderVersion,
 			configFn: func(rnd, zoneID, fallbackPool, defaultPool string) string {
-				domain := os.Getenv("CLOUDFLARE_DOMAIN")
+				domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 				lbName := fmt.Sprintf("tf-lb-%s.%s", rnd, domain)
 				return fmt.Sprintf(v5BasicConfig, rnd, zoneID, lbName, fallbackPool, defaultPool)
 			},
@@ -85,8 +85,8 @@ func TestMigrateLoadBalancer_V4ToV5_Basic(t *testing.T) {
 			}
 
 			// Setup
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 
@@ -102,8 +102,8 @@ func TestMigrateLoadBalancer_V4ToV5_Basic(t *testing.T) {
 					{
 						// Step 1: Create with specific provider version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -114,12 +114,12 @@ func TestMigrateLoadBalancer_V4ToV5_Basic(t *testing.T) {
 						[]statecheck.StateCheck{
 							// Verify renamed fields
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer."+rnd,
+								"zenthcloud_load_balancer."+rnd,
 								tfjsonpath.New("fallback_pool"),
 								knownvalue.StringExact(fallbackPoolID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer."+rnd,
+								"zenthcloud_load_balancer."+rnd,
 								tfjsonpath.New("default_pools"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.StringExact(defaultPoolID),
@@ -127,23 +127,23 @@ func TestMigrateLoadBalancer_V4ToV5_Basic(t *testing.T) {
 							),
 							// Verify type conversions (Int64 → Float64)
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer."+rnd,
+								"zenthcloud_load_balancer."+rnd,
 								tfjsonpath.New("ttl"),
 								knownvalue.Float64Exact(30),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer."+rnd,
+								"zenthcloud_load_balancer."+rnd,
 								tfjsonpath.New("session_affinity_ttl"),
 								knownvalue.Float64Exact(1800),
 							),
 							// Verify basic fields preserved
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer."+rnd,
+								"zenthcloud_load_balancer."+rnd,
 								tfjsonpath.New("zone_id"),
 								knownvalue.StringExact(zoneID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer."+rnd,
+								"zenthcloud_load_balancer."+rnd,
 								tfjsonpath.New("description"),
 								knownvalue.StringExact("Load balancer for tf-migrate test"),
 							),
@@ -177,7 +177,7 @@ func TestMigrateLoadBalancer_V4ToV5_WithNested(t *testing.T) {
 			name:    "from_v4_latest",
 			version: legacyProviderVersion,
 			configFn: func(rnd, zoneID, fallbackPool, defaultPool string) string {
-				domain := os.Getenv("CLOUDFLARE_DOMAIN")
+				domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 				lbName := fmt.Sprintf("tf-lb-nested-%s.%s", rnd, domain)
 				return fmt.Sprintf(v4WithNestedConfig, rnd, zoneID, lbName, fallbackPool, defaultPool)
 			},
@@ -186,7 +186,7 @@ func TestMigrateLoadBalancer_V4ToV5_WithNested(t *testing.T) {
 			name:    "from_v5",
 			version: currentProviderVersion,
 			configFn: func(rnd, zoneID, fallbackPool, defaultPool string) string {
-				domain := os.Getenv("CLOUDFLARE_DOMAIN")
+				domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 				lbName := fmt.Sprintf("tf-lb-nested-%s.%s", rnd, domain)
 				return fmt.Sprintf(v5WithNestedConfig, rnd, zoneID, lbName, fallbackPool, defaultPool)
 			},
@@ -199,8 +199,8 @@ func TestMigrateLoadBalancer_V4ToV5_WithNested(t *testing.T) {
 				t.Skip("migration mode must be set to 1 to run migration tests")
 			}
 
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 
@@ -213,8 +213,8 @@ func TestMigrateLoadBalancer_V4ToV5_WithNested(t *testing.T) {
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -224,40 +224,40 @@ func TestMigrateLoadBalancer_V4ToV5_WithNested(t *testing.T) {
 						[]statecheck.StateCheck{
 							// Verify session_affinity_attributes transformation
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer."+rnd,
+								"zenthcloud_load_balancer."+rnd,
 								tfjsonpath.New("session_affinity_attributes").AtMapKey("samesite"),
 								knownvalue.StringExact("Lax"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer."+rnd,
+								"zenthcloud_load_balancer."+rnd,
 								tfjsonpath.New("session_affinity_attributes").AtMapKey("secure"),
 								knownvalue.StringExact("Always"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer."+rnd,
+								"zenthcloud_load_balancer."+rnd,
 								tfjsonpath.New("session_affinity_attributes").AtMapKey("drain_duration"),
 								knownvalue.Float64Exact(100),
 							),
 							// Verify adaptive_routing transformation
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer."+rnd,
+								"zenthcloud_load_balancer."+rnd,
 								tfjsonpath.New("adaptive_routing").AtMapKey("failover_across_pools"),
 								knownvalue.Bool(true),
 							),
 							// Verify location_strategy transformation
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer."+rnd,
+								"zenthcloud_load_balancer."+rnd,
 								tfjsonpath.New("location_strategy").AtMapKey("prefer_ecs"),
 								knownvalue.StringExact("proximity"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer."+rnd,
+								"zenthcloud_load_balancer."+rnd,
 								tfjsonpath.New("location_strategy").AtMapKey("mode"),
 								knownvalue.StringExact("pop"),
 							),
 							// Verify random_steering transformation
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer."+rnd,
+								"zenthcloud_load_balancer."+rnd,
 								tfjsonpath.New("random_steering").AtMapKey("default_weight"),
 								knownvalue.Float64Exact(0.5),
 							),
@@ -289,7 +289,7 @@ func TestMigrateLoadBalancer_V4ToV5_WithPools(t *testing.T) {
 			name:    "from_v4_latest",
 			version: legacyProviderVersion,
 			configFn: func(rnd, zoneID, fallbackPool, defaultPool, regionPool, popPool, countryPool string) string {
-				domain := os.Getenv("CLOUDFLARE_DOMAIN")
+				domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 				lbName := fmt.Sprintf("tf-lb-pools-%s.%s", rnd, domain)
 				return fmt.Sprintf(v4WithPoolsConfig, rnd, zoneID, lbName,
 					fallbackPool, defaultPool, regionPool, popPool, countryPool)
@@ -299,7 +299,7 @@ func TestMigrateLoadBalancer_V4ToV5_WithPools(t *testing.T) {
 			name:    "from_v5",
 			version: currentProviderVersion,
 			configFn: func(rnd, zoneID, fallbackPool, defaultPool, regionPool, popPool, countryPool string) string {
-				domain := os.Getenv("CLOUDFLARE_DOMAIN")
+				domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 				lbName := fmt.Sprintf("tf-lb-pools-%s.%s", rnd, domain)
 				return fmt.Sprintf(v5WithPoolsConfig, rnd, zoneID, lbName,
 					fallbackPool, defaultPool, regionPool, popPool, countryPool)
@@ -313,8 +313,8 @@ func TestMigrateLoadBalancer_V4ToV5_WithPools(t *testing.T) {
 				t.Skip("migration mode must be set to 1 to run migration tests")
 			}
 
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 
@@ -331,8 +331,8 @@ func TestMigrateLoadBalancer_V4ToV5_WithPools(t *testing.T) {
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -342,7 +342,7 @@ func TestMigrateLoadBalancer_V4ToV5_WithPools(t *testing.T) {
 						[]statecheck.StateCheck{
 							// Verify region_pools transformation (block → map)
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer."+rnd,
+								"zenthcloud_load_balancer."+rnd,
 								tfjsonpath.New("region_pools").AtMapKey("WNAM"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.StringExact(regionPoolID),
@@ -350,7 +350,7 @@ func TestMigrateLoadBalancer_V4ToV5_WithPools(t *testing.T) {
 							),
 							// Verify pop_pools transformation (block → map)
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer."+rnd,
+								"zenthcloud_load_balancer."+rnd,
 								tfjsonpath.New("pop_pools").AtMapKey("LAX"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.StringExact(popPoolID),
@@ -358,7 +358,7 @@ func TestMigrateLoadBalancer_V4ToV5_WithPools(t *testing.T) {
 							),
 							// Verify country_pools transformation (block → map)
 							statecheck.ExpectKnownValue(
-								"cloudflare_load_balancer."+rnd,
+								"zenthcloud_load_balancer."+rnd,
 								tfjsonpath.New("country_pools").AtMapKey("US"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.StringExact(countryPoolID),
@@ -379,7 +379,7 @@ func createTestPool(t *testing.T, accountID, poolName string) string {
 
 	client, err := acctest.SharedV1Client()
 	if err != nil {
-		t.Fatalf("Failed to create Cloudflare client: %v", err)
+		t.Fatalf("Failed to create Zenthcloud client: %v", err)
 	}
 
 	ctx := context.Background()

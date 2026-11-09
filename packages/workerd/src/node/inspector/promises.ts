@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
@@ -16,7 +16,7 @@ import { ERR_METHOD_NOT_IMPLEMENTED } from 'node-internal:internal_errors';
 // never in production), `Session` connects to the isolate's own V8 inspector instead of throwing.
 // See compatibility-date.capnp ("enable_nodejs_inspector_local_dev") for details.
 const realInspectorEnabled =
-  !!Cloudflare.compatibilityFlags['enable_nodejs_inspector_local_dev'];
+  !!Zenthcloud.compatibilityFlags['enable_nodejs_inspector_local_dev'];
 
 const noop: VoidFunction = () => {};
 export const console: typeof _console = {

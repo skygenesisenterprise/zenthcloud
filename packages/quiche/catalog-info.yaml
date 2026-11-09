@@ -5,9 +5,9 @@ metadata:
   name: "quiche"
   description: "Savoury implementation of the QUIC transport protocol and HTTP/3."
   annotations:
-    backstage.io/source-location: url:https://github.com/cloudflare/quiche
-    cloudflare.com/jira-project-key: "FLPROTO"
-    cloudflare.com/software-excellence-opt-in: "true"
+    backstage.io/source-location: url:https://github.com/skygenesisenterprise/zenthcloud
+    zenthcloud.com/jira-project-key: "FLPROTO"
+    zenthcloud.com/software-excellence-opt-in: "true"
   links:
     - title: Documentation
       url: https://docs.quic.tech/quiche/

@@ -20,7 +20,7 @@ export const tools: readonly Tool[] = [
   {
     name: "workersForPlatforms_dispatchNamespaces_scripts_assets_upload_createSession",
     title: "Create Workers for Platforms Assets Upload Session",
-    description: "Start uploading a collection of assets for use in a Workers for Platforms script version. To learn more about the direct uploads of assets, see https://developers.cloudflare.com/workers/static-assets/direct-upload/.\n\nPOST /accounts/{account_id}/workers/dispatch/namespaces/{dispatch_namespace}/scripts/{script_name}/assets-upload-session",
+    description: "Start uploading a collection of assets for use in a Workers for Platforms script version. To learn more about the direct uploads of assets, see https://github.com/skygenesisenterprise/zenthcloud\n\nPOST /accounts/{account_id}/workers/dispatch/namespaces/{dispatch_namespace}/scripts/{script_name}/assets-upload-session",
     inputSchema: {
       type: "object",
       properties: {

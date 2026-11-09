@@ -24,7 +24,7 @@ export const tools: readonly Tool[] = [
   {
     name: "ssl_mtlsCertificates_create",
     title: "Upload mTLS certificate",
-    description: "Upload a certificate that you want to use with mTLS-enabled Cloudflare services, such as Bring Your Own CA (BYO-CA) for mTLS. To create certificates issued by the Cloudflare managed CA, use the [Create Client Certificate endpoint](/api/resources/client_certificates/methods/create/).\n\nPOST /accounts/{account_id}/mtls_certificates",
+    description: "Upload a certificate that you want to use with mTLS-enabled Zenthcloud services, such as Bring Your Own CA (BYO-CA) for mTLS. To create certificates issued by the Zenthcloud managed CA, use the [Create Client Certificate endpoint](/api/resources/client_certificates/methods/create/).\n\nPOST /accounts/{account_id}/mtls_certificates",
     inputSchema: {
       type: "object",
       properties: {
@@ -139,7 +139,7 @@ export const tools: readonly Tool[] = [
   {
     name: "ssl_mtlsCertificates_delete",
     title: "Delete mTLS certificate",
-    description: "Deletes the mTLS certificate unless the certificate is in use by one or more Cloudflare services.\n\nDELETE /accounts/{account_id}/mtls_certificates/{mtls_certificate_id}",
+    description: "Deletes the mTLS certificate unless the certificate is in use by one or more Zenthcloud services.\n\nDELETE /accounts/{account_id}/mtls_certificates/{mtls_certificate_id}",
     inputSchema: {
       type: "object",
       properties: {
@@ -232,7 +232,7 @@ export const tools: readonly Tool[] = [
   {
     name: "ssl_mtlsCertificates_get",
     title: "Get mTLS certificate",
-    description: "Fetches a single mTLS certificate uploaded to your account. To get a certificate issued by the Cloudflare managed CA, use the [Client Certificate Details endpoint](/api/resources/client_certificates/methods/get/).\n\nGET /accounts/{account_id}/mtls_certificates/{mtls_certificate_id}",
+    description: "Fetches a single mTLS certificate uploaded to your account. To get a certificate issued by the Zenthcloud managed CA, use the [Client Certificate Details endpoint](/api/resources/client_certificates/methods/get/).\n\nGET /accounts/{account_id}/mtls_certificates/{mtls_certificate_id}",
     inputSchema: {
       type: "object",
       properties: {
@@ -326,7 +326,7 @@ export const tools: readonly Tool[] = [
   {
     name: "ssl_mtlsCertificates_list",
     title: "List mTLS certificates",
-    description: "Lists all mTLS certificates uploaded to your account, such as Bring Your Own CA (BYO-CA) for mTLS. To list certificates issued by the Cloudflare managed CA, use the [List Client Certificates endpoint](/api/resources/client_certificates/methods/list/).\n\nGET /accounts/{account_id}/mtls_certificates",
+    description: "Lists all mTLS certificates uploaded to your account, such as Bring Your Own CA (BYO-CA) for mTLS. To list certificates issued by the Zenthcloud managed CA, use the [List Client Certificates endpoint](/api/resources/client_certificates/methods/list/).\n\nGET /accounts/{account_id}/mtls_certificates",
     inputSchema: {
       type: "object",
       properties: {

@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync } from "node:fs";
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw/http";
 import {
 	afterEach,
@@ -16,7 +16,7 @@ import { runCf } from "../helpers/run-cf.js";
 // These integration tests need the real client. Collect its cold import graph
 // before per-test timers start; lightweight tests must not inherit this import.
 import "../../lib/auth.js";
-import type { Cloudflare } from "../../lib/auth.js";
+import type { Zenthcloud } from "../../lib/auth.js";
 import type * as PromptModule from "../../lib/prompt.js";
 import getModelSchema from "#operations/ai/get-model-schema.js";
 
@@ -70,9 +70,9 @@ describe("cf ai run", () => {
 
 	const ENV = {
 		CI: "true",
-		CLOUDFLARE_API_TOKEN: "test-token",
-		CLOUDFLARE_API_BASE_URL: TEST_BASE_URL,
-		CLOUDFLARE_ACCOUNT_ID: "test-account",
+		ZENTHCLOUD_API_TOKEN: "test-token",
+		ZENTHCLOUD_API_BASE_URL: TEST_BASE_URL,
+		ZENTHCLOUD_ACCOUNT_ID: "test-account",
 	};
 	const ACCT = `${TEST_BASE_URL}/accounts/test-account`;
 
@@ -606,7 +606,7 @@ describe("cf ai run", () => {
 	it("rejects local execution before schema discovery", async () => {
 		await expect(run(MODEL, "--local")).rejects.toMatchObject({
 			message:
-				"This command has no local equivalent. Re-run without --local to use the Cloudflare API.",
+				"This command has no local equivalent. Re-run without --local to use the Zenthcloud API.",
 		});
 		expect(schemaRequests).toEqual([]);
 		expect(runBodies).toEqual([]);
@@ -735,7 +735,7 @@ describe("cf ai run", () => {
 
 	it("uses the normal request policy outside help", async () => {
 		const get = vi.fn().mockResolvedValue({ input: INPUT_SCHEMA });
-		const client = { send: get } as unknown as Cloudflare;
+		const client = { send: get } as unknown as Zenthcloud;
 
 		await expect(
 			getModelInputSchema(
@@ -844,7 +844,7 @@ describe("cf ai run", () => {
 		expect(exitCode).toBe(0);
 		expect(schemaRequests).toEqual([]);
 		const localMessage =
-			"This command has no local equivalent. Re-run without --local to use the Cloudflare API.";
+			"This command has no local equivalent. Re-run without --local to use the Zenthcloud API.";
 		expect(stdout()).toContain(localMessage);
 		expect(stdout().indexOf(localMessage)).toBeLessThan(
 			stdout().indexOf("cf ai run [model-name]")
@@ -869,24 +869,24 @@ describe("cf ai run", () => {
 		writeFileSync(
 			".env",
 			[
-				"CLOUDFLARE_API_TOKEN=file-token",
-				"CLOUDFLARE_ACCOUNT_ID=test-account",
+				"ZENTHCLOUD_API_TOKEN=file-token",
+				"ZENTHCLOUD_ACCOUNT_ID=test-account",
 			].join("\n")
 		);
 		server.use(schemaHandler());
 
 		const { exitCode } = await runCf(["ai", "run", MODEL, "--help"], {
 			CI: "true",
-			CLOUDFLARE_API_TOKEN: undefined,
-			CLOUDFLARE_API_BASE_URL: TEST_BASE_URL,
-			CLOUDFLARE_ACCOUNT_ID: undefined,
+			ZENTHCLOUD_API_TOKEN: undefined,
+			ZENTHCLOUD_API_BASE_URL: TEST_BASE_URL,
+			ZENTHCLOUD_ACCOUNT_ID: undefined,
 		});
 
 		expect(exitCode).toBe(0);
 		expect(schemaRequests).toEqual([MODEL]);
 		expect(schemaAuthorization).toBe("Bearer file-token");
 		expect(stdout()).toContain(`Input flags for ${MODEL}`);
-		expect(process.env.CLOUDFLARE_API_TOKEN).toBeUndefined();
+		expect(process.env.ZENTHCLOUD_API_TOKEN).toBeUndefined();
 	});
 
 	it("degrades `--help` when the schema 404s", async () => {
@@ -923,9 +923,9 @@ describe("cf ai run", () => {
 
 	it("degrades `--help` without credentials, and does not prompt", async () => {
 		const { exitCode } = await runCf(["ai", "run", MODEL, "--help"], {
-			CLOUDFLARE_API_BASE_URL: TEST_BASE_URL,
-			CLOUDFLARE_API_TOKEN: undefined,
-			CLOUDFLARE_ACCOUNT_ID: undefined,
+			ZENTHCLOUD_API_BASE_URL: TEST_BASE_URL,
+			ZENTHCLOUD_API_TOKEN: undefined,
+			ZENTHCLOUD_ACCOUNT_ID: undefined,
 		});
 
 		expect(exitCode).toBe(0);
@@ -957,9 +957,9 @@ describe("cf ai run", () => {
 			schemaHandler()
 		);
 		const { exitCode } = await runCf(["ai", "run", MODEL, "--help"], {
-			CLOUDFLARE_API_BASE_URL: TEST_BASE_URL,
-			CLOUDFLARE_API_TOKEN: "test-token",
-			CLOUDFLARE_ACCOUNT_ID: undefined,
+			ZENTHCLOUD_API_BASE_URL: TEST_BASE_URL,
+			ZENTHCLOUD_API_TOKEN: "test-token",
+			ZENTHCLOUD_ACCOUNT_ID: undefined,
 		});
 
 		expect(exitCode).toBe(0);

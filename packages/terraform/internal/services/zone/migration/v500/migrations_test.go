@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -69,8 +69,8 @@ func TestMigrateZone_Basic(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
 			zoneName := fmt.Sprintf("%s.cfapi.net", rnd)
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-			resourceName := "cloudflare_zone." + rnd
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+			resourceName := "zenthcloud_zone." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneName, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -84,8 +84,8 @@ func TestMigrateZone_Basic(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -150,8 +150,8 @@ func TestMigrateZone_WithOptionalFields(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
 			zoneName := fmt.Sprintf("%s.cfapi.net", rnd)
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-			resourceName := "cloudflare_zone." + rnd
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+			resourceName := "zenthcloud_zone." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneName, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -165,8 +165,8 @@ func TestMigrateZone_WithOptionalFields(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -202,8 +202,8 @@ func TestMigrateZone_WithOptionalFields(t *testing.T) {
 func TestMigrateZone_RemovedFields(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
 	zoneName := fmt.Sprintf("%s.cfapi.net", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_zone." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_zone." + rnd
 	tmpDir := t.TempDir()
 	version := acctest.GetLastV4Version()
 	sourceVer, targetVer := acctest.InferMigrationVersions(version)
@@ -219,8 +219,8 @@ func TestMigrateZone_RemovedFields(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
@@ -246,8 +246,8 @@ func TestMigrateZone_RemovedFields(t *testing.T) {
 func TestMigrateZone_Complete(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
 	zoneName := fmt.Sprintf("%s.cfapi.net", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_zone." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_zone." + rnd
 	tmpDir := t.TempDir()
 	version := acctest.GetLastV4Version()
 	sourceVer, targetVer := acctest.InferMigrationVersions(version)
@@ -263,8 +263,8 @@ func TestMigrateZone_Complete(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},

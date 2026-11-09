@@ -201,7 +201,7 @@ export function describeSchemaFailure(err: unknown): string {
 		return "not found, or this account can't access it";
 	}
 	if (status === 401) {
-		return "credentials were rejected; update `CLOUDFLARE_API_TOKEN` or run `cf auth login`";
+		return "credentials were rejected; update `ZENTHCLOUD_API_TOKEN` or run `cf auth login`";
 	}
 	if (status === 403) {
 		return "these credentials can't read it — check your API token permissions";

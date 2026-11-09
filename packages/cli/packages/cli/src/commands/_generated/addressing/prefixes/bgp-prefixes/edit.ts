@@ -36,12 +36,12 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("asn-prepend-count", {
 			type: "number",
 			description:
-				"Number of times to prepend the Cloudflare ASN to the BGP AS-Path attribute",
+				"Number of times to prepend the Zenthcloud ASN to the BGP AS-Path attribute",
 		})
 		.option("auto-advertise-withdraw", {
 			type: "boolean",
 			description:
-				"Determines if Cloudflare advertises a BYOIP BGP prefix even when there is no matching BGP prefix in the Magic routing table. When true, Cloudflare will automatically withdraw the BGP prefix when there are no matching BGP routes, and will resume advertising when there is at least one matching BGP route.",
+				"Determines if Zenthcloud advertises a BYOIP BGP prefix even when there is no matching BGP prefix in the Magic routing table. When true, Zenthcloud will automatically withdraw the BGP prefix when there are no matching BGP routes, and will resume advertising when there is at least one matching BGP route.",
 		})
 		.option("on-demand-advertised", {
 			type: "boolean",
@@ -83,7 +83,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf addressing prefixes bgp-prefixes edit",
 						method: "PATCH",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/addressing/prefixes/${argv["prefix-id"] == null ? "<prefix-id>" : encodeURIComponent(String(argv["prefix-id"]))}/bgp/prefixes/${argv["bgp-prefix-id"] == null ? "<bgp-prefix-id>" : encodeURIComponent(String(argv["bgp-prefix-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/addressing/prefixes/${argv["prefix-id"] == null ? "<prefix-id>" : encodeURIComponent(String(argv["prefix-id"]))}/bgp/prefixes/${argv["bgp-prefix-id"] == null ? "<bgp-prefix-id>" : encodeURIComponent(String(argv["bgp-prefix-id"]))}`,
 						pathParams: {
 							"prefix-id": String(argv["prefix-id"] ?? ""),
 							"bgp-prefix-id": String(argv["bgp-prefix-id"] ?? ""),

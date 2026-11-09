@@ -5,7 +5,7 @@ import (
 )
 
 // SourceListSchema returns a combined schema that can deserialize both v4 (SDKv2)
-// and v5 (Framework) cloudflare_list state.
+// and v5 (Framework) zenthcloud_list state.
 //
 // The published v5 provider (5.x) writes schema_version=0 (no Version field set),
 // which is the same as v4. This means both v4 and v5 state arrive at the version 0

@@ -7,11 +7,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/custom_certificates"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/custom_certificates"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -26,24 +26,24 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_custom_ssl", &resource.Sweeper{
-		Name: "cloudflare_custom_ssl",
-		F:    testSweepCloudflareCustomSSL,
+	resource.AddTestSweepers("zenthcloud_custom_ssl", &resource.Sweeper{
+		Name: "zenthcloud_custom_ssl",
+		F:    testSweepZenthcloudCustomSSL,
 	})
 }
 
-func testSweepCloudflareCustomSSL(r string) error {
+func testSweepZenthcloudCustomSSL(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping custom SSL sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping custom SSL sweep: ZENTHCLOUD_ZONE_ID not set")
 		return nil
 	}
 
 	certs, err := client.CustomCertificates.List(ctx, custom_certificates.CustomCertificateListParams{
-		ZoneID: cloudflare.F(zoneID),
+		ZoneID: zenthcloud.F(zoneID),
 	})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch custom SSL certificates: %s", err))
@@ -57,7 +57,7 @@ func testSweepCloudflareCustomSSL(r string) error {
 
 		tflog.Info(ctx, fmt.Sprintf("Deleting custom SSL certificate: %s", cert.ID))
 		_, err := client.CustomCertificates.Delete(ctx, cert.ID, custom_certificates.CustomCertificateDeleteParams{
-			ZoneID: cloudflare.F(zoneID),
+			ZoneID: zenthcloud.F(zoneID),
 		})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete custom SSL certificate %s: %s", cert.ID, err))
@@ -67,17 +67,17 @@ func testSweepCloudflareCustomSSL(r string) error {
 	return nil
 }
 
-func testAccCheckCloudflareCustomSSLDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudCustomSSLDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_custom_ssl" {
+		if rs.Type != "zenthcloud_custom_ssl" {
 			continue
 		}
 
 		zoneID := rs.Primary.Attributes[consts.ZoneIDSchemaKey]
 		_, err := client.CustomCertificates.Get(context.Background(), rs.Primary.ID, custom_certificates.CustomCertificateGetParams{
-			ZoneID: cloudflare.F(zoneID),
+			ZoneID: zenthcloud.F(zoneID),
 		})
 		if err != nil {
 			continue
@@ -92,15 +92,15 @@ func testAccCheckCloudflareCustomSSLDestroy(s *terraform.State) error {
 // TestAccCustomSSL_Lifecycle tests the full lifecycle of a custom SSL certificate.
 // This validates that the resource can be created, replaced (new cert/key triggers
 // destroy+create due to RequiresReplace), imported, and deleted.
-// Reference: https://developers.cloudflare.com/api/resources/custom_certificates/methods/edit/
+// Reference: https://github.com/skygenesisenterprise/zenthcloud
 func TestAccCustomSSL_Lifecycle(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_CUSTOM_SSL_TEST") != "1" {
-		t.Skip("Skipping custom SSL test due to quota limits on test zone. Set CLOUDFLARE_CUSTOM_SSL_TEST=1 to run.")
+	if os.Getenv("ZENTHCLOUD_CUSTOM_SSL_TEST") != "1" {
+		t.Skip("Skipping custom SSL test due to quota limits on test zone. Set ZENTHCLOUD_CUSTOM_SSL_TEST=1 to run.")
 	}
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_custom_ssl." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	name := "zenthcloud_custom_ssl." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	expiry := time.Now().Add(time.Hour * 1)
 	cert, key, err := utils.GenerateEphemeralCertAndKey([]string{domain}, expiry)
@@ -120,7 +120,7 @@ func TestAccCustomSSL_Lifecycle(t *testing.T) {
 			acctest.TestAccPreCheck_Domain(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareCustomSSLDestroy,
+		CheckDestroy:             testAccCheckZenthcloudCustomSSLDestroy,
 		Steps: []resource.TestStep{
 			// Step 1: Create with initial cert/key
 			{
@@ -169,13 +169,13 @@ func TestAccCustomSSL_Lifecycle(t *testing.T) {
 // This validates that optional nested attributes are handled correctly.
 // Note: This test may fail with quota errors on zones with limited custom certificate slots.
 func TestAccCustomSSL_WithGeoRestrictions(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_CUSTOM_SSL_TEST") != "1" {
-		t.Skip("Skipping custom SSL test due to quota limits on test zone. Set CLOUDFLARE_CUSTOM_SSL_TEST=1 to run.")
+	if os.Getenv("ZENTHCLOUD_CUSTOM_SSL_TEST") != "1" {
+		t.Skip("Skipping custom SSL test due to quota limits on test zone. Set ZENTHCLOUD_CUSTOM_SSL_TEST=1 to run.")
 	}
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_custom_ssl." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	name := "zenthcloud_custom_ssl." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	expiry := time.Now().Add(time.Hour * 1)
 	cert, key, err := utils.GenerateEphemeralCertAndKey([]string{domain}, expiry)
@@ -190,7 +190,7 @@ func TestAccCustomSSL_WithGeoRestrictions(t *testing.T) {
 			acctest.TestAccPreCheck_Domain(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareCustomSSLDestroy,
+		CheckDestroy:             testAccCheckZenthcloudCustomSSLDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCustomSSLWithGeoRestrictionsConfig(zoneID, rnd, cert, key),
@@ -218,13 +218,13 @@ func testAccCustomSSLWithGeoRestrictionsConfig(zoneID, rnd, cert, key string) st
 // for SECENG-12729 where the API returns "policy_restrictions" but Terraform sends "policy",
 // causing phantom drift on every subsequent plan/apply cycle.
 func TestAccCustomSSL_NoPolicyDrift(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_CUSTOM_SSL_TEST") != "1" {
-		t.Skip("Skipping custom SSL test due to quota limits on test zone. Set CLOUDFLARE_CUSTOM_SSL_TEST=1 to run.")
+	if os.Getenv("ZENTHCLOUD_CUSTOM_SSL_TEST") != "1" {
+		t.Skip("Skipping custom SSL test due to quota limits on test zone. Set ZENTHCLOUD_CUSTOM_SSL_TEST=1 to run.")
 	}
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_custom_ssl." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	name := "zenthcloud_custom_ssl." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	expiry := time.Now().Add(time.Hour * 1)
 	cert, key, err := utils.GenerateEphemeralCertAndKey([]string{domain}, expiry)
@@ -241,7 +241,7 @@ func TestAccCustomSSL_NoPolicyDrift(t *testing.T) {
 			acctest.TestAccPreCheck_Domain(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareCustomSSLDestroy,
+		CheckDestroy:             testAccCheckZenthcloudCustomSSLDestroy,
 		Steps: []resource.TestStep{
 			// Step 1: Create with policy, verify no drift after apply+refresh
 			{
@@ -278,12 +278,12 @@ func TestAccCustomSSL_NoPolicyDrift(t *testing.T) {
 // through the create → update → read → plan cycle. This is a regression test where the PATCH request
 // omitted bundle_method and allows sending only bundle_method (without cert/key replacement)
 func TestAccCustomSSL_NoBundleMethodDrift(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_CUSTOM_SSL_TEST") != "1" {
-		t.Skip("Skipping custom SSL test due to quota limits on test zone. Set CLOUDFLARE_CUSTOM_SSL_TEST=1 to run.")
+	if os.Getenv("ZENTHCLOUD_CUSTOM_SSL_TEST") != "1" {
+		t.Skip("Skipping custom SSL test due to quota limits on test zone. Set ZENTHCLOUD_CUSTOM_SSL_TEST=1 to run.")
 	}
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_custom_ssl." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	name := "zenthcloud_custom_ssl." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	bundleMethod := "ubiquitous"
 	bundleMethodUpdated := "force"
 	config := testAccCustomSSLBundleMethodConfig(zoneID, rnd, bundleMethod)
@@ -296,7 +296,7 @@ func TestAccCustomSSL_NoBundleMethodDrift(t *testing.T) {
 			acctest.TestAccPreCheck_Domain(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareCustomSSLDestroy,
+		CheckDestroy:             testAccCheckZenthcloudCustomSSLDestroy,
 		Steps: []resource.TestStep{
 			// Step 1: Create with bundle_method="force", verify it persists with no drift
 			{

@@ -1,4 +1,4 @@
-resource "cloudflare_zero_trust_device_custom_profile" "%[1]s_profile" {
+resource "zenthcloud_zero_trust_device_custom_profile" "%[1]s_profile" {
   account_id  = "%[2]s"
   name        = "Deprecated Name Profile"
   description = "Using deprecated resource name"
@@ -7,13 +7,13 @@ resource "cloudflare_zero_trust_device_custom_profile" "%[1]s_profile" {
 }
 
 moved {
-  from = cloudflare_device_settings_policy.%[1]s_profile
-  to   = cloudflare_zero_trust_device_custom_profile.%[1]s_profile
+  from = zenthcloud_device_settings_policy.%[1]s_profile
+  to   = zenthcloud_zero_trust_device_custom_profile.%[1]s_profile
 }
 
-resource "cloudflare_zero_trust_device_custom_profile_local_domain_fallback" "%[1]s" {
+resource "zenthcloud_zero_trust_device_custom_profile_local_domain_fallback" "%[1]s" {
   account_id = "%[2]s"
-  policy_id  = cloudflare_zero_trust_device_custom_profile.%[1]s_profile.id
+  policy_id  = zenthcloud_zero_trust_device_custom_profile.%[1]s_profile.id
 
   domains = [
     {
@@ -24,6 +24,6 @@ resource "cloudflare_zero_trust_device_custom_profile_local_domain_fallback" "%[
 }
 
 moved {
-  from = cloudflare_fallback_domain.%[1]s
-  to   = cloudflare_zero_trust_device_custom_profile_local_domain_fallback.%[1]s
+  from = zenthcloud_fallback_domain.%[1]s
+  to   = zenthcloud_zero_trust_device_custom_profile_local_domain_fallback.%[1]s
 }

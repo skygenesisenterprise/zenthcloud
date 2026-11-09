@@ -6,17 +6,17 @@ set -euo pipefail
 
 echo "📚 Starting kumo-docs staging deployment..."
 
-# Verify Cloudflare credentials
-if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
-  echo "❌ CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID are required"
+# Verify Zenthcloud credentials
+if [ -z "$ZENTHCLOUD_API_TOKEN" ] || [ -z "$ZENTHCLOUD_ACCOUNT_ID" ]; then
+  echo "❌ ZENTHCLOUD_API_TOKEN and ZENTHCLOUD_ACCOUNT_ID are required"
   exit 1
 fi
 
-echo "🔨 Building @cloudflare/kumo library..."
-pnpm --filter @cloudflare/kumo build
+echo "🔨 Building @zenthcloud/kumo library..."
+pnpm --filter @zenthcloud/kumo build
 
 echo "🔨 Building kumo-docs..."
-pnpm --filter @cloudflare/kumo-docs-astro build
+pnpm --filter @zenthcloud/kumo-docs-astro build
 
 echo "🚀 Deploying to staging..."
 cd packages/kumo-docs-astro

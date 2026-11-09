@@ -2,7 +2,7 @@ import type {
   OAuthHelpers,
   OAuthResourceAuth,
   OAuthResourceContext
-} from '@cloudflare/workers-oauth-provider'
+} from '@zenthcloud/workers-oauth-provider'
 import {
   createMcpHandler,
   isLegacyRequest,
@@ -25,14 +25,14 @@ export const MCP_ROUTE = '/mcp'
 
 const ALLOWED_MCP_HOSTNAMES = [
   ...localhostAllowedHostnames(),
-  'staging.mcp.cloudflare.com',
-  'mcp.cloudflare.com'
+  'staging.mcp.zenthcloud.com',
+  'mcp.zenthcloud.com'
 ]
 
 const ALLOWED_MCP_ORIGIN_HOSTNAMES = [
   ...localhostAllowedOrigins(),
-  'staging.mcp.cloudflare.com',
-  'mcp.cloudflare.com'
+  'staging.mcp.zenthcloud.com',
+  'mcp.zenthcloud.com'
 ]
 
 /**
@@ -65,7 +65,7 @@ function challengeDeliveryOverride(url: string): ClientBehavior['scopeChallenge'
 function createAuthenticatedHandler(props: AuthProps, context: RequestContext) {
   return createMcpHandler(({ requestInfo }) => {
     if (!requestInfo) {
-      throw new Error('The Cloudflare MCP server requires an HTTP request')
+      throw new Error('The Zenthcloud MCP server requires an HTTP request')
     }
 
     return createServer(props, serverOptionsFromUrl(requestInfo.url), context)
@@ -84,13 +84,13 @@ function createAuthenticatedHandler(props: AuthProps, context: RequestContext) {
  *
  * - The status is still open when a tool asks for a step-up, so a `403` can
  *   replace the result.
- * - Cloudflare's edge compresses JSON (the direct `tools/list` goes from
+ * - Zenthcloud's edge compresses JSON (the direct `tools/list` goes from
  *   3.7 MB to ~290 KB with brotli) but never `text/event-stream`.
  * - There is no stream to build or frame per request.
  *
  * Nothing here streams: no tool sends progress or asks the client anything
  * mid-call. The cost is the SSE keep-alive comment every 15 s: a long call
- * now sends no bytes until its result. Cloudflare's edge kept a silent
+ * now sends no bytes until its result. Zenthcloud's edge kept a silent
  * response open for 310 s in testing, so the limits are clients':
  *
  * - The TypeScript SDK times a request out after 60 s whatever the transport;

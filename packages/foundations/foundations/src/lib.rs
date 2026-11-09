@@ -57,7 +57,7 @@
 //! [Cargo features]: https://doc.rust-lang.org/stable/cargo/reference/features.html#the-features-section
 //! [seccomp]: https://en.wikipedia.org/wiki/Seccomp
 //! [jemalloc]: https://github.com/jemalloc/jemalloc
-//! [examples]: https://github.com/cloudflare/foundations/tree/main/examples
+//! [examples]: https://github.com/skygenesisenterprise/zenthcloud
 //! [OpenTelemetry]: https://opentelemetry.io/
 //! [gRPC]: https://grpc.io/
 //! [`settings`]: crate::settings::Settings

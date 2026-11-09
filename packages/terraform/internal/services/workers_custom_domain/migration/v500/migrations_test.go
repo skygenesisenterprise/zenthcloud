@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -73,14 +73,14 @@ func TestMigrateWorkersCustomDomain_Basic(t *testing.T) {
 				t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
 			}
 
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-			zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+			zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
 			rnd := utils.GenerateRandomResourceName()
 			hostname := fmt.Sprintf("%s.%s", rnd, zoneName)
 			workersService := testWorkersService()
 			workersEnvironment := testWorkersEnvironment()
-			resourceName := "cloudflare_workers_custom_domain.test"
+			resourceName := "zenthcloud_workers_custom_domain.test"
 			tmpDir := t.TempDir()
 			testConfig := fmt.Sprintf(tc.configFn(), accountID, zoneID, hostname, workersService, workersEnvironment)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -94,8 +94,8 @@ func TestMigrateWorkersCustomDomain_Basic(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -155,13 +155,13 @@ func TestMigrateWorkersCustomDomain_WithoutEnvironment(t *testing.T) {
 				t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
 			}
 
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-			zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+			zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
 			rnd := utils.GenerateRandomResourceName()
 			hostname := fmt.Sprintf("%s.%s", rnd, zoneName)
 			workersService := testWorkersService()
-			resourceName := "cloudflare_workers_custom_domain.test"
+			resourceName := "zenthcloud_workers_custom_domain.test"
 			tmpDir := t.TempDir()
 			testConfig := fmt.Sprintf(tc.configFn(), accountID, zoneID, hostname, workersService)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -180,8 +180,8 @@ func TestMigrateWorkersCustomDomain_WithoutEnvironment(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},

@@ -57,7 +57,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf user load-balancers pools delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/user/load_balancers/pools/${argv["pool-id"] == null ? "<pool-id>" : encodeURIComponent(String(argv["pool-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["pool-id"] == null ? "<pool-id>" : encodeURIComponent(String(argv["pool-id"]))}`,
 						pathParams: { "pool-id": String(argv["pool-id"] ?? "") },
 						bodyKind: "none",
 					});

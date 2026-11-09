@@ -9,10 +9,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -23,22 +23,22 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zero_trust_access_identity_provider", &resource.Sweeper{
-		Name: "cloudflare_zero_trust_access_identity_provider",
-		F:    testSweepCloudflareAccessIdentityProviders,
+	resource.AddTestSweepers("zenthcloud_zero_trust_access_identity_provider", &resource.Sweeper{
+		Name: "zenthcloud_zero_trust_access_identity_provider",
+		F:    testSweepZenthcloudAccessIdentityProviders,
 	})
 }
 
-func testSweepCloudflareAccessIdentityProviders(r string) error {
+func testSweepZenthcloudAccessIdentityProviders(r string) error {
 	ctx := context.Background()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 		return clientErr
 	}
 
-	accessIDPs, _, accessIDPsErr := client.ListAccessIdentityProviders(ctx, cloudflare.AccountIdentifier(accountID), cloudflare.ListAccessIdentityProvidersParams{})
+	accessIDPs, _, accessIDPsErr := client.ListAccessIdentityProviders(ctx, zenthcloud.AccountIdentifier(accountID), zenthcloud.ListAccessIdentityProvidersParams{})
 	if accessIDPsErr != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Access Identity Providers: %s", accessIDPsErr))
 		return accessIDPsErr
@@ -54,7 +54,7 @@ func testSweepCloudflareAccessIdentityProviders(r string) error {
 			continue
 		}
 		tflog.Info(ctx, fmt.Sprintf("Deleting Access Identity Provider: %s (%s) (account: %s)", idp.Name, idp.ID, accountID))
-		_, err := client.DeleteAccessIdentityProvider(ctx, cloudflare.AccountIdentifier(accountID), idp.ID)
+		_, err := client.DeleteAccessIdentityProvider(ctx, zenthcloud.AccountIdentifier(accountID), idp.ID)
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete Access Identity Provider %s (%s): %s", idp.Name, idp.ID, err))
 			continue
@@ -65,18 +65,18 @@ func testSweepCloudflareAccessIdentityProviders(r string) error {
 	return nil
 }
 
-func TestAccCloudflareAccessIdentityProvider_OneTimePin(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the OTP Access
+func TestAccZenthcloudAccessIdentityProvider_OneTimePin(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the OTP Access
 	// endpoint does not yet support the API tokens for updates and it results in
 	// state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_identity_provider." + rnd
+	resourceName := "zenthcloud_zero_trust_access_identity_provider." + rnd
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
@@ -85,14 +85,14 @@ func TestAccCloudflareAccessIdentityProvider_OneTimePin(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareAccessIdentityProviderOneTimePin(rnd, cloudflare.AccountIdentifier(accountID)),
+				Config: testAccCheckZenthcloudAccessIdentityProviderOneTimePin(rnd, zenthcloud.AccountIdentifier(accountID)),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(resourceName, "name", rnd),
 					resource.TestCheckResourceAttr(resourceName, "type", "onetimepin"),
 					resource.TestCheckResourceAttrWith(resourceName, "config.redirect_url", func(value string) error {
-						if !strings.HasSuffix(value, ".cloudflareaccess.com/cdn-cgi/access/callback") {
-							return fmt.Errorf("expected redirect_url to be a Cloudflare Access URL, got %s", value)
+						if !strings.HasSuffix(value, ".zenthcloudaccess.com/cdn-cgi/access/callback") {
+							return fmt.Errorf("expected redirect_url to be a Zenthcloud Access URL, got %s", value)
 						}
 						return nil
 					}),
@@ -100,7 +100,7 @@ func TestAccCloudflareAccessIdentityProvider_OneTimePin(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCheckCloudflareAccessIdentityProviderOneTimePin(rnd, cloudflare.AccountIdentifier(accountID)),
+				Config:   testAccCheckZenthcloudAccessIdentityProviderOneTimePin(rnd, zenthcloud.AccountIdentifier(accountID)),
 				PlanOnly: true,
 			},
 		},
@@ -113,14 +113,14 @@ func TestAccCloudflareAccessIdentityProvider_OneTimePin(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareAccessIdentityProviderOneTimePin(rnd, cloudflare.ZoneIdentifier(zoneID)),
+				Config: testAccCheckZenthcloudAccessIdentityProviderOneTimePin(rnd, zenthcloud.ZoneIdentifier(zoneID)),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(resourceName, "name", rnd),
 					resource.TestCheckResourceAttr(resourceName, "type", "onetimepin"),
 					resource.TestCheckResourceAttrWith(resourceName, "config.redirect_url", func(value string) error {
-						if !strings.HasSuffix(value, ".cloudflareaccess.com/cdn-cgi/access/callback") {
-							return fmt.Errorf("expected redirect_url to be a Cloudflare Access URL, got %s", value)
+						if !strings.HasSuffix(value, ".zenthcloudaccess.com/cdn-cgi/access/callback") {
+							return fmt.Errorf("expected redirect_url to be a Zenthcloud Access URL, got %s", value)
 						}
 						return nil
 					}),
@@ -128,18 +128,18 @@ func TestAccCloudflareAccessIdentityProvider_OneTimePin(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCheckCloudflareAccessIdentityProviderOneTimePin(rnd, cloudflare.ZoneIdentifier(zoneID)),
+				Config:   testAccCheckZenthcloudAccessIdentityProviderOneTimePin(rnd, zenthcloud.ZoneIdentifier(zoneID)),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessIdentityProvider_OAuth(t *testing.T) {
+func TestAccZenthcloudAccessIdentityProvider_OAuth(t *testing.T) {
 	t.Parallel()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_identity_provider." + rnd
+	resourceName := "zenthcloud_zero_trust_access_identity_provider." + rnd
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
@@ -148,7 +148,7 @@ func TestAccCloudflareAccessIdentityProvider_OAuth(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareAccessIdentityProviderOAuth(accountID, rnd),
+				Config: testAccCheckZenthcloudAccessIdentityProviderOAuth(accountID, rnd),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(resourceName, "name", rnd),
@@ -159,18 +159,18 @@ func TestAccCloudflareAccessIdentityProvider_OAuth(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCheckCloudflareAccessIdentityProviderOAuth(accountID, rnd),
+				Config:   testAccCheckZenthcloudAccessIdentityProviderOAuth(accountID, rnd),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessIdentityProvider_OAuthWithUpdate(t *testing.T) {
+func TestAccZenthcloudAccessIdentityProvider_OAuthWithUpdate(t *testing.T) {
 	t.Parallel()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_identity_provider." + rnd
+	resourceName := "zenthcloud_zero_trust_access_identity_provider." + rnd
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
@@ -179,7 +179,7 @@ func TestAccCloudflareAccessIdentityProvider_OAuthWithUpdate(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareAccessIdentityProviderOAuth(accountID, rnd),
+				Config: testAccCheckZenthcloudAccessIdentityProviderOAuth(accountID, rnd),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(resourceName, "name", rnd),
@@ -190,11 +190,11 @@ func TestAccCloudflareAccessIdentityProvider_OAuthWithUpdate(t *testing.T) {
 			},
 			{
 				// Ensures no diff on second plan
-				Config:   testAccCheckCloudflareAccessIdentityProviderOAuth(accountID, rnd),
+				Config:   testAccCheckZenthcloudAccessIdentityProviderOAuth(accountID, rnd),
 				PlanOnly: true,
 			},
 			{
-				Config: testAccCheckCloudflareAccessIdentityProviderOAuthUpdatedName(accountID, rnd),
+				Config: testAccCheckZenthcloudAccessIdentityProviderOAuthUpdatedName(accountID, rnd),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(resourceName, "name", rnd+"-updated"),
@@ -205,18 +205,18 @@ func TestAccCloudflareAccessIdentityProvider_OAuthWithUpdate(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCheckCloudflareAccessIdentityProviderOAuthUpdatedName(accountID, rnd),
+				Config:   testAccCheckZenthcloudAccessIdentityProviderOAuthUpdatedName(accountID, rnd),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessIdentityProvider_SAML(t *testing.T) {
+func TestAccZenthcloudAccessIdentityProvider_SAML(t *testing.T) {
 	t.Parallel()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_identity_provider." + rnd
+	resourceName := "zenthcloud_zero_trust_access_identity_provider." + rnd
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
@@ -225,13 +225,13 @@ func TestAccCloudflareAccessIdentityProvider_SAML(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareAccessIdentityProviderSAML(accountID, rnd),
+				Config: testAccCheckZenthcloudAccessIdentityProviderSAML(accountID, rnd),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(resourceName, "name", rnd),
 					resource.TestCheckResourceAttr(resourceName, "type", "saml"),
 					resource.TestCheckResourceAttr(resourceName, "config.issuer_url", "jumpcloud"),
-					resource.TestCheckResourceAttr(resourceName, "config.sso_target_url", "https://sso.myexample.jumpcloud.com/saml2/cloudflareaccess"),
+					resource.TestCheckResourceAttr(resourceName, "config.sso_target_url", "https://github.com/skygenesisenterprise/zenthcloud"),
 					resource.TestCheckResourceAttr(resourceName, "config.attributes.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "config.attributes.0", "email"),
 					resource.TestCheckResourceAttr(resourceName, "config.attributes.1", "username"),
@@ -240,18 +240,18 @@ func TestAccCloudflareAccessIdentityProvider_SAML(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCheckCloudflareAccessIdentityProviderSAML(accountID, rnd),
+				Config:   testAccCheckZenthcloudAccessIdentityProviderSAML(accountID, rnd),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessIdentityProvider_AzureAD(t *testing.T) {
+func TestAccZenthcloudAccessIdentityProvider_AzureAD(t *testing.T) {
 	t.Parallel()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_identity_provider." + rnd
+	resourceName := "zenthcloud_zero_trust_access_identity_provider." + rnd
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
@@ -260,7 +260,7 @@ func TestAccCloudflareAccessIdentityProvider_AzureAD(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareAccessIdentityProviderAzureAD(accountID, rnd),
+				Config: testAccCheckZenthcloudAccessIdentityProviderAzureAD(accountID, rnd),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(resourceName, "name", rnd),
@@ -274,18 +274,18 @@ func TestAccCloudflareAccessIdentityProvider_AzureAD(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCheckCloudflareAccessIdentityProviderAzureAD(accountID, rnd),
+				Config:   testAccCheckZenthcloudAccessIdentityProviderAzureAD(accountID, rnd),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessIdentityProvider_OAuth_Import(t *testing.T) {
+func TestAccZenthcloudAccessIdentityProvider_OAuth_Import(t *testing.T) {
 	t.Parallel()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_identity_provider." + rnd
+	resourceName := "zenthcloud_zero_trust_access_identity_provider." + rnd
 
 	checkFn := resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr(resourceName, consts.AccountIDSchemaKey, accountID),
@@ -303,16 +303,16 @@ func TestAccCloudflareAccessIdentityProvider_OAuth_Import(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareAccessIdentityProviderOAuth(accountID, rnd),
+				Config: testAccCheckZenthcloudAccessIdentityProviderOAuth(accountID, rnd),
 				Check:  checkFn,
 			},
 			{
 				// Ensures no diff on second plan
-				Config:   testAccCheckCloudflareAccessIdentityProviderOAuth(accountID, rnd),
+				Config:   testAccCheckZenthcloudAccessIdentityProviderOAuth(accountID, rnd),
 				PlanOnly: true,
 			},
 			{
-				Config:            testAccCheckCloudflareAccessIdentityProviderOAuth(accountID, rnd),
+				Config:            testAccCheckZenthcloudAccessIdentityProviderOAuth(accountID, rnd),
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
@@ -327,11 +327,11 @@ func TestAccCloudflareAccessIdentityProvider_OAuth_Import(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareAccessIdentityProvider_SCIM_Config_Secret(t *testing.T) {
+func TestAccZenthcloudAccessIdentityProvider_SCIM_Config_Secret(t *testing.T) {
 	t.Parallel()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_identity_provider." + rnd
+	resourceName := "zenthcloud_zero_trust_access_identity_provider." + rnd
 
 	checkFn := resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttrWith(resourceName, "scim_config.secret", func(value string) error {
@@ -351,32 +351,32 @@ func TestAccCloudflareAccessIdentityProvider_SCIM_Config_Secret(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareAccessIdentityProviderAzureAD(accountID, rnd),
+				Config: testAccCheckZenthcloudAccessIdentityProviderAzureAD(accountID, rnd),
 				Check:  checkFn,
 			},
 			{
 				// Ensures no diff on second plan
-				Config:   testAccCheckCloudflareAccessIdentityProviderAzureAD(accountID, rnd),
+				Config:   testAccCheckZenthcloudAccessIdentityProviderAzureAD(accountID, rnd),
 				PlanOnly: true,
 			},
 			{
-				Config: testAccCheckCloudflareAccessIdentityProviderAzureADUpdated(accountID, rnd),
+				Config: testAccCheckZenthcloudAccessIdentityProviderAzureADUpdated(accountID, rnd),
 				Check:  checkFn,
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCheckCloudflareAccessIdentityProviderAzureADUpdated(accountID, rnd),
+				Config:   testAccCheckZenthcloudAccessIdentityProviderAzureADUpdated(accountID, rnd),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessIdentityProvider_SCIM_Secret_Enabled_After_Resource_Creation(t *testing.T) {
+func TestAccZenthcloudAccessIdentityProvider_SCIM_Secret_Enabled_After_Resource_Creation(t *testing.T) {
 	t.Parallel()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_identity_provider." + rnd
+	resourceName := "zenthcloud_zero_trust_access_identity_provider." + rnd
 
 	checkFn := resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttrWith(resourceName, "scim_config.secret", func(value string) error {
@@ -395,45 +395,45 @@ func TestAccCloudflareAccessIdentityProvider_SCIM_Secret_Enabled_After_Resource_
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareAccessIdentityProviderAzureADNoSCIM(accountID, rnd),
+				Config: testAccCheckZenthcloudAccessIdentityProviderAzureADNoSCIM(accountID, rnd),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckNoResourceAttr(resourceName, "scim_config.secret"),
 				),
 			},
 			{
-				Config:   testAccCheckCloudflareAccessIdentityProviderAzureADNoSCIM(accountID, rnd),
+				Config:   testAccCheckZenthcloudAccessIdentityProviderAzureADNoSCIM(accountID, rnd),
 				PlanOnly: true,
 			},
 			{
-				Config: testAccCheckCloudflareAccessIdentityProviderAzureAD(accountID, rnd),
+				Config: testAccCheckZenthcloudAccessIdentityProviderAzureAD(accountID, rnd),
 				Check:  checkFn,
 			},
 			{
-				Config:   testAccCheckCloudflareAccessIdentityProviderAzureAD(accountID, rnd),
+				Config:   testAccCheckZenthcloudAccessIdentityProviderAzureAD(accountID, rnd),
 				PlanOnly: true,
 			},
 			{
-				Config: testAccCheckCloudflareAccessIdentityProviderAzureADUpdated(accountID, rnd),
+				Config: testAccCheckZenthcloudAccessIdentityProviderAzureADUpdated(accountID, rnd),
 				Check:  checkFn,
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCheckCloudflareAccessIdentityProviderAzureADUpdated(accountID, rnd),
+				Config:   testAccCheckZenthcloudAccessIdentityProviderAzureADUpdated(accountID, rnd),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessIdentityProvider_OneTimePin_ConflictsWithSCIM(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the OTP Access
+func TestAccZenthcloudAccessIdentityProvider_OneTimePin_ConflictsWithSCIM(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the OTP Access
 	// endpoint does not yet support the API tokens for updates and it results in
 	// state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -443,51 +443,51 @@ func TestAccCloudflareAccessIdentityProvider_OneTimePin_ConflictsWithSCIM(t *tes
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCheckCloudflareAccessIdentityProviderOneTimePinWithScim(rnd, cloudflare.AccountIdentifier(accountID)),
+				Config:      testAccCheckZenthcloudAccessIdentityProviderOneTimePinWithScim(rnd, zenthcloud.AccountIdentifier(accountID)),
 				ExpectError: regexp.MustCompile(`"scim_config" can not be set if "type" is one of: "onetimepin"`),
 			},
 		},
 	})
 }
 
-func testAccCheckCloudflareAccessIdentityProviderOneTimePin(name string, identifier *cloudflare.ResourceContainer) string {
+func testAccCheckZenthcloudAccessIdentityProviderOneTimePin(name string, identifier *zenthcloud.ResourceContainer) string {
 	return acctest.LoadTestCase("accessidentityprovideronetimepin.tf", name, identifier.Type, identifier.Identifier)
 }
 
-func testAccCheckCloudflareAccessIdentityProviderOneTimePinWithScim(name string, identifier *cloudflare.ResourceContainer) string {
+func testAccCheckZenthcloudAccessIdentityProviderOneTimePinWithScim(name string, identifier *zenthcloud.ResourceContainer) string {
 	return acctest.LoadTestCase("accessidentityprovideronetimepinwithscim.tf", name, identifier.Type, identifier.Identifier)
 }
 
-func testAccCheckCloudflareAccessIdentityProviderOAuth(accountID, name string) string {
+func testAccCheckZenthcloudAccessIdentityProviderOAuth(accountID, name string) string {
 	return acctest.LoadTestCase("accessidentityprovideroauth.tf", accountID, name)
 }
 
-func testAccCheckCloudflareAccessIdentityProviderOAuthUpdatedName(accountID, name string) string {
+func testAccCheckZenthcloudAccessIdentityProviderOAuthUpdatedName(accountID, name string) string {
 	return acctest.LoadTestCase("accessidentityprovideroauthupdatedname.tf", accountID, name)
 }
 
-func testAccCheckCloudflareAccessIdentityProviderSAML(accountID, name string) string {
+func testAccCheckZenthcloudAccessIdentityProviderSAML(accountID, name string) string {
 	return acctest.LoadTestCase("accessidentityprovidersaml.tf", accountID, name)
 }
 
-func testAccCheckCloudflareAccessIdentityProviderAzureAD(accountID, name string) string {
+func testAccCheckZenthcloudAccessIdentityProviderAzureAD(accountID, name string) string {
 	return acctest.LoadTestCase("accessidentityproviderazuread.tf", accountID, name)
 }
 
-func testAccCheckCloudflareAccessIdentityProviderAzureADUpdated(accountID, name string) string {
+func testAccCheckZenthcloudAccessIdentityProviderAzureADUpdated(accountID, name string) string {
 	return acctest.LoadTestCase("accessidentityproviderazureadupdated.tf", accountID, name)
 }
 
-func testAccCheckCloudflareAccessIdentityProviderAzureADNoSCIM(accountID, name string) string {
+func testAccCheckZenthcloudAccessIdentityProviderAzureADNoSCIM(accountID, name string) string {
 	return acctest.LoadTestCase("accessidentityproviderazureadnoscim.tf", accountID, name)
 }
 
 func TestAccUpgradeZeroTrustAccessIdentityProvider_FromPublishedV5(t *testing.T) {
 	t.Skip("Failed to marshal state to json: schema version 0 in state does not match version 1 from the provider")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 
-	config := testAccCheckCloudflareAccessIdentityProviderOneTimePin(rnd, cloudflare.AccountIdentifier(accountID))
+	config := testAccCheckZenthcloudAccessIdentityProviderOneTimePin(rnd, zenthcloud.AccountIdentifier(accountID))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -497,8 +497,8 @@ func TestAccUpgradeZeroTrustAccessIdentityProvider_FromPublishedV5(t *testing.T)
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

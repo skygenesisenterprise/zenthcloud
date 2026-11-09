@@ -5,9 +5,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -17,13 +17,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_universal_ssl_setting", &resource.Sweeper{
-		Name: "cloudflare_universal_ssl_setting",
-		F:    testSweepCloudflareUniversalSSLSetting,
+	resource.AddTestSweepers("zenthcloud_universal_ssl_setting", &resource.Sweeper{
+		Name: "zenthcloud_universal_ssl_setting",
+		F:    testSweepZenthcloudUniversalSSLSetting,
 	})
 }
 
-func testSweepCloudflareUniversalSSLSetting(r string) error {
+func testSweepZenthcloudUniversalSSLSetting(r string) error {
 	ctx := context.Background()
 	// Universal SSL Setting is a zone-level SSL configuration setting.
 	// It's a singleton setting per zone, not something that accumulates.
@@ -36,10 +36,10 @@ func testUniversalSSLSettingConfig(rnd, zoneID string, enabled bool) string {
 	return acctest.LoadTestCase("universalssl.tf", rnd, zoneID, enabled)
 }
 
-func TestAccCloudflareUniversalSSLSetting_Basic(t *testing.T) {
+func TestAccZenthcloudUniversalSSLSetting_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_universal_ssl_setting." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	name := "zenthcloud_universal_ssl_setting." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },

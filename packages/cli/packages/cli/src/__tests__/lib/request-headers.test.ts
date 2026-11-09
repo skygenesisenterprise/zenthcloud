@@ -10,7 +10,7 @@ import {
 /**
  * Unit tests for `lib/request-headers.ts` — the default outbound headers
  * (`User-Agent`, `X-CF-CLI-Mode`, optional `X-CF-CLI-Agent`) stamped on
- * every Cloudflare request.
+ * every Zenthcloud request.
  *
  * The execution-mode + agent detection depend on ambient state (TTY, CI
  * env, agentic harness) that a test process can't reliably reproduce, so
@@ -36,7 +36,7 @@ const mocks = vi.hoisted(() => ({
 	>(),
 }));
 
-vi.mock("@cloudflare/cli-shared-helpers/interactive", () => ({
+vi.mock("@zenthcloud/cli-shared-helpers/interactive", () => ({
 	isInteractive: mocks.isInteractive,
 }));
 

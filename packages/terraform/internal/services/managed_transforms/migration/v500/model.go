@@ -1,17 +1,17 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // ============================================================================
-// Source Models (Legacy Provider - v4.x: cloudflare_managed_headers)
+// Source Models (Legacy Provider - v4.x: zenthcloud_managed_headers)
 // ============================================================================
 
 // SourceManagedHeadersModel represents the legacy resource state from v4.x provider.
 // Schema version: 0 (v4 provider default)
-// Resource type: cloudflare_managed_headers (renamed to cloudflare_managed_transforms in v5)
+// Resource type: zenthcloud_managed_headers (renamed to zenthcloud_managed_transforms in v5)
 //
 // Key differences from v5:
 // - managed_request_headers and managed_response_headers were optional (could be null)
@@ -29,12 +29,12 @@ type SourceHeaderEntryModel struct {
 }
 
 // ============================================================================
-// Target Models (Current Provider - v5.x+: cloudflare_managed_transforms)
+// Target Models (Current Provider - v5.x+: zenthcloud_managed_transforms)
 // ============================================================================
 
 // TargetManagedTransformsModel represents the current resource state from v5.x+ provider.
 // Schema version: 500
-// Resource type: cloudflare_managed_transforms
+// Resource type: zenthcloud_managed_transforms
 type TargetManagedTransformsModel struct {
 	ID                     types.String                                                                  `tfsdk:"id"`
 	ZoneID                 types.String                                                                  `tfsdk:"zone_id"`

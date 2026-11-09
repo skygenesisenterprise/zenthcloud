@@ -16,23 +16,23 @@ import (
 	"github.com/quic-go/quic-go"
 	"github.com/rs/zerolog"
 
-	"github.com/cloudflare/cloudflared/client"
-	"github.com/cloudflare/cloudflared/connection"
-	"github.com/cloudflare/cloudflared/connection/dialopts"
-	cfdcrypto "github.com/cloudflare/cloudflared/crypto"
-	"github.com/cloudflare/cloudflared/edgediscovery"
-	"github.com/cloudflare/cloudflared/edgediscovery/allregions"
-	"github.com/cloudflare/cloudflared/features"
-	"github.com/cloudflare/cloudflared/ingress"
-	"github.com/cloudflare/cloudflared/ingress/origins"
-	"github.com/cloudflare/cloudflared/management"
-	"github.com/cloudflare/cloudflared/orchestration"
-	quicpogs "github.com/cloudflare/cloudflared/quic"
-	v3 "github.com/cloudflare/cloudflared/quic/v3"
-	"github.com/cloudflare/cloudflared/retry"
-	"github.com/cloudflare/cloudflared/signal"
-	"github.com/cloudflare/cloudflared/tunnelrpc/pogs"
-	"github.com/cloudflare/cloudflared/tunnelstate"
+	"github.com/zenthcloud/zenthcloudd/client"
+	"github.com/zenthcloud/zenthcloudd/connection"
+	"github.com/zenthcloud/zenthcloudd/connection/dialopts"
+	cfdcrypto "github.com/zenthcloud/zenthcloudd/crypto"
+	"github.com/zenthcloud/zenthcloudd/edgediscovery"
+	"github.com/zenthcloud/zenthcloudd/edgediscovery/allregions"
+	"github.com/zenthcloud/zenthcloudd/features"
+	"github.com/zenthcloud/zenthcloudd/ingress"
+	"github.com/zenthcloud/zenthcloudd/ingress/origins"
+	"github.com/zenthcloud/zenthcloudd/management"
+	"github.com/zenthcloud/zenthcloudd/orchestration"
+	quicpogs "github.com/zenthcloud/zenthcloudd/quic"
+	v3 "github.com/zenthcloud/zenthcloudd/quic/v3"
+	"github.com/zenthcloud/zenthcloudd/retry"
+	"github.com/zenthcloud/zenthcloudd/signal"
+	"github.com/zenthcloud/zenthcloudd/tunnelrpc/pogs"
+	"github.com/zenthcloud/zenthcloudd/tunnelstate"
 )
 
 const (
@@ -235,7 +235,7 @@ func (e *EdgeTunnelServer) Serve(ctx context.Context, connIndex uint8, protocolF
 	}
 
 	logger := e.config.Log.With().
-		Int(management.EventTypeKey, int(management.Cloudflared)).
+		Int(management.EventTypeKey, int(management.Zenthcloudd)).
 		IPAddr(connection.LogFieldIPAddress, addr.UDP.IP).
 		Uint8(connection.LogFieldConnIndex, connIndex).
 		Logger()
@@ -351,12 +351,12 @@ func selectNextProtocol(
 
 	if protocolBackoff.ReachedMaxRetries() || (hasFallback && isQuicBroken) {
 		if isQuicBroken {
-			connLog.Warn().Msg("If this log occurs persistently, and cloudflared is unable to connect to " +
-				"Cloudflare Network with `quic` protocol, then most likely your machine/network is getting its egress " +
+			connLog.Warn().Msg("If this log occurs persistently, and zenthcloudd is unable to connect to " +
+				"Zenthcloud Network with `quic` protocol, then most likely your machine/network is getting its egress " +
 				"UDP to port 7844 (or others) blocked or dropped. Make sure to allow egress connectivity as per " +
-				"https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/configuration/ports-and-ips/\n" +
+				"https://github.com/skygenesisenterprise/zenthcloud\n" +
 				"If you are using private routing to this Tunnel, then ICMP, UDP (and Private DNS Resolution) will not work " +
-				"unless your cloudflared can connect with Cloudflare Network with `quic`.")
+				"unless your zenthcloudd can connect with Zenthcloud Network with `quic`.")
 		}
 
 		fallback, hasFallback := selector.Fallback()
@@ -511,7 +511,7 @@ func (e *EdgeTunnelServer) serveConnection(
 			if ctx.Err() != nil {
 				return err, true
 			}
-			connLog.ConnAwareLogger().Err(err).Msg("Unable to establish connection with Cloudflare edge")
+			connLog.ConnAwareLogger().Err(err).Msg("Unable to establish connection with Zenthcloud edge")
 			return err, true
 		}
 

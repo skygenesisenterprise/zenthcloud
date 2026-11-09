@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf intel asn get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/intel/asn/${argv["asn"] == null ? "<asn>" : encodeURIComponent(String(argv["asn"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/intel/asn/${argv["asn"] == null ? "<asn>" : encodeURIComponent(String(argv["asn"]))}`,
 						pathParams: { asn: String(argv["asn"] ?? "") },
 						bodyKind: "none",
 					});

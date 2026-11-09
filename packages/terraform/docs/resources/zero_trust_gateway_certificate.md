@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zero_trust_gateway_certificate Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_gateway_certificate Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zero_trust_gateway_certificate (Resource)
+# zenthcloud_zero_trust_gateway_certificate (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_gateway_certificate" "example_zero_trust_gateway_certificate" {
+resource "zenthcloud_zero_trust_gateway_certificate" "example_zero_trust_gateway_certificate" {
   account_id = "699d98642c564d2e855e9661899b7252"
   validity_period_days = 1826
 }
@@ -23,16 +23,16 @@ resource "cloudflare_zero_trust_gateway_certificate" "example_zero_trust_gateway
 
 ### Required
 
-- `account_id` (String) Specify the Cloudflare account identifier.
+- `account_id` (String) Specify the Zenthcloud account identifier.
 
 ### Optional
 
-- `activate` (Boolean) Whether to activate the certificate on Cloudflare's edge. When true, the certificate will be activated. When false, the certificate will be deactivated at the edge. This is a Terraform-only field and does not appear in the API response. Monitor `binding_status` for the activation status. Once a certificate is activated, you may use the certificate to intercept traffic
+- `activate` (Boolean) Whether to activate the certificate on Zenthcloud's edge. When true, the certificate will be activated. When false, the certificate will be deactivated at the edge. This is a Terraform-only field and does not appear in the API response. Monitor `binding_status` for the activation status. Once a certificate is activated, you may use the certificate to intercept traffic
 - `validity_period_days` (Number) Sets the certificate validity period in days (range: 1-10,950 days / ~30 years). Defaults to 1,825 days (5 years). **Important**: This field is only settable during the certificate creation.  Certificates becomes immutable after creation - use the `/activate` and `/deactivate` endpoints to manage certificate lifecycle.
 
 ### Read-Only
 
-- `binding_status` (String) Indicate the read-only deployment status of the certificate on Cloudflare's edge. Gateway TLS interception can use certificates in the 'available' (previously called 'active') state.
+- `binding_status` (String) Indicate the read-only deployment status of the certificate on Zenthcloud's edge. Gateway TLS interception can use certificates in the 'available' (previously called 'active') state.
 Available values: "pending_deployment", "available", "pending_deletion", "inactive".
 - `certificate` (String) Provide the CA certificate (read-only).
 - `created_at` (String)
@@ -53,7 +53,7 @@ Available values: "custom", "gateway_managed".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_gateway_certificate.example '<account_id>/<certificate_id>'
+$ terraform import zenthcloud_zero_trust_gateway_certificate.example '<account_id>/<certificate_id>'
 ```
 
 

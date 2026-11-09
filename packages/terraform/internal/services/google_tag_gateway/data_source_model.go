@@ -5,8 +5,8 @@ package google_tag_gateway
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/google_tag_gateway"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/google_tag_gateway"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -27,7 +27,7 @@ type GoogleTagGatewayDataSourceModel struct {
 
 func (m *GoogleTagGatewayDataSourceModel) toReadParams(_ context.Context) (params google_tag_gateway.ConfigGetParams, diags diag.Diagnostics) {
 	params = google_tag_gateway.ConfigGetParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	return

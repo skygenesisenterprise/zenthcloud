@@ -6,11 +6,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/email_routing"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/email_routing"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -21,21 +21,21 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_email_routing_catch_all", &resource.Sweeper{
-		Name: "cloudflare_email_routing_catch_all",
+	resource.AddTestSweepers("zenthcloud_email_routing_catch_all", &resource.Sweeper{
+		Name: "zenthcloud_email_routing_catch_all",
 		F: func(region string) error {
 			ctx := context.Background()
 			client := acctest.SharedClient()
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 			if zoneID == "" {
-				tflog.Info(ctx, "Skipping email routing catch-all sweep: CLOUDFLARE_ZONE_ID not set")
+				tflog.Info(ctx, "Skipping email routing catch-all sweep: ZENTHCLOUD_ZONE_ID not set")
 				return nil
 			}
 
 			// Get the catch-all rule
 			catchAll, err := client.EmailRouting.Rules.CatchAlls.Get(ctx, email_routing.RuleCatchAllGetParams{
-				ZoneID: cloudflare.F(zoneID),
+				ZoneID: zenthcloud.F(zoneID),
 			})
 			if err != nil {
 				tflog.Error(ctx, fmt.Sprintf("Failed to fetch email routing catch-all: %s", err))
@@ -48,21 +48,21 @@ func init() {
 				actionParams := make([]email_routing.CatchAllActionParam, 0)
 				for _, action := range catchAll.Actions {
 					actionParams = append(actionParams, email_routing.CatchAllActionParam{
-						Type:  cloudflare.F(action.Type),
-						Value: cloudflare.F(action.Value),
+						Type:  zenthcloud.F(action.Type),
+						Value: zenthcloud.F(action.Value),
 					})
 				}
 				matcherParams := make([]email_routing.CatchAllMatcherParam, 0)
 				for _, matcher := range catchAll.Matchers {
 					matcherParams = append(matcherParams, email_routing.CatchAllMatcherParam{
-						Type: cloudflare.F(matcher.Type),
+						Type: zenthcloud.F(matcher.Type),
 					})
 				}
 				_, err := client.EmailRouting.Rules.CatchAlls.Update(ctx, email_routing.RuleCatchAllUpdateParams{
-					ZoneID:   cloudflare.F(zoneID),
-					Actions:  cloudflare.F(actionParams),
-					Matchers: cloudflare.F(matcherParams),
-					Enabled:  cloudflare.F(email_routing.RuleCatchAllUpdateParamsEnabledFalse),
+					ZoneID:   zenthcloud.F(zoneID),
+					Actions:  zenthcloud.F(actionParams),
+					Matchers: zenthcloud.F(matcherParams),
+					Enabled:  zenthcloud.F(email_routing.RuleCatchAllUpdateParamsEnabledFalse),
 				})
 				if err != nil {
 					tflog.Error(ctx, fmt.Sprintf("Failed to disable email routing catch-all: %s", err))
@@ -82,10 +82,10 @@ func testEmailRoutingRuleCatchAllConfig(resourceID, zoneID string, enabled bool)
 	return acctest.LoadTestCase("emailroutingrulecatchallconfig.tf", resourceID, zoneID, enabled)
 }
 
-func TestAccCloudflareEmailRoutingCatchAll(t *testing.T) {
+func TestAccZenthcloudEmailRoutingCatchAll(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_email_routing_catch_all." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	name := "zenthcloud_email_routing_catch_all." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -102,7 +102,7 @@ func TestAccCloudflareEmailRoutingCatchAll(t *testing.T) {
 
 					resource.TestCheckResourceAttr(name, "actions.0.type", "forward"),
 					resource.TestCheckResourceAttr(name, "actions.0.value.#", "1"),
-					resource.TestCheckResourceAttr(name, "actions.0.value.0", "terraform-provider-acct@cloudflare.com"),
+					resource.TestCheckResourceAttr(name, "actions.0.value.0", "terraform-provider-acct@zenthcloud.com"),
 				),
 			},
 		},
@@ -111,7 +111,7 @@ func TestAccCloudflareEmailRoutingCatchAll(t *testing.T) {
 
 func TestAccUpgradeEmailRoutingCatchAll_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	config := testEmailRoutingRuleCatchAllConfig(rnd, zoneID, true)
 
@@ -120,8 +120,8 @@ func TestAccUpgradeEmailRoutingCatchAll_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

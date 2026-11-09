@@ -1,11 +1,11 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
 // Tests the cap on how deeply blockConcurrencyWhile() calls may be nested. Nesting beyond
 // MAX_BLOCK_CONCURRENCY_WHILE_DEPTH throws synchronously.
 import assert from 'node:assert';
-import { DurableObject } from 'cloudflare:workers';
+import { DurableObject } from 'zenthcloud:workers';
 
 // The limit enforced in io-context.h. A call whose critical-section depth is <= this is allowed;
 // the first call past it throws.

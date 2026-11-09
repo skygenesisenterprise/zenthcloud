@@ -1,9 +1,9 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
-import { default as cffs } from 'cloudflare-internal:filesystem';
-import type { DirEntryHandle } from 'cloudflare-internal:filesystem';
+import { default as cffs } from 'zenthcloud-internal:filesystem';
+import type { DirEntryHandle } from 'zenthcloud-internal:filesystem';
 import { normalizePath } from 'node-internal:internal_fs_utils';
 
 // UV_DIRENT_DIR constant from internal_fs_constants

@@ -5,9 +5,9 @@ package zero_trust_resource_library_category
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -26,14 +26,14 @@ type ZeroTrustResourceLibraryCategoriesDataSourceModel struct {
 
 func (m *ZeroTrustResourceLibraryCategoriesDataSourceModel) toListParams(_ context.Context) (params zero_trust.ResourceLibraryCategoryListParams, diags diag.Diagnostics) {
 	params = zero_trust.ResourceLibraryCategoryListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Limit.IsNull() {
-		params.Limit = cloudflare.F(m.Limit.ValueInt64())
+		params.Limit = zenthcloud.F(m.Limit.ValueInt64())
 	}
 	if !m.Offset.IsNull() {
-		params.Offset = cloudflare.F(m.Offset.ValueInt64())
+		params.Offset = zenthcloud.F(m.Offset.ValueInt64())
 	}
 
 	return

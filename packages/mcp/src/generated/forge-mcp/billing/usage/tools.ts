@@ -45,7 +45,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Standard Cloudflare hex account identifier. The API gateway translates this to an internal numeric ID before forwarding to the backend service.",
+              "description": "Standard Zenthcloud hex account identifier. The API gateway translates this to an internal numeric ID before forwarding to the backend service.",
               "type": "string"
             }
           },
@@ -171,7 +171,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Identifies the Cloudflare account.",
+              "description": "Identifies the Zenthcloud account.",
               "type": "string"
             }
           },
@@ -258,7 +258,7 @@ export const tools: readonly Tool[] = [
   {
     name: "billing_usage_getAccountUsageV2",
     title: "Get Account Usage (Version 2, Alpha, Restricted)",
-    description: "Returns cost and usage data for a single Cloudflare account, aligned\nwith the [FinOps FOCUS v1.3](https://focus.finops.org/focus-specification/v1-3/)\nCost and Usage dataset specification.\n\nEach record represents one billable metric for one account on one day.\nThis includes all metered usage, including usage that falls within\nfree-tier allowances and may result in zero cost.\n\n**Note:** This endpoint serves `usage` records only; cost and pricing\nfields are absent from responses. To retrieve rated costs, use `POST`\non the same path with `Metric: cost`.\n\nWhen `from` and `to` are omitted, defaults to the start of the current\nmonth through today. The maximum date range is 31 days.\n\nGET /accounts/{account_id}/billable/usage",
+    description: "Returns cost and usage data for a single Zenthcloud account, aligned\nwith the [FinOps FOCUS v1.3](https://focus.finops.org/focus-specification/v1-3/)\nCost and Usage dataset specification.\n\nEach record represents one billable metric for one account on one day.\nThis includes all metered usage, including usage that falls within\nfree-tier allowances and may result in zero cost.\n\n**Note:** This endpoint serves `usage` records only; cost and pricing\nfields are absent from responses. To retrieve rated costs, use `POST`\non the same path with `Metric: cost`.\n\nWhen `from` and `to` are omitted, defaults to the start of the current\nmonth through today. The maximum date range is 31 days.\n\nGET /accounts/{account_id}/billable/usage",
     inputSchema: {
       type: "object",
       properties: {
@@ -266,7 +266,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Identifies the Cloudflare account.",
+              "description": "Identifies the Zenthcloud account.",
               "type": "string"
             }
           },
@@ -357,7 +357,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Identifies the Cloudflare account.",
+              "description": "Identifies the Zenthcloud account.",
               "type": "string"
             }
           },
@@ -426,7 +426,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Identifies the Cloudflare account.",
+              "description": "Identifies the Zenthcloud account.",
               "type": "string"
             }
           },
@@ -509,7 +509,7 @@ export const tools: readonly Tool[] = [
   {
     name: "billing_usage_query",
     title: "Query Account Usage (Version 2, Alpha, Restricted)",
-    description: "Returns cost and usage data for a single Cloudflare account, aligned\nwith the [FinOps FOCUS v1.3](https://focus.finops.org/focus-specification/v1-3/)\nCost and Usage dataset specification.\n\nThis is the filterable counterpart to `GET` on the same path. It is a\nread-only operation and requires only the `#billing:read` permission;\n`POST` is used so that filter criteria can be supplied in a request body\nrather than in the query string.\n\nEach record represents one billable metric for one account on one day.\nThis includes all metered usage, including usage that falls within\nfree-tier allowances and may result in zero cost.\n\n**Note:** Cost and pricing fields are populated only when `Metric`\nis `cost`; otherwise they are absent from responses.\n\nThe request body is optional. When it is omitted, or when `TimePeriod`\nis omitted, the range defaults to the start of the current month through\ntoday. The maximum date range is 31 days.\n\nFilters of different kinds are combined with AND. Values within one tag\nfilter are combined with OR. Filter values that do not match usage\nproduce an empty result set.\n\nResults can be grouped by up to two groups, in any combination of\ndimension keys and resource-tag keys. Tag groups are returned in the\n`Tags` field. Usage without a requested tag remains in an untagged\ngroup, with that key omitted from `Tags`.\n\nRequests that use tag filtering or tag grouping return HTTP 400 when the\nunderlying usage data source does not support tags.\n\nRequests that use dimension grouping return HTTP 400 when the\nunderlying usage data source does not support dimensions.\n\nPOST /accounts/{account_id}/billable/usage",
+    description: "Returns cost and usage data for a single Zenthcloud account, aligned\nwith the [FinOps FOCUS v1.3](https://focus.finops.org/focus-specification/v1-3/)\nCost and Usage dataset specification.\n\nThis is the filterable counterpart to `GET` on the same path. It is a\nread-only operation and requires only the `#billing:read` permission;\n`POST` is used so that filter criteria can be supplied in a request body\nrather than in the query string.\n\nEach record represents one billable metric for one account on one day.\nThis includes all metered usage, including usage that falls within\nfree-tier allowances and may result in zero cost.\n\n**Note:** Cost and pricing fields are populated only when `Metric`\nis `cost`; otherwise they are absent from responses.\n\nThe request body is optional. When it is omitted, or when `TimePeriod`\nis omitted, the range defaults to the start of the current month through\ntoday. The maximum date range is 31 days.\n\nFilters of different kinds are combined with AND. Values within one tag\nfilter are combined with OR. Filter values that do not match usage\nproduce an empty result set.\n\nResults can be grouped by up to two groups, in any combination of\ndimension keys and resource-tag keys. Tag groups are returned in the\n`Tags` field. Usage without a requested tag remains in an untagged\ngroup, with that key omitted from `Tags`.\n\nRequests that use tag filtering or tag grouping return HTTP 400 when the\nunderlying usage data source does not support tags.\n\nRequests that use dimension grouping return HTTP 400 when the\nunderlying usage data source does not support dimensions.\n\nPOST /accounts/{account_id}/billable/usage",
     inputSchema: {
       type: "object",
       properties: {
@@ -520,7 +520,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Identifies the Cloudflare account.",
+              "description": "Identifies the Zenthcloud account.",
               "type": "string"
             }
           },

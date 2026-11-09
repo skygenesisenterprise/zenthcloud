@@ -2,7 +2,7 @@ import {
 	mockConsoleMethods,
 	runInTempDir,
 	seed,
-} from "@cloudflare/workers-utils/test-helpers";
+} from "@zenthcloud/workers-utils/test-helpers";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { DEPENDENCIES_INSTRUMENTATION_ENV_VAR } from "../../../lib/dependencies-instrumentation.js";
 import { createMockDeployContext } from "../../helpers/mock-deploy-context.js";
@@ -29,8 +29,8 @@ describe("cf deploy — upload metadata", () => {
 	mockConsoleMethods();
 
 	beforeEach(async () => {
-		vi.stubEnv("CLOUDFLARE_API_TOKEN", "test-api-token");
-		vi.stubEnv("CLOUDFLARE_ACCOUNT_ID", ACCOUNT_ID);
+		vi.stubEnv("ZENTHCLOUD_API_TOKEN", "test-api-token");
+		vi.stubEnv("ZENTHCLOUD_ACCOUNT_ID", ACCOUNT_ID);
 		vi.stubEnv(DEPENDENCIES_INSTRUMENTATION_ENV_VAR, undefined);
 		mockDefaultHandlers();
 		await seedBuildDelegate();
@@ -45,10 +45,10 @@ describe("cf deploy — upload metadata", () => {
 				name: "example-dependency",
 				version: "1.2.3",
 			}),
-			".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-			".cloudflare/output/v0/workers/default/worker.config.json":
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+			".zenthcloud/output/v0/workers/default/worker.config.json":
 				workerConfig(),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export default { fetch() { return new Response('ok'); } }",
 		});
 	}
@@ -95,10 +95,10 @@ describe("cf deploy — upload metadata", () => {
 		const upload = mockWorkerUpload();
 
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-			".cloudflare/output/v0/workers/default/worker.config.json":
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+			".zenthcloud/output/v0/workers/default/worker.config.json":
 				workerConfig(),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export default { fetch() { return new Response('ok'); } }",
 		});
 
@@ -129,13 +129,13 @@ describe("cf deploy — upload metadata", () => {
 		);
 
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				env: {
 					MY_SECRET: { type: "secret" },
 				},
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export default { fetch() { return new Response('ok'); } }",
 		});
 

@@ -10,9 +10,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_organization"
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_organization/migration/v500"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/test_helpers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_organization"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_organization/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 // TestZeroTrustOrganizationMigrationModelSchemaParity verifies that TargetZeroTrustOrganizationModel
@@ -26,9 +26,9 @@ func TestZeroTrustOrganizationMigrationModelSchemaParity(t *testing.T) {
 }
 
 // TestZeroTrustOrganizationMigrationSourceModelSchemaParity verifies that
-// SourceCloudflareAccessOrganizationModel (used in MoveState and
+// SourceZenthcloudAccessOrganizationModel (used in MoveState and
 // UpgradeFromLegacyV0 to decode v4 state) declares every attribute that
-// SourceCloudflareAccessOrganizationSchema defines. A missing field causes the
+// SourceZenthcloudAccessOrganizationSchema defines. A missing field causes the
 // Plugin Framework to return a Value Conversion Error when reading v4 state,
 // blocking terraform plan after migration.
 //
@@ -36,8 +36,8 @@ func TestZeroTrustOrganizationMigrationModelSchemaParity(t *testing.T) {
 // the source schema but omitted from the source model struct.
 func TestZeroTrustOrganizationMigrationSourceModelSchemaParity(t *testing.T) {
 	t.Parallel()
-	model := (*v500.SourceCloudflareAccessOrganizationModel)(nil)
-	schema := v500.SourceCloudflareAccessOrganizationSchema()
+	model := (*v500.SourceZenthcloudAccessOrganizationModel)(nil)
+	schema := v500.SourceZenthcloudAccessOrganizationSchema()
 	errs := test_helpers.ValidateMigrationModelSchemaIntegrity(model, schema)
 	errs.Report(t)
 }

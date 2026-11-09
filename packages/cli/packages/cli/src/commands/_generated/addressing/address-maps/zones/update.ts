@@ -60,7 +60,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf addressing address-maps zones update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/addressing/address_maps/${argv["address-map-id"] == null ? "<address-map-id>" : encodeURIComponent(String(argv["address-map-id"]))}/zones/${argv["member-zone-id"] == null ? "<member-zone-id>" : encodeURIComponent(String(argv["member-zone-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/addressing/address_maps/${argv["address-map-id"] == null ? "<address-map-id>" : encodeURIComponent(String(argv["address-map-id"]))}/zones/${argv["member-zone-id"] == null ? "<member-zone-id>" : encodeURIComponent(String(argv["member-zone-id"]))}`,
 						pathParams: {
 							"address-map-id": String(argv["address-map-id"] ?? ""),
 							"member-zone-id": String(argv["member-zone-id"] ?? ""),

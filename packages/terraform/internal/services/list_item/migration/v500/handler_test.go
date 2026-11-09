@@ -6,17 +6,17 @@ import (
 	"math/big"
 	"testing"
 
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/list_item/migration/v500"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/list_item/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/list_item"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/list_item"
 )
 
 // TestUpgradeFromV1Ambiguous_V5HostnameState simulates the exact scenario from
-// GitHub issue #7073: a cloudflare_list_item with hostname created natively in
+// GitHub issue #7073: a zenthcloud_list_item with hostname created natively in
 // v5 (schema_version=1) must survive the upgrade to schema_version=500 without error.
 //
 // In v5, hostname is a SingleNestedAttribute stored as a JSON object:

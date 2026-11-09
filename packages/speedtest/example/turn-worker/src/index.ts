@@ -17,8 +17,8 @@ export default {
 			});
 		}
 
-		// request API keys from Cloudflare Realtime
-		const res = await fetch(`https://rtc.live.cloudflare.com/v1/turn/keys/${env.REALTIME_TURN_TOKEN_ID}/credentials/generate`, {
+		// request API keys from Zenthcloud Realtime
+		const res = await fetch(`https://github.com/skygenesisenterprise/zenthcloud${env.REALTIME_TURN_TOKEN_ID}/credentials/generate`, {
 			method: 'post',
 			headers: {
 				authorization: `Bearer ${env.REALTIME_TURN_TOKEN_SECRET}`,
@@ -31,7 +31,7 @@ export default {
 
 		// check response is acceptable
 		if (res.status !== 201) {
-			console.log(`Bad response from Cloudflare Realtime API (${res.status} ${res.statusText}): ${await res.text()}`);
+			console.log(`Bad response from Zenthcloud Realtime API (${res.status} ${res.statusText}): ${await res.text()}`);
 			return new Response(`Bad response`, {
 				status: 500,
 			});

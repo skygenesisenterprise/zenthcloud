@@ -1,12 +1,12 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-// SourceListModel represents the combined cloudflare_list state structure
+// SourceListModel represents the combined zenthcloud_list state structure
 // that can hold both v4 (SDKv2) and v5 (Framework) state data.
 // v4 state uses Item blocks; v5 state uses Items attribute.
 type SourceListModel struct {
@@ -55,7 +55,7 @@ type SourceRedirectModel struct {
 	PreservePathSuffix  types.String `tfsdk:"preserve_path_suffix"`
 }
 
-// TargetListModel represents the v5 cloudflare_list state structure.
+// TargetListModel represents the v5 zenthcloud_list state structure.
 type TargetListModel struct {
 	ID                    types.String                                       `tfsdk:"id"`
 	AccountID             types.String                                       `tfsdk:"account_id"`

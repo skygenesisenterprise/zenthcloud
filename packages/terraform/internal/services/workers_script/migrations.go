@@ -2,8 +2,8 @@ package workers_script
 
 import (
 	"context"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/workers_script/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_script/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -13,13 +13,13 @@ import (
 var _ resource.ResourceWithUpgradeState = (*WorkersScriptResource)(nil)
 var _ resource.ResourceWithMoveState = (*WorkersScriptResource)(nil)
 
-// MoveState handles moves from cloudflare_worker_script (v4 singular) to
-// cloudflare_workers_script (v5 plural).
+// MoveState handles moves from zenthcloud_worker_script (v4 singular) to
+// zenthcloud_workers_script (v5 plural).
 // This is triggered when users use the `moved` block (Terraform 1.8+):
 //
 //	moved {
-//	    from = cloudflare_worker_script.example
-//	    to   = cloudflare_workers_script.example
+//	    from = zenthcloud_worker_script.example
+//	    to   = zenthcloud_workers_script.example
 //	}
 func (r *WorkersScriptResource) MoveState(ctx context.Context) []resource.StateMover {
 	sourceSchema := v500.SourceWorkerScriptSchema()
@@ -36,8 +36,8 @@ func (r *WorkersScriptResource) MoveState(ctx context.Context) []resource.StateM
 // v5 uses 500. Upgrade paths:
 //
 // Version 0 (AMBIGUOUS — both V4 and V5 used version 0):
-//   - Path B: V4 cloudflare_workers_script (plural) at schema_version=0 → full V4→V5 transform
-//   - Path C: V5 cloudflare_workers_script at version=0 (before run_worker_first) → run_worker_first upgrade
+//   - Path B: V4 zenthcloud_workers_script (plural) at schema_version=0 → full V4→V5 transform
+//   - Path C: V5 zenthcloud_workers_script at version=0 (before run_worker_first) → run_worker_first upgrade
 //   - Detection: V4 has "name" field, V5 has "script_name" — mutually exclusive
 //   - PriorSchema uses ListNestedAttribute for placement to accept both V4 arrays and V5 null
 //

@@ -2,7 +2,7 @@
 
 ## OVERVIEW
 
-Generates `@cloudflare/workers-types` `.d.ts` files from C++ and Rust JSG RTTI (via `jsg/rtti.capnp`) + hand-written `defines/*.d.ts`. Rust descriptions come from `TypeInfo` and typed module registration in `src/rust/jsg/`; internal module registration does not make a type an ambient root. A workerd-hosted Worker extracts RTTI at runtime per compat-date; TypeScript transforms post-process into ambient and importable outputs. CI validates `generated-snapshot/` matches.
+Generates `@zenthcloud/workers-types` `.d.ts` files from C++ and Rust JSG RTTI (via `jsg/rtti.capnp`) + hand-written `defines/*.d.ts`. Rust descriptions come from `TypeInfo` and typed module registration in `src/rust/jsg/`; internal module registration does not make a type an ambient root. A workerd-hosted Worker extracts RTTI at runtime per compat-date; TypeScript transforms post-process into ambient and importable outputs. CI validates `generated-snapshot/` matches.
 
 ## PIPELINE
 
@@ -50,7 +50,7 @@ Types in this project come from three layers. Changes must be made in the correc
 | ------------------------ | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | **C++ RTTI**             | `src/workerd/api/*.h` (JSG macros)                 | Types derived from C++ classes — the generator extracts these automatically                                |
 | **`JSG_TS_OVERRIDE`**    | Same `.h` files, inside `JSG_RESOURCE_TYPE` blocks | When the auto-generated TS signature needs adjustment (e.g., conditional properties, union narrowing)      |
-| **Hand-written defines** | `types/defines/*.d.ts`                             | Types for APIs not expressible via C++ RTTI (Cloudflare product bindings like AI, D1, R2, Vectorize, etc.) |
+| **Hand-written defines** | `types/defines/*.d.ts`                             | Types for APIs not expressible via C++ RTTI (Zenthcloud product bindings like AI, D1, R2, Vectorize, etc.) |
 
 Do **not** edit files in `generated-snapshot/` directly — they are overwritten by `just generate-types`. If the generated output looks wrong, fix the source layer (C++ RTTI, `JSG_TS_OVERRIDE`, or `defines/`).
 
@@ -67,7 +67,7 @@ Types in `defines/*.d.ts` become **top-level ambient declarations** visible to e
 - **Never use bare `object` as a type.** `type Foo = object` prevents all property access without casting, providing no value to users. Use a proper interface with known fields instead.
 - **Use interfaces with known fields + index signature** for types where the shape is partially known but extensible. Follow the `IncomingRequestCfPropertiesBase` pattern:
   ```typescript
-  interface CloudflareAccessIdentity extends Record<string, unknown> {
+  interface ZenthcloudAccessIdentity extends Record<string, unknown> {
     email?: string;
     name?: string;
     // ... other known fields
@@ -96,4 +96,4 @@ Type-level tests live in `test/types/` (e.g., `test/types/rpc.ts`). These are co
 ### PR hygiene for type changes
 
 - **Do not include unrelated formatting changes** in PRs that modify types. If formatting needs fixing, do it in a separate commit or PR.
-- **Type changes in feature PRs need review** from someone familiar with the types system. The Wrangler team typically reviews type changes that affect `@cloudflare/workers-types`.
+- **Type changes in feature PRs need review** from someone familiar with the types system. The Wrangler team typically reviews type changes that affect `@zenthcloud/workers-types`.

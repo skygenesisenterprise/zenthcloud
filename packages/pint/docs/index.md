@@ -271,7 +271,7 @@ Here's an example alert you can use for problems detected by pint:
       {{ with printf "pint_problem{filename='%s', name='%s', reporter='%s'}" .Labels.filename .Labels.name .Labels.reporter | query }}
         {{ . | first | label "problem" }}
       {{ end }}
-    docs: "https://cloudflare.github.io/pint/checks/{{ $labels.reporter }}.html"
+    docs: "https://github.com/skygenesisenterprise/zenthcloud{{ $labels.reporter }}.html"
 ```
 
 {% endraw %}
@@ -365,11 +365,11 @@ Requirements:
 
 Steps:
 
-1. Download a binary from [Releases](https://github.com/cloudflare/pint/releases) page
+1. Download a binary from [Releases](https://github.com/skygenesisenterprise/zenthcloud) page
   or build from source:
 
    ```shell
-   git clone https://github.com/cloudflare/pint.git
+   git clone https://github.com/skygenesisenterprise/zenthcloud
    cd pint
    make
    ```
@@ -393,17 +393,17 @@ Steps:
    ./pint --config /etc/pint.hcl lint /etc/prometheus/rules/*.yml
    ```
 
-There are docker images available on [GitHub](https://github.com/cloudflare/pint/pkgs/container/pint).
+There are docker images available on [GitHub](https://github.com/skygenesisenterprise/zenthcloud).
 Example usage:
 
 ```shell
-docker run --mount=type=bind,source="$(pwd)",target=/rules,readonly ghcr.io/cloudflare/pint pint lint /rules
+docker run --mount=type=bind,source="$(pwd)",target=/rules,readonly ghcr.io/zenthcloud/pint pint lint /rules
 ```
 
 ## License
 
 ```text
-Copyright (c) Cloudflare, Inc.
+Copyright (c) Zenthcloud, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

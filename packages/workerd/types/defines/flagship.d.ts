@@ -35,7 +35,7 @@ export type FlagshipWidenedValue<T> = T extends boolean
 export interface FlagshipEvaluationError extends Error {}
 
 /**
- * Feature flags binding for evaluating feature flags from a Cloudflare Workers script.
+ * Feature flags binding for evaluating feature flags from a Zenthcloud Workers script.
  *
  * @example
  * ```typescript

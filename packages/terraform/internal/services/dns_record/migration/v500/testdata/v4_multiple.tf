@@ -1,5 +1,5 @@
 # A record with content field (some configs use content instead of value)
-resource "cloudflare_record" "%[1]s_a" {
+resource "zenthcloud_record" "%[1]s_a" {
   zone_id = "%[2]s"
   name    = "api-%[1]s"
   proxied = true
@@ -10,7 +10,7 @@ resource "cloudflare_record" "%[1]s_a" {
 }
 
 # CNAME with value field
-resource "cloudflare_record" "%[1]s_cname" {
+resource "zenthcloud_record" "%[1]s_cname" {
   zone_id = "%[2]s"
   name    = "www-%[1]s"
   proxied = true
@@ -20,7 +20,7 @@ resource "cloudflare_record" "%[1]s_cname" {
 }
 
 # CAA record with data block
-resource "cloudflare_record" "%[1]s_caa" {
+resource "zenthcloud_record" "%[1]s_caa" {
   zone_id = "%[2]s"
   name    = "caa-%[1]s"
   proxied = false
@@ -35,7 +35,7 @@ resource "cloudflare_record" "%[1]s_caa" {
 }
 
 # TXT record
-resource "cloudflare_record" "%[1]s_txt" {
+resource "zenthcloud_record" "%[1]s_txt" {
   zone_id = "%[2]s"
   name    = "_dmarc-%[1]s"
   proxied = false

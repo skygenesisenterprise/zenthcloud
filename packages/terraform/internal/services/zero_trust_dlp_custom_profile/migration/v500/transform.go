@@ -10,7 +10,7 @@ import (
 
 // Transform converts source (legacy v4 DLP profile) state to target (current v5 custom profile) state.
 // This function is shared by both UpgradeFromV0 and MoveState handlers.
-func Transform(ctx context.Context, source SourceCloudflareDLPProfileModel) (*TargetZeroTrustDLPCustomProfileModel, diag.Diagnostics) {
+func Transform(ctx context.Context, source SourceZenthcloudDLPProfileModel) (*TargetZeroTrustDLPCustomProfileModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	if source.AccountID.IsNull() || source.AccountID.IsUnknown() {

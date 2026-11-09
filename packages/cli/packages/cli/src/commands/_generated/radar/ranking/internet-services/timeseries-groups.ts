@@ -90,7 +90,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar ranking internet-services timeseries-groups",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/ranking/internet_services/timeseries_groups`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

@@ -8,11 +8,11 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/schema_validation"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/schema_validation"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
@@ -26,7 +26,7 @@ func NewResource() resource.Resource {
 
 // SchemaValidationOperationSettingsResource defines the resource implementation.
 type SchemaValidationOperationSettingsResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *SchemaValidationOperationSettingsResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -38,12 +38,12 @@ func (r *SchemaValidationOperationSettingsResource) Configure(ctx context.Contex
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -72,7 +72,7 @@ func (r *SchemaValidationOperationSettingsResource) Create(ctx context.Context, 
 		ctx,
 		data.OperationID.ValueString(),
 		schema_validation.SettingOperationUpdateParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -121,7 +121,7 @@ func (r *SchemaValidationOperationSettingsResource) Update(ctx context.Context, 
 		ctx,
 		data.OperationID.ValueString(),
 		schema_validation.SettingOperationUpdateParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -157,7 +157,7 @@ func (r *SchemaValidationOperationSettingsResource) Read(ctx context.Context, re
 		ctx,
 		data.OperationID.ValueString(),
 		schema_validation.SettingOperationGetParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -195,7 +195,7 @@ func (r *SchemaValidationOperationSettingsResource) Delete(ctx context.Context, 
 		ctx,
 		data.OperationID.ValueString(),
 		schema_validation.SettingOperationDeleteParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)

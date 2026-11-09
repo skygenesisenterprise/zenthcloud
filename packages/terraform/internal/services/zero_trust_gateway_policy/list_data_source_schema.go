@@ -5,7 +5,7 @@ package zero_trust_gateway_policy
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
@@ -22,7 +22,7 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"account_id": schema.StringAttribute{
-				Description: "Specify the Cloudflare account identifier.",
+				Description: "Specify the Zenthcloud account identifier.",
 				Optional:    true,
 			},
 			"direction": schema.StringAttribute{
@@ -116,7 +116,7 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 							Computed:    true,
 						},
 						"precedence": schema.Int64Attribute{
-							Description: "Set the order of your rules. Lower values indicate higher precedence. At each processing phase, evaluate applicable rules in ascending order of this value. Refer to [Order of enforcement](http://developers.cloudflare.com/learning-paths/secure-internet-traffic/understand-policies/order-of-enforcement/#manage-precedence-with-terraform) to manage precedence via Terraform.",
+							Description: "Set the order of your rules. Lower values indicate higher precedence. At each processing phase, evaluate applicable rules in ascending order of this value. Refer to [Order of enforcement](https://github.com/skygenesisenterprise/zenthcloud) to manage precedence via Terraform.",
 							Computed:    true,
 						},
 						"traffic": schema.StringAttribute{
@@ -344,7 +344,7 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 									ElementType: types.StringType,
 								},
 								"dns_resolvers": schema.SingleNestedAttribute{
-									Description: "Configure custom resolvers to route queries that match the resolver policy. Unused with 'resolve_dns_through_cloudflare' or 'resolve_dns_internally' settings. DNS queries get routed to the address closest to their origin. Only valid when a rule's action set to 'resolve'. Settable only for `dns_resolver` rules.",
+									Description: "Configure custom resolvers to route queries that match the resolver policy. Unused with 'resolve_dns_through_zenthcloud' or 'resolve_dns_internally' settings. DNS queries get routed to the address closest to their origin. Only valid when a rule's action set to 'resolve'. Settable only for `dns_resolver` rules.",
 									Computed:    true,
 									CustomType:  customfield.NewNestedObjectType[ZeroTrustGatewayPoliciesRuleSettingsDNSResolversDataSourceModel](ctx),
 									Attributes: map[string]schema.Attribute{
@@ -555,7 +555,7 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 									},
 								},
 								"resolve_dns_internally": schema.SingleNestedAttribute{
-									Description: "Configure to forward the query to the internal DNS service, passing the specified 'view_id' as input. Not used when 'dns_resolvers' is specified or 'resolve_dns_through_cloudflare' is set. Only valid when a rule's action set to 'resolve'. Settable only for `dns_resolver` rules.",
+									Description: "Configure to forward the query to the internal DNS service, passing the specified 'view_id' as input. Not used when 'dns_resolvers' is specified or 'resolve_dns_through_zenthcloud' is set. Only valid when a rule's action set to 'resolve'. Settable only for `dns_resolver` rules.",
 									Computed:    true,
 									CustomType:  customfield.NewNestedObjectType[ZeroTrustGatewayPoliciesRuleSettingsResolveDNSInternallyDataSourceModel](ctx),
 									Attributes: map[string]schema.Attribute{
@@ -572,8 +572,8 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 										},
 									},
 								},
-								"resolve_dns_through_cloudflare": schema.BoolAttribute{
-									Description: "Enable to send queries that match the policy to Cloudflare's default 1.1.1.1 DNS resolver. Cannot set when 'dns_resolvers' specified or 'resolve_dns_internally' is set. Only valid when a rule's action set to 'resolve'. Settable only for `dns_resolver` rules.",
+								"resolve_dns_through_zenthcloud": schema.BoolAttribute{
+									Description: "Enable to send queries that match the policy to Zenthcloud's default 1.1.1.1 DNS resolver. Cannot set when 'dns_resolvers' specified or 'resolve_dns_internally' is set. Only valid when a rule's action set to 'resolve'. Settable only for `dns_resolver` rules.",
 									Computed:    true,
 								},
 								"set_headers": schema.MapAttribute{

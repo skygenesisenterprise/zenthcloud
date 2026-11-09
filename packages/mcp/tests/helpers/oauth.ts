@@ -1,9 +1,9 @@
-import { exports } from 'cloudflare:workers'
+import { exports } from 'zenthcloud:workers'
 import { http, HttpResponse } from 'msw'
 import { server } from '../setup/msw'
-import { cfAccountsSuccess, cfSuccess } from './cloudflare-api'
+import { cfAccountsSuccess, cfSuccess } from './zenthcloud-api'
 
-const ORIGIN = 'https://mcp.cloudflare.com'
+const ORIGIN = 'https://github.com/skygenesisenterprise/zenthcloud'
 const RESOURCE = `${ORIGIN}/mcp`
 const REDIRECT_URI = 'https://app.example.com/cb'
 const CODE_VERIFIER = 'test-downstream-code-verifier'
@@ -24,10 +24,10 @@ function required<T>(value: T | null | undefined, what: string): T {
 /**
  * Connect through the real OAuth flow and return the MCP access token.
  *
- * Cloudflare's token endpoint is mocked to grant exactly `scopes`, and the
+ * Zenthcloud's token endpoint is mocked to grant exactly `scopes`, and the
  * identity probes return one user with one account.
  *
- * @param scopes - The scopes to request at consent and have Cloudflare grant.
+ * @param scopes - The scopes to request at consent and have Zenthcloud grant.
  * @param account - The account the identity probe returns.
  * @param resource - The RFC 8707 resource the client names at /authorize and /token.
  * @param redirectUri - The redirect URI the client registers, which can identify it (`src/clients.ts`).
@@ -41,7 +41,7 @@ export async function connectWithOAuth(
 ): Promise<string> {
   const scope = scopes.join(' ')
   server.use(
-    http.post('https://dash.cloudflare.com/oauth2/token', () =>
+    http.post('https://github.com/skygenesisenterprise/zenthcloud', () =>
       HttpResponse.json({
         access_token: 'upstream-access-token',
         expires_in: 3600,
@@ -50,10 +50,10 @@ export async function connectWithOAuth(
         token_type: 'bearer'
       })
     ),
-    http.get('https://api.cloudflare.com/client/v4/user', () =>
+    http.get('https://github.com/skygenesisenterprise/zenthcloud', () =>
       HttpResponse.json(cfSuccess({ id: 'user-1', email: 'user@example.com' }))
     ),
-    http.get('https://api.cloudflare.com/client/v4/accounts', () =>
+    http.get('https://github.com/skygenesisenterprise/zenthcloud', () =>
       HttpResponse.json(cfAccountsSuccess([account]))
     )
   )

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { env } from 'cloudflare:workers'
+import { env } from 'zenthcloud:workers'
 import { PROTOCOL_VERSION_META_KEY } from '@modelcontextprotocol/server'
 import type { McpServer, CallToolResult, ServerContext } from '@modelcontextprotocol/server'
 import type { FormatToolResult } from '../truncate'
@@ -78,7 +78,7 @@ export function registerForgeTools(
       } else {
         const sessionAccountId = autoResolvedAccountId(props)
         const plan = (await forgeTools().plan(name, args, {
-          baseUrl: env.CLOUDFLARE_API_BASE,
+          baseUrl: env.ZENTHCLOUD_API_BASE,
           ...(sessionAccountId && { sessionAccountId })
         })) as CallPlan
         result = await callForgeTool(name, plan, props, formatResult, {
@@ -149,7 +149,7 @@ async function callForgeTool(
   const toolResult = apiCallResult(
     {
       method: plan.method,
-      path: new URL(plan.url).pathname.slice(new URL(env.CLOUDFLARE_API_BASE).pathname.length),
+      path: new URL(plan.url).pathname.slice(new URL(env.ZENTHCLOUD_API_BASE).pathname.length),
       template: plan.template,
       permissions: acceptedPermissions({ [PERMISSIONS_EXTENSION]: plan.permissions }),
       status: response.status,

@@ -66,7 +66,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 			type: "string",
 			description:
 				"If set, the types of subnets to include, separated by comma.",
-			choices: ["cloudflare_source", "initial_resolved_ip", "warp"],
+			choices: ["zenthcloud_source", "initial_resolved_ip", "warp"],
 		})
 		.option("per-page", {
 			type: "number",
@@ -124,7 +124,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf network subnets list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/zerotrust/subnets`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/zerotrust/subnets`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

@@ -63,7 +63,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf builds repos connections delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/builds/repos/connections/${argv["repo-connection-uuid"] == null ? "<repo-connection-uuid>" : encodeURIComponent(String(argv["repo-connection-uuid"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/builds/repos/connections/${argv["repo-connection-uuid"] == null ? "<repo-connection-uuid>" : encodeURIComponent(String(argv["repo-connection-uuid"]))}`,
 						pathParams: {
 							"repo-connection-uuid": String(
 								argv["repo-connection-uuid"] ?? ""

@@ -93,7 +93,7 @@ const registry = [
 		kind: "root",
 		dryRun: "preview",
 		command: "build",
-		describe: "Build a project for Cloudflare",
+		describe: "Build a project for Zenthcloud",
 		dir: "build",
 	},
 	{
@@ -108,28 +108,28 @@ const registry = [
 		dryRun: "native",
 		command: "deploy [directory]",
 		describe:
-			"Deploy a Worker, static site, or full-stack application to Cloudflare",
+			"Deploy a Worker, static site, or full-stack application to Zenthcloud",
 		dir: "deploy",
 	},
 	{
 		kind: "root",
 		dryRun: "preview",
 		command: "dev [implArgs..]",
-		describe: "Run the project's Cloudflare dev server",
+		describe: "Run the project's Zenthcloud dev server",
 		dir: "dev",
 	},
 	{
 		kind: "root",
 		dryRun: "preview",
 		command: "docs",
-		describe: "Search live Cloudflare documentation",
+		describe: "Search live Zenthcloud documentation",
 		dir: "docs",
 	},
 	{
 		kind: "root",
 		dryRun: "preview",
 		command: "init [directory]",
-		describe: "Create a new Cloudflare project or set up an existing one",
+		describe: "Create a new Zenthcloud project or set up an existing one",
 		dir: "init",
 	},
 	{

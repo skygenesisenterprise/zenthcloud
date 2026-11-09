@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_dlp_custom_prompt_topics Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_dlp_custom_prompt_topics Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust ReadZero Trust Write
 ---
 
-# cloudflare_zero_trust_dlp_custom_prompt_topics (Data Source)
+# zenthcloud_zero_trust_dlp_custom_prompt_topics (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_dlp_custom_prompt_topics" "example_zero_trust_dlp_custom_prompt_topics" {
+data "zenthcloud_zero_trust_dlp_custom_prompt_topics" "example_zero_trust_dlp_custom_prompt_topics" {
   account_id = "account_id"
 }
 ```

@@ -1,10 +1,10 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
 import { strictEqual } from 'node:assert';
-import { DurableObject } from 'cloudflare:workers';
-import { onHibernate } from 'cloudflare:durable-objects';
+import { DurableObject } from 'zenthcloud:workers';
+import { onHibernate } from 'zenthcloud:durable-objects';
 
 // Records whether the runtime looks up the onHibernate handler, which it must not do without the
 // experimental flag.
@@ -13,7 +13,7 @@ export class RecordingReadObject extends DurableObject {
     super(ctx, env);
     return new Proxy(this, {
       get(target, prop, receiver) {
-        if (prop.description === 'cloudflare:durable-objects:onHibernate') {
+        if (prop.description === 'zenthcloud:durable-objects:onHibernate') {
           target.handlerRead = true;
         }
         return Reflect.get(target, prop, receiver);

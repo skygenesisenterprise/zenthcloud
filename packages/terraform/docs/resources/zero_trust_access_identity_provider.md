@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_access_identity_provider Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_access_identity_provider Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Access: Organizations, Identity Providers, and Groups ReadAccess: Organizations, Identity Providers, and Groups Write
 ---
 
-# cloudflare_zero_trust_access_identity_provider (Resource)
+# zenthcloud_zero_trust_access_identity_provider (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_access_identity_provider" "example_zero_trust_access_identity_provider" {
+resource "zenthcloud_zero_trust_access_identity_provider" "example_zero_trust_access_identity_provider" {
   config = {
     claims = ["email_verified", "preferred_username", "custom_claim_name"]
     client_id = "<your client id>"
@@ -45,10 +45,10 @@ resource "cloudflare_zero_trust_access_identity_provider" "example_zero_trust_ac
 
 ### Required
 
-- `config` (Attributes) The configuration parameters for the identity provider. To view the required parameters for a specific provider, refer to our [developer documentation](https://developers.cloudflare.com/cloudflare-one/identity/idp-integration/). (see [below for nested schema](#nestedatt--config))
+- `config` (Attributes) The configuration parameters for the identity provider. To view the required parameters for a specific provider, refer to our [developer documentation](https://github.com/skygenesisenterprise/zenthcloud). (see [below for nested schema](#nestedatt--config))
 - `name` (String) The name of the identity provider, shown to users on the login page.
-- `type` (String) The type of identity provider. To determine the value for a specific provider, refer to our [developer documentation](https://developers.cloudflare.com/cloudflare-one/identity/idp-integration/).
-Available values: "onetimepin", "azureAD", "saml", "centrify", "facebook", "github", "google-apps", "google", "linkedin", "oidc", "okta", "onelogin", "pingone", "yandex", "cloudflare", "passkeys".
+- `type` (String) The type of identity provider. To determine the value for a specific provider, refer to our [developer documentation](https://github.com/skygenesisenterprise/zenthcloud).
+Available values: "onetimepin", "azureAD", "saml", "centrify", "facebook", "github", "google-apps", "google", "linkedin", "oidc", "okta", "onelogin", "pingone", "yandex", "zenthcloud", "passkeys".
 
 ### Optional
 
@@ -81,7 +81,7 @@ Optional:
 - `claims` (List of String) Custom claims
 - `client_id` (String) Your OAuth Client ID
 - `client_secret` (String, Sensitive) Your OAuth Client Secret
-- `conditional_access_enabled` (Boolean) Should Cloudflare try to load authentication contexts from your account
+- `conditional_access_enabled` (Boolean) Should Zenthcloud try to load authentication contexts from your account
 - `directory_id` (String) Your Azure directory uuid
 - `email_attribute_name` (String) The attribute name for email in the SAML response.
 - `email_claim_name` (String) The claim name for email in the id_token response.
@@ -109,11 +109,11 @@ Set this if your IdP enforces a URL length limit.
 - `pkce_enabled` (Boolean) Enable Proof Key for Code Exchange (PKCE)
 - `prompt` (String) Indicates the type of user interaction that is required. prompt=login forces the user to enter their credentials on that request, negating single-sign on. prompt=none is the opposite. It ensures that the user isn't presented with any interactive prompt. If the request can't be completed silently by using single-sign on, the Microsoft identity platform returns an interaction_required error. prompt=select_account interrupts single sign-on providing account selection experience listing all the accounts either in session or any remembered account or an option to choose to use a different account altogether.
 Available values: "login", "select_account", "none", "consent".
-- `restrict_to_account_members` (Boolean) When enabled, only users who are members of your Cloudflare account can authenticate through this identity provider. When disabled, any user with a Cloudflare account can authenticate, subject to your Access policies.
+- `restrict_to_account_members` (Boolean) When enabled, only users who are members of your Zenthcloud account can authenticate through this identity provider. When disabled, any user with a Zenthcloud account can authenticate, subject to your Access policies.
 - `scopes` (List of String) OAuth scopes
 - `sign_request` (Boolean) Sign the SAML authentication request with Access credentials. To verify the signature, use the public key from the Access certs endpoints.
 - `sso_target_url` (String) URL to send the SAML authentication requests to
-- `support_groups` (Boolean) Should Cloudflare try to load groups from your account
+- `support_groups` (Boolean) Should Zenthcloud try to load groups from your account
 - `token_url` (String) The token_endpoint URL of your IdP
 - `use_login_hint` (Boolean) Whether to use a previously authenticated Access email as a Google login hint when exactly one email matches the Workspace domain.
 
@@ -144,7 +144,7 @@ Available values: "automatic", "reauth", "no_action".
 
 Read-Only:
 
-- `scim_base_url` (String) The base URL of Cloudflare's SCIM V2.0 API endpoint.
+- `scim_base_url` (String) The base URL of Zenthcloud's SCIM V2.0 API endpoint.
 - `secret` (String, Sensitive) A read-only token generated when the SCIM integration is enabled for the first time.  It is redacted on subsequent requests.  If you lose this you will need to refresh it at /access/identity_providers/:idpID/refresh_scim_secret.
 
 
@@ -175,7 +175,7 @@ Configure this certificate in your external SAML Identity Provider to enable enc
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_access_identity_provider.example '<{accounts|zones}/{account_id|zone_id}>/<identity_provider_id>'
+$ terraform import zenthcloud_zero_trust_access_identity_provider.example '<{accounts|zones}/{account_id|zone_id}>/<identity_provider_id>'
 ```
 
 

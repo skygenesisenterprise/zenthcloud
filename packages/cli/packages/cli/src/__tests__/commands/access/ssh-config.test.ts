@@ -1,20 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import { runCloudflared } from "../../../commands/cloudflared.js";
+import { runZenthcloudd } from "../../../commands/zenthcloudd.js";
 import { runCf } from "../../helpers/run-cf.js";
 
-vi.mock("../../../commands/cloudflared.js", async (importOriginal) => ({
+vi.mock("../../../commands/zenthcloudd.js", async (importOriginal) => ({
 	...(await importOriginal<Record<string, unknown>>()),
-	runCloudflared: vi.fn(),
+	runZenthcloudd: vi.fn(),
 }));
 
 describe("cf access ssh-config", () => {
 	beforeEach(() => {
-		vi.stubEnv("CLOUDFLARE_COMPLIANCE_REGION", undefined);
-		vi.mocked(runCloudflared).mockReset();
-		vi.mocked(runCloudflared).mockResolvedValue(0);
+		vi.stubEnv("ZENTHCLOUD_COMPLIANCE_REGION", undefined);
+		vi.mocked(runZenthcloudd).mockReset();
+		vi.mocked(runZenthcloudd).mockResolvedValue(0);
 	});
 
-	it("prints an SSH configuration through cloudflared", async () => {
+	it("prints an SSH configuration through zenthcloudd", async () => {
 		const result = await runCf([
 			"access",
 			"ssh-config",
@@ -23,7 +23,7 @@ describe("cf access ssh-config", () => {
 		]);
 
 		expect(result.exitCode).toBe(0);
-		expect(runCloudflared).toHaveBeenCalledWith([
+		expect(runZenthcloudd).toHaveBeenCalledWith([
 			"access",
 			"ssh-config",
 			"--hostname",
@@ -35,7 +35,7 @@ describe("cf access ssh-config", () => {
 		const result = await runCf(["access", "ssh-config", "--short-lived-cert"]);
 
 		expect(result.exitCode).toBe(0);
-		expect(runCloudflared).toHaveBeenCalledWith([
+		expect(runZenthcloudd).toHaveBeenCalledWith([
 			"access",
 			"ssh-config",
 			"--short-lived-cert",
@@ -43,18 +43,18 @@ describe("cf access ssh-config", () => {
 	});
 
 	it("rejects FedRAMP before generating an incompatible configuration", async () => {
-		vi.stubEnv("CLOUDFLARE_COMPLIANCE_REGION", "fedramp_high");
+		vi.stubEnv("ZENTHCLOUD_COMPLIANCE_REGION", "fedramp_high");
 
 		await expect(runCf(["access", "ssh-config"])).rejects.toThrow(
-			"cf access ssh-config does not support FedRAMP because cloudflared does not include --fedramp in its generated SSH configuration."
+			"cf access ssh-config does not support FedRAMP because zenthcloudd does not include --fedramp in its generated SSH configuration."
 		);
-		expect(runCloudflared).not.toHaveBeenCalled();
+		expect(runZenthcloudd).not.toHaveBeenCalled();
 	});
 
-	it("rejects local mode before starting cloudflared", async () => {
+	it("rejects local mode before starting zenthcloudd", async () => {
 		await expect(runCf(["access", "ssh-config", "--local"])).rejects.toThrow(
 			"--local is not supported by cf access ssh-config."
 		);
-		expect(runCloudflared).not.toHaveBeenCalled();
+		expect(runZenthcloudd).not.toHaveBeenCalled();
 	});
 });

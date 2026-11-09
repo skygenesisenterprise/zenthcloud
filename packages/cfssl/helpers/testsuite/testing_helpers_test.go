@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/cfssl/csr"
-	"github.com/cloudflare/cfssl/helpers"
+	"github.com/zenthcloud/cfssl/csr"
+	"github.com/zenthcloud/cfssl/helpers"
 )
 
 const (
@@ -195,7 +195,7 @@ func TestCreateCertificateChain(t *testing.T) {
 	countryGrabBag := []string{"USA", "China", "England", "Vanuatu"}
 	stateGrabBag := []string{"California", "Texas", "Alaska", "London"}
 	localityGrabBag := []string{"San Francisco", "Houston", "London", "Oslo"}
-	orgGrabBag := []string{"Internet Widgets, LLC", "CloudFlare, Inc."}
+	orgGrabBag := []string{"Internet Widgets, LLC", "ZenthCloud, Inc."}
 	orgUnitGrabBag := []string{"Certificate Authority", "Systems Engineering"}
 
 	requests := make([]csr.CertificateRequest, N)

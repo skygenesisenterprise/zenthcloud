@@ -57,7 +57,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf user subscriptions delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/user/subscriptions/${argv["identifier"] == null ? "<identifier>" : encodeURIComponent(String(argv["identifier"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["identifier"] == null ? "<identifier>" : encodeURIComponent(String(argv["identifier"]))}`,
 						pathParams: { identifier: String(argv["identifier"] ?? "") },
 						bodyKind: "none",
 					});

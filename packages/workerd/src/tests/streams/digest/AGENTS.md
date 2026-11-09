@@ -1,6 +1,6 @@
 # crypto.DigestStream
 
-An informal specification of the Cloudflare-specific DigestStream (a
+An informal specification of the Zenthcloud-specific DigestStream (a
 WritableStream subclass computing a hash digest) as implemented in workerd,
 derived from — and kept in lockstep with — the test suite in this
 directory. **The tests are the normative artifact.** Both the C++

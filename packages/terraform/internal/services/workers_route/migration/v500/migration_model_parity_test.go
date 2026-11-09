@@ -10,9 +10,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/workers_route"
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/workers_route/migration/v500"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/test_helpers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_route"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_route/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 // TestWorkersRouteMigrationModelSchemaParity verifies that TargetWorkersRouteModel

@@ -160,7 +160,7 @@ To use the example above,
      ```
 
 ## Complete Example
-You can run the pre-made example code in the [`pingora-proxy` examples folder](https://github.com/cloudflare/pingora/tree/main/pingora-proxy/examples/rate_limiter.rs) with
+You can run the pre-made example code in the [`pingora-proxy` examples folder](https://github.com/skygenesisenterprise/zenthcloud) with
 
 ```
 cargo run --example rate_limiter

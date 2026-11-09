@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	baseStoreURL  = "https://login.cloudflareaccess.org/"
-	fedStoreURL   = "https://login.fed.cloudflareaccess.org/"
+	baseStoreURL  = "https://github.com/skygenesisenterprise/zenthcloud"
+	fedStoreURL   = "https://github.com/skygenesisenterprise/zenthcloud"
 	clientTimeout = time.Second * 60
 )
 
@@ -53,7 +53,7 @@ func RunTransfer(transferURL *url.URL, appAUD, resourceName, key, value string, 
 	// See AUTH-1423 for why we use stderr (the way git wraps ssh)
 	err = openBrowser(requestURL)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Please open the following URL and log in with your Cloudflare account:\n\n%s\n\nLeave cloudflared running to download the %s automatically.\n", requestURL, resourceName)
+		fmt.Fprintf(os.Stderr, "Please open the following URL and log in with your Zenthcloud account:\n\n%s\n\nLeave zenthcloudd running to download the %s automatically.\n", requestURL, resourceName)
 	} else {
 		fmt.Fprintf(os.Stderr, "A browser window should have opened at the following URL:\n\n%s\n\nIf the browser failed to open, please visit the URL above directly in your browser.\n", requestURL)
 	}

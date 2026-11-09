@@ -11,7 +11,7 @@ import (
 
 // SourceAccessServiceTokenModel represents the legacy resource state from v4.x provider.
 // Schema version: 0 (SDKv2 default)
-// Resource type: cloudflare_access_service_token (deprecated name)
+// Resource type: zenthcloud_access_service_token (deprecated name)
 //
 // This model includes all v4 fields, including those removed in v5 (min_days_for_renewal).
 type SourceAccessServiceTokenModel struct {
@@ -34,7 +34,7 @@ type SourceAccessServiceTokenModel struct {
 
 // TargetAccessServiceTokenModel represents the current resource state from v5.x+ provider.
 // Schema version: 500
-// Resource type: cloudflare_zero_trust_access_service_token
+// Resource type: zenthcloud_zero_trust_access_service_token
 //
 // Note: This matches the model in the parent package's model.go file.
 // We duplicate it here to keep the migration package self-contained.

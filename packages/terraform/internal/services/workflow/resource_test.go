@@ -8,10 +8,10 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/workflows"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/workflows"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -25,13 +25,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_workflow", &resource.Sweeper{
-		Name: "cloudflare_workflow",
-		F:    testSweepCloudflareWorkflow,
+	resource.AddTestSweepers("zenthcloud_workflow", &resource.Sweeper{
+		Name: "zenthcloud_workflow",
+		F:    testSweepZenthcloudWorkflow,
 	})
 }
 
-func testSweepCloudflareWorkflow(r string) error {
+func testSweepZenthcloudWorkflow(r string) error {
 	ctx := context.Background()
 	// Workflow is an account-scoped workflow resource.
 	// These are managed workflows that should be cleaned up.
@@ -40,12 +40,12 @@ func testSweepCloudflareWorkflow(r string) error {
 	return nil
 }
 
-func TestAccCloudflareWorkflow(t *testing.T) {
+func TestAccZenthcloudWorkflow(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_workflow." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_workflow." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	workflowName := fmt.Sprintf("test-workflow-%s", rnd)
 	scriptName := fmt.Sprintf("test-script-%s", rnd)
 	scriptNameUpdated := fmt.Sprintf("test-script-updated-%s", rnd)
@@ -66,7 +66,7 @@ func TestAccCloudflareWorkflow(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWorkflowDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWorkflowDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: acctest.LoadTestCase("workflow.tf", rnd, accountID, workflowName, scriptName, className, contentFile),
@@ -77,7 +77,7 @@ func TestAccCloudflareWorkflow(t *testing.T) {
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("class_name"), knownvalue.StringExact(className)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(workflowName)),
 				},
-				Check: testAccCheckCloudflareWorkflowExists(name, accountID, workflowName),
+				Check: testAccCheckZenthcloudWorkflowExists(name, accountID, workflowName),
 			},
 			{
 				Config: acctest.LoadTestCase("workflow.tf", rnd, accountID, workflowName, scriptNameUpdated, classNameUpdated, contentFile),
@@ -88,7 +88,7 @@ func TestAccCloudflareWorkflow(t *testing.T) {
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("class_name"), knownvalue.StringExact(classNameUpdated)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(workflowName)),
 				},
-				Check: testAccCheckCloudflareWorkflowExists(name, accountID, workflowName),
+				Check: testAccCheckZenthcloudWorkflowExists(name, accountID, workflowName),
 			},
 			{
 				ResourceName:        name,
@@ -105,12 +105,12 @@ func TestAccCloudflareWorkflow(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareWorkflow_RequiredFields(t *testing.T) {
+func TestAccZenthcloudWorkflow_RequiredFields(t *testing.T) {
 	t.Skip(`Skipped: 403 Forbidden {"success":false,"errors":[{"code":1002,"message":"Forbidden. Account creation is not allowed"}],"messages":[],"result":null}`)
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -127,11 +127,11 @@ func TestAccCloudflareWorkflow_RequiredFields(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareWorkflowDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudWorkflowDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_workflow" {
+		if rs.Type != "zenthcloud_workflow" {
 			continue
 		}
 
@@ -142,7 +142,7 @@ func testAccCheckCloudflareWorkflowDestroy(s *terraform.State) error {
 			context.Background(),
 			workflowName,
 			workflows.WorkflowGetParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			},
 		)
 
@@ -154,7 +154,7 @@ func testAccCheckCloudflareWorkflowDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckCloudflareWorkflowExists(resourceName, accountID, workflowName string) resource.TestCheckFunc {
+func testAccCheckZenthcloudWorkflowExists(resourceName, accountID, workflowName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -170,7 +170,7 @@ func testAccCheckCloudflareWorkflowExists(resourceName, accountID, workflowName 
 			context.Background(),
 			workflowName,
 			workflows.WorkflowGetParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			},
 		)
 

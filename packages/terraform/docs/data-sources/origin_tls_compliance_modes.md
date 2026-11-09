@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_origin_tls_compliance_modes Data Source - Cloudflare"
+page_title: "zenthcloud_origin_tls_compliance_modes Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_origin_tls_compliance_modes (Data Source)
+# zenthcloud_origin_tls_compliance_modes (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_origin_tls_compliance_modes" "example_origin_tls_compliance_modes" {
+data "zenthcloud_origin_tls_compliance_modes" "example_origin_tls_compliance_modes" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```
@@ -29,6 +29,6 @@ data "cloudflare_origin_tls_compliance_modes" "example_origin_tls_compliance_mod
 - `editable` (Boolean) Whether the setting is editable.
 - `id` (String) Identifier.
 - `modified_on` (String) Last time this setting was modified.
-- `value` (List of String) List of TLS compliance modes that constrain the key-exchange algorithms Cloudflare may use when establishing the TLS connection to the zone's origin. Currently supported values are `fips` (FIPS-approved curves) and `pqh` (post-quantum hybrid). Future modes (e.g. `cnsa2`) may be added; clients should treat unknown values as opaque strings. Multiple modes are combined as the intersection of their permitted algorithm lists; selections whose intersection is empty are rejected. An empty list clears the constraint.
+- `value` (List of String) List of TLS compliance modes that constrain the key-exchange algorithms Zenthcloud may use when establishing the TLS connection to the zone's origin. Currently supported values are `fips` (FIPS-approved curves) and `pqh` (post-quantum hybrid). Future modes (e.g. `cnsa2`) may be added; clients should treat unknown values as opaque strings. Multiple modes are combined as the intersection of their permitted algorithm lists; selections whose intersection is empty are rejected. An empty list clears the constraint.
 
 

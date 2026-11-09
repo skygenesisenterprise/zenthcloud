@@ -3,7 +3,7 @@ package v500
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -11,7 +11,7 @@ import (
 // Transform converts source (legacy v4 DLP profile with type="predefined") state
 // to target (current v5 predefined profile) state.
 // This function is shared by both UpgradeFromV0 and MoveState handlers.
-func Transform(ctx context.Context, source SourceCloudflareDLPProfileModel) (*TargetZeroTrustDLPPredefinedProfileModel, diag.Diagnostics) {
+func Transform(ctx context.Context, source SourceZenthcloudDLPProfileModel) (*TargetZeroTrustDLPPredefinedProfileModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	if source.AccountID.IsNull() || source.AccountID.IsUnknown() {

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -1114,7 +1114,7 @@ KJ_TEST("Server: wrapped bindings work under the new module registry") {
     bindings = [
       ( name = "wrapped",
         wrapped = (
-          moduleName = "cloudflare-internal:d1-api"
+          moduleName = "zenthcloud-internal:d1-api"
         )
       )
     ]
@@ -1920,7 +1920,7 @@ KJ_TEST("Server: connect() to default outbound") {
     modules = [
       ( name = "main.js",
         esModule =
-          `import { connect } from 'cloudflare:sockets';
+          `import { connect } from 'zenthcloud:sockets';
           `import assert from 'node:assert';
           `
           `export default {
@@ -2041,7 +2041,7 @@ KJ_TEST("Server: connect() with Worker as outbound, no connect_pass_though") {
           modules = [
             ( name = "main.js",
               esModule =
-                `import { connect } from 'cloudflare:sockets';
+                `import { connect } from 'zenthcloud:sockets';
                 `import assert from 'node:assert';
                 `
                 `export default {
@@ -2102,7 +2102,7 @@ KJ_TEST("Server: connect() with Worker as outbound, with connect_pass_though") {
           modules = [
             ( name = "main.js",
               esModule =
-                `import { connect } from 'cloudflare:sockets';
+                `import { connect } from 'zenthcloud:sockets';
                 `import assert from 'node:assert';
                 `
                 `export default {
@@ -2326,7 +2326,7 @@ KJ_TEST("Server: Hyperdrive connect via synthetic IP") {
           modules = [
             ( name = "main.js",
               esModule =
-                `import { connect } from 'cloudflare:sockets';
+                `import { connect } from 'zenthcloud:sockets';
                 `export default {
                 `  async fetch(request, env) {
                 `    const ip = env.hyperdrive.ip;
@@ -2388,7 +2388,7 @@ KJ_TEST("Server: Hyperdrive host resolves via node:dns to synthetic IP") {
           modules = [
             ( name = "main.js",
               esModule =
-                `import { connect } from 'cloudflare:sockets';
+                `import { connect } from 'zenthcloud:sockets';
                 `import { promises as dns } from 'node:dns';
                 `export default {
                 `  async fetch(request, env) {
@@ -2453,7 +2453,7 @@ KJ_TEST("Server: Hyperdrive host resolves via node:dns resolve4 to synthetic IP"
           modules = [
             ( name = "main.js",
               esModule =
-                `import { connect } from 'cloudflare:sockets';
+                `import { connect } from 'zenthcloud:sockets';
                 `import { promises as dns } from 'node:dns';
                 `export default {
                 `  async fetch(request, env) {
@@ -2517,7 +2517,7 @@ KJ_TEST("Server: Hyperdrive connect via IPv4-mapped IPv6") {
           modules = [
             ( name = "main.js",
               esModule =
-                `import { connect } from 'cloudflare:sockets';
+                `import { connect } from 'zenthcloud:sockets';
                 `export default {
                 `  async fetch(request, env) {
                 `    // The IPv4-mapped IPv6 spelling must route to the same override as the IPv4.
@@ -2797,7 +2797,7 @@ KJ_TEST("Server: referencing DO class as entrypoint is not an error") {
           modules = [
             ( name = "main.js",
               esModule =
-                `import { DurableObject } from "cloudflare:workers"
+                `import { DurableObject } from "zenthcloud:workers"
                 `
                 `export class SomeActor extends DurableObject {}
                 `
@@ -2858,7 +2858,7 @@ KJ_TEST("Server: exporting a DO class as the default export is not an error") {
           modules = [
             ( name = "main.js",
               esModule =
-                `import { DurableObject } from "cloudflare:workers"
+                `import { DurableObject } from "zenthcloud:workers"
                 `
                 `export default class extends DurableObject {
                 `  async fetch(request) {
@@ -2998,7 +2998,7 @@ KJ_TEST("Server: named images and directory snapshots are not startup sources") 
           modules = [
             ( name = "main.js",
               esModule =
-                `import { DurableObject } from "cloudflare:workers";
+                `import { DurableObject } from "zenthcloud:workers";
                 `export default {
                 `  fetch(request, env) {
                 `    return env.ns.get(env.ns.idFromName("test")).fetch(request);
@@ -3376,7 +3376,7 @@ KJ_TEST("Server: Simultaneous requests to a DO that hasn't started don't cause s
           modules = [
             ( name = "main.js",
               esModule =
-                `import {DurableObject} from "cloudflare:workers"
+                `import {DurableObject} from "zenthcloud:workers"
                 `export default {
                 `  async fetch(request, env) {
                 `    let id = env.ns.idFromName(request.url)
@@ -3427,7 +3427,7 @@ KJ_TEST("Server: Broken DO stays broken until stub replaced") {
           modules = [
             ( name = "main.js",
               esModule =
-                `import {DurableObject} from "cloudflare:workers"
+                `import {DurableObject} from "zenthcloud:workers"
                 `export default {
                 `  async fetch(request, env) {
                 `    let id = env.ns.idFromName(request.url)
@@ -3712,7 +3712,7 @@ KJ_TEST("Server: alarm timeout with live facet channel") {
           modules = [
             ( name = "main.js",
               esModule =
-                `import { DurableObject } from "cloudflare:workers";
+                `import { DurableObject } from "zenthcloud:workers";
                 `export default {
                 `  async fetch(request, env, ctx) {
                 `    let id = ctx.exports.Parent.idFromName("test");
@@ -3850,8 +3850,8 @@ constexpr kj::StringPtr ON_HIBERNATE_CONFIG = R"((
       compatibilityDate = "2026-01-01",
       compatibilityFlags = ["experimental", "unsafe_module"],
       modules = [(name = "main.js", esModule =
-        `import { DurableObject } from "cloudflare:workers";
-        `import { onHibernate } from "cloudflare:durable-objects";
+        `import { DurableObject } from "zenthcloud:workers";
+        `import { onHibernate } from "zenthcloud:durable-objects";
         `import unsafe from "workerd:unsafe";
         `let nextInstance = 0;
         `export class Actor extends DurableObject {
@@ -3972,8 +3972,8 @@ KJ_TEST("Server: a tail worker gets the outcome of an onHibernate handler that r
         compatibilityDate = "2026-01-01",
         compatibilityFlags = ["experimental"],
         modules = [(name = "main.js", esModule =
-          `import { DurableObject } from "cloudflare:workers";
-          `import { onHibernate } from "cloudflare:durable-objects";
+          `import { DurableObject } from "zenthcloud:workers";
+          `import { onHibernate } from "zenthcloud:durable-objects";
           `export class Actor extends DurableObject {
           `  fetch() {
           `    return new Response("OK");
@@ -4035,8 +4035,8 @@ KJ_TEST("Server: a stub that onHibernate restores reaches the actor's next insta
         compatibilityDate = "2026-01-01",
         compatibilityFlags = ["experimental", "allow_irrevocable_stub_storage"],
         modules = [(name = "main.js", esModule =
-          `import { DurableObject, RpcTarget, restore } from "cloudflare:workers";
-          `import { onHibernate } from "cloudflare:durable-objects";
+          `import { DurableObject, RpcTarget, restore } from "zenthcloud:workers";
+          `import { onHibernate } from "zenthcloud:durable-objects";
           `let nextInstance = 0;
           `class Callback extends RpcTarget {
           `  constructor(instance, job) { super(); this.instance = instance; this.job = job; }
@@ -4977,7 +4977,7 @@ KJ_TEST("Server: tail workers turned off for a dynamic worker") {
           modules = [
             ( name = "main.js",
               esModule =
-                `import {WorkerEntrypoint} from "cloudflare:workers";
+                `import {WorkerEntrypoint} from "zenthcloud:workers";
                 `export class Tail extends WorkerEntrypoint {
                 `  async tail(events) {
                 `    await fetch("http://tail");
@@ -6636,7 +6636,7 @@ KJ_TEST("Server: bench command") {
           modules = [
             ( name = "main.js",
               esModule =
-                `import {WorkerEntrypoint, WorkflowEntrypoint} from "cloudflare:workers";
+                `import {WorkerEntrypoint, WorkflowEntrypoint} from "zenthcloud:workers";
                 `let calls = {sync: 0, async: 0, setup: 0, teardown: 0, state: 0, bareTeardown: 0,
                 `    asyncTeardown: 0, overlaps: 0};
                 `export default {
@@ -6828,7 +6828,7 @@ KJ_TEST("Server: JS RPC over HTTP connections") {
           modules = [
             ( name = "main.js",
               esModule =
-                `import {WorkerEntrypoint} from "cloudflare:workers";
+                `import {WorkerEntrypoint} from "zenthcloud:workers";
                 `export default {
                 `  async fetch(request, env) {
                 `    return new Response("got: " + await env.OUT.frob(3, 11));
@@ -6906,7 +6906,7 @@ KJ_TEST("Server: Entrypoint binding with props") {
           modules = [
             ( name = "main.js",
               esModule =
-                `import {WorkerEntrypoint} from "cloudflare:workers";
+                `import {WorkerEntrypoint} from "zenthcloud:workers";
                 `export default {
                 `  async fetch(request, env) {
                 `    return new Response("got: " + await env.MyRpc.getProps());
@@ -6953,7 +6953,7 @@ KJ_TEST("Server: ctx.exports self-referential bindings") {
           modules = [
             ( name = "main.js",
               esModule =
-                `import { WorkerEntrypoint, DurableObject, WorkflowEntrypoint } from "cloudflare:workers";
+                `import { WorkerEntrypoint, DurableObject, WorkflowEntrypoint } from "zenthcloud:workers";
                 `export default {
                 `  async fetch(request, env, ctx) {
                 `    // First set the actor state the old fashion way, to make sure we get
@@ -7038,7 +7038,7 @@ KJ_TEST("Server: configured Workflow is exposed through ctx.exports") {
           modules = [
             ( name = "main.js",
               esModule =
-                `import { WorkflowEntrypoint } from "cloudflare:workers";
+                `import { WorkflowEntrypoint } from "zenthcloud:workers";
                 `export default {
                 `  async fetch(request, env, ctx) {
                 `    const instance = await ctx.exports.GreetingWorkflow.create({
@@ -7079,7 +7079,7 @@ KJ_TEST("Server: configured Workflow is exposed through ctx.exports") {
           modules = [
             ( name = "engine.js",
               esModule =
-                `import { DurableObject, RpcStub, RpcTarget, restore } from "cloudflare:workers";
+                `import { DurableObject, RpcStub, RpcTarget, restore } from "zenthcloud:workers";
                 `class GreetingTarget extends RpcTarget {
                 `  constructor(prefix) { super(); this.prefix = prefix; }
                 `  greet(name) { return `${this.prefix}, ${name}!`; }
@@ -7120,7 +7120,7 @@ KJ_TEST("Server: configured Workflow is exposed through ctx.exports") {
           modules = [
             ( name = "binding.js",
               esModule =
-                `import { WorkerEntrypoint } from "cloudflare:workers";
+                `import { WorkerEntrypoint } from "zenthcloud:workers";
                 `export class WorkflowBinding extends WorkerEntrypoint {
                 `  async create(options = {}) {
                 `    const id = options.id ?? crypto.randomUUID();
@@ -7173,7 +7173,7 @@ KJ_TEST("Server: configured Workflows share Engine code but isolate namespaces a
           modules = [
             ( name = "main.js",
               esModule =
-                `import { WorkflowEntrypoint } from "cloudflare:workers";
+                `import { WorkflowEntrypoint } from "zenthcloud:workers";
                 `export default {
                 `  async fetch(request, env, ctx) {
                 `    const alpha = await ctx.exports.AlphaWorkflow.create({
@@ -7226,7 +7226,7 @@ KJ_TEST("Server: configured Workflows share Engine code but isolate namespaces a
           modules = [
             ( name = "engine.js",
               esModule =
-                `import { DurableObject } from "cloudflare:workers";
+                `import { DurableObject } from "zenthcloud:workers";
                 `export class Engine extends DurableObject {
                 `  async execute(payload) {
                 `    const props = this.ctx.props;
@@ -7251,7 +7251,7 @@ KJ_TEST("Server: configured Workflows share Engine code but isolate namespaces a
           modules = [
             ( name = "binding.js",
               esModule =
-                `import { WorkerEntrypoint } from "cloudflare:workers";
+                `import { WorkerEntrypoint } from "zenthcloud:workers";
                 `export class WorkflowBinding extends WorkerEntrypoint {
                 `  async create(options = {}) {
                 `    const id = options.id ?? crypto.randomUUID();
@@ -7280,7 +7280,7 @@ KJ_TEST("Server: configured Workflows share Engine code but isolate namespaces a
           modules = [
             ( name = "binding.js",
               esModule =
-                `import { WorkerEntrypoint } from "cloudflare:workers";
+                `import { WorkerEntrypoint } from "zenthcloud:workers";
                 `export class WorkflowBinding extends WorkerEntrypoint {
                 `  async create(options = {}) {
                 `    const id = options.id ?? crypto.randomUUID();
@@ -7337,7 +7337,7 @@ KJ_TEST("Server: ctx.exports channels handle interleaved Workflow and WorkerEntr
           modules = [
             ( name = "main.js",
               esModule =
-                `import { WorkerEntrypoint, WorkflowEntrypoint } from "cloudflare:workers";
+                `import { WorkerEntrypoint, WorkflowEntrypoint } from "zenthcloud:workers";
                 `export default {
                 `  async fetch(request, env, ctx) {
                 `    const instance = await ctx.exports.BWorkflow.create({ id: "channel-id" });
@@ -7375,7 +7375,7 @@ KJ_TEST("Server: ctx.exports channels handle interleaved Workflow and WorkerEntr
           modules = [
             ( name = "engine.js",
               esModule =
-                `import { DurableObject } from "cloudflare:workers";
+                `import { DurableObject } from "zenthcloud:workers";
                 `export class Engine extends DurableObject {
                 `  async execute() {
                 `    const result = { output: await this.ctx.props.workflowClass.run({}, {}) };
@@ -7394,7 +7394,7 @@ KJ_TEST("Server: ctx.exports channels handle interleaved Workflow and WorkerEntr
           modules = [
             ( name = "binding.js",
               esModule =
-                `import { WorkerEntrypoint } from "cloudflare:workers";
+                `import { WorkerEntrypoint } from "zenthcloud:workers";
                 `export class WorkflowBinding extends WorkerEntrypoint {
                 `  async create(options = {}) {
                 `    const id = options.id ?? crypto.randomUUID();
@@ -7443,7 +7443,7 @@ KJ_TEST("Server: unconfigured Workflow remains absent from ctx.exports") {
           modules = [
             ( name = "main.js",
               esModule =
-                `import { WorkflowEntrypoint } from "cloudflare:workers";
+                `import { WorkflowEntrypoint } from "zenthcloud:workers";
                 `export default {
                 `  fetch(request, env, ctx) {
                 `    return new Response([
@@ -7472,7 +7472,7 @@ KJ_TEST("Server: unconfigured Workflow remains absent from ctx.exports") {
           modules = [
             ( name = "engine.js",
               esModule =
-                `import { DurableObject } from "cloudflare:workers";
+                `import { DurableObject } from "zenthcloud:workers";
                 `export class Engine extends DurableObject {}
             )
           ],
@@ -7484,7 +7484,7 @@ KJ_TEST("Server: unconfigured Workflow remains absent from ctx.exports") {
           modules = [
             ( name = "binding.js",
               esModule =
-                `import { WorkerEntrypoint } from "cloudflare:workers";
+                `import { WorkerEntrypoint } from "zenthcloud:workers";
                 `export class WorkflowBinding extends WorkerEntrypoint {}
             )
           ],
@@ -7524,7 +7524,7 @@ KJ_TEST("Server: Workflow configuration validates binding services and names") {
           modules = [(
             name = "main.js",
             esModule =
-              `import { DurableObject, WorkflowEntrypoint } from "cloudflare:workers";
+              `import { DurableObject, WorkflowEntrypoint } from "zenthcloud:workers";
               `export class TestWorkflow extends WorkflowEntrypoint {}
               `export class InvalidWorkflow extends WorkflowEntrypoint {}
               `export class MissingBindingWorkflow extends WorkflowEntrypoint {}
@@ -7572,7 +7572,7 @@ KJ_TEST("Server: Workflow configuration validates binding services and names") {
           modules = [(
             name = "engine.js",
             esModule =
-              `import { DurableObject } from "cloudflare:workers";
+              `import { DurableObject } from "zenthcloud:workers";
               `export class Engine extends DurableObject {}
           )],
         )
@@ -7583,7 +7583,7 @@ KJ_TEST("Server: Workflow configuration validates binding services and names") {
           modules = [(
             name = "binding.js",
             esModule =
-              `import { DurableObject, WorkerEntrypoint } from "cloudflare:workers";
+              `import { DurableObject, WorkerEntrypoint } from "zenthcloud:workers";
               `export class WorkflowBinding extends WorkerEntrypoint {}
               `export class BindingObject extends DurableObject {}
           )],
@@ -7612,7 +7612,7 @@ KJ_TEST("Server: Workflow namespace key cannot collide with a Durable Object") {
           modules = [(
             name = "main.js",
             esModule =
-              `import { WorkflowEntrypoint } from "cloudflare:workers";
+              `import { WorkflowEntrypoint } from "zenthcloud:workers";
               `export class TestWorkflow extends WorkflowEntrypoint {}
           )],
           workflowsEngine = (
@@ -7631,7 +7631,7 @@ KJ_TEST("Server: Workflow namespace key cannot collide with a Durable Object") {
           modules = [(
             name = "engine.js",
             esModule =
-              `import { DurableObject } from "cloudflare:workers";
+              `import { DurableObject } from "zenthcloud:workers";
               `export class Engine extends DurableObject {}
           )],
           durableObjectNamespaces = [(
@@ -7647,7 +7647,7 @@ KJ_TEST("Server: Workflow namespace key cannot collide with a Durable Object") {
           modules = [(
             name = "binding.js",
             esModule =
-              `import { WorkerEntrypoint } from "cloudflare:workers";
+              `import { WorkerEntrypoint } from "zenthcloud:workers";
               `export class WorkflowBinding extends WorkerEntrypoint {}
           )],
           durableObjectStorage = (localDisk = "workflow-storage")
@@ -7674,7 +7674,7 @@ KJ_TEST("Server: Workflow engine configuration is checked field by field") {
           modules = [(
             name = "main.js",
             esModule =
-              `import { WorkflowEntrypoint } from "cloudflare:workers";
+              `import { WorkflowEntrypoint } from "zenthcloud:workers";
               `export class A extends WorkflowEntrypoint {}
           )],
           workflowsEngine = (
@@ -8082,7 +8082,7 @@ KJ_TEST("Server: Durable Object facets") {
           modules = [
             ( name = "main.js",
               esModule =
-                `import { DurableObject } from "cloudflare:workers";
+                `import { DurableObject } from "zenthcloud:workers";
                 `export default {
                 `  async fetch(request, env, ctx) {
                 `    let id = ctx.exports.MyActorClass.idFromName("name");
@@ -8355,7 +8355,7 @@ KJ_TEST("Server: Durable Object facet cloning") {
           modules = [
             ( name = "main.js",
               esModule =
-                `import { DurableObject } from "cloudflare:workers";
+                `import { DurableObject } from "zenthcloud:workers";
                 `export default {
                 `  async fetch(request, env, ctx) {
                 `    let id = ctx.exports.MyActorClass.idFromName("name");
@@ -8598,7 +8598,7 @@ KJ_TEST("Server: a durableObjectClass binding without props can be sent over RPC
     modules = [
       ( name = "main.js",
         esModule =
-          `import { DurableObject, WorkerEntrypoint } from "cloudflare:workers";
+          `import { DurableObject, WorkerEntrypoint } from "zenthcloud:workers";
           `export class MyActorClass extends DurableObject {}
           `export class Receiver extends WorkerEntrypoint {
           `  take(cls) {
@@ -8634,7 +8634,7 @@ KJ_TEST("Server: Durable Object facet limits") {
           modules = [
             ( name = "main.js",
               esModule =
-                `import { DurableObject } from "cloudflare:workers";
+                `import { DurableObject } from "zenthcloud:workers";
                 `export default {
                 `  async fetch(request, env, ctx) {
                 `    let id = env.MY_ACTOR.idFromName("limits");
@@ -8794,7 +8794,7 @@ KJ_TEST("Server: Durable Object facets cannot set alarms") {
           modules = [
             ( name = "main.js",
               esModule =
-                `import { DurableObject } from "cloudflare:workers";
+                `import { DurableObject } from "zenthcloud:workers";
                 `export default {
                 `  async fetch(request, env, ctx) {
                 `    let id = env.MY_ACTOR.idFromName("alarms");
@@ -8882,7 +8882,7 @@ KJ_TEST("Server: Durable Object facets cannot snapshot or restore") {
           modules = [
             ( name = "main.js",
               esModule =
-                `import { DurableObject } from "cloudflare:workers";
+                `import { DurableObject } from "zenthcloud:workers";
                 `export default {
                 `  async fetch(request, env, ctx) {
                 `    let actor = ctx.exports.MyActorClass.getByName("snapshots");
@@ -8973,7 +8973,7 @@ KJ_TEST("Server: Pass service stubs in ctx.props.") {
           modules = [
             ( name = "main.js",
               esModule =
-                `import { WorkerEntrypoint } from "cloudflare:workers";
+                `import { WorkerEntrypoint } from "zenthcloud:workers";
                 `export default {
                 `  async fetch(request, env, ctx) {
                 `    let props = {
@@ -9411,7 +9411,7 @@ KJ_TEST("Server: debug port RPC calls") {
           modules = [
             ( name = "worker.js",
               esModule =
-                `import {WorkerEntrypoint} from "cloudflare:workers";
+                `import {WorkerEntrypoint} from "zenthcloud:workers";
                 `export default class extends WorkerEntrypoint {
                 `  async add(a, b) {
                 `    return a + b;
@@ -9702,7 +9702,7 @@ KJ_TEST("Server: workerdDebugPort binding with props") {
           modules = [
             ( name = "worker.js",
               esModule =
-                `import {WorkerEntrypoint} from "cloudflare:workers";
+                `import {WorkerEntrypoint} from "zenthcloud:workers";
                 `export class PropsHandler extends WorkerEntrypoint {
                 `  async fetch(request) {
                 `    const props = this.ctx.props;
@@ -9776,7 +9776,7 @@ KJ_TEST("Server: workerdDebugPort binding getActor") {
           modules = [
             ( name = "worker.js",
               esModule =
-                `import {DurableObject} from "cloudflare:workers";
+                `import {DurableObject} from "zenthcloud:workers";
                 `export default {
                 `  async fetch(request) {
                 `    return new Response("DO service default handler");
@@ -9903,7 +9903,7 @@ KJ_TEST("Server: workerdDebugPort WebSocket passthrough via WorkerEntrypoint") {
           modules = [
             ( name = "worker.js",
               esModule =
-                `import {WorkerEntrypoint} from "cloudflare:workers";
+                `import {WorkerEntrypoint} from "zenthcloud:workers";
                 `
                 `// This WorkerEntrypoint gets a WebSocket via debug port and passes it through
                 `export class Proxy extends WorkerEntrypoint {
@@ -9960,7 +9960,7 @@ KJ_TEST("Server: workerdDebugPort WebSocket passthrough via WorkerEntrypoint") {
   wsConn.recvWebSocket("echo:world");
 }
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-100: heap use-after-free in ActorContainer
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-100: heap use-after-free in ActorContainer
 // when a facet is aborted while a request is pending on the async startup callback. The
 // constructor's .then([this]) continuation and the getActor() coroutine both hold references
 // to the ForkHub independently of the ActorContainer refcount. Without kj::addRef(*this) in
@@ -9976,7 +9976,7 @@ KJ_TEST("Server: DO facet abort during pending startup") {
           modules = [
             ( name = "main.js",
               esModule =
-                `import { DurableObject } from "cloudflare:workers";
+                `import { DurableObject } from "zenthcloud:workers";
                 `
                 `let startupResolve;
                 `
@@ -10151,7 +10151,7 @@ KJ_TEST("Server: ctx.access.getIdentity() dispatches to accessBindingService") {
           modules = [
             ( name = "main.js",
               esModule =
-                `import {WorkerEntrypoint} from "cloudflare:workers";
+                `import {WorkerEntrypoint} from "zenthcloud:workers";
                 `export default {
                 `  async fetch(request) {
                 `    return new Response("not used");

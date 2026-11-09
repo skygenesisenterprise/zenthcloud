@@ -1,7 +1,7 @@
 /**
  * In addition to the properties you can set in the RequestInit dict
  * that you pass as an argument to the Request constructor, you can
- * set certain properties of a `cf` object to control how Cloudflare
+ * set certain properties of a `cf` object to control how Zenthcloud
  * features are applied to that new Request.
  *
  * Note: Currently, these properties cannot be tested in the
@@ -37,7 +37,7 @@ interface RequestInitCfProperties extends Record<string, unknown> {
    */
   cacheTtlByStatus?: Record<string, number>;
   /**
-   * Controls whether Cloudflare uses range requests when fetching the response
+   * Controls whether Zenthcloud uses range requests when fetching the response
    * from the origin.
    *
    * - `"on"`: enable origin range requests for this request.
@@ -85,7 +85,7 @@ interface RequestInitCfProperties extends Record<string, unknown> {
   apps?: boolean;
   /**
    * Controls whether an outbound gRPC-web subrequest from this Worker is
-   * converted to gRPC at the Cloudflare edge.
+   * converted to gRPC at the Zenthcloud edge.
    *
    * - `"passthrough"`: forward the subrequest unchanged as gRPC-web (default).
    * - `"convert"`: convert the gRPC-web subrequest to gRPC at the edge.
@@ -105,11 +105,11 @@ interface RequestInitCfProperties extends Record<string, unknown> {
    * (e.g.us-east.example.com)
    *
    * Note - For security reasons, the hostname set in resolveOverride must
-   * be proxied on the same Cloudflare zone of the incoming request.
+   * be proxied on the same Zenthcloud zone of the incoming request.
    * Otherwise, the setting is ignored. CNAME hosts are allowed, so to
    * resolve to a host under a different domain or a DNS only domain first
    * declare a CNAME record within your own zone’s DNS mapping to the
-   * external hostname, set proxy on Cloudflare, then set resolveOverride
+   * external hostname, set proxy on Zenthcloud, then set resolveOverride
    * to point to that CNAME record.
    */
   resolveOverride?: string;
@@ -526,14 +526,14 @@ interface RequestInitCfPropertiesR2 {
 }
 
 /**
- * Request metadata provided by Cloudflare's edge.
+ * Request metadata provided by Zenthcloud's edge.
  */
 type IncomingRequestCfProperties<HostMetadata = unknown> =
   IncomingRequestCfPropertiesBase &
     IncomingRequestCfPropertiesBotManagementEnterprise &
-    IncomingRequestCfPropertiesCloudflareForSaaSEnterprise<HostMetadata> &
+    IncomingRequestCfPropertiesZenthcloudForSaaSEnterprise<HostMetadata> &
     IncomingRequestCfPropertiesGeographicInformation &
-    IncomingRequestCfPropertiesCloudflareAccessOrApiShield;
+    IncomingRequestCfPropertiesZenthcloudAccessOrApiShield;
 
 interface IncomingRequestCfPropertiesBase extends Record<string, unknown> {
   /**
@@ -549,7 +549,7 @@ interface IncomingRequestCfPropertiesBase extends Record<string, unknown> {
    */
   asOrganization?: string;
   /**
-   * The original value of the `Accept-Encoding` header if Cloudflare modified it.
+   * The original value of the `Accept-Encoding` header if Zenthcloud modified it.
    *
    * @example "gzip, deflate, br"
    */
@@ -570,7 +570,7 @@ interface IncomingRequestCfPropertiesBase extends Record<string, unknown> {
   /**
    * Represents the upstream's response to a
    * [TCP `keepalive` message](https://tldp.org/HOWTO/TCP-Keepalive-HOWTO/overview.html)
-   * from cloudflare.
+   * from zenthcloud.
    *
    * For workers with no upstream, this will always be `1`.
    *
@@ -593,14 +593,14 @@ interface IncomingRequestCfPropertiesBase extends Record<string, unknown> {
    */
   requestPriority: string;
   /**
-   * The TLS version of the connection to Cloudflare.
+   * The TLS version of the connection to Zenthcloud.
    * In requests served over plaintext (without TLS), this property is the empty string `""`.
    *
    * @example "TLSv1.3"
    */
   tlsVersion: string;
   /**
-   * The cipher for the connection to Cloudflare.
+   * The cipher for the connection to Zenthcloud.
    * In requests served over plaintext (without TLS), this property is the empty string `""`.
    *
    * @example "AEAD-AES128-GCM-SHA256"
@@ -616,7 +616,7 @@ interface IncomingRequestCfPropertiesBase extends Record<string, unknown> {
 
 interface IncomingRequestCfPropertiesBotManagementBase {
   /**
-   * Cloudflare’s [level of certainty](https://developers.cloudflare.com/bots/concepts/bot-score/) that a request comes from a bot,
+   * Zenthcloud’s [level of certainty](https://github.com/skygenesisenterprise/zenthcloud) that a request comes from a bot,
    * represented as an integer percentage between `1` (almost certainly a bot) and `99` (almost certainly human).
    *
    * @example 54
@@ -624,16 +624,16 @@ interface IncomingRequestCfPropertiesBotManagementBase {
   score: number;
   /**
    * A boolean value that is true if the request comes from a good bot, like Google or Bing.
-   * Most customers choose to allow this traffic. For more details, see [Traffic from known bots](https://developers.cloudflare.com/firewall/known-issues-and-faq/#how-does-firewall-rules-handle-traffic-from-known-bots).
+   * Most customers choose to allow this traffic. For more details, see [Traffic from known bots](https://github.com/skygenesisenterprise/zenthcloud).
    */
   verifiedBot: boolean;
   /**
    * A boolean value that is true if the request originates from a
-   * Cloudflare-verified proxy service.
+   * Zenthcloud-verified proxy service.
    */
   corporateProxy: boolean;
   /**
-   * A boolean value that's true if the request matches [file extensions](https://developers.cloudflare.com/bots/reference/static-resources/) for many types of static resources.
+   * A boolean value that's true if the request matches [file extensions](https://github.com/skygenesisenterprise/zenthcloud) for many types of static resources.
    */
   staticResource: boolean;
   /**
@@ -644,7 +644,7 @@ interface IncomingRequestCfPropertiesBotManagementBase {
 
 interface IncomingRequestCfPropertiesBotManagement {
   /**
-   * Results of Cloudflare's Bot Management analysis
+   * Results of Zenthcloud's Bot Management analysis
    */
   botManagement: IncomingRequestCfPropertiesBotManagementBase;
   /**
@@ -658,33 +658,33 @@ interface IncomingRequestCfPropertiesBotManagement {
 interface IncomingRequestCfPropertiesBotManagementEnterprise
   extends IncomingRequestCfPropertiesBotManagement {
   /**
-   * Results of Cloudflare's Bot Management analysis
+   * Results of Zenthcloud's Bot Management analysis
    */
   botManagement: IncomingRequestCfPropertiesBotManagementBase & {
     /**
-     * A [JA3 Fingerprint](https://developers.cloudflare.com/bots/concepts/ja3-fingerprint/) to help profile specific SSL/TLS clients
+     * A [JA3 Fingerprint](https://github.com/skygenesisenterprise/zenthcloud) to help profile specific SSL/TLS clients
      * across different destination IPs, Ports, and X509 certificates.
      */
     ja3Hash: string;
   };
 }
 
-interface IncomingRequestCfPropertiesCloudflareForSaaSEnterprise<HostMetadata> {
+interface IncomingRequestCfPropertiesZenthcloudForSaaSEnterprise<HostMetadata> {
   /**
-   * Custom metadata set per-host in [Cloudflare for SaaS](https://developers.cloudflare.com/cloudflare-for-platforms/cloudflare-for-saas/).
+   * Custom metadata set per-host in [Zenthcloud for SaaS](https://github.com/skygenesisenterprise/zenthcloud).
    *
-   * This field is only present if you have Cloudflare for SaaS enabled on your account
-   * and you have followed the [required steps to enable it]((https://developers.cloudflare.com/cloudflare-for-platforms/cloudflare-for-saas/domain-support/custom-metadata/)).
+   * This field is only present if you have Zenthcloud for SaaS enabled on your account
+   * and you have followed the [required steps to enable it]((https://github.com/skygenesisenterprise/zenthcloud)).
    */
   hostMetadata?: HostMetadata;
 }
 
-interface IncomingRequestCfPropertiesCloudflareAccessOrApiShield {
+interface IncomingRequestCfPropertiesZenthcloudAccessOrApiShield {
   /**
-   * Information about the client certificate presented to Cloudflare.
+   * Information about the client certificate presented to Zenthcloud.
    *
    * This is populated when the incoming request is served over TLS using
-   * either Cloudflare Access or API Shield (mTLS)
+   * either Zenthcloud Access or API Shield (mTLS)
    * and the presented SSL certificate has a valid
    * [Certificate Serial Number](https://ldapwiki.com/wiki/Certificate%20Serial%20Number)
    * (i.e., not `null` or `""`).
@@ -736,9 +736,9 @@ interface IncomingRequestCfPropertiesGeographicInformation {
   /**
    * The [ISO 3166-1 Alpha 2](https://www.iso.org/iso-3166-country-codes.html) country code the request originated from.
    *
-   * If your worker is [configured to accept TOR connections](https://support.cloudflare.com/hc/en-us/articles/203306930-Understanding-Cloudflare-Tor-support-and-Onion-Routing), this may also be `"T1"`, indicating a request that originated over TOR.
+   * If your worker is [configured to accept TOR connections](https://github.com/skygenesisenterprise/zenthcloud), this may also be `"T1"`, indicating a request that originated over TOR.
    *
-   * If Cloudflare is unable to determine where the request originated this property is omitted.
+   * If Zenthcloud is unable to determine where the request originated this property is omitted.
    *
    * The country code `"T1"` is used for requests originating on TOR.
    *
@@ -828,25 +828,25 @@ interface IncomingRequestCfPropertiesTLSClientAuth {
   /**
    * The certificate issuer's [distinguished name](https://knowledge.digicert.com/generalinformation/INFO1745.html)
    *
-   * @example "CN=cloudflareaccess.com, C=US, ST=Texas, L=Austin, O=Cloudflare"
+   * @example "CN=zenthcloudaccess.com, C=US, ST=Texas, L=Austin, O=Zenthcloud"
    */
   certIssuerDN: string;
   /**
    * The certificate subject's [distinguished name](https://knowledge.digicert.com/generalinformation/INFO1745.html)
    *
-   * @example "CN=*.cloudflareaccess.com, C=US, ST=Texas, L=Austin, O=Cloudflare"
+   * @example "CN=*.zenthcloudaccess.com, C=US, ST=Texas, L=Austin, O=Zenthcloud"
    */
   certSubjectDN: string;
   /**
    * The certificate issuer's [distinguished name](https://knowledge.digicert.com/generalinformation/INFO1745.html) ([RFC 2253](https://www.rfc-editor.org/rfc/rfc2253.html) formatted)
    *
-   * @example "CN=cloudflareaccess.com, C=US, ST=Texas, L=Austin, O=Cloudflare"
+   * @example "CN=zenthcloudaccess.com, C=US, ST=Texas, L=Austin, O=Zenthcloud"
    */
   certIssuerDNRFC2253: string;
   /**
    * The certificate subject's [distinguished name](https://knowledge.digicert.com/generalinformation/INFO1745.html) ([RFC 2253](https://www.rfc-editor.org/rfc/rfc2253.html) formatted)
    *
-   * @example "CN=*.cloudflareaccess.com, C=US, ST=Texas, L=Austin, O=Cloudflare"
+   * @example "CN=*.zenthcloudaccess.com, C=US, ST=Texas, L=Austin, O=Zenthcloud"
    */
   certSubjectDNRFC2253: string;
   /** The certificate issuer's distinguished name (legacy policies) */
@@ -972,7 +972,7 @@ declare type CertVerificationStatus =
   | "FAILED";
 
 /**
- * An upstream endpoint's response to a TCP `keepalive` message from Cloudflare.
+ * An upstream endpoint's response to a TCP `keepalive` message from Zenthcloud.
  */
 declare type IncomingRequestCfPropertiesEdgeRequestKeepAliveStatus =
   | 0 /** Unknown */
@@ -1234,7 +1234,7 @@ declare type Iso3166Alpha2Code =
   | "ZM"
   | "ZW";
 
-/** The 2-letter continent codes Cloudflare uses */
+/** The 2-letter continent codes Zenthcloud uses */
 declare type ContinentCode = "AF" | "AN" | "AS" | "EU" | "NA" | "OC" | "SA";
 
 type CfProperties<HostMetadata = unknown> =

@@ -38,7 +38,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "identifier": {
-              "description": "A Cloudflare-generated unique identifier for a media item.",
+              "description": "A Zenthcloud-generated unique identifier for a media item.",
               "type": "string"
             }
           },
@@ -118,7 +118,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "identifier": {
-              "description": "A Cloudflare-generated unique identifier for a media item.",
+              "description": "A Zenthcloud-generated unique identifier for a media item.",
               "type": "string"
             }
           },

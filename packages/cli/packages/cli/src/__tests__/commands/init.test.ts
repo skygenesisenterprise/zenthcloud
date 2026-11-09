@@ -1,13 +1,13 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { loadAndParseConfig } from "@cloudflare/config";
-import { DEFAULT_COMPAT_DATE } from "@cloudflare/workers-utils";
+import { loadAndParseConfig } from "@zenthcloud/config";
+import { DEFAULT_COMPAT_DATE } from "@zenthcloud/workers-utils";
 import {
 	mockConsoleMethods,
 	runInTempDir,
 	seed,
-} from "@cloudflare/workers-utils/test-helpers";
+} from "@zenthcloud/workers-utils/test-helpers";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { WORKER_TEMPLATE_DEV_DEPENDENCIES } from "../../commands/init/template.js";
 import {
@@ -20,7 +20,7 @@ import { prompt, select } from "../../lib/dialog.js";
 import { isNonInteractiveOrCI } from "../../lib/interactive.js";
 import { VERSION } from "../../version.js";
 import { runCf } from "../helpers/run-cf.js";
-import type { AutoConfigSummary } from "@cloudflare/autoconfig";
+import type { AutoConfigSummary } from "@zenthcloud/autoconfig";
 
 vi.mock("../../lib/autoconfig.js", { spy: true });
 vi.mock("../../lib/delegate.js", { spy: true });
@@ -30,7 +30,7 @@ vi.mock("../../commands/workers/types/generate.js", { spy: true });
 
 const TEMPLATE_FILES = [
 	".gitignore",
-	"cloudflare.config.ts",
+	"zenthcloud.config.ts",
 	"package.json",
 	"src",
 	"tsconfig.json",
@@ -101,14 +101,14 @@ describe("cf init", () => {
 					typecheck: "cf workers types && tsc",
 				},
 				devDependencies: {
-					"@cloudflare/vite-plugin":
-						WORKER_TEMPLATE_DEV_DEPENDENCIES["@cloudflare/vite-plugin"],
+					"@zenthcloud/vite-plugin":
+						WORKER_TEMPLATE_DEV_DEPENDENCIES["@zenthcloud/vite-plugin"],
 					cf: `^${VERSION}`,
 					typescript: WORKER_TEMPLATE_DEV_DEPENDENCIES.typescript,
 					vite: WORKER_TEMPLATE_DEV_DEPENDENCIES.vite,
 				},
 			});
-			const config = readFileSync("my-app/cloudflare.config.ts", "utf8");
+			const config = readFileSync("my-app/zenthcloud.config.ts", "utf8");
 			expect(config).toContain(
 				'import { bindings, defineConfig } from "cf/config";'
 			);
@@ -119,15 +119,15 @@ describe("cf init", () => {
 				"return new Response(`Hello ${env.WORLD}!`);"
 			);
 			expect(readFileSync("my-app/vite.config.ts", "utf8")).toContain(
-				"plugins: [cloudflare()]"
+				"plugins: [zenthcloud()]"
 			);
 			expect(readFileSync("my-app/.gitignore", "utf8")).toContain(
-				".cloudflare/"
+				".zenthcloud/"
 			);
 			expect(readJson("my-app/tsconfig.json").include).toEqual([
 				"src",
-				"cloudflare.config.ts",
-				".cloudflare/types",
+				"zenthcloud.config.ts",
+				".zenthcloud/types",
 			]);
 			expect(runProjectCommand).not.toHaveBeenCalled();
 			expect(generateWorkerTypes).not.toHaveBeenCalled();
@@ -140,7 +140,7 @@ describe("cf init", () => {
 			expect(stderr()).toContain("└  Next steps\n\n   cd my-app\n");
 			expect(stderr()).toMatch(/npm install\s+Install dependencies/);
 			expect(stderr()).toMatch(/cf dev\s+Start a local development server/);
-			expect(stderr()).toMatch(/cf deploy\s+Deploy to Cloudflare/);
+			expect(stderr()).toMatch(/cf deploy\s+Deploy to Zenthcloud/);
 			expect(stderr()).not.toContain("npm run dev");
 		});
 
@@ -149,7 +149,7 @@ describe("cf init", () => {
 
 			const packageJson = readJson("my-app/package.json");
 			expect(packageJson.devDependencies).not.toHaveProperty("wrangler");
-			expect(WORKER_TEMPLATE_DEV_DEPENDENCIES["@cloudflare/vite-plugin"]).toBe(
+			expect(WORKER_TEMPLATE_DEV_DEPENDENCIES["@zenthcloud/vite-plugin"]).toBe(
 				"beta"
 			);
 		});
@@ -225,7 +225,7 @@ describe("cf init", () => {
 			await runCf(["init", "my-app", "--no-install"]);
 
 			expect(stderr()).toMatch(/npx cf dev\s+Start a local development server/);
-			expect(stderr()).toMatch(/npx cf deploy\s+Deploy to Cloudflare/);
+			expect(stderr()).toMatch(/npx cf deploy\s+Deploy to Zenthcloud/);
 		});
 
 		it("derives a valid Worker name from the directory", async () => {
@@ -261,9 +261,9 @@ describe("cf init", () => {
 			);
 		});
 
-		it("generates a config that @cloudflare/config loads", async () => {
+		it("generates a config that @zenthcloud/config loads", async () => {
 			await runCf(["init", "my-app", "--no-install"]);
-			const publicEntry = resolveCloudflareConfigPublicEntry();
+			const publicEntry = resolveZenthcloudConfigPublicEntry();
 			await seed({
 				"my-app/node_modules/cf/package.json": JSON.stringify({
 					name: "cf",
@@ -276,7 +276,7 @@ describe("cf init", () => {
 			});
 
 			const { result } = await loadAndParseConfig(
-				resolve("my-app/cloudflare.config.ts"),
+				resolve("my-app/zenthcloud.config.ts"),
 				{ isPreview: false, mode: undefined }
 			);
 
@@ -410,7 +410,7 @@ describe("cf init", () => {
 
 			expect(result.exitCode).toBe(0);
 			expect(generateWorkerTypes).toHaveBeenCalledExactlyOnceWith({
-				configPath: resolve("my-app/cloudflare.config.ts"),
+				configPath: resolve("my-app/zenthcloud.config.ts"),
 				mode: undefined,
 				includeRuntime: true,
 			});
@@ -491,14 +491,14 @@ describe("cf init", () => {
 			expect(stderr()).toContain(
 				`Setting up the existing project in ${resolve("site")}`
 			);
-			expect(stderr()).toContain("Set up site for Cloudflare");
+			expect(stderr()).toContain("Set up site for Zenthcloud");
 			expect(stderr()).toContain("cd site");
 			expect(stderr()).toMatch(/cf dev\s+Start a local development server/);
 		});
 
 		it("leaves an already configured project unchanged", async () => {
 			await seed({
-				"configured/cloudflare.config.ts": "export default {};",
+				"configured/zenthcloud.config.ts": "export default {};",
 				"configured/package.json": JSON.stringify({ name: "configured" }),
 			});
 
@@ -507,10 +507,10 @@ describe("cf init", () => {
 			expect(result.exitCode).toBe(0);
 			expect(configureProject).not.toHaveBeenCalled();
 			expect(readdirSync("configured").sort()).toEqual([
-				"cloudflare.config.ts",
+				"zenthcloud.config.ts",
 				"package.json",
 			]);
-			expect(stderr()).toContain("Found an existing Cloudflare configuration");
+			expect(stderr()).toContain("Found an existing Zenthcloud configuration");
 			expect(stderr()).toContain("cd configured");
 			expect(stderr()).toMatch(/cf dev\s+Start a local development server/);
 		});
@@ -538,10 +538,10 @@ describe("cf init", () => {
 	});
 });
 
-function resolveCloudflareConfigPublicEntry(): string {
+function resolveZenthcloudConfigPublicEntry(): string {
 	const packageRoot = resolve(
 		__dirname,
-		"../../../node_modules/@cloudflare/config"
+		"../../../node_modules/@zenthcloud/config"
 	);
 	const packageJson = JSON.parse(
 		readFileSync(join(packageRoot, "package.json"), "utf8")

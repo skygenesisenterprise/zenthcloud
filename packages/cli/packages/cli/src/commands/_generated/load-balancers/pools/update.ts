@@ -34,7 +34,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 			type: "string",
 			array: true,
 			description:
-				"A list of regions from which to run health checks. Null means every Cloudflare data center.",
+				"A list of regions from which to run health checks. Null means every Zenthcloud data center.",
 		})
 		.option("description", {
 			type: "string",
@@ -117,7 +117,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("notification-email", {
 			type: "string",
 			description:
-				"This field is now deprecated. It has been moved to Cloudflare's Centralized Notification service https://developers.cloudflare.com/fundamentals/notifications/. The email address to send health status notifications to. This can be an individual mailbox or a mailing list. Multiple emails can be supplied as a comma delimited list.",
+				"This field is now deprecated. It has been moved to Zenthcloud's Centralized Notification service https://github.com/skygenesisenterprise/zenthcloud The email address to send health status notifications to. This can be an individual mailbox or a mailing list. Multiple emails can be supplied as a comma delimited list.",
 		})
 		.option("notification-filter-origin-disable", {
 			type: "boolean",
@@ -200,7 +200,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf load-balancers pools update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/load_balancers/pools/${argv["pool-id"] == null ? "<pool-id>" : encodeURIComponent(String(argv["pool-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/load_balancers/pools/${argv["pool-id"] == null ? "<pool-id>" : encodeURIComponent(String(argv["pool-id"]))}`,
 						pathParams: { "pool-id": String(argv["pool-id"] ?? "") },
 						bodyKind: "json",
 						body:

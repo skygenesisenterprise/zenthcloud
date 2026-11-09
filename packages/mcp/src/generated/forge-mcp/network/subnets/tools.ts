@@ -30,7 +30,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID",
+              "description": "Zenthcloud account ID",
               "type": "string"
             }
           },
@@ -94,7 +94,7 @@ export const tools: readonly Tool[] = [
             "subnet_types": {
               "description": "If set, the types of subnets to include, separated by comma.",
               "enum": [
-                "cloudflare_source",
+                "zenthcloud_source",
                 "initial_resolved_ip",
                 "warp"
               ],
@@ -147,8 +147,8 @@ export const tools: readonly Tool[] = [
       ],
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Networks Write",
-          "Cloudflare One Networks Read"
+          "Zenthcloud One Networks Write",
+          "Zenthcloud One Networks Read"
         ]
       },
       responses: {

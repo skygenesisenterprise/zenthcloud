@@ -5,8 +5,8 @@ package zero_trust_device_subnet
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -20,8 +20,8 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		MarkdownDescription: schemata.Description{
 			Scopes: []string{
-				"Cloudflare One Networks Read",
-				"Cloudflare One Networks Write",
+				"Zenthcloud One Networks Read",
+				"Zenthcloud One Networks Write",
 			},
 		}.String(),
 		Attributes: map[string]schema.Attribute{
@@ -34,7 +34,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"account_id": schema.StringAttribute{
-				Description: "Cloudflare account ID",
+				Description: "Zenthcloud account ID",
 				Optional:    true,
 			},
 			"comment": schema.StringAttribute{
@@ -64,11 +64,11 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"subnet_type": schema.StringAttribute{
-				Description: "The type of subnet.\nAvailable values: \"cloudflare_source\", \"initial_resolved_ip\", \"warp\".",
+				Description: "The type of subnet.\nAvailable values: \"zenthcloud_source\", \"initial_resolved_ip\", \"warp\".",
 				Computed:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive(
-						"cloudflare_source",
+						"zenthcloud_source",
 						"initial_resolved_ip",
 						"warp",
 					),

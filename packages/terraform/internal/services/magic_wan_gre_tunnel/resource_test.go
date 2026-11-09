@@ -9,10 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
-	"github.com/cloudflare/cloudflare-go"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 )
@@ -22,23 +22,23 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_magic_wan_gre_tunnel", &resource.Sweeper{
-		Name: "cloudflare_magic_wan_gre_tunnel",
-		F:    testSweepCloudflareMagicWanGRETunnel,
+	resource.AddTestSweepers("zenthcloud_magic_wan_gre_tunnel", &resource.Sweeper{
+		Name: "zenthcloud_magic_wan_gre_tunnel",
+		F:    testSweepZenthcloudMagicWanGRETunnel,
 	})
 }
 
-func testSweepCloudflareMagicWanGRETunnel(r string) error {
+func testSweepZenthcloudMagicWanGRETunnel(r string) error {
 	ctx := context.Background()
 	client, clientErr := acctest.SharedV1Client()
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
-		return fmt.Errorf("failed to create Cloudflare client: %w", clientErr)
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
+		return fmt.Errorf("failed to create Zenthcloud client: %w", clientErr)
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping GRE tunnels sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping GRE tunnels sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
@@ -82,17 +82,17 @@ func testSweepCloudflareMagicWanGRETunnel(r string) error {
 	return nil
 }
 
-func TestAccCloudflareGRETunnelExists(t *testing.T) {
+func TestAccZenthcloudGRETunnelExists(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_magic_wan_gre_tunnel.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_magic_wan_gre_tunnel.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	cfIP := utils.LookupMagicWanCfIP(t, accountID)
 	// Use unique endpoints and interface address per test to avoid conflicts
 	customerEndpoint := "203.0.113.10"
 	interfaceAddr := "10.213.0.20/31"
-	config := testAccCheckCloudflareGRETunnelSimple(rnd, rnd, rnd, accountID, cfIP, customerEndpoint, interfaceAddr)
+	config := testAccCheckZenthcloudGRETunnelSimple(rnd, rnd, rnd, accountID, cfIP, customerEndpoint, interfaceAddr)
 
-	var Tunnel cloudflare.MagicTransitGRETunnel
+	var Tunnel zenthcloud.MagicTransitGRETunnel
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck_AccountID(t) },
@@ -101,11 +101,11 @@ func TestAccCloudflareGRETunnelExists(t *testing.T) {
 			{
 				Config: config,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareGRETunnelExists(name, &Tunnel),
+					testAccCheckZenthcloudGRETunnelExists(name, &Tunnel),
 					resource.TestCheckResourceAttr(name, "description", rnd),
 					resource.TestCheckResourceAttr(name, "name", rnd),
 					resource.TestCheckResourceAttr(name, "customer_gre_endpoint", "203.0.113.10"),
-					resource.TestCheckResourceAttr(name, "cloudflare_gre_endpoint", cfIP),
+					resource.TestCheckResourceAttr(name, "zenthcloud_gre_endpoint", cfIP),
 					resource.TestCheckResourceAttr(name, "interface_address", "10.213.0.20/31"),
 					resource.TestCheckResourceAttr(name, "health_check.target.effective", "203.0.113.10"),
 					resource.TestCheckResourceAttr(name, "automatic_return_routing", "true"),
@@ -133,7 +133,7 @@ func TestAccCloudflareGRETunnelExists(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareGRETunnelExists(n string, tunnel *cloudflare.MagicTransitGRETunnel) resource.TestCheckFunc {
+func testAccCheckZenthcloudGRETunnelExists(n string, tunnel *zenthcloud.MagicTransitGRETunnel) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -146,7 +146,7 @@ func testAccCheckCloudflareGRETunnelExists(n string, tunnel *cloudflare.MagicTra
 
 		client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 		if clientErr != nil {
-			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 		}
 		foundGRETunnel, err := client.GetMagicTransitGRETunnel(context.Background(), rs.Primary.Attributes[consts.AccountIDSchemaKey], rs.Primary.ID)
 		if err != nil {
@@ -159,39 +159,39 @@ func testAccCheckCloudflareGRETunnelExists(n string, tunnel *cloudflare.MagicTra
 	}
 }
 
-func TestAccCloudflareGRETunnelUpdateDescription(t *testing.T) {
+func TestAccZenthcloudGRETunnelUpdateDescription(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_magic_wan_gre_tunnel.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_magic_wan_gre_tunnel.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	cfIP := utils.LookupMagicWanCfIP(t, accountID)
 	// Use unique endpoints and interface address per test to avoid conflicts
 	customerEndpoint := "203.0.113.11"
 	interfaceAddr := "10.213.0.22/31"
 
-	var Tunnel cloudflare.MagicTransitGRETunnel
+	var Tunnel zenthcloud.MagicTransitGRETunnel
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck_AccountID(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareGRETunnelSimple(rnd, rnd, rnd, accountID, cfIP, customerEndpoint, interfaceAddr),
+				Config: testAccCheckZenthcloudGRETunnelSimple(rnd, rnd, rnd, accountID, cfIP, customerEndpoint, interfaceAddr),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareGRETunnelExists(name, &Tunnel),
+					testAccCheckZenthcloudGRETunnelExists(name, &Tunnel),
 					resource.TestCheckResourceAttr(name, "description", rnd),
 				),
 			},
 			{
-				Config: testAccCheckCloudflareGRETunnelSimple(rnd, rnd, rnd+"-updated", accountID, cfIP, customerEndpoint, interfaceAddr),
+				Config: testAccCheckZenthcloudGRETunnelSimple(rnd, rnd, rnd+"-updated", accountID, cfIP, customerEndpoint, interfaceAddr),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareGRETunnelExists(name, &Tunnel),
+					testAccCheckZenthcloudGRETunnelExists(name, &Tunnel),
 					resource.TestCheckResourceAttr(name, "description", rnd+"-updated"),
 				),
 			},
 			{
-				Config: testAccCheckCloudflareGRETunnelNoDescription(rnd, rnd, accountID, customerEndpoint, cfIP, interfaceAddr),
+				Config: testAccCheckZenthcloudGRETunnelNoDescription(rnd, rnd, accountID, customerEndpoint, cfIP, interfaceAddr),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareGRETunnelExists(name, &Tunnel),
+					testAccCheckZenthcloudGRETunnelExists(name, &Tunnel),
 					resource.TestCheckResourceAttr(name, "description", rnd+"-updated"),
 				),
 			},
@@ -199,10 +199,10 @@ func TestAccCloudflareGRETunnelUpdateDescription(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareGRETunnelUpdateMulti(t *testing.T) {
+func TestAccZenthcloudGRETunnelUpdateMulti(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_magic_wan_gre_tunnel.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_magic_wan_gre_tunnel.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	cfIP := utils.LookupMagicWanCfIP(t, accountID)
 	// Use unique endpoints and interface address per test to avoid conflicts
 	customerEndpoint1 := "203.0.113.12"
@@ -210,20 +210,20 @@ func TestAccCloudflareGRETunnelUpdateMulti(t *testing.T) {
 	customerEndpoint2 := "203.0.113.13"
 	interfaceAddr2 := "10.213.0.26/31"
 
-	var Tunnel cloudflare.MagicTransitGRETunnel
+	var Tunnel zenthcloud.MagicTransitGRETunnel
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck_AccountID(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareGRETunnelSimple(rnd, rnd, rnd, accountID, cfIP, customerEndpoint1, interfaceAddr1),
+				Config: testAccCheckZenthcloudGRETunnelSimple(rnd, rnd, rnd, accountID, cfIP, customerEndpoint1, interfaceAddr1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareGRETunnelExists(name, &Tunnel),
+					testAccCheckZenthcloudGRETunnelExists(name, &Tunnel),
 					resource.TestCheckResourceAttr(name, "description", rnd),
 					resource.TestCheckResourceAttr(name, "name", rnd),
 					resource.TestCheckResourceAttr(name, "customer_gre_endpoint", "203.0.113.12"),
-					resource.TestCheckResourceAttr(name, "cloudflare_gre_endpoint", cfIP),
+					resource.TestCheckResourceAttr(name, "zenthcloud_gre_endpoint", cfIP),
 					resource.TestCheckResourceAttr(name, "interface_address", "10.213.0.24/31"),
 					resource.TestCheckResourceAttr(name, "ttl", "64"),
 					resource.TestCheckResourceAttr(name, "mtu", "1476"),
@@ -231,13 +231,13 @@ func TestAccCloudflareGRETunnelUpdateMulti(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckCloudflareGRETunnelMultiUpdate(rnd, rnd, rnd+"-updated", accountID, cfIP, customerEndpoint2, interfaceAddr2),
+				Config: testAccCheckZenthcloudGRETunnelMultiUpdate(rnd, rnd, rnd+"-updated", accountID, cfIP, customerEndpoint2, interfaceAddr2),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareGRETunnelExists(name, &Tunnel),
+					testAccCheckZenthcloudGRETunnelExists(name, &Tunnel),
 					resource.TestCheckResourceAttr(name, "description", rnd+"-updated"),
 					resource.TestCheckResourceAttr(name, "name", rnd),
 					resource.TestCheckResourceAttr(name, "customer_gre_endpoint", "203.0.113.13"),
-					resource.TestCheckResourceAttr(name, "cloudflare_gre_endpoint", cfIP),
+					resource.TestCheckResourceAttr(name, "zenthcloud_gre_endpoint", cfIP),
 					resource.TestCheckResourceAttr(name, "interface_address", "10.213.0.26/31"),
 					resource.TestCheckResourceAttr(name, "ttl", "65"),
 					resource.TestCheckResourceAttr(name, "mtu", "1475"),
@@ -248,33 +248,33 @@ func TestAccCloudflareGRETunnelUpdateMulti(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareGRETunnelSimple(ID, name, description, accountID, cfIP, customerEndpoint, interfaceAddr string) string {
+func testAccCheckZenthcloudGRETunnelSimple(ID, name, description, accountID, cfIP, customerEndpoint, interfaceAddr string) string {
 	return acctest.LoadTestCase("gretunnelsimple.tf", ID, name, description, accountID, cfIP, customerEndpoint, interfaceAddr)
 }
 
-func testAccCheckCloudflareGRETunnelNoDescription(ID, name, accountID, customerEndpoint, cfIP, interfaceAddr string) string {
+func testAccCheckZenthcloudGRETunnelNoDescription(ID, name, accountID, customerEndpoint, cfIP, interfaceAddr string) string {
 	return acctest.LoadTestCase("gretunnelnodescription.tf", ID, name, accountID, customerEndpoint, cfIP, interfaceAddr)
 }
 
-func testAccCheckCloudflareGRETunnelMultiUpdate(ID, name, description, accountID, cfIP, customerEndpoint, interfaceAddr string) string {
+func testAccCheckZenthcloudGRETunnelMultiUpdate(ID, name, description, accountID, cfIP, customerEndpoint, interfaceAddr string) string {
 	return acctest.LoadTestCase("gretunnelmultiupdate.tf", ID, name, description, accountID, cfIP, customerEndpoint, interfaceAddr)
 }
 
 func TestAccUpgradeMagicWanGreTunnel_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	cfIP := utils.LookupMagicWanCfIP(t, accountID)
 	customerEndpoint := "203.0.113.10"
 	interfaceAddr := "10.213.0.20/31"
-	config := testAccCheckCloudflareGRETunnelSimple(rnd, rnd, rnd, accountID, cfIP, customerEndpoint, interfaceAddr)
+	config := testAccCheckZenthcloudGRETunnelSimple(rnd, rnd, rnd, accountID, cfIP, customerEndpoint, interfaceAddr)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck_AccountID(t) },
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

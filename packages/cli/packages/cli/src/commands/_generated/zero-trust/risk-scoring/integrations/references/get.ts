@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust risk-scoring integrations references get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/zt_risk_scoring/integrations/reference_id/${argv["reference-id"] == null ? "<reference-id>" : encodeURIComponent(String(argv["reference-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/zt_risk_scoring/integrations/reference_id/${argv["reference-id"] == null ? "<reference-id>" : encodeURIComponent(String(argv["reference-id"]))}`,
 						pathParams: { "reference-id": String(argv["reference-id"] ?? "") },
 						bodyKind: "none",
 					});

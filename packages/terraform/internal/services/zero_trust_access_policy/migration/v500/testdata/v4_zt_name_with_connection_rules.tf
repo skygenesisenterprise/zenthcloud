@@ -1,7 +1,7 @@
-# v4 config using cloudflare_zero_trust_access_policy with connection_rules
+# v4 config using zenthcloud_zero_trust_access_policy with connection_rules
 # This reproduces the research-team error:
 #   Error: AttributeName("connection_rules"): invalid JSON, expected "{", got "["
-resource "cloudflare_zero_trust_access_policy" {
+resource "zenthcloud_zero_trust_access_policy" {
   account_id = "%[2]s"
   name       = "%[1]s"
   decision   = "non_identity"

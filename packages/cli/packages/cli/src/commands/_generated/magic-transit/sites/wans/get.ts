@@ -60,7 +60,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf magic-transit sites wans get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/magic/sites/${argv["site-id"] == null ? "<site-id>" : encodeURIComponent(String(argv["site-id"]))}/wans/${argv["wan-id"] == null ? "<wan-id>" : encodeURIComponent(String(argv["wan-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/magic/sites/${argv["site-id"] == null ? "<site-id>" : encodeURIComponent(String(argv["site-id"]))}/wans/${argv["wan-id"] == null ? "<wan-id>" : encodeURIComponent(String(argv["wan-id"]))}`,
 						pathParams: {
 							"site-id": String(argv["site-id"] ?? ""),
 							"wan-id": String(argv["wan-id"] ?? ""),

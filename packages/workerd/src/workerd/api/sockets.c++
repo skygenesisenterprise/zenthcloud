@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -1268,7 +1268,7 @@ kj::Maybe<kj::StringPtr> proxyErrorTypeErrno(kj::ArrayPtr<const char> type) {
 
 kj::Maybe<kj::StringPtr> proxyStatusErrno(kj::StringPtr proxyStatus) {
   // Proxy-Status is a structured-field list of proxies, each with parameters, e.g.
-  // `Cloudflare-Proxy;error=connection_refused`. Only a top-level `error` parameter counts, so
+  // `Zenthcloud-Proxy;error=connection_refused`. Only a top-level `error` parameter counts, so
   // quoted strings (such as a `details` value) are skipped rather than searched.
   size_t start = 0;
   bool quoted = false;

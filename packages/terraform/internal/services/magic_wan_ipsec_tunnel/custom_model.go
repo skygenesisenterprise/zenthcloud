@@ -1,9 +1,9 @@
 package magic_wan_ipsec_tunnel
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -15,7 +15,7 @@ type CustomMagicWANIPSECTunnelResultEnvelope struct {
 type CustomMagicWANIPSECTunnelModel struct {
 	ID                     types.String                                                  `tfsdk:"id" json:"id,computed"`
 	AccountID              types.String                                                  `tfsdk:"account_id" path:"account_id,required"`
-	CloudflareEndpoint     types.String                                                  `tfsdk:"cloudflare_endpoint" json:"cloudflare_endpoint,required"`
+	ZenthcloudEndpoint     types.String                                                  `tfsdk:"zenthcloud_endpoint" json:"zenthcloud_endpoint,required"`
 	InterfaceAddress       types.String                                                  `tfsdk:"interface_address" json:"interface_address,required"`
 	Name                   types.String                                                  `tfsdk:"name" json:"name,required"`
 	CustomerEndpoint       types.String                                                  `tfsdk:"customer_endpoint" json:"customer_endpoint,optional"`

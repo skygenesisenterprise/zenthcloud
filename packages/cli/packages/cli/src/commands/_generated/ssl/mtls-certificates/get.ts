@@ -20,7 +20,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 ssl mtls-certificates get <mtls-certificate-id>\n\nFetches a single mTLS certificate uploaded to your account. To get a certificate issued by the Cloudflare managed CA, use the [Client Certificate Details endpoint](/api/resources/client_certificates/methods/get/)."
+			"$0 ssl mtls-certificates get <mtls-certificate-id>\n\nFetches a single mTLS certificate uploaded to your account. To get a certificate issued by the Zenthcloud managed CA, use the [Client Certificate Details endpoint](/api/resources/client_certificates/methods/get/)."
 		)
 		.positional("mtls-certificate-id", {
 			type: "string",
@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf ssl mtls-certificates get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/mtls_certificates/${argv["mtls-certificate-id"] == null ? "<mtls-certificate-id>" : encodeURIComponent(String(argv["mtls-certificate-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/mtls_certificates/${argv["mtls-certificate-id"] == null ? "<mtls-certificate-id>" : encodeURIComponent(String(argv["mtls-certificate-id"]))}`,
 						pathParams: {
 							"mtls-certificate-id": String(argv["mtls-certificate-id"] ?? ""),
 						},

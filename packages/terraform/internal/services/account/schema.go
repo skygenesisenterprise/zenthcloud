@@ -5,8 +5,8 @@ package account
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -70,7 +70,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown(), boolplanmodifier.RequiresReplaceIfConfigured()},
 			},
 		"unit": schema.SingleNestedAttribute{
-			Description: "Information related to the tenant unit. Provide its ID and omit `standalone` to create the Account within an Organization. See https://developers.cloudflare.com/tenant/how-to/manage-accounts/.",
+			Description: "Information related to the tenant unit. Provide its ID and omit `standalone` to create the Account within an Organization. See https://github.com/skygenesisenterprise/zenthcloud",
 			Computed:    true,
 			Optional:    true,
 			CustomType:  customfield.NewNestedObjectType[AccountUnitModel](ctx),

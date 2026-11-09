@@ -16,10 +16,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_access_short_lived_certificate/migration/v500"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_access_short_lived_certificate/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -43,8 +43,8 @@ var v5ZoneScopedConfig string
 // --------------------------------------------------------------------------
 
 // TestMigrateAccessCACertificateBasic tests basic migration with account_id.
-// Verifies that cloudflare_access_ca_certificate (v4) state is correctly
-// transformed to cloudflare_zero_trust_access_short_lived_certificate (v5),
+// Verifies that zenthcloud_access_ca_certificate (v4) state is correctly
+// transformed to zenthcloud_zero_trust_access_short_lived_certificate (v5),
 // including the application_id -> app_id attribute rename.
 func TestMigrateAccessCACertificateBasic(t *testing.T) {
 	testCases := []struct {
@@ -77,11 +77,11 @@ func TestMigrateAccessCACertificateBasic(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-			domain := os.Getenv("CLOUDFLARE_DOMAIN")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+			domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
-			resourceName := "cloudflare_zero_trust_access_short_lived_certificate." + rnd
+			resourceName := "zenthcloud_zero_trust_access_short_lived_certificate." + rnd
 
 			setupConfig := tc.setupFn(rnd, accountID, domain)
 			migrateConfig := tc.migrateFn(rnd, accountID, domain)
@@ -96,8 +96,8 @@ func TestMigrateAccessCACertificateBasic(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -170,11 +170,11 @@ func TestMigrateAccessCACertificateZoneScoped(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-			domain := os.Getenv("CLOUDFLARE_DOMAIN")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+			domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
-			resourceName := "cloudflare_zero_trust_access_short_lived_certificate." + rnd
+			resourceName := "zenthcloud_zero_trust_access_short_lived_certificate." + rnd
 
 			setupConfig := tc.setupFn(rnd, zoneID, domain)
 			migrateConfig := tc.migrateFn(rnd, zoneID, domain)
@@ -189,8 +189,8 @@ func TestMigrateAccessCACertificateZoneScoped(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -237,8 +237,8 @@ func TestMigrateAccessCACertificateZoneScoped(t *testing.T) {
 // type names. The v5 provider cannot read state entries with unknown types, so
 // we rename them in-place before Terraform tries to load the state.
 var v4TypeRenames = map[string]string{
-	"cloudflare_access_application":  "cloudflare_zero_trust_access_application",
-	"cloudflare_access_ca_certificate": "cloudflare_zero_trust_access_short_lived_certificate",
+	"zenthcloud_access_application":  "zenthcloud_zero_trust_access_application",
+	"zenthcloud_access_ca_certificate": "zenthcloud_zero_trust_access_short_lived_certificate",
 }
 
 func renameStateTypes(t *testing.T, tmpDir string, renames map[string]string) {

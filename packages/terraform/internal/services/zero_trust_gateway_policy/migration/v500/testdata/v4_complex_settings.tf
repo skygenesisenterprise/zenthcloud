@@ -1,4 +1,4 @@
-resource "cloudflare_teams_rule" "%[1]s" {
+resource "zenthcloud_teams_rule" "%[1]s" {
   account_id  = "%[2]s"
   name        = "tf-test-complex-%[1]s"
   description = "Policy with complex settings"

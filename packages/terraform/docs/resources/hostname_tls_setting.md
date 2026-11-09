@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_hostname_tls_setting Resource - Cloudflare"
+page_title: "zenthcloud_hostname_tls_setting Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   SSL and Certificates Write
 ---
 
-# cloudflare_hostname_tls_setting (Resource)
+# zenthcloud_hostname_tls_setting (Resource)
 
 Accepted Permissions
 
@@ -15,7 +15,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_hostname_tls_setting" "example_hostname_tls_setting" {
+resource "zenthcloud_hostname_tls_setting" "example_hostname_tls_setting" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   setting_id = "ciphers"
   hostname = "app.example.com"
@@ -60,7 +60,7 @@ Available values: "ciphers", "min_tls_version", "http2".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_hostname_tls_setting.example '<zone_id>/<setting_id>/<hostname>'
+$ terraform import zenthcloud_hostname_tls_setting.example '<zone_id>/<setting_id>/<hostname>'
 ```
 
 

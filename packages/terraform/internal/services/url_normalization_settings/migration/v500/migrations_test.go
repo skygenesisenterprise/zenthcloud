@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -21,11 +21,11 @@ var (
 
 // Embed migration test configuration files
 //
-//go:embed testdata/v4_cloudflare_incoming.tf
-var v4CloudflareIncomingConfig string
+//go:embed testdata/v4_zenthcloud_incoming.tf
+var v4ZenthcloudIncomingConfig string
 
-//go:embed testdata/v5_cloudflare_incoming.tf
-var v5CloudflareIncomingConfig string
+//go:embed testdata/v5_zenthcloud_incoming.tf
+var v5ZenthcloudIncomingConfig string
 
 //go:embed testdata/v4_rfc3986_both.tf
 var v4RFC3986BothConfig string
@@ -33,14 +33,14 @@ var v4RFC3986BothConfig string
 //go:embed testdata/v5_rfc3986_both.tf
 var v5RFC3986BothConfig string
 
-//go:embed testdata/v4_cloudflare_none.tf
-var v4CloudflareNoneConfig string
+//go:embed testdata/v4_zenthcloud_none.tf
+var v4ZenthcloudNoneConfig string
 
-//go:embed testdata/v5_cloudflare_none.tf
-var v5CloudflareNoneConfig string
+//go:embed testdata/v5_zenthcloud_none.tf
+var v5ZenthcloudNoneConfig string
 
-// TestMigrateURLNormalizationSettings_CloudflareIncoming tests migration with type=cloudflare, scope=incoming
-func TestMigrateURLNormalizationSettings_CloudflareIncoming(t *testing.T) {
+// TestMigrateURLNormalizationSettings_ZenthcloudIncoming tests migration with type=zenthcloud, scope=incoming
+func TestMigrateURLNormalizationSettings_ZenthcloudIncoming(t *testing.T) {
 	testCases := []struct {
 		name     string
 		version  string
@@ -50,14 +50,14 @@ func TestMigrateURLNormalizationSettings_CloudflareIncoming(t *testing.T) {
 			name:    "from_v4_latest",
 			version: acctest.GetLastV4Version(),
 			configFn: func(rnd, zoneID string) string {
-				return fmt.Sprintf(v4CloudflareIncomingConfig, rnd, zoneID)
+				return fmt.Sprintf(v4ZenthcloudIncomingConfig, rnd, zoneID)
 			},
 		},
 		{
 			name:    "from_v5",
 			version: currentProviderVersion,
 			configFn: func(rnd, zoneID string) string {
-				return fmt.Sprintf(v5CloudflareIncomingConfig, rnd, zoneID)
+				return fmt.Sprintf(v5ZenthcloudIncomingConfig, rnd, zoneID)
 			},
 		},
 	}
@@ -65,8 +65,8 @@ func TestMigrateURLNormalizationSettings_CloudflareIncoming(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_url_normalization_settings." + rnd
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			resourceName := "zenthcloud_url_normalization_settings." + rnd
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -80,8 +80,8 @@ func TestMigrateURLNormalizationSettings_CloudflareIncoming(t *testing.T) {
 				Steps: append([]resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -90,7 +90,7 @@ func TestMigrateURLNormalizationSettings_CloudflareIncoming(t *testing.T) {
 				},
 					acctest.MigrationV2TestStepWithPlan(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
-						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("cloudflare")),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("zenthcloud")),
 						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("scope"), knownvalue.StringExact("incoming")),
 					})...),
 			})
@@ -124,8 +124,8 @@ func TestMigrateURLNormalizationSettings_RFC3986Both(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_url_normalization_settings." + rnd
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			resourceName := "zenthcloud_url_normalization_settings." + rnd
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -139,8 +139,8 @@ func TestMigrateURLNormalizationSettings_RFC3986Both(t *testing.T) {
 				Steps: append([]resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -157,8 +157,8 @@ func TestMigrateURLNormalizationSettings_RFC3986Both(t *testing.T) {
 	}
 }
 
-// TestMigrateURLNormalizationSettings_CloudflareNone tests migration with type=cloudflare, scope=none
-func TestMigrateURLNormalizationSettings_CloudflareNone(t *testing.T) {
+// TestMigrateURLNormalizationSettings_ZenthcloudNone tests migration with type=zenthcloud, scope=none
+func TestMigrateURLNormalizationSettings_ZenthcloudNone(t *testing.T) {
 	testCases := []struct {
 		name     string
 		version  string
@@ -168,14 +168,14 @@ func TestMigrateURLNormalizationSettings_CloudflareNone(t *testing.T) {
 			name:    "from_v4_latest",
 			version: acctest.GetLastV4Version(),
 			configFn: func(rnd, zoneID string) string {
-				return fmt.Sprintf(v4CloudflareNoneConfig, rnd, zoneID)
+				return fmt.Sprintf(v4ZenthcloudNoneConfig, rnd, zoneID)
 			},
 		},
 		{
 			name:    "from_v5",
 			version: currentProviderVersion,
 			configFn: func(rnd, zoneID string) string {
-				return fmt.Sprintf(v5CloudflareNoneConfig, rnd, zoneID)
+				return fmt.Sprintf(v5ZenthcloudNoneConfig, rnd, zoneID)
 			},
 		},
 	}
@@ -183,8 +183,8 @@ func TestMigrateURLNormalizationSettings_CloudflareNone(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_url_normalization_settings." + rnd
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			resourceName := "zenthcloud_url_normalization_settings." + rnd
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -198,8 +198,8 @@ func TestMigrateURLNormalizationSettings_CloudflareNone(t *testing.T) {
 				Steps: append([]resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -208,7 +208,7 @@ func TestMigrateURLNormalizationSettings_CloudflareNone(t *testing.T) {
 				},
 					acctest.MigrationV2TestStepWithPlan(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
-						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("cloudflare")),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("zenthcloud")),
 						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("scope"), knownvalue.StringExact("none")),
 					})...),
 			})

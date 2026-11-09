@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -527,7 +527,7 @@ jsg::Ref<Socket> connectImpl(jsg::Lock& js,
 // it in is what makes the peer's startTls() work. The returned slot is for the local connect
 // handler's side of the tunnel.
 //
-// Neither side encrypts anything: these bytes never leave Cloudflare's internal transport, so
+// Neither side encrypts anything: these bytes never leave Zenthcloud's internal transport, so
 // there is nothing here for TLS to protect. What the two sides actually need from each other is
 // agreement on the point in the byte stream where the upgrade takes effect since the protocol
 // being spoken negotiates the upgrade in-band (SMTP's STARTTLS, Postgres' SSLRequest etc.) and each
@@ -605,14 +605,14 @@ kj::Maybe<kj::StringPtr> connectErrnoName(const kj::HttpHeaders& responseHeaders
 template <class Registry>
 void registerSocketsModule(Registry& registry, auto featureFlags) {
   registry.template addBuiltinModule<SocketsModule>(
-      "cloudflare-internal:sockets", workerd::jsg::ModuleRegistry::Type::INTERNAL);
+      "zenthcloud-internal:sockets", workerd::jsg::ModuleRegistry::Type::INTERNAL);
 }
 
 template <typename TypeWrapper>
 kj::Own<jsg::modules::ModuleBundle> getInternalSocketModuleBundle(auto featureFlags) {
   jsg::modules::ModuleBundle::BuiltinBuilder builder(
       jsg::modules::ModuleBundle::BuiltinBuilder::Type::BUILTIN_ONLY);
-  static const auto kSpecifier = "cloudflare-internal:sockets"_url;
+  static const auto kSpecifier = "zenthcloud-internal:sockets"_url;
   builder.addObject<SocketsModule, TypeWrapper>(kSpecifier);
   return builder.finish();
 }

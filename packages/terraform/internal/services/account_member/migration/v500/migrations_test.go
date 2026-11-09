@@ -8,8 +8,8 @@ import (
 	"os"
 	"testing"
 
-	cloudflarev6 "github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/accounts"
+	zenthcloudv6 "github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/accounts"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -17,9 +17,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -75,19 +75,19 @@ func TestMigrateAccountMember_V4ToV5_Basic(t *testing.T) {
 				t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
 			}
 
-			// Temporarily unset CLOUDFLARE_API_TOKEN as the API token won't have
+			// Temporarily unset ZENTHCLOUD_API_TOKEN as the API token won't have
 			// permission to manage account members.
-			if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-				t.Setenv("CLOUDFLARE_API_TOKEN", "")
+			if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+				t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 			}
 
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 
 			// Use random email with cfapi.net domain
 			testEmail := fmt.Sprintf("tf-test-%s@cfapi.net", rnd)
-			resourceName := "cloudflare_account_member." + rnd
+			resourceName := "zenthcloud_account_member." + rnd
 
 			// Get a role ID to use
 			roleID := getTestRoleID(t, accountID, "Administrator Read Only")
@@ -111,8 +111,8 @@ func TestMigrateAccountMember_V4ToV5_Basic(t *testing.T) {
 				// Use external v4 provider
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -210,20 +210,20 @@ func TestMigrateAccountMember_V4ToV5_WithStatus(t *testing.T) {
 				t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
 			}
 
-			// Temporarily unset CLOUDFLARE_API_TOKEN as the API token won't have
+			// Temporarily unset ZENTHCLOUD_API_TOKEN as the API token won't have
 			// permission to manage account members.
-			if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-				t.Setenv("CLOUDFLARE_API_TOKEN", "")
+			if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+				t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 			}
 
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 
-			// Use real test user email that exists in Cloudflare system
+			// Use real test user email that exists in Zenthcloud system
 			// (required because status="accepted" needs an existing user)
 			testEmail := "terraform-test-user-b@cfapi.net"
-			resourceName := "cloudflare_account_member." + rnd
+			resourceName := "zenthcloud_account_member." + rnd
 
 			roleID := getTestRoleID(t, accountID, "Administrator Read Only")
 			testConfig := tc.configFn(rnd, accountID, testEmail, roleID)
@@ -238,8 +238,8 @@ func TestMigrateAccountMember_V4ToV5_WithStatus(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -280,11 +280,11 @@ func TestMigrateAccountMember_V4ToV5_WithStatus(t *testing.T) {
 // This tests the stepping stone pattern where early v5 state needs to be upgraded to v500.
 func TestMigrateAccountMember_FromV5_13(t *testing.T) {
 	t.Skip("API returning id:00000000000000000000000000000000 for the test user.")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	email := fmt.Sprintf("%s@example.com", rnd)
 	tmpDir := t.TempDir()
-	resourceName := "cloudflare_account_member." + rnd
+	resourceName := "zenthcloud_account_member." + rnd
 
 	// Config uses policies (v5 feature, not available in v4)
 	testConfig := fmt.Sprintf(v5WithPoliciesConfig, accountID, accountID, accountID, rnd, accountID, email)
@@ -299,8 +299,8 @@ func TestMigrateAccountMember_FromV5_13(t *testing.T) {
 			{
 				// Step 1: Create with v5.13 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.13.0",
 					},
 				},
@@ -341,8 +341,8 @@ func getTestRoleID(t *testing.T, accountID, roleName string) string {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 	roles, err := client.Accounts.Roles.List(ctx, accounts.RoleListParams{
-		AccountID: cloudflarev6.String(accountID),
-		PerPage:   cloudflarev6.Float(100),
+		AccountID: zenthcloudv6.String(accountID),
+		PerPage:   zenthcloudv6.Float(100),
 	})
 	if err != nil {
 		t.Fatalf("Failed to get account roles: %v", err)
@@ -358,16 +358,16 @@ func getTestRoleID(t *testing.T, accountID, roleName string) string {
 	return ""
 }
 
-// setupBaseURLEnv sets up the legacy CLOUDFLARE_API_HOSTNAME env var if needed.
+// setupBaseURLEnv sets up the legacy ZENTHCLOUD_API_HOSTNAME env var if needed.
 func setupBaseURLEnv(t *testing.T) {
 	t.Helper()
-	baseUrl := os.Getenv("CLOUDFLARE_BASE_URL")
+	baseUrl := os.Getenv("ZENTHCLOUD_BASE_URL")
 	if baseUrl != "" {
 		u, err := url.Parse(baseUrl)
 		if err != nil {
 			t.Fatal(err)
 		}
 		hostname := u.Hostname()
-		os.Setenv("CLOUDFLARE_API_HOSTNAME", hostname)
+		os.Setenv("ZENTHCLOUD_API_HOSTNAME", hostname)
 	}
 }

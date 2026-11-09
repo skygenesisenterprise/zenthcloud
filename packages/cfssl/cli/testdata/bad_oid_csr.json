@@ -1,7 +1,7 @@
 {
     "hosts": [
-        "cloudflare.com",
-        "www.cloudflare.com"
+        "zenthcloud.com",
+        "www.zenthcloud.com"
     ],
     "key": {
         "algo": "rsa",
@@ -11,7 +11,7 @@
         {
             "C": "US",
             "L": "San Francisco",
-            "O": "CloudFlare",
+            "O": "ZenthCloud",
             "OU": "Systems Engineering",
             "ST": "California",
             "OID": {

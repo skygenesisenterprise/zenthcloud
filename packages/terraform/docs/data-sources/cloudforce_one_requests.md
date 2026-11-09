@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_cloudforce_one_requests Data Source - Cloudflare"
+page_title: "zenthcloud_cloudforce_one_requests Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Cloudforce One Write
 ---
 
-# cloudflare_cloudforce_one_requests (Data Source)
+# zenthcloud_cloudforce_one_requests (Data Source)
 
 Accepted Permissions
 
@@ -15,7 +15,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_cloudforce_one_requests" "example_cloudforce_one_requests" {
+data "zenthcloud_cloudforce_one_requests" "example_cloudforce_one_requests" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   page = 0
   per_page = 10

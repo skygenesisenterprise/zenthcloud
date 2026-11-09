@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_load_balancer_pools Data Source - Cloudflare"
+page_title: "zenthcloud_load_balancer_pools Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Load Balancing: Monitors and Pools ReadLoad Balancing: Monitors and Pools Write
 ---
 
-# cloudflare_load_balancer_pools (Data Source)
+# zenthcloud_load_balancer_pools (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_load_balancer_pools" "example_load_balancer_pools" {
+data "zenthcloud_load_balancer_pools" "example_load_balancer_pools" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   monitor = "monitor"
 }
@@ -40,7 +40,7 @@ data "cloudflare_load_balancer_pools" "example_load_balancer_pools" {
 
 Read-Only:
 
-- `check_regions` (List of String) A list of regions from which to run health checks. Null means every Cloudflare data center.
+- `check_regions` (List of String) A list of regions from which to run health checks. Null means every Zenthcloud data center.
 - `created_on` (String)
 - `description` (String) A human-readable description of the pool.
 - `disabled_at` (String) This field shows up only if the pool is disabled. This field is set with the time the pool was disabled at.
@@ -56,7 +56,7 @@ Read-Only:
 - `monitor_group` (String) The ID of the Monitor Group to use for checking the health of origins within this pool.
 - `name` (String) A short name (tag) for the pool. Only alphanumeric characters, hyphens, and underscores are allowed.
 - `networks` (List of String) List of networks where Load Balancer or Pool is enabled.
-- `notification_email` (String) This field is now deprecated. It has been moved to Cloudflare's Centralized Notification service https://developers.cloudflare.com/fundamentals/notifications/. The email address to send health status notifications to. This can be an individual mailbox or a mailing list. Multiple emails can be supplied as a comma delimited list.
+- `notification_email` (String) This field is now deprecated. It has been moved to Zenthcloud's Centralized Notification service https://github.com/skygenesisenterprise/zenthcloud The email address to send health status notifications to. This can be an individual mailbox or a mailing list. Multiple emails can be supplied as a comma delimited list.
 - `notification_filter` (Attributes) Filter pool and origin health notifications by resource type or health status. Use null to reset. (see [below for nested schema](#nestedatt--result--notification_filter))
 - `origin_steering` (Attributes) Configures origin steering for the pool. Controls how origins are selected for new sessions and traffic without session affinity. (see [below for nested schema](#nestedatt--result--origin_steering))
 - `origins` (Attributes Set) The list of origins within this pool. Traffic directed at this pool is balanced across all currently healthy origins, provided the pool itself is healthy. (see [below for nested schema](#nestedatt--result--origins))
@@ -119,7 +119,7 @@ Available values: "random", "hash", "least_outstanding_requests", "least_connect
 
 Read-Only:
 
-- `address` (String) The IP address (IPv4 or IPv6) of the origin, or its publicly addressable hostname. Hostnames entered here should resolve directly to the origin, and not be a hostname proxied by Cloudflare. To set an internal/reserved address, virtual_network_id must also be set.
+- `address` (String) The IP address (IPv4 or IPv6) of the origin, or its publicly addressable hostname. Hostnames entered here should resolve directly to the origin, and not be a hostname proxied by Zenthcloud. To set an internal/reserved address, virtual_network_id must also be set.
 - `disabled_at` (String) This field shows up only if the origin is disabled. This field is set with the time the origin was disabled.
 - `enabled` (Boolean) Whether to enable (the default) this origin within the pool. Disabled origins will not receive traffic and are excluded from health checks. The origin will only be disabled for the current pool.
 - `flatten_cname` (Boolean) Whether to flatten CNAME records for this origin, resolving them to A/AAAA records before returning to the client. When true (the default), the director resolves CNAME addresses to their underlying A/AAAA records. When false, the origin address is returned as a raw CNAME record without resolution. This setting mirrors the DNS API record flatten_cname setting.

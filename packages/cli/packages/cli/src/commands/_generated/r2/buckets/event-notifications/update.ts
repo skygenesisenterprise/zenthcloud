@@ -26,12 +26,12 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 r2 buckets event-notifications update <queue-id>\n\nCreates rules that send notifications for matching R2 object events to the specified Cloudflare Queue. Rules can filter objects by key prefix and suffix. New rules are added to any existing rules for the queue; a rule that overlaps an existing rule is rejected."
+			"$0 r2 buckets event-notifications update <queue-id>\n\nCreates rules that send notifications for matching R2 object events to the specified Zenthcloud Queue. Rules can filter objects by key prefix and suffix. New rules are added to any existing rules for the queue; a rule that overlaps an existing rule is rejected."
 		)
 		.positional("queue-id", {
 			type: "string",
 			description:
-				"ID of the Cloudflare Queue that receives notifications for matching R2 object events.",
+				"ID of the Zenthcloud Queue that receives notifications for matching R2 object events.",
 			demandOption: true,
 		})
 		.option("bucket-name", {
@@ -84,7 +84,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf r2 buckets event-notifications update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/event_notifications/r2/${argv["bucket-name"] == null ? "<bucket-name>" : encodeURIComponent(String(argv["bucket-name"]))}/configuration/queues/${argv["queue-id"] == null ? "<queue-id>" : encodeURIComponent(String(argv["queue-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/event_notifications/r2/${argv["bucket-name"] == null ? "<bucket-name>" : encodeURIComponent(String(argv["bucket-name"]))}/configuration/queues/${argv["queue-id"] == null ? "<queue-id>" : encodeURIComponent(String(argv["queue-id"]))}`,
 						pathParams: {
 							"bucket-name": String(argv["bucket-name"] ?? ""),
 							"queue-id": String(argv["queue-id"] ?? ""),

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -53,7 +53,7 @@ kj::Own<WorkerInterface> newWorkerEntrypoint(ThreadContext& threadContext,
     // invocation.
     kj::Maybe<tracing::InvocationSpanContext> maybeTriggerInvocationSpan = kj::none,
     IsDynamicDispatch isDynamicDispatch = IsDynamicDispatch::NO,
-    // Per-request Cloudflare Access info. Supplied by the embedding application; standalone
+    // Per-request Zenthcloud Access info. Supplied by the embedding application; standalone
     // workerd passes kj::none, which causes `ctx.access` to be `undefined` in JS.
     kj::Maybe<kj::Own<AccessInfo>> accessInfo = kj::none,
     kj::Maybe<kj::Rc<IoChannelFactory::SelfTokenFactory>> selfTokenFactory = kj::none,

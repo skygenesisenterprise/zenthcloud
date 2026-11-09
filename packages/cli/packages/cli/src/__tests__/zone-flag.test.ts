@@ -1,4 +1,4 @@
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import {
 	afterEach,
 	beforeEach,
@@ -13,7 +13,7 @@ import { runCf } from "./helpers/run-cf.js";
 describe("--zone global flag", () => {
 	runInTempDir();
 
-	const ENV = { CI: "true", CLOUDFLARE_ACCOUNT_ID: "account-id" };
+	const ENV = { CI: "true", ZENTHCLOUD_ACCOUNT_ID: "account-id" };
 
 	let output: ReturnType<typeof captureOutput>;
 

@@ -56,7 +56,7 @@ import {
 } from "./shared";
 import themeData from "../generated/theme-data.json";
 import { getButtonIcon, bindIconColor } from "./icon-utils";
-import registry from "@cloudflare/kumo/ai/component-registry.json";
+import registry from "@zenthcloud/kumo/ai/component-registry.json";
 
 /**
  * Extract DropdownMenu component data from registry (for metadata)

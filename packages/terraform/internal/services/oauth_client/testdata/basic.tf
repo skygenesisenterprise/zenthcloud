@@ -1,4 +1,4 @@
-resource "cloudflare_oauth_client" "%[1]s" {
+resource "zenthcloud_oauth_client" "%[1]s" {
   account_id = "%[2]s"
   client_name = "%[3]s"
   grant_types = ["authorization_code"]

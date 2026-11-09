@@ -7,16 +7,16 @@ import (
 	"testing"
 	"time"
 
-	cfold "github.com/cloudflare/cloudflare-go"
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/load_balancers"
+	cfold "github.com/zenthcloud/zenthcloud-go"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/load_balancers"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 func TestMain(m *testing.M) {
@@ -24,42 +24,42 @@ func TestMain(m *testing.M) {
 }
 
 var (
-	accountID = os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID = os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 )
 
 func init() {
-	resource.AddTestSweepers("cloudflare_load_balancer", &resource.Sweeper{
-		Name: "cloudflare_load_balancer",
-		F:    testSweepCloudflareLoadBalancer,
+	resource.AddTestSweepers("zenthcloud_load_balancer", &resource.Sweeper{
+		Name: "zenthcloud_load_balancer",
+		F:    testSweepZenthcloudLoadBalancer,
 	})
 }
 
-func testSweepCloudflareLoadBalancer(r string) error {
+func testSweepZenthcloudLoadBalancer(r string) error {
 	ctx := context.Background()
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 		return clientErr
 	}
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping load balancers sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping load balancers sweep: ZENTHCLOUD_ZONE_ID not set")
 		return nil
 	}
 
 	lbs, err := client.ListLoadBalancers(ctx, cfold.ZoneIdentifier(zoneID), cfold.ListLoadBalancerParams{})
 	if err != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Cloudflare Load Balancers: %s", err))
+		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Zenthcloud Load Balancers: %s", err))
 		return err
 	}
 
 	if len(lbs) == 0 {
-		tflog.Debug(ctx, "[DEBUG] No Cloudflare Load Balancers to sweep")
+		tflog.Debug(ctx, "[DEBUG] No Zenthcloud Load Balancers to sweep")
 		return nil
 	}
 
-	tflog.Debug(ctx, fmt.Sprintf("[DEBUG] Found %d Cloudflare Load Balancers to sweep", len(lbs)))
+	tflog.Debug(ctx, fmt.Sprintf("[DEBUG] Found %d Zenthcloud Load Balancers to sweep", len(lbs)))
 
 	// Track deletion results
 	deleted := 0
@@ -71,7 +71,7 @@ func testSweepCloudflareLoadBalancer(r string) error {
 			continue
 		}
 
-		tflog.Info(ctx, fmt.Sprintf("Deleting Cloudflare Load Balancer: %s (%s)", lb.Name, lb.ID))
+		tflog.Info(ctx, fmt.Sprintf("Deleting Zenthcloud Load Balancer: %s (%s)", lb.Name, lb.ID))
 
 		err := client.DeleteLoadBalancer(ctx, cfold.ZoneIdentifier(zoneID), lb.ID)
 		if err != nil {
@@ -88,31 +88,31 @@ func testSweepCloudflareLoadBalancer(r string) error {
 	return nil
 }
 
-func TestAccCloudflareLoadBalancer_Basic(t *testing.T) {
+func TestAccZenthcloudLoadBalancer_Basic(t *testing.T) {
 	testStartTime := time.Now().UTC()
 	var loadBalancer cfold.LoadBalancer
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer." + rnd
+	name := "zenthcloud_load_balancer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerConfigBasic(zoneID, zone, rnd),
+				Config: testAccCheckZenthcloudLoadBalancerConfigBasic(zoneID, zone, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerExists(name, &loadBalancer),
-					testAccCheckCloudflareLoadBalancerIDIsValid(name, zoneID),
+					testAccCheckZenthcloudLoadBalancerExists(name, &loadBalancer),
+					testAccCheckZenthcloudLoadBalancerIDIsValid(name, zoneID),
 					// dont check that specified values are set, this will be evident by lack of plan diff
 					// some values will get empty values
 					resource.TestCheckResourceAttr(name, "pop_pools.#", "0"),
 					resource.TestCheckResourceAttr(name, "country_pools.#", "0"),
 					resource.TestCheckResourceAttr(name, "region_pools.#", "0"),
 					// also expect api to generate some values
-					testAccCheckCloudflareLoadBalancerDates(name, &loadBalancer, testStartTime),
+					testAccCheckZenthcloudLoadBalancerDates(name, &loadBalancer, testStartTime),
 					resource.TestCheckResourceAttr(name, "proxied", "false"), // default value
 					resource.TestCheckResourceAttr(name, "ttl", "30"),
 					resource.TestCheckResourceAttr(name, "steering_policy", "off"),
@@ -122,23 +122,23 @@ func TestAccCloudflareLoadBalancer_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareLoadBalancer_SessionAffinity(t *testing.T) {
+func TestAccZenthcloudLoadBalancer_SessionAffinity(t *testing.T) {
 	var loadBalancer cfold.LoadBalancer
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer." + rnd
+	name := "zenthcloud_load_balancer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerConfigSessionAffinity(zoneID, zone, rnd),
+				Config: testAccCheckZenthcloudLoadBalancerConfigSessionAffinity(zoneID, zone, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerExists(name, &loadBalancer),
-					testAccCheckCloudflareLoadBalancerIDIsValid(name, zoneID),
+					testAccCheckZenthcloudLoadBalancerExists(name, &loadBalancer),
+					testAccCheckZenthcloudLoadBalancerIDIsValid(name, zoneID),
 					// explicitly verify that our session_affinity has been set
 					resource.TestCheckResourceAttr(name, "session_affinity", "cookie"),
 					resource.TestCheckResourceAttr(name, "session_affinity_ttl", "1800"),
@@ -157,23 +157,23 @@ func TestAccCloudflareLoadBalancer_SessionAffinity(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareLoadBalancer_SessionAffinityIPCookie(t *testing.T) {
+func TestAccZenthcloudLoadBalancer_SessionAffinityIPCookie(t *testing.T) {
 	var loadBalancer cfold.LoadBalancer
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer." + rnd
+	name := "zenthcloud_load_balancer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerConfigSessionAffinityIPCookie(zoneID, zone, rnd),
+				Config: testAccCheckZenthcloudLoadBalancerConfigSessionAffinityIPCookie(zoneID, zone, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerExists(name, &loadBalancer),
-					testAccCheckCloudflareLoadBalancerIDIsValid(name, zoneID),
+					testAccCheckZenthcloudLoadBalancerExists(name, &loadBalancer),
+					testAccCheckZenthcloudLoadBalancerIDIsValid(name, zoneID),
 					// explicitly verify that our session_affinity has been set
 					resource.TestCheckResourceAttr(name, "session_affinity", "ip_cookie"),
 					// session_affinity_ttl should be present and set to its default
@@ -194,23 +194,23 @@ func TestAccCloudflareLoadBalancer_SessionAffinityIPCookie(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareLoadBalancer_SessionAffinityHeader(t *testing.T) {
+func TestAccZenthcloudLoadBalancer_SessionAffinityHeader(t *testing.T) {
 	var loadBalancer cfold.LoadBalancer
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer." + rnd
+	name := "zenthcloud_load_balancer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerConfigSessionAffinityHeader(zoneID, zone, rnd),
+				Config: testAccCheckZenthcloudLoadBalancerConfigSessionAffinityHeader(zoneID, zone, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerExists(name, &loadBalancer),
-					testAccCheckCloudflareLoadBalancerIDIsValid(name, zoneID),
+					testAccCheckZenthcloudLoadBalancerExists(name, &loadBalancer),
+					testAccCheckZenthcloudLoadBalancerIDIsValid(name, zoneID),
 					// explicitly verify that our session_affinity has been set
 					resource.TestCheckResourceAttr(name, "session_affinity", "header"),
 					resource.TestCheckResourceAttr(name, "session_affinity_ttl", "1800"),
@@ -233,23 +233,23 @@ func TestAccCloudflareLoadBalancer_SessionAffinityHeader(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareLoadBalancer_AdaptiveRouting(t *testing.T) {
+func TestAccZenthcloudLoadBalancer_AdaptiveRouting(t *testing.T) {
 	var loadBalancer cfold.LoadBalancer
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer." + rnd
+	name := "zenthcloud_load_balancer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerConfigAdaptiveRouting(zoneID, zone, rnd),
+				Config: testAccCheckZenthcloudLoadBalancerConfigAdaptiveRouting(zoneID, zone, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerExists(name, &loadBalancer),
-					testAccCheckCloudflareLoadBalancerIDIsValid(name, zoneID),
+					testAccCheckZenthcloudLoadBalancerExists(name, &loadBalancer),
+					testAccCheckZenthcloudLoadBalancerIDIsValid(name, zoneID),
 					// explicitly verify that adaptive_routing has been set
 					resource.TestCheckResourceAttr(name, "adaptive_routing.%", "1"),
 					resource.TestCheckResourceAttr(name, "adaptive_routing.failover_across_pools", "true"),
@@ -264,23 +264,23 @@ func TestAccCloudflareLoadBalancer_AdaptiveRouting(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareLoadBalancer_LocationStrategy(t *testing.T) {
+func TestAccZenthcloudLoadBalancer_LocationStrategy(t *testing.T) {
 	var loadBalancer cfold.LoadBalancer
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer." + rnd
+	name := "zenthcloud_load_balancer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerConfigLocationStrategy(zoneID, zone, rnd),
+				Config: testAccCheckZenthcloudLoadBalancerConfigLocationStrategy(zoneID, zone, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerExists(name, &loadBalancer),
-					testAccCheckCloudflareLoadBalancerIDIsValid(name, zoneID),
+					testAccCheckZenthcloudLoadBalancerExists(name, &loadBalancer),
+					testAccCheckZenthcloudLoadBalancerIDIsValid(name, zoneID),
 					// explicitly verify that location_strategy has been set
 					resource.TestCheckResourceAttr(name, "location_strategy.%", "2"),
 					resource.TestCheckResourceAttr(name, "location_strategy.prefer_ecs", "proximity"),
@@ -296,23 +296,23 @@ func TestAccCloudflareLoadBalancer_LocationStrategy(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareLoadBalancer_RandomSteering(t *testing.T) {
+func TestAccZenthcloudLoadBalancer_RandomSteering(t *testing.T) {
 	var loadBalancer cfold.LoadBalancer
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer." + rnd
+	name := "zenthcloud_load_balancer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerConfigRandomSteering(zoneID, zone, rnd),
+				Config: testAccCheckZenthcloudLoadBalancerConfigRandomSteering(zoneID, zone, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerExists(name, &loadBalancer),
-					testAccCheckCloudflareLoadBalancerIDIsValid(name, zoneID),
+					testAccCheckZenthcloudLoadBalancerExists(name, &loadBalancer),
+					testAccCheckZenthcloudLoadBalancerIDIsValid(name, zoneID),
 					// explicitly verify that random_steering has been set
 					resource.TestCheckResourceAttr(name, "random_steering.%", "2"),                   // random_steering appears once
 					resource.TestCheckResourceAttr(name, "random_steering.pool_weights.%", "1"),      // one pool configured
@@ -326,10 +326,10 @@ func TestAccCloudflareLoadBalancer_RandomSteering(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckCloudflareLoadBalancerConfigRandomSteeringUpdate(zoneID, zone, rnd),
+				Config: testAccCheckZenthcloudLoadBalancerConfigRandomSteeringUpdate(zoneID, zone, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerExists(name, &loadBalancer),
-					testAccCheckCloudflareLoadBalancerIDIsValid(name, zoneID),
+					testAccCheckZenthcloudLoadBalancerExists(name, &loadBalancer),
+					testAccCheckZenthcloudLoadBalancerIDIsValid(name, zoneID),
 					// explicitly verify that random_steering has been set
 					resource.TestCheckResourceAttr(name, "random_steering.%", "2"),                   // random_steering appears once
 					resource.TestCheckResourceAttr(name, "random_steering.pool_weights.%", "1"),      // one pool configured
@@ -346,23 +346,23 @@ func TestAccCloudflareLoadBalancer_RandomSteering(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareLoadBalancer_GeoBalancedUpdate(t *testing.T) {
+func TestAccZenthcloudLoadBalancer_GeoBalancedUpdate(t *testing.T) {
 	var loadBalancer cfold.LoadBalancer
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer." + rnd
+	name := "zenthcloud_load_balancer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerConfigGeoBalancedPoPCountry(zoneID, zone, rnd),
+				Config: testAccCheckZenthcloudLoadBalancerConfigGeoBalancedPoPCountry(zoneID, zone, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerExists(name, &loadBalancer),
-					testAccCheckCloudflareLoadBalancerIDIsValid(name, zoneID),
+					testAccCheckZenthcloudLoadBalancerExists(name, &loadBalancer),
+					testAccCheckZenthcloudLoadBalancerIDIsValid(name, zoneID),
 					// checking our overrides of default values worked
 					resource.TestCheckResourceAttr(name, "description", "tf-acctest load balancer using pop/country geo-balancing"),
 					resource.TestCheckResourceAttr(name, "proxied", "true"),
@@ -374,10 +374,10 @@ func TestAccCloudflareLoadBalancer_GeoBalancedUpdate(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckCloudflareLoadBalancerConfigGeoBalancedPoPCountryToRegionUpdate(zoneID, zone, rnd),
+				Config: testAccCheckZenthcloudLoadBalancerConfigGeoBalancedPoPCountryToRegionUpdate(zoneID, zone, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerExists(name, &loadBalancer),
-					testAccCheckCloudflareLoadBalancerIDIsValid(name, zoneID),
+					testAccCheckZenthcloudLoadBalancerExists(name, &loadBalancer),
+					testAccCheckZenthcloudLoadBalancerIDIsValid(name, zoneID),
 					// checking our updates to geo steering with only a region defined worked
 					resource.TestCheckResourceAttr(name, "description", "tf-acctest load balancer using pop/country geo-balancing updated to region geo-balancing"),
 					resource.TestCheckResourceAttr(name, "proxied", "true"),
@@ -392,23 +392,23 @@ func TestAccCloudflareLoadBalancer_GeoBalancedUpdate(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareLoadBalancer_GeoBalanced(t *testing.T) {
+func TestAccZenthcloudLoadBalancer_GeoBalanced(t *testing.T) {
 	var loadBalancer cfold.LoadBalancer
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer." + rnd
+	name := "zenthcloud_load_balancer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerConfigGeoBalanced(zoneID, zone, rnd),
+				Config: testAccCheckZenthcloudLoadBalancerConfigGeoBalanced(zoneID, zone, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerExists(name, &loadBalancer),
-					testAccCheckCloudflareLoadBalancerIDIsValid(name, zoneID),
+					testAccCheckZenthcloudLoadBalancerExists(name, &loadBalancer),
+					testAccCheckZenthcloudLoadBalancerIDIsValid(name, zoneID),
 					// checking our overrides of default values worked
 					resource.TestCheckResourceAttr(name, "description", "tf-acctest load balancer using geo-balancing"),
 					resource.TestCheckResourceAttr(name, "proxied", "true"),
@@ -423,23 +423,23 @@ func TestAccCloudflareLoadBalancer_GeoBalanced(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareLoadBalancer_ProximityBalanced(t *testing.T) {
+func TestAccZenthcloudLoadBalancer_ProximityBalanced(t *testing.T) {
 	var loadBalancer cfold.LoadBalancer
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer." + rnd
+	name := "zenthcloud_load_balancer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerConfigProximityBalanced(zoneID, zone, rnd),
+				Config: testAccCheckZenthcloudLoadBalancerConfigProximityBalanced(zoneID, zone, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerExists(name, &loadBalancer),
-					testAccCheckCloudflareLoadBalancerIDIsValid(name, zoneID),
+					testAccCheckZenthcloudLoadBalancerExists(name, &loadBalancer),
+					testAccCheckZenthcloudLoadBalancerIDIsValid(name, zoneID),
 					// checking our overrides of default values worked
 					resource.TestCheckResourceAttr(name, "description", "tf-acctest load balancer using proximity-balancing"),
 					resource.TestCheckResourceAttr(name, "proxied", "true"),
@@ -451,23 +451,23 @@ func TestAccCloudflareLoadBalancer_ProximityBalanced(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareLoadBalancer_LeastOutstandingRequestsBalanced(t *testing.T) {
+func TestAccZenthcloudLoadBalancer_LeastOutstandingRequestsBalanced(t *testing.T) {
 	var loadBalancer cfold.LoadBalancer
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer." + rnd
+	name := "zenthcloud_load_balancer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerConfigLeastOutstandingRequestsBalanced(zoneID, zone, rnd),
+				Config: testAccCheckZenthcloudLoadBalancerConfigLeastOutstandingRequestsBalanced(zoneID, zone, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerExists(name, &loadBalancer),
-					testAccCheckCloudflareLoadBalancerIDIsValid(name, zoneID),
+					testAccCheckZenthcloudLoadBalancerExists(name, &loadBalancer),
+					testAccCheckZenthcloudLoadBalancerIDIsValid(name, zoneID),
 					// checking our overrides of default values worked
 					resource.TestCheckResourceAttr(name, "description", "tf-acctest load balancer using least outstanding requests steering"),
 					resource.TestCheckResourceAttr(name, "proxied", "true"),
@@ -482,23 +482,23 @@ func TestAccCloudflareLoadBalancer_LeastOutstandingRequestsBalanced(t *testing.T
 	})
 }
 
-func TestAccCloudflareLoadBalancer_LeastConnectionsBalanced(t *testing.T) {
+func TestAccZenthcloudLoadBalancer_LeastConnectionsBalanced(t *testing.T) {
 	var loadBalancer cfold.LoadBalancer
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer." + rnd
+	name := "zenthcloud_load_balancer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerConfigLeastConnectionsBalanced(zoneID, zone, rnd),
+				Config: testAccCheckZenthcloudLoadBalancerConfigLeastConnectionsBalanced(zoneID, zone, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerExists(name, &loadBalancer),
-					testAccCheckCloudflareLoadBalancerIDIsValid(name, zoneID),
+					testAccCheckZenthcloudLoadBalancerExists(name, &loadBalancer),
+					testAccCheckZenthcloudLoadBalancerIDIsValid(name, zoneID),
 					// checking our overrides of default values worked
 					resource.TestCheckResourceAttr(name, "description", "tf-acctest load balancer using least connections steering"),
 					resource.TestCheckResourceAttr(name, "proxied", "true"),
@@ -513,233 +513,233 @@ func TestAccCloudflareLoadBalancer_LeastConnectionsBalanced(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareLoadBalancer_AdaptiveRoutingFailoverFalse(t *testing.T) {
+func TestAccZenthcloudLoadBalancer_AdaptiveRoutingFailoverFalse(t *testing.T) {
 	var loadBalancer cfold.LoadBalancer
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer." + rnd
+	name := "zenthcloud_load_balancer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerDestroy,
 		Steps: []resource.TestStep{{
-			Config: testAccCheckCloudflareLoadBalancerConfigAdaptiveRoutingFailoverFalse(zoneID, zone, rnd),
+			Config: testAccCheckZenthcloudLoadBalancerConfigAdaptiveRoutingFailoverFalse(zoneID, zone, rnd),
 			Check: resource.ComposeTestCheckFunc(
-				testAccCheckCloudflareLoadBalancerExists(name, &loadBalancer),
-				testAccCheckCloudflareLoadBalancerIDIsValid(name, zoneID),
+				testAccCheckZenthcloudLoadBalancerExists(name, &loadBalancer),
+				testAccCheckZenthcloudLoadBalancerIDIsValid(name, zoneID),
 			),
 		}},
 	})
 }
 
-func TestAccCloudflareLoadBalancer_AdaptiveRoutingFailoverTrue(t *testing.T) {
+func TestAccZenthcloudLoadBalancer_AdaptiveRoutingFailoverTrue(t *testing.T) {
 	var loadBalancer cfold.LoadBalancer
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer." + rnd
+	name := "zenthcloud_load_balancer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerDestroy,
 		Steps: []resource.TestStep{{
-			Config: testAccCheckCloudflareLoadBalancerConfigAdaptiveRoutingFailoverTrue(zoneID, zone, rnd),
+			Config: testAccCheckZenthcloudLoadBalancerConfigAdaptiveRoutingFailoverTrue(zoneID, zone, rnd),
 			Check: resource.ComposeTestCheckFunc(
-				testAccCheckCloudflareLoadBalancerExists(name, &loadBalancer),
-				testAccCheckCloudflareLoadBalancerIDIsValid(name, zoneID),
+				testAccCheckZenthcloudLoadBalancerExists(name, &loadBalancer),
+				testAccCheckZenthcloudLoadBalancerIDIsValid(name, zoneID),
 			),
 		}},
 	})
 }
 
-func TestAccCloudflareLoadBalancer_CountryPools(t *testing.T) {
+func TestAccZenthcloudLoadBalancer_CountryPools(t *testing.T) {
 	var loadBalancer cfold.LoadBalancer
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer." + rnd
+	name := "zenthcloud_load_balancer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerDestroy,
 		Steps: []resource.TestStep{{
-			Config: testAccCheckCloudflareLoadBalancerConfigCountryPools(zoneID, zone, rnd),
+			Config: testAccCheckZenthcloudLoadBalancerConfigCountryPools(zoneID, zone, rnd),
 			Check: resource.ComposeTestCheckFunc(
-				testAccCheckCloudflareLoadBalancerExists(name, &loadBalancer),
-				testAccCheckCloudflareLoadBalancerIDIsValid(name, zoneID),
+				testAccCheckZenthcloudLoadBalancerExists(name, &loadBalancer),
+				testAccCheckZenthcloudLoadBalancerIDIsValid(name, zoneID),
 			),
 		}},
 	})
 }
 
-func TestAccCloudflareLoadBalancer_CustomLocationStrategy(t *testing.T) {
+func TestAccZenthcloudLoadBalancer_CustomLocationStrategy(t *testing.T) {
 	var loadBalancer cfold.LoadBalancer
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer." + rnd
+	name := "zenthcloud_load_balancer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerDestroy,
 		Steps: []resource.TestStep{{
-			Config: testAccCheckCloudflareLoadBalancerConfigCustomLocationStrategy(zoneID, zone, rnd),
+			Config: testAccCheckZenthcloudLoadBalancerConfigCustomLocationStrategy(zoneID, zone, rnd),
 			Check: resource.ComposeTestCheckFunc(
-				testAccCheckCloudflareLoadBalancerExists(name, &loadBalancer),
-				testAccCheckCloudflareLoadBalancerIDIsValid(name, zoneID),
+				testAccCheckZenthcloudLoadBalancerExists(name, &loadBalancer),
+				testAccCheckZenthcloudLoadBalancerIDIsValid(name, zoneID),
 			),
 		}},
 	})
 }
 
-func TestAccCloudflareLoadBalancer_CustomPort(t *testing.T) {
+func TestAccZenthcloudLoadBalancer_CustomPort(t *testing.T) {
 	var loadBalancer cfold.LoadBalancer
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer." + rnd
+	name := "zenthcloud_load_balancer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerDestroy,
 		Steps: []resource.TestStep{{
-			Config: testAccCheckCloudflareLoadBalancerConfigCustomPort(zoneID, zone, rnd),
+			Config: testAccCheckZenthcloudLoadBalancerConfigCustomPort(zoneID, zone, rnd),
 			Check: resource.ComposeTestCheckFunc(
-				testAccCheckCloudflareLoadBalancerExists(name, &loadBalancer),
-				testAccCheckCloudflareLoadBalancerIDIsValid(name, zoneID),
+				testAccCheckZenthcloudLoadBalancerExists(name, &loadBalancer),
+				testAccCheckZenthcloudLoadBalancerIDIsValid(name, zoneID),
 			),
 		}},
 	})
 }
 
-func TestAccCloudflareLoadBalancer_CustomSessionAffinityAttributes(t *testing.T) {
+func TestAccZenthcloudLoadBalancer_CustomSessionAffinityAttributes(t *testing.T) {
 	var loadBalancer cfold.LoadBalancer
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer." + rnd
+	name := "zenthcloud_load_balancer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerDestroy,
 		Steps: []resource.TestStep{{
-			Config: testAccCheckCloudflareLoadBalancerConfigCustomSessionAffinityAttributes(zoneID, zone, rnd),
+			Config: testAccCheckZenthcloudLoadBalancerConfigCustomSessionAffinityAttributes(zoneID, zone, rnd),
 			Check: resource.ComposeTestCheckFunc(
-				testAccCheckCloudflareLoadBalancerExists(name, &loadBalancer),
-				testAccCheckCloudflareLoadBalancerIDIsValid(name, zoneID),
+				testAccCheckZenthcloudLoadBalancerExists(name, &loadBalancer),
+				testAccCheckZenthcloudLoadBalancerIDIsValid(name, zoneID),
 			),
 		}},
 	})
 }
 
-func TestAccCloudflareLoadBalancer_CustomTTL(t *testing.T) {
+func TestAccZenthcloudLoadBalancer_CustomTTL(t *testing.T) {
 	var loadBalancer cfold.LoadBalancer
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer." + rnd
+	name := "zenthcloud_load_balancer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerDestroy,
 		Steps: []resource.TestStep{{
-			Config: testAccCheckCloudflareLoadBalancerConfigCustomTTL(zoneID, zone, rnd),
+			Config: testAccCheckZenthcloudLoadBalancerConfigCustomTTL(zoneID, zone, rnd),
 			Check: resource.ComposeTestCheckFunc(
-				testAccCheckCloudflareLoadBalancerExists(name, &loadBalancer),
-				testAccCheckCloudflareLoadBalancerIDIsValid(name, zoneID),
+				testAccCheckZenthcloudLoadBalancerExists(name, &loadBalancer),
+				testAccCheckZenthcloudLoadBalancerIDIsValid(name, zoneID),
 			),
 		}},
 	})
 }
 
-func TestAccCloudflareLoadBalancer_LocationStrategyAlwaysResolverIP(t *testing.T) {
+func TestAccZenthcloudLoadBalancer_LocationStrategyAlwaysResolverIP(t *testing.T) {
 	var loadBalancer cfold.LoadBalancer
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer." + rnd
+	name := "zenthcloud_load_balancer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerDestroy,
 		Steps: []resource.TestStep{{
-			Config: testAccCheckCloudflareLoadBalancerConfigLocationStrategyAlwaysResolverIP(zoneID, zone, rnd),
+			Config: testAccCheckZenthcloudLoadBalancerConfigLocationStrategyAlwaysResolverIP(zoneID, zone, rnd),
 			Check: resource.ComposeTestCheckFunc(
-				testAccCheckCloudflareLoadBalancerExists(name, &loadBalancer),
-				testAccCheckCloudflareLoadBalancerIDIsValid(name, zoneID),
+				testAccCheckZenthcloudLoadBalancerExists(name, &loadBalancer),
+				testAccCheckZenthcloudLoadBalancerIDIsValid(name, zoneID),
 			),
 		}},
 	})
 }
 
-func TestAccCloudflareLoadBalancer_LocationStrategyNeverPop(t *testing.T) {
+func TestAccZenthcloudLoadBalancer_LocationStrategyNeverPop(t *testing.T) {
 	var loadBalancer cfold.LoadBalancer
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer." + rnd
+	name := "zenthcloud_load_balancer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerDestroy,
 		Steps: []resource.TestStep{{
-			Config: testAccCheckCloudflareLoadBalancerConfigLocationStrategyNeverPop(zoneID, zone, rnd),
+			Config: testAccCheckZenthcloudLoadBalancerConfigLocationStrategyNeverPop(zoneID, zone, rnd),
 			Check: resource.ComposeTestCheckFunc(
-				testAccCheckCloudflareLoadBalancerExists(name, &loadBalancer),
-				testAccCheckCloudflareLoadBalancerIDIsValid(name, zoneID),
+				testAccCheckZenthcloudLoadBalancerExists(name, &loadBalancer),
+				testAccCheckZenthcloudLoadBalancerIDIsValid(name, zoneID),
 			),
 		}},
 	})
 }
 
-func TestAccCloudflareLoadBalancer_StandardZone(t *testing.T) {
+func TestAccZenthcloudLoadBalancer_StandardZone(t *testing.T) {
 	var loadBalancer cfold.LoadBalancer
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer." + rnd
+	name := "zenthcloud_load_balancer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerDestroy,
 		Steps: []resource.TestStep{{
-			Config: testAccCheckCloudflareLoadBalancerConfigStandardZone(zoneID, zone, rnd),
+			Config: testAccCheckZenthcloudLoadBalancerConfigStandardZone(zoneID, zone, rnd),
 			Check: resource.ComposeTestCheckFunc(
-				testAccCheckCloudflareLoadBalancerExists(name, &loadBalancer),
-				testAccCheckCloudflareLoadBalancerIDIsValid(name, zoneID),
+				testAccCheckZenthcloudLoadBalancerExists(name, &loadBalancer),
+				testAccCheckZenthcloudLoadBalancerIDIsValid(name, zoneID),
 			),
 		}},
 	})
 }
 
-func TestAccCloudflareLoadBalancer_Rules(t *testing.T) {
+func TestAccZenthcloudLoadBalancer_Rules(t *testing.T) {
 	var loadBalancer cfold.LoadBalancer
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer." + rnd
+	name := "zenthcloud_load_balancer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerConfigRules(zoneID, zone, rnd),
+				Config: testAccCheckZenthcloudLoadBalancerConfigRules(zoneID, zone, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerExists(name, &loadBalancer),
-					testAccCheckCloudflareLoadBalancerIDIsValid(name, zoneID),
+					testAccCheckZenthcloudLoadBalancerExists(name, &loadBalancer),
+					testAccCheckZenthcloudLoadBalancerIDIsValid(name, zoneID),
 					// checking our overrides of default values worked
 					resource.TestCheckResourceAttr(name, "description", "rules lb"),
 					resource.TestCheckResourceAttr(name, "rules.0.name", "test rule 1"),
@@ -765,34 +765,34 @@ func TestAccCloudflareLoadBalancer_Rules(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareLoadBalancer_Update(t *testing.T) {
+func TestAccZenthcloudLoadBalancer_Update(t *testing.T) {
 	var loadBalancer cfold.LoadBalancer
 	var initialId string
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer." + rnd
+	name := "zenthcloud_load_balancer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerConfigBasic(zoneID, zone, rnd),
+				Config: testAccCheckZenthcloudLoadBalancerConfigBasic(zoneID, zone, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerExists(name, &loadBalancer),
-					testAccCheckCloudflareLoadBalancerIDIsValid(name, zoneID),
+					testAccCheckZenthcloudLoadBalancerExists(name, &loadBalancer),
+					testAccCheckZenthcloudLoadBalancerIDIsValid(name, zoneID),
 				),
 			},
 			{
 				PreConfig: func() {
 					initialId = loadBalancer.ID
 				},
-				Config: testAccCheckCloudflareLoadBalancerConfigGeoBalanced(zoneID, zone, rnd),
+				Config: testAccCheckZenthcloudLoadBalancerConfigGeoBalanced(zoneID, zone, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerExists(name, &loadBalancer),
-					testAccCheckCloudflareLoadBalancerIDIsValid(name, zoneID),
+					testAccCheckZenthcloudLoadBalancerExists(name, &loadBalancer),
+					testAccCheckZenthcloudLoadBalancerIDIsValid(name, zoneID),
 					func(state *terraform.State) error {
 						if initialId != loadBalancer.ID {
 							// want in place update
@@ -806,16 +806,16 @@ func TestAccCloudflareLoadBalancer_Update(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareLoadBalancerDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudLoadBalancerDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_load_balancer" {
+		if rs.Type != "zenthcloud_load_balancer" {
 			continue
 		}
 
 		_, err := client.LoadBalancers.Get(context.Background(), rs.Primary.ID, load_balancers.LoadBalancerGetParams{
-			ZoneID: cloudflare.F(rs.Primary.Attributes[consts.ZoneIDSchemaKey]),
+			ZoneID: zenthcloud.F(rs.Primary.Attributes[consts.ZoneIDSchemaKey]),
 		})
 		if err == nil {
 			return fmt.Errorf("load balancer still exists: %s", rs.Primary.ID)
@@ -825,7 +825,7 @@ func testAccCheckCloudflareLoadBalancerDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckCloudflareLoadBalancerExists(n string, loadBalancer *cfold.LoadBalancer) resource.TestCheckFunc {
+func testAccCheckZenthcloudLoadBalancerExists(n string, loadBalancer *cfold.LoadBalancer) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -838,7 +838,7 @@ func testAccCheckCloudflareLoadBalancerExists(n string, loadBalancer *cfold.Load
 
 		client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 		if clientErr != nil {
-			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 		}
 		foundLoadBalancer, err := client.GetLoadBalancer(context.Background(), cfold.ZoneIdentifier(rs.Primary.Attributes[consts.ZoneIDSchemaKey]), rs.Primary.ID)
 		if err != nil {
@@ -851,7 +851,7 @@ func testAccCheckCloudflareLoadBalancerExists(n string, loadBalancer *cfold.Load
 	}
 }
 
-func testAccCheckCloudflareLoadBalancerIDIsValid(n, expectedZoneID string) resource.TestCheckFunc {
+func testAccCheckZenthcloudLoadBalancerIDIsValid(n, expectedZoneID string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -874,7 +874,7 @@ func testAccCheckCloudflareLoadBalancerIDIsValid(n, expectedZoneID string) resou
 	}
 }
 
-func testAccCheckCloudflareLoadBalancerDates(n string, loadBalancer *cfold.LoadBalancer, testStartTime time.Time) resource.TestCheckFunc {
+func testAccCheckZenthcloudLoadBalancerDates(n string, loadBalancer *cfold.LoadBalancer, testStartTime time.Time) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, _ := s.RootModule().Resources[n]
 
@@ -906,7 +906,7 @@ func testAccManuallyDeleteLoadBalancer(name string, loadBalancerID string, initi
 			context.Background(),
 			loadBalancerID,
 			load_balancers.LoadBalancerDeleteParams{
-				ZoneID: cloudflare.F(rs.Primary.Attributes[consts.ZoneIDSchemaKey]),
+				ZoneID: zenthcloud.F(rs.Primary.Attributes[consts.ZoneIDSchemaKey]),
 			},
 		)
 		if err != nil {
@@ -916,110 +916,110 @@ func testAccManuallyDeleteLoadBalancer(name string, loadBalancerID string, initi
 	}
 }
 
-func testAccCheckCloudflareLoadBalancerConfigBasic(zoneID, zone, id string) string {
-	return testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigbasic.tf", zoneID, zone, id)
+func testAccCheckZenthcloudLoadBalancerConfigBasic(zoneID, zone, id string) string {
+	return testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigbasic.tf", zoneID, zone, id)
 }
 
-func testAccCheckCloudflareLoadBalancerConfigSessionAffinity(zoneID, zone, id string) string {
-	return testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigsessionaffinity.tf", zoneID, zone, id)
+func testAccCheckZenthcloudLoadBalancerConfigSessionAffinity(zoneID, zone, id string) string {
+	return testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigsessionaffinity.tf", zoneID, zone, id)
 }
 
-func testAccCheckCloudflareLoadBalancerConfigSessionAffinityIPCookie(zoneID, zone, id string) string {
-	return testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigsessionaffinityipcookie.tf", zoneID, zone, id)
+func testAccCheckZenthcloudLoadBalancerConfigSessionAffinityIPCookie(zoneID, zone, id string) string {
+	return testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigsessionaffinityipcookie.tf", zoneID, zone, id)
 }
 
-func testAccCheckCloudflareLoadBalancerConfigSessionAffinityHeader(zoneID, zone, id string) string {
-	return testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigsessionaffinityheader.tf", zoneID, zone, id)
+func testAccCheckZenthcloudLoadBalancerConfigSessionAffinityHeader(zoneID, zone, id string) string {
+	return testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigsessionaffinityheader.tf", zoneID, zone, id)
 }
 
-func testAccCheckCloudflareLoadBalancerConfigAdaptiveRouting(zoneID, zone, id string) string {
-	return testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigadaptiverouting.tf", zoneID, zone, id)
+func testAccCheckZenthcloudLoadBalancerConfigAdaptiveRouting(zoneID, zone, id string) string {
+	return testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigadaptiverouting.tf", zoneID, zone, id)
 }
 
-func testAccCheckCloudflareLoadBalancerConfigLocationStrategy(zoneID, zone, id string) string {
-	return testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfiglocationstrategy.tf", zoneID, zone, id)
+func testAccCheckZenthcloudLoadBalancerConfigLocationStrategy(zoneID, zone, id string) string {
+	return testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfiglocationstrategy.tf", zoneID, zone, id)
 }
 
-func testAccCheckCloudflareLoadBalancerConfigRandomSteering(zoneID, zone, id string) string {
-	return testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigrandomsteering.tf", zoneID, zone, id)
+func testAccCheckZenthcloudLoadBalancerConfigRandomSteering(zoneID, zone, id string) string {
+	return testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigrandomsteering.tf", zoneID, zone, id)
 }
 
-func testAccCheckCloudflareLoadBalancerConfigRandomSteeringUpdate(zoneID, zone, id string) string {
-	return testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigrandomsteeringupdate.tf", zoneID, zone, id)
+func testAccCheckZenthcloudLoadBalancerConfigRandomSteeringUpdate(zoneID, zone, id string) string {
+	return testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigrandomsteeringupdate.tf", zoneID, zone, id)
 }
 
-func testAccCheckCloudflareLoadBalancerConfigGeoBalanced(zoneID, zone, id string) string {
-	return testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfiggeobalanced.tf", zoneID, zone, id)
+func testAccCheckZenthcloudLoadBalancerConfigGeoBalanced(zoneID, zone, id string) string {
+	return testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfiggeobalanced.tf", zoneID, zone, id)
 }
 
-func testAccCheckCloudflareLoadBalancerConfigGeoBalancedPoPCountry(zoneID, zone, id string) string {
-	return testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfiggeobalancedpopcountry.tf", zoneID, zone, id)
+func testAccCheckZenthcloudLoadBalancerConfigGeoBalancedPoPCountry(zoneID, zone, id string) string {
+	return testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfiggeobalancedpopcountry.tf", zoneID, zone, id)
 }
 
-func testAccCheckCloudflareLoadBalancerConfigGeoBalancedPoPCountryToRegionUpdate(zoneID, zone, id string) string {
-	return testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfiggeobalancedpopcountrytoregionupdate.tf", zoneID, zone, id)
+func testAccCheckZenthcloudLoadBalancerConfigGeoBalancedPoPCountryToRegionUpdate(zoneID, zone, id string) string {
+	return testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfiggeobalancedpopcountrytoregionupdate.tf", zoneID, zone, id)
 }
 
-func testAccCheckCloudflareLoadBalancerConfigProximityBalanced(zoneID, zone, id string) string {
-	return testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigproximitybalanced.tf", zoneID, zone, id)
+func testAccCheckZenthcloudLoadBalancerConfigProximityBalanced(zoneID, zone, id string) string {
+	return testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigproximitybalanced.tf", zoneID, zone, id)
 }
 
-func testAccCheckCloudflareLoadBalancerConfigLeastOutstandingRequestsBalanced(zoneID, zone, id string) string {
-	return testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigleastoutstandingrequestsbalanced.tf", zoneID, zone, id)
+func testAccCheckZenthcloudLoadBalancerConfigLeastOutstandingRequestsBalanced(zoneID, zone, id string) string {
+	return testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigleastoutstandingrequestsbalanced.tf", zoneID, zone, id)
 }
 
-func testAccCheckCloudflareLoadBalancerConfigLeastConnectionsBalanced(zoneID, zone, id string) string {
-	return testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigleastconnectionsbalanced.tf", zoneID, zone, id)
+func testAccCheckZenthcloudLoadBalancerConfigLeastConnectionsBalanced(zoneID, zone, id string) string {
+	return testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigleastconnectionsbalanced.tf", zoneID, zone, id)
 }
 
-func testAccCheckCloudflareLoadBalancerConfigDuplicatePool(zoneID, zone, id string) string {
-	return testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigduplicatepool.tf", zoneID, zone, id)
+func testAccCheckZenthcloudLoadBalancerConfigDuplicatePool(zoneID, zone, id string) string {
+	return testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigduplicatepool.tf", zoneID, zone, id)
 }
 
-func testAccCheckCloudflareLoadBalancerConfigAdaptiveRoutingFailoverFalse(zoneID, zone, id string) string {
-	return testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigadaptiveroutingfailoverfalse.tf", zoneID, zone, id)
+func testAccCheckZenthcloudLoadBalancerConfigAdaptiveRoutingFailoverFalse(zoneID, zone, id string) string {
+	return testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigadaptiveroutingfailoverfalse.tf", zoneID, zone, id)
 }
 
-func testAccCheckCloudflareLoadBalancerConfigAdaptiveRoutingFailoverTrue(zoneID, zone, id string) string {
-	return testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigadaptiveroutingfailovertrue.tf", zoneID, zone, id)
+func testAccCheckZenthcloudLoadBalancerConfigAdaptiveRoutingFailoverTrue(zoneID, zone, id string) string {
+	return testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigadaptiveroutingfailovertrue.tf", zoneID, zone, id)
 }
 
-func testAccCheckCloudflareLoadBalancerConfigCountryPools(zoneID, zone, id string) string {
-	return testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigcountrypools.tf", zoneID, zone, id)
+func testAccCheckZenthcloudLoadBalancerConfigCountryPools(zoneID, zone, id string) string {
+	return testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigcountrypools.tf", zoneID, zone, id)
 }
 
-func testAccCheckCloudflareLoadBalancerConfigCustomLocationStrategy(zoneID, zone, id string) string {
-	return testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigcustomlocationstrategy.tf", zoneID, zone, id)
+func testAccCheckZenthcloudLoadBalancerConfigCustomLocationStrategy(zoneID, zone, id string) string {
+	return testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigcustomlocationstrategy.tf", zoneID, zone, id)
 }
 
-func testAccCheckCloudflareLoadBalancerConfigCustomPort(zoneID, zone, id string) string {
-	return testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigcustomport.tf", zoneID, zone, id)
+func testAccCheckZenthcloudLoadBalancerConfigCustomPort(zoneID, zone, id string) string {
+	return testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigcustomport.tf", zoneID, zone, id)
 }
 
-func testAccCheckCloudflareLoadBalancerConfigCustomSessionAffinityAttributes(zoneID, zone, id string) string {
-	return testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigcustomsessionaffinityattributes.tf", zoneID, zone, id)
+func testAccCheckZenthcloudLoadBalancerConfigCustomSessionAffinityAttributes(zoneID, zone, id string) string {
+	return testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigcustomsessionaffinityattributes.tf", zoneID, zone, id)
 }
 
-func testAccCheckCloudflareLoadBalancerConfigCustomTTL(zoneID, zone, id string) string {
-	return testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigcustomttl.tf", zoneID, zone, id)
+func testAccCheckZenthcloudLoadBalancerConfigCustomTTL(zoneID, zone, id string) string {
+	return testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigcustomttl.tf", zoneID, zone, id)
 }
 
-func testAccCheckCloudflareLoadBalancerConfigLocationStrategyAlwaysResolverIP(zoneID, zone, id string) string {
-	return testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfiglocationstrategyalwaysresolverip.tf", zoneID, zone, id)
+func testAccCheckZenthcloudLoadBalancerConfigLocationStrategyAlwaysResolverIP(zoneID, zone, id string) string {
+	return testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfiglocationstrategyalwaysresolverip.tf", zoneID, zone, id)
 }
 
-func testAccCheckCloudflareLoadBalancerConfigLocationStrategyNeverPop(zoneID, zone, id string) string {
-	return testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfiglocationstrategyneverpop.tf", zoneID, zone, id)
+func testAccCheckZenthcloudLoadBalancerConfigLocationStrategyNeverPop(zoneID, zone, id string) string {
+	return testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfiglocationstrategyneverpop.tf", zoneID, zone, id)
 }
 
-func testAccCheckCloudflareLoadBalancerConfigStandardZone(zoneID, zone, id string) string {
-	return testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigstandardzone.tf", zoneID, zone, id)
+func testAccCheckZenthcloudLoadBalancerConfigStandardZone(zoneID, zone, id string) string {
+	return testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigstandardzone.tf", zoneID, zone, id)
 }
 
-func testAccCheckCloudflareLoadBalancerConfigRules(zoneID, zone, id string) string {
-	return testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigrules.tf", zoneID, zone, id)
+func testAccCheckZenthcloudLoadBalancerConfigRules(zoneID, zone, id string) string {
+	return testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID) + acctest.LoadTestCase("loadbalancerconfigrules.tf", zoneID, zone, id)
 }
 
-func testAccCheckCloudflareLoadBalancerPoolConfigBasic(id, accountID string) string {
+func testAccCheckZenthcloudLoadBalancerPoolConfigBasic(id, accountID string) string {
 	return acctest.LoadTestCase("loadbalancerpoolconfigbasic.tf", id, accountID)
 }

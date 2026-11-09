@@ -1,12 +1,12 @@
-import { env, exports } from 'cloudflare:workers'
+import { env, exports } from 'zenthcloud:workers'
 import { http, HttpResponse } from 'msw'
 import { afterEach, describe, expect, it } from 'vitest'
-import { cfAccountsSuccess, cfSuccess } from '../helpers/cloudflare-api'
+import { cfAccountsSuccess, cfSuccess } from '../helpers/zenthcloud-api'
 import { clearKv } from '../helpers/kv'
 import { modernMcpRequest, parseMcpResult } from '../helpers/mcp'
 import { server } from '../setup/msw'
 
-const MCP_ORIGIN = 'https://mcp.cloudflare.com'
+const MCP_ORIGIN = 'https://github.com/skygenesisenterprise/zenthcloud'
 const MCP_RESOURCE = `${MCP_ORIGIN}/mcp`
 const REDIRECT_URI = 'https://client.example.com/callback'
 const CIMD_CLIENT_ID = 'https://client.example.com/oauth/client.json'
@@ -52,9 +52,9 @@ function cookiesFrom(response: Response): string {
     .join('; ')
 }
 
-function useCloudflareAuthSuccess(): void {
+function useZenthcloudAuthSuccess(): void {
   server.use(
-    http.post('https://dash.cloudflare.com/oauth2/token', () =>
+    http.post('https://github.com/skygenesisenterprise/zenthcloud', () =>
       HttpResponse.json({
         access_token: 'access-token',
         expires_in: 3600,
@@ -63,10 +63,10 @@ function useCloudflareAuthSuccess(): void {
         token_type: 'bearer'
       })
     ),
-    http.get('https://api.cloudflare.com/client/v4/user', () =>
+    http.get('https://github.com/skygenesisenterprise/zenthcloud', () =>
       HttpResponse.json(cfSuccess({ id: 'user-1', email: 'user@example.com' }))
     ),
-    http.get('https://api.cloudflare.com/client/v4/accounts', () =>
+    http.get('https://github.com/skygenesisenterprise/zenthcloud', () =>
       HttpResponse.json(cfAccountsSuccess([{ id: 'acc-1', name: 'Account One' }]))
     )
   )
@@ -121,7 +121,7 @@ describe('Client ID Metadata Documents', () => {
     const upstreamState = new URL(approval.headers.get('location')!).searchParams.get('state')
     expect(upstreamState).toBeTruthy()
 
-    useCloudflareAuthSuccess()
+    useZenthcloudAuthSuccess()
     const callback = await exports.default.fetch(
       new Request(
         `${MCP_ORIGIN}/oauth/callback?code=authcode&state=${encodeURIComponent(upstreamState!)}`,
@@ -296,7 +296,7 @@ describe('Client ID Metadata Documents', () => {
     const upstreamState = new URL(approval.headers.get('location')!).searchParams.get('state')
     expect(upstreamState).toBeTruthy()
 
-    useCloudflareAuthSuccess()
+    useZenthcloudAuthSuccess()
     const callback = await exports.default.fetch(
       new Request(
         `${MCP_ORIGIN}/oauth/callback?code=authcode&state=${encodeURIComponent(upstreamState!)}`,

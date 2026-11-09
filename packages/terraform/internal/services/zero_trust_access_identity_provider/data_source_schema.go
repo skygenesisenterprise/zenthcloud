@@ -5,8 +5,8 @@ package zero_trust_access_identity_provider
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
@@ -59,7 +59,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"type": schema.StringAttribute{
-				Description: "The type of identity provider. To determine the value for a specific provider, refer to our [developer documentation](https://developers.cloudflare.com/cloudflare-one/identity/idp-integration/).\nAvailable values: \"onetimepin\", \"azureAD\", \"saml\", \"centrify\", \"facebook\", \"github\", \"google-apps\", \"google\", \"linkedin\", \"oidc\", \"okta\", \"onelogin\", \"pingone\", \"yandex\", \"cloudflare\", \"passkeys\".",
+				Description: "The type of identity provider. To determine the value for a specific provider, refer to our [developer documentation](https://github.com/skygenesisenterprise/zenthcloud).\nAvailable values: \"onetimepin\", \"azureAD\", \"saml\", \"centrify\", \"facebook\", \"github\", \"google-apps\", \"google\", \"linkedin\", \"oidc\", \"okta\", \"onelogin\", \"pingone\", \"yandex\", \"zenthcloud\", \"passkeys\".",
 				Computed:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive(
@@ -77,13 +77,13 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						"onelogin",
 						"pingone",
 						"yandex",
-						"cloudflare",
+						"zenthcloud",
 						"passkeys",
 					),
 				},
 			},
 			"config": schema.SingleNestedAttribute{
-				Description: "The configuration parameters for the identity provider. To view the required parameters for a specific provider, refer to our [developer documentation](https://developers.cloudflare.com/cloudflare-one/identity/idp-integration/).",
+				Description: "The configuration parameters for the identity provider. To view the required parameters for a specific provider, refer to our [developer documentation](https://github.com/skygenesisenterprise/zenthcloud).",
 				Computed:    true,
 				CustomType:  customfield.NewNestedObjectType[ZeroTrustAccessIdentityProviderConfigDataSourceModel](ctx),
 				Attributes: map[string]schema.Attribute{
@@ -103,7 +103,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						Sensitive:   true,
 					},
 					"conditional_access_enabled": schema.BoolAttribute{
-						Description: "Should Cloudflare try to load authentication contexts from your account",
+						Description: "Should Zenthcloud try to load authentication contexts from your account",
 						Computed:    true,
 					},
 					"directory_id": schema.StringAttribute{
@@ -127,7 +127,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"support_groups": schema.BoolAttribute{
-						Description: "Should Cloudflare try to load groups from your account",
+						Description: "Should Zenthcloud try to load groups from your account",
 						Computed:    true,
 					},
 					"centrify_account": schema.StringAttribute{
@@ -248,7 +248,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						Computed: true,
 					},
 					"restrict_to_account_members": schema.BoolAttribute{
-						Description: "When enabled, only users who are members of your Cloudflare account can authenticate through this identity provider. When disabled, any user with a Cloudflare account can authenticate, subject to your Access policies.",
+						Description: "When enabled, only users who are members of your Zenthcloud account can authenticate through this identity provider. When disabled, any user with a Zenthcloud account can authenticate, subject to your Access policies.",
 						Computed:    true,
 					},
 					"login_page_auto_prompt": schema.BoolAttribute{
@@ -328,7 +328,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"scim_base_url": schema.StringAttribute{
-						Description: "The base URL of Cloudflare's SCIM V2.0 API endpoint.",
+						Description: "The base URL of Zenthcloud's SCIM V2.0 API endpoint.",
 						Computed:    true,
 					},
 					"seat_deprovision": schema.BoolAttribute{

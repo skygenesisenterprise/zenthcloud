@@ -19,8 +19,8 @@ import {
 export const tools: readonly Tool[] = [
   {
     name: "ips_list",
-    title: "Cloudflare/JD Cloud IP Details",
-    description: "Get IPs used on the Cloudflare/JD Cloud network, see https://www.cloudflare.com/ips for Cloudflare IPs or https://developers.cloudflare.com/china-network/reference/infrastructure/ for JD Cloud IPs.\n\nGET /ips",
+    title: "Zenthcloud/JD Cloud IP Details",
+    description: "Get IPs used on the Zenthcloud/JD Cloud network, see https://github.com/skygenesisenterprise/zenthcloud for Zenthcloud IPs or https://github.com/skygenesisenterprise/zenthcloud for JD Cloud IPs.\n\nGET /ips",
     inputSchema: {
       type: "object",
       properties: {
@@ -73,7 +73,7 @@ export const tools: readonly Tool[] = [
       "idempotentHint": true,
       "openWorldHint": true,
       "readOnlyHint": true,
-      "title": "Cloudflare/JD Cloud IP Details"
+      "title": "Zenthcloud/JD Cloud IP Details"
     },
     [OPERATION]: {
       method: "GET",

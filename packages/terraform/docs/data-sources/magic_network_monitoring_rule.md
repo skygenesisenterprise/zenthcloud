@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_magic_network_monitoring_rule Data Source - Cloudflare"
+page_title: "zenthcloud_magic_network_monitoring_rule Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Magic Network Monitoring AdminMagic Network Monitoring Config ReadMagic Network Monitoring Config Write
 ---
 
-# cloudflare_magic_network_monitoring_rule (Data Source)
+# zenthcloud_magic_network_monitoring_rule (Data Source)
 
 Accepted Permissions
 
@@ -17,7 +17,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_magic_network_monitoring_rule" "example_magic_network_monitoring_rule" {
+data "zenthcloud_magic_network_monitoring_rule" "example_magic_network_monitoring_rule" {
   account_id = "6f91088a406011ed95aed352566e8d4c"
   rule_id = "2890e6fa406311ed9b5a23f70f6fb8cf"
 }
@@ -36,7 +36,7 @@ data "cloudflare_magic_network_monitoring_rule" "example_magic_network_monitorin
 
 ### Read-Only
 
-- `automatic_advertisement` (Boolean) Toggle on if you would like Cloudflare to automatically advertise the IP Prefixes within the rule via Magic Transit when the rule is triggered. Only available for users of Magic Transit.
+- `automatic_advertisement` (Boolean) Toggle on if you would like Zenthcloud to automatically advertise the IP Prefixes within the rule via Magic Transit when the rule is triggered. Only available for users of Magic Transit.
 - `bandwidth_threshold` (Number) The number of bits per second for the rule. When this value is exceeded for the set duration, an alert notification is sent. Minimum of 1 and no maximum.
 - `duration` (String) The amount of time that the rule threshold must be exceeded to send an alert notification. The final value must be equivalent to one of the following 8 values ["1m","5m","10m","15m","20m","30m","45m","60m"].
 Available values: "1m", "5m", "10m", "15m", "20m", "30m", "45m", "60m".

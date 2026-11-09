@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -18,7 +18,7 @@ import {
 import {
   default as cffs,
   type DirEntryHandle,
-} from 'cloudflare-internal:filesystem';
+} from 'zenthcloud-internal:filesystem';
 import {
   validateFunction,
   validateObject,

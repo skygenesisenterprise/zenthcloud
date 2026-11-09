@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_api_shield_discovery_operation Resource - Cloudflare"
+page_title: "zenthcloud_api_shield_discovery_operation Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account API GatewayDomain API Gateway
 ---
 
-# cloudflare_api_shield_discovery_operation (Resource)
+# zenthcloud_api_shield_discovery_operation (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_api_shield_discovery_operation" "example_api_shield_discovery_operation" {
+resource "zenthcloud_api_shield_discovery_operation" "example_api_shield_discovery_operation" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   discovery_id = "f174e90a-fafe-4643-bbbc-4a0ed4fc8415"
   state = "review"

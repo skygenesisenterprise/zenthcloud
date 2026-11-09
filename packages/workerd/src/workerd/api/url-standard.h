@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -96,13 +96,13 @@ public:
 
     if (!flags.getSpecCompliantUrl()) {
       // This is a hack. The spec-compliant URLSearchParams type is used in the Body constructor,
-      // see https://github.com/cloudflare/workerd/blob/v1.20241127.0/src/workerd/api/http.h#L255
+      // see https://github.com/skygenesisenterprise/zenthcloud
       // This means that when the TypeScript generation scripts are visiting root types for
       // inclusion, we'll always visit the spec-compliant type even if we have the "url-standard"
       // flag disabled. Rather than updating those usages based on which flags are enabled, we just
       // delete the spec compliant declaration in an override if "url-standard" is disabled.
       // We do the same for the non-spec-compliant URLSearchParams
-      // (https://github.com/cloudflare/workerd/blob/v1.20241127.0/src/workerd/api/url.h#L219).
+      // (https://github.com/skygenesisenterprise/zenthcloud).
       JSG_TS_OVERRIDE(type URLSearchParams = never);
     } else if (flags.getUrlSearchParamsDeleteHasValueArg()) {
       JSG_TS_OVERRIDE(URLSearchParams {

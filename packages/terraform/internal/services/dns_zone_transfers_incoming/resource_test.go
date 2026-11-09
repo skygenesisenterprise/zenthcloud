@@ -7,10 +7,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/dns"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/dns"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -21,33 +21,33 @@ func TestMain(m *testing.M) {
 
 
 func init() {
-	resource.AddTestSweepers("cloudflare_dns_zone_transfers_incoming", &resource.Sweeper{
-		Name: "cloudflare_dns_zone_transfers_incoming",
-		F:    testSweepCloudflareDNSZoneTransfersIncoming,
+	resource.AddTestSweepers("zenthcloud_dns_zone_transfers_incoming", &resource.Sweeper{
+		Name: "zenthcloud_dns_zone_transfers_incoming",
+		F:    testSweepZenthcloudDNSZoneTransfersIncoming,
 	})
 }
 
-func testSweepCloudflareDNSZoneTransfersIncoming(r string) error {
+func testSweepZenthcloudDNSZoneTransfersIncoming(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
 	// Clean up the connections between peers and zones
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		return errors.New("CLOUDFLARE_ZONE_ID must be set")
+		return errors.New("ZENTHCLOUD_ZONE_ID must be set")
 	}
 
-	incomingZone, err := client.DNS.ZoneTransfers.Incoming.Get(context.Background(), dns.ZoneTransferIncomingGetParams{ZoneID: cloudflare.F(zoneID)})
+	incomingZone, err := client.DNS.ZoneTransfers.Incoming.Get(context.Background(), dns.ZoneTransferIncomingGetParams{ZoneID: zenthcloud.F(zoneID)})
 	if err != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Cloudflare incoming secondary zones: %s", err))
+		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Zenthcloud incoming secondary zones: %s", err))
 	}
 
 	if len(incomingZone.Peers) == 0 {
-		tflog.Info(ctx, "No Cloudflare peers connected to zones records to sweep")
+		tflog.Info(ctx, "No Zenthcloud peers connected to zones records to sweep")
 		return nil
 	}
 
-	_, err = client.DNS.ZoneTransfers.Incoming.Update(context.Background(), dns.ZoneTransferIncomingUpdateParams{ZoneID: cloudflare.F(zoneID), Peers: cloudflare.F([]string{})})
+	_, err = client.DNS.ZoneTransfers.Incoming.Update(context.Background(), dns.ZoneTransferIncomingUpdateParams{ZoneID: zenthcloud.F(zoneID), Peers: zenthcloud.F([]string{})})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to clear peers on incoming zone: %s", err))
 	}
@@ -55,12 +55,12 @@ func testSweepCloudflareDNSZoneTransfersIncoming(r string) error {
 	return nil
 }
 
-func TestAccCloudflareDNSZoneTransfersIncoming_Basic(t *testing.T) {
+func TestAccZenthcloudDNSZoneTransfersIncoming_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
-	name := "cloudflare_dns_zone_transfers_incoming." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
+	name := "zenthcloud_dns_zone_transfers_incoming." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -77,12 +77,12 @@ func TestAccCloudflareDNSZoneTransfersIncoming_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareDNSZoneTransfersIncoming_Update(t *testing.T) {
+func TestAccZenthcloudDNSZoneTransfersIncoming_Update(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
-	name := "cloudflare_dns_zone_transfers_incoming." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
+	name := "zenthcloud_dns_zone_transfers_incoming." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },

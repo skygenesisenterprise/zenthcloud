@@ -7,8 +7,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -18,22 +18,22 @@ import (
 )
 
 //go:embed testdata/v4_basic.tf
-var testAccCloudflareSnippetMigrationConfigBasic string
+var testAccZenthcloudSnippetMigrationConfigBasic string
 
 //go:embed testdata/v4_multiple_files.tf
-var testAccCloudflareSnippetMigrationConfigMultipleFiles string
+var testAccZenthcloudSnippetMigrationConfigMultipleFiles string
 
 //go:embed testdata/v4_complex_content.tf
-var testAccCloudflareSnippetMigrationConfigComplexContent string
+var testAccZenthcloudSnippetMigrationConfigComplexContent string
 
 //go:embed testdata/v4_url_rewrite.tf
-var testAccCloudflareSnippetMigrationConfigURLRewrite string
+var testAccZenthcloudSnippetMigrationConfigURLRewrite string
 
 //go:embed testdata/v4_header_manipulation.tf
-var testAccCloudflareSnippetMigrationConfigHeaderManipulation string
+var testAccZenthcloudSnippetMigrationConfigHeaderManipulation string
 
 //go:embed testdata/v4_edge_cases.tf
-var testAccCloudflareSnippetMigrationConfigEdgeCases string
+var testAccZenthcloudSnippetMigrationConfigEdgeCases string
 
 // Configs for _Migration_ tests (zoneID=%[1]s, rnd=%[2]s arg order)
 
@@ -50,10 +50,10 @@ var v4MigrationComplexContentConfig string
 // Tests ported from migrations_test.go (original PreConfig/RunMigrationV2Command style)
 // ============================================================================
 
-func TestMigrateCloudflareSnippetBasic(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestMigrateZenthcloudSnippetBasic(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_snippet.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_snippet.%s", rnd)
 	tmpDir := t.TempDir()
 
 	resource.Test(t, resource.TestCase{
@@ -65,17 +65,17 @@ func TestMigrateCloudflareSnippetBasic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
-				Config: fmt.Sprintf(testAccCloudflareSnippetMigrationConfigBasic, rnd, zoneID),
+				Config: fmt.Sprintf(testAccZenthcloudSnippetMigrationConfigBasic, rnd, zoneID),
 			},
 			{
 				PreConfig: func() {
-					acctest.WriteOutConfig(t, fmt.Sprintf(testAccCloudflareSnippetMigrationConfigBasic, rnd, zoneID), tmpDir)
-					acctest.RunMigrationV2Command(t, fmt.Sprintf(testAccCloudflareSnippetMigrationConfigBasic, rnd, zoneID), tmpDir, "v4", "v5")
+					acctest.WriteOutConfig(t, fmt.Sprintf(testAccZenthcloudSnippetMigrationConfigBasic, rnd, zoneID), tmpDir)
+					acctest.RunMigrationV2Command(t, fmt.Sprintf(testAccZenthcloudSnippetMigrationConfigBasic, rnd, zoneID), tmpDir, "v4", "v5")
 				},
 				ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 				ConfigDirectory:          config.StaticDirectory(tmpDir),
@@ -99,10 +99,10 @@ func TestMigrateCloudflareSnippetBasic(t *testing.T) {
 	})
 }
 
-func TestMigrateCloudflareSnippetMultipleFiles(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestMigrateZenthcloudSnippetMultipleFiles(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_snippet.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_snippet.%s", rnd)
 	tmpDir := t.TempDir()
 
 	resource.Test(t, resource.TestCase{
@@ -114,17 +114,17 @@ func TestMigrateCloudflareSnippetMultipleFiles(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
-				Config: fmt.Sprintf(testAccCloudflareSnippetMigrationConfigMultipleFiles, rnd, zoneID),
+				Config: fmt.Sprintf(testAccZenthcloudSnippetMigrationConfigMultipleFiles, rnd, zoneID),
 			},
 			{
 				PreConfig: func() {
-					acctest.WriteOutConfig(t, fmt.Sprintf(testAccCloudflareSnippetMigrationConfigMultipleFiles, rnd, zoneID), tmpDir)
-					acctest.RunMigrationV2Command(t, fmt.Sprintf(testAccCloudflareSnippetMigrationConfigMultipleFiles, rnd, zoneID), tmpDir, "v4", "v5")
+					acctest.WriteOutConfig(t, fmt.Sprintf(testAccZenthcloudSnippetMigrationConfigMultipleFiles, rnd, zoneID), tmpDir)
+					acctest.RunMigrationV2Command(t, fmt.Sprintf(testAccZenthcloudSnippetMigrationConfigMultipleFiles, rnd, zoneID), tmpDir, "v4", "v5")
 				},
 				ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 				ConfigDirectory:          config.StaticDirectory(tmpDir),
@@ -154,10 +154,10 @@ func TestMigrateCloudflareSnippetMultipleFiles(t *testing.T) {
 	})
 }
 
-func TestMigrateCloudflareSnippetComplexContent(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestMigrateZenthcloudSnippetComplexContent(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_snippet.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_snippet.%s", rnd)
 	tmpDir := t.TempDir()
 
 	resource.Test(t, resource.TestCase{
@@ -169,17 +169,17 @@ func TestMigrateCloudflareSnippetComplexContent(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
-				Config: fmt.Sprintf(testAccCloudflareSnippetMigrationConfigComplexContent, rnd, zoneID),
+				Config: fmt.Sprintf(testAccZenthcloudSnippetMigrationConfigComplexContent, rnd, zoneID),
 			},
 			{
 				PreConfig: func() {
-					acctest.WriteOutConfig(t, fmt.Sprintf(testAccCloudflareSnippetMigrationConfigComplexContent, rnd, zoneID), tmpDir)
-					acctest.RunMigrationV2Command(t, fmt.Sprintf(testAccCloudflareSnippetMigrationConfigComplexContent, rnd, zoneID), tmpDir, "v4", "v5")
+					acctest.WriteOutConfig(t, fmt.Sprintf(testAccZenthcloudSnippetMigrationConfigComplexContent, rnd, zoneID), tmpDir)
+					acctest.RunMigrationV2Command(t, fmt.Sprintf(testAccZenthcloudSnippetMigrationConfigComplexContent, rnd, zoneID), tmpDir, "v4", "v5")
 				},
 				ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 				ConfigDirectory:          config.StaticDirectory(tmpDir),
@@ -203,10 +203,10 @@ func TestMigrateCloudflareSnippetComplexContent(t *testing.T) {
 	})
 }
 
-func TestMigrateCloudflareSnippetWithImport(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestMigrateZenthcloudSnippetWithImport(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_snippet.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_snippet.%s", rnd)
 	tmpDir := t.TempDir()
 
 	resource.Test(t, resource.TestCase{
@@ -218,17 +218,17 @@ func TestMigrateCloudflareSnippetWithImport(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
-				Config: fmt.Sprintf(testAccCloudflareSnippetMigrationConfigBasic, rnd, zoneID),
+				Config: fmt.Sprintf(testAccZenthcloudSnippetMigrationConfigBasic, rnd, zoneID),
 			},
 			{
 				PreConfig: func() {
-					acctest.WriteOutConfig(t, fmt.Sprintf(testAccCloudflareSnippetMigrationConfigBasic, rnd, zoneID), tmpDir)
-					acctest.RunMigrationV2Command(t, fmt.Sprintf(testAccCloudflareSnippetMigrationConfigBasic, rnd, zoneID), tmpDir, "v4", "v5")
+					acctest.WriteOutConfig(t, fmt.Sprintf(testAccZenthcloudSnippetMigrationConfigBasic, rnd, zoneID), tmpDir)
+					acctest.RunMigrationV2Command(t, fmt.Sprintf(testAccZenthcloudSnippetMigrationConfigBasic, rnd, zoneID), tmpDir, "v4", "v5")
 				},
 				ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 				ConfigDirectory:          config.StaticDirectory(tmpDir),
@@ -246,10 +246,10 @@ func TestMigrateCloudflareSnippetWithImport(t *testing.T) {
 	})
 }
 
-func TestMigrateCloudflareSnippetURLRewrite(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestMigrateZenthcloudSnippetURLRewrite(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_snippet.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_snippet.%s", rnd)
 	tmpDir := t.TempDir()
 
 	resource.Test(t, resource.TestCase{
@@ -261,17 +261,17 @@ func TestMigrateCloudflareSnippetURLRewrite(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
-				Config: fmt.Sprintf(testAccCloudflareSnippetMigrationConfigURLRewrite, rnd, zoneID),
+				Config: fmt.Sprintf(testAccZenthcloudSnippetMigrationConfigURLRewrite, rnd, zoneID),
 			},
 			{
 				PreConfig: func() {
-					acctest.WriteOutConfig(t, fmt.Sprintf(testAccCloudflareSnippetMigrationConfigURLRewrite, rnd, zoneID), tmpDir)
-					acctest.RunMigrationV2Command(t, fmt.Sprintf(testAccCloudflareSnippetMigrationConfigURLRewrite, rnd, zoneID), tmpDir, "v4", "v5")
+					acctest.WriteOutConfig(t, fmt.Sprintf(testAccZenthcloudSnippetMigrationConfigURLRewrite, rnd, zoneID), tmpDir)
+					acctest.RunMigrationV2Command(t, fmt.Sprintf(testAccZenthcloudSnippetMigrationConfigURLRewrite, rnd, zoneID), tmpDir, "v4", "v5")
 				},
 				ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 				ConfigDirectory:          config.StaticDirectory(tmpDir),
@@ -295,10 +295,10 @@ func TestMigrateCloudflareSnippetURLRewrite(t *testing.T) {
 	})
 }
 
-func TestMigrateCloudflareSnippetHeaderManipulation(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestMigrateZenthcloudSnippetHeaderManipulation(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_snippet.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_snippet.%s", rnd)
 	tmpDir := t.TempDir()
 
 	resource.Test(t, resource.TestCase{
@@ -310,17 +310,17 @@ func TestMigrateCloudflareSnippetHeaderManipulation(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
-				Config: fmt.Sprintf(testAccCloudflareSnippetMigrationConfigHeaderManipulation, rnd, zoneID),
+				Config: fmt.Sprintf(testAccZenthcloudSnippetMigrationConfigHeaderManipulation, rnd, zoneID),
 			},
 			{
 				PreConfig: func() {
-					acctest.WriteOutConfig(t, fmt.Sprintf(testAccCloudflareSnippetMigrationConfigHeaderManipulation, rnd, zoneID), tmpDir)
-					acctest.RunMigrationV2Command(t, fmt.Sprintf(testAccCloudflareSnippetMigrationConfigHeaderManipulation, rnd, zoneID), tmpDir, "v4", "v5")
+					acctest.WriteOutConfig(t, fmt.Sprintf(testAccZenthcloudSnippetMigrationConfigHeaderManipulation, rnd, zoneID), tmpDir)
+					acctest.RunMigrationV2Command(t, fmt.Sprintf(testAccZenthcloudSnippetMigrationConfigHeaderManipulation, rnd, zoneID), tmpDir, "v4", "v5")
 				},
 				ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 				ConfigDirectory:          config.StaticDirectory(tmpDir),
@@ -344,10 +344,10 @@ func TestMigrateCloudflareSnippetHeaderManipulation(t *testing.T) {
 	})
 }
 
-func TestMigrateCloudflareSnippetEdgeCases(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestMigrateZenthcloudSnippetEdgeCases(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_snippet.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_snippet.%s", rnd)
 	tmpDir := t.TempDir()
 
 	resource.Test(t, resource.TestCase{
@@ -359,17 +359,17 @@ func TestMigrateCloudflareSnippetEdgeCases(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
-				Config: fmt.Sprintf(testAccCloudflareSnippetMigrationConfigEdgeCases, rnd, zoneID),
+				Config: fmt.Sprintf(testAccZenthcloudSnippetMigrationConfigEdgeCases, rnd, zoneID),
 			},
 			{
 				PreConfig: func() {
-					acctest.WriteOutConfig(t, fmt.Sprintf(testAccCloudflareSnippetMigrationConfigEdgeCases, rnd, zoneID), tmpDir)
-					acctest.RunMigrationV2Command(t, fmt.Sprintf(testAccCloudflareSnippetMigrationConfigEdgeCases, rnd, zoneID), tmpDir, "v4", "v5")
+					acctest.WriteOutConfig(t, fmt.Sprintf(testAccZenthcloudSnippetMigrationConfigEdgeCases, rnd, zoneID), tmpDir)
+					acctest.RunMigrationV2Command(t, fmt.Sprintf(testAccZenthcloudSnippetMigrationConfigEdgeCases, rnd, zoneID), tmpDir, "v4", "v5")
 				},
 				ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 				ConfigDirectory:          config.StaticDirectory(tmpDir),
@@ -397,7 +397,7 @@ func TestMigrateCloudflareSnippetEdgeCases(t *testing.T) {
 // Tests ported from migrations_v4_to_v5_test.go (MigrationV2TestStepWithStateNormalization style)
 // ============================================================================
 
-func TestMigrateCloudflareSnippet_Migration_Basic_MultiVersion(t *testing.T) {
+func TestMigrateZenthcloudSnippet_Migration_Basic_MultiVersion(t *testing.T) {
 	testCases := []struct {
 		name     string
 		version  string
@@ -412,9 +412,9 @@ func TestMigrateCloudflareSnippet_Migration_Basic_MultiVersion(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_snippet." + rnd
+			resourceName := "zenthcloud_snippet." + rnd
 			testConfig := tc.configFn(zoneID, rnd)
 			tmpDir := t.TempDir()
 
@@ -428,9 +428,9 @@ func TestMigrateCloudflareSnippet_Migration_Basic_MultiVersion(t *testing.T) {
 					[]resource.TestStep{
 						{
 							ExternalProviders: map[string]resource.ExternalProvider{
-								"cloudflare": {
+								"zenthcloud": {
 									VersionConstraint: tc.version,
-									Source:            "cloudflare/cloudflare",
+									Source:            "zenthcloud/zenthcloud",
 								},
 							},
 							Config: testConfig,
@@ -454,10 +454,10 @@ func TestMigrateCloudflareSnippet_Migration_Basic_MultiVersion(t *testing.T) {
 	}
 }
 
-func TestMigrateCloudflareSnippet_Migration_WithMultipleFiles(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestMigrateZenthcloudSnippet_Migration_WithMultipleFiles(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_snippet." + rnd
+	resourceName := "zenthcloud_snippet." + rnd
 	v4Config := fmt.Sprintf(v4MigrationMultipleFilesConfig, zoneID, rnd)
 	tmpDir := t.TempDir()
 
@@ -471,9 +471,9 @@ func TestMigrateCloudflareSnippet_Migration_WithMultipleFiles(t *testing.T) {
 			[]resource.TestStep{
 				{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
+						"zenthcloud": {
 							VersionConstraint: "4.52.1",
-							Source:            "cloudflare/cloudflare",
+							Source:            "zenthcloud/zenthcloud",
 						},
 					},
 					Config: v4Config,
@@ -496,10 +496,10 @@ func TestMigrateCloudflareSnippet_Migration_WithMultipleFiles(t *testing.T) {
 	})
 }
 
-func TestMigrateCloudflareSnippet_Migration_ComplexContent(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestMigrateZenthcloudSnippet_Migration_ComplexContent(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_snippet." + rnd
+	resourceName := "zenthcloud_snippet." + rnd
 	v4Config := fmt.Sprintf(v4MigrationComplexContentConfig, zoneID, rnd)
 	tmpDir := t.TempDir()
 
@@ -513,9 +513,9 @@ func TestMigrateCloudflareSnippet_Migration_ComplexContent(t *testing.T) {
 			[]resource.TestStep{
 				{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
+						"zenthcloud": {
 							VersionConstraint: "4.52.1",
-							Source:            "cloudflare/cloudflare",
+							Source:            "zenthcloud/zenthcloud",
 						},
 					},
 					Config: v4Config,

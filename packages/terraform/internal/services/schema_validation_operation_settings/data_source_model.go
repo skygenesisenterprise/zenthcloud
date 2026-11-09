@@ -5,8 +5,8 @@ package schema_validation_operation_settings
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/schema_validation"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/schema_validation"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -23,7 +23,7 @@ type SchemaValidationOperationSettingsDataSourceModel struct {
 
 func (m *SchemaValidationOperationSettingsDataSourceModel) toReadParams(_ context.Context) (params schema_validation.SettingOperationGetParams, diags diag.Diagnostics) {
 	params = schema_validation.SettingOperationGetParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	return

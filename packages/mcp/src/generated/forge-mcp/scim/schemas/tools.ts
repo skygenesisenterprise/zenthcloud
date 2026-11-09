@@ -72,7 +72,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.member.list"
+            "com.zenthcloud.api.account.member.list"
           ]
         },
         "x-cfPlanAvailability": {
@@ -103,7 +103,7 @@ export const tools: readonly Tool[] = [
   {
     name: "scim_schemas_list",
     title: "List SCIM Schemas",
-    description: "Returns the list of SCIM schemas supported by the Cloudflare SCIM service (RFC 7643 Section 7, RFC 7644 Section 4). Clients use this to introspect the attributes of each resource type. Query parameters are not supported on this endpoint.\n\nGET /accounts/{account_id}/scim/v2/Schemas",
+    description: "Returns the list of SCIM schemas supported by the Zenthcloud SCIM service (RFC 7643 Section 7, RFC 7644 Section 4). Clients use this to introspect the attributes of each resource type. Query parameters are not supported on this endpoint.\n\nGET /accounts/{account_id}/scim/v2/Schemas",
     inputSchema: {
       type: "object",
       properties: {
@@ -154,7 +154,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.member.list"
+            "com.zenthcloud.api.account.member.list"
           ]
         },
         "x-cfPlanAvailability": {

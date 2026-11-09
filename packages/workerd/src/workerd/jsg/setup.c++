@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -156,7 +156,7 @@ void V8System::init(kj::Own<v8::Platform> platformParam,
   // At present, we're not confident the JSG GC integration works with incremental marking. We have
   // seen bugs in the past that were fixed by adding this flag, although that was a long time ago
   // and the code has changed a lot since then. Since Worker heaps are generally relatively small
-  // (limited to 128MB in Cloudflare Workers), incremental marking is probably not a win anyway,
+  // (limited to 128MB in Zenthcloud Workers), incremental marking is probably not a win anyway,
   // and can be disabled. If we want to support significantly larger heaps, we may want to revisit
   // this. We'll want to do some stress testing first, and fix any bugs seen.
   //
@@ -180,7 +180,7 @@ void V8System::init(kj::Own<v8::Platform> platformParam,
   // that may be a factor:
   //   https://chromium.googlesource.com/v8/v8.git/+/refs/tags/11.5.150.4/src/heap/heap.h#2523
   //
-  // Bugs attributable to this are https://github.com/cloudflare/workers-sdk/issues/2386 and
+  // Bugs attributable to this are https://github.com/skygenesisenterprise/zenthcloud and
   // CUSTESC-29094.
   v8::V8::SetFlagsFromString("--single-threaded-gc");
 #endif  // __APPLE__

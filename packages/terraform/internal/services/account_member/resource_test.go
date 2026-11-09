@@ -8,14 +8,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go"
-	cloudflarev6 "github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/accounts"
-	"github.com/cloudflare/cloudflare-go/v7/iam"
-	"github.com/cloudflare/cloudflare-go/v7/zones"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go"
+	zenthcloudv6 "github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/accounts"
+	"github.com/zenthcloud/zenthcloud-go/v7/iam"
+	"github.com/zenthcloud/zenthcloud-go/v7/zones"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -37,27 +37,27 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_account_member", &resource.Sweeper{
-		Name: "cloudflare_account_member",
-		F:    testSweepCloudflareAccountMembers,
+	resource.AddTestSweepers("zenthcloud_account_member", &resource.Sweeper{
+		Name: "zenthcloud_account_member",
+		F:    testSweepZenthcloudAccountMembers,
 	})
 }
 
-func testSweepCloudflareAccountMembers(r string) error {
+func testSweepZenthcloudAccountMembers(r string) error {
 	ctx := context.Background()
 	client, clientErr := acctest.SharedV1Client()
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 		return clientErr
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping account members sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping account members sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
-	members, _, err := client.AccountMembers(ctx, accountID, cloudflare.PaginationOptions{})
+	members, _, err := client.AccountMembers(ctx, accountID, zenthcloud.PaginationOptions{})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch account members: %s", err))
 		return fmt.Errorf("failed to fetch account members: %w", err)
@@ -86,7 +86,7 @@ func testSweepCloudflareAccountMembers(r string) error {
 	// List all Resource Groups
 	client2 := acctest.SharedClient()
 	resourceGroups, err := client2.IAM.ResourceGroups.List(ctx, iam.ResourceGroupListParams{
-		AccountID: cloudflarev6.String(accountID),
+		AccountID: zenthcloudv6.String(accountID),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to fetch account tokens: %w", err)
@@ -107,11 +107,11 @@ func testSweepCloudflareAccountMembers(r string) error {
 	return nil
 }
 
-func TestAccCloudflareAccountMember_Basic(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN as the API token won't have
+func TestAccZenthcloudAccountMember_Basic(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN as the API token won't have
 	// permission to manage account members.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	if os.Getenv("TF_ACC") == "" {
@@ -119,9 +119,9 @@ func TestAccCloudflareAccountMember_Basic(t *testing.T) {
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	email := fmt.Sprintf("%s@example.com", rnd)
-	resourceName := "cloudflare_account_member.test_member"
+	resourceName := "zenthcloud_account_member.test_member"
 
 	adminPermissionGroupID := getPermissionGroupId(t, accountID, "admin")
 	adminRoleID := getRoleId(t, accountID, "Administrator")
@@ -134,7 +134,7 @@ func TestAccCloudflareAccountMember_Basic(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareAccountMemberBasicConfig(accountID, email),
+				Config: testZenthcloudAccountMemberBasicConfig(accountID, email),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("email"), knownvalue.StringExact(email)),
@@ -151,11 +151,11 @@ func TestAccCloudflareAccountMember_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareAccountMember_Import(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN as the API token won't have
+func TestAccZenthcloudAccountMember_Import(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN as the API token won't have
 	// permission to manage account members.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	if os.Getenv("TF_ACC") == "" {
@@ -163,9 +163,9 @@ func TestAccCloudflareAccountMember_Import(t *testing.T) {
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	email := fmt.Sprintf("%s@example.com", rnd)
-	resourceName := "cloudflare_account_member.test_member"
+	resourceName := "zenthcloud_account_member.test_member"
 
 	adminPermissionGroupID := getPermissionGroupId(t, accountID, "admin")
 	adminRoleID := getRoleId(t, accountID, "Administrator")
@@ -178,7 +178,7 @@ func TestAccCloudflareAccountMember_Import(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareAccountMemberBasicConfig(accountID, email),
+				Config: testZenthcloudAccountMemberBasicConfig(accountID, email),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("email"), knownvalue.StringExact(email)),
@@ -201,18 +201,18 @@ func TestAccCloudflareAccountMember_Import(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareAccountMember_DirectAdd(t *testing.T) {
+func TestAccZenthcloudAccountMember_DirectAdd(t *testing.T) {
 
 	t.Skip("API now throws if the user doesn't exist. We will have to see if we can easily create test users for this test.")
 
-	// Temporarily unset CLOUDFLARE_API_TOKEN as the API token won't have
+	// Temporarily unset ZENTHCLOUD_API_TOKEN as the API token won't have
 	// permission to manage account members.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	email := fmt.Sprintf("%s@example.com", rnd)
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -222,24 +222,24 @@ func TestAccCloudflareAccountMember_DirectAdd(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareAccountMemberDirectAdd(accountID, email),
+				Config: testZenthcloudAccountMemberDirectAdd(accountID, email),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("cloudflare_account_member.test_member", consts.AccountIDSchemaKey, accountID),
-					resource.TestCheckResourceAttr("cloudflare_account_member.test_member", "email", email),
-					resource.TestCheckResourceAttr("cloudflare_account_member.test_member", "status", "accepted"),
+					resource.TestCheckResourceAttr("zenthcloud_account_member.test_member", consts.AccountIDSchemaKey, accountID),
+					resource.TestCheckResourceAttr("zenthcloud_account_member.test_member", "email", email),
+					resource.TestCheckResourceAttr("zenthcloud_account_member.test_member", "status", "accepted"),
 				),
 			},
 		},
 	})
 }
 
-func testCloudflareAccountMemberBasicConfig(accountID, emailAddress string) string {
-	return acctest.LoadTestCase("cloudflareaccountmemberbasicconfig.tf", accountID, emailAddress)
+func testZenthcloudAccountMemberBasicConfig(accountID, emailAddress string) string {
+	return acctest.LoadTestCase("zenthcloudaccountmemberbasicconfig.tf", accountID, emailAddress)
 }
 
-func TestAccCloudflareAccountMember_RolesUpdate(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+func TestAccZenthcloudAccountMember_RolesUpdate(t *testing.T) {
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	if os.Getenv("TF_ACC") == "" {
@@ -247,8 +247,8 @@ func TestAccCloudflareAccountMember_RolesUpdate(t *testing.T) {
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_account_member.test_member"
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_account_member.test_member"
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	email := fmt.Sprintf("%s@example.com", rnd)
 
 	adminRoleID := getRoleId(t, accountID, "Administrator")
@@ -266,7 +266,7 @@ func TestAccCloudflareAccountMember_RolesUpdate(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				// Create with initial role
-				Config: testCloudflareAccountMemberRolesConfig(email, accountID, adminRoleID),
+				Config: testZenthcloudAccountMemberRolesConfig(email, accountID, adminRoleID),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionCreate),
@@ -289,7 +289,7 @@ func TestAccCloudflareAccountMember_RolesUpdate(t *testing.T) {
 			},
 			{
 				// Another apply should not cause any changes (stable state)
-				Config: testCloudflareAccountMemberRolesConfig(email, accountID, adminRoleID),
+				Config: testZenthcloudAccountMemberRolesConfig(email, accountID, adminRoleID),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionNoop),
@@ -309,7 +309,7 @@ func TestAccCloudflareAccountMember_RolesUpdate(t *testing.T) {
 			},
 			{
 				// Update role in-place (tests custom marshal logic)
-				Config: testCloudflareAccountMemberRolesConfig(email, accountID, superAdminRoleID),
+				Config: testZenthcloudAccountMemberRolesConfig(email, accountID, superAdminRoleID),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -332,7 +332,7 @@ func TestAccCloudflareAccountMember_RolesUpdate(t *testing.T) {
 			},
 			{
 				// Another apply should not cause any changes (stable state)
-				Config: testCloudflareAccountMemberRolesConfig(email, accountID, superAdminRoleID),
+				Config: testZenthcloudAccountMemberRolesConfig(email, accountID, superAdminRoleID),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionNoop),
@@ -360,19 +360,19 @@ func TestAccCloudflareAccountMember_RolesUpdate(t *testing.T) {
 	})
 }
 
-func testCloudflareAccountMemberDirectAdd(accountID, emailAddress string) string {
-	return acctest.LoadTestCase("cloudflareaccountmemberdirectadd.tf", accountID, emailAddress)
+func testZenthcloudAccountMemberDirectAdd(accountID, emailAddress string) string {
+	return acctest.LoadTestCase("zenthcloudaccountmemberdirectadd.tf", accountID, emailAddress)
 }
 
-func testCloudflareAccountMemberRolesConfig(emailAddress, accountID, roleID string) string {
-	return acctest.LoadTestCase("cloudflareaccountmemberrolesconfig.tf", emailAddress, accountID, roleID)
+func testZenthcloudAccountMemberRolesConfig(emailAddress, accountID, roleID string) string {
+	return acctest.LoadTestCase("zenthcloudaccountmemberrolesconfig.tf", emailAddress, accountID, roleID)
 }
 
-func TestAccCloudflareAccountMember_Policies(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN as the API token won't have
+func TestAccZenthcloudAccountMember_Policies(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN as the API token won't have
 	// permission to manage account members.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	if os.Getenv("TF_ACC") == "" {
@@ -380,8 +380,8 @@ func TestAccCloudflareAccountMember_Policies(t *testing.T) {
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_account_member.test_member"
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_account_member.test_member"
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	email := fmt.Sprintf("%s@example.com", rnd)
 
 	adminRoleID := getRoleId(t, accountID, "Administrator")
@@ -398,7 +398,7 @@ func TestAccCloudflareAccountMember_Policies(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareAccountMemberPoliciesConfig(accountID, email, adminPermissionGroupID),
+				Config: testZenthcloudAccountMemberPoliciesConfig(accountID, email, adminPermissionGroupID),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionCreate),
@@ -425,7 +425,7 @@ func TestAccCloudflareAccountMember_Policies(t *testing.T) {
 			},
 			{
 				// Another apply should not cause any changes (stable state)
-				Config: testCloudflareAccountMemberPoliciesConfig(accountID, email, adminPermissionGroupID),
+				Config: testZenthcloudAccountMemberPoliciesConfig(accountID, email, adminPermissionGroupID),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionNoop),
@@ -444,7 +444,7 @@ func TestAccCloudflareAccountMember_Policies(t *testing.T) {
 			},
 			{
 				// Update with super admin permission group
-				Config: testCloudflareAccountMemberPoliciesConfig(accountID, email, superAdminPermissionGroupID),
+				Config: testZenthcloudAccountMemberPoliciesConfig(accountID, email, superAdminPermissionGroupID),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -471,7 +471,7 @@ func TestAccCloudflareAccountMember_Policies(t *testing.T) {
 			},
 			{
 				// Another apply should not cause any changes (stable state)
-				Config: testCloudflareAccountMemberPoliciesConfig(accountID, email, superAdminPermissionGroupID),
+				Config: testZenthcloudAccountMemberPoliciesConfig(accountID, email, superAdminPermissionGroupID),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionNoop),
@@ -498,13 +498,13 @@ func TestAccCloudflareAccountMember_Policies(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareAccountMember_PoliciesAddResourceGroup(t *testing.T) {
+func TestAccZenthcloudAccountMember_PoliciesAddResourceGroup(t *testing.T) {
 	// once this is enabled, the test may also be flaky due to caching issues
 	t.Skip("Needs a DSR enabled user")
-	// Temporarily unset CLOUDFLARE_API_TOKEN as the API token won't have
+	// Temporarily unset ZENTHCLOUD_API_TOKEN as the API token won't have
 	// permission to manage account members.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	if os.Getenv("TF_ACC") == "" {
@@ -512,8 +512,8 @@ func TestAccCloudflareAccountMember_PoliciesAddResourceGroup(t *testing.T) {
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_account_member.test_member"
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_account_member.test_member"
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	email := fmt.Sprintf("%s@example.com", rnd)
 	domainAdminPermissionGroupID := getPermissionGroupId(t, accountID, "domain_admin_readonly")
 
@@ -540,7 +540,7 @@ func TestAccCloudflareAccountMember_PoliciesAddResourceGroup(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: acctest.LoadTestCase("cloudflare_account_member-add-resource-group1.tf", accountID, email, domainAdminPermissionGroupID, domainGroupID1),
+				Config: acctest.LoadTestCase("zenthcloud_account_member-add-resource-group1.tf", accountID, email, domainAdminPermissionGroupID, domainGroupID1),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionCreate),
@@ -581,7 +581,7 @@ func TestAccCloudflareAccountMember_PoliciesAddResourceGroup(t *testing.T) {
 			},
 			{
 				// Another apply should not cause any changes (stable state)
-				Config: acctest.LoadTestCase("cloudflare_account_member-add-resource-group1.tf", accountID, email, domainAdminPermissionGroupID, domainGroupID1),
+				Config: acctest.LoadTestCase("zenthcloud_account_member-add-resource-group1.tf", accountID, email, domainAdminPermissionGroupID, domainGroupID1),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionNoop),
@@ -606,7 +606,7 @@ func TestAccCloudflareAccountMember_PoliciesAddResourceGroup(t *testing.T) {
 				},
 			},
 			{
-				Config: acctest.LoadTestCase("cloudflare_account_member-add-resource-group2.tf", accountID, email, domainAdminPermissionGroupID, domainGroupID1, domainGroupID2),
+				Config: acctest.LoadTestCase("zenthcloud_account_member-add-resource-group2.tf", accountID, email, domainAdminPermissionGroupID, domainGroupID1, domainGroupID2),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -653,7 +653,7 @@ func TestAccCloudflareAccountMember_PoliciesAddResourceGroup(t *testing.T) {
 			},
 			{
 				// Another apply should not cause any changes (stable state)
-				Config: acctest.LoadTestCase("cloudflare_account_member-add-resource-group2.tf", accountID, email, domainAdminPermissionGroupID, domainGroupID1, domainGroupID2),
+				Config: acctest.LoadTestCase("zenthcloud_account_member-add-resource-group2.tf", accountID, email, domainAdminPermissionGroupID, domainGroupID1, domainGroupID2),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionNoop),
@@ -690,11 +690,11 @@ func TestAccCloudflareAccountMember_PoliciesAddResourceGroup(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareAccountMember_RolesAndPoliciesInvalid(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN as the API token won't have
+func TestAccZenthcloudAccountMember_RolesAndPoliciesInvalid(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN as the API token won't have
 	// permission to manage account members.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	if os.Getenv("TF_ACC") == "" {
@@ -702,7 +702,7 @@ func TestAccCloudflareAccountMember_RolesAndPoliciesInvalid(t *testing.T) {
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	email := fmt.Sprintf("%s@example.com", rnd)
 
 	resource.Test(t, resource.TestCase{
@@ -713,23 +713,23 @@ func TestAccCloudflareAccountMember_RolesAndPoliciesInvalid(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      acctest.LoadTestCase("cloudflare_account_member-roles-and-policies-invalid.tf", accountID, email),
+				Config:      acctest.LoadTestCase("zenthcloud_account_member-roles-and-policies-invalid.tf", accountID, email),
 				ExpectError: regexp.MustCompile(`Exactly one of these attributes must be configured: \[roles,policies\]`),
 			},
 		},
 	})
 }
 
-func testCloudflareAccountMemberPoliciesConfig(accountID, emailAddress, permgroupId string) string {
-	return acctest.LoadTestCase("cloudflareaccountmemberpoliciesconfig.tf", accountID, emailAddress, permgroupId)
+func testZenthcloudAccountMemberPoliciesConfig(accountID, emailAddress, permgroupId string) string {
+	return acctest.LoadTestCase("zenthcloudaccountmemberpoliciesconfig.tf", accountID, emailAddress, permgroupId)
 }
 
 func getPermissionGroupId(t *testing.T, accountID string, label string) string {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 	res, err := client.IAM.PermissionGroups.List(ctx, iam.PermissionGroupListParams{
-		AccountID: cloudflarev6.String(accountID),
-		Label:     cloudflarev6.String(label),
+		AccountID: zenthcloudv6.String(accountID),
+		Label:     zenthcloudv6.String(label),
 	})
 	if err != nil {
 		t.Fatalf("Failed to list permission groups: %v for account %s", err, accountID)
@@ -744,9 +744,9 @@ func getRoleId(t *testing.T, accountID string, label string) string {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 	roles, err := client.Accounts.Roles.List(ctx, accounts.RoleListParams{
-		AccountID: cloudflarev6.String(accountID),
+		AccountID: zenthcloudv6.String(accountID),
 		// this may eventually become a problem if there are too many roles
-		PerPage: cloudflarev6.Float(100),
+		PerPage: zenthcloudv6.Float(100),
 	})
 	if err != nil {
 		t.Fatalf("failed to list roles for account %s: %s", accountID, err)
@@ -771,8 +771,8 @@ func getDomains(t *testing.T, accountID string) []zones.Zone {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 	res, err := client.Zones.List(ctx, zones.ZoneListParams{
-		Account: cloudflarev6.F(zones.ZoneListParamsAccount{
-			ID: cloudflarev6.F(accountID),
+		Account: zenthcloudv6.F(zones.ZoneListParamsAccount{
+			ID: zenthcloudv6.F(accountID),
 		}),
 	})
 	if err != nil {
@@ -785,13 +785,13 @@ func createDomainGroup(t *testing.T, rnd, accountID, domainID string) string {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 	domainGroup, err := client.IAM.ResourceGroups.New(ctx, iam.ResourceGroupNewParams{
-		AccountID: cloudflarev6.String(accountID),
-		Name:      cloudflarev6.String(fmt.Sprintf("%s-%s", rnd, domainID)),
-		Scope: cloudflarev6.F(iam.ResourceGroupNewParamsScope{
-			Key: cloudflarev6.String(fmt.Sprintf("com.cloudflare.api.account.%s", accountID)),
-			Objects: cloudflarev6.F([]iam.ResourceGroupNewParamsScopeObject{
+		AccountID: zenthcloudv6.String(accountID),
+		Name:      zenthcloudv6.String(fmt.Sprintf("%s-%s", rnd, domainID)),
+		Scope: zenthcloudv6.F(iam.ResourceGroupNewParamsScope{
+			Key: zenthcloudv6.String(fmt.Sprintf("com.zenthcloud.api.account.%s", accountID)),
+			Objects: zenthcloudv6.F([]iam.ResourceGroupNewParamsScopeObject{
 				{
-					Key: cloudflarev6.String(fmt.Sprintf("com.cloudflare.api.account.zone.%s", domainID)),
+					Key: zenthcloudv6.String(fmt.Sprintf("com.zenthcloud.api.account.zone.%s", domainID)),
 				},
 			}),
 		}),
@@ -806,17 +806,17 @@ func deleteDomainGroup(accountID, domainID string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 	_, err := client.IAM.ResourceGroups.Delete(ctx, domainID, iam.ResourceGroupDeleteParams{
-		AccountID: cloudflarev6.String(accountID),
+		AccountID: zenthcloudv6.String(accountID),
 	})
 	return err
 }
 
 func TestAccUpgradeAccountMember_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	email := fmt.Sprintf("%s@example.com", rnd)
 
-	config := testCloudflareAccountMemberBasicConfig(accountID, email)
+	config := testZenthcloudAccountMemberBasicConfig(accountID, email)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -826,8 +826,8 @@ func TestAccUpgradeAccountMember_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

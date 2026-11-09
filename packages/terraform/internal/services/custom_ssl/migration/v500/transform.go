@@ -3,13 +3,13 @@ package v500
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Transform converts a v4 source state (SourceCloudflareCustomSSLModel) to the v5 target
+// Transform converts a v4 source state (SourceZenthcloudCustomSSLModel) to the v5 target
 // state (TargetCustomSSLModel).
 //
 // Transformation summary:
@@ -20,7 +20,7 @@ import (
 //   - uploaded_on / modified_on / expires_on (types.String) → timetypes.RFC3339
 //   - hosts (types.List) → customfield.List[types.String]
 //   - New v5-only computed fields → null (will be populated from API on next refresh)
-func Transform(ctx context.Context, source SourceCloudflareCustomSSLModel) (*TargetCustomSSLModel, diag.Diagnostics) {
+func Transform(ctx context.Context, source SourceZenthcloudCustomSSLModel) (*TargetCustomSSLModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Validate required field.

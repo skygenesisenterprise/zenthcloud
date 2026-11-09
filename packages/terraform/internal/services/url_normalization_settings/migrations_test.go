@@ -10,21 +10,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
-func TestMigrateURLNormalizationSettings_Cloudflare(t *testing.T) {
+func TestMigrateURLNormalizationSettings_Zenthcloud(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	tmpDir := t.TempDir()
-	resourceName := "cloudflare_url_normalization_settings." + rnd
+	resourceName := "zenthcloud_url_normalization_settings." + rnd
 
 	// v4 config - no changes needed, pass-through migration
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_url_normalization_settings" "%[1]s" {
+resource "zenthcloud_url_normalization_settings" "%[1]s" {
   zone_id = "%[2]s"
-  type    = "cloudflare"
+  type    = "zenthcloud"
   scope   = "incoming"
 }`, rnd, zoneID)
 
@@ -39,8 +39,8 @@ resource "cloudflare_url_normalization_settings" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -49,7 +49,7 @@ resource "cloudflare_url_normalization_settings" "%[1]s" {
 		}, // Step 2: Run migration and verify state
 			acctest.MigrationV2TestStepWithPlan(t, v4Config, tmpDir, "4.52.1", "v4", "v5", []statecheck.StateCheck{
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
-				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("cloudflare")),
+				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("zenthcloud")),
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("scope"), knownvalue.StringExact("incoming")),
 			})...),
 	})
@@ -57,13 +57,13 @@ resource "cloudflare_url_normalization_settings" "%[1]s" {
 
 func TestMigrateURLNormalizationSettings_RFC3986(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	tmpDir := t.TempDir()
-	resourceName := "cloudflare_url_normalization_settings." + rnd
+	resourceName := "zenthcloud_url_normalization_settings." + rnd
 
 	// v4 config with RFC3986 type
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_url_normalization_settings" "%[1]s" {
+resource "zenthcloud_url_normalization_settings" "%[1]s" {
   zone_id = "%[2]s"
   type    = "rfc3986"
   scope   = "both"
@@ -80,8 +80,8 @@ resource "cloudflare_url_normalization_settings" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -98,15 +98,15 @@ resource "cloudflare_url_normalization_settings" "%[1]s" {
 
 func TestMigrateURLNormalizationSettings_NoneScope(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	tmpDir := t.TempDir()
-	resourceName := "cloudflare_url_normalization_settings." + rnd
+	resourceName := "zenthcloud_url_normalization_settings." + rnd
 
 	// v4 config with "none" scope
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_url_normalization_settings" "%[1]s" {
+resource "zenthcloud_url_normalization_settings" "%[1]s" {
   zone_id = "%[2]s"
-  type    = "cloudflare"
+  type    = "zenthcloud"
   scope   = "none"
 }`, rnd, zoneID)
 
@@ -121,8 +121,8 @@ resource "cloudflare_url_normalization_settings" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -131,7 +131,7 @@ resource "cloudflare_url_normalization_settings" "%[1]s" {
 		}, // Step 2: Run migration and verify state
 			acctest.MigrationV2TestStepWithPlan(t, v4Config, tmpDir, "4.52.1", "v4", "v5", []statecheck.StateCheck{
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
-				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("cloudflare")),
+				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("zenthcloud")),
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("scope"), knownvalue.StringExact("none")),
 			})...),
 	})

@@ -17,7 +17,7 @@ import type { CodeHighlightedProps } from "./types";
  *
  * @example
  * ```tsx
- * import { ShikiProvider, CodeHighlighted } from "@cloudflare/kumo/code";
+ * import { ShikiProvider, CodeHighlighted } from "@zenthcloud/kumo/code";
  *
  * <ShikiProvider
  *   engine="javascript"

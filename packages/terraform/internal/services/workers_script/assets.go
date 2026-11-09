@@ -13,10 +13,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/workers"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/workers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -145,7 +145,7 @@ func getAssetManifestHash(manifest AssetManifest) (string, error) {
 	return calculateStringHash(string(manifestBytes))
 }
 
-func handleAssets(ctx context.Context, client *cloudflare.Client, data *WorkersScriptModel) error {
+func handleAssets(ctx context.Context, client *zenthcloud.Client, data *WorkersScriptModel) error {
 	if data == nil {
 		return nil
 	}
@@ -184,7 +184,7 @@ func handleAssets(ctx context.Context, client *cloudflare.Client, data *WorkersS
 		ctx,
 		scriptName,
 		workers.ScriptAssetUploadNewParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -227,8 +227,8 @@ func handleAssets(ctx context.Context, client *cloudflare.Client, data *WorkersS
 
 		res, err := client.Workers.Assets.Upload.New(ctx,
 			workers.AssetUploadNewParams{
-				AccountID: cloudflare.F(data.AccountID.ValueString()),
-				Base64:    cloudflare.F(workers.AssetUploadNewParamsBase64True),
+				AccountID: zenthcloud.F(data.AccountID.ValueString()),
+				Base64:    zenthcloud.F(workers.AssetUploadNewParamsBase64True),
 			},
 			option.WithRequestBody(formDataContentType, bucketBytes),
 			option.WithHeader("Authorization", fmt.Sprintf("Bearer %s", sessionToken)),

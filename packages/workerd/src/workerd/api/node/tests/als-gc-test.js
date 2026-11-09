@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -27,7 +27,7 @@ export const test = {
 
 // A store that reaches a Response created inside run() must still be collectable. The Response
 // captures the current frame, and the frame holds the store, so this is a cycle through C++.
-// See https://github.com/cloudflare/workerd/issues/7851.
+// See https://github.com/skygenesisenterprise/zenthcloud
 export const storeReachingResponseIsCollected = {
   async test() {
     const als = new AsyncLocalStorage();

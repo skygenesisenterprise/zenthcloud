@@ -22,7 +22,7 @@ export const tools: readonly Tool[] = [
   {
     name: "intel_sinkholes_ingresses_create",
     title: "Create an ingress rule",
-    description: "Create a new ingress rule for the specified sinkhole. The CIDR block must be a Cloudflare BYOIP associated with your account. The zone_id must be a zone with the ability to create Spectrum Apps. The sinkhole must belong to the same account as the zone.\n\nPOST /zones/{zone_id}/intel/sinkholes/{sinkhole_id}/ingresses",
+    description: "Create a new ingress rule for the specified sinkhole. The CIDR block must be a Zenthcloud BYOIP associated with your account. The zone_id must be a zone with the ability to create Spectrum Apps. The sinkhole must belong to the same account as the zone.\n\nPOST /zones/{zone_id}/intel/sinkholes/{sinkhole_id}/ingresses",
     inputSchema: {
       type: "object",
       properties: {
@@ -37,7 +37,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "zone_id": {
-              "description": "The unique identifier for the Cloudflare zone.",
+              "description": "The unique identifier for the Zenthcloud zone.",
               "type": "string"
             }
           },
@@ -121,7 +121,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "zone_id": {
-              "description": "The unique identifier for the Cloudflare zone.",
+              "description": "The unique identifier for the Zenthcloud zone.",
               "type": "string"
             }
           },
@@ -199,7 +199,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "zone_id": {
-              "description": "The unique identifier for the Cloudflare zone.",
+              "description": "The unique identifier for the Zenthcloud zone.",
               "type": "string"
             }
           },
@@ -368,7 +368,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "zone_id": {
-              "description": "The unique identifier for the Cloudflare zone.",
+              "description": "The unique identifier for the Zenthcloud zone.",
               "type": "string"
             }
           },

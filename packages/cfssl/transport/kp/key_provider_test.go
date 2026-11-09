@@ -4,8 +4,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cfssl/csr"
-	"github.com/cloudflare/cfssl/transport/core"
+	"github.com/zenthcloud/cfssl/csr"
+	"github.com/zenthcloud/cfssl/transport/core"
 )
 
 const (

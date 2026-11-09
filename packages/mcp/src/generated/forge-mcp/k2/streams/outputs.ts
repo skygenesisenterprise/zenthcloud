@@ -4,9 +4,9 @@
 import type { JSONObject } from "@modelcontextprotocol/server";
 
 /**
- * The schema of `cloudflare-k2_K2Stream` in responses.
+ * The schema of `zenthcloud-k2_K2Stream` in responses.
  */
-export const cloudflare$$k2_K2Stream: JSONObject = {
+export const zenthcloud$$k2_K2Stream: JSONObject = {
   "properties": {
     "created_at": {
       "format": "date-time",
@@ -16,7 +16,7 @@ export const cloudflare$$k2_K2Stream: JSONObject = {
       "type": "string"
     },
     "http": {
-      "$ref": "#/$defs/cloudflare-k2_K2StreamHttpInput"
+      "$ref": "#/$defs/zenthcloud-k2_K2StreamHttpInput"
     },
     "id": {
       "type": "string"
@@ -32,7 +32,7 @@ export const cloudflare$$k2_K2Stream: JSONObject = {
       "type": "integer"
     },
     "worker_binding": {
-      "$ref": "#/$defs/cloudflare-k2_K2StreamWorkerBindingInput"
+      "$ref": "#/$defs/zenthcloud-k2_K2StreamWorkerBindingInput"
     }
   },
   "required": [
@@ -49,9 +49,9 @@ export const cloudflare$$k2_K2Stream: JSONObject = {
 };
 
 /**
- * The schema of `cloudflare-k2_K2StreamCorsOptions` in responses.
+ * The schema of `zenthcloud-k2_K2StreamCorsOptions` in responses.
  */
-export const cloudflare$$k2_K2StreamCorsOptions: JSONObject = {
+export const zenthcloud$$k2_K2StreamCorsOptions: JSONObject = {
   "properties": {
     "origins": {
       "items": {
@@ -65,15 +65,15 @@ export const cloudflare$$k2_K2StreamCorsOptions: JSONObject = {
 };
 
 /**
- * The schema of `cloudflare-k2_K2StreamHttpInput` in responses.
+ * The schema of `zenthcloud-k2_K2StreamHttpInput` in responses.
  */
-export const cloudflare$$k2_K2StreamHttpInput: JSONObject = {
+export const zenthcloud$$k2_K2StreamHttpInput: JSONObject = {
   "properties": {
     "authentication": {
       "type": "boolean"
     },
     "cors": {
-      "$ref": "#/$defs/cloudflare-k2_K2StreamCorsOptions"
+      "$ref": "#/$defs/zenthcloud-k2_K2StreamCorsOptions"
     },
     "enabled": {
       "type": "boolean"
@@ -86,19 +86,19 @@ export const cloudflare$$k2_K2StreamHttpInput: JSONObject = {
 };
 
 /**
- * The schema of `cloudflare-k2_K2StreamListResponse` in responses.
+ * The schema of `zenthcloud-k2_K2StreamListResponse` in responses.
  */
-export const cloudflare$$k2_K2StreamListResponse: JSONObject = {
+export const zenthcloud$$k2_K2StreamListResponse: JSONObject = {
   "properties": {
     "errors": {
-      "$ref": "#/$defs/cloudflare-k2_workers-k2-messages"
+      "$ref": "#/$defs/zenthcloud-k2_workers-k2-messages"
     },
     "messages": {
-      "$ref": "#/$defs/cloudflare-k2_workers-k2-messages"
+      "$ref": "#/$defs/zenthcloud-k2_workers-k2-messages"
     },
     "result": {
       "items": {
-        "$ref": "#/$defs/cloudflare-k2_K2Stream"
+        "$ref": "#/$defs/zenthcloud-k2_K2Stream"
       },
       "type": "array"
     },
@@ -140,18 +140,18 @@ export const cloudflare$$k2_K2StreamListResponse: JSONObject = {
 };
 
 /**
- * The schema of `cloudflare-k2_K2StreamResponse` in responses.
+ * The schema of `zenthcloud-k2_K2StreamResponse` in responses.
  */
-export const cloudflare$$k2_K2StreamResponse: JSONObject = {
+export const zenthcloud$$k2_K2StreamResponse: JSONObject = {
   "properties": {
     "errors": {
-      "$ref": "#/$defs/cloudflare-k2_workers-k2-messages"
+      "$ref": "#/$defs/zenthcloud-k2_workers-k2-messages"
     },
     "messages": {
-      "$ref": "#/$defs/cloudflare-k2_workers-k2-messages"
+      "$ref": "#/$defs/zenthcloud-k2_workers-k2-messages"
     },
     "result": {
-      "$ref": "#/$defs/cloudflare-k2_K2Stream"
+      "$ref": "#/$defs/zenthcloud-k2_K2Stream"
     },
     "success": {
       "type": "boolean"
@@ -167,9 +167,9 @@ export const cloudflare$$k2_K2StreamResponse: JSONObject = {
 };
 
 /**
- * The schema of `cloudflare-k2_K2StreamWorkerBindingInput` in responses.
+ * The schema of `zenthcloud-k2_K2StreamWorkerBindingInput` in responses.
  */
-export const cloudflare$$k2_K2StreamWorkerBindingInput: JSONObject = {
+export const zenthcloud$$k2_K2StreamWorkerBindingInput: JSONObject = {
   "properties": {
     "enabled": {
       "type": "boolean"
@@ -182,9 +182,9 @@ export const cloudflare$$k2_K2StreamWorkerBindingInput: JSONObject = {
 };
 
 /**
- * The schema of `cloudflare-k2_workers-k2-messages` in responses.
+ * The schema of `zenthcloud-k2_workers-k2-messages` in responses.
  */
-export const cloudflare$$k2_workers$$k2$$messages: JSONObject = {
+export const zenthcloud$$k2_workers$$k2$$messages: JSONObject = {
   "items": {
     "properties": {
       "code": {

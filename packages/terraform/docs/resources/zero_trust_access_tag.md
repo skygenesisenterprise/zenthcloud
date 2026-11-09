@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zero_trust_access_tag Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_access_tag Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zero_trust_access_tag (Resource)
+# zenthcloud_zero_trust_access_tag (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_access_tag" "example_zero_trust_access_tag" {
+resource "zenthcloud_zero_trust_access_tag" "example_zero_trust_access_tag" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name = "engineers"
 }
@@ -35,7 +35,7 @@ resource "cloudflare_zero_trust_access_tag" "example_zero_trust_access_tag" {
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_access_tag.example '<account_id>/<tag_name>'
+$ terraform import zenthcloud_zero_trust_access_tag.example '<account_id>/<tag_name>'
 ```
 
 

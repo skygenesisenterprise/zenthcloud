@@ -22,13 +22,13 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("paused", {
 			type: "boolean",
 			description:
-				"Indicates whether the zone is only using Cloudflare DNS services. A\ntrue value means the zone will not receive security or performance\nbenefits.\n",
+				"Indicates whether the zone is only using Zenthcloud DNS services. A\ntrue value means the zone will not receive security or performance\nbenefits.\n",
 		})
 		.option("plan-id", { type: "string", description: "Identifier" })
 		.option("type", {
 			type: "string",
 			description:
-				"A full zone implies that DNS is hosted with Cloudflare. A partial\nzone is typically a partner-hosted zone or a CNAME setup. This\nparameter is only available to Enterprise customers or if it has\nbeen explicitly enabled on a zone.\n",
+				"A full zone implies that DNS is hosted with Zenthcloud. A partial\nzone is typically a partner-hosted zone or a CNAME setup. This\nparameter is only available to Enterprise customers or if it has\nbeen explicitly enabled on a zone.\n",
 			choices: ["full", "partial", "secondary", "internal"],
 		})
 		.coerce("type", (value) => resolveFileToken(value, "type", "text"))
@@ -69,7 +69,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zones edit",
 						method: "PATCH",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 						},

@@ -1,9 +1,9 @@
-import { cloudflare } from "@cloudflare/vite-plugin";
+import { zenthcloud } from "@zenthcloud/vite-plugin";
 import { defineConfig } from "vite";
 
 export default defineConfig({
 	plugins: [
-		cloudflare({
+		zenthcloud({
 			inspectorPort: false,
 			persistState: false,
 			types: { includeRuntime: false },

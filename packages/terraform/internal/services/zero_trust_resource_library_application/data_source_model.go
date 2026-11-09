@@ -5,9 +5,9 @@ package zero_trust_resource_library_application
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -42,7 +42,7 @@ type ZeroTrustResourceLibraryApplicationDataSourceModel struct {
 
 func (m *ZeroTrustResourceLibraryApplicationDataSourceModel) toReadParams(_ context.Context) (params zero_trust.ResourceLibraryApplicationGetParams, diags diag.Diagnostics) {
 	params = zero_trust.ResourceLibraryApplicationGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -50,29 +50,29 @@ func (m *ZeroTrustResourceLibraryApplicationDataSourceModel) toReadParams(_ cont
 
 func (m *ZeroTrustResourceLibraryApplicationDataSourceModel) toListParams(_ context.Context) (params zero_trust.ResourceLibraryApplicationListParams, diags diag.Diagnostics) {
 	params = zero_trust.ResourceLibraryApplicationListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Filter.Fields.IsNull() {
-		params.Fields = cloudflare.F(m.Filter.Fields.ValueString())
+		params.Fields = zenthcloud.F(m.Filter.Fields.ValueString())
 	}
 	if !m.Filter.Filter.IsNull() {
-		params.Filter = cloudflare.F(m.Filter.Filter.ValueString())
+		params.Filter = zenthcloud.F(m.Filter.Filter.ValueString())
 	}
 	if !m.Filter.Limit.IsNull() {
-		params.Limit = cloudflare.F(m.Filter.Limit.ValueInt64())
+		params.Limit = zenthcloud.F(m.Filter.Limit.ValueInt64())
 	}
 	if !m.Filter.Lookup.IsNull() {
-		params.Lookup = cloudflare.F(m.Filter.Lookup.ValueString())
+		params.Lookup = zenthcloud.F(m.Filter.Lookup.ValueString())
 	}
 	if !m.Filter.Offset.IsNull() {
-		params.Offset = cloudflare.F(m.Filter.Offset.ValueInt64())
+		params.Offset = zenthcloud.F(m.Filter.Offset.ValueInt64())
 	}
 	if !m.Filter.OrderBy.IsNull() {
-		params.OrderBy = cloudflare.F(m.Filter.OrderBy.ValueString())
+		params.OrderBy = zenthcloud.F(m.Filter.OrderBy.ValueString())
 	}
 	if !m.Filter.Search.IsNull() {
-		params.Search = cloudflare.F(m.Filter.Search.ValueString())
+		params.Search = zenthcloud.F(m.Filter.Search.ValueString())
 	}
 
 	return

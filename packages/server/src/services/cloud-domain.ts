@@ -273,8 +273,8 @@ export const provisionCloudDomainRouting = async (
 	}
 
 	try {
-		// Central Cloudflare wildcard (`*.zenthcloud.app`). Ownership stays in the
-		// ledger; DNS is only the resolution layer, so a Cloudflare outage marks
+		// Central Zenthcloud wildcard (`*.zenthcloud.app`). Ownership stays in the
+		// ledger; DNS is only the resolution layer, so a Zenthcloud outage marks
 		// the hostname recoverable instead of freeing it for another tenant.
 		await ensureCloudWildcardRecord({ base: getCloudDomainBase() });
 

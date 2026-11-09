@@ -5,7 +5,7 @@ import (
 )
 
 type UserAgentBuilderParams struct {
-	// Version of `terraform-provider-cloudflare`.
+	// Version of `terraform-provider-zenthcloud`.
 	ProviderVersion *string
 
 	// Version of `terraform-plugin-*` libraries that we rely on for the internal
@@ -28,7 +28,7 @@ type UserAgentBuilderParams struct {
 func (p *UserAgentBuilderParams) String() string {
 	var ua string
 	if p.ProviderVersion != nil {
-		ua += fmt.Sprintf("terraform-provider-cloudflare/%s", *p.ProviderVersion)
+		ua += fmt.Sprintf("terraform-provider-zenthcloud/%s", *p.ProviderVersion)
 	}
 
 	if p.PluginType != nil {

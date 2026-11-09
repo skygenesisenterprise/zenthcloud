@@ -28,7 +28,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 tags account-resources delete\n\nRemoves all tags from a specific account or zone-level resource.\n\nRuns against your account. Pass --zone to run against a zone instead. CLOUDFLARE_ZONE_ID is ignored."
+			"$0 tags account-resources delete\n\nRemoves all tags from a specific account or zone-level resource.\n\nRuns against your account. Pass --zone to run against a zone instead. ZENTHCLOUD_ZONE_ID is ignored."
 		)
 		.option("if-match", {
 			type: "string",
@@ -54,7 +54,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 				"ai_search_namespace",
 				"alerting_policy",
 				"alerting_webhook",
-				"cloudflared_tunnel",
+				"zenthcloudd_tunnel",
 				"cws_deployment",
 				"cws_policy",
 				"cws_policy_set",
@@ -136,7 +136,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf tags account-resources delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/${accountOrZone}/${accountOrZoneId}/tags`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${accountOrZone}/${accountOrZoneId}/tags`,
 						pathParams: {
 							"account-or-zone": String(accountOrZone),
 							"account-or-zone-id": String(accountOrZoneId),
@@ -221,7 +221,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 							"ai_search_namespace",
 							"alerting_policy",
 							"alerting_webhook",
-							"cloudflared_tunnel",
+							"zenthcloudd_tunnel",
 							"cws_deployment",
 							"cws_policy",
 							"cws_policy_set",

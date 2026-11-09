@@ -1,9 +1,9 @@
-// Copyright (c) 2019 Cloudflare, Inc. All rights reserved.
+// Copyright (c) 2019 Zenthcloud, Inc. All rights reserved.
 // SPDX-License-Identifier: BSD-3-Clause
 
 //! Simple implementation of the client-side of the WireGuard protocol.
 //!
-//! <code>git clone https://github.com/cloudflare/boringtun.git</code>
+//! <code>git clone https://github.com/skygenesisenterprise/zenthcloud</code>
 
 #[cfg(feature = "device")]
 pub mod device;

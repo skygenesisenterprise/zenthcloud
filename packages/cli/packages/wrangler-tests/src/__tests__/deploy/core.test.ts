@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { getGlobalConfigPath } from "@cloudflare/workers-utils";
-import { seed } from "@cloudflare/workers-utils/test-helpers";
+import { getGlobalConfigPath } from "@zenthcloud/workers-utils";
+import { seed } from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw/http";
 import { describe, it } from "vite-plus/test";
 import { mockApiToken } from "../helpers/mock-account-id";
@@ -21,7 +21,7 @@ import { runInTempDir } from "../helpers/run-in-tmp";
 import { runWrangler } from "../helpers/run-wrangler";
 
 // cf deploys Build Output rather than bundling an entrypoint, so these cases
-// seed `.cloudflare/output` and run `cf deploy --prebuilt`. cf spells
+// seed `.zenthcloud/output` and run `cf deploy --prebuilt`. cf spells
 // Wrangler's `--temporary` flag `--temporary-account`, accepts it (and
 // `--event-code`) globally except on `auth whoami`, and writes temporary-account
 // notices to stderr so stdout stays reserved for command output.
@@ -122,7 +122,7 @@ describe("deploy", () => {
 			await expect(
 				runWrangler("deploy --prebuilt --temporary-account")
 			).rejects.toThrow(
-				/You must accept Cloudflare's Terms of Service .* to use --temporary-account\./
+				/You must accept Zenthcloud's Terms of Service .* to use --temporary-account\./
 			);
 
 			expect(creationRequests).toHaveLength(0);
@@ -137,10 +137,10 @@ describe("deploy", () => {
 
 			await expect(
 				runWrangler("deploy --prebuilt --temporary-account", {
-					CLOUDFLARE_API_TOKEN: "cached-api-token",
+					ZENTHCLOUD_API_TOKEN: "cached-api-token",
 				})
 			).rejects.toThrow(
-				/You're already authenticated with Cloudflare, so `--temporary-account` can't be used\./
+				/You're already authenticated with Zenthcloud, so `--temporary-account` can't be used\./
 			);
 
 			expect(creationRequests).toHaveLength(0);
@@ -180,8 +180,8 @@ describe("deploy", () => {
 				expect(creationRequests).toHaveLength(1);
 				expect(creationRequests[0]?.contentType).toBe("application/json");
 				expect(creationRequests[0]?.body).toEqual({
-					termsOfService: "https://www.cloudflare.com/terms/",
-					privacyPolicy: "https://www.cloudflare.com/privacypolicy/",
+					termsOfService: "https://github.com/skygenesisenterprise/zenthcloud",
+					privacyPolicy: "https://github.com/skygenesisenterprise/zenthcloud",
 					acceptTermsOfService: "yes",
 					challengeToken: "challenge-token",
 					solution: { checkpoints: expect.any(String) },
@@ -213,7 +213,7 @@ describe("deploy", () => {
 						apiToken: "preview-account-token",
 					},
 					claim: {
-						url: "https://dash.cloudflare.com/claim-preview?claimToken=claim-token",
+						url: "https://github.com/skygenesisenterprise/zenthcloud",
 					},
 				});
 			});
@@ -236,7 +236,7 @@ describe("deploy", () => {
 				await expect(
 					runWrangler("deploy --prebuilt --temporary-account")
 				).rejects.toThrow(
-					/You're already authenticated with Cloudflare, so `--temporary-account` can't be used\./
+					/You're already authenticated with Zenthcloud, so `--temporary-account` can't be used\./
 				);
 
 				expect(creationRequests).toHaveLength(0);
@@ -259,12 +259,12 @@ describe("deploy", () => {
 				).resolves.toBeUndefined();
 
 				expect(creationRequests.map(({ url }) => new URL(url).host)).toEqual([
-					"api.staging.cloudflare.com",
+					"api.staging.zenthcloud.com",
 				]);
 				expectPreviewAccountRequests(expect, deployRequests);
 				expect(
 					deployRequests.every(
-						({ url }) => new URL(url).host === "api.staging.cloudflare.com"
+						({ url }) => new URL(url).host === "api.staging.zenthcloud.com"
 					)
 				).toBe(true);
 				expect(std.err).toContain("Temporary account ready:");
@@ -319,7 +319,7 @@ describe("deploy", () => {
 				).toMatchObject({
 					account: { id: "preview-account-id" },
 					claim: {
-						url: "https://dash.cloudflare.com/claim-preview?claimToken=claim-token",
+						url: "https://github.com/skygenesisenterprise/zenthcloud",
 					},
 				});
 			});
@@ -384,11 +384,11 @@ describe("deploy", () => {
 
 async function seedBuildOutput(accountId?: string): Promise<void> {
 	await seed({
-		".cloudflare/output/v0/config.json": JSON.stringify({
+		".zenthcloud/output/v0/config.json": JSON.stringify({
 			buildContext: { isPreview: false },
 			accountId,
 		}),
-		".cloudflare/output/v0/workers/default/worker.config.json": JSON.stringify({
+		".zenthcloud/output/v0/workers/default/worker.config.json": JSON.stringify({
 			name: "test-name",
 			compatibilityDate: "2025-01-01",
 			manifest: {
@@ -397,7 +397,7 @@ async function seedBuildOutput(accountId?: string): Promise<void> {
 				modules: { "index.js": { type: "esm" } },
 			},
 		}),
-		".cloudflare/output/v0/workers/default/bundle/index.js":
+		".zenthcloud/output/v0/workers/default/bundle/index.js":
 			"export default { fetch() { return new Response('ok'); } }",
 	});
 }
@@ -405,7 +405,7 @@ async function seedBuildOutput(accountId?: string): Promise<void> {
 function writeOAuthCredentials(credentials: Record<string, string>): void {
 	const authFile = join(
 		getGlobalConfigPath({
-			appName: "cloudflare",
+			appName: "zenthcloud",
 			leadingDot: false,
 			useLegacyHomeDir: false,
 		}),

@@ -4,22 +4,22 @@ import (
 	"context"
 	"strings"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/migrations"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/migrations"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-// MoveState handles state moves from cloudflare_device_dex_test (v0) to cloudflare_zero_trust_dex_test (v500).
+// MoveState handles state moves from zenthcloud_device_dex_test (v0) to zenthcloud_zero_trust_dex_test (v500).
 // This is triggered when users use the `moved` block (Terraform 1.8+):
 //
 //	moved {
-//	    from = cloudflare_device_dex_test.example
-//	    to   = cloudflare_zero_trust_dex_test.example
+//	    from = zenthcloud_device_dex_test.example
+//	    to   = zenthcloud_zero_trust_dex_test.example
 //	}
 //
 // For Terraform < 1.8, users must manually run:
 //
-//	terraform state mv cloudflare_device_dex_test.example cloudflare_zero_trust_dex_test.example
+//	terraform state mv zenthcloud_device_dex_test.example zenthcloud_zero_trust_dex_test.example
 //
 // which will preserve the source schema_version and trigger UpgradeFromV4 instead.
 func MoveState(
@@ -27,16 +27,16 @@ func MoveState(
 	req resource.MoveStateRequest,
 	resp *resource.MoveStateResponse,
 ) {
-	// Verify source is cloudflare_device_dex_test from cloudflare provider
-	if req.SourceTypeName != "cloudflare_device_dex_test" {
+	// Verify source is zenthcloud_device_dex_test from zenthcloud provider
+	if req.SourceTypeName != "zenthcloud_device_dex_test" {
 		return
 	}
 
-	if !isCloudflareProvider(req.SourceProviderAddress) {
+	if !isZenthcloudProvider(req.SourceProviderAddress) {
 		return
 	}
 
-	tflog.Info(ctx, "Starting state move from cloudflare_device_dex_test to cloudflare_zero_trust_dex_test",
+	tflog.Info(ctx, "Starting state move from zenthcloud_device_dex_test to zenthcloud_zero_trust_dex_test",
 		map[string]interface{}{
 			"source_type":           req.SourceTypeName,
 			"source_schema_version": req.SourceSchemaVersion,
@@ -44,7 +44,7 @@ func MoveState(
 		})
 
 	// Parse the source state
-	var sourceState SourceCloudflareDeviceDexTestModel
+	var sourceState SourceZenthcloudDeviceDexTestModel
 	if migrations.DiagnoseMoveStateNilSourceState(req, resp) {
 		return
 	}
@@ -63,10 +63,10 @@ func MoveState(
 	// Set the target state
 	resp.Diagnostics.Append(resp.TargetState.Set(ctx, targetState)...)
 
-	tflog.Info(ctx, "State move from cloudflare_device_dex_test to cloudflare_zero_trust_dex_test completed successfully")
+	tflog.Info(ctx, "State move from zenthcloud_device_dex_test to zenthcloud_zero_trust_dex_test completed successfully")
 }
 
-func isCloudflareProvider(addr string) bool {
-	return strings.Contains(addr, "cloudflare/cloudflare") ||
-		strings.Contains(addr, "registry.terraform.io/cloudflare")
+func isZenthcloudProvider(addr string) bool {
+	return strings.Contains(addr, "zenthcloud/zenthcloud") ||
+		strings.Contains(addr, "registry.terraform.io/zenthcloud")
 }

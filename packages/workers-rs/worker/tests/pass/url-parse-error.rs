@@ -1,4 +1,4 @@
-// Regression test for https://github.com/cloudflare/workers-rs/issues/380.
+// Regression test for https://github.com/skygenesisenterprise/zenthcloud
 // `Url::parse` returns `Result<Url, ParseError>`, and `Error` has a
 // `From<url::ParseError>` impl, so the error type must be nameable through
 // `::worker::` without `url` as a direct dependency.

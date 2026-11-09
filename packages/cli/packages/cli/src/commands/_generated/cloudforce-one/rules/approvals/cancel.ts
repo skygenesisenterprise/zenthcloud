@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf cloudforce-one rules approvals cancel",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/cloudforce-one/rules/approvals/${argv["id"] == null ? "<id>" : encodeURIComponent(String(argv["id"]))}/cancel`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/cloudforce-one/rules/approvals/${argv["id"] == null ? "<id>" : encodeURIComponent(String(argv["id"]))}/cancel`,
 						pathParams: { id: String(argv["id"] ?? "") },
 						bodyKind: "none",
 					});

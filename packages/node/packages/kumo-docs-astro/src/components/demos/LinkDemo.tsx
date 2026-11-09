@@ -1,4 +1,4 @@
-import { Link } from "@cloudflare/kumo";
+import { Link } from "@zenthcloud/kumo";
 
 export function LinkBasicDemo() {
   return (
@@ -27,12 +27,12 @@ export function LinkInParagraphDemo() {
 export function LinkExternalDemo() {
   return (
     <Link
-      href="https://cloudflare.com"
+      href="https://github.com/skygenesisenterprise/zenthcloud"
       target="_blank"
       rel="noopener noreferrer"
       className="text-base"
     >
-      Visit Cloudflare <Link.ExternalIcon />
+      Visit Zenthcloud <Link.ExternalIcon />
     </Link>
   );
 }
@@ -68,14 +68,14 @@ export function LinkRenderDemo() {
       <Link
         render={
           <CustomRouterLink
-            href="https://developers.cloudflare.com"
+            href="https://github.com/skygenesisenterprise/zenthcloud"
             target="_blank"
             rel="noopener noreferrer"
           />
         }
         variant="inline"
       >
-        Cloudflare Docs <Link.ExternalIcon />
+        Zenthcloud Docs <Link.ExternalIcon />
       </Link>
     </div>
   );

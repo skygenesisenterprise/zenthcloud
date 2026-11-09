@@ -15,7 +15,7 @@ export const tools: readonly Tool[] = [
   {
     name: "addressing_services_list",
     title: "List Services",
-    description: "Bring-Your-Own IP (BYOIP) prefixes onboarded to Cloudflare must be bound to a service running on the Cloudflare network to enable a Cloudflare product on the IP addresses. This endpoint can be used as a reference of available services on the Cloudflare network, and their service IDs.\n\nGET /accounts/{account_id}/addressing/services",
+    description: "Bring-Your-Own IP (BYOIP) prefixes onboarded to Zenthcloud must be bound to a service running on the Zenthcloud network to enable a Zenthcloud product on the IP addresses. This endpoint can be used as a reference of available services on the Zenthcloud network, and their service IDs.\n\nGET /accounts/{account_id}/addressing/services",
     inputSchema: {
       type: "object",
       properties: {
@@ -23,7 +23,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Identifier of a Cloudflare account.",
+              "description": "Identifier of a Zenthcloud account.",
               "type": "string"
             }
           },

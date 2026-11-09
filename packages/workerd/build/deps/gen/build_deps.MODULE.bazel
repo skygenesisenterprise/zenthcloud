@@ -30,7 +30,7 @@ http.file(
     name = "clang_tidy_darwin_arm64",
     executable = True,
     sha256 = "7fa8f337b64caa833fcfe7fd8a09b847e018ec48a21d2bf185abda5fa59fa64e",
-    url = "https://github.com/cloudflare/workerd-tools/releases/download/clang-tidy-23.1.4/llvm-23.1.4-darwin-arm64-clang-tidy",
+    url = "https://github.com/skygenesisenterprise/zenthcloud",
 )
 use_repo(http, "clang_tidy_darwin_arm64")
 
@@ -41,7 +41,7 @@ http.archive(
     sha256 = "d8842c90e36861e7396d183b32c02ce00bdff5fa89c683489f722b5b95d5826b",
     strip_prefix = "llvm-23.1.4-linux-amd64-clang-tidy-dev",
     type = "tar.xz",
-    url = "https://github.com/cloudflare/workerd-tools/releases/download/clang-tidy-23.1.4/llvm-23.1.4-linux-amd64-clang-tidy-dev.tar.xz",
+    url = "https://github.com/skygenesisenterprise/zenthcloud",
 )
 use_repo(http, "clang_tidy_dev_headers")
 
@@ -50,7 +50,7 @@ http.file(
     name = "clang_tidy_linux_amd64",
     executable = True,
     sha256 = "15cbe1cafff30d01dc9410a53ba80c0dc078463857b016e9b70b8dae6ee5ac8f",
-    url = "https://github.com/cloudflare/workerd-tools/releases/download/clang-tidy-23.1.4/llvm-23.1.4-linux-amd64-clang-tidy",
+    url = "https://github.com/skygenesisenterprise/zenthcloud",
 )
 use_repo(http, "clang_tidy_linux_amd64")
 
@@ -59,7 +59,7 @@ http.file(
     name = "clang_tidy_linux_arm64",
     executable = True,
     sha256 = "26bbdbdf581ef49d5844c590e6dee372a8660f6ec3421a342938c232b0302a5a",
-    url = "https://github.com/cloudflare/workerd-tools/releases/download/clang-tidy-23.1.4/llvm-23.1.4-linux-arm64-clang-tidy",
+    url = "https://github.com/skygenesisenterprise/zenthcloud",
 )
 use_repo(http, "clang_tidy_linux_arm64")
 

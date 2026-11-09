@@ -5,9 +5,9 @@ package turnstile_widget
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/turnstile"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/turnstile"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -39,7 +39,7 @@ type TurnstileWidgetDataSourceModel struct {
 
 func (m *TurnstileWidgetDataSourceModel) toReadParams(_ context.Context) (params turnstile.WidgetGetParams, diags diag.Diagnostics) {
 	params = turnstile.WidgetGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -47,17 +47,17 @@ func (m *TurnstileWidgetDataSourceModel) toReadParams(_ context.Context) (params
 
 func (m *TurnstileWidgetDataSourceModel) toListParams(_ context.Context) (params turnstile.WidgetListParams, diags diag.Diagnostics) {
 	params = turnstile.WidgetListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Filter.Direction.IsNull() {
-		params.Direction = cloudflare.F(turnstile.WidgetListParamsDirection(m.Filter.Direction.ValueString()))
+		params.Direction = zenthcloud.F(turnstile.WidgetListParamsDirection(m.Filter.Direction.ValueString()))
 	}
 	if !m.Filter.Filter.IsNull() {
-		params.Filter = cloudflare.F(m.Filter.Filter.ValueString())
+		params.Filter = zenthcloud.F(m.Filter.Filter.ValueString())
 	}
 	if !m.Filter.Order.IsNull() {
-		params.Order = cloudflare.F(turnstile.WidgetListParamsOrder(m.Filter.Order.ValueString()))
+		params.Order = zenthcloud.F(turnstile.WidgetListParamsOrder(m.Filter.Order.ValueString()))
 	}
 
 	return

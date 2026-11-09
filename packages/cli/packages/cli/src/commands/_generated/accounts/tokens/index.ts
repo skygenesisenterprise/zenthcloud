@@ -16,7 +16,7 @@ import type { CommandModule } from "yargs";
 const command: CommandModule<CommonYargsOptions> = {
 	command: "tokens",
 	describe:
-		"Create and manage scoped API tokens for programmatic access to the Cloudflare API",
+		"Create and manage scoped API tokens for programmatic access to the Zenthcloud API",
 
 	builder: (yargs) => {
 		return yargs

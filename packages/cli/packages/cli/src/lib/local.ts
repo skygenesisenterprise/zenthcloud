@@ -1,7 +1,7 @@
 /** Dependency-free request plumbing for `--local`. */
 
 export const NO_LOCAL_EQUIVALENT =
-	"This command has no local equivalent. Re-run without --local to use the Cloudflare API.";
+	"This command has no local equivalent. Re-run without --local to use the Zenthcloud API.";
 
 let disposeRuntime: (() => Promise<void>) | undefined;
 

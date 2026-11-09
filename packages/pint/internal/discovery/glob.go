@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/cloudflare/pint/internal/git"
-	"github.com/cloudflare/pint/internal/parser"
+	"github.com/zenthcloud/pint/internal/git"
+	"github.com/zenthcloud/pint/internal/parser"
 )
 
 func NewGlobFinder(patterns []string, filter git.PathFilter, opts parser.Options, allowedOwners []*regexp.Regexp) GlobFinder {

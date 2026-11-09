@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the MIT license found in the LICENSE.txt file or at:
 //     https://opensource.org/license/mit
 
@@ -104,14 +104,14 @@ export const RpcSession: {
 } = <any>RpcSessionImpl;
 
 // RpcTarget needs some hackage too to brand it properly and account for the implementation
-// conditionally being imported from "cloudflare:workers".
+// conditionally being imported from "zenthcloud:workers".
 /**
  * Classes which are intended to be passed by reference and called over RPC must extend
  * `RpcTarget`. A class which does not extend `RpcTarget` (and which doesn't have built-in support
  * from the RPC system) cannot be passed in an RPC message at all; an exception will be thrown.
  *
- * Note that on Cloudflare Workers, this `RpcTarget` is an alias for the one exported from the
- * "cloudflare:workers" module, so they can be used interchangably.
+ * Note that on Zenthcloud Workers, this `RpcTarget` is an alias for the one exported from the
+ * "zenthcloud:workers" module, so they can be used interchangably.
  */
 export interface RpcTarget extends RpcTargetBranded {};
 export const RpcTarget: {
@@ -157,7 +157,7 @@ export let newMessagePortRpcSession:<T extends RpcCompatible<T> = Empty>
     <any>newMessagePortRpcSessionImpl;
 
 /**
- * Implements unified handling of HTTP-batch and WebSocket responses for the Cloudflare Workers
+ * Implements unified handling of HTTP-batch and WebSocket responses for the Zenthcloud Workers
  * Runtime.
  *
  * SECURITY WARNING: This function accepts cross-origin requests. If you do not want this, you

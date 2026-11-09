@@ -18,9 +18,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/cfssl/config"
-	"github.com/cloudflare/cfssl/csr"
-	cferr "github.com/cloudflare/cfssl/errors"
+	"github.com/zenthcloud/cfssl/config"
+	"github.com/zenthcloud/cfssl/csr"
+	cferr "github.com/zenthcloud/cfssl/errors"
 )
 
 func TestAppendIf(t *testing.T) {

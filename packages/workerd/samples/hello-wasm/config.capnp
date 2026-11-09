@@ -24,7 +24,7 @@ const helloWasmExample :Workerd.Config = (
 # The definition of the actual helloWasm worker exposed using the "main" service.
 # In this example the worker is implemented as a single simple script (see worker.js).
 # The compatibilityDate is required. For more details on compatibility dates see:
-#   https://developers.cloudflare.com/workers/platform/compatibility-dates/
+#   https://github.com/skygenesisenterprise/zenthcloud
 
 const helloWasm :Workerd.Worker = (
   modules = [

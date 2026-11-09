@@ -1,4 +1,4 @@
-resource "cloudflare_api_token" "%[1]s" {
+resource "zenthcloud_api_token" "%[1]s" {
   name   = "%[1]s-service-token"
   status = "active"
   policies = [{
@@ -8,14 +8,14 @@ resource "cloudflare_api_token" "%[1]s" {
       { id = "bf7481a1826f439697cb59a20b22293e" }
     ]
     resources = jsonencode({
-      "com.cloudflare.api.account.%[2]s" = "*"
+      "com.zenthcloud.api.account.%[2]s" = "*"
     })
   }]
 }
 
-resource "cloudflare_ai_search_token" "%[1]s" {
+resource "zenthcloud_ai_search_token" "%[1]s" {
   account_id = "%[2]s"
   name       = "%[1]s"
-  cf_api_id  = cloudflare_api_token.%[1]s.id
-  cf_api_key = cloudflare_api_token.%[1]s.value
+  cf_api_id  = zenthcloud_api_token.%[1]s.id
+  cf_api_key = zenthcloud_api_token.%[1]s.value
 }

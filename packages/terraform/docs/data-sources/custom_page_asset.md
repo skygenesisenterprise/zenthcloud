@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_custom_page_asset Data Source - Cloudflare"
+page_title: "zenthcloud_custom_page_asset Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_custom_page_asset (Data Source)
+# zenthcloud_custom_page_asset (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_custom_page_asset" "example_custom_page_asset" {
+data "zenthcloud_custom_page_asset" "example_custom_page_asset" {
   asset_name = "my_custom_error_page"
   account_id = "account_id"
   zone_id = "zone_id"

@@ -1,4 +1,4 @@
-resource "cloudflare_zero_trust_dlp_predefined_profile" "%[1]s"   {
+resource "zenthcloud_zero_trust_dlp_predefined_profile" "%[1]s"   {
   profile_id = "e91a2360-da51-4fdf-9711-bcdecd462614"
   account_id = "%[2]s"
   ocr_enabled = %[3]s

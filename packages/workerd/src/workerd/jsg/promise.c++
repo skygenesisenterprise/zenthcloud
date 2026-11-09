@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -134,7 +134,7 @@ void UnhandledRejectionHandler::ensureProcessingWarnings(jsg::Lock& js) {
     // This ensures that promise chains like `.then().catch()` have fully settled
     // before we decide a rejection is unhandled. Using a microtask would race
     // with V8's internal promise adoption microtasks and fire too early.
-    // See https://github.com/cloudflare/workerd/issues/6020
+    // See https://github.com/skygenesisenterprise/zenthcloud
     js.v8Isolate->AddMicrotasksCompletedCallback(
         &UnhandledRejectionHandler::onMicrotasksCompleted, this);
     // Ensure we get another microtask checkpoint to deliver the callback even if

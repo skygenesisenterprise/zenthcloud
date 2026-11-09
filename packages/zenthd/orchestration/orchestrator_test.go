@@ -19,14 +19,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/cloudflare/cloudflared/cmd/cloudflared/flags"
+	"github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/flags"
 
-	"github.com/cloudflare/cloudflared/config"
-	"github.com/cloudflare/cloudflared/connection"
-	"github.com/cloudflare/cloudflared/ingress"
-	"github.com/cloudflare/cloudflared/management"
-	"github.com/cloudflare/cloudflared/tracing"
-	"github.com/cloudflare/cloudflared/tunnelrpc/pogs"
+	"github.com/zenthcloud/zenthcloudd/config"
+	"github.com/zenthcloud/zenthcloudd/connection"
+	"github.com/zenthcloud/zenthcloudd/ingress"
+	"github.com/zenthcloud/zenthcloudd/management"
+	"github.com/zenthcloud/zenthcloudd/tracing"
+	"github.com/zenthcloud/zenthcloudd/tunnelrpc/pogs"
 )
 
 var (
@@ -221,7 +221,7 @@ func TestHTTPRequestAuthorizerPersistsAcrossConfigurationUpdates(t *testing.T) {
 	}`))
 	originProxy, err := orchestrator.GetOriginProxy()
 	require.NoError(t, err)
-	response, err := proxyHTTP(originProxy, "test-tunnel.trycloudflare.com")
+	response, err := proxyHTTP(originProxy, "test-tunnel.tryzenthcloud.com")
 	require.NoError(t, err)
 	assert.Equal(t, http.StatusTeapot, response.StatusCode)
 	require.NoError(t, response.Body.Close())
@@ -765,12 +765,12 @@ func TestPersistentConnection(t *testing.T) {
 			echoTCP(t, conn)
 		}
 	}()
-	// Simulate cloudflared receiving a TCP connection
+	// Simulate zenthcloudd receiving a TCP connection
 	go func() {
 		defer wg.Done()
 		assert.NoError(t, proxyTCP(ctx, originProxy, tcpOrigin.Addr().String(), tcpRespReadWriter, tcpReqReader))
 	}()
-	// Simulate cloudflared receiving a WS connection
+	// Simulate zenthcloudd receiving a WS connection
 	go func() {
 		defer wg.Done()
 

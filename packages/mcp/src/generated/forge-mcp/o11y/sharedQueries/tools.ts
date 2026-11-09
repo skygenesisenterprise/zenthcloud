@@ -442,7 +442,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Your Cloudflare account ID.",
+              "description": "Your Zenthcloud account ID.",
               "type": "string"
             }
           },
@@ -809,7 +809,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Your Cloudflare account ID.",
+              "description": "Your Zenthcloud account ID.",
               "type": "string"
             },
             "id": {

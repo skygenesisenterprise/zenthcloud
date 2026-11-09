@@ -9,10 +9,10 @@ import (
 
 // UpgradeFromV0 handles state upgrades from v4 provider (schema_version=0) to v5 (version=500).
 //
-// The v4 resource cloudflare_managed_headers used schema_version=0.
+// The v4 resource zenthcloud_managed_headers used schema_version=0.
 // This is triggered when users manually run:
 //
-//	terraform state mv cloudflare_managed_headers.x cloudflare_managed_transforms.x
+//	terraform state mv zenthcloud_managed_headers.x zenthcloud_managed_transforms.x
 //
 // which preserves the source schema_version=0.
 func UpgradeFromV0(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {

@@ -127,9 +127,9 @@ export default function (plop) {
         console.log(`   3. Run tests: pnpm test`);
         console.log(`   4. Build: pnpm build`);
         console.log(`\n💡 Import examples:`);
-        console.log(`   import { ${pascalName} } from "@cloudflare/kumo";`);
+        console.log(`   import { ${pascalName} } from "@zenthcloud/kumo";`);
         console.log(
-          `   import { ${pascalName} } from "@cloudflare/kumo/components/${kebabName}";`,
+          `   import { ${pascalName} } from "@zenthcloud/kumo/components/${kebabName}";`,
         );
 
         return "Component created successfully";

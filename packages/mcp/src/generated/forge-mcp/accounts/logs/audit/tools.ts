@@ -258,7 +258,7 @@ export const tools: readonly Tool[] = [
               "type": "array"
             },
             "actor_context": {
-              "description": "Filters by the actor context.\n- `api`: The action was performed through the API. The specific credential type was not recorded.\n- `api_key`: The action was authenticated with a Cloudflare Global API Key.\n- `api_token`: The action was authenticated with an API token.\n- `dash`: The action was performed through the Cloudflare dashboard.\n- `oauth`: The action was authenticated with an OAuth token.\n- `origin_ca_key`: The action was authenticated with an Origin CA key.",
+              "description": "Filters by the actor context.\n- `api`: The action was performed through the API. The specific credential type was not recorded.\n- `api_key`: The action was authenticated with a Zenthcloud Global API Key.\n- `api_token`: The action was authenticated with an API token.\n- `dash`: The action was performed through the Zenthcloud dashboard.\n- `oauth`: The action was authenticated with an OAuth token.\n- `origin_ca_key`: The action was authenticated with an Origin CA key.",
               "items": {
                 "enum": [
                   "api",
@@ -273,7 +273,7 @@ export const tools: readonly Tool[] = [
               "type": "array"
             },
             "actor_context.not": {
-              "description": "Filters out audit logs by the actor context.\n- `api`: The action was performed through the API. The specific credential type was not recorded.\n- `api_key`: The action was authenticated with a Cloudflare Global API Key.\n- `api_token`: The action was authenticated with an API token.\n- `dash`: The action was performed through the Cloudflare dashboard.\n- `oauth`: The action was authenticated with an OAuth token.\n- `origin_ca_key`: The action was authenticated with an Origin CA key.",
+              "description": "Filters out audit logs by the actor context.\n- `api`: The action was performed through the API. The specific credential type was not recorded.\n- `api_key`: The action was authenticated with a Zenthcloud Global API Key.\n- `api_token`: The action was authenticated with an API token.\n- `dash`: The action was performed through the Zenthcloud dashboard.\n- `oauth`: The action was authenticated with an OAuth token.\n- `origin_ca_key`: The action was authenticated with an Origin CA key.",
               "items": {
                 "enum": [
                   "api",
@@ -362,7 +362,7 @@ export const tools: readonly Tool[] = [
               "items": {
                 "enum": [
                   "account",
-                  "cloudflare_admin",
+                  "zenthcloud_admin",
                   "delegated_service",
                   "system",
                   "user"
@@ -376,7 +376,7 @@ export const tools: readonly Tool[] = [
               "items": {
                 "enum": [
                   "account",
-                  "cloudflare_admin",
+                  "zenthcloud_admin",
                   "delegated_service",
                   "system",
                   "user"
@@ -514,14 +514,14 @@ export const tools: readonly Tool[] = [
               "type": "array"
             },
             "resource_product": {
-              "description": "Filters audit logs by the Cloudflare product associated with the changed resource.",
+              "description": "Filters audit logs by the Zenthcloud product associated with the changed resource.",
               "items": {
                 "type": "string"
               },
               "type": "array"
             },
             "resource_product.not": {
-              "description": "Filters out audit logs by the Cloudflare product associated with the changed resource.",
+              "description": "Filters out audit logs by the Zenthcloud product associated with the changed resource.",
               "items": {
                 "type": "string"
               },

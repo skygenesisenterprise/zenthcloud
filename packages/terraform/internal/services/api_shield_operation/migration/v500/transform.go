@@ -3,7 +3,7 @@ package v500
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
@@ -15,7 +15,7 @@ import (
 // - New v5 fields are all Computed and set to Null (API will populate on read)
 //
 // This function is used by UpgradeFromV4 handler.
-func Transform(ctx context.Context, source SourceCloudflareAPIShieldOperationModel) (*TargetAPIShieldOperationModel, diag.Diagnostics) {
+func Transform(ctx context.Context, source SourceZenthcloudAPIShieldOperationModel) (*TargetAPIShieldOperationModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Validate required fields

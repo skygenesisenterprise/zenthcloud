@@ -7,7 +7,7 @@ import type { JSONObject } from "@modelcontextprotocol/server";
  * The schema of `access_cf_resource_id-3`.
  */
 export const access_cf_resource_id$$3: JSONObject = {
-  "description": "The unique Cloudflare-generated Id of the SCIM resource. Pass once for\na single lookup (`?cf_resource_id=A`) or repeat the parameter\n(`?cf_resource_id=A&cf_resource_id=B`) to filter by multiple resources\nin one request.",
+  "description": "The unique Zenthcloud-generated Id of the SCIM resource. Pass once for\na single lookup (`?cf_resource_id=A`) or repeat the parameter\n(`?cf_resource_id=A&cf_resource_id=B`) to filter by multiple resources\nin one request.",
   "items": {
     "type": "string"
   },

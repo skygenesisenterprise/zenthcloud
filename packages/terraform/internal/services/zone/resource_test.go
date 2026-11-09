@@ -7,23 +7,23 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zones"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zones"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zone", &resource.Sweeper{
-		Name: "cloudflare_zone",
-		F:    testSweepCloudflareZone,
+	resource.AddTestSweepers("zenthcloud_zone", &resource.Sweeper{
+		Name: "zenthcloud_zone",
+		F:    testSweepZenthcloudZone,
 	})
 }
 
-// testSweepCloudflareZone removes test zones created during acceptance tests.
+// testSweepZenthcloudZone removes test zones created during acceptance tests.
 //
 // This sweeper:
 // - Lists all zones in the test account
@@ -34,21 +34,21 @@ func init() {
 // Run with: go test ./internal/services/zone/ -v -sweep=all
 //
 // Requires:
-// - CLOUDFLARE_ACCOUNT_ID (for account-scoped zones)
-// - CLOUDFLARE_EMAIL + CLOUDFLARE_API_KEY or CLOUDFLARE_API_TOKEN
-func testSweepCloudflareZone(r string) error {
+// - ZENTHCLOUD_ACCOUNT_ID (for account-scoped zones)
+// - ZENTHCLOUD_EMAIL + ZENTHCLOUD_API_KEY or ZENTHCLOUD_API_TOKEN
+func testSweepZenthcloudZone(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
 		return nil
 	}
 
 	// List all zones in the account
 	page, err := client.Zones.List(ctx, zones.ZoneListParams{
-		Account: cloudflare.F(zones.ZoneListParamsAccount{
-			ID: cloudflare.F(accountID),
+		Account: zenthcloud.F(zones.ZoneListParamsAccount{
+			ID: zenthcloud.F(accountID),
 		}),
 	})
 	if err != nil {
@@ -56,7 +56,7 @@ func testSweepCloudflareZone(r string) error {
 		return err
 	}
 	if len(page.Result) == 0 {
-		tflog.Info(ctx, "No Cloudflare zones to sweep")
+		tflog.Info(ctx, "No Zenthcloud zones to sweep")
 		return nil
 	}
 
@@ -68,7 +68,7 @@ func testSweepCloudflareZone(r string) error {
 
 		tflog.Info(ctx, fmt.Sprintf("Deleting test zone: %s (%s)", zone.Name, zone.ID))
 		_, err := client.Zones.Delete(ctx, zones.ZoneDeleteParams{
-			ZoneID: cloudflare.F(zone.ID),
+			ZoneID: zenthcloud.F(zone.ID),
 		})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete zone %s (%s): %s", zone.Name, zone.ID,err))
@@ -103,10 +103,10 @@ func isTestZone(name string) bool {
 	return false
 }
 
-func TestAccCloudflareZone_Basic(t *testing.T) {
+func TestAccZenthcloudZone_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_zone." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_zone." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -136,10 +136,10 @@ func TestAccCloudflareZone_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareZone_PartialSetup(t *testing.T) {
+func TestAccZenthcloudZone_PartialSetup(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_zone." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_zone." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -162,10 +162,10 @@ func TestAccCloudflareZone_PartialSetup(t *testing.T) {
 		}})
 }
 
-func TestAccCloudflareZone_FullSetup(t *testing.T) {
+func TestAccZenthcloudZone_FullSetup(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_zone." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_zone." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -190,8 +190,8 @@ func TestAccCloudflareZone_FullSetup(t *testing.T) {
 
 func TestAccZoneWithUnicodeIsStoredAsUnicode(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_zone." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_zone." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	unicodeDomain := fmt.Sprintf("żóła.%s.cfapi.net", rnd)
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -217,8 +217,8 @@ func TestAccZoneWithUnicodeIsStoredAsUnicode(t *testing.T) {
 func TestAccZoneWithoutUnicodeIsStoredAsUnicode(t *testing.T) {
 	t.Skip("unicode translation not working correctly")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_zone." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_zone." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	domain := fmt.Sprintf("xn--w-uga1v8h.%s.cfapi.net", rnd)
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -244,8 +244,8 @@ func TestAccZoneWithoutUnicodeIsStoredAsUnicode(t *testing.T) {
 func TestAccZonePerformsUnicodeComparison(t *testing.T) {
 	t.Skip("unicode translation not working correctly")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_zone." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_zone." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -277,13 +277,13 @@ func TestAccZonePerformsUnicodeComparison(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareZone_WithEnterprisePlanVanityNameServers(t *testing.T) {
+func TestAccZenthcloudZone_WithEnterprisePlanVanityNameServers(t *testing.T) {
 	acctest.TestAccSkipForDefaultAccount(t, "Need working zone_subscription to create enterprise plan before setting vanity name servers")
 
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_zone." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
+	name := "zenthcloud_zone." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -308,11 +308,11 @@ func TestAccCloudflareZone_WithEnterprisePlanVanityNameServers(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareZone_Secondary(t *testing.T) {
+func TestAccZenthcloudZone_Secondary(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_zone." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
+	name := "zenthcloud_zone." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -335,13 +335,13 @@ func TestAccCloudflareZone_Secondary(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareZone_SecondaryWithVanityNameServers(t *testing.T) {
+func TestAccZenthcloudZone_SecondaryWithVanityNameServers(t *testing.T) {
 	acctest.TestAccSkipForDefaultAccount(t, "Need working zone_subscription to create enterprise plan before setting vanity name servers")
 
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_zone." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
+	name := "zenthcloud_zone." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -365,10 +365,10 @@ func TestAccCloudflareZone_SecondaryWithVanityNameServers(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareZone_TogglePaused(t *testing.T) {
+func TestAccZenthcloudZone_TogglePaused(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_zone." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_zone." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -410,11 +410,11 @@ func TestAccCloudflareZone_TogglePaused(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareZone_SetType(t *testing.T) {
+func TestAccZenthcloudZone_SetType(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_zone." + rnd
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_zone." + rnd
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -456,7 +456,7 @@ func testZoneConfigWithPaused(resourceID, accountID, zoneName string, paused boo
 func TestAccUpgradeZone_FromPublishedV5(t *testing.T) {
 	t.Skip("Failed to marshal state to json: schema version 0 in state does not match version 1 from the provider")
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	config := testZoneConfig(rnd, fmt.Sprintf("%s.cfapi.net", rnd), accountID)
 
@@ -465,8 +465,8 @@ func TestAccUpgradeZone_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

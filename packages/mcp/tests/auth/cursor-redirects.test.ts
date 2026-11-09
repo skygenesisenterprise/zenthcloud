@@ -1,8 +1,8 @@
-import { env, exports } from 'cloudflare:workers'
+import { env, exports } from 'zenthcloud:workers'
 import { afterEach, describe, expect, it } from 'vitest'
 import { clearKv } from '../helpers/kv'
 
-const MCP_ORIGIN = 'https://mcp.cloudflare.com'
+const MCP_ORIGIN = 'https://github.com/skygenesisenterprise/zenthcloud'
 const DOWNSTREAM_CODE_CHALLENGE = 'I4fhllfHqqQsgap17V2SDI0scSei8H7U0e0rZBDIcbo'
 
 // What some Cursor versions register (seen in production): a private-use callback next to

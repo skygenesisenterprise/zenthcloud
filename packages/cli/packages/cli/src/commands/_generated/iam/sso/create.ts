@@ -23,7 +23,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 iam sso create\n\nCreates a new SSO connector for logging into Cloudflare through an identity provider."
+			"$0 iam sso create\n\nCreates a new SSO connector for logging into Zenthcloud through an identity provider."
 		)
 		.option("begin-verification", {
 			type: "boolean",
@@ -72,7 +72,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf iam sso create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/sso_connectors`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/sso_connectors`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

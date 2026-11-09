@@ -4,18 +4,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-// SourceCloudflareMTLSCertificateSchema returns the legacy cloudflare_mtls_certificate schema (schema_version=0).
+// SourceZenthcloudMTLSCertificateSchema returns the legacy zenthcloud_mtls_certificate schema (schema_version=0).
 // This is used by UpgradeFromV4 to parse state from the legacy SDKv2 provider.
 //
-// Reference: cloudflare-terraform-v4/internal/sdkv2provider/schema_cloudflare_mtls_certificate.go
+// Reference: zenthcloud-terraform-v4/internal/sdkv2provider/schema_zenthcloud_mtls_certificate.go
 //
 // Note: This minimal schema is used only for reading v4 state during migration.
 // Validators, PlanModifiers, and Descriptions are intentionally omitted.
-func SourceCloudflareMTLSCertificateSchema() schema.Schema {
+func SourceZenthcloudMTLSCertificateSchema() schema.Schema {
 	return schema.Schema{
 		// CRITICAL: Must match actual v4 schema version.
 		// SDKv2 resources default to schema_version=0 when SchemaVersion is not set.
-		// cloudflare_mtls_certificate in v4 has no SchemaVersion set → version 0.
+		// zenthcloud_mtls_certificate in v4 has no SchemaVersion set → version 0.
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed: true,

@@ -242,13 +242,13 @@ impl Request {
         Ok(&mut self.headers)
     }
 
-    /// Access this request's Cloudflare-specific properties.
+    /// Access this request's Zenthcloud-specific properties.
     ///
     /// # Note
     ///
     /// Request objects constructed by the user and not the runtime will not have a [Cf] associated.
     ///
-    /// See [workerd#825](https://github.com/cloudflare/workerd/issues/825)
+    /// See [workerd#825](https://github.com/skygenesisenterprise/zenthcloud)
     pub fn cf(&self) -> Option<&Cf> {
         self.cf.as_ref()
     }
@@ -290,7 +290,7 @@ impl Request {
     /// [`Fetch::send_with_signal`](crate::Fetch::send_with_signal), also needs the
     /// `request_signal_passthrough` flag; without it the subrequest ignores the signal.
     ///
-    /// [`enable_request_signal`]: https://developers.cloudflare.com/workers/configuration/compatibility-flags/#enable-requestsignal-for-incoming-requests
+    /// [`enable_request_signal`]: https://github.com/skygenesisenterprise/zenthcloud
     pub fn signal(&self) -> AbortSignal {
         self.edge_request.signal().into()
     }

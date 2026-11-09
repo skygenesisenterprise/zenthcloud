@@ -1,21 +1,21 @@
 ---
 layout: ""
-page_title: "Provider: Cloudflare"
+page_title: "Provider: Zenthcloud"
 description: |-
-  The Cloudflare provider provides resources to interact with the Cloudflare API.
+  The Zenthcloud provider provides resources to interact with the Zenthcloud API.
 ---
 
-# Cloudflare Provider
+# Zenthcloud Provider
 
-The Cloudflare provider is used to interact with resources supported by
-Cloudflare. The provider needs to be configured with the proper credentials
+The Zenthcloud provider is used to interact with resources supported by
+Zenthcloud. The provider needs to be configured with the proper credentials
 before it can be used.
 
 ## Getting Started
 
-Try the [getting started tutorial](https://developers.cloudflare.com/terraform/tutorial/)
-on [developers.cloudflare.com](https://developers.cloudflare.com). In the walk
-through, you will setup Terraform and learn to manage Cloudflare resources such
+Try the [getting started tutorial](https://github.com/skygenesisenterprise/zenthcloud)
+on [developers.zenthcloud.com](https://github.com/skygenesisenterprise/zenthcloud). In the walk
+through, you will setup Terraform and learn to manage Zenthcloud resources such
 as DNS records, zone settings, load balancers and much more!
 
 ## Example Usage
@@ -23,19 +23,19 @@ as DNS records, zone settings, load balancers and much more!
 ```terraform
 terraform {
   required_providers {
-    cloudflare = {
-      source  = "cloudflare/cloudflare"
+    zenthcloud = {
+      source  = "zenthcloud/zenthcloud"
       version = "~> 5"
     }
   }
 }
 
-provider "cloudflare" {
-  api_token = var.cloudflare_api_token
+provider "zenthcloud" {
+  api_token = var.zenthcloud_api_token
 }
 
 # Create a DNS record
-resource "cloudflare_dns_record" "www" {
+resource "zenthcloud_dns_record" "www" {
   # ...
 }
 ```
@@ -45,9 +45,9 @@ resource "cloudflare_dns_record" "www" {
 
 ### Optional
 
-- `api_key` (String, Sensitive) The API key for operations. Alternatively, can be configured using the `CLOUDFLARE_API_KEY` environment variable. API keys are [now considered legacy by Cloudflare](https://developers.cloudflare.com/fundamentals/api/get-started/keys/#limitations), API tokens should be used instead. Must provide only one of `api_key`, `api_token`, `api_user_service_key`.
-- `api_token` (String, Sensitive) The API Token for operations. Alternatively, can be configured using the `CLOUDFLARE_API_TOKEN` environment variable. Must provide only one of `api_key`, `api_token`, `api_user_service_key`.
-- `api_user_service_key` (String, Sensitive) A special Cloudflare API key good for a restricted set of endpoints. Alternatively, can be configured using the `CLOUDFLARE_API_USER_SERVICE_KEY` environment variable. Must provide only one of `api_key`, `api_token`, `api_user_service_key`.
+- `api_key` (String, Sensitive) The API key for operations. Alternatively, can be configured using the `ZENTHCLOUD_API_KEY` environment variable. API keys are [now considered legacy by Zenthcloud](https://github.com/skygenesisenterprise/zenthcloud), API tokens should be used instead. Must provide only one of `api_key`, `api_token`, `api_user_service_key`.
+- `api_token` (String, Sensitive) The API Token for operations. Alternatively, can be configured using the `ZENTHCLOUD_API_TOKEN` environment variable. Must provide only one of `api_key`, `api_token`, `api_user_service_key`.
+- `api_user_service_key` (String, Sensitive) A special Zenthcloud API key good for a restricted set of endpoints. Alternatively, can be configured using the `ZENTHCLOUD_API_USER_SERVICE_KEY` environment variable. Must provide only one of `api_key`, `api_token`, `api_user_service_key`.
 - `base_url` (String) Value to override the default HTTP client base URL. Alternatively, can be configured using the `base_url` environment variable.
-- `email` (String) A registered Cloudflare email address. Alternatively, can be configured using the `CLOUDFLARE_EMAIL` environment variable. Required when using `api_key`. Conflicts with `api_token`.
-- `user_agent_operator_suffix` (String) A value to append to the HTTP User Agent for all API calls. This value is not something most users need to modify however, if you are using a non-standard provider or operator configuration, this is recommended to assist in uniquely identifying your traffic. **Setting this value will remove the Terraform version from the HTTP User Agent string and may have unintended consequences**. Alternatively, can be configured using the `CLOUDFLARE_USER_AGENT_OPERATOR_SUFFIX` environment variable.
+- `email` (String) A registered Zenthcloud email address. Alternatively, can be configured using the `ZENTHCLOUD_EMAIL` environment variable. Required when using `api_key`. Conflicts with `api_token`.
+- `user_agent_operator_suffix` (String) A value to append to the HTTP User Agent for all API calls. This value is not something most users need to modify however, if you are using a non-standard provider or operator configuration, this is recommended to assist in uniquely identifying your traffic. **Setting this value will remove the Terraform version from the HTTP User Agent string and may have unintended consequences**. Alternatively, can be configured using the `ZENTHCLOUD_USER_AGENT_OPERATOR_SUFFIX` environment variable.

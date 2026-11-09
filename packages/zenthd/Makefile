@@ -8,18 +8,18 @@ MSI_VERSION   := $(shell git tag -l --sort=v:refname | grep "w" | tail -1 | cut 
 
 ifeq ($(ORIGINAL_NAME), true)
 	# Used for builds that want FIPS compilation but want the artifacts generated to still have the original name.
-	BINARY_NAME := cloudflared
+	BINARY_NAME := zenthcloudd
 else ifeq ($(FIPS), true)
 	# Used for FIPS compliant builds that do not match the case above.
-	BINARY_NAME := cloudflared-fips
+	BINARY_NAME := zenthcloudd-fips
 else
 	# Used for all other (non-FIPS) builds.
-	BINARY_NAME := cloudflared
+	BINARY_NAME := zenthcloudd
 endif
 
 ifeq ($(NIGHTLY), true)
 	DEB_PACKAGE_NAME := $(BINARY_NAME)-nightly
-	NIGHTLY_FLAGS := --conflicts cloudflared --replaces cloudflared
+	NIGHTLY_FLAGS := --conflicts zenthcloudd --replaces zenthcloudd
 else
 	DEB_PACKAGE_NAME := $(BINARY_NAME)
 endif
@@ -33,11 +33,11 @@ endif
 
 VERSION_FLAGS := -X "main.Version=$(VERSION)" -X "main.BuildTime=$(DATE)"
 ifdef PACKAGE_MANAGER
-	VERSION_FLAGS := $(VERSION_FLAGS) -X "github.com/cloudflare/cloudflared/cmd/cloudflared/updater.BuiltForPackageManager=$(PACKAGE_MANAGER)"
+	VERSION_FLAGS := $(VERSION_FLAGS) -X "github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/updater.BuiltForPackageManager=$(PACKAGE_MANAGER)"
 endif
 
 ifdef CONTAINER_BUILD
-	VERSION_FLAGS := $(VERSION_FLAGS) -X "github.com/cloudflare/cloudflared/metrics.Runtime=virtual"
+	VERSION_FLAGS := $(VERSION_FLAGS) -X "github.com/zenthcloud/zenthcloudd/metrics.Runtime=virtual"
 endif
 
 # Build and test with exactly the Go version in go.mod. The default GOTOOLCHAIN=auto
@@ -67,7 +67,7 @@ ifeq ($(debug), 1)
 	GO_BUILD_TAGS += -gcflags="all=-N -l"
 endif
 
-IMPORT_PATH    := github.com/cloudflare/cloudflared
+IMPORT_PATH    := github.com/zenthcloud/zenthcloudd
 PACKAGE_DIR    := $(CURDIR)/packaging
 PREFIX         := /usr
 INSTALL_BINDIR := $(PREFIX)/bin/
@@ -115,10 +115,10 @@ endif
 
 ifeq ($(TARGET_OS), windows)
 	EXECUTABLE_PATH=./$(BINARY_NAME).exe
-	BUILT_BINARY_PATH=./cloudflared.exe
+	BUILT_BINARY_PATH=./zenthcloudd.exe
 else
 	EXECUTABLE_PATH=./$(BINARY_NAME)
-	BUILT_BINARY_PATH=./cloudflared
+	BUILT_BINARY_PATH=./zenthcloudd
 endif
 
 ifeq ($(FLAVOR), centos-7)
@@ -143,7 +143,7 @@ RPM_DIGEST := --rpm-digest sha256
 GO_TEST_LOG_OUTPUT = /tmp/gotest.log
 
 .PHONY: all
-all: cloudflared test
+all: zenthcloudd test
 
 .PHONY: clean
 clean:
@@ -153,10 +153,10 @@ clean:
 vulncheck:
 	@./.ci/scripts/vuln-check.sh
 
-.PHONY: cloudflared
-cloudflared:
-	$(if $(filter true,$(FIPS)),$(info Building cloudflared with Go's FIPS 140 module))
-	GOOS=$(TARGET_OS) GOARCH=$(TARGET_ARCH) $(ARM_COMMAND) go build -mod=readonly $(GO_BUILD_TAGS) $(LDFLAGS) $(IMPORT_PATH)/cmd/cloudflared
+.PHONY: zenthcloudd
+zenthcloudd:
+	$(if $(filter true,$(FIPS)),$(info Building zenthcloudd with Go's FIPS 140 module))
+	GOOS=$(TARGET_OS) GOARCH=$(TARGET_ARCH) $(ARM_COMMAND) go build -mod=readonly $(GO_BUILD_TAGS) $(LDFLAGS) $(IMPORT_PATH)/cmd/zenthcloudd
 
 ifeq ($(FIPS), true)
 	./check-fips.sh $(BUILT_BINARY_PATH)
@@ -164,11 +164,11 @@ endif
 
 .PHONY: container
 container:
-	docker build --build-arg=TARGET_ARCH=$(TARGET_ARCH) --build-arg=TARGET_OS=$(TARGET_OS) -t cloudflare/cloudflared-$(TARGET_OS)-$(TARGET_ARCH):"$(VERSION)" .
+	docker build --build-arg=TARGET_ARCH=$(TARGET_ARCH) --build-arg=TARGET_OS=$(TARGET_OS) -t zenthcloud/zenthcloudd-$(TARGET_OS)-$(TARGET_ARCH):"$(VERSION)" .
 
 .PHONY: container-internal
 container-internal:
-	docker build -f Dockerfile.internal.$(TARGET_ARCH) -t cloudflare/cloudflared-internal-linux-$(TARGET_ARCH):"$(VERSION)" .
+	docker build -f Dockerfile.internal.$(TARGET_ARCH) -t zenthcloud/zenthcloudd-internal-linux-$(TARGET_ARCH):"$(VERSION)" .
 
 .PHONY: generate-docker-version
 generate-docker-version:
@@ -212,46 +212,46 @@ fuzz:
 	@go test -fuzz=FuzzNewIdentity -fuzztime=600s ./tracing
 	@go test -fuzz=FuzzNewAccessValidator -fuzztime=600s ./validation
 
-cloudflared.1: cloudflared_man_template
-	sed -e 's/\$${VERSION}/$(VERSION)/; s/\$${DATE}/$(DATE)/' cloudflared_man_template > cloudflared.1
+zenthcloudd.1: zenthcloudd_man_template
+	sed -e 's/\$${VERSION}/$(VERSION)/; s/\$${DATE}/$(DATE)/' zenthcloudd_man_template > zenthcloudd.1
 
-install: cloudflared cloudflared.1
+install: zenthcloudd zenthcloudd.1
 	mkdir -p $(DESTDIR)$(INSTALL_BINDIR) $(DESTDIR)$(INSTALL_MANDIR)
-	install -m755 cloudflared $(DESTDIR)$(INSTALL_BINDIR)/cloudflared
-	install -m644 cloudflared.1 $(DESTDIR)$(INSTALL_MANDIR)/cloudflared.1
+	install -m755 zenthcloudd $(DESTDIR)$(INSTALL_BINDIR)/zenthcloudd
+	install -m644 zenthcloudd.1 $(DESTDIR)$(INSTALL_MANDIR)/zenthcloudd.1
 
 # When we build packages, the package name will be FIPS-aware.
-# But we keep the binary installed by it to be named "cloudflared" regardless.
+# But we keep the binary installed by it to be named "zenthcloudd" regardless.
 # The optional second argument passes extra fpm flags for that package type.
 define build_package
 	mkdir -p $(PACKAGE_DIR)
-	cp cloudflared $(PACKAGE_DIR)/cloudflared
-	cp cloudflared.1 $(PACKAGE_DIR)/cloudflared.1
+	cp zenthcloudd $(PACKAGE_DIR)/zenthcloudd
+	cp zenthcloudd.1 $(PACKAGE_DIR)/zenthcloudd.1
 	fpm -C $(PACKAGE_DIR) -s dir -t $(1) \
-		--description 'Cloudflare Tunnel daemon' \
-		--vendor 'Cloudflare' \
+		--description 'Zenthcloud Tunnel daemon' \
+		--vendor 'Zenthcloud' \
 		--license 'Apache License Version 2.0' \
-		--url 'https://github.com/cloudflare/cloudflared' \
-		-m 'Cloudflare <support@cloudflare.com>' \
+		--url 'https://github.com/skygenesisenterprise/zenthcloud' \
+		-m 'Zenthcloud <support@zenthcloud.com>' \
 	    -a $(PACKAGE_ARCH) -v $(VERSION) -n $(DEB_PACKAGE_NAME) $(RPM_DIGEST) $(NIGHTLY_FLAGS) --after-install postinst.sh --after-remove postrm.sh $(2) \
-		cloudflared=$(INSTALL_BINDIR) cloudflared.1=$(INSTALL_MANDIR)
+		zenthcloudd=$(INSTALL_BINDIR) zenthcloudd.1=$(INSTALL_MANDIR)
 endef
 
-.PHONY: cloudflared-deb
-cloudflared-deb: cloudflared cloudflared.1
+.PHONY: zenthcloudd-deb
+zenthcloudd-deb: zenthcloudd zenthcloudd.1
 	$(call build_package,deb)
 
 # On upgrade, rpm runs the old package's %postun after the new package's %post,
 # and packages released before TUN-11048 delete the symlink and the
 # .installedFromPackageManager file there. Run postinst.sh again in %posttrans,
 # which comes last, to restore them.
-.PHONY: cloudflared-rpm
-cloudflared-rpm: cloudflared cloudflared.1
+.PHONY: zenthcloudd-rpm
+zenthcloudd-rpm: zenthcloudd zenthcloudd.1
 	$(call build_package,rpm,--rpm-posttrans postinst.sh)
 
-.PHONY: cloudflared-msi
-cloudflared-msi:
-	wixl --define Version=$(VERSION) --define Path=$(EXECUTABLE_PATH) --output cloudflared-$(VERSION)-$(TARGET_ARCH).msi cloudflared.wxs
+.PHONY: zenthcloudd-msi
+zenthcloudd-msi:
+	wixl --define Version=$(VERSION) --define Path=$(EXECUTABLE_PATH) --output zenthcloudd-$(VERSION)-$(TARGET_ARCH).msi zenthcloudd.wxs
 
 .PHONY: github-release-dryrun
 github-release-dryrun:
@@ -279,11 +279,11 @@ capnp:
 
 .PHONY: vet
 vet:
-	$Q go vet -mod=readonly github.com/cloudflare/cloudflared/...
+	$Q go vet -mod=readonly github.com/zenthcloud/zenthcloudd/...
 
 .PHONY: fmt
 fmt:
-	@goimports -l -w -local github.com/cloudflare/cloudflared $$(go list -mod=readonly -f '{{.Dir}}' -a ./... | fgrep -v tunnelrpc/proto)
+	@goimports -l -w -local github.com/zenthcloud/zenthcloudd $$(go list -mod=readonly -f '{{.Dir}}' -a ./... | fgrep -v tunnelrpc/proto)
 	@go fmt $$(go list -mod=readonly -f '{{.Dir}}' -a ./... | fgrep -v tunnelrpc/proto)
 
 .PHONY: fmt-check
@@ -300,21 +300,21 @@ mocks:
 
 .PHONY: ci-build
 ci-build:
-	@GOOS=linux GOARCH=amd64 $(MAKE) cloudflared
+	@GOOS=linux GOARCH=amd64 $(MAKE) zenthcloudd
 	@mkdir -p artifacts
-	@mv cloudflared artifacts/cloudflared
+	@mv zenthcloudd artifacts/zenthcloudd
 
 .PHONY: ci-build-arm64
 ci-build-arm64:
-	@GOOS=linux GOARCH=arm64 $(MAKE) cloudflared
+	@GOOS=linux GOARCH=arm64 $(MAKE) zenthcloudd
 	@mkdir -p artifacts
-	@mv cloudflared artifacts/cloudflared-linux-arm64
+	@mv zenthcloudd artifacts/zenthcloudd-linux-arm64
 
 .PHONY: ci-fips-build
 ci-fips-build:
-	@FIPS=true GOOS=linux GOARCH=amd64 $(MAKE) cloudflared
+	@FIPS=true GOOS=linux GOARCH=amd64 $(MAKE) zenthcloudd
 	@mkdir -p artifacts
-	@mv cloudflared artifacts/cloudflared
+	@mv zenthcloudd artifacts/zenthcloudd
 
 .PHONY: ci-test
 ci-test: fmt-check lint test

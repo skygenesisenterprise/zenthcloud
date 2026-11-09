@@ -5,9 +5,9 @@ package custom_ssl
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/custom_certificates"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/custom_certificates"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -27,14 +27,14 @@ type CustomSSLsDataSourceModel struct {
 
 func (m *CustomSSLsDataSourceModel) toListParams(_ context.Context) (params custom_certificates.CustomCertificateListParams, diags diag.Diagnostics) {
 	params = custom_certificates.CustomCertificateListParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	if !m.Match.IsNull() {
-		params.Match = cloudflare.F(custom_certificates.CustomCertificateListParamsMatch(m.Match.ValueString()))
+		params.Match = zenthcloud.F(custom_certificates.CustomCertificateListParamsMatch(m.Match.ValueString()))
 	}
 	if !m.Status.IsNull() {
-		params.Status = cloudflare.F(custom_certificates.CustomCertificateListParamsStatus(m.Status.ValueString()))
+		params.Status = zenthcloud.F(custom_certificates.CustomCertificateListParamsStatus(m.Status.ValueString()))
 	}
 
 	return

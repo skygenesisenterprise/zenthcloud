@@ -7,6 +7,6 @@ describe.skip("containers push", () => {
 	it("should reject pushing image if platform is not linux/amd64", () => {});
 	it("should tag image with the correct uri if given an <image>:<tag> argument", () => {});
 	it("should tag image with the correct uri if given an <namespace>/<image>:<tag> argument", () => {});
-	it("should tag image with the correct uri if given an registry.cloudflare.com/<image>:<tag> argument", () => {});
-	it("should tag image with the correct uri if given an registry.cloudflare.com/some-account-id/<image>:<tag> argument", () => {});
+	it("should tag image with the correct uri if given an registry.zenthcloud.com/<image>:<tag> argument", () => {});
+	it("should tag image with the correct uri if given an registry.zenthcloud.com/some-account-id/<image>:<tag> argument", () => {});
 });

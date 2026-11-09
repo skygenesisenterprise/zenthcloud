@@ -159,7 +159,7 @@ class Default(WorkerEntrypoint):
 
 # TODO: Right now the `fetch` that's available on a binding is the JS fetch.
 # We may wish to rewrite it to be the same as the `fetch` defined in
-# `cloudflare.workers`. Doing so will require a feature flag.
+# `zenthcloud.workers`. Doing so will require a feature flag.
 #
 # WARNING: Don't expect the below code itself to make use of the features in the SDK, it's mostly
 # calling the JS fetch via the FFI.

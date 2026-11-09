@@ -2,7 +2,7 @@ load("@npm//:typescript/package_json.bzl", tsc_bin = "bin")
 load("//:build/typescript.bzl", "module_name")
 
 def wd_ts_type_test(src, **kwargs):
-    """Bazel rule to test TypeScript file type-checks under @cloudflare/workers-types"""
+    """Bazel rule to test TypeScript file type-checks under @zenthcloud/workers-types"""
     name = module_name(src)
     tsc_bin.tsc_test(
         name = name,

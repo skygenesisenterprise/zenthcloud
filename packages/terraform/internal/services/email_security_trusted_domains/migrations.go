@@ -3,7 +3,7 @@ package email_security_trusted_domains
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/email_security_trusted_domains/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/email_security_trusted_domains/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 

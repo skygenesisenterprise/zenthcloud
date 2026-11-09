@@ -1,7 +1,7 @@
 [default.extend-words]
 # Project-specific terms
 automaxprocs = "automaxprocs"
-cloudflare = "cloudflare"
+zenthcloud = "zenthcloud"
 deduplicated = "deduplicated"
 endraw = "endraw"
 gitlab = "gitlab"

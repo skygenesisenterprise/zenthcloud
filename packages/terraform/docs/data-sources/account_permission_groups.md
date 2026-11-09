@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_account_permission_groups Data Source - Cloudflare"
+page_title: "zenthcloud_account_permission_groups Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Firewall Access Rules ReadAccount Firewall Access Rules WriteAccount Settings ReadAccount Settings WriteBilling ReadBilling WriteDDoS Botnet Feed ReadDDoS Botnet Feed WriteDDoS Protection ReadDDoS Protection WriteDNS Firewall ReadDNS Firewall WriteDNS View ReadDNS View WriteLoad Balancers Account ReadLoad Balancers Account WriteLoad Balancing: Monitors and Pools ReadLoad Balancing: Monitors and Pools WriteSCIM ProvisioningTrust and Safety ReadTrust and Safety WriteWorkers KV Storage ReadWorkers KV Storage WriteWorkers R2 Storage ReadWorkers R2 Storage WriteWorkers Scripts ReadWorkers Scripts WriteWorkers Tail ReadZero Trust: PII Read
 ---
 
-# cloudflare_account_permission_groups (Data Source)
+# zenthcloud_account_permission_groups (Data Source)
 
 Accepted Permissions
 
@@ -43,7 +43,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_account_permission_groups" "example_account_permission_groups" {
+data "zenthcloud_account_permission_groups" "example_account_permission_groups" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   id = "6d7f2f5f5b1d4a0e9081fdc98d432fd1"
   label = "labelOfThePermissionGroup"

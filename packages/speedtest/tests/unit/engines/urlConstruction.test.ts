@@ -11,7 +11,7 @@ import { describe, it, expect } from 'vitest';
  * This ensures custom apiUrls with existing query strings (e.g.,
  * `?token=ABC`) are handled correctly without double-? issues.
  *
- * See: https://github.com/cloudflare/speedtest/issues/105
+ * See: https://github.com/skygenesisenterprise/zenthcloud
  */
 
 const ORIGIN = 'https://localhost';
@@ -25,10 +25,10 @@ function buildUrl(apiUrl: string, qsParams: Record<string, string>): string {
 describe('URL construction', () => {
   describe('query string handling', () => {
     it('appends params to URL without query string', () => {
-      const url = buildUrl('https://speed.cloudflare.com/__down', {
+      const url = buildUrl('https://github.com/skygenesisenterprise/zenthcloud', {
         bytes: '100000'
       });
-      expect(url).toBe('https://speed.cloudflare.com/__down?bytes=100000');
+      expect(url).toBe('https://github.com/skygenesisenterprise/zenthcloud');
     });
 
     it('appends params to URL with existing query string', () => {
@@ -66,32 +66,32 @@ describe('URL construction', () => {
     });
 
     it('appends multiple query params', () => {
-      const url = buildUrl('https://speed.cloudflare.com/__down', {
+      const url = buildUrl('https://github.com/skygenesisenterprise/zenthcloud', {
         bytes: '100000',
         measId: '42',
         during: 'download'
       });
       expect(url).toBe(
-        'https://speed.cloudflare.com/__down?bytes=100000&measId=42&during=download'
+        'https://github.com/skygenesisenterprise/zenthcloud'
       );
     });
 
     it('produces valid URL with empty qsParams', () => {
-      const url = buildUrl('https://speed.cloudflare.com/__down', {});
-      expect(url).toBe('https://speed.cloudflare.com/__down');
+      const url = buildUrl('https://github.com/skygenesisenterprise/zenthcloud', {});
+      expect(url).toBe('https://github.com/skygenesisenterprise/zenthcloud');
     });
   });
 
   describe('URL encoding', () => {
     it('encodes special characters in param values', () => {
-      const url = buildUrl('https://speed.cloudflare.com/__down', {
+      const url = buildUrl('https://github.com/skygenesisenterprise/zenthcloud', {
         token: 'a&b=c'
       });
       expect(url).toContain('token=a%26b%3Dc');
     });
 
     it('encodes spaces in param values', () => {
-      const url = buildUrl('https://speed.cloudflare.com/__down', {
+      const url = buildUrl('https://github.com/skygenesisenterprise/zenthcloud', {
         name: 'hello world'
       });
       expect(url).toContain('name=hello+world');

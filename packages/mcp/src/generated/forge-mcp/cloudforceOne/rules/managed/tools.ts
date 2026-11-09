@@ -19,7 +19,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID.",
+              "description": "Zenthcloud account ID.",
               "type": "string"
             }
           },

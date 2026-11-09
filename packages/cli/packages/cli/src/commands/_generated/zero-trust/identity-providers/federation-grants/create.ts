@@ -23,12 +23,12 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 zero-trust identity-providers federation-grants create\n\nCreates an IdP federation grant for the specified identity provider, making it available for federation to other accounts in the same Cloudflare organization. The account must belong to a Cloudflare organization. One-time pin and Cloudflare-managed identity providers cannot be federated. An account can federate at most five identity providers at a time."
+			"$0 zero-trust identity-providers federation-grants create\n\nCreates an IdP federation grant for the specified identity provider, making it available for federation to other accounts in the same Zenthcloud organization. The account must belong to a Zenthcloud organization. One-time pin and Zenthcloud-managed identity providers cannot be federated. An account can federate at most five identity providers at a time."
 		)
 		.option("idp-id", {
 			type: "string",
 			description:
-				"UID of the identity provider to federate. Must be an existing identity provider in this account. One-time pin and Cloudflare-managed identity providers cannot be federated.",
+				"UID of the identity provider to federate. Must be an existing identity provider in this account. One-time pin and Zenthcloud-managed identity providers cannot be federated.",
 		})
 		.option("dry-run", {
 			type: "boolean",
@@ -63,7 +63,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 						command:
 							"cf zero-trust identity-providers federation-grants create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/access/idp_federation_grants`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/access/idp_federation_grants`,
 						pathParams: {},
 						bodyKind: "json",
 						body:
@@ -96,7 +96,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 				if (argv["idp-id"] === undefined) {
 					argv["idp-id"] = await promptForRequiredField(
 						"idp-id",
-						"UID of the identity provider to federate. Must be an existing identity provider in this account. One-time pin and Cloudflare-managed identity providers cannot be federated."
+						"UID of the identity provider to federate. Must be an existing identity provider in this account. One-time pin and Zenthcloud-managed identity providers cannot be federated."
 					);
 				}
 

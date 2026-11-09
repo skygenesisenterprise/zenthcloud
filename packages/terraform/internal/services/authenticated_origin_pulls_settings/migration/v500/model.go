@@ -8,14 +8,14 @@ import (
 // Source Models (Legacy Provider - v4.x)
 // ============================================================================
 
-// SourceCloudflareAuthenticatedOriginPullsModel represents the legacy resource state from v4.x provider.
+// SourceZenthcloudAuthenticatedOriginPullsModel represents the legacy resource state from v4.x provider.
 // Schema version: 0 (actual v4 schema version)
-// Resource type: cloudflare_authenticated_origin_pulls
+// Resource type: zenthcloud_authenticated_origin_pulls
 //
 // This model includes ALL v4 fields, including ones that will be removed in v5:
 // - hostname: Per-hostname AOP configuration (removed in v5)
 // - authenticated_origin_pulls_certificate: Certificate ID for AOP (removed in v5)
-type SourceCloudflareAuthenticatedOriginPullsModel struct {
+type SourceZenthcloudAuthenticatedOriginPullsModel struct {
 	ID                                   types.String `tfsdk:"id"`
 	ZoneID                              types.String `tfsdk:"zone_id"`
 	Hostname                            types.String `tfsdk:"hostname"`
@@ -29,7 +29,7 @@ type SourceCloudflareAuthenticatedOriginPullsModel struct {
 
 // TargetAuthenticatedOriginPullsSettingsModel represents the current resource state from v5.x+ provider.
 // Schema version: 500
-// Resource type: cloudflare_authenticated_origin_pulls_settings
+// Resource type: zenthcloud_authenticated_origin_pulls_settings
 //
 // Note: This matches the model in the parent package's model.go file.
 // The v5 model is simplified - it only supports zone-wide AOP settings.

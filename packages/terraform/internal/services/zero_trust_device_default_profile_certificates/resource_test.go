@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -19,13 +19,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zero_trust_device_default_profile_certificates", &resource.Sweeper{
-		Name: "cloudflare_zero_trust_device_default_profile_certificates",
-		F:    testSweepCloudflareZeroTrustDeviceDefaultProfileCertificates,
+	resource.AddTestSweepers("zenthcloud_zero_trust_device_default_profile_certificates", &resource.Sweeper{
+		Name: "zenthcloud_zero_trust_device_default_profile_certificates",
+		F:    testSweepZenthcloudZeroTrustDeviceDefaultProfileCertificates,
 	})
 }
 
-func testSweepCloudflareZeroTrustDeviceDefaultProfileCertificates(r string) error {
+func testSweepZenthcloudZeroTrustDeviceDefaultProfileCertificates(r string) error {
 	ctx := context.Background()
 	// Device Default Profile Certificates is a zone-level certificate setting for the default device profile.
 	// It's a singleton setting per zone, not something that accumulates.
@@ -34,17 +34,17 @@ func testSweepCloudflareZeroTrustDeviceDefaultProfileCertificates(r string) erro
 	return nil
 }
 
-func TestAccCloudflareDeviceDefaultProfileCertificates_Create(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudDeviceDefaultProfileCertificates_Create(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_device_default_profile_certificates.%s", rnd)
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_device_default_profile_certificates.%s", rnd)
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -53,7 +53,7 @@ func TestAccCloudflareDeviceDefaultProfileCertificates_Create(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareDevicePolicyCertificates(rnd, zoneID, true),
+				Config: testZenthcloudDevicePolicyCertificates(rnd, zoneID, true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(name, "enabled", "true"),
@@ -63,9 +63,9 @@ func TestAccCloudflareDeviceDefaultProfileCertificates_Create(t *testing.T) {
 	})
 }
 
-func testCloudflareDevicePolicyCertificates(rnd, zoneID string, enable bool) string {
+func testZenthcloudDevicePolicyCertificates(rnd, zoneID string, enable bool) string {
 	return fmt.Sprintf(`
-resource "cloudflare_zero_trust_device_default_profile_certificates" "%[1]s" {
+resource "zenthcloud_zero_trust_device_default_profile_certificates" "%[1]s" {
 	zone_id = "%[2]s"
 	enabled = %[3]t
 }
@@ -74,9 +74,9 @@ resource "cloudflare_zero_trust_device_default_profile_certificates" "%[1]s" {
 
 func TestAccUpgradeZeroTrustDeviceDefaultProfileCertificates_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
-	config := testCloudflareDevicePolicyCertificates(rnd, zoneID, true)
+	config := testZenthcloudDevicePolicyCertificates(rnd, zoneID, true)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -85,8 +85,8 @@ func TestAccUpgradeZeroTrustDeviceDefaultProfileCertificates_FromPublishedV5(t *
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

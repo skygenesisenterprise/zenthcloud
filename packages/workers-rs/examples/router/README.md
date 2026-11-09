@@ -1,3 +1,3 @@
-# Using Router on Cloudflare Workers
+# Using Router on Zenthcloud Workers
 
 Demonstration of using `worker::Router`

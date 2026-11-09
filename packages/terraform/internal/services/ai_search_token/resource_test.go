@@ -6,11 +6,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/ai_search"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/ai_search"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -24,24 +24,24 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_ai_search_token", &resource.Sweeper{
-		Name: "cloudflare_ai_search_token",
-		F:    testSweepCloudflareAISearchTokens,
+	resource.AddTestSweepers("zenthcloud_ai_search_token", &resource.Sweeper{
+		Name: "zenthcloud_ai_search_token",
+		F:    testSweepZenthcloudAISearchTokens,
 	})
 }
 
-func testSweepCloudflareAISearchTokens(r string) error {
+func testSweepZenthcloudAISearchTokens(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping AI Search token sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping AI Search token sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
 	tokens, err := client.AISearch.Tokens.List(ctx, ai_search.TokenListParams{
-		AccountID: cloudflare.F(accountID),
+		AccountID: zenthcloud.F(accountID),
 	})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch AI Search tokens: %s", err))
@@ -60,7 +60,7 @@ func testSweepCloudflareAISearchTokens(r string) error {
 
 		tflog.Info(ctx, fmt.Sprintf("Deleting AI Search token: %s (account: %s)", token.Name, accountID))
 		_, err := client.AISearch.Tokens.Delete(ctx, token.ID, ai_search.TokenDeleteParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete AI Search token %s: %s", token.ID, err))
@@ -72,17 +72,17 @@ func testSweepCloudflareAISearchTokens(r string) error {
 	return nil
 }
 
-func TestAccCloudflareAISearchToken_Basic(t *testing.T) {
+func TestAccZenthcloudAISearchToken_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_ai_search_token." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_ai_search_token." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAISearchTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAISearchTokenDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: acctest.LoadTestCase("aisearchtokenbasic.tf", rnd, accountID),
@@ -104,11 +104,11 @@ func TestAccCloudflareAISearchToken_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareAISearchTokenDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudAISearchTokenDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_ai_search_token" {
+		if rs.Type != "zenthcloud_ai_search_token" {
 			continue
 		}
 
@@ -117,7 +117,7 @@ func testAccCheckCloudflareAISearchTokenDestroy(s *terraform.State) error {
 			context.Background(),
 			rs.Primary.ID,
 			ai_search.TokenReadParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			},
 		)
 		if err == nil {

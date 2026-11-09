@@ -26,7 +26,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 			type: "string",
 			array: true,
 			description:
-				"Accepts multiple values like `?domain=cloudflare.com&domain=example.com`.",
+				"Accepts multiple values like `?domain=zenthcloud.com&domain=example.com`.",
 		})
 		.option("include-ranking", {
 			type: "boolean",
@@ -77,7 +77,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf intel domains bulks get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/intel/domain/bulk`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/intel/domain/bulk`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

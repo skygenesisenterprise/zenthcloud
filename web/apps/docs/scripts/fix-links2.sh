@@ -54,7 +54,7 @@ PAIRS='
 /docs/applications/index /docs/core/applications
 /docs/applications /docs/core/applications
 /docs/infrastructure/object-storage/aws-s3 /docs/core/aws-s3
-/docs/infrastructure/object-storage/cloudflare-r2 /docs/core/cloudflare-r2
+/docs/infrastructure/object-storage/zenthcloud-r2 /docs/core/zenthcloud-r2
 /docs/infrastructure/object-storage/backblaze-b2 /docs/core/backblaze-b2
 /docs/infrastructure/object-storage/cloud-storage /docs/core/cloud-storage
 /docs/infrastructure/object-storage/actions /docs/core/actions

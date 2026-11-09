@@ -4,33 +4,33 @@ import (
 	"context"
 	"strings"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/migrations"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/migrations"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-// MoveState handles state moves from cloudflare_device_posture_rule to cloudflare_zero_trust_device_posture_rule.
+// MoveState handles state moves from zenthcloud_device_posture_rule to zenthcloud_zero_trust_device_posture_rule.
 // This is triggered when users use the `moved` block (Terraform 1.8+):
 //
 //	moved {
-//	    from = cloudflare_device_posture_rule.example
-//	    to   = cloudflare_zero_trust_device_posture_rule.example
+//	    from = zenthcloud_device_posture_rule.example
+//	    to   = zenthcloud_zero_trust_device_posture_rule.example
 //	}
 func MoveState(
 	ctx context.Context,
 	req resource.MoveStateRequest,
 	resp *resource.MoveStateResponse,
 ) {
-	// Verify source is cloudflare_device_posture_rule from cloudflare provider
-	if req.SourceTypeName != "cloudflare_device_posture_rule" {
+	// Verify source is zenthcloud_device_posture_rule from zenthcloud provider
+	if req.SourceTypeName != "zenthcloud_device_posture_rule" {
 		return
 	}
 
-	if !isCloudflareProvider(req.SourceProviderAddress) {
+	if !isZenthcloudProvider(req.SourceProviderAddress) {
 		return
 	}
 
-	tflog.Info(ctx, "Starting state move from cloudflare_device_posture_rule to cloudflare_zero_trust_device_posture_rule",
+	tflog.Info(ctx, "Starting state move from zenthcloud_device_posture_rule to zenthcloud_zero_trust_device_posture_rule",
 		map[string]interface{}{
 			"source_type":           req.SourceTypeName,
 			"source_schema_version": req.SourceSchemaVersion,
@@ -57,10 +57,10 @@ func MoveState(
 	// Set the target state
 	resp.Diagnostics.Append(resp.TargetState.Set(ctx, targetState)...)
 
-	tflog.Info(ctx, "State move from cloudflare_device_posture_rule to cloudflare_zero_trust_device_posture_rule completed successfully")
+	tflog.Info(ctx, "State move from zenthcloud_device_posture_rule to zenthcloud_zero_trust_device_posture_rule completed successfully")
 }
 
-func isCloudflareProvider(addr string) bool {
-	return strings.Contains(addr, "cloudflare/cloudflare") ||
-		strings.Contains(addr, "registry.terraform.io/cloudflare")
+func isZenthcloudProvider(addr string) bool {
+	return strings.Contains(addr, "zenthcloud/zenthcloud") ||
+		strings.Contains(addr, "registry.terraform.io/zenthcloud")
 }

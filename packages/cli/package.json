@@ -1,5 +1,5 @@
 {
-	"name": "@cloudflare/cf-root",
+	"name": "@zenthcloud/cf-root",
 	"private": true,
 	"type": "module",
 	"scripts": {

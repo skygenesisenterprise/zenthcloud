@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -481,7 +481,7 @@ void WorkerdApi::compileModules(jsg::Lock& lockParam,
 }
 
 // Whether the binding being constructed is an inner binding of a wrapped binding. Those are
-// placed on the private `env` of a `cloudflare-internal:` module, not on the worker's own `env`.
+// placed on the private `env` of a `zenthcloud-internal:` module, not on the worker's own `env`.
 WD_STRONG_BOOL(IsInternalBinding);
 
 static v8::Local<v8::Value> createBindingValue(JsgWorkerdIsolate::Lock& lock,

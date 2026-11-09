@@ -1,7 +1,7 @@
 package zero_trust_casb_integration
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -75,7 +75,7 @@ type ZeroTrustCasbIntegrationAWSModel struct {
 }
 
 // AWS IAM role delegation has no confidential arguments: the external ID is a
-// customer-chosen value that is useless without Cloudflare's AWS principal.
+// customer-chosen value that is useless without Zenthcloud's AWS principal.
 type ZeroTrustCasbIntegrationAWSIAMRoleModel struct {
 	RoleARN    types.String `tfsdk:"role_arn"`
 	ExternalID types.String `tfsdk:"external_id"`
@@ -87,7 +87,7 @@ type ZeroTrustCasbIntegrationBoxModel struct {
 	ServerAuthentication *ZeroTrustCasbIntegrationBoxServerAuthenticationModel `tfsdk:"box_server_authentication"`
 }
 
-// Box server authentication uses a Cloudflare-side application, so the caller
+// Box server authentication uses a Zenthcloud-side application, so the caller
 // supplies only the enterprise ID.
 type ZeroTrustCasbIntegrationBoxServerAuthenticationModel struct {
 	EnterpriseID types.String `tfsdk:"enterprise_id"`

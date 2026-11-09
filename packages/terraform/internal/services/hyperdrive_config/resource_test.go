@@ -7,12 +7,12 @@ import (
 	"strconv"
 	"testing"
 
-	cfv1 "github.com/cloudflare/cloudflare-go"
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/hyperdrive"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	cfv1 "github.com/zenthcloud/zenthcloud-go"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/hyperdrive"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -23,20 +23,20 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_hyperdrive_config", &resource.Sweeper{
-		Name: "cloudflare_hyperdrive_config",
+	resource.AddTestSweepers("zenthcloud_hyperdrive_config", &resource.Sweeper{
+		Name: "zenthcloud_hyperdrive_config",
 		F: func(region string) error {
 			ctx := context.Background()
 			client, err := acctest.SharedV1Client()
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 			if err != nil {
-				tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", err))
+				tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", err))
 				return fmt.Errorf("error establishing client: %w", err)
 			}
 
 			if accountID == "" {
-				tflog.Info(ctx, "Skipping Hyperdrive configs sweep: CLOUDFLARE_ACCOUNT_ID not set")
+				tflog.Info(ctx, "Skipping Hyperdrive configs sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 				return nil
 			}
 
@@ -75,11 +75,11 @@ func init() {
 	})
 }
 
-func testAccCheckCloudflareHyperdriveConfigDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudHyperdriveConfigDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_hyperdrive_config" {
+		if rs.Type != "zenthcloud_hyperdrive_config" {
 			continue
 		}
 
@@ -88,7 +88,7 @@ func testAccCheckCloudflareHyperdriveConfigDestroy(s *terraform.State) error {
 			context.Background(),
 			rs.Primary.ID,
 			hyperdrive.ConfigGetParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			},
 		)
 		if err == nil {
@@ -99,17 +99,17 @@ func testAccCheckCloudflareHyperdriveConfigDestroy(s *terraform.State) error {
 	return nil
 }
 
-func TestAccCloudflareHyperdriveConfig_Basic(t *testing.T) {
+func TestAccZenthcloudHyperdriveConfig_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	databaseName := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_NAME")
-	databaseHostname := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_HOSTNAME")
-	databasePort := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_PORT")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	databaseName := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_NAME")
+	databaseHostname := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_HOSTNAME")
+	databasePort := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_PORT")
 	port, _ := strconv.Atoi(databasePort)
-	databaseUser := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_USER")
-	databasePassword := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_PASSWORD")
+	databaseUser := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_USER")
+	databasePassword := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_PASSWORD")
 
-	resourceName := "cloudflare_hyperdrive_config." + rnd
+	resourceName := "zenthcloud_hyperdrive_config." + rnd
 
 	var origin = cfv1.HyperdriveConfigOrigin{
 		Database: databaseName,
@@ -127,7 +127,7 @@ func TestAccCloudflareHyperdriveConfig_Basic(t *testing.T) {
 			acctest.TestAccPreCheck_Hyperdrive(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareHyperdriveConfigDestroy,
+		CheckDestroy:             testAccCheckZenthcloudHyperdriveConfigDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testHyperdriveConfig(
@@ -187,16 +187,16 @@ func TestAccCloudflareHyperdriveConfig_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareHyperdriveConfig_CachingSettings(t *testing.T) {
+func TestAccZenthcloudHyperdriveConfig_CachingSettings(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	databaseName := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_NAME")
-	databaseHostname := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_HOSTNAME")
-	databasePort := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_PORT")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	databaseName := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_NAME")
+	databaseHostname := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_HOSTNAME")
+	databasePort := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_PORT")
 	port, _ := strconv.Atoi(databasePort)
-	databaseUser := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_USER")
-	databasePassword := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_PASSWORD")
-	resourceName := "cloudflare_hyperdrive_config." + rnd
+	databaseUser := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_USER")
+	databasePassword := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_PASSWORD")
+	resourceName := "zenthcloud_hyperdrive_config." + rnd
 
 	var origin = cfv1.HyperdriveConfigOrigin{
 		Database: databaseName,
@@ -212,7 +212,7 @@ func TestAccCloudflareHyperdriveConfig_CachingSettings(t *testing.T) {
 			acctest.TestAccPreCheck_Hyperdrive(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareHyperdriveConfigDestroy,
+		CheckDestroy:             testAccCheckZenthcloudHyperdriveConfigDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testHyperdriveConfigFullCachingSettings(
@@ -253,16 +253,16 @@ func TestAccCloudflareHyperdriveConfig_CachingSettings(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareHyperdriveConfig_HyperdriveOverAccess(t *testing.T) {
+func TestAccZenthcloudHyperdriveConfig_HyperdriveOverAccess(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	databaseName := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_NAME")
-	databaseHostname := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_HOSTNAME")
-	databaseUser := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_USER")
-	databasePassword := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_PASSWORD")
-	accessClientID := os.Getenv("CLOUDFLARE_HYPERDRIVE_ACCESS_CLIENT_ID")
-	accessClientSecret := os.Getenv("CLOUDFLARE_HYPERDRIVE_ACCESS_CLIENT_SECRET")
-	resourceName := "cloudflare_hyperdrive_config." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	databaseName := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_NAME")
+	databaseHostname := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_HOSTNAME")
+	databaseUser := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_USER")
+	databasePassword := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_PASSWORD")
+	accessClientID := os.Getenv("ZENTHCLOUD_HYPERDRIVE_ACCESS_CLIENT_ID")
+	accessClientSecret := os.Getenv("ZENTHCLOUD_HYPERDRIVE_ACCESS_CLIENT_SECRET")
+	resourceName := "zenthcloud_hyperdrive_config." + rnd
 
 	var origin = cfv1.HyperdriveConfigOriginWithSecrets{
 		HyperdriveConfigOrigin: cfv1.HyperdriveConfigOrigin{
@@ -283,7 +283,7 @@ func TestAccCloudflareHyperdriveConfig_HyperdriveOverAccess(t *testing.T) {
 			acctest.TestAccPreCheck_HyperdriveWithAccess(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareHyperdriveConfigDestroy,
+		CheckDestroy:             testAccCheckZenthcloudHyperdriveConfigDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testHyperdriveOverAccessConfig(
@@ -343,16 +343,16 @@ func TestAccCloudflareHyperdriveConfig_HyperdriveOverAccess(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareHyperdriveConfig_Minimum(t *testing.T) {
+func TestAccZenthcloudHyperdriveConfig_Minimum(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	databaseName := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_NAME")
-	databaseHostname := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_HOSTNAME")
-	databasePort := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_PORT")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	databaseName := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_NAME")
+	databaseHostname := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_HOSTNAME")
+	databasePort := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_PORT")
 	port, _ := strconv.Atoi(databasePort)
-	databaseUser := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_USER")
-	databasePassword := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_PASSWORD")
-	resourceName := "cloudflare_hyperdrive_config." + rnd
+	databaseUser := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_USER")
+	databasePassword := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_PASSWORD")
+	resourceName := "zenthcloud_hyperdrive_config." + rnd
 
 	var origin = cfv1.HyperdriveConfigOrigin{
 		Database: databaseName,
@@ -368,7 +368,7 @@ func TestAccCloudflareHyperdriveConfig_Minimum(t *testing.T) {
 			acctest.TestAccPreCheck_Hyperdrive(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareHyperdriveConfigDestroy,
+		CheckDestroy:             testAccCheckZenthcloudHyperdriveConfigDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testHyperdriveConfigMinimum(
@@ -405,16 +405,16 @@ func TestAccCloudflareHyperdriveConfig_Minimum(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareHyperdriveConfig_ConnectionLimit(t *testing.T) {
+func TestAccZenthcloudHyperdriveConfig_ConnectionLimit(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	databaseName := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_NAME")
-	databaseHostname := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_HOSTNAME")
-	databasePort := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_PORT")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	databaseName := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_NAME")
+	databaseHostname := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_HOSTNAME")
+	databasePort := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_PORT")
 	port, _ := strconv.Atoi(databasePort)
-	databaseUser := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_USER")
-	databasePassword := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_PASSWORD")
-	resourceName := "cloudflare_hyperdrive_config." + rnd
+	databaseUser := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_USER")
+	databasePassword := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_PASSWORD")
+	resourceName := "zenthcloud_hyperdrive_config." + rnd
 
 	var origin = cfv1.HyperdriveConfigOrigin{
 		Database: databaseName,
@@ -430,7 +430,7 @@ func TestAccCloudflareHyperdriveConfig_ConnectionLimit(t *testing.T) {
 			acctest.TestAccPreCheck_Hyperdrive(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareHyperdriveConfigDestroy,
+		CheckDestroy:             testAccCheckZenthcloudHyperdriveConfigDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testHyperdriveConfigConnectionLimit(
@@ -467,19 +467,19 @@ func TestAccCloudflareHyperdriveConfig_ConnectionLimit(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareHyperdriveConfig_NoDiffOnConsecutiveApply tests that applying the same
+// TestAccZenthcloudHyperdriveConfig_NoDiffOnConsecutiveApply tests that applying the same
 // configuration twice does not result in any changes being detected.
-// This is a regression test for https://github.com/cloudflare/terraform-provider-cloudflare/issues/6650
-func TestAccCloudflareHyperdriveConfig_NoDiffOnConsecutiveApply(t *testing.T) {
+// This is a regression test for https://github.com/skygenesisenterprise/zenthcloud
+func TestAccZenthcloudHyperdriveConfig_NoDiffOnConsecutiveApply(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	databaseName := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_NAME")
-	databaseHostname := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_HOSTNAME")
-	databasePort := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_PORT")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	databaseName := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_NAME")
+	databaseHostname := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_HOSTNAME")
+	databasePort := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_PORT")
 	port, _ := strconv.Atoi(databasePort)
-	databaseUser := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_USER")
-	databasePassword := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_PASSWORD")
-	resourceName := "cloudflare_hyperdrive_config." + rnd
+	databaseUser := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_USER")
+	databasePassword := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_PASSWORD")
+	resourceName := "zenthcloud_hyperdrive_config." + rnd
 
 	var origin = cfv1.HyperdriveConfigOrigin{
 		Database: databaseName,
@@ -504,7 +504,7 @@ func TestAccCloudflareHyperdriveConfig_NoDiffOnConsecutiveApply(t *testing.T) {
 			acctest.TestAccPreCheck_Hyperdrive(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareHyperdriveConfigDestroy,
+		CheckDestroy:             testAccCheckZenthcloudHyperdriveConfigDestroy,
 		Steps: []resource.TestStep{
 			{
 				// Initial creation
@@ -524,19 +524,19 @@ func TestAccCloudflareHyperdriveConfig_NoDiffOnConsecutiveApply(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareHyperdriveConfig_NoDiffOnConsecutiveApplyWithAccess tests that applying
+// TestAccZenthcloudHyperdriveConfig_NoDiffOnConsecutiveApplyWithAccess tests that applying
 // the same configuration with access credentials twice does not result in any changes.
-// This is a regression test for https://github.com/cloudflare/terraform-provider-cloudflare/issues/6650
-func TestAccCloudflareHyperdriveConfig_NoDiffOnConsecutiveApplyWithAccess(t *testing.T) {
+// This is a regression test for https://github.com/skygenesisenterprise/zenthcloud
+func TestAccZenthcloudHyperdriveConfig_NoDiffOnConsecutiveApplyWithAccess(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	databaseName := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_NAME")
-	databaseHostname := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_HOSTNAME")
-	databaseUser := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_USER")
-	databasePassword := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_PASSWORD")
-	accessClientID := os.Getenv("CLOUDFLARE_HYPERDRIVE_ACCESS_CLIENT_ID")
-	accessClientSecret := os.Getenv("CLOUDFLARE_HYPERDRIVE_ACCESS_CLIENT_SECRET")
-	resourceName := "cloudflare_hyperdrive_config." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	databaseName := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_NAME")
+	databaseHostname := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_HOSTNAME")
+	databaseUser := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_USER")
+	databasePassword := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_PASSWORD")
+	accessClientID := os.Getenv("ZENTHCLOUD_HYPERDRIVE_ACCESS_CLIENT_ID")
+	accessClientSecret := os.Getenv("ZENTHCLOUD_HYPERDRIVE_ACCESS_CLIENT_SECRET")
+	resourceName := "zenthcloud_hyperdrive_config." + rnd
 
 	var origin = cfv1.HyperdriveConfigOriginWithSecrets{
 		HyperdriveConfigOrigin: cfv1.HyperdriveConfigOrigin{
@@ -564,7 +564,7 @@ func TestAccCloudflareHyperdriveConfig_NoDiffOnConsecutiveApplyWithAccess(t *tes
 			acctest.TestAccPreCheck_HyperdriveWithAccess(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareHyperdriveConfigDestroy,
+		CheckDestroy:             testAccCheckZenthcloudHyperdriveConfigDestroy,
 		Steps: []resource.TestStep{
 			{
 				// Initial creation

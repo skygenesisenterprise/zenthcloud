@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, DropdownMenu } from "@cloudflare/kumo";
+import { Button, ButtonGroup, DropdownMenu } from "@zenthcloud/kumo";
 import { CaretDownIcon } from "@phosphor-icons/react";
 
 /**

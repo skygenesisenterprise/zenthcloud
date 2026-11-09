@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_access_policy Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_access_policy Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Access: Apps and Policies ReadAccess: Apps and Policies Write
 ---
 
-# cloudflare_zero_trust_access_policy (Data Source)
+# zenthcloud_zero_trust_access_policy (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_access_policy" "example_zero_trust_access_policy" {
+data "zenthcloud_zero_trust_access_policy" "example_zero_trust_access_policy" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   policy_id = "f174e90a-fafe-4643-bbbc-4a0ed4fc8415"
 }
@@ -92,7 +92,7 @@ Read-Only:
 - `auth_method` (Attributes) (see [below for nested schema](#nestedatt--exclude--auth_method))
 - `azure_ad` (Attributes) (see [below for nested schema](#nestedatt--exclude--azure_ad))
 - `certificate` (Attributes) (see [below for nested schema](#nestedatt--exclude--certificate))
-- `cloudflare_account_member` (Attributes) (see [below for nested schema](#nestedatt--exclude--cloudflare_account_member))
+- `zenthcloud_account_member` (Attributes) (see [below for nested schema](#nestedatt--exclude--zenthcloud_account_member))
 - `common_name` (Attributes) (see [below for nested schema](#nestedatt--exclude--common_name))
 - `device_posture` (Attributes) (see [below for nested schema](#nestedatt--exclude--device_posture))
 - `email` (Attributes) (see [below for nested schema](#nestedatt--exclude--email))
@@ -149,8 +149,8 @@ Read-Only:
 ### Nested Schema for `exclude.certificate`
 
 
-<a id="nestedatt--exclude--cloudflare_account_member"></a>
-### Nested Schema for `exclude.cloudflare_account_member`
+<a id="nestedatt--exclude--zenthcloud_account_member"></a>
+### Nested Schema for `exclude.zenthcloud_account_member`
 
 Read-Only:
 
@@ -334,7 +334,7 @@ Read-Only:
 - `auth_method` (Attributes) (see [below for nested schema](#nestedatt--include--auth_method))
 - `azure_ad` (Attributes) (see [below for nested schema](#nestedatt--include--azure_ad))
 - `certificate` (Attributes) (see [below for nested schema](#nestedatt--include--certificate))
-- `cloudflare_account_member` (Attributes) (see [below for nested schema](#nestedatt--include--cloudflare_account_member))
+- `zenthcloud_account_member` (Attributes) (see [below for nested schema](#nestedatt--include--zenthcloud_account_member))
 - `common_name` (Attributes) (see [below for nested schema](#nestedatt--include--common_name))
 - `device_posture` (Attributes) (see [below for nested schema](#nestedatt--include--device_posture))
 - `email` (Attributes) (see [below for nested schema](#nestedatt--include--email))
@@ -391,8 +391,8 @@ Read-Only:
 ### Nested Schema for `include.certificate`
 
 
-<a id="nestedatt--include--cloudflare_account_member"></a>
-### Nested Schema for `include.cloudflare_account_member`
+<a id="nestedatt--include--zenthcloud_account_member"></a>
+### Nested Schema for `include.zenthcloud_account_member`
 
 Read-Only:
 
@@ -586,7 +586,7 @@ Read-Only:
 - `auth_method` (Attributes) (see [below for nested schema](#nestedatt--require--auth_method))
 - `azure_ad` (Attributes) (see [below for nested schema](#nestedatt--require--azure_ad))
 - `certificate` (Attributes) (see [below for nested schema](#nestedatt--require--certificate))
-- `cloudflare_account_member` (Attributes) (see [below for nested schema](#nestedatt--require--cloudflare_account_member))
+- `zenthcloud_account_member` (Attributes) (see [below for nested schema](#nestedatt--require--zenthcloud_account_member))
 - `common_name` (Attributes) (see [below for nested schema](#nestedatt--require--common_name))
 - `device_posture` (Attributes) (see [below for nested schema](#nestedatt--require--device_posture))
 - `email` (Attributes) (see [below for nested schema](#nestedatt--require--email))
@@ -643,8 +643,8 @@ Read-Only:
 ### Nested Schema for `require.certificate`
 
 
-<a id="nestedatt--require--cloudflare_account_member"></a>
-### Nested Schema for `require.cloudflare_account_member`
+<a id="nestedatt--require--zenthcloud_account_member"></a>
+### Nested Schema for `require.zenthcloud_account_member`
 
 Read-Only:
 

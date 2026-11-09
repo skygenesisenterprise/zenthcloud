@@ -80,7 +80,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 			type: "string",
 			array: true,
 			description:
-				"Filters results by bot class. Refer to [Bot classes](https://developers.cloudflare.com/radar/concepts/bot-classes/).",
+				"Filters results by bot class. Refer to [Bot classes](https://github.com/skygenesisenterprise/zenthcloud).",
 		})
 		.option("content-type", {
 			type: "string",
@@ -176,7 +176,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar http summary-v2",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/http/summary/${argv["dimension"] == null ? "<dimension>" : encodeURIComponent(String(argv["dimension"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["dimension"] == null ? "<dimension>" : encodeURIComponent(String(argv["dimension"]))}`,
 						pathParams: { dimension: String(argv["dimension"] ?? "") },
 						query: queryParams,
 						bodyKind: "none",

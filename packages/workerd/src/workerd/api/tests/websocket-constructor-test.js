@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -12,7 +12,7 @@ import {
 // Test that WebSocket constructor handles empty protocols array correctly.
 // Per the WebSocket spec, an empty protocols array should be valid and equivalent
 // to not specifying any protocols.
-// See: https://github.com/cloudflare/workerd/issues/5822
+// See: https://github.com/skygenesisenterprise/zenthcloud
 export const emptyProtocolsArray = {
   async test() {
     const ws = new WebSocket('wss://example.com/', []);

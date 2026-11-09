@@ -85,7 +85,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar post-quantum origin timeseries-groups",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/post_quantum/origin/timeseries_groups/${argv["dimension"] == null ? "<dimension>" : encodeURIComponent(String(argv["dimension"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["dimension"] == null ? "<dimension>" : encodeURIComponent(String(argv["dimension"]))}`,
 						pathParams: { dimension: String(argv["dimension"] ?? "") },
 						query: queryParams,
 						bodyKind: "none",

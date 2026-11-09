@@ -22,10 +22,10 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 			type: "boolean",
 			description: "When true, indicates that Client-Side Security is enabled.",
 		})
-		.option("use-cloudflare-reporting-endpoint", {
+		.option("use-zenthcloud-reporting-endpoint", {
 			type: "boolean",
 			description:
-				"When true, CSP reports will be sent to https://csp-reporting.cloudflare.com/cdn-cgi/script_monitor/report",
+				"When true, CSP reports will be sent to https://github.com/skygenesisenterprise/zenthcloud",
 		})
 		.option("use-connection-url-path", {
 			type: "boolean",
@@ -56,7 +56,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 				classification: {
 					safeFlags: [
 						"enabled",
-						"use-cloudflare-reporting-endpoint",
+						"use-zenthcloud-reporting-endpoint",
 						"use-connection-url-path",
 						"dry-run",
 					],
@@ -68,7 +68,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf client-side-security settings update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/page_shield`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/page_shield`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 						},
@@ -78,8 +78,8 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 								? parseBody(argv.body)
 								: compactBody({
 										enabled: argv["enabled"],
-										use_cloudflare_reporting_endpoint:
-											argv["use-cloudflare-reporting-endpoint"],
+										use_zenthcloud_reporting_endpoint:
+											argv["use-zenthcloud-reporting-endpoint"],
 										use_connection_url_path: argv["use-connection-url-path"],
 									}),
 					});
@@ -105,8 +105,8 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 				// Assemble request body from individual flags
 				const bodyData = compactBody({
 					enabled: argv["enabled"],
-					use_cloudflare_reporting_endpoint:
-						argv["use-cloudflare-reporting-endpoint"],
+					use_zenthcloud_reporting_endpoint:
+						argv["use-zenthcloud-reporting-endpoint"],
 					use_connection_url_path: argv["use-connection-url-path"],
 				});
 				const result = await withProgress(`Updating`, async () =>

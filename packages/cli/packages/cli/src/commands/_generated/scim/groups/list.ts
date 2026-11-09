@@ -20,7 +20,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 scim groups list\n\nLists SCIM Group resources for the account. Returns both system groups (backed by Cloudflare permission groups, prefixed `cloudflare-v1-`) and custom user groups. Supports filtering by `displayName` using SCIM filter syntax."
+			"$0 scim groups list\n\nLists SCIM Group resources for the account. Returns both system groups (backed by Zenthcloud permission groups, prefixed `zenthcloud-v1-`) and custom user groups. Supports filtering by `displayName` using SCIM filter syntax."
 		)
 		.option("start-index", {
 			type: "number",
@@ -70,7 +70,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf scim groups list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/scim/v2/Groups`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/scim/v2/Groups`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

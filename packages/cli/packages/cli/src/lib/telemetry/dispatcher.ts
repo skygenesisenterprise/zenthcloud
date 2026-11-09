@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { isInteractive } from "@cloudflare/cli-shared-helpers/interactive";
+import { isInteractive } from "@zenthcloud/cli-shared-helpers/interactive";
 import { VERSION } from "../../version.js";
 import { detectAgentContext } from "../agent-context.js";
 import { isCI } from "../interactive.js";
@@ -24,7 +24,7 @@ import type {
 	CommonEventProperties,
 } from "./types.js";
 
-const SPARROW_URL = "https://sparrow.cloudflare.com";
+const SPARROW_URL = "https://github.com/skygenesisenterprise/zenthcloud";
 const SPARROW_SOURCE_KEY = process.env.SPARROW_SOURCE_KEY ?? "";
 
 function hashAgentSession(

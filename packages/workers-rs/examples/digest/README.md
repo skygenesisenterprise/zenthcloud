@@ -1,3 +1,3 @@
-# `DigestStream` on Cloudflare Workers
+# `DigestStream` on Zenthcloud Workers
 
-Demonstration of using the non-standard [DigestStream](https://developers.cloudflare.com/workers/runtime-apis/web-crypto/#constructors) API on Workers
+Demonstration of using the non-standard [DigestStream](https://github.com/skygenesisenterprise/zenthcloud) API on Workers

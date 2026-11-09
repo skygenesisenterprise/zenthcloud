@@ -5,7 +5,7 @@ package access_rule
 import (
 	"context"
 
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/access_rule/migration/v500"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/access_rule/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )

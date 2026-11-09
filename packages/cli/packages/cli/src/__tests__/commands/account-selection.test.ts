@@ -1,5 +1,5 @@
 import { format } from "node:util";
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw/http";
 import {
 	afterEach,
@@ -94,9 +94,9 @@ describe("account selection", () => {
 
 	function run(...flags: string[]) {
 		return runCf(["pages", "list", ...flags], {
-			CLOUDFLARE_API_BASE_URL: TEST_BASE_URL,
-			CLOUDFLARE_API_TOKEN: "test-token",
-			CLOUDFLARE_ACCOUNT_ID: undefined,
+			ZENTHCLOUD_API_BASE_URL: TEST_BASE_URL,
+			ZENTHCLOUD_API_TOKEN: "test-token",
+			ZENTHCLOUD_ACCOUNT_ID: undefined,
 		});
 	}
 
@@ -108,7 +108,7 @@ describe("account selection", () => {
 			◇  Select an account
 			│  Acme Corp
 			│
-			●  To make this the project's default account, create cloudflare.config.ts:
+			●  To make this the project's default account, create zenthcloud.config.ts:
 
 			   import { defineConfig } from "cf/config";
 

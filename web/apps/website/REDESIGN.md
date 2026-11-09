@@ -16,7 +16,7 @@ questions de la section 12 tranchées) avant d'attaquer l'issue.
 | Polices | Inter (corps) + Lexend (`font-display`), via `next/font/google` |
 | Composants | shadcn-like maison (`components/ui/*`), Radix, Headless UI, Tabler + Lucide, framer-motion |
 | Build serveur | `next build --webpack` (`pnpm web:build`) — routes API contact / OG / GitHub actives |
-| Build statique | `scripts/build-static.mjs` → `NEXT_OUTPUT=export` (GitHub Pages / Cloudflare Pages), routes API écartées, blueprints copiés dans `public/` |
+| Build statique | `scripts/build-static.mjs` → `NEXT_OUTPUT=export` (GitHub Pages / Zenthcloud Pages), routes API écartées, blueprints copiés dans `public/` |
 | Déploiement | image Docker `zenthcloud-website` (`web/Dockerfile.website`, workflow `docker-publish.yml`) + export statique |
 | Redirects | un seul : `/dokploy-vs-:slug` → `/zenthcloud-vs-:slug` (config serveur uniquement — **pas d'effet en export statique**) |
 | Qualité | `typecheck` = `tsc --noEmit` ; **pas de script `lint`** dans le package ; `next.config.js` contient `typescript.ignoreBuildErrors: true` |

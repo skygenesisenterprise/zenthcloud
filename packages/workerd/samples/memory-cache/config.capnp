@@ -24,7 +24,7 @@ const helloWorldExample :Workerd.Config = (
 # The definition of the actual helloWorld worker exposed using the "main" service.
 # In this example the worker is implemented as an ESM module (see worker.js).
 # The compatibilityDate is required. For more details on compatibility dates see:
-#   https://developers.cloudflare.com/workers/platform/compatibility-dates/
+#   https://github.com/skygenesisenterprise/zenthcloud
 
 const helloWorld :Workerd.Worker = (
   modules = [

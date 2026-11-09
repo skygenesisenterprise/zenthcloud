@@ -48,7 +48,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID",
+              "description": "Zenthcloud account ID",
               "type": "string"
             }
           },
@@ -87,8 +87,8 @@ export const tools: readonly Tool[] = [
       body: { mediaTypes: ["application/json"] },
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Networks Write",
-          "Cloudflare Tunnel Write"
+          "Zenthcloud One Networks Write",
+          "Zenthcloud Tunnel Write"
         ]
       },
       responses: {
@@ -128,7 +128,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID",
+              "description": "Zenthcloud account ID",
               "type": "string"
             },
             "hostname_route_id": {
@@ -171,8 +171,8 @@ export const tools: readonly Tool[] = [
       pathOf: encodePath`/accounts/${"account_id"}/zerotrust/routes/hostname/${"hostname_route_id"}`,
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Networks Write",
-          "Cloudflare Tunnel Write"
+          "Zenthcloud One Networks Write",
+          "Zenthcloud Tunnel Write"
         ]
       },
       responses: {
@@ -230,7 +230,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID",
+              "description": "Zenthcloud account ID",
               "type": "string"
             },
             "hostname_route_id": {
@@ -275,8 +275,8 @@ export const tools: readonly Tool[] = [
       body: { mediaTypes: ["application/json"] },
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Networks Write",
-          "Cloudflare Tunnel Write"
+          "Zenthcloud One Networks Write",
+          "Zenthcloud Tunnel Write"
         ]
       },
       responses: {
@@ -316,7 +316,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID",
+              "description": "Zenthcloud account ID",
               "type": "string"
             },
             "hostname_route_id": {
@@ -359,10 +359,10 @@ export const tools: readonly Tool[] = [
       pathOf: encodePath`/accounts/${"account_id"}/zerotrust/routes/hostname/${"hostname_route_id"}`,
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Networks Write",
-          "Cloudflare One Networks Read",
-          "Cloudflare Tunnel Write",
-          "Cloudflare Tunnel Read"
+          "Zenthcloud One Networks Write",
+          "Zenthcloud One Networks Read",
+          "Zenthcloud Tunnel Write",
+          "Zenthcloud Tunnel Read"
         ]
       },
       responses: {
@@ -402,7 +402,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID",
+              "description": "Zenthcloud account ID",
               "type": "string"
             }
           },
@@ -493,10 +493,10 @@ export const tools: readonly Tool[] = [
       ],
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Networks Write",
-          "Cloudflare One Networks Read",
-          "Cloudflare Tunnel Write",
-          "Cloudflare Tunnel Read"
+          "Zenthcloud One Networks Write",
+          "Zenthcloud One Networks Read",
+          "Zenthcloud Tunnel Write",
+          "Zenthcloud Tunnel Read"
         ]
       },
       responses: {

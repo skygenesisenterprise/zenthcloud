@@ -5,9 +5,9 @@ package moq_relay
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/moq"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/moq"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -34,20 +34,20 @@ func (m *MoQRelaysDataSourceModel) toListParams(_ context.Context) (params moq.R
 	diags.Append(errs...)
 
 	params = moq.RelayListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Asc.IsNull() {
-		params.Asc = cloudflare.F(m.Asc.ValueBool())
+		params.Asc = zenthcloud.F(m.Asc.ValueBool())
 	}
 	if !m.CreatedAfter.IsNull() {
-		params.CreatedAfter = cloudflare.F(mCreatedAfter)
+		params.CreatedAfter = zenthcloud.F(mCreatedAfter)
 	}
 	if !m.CreatedBefore.IsNull() {
-		params.CreatedBefore = cloudflare.F(mCreatedBefore)
+		params.CreatedBefore = zenthcloud.F(mCreatedBefore)
 	}
 	if !m.PerPage.IsNull() {
-		params.PerPage = cloudflare.F(m.PerPage.ValueInt64())
+		params.PerPage = zenthcloud.F(m.PerPage.ValueInt64())
 	}
 
 	return

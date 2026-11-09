@@ -5,9 +5,9 @@ package email_security_allow_policy
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/email_security"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/email_security"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -34,35 +34,35 @@ type EmailSecurityAllowPoliciesDataSourceModel struct {
 
 func (m *EmailSecurityAllowPoliciesDataSourceModel) toListParams(_ context.Context) (params email_security.SettingAllowPolicyListParams, diags diag.Diagnostics) {
 	params = email_security.SettingAllowPolicyListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Direction.IsNull() {
-		params.Direction = cloudflare.F(email_security.SettingAllowPolicyListParamsDirection(m.Direction.ValueString()))
+		params.Direction = zenthcloud.F(email_security.SettingAllowPolicyListParamsDirection(m.Direction.ValueString()))
 	}
 	if !m.IsAcceptableSender.IsNull() {
-		params.IsAcceptableSender = cloudflare.F(m.IsAcceptableSender.ValueBool())
+		params.IsAcceptableSender = zenthcloud.F(m.IsAcceptableSender.ValueBool())
 	}
 	if !m.IsExemptRecipient.IsNull() {
-		params.IsExemptRecipient = cloudflare.F(m.IsExemptRecipient.ValueBool())
+		params.IsExemptRecipient = zenthcloud.F(m.IsExemptRecipient.ValueBool())
 	}
 	if !m.IsTrustedSender.IsNull() {
-		params.IsTrustedSender = cloudflare.F(m.IsTrustedSender.ValueBool())
+		params.IsTrustedSender = zenthcloud.F(m.IsTrustedSender.ValueBool())
 	}
 	if !m.Order.IsNull() {
-		params.Order = cloudflare.F(email_security.SettingAllowPolicyListParamsOrder(m.Order.ValueString()))
+		params.Order = zenthcloud.F(email_security.SettingAllowPolicyListParamsOrder(m.Order.ValueString()))
 	}
 	if !m.Pattern.IsNull() {
-		params.Pattern = cloudflare.F(m.Pattern.ValueString())
+		params.Pattern = zenthcloud.F(m.Pattern.ValueString())
 	}
 	if !m.PatternType.IsNull() {
-		params.PatternType = cloudflare.F(email_security.SettingAllowPolicyListParamsPatternType(m.PatternType.ValueString()))
+		params.PatternType = zenthcloud.F(email_security.SettingAllowPolicyListParamsPatternType(m.PatternType.ValueString()))
 	}
 	if !m.Search.IsNull() {
-		params.Search = cloudflare.F(m.Search.ValueString())
+		params.Search = zenthcloud.F(m.Search.ValueString())
 	}
 	if !m.VerifySender.IsNull() {
-		params.VerifySender = cloudflare.F(m.VerifySender.ValueBool())
+		params.VerifySender = zenthcloud.F(m.VerifySender.ValueBool())
 	}
 
 	return

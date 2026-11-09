@@ -1,4 +1,4 @@
-// Generated from cloudflare/workers-sdk@c2bb4c815. Do not rename cases.
+// Generated from zenthcloud/workers-sdk@c2bb4c815. Do not rename cases.
 import { describe, it } from "vite-plus/test";
 
 const groups = [
@@ -40,8 +40,8 @@ const groups = [
 		names: [
 			"is emitted even when there are no account settings",
 			"records the mode from --env",
-			"records the mode from CLOUDFLARE_ENV",
-			"omits the mode when neither --env nor CLOUDFLARE_ENV is set",
+			"records the mode from ZENTHCLOUD_ENV",
+			"omits the mode when neither --env nor ZENTHCLOUD_ENV is set",
 			"records the mode alongside account settings",
 		],
 	},
@@ -260,7 +260,7 @@ const groups = [
 			"should be able to transpile TypeScript (esm)",
 			"should be able to transpile TypeScript (sw)",
 			"should add referenced text modules into the form upload",
-			"should allow cloudflare module import",
+			"should allow zenthcloud module import",
 			"should be able to transpile entry-points in sub-directories (esm)",
 			"should not trigger autoconfig on `wrangler deploy <script>`",
 			"should preserve exports on a module format worker",
@@ -532,7 +532,7 @@ const groups = [
 		file: "unstable-get-miniflare-worker-options.test.ts",
 		ancestors: [
 			"unstable_getMiniflareWorkerOptions",
-			"Cloudflare Access local dev simulation (`ctx.access`)",
+			"Zenthcloud Access local dev simulation (`ctx.access`)",
 		],
 		status: "skip",
 		names: [

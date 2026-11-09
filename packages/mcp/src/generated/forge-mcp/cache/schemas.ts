@@ -10,7 +10,7 @@ export const cache$$purge_Everything: JSONObject = {
   "description": "Purge everything",
   "properties": {
     "purge_everything": {
-      "description": "Set to `true` to target all cached content in the zone, or in the environment for the environment endpoints. Must be the only field in the request. See [Purge everything](https://developers.cloudflare.com/cache/how-to/purge-cache/purge-everything/).",
+      "description": "Set to `true` to target all cached content in the zone, or in the environment for the environment endpoints. Must be the only field in the request. See [Purge everything](https://github.com/skygenesisenterprise/zenthcloud).",
       "type": "boolean"
     }
   },
@@ -24,7 +24,7 @@ export const cache$$purge_FlexPurgeByHostnames: JSONObject = {
   "description": "Purge by hostnames",
   "properties": {
     "hosts": {
-      "description": "Hostnames, such as `www.example.com`. Targets all content cached for these hostnames. See [Purge cache by hostname](https://developers.cloudflare.com/cache/how-to/purge-cache/purge-by-hostname/).",
+      "description": "Hostnames, such as `www.example.com`. Targets all content cached for these hostnames. See [Purge cache by hostname](https://github.com/skygenesisenterprise/zenthcloud).",
       "items": {
         "type": "string"
       },
@@ -41,7 +41,7 @@ export const cache$$purge_FlexPurgeByPrefixes: JSONObject = {
   "description": "Purge by prefixes",
   "properties": {
     "prefixes": {
-      "description": "URL prefixes, each a hostname followed by a path, such as `www.example.com/blog/`. Targets all content whose URL starts with one of these prefixes. Do not include a scheme, query string, or fragment. See [Purge cache by prefix](https://developers.cloudflare.com/cache/how-to/purge-cache/purge_by_prefix/).",
+      "description": "URL prefixes, each a hostname followed by a path, such as `www.example.com/blog/`. Targets all content whose URL starts with one of these prefixes. Do not include a scheme, query string, or fragment. See [Purge cache by prefix](https://github.com/skygenesisenterprise/zenthcloud).",
       "items": {
         "type": "string"
       },
@@ -58,7 +58,7 @@ export const cache$$purge_FlexPurgeByTags: JSONObject = {
   "description": "Purge by tags",
   "properties": {
     "tags": {
-      "description": "Cache tags. Targets all content whose `Cache-Tag` response header contains at least one of these tags. See [Purge cache by cache-tags](https://developers.cloudflare.com/cache/how-to/purge-cache/purge-by-tags/).",
+      "description": "Cache tags. Targets all content whose `Cache-Tag` response header contains at least one of these tags. See [Purge cache by cache-tags](https://github.com/skygenesisenterprise/zenthcloud).",
       "items": {
         "type": "string"
       },
@@ -75,7 +75,7 @@ export const cache$$purge_SingleFile: JSONObject = {
   "description": "Purge files",
   "properties": {
     "files": {
-      "description": "Full URLs, such as `https://www.example.com/css/styles.css`. Targets the content cached for each URL. If your cache key includes request headers, send objects with `url` and `headers` instead. See [Purge by single-file](https://developers.cloudflare.com/cache/how-to/purge-cache/purge-by-single-file/).",
+      "description": "Full URLs, such as `https://www.example.com/css/styles.css`. Targets the content cached for each URL. If your cache key includes request headers, send objects with `url` and `headers` instead. See [Purge by single-file](https://github.com/skygenesisenterprise/zenthcloud).",
       "items": {
         "type": "string"
       },
@@ -92,7 +92,7 @@ export const cache$$purge_SingleFileWithUrlAndHeaders: JSONObject = {
   "description": "Purge files with URL and headers",
   "properties": {
     "files": {
-      "description": "URLs with the request headers your cache key uses. Use this form when your cache key includes request headers, or the visitor's device type, country, or language: send the header values each URL was cached with, such as `CF-Device-Type`, `CF-IPCountry`, or `Accept-Language`.\n\nWhen you send the `Origin` header, include the scheme and hostname. Include the port unless it is the default for the scheme: 80 for `http`, 443 for `https`.\n\nSee [Purge by single-file](https://developers.cloudflare.com/cache/how-to/purge-cache/purge-by-single-file/).",
+      "description": "URLs with the request headers your cache key uses. Use this form when your cache key includes request headers, or the visitor's device type, country, or language: send the header values each URL was cached with, such as `CF-Device-Type`, `CF-IPCountry`, or `Accept-Language`.\n\nWhen you send the `Origin` header, include the scheme and hostname. Include the port unless it is the default for the scheme: 80 for `http`, 443 for `https`.\n\nSee [Purge by single-file](https://github.com/skygenesisenterprise/zenthcloud).",
       "items": {
         "properties": {
           "headers": {

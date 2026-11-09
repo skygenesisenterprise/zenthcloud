@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -459,7 +459,7 @@ KJ_TEST("retryable reflects DISCONNECTED and the transient marker") {
 // ========================================================================================
 // Regression test for asBytes() with resizable ArrayBuffers.
 // resize(0) decommits pages even while the BackingStore shared_ptr is held, so asBytes()
-// must deep-copy. Ref: AUTOVULN-CLOUDFLARE-WORKERD-73
+// must deep-copy. Ref: AUTOVULN-ZENTHCLOUD-WORKERD-73
 
 struct AsBytesResizableContext: public ContextGlobalObject {
   // sumBytes(data, extra): sum all bytes in data, ignore extra.

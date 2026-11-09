@@ -9,7 +9,7 @@ import type { JSONObject } from "@modelcontextprotocol/server";
 export const dns$$settings_account_settings_patch: JSONObject = {
   "properties": {
     "enforce_dns_only": {
-      "description": "When enabled, forces all proxied DNS records in the account to behave as DNS-only at the edge, regardless of each record's individual proxy setting. Note that this account-level override does not modify the records themselves; it only affects how they are served at the edge. See more on [Enforce DNS-only](https://developers.cloudflare.com/dns/proxy-status/enforce-dns-only).",
+      "description": "When enabled, forces all proxied DNS records in the account to behave as DNS-only at the edge, regardless of each record's individual proxy setting. Note that this account-level override does not modify the records themselves; it only affects how they are served at the edge. See more on [Enforce DNS-only](https://github.com/skygenesisenterprise/zenthcloud).",
       "type": "boolean"
     },
     "zone_defaults": {
@@ -36,9 +36,9 @@ export const dns$$settings_dns$$settings$$account$$patch: JSONObject = {
             "type": {
               "description": "Nameserver type",
               "enum": [
-                "cloudflare.standard",
-                "cloudflare.advanced",
-                "cloudflare.standard.random",
+                "zenthcloud.standard",
+                "zenthcloud.advanced",
+                "zenthcloud.standard.random",
                 "custom.account",
                 "custom.tenant"
               ],
@@ -73,7 +73,7 @@ export const dns$$settings_dns$$settings$$patch: JSONObject = {
       "description": "Settings for this internal zone."
     },
     "multi_provider": {
-      "description": "Whether to enable multi-provider DNS, which causes Cloudflare to activate the zone even when non-Cloudflare NS records exist, and to respect NS records at the zone apex during outbound zone transfers.",
+      "description": "Whether to enable multi-provider DNS, which causes Zenthcloud to activate the zone even when non-Zenthcloud NS records exist, and to respect NS records at the zone apex during outbound zone transfers.",
       "type": "boolean"
     },
     "ns_ttl": {
@@ -130,7 +130,7 @@ export const dns$$settings_soa$$base: JSONObject = {
       "type": "number"
     },
     "mname": {
-      "description": "The primary nameserver, which may be used for outbound zone transfers. If null, a Cloudflare-assigned value will be used.",
+      "description": "The primary nameserver, which may be used for outbound zone transfers. If null, a Zenthcloud-assigned value will be used.",
       "oneOf": [
         {
           "type": "string"

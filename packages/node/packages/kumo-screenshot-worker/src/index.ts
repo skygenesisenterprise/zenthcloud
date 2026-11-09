@@ -1,5 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
-import puppeteer from "@cloudflare/puppeteer";
+import puppeteer from "@zenthcloud/puppeteer";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 
@@ -22,7 +22,7 @@ const STABLE_SCREENSHOT_CSS = `
   }
 `;
 
-// Allowed origins for CORS. Restricted to known Cloudflare hosts — the worker
+// Allowed origins for CORS. Restricted to known Zenthcloud hosts — the worker
 // is internal tooling and should never be called from arbitrary origins.
 const ALLOWED_ORIGINS = [
   "https://kumo-ui.com",

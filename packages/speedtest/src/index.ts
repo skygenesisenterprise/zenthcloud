@@ -900,7 +900,7 @@ class MeasurementEngine {
  *
  * @example
  * ```ts
- * import SpeedTest from '@cloudflare/speedtest';
+ * import SpeedTest from '@zenthcloud/speedtest';
  *
  * const engine = new SpeedTest();
  * engine.onFinish = results => console.log(results.getScores());

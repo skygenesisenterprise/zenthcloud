@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_web3_hostname Data Source - Cloudflare"
+page_title: "zenthcloud_web3_hostname Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Web3 Hostnames ReadWeb3 Hostnames Write
 ---
 
-# cloudflare_web3_hostname (Data Source)
+# zenthcloud_web3_hostname (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_web3_hostname" "example_web3_hostname" {
+data "zenthcloud_web3_hostname" "example_web3_hostname" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   identifier = "023e105f4ecef8ad9ca31a8372d0c353"
 }

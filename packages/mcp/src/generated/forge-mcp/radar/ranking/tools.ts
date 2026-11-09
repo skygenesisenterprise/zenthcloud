@@ -609,7 +609,7 @@ export const tools: readonly Tool[] = [
   {
     name: "radar_ranking_top",
     title: "Get top or trending domains",
-    description: "Retrieves the top or trending domains based on their rank. Popular domains are domains of broad appeal based on how people use the Internet. Trending domains are domains that are generating a surge in interest. For more information on top domains, see https://blog.cloudflare.com/radar-domain-rankings/.\n\nGET /radar/ranking/top",
+    description: "Retrieves the top or trending domains based on their rank. Popular domains are domains of broad appeal based on how people use the Internet. Trending domains are domains that are generating a surge in interest. For more information on top domains, see https://github.com/skygenesisenterprise/zenthcloud\n\nGET /radar/ranking/top",
     inputSchema: {
       type: "object",
       properties: {

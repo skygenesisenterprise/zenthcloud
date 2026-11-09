@@ -5,9 +5,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceAccessMutualTLSCertificateSchema returns the minimal schema for the legacy cloudflare_access_mutual_tls_certificate resource.
+// SourceAccessMutualTLSCertificateSchema returns the minimal schema for the legacy zenthcloud_access_mutual_tls_certificate resource.
 // Schema version: 0 (SDKv2 default)
-// Resource type: cloudflare_access_mutual_tls_certificate
+// Resource type: zenthcloud_access_mutual_tls_certificate
 //
 // This minimal schema is used only for reading v4 state during migration.
 // It includes only the properties needed for state parsing (Required, Optional, Computed, ElementType).

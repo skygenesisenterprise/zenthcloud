@@ -16,9 +16,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -114,8 +114,8 @@ var ExpectEmptyPlanExceptIncludeExcludeDrift = expectEmptyPlanExceptIncludeExclu
 // - Current v5 release: auto-updates with releases (internal.PackageVersion)
 //
 // Based on zero_trust_device_profiles → zero_trust_device_custom_profile migration:
-// - v4: cloudflare_zero_trust_device_profiles (with match AND precedence)
-// - v5: cloudflare_zero_trust_device_custom_profile
+// - v4: zenthcloud_zero_trust_device_profiles (with match AND precedence)
+// - v5: zenthcloud_zero_trust_device_custom_profile
 
 // Embed migration test configuration files
 //
@@ -176,7 +176,7 @@ func TestMigrateDeviceCustomProfileBasic(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			// Use timestamp-based precedence to ensure uniqueness (within valid range 1-999)
@@ -196,8 +196,8 @@ func TestMigrateDeviceCustomProfileBasic(t *testing.T) {
 				// Use external v4 provider (will create version=0 state)
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -235,38 +235,38 @@ func TestMigrateDeviceCustomProfileBasic(t *testing.T) {
 							},
 						},
 						ConfigStateChecks: []statecheck.StateCheck{
-						// Resource should be renamed to cloudflare_zero_trust_device_custom_profile
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+						// Resource should be renamed to zenthcloud_zero_trust_device_custom_profile
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 
 						// Validate fields kept from v4
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("name"), knownvalue.StringExact("Custom Profile Test")),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("description"), knownvalue.StringExact("Test custom device profile")),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("match"), knownvalue.StringExact("identity.email == \"test@example.com\"")),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("name"), knownvalue.StringExact("Custom Profile Test")),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("description"), knownvalue.StringExact("Test custom device profile")),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("match"), knownvalue.StringExact("identity.email == \"test@example.com\"")),
 
 						// Validate type conversions Int64 → Float64
 						// Note: precedence is allowed to drift (API auto-assigns values), so we just check it exists
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("precedence"), knownvalue.NotNull()),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("auto_connect"), knownvalue.Float64Exact(0)),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("captive_portal"), knownvalue.Float64Exact(180)),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("precedence"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("auto_connect"), knownvalue.Float64Exact(0)),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("captive_portal"), knownvalue.Float64Exact(180)),
 
 						// Validate service_mode_v2 structure change (flatten → nested)
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("service_mode_v2").AtMapKey("mode"), knownvalue.StringExact("proxy")),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("service_mode_v2").AtMapKey("port"), knownvalue.Float64Exact(3128)),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("service_mode_v2").AtMapKey("mode"), knownvalue.StringExact("proxy")),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("service_mode_v2").AtMapKey("port"), knownvalue.Float64Exact(3128)),
 
 						// Validate policy_id extracted from ID (computed field)
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("policy_id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("policy_id"), knownvalue.NotNull()),
 
 						// Validate pass-through fields
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("disable_auto_fallback"), knownvalue.Bool(false)),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("allow_mode_switch"), knownvalue.Bool(false)),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("switch_locked"), knownvalue.Bool(false)),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("allow_updates"), knownvalue.Bool(true)),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("allowed_to_leave"), knownvalue.Bool(true)),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("support_url"), knownvalue.StringExact("https://support.example.com")),
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("tunnel_protocol"), knownvalue.StringExact("wireguard")),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("disable_auto_fallback"), knownvalue.Bool(false)),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("allow_mode_switch"), knownvalue.Bool(false)),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("switch_locked"), knownvalue.Bool(false)),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("allow_updates"), knownvalue.Bool(true)),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("allowed_to_leave"), knownvalue.Bool(true)),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("support_url"), knownvalue.StringExact("https://support.example.com")),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("tunnel_protocol"), knownvalue.StringExact("wireguard")),
 
 						// Computed fields should be populated by API (just check they're set)
-						statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("default"), knownvalue.Bool(false)),
+						statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("default"), knownvalue.Bool(false)),
 					},
 				},
 			},
@@ -298,7 +298,7 @@ func TestMigrateDeviceCustomProfileWithServiceModeV2(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			precedence := 1 + int(time.Now().Unix()%998)
@@ -314,8 +314,8 @@ func TestMigrateDeviceCustomProfileWithServiceModeV2(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -349,16 +349,16 @@ func TestMigrateDeviceCustomProfileWithServiceModeV2(t *testing.T) {
 							},
 						},
 						ConfigStateChecks: []statecheck.StateCheck{
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("name"), knownvalue.StringExact("Custom Profile with Service Mode")),
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("match"), knownvalue.StringExact("identity.email == \"admin@example.com\"")),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("name"), knownvalue.StringExact("Custom Profile with Service Mode")),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("match"), knownvalue.StringExact("identity.email == \"admin@example.com\"")),
 
 							// Verify service_mode_v2 nested object (mode="warp", port is null/not set)
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("service_mode_v2").AtMapKey("mode"), knownvalue.StringExact("warp")),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("service_mode_v2").AtMapKey("mode"), knownvalue.StringExact("warp")),
 
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("allow_mode_switch"), knownvalue.Bool(false)),
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("auto_connect"), knownvalue.Float64Exact(15)),
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("captive_portal"), knownvalue.Float64Exact(300)),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("allow_mode_switch"), knownvalue.Bool(false)),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("auto_connect"), knownvalue.Float64Exact(15)),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("captive_portal"), knownvalue.Float64Exact(300)),
 						},
 					},
 				},
@@ -390,7 +390,7 @@ func TestMigrateDeviceCustomProfileMaximal(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			precedence := 1 + int(time.Now().Unix()%998)
@@ -406,8 +406,8 @@ func TestMigrateDeviceCustomProfileMaximal(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -441,28 +441,28 @@ func TestMigrateDeviceCustomProfileMaximal(t *testing.T) {
 							},
 						},
 						ConfigStateChecks: []statecheck.StateCheck{
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("name"), knownvalue.StringExact("Maximal Custom Profile")),
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("description"), knownvalue.StringExact("Test custom profile with all optional fields")),
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("match"), knownvalue.StringExact("identity.email == \"maximal@example.com\"")),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("name"), knownvalue.StringExact("Maximal Custom Profile")),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("description"), knownvalue.StringExact("Test custom profile with all optional fields")),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("match"), knownvalue.StringExact("identity.email == \"maximal@example.com\"")),
 
 							// Verify boolean fields
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("allow_mode_switch"), knownvalue.Bool(false)),
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("allow_updates"), knownvalue.Bool(true)),
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("allowed_to_leave"), knownvalue.Bool(false)),
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("disable_auto_fallback"), knownvalue.Bool(true)),
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("switch_locked"), knownvalue.Bool(true)),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("allow_mode_switch"), knownvalue.Bool(false)),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("allow_updates"), knownvalue.Bool(true)),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("allowed_to_leave"), knownvalue.Bool(false)),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("disable_auto_fallback"), knownvalue.Bool(true)),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("switch_locked"), knownvalue.Bool(true)),
 
 							// Verify numeric fields
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("auto_connect"), knownvalue.Float64Exact(30)),
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("captive_portal"), knownvalue.Float64Exact(600)),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("auto_connect"), knownvalue.Float64Exact(30)),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("captive_portal"), knownvalue.Float64Exact(600)),
 
 							// Verify string fields
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("support_url"), knownvalue.StringExact("https://support.custom.cf-tf-test.com")),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("support_url"), knownvalue.StringExact("https://support.custom.cf-tf-test.com")),
 
 							// Verify service_mode_v2 nested object
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("service_mode_v2").AtMapKey("mode"), knownvalue.StringExact("proxy")),
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("service_mode_v2").AtMapKey("port"), knownvalue.Float64Exact(443)),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("service_mode_v2").AtMapKey("mode"), knownvalue.StringExact("proxy")),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("service_mode_v2").AtMapKey("port"), knownvalue.Float64Exact(443)),
 						},
 					},
 				},
@@ -473,7 +473,7 @@ func TestMigrateDeviceCustomProfileMaximal(t *testing.T) {
 
 // TestMigrateDeviceCustomProfileOldResourceName tests migration from old resource name
 // Key transformations tested:
-// - cloudflare_device_settings_policy → cloudflare_zero_trust_device_custom_profile
+// - zenthcloud_device_settings_policy → zenthcloud_zero_trust_device_custom_profile
 func TestMigrateDeviceCustomProfileOldResourceName(t *testing.T) {
 	testCases := []struct {
 		name     string
@@ -490,7 +490,7 @@ func TestMigrateDeviceCustomProfileOldResourceName(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			precedence := 1 + int(time.Now().Unix()%998)
@@ -499,8 +499,8 @@ func TestMigrateDeviceCustomProfileOldResourceName(t *testing.T) {
 
 			firstStep := resource.TestStep{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: tc.version,
 					},
 				},
@@ -534,17 +534,17 @@ func TestMigrateDeviceCustomProfileOldResourceName(t *testing.T) {
 						},
 						ConfigStateChecks: []statecheck.StateCheck{
 							// Verify resource type changed to new custom profile name
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("name"), knownvalue.StringExact("Old Name Custom Profile")),
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("match"), knownvalue.StringExact("identity.email == \"legacy@example.com\"")),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("name"), knownvalue.StringExact("Old Name Custom Profile")),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("match"), knownvalue.StringExact("identity.email == \"legacy@example.com\"")),
 
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("allow_mode_switch"), knownvalue.Bool(true)),
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("auto_connect"), knownvalue.Float64Exact(0)),
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("captive_portal"), knownvalue.Float64Exact(300)),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("allow_mode_switch"), knownvalue.Bool(true)),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("auto_connect"), knownvalue.Float64Exact(0)),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("captive_portal"), knownvalue.Float64Exact(300)),
 
 							// Verify service_mode_v2 nested object
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("service_mode_v2").AtMapKey("mode"), knownvalue.StringExact("proxy")),
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("service_mode_v2").AtMapKey("port"), knownvalue.Float64Exact(8080)),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("service_mode_v2").AtMapKey("mode"), knownvalue.StringExact("proxy")),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("service_mode_v2").AtMapKey("port"), knownvalue.Float64Exact(8080)),
 						},
 					},
 				},
@@ -576,7 +576,7 @@ func TestMigrateDeviceCustomProfileHighPrecedence(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			precedence := 1 + int(time.Now().Unix()%998)
@@ -592,8 +592,8 @@ func TestMigrateDeviceCustomProfileHighPrecedence(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -627,20 +627,20 @@ func TestMigrateDeviceCustomProfileHighPrecedence(t *testing.T) {
 							},
 						},
 						ConfigStateChecks: []statecheck.StateCheck{
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("name"), knownvalue.StringExact("High Priority Profile")),
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("match"), knownvalue.StringExact("identity.email == \"vip@example.com\"")),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("name"), knownvalue.StringExact("High Priority Profile")),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("match"), knownvalue.StringExact("identity.email == \"vip@example.com\"")),
 
 							// Verify precedence exists (API may auto-assign different value)
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("precedence"), knownvalue.NotNull()),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("precedence"), knownvalue.NotNull()),
 
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("allow_mode_switch"), knownvalue.Bool(true)),
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("auto_connect"), knownvalue.Float64Exact(5)),
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("captive_portal"), knownvalue.Float64Exact(120)),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("allow_mode_switch"), knownvalue.Bool(true)),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("auto_connect"), knownvalue.Float64Exact(5)),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("captive_portal"), knownvalue.Float64Exact(120)),
 
 							// Verify service_mode_v2 nested object
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("service_mode_v2").AtMapKey("mode"), knownvalue.StringExact("proxy")),
-							statecheck.ExpectKnownValue("cloudflare_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("service_mode_v2").AtMapKey("port"), knownvalue.Float64Exact(8080)),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("service_mode_v2").AtMapKey("mode"), knownvalue.StringExact("proxy")),
+							statecheck.ExpectKnownValue("zenthcloud_zero_trust_device_custom_profile."+rnd, tfjsonpath.New("service_mode_v2").AtMapKey("port"), knownvalue.Float64Exact(8080)),
 						},
 					},
 				},

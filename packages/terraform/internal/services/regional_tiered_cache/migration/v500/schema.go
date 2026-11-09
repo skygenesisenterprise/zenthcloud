@@ -4,11 +4,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-// SourceCloudflareRegionalTieredCacheSchema returns the legacy cloudflare_regional_tiered_cache schema (schema_version=0).
+// SourceZenthcloudRegionalTieredCacheSchema returns the legacy zenthcloud_regional_tiered_cache schema (schema_version=0).
 // This is used by UpgradeFromLegacyV0 to parse state from the legacy SDKv2 provider.
 //
 // Schema version: 0 (SDKv2 default - no explicit SchemaVersion set in v4 resource)
-// Resource type: cloudflare_regional_tiered_cache (NOT renamed in v5)
+// Resource type: zenthcloud_regional_tiered_cache (NOT renamed in v5)
 //
 // This minimal schema includes only the properties needed for state parsing:
 // - Required, Optional, Computed flags
@@ -20,8 +20,8 @@ import (
 // - Descriptions/MarkdownDescription
 // - Default values
 //
-// Reference: https://github.com/cloudflare/terraform-provider-cloudflare/blob/v4/internal/sdkv2provider/schema_cloudflare_regional_tiered_cache.go
-func SourceCloudflareRegionalTieredCacheSchema() schema.Schema {
+// Reference: https://github.com/skygenesisenterprise/zenthcloud
+func SourceZenthcloudRegionalTieredCacheSchema() schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			// id: Set to zone_id in v4 provider (see resource.go line 42: d.SetId(zoneID))

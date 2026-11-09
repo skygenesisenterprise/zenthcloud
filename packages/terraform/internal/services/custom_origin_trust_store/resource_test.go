@@ -15,10 +15,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/acm"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/acm"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -29,24 +29,24 @@ import (
 )
 
 func init() {
-	resource.AddTestSweepers("cloudflare_custom_origin_trust_store", &resource.Sweeper{
-		Name: "cloudflare_custom_origin_trust_store",
-		F:    testSweepCloudflareCustomOriginTrustStores,
+	resource.AddTestSweepers("zenthcloud_custom_origin_trust_store", &resource.Sweeper{
+		Name: "zenthcloud_custom_origin_trust_store",
+		F:    testSweepZenthcloudCustomOriginTrustStores,
 	})
 }
 
-func testSweepCloudflareCustomOriginTrustStores(r string) error {
+func testSweepZenthcloudCustomOriginTrustStores(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	if zoneID == "" {
-		tflog.Info(ctx, "CLOUDFLARE_ZONE_ID not set, skipping custom origin trust store sweep")
+		tflog.Info(ctx, "ZENTHCLOUD_ZONE_ID not set, skipping custom origin trust store sweep")
 		return nil
 	}
 
 	certs, err := client.ACM.CustomTrustStore.List(ctx, acm.CustomTrustStoreListParams{
-		ZoneID: cloudflare.F(zoneID),
+		ZoneID: zenthcloud.F(zoneID),
 	})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to list custom origin trust store certificates: %s", err))
@@ -56,7 +56,7 @@ func testSweepCloudflareCustomOriginTrustStores(r string) error {
 	for _, cert := range certs.Result {
 		tflog.Info(ctx, fmt.Sprintf("Deleting custom origin trust store certificate: %s", cert.ID))
 		_, err := client.ACM.CustomTrustStore.Delete(ctx, cert.ID, acm.CustomTrustStoreDeleteParams{
-			ZoneID: cloudflare.F(zoneID),
+			ZoneID: zenthcloud.F(zoneID),
 		})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete custom origin trust store certificate %s: %s", cert.ID, err))
@@ -70,10 +70,10 @@ func TestMain(m *testing.M) {
 	resource.TestMain(m)
 }
 
-func TestAccCloudflareCustomOriginTrustStore_FullLifecycle(t *testing.T) {
+func TestAccZenthcloudCustomOriginTrustStore_FullLifecycle(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_custom_origin_trust_store.%s", rnd)
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	name := fmt.Sprintf("zenthcloud_custom_origin_trust_store.%s", rnd)
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	cert, err := generateSelfSignedCert(rnd)
 	if err != nil {
@@ -85,11 +85,11 @@ func TestAccCloudflareCustomOriginTrustStore_FullLifecycle(t *testing.T) {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareCustomOriginTrustStoreDestroy,
+		CheckDestroy:             testAccCheckZenthcloudCustomOriginTrustStoreDestroy,
 		Steps: []resource.TestStep{
 			// Create and Read
 			{
-				Config: testAccCloudflareCustomOriginTrustStoreConfig(rnd, zoneID, cert),
+				Config: testAccZenthcloudCustomOriginTrustStoreConfig(rnd, zoneID, cert),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("id"), knownvalue.NotNull()),
@@ -103,7 +103,7 @@ func TestAccCloudflareCustomOriginTrustStore_FullLifecycle(t *testing.T) {
 			},
 			// Re-apply same config to verify no drift
 			{
-				Config: testAccCloudflareCustomOriginTrustStoreConfig(rnd, zoneID, cert),
+				Config: testAccZenthcloudCustomOriginTrustStoreConfig(rnd, zoneID, cert),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -114,18 +114,18 @@ func TestAccCloudflareCustomOriginTrustStore_FullLifecycle(t *testing.T) {
 			{
 				ResourceName:      name,
 				ImportState:       true,
-				ImportStateIdFunc: testAccCloudflareCustomOriginTrustStoreImportStateIdFunc(name),
+				ImportStateIdFunc: testAccZenthcloudCustomOriginTrustStoreImportStateIdFunc(name),
 				ImportStateVerify: true,
 			},
 		},
 	})
 }
 
-func testAccCheckCloudflareCustomOriginTrustStoreDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudCustomOriginTrustStoreDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_custom_origin_trust_store" {
+		if rs.Type != "zenthcloud_custom_origin_trust_store" {
 			continue
 		}
 
@@ -136,7 +136,7 @@ func testAccCheckCloudflareCustomOriginTrustStoreDestroy(s *terraform.State) err
 			context.Background(),
 			certID,
 			acm.CustomTrustStoreGetParams{
-				ZoneID: cloudflare.F(zoneID),
+				ZoneID: zenthcloud.F(zoneID),
 			},
 		)
 
@@ -155,7 +155,7 @@ func testAccCheckCloudflareCustomOriginTrustStoreDestroy(s *terraform.State) err
 	return nil
 }
 
-func testAccCloudflareCustomOriginTrustStoreImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
+func testAccZenthcloudCustomOriginTrustStoreImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -201,17 +201,17 @@ func generateSelfSignedCert(testName string) (string, error) {
 	return string(certPEM), nil
 }
 
-func testAccCloudflareCustomOriginTrustStoreConfig(rnd, zoneID, cert string) string {
+func testAccZenthcloudCustomOriginTrustStoreConfig(rnd, zoneID, cert string) string {
 	return acctest.LoadTestCase("customorigintruststorelifecycle.tf", rnd, zoneID, cert)
 }
 
-// TestAccCloudflareCustomOriginTrustStore_NoTrailingNewline tests that
+// TestAccZenthcloudCustomOriginTrustStore_NoTrailingNewline tests that
 // the provider properly handles certificates without trailing newlines and doesn't
 // detect drift. This verifies the normalization logic for the certificate field.
-func TestAccCloudflareCustomOriginTrustStore_NoTrailingNewline(t *testing.T) {
+func TestAccZenthcloudCustomOriginTrustStore_NoTrailingNewline(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_custom_origin_trust_store.%s", rnd)
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	name := fmt.Sprintf("zenthcloud_custom_origin_trust_store.%s", rnd)
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	cert, err := generateSelfSignedCert(rnd)
 	if err != nil {
@@ -226,11 +226,11 @@ func TestAccCloudflareCustomOriginTrustStore_NoTrailingNewline(t *testing.T) {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareCustomOriginTrustStoreDestroy,
+		CheckDestroy:             testAccCheckZenthcloudCustomOriginTrustStoreDestroy,
 		Steps: []resource.TestStep{
 			// Create and Read
 			{
-				Config: testAccCloudflareCustomOriginTrustStoreNoTrailingNewlineConfig(rnd, zoneID, certNoTrailingNewline),
+				Config: testAccZenthcloudCustomOriginTrustStoreNoTrailingNewlineConfig(rnd, zoneID, certNoTrailingNewline),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("id"), knownvalue.NotNull()),
@@ -240,7 +240,7 @@ func TestAccCloudflareCustomOriginTrustStore_NoTrailingNewline(t *testing.T) {
 			},
 			// Re-apply same config to verify no drift
 			{
-				Config: testAccCloudflareCustomOriginTrustStoreNoTrailingNewlineConfig(rnd, zoneID, certNoTrailingNewline),
+				Config: testAccZenthcloudCustomOriginTrustStoreNoTrailingNewlineConfig(rnd, zoneID, certNoTrailingNewline),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -252,10 +252,10 @@ func TestAccCloudflareCustomOriginTrustStore_NoTrailingNewline(t *testing.T) {
 }
 
 // Mocks hardcoded certificates that end without trailing new line /n
-func testAccCloudflareCustomOriginTrustStoreNoTrailingNewlineConfig(rnd, zoneID, cert string) string {
+func testAccZenthcloudCustomOriginTrustStoreNoTrailingNewlineConfig(rnd, zoneID, cert string) string {
 	escapedCert := strings.ReplaceAll(cert, "\n", `\n`)
 	return fmt.Sprintf(`
-resource "cloudflare_custom_origin_trust_store" "%s" {
+resource "zenthcloud_custom_origin_trust_store" "%s" {
   zone_id     = "%s"
   certificate = "%s"
 }

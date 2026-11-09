@@ -8,10 +8,10 @@ import (
 // Source Models (Legacy Provider - v4.x)
 // ============================================================================
 
-// SourceCloudflareDevicePostureIntegrationModel represents the legacy resource state from v4.x provider.
+// SourceZenthcloudDevicePostureIntegrationModel represents the legacy resource state from v4.x provider.
 // Schema version: 0 (SDKv2 implicit)
-// Resource type: cloudflare_device_posture_integration
-type SourceCloudflareDevicePostureIntegrationModel struct {
+// Resource type: zenthcloud_device_posture_integration
+type SourceZenthcloudDevicePostureIntegrationModel struct {
 	ID         types.String        `tfsdk:"id"`
 	AccountID  types.String        `tfsdk:"account_id"`
 	Name       types.String        `tfsdk:"name"`
@@ -40,7 +40,7 @@ type SourceConfigModel struct {
 
 // TargetZeroTrustDevicePostureIntegrationModel represents the current resource state from v5.x+ provider.
 // Schema version: 500
-// Resource type: cloudflare_zero_trust_device_posture_integration
+// Resource type: zenthcloud_zero_trust_device_posture_integration
 //
 // Note: This matches the model in the parent package's model.go file.
 // We duplicate it here to keep the migration package self-contained.

@@ -12,7 +12,7 @@ import type { CommandModule } from "yargs";
 const command: CommandModule<CommonYargsOptions> = {
 	command: "realtime",
 	describe:
-		"Real-time audio, video, and data services on Cloudflare's global network",
+		"Real-time audio, video, and data services on Zenthcloud's global network",
 
 	builder: (yargs) => {
 		return yargs

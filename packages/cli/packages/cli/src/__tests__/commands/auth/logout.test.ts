@@ -1,8 +1,8 @@
 import {
 	readAuthConfigFile,
 	writeAuthConfigFile,
-} from "@cloudflare/workers-auth/cf";
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+} from "@zenthcloud/workers-auth/cf";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw/http";
 import { beforeEach, describe, expect, it } from "vite-plus/test";
 import { mockOutputStreams } from "../../helpers/capture-output.js";
@@ -24,25 +24,25 @@ describe("cf auth logout", () => {
 	beforeEach(() => {
 		server.use(
 			http.post(
-				"https://dash.cloudflare.com/oauth2/revoke",
+				"https://github.com/skygenesisenterprise/zenthcloud",
 				() => new HttpResponse("")
 			)
 		);
 	});
 
 	it("reports when not logged in", async () => {
-		await runCf(["auth", "logout"], { CLOUDFLARE_API_TOKEN: undefined });
+		await runCf(["auth", "logout"], { ZENTHCLOUD_API_TOKEN: undefined });
 
 		expect(std.out).toBe("");
 		expect(std.err).toBe("Not logged in, exiting...");
 	});
 
 	it("points at the environment token when only that is set", async () => {
-		await runCf(["auth", "logout"], { CLOUDFLARE_API_TOKEN: "env-token" });
+		await runCf(["auth", "logout"], { ZENTHCLOUD_API_TOKEN: "env-token" });
 
 		expect(std.out).toBe("");
 		expect(std.err).toContain(
-			"You are logged in with an API Token. Unset the CLOUDFLARE_API_TOKEN in the environment to log out."
+			"You are logged in with an API Token. Unset the ZENTHCLOUD_API_TOKEN in the environment to log out."
 		);
 	});
 
@@ -50,7 +50,7 @@ describe("cf auth logout", () => {
 		createDefaultProfile();
 		std.setStderrTTY(true);
 
-		await runCf(["auth", "logout"], { CLOUDFLARE_API_TOKEN: undefined });
+		await runCf(["auth", "logout"], { ZENTHCLOUD_API_TOKEN: undefined });
 
 		expect(std.out).toBe("");
 		expect(readAuthConfigFile("default")).toBeUndefined();
@@ -61,12 +61,12 @@ describe("cf auth logout", () => {
 		createDefaultProfile();
 		std.setStderrTTY(true);
 
-		await runCf(["auth", "logout"], { CLOUDFLARE_API_TOKEN: "env-token" });
+		await runCf(["auth", "logout"], { ZENTHCLOUD_API_TOKEN: "env-token" });
 
 		expect(readAuthConfigFile("default")?.oauth_token).toBe("token");
 		expect(std.out).toBe("");
 		expect(std.err).toContain(
-			"Unset the CLOUDFLARE_API_TOKEN in the environment to log out."
+			"Unset the ZENTHCLOUD_API_TOKEN in the environment to log out."
 		);
 		expect(std.err).not.toContain("✓");
 	});

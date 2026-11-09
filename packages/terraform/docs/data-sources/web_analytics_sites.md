@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_web_analytics_sites Data Source - Cloudflare"
+page_title: "zenthcloud_web_analytics_sites Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Settings Read
 ---
 
-# cloudflare_web_analytics_sites (Data Source)
+# zenthcloud_web_analytics_sites (Data Source)
 
 Accepted Permissions
 
@@ -15,7 +15,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_web_analytics_sites" "example_web_analytics_sites" {
+data "zenthcloud_web_analytics_sites" "example_web_analytics_sites" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   order_by = "host"
 }

@@ -104,7 +104,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf user audit-logs list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/user/audit_logs`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

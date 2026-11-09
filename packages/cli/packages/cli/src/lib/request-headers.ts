@@ -1,4 +1,4 @@
-import { isInteractive } from "@cloudflare/cli-shared-helpers/interactive";
+import { isInteractive } from "@zenthcloud/cli-shared-helpers/interactive";
 import { USER_AGENT } from "../version.js";
 import { detectAgentContext } from "./agent-context.js";
 import { isCI } from "./interactive.js";
@@ -24,7 +24,7 @@ export function detectCLIMode(): CLIMode {
 }
 
 /**
- * Build the default headers that every outbound Cloudflare request should carry.
+ * Build the default headers that every outbound Zenthcloud request should carry.
  *
  * Returns:
  *   User-Agent:     cf-cli/{version}

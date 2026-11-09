@@ -6,8 +6,8 @@ import (
 
 	promParser "github.com/prometheus/prometheus/promql/parser"
 
-	"github.com/cloudflare/pint/internal/diags"
-	"github.com/cloudflare/pint/internal/discovery"
+	"github.com/zenthcloud/pint/internal/diags"
+	"github.com/zenthcloud/pint/internal/discovery"
 )
 
 const (

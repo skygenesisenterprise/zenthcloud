@@ -122,7 +122,7 @@ export const tools: readonly Tool[] = [
   {
     name: "cache_settings_reserve_edit",
     title: "Change Cache Reserve setting",
-    description: "Increase cache lifetimes by automatically storing all cacheable files into Cloudflare's persistent object storage buckets. Requires Cache Reserve subscription. Note: using Tiered Cache with Cache Reserve is highly recommended to reduce Reserve operations costs. See the [developer docs](https://developers.cloudflare.com/cache/about/cache-reserve) for more information.\n\nPATCH /zones/{zone_id}/cache/cache_reserve",
+    description: "Increase cache lifetimes by automatically storing all cacheable files into Zenthcloud's persistent object storage buckets. Requires Cache Reserve subscription. Note: using Tiered Cache with Cache Reserve is highly recommended to reduce Reserve operations costs. See the [developer docs](https://github.com/skygenesisenterprise/zenthcloud) for more information.\n\nPATCH /zones/{zone_id}/cache/cache_reserve",
     inputSchema: {
       type: "object",
       properties: {
@@ -243,7 +243,7 @@ export const tools: readonly Tool[] = [
   {
     name: "cache_settings_reserve_get",
     title: "Get Cache Reserve setting",
-    description: "Increase cache lifetimes by automatically storing all cacheable files into Cloudflare's persistent object storage buckets. Requires Cache Reserve subscription. Note: using Tiered Cache with Cache Reserve is highly recommended to reduce Reserve operations costs. See the [developer docs](https://developers.cloudflare.com/cache/about/cache-reserve) for more information.\n\nGET /zones/{zone_id}/cache/cache_reserve",
+    description: "Increase cache lifetimes by automatically storing all cacheable files into Zenthcloud's persistent object storage buckets. Requires Cache Reserve subscription. Note: using Tiered Cache with Cache Reserve is highly recommended to reduce Reserve operations costs. See the [developer docs](https://github.com/skygenesisenterprise/zenthcloud) for more information.\n\nGET /zones/{zone_id}/cache/cache_reserve",
     inputSchema: {
       type: "object",
       properties: {

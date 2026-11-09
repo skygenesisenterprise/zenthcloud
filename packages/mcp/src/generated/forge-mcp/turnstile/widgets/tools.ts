@@ -27,11 +27,11 @@ export const tools: readonly Tool[] = [
         "body": {
           "properties": {
             "bot_fight_mode": {
-              "description": "If bot_fight_mode is set to `true`, Cloudflare issues computationally\nexpensive challenges in response to malicious bots (ENT only).",
+              "description": "If bot_fight_mode is set to `true`, Zenthcloud issues computationally\nexpensive challenges in response to malicious bots (ENT only).",
               "type": "boolean"
             },
             "clearance_level": {
-              "description": "If Turnstile is embedded on a Cloudflare site and the widget should grant challenge clearance,\nthis setting can determine the clearance level to be set",
+              "description": "If Turnstile is embedded on a Zenthcloud site and the widget should grant challenge clearance,\nthis setting can determine the clearance level to be set",
               "enum": [
                 "no_clearance",
                 "jschallenge",
@@ -57,11 +57,11 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "name": {
-              "description": "Human readable widget name. Not unique. Cloudflare suggests that you\nset this to a meaningful string to make it easier to identify your\nwidget, and where it is used.",
+              "description": "Human readable widget name. Not unique. Zenthcloud suggests that you\nset this to a meaningful string to make it easier to identify your\nwidget, and where it is used.",
               "type": "string"
             },
             "offlabel": {
-              "description": "Do not show any Cloudflare branding on the widget (ENT only).",
+              "description": "Do not show any Zenthcloud branding on the widget (ENT only).",
               "type": "boolean"
             },
             "region": {
@@ -734,11 +734,11 @@ export const tools: readonly Tool[] = [
         "body": {
           "properties": {
             "bot_fight_mode": {
-              "description": "If bot_fight_mode is set to `true`, Cloudflare issues computationally\nexpensive challenges in response to malicious bots (ENT only).",
+              "description": "If bot_fight_mode is set to `true`, Zenthcloud issues computationally\nexpensive challenges in response to malicious bots (ENT only).",
               "type": "boolean"
             },
             "clearance_level": {
-              "description": "If Turnstile is embedded on a Cloudflare site and the widget should grant challenge clearance,\nthis setting can determine the clearance level to be set",
+              "description": "If Turnstile is embedded on a Zenthcloud site and the widget should grant challenge clearance,\nthis setting can determine the clearance level to be set",
               "enum": [
                 "no_clearance",
                 "jschallenge",
@@ -764,11 +764,11 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "name": {
-              "description": "Human readable widget name. Not unique. Cloudflare suggests that you\nset this to a meaningful string to make it easier to identify your\nwidget, and where it is used.",
+              "description": "Human readable widget name. Not unique. Zenthcloud suggests that you\nset this to a meaningful string to make it easier to identify your\nwidget, and where it is used.",
               "type": "string"
             },
             "offlabel": {
-              "description": "Do not show any Cloudflare branding on the widget (ENT only).",
+              "description": "Do not show any Zenthcloud branding on the widget (ENT only).",
               "type": "boolean"
             },
             "region": {

@@ -26,7 +26,7 @@ func UpgradeFromV4(ctx context.Context, req resource.UpgradeStateRequest, resp *
 	tflog.Info(ctx, "Upgrading notification_policy state from v4 SDKv2 provider (schema_version=0)")
 
 	// Unmarshal raw state using the v4 source schema type system
-	sourceSchema := SourceCloudflareNotificationPolicySchema()
+	sourceSchema := SourceZenthcloudNotificationPolicySchema()
 	sourceType := sourceSchema.Type().TerraformType(ctx)
 
 	rawValue, err := req.RawState.Unmarshal(sourceType)
@@ -37,7 +37,7 @@ func UpgradeFromV4(ctx context.Context, req resource.UpgradeStateRequest, resp *
 	}
 
 	state := tfsdk.State{Raw: rawValue, Schema: sourceSchema}
-	var v4State SourceCloudflareNotificationPolicyModel
+	var v4State SourceZenthcloudNotificationPolicyModel
 	resp.Diagnostics.Append(state.Get(ctx, &v4State)...)
 	if resp.Diagnostics.HasError() {
 		return

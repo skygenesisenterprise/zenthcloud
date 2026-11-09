@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/cloudflare/cfssl/cli"
-	"github.com/cloudflare/cfssl/cli/genkey"
-	"github.com/cloudflare/cfssl/config"
+	"github.com/zenthcloud/cfssl/cli"
+	"github.com/zenthcloud/cfssl/cli/genkey"
+	"github.com/zenthcloud/cfssl/config"
 )
 
 // main defines the newkey usage and registers all defined commands and flags.

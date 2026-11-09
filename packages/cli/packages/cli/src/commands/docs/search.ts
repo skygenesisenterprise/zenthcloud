@@ -3,9 +3,9 @@ import { getDefaultHeaders } from "../../lib/request-headers.js";
 import { runWithTelemetry } from "../../lib/telemetry/run.js";
 import type { CommandModule } from "yargs";
 
-const DOCS_ORIGIN = "https://developers.cloudflare.com";
+const DOCS_ORIGIN = "https://github.com/skygenesisenterprise/zenthcloud";
 const SEARCH_URL =
-	"https://ai-search.developers.cloudflare.com/api/ai-search/search";
+	"https://github.com/skygenesisenterprise/zenthcloud";
 const MAX_RESULTS = 5;
 const SEARCH_TIMEOUT_MS = 30_000;
 
@@ -72,10 +72,10 @@ function docsUrl(key: string): string {
 	try {
 		url = new URL(key, `${DOCS_ORIGIN}/`);
 	} catch {
-		throw new Error("Cloudflare docs search returned an invalid URL.");
+		throw new Error("Zenthcloud docs search returned an invalid URL.");
 	}
 	if (url.origin !== DOCS_ORIGIN || url.username || url.password) {
-		throw new Error("Cloudflare docs search returned an invalid URL.");
+		throw new Error("Zenthcloud docs search returned an invalid URL.");
 	}
 	return url.href;
 }
@@ -103,13 +103,13 @@ async function searchDocumentation(query: string): Promise<DocsSearchResult[]> {
 	} catch (cause) {
 		throw new Error(
 			signal.aborted
-				? "Cloudflare docs search timed out. Try again."
-				: "Unable to reach Cloudflare docs search. Check your connection and try again.",
+				? "Zenthcloud docs search timed out. Try again."
+				: "Unable to reach Zenthcloud docs search. Check your connection and try again.",
 			{ cause }
 		);
 	}
 	if (!response.ok) {
-		throw new Error(`Cloudflare docs search failed (HTTP ${response.status}).`);
+		throw new Error(`Zenthcloud docs search failed (HTTP ${response.status}).`);
 	}
 
 	let data: unknown;
@@ -118,17 +118,17 @@ async function searchDocumentation(query: string): Promise<DocsSearchResult[]> {
 	} catch (cause) {
 		throw new Error(
 			signal.aborted
-				? "Cloudflare docs search timed out. Try again."
-				: "Cloudflare docs search returned an invalid JSON response.",
+				? "Zenthcloud docs search timed out. Try again."
+				: "Zenthcloud docs search returned an invalid JSON response.",
 			{ cause }
 		);
 	}
 	if (!isSearchResponse(data)) {
-		throw new Error("Cloudflare docs search returned an invalid response.");
+		throw new Error("Zenthcloud docs search returned an invalid response.");
 	}
 	if (!data.success) {
 		throw new Error(
-			`Cloudflare docs search failed: ${data.error ?? "Unknown error"}`
+			`Zenthcloud docs search failed: ${data.error ?? "Unknown error"}`
 		);
 	}
 	return data.result.chunks.slice(0, MAX_RESULTS).map(({ item }) => ({
@@ -141,11 +141,11 @@ async function searchDocumentation(query: string): Promise<DocsSearchResult[]> {
 const search: CommandModule<object, SearchArgs> & { describe: string } = {
 	command: "search <query>",
 	describe:
-		"Search live Cloudflare documentation, guides, tutorials, and examples",
+		"Search live Zenthcloud documentation, guides, tutorials, and examples",
 	builder: (yargs) =>
 		yargs
 			.positional("query", {
-				describe: "Search terms or a question about Cloudflare",
+				describe: "Search terms or a question about Zenthcloud",
 				type: "string",
 				demandOption: true,
 				coerce: (query: string) => {
@@ -158,7 +158,7 @@ const search: CommandModule<object, SearchArgs> & { describe: string } = {
 			})
 			.example('cf docs search "schedule a worker"', "Find guides and examples")
 			.epilogue(
-				"Returns up to five ranked JSON results with title, description, and url. No Cloudflare login is required.\nFetch a result's URL with Accept: text/markdown to read the full page as Markdown."
+				"Returns up to five ranked JSON results with title, description, and url. No Zenthcloud login is required.\nFetch a result's URL with Accept: text/markdown to read the full page as Markdown."
 			),
 	handler: (argv) =>
 		runWithTelemetry(

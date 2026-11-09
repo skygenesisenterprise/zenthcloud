@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_logpull_retention Resource - Cloudflare"
+page_title: "zenthcloud_logpull_retention Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Logs ReadLogs Write
 ---
 
-# cloudflare_logpull_retention (Resource)
+# zenthcloud_logpull_retention (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_logpull_retention" "example_logpull_retention" {
+resource "zenthcloud_logpull_retention" "example_logpull_retention" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   flag = true
 }
@@ -42,7 +42,7 @@ resource "cloudflare_logpull_retention" "example_logpull_retention" {
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_logpull_retention.example '<zone_id>'
+$ terraform import zenthcloud_logpull_retention.example '<zone_id>'
 ```
 
 

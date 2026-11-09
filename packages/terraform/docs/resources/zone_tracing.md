@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zone_tracing Resource - Cloudflare"
+page_title: "zenthcloud_zone_tracing Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zone_tracing (Resource)
+# zenthcloud_zone_tracing (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zone_tracing" "example_zone_tracing" {
+resource "zenthcloud_zone_tracing" "example_zone_tracing" {
   zone_id = "zone_id"
   destinations = ["x"]
   enabled = true
@@ -33,9 +33,9 @@ resource "cloudflare_zone_tracing" "example_zone_tracing" {
 ### Optional
 
 - `destinations` (List of String) Up to 100 OpenTelemetry destination identifiers that receive traces.
-- `enabled` (Boolean) Whether Cloudflare Traces is enabled for the zone.
+- `enabled` (Boolean) Whether Zenthcloud Traces is enabled for the zone.
 - `forward_context` (Boolean) Whether trace context is sent externally or across a zone boundary.
-- `persist` (Boolean) Whether traces are persisted in Cloudflare.
+- `persist` (Boolean) Whether traces are persisted in Zenthcloud.
 - `propagation_policy` (String) When inbound trace context may be continued. Authenticated propagation is not supported yet.
 Available values: "accept", "authenticated", "reject".
 - `sampling_ratio` (Number) The ratio of requests sampled for tracing, from 0 to 1.
@@ -49,7 +49,7 @@ Available values: "accept", "authenticated", "reject".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zone_tracing.example '<zone_id>'
+$ terraform import zenthcloud_zone_tracing.example '<zone_id>'
 ```
 
 

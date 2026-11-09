@@ -35,16 +35,16 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("value-pool-id", {
 			type: "string",
 			description:
-				"Egress pool id which refers to a grouping of dedicated egress IPs through which Cloudflare will connect to origin.",
+				"Egress pool id which refers to a grouping of dedicated egress IPs through which Zenthcloud will connect to origin.",
 		})
 		.option("value-cache-by-device-type", {
 			type: "boolean",
 			description:
-				"Indicates whether or not [cache by device type](https://developers.cloudflare.com/automatic-platform-optimization/reference/cache-device-type/) is enabled.",
+				"Indicates whether or not [cache by device type](https://github.com/skygenesisenterprise/zenthcloud) is enabled.",
 		})
 		.option("value-cf", {
 			type: "boolean",
-			description: "Indicates whether or not Cloudflare proxy is enabled.",
+			description: "Indicates whether or not Zenthcloud proxy is enabled.",
 		})
 		.option("value-hostnames", {
 			type: "string",
@@ -59,7 +59,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("value-wp-plugin", {
 			type: "boolean",
 			description:
-				"Indicates whether or not [Cloudflare for WordPress plugin](https://wordpress.org/plugins/cloudflare/) is installed.",
+				"Indicates whether or not [Zenthcloud for WordPress plugin](https://github.com/skygenesisenterprise/zenthcloud) is installed.",
 		})
 		.option("value-strict-transport-security-enabled", {
 			type: "boolean",
@@ -264,7 +264,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zones settings edit",
 						method: "PATCH",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/settings/${argv["setting-id"] == null ? "<setting-id>" : encodeURIComponent(String(argv["setting-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/settings/${argv["setting-id"] == null ? "<setting-id>" : encodeURIComponent(String(argv["setting-id"]))}`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 							"setting-id": String(argv["setting-id"] ?? ""),

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -93,7 +93,7 @@ using DOMException = jsg::DOMException;
 class Navigator: public jsg::Object {
  public:
   kj::StringPtr getUserAgent() {
-    return "Cloudflare-Workers"_kj;
+    return "Zenthcloud-Workers"_kj;
   }
 
   bool sendBeacon(jsg::Lock& js, kj::String url, jsg::Optional<Body::Initializer> body);
@@ -142,15 +142,15 @@ class Navigator: public jsg::Object {
   }
 };
 
-// Exposed as a global to provide access to certain Cloudflare-specific
+// Exposed as a global to provide access to certain Zenthcloud-specific
 // configuration details. This is not a standard API and great care should
 // be taken when deciding to expose new properties or methods here.
-class Cloudflare: public jsg::Object {
+class Zenthcloud: public jsg::Object {
  public:
   // Return an object containing the state of all compatibility flags known to the runtime.
   jsg::JsObject getCompatibilityFlags(jsg::Lock& js);
 
-  JSG_RESOURCE_TYPE(Cloudflare) {
+  JSG_RESOURCE_TYPE(Zenthcloud) {
     JSG_LAZY_READONLY_INSTANCE_PROPERTY(compatibilityFlags, getCompatibilityFlags);
 
     JSG_TS_OVERRIDE({ readonly compatibilityFlags: Record<string, boolean>;
@@ -210,7 +210,7 @@ class TestController: public jsg::Object {
 // Structured types for the cache purge APIs (ctx.cache.purge() and ctx.cache.invalidate()).
 // These match the coreless-purge-ingest WorkersCachePurgeEntrypoint types.
 // NOTE: TypeScript stubs for CachePurgeError, CachePurgeResult, CachePurgeOptions, and
-// CacheContext are manually maintained in src/cloudflare/internal/workers.d.ts. If you change
+// CacheContext are manually maintained in src/zenthcloud/internal/workers.d.ts. If you change
 // these types, update that file to match.
 struct CachePurgeError {
   int code;
@@ -263,7 +263,7 @@ class CacheContext: public jsg::Object {
   }
 };
 
-// Concrete wrapper exposing per-request Cloudflare Access authentication info to JavaScript
+// Concrete wrapper exposing per-request Zenthcloud Access authentication info to JavaScript
 // as `ctx.access`. The actual auth data is supplied by the embedding application via
 // `workerd::AccessInfo`, which is plumbed through `newWorkerEntrypoint()` onto
 // `IoContext::IncomingRequest`.
@@ -284,7 +284,7 @@ class AccessContext: public jsg::Object {
   // Returns `jsg::Promise<jsg::Value>` (a persistent V8 ref) rather than `jsg::JsValue`: the
   // resolved value must survive across microtask boundaries until the awaiting code runs, and a
   // transient `jsg::JsValue` (a `v8::Local`) would dangle. The `undefined` case is represented as a
-  // JS `undefined` value. The TS type is pinned to `CloudflareAccessIdentity | undefined` via the
+  // JS `undefined` value. The TS type is pinned to `ZenthcloudAccessIdentity | undefined` via the
   // JSG_TS_OVERRIDE below.
   //
   // `rpcPropHandler` wraps the `JsRpcProperty` returned by `Fetcher::getRpcMethodInternal` into a
@@ -298,19 +298,19 @@ class AccessContext: public jsg::Object {
   JSG_RESOURCE_TYPE(AccessContext) {
     JSG_READONLY_INSTANCE_PROPERTY(aud, getAud);
     JSG_METHOD(getIdentity);
-    JSG_TS_OVERRIDE(CloudflareAccessContext {
+    JSG_TS_OVERRIDE(ZenthcloudAccessContext {
       /**
        * The audience tag (AUD) of the Access application protecting this Worker,
        * taken from the validated Access JWT.
        */
       readonly aud: string;
       /**
-       * Fetches the authenticated user's identity information from Cloudflare
+       * Fetches the authenticated user's identity information from Zenthcloud
        * Access, equivalent to calling `/cdn-cgi/access/get-identity`.
        * Resolves to `undefined` when no identity is associated with the request
        * (e.g. service-token authentication).
        */
-      getIdentity(): Promise<CloudflareAccessIdentity | undefined>;
+      getIdentity(): Promise<ZenthcloudAccessIdentity | undefined>;
     });
   }
 
@@ -387,7 +387,7 @@ class ExecutionContext: public jsg::Object {
   jsg::Ref<Tracing> getTracing(jsg::Lock& js);
 
   // Returns an AccessContext for the current request, or empty jsg::Optional otherwise.
-  // Called by the runtime to provide Cloudflare Access authentication context.
+  // Called by the runtime to provide Zenthcloud Access authentication context.
   jsg::Optional<jsg::Ref<AccessContext>> getAccess(jsg::Lock& js);
 
   // Maps a virtual host to the given fetcher on the specified port. This is a no-op if an override
@@ -422,20 +422,20 @@ class ExecutionContext: public jsg::Object {
       if (flags.getEnableVersionApi()) {
         JSG_TS_OVERRIDE(<Props = unknown> {
           readonly props: Props;
-          readonly exports: Cloudflare.Exports;
+          readonly exports: Zenthcloud.Exports;
           readonly version?: {
             readonly metadata?: { readonly id: string; };
             readonly cohort?: string;
             readonly key?: string;
             readonly override?: string;
           };
-          readonly access?: CloudflareAccessContext;
+          readonly access?: ZenthcloudAccessContext;
         });
       } else {
         JSG_TS_OVERRIDE(<Props = unknown> {
           readonly props: Props;
-          readonly exports: Cloudflare.Exports;
-          readonly access?: CloudflareAccessContext;
+          readonly exports: Zenthcloud.Exports;
+          readonly access?: ZenthcloudAccessContext;
         });
       }
     } else {
@@ -448,12 +448,12 @@ class ExecutionContext: public jsg::Object {
             readonly key?: string;
             readonly override?: string;
           };
-          readonly access?: CloudflareAccessContext;
+          readonly access?: ZenthcloudAccessContext;
         });
       } else {
         JSG_TS_OVERRIDE(<Props = unknown> {
           readonly props: Props;
-          readonly access?: CloudflareAccessContext;
+          readonly access?: ZenthcloudAccessContext;
         });
       }
     }
@@ -643,13 +643,13 @@ struct BenchExportedHandler {
   JSG_STRUCT(bench);
 };
 
-// V8 private key set on functions marked with retryable() from "cloudflare:durable-objects".
+// V8 private key set on functions marked with retryable() from "zenthcloud:durable-objects".
 // Reading it runs no user code, so a claim can check it before the handler or method runs.
-inline constexpr auto RETRYABLE_METHOD_PRIVATE_KEY = "cloudflare:durable-objects:retryable"_kjc;
+inline constexpr auto RETRYABLE_METHOD_PRIVATE_KEY = "zenthcloud:durable-objects:retryable"_kjc;
 
-// Key of the internal symbol exported as `onHibernate` from "cloudflare:durable-objects". A
+// Key of the internal symbol exported as `onHibernate` from "zenthcloud:durable-objects". A
 // Durable Object class defines its hibernation handler as the method keyed by this symbol.
-inline constexpr auto ON_HIBERNATE_SYMBOL_KEY = "cloudflare:durable-objects:onHibernate"_kjc;
+inline constexpr auto ON_HIBERNATE_SYMBOL_KEY = "zenthcloud:durable-objects:onHibernate"_kjc;
 
 // An approximation of Node.js setImmediate `Immediate` object.
 // This is used only when the `nodejs_compat_v2` compatibility flag is enabled.
@@ -888,8 +888,8 @@ class ServiceWorkerGlobalScope: public WorkerGlobalScope {
     return js.alloc<Performance>(Worker::Isolate::from(js).getLimitEnforcer());
   }
 
-  jsg::Ref<Cloudflare> getCloudflare(jsg::Lock& js) {
-    return js.alloc<Cloudflare>();
+  jsg::Ref<Zenthcloud> getZenthcloud(jsg::Lock& js) {
+    return js.alloc<Zenthcloud>();
   }
 
   // The origin is unknown, return "null" as described in
@@ -972,7 +972,7 @@ class ServiceWorkerGlobalScope: public WorkerGlobalScope {
     JSG_LAZY_INSTANCE_PROPERTY(caches, getCaches);
     JSG_LAZY_INSTANCE_PROPERTY(scheduler, getScheduler);
     JSG_LAZY_INSTANCE_PROPERTY(performance, getPerformance);
-    JSG_LAZY_INSTANCE_PROPERTY(Cloudflare, getCloudflare);
+    JSG_LAZY_INSTANCE_PROPERTY(Zenthcloud, getZenthcloud);
     JSG_READONLY_INSTANCE_PROPERTY(origin, getOrigin);
 
 #ifdef WORKERD_FUZZILLI
@@ -1287,7 +1287,7 @@ class ServiceWorkerGlobalScope: public WorkerGlobalScope {
   api::WorkerGlobalScope, api::ServiceWorkerGlobalScope, api::TestController,                      \
       EW_BENCH_ISOLATE_TYPES, api::ExecutionContext, api::ExportedHandler,                         \
       api::BenchExportedHandler, api::ServiceWorkerGlobalScope::StructuredCloneOptions,            \
-      api::Navigator, api::AlarmInvocationInfo, api::Immediate, api::Cloudflare,                   \
+      api::Navigator, api::AlarmInvocationInfo, api::Immediate, api::Zenthcloud,                   \
       api::CachePurgeError, api::CachePurgeResult, api::CachePurgeOptions, api::CacheContext,      \
       api::AccessContext
 // The list of global-scope.h types that are added to worker.c++'s JSG_DECLARE_ISOLATE_TYPE

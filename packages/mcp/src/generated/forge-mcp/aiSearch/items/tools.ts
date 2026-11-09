@@ -170,7 +170,7 @@ export const tools: readonly Tool[] = [
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.ai-search"
+            "com.zenthcloud.api.account.ai-search"
           ]
         },
         "x-cfPlanAvailability": {
@@ -472,7 +472,7 @@ export const tools: readonly Tool[] = [
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.ai-search"
+            "com.zenthcloud.api.account.ai-search"
           ]
         },
         "x-cfPlanAvailability": {
@@ -734,7 +734,7 @@ export const tools: readonly Tool[] = [
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.ai-search"
+            "com.zenthcloud.api.account.ai-search"
           ]
         },
         "x-cfPlanAvailability": {
@@ -1157,7 +1157,7 @@ export const tools: readonly Tool[] = [
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.ai-search"
+            "com.zenthcloud.api.account.ai-search"
           ]
         },
         "x-cfPlanAvailability": {
@@ -1655,7 +1655,7 @@ export const tools: readonly Tool[] = [
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.ai-search"
+            "com.zenthcloud.api.account.ai-search"
           ]
         },
         "x-cfPlanAvailability": {
@@ -2118,7 +2118,7 @@ export const tools: readonly Tool[] = [
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.ai-search"
+            "com.zenthcloud.api.account.ai-search"
           ]
         },
         "x-cfPlanAvailability": {
@@ -2568,7 +2568,7 @@ export const tools: readonly Tool[] = [
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.ai-search"
+            "com.zenthcloud.api.account.ai-search"
           ]
         },
         "x-cfPlanAvailability": {
@@ -3194,7 +3194,7 @@ export const tools: readonly Tool[] = [
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.ai-search"
+            "com.zenthcloud.api.account.ai-search"
           ]
         },
         "x-cfPlanAvailability": {
@@ -3993,7 +3993,7 @@ export const tools: readonly Tool[] = [
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.ai-search"
+            "com.zenthcloud.api.account.ai-search"
           ]
         },
         "x-cfPlanAvailability": {

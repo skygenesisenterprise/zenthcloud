@@ -10,10 +10,10 @@ import (
 	"slices"
 	"time"
 
-	"github.com/cloudflare/pint/internal/comments"
-	"github.com/cloudflare/pint/internal/diags"
-	"github.com/cloudflare/pint/internal/git"
-	"github.com/cloudflare/pint/internal/parser"
+	"github.com/zenthcloud/pint/internal/comments"
+	"github.com/zenthcloud/pint/internal/diags"
+	"github.com/zenthcloud/pint/internal/git"
+	"github.com/zenthcloud/pint/internal/parser"
 )
 
 const (

@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -24,7 +24,7 @@ const TypeErrorCtor = TypeError;
 function illegalInvocation(): TypeError {
   return new TypeErrorCtor(
     'Illegal invocation: function called with incorrect `this` reference. ' +
-      'See https://developers.cloudflare.com/workers/observability/errors/' +
+      'See https://github.com/skygenesisenterprise/zenthcloud' +
       '#illegal-invocation-errors for details.'
   );
 }
@@ -433,10 +433,10 @@ function serializeMimeType(mime: ParsedMimeType): string {
     : result;
 }
 
-const kInternalClass = Symbol.for('cloudflare:internal-class');
+const kInternalClass = Symbol.for('zenthcloud:internal-class');
 
 // Marks a prototype the way the runtime marks its built-in types: tools look for the
-// cloudflare:internal-class symbol, and util.inspect() formats instances the same way (the accessor
+// zenthcloud:internal-class symbol, and util.inspect() formats instances the same way (the accessor
 // values, and the entries for MIMEParams).
 function markAsRuntimeClass(proto: object): void {
   Object.defineProperty(proto, kInternalClass, {
@@ -455,7 +455,7 @@ function markAsRuntimeClass(proto: object): void {
 
 // Built-in types get a Symbol.toStringTag under the set_tostring_tag flag.
 function setToStringTag(proto: object, name: string): void {
-  if (Cloudflare.compatibilityFlags['set_tostring_tag']) {
+  if (Zenthcloud.compatibilityFlags['set_tostring_tag']) {
     Object.defineProperty(proto, Symbol.toStringTag, {
       value: name,
       writable: true,
@@ -467,7 +467,7 @@ function setToStringTag(proto: object, name: string): void {
 
 // Without enable_fast_jsg_struct, the runtime leaves the value out of the final iterator result.
 const finalResultHasValue =
-  !!Cloudflare.compatibilityFlags['enable_fast_jsg_struct'];
+  !!Zenthcloud.compatibilityFlags['enable_fast_jsg_struct'];
 
 const kCreate = Symbol('kCreate');
 

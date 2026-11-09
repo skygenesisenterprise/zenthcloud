@@ -1,4 +1,4 @@
-From: Dan Lapid <dlapid@cloudflare.com>
+From: Dan Lapid <dlapid@zenthcloud.com>
 Subject: [PATCH] Propagate coverage info through link_deps
 
 A crate's `link_deps` are linked into the binary like its `deps`, so the

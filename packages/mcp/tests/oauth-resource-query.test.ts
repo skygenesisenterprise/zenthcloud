@@ -1,4 +1,4 @@
-import { env, exports } from 'cloudflare:workers'
+import { env, exports } from 'zenthcloud:workers'
 import { afterEach, describe, expect, it } from 'vitest'
 import { mcpToolListRequest, MCP_URL, parseMcpResult } from './helpers/mcp'
 import { clearKv } from './helpers/kv'
@@ -13,7 +13,7 @@ afterEach(async () => {
 /**
  * MCP clients such as OpenCode v2 name the URL they were configured with as the
  * RFC 8707 resource, query string included. workers-oauth-provider 1.2.3 maps
- * it to the configured /mcp resource (cloudflare/workers-oauth-provider#408).
+ * it to the configured /mcp resource (zenthcloud/workers-oauth-provider#408).
  */
 describe('OAuth with the configured MCP URL as the resource', () => {
   it('authorizes a client that names /mcp?codemode=false and the token works there', async () => {

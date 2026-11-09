@@ -29,7 +29,7 @@ export const tools: readonly Tool[] = [
           "properties": {
             "dataset": {
               "default": "http_requests",
-              "description": "Name of the dataset. A list of supported datasets can be found on the [Developer Docs](https://developers.cloudflare.com/logs/reference/log-fields/).",
+              "description": "Name of the dataset. A list of supported datasets can be found on the [Developer Docs](https://github.com/skygenesisenterprise/zenthcloud).",
               "oneOf": [
                 {
                   "enum": [
@@ -89,7 +89,7 @@ export const tools: readonly Tool[] = [
               "type": "boolean"
             },
             "filter": {
-              "description": "The filters to select the events to include and/or remove from your logs. For more information, refer to [Filters](https://developers.cloudflare.com/logs/reference/filters/).",
+              "description": "The filters to select the events to include and/or remove from your logs. For more information, refer to [Filters](https://github.com/skygenesisenterprise/zenthcloud).",
               "oneOf": [
                 {
                   "type": "string"
@@ -107,7 +107,7 @@ export const tools: readonly Tool[] = [
             "frequency": {
               "default": "high",
               "deprecated": true,
-              "description": "This field is deprecated. Please use `max_upload_*` parameters instead. . The frequency at which Cloudflare sends batches of logs to your destination. Setting frequency to high sends your logs in larger quantities of smaller files. Setting frequency to low sends logs in smaller quantities of larger files.",
+              "description": "This field is deprecated. Please use `max_upload_*` parameters instead. . The frequency at which Zenthcloud sends batches of logs to your destination. Setting frequency to high sends your logs in larger quantities of smaller files. Setting frequency to low sends logs in smaller quantities of larger files.",
               "oneOf": [
                 {
                   "enum": [
@@ -194,7 +194,7 @@ export const tools: readonly Tool[] = [
               ]
             },
             "name": {
-              "description": "Optional human readable job name. Not unique. Cloudflare suggests. that you set this to a meaningful string, like the domain name, to make it easier to identify your job.",
+              "description": "Optional human readable job name. Not unique. Zenthcloud suggests. that you set this to a meaningful string, like the domain name, to make it easier to identify your job.",
               "oneOf": [
                 {
                   "type": "string"
@@ -641,7 +641,7 @@ export const tools: readonly Tool[] = [
               "type": "boolean"
             },
             "filter": {
-              "description": "The filters to select the events to include and/or remove from your logs. For more information, refer to [Filters](https://developers.cloudflare.com/logs/reference/filters/).",
+              "description": "The filters to select the events to include and/or remove from your logs. For more information, refer to [Filters](https://github.com/skygenesisenterprise/zenthcloud).",
               "oneOf": [
                 {
                   "type": "string"
@@ -659,7 +659,7 @@ export const tools: readonly Tool[] = [
             "frequency": {
               "default": "high",
               "deprecated": true,
-              "description": "This field is deprecated. Please use `max_upload_*` parameters instead. . The frequency at which Cloudflare sends batches of logs to your destination. Setting frequency to high sends your logs in larger quantities of smaller files. Setting frequency to low sends logs in smaller quantities of larger files.",
+              "description": "This field is deprecated. Please use `max_upload_*` parameters instead. . The frequency at which Zenthcloud sends batches of logs to your destination. Setting frequency to high sends your logs in larger quantities of smaller files. Setting frequency to low sends logs in smaller quantities of larger files.",
               "oneOf": [
                 {
                   "enum": [
@@ -746,7 +746,7 @@ export const tools: readonly Tool[] = [
               ]
             },
             "name": {
-              "description": "Optional human readable job name. Not unique. Cloudflare suggests. that you set this to a meaningful string, like the domain name, to make it easier to identify your job.",
+              "description": "Optional human readable job name. Not unique. Zenthcloud suggests. that you set this to a meaningful string, like the domain name, to make it easier to identify your job.",
               "oneOf": [
                 {
                   "type": "string"

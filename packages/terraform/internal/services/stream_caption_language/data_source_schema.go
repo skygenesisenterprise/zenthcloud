@@ -5,7 +5,7 @@ package stream_caption_language
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -28,7 +28,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"identifier": schema.StringAttribute{
-				Description: "A Cloudflare-generated unique identifier for a media item.",
+				Description: "A Zenthcloud-generated unique identifier for a media item.",
 				Required:    true,
 			},
 			"language": schema.StringAttribute{

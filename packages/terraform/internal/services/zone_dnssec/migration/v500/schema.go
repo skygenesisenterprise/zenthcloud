@@ -11,10 +11,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceCloudflareZoneDNSSECSchema returns the schema for the v4 (SDKv2) resource
+// SourceZenthcloudZoneDNSSECSchema returns the schema for the v4 (SDKv2) resource
 // This schema is used to read the old state format before migration
 // Version 0 corresponds to the v4 SDKv2 schema
-func SourceCloudflareZoneDNSSECSchema() schema.Schema {
+func SourceZenthcloudZoneDNSSECSchema() schema.Schema {
 	return schema.Schema{
 		Version: 0, // v4 SDKv2 resources start at version 0
 		Attributes: map[string]schema.Attribute{

@@ -7,9 +7,9 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -139,7 +139,7 @@ func TestMigrateAPIToken_V4ToV5_Basic(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_api_token." + rnd
+			resourceName := "zenthcloud_api_token." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -150,8 +150,8 @@ func TestMigrateAPIToken_V4ToV5_Basic(t *testing.T) {
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -171,7 +171,7 @@ func TestMigrateAPIToken_V4ToV5_Basic(t *testing.T) {
 							),
 							statecheck.ExpectKnownValue(resourceName,
 								tfjsonpath.New("policies").AtSliceIndex(0).AtMapKey("resources"),
-								knownvalue.StringExact(`{"com.cloudflare.api.account.zone.*":"*"}`),
+								knownvalue.StringExact(`{"com.zenthcloud.api.account.zone.*":"*"}`),
 							),
 						},
 					),
@@ -208,7 +208,7 @@ func TestMigrateAPIToken_V4ToV5_WithCondition(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_api_token." + rnd
+			resourceName := "zenthcloud_api_token." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -219,8 +219,8 @@ func TestMigrateAPIToken_V4ToV5_WithCondition(t *testing.T) {
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -237,7 +237,7 @@ func TestMigrateAPIToken_V4ToV5_WithCondition(t *testing.T) {
 							),
 							statecheck.ExpectKnownValue(resourceName,
 								tfjsonpath.New("policies").AtSliceIndex(0).AtMapKey("resources"),
-								knownvalue.StringExact(`{"com.cloudflare.api.account.zone.*":"*"}`),
+								knownvalue.StringExact(`{"com.zenthcloud.api.account.zone.*":"*"}`),
 							),
 						},
 					),
@@ -274,7 +274,7 @@ func TestMigrateAPIToken_V4ToV5_WithTTL(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_api_token." + rnd
+			resourceName := "zenthcloud_api_token." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -285,8 +285,8 @@ func TestMigrateAPIToken_V4ToV5_WithTTL(t *testing.T) {
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -299,7 +299,7 @@ func TestMigrateAPIToken_V4ToV5_WithTTL(t *testing.T) {
 							statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("expires_on"), knownvalue.StringExact("2027-12-31T23:59:59Z")),
 							statecheck.ExpectKnownValue(resourceName,
 								tfjsonpath.New("policies").AtSliceIndex(0).AtMapKey("resources"),
-								knownvalue.StringExact(`{"com.cloudflare.api.account.zone.*":"*"}`),
+								knownvalue.StringExact(`{"com.zenthcloud.api.account.zone.*":"*"}`),
 							),
 						},
 					),
@@ -335,7 +335,7 @@ func TestMigrateAPIToken_V4ToV5_DenyEffect(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_api_token." + rnd
+			resourceName := "zenthcloud_api_token." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -346,8 +346,8 @@ func TestMigrateAPIToken_V4ToV5_DenyEffect(t *testing.T) {
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -395,7 +395,7 @@ func TestMigrateAPIToken_V4ToV5_ConditionNotIn(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_api_token." + rnd
+			resourceName := "zenthcloud_api_token." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -406,8 +406,8 @@ func TestMigrateAPIToken_V4ToV5_ConditionNotIn(t *testing.T) {
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -431,7 +431,7 @@ func TestMigrateAPIToken_V4ToV5_ConditionNotIn(t *testing.T) {
 
 // TestMigrateAPIToken_V4ToV5_MultiplePolicies tests migration with multiple policies.
 func TestMigrateAPIToken_V4ToV5_MultiplePolicies(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	testCases := []struct {
 		name     string
@@ -457,7 +457,7 @@ func TestMigrateAPIToken_V4ToV5_MultiplePolicies(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_api_token." + rnd
+			resourceName := "zenthcloud_api_token." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -471,8 +471,8 @@ func TestMigrateAPIToken_V4ToV5_MultiplePolicies(t *testing.T) {
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -484,11 +484,11 @@ func TestMigrateAPIToken_V4ToV5_MultiplePolicies(t *testing.T) {
 							statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("policies"), knownvalue.ListSizeExact(2)),
 							statecheck.ExpectKnownValue(resourceName,
 								tfjsonpath.New("policies").AtSliceIndex(0).AtMapKey("resources"),
-								knownvalue.StringExact(fmt.Sprintf(`{"com.cloudflare.api.account.%s":"*"}`, accountID)),
+								knownvalue.StringExact(fmt.Sprintf(`{"com.zenthcloud.api.account.%s":"*"}`, accountID)),
 							),
 							statecheck.ExpectKnownValue(resourceName,
 								tfjsonpath.New("policies").AtSliceIndex(1).AtMapKey("resources"),
-								knownvalue.StringExact(`{"com.cloudflare.api.account.zone.*":"*"}`),
+								knownvalue.StringExact(`{"com.zenthcloud.api.account.zone.*":"*"}`),
 							),
 						},
 					),
@@ -501,7 +501,7 @@ func TestMigrateAPIToken_V4ToV5_MultiplePolicies(t *testing.T) {
 // TestMigrateAPIToken_V4ToV5_MultipleResources tests migration with multiple resource keys
 // in a single policy to ensure proper JSON encoding with multiple entries.
 func TestMigrateAPIToken_V4ToV5_MultipleResources(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	testCases := []struct {
 		name     string
@@ -527,7 +527,7 @@ func TestMigrateAPIToken_V4ToV5_MultipleResources(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_api_token." + rnd
+			resourceName := "zenthcloud_api_token." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -541,8 +541,8 @@ func TestMigrateAPIToken_V4ToV5_MultipleResources(t *testing.T) {
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -566,7 +566,7 @@ func TestMigrateAPIToken_V4ToV5_MultipleResources(t *testing.T) {
 
 // TestMigrateAPIToken_V4ToV5_MixedEffects tests migration with mixed allow/deny policies.
 func TestMigrateAPIToken_V4ToV5_MixedEffects(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	testCases := []struct {
 		name     string
@@ -592,7 +592,7 @@ func TestMigrateAPIToken_V4ToV5_MixedEffects(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_api_token." + rnd
+			resourceName := "zenthcloud_api_token." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -606,8 +606,8 @@ func TestMigrateAPIToken_V4ToV5_MixedEffects(t *testing.T) {
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -640,21 +640,21 @@ func TestMigrateAPIToken_V4ToV5_MixedEffects(t *testing.T) {
 
 func TestMigrateAPITokenFromV5MapToJSON(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_api_token.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_api_token.%s", rnd)
 	tmpDir := t.TempDir()
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck(t) }, WorkingDir: tmpDir,
 		Steps: []resource.TestStep{
 			// Step 1: Create with early v5 (schema_version=0, resources as map)
-			{ExternalProviders: map[string]resource.ExternalProvider{"cloudflare": {Source: "cloudflare/cloudflare", VersionConstraint: "5.0.0"}}, Config: fmt.Sprintf(v5EarlyBasicWithConditionConfig, rnd)},
+			{ExternalProviders: map[string]resource.ExternalProvider{"zenthcloud": {Source: "zenthcloud/zenthcloud", VersionConstraint: "5.0.0"}}, Config: fmt.Sprintf(v5EarlyBasicWithConditionConfig, rnd)},
 			// Step 2: Stepping stone through v5.18 (applies 0→1 upgrade)
-			{ExternalProviders: map[string]resource.ExternalProvider{"cloudflare": {Source: "cloudflare/cloudflare", VersionConstraint: "5.18.0"}}, Config: fmt.Sprintf(v5LatestBasicWithConditionConfig, rnd)},
+			{ExternalProviders: map[string]resource.ExternalProvider{"zenthcloud": {Source: "zenthcloud/zenthcloud", VersionConstraint: "5.18.0"}}, Config: fmt.Sprintf(v5LatestBasicWithConditionConfig, rnd)},
 			// Step 3: Upgrade to current (applies 1→500 upgrade)
 			{ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories, Config: fmt.Sprintf(v5LatestBasicWithConditionConfig, rnd), ConfigStateChecks: []statecheck.StateCheck{
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("policies").AtSliceIndex(0).AtMapKey("effect"), knownvalue.StringExact("allow")),
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("policies").AtSliceIndex(0).AtMapKey("permission_groups").AtSliceIndex(0).AtMapKey("id"), knownvalue.StringExact("82e64a83756745bbbb1c9c2701bf816b")),
-				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("policies").AtSliceIndex(0).AtMapKey("resources"), knownvalue.StringExact(`{"com.cloudflare.api.account.zone.*":"*"}`)),
+				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("policies").AtSliceIndex(0).AtMapKey("resources"), knownvalue.StringExact(`{"com.zenthcloud.api.account.zone.*":"*"}`)),
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("condition").AtMapKey("request_ip").AtMapKey("in").AtSliceIndex(0), knownvalue.StringExact("192.0.2.1/32")),
 			}},
 		},
@@ -663,20 +663,20 @@ func TestMigrateAPITokenFromV5MapToJSON(t *testing.T) {
 
 func TestMigrateAPITokenFromV5ComplexResources(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := fmt.Sprintf("cloudflare_api_token.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := fmt.Sprintf("zenthcloud_api_token.%s", rnd)
 	tmpDir := t.TempDir()
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck(t) }, WorkingDir: tmpDir,
 		Steps: []resource.TestStep{
 			// Step 1: Create with early v5 (schema_version=0, resources as map)
-			{ExternalProviders: map[string]resource.ExternalProvider{"cloudflare": {Source: "cloudflare/cloudflare", VersionConstraint: "5.0.0"}}, Config: fmt.Sprintf(v5EarlyComplexResourcesConfig, rnd, accountID)},
+			{ExternalProviders: map[string]resource.ExternalProvider{"zenthcloud": {Source: "zenthcloud/zenthcloud", VersionConstraint: "5.0.0"}}, Config: fmt.Sprintf(v5EarlyComplexResourcesConfig, rnd, accountID)},
 			// Step 2: Stepping stone through v5.18 (applies 0→1 upgrade)
-			{ExternalProviders: map[string]resource.ExternalProvider{"cloudflare": {Source: "cloudflare/cloudflare", VersionConstraint: "5.18.0"}}, Config: fmt.Sprintf(v5LatestComplexResourcesConfig, rnd, accountID)},
+			{ExternalProviders: map[string]resource.ExternalProvider{"zenthcloud": {Source: "zenthcloud/zenthcloud", VersionConstraint: "5.18.0"}}, Config: fmt.Sprintf(v5LatestComplexResourcesConfig, rnd, accountID)},
 			// Step 3: Upgrade to current (applies 1→500 upgrade)
 			{ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories, Config: fmt.Sprintf(v5LatestComplexResourcesConfig, rnd, accountID), ConfigStateChecks: []statecheck.StateCheck{
-				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("policies").AtSliceIndex(0).AtMapKey("resources"), knownvalue.StringExact(fmt.Sprintf(`{"com.cloudflare.api.account.%s":"*"}`, accountID))),
-				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("policies").AtSliceIndex(1).AtMapKey("resources"), knownvalue.StringExact(`{"com.cloudflare.api.account.zone.*":"*"}`)),
+				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("policies").AtSliceIndex(0).AtMapKey("resources"), knownvalue.StringExact(fmt.Sprintf(`{"com.zenthcloud.api.account.%s":"*"}`, accountID))),
+				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("policies").AtSliceIndex(1).AtMapKey("resources"), knownvalue.StringExact(`{"com.zenthcloud.api.account.zone.*":"*"}`)),
 			}},
 		},
 	})
@@ -684,20 +684,20 @@ func TestMigrateAPITokenFromV5ComplexResources(t *testing.T) {
 
 func TestMigrateAPITokenFromV5WithTTL(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_api_token.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_api_token.%s", rnd)
 	tmpDir := t.TempDir()
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck(t) }, WorkingDir: tmpDir,
 		Steps: []resource.TestStep{
 			// Step 1: Create with early v5 (schema_version=0)
-			{ExternalProviders: map[string]resource.ExternalProvider{"cloudflare": {Source: "cloudflare/cloudflare", VersionConstraint: "5.0.0"}}, Config: fmt.Sprintf(v5EarlyWithTTLConfig, rnd)},
+			{ExternalProviders: map[string]resource.ExternalProvider{"zenthcloud": {Source: "zenthcloud/zenthcloud", VersionConstraint: "5.0.0"}}, Config: fmt.Sprintf(v5EarlyWithTTLConfig, rnd)},
 			// Step 2: Stepping stone through v5.18 (applies 0→1 upgrade)
-			{ExternalProviders: map[string]resource.ExternalProvider{"cloudflare": {Source: "cloudflare/cloudflare", VersionConstraint: "5.18.0"}}, Config: fmt.Sprintf(v5LatestWithTTLConfig, rnd)},
+			{ExternalProviders: map[string]resource.ExternalProvider{"zenthcloud": {Source: "zenthcloud/zenthcloud", VersionConstraint: "5.18.0"}}, Config: fmt.Sprintf(v5LatestWithTTLConfig, rnd)},
 			// Step 3: Upgrade to current (applies 1→500 upgrade)
 			{ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories, Config: fmt.Sprintf(v5LatestWithTTLConfig, rnd), ConfigStateChecks: []statecheck.StateCheck{
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("not_before"), knownvalue.StringExact("2027-01-01T00:00:00Z")),
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("expires_on"), knownvalue.StringExact("2027-12-31T23:59:59Z")),
-				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("policies").AtSliceIndex(0).AtMapKey("resources"), knownvalue.StringExact(`{"com.cloudflare.api.account.zone.*":"*"}`)),
+				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("policies").AtSliceIndex(0).AtMapKey("resources"), knownvalue.StringExact(`{"com.zenthcloud.api.account.zone.*":"*"}`)),
 			}},
 		},
 	})
@@ -705,15 +705,15 @@ func TestMigrateAPITokenFromV5WithTTL(t *testing.T) {
 
 func TestMigrateAPITokenFromV5RemovedFields(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_api_token.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_api_token.%s", rnd)
 	tmpDir := t.TempDir()
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck(t) }, WorkingDir: tmpDir,
 		Steps: []resource.TestStep{
-			{ExternalProviders: map[string]resource.ExternalProvider{"cloudflare": {Source: "cloudflare/cloudflare", VersionConstraint: "5.0.0"}}, Config: fmt.Sprintf(v5EarlyBasicMapConfig, rnd)},
+			{ExternalProviders: map[string]resource.ExternalProvider{"zenthcloud": {Source: "zenthcloud/zenthcloud", VersionConstraint: "5.0.0"}}, Config: fmt.Sprintf(v5EarlyBasicMapConfig, rnd)},
 			{ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories, Config: fmt.Sprintf(v5LatestBasicJsonencodeConfig, rnd), ConfigStateChecks: []statecheck.StateCheck{
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("policies").AtSliceIndex(0).AtMapKey("permission_groups").AtSliceIndex(0).AtMapKey("id"), knownvalue.StringExact("82e64a83756745bbbb1c9c2701bf816b")),
-				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("policies").AtSliceIndex(0).AtMapKey("resources"), knownvalue.StringExact(`{"com.cloudflare.api.account.zone.*":"*"}`)),
+				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("policies").AtSliceIndex(0).AtMapKey("resources"), knownvalue.StringExact(`{"com.zenthcloud.api.account.zone.*":"*"}`)),
 			}},
 		},
 	})
@@ -721,14 +721,14 @@ func TestMigrateAPITokenFromV5RemovedFields(t *testing.T) {
 
 func TestMigrateAPITokenFromV5_4(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_api_token.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_api_token.%s", rnd)
 	tmpDir := t.TempDir()
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck(t) }, WorkingDir: tmpDir,
 		Steps: []resource.TestStep{
-			{ExternalProviders: map[string]resource.ExternalProvider{"cloudflare": {Source: "cloudflare/cloudflare", VersionConstraint: "5.4.0"}}, Config: fmt.Sprintf(v5EarlyBasicMapConfig, rnd), ExpectNonEmptyPlan: true},
+			{ExternalProviders: map[string]resource.ExternalProvider{"zenthcloud": {Source: "zenthcloud/zenthcloud", VersionConstraint: "5.4.0"}}, Config: fmt.Sprintf(v5EarlyBasicMapConfig, rnd), ExpectNonEmptyPlan: true},
 			{ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories, Config: fmt.Sprintf(v5LatestBasicJsonencodeConfig, rnd), ConfigStateChecks: []statecheck.StateCheck{
-				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("policies").AtSliceIndex(0).AtMapKey("resources"), knownvalue.StringExact(`{"com.cloudflare.api.account.zone.*":"*"}`)),
+				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("policies").AtSliceIndex(0).AtMapKey("resources"), knownvalue.StringExact(`{"com.zenthcloud.api.account.zone.*":"*"}`)),
 			}},
 		},
 	})
@@ -736,14 +736,14 @@ func TestMigrateAPITokenFromV5_4(t *testing.T) {
 
 func TestMigrateAPITokenFromV5_7(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_api_token.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_api_token.%s", rnd)
 	tmpDir := t.TempDir()
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck(t) }, WorkingDir: tmpDir,
 		Steps: []resource.TestStep{
-			{ExternalProviders: map[string]resource.ExternalProvider{"cloudflare": {Source: "cloudflare/cloudflare", VersionConstraint: "5.7.0"}}, Config: fmt.Sprintf(v5EarlyWithTTLConfig, rnd)},
+			{ExternalProviders: map[string]resource.ExternalProvider{"zenthcloud": {Source: "zenthcloud/zenthcloud", VersionConstraint: "5.7.0"}}, Config: fmt.Sprintf(v5EarlyWithTTLConfig, rnd)},
 			{ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories, Config: fmt.Sprintf(v5LatestWithTTLConfig, rnd), ConfigStateChecks: []statecheck.StateCheck{
-				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("policies").AtSliceIndex(0).AtMapKey("resources"), knownvalue.StringExact(`{"com.cloudflare.api.account.zone.*":"*"}`)),
+				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("policies").AtSliceIndex(0).AtMapKey("resources"), knownvalue.StringExact(`{"com.zenthcloud.api.account.zone.*":"*"}`)),
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("expires_on"), knownvalue.StringExact("2027-12-31T23:59:59Z")),
 			}},
 		},
@@ -752,16 +752,16 @@ func TestMigrateAPITokenFromV5_7(t *testing.T) {
 
 func TestMigrateAPITokenFromV5_ComplexNestedResources(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := fmt.Sprintf("cloudflare_api_token.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := fmt.Sprintf("zenthcloud_api_token.%s", rnd)
 	tmpDir := t.TempDir()
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck(t) }, WorkingDir: tmpDir,
 		Steps: []resource.TestStep{
-			{ExternalProviders: map[string]resource.ExternalProvider{"cloudflare": {Source: "cloudflare/cloudflare", VersionConstraint: "5.7.0"}}, Config: fmt.Sprintf(v5EarlyNestedResourcesNestedConfig, rnd, accountID), ExpectError: regexp.MustCompile(`Incorrect attribute value type`)},
-			{ExternalProviders: map[string]resource.ExternalProvider{"cloudflare": {Source: "cloudflare/cloudflare", VersionConstraint: "5.7.0"}}, Config: fmt.Sprintf(v5EarlyNestedResourcesFlatConfig, rnd, accountID)},
+			{ExternalProviders: map[string]resource.ExternalProvider{"zenthcloud": {Source: "zenthcloud/zenthcloud", VersionConstraint: "5.7.0"}}, Config: fmt.Sprintf(v5EarlyNestedResourcesNestedConfig, rnd, accountID), ExpectError: regexp.MustCompile(`Incorrect attribute value type`)},
+			{ExternalProviders: map[string]resource.ExternalProvider{"zenthcloud": {Source: "zenthcloud/zenthcloud", VersionConstraint: "5.7.0"}}, Config: fmt.Sprintf(v5EarlyNestedResourcesFlatConfig, rnd, accountID)},
 			{ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories, Config: fmt.Sprintf(v5LatestNestedResourcesConfig, rnd, accountID), ConfigStateChecks: []statecheck.StateCheck{
-				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("policies").AtSliceIndex(0).AtMapKey("resources"), knownvalue.StringExact(fmt.Sprintf(`{"com.cloudflare.api.account.%s":{"com.cloudflare.api.account.zone.*":"*"}}`, accountID))),
+				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("policies").AtSliceIndex(0).AtMapKey("resources"), knownvalue.StringExact(fmt.Sprintf(`{"com.zenthcloud.api.account.%s":{"com.zenthcloud.api.account.zone.*":"*"}}`, accountID))),
 			}},
 		},
 	})
@@ -769,16 +769,16 @@ func TestMigrateAPITokenFromV5_ComplexNestedResources(t *testing.T) {
 
 func TestMigrateAPITokenFromV5_4_BothResourceFormats(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := fmt.Sprintf("cloudflare_api_token.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := fmt.Sprintf("zenthcloud_api_token.%s", rnd)
 	tmpDir := t.TempDir()
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck(t) }, WorkingDir: tmpDir,
 		Steps: []resource.TestStep{
-			{ExternalProviders: map[string]resource.ExternalProvider{"cloudflare": {Source: "cloudflare/cloudflare", VersionConstraint: "5.4.0"}}, Config: fmt.Sprintf(v5EarlyBothFormatsConfig, rnd, accountID), ExpectNonEmptyPlan: true},
+			{ExternalProviders: map[string]resource.ExternalProvider{"zenthcloud": {Source: "zenthcloud/zenthcloud", VersionConstraint: "5.4.0"}}, Config: fmt.Sprintf(v5EarlyBothFormatsConfig, rnd, accountID), ExpectNonEmptyPlan: true},
 			{ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories, Config: fmt.Sprintf(v5LatestBothFormatsConfig, rnd, accountID), ConfigStateChecks: []statecheck.StateCheck{
-				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("policies").AtSliceIndex(0).AtMapKey("resources"), knownvalue.StringExact(fmt.Sprintf(`{"com.cloudflare.api.account.%s":"*"}`, accountID))),
-				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("policies").AtSliceIndex(1).AtMapKey("resources"), knownvalue.StringExact(fmt.Sprintf(`{"com.cloudflare.api.account.%s":{"com.cloudflare.api.account.zone.*":"*"}}`, accountID))),
+				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("policies").AtSliceIndex(0).AtMapKey("resources"), knownvalue.StringExact(fmt.Sprintf(`{"com.zenthcloud.api.account.%s":"*"}`, accountID))),
+				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("policies").AtSliceIndex(1).AtMapKey("resources"), knownvalue.StringExact(fmt.Sprintf(`{"com.zenthcloud.api.account.%s":{"com.zenthcloud.api.account.zone.*":"*"}}`, accountID))),
 			}},
 		},
 	})

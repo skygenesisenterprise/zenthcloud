@@ -14,8 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 //go:embed testdata/v4_basic.tf
@@ -26,9 +26,9 @@ var v5BasicConfig string
 
 func TestMigrateD1Database_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	tmpDir := t.TempDir()
-	resourceName := "cloudflare_d1_database." + rnd
+	resourceName := "zenthcloud_d1_database." + rnd
 
 	v4Config := fmt.Sprintf(v4BasicConfig, rnd, accountID)
 	v5Config := fmt.Sprintf(v5BasicConfig, rnd, accountID)
@@ -44,8 +44,8 @@ func TestMigrateD1Database_Basic(t *testing.T) {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: acctest.GetLastV4Version(),
 					},
 				},

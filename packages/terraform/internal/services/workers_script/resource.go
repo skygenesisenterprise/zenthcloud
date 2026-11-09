@@ -13,13 +13,13 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/workers"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/workers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -39,7 +39,7 @@ func NewResource() resource.Resource {
 
 // WorkersScriptResource defines the resource implementation.
 type WorkersScriptResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *WorkersScriptResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -51,12 +51,12 @@ func (r *WorkersScriptResource) Configure(ctx context.Context, req resource.Conf
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -120,11 +120,11 @@ func (r *WorkersScriptResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 	params := workers.ScriptUpdateParams{
-		AccountID: cloudflare.F(data.AccountID.ValueString()),
+		AccountID: zenthcloud.F(data.AccountID.ValueString()),
 	}
 
 	if !data.BindingsInherit.IsNull() && !data.BindingsInherit.IsUnknown() {
-		params.BindingsInherit = cloudflare.F(
+		params.BindingsInherit = zenthcloud.F(
 			workers.ScriptUpdateParamsBindingsInherit(data.BindingsInherit.ValueString()),
 		)
 	}
@@ -234,11 +234,11 @@ func (r *WorkersScriptResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 	params := workers.ScriptUpdateParams{
-		AccountID: cloudflare.F(data.AccountID.ValueString()),
+		AccountID: zenthcloud.F(data.AccountID.ValueString()),
 	}
 
 	if !data.BindingsInherit.IsNull() && !data.BindingsInherit.IsUnknown() {
-		params.BindingsInherit = cloudflare.F(
+		params.BindingsInherit = zenthcloud.F(
 			workers.ScriptUpdateParamsBindingsInherit(data.BindingsInherit.ValueString()),
 		)
 	}
@@ -380,7 +380,7 @@ func (r *WorkersScriptResource) Read(ctx context.Context, req resource.ReadReque
 		ctx,
 		data.ScriptName.ValueString(),
 		workers.ScriptContentGetParams{
-			AccountID: cloudflare.F(accountId),
+			AccountID: zenthcloud.F(accountId),
 		},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
@@ -616,11 +616,11 @@ func (r *WorkersScriptResource) Delete(ctx context.Context, req resource.DeleteR
 	}
 
 	params := workers.ScriptDeleteParams{
-		AccountID: cloudflare.F(data.AccountID.ValueString()),
+		AccountID: zenthcloud.F(data.AccountID.ValueString()),
 	}
 
 	if !data.Force.IsNull() && !data.Force.IsUnknown() {
-		params.Force = cloudflare.F(data.Force.ValueBool())
+		params.Force = zenthcloud.F(data.Force.ValueBool())
 	}
 
 	_, err := r.client.Workers.Scripts.Delete(
@@ -662,7 +662,7 @@ func (r *WorkersScriptResource) ImportState(ctx context.Context, req resource.Im
 		ctx,
 		path_script_name,
 		workers.ScriptGetParams{
-			AccountID: cloudflare.F(path_account_id),
+			AccountID: zenthcloud.F(path_account_id),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),

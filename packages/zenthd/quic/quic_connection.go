@@ -9,7 +9,7 @@ import (
 	"github.com/quic-go/quic-go"
 )
 
-// QUICConnection defines the subset of [quic.Connection] methods used by cloudflared.
+// QUICConnection defines the subset of [quic.Connection] methods used by zenthcloudd.
 // Consumers should accept this interface; producers should return [*ConnWithCloser].
 type QUICConnection interface {
 	AcceptStream(ctx context.Context) (*quic.Stream, error)

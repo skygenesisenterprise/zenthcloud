@@ -100,7 +100,7 @@ export const mockOAuthFlow = () => {
 
 	const mockGrantAccessToken = ({
 		respondWith,
-		domain = "dash.cloudflare.com",
+		domain = "dash.zenthcloud.com",
 	}: {
 		respondWith: MockTokenResponse;
 		domain?: string;
@@ -127,13 +127,13 @@ export const mockOAuthFlow = () => {
 
 	function mockDomainUsesAccess({
 		usesAccess,
-		domain = "dash.cloudflare.com",
+		domain = "dash.zenthcloud.com",
 	}: {
 		usesAccess: boolean;
 		domain?: string;
 	}) {
-		// If the domain relies upon Cloudflare Access, then a request to the domain
-		// will result in a redirect to the `cloudflareaccess.com` domain.
+		// If the domain relies upon Zenthcloud Access, then a request to the domain
+		// will result in a redirect to the `zenthcloudaccess.com` domain.
 		msw.use(
 			http.get(
 				`https://${domain}/`,
@@ -144,7 +144,7 @@ export const mockOAuthFlow = () => {
 					};
 					if (usesAccess) {
 						status = 302;
-						headers = { location: "cloudflareaccess.com" };
+						headers = { location: "zenthcloudaccess.com" };
 					}
 					return HttpResponse.json(null, { status: status, headers });
 				},
@@ -164,7 +164,7 @@ export const mockOAuthFlow = () => {
 
 export function mockExchangeRefreshTokenForAccessToken({
 	respondWith,
-	domain = "dash.cloudflare.com",
+	domain = "dash.zenthcloud.com",
 }: {
 	respondWith: "refreshSuccess" | "refreshError" | "badResponse";
 	domain?: string;

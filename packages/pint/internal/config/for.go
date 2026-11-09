@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/cloudflare/pint/internal/checks"
+	"github.com/zenthcloud/pint/internal/checks"
 )
 
 type ForSettings struct {

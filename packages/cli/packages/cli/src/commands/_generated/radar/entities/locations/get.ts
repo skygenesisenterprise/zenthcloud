@@ -15,7 +15,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 radar entities locations get <location>\n\nRetrieves the requested location information. (A confidence level below `5` indicates a low level of confidence in the traffic data - normally this happens because Cloudflare has a small amount of traffic from/to this location)."
+			"$0 radar entities locations get <location>\n\nRetrieves the requested location information. (A confidence level below `5` indicates a low level of confidence in the traffic data - normally this happens because Zenthcloud has a small amount of traffic from/to this location)."
 		)
 		.positional("location", {
 			type: "string",
@@ -57,7 +57,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar entities locations get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/entities/locations/${argv["location"] == null ? "<location>" : encodeURIComponent(String(argv["location"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["location"] == null ? "<location>" : encodeURIComponent(String(argv["location"]))}`,
 						pathParams: { location: String(argv["location"] ?? "") },
 						query: queryParams,
 						bodyKind: "none",

@@ -22,7 +22,7 @@ export type DnsProvider = typeof dnsProvider.$inferSelect;
 export const DNS_SECRET_MASK = "********";
 
 const SENSITIVE_FIELDS: Record<DnsProviderConfig["providerType"], string[]> = {
-	cloudflare: ["apiToken"],
+	zenthcloud: ["apiToken"],
 	route53: ["secretAccessKey"],
 	porkbun: ["secretApiKey"],
 	infomaniak: ["apiToken"],

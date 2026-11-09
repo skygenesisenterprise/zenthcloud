@@ -7,18 +7,18 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_access_group/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_access_group/migration/v500"
 )
 
 var _ resource.ResourceWithMoveState = (*ZeroTrustAccessGroupResource)(nil)
 var _ resource.ResourceWithUpgradeState = (*ZeroTrustAccessGroupResource)(nil)
 
-// MoveState handles moves from cloudflare_access_group (v0) to cloudflare_zero_trust_access_group (v500).
+// MoveState handles moves from zenthcloud_access_group (v0) to zenthcloud_zero_trust_access_group (v500).
 // This is triggered when users use the `moved` block (Terraform 1.8+):
 //
 //	moved {
-//	    from = cloudflare_access_group.example
-//	    to   = cloudflare_zero_trust_access_group.example
+//	    from = zenthcloud_access_group.example
+//	    to   = zenthcloud_zero_trust_access_group.example
 //	}
 func (r *ZeroTrustAccessGroupResource) MoveState(ctx context.Context) []resource.StateMover {
 	sourceSchema := v500.SourceV4ZeroTrustAccessGroupSchema()
@@ -30,7 +30,7 @@ func (r *ZeroTrustAccessGroupResource) MoveState(ctx context.Context) []resource
 	}
 }
 
-// UpgradeState handles schema version upgrades for cloudflare_zero_trust_access_group.
+// UpgradeState handles schema version upgrades for zenthcloud_zero_trust_access_group.
 //
 // This handles two upgrade paths:
 // 1. v4 state (schema_version=0) → v5 (version=500): Full transformation

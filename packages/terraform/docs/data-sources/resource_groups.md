@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_resource_groups Data Source - Cloudflare"
+page_title: "zenthcloud_resource_groups Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Settings ReadAccount Settings WriteSCIM Provisioning
 ---
 
-# cloudflare_resource_groups (Data Source)
+# zenthcloud_resource_groups (Data Source)
 
 Accepted Permissions
 
@@ -17,7 +17,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_resource_groups" "example_resource_groups" {
+data "zenthcloud_resource_groups" "example_resource_groups" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   id = "023e105f4ecef8ad9ca31a8372d0c353"
   name = "NameOfTheResourceGroup"

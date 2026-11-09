@@ -5,8 +5,8 @@ package zero_trust_access_policy
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
@@ -460,9 +460,9 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 								},
 							},
 						},
-						"cloudflare_account_member": schema.SingleNestedAttribute{
+						"zenthcloud_account_member": schema.SingleNestedAttribute{
 							Computed:   true,
-							CustomType: customfield.NewNestedObjectType[ZeroTrustAccessPolicyExcludeCloudflareAccountMemberDataSourceModel](ctx),
+							CustomType: customfield.NewNestedObjectType[ZeroTrustAccessPolicyExcludeZenthcloudAccountMemberDataSourceModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"account_id": schema.StringAttribute{
 									Description: "Identifier.",
@@ -780,9 +780,9 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 								},
 							},
 						},
-						"cloudflare_account_member": schema.SingleNestedAttribute{
+						"zenthcloud_account_member": schema.SingleNestedAttribute{
 							Computed:   true,
-							CustomType: customfield.NewNestedObjectType[ZeroTrustAccessPolicyIncludeCloudflareAccountMemberDataSourceModel](ctx),
+							CustomType: customfield.NewNestedObjectType[ZeroTrustAccessPolicyIncludeZenthcloudAccountMemberDataSourceModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"account_id": schema.StringAttribute{
 									Description: "Identifier.",
@@ -1130,9 +1130,9 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 								},
 							},
 						},
-						"cloudflare_account_member": schema.SingleNestedAttribute{
+						"zenthcloud_account_member": schema.SingleNestedAttribute{
 							Computed:   true,
-							CustomType: customfield.NewNestedObjectType[ZeroTrustAccessPolicyRequireCloudflareAccountMemberDataSourceModel](ctx),
+							CustomType: customfield.NewNestedObjectType[ZeroTrustAccessPolicyRequireZenthcloudAccountMemberDataSourceModel](ctx),
 							Attributes: map[string]schema.Attribute{
 								"account_id": schema.StringAttribute{
 									Description: "Identifier.",

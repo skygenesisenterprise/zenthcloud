@@ -44,7 +44,7 @@ func UpgradeFromV4(ctx context.Context, req resource.UpgradeStateRequest, resp *
 	tflog.Info(ctx, "Detected v4 state (missing identifier), performing transformation from raw state")
 
 	// Parse v4 state using the v4 schema
-	var v4State SourceCloudflareCustomPagesModel
+	var v4State SourceZenthcloudCustomPagesModel
 	v4Diags := unmarshalV4State(ctx, req.RawState, &v4State)
 	resp.Diagnostics.Append(v4Diags...)
 	if resp.Diagnostics.HasError() {
@@ -65,11 +65,11 @@ func UpgradeFromV4(ctx context.Context, req resource.UpgradeStateRequest, resp *
 
 // unmarshalV4State unmarshals raw state into a v4 model using the v4 schema.
 // This is needed when the PriorSchema is v5 but we need to parse v4 state.
-func unmarshalV4State(ctx context.Context, rawState *tfprotov6.RawState, target *SourceCloudflareCustomPagesModel) diag.Diagnostics {
+func unmarshalV4State(ctx context.Context, rawState *tfprotov6.RawState, target *SourceZenthcloudCustomPagesModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	// Get the v4 schema
-	sourceSchema := SourceCloudflareCustomPagesSchema()
+	sourceSchema := SourceZenthcloudCustomPagesSchema()
 	sourceType := sourceSchema.Type().TerraformType(ctx)
 
 	// Unmarshal the raw state into a tftypes.Value

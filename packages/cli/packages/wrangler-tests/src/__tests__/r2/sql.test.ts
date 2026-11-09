@@ -1,7 +1,7 @@
 import { describe, it } from "vite-plus/test";
 
 // `r2 sql query` is wrangler-only. The R2 SQL feature targets a
-// separate API host (`api.sql.cloudflarestorage.com`) and is not
+// separate API host (`api.sql.zenthcloudstorage.com`) and is not
 // surfaced by forge — cf has no `r2 sql ...` command tree. The
 // closest cf equivalent (`cf r2-data-catalog ...`) covers catalog
 // management (enable/disable, namespaces, tables, credentials,

@@ -9,13 +9,13 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/rules"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/rules"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -32,7 +32,7 @@ func NewResource() resource.Resource {
 
 // ListResource defines the resource implementation.
 type ListResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *ListResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -44,12 +44,12 @@ func (r *ListResource) Configure(ctx context.Context, req resource.ConfigureRequ
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -74,10 +74,10 @@ func (r *ListResource) Create(ctx context.Context, req resource.CreateRequest, r
 	_, err := r.client.Rules.Lists.New(
 		ctx,
 		rules.ListNewParams{
-			AccountID:   cloudflare.F(data.AccountID.ValueString()),
-			Kind:        cloudflare.F(rules.ListNewParamsKind(data.Kind.ValueString())),
-			Name:        cloudflare.F(data.Name.ValueString()),
-			Description: cloudflare.F(data.Description.ValueString()),
+			AccountID:   zenthcloud.F(data.AccountID.ValueString()),
+			Kind:        zenthcloud.F(rules.ListNewParamsKind(data.Kind.ValueString())),
+			Name:        zenthcloud.F(data.Name.ValueString()),
+			Description: zenthcloud.F(data.Description.ValueString()),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -139,8 +139,8 @@ func (r *ListResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		ctx,
 		data.ID.ValueString(),
 		rules.ListUpdateParams{
-			AccountID:   cloudflare.F(data.AccountID.ValueString()),
-			Description: cloudflare.F(data.Description.ValueString()),
+			AccountID:   zenthcloud.F(data.AccountID.ValueString()),
+			Description: zenthcloud.F(data.Description.ValueString()),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -205,7 +205,7 @@ func (r *ListResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		ctx,
 		data.ID.ValueString(),
 		rules.ListGetParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -261,7 +261,7 @@ func (r *ListResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		ctx,
 		data.ID.ValueString(),
 		rules.ListDeleteParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
@@ -298,7 +298,7 @@ func (r *ListResource) ImportState(ctx context.Context, req resource.ImportState
 		ctx,
 		path_list_id,
 		rules.ListGetParams{
-			AccountID: cloudflare.F(path_account_id),
+			AccountID: zenthcloud.F(path_account_id),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -340,7 +340,7 @@ func (r *ListResource) ModifyPlan(_ context.Context, _ resource.ModifyPlanReques
 
 }
 
-func PollListBulkOperation(ctx context.Context, accountID, operationID string, client *cloudflare.Client) error {
+func PollListBulkOperation(ctx context.Context, accountID, operationID string, client *zenthcloud.Client) error {
 	backoff := 1 * time.Second
 	maxBackoff := 30 * time.Second
 
@@ -349,7 +349,7 @@ func PollListBulkOperation(ctx context.Context, accountID, operationID string, c
 			ctx,
 			operationID,
 			rules.ListBulkOperationGetParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			},
 			option.WithMiddleware(logging.Middleware(ctx)),
 		)
@@ -371,7 +371,7 @@ func PollListBulkOperation(ctx context.Context, accountID, operationID string, c
 	}
 }
 
-func bulkUpdateList(ctx context.Context, client *cloudflare.Client, accountID, listID string, plan *ListModel) diag.Diagnostics {
+func bulkUpdateList(ctx context.Context, client *zenthcloud.Client, accountID, listID string, plan *ListModel) diag.Diagnostics {
 	var diagnostics diag.Diagnostics
 	items, diags := plan.Items.AsStructSliceT(ctx)
 	diagnostics.Append(diags...)
@@ -386,7 +386,7 @@ func bulkUpdateList(ctx context.Context, client *cloudflare.Client, accountID, l
 	}
 
 	result, err := client.Rules.Lists.Items.Update(ctx, listID, rules.ListItemUpdateParams{
-		AccountID: cloudflare.F(accountID),
+		AccountID: zenthcloud.F(accountID),
 	},
 		option.WithRequestBody("application/json", itemsBytes),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -405,7 +405,7 @@ func bulkUpdateList(ctx context.Context, client *cloudflare.Client, accountID, l
 	return diagnostics
 }
 
-func getAllListItems[M any](ctx context.Context, client *cloudflare.Client, accountID, listID, search string) ([]M, diag.Diagnostics) {
+func getAllListItems[M any](ctx context.Context, client *zenthcloud.Client, accountID, listID, search string) ([]M, diag.Diagnostics) {
 	var diagnostics diag.Diagnostics
 	paginatedItems := make([]M, 0)
 
@@ -413,9 +413,9 @@ func getAllListItems[M any](ctx context.Context, client *cloudflare.Client, acco
 		ctx,
 		listID,
 		rules.ListItemListParams{
-			AccountID: cloudflare.F(accountID),
-			PerPage:   cloudflare.F(int64(500)),
-			Search:    cloudflare.F(search),
+			AccountID: zenthcloud.F(accountID),
+			PerPage:   zenthcloud.F(int64(500)),
+			Search:    zenthcloud.F(search),
 		},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)

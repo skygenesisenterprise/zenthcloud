@@ -29,14 +29,14 @@ fi
 cd -- "$(dirname -- "$0")/.."
 
 # update list item docs to account for custom code
-cat << EOT > examples/resources/cloudflare_list_item/import.sh
-$ terraform import cloudflare_list_item.example '<account_id>/<list_id>/<item_id>'
+cat << EOT > examples/resources/zenthcloud_list_item/import.sh
+$ terraform import zenthcloud_list_item.example '<account_id>/<list_id>/<item_id>'
 EOT
 
 echo "==> Generating zone setting IDs from OpenAPI spec"
 python3 "$(dirname "$0")/generate-zone-setting-ids" "$OPENAPI_SPEC_PATH"
 # Mark the necessary Go modules as private to avoid Go's proxy
-export GOPRIVATE="${GOPRIVATE:+$GOPRIVATE,}github.com/cloudflare/cloudflare-go,github.com/gitlab.cfdata.org/cloudflare/sdks/cloudflare-go"
+export GOPRIVATE="${GOPRIVATE:+$GOPRIVATE,}github.com/zenthcloud/zenthcloud-go,github.com/gitlab.cfdata.org/zenthcloud/sdks/zenthcloud-go"
 
 echo "==> Generating Terraform provider documentation"
 
@@ -54,4 +54,4 @@ linux*)
 esac
 
 go mod tidy
-exec -- "$EXEC" generate -rendered-provider-name "Cloudflare" -provider-name="cloudflare"
+exec -- "$EXEC" generate -rendered-provider-name "Zenthcloud" -provider-name="zenthcloud"

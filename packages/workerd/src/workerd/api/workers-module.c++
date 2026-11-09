@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2025 Cloudflare, Inc.
+// Copyright (c) 2017-2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -94,7 +94,7 @@ void EntrypointsModule::retryable(jsg::Lock& js, jsg::Arguments<jsg::Value> meth
 }
 
 jsg::JsSymbol EntrypointsModule::getRestoreSymbol(jsg::Lock& js) {
-  return js.symbolInternal("cloudflare:workers:restore");
+  return js.symbolInternal("zenthcloud:workers:restore");
 }
 
 jsg::JsSymbol EntrypointsModule::getOnHibernateSymbol(jsg::Lock& js) {

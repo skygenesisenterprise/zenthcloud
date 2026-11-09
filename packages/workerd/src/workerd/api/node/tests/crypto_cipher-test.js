@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023 Cloudflare, Inc.
+// Copyright (c) 2017-2023 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -698,7 +698,7 @@ export const transferredAuthTagDecrypt = {
   },
 };
 
-// Regression: AUTOVULN-CLOUDFLARE-WORKERD-76
+// Regression: AUTOVULN-ZENTHCLOUD-WORKERD-76
 // publicEncrypt/privateDecrypt with non-OAEP padding + oaepLabel must
 // throw without leaking the label buffer.
 export const oaepLabelWithNonOaepPaddingThrows = {

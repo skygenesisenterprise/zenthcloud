@@ -5,9 +5,9 @@ package zone_lockdown
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/firewall"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/firewall"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -32,7 +32,7 @@ type ZoneLockdownDataSourceModel struct {
 
 func (m *ZoneLockdownDataSourceModel) toReadParams(_ context.Context) (params firewall.LockdownGetParams, diags diag.Diagnostics) {
 	params = firewall.LockdownGetParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	return
@@ -45,35 +45,35 @@ func (m *ZoneLockdownDataSourceModel) toListParams(_ context.Context) (params fi
 	diags.Append(errs...)
 
 	params = firewall.LockdownListParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	if !m.Filter.CreatedOn.IsNull() {
-		params.CreatedOn = cloudflare.F(mFilterCreatedOn)
+		params.CreatedOn = zenthcloud.F(mFilterCreatedOn)
 	}
 	if !m.Filter.Description.IsNull() {
-		params.Description = cloudflare.F(m.Filter.Description.ValueString())
+		params.Description = zenthcloud.F(m.Filter.Description.ValueString())
 	}
 	if !m.Filter.DescriptionSearch.IsNull() {
-		params.DescriptionSearch = cloudflare.F(m.Filter.DescriptionSearch.ValueString())
+		params.DescriptionSearch = zenthcloud.F(m.Filter.DescriptionSearch.ValueString())
 	}
 	if !m.Filter.IP.IsNull() {
-		params.IP = cloudflare.F(m.Filter.IP.ValueString())
+		params.IP = zenthcloud.F(m.Filter.IP.ValueString())
 	}
 	if !m.Filter.IPRangeSearch.IsNull() {
-		params.IPRangeSearch = cloudflare.F(m.Filter.IPRangeSearch.ValueString())
+		params.IPRangeSearch = zenthcloud.F(m.Filter.IPRangeSearch.ValueString())
 	}
 	if !m.Filter.IPSearch.IsNull() {
-		params.IPSearch = cloudflare.F(m.Filter.IPSearch.ValueString())
+		params.IPSearch = zenthcloud.F(m.Filter.IPSearch.ValueString())
 	}
 	if !m.Filter.ModifiedOn.IsNull() {
-		params.ModifiedOn = cloudflare.F(mFilterModifiedOn)
+		params.ModifiedOn = zenthcloud.F(mFilterModifiedOn)
 	}
 	if !m.Filter.Priority.IsNull() {
-		params.Priority = cloudflare.F(m.Filter.Priority.ValueFloat64())
+		params.Priority = zenthcloud.F(m.Filter.Priority.ValueFloat64())
 	}
 	if !m.Filter.URISearch.IsNull() {
-		params.URISearch = cloudflare.F(m.Filter.URISearch.ValueString())
+		params.URISearch = zenthcloud.F(m.Filter.URISearch.ValueString())
 	}
 
 	return

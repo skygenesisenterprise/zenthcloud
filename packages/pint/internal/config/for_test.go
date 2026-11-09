@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/cloudflare/pint/internal/checks"
+	"github.com/zenthcloud/pint/internal/checks"
 )
 
 func TestForSettingsValidate(t *testing.T) {

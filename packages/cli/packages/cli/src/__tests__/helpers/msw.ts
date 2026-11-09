@@ -14,14 +14,14 @@ import type { RequestHandler } from "msw";
  * disable MSW's fetch interception.
  *
  * Tests point the client at a stable test origin by setting
- * `CLOUDFLARE_API_BASE_URL` (honoured by `createCommandClient` in
+ * `ZENTHCLOUD_API_BASE_URL` (honoured by `createCommandClient` in
  * `lib/auth.ts`) and register handlers for that origin. The default
  * `onUnhandledFrame: "error"` turns any un-mocked outbound request
  * into a loud failure rather than a silent real network call — a unit
- * suite must never reach the real Cloudflare API.
+ * suite must never reach the real Zenthcloud API.
  */
 
-/** Base origin tests route the client at via `CLOUDFLARE_API_BASE_URL`. */
+/** Base origin tests route the client at via `ZENTHCLOUD_API_BASE_URL`. */
 export const TEST_BASE_URL = "https://api.test/client/v4";
 
 /**

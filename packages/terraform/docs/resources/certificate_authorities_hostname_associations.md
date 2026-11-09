@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_certificate_authorities_hostname_associations Resource - Cloudflare"
+page_title: "zenthcloud_certificate_authorities_hostname_associations Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   SSL and Certificates ReadSSL and Certificates Write
 ---
 
-# cloudflare_certificate_authorities_hostname_associations (Resource)
+# zenthcloud_certificate_authorities_hostname_associations (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_certificate_authorities_hostname_associations" "example_certificate_authorities_hostname_associations" {
+resource "zenthcloud_certificate_authorities_hostname_associations" "example_certificate_authorities_hostname_associations" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   hostnames = ["api.example.com"]
   mtls_certificate_id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -33,7 +33,7 @@ resource "cloudflare_certificate_authorities_hostname_associations" "example_cer
 ### Optional
 
 - `hostnames` (List of String)
-- `mtls_certificate_id` (String) The UUID for a certificate that was uploaded to the mTLS Certificate Management endpoint. If no mtls_certificate_id is given, the hostnames will be associated to your active Cloudflare Managed CA.
+- `mtls_certificate_id` (String) The UUID for a certificate that was uploaded to the mTLS Certificate Management endpoint. If no mtls_certificate_id is given, the hostnames will be associated to your active Zenthcloud Managed CA.
 
 ### Read-Only
 
@@ -44,7 +44,7 @@ resource "cloudflare_certificate_authorities_hostname_associations" "example_cer
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_certificate_authorities_hostname_associations.example '<zone_id>'
+$ terraform import zenthcloud_certificate_authorities_hostname_associations.example '<zone_id>'
 ```
 
 

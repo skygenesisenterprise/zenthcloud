@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_workers_kv_namespaces Data Source - Cloudflare"
+page_title: "zenthcloud_workers_kv_namespaces Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Workers KV Storage ReadWorkers KV Storage Write
 ---
 
-# cloudflare_workers_kv_namespaces (Data Source)
+# zenthcloud_workers_kv_namespaces (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_workers_kv_namespaces" "example_workers_kv_namespaces" {
+data "zenthcloud_workers_kv_namespaces" "example_workers_kv_namespaces" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   direction = "asc"
   order = "id"
@@ -28,7 +28,7 @@ data "cloudflare_workers_kv_namespaces" "example_workers_kv_namespaces" {
 
 ### Optional
 
-- `account_id` (String) ID of the Cloudflare account that owns the Workers KV namespaces.
+- `account_id` (String) ID of the Zenthcloud account that owns the Workers KV namespaces.
 - `direction` (String) Sort namespaces in ascending (`asc`) or descending (`desc`) order.
 Available values: "asc", "desc".
 - `max_items` (Number) Max items to fetch, default: 1000

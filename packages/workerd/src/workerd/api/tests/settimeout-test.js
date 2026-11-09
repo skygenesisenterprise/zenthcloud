@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import { ok } from 'node:assert';
@@ -11,7 +11,7 @@ const JITTER = 10;
 
 // The first setTimeout was firing too early because
 // kj::Timer::now() was stale after script compilation/startup.
-// Ref: https://github.com/cloudflare/workerd/issues/6019
+// Ref: https://github.com/skygenesisenterprise/zenthcloud
 export const basicAccuracy = {
   async test() {
     const t0 = Date.now();
@@ -27,7 +27,7 @@ export const basicAccuracy = {
 // After CPU-heavy work between setTimeout calls,
 // subsequent consecutive setTimeouts must still each wait their full delay
 // rather than all firing at the same instant.
-// Ref: https://github.com/cloudflare/workerd/issues/6037
+// Ref: https://github.com/skygenesisenterprise/zenthcloud
 export const accuracyAfterCpuWork = {
   async test() {
     await timers.setTimeout(50);

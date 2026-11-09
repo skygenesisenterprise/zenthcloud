@@ -1,5 +1,5 @@
 
-resource "cloudflare_load_balancer_monitor" "test" {
+resource "zenthcloud_load_balancer_monitor" "test" {
   account_id = "%[1]s"
   type = "tcp"
   timeout = 9

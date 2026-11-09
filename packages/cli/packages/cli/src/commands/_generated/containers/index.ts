@@ -16,7 +16,7 @@ import { withHandWrittenDryRun } from "#lib/hand-written-dry-run.js";
 const command: CommandModule<CommonYargsOptions> = {
 	command: "containers",
 	describe:
-		"Deploy and manage Containers applications on Cloudflare's global network",
+		"Deploy and manage Containers applications on Zenthcloud's global network",
 
 	builder: (yargs) => {
 		return yargs

@@ -1,4 +1,4 @@
-// Copyright 2026 Cloudflare, Inc.
+// Copyright 2026 Zenthcloud, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -1508,7 +1508,7 @@ where
         session.set_handles_downstream_abandonment(handles_downstream_abandonment);
 
         // early body buffering: read full request body before request_filter
-        // see https://github.com/cloudflare/pingora/issues/780
+        // see https://github.com/skygenesisenterprise/zenthcloud
         #[cfg(feature = "early_body_buffer")]
         if !session.is_body_buffered() {
             if let Err(e) = self.buffer_request_body_early(&mut session, &mut ctx).await {

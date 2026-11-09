@@ -6,11 +6,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/pages"
-	"github.com/cloudflare/cloudflare-go/v7/zones"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/pages"
+	"github.com/zenthcloud/zenthcloud-go/v7/zones"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -25,25 +25,25 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_pages_domain", &resource.Sweeper{
-		Name: "cloudflare_pages_domain",
-		F:    testSweepCloudflarePagesDomains,
+	resource.AddTestSweepers("zenthcloud_pages_domain", &resource.Sweeper{
+		Name: "zenthcloud_pages_domain",
+		F:    testSweepZenthcloudPagesDomains,
 	})
 }
 
-func testSweepCloudflarePagesDomains(r string) error {
+func testSweepZenthcloudPagesDomains(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping pages domains sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping pages domains sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
 	// List all pages projects
 	projectsPage, err := client.Pages.Projects.List(ctx, pages.ProjectListParams{
-		AccountID: cloudflare.F(accountID),
+		AccountID: zenthcloud.F(accountID),
 	})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch pages projects: %s", err))
@@ -63,7 +63,7 @@ func testSweepCloudflarePagesDomains(r string) error {
 		}
 
 		domainsPage, err := client.Pages.Projects.Domains.List(ctx, project.Name, pages.ProjectDomainListParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to fetch domains for pages project %s: %s", project.Name, err))
@@ -73,7 +73,7 @@ func testSweepCloudflarePagesDomains(r string) error {
 		for _, domain := range domainsPage.Result {
 			tflog.Info(ctx, fmt.Sprintf("Deleting pages domain: %s (project: %s, account: %s)", domain.Name, project.Name, accountID))
 			_, err := client.Pages.Projects.Domains.Delete(ctx, project.Name, domain.Name, pages.ProjectDomainDeleteParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			})
 			if err != nil {
 				tflog.Error(ctx, fmt.Sprintf("Failed to delete pages domain %s: %s", domain.Name, err))
@@ -86,17 +86,17 @@ func testSweepCloudflarePagesDomains(r string) error {
 	return nil
 }
 
-func TestAccCloudflarePagesDomain(t *testing.T) {
+func TestAccZenthcloudPagesDomain(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_pages_domain." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_pages_domain." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	client := acctest.SharedClient()
 	zonePage, err := client.Zones.List(context.Background(), zones.ZoneListParams{
-		Account: cloudflare.F(zones.ZoneListParamsAccount{
-			ID: cloudflare.F(accountID),
+		Account: zenthcloud.F(zones.ZoneListParamsAccount{
+			ID: zenthcloud.F(accountID),
 		}),
 	})
 	if err != nil || zonePage == nil || len(zonePage.Result) == 0 {
@@ -112,7 +112,7 @@ func TestAccCloudflarePagesDomain(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflarePagesDomainDestroy,
+		CheckDestroy:             testAccCheckZenthcloudPagesDomainDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: acctest.LoadTestCase("pagesdomainconfig.tf", rnd, accountID, rnd, fullDomain),
@@ -121,7 +121,7 @@ func TestAccCloudflarePagesDomain(t *testing.T) {
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("project_name"), knownvalue.StringExact(rnd)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(fullDomain)),
 				},
-				Check: testAccCheckCloudflarePagesDomainExists(name, accountID, rnd, fullDomain),
+				Check: testAccCheckZenthcloudPagesDomainExists(name, accountID, rnd, fullDomain),
 				//ExpectNonEmptyPlan: true, // Pages project computed fields (canonical_deployment, latest_deployment, etc.) can change
 			},
 			{
@@ -139,11 +139,11 @@ func TestAccCloudflarePagesDomain(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflarePagesDomainDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudPagesDomainDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type == "cloudflare_pages_domain" {
+		if rs.Type == "zenthcloud_pages_domain" {
 			accountID := rs.Primary.Attributes["account_id"]
 			projectName := rs.Primary.Attributes["project_name"]
 			domainName := rs.Primary.Attributes["name"]
@@ -153,7 +153,7 @@ func testAccCheckCloudflarePagesDomainDestroy(s *terraform.State) error {
 				projectName,
 				domainName,
 				pages.ProjectDomainGetParams{
-					AccountID: cloudflare.F(accountID),
+					AccountID: zenthcloud.F(accountID),
 				},
 			)
 
@@ -162,7 +162,7 @@ func testAccCheckCloudflarePagesDomainDestroy(s *terraform.State) error {
 			}
 		}
 
-		if rs.Type == "cloudflare_pages_project" {
+		if rs.Type == "zenthcloud_pages_project" {
 			accountID := rs.Primary.Attributes["account_id"]
 			projectName := rs.Primary.Attributes["name"]
 
@@ -170,7 +170,7 @@ func testAccCheckCloudflarePagesDomainDestroy(s *terraform.State) error {
 				context.Background(),
 				projectName,
 				pages.ProjectGetParams{
-					AccountID: cloudflare.F(accountID),
+					AccountID: zenthcloud.F(accountID),
 				},
 			)
 
@@ -183,7 +183,7 @@ func testAccCheckCloudflarePagesDomainDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckCloudflarePagesDomainExists(resourceName, accountID, projectName, domainName string) resource.TestCheckFunc {
+func testAccCheckZenthcloudPagesDomainExists(resourceName, accountID, projectName, domainName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -200,7 +200,7 @@ func testAccCheckCloudflarePagesDomainExists(resourceName, accountID, projectNam
 			projectName,
 			domainName,
 			pages.ProjectDomainGetParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			},
 		)
 
@@ -214,11 +214,11 @@ func testAccCheckCloudflarePagesDomainExists(resourceName, accountID, projectNam
 
 func TestAccUpgradePagesDomain_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	client := acctest.SharedClient()
 	zonePage, err := client.Zones.List(context.Background(), zones.ZoneListParams{
-		Account: cloudflare.F(zones.ZoneListParamsAccount{
-			ID: cloudflare.F(accountID),
+		Account: zenthcloud.F(zones.ZoneListParamsAccount{
+			ID: zenthcloud.F(accountID),
 		}),
 	})
 	if err != nil || zonePage == nil || len(zonePage.Result) == 0 {
@@ -238,8 +238,8 @@ func TestAccUpgradePagesDomain_FromPublishedV5(t *testing.T) {
 			{
 				// Step 1: Create with v5.16.0 (schema version 0)
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},
@@ -250,8 +250,8 @@ func TestAccUpgradePagesDomain_FromPublishedV5(t *testing.T) {
 				// This is required because schema version 0 -> 1 state upgrader
 				// expects v4 SDKv2 format, but v5.16.0 state is v5 Plugin Framework format
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.17.0",
 					},
 				},

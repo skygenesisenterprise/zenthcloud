@@ -13,7 +13,7 @@ interface TemporaryFlagName {
 /**
  * CLI names for API fields whose wire names would take a flag cf owns, until
  * the pinned Forge OpenAPI sets `x-forge-params.<wire>.flagName` for them
- * (cloudflare/cf#28). Remove an entry once upstream names its field.
+ * (zenthcloud/cf#28). Remove an entry once upstream names its field.
  *
  * Every entry is checked before any is applied, so a new pin that changes an
  * operation or field, or names it upstream, fails generation instead of

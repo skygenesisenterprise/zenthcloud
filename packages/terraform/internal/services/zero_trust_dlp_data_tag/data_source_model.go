@@ -5,8 +5,8 @@ package zero_trust_dlp_data_tag
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -29,7 +29,7 @@ type ZeroTrustDLPDataTagDataSourceModel struct {
 
 func (m *ZeroTrustDLPDataTagDataSourceModel) toReadParams(_ context.Context) (params zero_trust.DLPDataTagCategoryDataTagGetParams, diags diag.Diagnostics) {
 	params = zero_trust.DLPDataTagCategoryDataTagGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return

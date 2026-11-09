@@ -26,7 +26,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zones_aegis_delete",
     title: "Delete aegis setting",
-    description: "Aegis provides dedicated egress IPs (from Cloudflare to your origin) for your layer 7 WAF and CDN services. The egress IPs are reserved exclusively for your account so that you can increase your origin security by only allowing traffic from a small list of IP addresses.\n\nDELETE /zones/{zone_id}/settings/aegis",
+    description: "Aegis provides dedicated egress IPs (from Zenthcloud to your origin) for your layer 7 WAF and CDN services. The egress IPs are reserved exclusively for your account so that you can increase your origin security by only allowing traffic from a small list of IP addresses.\n\nDELETE /zones/{zone_id}/settings/aegis",
     inputSchema: {
       type: "object",
       properties: {
@@ -130,7 +130,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zones_aegis_edit",
     title: "Change aegis setting",
-    description: "Aegis provides dedicated egress IPs (from Cloudflare to your origin) for your layer 7 WAF and CDN services. The egress IPs are reserved exclusively for your account so that you can increase your origin security by only allowing traffic from a small list of IP addresses.\n\nPATCH /zones/{zone_id}/settings/aegis",
+    description: "Aegis provides dedicated egress IPs (from Zenthcloud to your origin) for your layer 7 WAF and CDN services. The egress IPs are reserved exclusively for your account so that you can increase your origin security by only allowing traffic from a small list of IP addresses.\n\nPATCH /zones/{zone_id}/settings/aegis",
     inputSchema: {
       type: "object",
       properties: {
@@ -251,7 +251,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zones_aegis_get",
     title: "Get aegis setting",
-    description: "Aegis provides dedicated egress IPs (from Cloudflare to your origin) for your layer 7 WAF and CDN services. The egress IPs are reserved exclusively for your account so that you can increase your origin security by only allowing traffic from a small list of IP addresses.\n\nGET /zones/{zone_id}/settings/aegis",
+    description: "Aegis provides dedicated egress IPs (from Zenthcloud to your origin) for your layer 7 WAF and CDN services. The egress IPs are reserved exclusively for your account so that you can increase your origin security by only allowing traffic from a small list of IP addresses.\n\nGET /zones/{zone_id}/settings/aegis",
     inputSchema: {
       type: "object",
       properties: {

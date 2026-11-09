@@ -5,9 +5,9 @@ package api_shield_operation
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/api_gateway"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/api_gateway"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -51,20 +51,20 @@ func (m *APIShieldOperationsDataSourceModel) toListParams(_ context.Context) (pa
 	}
 
 	params = api_gateway.OperationListParams{
-		ZoneID:  cloudflare.F(m.ZoneID.ValueString()),
-		Feature: cloudflare.F(mFeature),
-		Host:    cloudflare.F(mHost),
-		Method:  cloudflare.F(mMethod),
+		ZoneID:  zenthcloud.F(m.ZoneID.ValueString()),
+		Feature: zenthcloud.F(mFeature),
+		Host:    zenthcloud.F(mHost),
+		Method:  zenthcloud.F(mMethod),
 	}
 
 	if !m.Direction.IsNull() {
-		params.Direction = cloudflare.F(api_gateway.OperationListParamsDirection(m.Direction.ValueString()))
+		params.Direction = zenthcloud.F(api_gateway.OperationListParamsDirection(m.Direction.ValueString()))
 	}
 	if !m.Endpoint.IsNull() {
-		params.Endpoint = cloudflare.F(m.Endpoint.ValueString())
+		params.Endpoint = zenthcloud.F(m.Endpoint.ValueString())
 	}
 	if !m.Order.IsNull() {
-		params.Order = cloudflare.F(api_gateway.OperationListParamsOrder(m.Order.ValueString()))
+		params.Order = zenthcloud.F(api_gateway.OperationListParamsOrder(m.Order.ValueString()))
 	}
 
 	return

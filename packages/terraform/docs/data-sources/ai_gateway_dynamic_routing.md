@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_ai_gateway_dynamic_routing Data Source - Cloudflare"
+page_title: "zenthcloud_ai_gateway_dynamic_routing Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   AI Gateway ReadAI Gateway Write
 ---
 
-# cloudflare_ai_gateway_dynamic_routing (Data Source)
+# zenthcloud_ai_gateway_dynamic_routing (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_ai_gateway_dynamic_routing" "example_ai_gateway_dynamic_routing" {
+data "zenthcloud_ai_gateway_dynamic_routing" "example_ai_gateway_dynamic_routing" {
   account_id = "0d37909e38d3e99c29fa2cd343ac421a"
   gateway_id = "54442216"
   id = "54442216"

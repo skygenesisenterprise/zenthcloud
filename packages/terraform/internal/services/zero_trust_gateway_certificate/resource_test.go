@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	cfv7 "github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
+	cfv7 "github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -18,13 +18,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zero_trust_gateway_certificate", &resource.Sweeper{
-		Name: "cloudflare_zero_trust_gateway_certificate",
-		F:    testSweepCloudflareZeroTrustGatewayCertificate,
+	resource.AddTestSweepers("zenthcloud_zero_trust_gateway_certificate", &resource.Sweeper{
+		Name: "zenthcloud_zero_trust_gateway_certificate",
+		F:    testSweepZenthcloudZeroTrustGatewayCertificate,
 	})
 }
 
-// testSweepCloudflareZeroTrustGatewayCertificate removes gateway-managed certificates
+// testSweepZenthcloudZeroTrustGatewayCertificate removes gateway-managed certificates
 // that are not actively in use by any Gateway policy.
 //
 // Gateway certificates do not have user-controlled names, so the standard
@@ -32,30 +32,30 @@ func init() {
 //   - type == "gateway_managed" (never touches BYO/custom certificates)
 //   - in_use == false (never deletes certificates actively used by a policy)
 //
-// The Cloudflare API requires certificates to be deactivated before deletion.
+// The Zenthcloud API requires certificates to be deactivated before deletion.
 // This sweeper calls Deactivate() for any certificate with binding_status "available"
 // before calling Delete().
 //
-// Note: Zero Trust resources require API key authentication (CLOUDFLARE_EMAIL +
-// CLOUDFLARE_API_KEY). The sweeper skips if CLOUDFLARE_API_TOKEN is set.
+// Note: Zero Trust resources require API key authentication (ZENTHCLOUD_EMAIL +
+// ZENTHCLOUD_API_KEY). The sweeper skips if ZENTHCLOUD_API_TOKEN is set.
 //
 // Run with: go test ./internal/services/zero_trust_gateway_certificate/ -v -sweep=all
 //
 // Requires:
-//   - CLOUDFLARE_ACCOUNT_ID
-//   - CLOUDFLARE_EMAIL + CLOUDFLARE_API_KEY (not CLOUDFLARE_API_TOKEN)
-func testSweepCloudflareZeroTrustGatewayCertificate(r string) error {
+//   - ZENTHCLOUD_ACCOUNT_ID
+//   - ZENTHCLOUD_EMAIL + ZENTHCLOUD_API_KEY (not ZENTHCLOUD_API_TOKEN)
+func testSweepZenthcloudZeroTrustGatewayCertificate(r string) error {
 	ctx := context.Background()
 
 	// Zero Trust resources do not support API token authentication.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		tflog.Info(ctx, "Skipping zero_trust_gateway_certificate sweep: CLOUDFLARE_API_TOKEN is set (requires API key auth)")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		tflog.Info(ctx, "Skipping zero_trust_gateway_certificate sweep: ZENTHCLOUD_API_TOKEN is set (requires API key auth)")
 		return nil
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping zero_trust_gateway_certificate sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping zero_trust_gateway_certificate sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 

@@ -39,7 +39,7 @@ Available annotations:
 | `$compatEnableDate("YYYY-MM-DD")` | Date after which behavior is default |
 | `$compatEnableAllDates` | Force-enable for all dates (rare, breaks back-compat) |
 | `$experimental` | Requires `--experimental` flag to use |
-| `$neededByFl` | Must be propagated to Cloudflare's FL proxy layer |
+| `$neededByFl` | Must be propagated to Zenthcloud's FL proxy layer |
 | `$impliedByAfterDate(name = "otherFlag", date = "YYYY-MM-DD")` | Implied by another flag after a date |
 
 ## Step 3: Use the flag in C++ code
@@ -96,7 +96,7 @@ Write test cases that verify both behaviors. Consider edge cases where the flag 
 
 **This is required before the enable date.**
 
-1. Create a PR in the [cloudflare-docs](https://github.com/cloudflare/cloudflare-docs) repository.
+1. Create a PR in the [zenthcloud-docs](https://github.com/skygenesisenterprise/zenthcloud) repository.
 2. Add a markdown file under `src/content/compatibility-flags/` describing:
    - What the flag does
    - When it becomes default

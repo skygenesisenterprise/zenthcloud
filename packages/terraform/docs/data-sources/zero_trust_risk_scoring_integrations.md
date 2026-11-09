@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_risk_scoring_integrations Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_risk_scoring_integrations Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust ReadZero Trust Write
 ---
 
-# cloudflare_zero_trust_risk_scoring_integrations (Data Source)
+# zenthcloud_zero_trust_risk_scoring_integrations (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_risk_scoring_integrations" "example_zero_trust_risk_scoring_integrations" {
+data "zenthcloud_zero_trust_risk_scoring_integrations" "example_zero_trust_risk_scoring_integrations" {
   account_id = "account_id"
 }
 ```
@@ -38,7 +38,7 @@ data "cloudflare_zero_trust_risk_scoring_integrations" "example_zero_trust_risk_
 
 Read-Only:
 
-- `account_tag` (String) The Cloudflare account tag.
+- `account_tag` (String) The Zenthcloud account tag.
 - `active` (Boolean) Whether this integration is enabled and should export changes in risk score.
 - `created_at` (String) When the integration was created in RFC3339 format.
 - `id` (String) The id of the integration, a UUIDv4.

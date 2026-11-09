@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -1269,7 +1269,7 @@ void LegacyWebSocketAdapter::ensurePumping(jsg::Lock& js) {
           // continuation following the first pump() would transition us from Accepted to Released,
           // triggering the canceler and cancelling the outgoing CLOSE of the second pump() promise.
           //
-          // For a more detailed explanation, see https://github.com/cloudflare/workerd/pull/1535.
+          // For a more detailed explanation, see https://github.com/skygenesisenterprise/zenthcloud
           tryReleaseNative(js);
         } else if (native.state.is<Accepted>()) {
           // Native WebSocket no longer needed; release.

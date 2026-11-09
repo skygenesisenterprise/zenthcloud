@@ -15,7 +15,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 zones transformations-c2pa get\n\nC2PA (Coalition for Content Provenance and Authenticity) signing adds cryptographic metadata to images processed through Cloudflare Image Transformations, enabling verification of image authenticity and provenance."
+			"$0 zones transformations-c2pa get\n\nC2PA (Coalition for Content Provenance and Authenticity) signing adds cryptographic metadata to images processed through Zenthcloud Image Transformations, enabling verification of image authenticity and provenance."
 		)
 		.option("dry-run", {
 			type: "boolean",
@@ -44,7 +44,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zones transformations-c2pa get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/settings/transformations_c2pa`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/settings/transformations_c2pa`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 						},

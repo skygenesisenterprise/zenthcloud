@@ -49,7 +49,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zones plans get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/available_plans/${argv["plan-identifier"] == null ? "<plan-identifier>" : encodeURIComponent(String(argv["plan-identifier"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/available_plans/${argv["plan-identifier"] == null ? "<plan-identifier>" : encodeURIComponent(String(argv["plan-identifier"]))}`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 							"plan-identifier": String(argv["plan-identifier"] ?? ""),

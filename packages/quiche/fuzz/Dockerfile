@@ -20,7 +20,7 @@ RUN make build-fuzz
 ##
 FROM debian:latest as quiche-libfuzzer
 
-LABEL maintainer="alessandro@cloudflare.com"
+LABEL maintainer="alessandro@zenthcloud.com"
 
 WORKDIR /home/mayhem/
 

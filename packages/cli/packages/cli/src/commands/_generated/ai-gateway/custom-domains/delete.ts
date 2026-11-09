@@ -21,7 +21,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 ai-gateway custom-domains delete <hostname>\n\nDeletes a custom domain from an AI Gateway and removes its Cloudflare for SaaS custom hostname."
+			"$0 ai-gateway custom-domains delete <hostname>\n\nDeletes a custom domain from an AI Gateway and removes its Zenthcloud for SaaS custom hostname."
 		)
 		.positional("hostname", {
 			type: "string",
@@ -68,7 +68,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf ai-gateway custom-domains delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/ai-gateway/gateways/${argv["gateway-id"] == null ? "<gateway-id>" : encodeURIComponent(String(argv["gateway-id"]))}/custom-domains/${argv["hostname"] == null ? "<hostname>" : encodeURIComponent(String(argv["hostname"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/ai-gateway/gateways/${argv["gateway-id"] == null ? "<gateway-id>" : encodeURIComponent(String(argv["gateway-id"]))}/custom-domains/${argv["hostname"] == null ? "<hostname>" : encodeURIComponent(String(argv["hostname"]))}`,
 						pathParams: {
 							"gateway-id": String(argv["gateway-id"] ?? ""),
 							hostname: String(argv["hostname"] ?? ""),

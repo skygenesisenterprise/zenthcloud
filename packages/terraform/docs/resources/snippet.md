@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_snippet Resource - Cloudflare"
+page_title: "zenthcloud_snippet Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Snippets ReadSnippets Write
 ---
 
-# cloudflare_snippet (Resource)
+# zenthcloud_snippet (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_snippet" "example_snippet" {
+resource "zenthcloud_snippet" "example_snippet" {
   zone_id      = "9f1839b6152d298aca64c4e906b6d074"
   snippet_name = "my_snippet"
   files = [
@@ -74,7 +74,7 @@ Required:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_snippet.example '<zone_id>/<snippet_name>'
+$ terraform import zenthcloud_snippet.example '<zone_id>/<snippet_name>'
 ```
 
 

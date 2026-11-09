@@ -6,11 +6,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/email_routing"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/email_routing"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -21,21 +21,21 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_email_routing_rule", &resource.Sweeper{
-		Name: "cloudflare_email_routing_rule",
+	resource.AddTestSweepers("zenthcloud_email_routing_rule", &resource.Sweeper{
+		Name: "zenthcloud_email_routing_rule",
 		F: func(region string) error {
 			ctx := context.Background()
 			client := acctest.SharedClient()
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 			if zoneID == "" {
-				tflog.Info(ctx, "Skipping email routing rules sweep: CLOUDFLARE_ZONE_ID not set")
+				tflog.Info(ctx, "Skipping email routing rules sweep: ZENTHCLOUD_ZONE_ID not set")
 				return nil
 			}
 
 			// List all email routing rules
 			rules, err := client.EmailRouting.Rules.List(ctx, email_routing.RuleListParams{
-				ZoneID: cloudflare.F(zoneID),
+				ZoneID: zenthcloud.F(zoneID),
 			})
 			if err != nil {
 				tflog.Error(ctx, fmt.Sprintf("Failed to fetch email routing rules: %s", err))
@@ -73,7 +73,7 @@ func init() {
 
 				tflog.Info(ctx, fmt.Sprintf("Deleting email routing rule: %s (%s) (zone: %s)", rule.Name, rule.Tag, zoneID))
 				_, err := client.EmailRouting.Rules.Delete(ctx, rule.Tag, email_routing.RuleDeleteParams{
-					ZoneID: cloudflare.F(zoneID),
+					ZoneID: zenthcloud.F(zoneID),
 				})
 				if err != nil {
 					tflog.Error(ctx, fmt.Sprintf("Failed to delete email routing rule %s: %s", rule.Name, err))
@@ -89,10 +89,10 @@ func init() {
 	})
 }
 
-func TestAccCloudflareEmailRoutingRule_Basic(t *testing.T) {
+func TestAccZenthcloudEmailRoutingRule_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_email_routing_rule." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	name := "zenthcloud_email_routing_rule." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -112,17 +112,17 @@ func TestAccCloudflareEmailRoutingRule_Basic(t *testing.T) {
 
 					resource.TestCheckResourceAttr(name, "actions.0.type", "forward"),
 					resource.TestCheckResourceAttr(name, "actions.0.value.#", "1"),
-					resource.TestCheckResourceAttr(name, "actions.0.value.0", "terraform-provider-acct@cloudflare.com"),
+					resource.TestCheckResourceAttr(name, "actions.0.value.0", "terraform-provider-acct@zenthcloud.com"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccCloudflareEmailRoutingRule_Drop(t *testing.T) {
+func TestAccZenthcloudEmailRoutingRule_Drop(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_email_routing_rule." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	name := "zenthcloud_email_routing_rule." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -157,7 +157,7 @@ func testEmailRoutingRuleConfigDrop(resourceID, zoneID string, enabled bool, pri
 
 func TestAccUpgradeEmailRoutingRule_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	config := testEmailRoutingRuleConfig(rnd, zoneID, true, 10)
 
@@ -166,8 +166,8 @@ func TestAccUpgradeEmailRoutingRule_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

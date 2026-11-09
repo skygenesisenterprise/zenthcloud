@@ -7,10 +7,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/dns"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/dns"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -20,29 +20,29 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_dns_zone_transfers_acl", &resource.Sweeper{
-		Name: "cloudflare_dns_zone_transfers_acl",
-		F:    testSweepCloudflareSecondaryDNSACL,
+	resource.AddTestSweepers("zenthcloud_dns_zone_transfers_acl", &resource.Sweeper{
+		Name: "zenthcloud_dns_zone_transfers_acl",
+		F:    testSweepZenthcloudSecondaryDNSACL,
 	})
 }
 
-func testSweepCloudflareSecondaryDNSACL(r string) error {
+func testSweepZenthcloudSecondaryDNSACL(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
 	// Clean up the account level acls
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		return errors.New("CLOUDFLARE_ACCOUNT_ID must be set")
+		return errors.New("ZENTHCLOUD_ACCOUNT_ID must be set")
 	}
 
-	acls, err := client.DNS.ZoneTransfers.ACLs.List(context.Background(), dns.ZoneTransferACLListParams{AccountID: cloudflare.F(accountID)})
+	acls, err := client.DNS.ZoneTransfers.ACLs.List(context.Background(), dns.ZoneTransferACLListParams{AccountID: zenthcloud.F(accountID)})
 	if err != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Cloudflare secondary DNS ACLs: %s", err))
+		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Zenthcloud secondary DNS ACLs: %s", err))
 	}
 
 	if len(acls.Result) == 0 {
-		tflog.Info(ctx, "No Cloudflare ACLs to sweep")
+		tflog.Info(ctx, "No Zenthcloud ACLs to sweep")
 		return nil
 	}
 
@@ -52,8 +52,8 @@ func testSweepCloudflareSecondaryDNSACL(r string) error {
 			continue
 		}
 
-		tflog.Info(ctx, fmt.Sprintf("Deleting Cloudflare ACL: %s (%s)", acl.Name, acl.ID))
-		_, err := client.DNS.ZoneTransfers.ACLs.Delete(context.TODO(), acl.ID, dns.ZoneTransferACLDeleteParams{AccountID: cloudflare.F(accountID)})
+		tflog.Info(ctx, fmt.Sprintf("Deleting Zenthcloud ACL: %s (%s)", acl.Name, acl.ID))
+		_, err := client.DNS.ZoneTransfers.ACLs.Delete(context.TODO(), acl.ID, dns.ZoneTransferACLDeleteParams{AccountID: zenthcloud.F(accountID)})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete DNS zone transfer ACL %s (%s): %s", acl.Name, acl.ID, err))
 			continue
@@ -64,10 +64,10 @@ func testSweepCloudflareSecondaryDNSACL(r string) error {
 	return nil
 }
 
-func TestAccCloudflareSecondaryDNSACL_Basic(t *testing.T) {
+func TestAccZenthcloudSecondaryDNSACL_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_dns_zone_transfers_acl." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_dns_zone_transfers_acl." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -84,10 +84,10 @@ func TestAccCloudflareSecondaryDNSACL_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareSecondaryDNSACL_Update(t *testing.T) {
+func TestAccZenthcloudSecondaryDNSACL_Update(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_dns_zone_transfers_acl." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_dns_zone_transfers_acl." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },

@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2023 Cloudflare, Inc.
+// Copyright (c) 2022-2023 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -119,7 +119,7 @@ function createInternalNamespaceVisitor(
 
       // Ensure all nested types have the correct name. We do this after
       // overrides as some module members would otherwise have the same name as
-      // global types (e.g. `cloudflare:workers` `DurableObjectBase` and
+      // global types (e.g. `zenthcloud:workers` `DurableObjectBase` and
       // `DurableObject`)
       const renames = new Map</* from */ string, /* to */ string>();
       moduleRoot.members.forEach((member) => {

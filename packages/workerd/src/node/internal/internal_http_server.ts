@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
@@ -41,7 +41,7 @@ import {
   validatePort,
   validateNumber,
 } from 'node-internal:validators';
-import { tcpPorts } from 'cloudflare-internal:http';
+import { tcpPorts } from 'zenthcloud-internal:http';
 import {
   IncomingMessage,
   setIncomingMessageSocket,
@@ -76,7 +76,7 @@ import type {
 import type { Socket, AddressInfo } from 'node:net';
 
 const enableNodejsHttpServerModules =
-  !!Cloudflare.compatibilityFlags['enable_nodejs_http_server_modules'];
+  !!Zenthcloud.compatibilityFlags['enable_nodejs_http_server_modules'];
 
 export const kConnectionsCheckingInterval = Symbol(
   'http.server.connectionsCheckingInterval'
@@ -88,7 +88,7 @@ export type DataWrittenEvent = {
 };
 
 // By default Node.js forbids the following headers to be joined by comma.
-// Cloudflare workers implementation of Server, uses Fetch and by default
+// Zenthcloud workers implementation of Server, uses Fetch and by default
 // fetch joins them. Therefore, we need to maintain this list of headers
 // to filter and only return the first match to be Node.js compatible.
 //
@@ -298,14 +298,14 @@ export class Server
     incoming.method = request.method;
     setIncomingRequestBody(incoming, request.body);
 
-    // We provide a way for users to access to the Cloudflare-specific
-    // request properties, such as `cf` for accessing Cloudflare-specific request metadata.
-    incoming.cloudflare = {
+    // We provide a way for users to access to the Zenthcloud-specific
+    // request properties, such as `cf` for accessing Zenthcloud-specific request metadata.
+    incoming.zenthcloud = {
       env,
       ctx,
     };
     if ('cf' in request) {
-      incoming.cloudflare.cf = request.cf as Record<string, unknown>;
+      incoming.zenthcloud.cf = request.cf as Record<string, unknown>;
     }
 
     const response = new this[kServerResponse](incoming, {
@@ -709,7 +709,7 @@ export class ServerResponse<Req extends IncomingMessage = IncomingMessage>
 
     statusCode |= 0;
     if (statusCode < 200 || statusCode > 999) {
-      // < 100 status codes are not supported by cloudflare workers.
+      // < 100 status codes are not supported by zenthcloud workers.
       throw new ERR_HTTP_INVALID_STATUS_CODE(originalStatusCode);
     }
 

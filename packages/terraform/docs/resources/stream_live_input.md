@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_stream_live_input Resource - Cloudflare"
+page_title: "zenthcloud_stream_live_input Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Stream ReadStream Write
 ---
 
-# cloudflare_stream_live_input (Resource)
+# zenthcloud_stream_live_input (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_stream_live_input" "example_stream_live_input" {
+resource "zenthcloud_stream_live_input" "example_stream_live_input" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   default_creator = "defaultCreator"
   delete_recording_after_days = 45
@@ -50,7 +50,7 @@ resource "cloudflare_stream_live_input" "example_stream_live_input" {
 - `live_input_identifier` (String) A unique identifier for a live input.
 - `meta` (String) A user modifiable key-value store used to reference other systems of record for managing live inputs.
 - `prefer_low_latency` (Boolean) When enabled, the live stream is delivered using Low-Latency HLS (LL-HLS), reducing glass-to-glass latency for viewers at the cost of reduced player compatibility.
-- `recording` (Attributes) Records the input to a Cloudflare Stream video. Behavior depends on the mode. In most cases, the video will initially be viewable as a live video and transition to on-demand after a condition is satisfied. (see [below for nested schema](#nestedatt--recording))
+- `recording` (Attributes) Records the input to a Zenthcloud Stream video. Behavior depends on the mode. In most cases, the video will initially be viewable as a live video and transition to on-demand after a condition is satisfied. (see [below for nested schema](#nestedatt--recording))
 
 ### Read-Only
 

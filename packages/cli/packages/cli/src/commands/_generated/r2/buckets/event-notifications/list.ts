@@ -20,7 +20,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 r2 buckets event-notifications list\n\nLists event notification rules for an R2 bucket, grouped by the Cloudflare Queue that receives matching object events."
+			"$0 r2 buckets event-notifications list\n\nLists event notification rules for an R2 bucket, grouped by the Zenthcloud Queue that receives matching object events."
 		)
 		.option("bucket-name", {
 			type: "string",
@@ -63,7 +63,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf r2 buckets event-notifications list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/event_notifications/r2/${argv["bucket-name"] == null ? "<bucket-name>" : encodeURIComponent(String(argv["bucket-name"]))}/configuration`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/event_notifications/r2/${argv["bucket-name"] == null ? "<bucket-name>" : encodeURIComponent(String(argv["bucket-name"]))}/configuration`,
 						pathParams: { "bucket-name": String(argv["bucket-name"] ?? "") },
 						bodyKind: "none",
 					});

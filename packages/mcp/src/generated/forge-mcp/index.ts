@@ -469,7 +469,7 @@ import { tools as monetization_rulesTools } from "./monetization/rules/tools.js"
 import { tools as network_routes_cidrTools } from "./network/routes/cidr/tools.js";
 import { tools as network_routes_hostnameTools } from "./network/routes/hostname/tools.js";
 import { tools as network_routesTools } from "./network/routes/tools.js";
-import { tools as network_subnets_cloudflareSourceTools } from "./network/subnets/cloudflareSource/tools.js";
+import { tools as network_subnets_zenthcloudSourceTools } from "./network/subnets/zenthcloudSource/tools.js";
 import { tools as network_subnets_initialResolvedIpTools } from "./network/subnets/initialResolvedIp/tools.js";
 import { tools as network_subnetsTools } from "./network/subnets/tools.js";
 import { tools as network_subnets_warpTools } from "./network/subnets/warp/tools.js";
@@ -1042,9 +1042,9 @@ export { operation, registerTools } from './_/tool.js';
  * The API the tools call.
  */
 export const api = {
-  baseUrl: "https://api.cloudflare.com/client/v4",
+  baseUrl: "https://github.com/skygenesisenterprise/zenthcloud",
   version: "4.0.0",
-  description: "Cloudflare API\n\nWelcome to Cloudflare's API documentation site. We are experimenting with an updated version of our API documentation - check out [developers.cloudflare.com/api-next/](https://developers.cloudflare.com/api-next/) to test out the new experience.\n\nTo get started using Cloudflare's products and services via the API, refer to [how to interact with Cloudflare](https://developers.cloudflare.com/fundamentals/basic-tasks/interact-with-cloudflare/), which covers using tools like [Terraform](https://developers.cloudflare.com/terraform/#cloudflare-terraform) and the [official SDKs](https://developers.cloudflare.com/fundamentals/api/reference/sdks/) to maintain your Cloudflare resources.\n\nUsing the Cloudflare API requires authentication so that Cloudflare knows who is making requests and what permissions you have. Create an API token to grant access to the API to perform actions. You can also authenticate with [API keys](https://developers.cloudflare.com/fundamentals/api/get-started/keys/), but these keys have [several limitations](https://developers.cloudflare.com/fundamentals/api/get-started/keys/#limitations) that make them less secure than API tokens. Whenever possible, use API tokens to interact with the Cloudflare API.\n\nTo create an API token, from the Cloudflare dashboard, go to My Profile > API Tokens and select Create Token. For more information on how to create and troubleshoot API tokens, refer to\nour [API fundamentals](https://developers.cloudflare.com/fundamentals/api/).\n\nFor information regarding rate limits, refer to our [API Rate Limits](https://developers.cloudflare.com/cloudflare-for-platforms/workers-for-platforms/platform/limits/#api-rate-limits).\n\nTotally new to Cloudflare? [Start here](https://developers.cloudflare.com/fundamentals/get-started/).",
+  description: "Zenthcloud API\n\nWelcome to Zenthcloud's API documentation site. We are experimenting with an updated version of our API documentation - check out [developers.zenthcloud.com/api-next/](https://github.com/skygenesisenterprise/zenthcloud) to test out the new experience.\n\nTo get started using Zenthcloud's products and services via the API, refer to [how to interact with Zenthcloud](https://github.com/skygenesisenterprise/zenthcloud), which covers using tools like [Terraform](https://github.com/skygenesisenterprise/zenthcloud) and the [official SDKs](https://github.com/skygenesisenterprise/zenthcloud) to maintain your Zenthcloud resources.\n\nUsing the Zenthcloud API requires authentication so that Zenthcloud knows who is making requests and what permissions you have. Create an API token to grant access to the API to perform actions. You can also authenticate with [API keys](https://github.com/skygenesisenterprise/zenthcloud), but these keys have [several limitations](https://github.com/skygenesisenterprise/zenthcloud) that make them less secure than API tokens. Whenever possible, use API tokens to interact with the Zenthcloud API.\n\nTo create an API token, from the Zenthcloud dashboard, go to My Profile > API Tokens and select Create Token. For more information on how to create and troubleshoot API tokens, refer to\nour [API fundamentals](https://github.com/skygenesisenterprise/zenthcloud).\n\nFor information regarding rate limits, refer to our [API Rate Limits](https://github.com/skygenesisenterprise/zenthcloud).\n\nTotally new to Zenthcloud? [Start here](https://github.com/skygenesisenterprise/zenthcloud).",
 } as const;
 
 /**
@@ -1519,7 +1519,7 @@ export const tools: readonly Tool[] = [
   ...network_routes_cidrTools,
   ...network_routes_hostnameTools,
   ...network_subnetsTools,
-  ...network_subnets_cloudflareSourceTools,
+  ...network_subnets_zenthcloudSourceTools,
   ...network_subnets_initialResolvedIpTools,
   ...network_subnets_warpTools,
   ...network_virtualNetworksTools,

@@ -8,9 +8,9 @@ import (
 // Source Models (Legacy v4 SDKv2 Provider)
 // ============================================================================
 
-// SourceAccessCACertificateModel represents the legacy cloudflare_access_ca_certificate state from v4.x provider.
+// SourceAccessCACertificateModel represents the legacy zenthcloud_access_ca_certificate state from v4.x provider.
 // Schema version: 0 (SDKv2 default)
-// Resource type: cloudflare_access_ca_certificate
+// Resource type: zenthcloud_access_ca_certificate
 type SourceAccessCACertificateModel struct {
 	ID            types.String `tfsdk:"id"`
 	AccountID     types.String `tfsdk:"account_id"`
@@ -24,9 +24,9 @@ type SourceAccessCACertificateModel struct {
 // Target Models (Current v5 Provider)
 // ============================================================================
 
-// TargetAccessShortLivedCertificateModel represents the current cloudflare_zero_trust_access_short_lived_certificate state.
+// TargetAccessShortLivedCertificateModel represents the current zenthcloud_zero_trust_access_short_lived_certificate state.
 // Schema version: 500
-// Resource type: cloudflare_zero_trust_access_short_lived_certificate
+// Resource type: zenthcloud_zero_trust_access_short_lived_certificate
 type TargetAccessShortLivedCertificateModel struct {
 	ID        types.String `tfsdk:"id"`
 	AppID     types.String `tfsdk:"app_id"`

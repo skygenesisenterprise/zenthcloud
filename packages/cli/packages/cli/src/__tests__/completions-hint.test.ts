@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
-import { getCfConfigPath } from "@cloudflare/workers-auth/cf";
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { getCfConfigPath } from "@zenthcloud/workers-auth/cf";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { mockOutputStreams } from "./helpers/capture-output.js";
 import { runCf } from "./helpers/run-cf.js";

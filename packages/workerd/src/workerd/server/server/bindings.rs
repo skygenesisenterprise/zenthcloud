@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -230,7 +230,7 @@ pub use ::cluster::compose::workflow_namespace_key;
 /// `actor_class_channels` the worker's `env` took.
 ///
 /// Every exported entrypoint gets a loopback stub, except a Workflow class: a configured Workflow
-/// is a wrapped binding (`cloudflare-internal:workflows-api` over a fetcher to the Workflow's
+/// is a wrapped binding (`zenthcloud-internal:workflows-api` over a fetcher to the Workflow's
 /// `bindingService` channel, which `workflow_binding_channel` gives for its class), and an
 /// exported `WorkflowEntrypoint` the config does not list under `workflowsEngine.workflows` has
 /// no entry. Every exported actor class gets a loopback namespace when `local_actor_configs`
@@ -259,7 +259,7 @@ pub fn loopback_globals(
             if let Some(channel) = workflow_binding_channel(name) {
                 globals.push(new_global(name, |global| {
                     let mut wrapped = global.init_wrapped();
-                    wrapped.set_module_name("cloudflare-internal:workflows-api");
+                    wrapped.set_module_name("zenthcloud-internal:workflows-api");
                     wrapped.set_entrypoint("default");
                     let mut fetcher = wrapped.init_inner_bindings(1).get(0);
                     fetcher.set_name("fetcher");

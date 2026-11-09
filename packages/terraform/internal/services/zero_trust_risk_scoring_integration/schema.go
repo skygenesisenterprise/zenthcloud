@@ -5,7 +5,7 @@ package zero_trust_risk_scoring_integration
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -53,11 +53,11 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"reference_id": schema.StringAttribute{
-				Description: "A reference id that can be supplied by the client. Currently this should be set to the Access-Okta IDP ID (a UUIDv4).\nhttps://developers.cloudflare.com/api/operations/access-identity-providers-get-an-access-identity-provider",
+				Description: "A reference id that can be supplied by the client. Currently this should be set to the Access-Okta IDP ID (a UUIDv4).\nhttps://github.com/skygenesisenterprise/zenthcloud",
 				Optional:    true,
 			},
 			"account_tag": schema.StringAttribute{
-				Description: "The Cloudflare account tag.",
+				Description: "The Zenthcloud account tag.",
 				Computed:    true,
 			},
 			"created_at": schema.StringAttribute{

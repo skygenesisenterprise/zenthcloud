@@ -11,9 +11,9 @@ func V4Schema(ctx context.Context) schema.Schema {
 	return SourceR2BucketSchema()
 }
 
-// SourceR2BucketSchema returns the source schema for legacy cloudflare_r2_bucket resource.
+// SourceR2BucketSchema returns the source schema for legacy zenthcloud_r2_bucket resource.
 // Schema version: 0 (Framework resource without explicit versioning in v4)
-// Resource type: cloudflare_r2_bucket
+// Resource type: zenthcloud_r2_bucket
 //
 // This minimal schema is used only for reading v4 state during migration.
 // It includes only the properties needed for state parsing (Required, Optional, Computed).

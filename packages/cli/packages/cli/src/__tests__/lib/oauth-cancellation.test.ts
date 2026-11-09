@@ -23,7 +23,7 @@ vi.mock("@clack/prompts", () => ({
 	text: vi.fn(),
 }));
 
-vi.mock("@cloudflare/workers-auth/cf", () => ({
+vi.mock("@zenthcloud/workers-auth/cf", () => ({
 	createCfAuth: (context: CapturedAuthContext) => {
 		testState.context = context;
 		return {};

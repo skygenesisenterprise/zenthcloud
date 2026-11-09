@@ -57,7 +57,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf ssl origin-ca-certificates delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/certificates/${argv["certificate-id"] == null ? "<certificate-id>" : encodeURIComponent(String(argv["certificate-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["certificate-id"] == null ? "<certificate-id>" : encodeURIComponent(String(argv["certificate-id"]))}`,
 						pathParams: {
 							"certificate-id": String(argv["certificate-id"] ?? ""),
 						},

@@ -5,9 +5,9 @@ package account
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/accounts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/accounts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -28,10 +28,10 @@ func (m *AccountsDataSourceModel) toListParams(_ context.Context) (params accoun
 	params = accounts.AccountListParams{}
 
 	if !m.Direction.IsNull() {
-		params.Direction = cloudflare.F(accounts.AccountListParamsDirection(m.Direction.ValueString()))
+		params.Direction = zenthcloud.F(accounts.AccountListParamsDirection(m.Direction.ValueString()))
 	}
 	if !m.Name.IsNull() {
-		params.Name = cloudflare.F(m.Name.ValueString())
+		params.Name = zenthcloud.F(m.Name.ValueString())
 	}
 
 	return

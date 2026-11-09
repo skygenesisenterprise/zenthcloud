@@ -1,5 +1,5 @@
 {
-  "name": "@cloudflare/workerd-root",
+  "name": "@zenthcloud/workerd-root",
   "private": true,
   "scripts": {},
   "dependencies": {
@@ -24,7 +24,7 @@
       "esbuild"
     ],
     "packageExtensions": {
-      "@opennextjs/cloudflare": {
+      "@opennextjs/zenthcloud": {
         "dependencies": {
           "esbuild": "^0.27.7"
         }

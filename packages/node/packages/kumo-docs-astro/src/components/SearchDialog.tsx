@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { matchSorter } from "match-sorter";
-import { CommandPalette, Badge, type HighlightRange } from "@cloudflare/kumo";
+import { CommandPalette, Badge, type HighlightRange } from "@zenthcloud/kumo";
 import {
   MagnifyingGlassIcon,
   CubeIcon,
@@ -19,8 +19,8 @@ import {
  * 3. Add its description to COMPONENT_DESCRIPTIONS below
  */
 const COMPONENTS_WITHOUT_DOCS = new Set([
-  "Code", // Deprecated: use CodeHighlighted from @cloudflare/kumo/code
-  "CodeBlock", // Deprecated: use CodeHighlighted from @cloudflare/kumo/code
+  "Code", // Deprecated: use CodeHighlighted from @zenthcloud/kumo/code
+  "CodeBlock", // Deprecated: use CodeHighlighted from @zenthcloud/kumo/code
   "DateRangePicker", // Deprecated: use DatePicker with mode="range"
   "Field",
   "Icon",
@@ -29,7 +29,7 @@ const COMPONENTS_WITHOUT_DOCS = new Set([
 ]);
 
 /**
- * Chart components are auto-discovered from the @cloudflare/kumo registry, but
+ * Chart components are auto-discovered from the @zenthcloud/kumo registry, but
  * they are documented under /charts/* rather than /components/*. Map the ones
  * with a dedicated page to their real docs URL so search results link correctly
  * — e.g. searching "bubble" finds BubbleMap and links to /charts/maps#bubble-map
@@ -42,7 +42,7 @@ const CHART_COMPONENT_URLS: Record<string, string> = {
   TimeseriesChart: "/charts/timeseries",
   BubbleMap: "/charts/maps#bubble-map",
   ChoroplethMap: "/charts/maps#choropleth-map",
-  GlobeMap: "/charts/maps#cloudflare-availability-locations",
+  GlobeMap: "/charts/maps#zenthcloud-availability-locations",
 };
 
 /**

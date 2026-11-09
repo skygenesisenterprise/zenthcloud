@@ -4,15 +4,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-// SourceCloudflareDeviceDexTestSchema returns the legacy cloudflare_device_dex_test schema (schema_version=0).
+// SourceZenthcloudDeviceDexTestSchema returns the legacy zenthcloud_device_dex_test schema (schema_version=0).
 // This is used by MoveState and UpgradeFromLegacyV3 to parse state from the legacy SDKv2 provider.
 //
 // Schema version 0 is the default for SDKv2 resources (no explicit version set).
-// Reference: cloudflare-terraform-v4/internal/sdkv2provider/schema_cloudflare_device_dex_tests.go
+// Reference: zenthcloud-terraform-v4/internal/sdkv2provider/schema_zenthcloud_device_dex_tests.go
 //
 // This minimal schema includes only the properties needed for state parsing (Required, Optional, Computed).
 // Validators, PlanModifiers, and Descriptions are intentionally omitted.
-func SourceCloudflareDeviceDexTestSchema() schema.Schema {
+func SourceZenthcloudDeviceDexTestSchema() schema.Schema {
 	return schema.Schema{
 		// Version 0 is implicit for SDKv2 resources without explicit SchemaVersion
 		Attributes: map[string]schema.Attribute{

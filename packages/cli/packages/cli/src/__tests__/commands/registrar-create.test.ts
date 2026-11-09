@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync } from "node:fs";
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw/http";
 import {
 	afterEach,
@@ -20,7 +20,7 @@ import { runCf } from "../helpers/run-cf.js";
 // These integration tests need the real client. Collect its cold import graph
 // before per-test timers start; lightweight tests must not inherit this import.
 import "../../lib/auth.js";
-import type { Cloudflare } from "../../lib/auth.js";
+import type { Zenthcloud } from "../../lib/auth.js";
 import type * as PromptModule from "../../lib/prompt.js";
 import getRegistrarExtension from "#operations/registrar/extensions/get.js";
 
@@ -238,9 +238,9 @@ describe("cf registrar registrations create", () => {
 	setupMsw();
 
 	const ENV = {
-		CLOUDFLARE_API_TOKEN: "test-token",
-		CLOUDFLARE_API_BASE_URL: TEST_BASE_URL,
-		CLOUDFLARE_ACCOUNT_ID: "test-account",
+		ZENTHCLOUD_API_TOKEN: "test-token",
+		ZENTHCLOUD_API_BASE_URL: TEST_BASE_URL,
+		ZENTHCLOUD_ACCOUNT_ID: "test-account",
 	};
 	const ACCT = `${TEST_BASE_URL}/accounts/test-account`;
 
@@ -609,7 +609,7 @@ describe("cf registrar registrations create", () => {
 		const get = vi.fn().mockResolvedValue({
 			registration_schema: REGISTRATION_SCHEMA,
 		});
-		const client = { send: get } as unknown as Cloudflare;
+		const client = { send: get } as unknown as Zenthcloud;
 
 		await expect(
 			resolveRegistrationSchema(
@@ -3066,7 +3066,7 @@ describe("cf registrar registrations create", () => {
 	it("rejects local execution before schema discovery or prompting", async () => {
 		await expect(create(DOMAIN, "--local")).rejects.toMatchObject({
 			message:
-				"This command has no local equivalent. Re-run without --local to use the Cloudflare API.",
+				"This command has no local equivalent. Re-run without --local to use the Zenthcloud API.",
 		});
 		expect(extensionRequests).toEqual([]);
 		expect(registrations).toEqual([]);
@@ -3148,9 +3148,9 @@ describe("cf registrar registrations create", () => {
 		const { exitCode } = await runCf(
 			["registrar", "registrations", "create", DOMAIN, "--help"],
 			{
-				CLOUDFLARE_API_BASE_URL: TEST_BASE_URL,
-				CLOUDFLARE_API_TOKEN: "test-token",
-				CLOUDFLARE_ACCOUNT_ID: undefined,
+				ZENTHCLOUD_API_BASE_URL: TEST_BASE_URL,
+				ZENTHCLOUD_API_TOKEN: "test-token",
+				ZENTHCLOUD_ACCOUNT_ID: undefined,
 			}
 		);
 

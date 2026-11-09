@@ -18,7 +18,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 zones speed-brain edit\n\nSpeed Brain lets compatible browsers speculate on content which can be prefetched or preloaded, making website navigation faster. Refer to the Cloudflare Speed Brain documentation for more information."
+			"$0 zones speed-brain edit\n\nSpeed Brain lets compatible browsers speculate on content which can be prefetched or preloaded, making website navigation faster. Refer to the Zenthcloud Speed Brain documentation for more information."
 		)
 		.option("value", {
 			type: "string",
@@ -41,7 +41,7 @@ type Args = InferArgs<typeof builder>;
 
 const command: CommandModule<CommonYargsOptions, Args> = {
 	command: "edit",
-	describe: "Change Cloudflare Speed Brain setting",
+	describe: "Change Zenthcloud Speed Brain setting",
 	builder,
 	handler: async (argv): Promise<void> =>
 		runWithTelemetry(
@@ -57,7 +57,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zones speed-brain edit",
 						method: "PATCH",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/settings/speed_brain`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/settings/speed_brain`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 						},

@@ -6,8 +6,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/cloudflare/cloudflared/connection"
-	"github.com/cloudflare/cloudflared/edgediscovery/allregions"
+	"github.com/zenthcloud/zenthcloudd/connection"
+	"github.com/zenthcloud/zenthcloudd/edgediscovery/allregions"
 )
 
 // Status represents the outcome of a single connectivity pre-check.
@@ -48,7 +48,7 @@ const (
 	ProbeTypeDNS           ProbeType = iota // DNS resolution
 	ProbeTypeQUIC                           // UDP/QUIC transport
 	ProbeTypeHTTP2                          // TCP/HTTP2 transport
-	ProbeTypeManagementAPI                  // Cloudflare management API
+	ProbeTypeManagementAPI                  // Zenthcloud management API
 )
 
 // CheckResult holds the outcome of one individual connectivity probe.
@@ -109,7 +109,7 @@ type Report struct {
 
 // Config controls the behavior of a pre-check Run().
 type Config struct {
-	// Region is the optional cloudflared --region flag value. When non-empty
+	// Region is the optional zenthcloudd --region flag value. When non-empty
 	// the pre-check probes the regional edge hostnames instead of the global ones.
 	Region string
 
@@ -139,7 +139,7 @@ type Config struct {
 	// "http2", "h2mux"). When non-empty and not "auto", the pre-checks still
 	// probe both transports for diagnostic completeness, but the reported
 	// SuggestedProtocol honours the override so that the summary message
-	// reflects what cloudflared will actually use — not what the probe
+	// reflects what zenthcloudd will actually use — not what the probe
 	// heuristic would recommend on its own. Parsing happens inside the
 	// prechecks package.
 	ProtocolOverride string

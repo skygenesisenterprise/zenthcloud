@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -50,9 +50,9 @@ var v5BasicConfig string
 // 2. v5→v5 version bump works correctly (no-op upgrade)
 // 3. Computed fields (id, status) are present after migration
 func TestMigrateCustomHostnameFallbackOriginBasic(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_hostname_fallback_origin." + rnd
+	resourceName := "zenthcloud_custom_hostname_fallback_origin." + rnd
 	tmpDir := t.TempDir()
 	originHostname := fmt.Sprintf("cftftest-fallback-%s.cf-tf-test.com", rnd)
 
@@ -64,11 +64,11 @@ func TestMigrateCustomHostnameFallbackOriginBasic(t *testing.T) {
 	legacyProviderVersion := acctest.GetLastV4Version()
 	sourceVer, targetVer := acctest.InferMigrationVersions(legacyProviderVersion)
 
-	// Cleanup: Wait for resource to fully delete from Cloudflare API
+	// Cleanup: Wait for resource to fully delete from Zenthcloud API
 	// This is a singleton resource, and the API needs time to complete deletion
 	// before another test can create a new fallback origin in the same zone.
 	t.Cleanup(func() {
-		t.Logf("Waiting 5 seconds for fallback origin to fully delete from Cloudflare API...")
+		t.Logf("Waiting 5 seconds for fallback origin to fully delete from Zenthcloud API...")
 		time.Sleep(5 * time.Second)
 	})
 
@@ -82,8 +82,8 @@ func TestMigrateCustomHostnameFallbackOriginBasic(t *testing.T) {
 			{
 				// Test Case 1: Migration from v4 latest
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: legacyProviderVersion,
 					},
 				},
@@ -107,9 +107,9 @@ func TestMigrateCustomHostnameFallbackOriginBasic(t *testing.T) {
 // This test verifies that when TF_MIG_TEST=1, the resource can upgrade from version=1 to version=500
 // without any data loss or transformation issues.
 func TestMigrateCustomHostnameFallbackOriginFromV5(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_hostname_fallback_origin." + rnd
+	resourceName := "zenthcloud_custom_hostname_fallback_origin." + rnd
 	tmpDir := t.TempDir()
 	originHostname := fmt.Sprintf("cftftest-v5-%s.cf-tf-test.com", rnd)
 

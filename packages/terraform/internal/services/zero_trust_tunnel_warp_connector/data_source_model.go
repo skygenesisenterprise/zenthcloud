@@ -5,9 +5,9 @@ package zero_trust_tunnel_warp_connector
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -37,7 +37,7 @@ type ZeroTrustTunnelWARPConnectorDataSourceModel struct {
 
 func (m *ZeroTrustTunnelWARPConnectorDataSourceModel) toReadParams(_ context.Context) (params zero_trust.TunnelWARPConnectorGetParams, diags diag.Diagnostics) {
 	params = zero_trust.TunnelWARPConnectorGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -50,35 +50,35 @@ func (m *ZeroTrustTunnelWARPConnectorDataSourceModel) toListParams(_ context.Con
 	diags.Append(errs...)
 
 	params = zero_trust.TunnelWARPConnectorListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Filter.ExcludePrefix.IsNull() {
-		params.ExcludePrefix = cloudflare.F(m.Filter.ExcludePrefix.ValueString())
+		params.ExcludePrefix = zenthcloud.F(m.Filter.ExcludePrefix.ValueString())
 	}
 	if !m.Filter.ExistedAt.IsNull() {
-		params.ExistedAt = cloudflare.F(m.Filter.ExistedAt.ValueString())
+		params.ExistedAt = zenthcloud.F(m.Filter.ExistedAt.ValueString())
 	}
 	if !m.Filter.IncludePrefix.IsNull() {
-		params.IncludePrefix = cloudflare.F(m.Filter.IncludePrefix.ValueString())
+		params.IncludePrefix = zenthcloud.F(m.Filter.IncludePrefix.ValueString())
 	}
 	if !m.Filter.IsDeleted.IsNull() {
-		params.IsDeleted = cloudflare.F(m.Filter.IsDeleted.ValueBool())
+		params.IsDeleted = zenthcloud.F(m.Filter.IsDeleted.ValueBool())
 	}
 	if !m.Filter.Name.IsNull() {
-		params.Name = cloudflare.F(m.Filter.Name.ValueString())
+		params.Name = zenthcloud.F(m.Filter.Name.ValueString())
 	}
 	if !m.Filter.Status.IsNull() {
-		params.Status = cloudflare.F(zero_trust.TunnelWARPConnectorListParamsStatus(m.Filter.Status.ValueString()))
+		params.Status = zenthcloud.F(zero_trust.TunnelWARPConnectorListParamsStatus(m.Filter.Status.ValueString()))
 	}
 	if !m.Filter.UUID.IsNull() {
-		params.UUID = cloudflare.F(m.Filter.UUID.ValueString())
+		params.UUID = zenthcloud.F(m.Filter.UUID.ValueString())
 	}
 	if !m.Filter.WasActiveAt.IsNull() {
-		params.WasActiveAt = cloudflare.F(mFilterWasActiveAt)
+		params.WasActiveAt = zenthcloud.F(mFilterWasActiveAt)
 	}
 	if !m.Filter.WasInactiveAt.IsNull() {
-		params.WasInactiveAt = cloudflare.F(mFilterWasInactiveAt)
+		params.WasInactiveAt = zenthcloud.F(mFilterWasInactiveAt)
 	}
 
 	return

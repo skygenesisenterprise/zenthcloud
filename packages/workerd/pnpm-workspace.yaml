@@ -4,8 +4,8 @@ minimumReleaseAgeExclude:
   - 'wrangler'
   - 'workerd'
   - 'miniflare'
-  - '@cloudflare/workerd-*'
-  - '@opennextjs/cloudflare'
+  - '@zenthcloud/workerd-*'
+  - '@opennextjs/zenthcloud'
   - '@opennextjs/aws'
   - 'capnp-es'
 packages:

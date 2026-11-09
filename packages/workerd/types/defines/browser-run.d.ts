@@ -272,13 +272,13 @@ type BrowserRunJsonOptions = BrowserRunCommonOptions &
     | {
         /** Natural-language prompt describing what data to extract. */
         prompt: string;
-        /** Structured output schema for the AI model. @see https://developers.cloudflare.com/workers-ai/json-mode/ */
+        /** Structured output schema for the AI model. @see https://github.com/skygenesisenterprise/zenthcloud */
         response_format?: AiTextGenerationResponseFormat;
       }
     | {
         /** Natural-language prompt describing what data to extract. */
         prompt?: string;
-        /** Structured output schema for the AI model. @see https://developers.cloudflare.com/workers-ai/json-mode/ */
+        /** Structured output schema for the AI model. @see https://github.com/skygenesisenterprise/zenthcloud */
         response_format: AiTextGenerationResponseFormat;
       }
   );
@@ -657,13 +657,13 @@ type BrowserRunCloseSessionResult = {
 
 /**
  * Browser Run API binding for automating headless browsers.
- * @see https://developers.cloudflare.com/browser-run/
+ * @see https://github.com/skygenesisenterprise/zenthcloud
  */
 declare abstract class BrowserRun {
   /**
    * Send a raw HTTP request to the Browser Run API.
-   * Used by libraries like `@cloudflare/puppeteer` to acquire and connect to a browser instance.
-   * @see https://developers.cloudflare.com/browser-run/
+   * Used by libraries like `@zenthcloud/puppeteer` to acquire and connect to a browser instance.
+   * @see https://github.com/skygenesisenterprise/zenthcloud
    */
   fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
 

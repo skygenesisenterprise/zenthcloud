@@ -5,9 +5,9 @@ package secrets_store_secret
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/secrets_store"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/secrets_store"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -33,7 +33,7 @@ type SecretsStoreSecretDataSourceModel struct {
 
 func (m *SecretsStoreSecretDataSourceModel) toReadParams(_ context.Context) (params secrets_store.StoreSecretGetParams, diags diag.Diagnostics) {
 	params = secrets_store.StoreSecretGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -48,18 +48,18 @@ func (m *SecretsStoreSecretDataSourceModel) toListParams(_ context.Context) (par
 	}
 
 	params = secrets_store.StoreSecretListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
-		Scopes:    cloudflare.F(mFilterScopes),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
+		Scopes:    zenthcloud.F(mFilterScopes),
 	}
 
 	if !m.Filter.Direction.IsNull() {
-		params.Direction = cloudflare.F(secrets_store.StoreSecretListParamsDirection(m.Filter.Direction.ValueString()))
+		params.Direction = zenthcloud.F(secrets_store.StoreSecretListParamsDirection(m.Filter.Direction.ValueString()))
 	}
 	if !m.Filter.Order.IsNull() {
-		params.Order = cloudflare.F(secrets_store.StoreSecretListParamsOrder(m.Filter.Order.ValueString()))
+		params.Order = zenthcloud.F(secrets_store.StoreSecretListParamsOrder(m.Filter.Order.ValueString()))
 	}
 	if !m.Filter.Search.IsNull() {
-		params.Search = cloudflare.F(m.Filter.Search.ValueString())
+		params.Search = zenthcloud.F(m.Filter.Search.ValueString())
 	}
 
 	return

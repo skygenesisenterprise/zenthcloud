@@ -152,7 +152,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.zone.email.routing.config.update"
+            "com.zenthcloud.api.account.zone.email.routing.config.update"
           ]
         },
         "x-cfPlanAvailability": {

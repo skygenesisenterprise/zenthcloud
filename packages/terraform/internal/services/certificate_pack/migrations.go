@@ -5,7 +5,7 @@ package certificate_pack
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/certificate_pack/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/certificate_pack/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
@@ -24,7 +24,7 @@ var _ resource.ResourceWithUpgradeState = (*CertificatePackResource)(nil)
 //   - Just bumps the version number, no data transformation
 func (r *CertificatePackResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
 	targetSchema := ResourceSchema(ctx)
-	sourceSchema := v500.SourceCloudflareCertificatePackSchema()
+	sourceSchema := v500.SourceZenthcloudCertificatePackSchema()
 
 	return map[int64]resource.StateUpgrader{
 		0: {

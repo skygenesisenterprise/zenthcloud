@@ -4,7 +4,7 @@ use wasm_bindgen::prelude::*;
 
 use crate::send::SendFuture;
 
-/// A Rust-friendly wrapper around the non-standard [crypto.DigestStream](https://developers.cloudflare.com/workers/runtime-apis/web-crypto/#constructors) API
+/// A Rust-friendly wrapper around the non-standard [crypto.DigestStream](https://github.com/skygenesisenterprise/zenthcloud) API
 ///
 /// Example usage:
 /// ```rust

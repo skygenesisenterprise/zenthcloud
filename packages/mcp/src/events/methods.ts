@@ -56,7 +56,7 @@ async function operation<T>(run: () => Promise<T>) {
  * `events/unsubscribe`) and advertise the `events` capability.
  *
  * @param server - The per-request MCP server.
- * @param env - Bindings used for subscription state and the Cloudflare API.
+ * @param env - Bindings used for subscription state and the Zenthcloud API.
  * @param props - The authenticated principal.
  * @param bearer - The MCP bearer token for this request.
  */

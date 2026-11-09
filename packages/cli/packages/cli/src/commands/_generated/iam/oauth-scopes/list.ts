@@ -44,7 +44,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf iam oauth-scopes list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/oauth/scopes`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						bodyKind: "none",
 					});

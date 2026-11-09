@@ -16,7 +16,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 zones origin-tls-compliance-modes delete\n\nDelete the Origin TLS Compliance Modes setting for the zone, removing any configured compliance constraint. After deletion, Cloudflare's default behavior applies (no compliance filtering of the key-exchange algorithm list sent to the origin)."
+			"$0 zones origin-tls-compliance-modes delete\n\nDelete the Origin TLS Compliance Modes setting for the zone, removing any configured compliance constraint. After deletion, Zenthcloud's default behavior applies (no compliance filtering of the key-exchange algorithm list sent to the origin)."
 		)
 		.option("dry-run", {
 			type: "boolean",
@@ -52,7 +52,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zones origin-tls-compliance-modes delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/settings/origin_tls_compliance_modes`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/settings/origin_tls_compliance_modes`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 						},

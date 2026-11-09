@@ -5,8 +5,8 @@ package workers_script_subdomain
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/workers"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/workers"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -24,7 +24,7 @@ type WorkersScriptSubdomainDataSourceModel struct {
 
 func (m *WorkersScriptSubdomainDataSourceModel) toReadParams(_ context.Context) (params workers.ScriptSubdomainGetParams, diags diag.Diagnostics) {
 	params = workers.ScriptSubdomainGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return

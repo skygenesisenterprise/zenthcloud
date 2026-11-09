@@ -10,7 +10,7 @@ export const tools: readonly Tool[] = [
   {
     name: "o11y_tracing_settings_delete",
     title: "Reset zone tracing settings",
-    description: "Reset the zone-level Cloudflare Traces settings to their defaults while preserving the sampling rules.\n\nDELETE /zones/{zone_id}/observability/tracing/settings",
+    description: "Reset the zone-level Zenthcloud Traces settings to their defaults while preserving the sampling rules.\n\nDELETE /zones/{zone_id}/observability/tracing/settings",
     inputSchema: {
       type: "object",
       properties: {
@@ -429,7 +429,7 @@ export const tools: readonly Tool[] = [
   {
     name: "o11y_tracing_settings_get",
     title: "View zone tracing settings",
-    description: "Retrieve the zone-level Cloudflare Traces settings.\n\nGET /zones/{zone_id}/observability/tracing/settings",
+    description: "Retrieve the zone-level Zenthcloud Traces settings.\n\nGET /zones/{zone_id}/observability/tracing/settings",
     inputSchema: {
       type: "object",
       properties: {
@@ -848,7 +848,7 @@ export const tools: readonly Tool[] = [
   {
     name: "o11y_tracing_settings_update",
     title: "Update zone tracing settings",
-    description: "Update the zone-level Cloudflare Traces settings.\n\nPATCH /zones/{zone_id}/observability/tracing/settings",
+    description: "Update the zone-level Zenthcloud Traces settings.\n\nPATCH /zones/{zone_id}/observability/tracing/settings",
     inputSchema: {
       type: "object",
       properties: {
@@ -864,7 +864,7 @@ export const tools: readonly Tool[] = [
               "type": "array"
             },
             "enabled": {
-              "description": "Whether Cloudflare Traces is enabled for the zone.",
+              "description": "Whether Zenthcloud Traces is enabled for the zone.",
               "type": "boolean"
             },
             "forward_context": {
@@ -872,7 +872,7 @@ export const tools: readonly Tool[] = [
               "type": "boolean"
             },
             "persist": {
-              "description": "Whether traces are persisted in Cloudflare.",
+              "description": "Whether traces are persisted in Zenthcloud.",
               "type": "boolean"
             },
             "propagation_policy": {

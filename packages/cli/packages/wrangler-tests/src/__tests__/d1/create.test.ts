@@ -21,7 +21,7 @@ describe("create", () => {
 		// the project's state, and reports that this control-plane operation
 		// has no explorer equivalent. The canonical title retains Wrangler's
 		// former `--local-endpoint` wording.
-		writeFileSync("cloudflare.config.ts", "export default {};");
+		writeFileSync("zenthcloud.config.ts", "export default {};");
 		await expect(runWrangler("d1 create --name test --local")).rejects.toThrow(
 			/no local equivalent.*re-run without --local/i
 		);

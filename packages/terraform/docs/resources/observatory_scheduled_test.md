@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_observatory_scheduled_test Resource - Cloudflare"
+page_title: "zenthcloud_observatory_scheduled_test Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zone Settings ReadZone Settings Write
 ---
 
-# cloudflare_observatory_scheduled_test (Resource)
+# zenthcloud_observatory_scheduled_test (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_observatory_scheduled_test" "example_observatory_scheduled_test" {
+resource "zenthcloud_observatory_scheduled_test" "example_observatory_scheduled_test" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   url = "example.com"
 }
@@ -147,7 +147,7 @@ Available values: "asia-east1", "asia-northeast1", "asia-northeast2", "asia-sout
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_observatory_scheduled_test.example '<zone_id>/<url>'
+$ terraform import zenthcloud_observatory_scheduled_test.example '<zone_id>/<url>'
 ```
 
 

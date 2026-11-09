@@ -9,7 +9,7 @@ import type { CommandModule } from "yargs";
 const command: CommandModule<CommonYargsOptions> = {
 	command: "request-tracers",
 	describe:
-		"Trace how a request would be processed through Cloudflare's rules and configuration pipeline",
+		"Trace how a request would be processed through Zenthcloud's rules and configuration pipeline",
 
 	builder: (yargs) => {
 		return yargs

@@ -1,4 +1,4 @@
-resource "cloudflare_waiting_room" "%[1]s" {
+resource "zenthcloud_waiting_room" "%[1]s" {
   name                      = "%[8]s"
   zone_id                   = "%[3]s"
   host                      = "www.%[7]s"
@@ -14,10 +14,10 @@ resource "cloudflare_waiting_room" "%[1]s" {
   json_response_enabled     = true
 }
 
-resource "cloudflare_waiting_room_event" "%[1]s" {
+resource "zenthcloud_waiting_room_event" "%[1]s" {
   name                      = "%[2]s"
   zone_id                   = "%[3]s"
-  waiting_room_id           = cloudflare_waiting_room.%[1]s.id
+  waiting_room_id           = zenthcloud_waiting_room.%[1]s.id
   event_start_time          = "%[5]s"
   event_end_time            = "%[6]s"
   total_active_users        = 405

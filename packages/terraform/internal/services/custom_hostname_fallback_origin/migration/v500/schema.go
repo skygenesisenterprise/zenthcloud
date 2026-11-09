@@ -7,7 +7,7 @@ import (
 
 // SourceCustomHostnameFallbackOriginSchema returns the source schema for legacy resource.
 // Schema version: 0 (v4 had no explicit version)
-// Resource type: cloudflare_custom_hostname_fallback_origin
+// Resource type: zenthcloud_custom_hostname_fallback_origin
 //
 // This minimal schema is used only for reading v4 state during migration.
 // It includes only the properties needed for state parsing (Required, Optional, Computed, ElementType).

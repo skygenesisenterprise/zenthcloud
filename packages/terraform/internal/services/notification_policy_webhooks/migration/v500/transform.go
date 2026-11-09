@@ -13,10 +13,10 @@ import (
 // timestamp fields (created_at, last_success, last_failure), which change from
 // plain TypeString (v4) to timetypes.RFC3339 (v5). These are set to null and
 // will be repopulated by the API on the next refresh.
-func Transform(_ context.Context, source SourceCloudflareNotificationPolicyWebhooksModel) (*TargetCloudflareNotificationPolicyWebhooksModel, diag.Diagnostics) {
+func Transform(_ context.Context, source SourceZenthcloudNotificationPolicyWebhooksModel) (*TargetZenthcloudNotificationPolicyWebhooksModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	target := &TargetCloudflareNotificationPolicyWebhooksModel{
+	target := &TargetZenthcloudNotificationPolicyWebhooksModel{
 		// Direct copies
 		ID:        source.ID,
 		AccountID: source.AccountID,

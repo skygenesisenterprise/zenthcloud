@@ -14,7 +14,7 @@ import type { CommandModule } from "yargs";
 const command: CommandModule<CommonYargsOptions> = {
 	command: "applications",
 	describe:
-		"List Cloudflare-curated and custom applications, and manage custom applications",
+		"List Zenthcloud-curated and custom applications, and manage custom applications",
 
 	builder: (yargs) => {
 		return yargs

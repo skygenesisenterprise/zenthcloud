@@ -3,7 +3,7 @@
  *
  * Allows users to use friendly names instead of UUIDs
  */
-import type { Cloudflare } from "./auth.js";
+import type { Zenthcloud } from "./auth.js";
 import listZones from "#operations/zones/list.js";
 
 /**
@@ -41,17 +41,17 @@ export function isUUID(str: string): boolean {
 }
 
 /**
- * Check if a string looks like a Cloudflare ID (32 hex chars)
+ * Check if a string looks like a Zenthcloud ID (32 hex chars)
  */
-export function isCloudflareId(str: string): boolean {
+export function isZenthcloudId(str: string): boolean {
 	return /^[0-9a-f]{32}$/i.test(str);
 }
 
 /**
- * Check if a string is any kind of ID (UUID or Cloudflare ID)
+ * Check if a string is any kind of ID (UUID or Zenthcloud ID)
  */
 export function isId(str: string): boolean {
-	return isUUID(str) || isCloudflareId(str);
+	return isUUID(str) || isZenthcloudId(str);
 }
 
 /**
@@ -113,14 +113,14 @@ interface Zone {
  * If the input looks like a UUID/ID, return it as-is.
  * Otherwise, look up the zone by name.
  *
- * @param client - Cloudflare API client
+ * @param client - Zenthcloud API client
  * @param accountId - Account ID to search in
  * @param zoneIdOrName - Zone ID or zone name (e.g., "example.com")
  * @returns Zone ID
  * @throws Error if zone not found
  */
 export async function resolveZoneId(
-	client: Cloudflare,
+	client: Zenthcloud,
 	accountId: string,
 	zoneIdOrName: string
 ): Promise<string> {

@@ -17,7 +17,7 @@
  *   initCatalog,
  *   evaluateVisibility,
  *   resolveProps,
- * } from '@cloudflare/kumo/catalog';
+ * } from '@zenthcloud/kumo/catalog';
  *
  * // Create catalog with actions
  * const catalog = createKumoCatalog({

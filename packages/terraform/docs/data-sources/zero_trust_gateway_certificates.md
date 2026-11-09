@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zero_trust_gateway_certificates Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_gateway_certificates Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zero_trust_gateway_certificates (Data Source)
+# zenthcloud_zero_trust_gateway_certificates (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_gateway_certificates" "example_zero_trust_gateway_certificates" {
+data "zenthcloud_zero_trust_gateway_certificates" "example_zero_trust_gateway_certificates" {
   account_id = "699d98642c564d2e855e9661899b7252"
 }
 ```
@@ -22,7 +22,7 @@ data "cloudflare_zero_trust_gateway_certificates" "example_zero_trust_gateway_ce
 
 ### Optional
 
-- `account_id` (String) Specify the Cloudflare account identifier.
+- `account_id` (String) Specify the Zenthcloud account identifier.
 - `max_items` (Number) Max items to fetch, default: 1000
 
 ### Read-Only
@@ -34,7 +34,7 @@ data "cloudflare_zero_trust_gateway_certificates" "example_zero_trust_gateway_ce
 
 Read-Only:
 
-- `binding_status` (String) Indicate the read-only deployment status of the certificate on Cloudflare's edge. Gateway TLS interception can use certificates in the 'available' (previously called 'active') state.
+- `binding_status` (String) Indicate the read-only deployment status of the certificate on Zenthcloud's edge. Gateway TLS interception can use certificates in the 'available' (previously called 'active') state.
 Available values: "pending_deployment", "available", "pending_deletion", "inactive".
 - `certificate` (String) Provide the CA certificate (read-only).
 - `created_at` (String)

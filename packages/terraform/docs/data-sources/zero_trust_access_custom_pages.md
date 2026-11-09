@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_access_custom_pages Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_access_custom_pages Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Access: Custom Pages ReadAccess: Custom Pages Write
 ---
 
-# cloudflare_zero_trust_access_custom_pages (Data Source)
+# zenthcloud_zero_trust_access_custom_pages (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_access_custom_pages" "example_zero_trust_access_custom_pages" {
+data "zenthcloud_zero_trust_access_custom_pages" "example_zero_trust_access_custom_pages" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```

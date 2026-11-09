@@ -1,5 +1,5 @@
 import { writeFile } from "node:fs/promises";
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw/http";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { server, setupMsw, TEST_BASE_URL } from "../helpers/msw.js";
@@ -13,7 +13,7 @@ describe("API command project config loading", () => {
 
 	it("does not load project config when account ID and compliance region are in the environment", async () => {
 		await writeFile(
-			"cloudflare.config.ts",
+			"zenthcloud.config.ts",
 			`import "a-package-that-does-not-exist"; export default {};`
 		);
 		vi.spyOn(console, "log").mockImplementation(() => undefined);
@@ -31,10 +31,10 @@ describe("API command project config loading", () => {
 		const result = await runCf(
 			["workers", "scripts", "search", "--name", "x"],
 			{
-				CLOUDFLARE_API_BASE_URL: TEST_BASE_URL,
-				CLOUDFLARE_API_TOKEN: "test-token",
-				CLOUDFLARE_ACCOUNT_ID: "account-1",
-				CLOUDFLARE_COMPLIANCE_REGION: "public",
+				ZENTHCLOUD_API_BASE_URL: TEST_BASE_URL,
+				ZENTHCLOUD_API_TOKEN: "test-token",
+				ZENTHCLOUD_ACCOUNT_ID: "account-1",
+				ZENTHCLOUD_COMPLIANCE_REGION: "public",
 			}
 		);
 

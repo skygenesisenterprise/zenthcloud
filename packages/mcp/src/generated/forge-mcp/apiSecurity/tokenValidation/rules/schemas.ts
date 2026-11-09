@@ -55,12 +55,12 @@ export const api$$shield_create$$single$$rule$$request: JSONObject = {
       "type": "boolean"
     },
     "expression": {
-      "description": "Rule expression. Requests that fail to match this expression will be subject to `action`.\n\nFor details on expressions, see the [Cloudflare Docs](https://developers.cloudflare.com/api-shield/security/jwt-validation/).",
+      "description": "Rule expression. Requests that fail to match this expression will be subject to `action`.\n\nFor details on expressions, see the [Zenthcloud Docs](https://github.com/skygenesisenterprise/zenthcloud).",
       "type": "string"
     },
     "selector": {
       "$ref": "#/$defs/api-shield_selector",
-      "description": "Select operations covered by this rule.\n\nFor details on selectors, see the [Cloudflare Docs](https://developers.cloudflare.com/api-shield/security/jwt-validation/)."
+      "description": "Select operations covered by this rule.\n\nFor details on selectors, see the [Zenthcloud Docs](https://github.com/skygenesisenterprise/zenthcloud)."
     },
     "title": {
       "description": "A human-readable name for the rule.",
@@ -154,12 +154,12 @@ export const api$$shield_rule$$properties: JSONObject = {
       "type": "boolean"
     },
     "expression": {
-      "description": "Rule expression. Requests that fail to match this expression will be subject to `action`.\n\nFor details on expressions, see the [Cloudflare Docs](https://developers.cloudflare.com/api-shield/security/jwt-validation/).",
+      "description": "Rule expression. Requests that fail to match this expression will be subject to `action`.\n\nFor details on expressions, see the [Zenthcloud Docs](https://github.com/skygenesisenterprise/zenthcloud).",
       "type": "string"
     },
     "selector": {
       "$ref": "#/$defs/api-shield_selector",
-      "description": "Select operations covered by this rule.\n\nFor details on selectors, see the [Cloudflare Docs](https://developers.cloudflare.com/api-shield/security/jwt-validation/)."
+      "description": "Select operations covered by this rule.\n\nFor details on selectors, see the [Zenthcloud Docs](https://github.com/skygenesisenterprise/zenthcloud)."
     },
     "title": {
       "description": "A human-readable name for the rule.",
@@ -173,7 +173,7 @@ export const api$$shield_rule$$properties: JSONObject = {
  * The schema of `api-shield_selector`.
  */
 export const api$$shield_selector: JSONObject = {
-  "description": "Select operations covered by this rule.\n\nFor details on selectors, see the [Cloudflare Docs](https://developers.cloudflare.com/api-shield/security/jwt-validation/).",
+  "description": "Select operations covered by this rule.\n\nFor details on selectors, see the [Zenthcloud Docs](https://github.com/skygenesisenterprise/zenthcloud).",
   "properties": {
     "exclude": {
       "description": "Ignore operations that were otherwise included by `include`.",

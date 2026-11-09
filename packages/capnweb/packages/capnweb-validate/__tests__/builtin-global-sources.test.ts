@@ -1,5 +1,5 @@
 // Built-in globals (Request/Response) come from various sources (DOM lib,
-// @cloudflare/workers-types, wrangler worker-configuration.d.ts, @types/node);
+// @zenthcloud/workers-types, wrangler worker-configuration.d.ts, @types/node);
 // emit v.response for any of them, but not for a module-scoped type that just
 // reuses the name.
 import { describe, expect, it } from "vitest";
@@ -64,10 +64,10 @@ function getThingValidator(options: {
 }
 
 describe("built-in global Response from any source -> v.response", () => {
-  it("@cloudflare/workers-types (no DOM lib)", () => {
+  it("@zenthcloud/workers-types (no DOM lib)", () => {
     expect(getThingValidator({
-      files: typesPackage("@cloudflare/workers-types", GLOBALS),
-      types: ["@cloudflare/workers-types"],
+      files: typesPackage("@zenthcloud/workers-types", GLOBALS),
+      types: ["@zenthcloud/workers-types"],
     })).toBe(v.response);
   });
 

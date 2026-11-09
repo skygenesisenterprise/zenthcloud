@@ -49,7 +49,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar datasets get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/datasets/${argv["alias"] == null ? "<alias>" : encodeURIComponent(String(argv["alias"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["alias"] == null ? "<alias>" : encodeURIComponent(String(argv["alias"]))}`,
 						pathParams: { alias: String(argv["alias"] ?? "") },
 						bodyKind: "none",
 					});

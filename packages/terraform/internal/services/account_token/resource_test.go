@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/accounts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/accounts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -25,25 +25,25 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_account_token", &resource.Sweeper{
-		Name: "cloudflare_account_token",
-		F:    testSweepCloudflareAccountToken,
+	resource.AddTestSweepers("zenthcloud_account_token", &resource.Sweeper{
+		Name: "zenthcloud_account_token",
+		F:    testSweepZenthcloudAccountToken,
 	})
 }
 
-func testSweepCloudflareAccountToken(r string) error {
+func testSweepZenthcloudAccountToken(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping account tokens sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping account tokens sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
 	// List all API tokens
 	tokens, err := client.Accounts.Tokens.List(ctx, accounts.TokenListParams{
-		AccountID: cloudflare.F(accountID),
+		AccountID: zenthcloud.F(accountID),
 	})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch account tokens: %s", err))
@@ -64,7 +64,7 @@ func testSweepCloudflareAccountToken(r string) error {
 
 		tflog.Info(ctx, fmt.Sprintf("Deleting account token: %s (%s) (account: %s)", token.Name, token.ID, accountID))
 		_, err := client.Accounts.Tokens.Delete(ctx, token.ID, accounts.TokenDeleteParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete account token %s (%s): %s", token.Name, token.ID, err))
@@ -76,18 +76,18 @@ func testSweepCloudflareAccountToken(r string) error {
 	return nil
 }
 
-func testAccCheckCloudflareAccountTokenDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudAccountTokenDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_account_token" {
+		if rs.Type != "zenthcloud_account_token" {
 			continue
 		}
 
 		tokenID := rs.Primary.ID
 		_, err := client.Accounts.Tokens.Get(context.Background(), tokenID, accounts.TokenGetParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		})
 		if err == nil {
 			return fmt.Errorf("account token %s still exists", tokenID)
@@ -99,13 +99,13 @@ func testAccCheckCloudflareAccountTokenDestroy(s *terraform.State) error {
 
 func TestAccAccountToken_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_account_token.test_account_token"
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_account_token.test_account_token"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccountTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccountTokenDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: acctest.LoadTestCase("account_token-without-condition.tf", rnd, accountID),
@@ -171,13 +171,13 @@ func TestAccAccountToken_Basic(t *testing.T) {
 
 func TestAccAccountToken_SetIndividualCondition(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_account_token.test_account_token"
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_account_token.test_account_token"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccountTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccountTokenDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: acctest.LoadTestCase("account_token-with-individual-condition.tf", rnd, accountID),
@@ -214,13 +214,13 @@ func TestAccAccountToken_SetIndividualCondition(t *testing.T) {
 
 func TestAccAccountToken_SetAllCondition(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_account_token.test_account_token"
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_account_token.test_account_token"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccountTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccountTokenDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: acctest.LoadTestCase("account_token-with-all-condition.tf", rnd, accountID),
@@ -261,8 +261,8 @@ func TestAccAccountToken_SetAllCondition(t *testing.T) {
 
 func TestAccAccountToken_TokenTTL(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_account_token.test_account_token"
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_account_token.test_account_token"
 
 	oneDaysFromNow := time.Now().UTC().AddDate(0, 0, 1)
 	expireTime := oneDaysFromNow.Format(time.RFC3339)
@@ -273,7 +273,7 @@ func TestAccAccountToken_TokenTTL(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccountTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccountTokenDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: acctest.LoadTestCase("account_token-with-ttl.tf", rnd, accountID, expireTime),
@@ -372,15 +372,15 @@ func checkPermissionGroupIDsUnchanged(resourceName string, policyIdx int, expect
 // `checkPermissionGroupIDsUnchanged` verifies the latter across all steps.
 func TestAccAccountToken_PermissionGroupOrder(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_account_token.test_account_token"
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_account_token.test_account_token"
 
 	var permGroupIDs []string
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccountTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccountTokenDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: acctest.LoadTestCase("account_token-permissiongroup-order1.tf", rnd, accountID),
@@ -441,7 +441,7 @@ func TestAccAccountToken_PermissionGroupOrder(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccountTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccountTokenDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: acctest.LoadTestCase("account_token-permissiongroup-order2.tf", rnd, accountID),
@@ -547,15 +547,15 @@ func checkAllPolicyPermGroupIDsUnchanged(resourceName string, expectedIDs *[]str
 // policies is preserved (asserted via checkAllPolicyPermGroupIDsUnchanged).
 func TestAccAccountToken_PolicyOrder(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_account_token.test_account_token"
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_account_token.test_account_token"
 
 	var allPermGroupIDs []string
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccountTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccountTokenDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: acctest.LoadTestCase("account_token-policy-order1.tf", rnd, accountID),
@@ -616,7 +616,7 @@ func TestAccAccountToken_PolicyOrder(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccountTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccountTokenDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: acctest.LoadTestCase("account_token-policy-order2.tf", rnd, accountID),
@@ -672,13 +672,13 @@ func TestAccAccountToken_PolicyOrder(t *testing.T) {
 
 func TestAccAccountToken_ResourcesFlexible(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_account_token.test_account_token"
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_account_token.test_account_token"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccountTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccountTokenDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: acctest.LoadTestCase("account_token-resources-flexible.tf", rnd, accountID),
@@ -730,13 +730,13 @@ func TestAccAccountToken_ResourcesFlexible(t *testing.T) {
 // different resources and that we can correct identify them when they change.
 func TestAccAccountToken_FullFlexible(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_account_token.test_account_token"
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_account_token.test_account_token"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccountTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccountTokenDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: acctest.LoadTestCase("account_token-full-flexible1.tf", rnd, accountID),
@@ -769,8 +769,8 @@ func TestAccAccountToken_FullFlexible(t *testing.T) {
 func TestAccAccountToken_CRUD(t *testing.T) {
 	// Comprehensive test covering Create, Read, Update, Delete + Import
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_account_token.crud_test"
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_account_token.crud_test"
 
 	initialName := rnd + "-initial"
 	updatedName := rnd + "-updated"
@@ -782,7 +782,7 @@ func TestAccAccountToken_CRUD(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccountTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccountTokenDestroy,
 		Steps: []resource.TestStep{
 			// Create and Read
 			{
@@ -841,7 +841,7 @@ func TestAccAccountToken_CRUD(t *testing.T) {
 
 func TestAccUpgradeAccountToken_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	config := acctest.LoadTestCase("account_token-without-condition.tf", rnd, accountID)
 
@@ -850,8 +850,8 @@ func TestAccUpgradeAccountToken_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

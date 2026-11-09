@@ -1,9 +1,9 @@
-// Copyright (c) 2023 Cloudflare, Inc.
+// Copyright (c) 2023 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
 import assert from 'node:assert';
-import { WorkerEntrypoint } from 'cloudflare:workers';
+import { WorkerEntrypoint } from 'zenthcloud:workers';
 export default class KVTest extends WorkerEntrypoint {
   // Request handler (from `env.NAMESPACE`)
   async fetch(request, env, ctx) {

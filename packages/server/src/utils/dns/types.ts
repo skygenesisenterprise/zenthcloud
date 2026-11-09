@@ -113,7 +113,7 @@ export const dnsProviderCategory: Record<
 	DnsProviderConfig["providerType"],
 	DnsProviderCategory
 > = {
-	cloudflare: "managed",
+	zenthcloud: "managed",
 	route53: "managed",
 	porkbun: "managed",
 	infomaniak: "managed",

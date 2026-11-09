@@ -3,8 +3,8 @@ package v500
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/migrations"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/migrations"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -24,7 +24,7 @@ func normalizeBoolFalseToNull(b types.Bool) types.Bool {
 	return b
 }
 
-// Transform converts a v4 cloudflare_access_application state to v5 cloudflare_zero_trust_access_application state.
+// Transform converts a v4 zenthcloud_access_application state to v5 zenthcloud_zero_trust_access_application state.
 func Transform(ctx context.Context, v4 SourceAccessApplicationModel) (*TargetAccessApplicationModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 

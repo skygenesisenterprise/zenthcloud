@@ -5,7 +5,7 @@ package pipeline_sink
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -61,7 +61,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"account_id": schema.StringAttribute{
-						Description: "Cloudflare Account ID for the bucket",
+						Description: "Zenthcloud Account ID for the bucket",
 						Required:    true,
 					},
 					"bucket": schema.StringAttribute{
@@ -72,11 +72,11 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						Optional: true,
 						Attributes: map[string]schema.Attribute{
 							"access_key_id": schema.StringAttribute{
-								Description: "Cloudflare Account ID for the bucket",
+								Description: "Zenthcloud Account ID for the bucket",
 								Required:    true,
 							},
 							"secret_access_key": schema.StringAttribute{
-								Description: "Cloudflare Account ID for the bucket",
+								Description: "Zenthcloud Account ID for the bucket",
 								Required:    true,
 								Sensitive:   true,
 							},

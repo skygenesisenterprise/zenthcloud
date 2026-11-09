@@ -5,17 +5,17 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccCloudflareConnectivityDirectoryServiceDataSource_Basic(t *testing.T) {
+func TestAccZenthcloudConnectivityDirectoryServiceDataSource_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_connectivity_directory_service." + rnd
-	dataSourceName := "data.cloudflare_connectivity_directory_service." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_connectivity_directory_service." + rnd
+	dataSourceName := "data.zenthcloud_connectivity_directory_service." + rnd
 
 	// Test configuration values
 	serviceName := fmt.Sprintf("test-directory-service-%s", rnd)
@@ -33,7 +33,7 @@ func TestAccCloudflareConnectivityDirectoryServiceDataSource_Basic(t *testing.T)
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareConnectivityDirectoryServiceDataSource_Basic(
+				Config: testAccZenthcloudConnectivityDirectoryServiceDataSource_Basic(
 					rnd,
 					accountID,
 					serviceName,
@@ -69,7 +69,7 @@ func TestAccCloudflareConnectivityDirectoryServiceDataSource_Basic(t *testing.T)
 	})
 }
 
-func testAccCloudflareConnectivityDirectoryServiceDataSource_Basic(rnd, accountID, serviceName, hostname, resolverIP1, resolverIP2 string, httpPort, httpsPort int) string {
+func testAccZenthcloudConnectivityDirectoryServiceDataSource_Basic(rnd, accountID, serviceName, hostname, resolverIP1, resolverIP2 string, httpPort, httpsPort int) string {
 	return acctest.LoadTestCase("datasource_basic.tf",
 		rnd,
 		accountID,

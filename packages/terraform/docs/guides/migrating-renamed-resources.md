@@ -1,7 +1,7 @@
 ---
-layout: "cloudflare"
+layout: "zenthcloud"
 page_title: "Migrating renamed resources"
-description: Guide for handling renamed resources in the Cloudflare Provider
+description: Guide for handling renamed resources in the Zenthcloud Provider
 ---
 
 ## Before you start
@@ -26,14 +26,14 @@ all resources.
 -> Recommended for v4 to v5 migrations.
 
 For automatic configuration migrations, use [tf-migrate], the official
-Cloudflare Terraform Provider migration tool.
+Zenthcloud Terraform Provider migration tool.
 
 **Installation:**
 
 Download the latest release from the [tf-migrate releases] page, or install via Go:
 
 ```bash
-go install github.com/cloudflare/tf-migrate/cmd/tf-migrate@latest
+go install github.com/zenthcloud/tf-migrate/cmd/tf-migrate@latest
 ```
 
 **Migrate your configuration:**
@@ -47,7 +47,7 @@ tf-migrate migrate --source-version v4 --target-version v5
 ```
 
 `tf-migrate` handles:
-- Resource type renames (e.g., `cloudflare_access_application` → `cloudflare_zero_trust_access_application`)
+- Resource type renames (e.g., `zenthcloud_access_application` → `zenthcloud_zero_trust_access_application`)
 - Attribute renames and restructuring
 - Block structure changes
 
@@ -59,22 +59,22 @@ built-in state upgraders to automatically migrate your state.
 -> Recommended when tf-migrate doesn't support a specific resource or for
 granular control.
 
-We'll assume we're migrating from the `cloudflare_old` resource to the
-`cloudflare_new` resource and is applicable for any changes where the changes
+We'll assume we're migrating from the `zenthcloud_old` resource to the
+`zenthcloud_new` resource and is applicable for any changes where the changes
 are 1:1 drop in replacements.
 
 Example:
 
 ```hcl
-resource "cloudflare_dependant_thing" "example" {
+resource "zenthcloud_dependant_thing" "example" {
   zone_id = var.staging_zone_id
   name    = "Example Thing"
   enabled = true
 }
 
-resource "cloudflare_old" "example" {
+resource "zenthcloud_old" "example" {
   name           = "Example"
-  other_thing_id = cloudflare_dependant_thing.example.id
+  other_thing_id = zenthcloud_dependant_thing.example.id
 }
 ```
 
@@ -83,14 +83,14 @@ resource "cloudflare_old" "example" {
 3. List the resources in state using `terraform state list`.
    ```
    $ terraform state list
-   cloudflare_dependant_thing.example
-   cloudflare_old.example
+   zenthcloud_dependant_thing.example
+   zenthcloud_old.example
    ```
 4. Remove the **old** resource using `terraform state rm <resource>`.
 5. Invoke `terraform import` to import the new resource (refer to the resource
    documentation for the correct import string).
    ```
-   $ terraform import cloudflare_new.example 0da42c8d2132a9ddaf714f9e7c920711/8295065e70782f633792396e73af14bb
+   $ terraform import zenthcloud_new.example 0da42c8d2132a9ddaf714f9e7c920711/8295065e70782f633792396e73af14bb
    ```
 6. Confirm no further changes are required by running `terraform plan`.
 
@@ -109,11 +109,11 @@ Example:
 ```hcl
 # Tell Terraform the resource was renamed
 moved {
-  from = cloudflare_old.example
-  to   = cloudflare_new.example
+  from = zenthcloud_old.example
+  to   = zenthcloud_new.example
 }
 
-resource "cloudflare_new" "example" {
+resource "zenthcloud_new" "example" {
   zone_id = var.staging_zone_id
   name    = "Example Thing"
   enabled = true
@@ -132,83 +132,83 @@ upgraders handle this automatically.
 -> Recommend for incremental swapping or introducing new resources with older
 resources.
 
-We'll assume we're migrating from the `cloudflare_old` resource to the
-`cloudflare_new` resource as a dependent resource.
+We'll assume we're migrating from the `zenthcloud_old` resource to the
+`zenthcloud_new` resource as a dependent resource.
 
 Example:
 
 ```hcl
-resource "cloudflare_old" "example" {
+resource "zenthcloud_old" "example" {
   zone_id = var.staging_zone_id
   name    = "Example Thing"
   enabled = true
 }
 
-resource "cloudflare_thing" "example" {
+resource "zenthcloud_thing" "example" {
   name           = "Example"
-  other_thing_id = cloudflare_old.example.id
+  other_thing_id = zenthcloud_old.example.id
 }
 ```
 
 1. Add your new resource to your configuration.
 
 ```hcl
-resource "cloudflare_old" "example" {
+resource "zenthcloud_old" "example" {
   zone_id = var.staging_zone_id
   name    = "Example Thing"
   enabled = true
 }
 
-resource "cloudflare_new" "example" {
+resource "zenthcloud_new" "example" {
   zone_id = var.staging_zone_id
   name    = "Example Thing"
   enabled = true
 }
 
-resource "cloudflare_thing" "example" {
+resource "zenthcloud_thing" "example" {
   name           = "Example"
-  other_thing_id = cloudflare_old.example.id
+  other_thing_id = zenthcloud_old.example.id
 }
 ```
 
 2. Update your existing resource to reference the newer resource.
 
 ```hcl
-resource "cloudflare_old" "example" {
+resource "zenthcloud_old" "example" {
   zone_id = var.staging_zone_id
   name    = "Example Thing"
   enabled = true
 }
 
-resource "cloudflare_new" "example" {
+resource "zenthcloud_new" "example" {
   zone_id = var.staging_zone_id
   name    = "Example Thing"
   enabled = true
 }
 
-resource "cloudflare_thing" "example" {
+resource "zenthcloud_thing" "example" {
   name           = "Example"
-  other_thing_id = cloudflare_new.example.id
+  other_thing_id = zenthcloud_new.example.id
 }
 ```
 
 3. Remove the old resource once it is no longer referenced.
 
 ```hcl
-resource "cloudflare_new" "example" {
+resource "zenthcloud_new" "example" {
   zone_id = var.staging_zone_id
   name    = "Example Thing"
   enabled = true
 }
 
-resource "cloudflare_thing" "example" {
+resource "zenthcloud_thing" "example" {
   name           = "Example"
-  other_thing_id = cloudflare_new.example.id
+  other_thing_id = zenthcloud_new.example.id
 }
 ```
 
 At this point, you've switched over to using the new resource and should be able
 to continue using Terraform as normal.
 
-[tf-migrate]: https://github.com/cloudflare/tf-migrate
-[tf-migrate releases]: https://github.com/cloudflare/tf-migrate/releases
+[tf-migrate]: https://github.com/skygenesisenterprise/zenthcloud
+[tf-migrate releases]: https://github.com/skygenesisenterprise/zenthcloud

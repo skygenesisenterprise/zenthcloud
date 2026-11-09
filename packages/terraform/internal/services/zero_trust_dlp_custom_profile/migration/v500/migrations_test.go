@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -81,7 +81,7 @@ func TestMigrateZeroTrustDLPCustomProfile_V4ToV5_BasicProfile(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
@@ -96,8 +96,8 @@ func TestMigrateZeroTrustDLPCustomProfile_V4ToV5_BasicProfile(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -115,17 +115,17 @@ func TestMigrateZeroTrustDLPCustomProfile_V4ToV5_BasicProfile(t *testing.T) {
 					firstStep,
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(
-							"cloudflare_zero_trust_dlp_custom_profile."+rnd,
+							"zenthcloud_zero_trust_dlp_custom_profile."+rnd,
 							tfjsonpath.New("account_id"),
 							knownvalue.StringExact(accountID),
 						),
 						statecheck.ExpectKnownValue(
-							"cloudflare_zero_trust_dlp_custom_profile."+rnd,
+							"zenthcloud_zero_trust_dlp_custom_profile."+rnd,
 							tfjsonpath.New("name"),
 							knownvalue.StringRegexp(regexp.MustCompile(".*-"+rnd+"$")),
 						),
 						statecheck.ExpectKnownValue(
-							"cloudflare_zero_trust_dlp_custom_profile."+rnd,
+							"zenthcloud_zero_trust_dlp_custom_profile."+rnd,
 							tfjsonpath.New("allowed_match_count"),
 							knownvalue.Int64Exact(5),
 						),
@@ -143,7 +143,7 @@ func TestMigrateZeroTrustDLPCustomProfile_V4ToV5_FromV516(t *testing.T) {
 	os.Setenv("migration mode", "")
 	t.Cleanup(func() { os.Setenv("migration mode", "1") })
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
 	testConfig := fmt.Sprintf(v516BasicConfig, rnd, accountID)
@@ -152,8 +152,8 @@ func TestMigrateZeroTrustDLPCustomProfile_V4ToV5_FromV516(t *testing.T) {
 	steps := []resource.TestStep{
 		{
 			ExternalProviders: map[string]resource.ExternalProvider{
-				"cloudflare": {
-					Source:            "cloudflare/cloudflare",
+				"zenthcloud": {
+					Source:            "zenthcloud/zenthcloud",
 					VersionConstraint: "5.16.0",
 				},
 			},
@@ -174,17 +174,17 @@ func TestMigrateZeroTrustDLPCustomProfile_V4ToV5_FromV516(t *testing.T) {
 			ConfigDirectory:          config.StaticDirectory(tmpDir),
 			ConfigStateChecks: []statecheck.StateCheck{
 				statecheck.ExpectKnownValue(
-					"cloudflare_zero_trust_dlp_custom_profile."+rnd,
+					"zenthcloud_zero_trust_dlp_custom_profile."+rnd,
 					tfjsonpath.New("account_id"),
 					knownvalue.StringExact(accountID),
 				),
 				statecheck.ExpectKnownValue(
-					"cloudflare_zero_trust_dlp_custom_profile."+rnd,
+					"zenthcloud_zero_trust_dlp_custom_profile."+rnd,
 					tfjsonpath.New("name"),
 					knownvalue.StringRegexp(regexp.MustCompile(".*-"+rnd+"$")),
 				),
 				statecheck.ExpectKnownValue(
-					"cloudflare_zero_trust_dlp_custom_profile."+rnd,
+					"zenthcloud_zero_trust_dlp_custom_profile."+rnd,
 					tfjsonpath.New("allowed_match_count"),
 					knownvalue.Int64Exact(5),
 				),
@@ -227,7 +227,7 @@ func TestMigrateZeroTrustDLPCustomProfile_V4ToV5_MultipleEntries(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
@@ -242,8 +242,8 @@ func TestMigrateZeroTrustDLPCustomProfile_V4ToV5_MultipleEntries(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -261,17 +261,17 @@ func TestMigrateZeroTrustDLPCustomProfile_V4ToV5_MultipleEntries(t *testing.T) {
 					firstStep,
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(
-							"cloudflare_zero_trust_dlp_custom_profile."+rnd,
+							"zenthcloud_zero_trust_dlp_custom_profile."+rnd,
 							tfjsonpath.New("account_id"),
 							knownvalue.StringExact(accountID),
 						),
 						statecheck.ExpectKnownValue(
-							"cloudflare_zero_trust_dlp_custom_profile."+rnd,
+							"zenthcloud_zero_trust_dlp_custom_profile."+rnd,
 							tfjsonpath.New("name"),
 							knownvalue.StringExact("multi-pattern-"+rnd),
 						),
 						statecheck.ExpectKnownValue(
-							"cloudflare_zero_trust_dlp_custom_profile."+rnd,
+							"zenthcloud_zero_trust_dlp_custom_profile."+rnd,
 							tfjsonpath.New("allowed_match_count"),
 							knownvalue.Int64Exact(10),
 						),
@@ -307,7 +307,7 @@ func TestMigrateZeroTrustDLPCustomProfile_V4ToV5_MinimalProfile(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
@@ -322,8 +322,8 @@ func TestMigrateZeroTrustDLPCustomProfile_V4ToV5_MinimalProfile(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -341,17 +341,17 @@ func TestMigrateZeroTrustDLPCustomProfile_V4ToV5_MinimalProfile(t *testing.T) {
 					firstStep,
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(
-							"cloudflare_zero_trust_dlp_custom_profile."+rnd,
+							"zenthcloud_zero_trust_dlp_custom_profile."+rnd,
 							tfjsonpath.New("account_id"),
 							knownvalue.StringExact(accountID),
 						),
 						statecheck.ExpectKnownValue(
-							"cloudflare_zero_trust_dlp_custom_profile."+rnd,
+							"zenthcloud_zero_trust_dlp_custom_profile."+rnd,
 							tfjsonpath.New("name"),
 							knownvalue.StringExact("minimal-"+rnd),
 						),
 						statecheck.ExpectKnownValue(
-							"cloudflare_zero_trust_dlp_custom_profile."+rnd,
+							"zenthcloud_zero_trust_dlp_custom_profile."+rnd,
 							tfjsonpath.New("allowed_match_count"),
 							knownvalue.Int64Exact(1),
 						),
@@ -387,7 +387,7 @@ func TestMigrateZeroTrustDLPCustomProfile_V4ToV5_ComplexPatterns(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
@@ -402,8 +402,8 @@ func TestMigrateZeroTrustDLPCustomProfile_V4ToV5_ComplexPatterns(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -421,17 +421,17 @@ func TestMigrateZeroTrustDLPCustomProfile_V4ToV5_ComplexPatterns(t *testing.T) {
 					firstStep,
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(
-							"cloudflare_zero_trust_dlp_custom_profile."+rnd,
+							"zenthcloud_zero_trust_dlp_custom_profile."+rnd,
 							tfjsonpath.New("account_id"),
 							knownvalue.StringExact(accountID),
 						),
 						statecheck.ExpectKnownValue(
-							"cloudflare_zero_trust_dlp_custom_profile."+rnd,
+							"zenthcloud_zero_trust_dlp_custom_profile."+rnd,
 							tfjsonpath.New("name"),
 							knownvalue.StringExact("complex-"+rnd),
 						),
 						statecheck.ExpectKnownValue(
-							"cloudflare_zero_trust_dlp_custom_profile."+rnd,
+							"zenthcloud_zero_trust_dlp_custom_profile."+rnd,
 							tfjsonpath.New("allowed_match_count"),
 							knownvalue.Int64Exact(3),
 						),
@@ -467,7 +467,7 @@ func TestMigrateZeroTrustDLPCustomProfile_V4ToV5_NoDescription(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
@@ -482,8 +482,8 @@ func TestMigrateZeroTrustDLPCustomProfile_V4ToV5_NoDescription(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -501,12 +501,12 @@ func TestMigrateZeroTrustDLPCustomProfile_V4ToV5_NoDescription(t *testing.T) {
 					firstStep,
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(
-							"cloudflare_zero_trust_dlp_custom_profile."+rnd,
+							"zenthcloud_zero_trust_dlp_custom_profile."+rnd,
 							tfjsonpath.New("account_id"),
 							knownvalue.StringExact(accountID),
 						),
 						statecheck.ExpectKnownValue(
-							"cloudflare_zero_trust_dlp_custom_profile."+rnd,
+							"zenthcloud_zero_trust_dlp_custom_profile."+rnd,
 							tfjsonpath.New("allowed_match_count"),
 							knownvalue.Int64Exact(0),
 						),

@@ -1,7 +1,7 @@
-resource "cloudflare_zero_trust_dlp_custom_entry" "%[1]s" {
+resource "zenthcloud_zero_trust_dlp_custom_entry" "%[1]s" {
   name = "%[1]s"
   account_id = "%[2]s"
-  profile_id = cloudflare_zero_trust_dlp_custom_profile.%[1]s.id
+  profile_id = zenthcloud_zero_trust_dlp_custom_profile.%[1]s.id
   pattern = {
     regex = "customentryregex"
   }
@@ -9,10 +9,10 @@ resource "cloudflare_zero_trust_dlp_custom_entry" "%[1]s" {
   enabled = %[3]s
 }
 
-resource "cloudflare_zero_trust_dlp_custom_entry" "%[1]s-second" {
+resource "zenthcloud_zero_trust_dlp_custom_entry" "%[1]s-second" {
   name = "%[1]s-second"
   account_id = "%[2]s"
-  profile_id = cloudflare_zero_trust_dlp_custom_profile.%[1]s.id
+  profile_id = zenthcloud_zero_trust_dlp_custom_profile.%[1]s.id
   pattern = {
     regex = "customentryregex"
   }
@@ -20,7 +20,7 @@ resource "cloudflare_zero_trust_dlp_custom_entry" "%[1]s-second" {
   enabled = %[3]s
 }
 
-resource "cloudflare_zero_trust_dlp_custom_profile" "%[1]s" {
+resource "zenthcloud_zero_trust_dlp_custom_profile" "%[1]s" {
 	account_id  = "%[2]s"
 	name        = "%[1]s"
 	description = "Test with shared entries"

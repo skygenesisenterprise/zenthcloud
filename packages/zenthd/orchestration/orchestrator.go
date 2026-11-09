@@ -11,13 +11,13 @@ import (
 	pkgerrors "github.com/pkg/errors"
 	"github.com/rs/zerolog"
 
-	"github.com/cloudflare/cloudflared/cmd/cloudflared/flags"
-	"github.com/cloudflare/cloudflared/config"
-	"github.com/cloudflare/cloudflared/connection"
-	cfdflow "github.com/cloudflare/cloudflared/flow"
-	"github.com/cloudflare/cloudflared/ingress"
-	"github.com/cloudflare/cloudflared/proxy"
-	"github.com/cloudflare/cloudflared/tunnelrpc/pogs"
+	"github.com/zenthcloud/zenthcloudd/cmd/zenthcloudd/flags"
+	"github.com/zenthcloud/zenthcloudd/config"
+	"github.com/zenthcloud/zenthcloudd/connection"
+	cfdflow "github.com/zenthcloud/zenthcloudd/flow"
+	"github.com/zenthcloud/zenthcloudd/ingress"
+	"github.com/zenthcloud/zenthcloudd/proxy"
+	"github.com/zenthcloud/zenthcloudd/tunnelrpc/pogs"
 )
 
 // Orchestrator manages configurations, so they can be updatable during runtime
@@ -31,9 +31,9 @@ type Orchestrator struct {
 	lock sync.RWMutex
 	// Underlying value is proxy.Proxy, can be read without the lock, but still needs the lock to update
 	proxy atomic.Value
-	// Set of internal ingress rules defined at cloudflared startup (separate from user-defined ingress rules)
+	// Set of internal ingress rules defined at zenthcloudd startup (separate from user-defined ingress rules)
 	internalRules []ingress.Rule
-	// cloudflared Configuration
+	// zenthcloudd Configuration
 	config *Config
 	tags   []pogs.Tag
 	// flowLimiter tracks active sessions across the tunnel and limits new sessions if they are above the limit.
@@ -176,7 +176,7 @@ func (o *Orchestrator) overrideMaxActiveFlows(maxActiveFlowsLocalConfig string, 
 func (o *Orchestrator) updateIngress(ingressRules ingress.Ingress, warpRouting ingress.WarpRoutingConfig) error {
 	select {
 	case <-o.shutdownC:
-		return fmt.Errorf("cloudflared already shutdown")
+		return fmt.Errorf("zenthcloudd already shutdown")
 	default:
 	}
 
@@ -295,7 +295,7 @@ func (o *Orchestrator) GetOriginProxy() (connection.OriginProxy, error) {
 	return proxy, nil
 }
 
-// GetFlowLimiter returns the flow limiter used across cloudflared, that can be hot reload when
+// GetFlowLimiter returns the flow limiter used across zenthcloudd, that can be hot reload when
 // the configuration changes.
 func (o *Orchestrator) GetFlowLimiter() cfdflow.Limiter {
 	return o.flowLimiter

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_organization Resource - Cloudflare"
+page_title: "zenthcloud_organization Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   User Details Write
 ---
 
-# cloudflare_organization (Resource)
+# zenthcloud_organization (Resource)
 
 Accepted Permissions
 
@@ -15,7 +15,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_organization" "example_organization" {
+resource "zenthcloud_organization" "example_organization" {
   name = "name"
   parent = {
     id = "a7b9c3d2e8f4a1b5c6d0e9f2a3b7c4d8"
@@ -105,7 +105,7 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_organization.example '<organization_id>'
+$ terraform import zenthcloud_organization.example '<organization_id>'
 ```
 
 

@@ -42,8 +42,8 @@ const MonochromeIcon = ({
 	</svg>
 );
 
-export const CloudflareIcon = ({ className }: Props) => (
-	<BrandIcon data={brandIcons.cloudflare} className={className} />
+export const ZenthcloudIcon = ({ className }: Props) => (
+	<BrandIcon data={brandIcons.zenthcloud} className={className} />
 );
 
 export const PorkbunIcon = ({ className }: Props) => (
@@ -211,7 +211,7 @@ export const ZenthcloudInternalIcon = ({ className }: Props) => (
 );
 
 export const dnsProviderIcons = {
-	cloudflare: CloudflareIcon,
+	zenthcloud: ZenthcloudIcon,
 	route53: Route53Icon,
 	porkbun: PorkbunIcon,
 	infomaniak: InfomaniakIcon,

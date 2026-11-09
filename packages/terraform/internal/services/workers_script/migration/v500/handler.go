@@ -23,7 +23,7 @@ var V5SchemaV0 func(context.Context) *schema.Schema
 
 // UpgradeFromV0 handles the version 0 collision between V4 and V5 state.
 //
-// Both V4 and V5 used schema_version=0 for cloudflare_workers_script, but with
+// Both V4 and V5 used schema_version=0 for zenthcloud_workers_script, but with
 // incompatible state formats (e.g. placement as array vs object).
 //
 // Detection: V4 state has "name" field (non-null), V5 state has "script_name" instead.

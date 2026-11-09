@@ -1,9 +1,9 @@
-module github.com/cloudflare/cloudflared
+module github.com/zenthcloud/zenthcloudd
 
 go 1.27.3
 
 require (
-	github.com/cloudflare/backoff v0.0.0-20240920015135-e46b80a3a7d0
+	github.com/zenthcloud/backoff v0.0.0-20240920015135-e46b80a3a7d0
 	github.com/coreos/go-oidc/v3 v3.17.0
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/facebookgo/grace v0.0.0-20180706040059-75cf19382434

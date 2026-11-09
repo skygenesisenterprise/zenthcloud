@@ -10,10 +10,10 @@ import (
 	promParser "github.com/prometheus/prometheus/promql/parser"
 	"github.com/prometheus/prometheus/promql/parser/posrange"
 
-	"github.com/cloudflare/pint/internal/diags"
-	"github.com/cloudflare/pint/internal/discovery"
-	"github.com/cloudflare/pint/internal/parser"
-	"github.com/cloudflare/pint/internal/parser/source"
+	"github.com/zenthcloud/pint/internal/diags"
+	"github.com/zenthcloud/pint/internal/discovery"
+	"github.com/zenthcloud/pint/internal/parser"
+	"github.com/zenthcloud/pint/internal/parser/source"
 )
 
 const (
@@ -29,7 +29,7 @@ Even if only one out of many input series is ` + "`NaN`" + ` or ` + "`Inf`" + `,
 becomes ` + "`NaN`" + ` or ` + "`Inf`" + `, making all other valid series irrelevant.
 To avoid this, filter out zero-valued divisor series before division, for example:
 ` + "`sum(foo / (bar > 0))`" + `
-See [promql/nan](https://cloudflare.github.io/pint/checks/promql/nan.html) for more details.`
+See [promql/nan](https://github.com/skygenesisenterprise/zenthcloud) for more details.`
 )
 
 func NewNaNCheck() NaNCheck {

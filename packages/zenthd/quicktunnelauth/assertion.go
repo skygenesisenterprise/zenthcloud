@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	quickTunnelAuthBrokerIssuer        = "https://login.trycloudflare.com"
-	quickTunnelAuthBrokerAudience      = "cloudflared-quick-tunnel"
+	quickTunnelAuthBrokerIssuer        = "https://github.com/skygenesisenterprise/zenthcloud"
+	quickTunnelAuthBrokerAudience      = "zenthcloudd-quick-tunnel"
 	quickTunnelAuthBrokerAssertionType = "quick_tunnel_auth"
 
 	quickTunnelAuthBrokerAssertionTTL  = 2 * time.Minute

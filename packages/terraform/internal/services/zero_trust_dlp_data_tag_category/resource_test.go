@@ -11,16 +11,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
-// TestAccCloudflareZeroTrustDLPDataTagCategory_Basic verifies basic CRUD for
+// TestAccZenthcloudZeroTrustDLPDataTagCategory_Basic verifies basic CRUD for
 // a data tag category: apply, read, import, destroy.
-func TestAccCloudflareZeroTrustDLPDataTagCategory_Basic(t *testing.T) {
+func TestAccZenthcloudZeroTrustDLPDataTagCategory_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	name := fmt.Sprintf("cloudflare_zero_trust_dlp_data_tag_category.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_dlp_data_tag_category.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -60,11 +60,11 @@ func TestAccCloudflareZeroTrustDLPDataTagCategory_Basic(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareZeroTrustDLPDataTagCategory_Update verifies in-place update.
-func TestAccCloudflareZeroTrustDLPDataTagCategory_Update(t *testing.T) {
+// TestAccZenthcloudZeroTrustDLPDataTagCategory_Update verifies in-place update.
+func TestAccZenthcloudZeroTrustDLPDataTagCategory_Update(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	name := fmt.Sprintf("cloudflare_zero_trust_dlp_data_tag_category.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_dlp_data_tag_category.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },

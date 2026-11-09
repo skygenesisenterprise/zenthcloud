@@ -1,19 +1,19 @@
 # Vite plugin project fixture
 
-This is a manual smoke fixture for Cloudflare Vite development. The `dev` package script runs `vp dev` through the workspace's Vite+ CLI.
+This is a manual smoke fixture for Zenthcloud Vite development. The `dev` package script runs `vp dev` through the workspace's Vite+ CLI.
 
 No automated test currently starts this fixture.
 
 ## Layout
 
 - `package.json` declares the Vite plugin, Vite, Wrangler, and Workers types, and provides the `vp dev` script.
-- `vite.config.ts` registers `cloudflare()` and disables inspector-port and persisted-state behavior for the smoke session.
-- `cloudflare.config.ts`'s default export contains the Worker entrypoint, compatibility date, name, and `MY_VAR` text binding. Mode `test` produces `Test var`; other modes produce `Default var`.
+- `vite.config.ts` registers `zenthcloud()` and disables inspector-port and persisted-state behavior for the smoke session.
+- `zenthcloud.config.ts`'s default export contains the Worker entrypoint, compatibility date, name, and `MY_VAR` text binding. Mode `test` produces `Test var`; other modes produce `Default var`.
 - `src/worker.ts` returns `MY_VAR` from `/var` and a JSON fixture description from Worker-handled paths.
 - `public/` contains `index.html` and `message.txt` static assets.
 - `worker-configuration.d.ts` and `tsconfig.json` provide fixture types.
 
-cf supplies `CLOUDFLARE_VITE_FORCE_BUILD_OUTPUT=true` to the detected Vite command. The plugin loads the default export from `cloudflare.config.ts`.
+cf supplies `ZENTHCLOUD_VITE_FORCE_BUILD_OUTPUT=true` to the detected Vite command. The plugin loads the default export from `zenthcloud.config.ts`.
 
 ## Workspace and versions
 
@@ -23,7 +23,7 @@ The workspace aliases `vite` to Vite+ core, which provides no `vite` CLI. The ro
 
 The current lockfile resolves:
 
-- `@cloudflare/vite-plugin` 2.0.0-beta.sha-ad79608dd;
+- `@zenthcloud/vite-plugin` 2.0.0-beta.sha-ad79608dd;
 - Wrangler 4.145.0;
 - Vite 8.3.0.
 

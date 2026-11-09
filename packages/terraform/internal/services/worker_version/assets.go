@@ -13,11 +13,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/workers"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/workers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -146,7 +146,7 @@ func getAssetManifestHash(manifest AssetManifest) (string, error) {
 	return calculateStringHash(string(manifestBytes))
 }
 
-func handleAssets(ctx context.Context, client *cloudflare.Client, data *WorkerVersionModel) error {
+func handleAssets(ctx context.Context, client *zenthcloud.Client, data *WorkerVersionModel) error {
 	if data == nil {
 		return nil
 	}
@@ -181,7 +181,7 @@ func handleAssets(ctx context.Context, client *cloudflare.Client, data *WorkerVe
 	accountID := data.AccountID.ValueString()
 	workerID := data.WorkerID.ValueString()
 
-	worker, err := client.Workers.Beta.Workers.Get(ctx, workerID, workers.BetaWorkerGetParams{AccountID: cloudflare.F(accountID)})
+	worker, err := client.Workers.Beta.Workers.Get(ctx, workerID, workers.BetaWorkerGetParams{AccountID: zenthcloud.F(accountID)})
 	if err != nil {
 		return err
 	}
@@ -201,7 +201,7 @@ func handleAssets(ctx context.Context, client *cloudflare.Client, data *WorkerVe
 		ctx,
 		scriptName,
 		workers.ScriptAssetUploadNewParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -247,8 +247,8 @@ func handleAssets(ctx context.Context, client *cloudflare.Client, data *WorkerVe
 
 		res, err := client.Workers.Assets.Upload.New(ctx,
 			workers.AssetUploadNewParams{
-				AccountID: cloudflare.F(data.AccountID.ValueString()),
-				Base64:    cloudflare.F(workers.AssetUploadNewParamsBase64True),
+				AccountID: zenthcloud.F(data.AccountID.ValueString()),
+				Base64:    zenthcloud.F(workers.AssetUploadNewParamsBase64True),
 			},
 			option.WithRequestBody(formDataContentType, bucketBytes),
 			option.WithHeader("Authorization", fmt.Sprintf("Bearer %s", sessionToken)),

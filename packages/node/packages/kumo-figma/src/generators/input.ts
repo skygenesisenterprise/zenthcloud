@@ -36,7 +36,7 @@ import {
   VAR_NAMES,
 } from "./shared";
 import { logComplete } from "../logger";
-import registry from "@cloudflare/kumo/ai/component-registry.json";
+import registry from "@zenthcloud/kumo/ai/component-registry.json";
 import { parseTailwindClasses } from "../parsers/tailwind-to-figma";
 
 /**

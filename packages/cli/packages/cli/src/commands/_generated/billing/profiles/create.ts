@@ -46,7 +46,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		})
 		.option("cf-turnstile-response", {
 			type: "string",
-			description: "Cloudflare Turnstile response.",
+			description: "Zenthcloud Turnstile response.",
 		})
 		.option("city", {
 			type: "string",
@@ -126,7 +126,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf billing profiles create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/billing/profile`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/billing/profile`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

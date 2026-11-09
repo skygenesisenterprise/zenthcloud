@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_queues Data Source - Cloudflare"
+page_title: "zenthcloud_queues Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Queues ReadQueues WriteWorkers Scripts ReadWorkers Scripts Write
 ---
 
-# cloudflare_queues (Data Source)
+# zenthcloud_queues (Data Source)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_queues" "example_queues" {
+data "zenthcloud_queues" "example_queues" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```

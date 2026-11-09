@@ -13,7 +13,7 @@ const initCommand: CommandModule<CommonYargsOptions, InitArgs> & {
 	describe: string;
 } = {
 	command: "init [directory]",
-	describe: "Create a new Cloudflare project or set up an existing one",
+	describe: "Create a new Zenthcloud project or set up an existing one",
 
 	builder: (yargs: Argv<CommonYargsOptions>) =>
 		initBuilder(yargs)

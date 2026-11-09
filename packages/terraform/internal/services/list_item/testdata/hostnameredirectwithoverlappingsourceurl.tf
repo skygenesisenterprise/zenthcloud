@@ -1,14 +1,14 @@
 
-  resource "cloudflare_list" "%[2]s" {
+  resource "zenthcloud_list" "%[2]s" {
     account_id          = "%[4]s"
     name                = "%[2]s"
     description         = "list named %[2]s"
     kind                = "redirect"
   }
 
-  resource "cloudflare_list_item" "%[1]s_1" {
+  resource "zenthcloud_list_item" "%[1]s_1" {
     account_id = "%[4]s"
-  	list_id    = cloudflare_list.%[2]s.id
+  	list_id    = zenthcloud_list.%[2]s.id
   	comment    = "%[3]s"
   	redirect = {
   		source_url = "www.site1.com/"
@@ -17,13 +17,13 @@
   	}
   }
 
-  resource "cloudflare_list_item" "%[1]s_2" {
+  resource "zenthcloud_list_item" "%[1]s_2" {
     account_id = "%[4]s"
-  	list_id    = cloudflare_list.%[2]s.id
+  	list_id    = zenthcloud_list.%[2]s.id
   	comment    = "%[3]s"
   	redirect = {
   		source_url = "www.site1.com/test"
-  		target_url = "https://cloudflare.com"
+  		target_url = "https://github.com/skygenesisenterprise/zenthcloud"
   		status_code = 301
   	}
   }

@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_magic_wan_static_route Resource - Cloudflare"
+page_title: "zenthcloud_magic_wan_static_route Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_magic_wan_static_route (Resource)
+# zenthcloud_magic_wan_static_route (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_magic_wan_static_route" "example_magic_wan_static_route" {
+resource "zenthcloud_magic_wan_static_route" "example_magic_wan_static_route" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   nexthop = "203.0.113.1"
   prefix = "192.0.2.0/24"
@@ -61,7 +61,7 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_magic_wan_static_route.example '<account_id>/<route_id>'
+$ terraform import zenthcloud_magic_wan_static_route.example '<account_id>/<route_id>'
 ```
 
 

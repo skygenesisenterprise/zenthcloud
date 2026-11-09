@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -9,7 +9,7 @@
 // itself is swept, so collection is checked over a few major GCs.
 
 import { deepStrictEqual, ok, strictEqual } from 'node:assert';
-import { DurableObject } from 'cloudflare:workers';
+import { DurableObject } from 'zenthcloud:workers';
 
 async function collect(weakRef) {
   for (let i = 0; i < 3 && weakRef.deref() !== undefined; i++) {

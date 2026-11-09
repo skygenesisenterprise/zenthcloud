@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_device_ip_profile Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_device_ip_profile Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust ReadZero Trust Write
 ---
 
-# cloudflare_zero_trust_device_ip_profile (Resource)
+# zenthcloud_zero_trust_device_ip_profile (Resource)
 
 Accepted Permissions
 
@@ -16,10 +16,10 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_device_ip_profile" "example_zero_trust_device_ip_profile" {
+resource "zenthcloud_zero_trust_device_ip_profile" "example_zero_trust_device_ip_profile" {
   account_id = "account_id"
-  match = "identity.email == \"test@cloudflare.com\""
-  name = "IPv4 Cloudflare Source IPs"
+  match = "identity.email == \"test@zenthcloud.com\""
+  name = "IPv4 Zenthcloud Source IPs"
   precedence = 100
   subnet_id = "b70ff985-a4ef-4643-bbbc-4a0ed4fc8415"
   description = "example comment"
@@ -54,7 +54,7 @@ resource "cloudflare_zero_trust_device_ip_profile" "example_zero_trust_device_ip
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_device_ip_profile.example '<account_id>/<profile_id>'
+$ terraform import zenthcloud_zero_trust_device_ip_profile.example '<account_id>/<profile_id>'
 ```
 
 

@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -24,9 +24,9 @@ var v526BasicConfig string
 // v501 schema by the StateUpgrader, and that the resulting plan is a strict
 // no-op with no spurious attribute changes.
 func TestMigrateAPIShieldOperation_V526ToCurrentSchema(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_api_shield_operation." + rnd
+	resourceName := "zenthcloud_api_shield_operation." + rnd
 	tmpDir := t.TempDir()
 	cfg := fmt.Sprintf(v526BasicConfig, rnd, zoneID)
 
@@ -42,8 +42,8 @@ func TestMigrateAPIShieldOperation_V526ToCurrentSchema(t *testing.T) {
 				// feature and with_schemas in the schema. The state file will
 				// contain schema_version=500 with both attributes present.
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.26.0",
 					},
 				},

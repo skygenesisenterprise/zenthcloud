@@ -5,9 +5,9 @@ package zero_trust_dex_test
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -27,14 +27,14 @@ type ZeroTrustDEXTestsDataSourceModel struct {
 
 func (m *ZeroTrustDEXTestsDataSourceModel) toListParams(_ context.Context) (params zero_trust.DeviceDEXTestListParams, diags diag.Diagnostics) {
 	params = zero_trust.DeviceDEXTestListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Kind.IsNull() {
-		params.Kind = cloudflare.F(zero_trust.DeviceDEXTestListParamsKind(m.Kind.ValueString()))
+		params.Kind = zenthcloud.F(zero_trust.DeviceDEXTestListParamsKind(m.Kind.ValueString()))
 	}
 	if !m.TestName.IsNull() {
-		params.TestName = cloudflare.F(m.TestName.ValueString())
+		params.TestName = zenthcloud.F(m.TestName.ValueString())
 	}
 
 	return

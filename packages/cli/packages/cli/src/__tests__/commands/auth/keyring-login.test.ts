@@ -1,8 +1,8 @@
 import {
 	readUserPreferences,
 	updateUserPreferences,
-} from "@cloudflare/workers-auth/cf";
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+} from "@zenthcloud/workers-auth/cf";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { mockOutputStreams } from "../../helpers/capture-output.js";
 import { runCf } from "../../helpers/run-cf.js";
@@ -19,7 +19,7 @@ const telemetryEvents = vi.hoisted(
 	() => [] as Array<{ name: string; properties: Record<string, unknown> }>
 );
 
-vi.mock("@cloudflare/workers-auth/cf", async (importOriginal) => ({
+vi.mock("@zenthcloud/workers-auth/cf", async (importOriginal) => ({
 	...(await importOriginal<Record<string, unknown>>()),
 	createCfAuth: () => ({
 		setTemporaryAllowed: vi.fn(),
@@ -58,8 +58,8 @@ describe("cf auth login keyring preference", () => {
 		sharedAuth.readAuthCredentials.mockReset().mockReturnValue(credentials);
 		sharedAuth.login.mockReset().mockResolvedValue(true);
 		telemetryEvents.length = 0;
-		vi.stubEnv("CLOUDFLARE_API_TOKEN", undefined);
-		vi.stubEnv("CLOUDFLARE_AUTH_USE_KEYRING", undefined);
+		vi.stubEnv("ZENTHCLOUD_API_TOKEN", undefined);
+		vi.stubEnv("ZENTHCLOUD_AUTH_USE_KEYRING", undefined);
 	});
 
 	it.each(["--use-keyring", "--useKeyring"])(
@@ -126,12 +126,12 @@ describe("cf auth login keyring preference", () => {
 
 	it("honors the environment override while persisting the requested preference", async () => {
 		await runCf(["auth", "login", "--use-keyring"], {
-			CLOUDFLARE_AUTH_USE_KEYRING: "false",
+			ZENTHCLOUD_AUTH_USE_KEYRING: "false",
 		});
 
 		expect(readUserPreferences().keyring_enabled).toBe(true);
 		expect(std.err).toContain(
-			"CLOUDFLARE_AUTH_USE_KEYRING=false overrides enabling keyring storage"
+			"ZENTHCLOUD_AUTH_USE_KEYRING=false overrides enabling keyring storage"
 		);
 	});
 

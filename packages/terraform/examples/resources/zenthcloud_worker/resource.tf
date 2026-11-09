@@ -1,0 +1,79 @@
+resource "zenthcloud_worker" "example_worker" {
+  account_id = "023e105f4ecef8ad9ca31a8372d0c353"
+  name = "my-worker"
+  logpush = true
+  observability = {
+    enabled = true
+    head_sampling_rate = 1
+    issues = {
+      enabled = true
+    }
+    logs = {
+      destinations = ["string"]
+      enabled = true
+      head_sampling_rate = 1
+      invocation_logs = true
+      persist = true
+    }
+    redact_query_string = true
+    traces = {
+      destinations = ["string"]
+      enabled = true
+      head_sampling_rate = 1
+      persist = true
+      propagation_policy = "authenticated"
+    }
+  }
+  previews_base_config = {
+    cache_options = {
+      enabled = true
+      cross_version_cache = true
+    }
+    env = {
+      MY_ENV_VAR = {
+        type = "plain_text"
+      }
+    }
+    limits = {
+      cpu_ms = 50
+      subrequests = 1000
+    }
+    logpush = true
+    observability = {
+      enabled = true
+      head_sampling_rate = 1
+      issues = {
+        enabled = true
+      }
+      logs = {
+        destinations = ["string"]
+        enabled = true
+        head_sampling_rate = 1
+        invocation_logs = true
+        persist = true
+      }
+      redact_query_string = true
+      traces = {
+        destinations = ["string"]
+        enabled = true
+        head_sampling_rate = 1
+        persist = true
+        propagation_policy = "authenticated"
+      }
+    }
+    placement = {
+      mode = "smart"
+    }
+    tail_consumers = [{
+      name = "my-tail-consumer"
+    }]
+  }
+  subdomain = {
+    enabled = true
+    previews_enabled = true
+  }
+  tags = ["my-team", "my-public-api"]
+  tail_consumers = [{
+    name = "my-tail-consumer"
+  }]
+}

@@ -1,7 +1,7 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -9,9 +9,9 @@ import (
 // Source Models (Legacy Provider - v4.x)
 // ============================================================================
 
-// SourceCloudflareLoadBalancerModel represents the legacy cloudflare_load_balancer state from v4.x provider.
+// SourceZenthcloudLoadBalancerModel represents the legacy zenthcloud_load_balancer state from v4.x provider.
 // Schema version: 1 (SDKv2 default for resources with migrations)
-// Resource type: cloudflare_load_balancer
+// Resource type: zenthcloud_load_balancer
 //
 // Key differences from v5:
 // - default_pool_ids (v4) → default_pools (v5)
@@ -20,7 +20,7 @@ import (
 // - session_affinity_ttl as Int64 (v4) → Float64 (v5)
 // - Nested objects stored as TypeList MaxItems:1 (arrays) in v4, single objects in v5
 // - Pool fields stored as TypeSet of blocks in v4, maps in v5
-type SourceCloudflareLoadBalancerModel struct {
+type SourceZenthcloudLoadBalancerModel struct {
 	ID                        types.String                                `tfsdk:"id"`
 	ZoneID                    types.String                                `tfsdk:"zone_id"`
 	Name                      types.String                                `tfsdk:"name"`
@@ -140,7 +140,7 @@ type SourceFixedResponseModel struct {
 // These mirror the models in the parent package (../model.go) but are
 // duplicated here to keep the migration package self-contained.
 
-// TargetLoadBalancerModel represents the target cloudflare_load_balancer state (v500).
+// TargetLoadBalancerModel represents the target zenthcloud_load_balancer state (v500).
 type TargetLoadBalancerModel struct {
 	ID                        types.String                                                         `tfsdk:"id"`
 	ZoneID                    types.String                                                         `tfsdk:"zone_id"`

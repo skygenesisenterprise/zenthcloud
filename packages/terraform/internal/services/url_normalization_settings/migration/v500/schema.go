@@ -6,9 +6,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
-// SourceURLNormalizationSettingsSchema returns the source schema for legacy cloudflare_url_normalization_settings resource.
+// SourceURLNormalizationSettingsSchema returns the source schema for legacy zenthcloud_url_normalization_settings resource.
 // Schema version: 1 (actual v4 provider schema version)
-// Resource type: cloudflare_url_normalization_settings
+// Resource type: zenthcloud_url_normalization_settings
 //
 // This minimal schema is used only for reading v4 state during migration.
 // It includes only the properties needed for state parsing (Required, Optional, Computed).

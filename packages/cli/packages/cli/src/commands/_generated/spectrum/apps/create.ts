@@ -103,12 +103,12 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("protocol", {
 			type: "string",
 			description:
-				'The port configuration at Cloudflare\'s edge. May specify a single port, for example `"tcp/1000"`, or a range of ports, for example `"tcp/1000-2000"`.',
+				'The port configuration at Zenthcloud\'s edge. May specify a single port, for example `"tcp/1000"`, or a range of ports, for example `"tcp/1000-2000"`.',
 		})
 		.option("proxy-protocol", {
 			type: "string",
 			description:
-				"Enables Proxy Protocol to the origin. Refer to [Enable Proxy protocol](https://developers.cloudflare.com/spectrum/getting-started/proxy-protocol/) for implementation details on PROXY Protocol V1, PROXY Protocol V2, and Simple Proxy Protocol.",
+				"Enables Proxy Protocol to the origin. Refer to [Enable Proxy protocol](https://github.com/skygenesisenterprise/zenthcloud) for implementation details on PROXY Protocol V1, PROXY Protocol V2, and Simple Proxy Protocol.",
 			choices: ["off", "v1", "v2", "simple"],
 			default: "off",
 		})
@@ -126,7 +126,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("traffic-type", {
 			type: "string",
 			description:
-				'Determines how data travels from the edge to your origin. When set to "direct", Spectrum will send traffic directly to your origin, and the application\'s type is derived from the `protocol`. When set to "http" or "https", Spectrum will apply Cloudflare\'s HTTP/HTTPS features as it sends traffic to your origin, and the application type matches this property exactly. When set to "worker", traffic is sent to the Worker specified by `origin_worker_id`.',
+				'Determines how data travels from the edge to your origin. When set to "direct", Spectrum will send traffic directly to your origin, and the application\'s type is derived from the `protocol`. When set to "http" or "https", Spectrum will apply Zenthcloud\'s HTTP/HTTPS features as it sends traffic to your origin, and the application type matches this property exactly. When set to "worker", traffic is sent to the Worker specified by `origin_worker_id`.',
 			choices: ["direct", "http", "https", "worker"],
 			default: "direct",
 		})
@@ -193,7 +193,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf spectrum apps create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/spectrum/apps`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/spectrum/apps`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 						},
@@ -272,7 +272,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 				if (argv["protocol"] === undefined) {
 					argv["protocol"] = await promptForRequiredField(
 						"protocol",
-						'The port configuration at Cloudflare\'s edge. May specify a single port, for example \`"tcp/1000"\`, or a range of ports, for example \`"tcp/1000-2000"\`.'
+						'The port configuration at Zenthcloud\'s edge. May specify a single port, for example \`"tcp/1000"\`, or a range of ports, for example \`"tcp/1000-2000"\`.'
 					);
 				}
 

@@ -5,20 +5,20 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // UpgradeFromV0 handles state upgrades from v4 (schema_version=0) to v5.
-// This is the main v4→v5 migration path for cloudflare_list_item.
+// This is the main v4→v5 migration path for zenthcloud_list_item.
 // Key transformations:
 //   - hostname: List (MaxItems:1) → SingleNestedAttribute
 //   - redirect: List (MaxItems:1) → SingleNestedAttribute
 //   - redirect boolean fields: "enabled"/"disabled" strings → true/false booleans
 func UpgradeFromV0(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
-	tflog.Info(ctx, "Upgrading cloudflare_list_item state from v4 (schema_version=0)")
+	tflog.Info(ctx, "Upgrading zenthcloud_list_item state from v4 (schema_version=0)")
 
 	var sourceState SourceListItemModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &sourceState)...)
@@ -34,7 +34,7 @@ func UpgradeFromV0(ctx context.Context, req resource.UpgradeStateRequest, resp *
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, targetState)...)
 
-	tflog.Info(ctx, "State upgrade for cloudflare_list_item from v4 completed successfully")
+	tflog.Info(ctx, "State upgrade for zenthcloud_list_item from v4 completed successfully")
 }
 
 // UpgradeFromV1 handles state upgrades from v4.52.5 framework (schema_version=1) to v500.
@@ -46,7 +46,7 @@ func UpgradeFromV0(ctx context.Context, req resource.UpgradeStateRequest, resp *
 // When called from UpgradeFromV1Ambiguous (where PriorSchema is nil), use
 // upgradeFromV1ViaRawState instead.
 func UpgradeFromV1(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
-	tflog.Info(ctx, "Upgrading cloudflare_list_item state from v4.52.5 framework (schema_version=1)")
+	tflog.Info(ctx, "Upgrading zenthcloud_list_item state from v4.52.5 framework (schema_version=1)")
 
 	var sourceState SourceListItemV1Model
 	resp.Diagnostics.Append(req.State.Get(ctx, &sourceState)...)
@@ -89,7 +89,7 @@ func UpgradeFromV1(ctx context.Context, req resource.UpgradeStateRequest, resp *
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, target)...)
-	tflog.Info(ctx, "State upgrade for cloudflare_list_item from v1 completed successfully")
+	tflog.Info(ctx, "State upgrade for zenthcloud_list_item from v1 completed successfully")
 }
 
 // UpgradeFromV1Ambiguous handles schema_version=1 state that is AMBIGUOUS between
@@ -107,7 +107,7 @@ func UpgradeFromV1(ctx context.Context, req resource.UpgradeStateRequest, resp *
 // If array -> v4.52.5 format -> transform via raw state.
 // If object (or absent) -> v5 format -> no-op re-decode with target schema.
 func UpgradeFromV1Ambiguous(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
-	tflog.Info(ctx, "Upgrading cloudflare_list_item state from schema_version=1 (detecting v4.52.5 vs v5 format)")
+	tflog.Info(ctx, "Upgrading zenthcloud_list_item state from schema_version=1 (detecting v4.52.5 vs v5 format)")
 
 	isV4, err := detectV4ListItemState(req)
 	if err != nil {

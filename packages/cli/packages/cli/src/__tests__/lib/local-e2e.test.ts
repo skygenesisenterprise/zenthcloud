@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import { Miniflare } from "miniflare";
 import {
 	afterEach,
@@ -29,7 +29,7 @@ describe("cf --local end to end", () => {
 	});
 
 	it("writes and reads persisted KV data through a real local runtime", async () => {
-		const env = { CLOUDFLARE_API_TOKEN: undefined };
+		const env = { ZENTHCLOUD_API_TOKEN: undefined };
 		const local = ["--local", "--persist-to", "state"];
 
 		await runCf(
@@ -86,10 +86,10 @@ describe("cf --local end to end", () => {
 		"shares KV with a live Miniflare storage owner (canonical override: %s)",
 		async (override) => {
 			vi.stubEnv(
-				"CLOUDFLARE_DEV_REGISTRY_PATH",
+				"ZENTHCLOUD_DEV_REGISTRY_PATH",
 				override ? "shared registry" : undefined
 			);
-			vi.stubEnv("CLOUDFLARE_REGISTRY_PATH", "legacy cf registry");
+			vi.stubEnv("ZENTHCLOUD_REGISTRY_PATH", "legacy cf registry");
 			vi.stubEnv("WRANGLER_REGISTRY_PATH", "legacy wrangler registry");
 			vi.stubEnv("MINIFLARE_REGISTRY_PATH", "legacy miniflare registry");
 			const peer = new Miniflare({
@@ -142,7 +142,7 @@ describe("cf --local end to end", () => {
 						"--text",
 						...local,
 					],
-					{ CLOUDFLARE_API_TOKEN: undefined }
+					{ ZENTHCLOUD_API_TOKEN: undefined }
 				);
 				expect(
 					out.mock.calls.map((call: unknown[]) => String(call[0])).join("")
@@ -160,7 +160,7 @@ describe("cf --local end to end", () => {
 						"from cf",
 						...local,
 					],
-					{ CLOUDFLARE_API_TOKEN: undefined }
+					{ ZENTHCLOUD_API_TOKEN: undefined }
 				);
 				expect(
 					await (await peer.dispatchFetch("http://localhost/")).text()
@@ -179,7 +179,7 @@ describe("cf --local end to end", () => {
 			"migrations/0001_users.sql",
 			"CREATE TABLE users (id INTEGER PRIMARY KEY);"
 		);
-		const env = { CLOUDFLARE_API_TOKEN: undefined };
+		const env = { ZENTHCLOUD_API_TOKEN: undefined };
 		const local = ["--local", "--persist-to", "state"];
 
 		const applied = await runCf(
@@ -205,7 +205,7 @@ describe("cf --local end to end", () => {
 	it("explains how to retry commands without a local implementation", async () => {
 		await expect(
 			runCf(["zones", "list", "--local", "--persist-to", "state"], {
-				CLOUDFLARE_API_TOKEN: undefined,
+				ZENTHCLOUD_API_TOKEN: undefined,
 			})
 		).rejects.toThrow(
 			/no local equivalent.*re-run without --local.*GET \/zones/i
@@ -228,14 +228,14 @@ describe("cf --local end to end", () => {
 					"--persist-to",
 					"state",
 				],
-				{ CLOUDFLARE_API_TOKEN: undefined }
+				{ ZENTHCLOUD_API_TOKEN: undefined }
 			)
 		).rejects.toThrow(/local persistence path must be a directory/i);
 	}, 60_000);
 
-	it("defaults to the project state directory next to cloudflare.config.ts", async () => {
-		writeFileSync("cloudflare.config.ts", "export default {};");
-		const env = { CLOUDFLARE_API_TOKEN: undefined };
+	it("defaults to the project state directory next to zenthcloud.config.ts", async () => {
+		writeFileSync("zenthcloud.config.ts", "export default {};");
+		const env = { ZENTHCLOUD_API_TOKEN: undefined };
 
 		await runCf(
 			[
@@ -264,7 +264,7 @@ describe("cf --local end to end", () => {
 				"--text",
 				"--local",
 				"--persist-to",
-				".cloudflare/state",
+				".zenthcloud/state",
 			],
 			env
 		);
@@ -275,7 +275,7 @@ describe("cf --local end to end", () => {
 	}, 60_000);
 
 	it("lets --persist-to override the project state directory", async () => {
-		writeFileSync("cloudflare.config.ts", "export default {};");
+		writeFileSync("zenthcloud.config.ts", "export default {};");
 
 		await runCf(
 			[
@@ -291,19 +291,19 @@ describe("cf --local end to end", () => {
 				"--persist-to",
 				"state",
 			],
-			{ CLOUDFLARE_API_TOKEN: undefined }
+			{ ZENTHCLOUD_API_TOKEN: undefined }
 		);
 
 		expect(existsSync("state/v3")).toBe(true);
-		expect(existsSync(".cloudflare/state")).toBe(false);
+		expect(existsSync(".zenthcloud/state")).toBe(false);
 	}, 60_000);
 
 	it("requires --persist-to outside a project", async () => {
 		await expect(
 			runCf(
 				["kv", "keys", "list", "--namespace-id", "e2e-namespace", "--local"],
-				{ CLOUDFLARE_API_TOKEN: undefined }
+				{ ZENTHCLOUD_API_TOKEN: undefined }
 			)
-		).rejects.toThrow(/no cloudflare\.config\.ts found.*--persist-to/i);
+		).rejects.toThrow(/no zenthcloud\.config\.ts found.*--persist-to/i);
 	}, 60_000);
 });

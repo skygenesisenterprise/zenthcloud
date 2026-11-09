@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -55,7 +55,7 @@ var v5ComprehensiveConfig string
 // with DUAL test cases: from v4 legacy provider and from v5 current provider
 //
 // Tests transformation of:
-// - Resource rename: cloudflare_device_posture_integration → cloudflare_zero_trust_device_posture_integration
+// - Resource rename: zenthcloud_device_posture_integration → zenthcloud_zero_trust_device_posture_integration
 // - Config structure: TypeList block → SingleNested attribute
 // - interval field: Optional → Required (default "24h" if missing)
 // - identifier field: Removed in v5
@@ -84,18 +84,18 @@ func TestMigrateZeroTrustDevicePostureIntegration_V4ToV5_Basic(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Zero Trust resources require API_KEY + EMAIL, not API_TOKEN
-			originalToken := os.Getenv("CLOUDFLARE_API_TOKEN")
+			originalToken := os.Getenv("ZENTHCLOUD_API_TOKEN")
 			if originalToken != "" {
-				os.Unsetenv("CLOUDFLARE_API_TOKEN")
-				defer os.Setenv("CLOUDFLARE_API_TOKEN", originalToken)
+				os.Unsetenv("ZENTHCLOUD_API_TOKEN")
+				defer os.Setenv("ZENTHCLOUD_API_TOKEN", originalToken)
 			}
 
 			// Test setup - requires CrowdStrike credentials
-			clientID := os.Getenv("CLOUDFLARE_CROWDSTRIKE_CLIENT_ID")
-			clientSecret := os.Getenv("CLOUDFLARE_CROWDSTRIKE_CLIENT_SECRET")
-			apiURL := os.Getenv("CLOUDFLARE_CROWDSTRIKE_API_URL")
-			customerID := os.Getenv("CLOUDFLARE_CROWDSTRIKE_CUSTOMER_ID")
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			clientID := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_CLIENT_ID")
+			clientSecret := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_CLIENT_SECRET")
+			apiURL := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_API_URL")
+			customerID := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_CUSTOMER_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 			rnd := utils.GenerateRandomResourceName()
 			name := "tf-migrate-" + rnd
@@ -115,8 +115,8 @@ func TestMigrateZeroTrustDevicePostureIntegration_V4ToV5_Basic(t *testing.T) {
 				// Use external v4 provider (will create version=0 state)
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -138,24 +138,24 @@ func TestMigrateZeroTrustDevicePostureIntegration_V4ToV5_Basic(t *testing.T) {
 						[]statecheck.StateCheck{
 							// Verify critical identifier fields
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("account_id"),
 								knownvalue.StringExact(accountID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("name"),
 								knownvalue.StringExact(name),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("type"),
 								knownvalue.StringExact("crowdstrike_s2s"),
 							),
 
 							// Verify interval field (optional→required transformation)
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("interval"),
 								knownvalue.StringExact("24h"),
 							),
@@ -163,24 +163,24 @@ func TestMigrateZeroTrustDevicePostureIntegration_V4ToV5_Basic(t *testing.T) {
 							// Verify config fields (array→pointer transformation)
 							// Config should be converted from block [{...}] to attribute {...}
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("config").AtMapKey("api_url"),
 								knownvalue.StringExact(apiURL),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("config").AtMapKey("client_id"),
 								knownvalue.StringExact(clientID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("config").AtMapKey("customer_id"),
 								knownvalue.StringExact(customerID),
 							),
 
 							// Verify ID exists (API-assigned)
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("id"),
 								knownvalue.NotNull(),
 							),
@@ -196,7 +196,7 @@ func TestMigrateZeroTrustDevicePostureIntegration_V4ToV5_Basic(t *testing.T) {
 // from deprecated resource name with DUAL test cases.
 //
 // Tests:
-// - Resource rename: cloudflare_device_posture_integration → cloudflare_zero_trust_device_posture_integration
+// - Resource rename: zenthcloud_device_posture_integration → zenthcloud_zero_trust_device_posture_integration
 // - Config block → attribute transformation
 // - Empty string → null conversion for optional fields
 func TestMigrateZeroTrustDevicePostureIntegration_V4ToV5_DeprecatedName(t *testing.T) {
@@ -223,17 +223,17 @@ func TestMigrateZeroTrustDevicePostureIntegration_V4ToV5_DeprecatedName(t *testi
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			originalToken := os.Getenv("CLOUDFLARE_API_TOKEN")
+			originalToken := os.Getenv("ZENTHCLOUD_API_TOKEN")
 			if originalToken != "" {
-				os.Unsetenv("CLOUDFLARE_API_TOKEN")
-				defer os.Setenv("CLOUDFLARE_API_TOKEN", originalToken)
+				os.Unsetenv("ZENTHCLOUD_API_TOKEN")
+				defer os.Setenv("ZENTHCLOUD_API_TOKEN", originalToken)
 			}
 
-			clientID := os.Getenv("CLOUDFLARE_CROWDSTRIKE_CLIENT_ID")
-			clientSecret := os.Getenv("CLOUDFLARE_CROWDSTRIKE_CLIENT_SECRET")
-			apiURL := os.Getenv("CLOUDFLARE_CROWDSTRIKE_API_URL")
-			customerID := os.Getenv("CLOUDFLARE_CROWDSTRIKE_CUSTOMER_ID")
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			clientID := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_CLIENT_ID")
+			clientSecret := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_CLIENT_SECRET")
+			apiURL := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_API_URL")
+			customerID := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_CUSTOMER_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 			rnd := utils.GenerateRandomResourceName()
 			name := fmt.Sprintf("tf-migrate-deprecated-%s", rnd)
@@ -250,8 +250,8 @@ func TestMigrateZeroTrustDevicePostureIntegration_V4ToV5_DeprecatedName(t *testi
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -272,38 +272,38 @@ func TestMigrateZeroTrustDevicePostureIntegration_V4ToV5_DeprecatedName(t *testi
 						[]statecheck.StateCheck{
 							// Verify resource was renamed
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("account_id"),
 								knownvalue.StringExact(accountID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("name"),
 								knownvalue.StringExact(name),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("type"),
 								knownvalue.StringExact("crowdstrike_s2s"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("interval"),
 								knownvalue.StringExact("24h"),
 							),
 							// Config should be converted from block to attribute
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("config").AtMapKey("api_url"),
 								knownvalue.StringExact(apiURL),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("config").AtMapKey("client_id"),
 								knownvalue.StringExact(clientID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("config").AtMapKey("customer_id"),
 								knownvalue.StringExact(customerID),
 							),
@@ -345,17 +345,17 @@ func TestMigrateZeroTrustDevicePostureIntegration_V4ToV5_CurrentName(t *testing.
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			originalToken := os.Getenv("CLOUDFLARE_API_TOKEN")
+			originalToken := os.Getenv("ZENTHCLOUD_API_TOKEN")
 			if originalToken != "" {
-				os.Unsetenv("CLOUDFLARE_API_TOKEN")
-				defer os.Setenv("CLOUDFLARE_API_TOKEN", originalToken)
+				os.Unsetenv("ZENTHCLOUD_API_TOKEN")
+				defer os.Setenv("ZENTHCLOUD_API_TOKEN", originalToken)
 			}
 
-			clientID := os.Getenv("CLOUDFLARE_CROWDSTRIKE_CLIENT_ID")
-			clientSecret := os.Getenv("CLOUDFLARE_CROWDSTRIKE_CLIENT_SECRET")
-			apiURL := os.Getenv("CLOUDFLARE_CROWDSTRIKE_API_URL")
-			customerID := os.Getenv("CLOUDFLARE_CROWDSTRIKE_CUSTOMER_ID")
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			clientID := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_CLIENT_ID")
+			clientSecret := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_CLIENT_SECRET")
+			apiURL := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_API_URL")
+			customerID := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_CUSTOMER_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 			rnd := utils.GenerateRandomResourceName()
 			name := fmt.Sprintf("tf-migrate-current-%s", rnd)
@@ -372,8 +372,8 @@ func TestMigrateZeroTrustDevicePostureIntegration_V4ToV5_CurrentName(t *testing.
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -394,38 +394,38 @@ func TestMigrateZeroTrustDevicePostureIntegration_V4ToV5_CurrentName(t *testing.
 						[]statecheck.StateCheck{
 							// Resource name should stay the same (already using current name)
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("account_id"),
 								knownvalue.StringExact(accountID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("name"),
 								knownvalue.StringExact(name),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("type"),
 								knownvalue.StringExact("crowdstrike_s2s"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("interval"),
 								knownvalue.StringExact("24h"),
 							),
 							// Config should be converted from block to attribute
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("config").AtMapKey("api_url"),
 								knownvalue.StringExact(apiURL),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("config").AtMapKey("client_id"),
 								knownvalue.StringExact(clientID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("config").AtMapKey("customer_id"),
 								knownvalue.StringExact(customerID),
 							),
@@ -468,17 +468,17 @@ func TestMigrateZeroTrustDevicePostureIntegration_V4ToV5_WithIdentifier(t *testi
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			originalToken := os.Getenv("CLOUDFLARE_API_TOKEN")
+			originalToken := os.Getenv("ZENTHCLOUD_API_TOKEN")
 			if originalToken != "" {
-				os.Unsetenv("CLOUDFLARE_API_TOKEN")
-				defer os.Setenv("CLOUDFLARE_API_TOKEN", originalToken)
+				os.Unsetenv("ZENTHCLOUD_API_TOKEN")
+				defer os.Setenv("ZENTHCLOUD_API_TOKEN", originalToken)
 			}
 
-			clientID := os.Getenv("CLOUDFLARE_CROWDSTRIKE_CLIENT_ID")
-			clientSecret := os.Getenv("CLOUDFLARE_CROWDSTRIKE_CLIENT_SECRET")
-			apiURL := os.Getenv("CLOUDFLARE_CROWDSTRIKE_API_URL")
-			customerID := os.Getenv("CLOUDFLARE_CROWDSTRIKE_CUSTOMER_ID")
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			clientID := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_CLIENT_ID")
+			clientSecret := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_CLIENT_SECRET")
+			apiURL := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_API_URL")
+			customerID := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_CUSTOMER_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 			rnd := utils.GenerateRandomResourceName()
 			name := fmt.Sprintf("tf-migrate-identifier-%s", rnd)
@@ -495,8 +495,8 @@ func TestMigrateZeroTrustDevicePostureIntegration_V4ToV5_WithIdentifier(t *testi
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -517,38 +517,38 @@ func TestMigrateZeroTrustDevicePostureIntegration_V4ToV5_WithIdentifier(t *testi
 						[]statecheck.StateCheck{
 							// Verify resource renamed and identifier removed
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("account_id"),
 								knownvalue.StringExact(accountID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("name"),
 								knownvalue.StringExact(name),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("type"),
 								knownvalue.StringExact("crowdstrike_s2s"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("interval"),
 								knownvalue.StringExact("24h"),
 							),
 							// Config should be converted from block to attribute
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("config").AtMapKey("api_url"),
 								knownvalue.StringExact(apiURL),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("config").AtMapKey("client_id"),
 								knownvalue.StringExact(clientID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd,
 								tfjsonpath.New("config").AtMapKey("customer_id"),
 								knownvalue.StringExact(customerID),
 							),
@@ -596,17 +596,17 @@ func TestMigrateZeroTrustDevicePostureIntegration_V4ToV5_Comprehensive(t *testin
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			originalToken := os.Getenv("CLOUDFLARE_API_TOKEN")
+			originalToken := os.Getenv("ZENTHCLOUD_API_TOKEN")
 			if originalToken != "" {
-				os.Unsetenv("CLOUDFLARE_API_TOKEN")
-				defer os.Setenv("CLOUDFLARE_API_TOKEN", originalToken)
+				os.Unsetenv("ZENTHCLOUD_API_TOKEN")
+				defer os.Setenv("ZENTHCLOUD_API_TOKEN", originalToken)
 			}
 
-			clientID := os.Getenv("CLOUDFLARE_CROWDSTRIKE_CLIENT_ID")
-			clientSecret := os.Getenv("CLOUDFLARE_CROWDSTRIKE_CLIENT_SECRET")
-			apiURL := os.Getenv("CLOUDFLARE_CROWDSTRIKE_API_URL")
-			customerID := os.Getenv("CLOUDFLARE_CROWDSTRIKE_CUSTOMER_ID")
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			clientID := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_CLIENT_ID")
+			clientSecret := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_CLIENT_SECRET")
+			apiURL := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_API_URL")
+			customerID := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_CUSTOMER_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 			rnd1 := utils.GenerateRandomResourceName()
 			rnd2 := utils.GenerateRandomResourceName()
@@ -627,8 +627,8 @@ func TestMigrateZeroTrustDevicePostureIntegration_V4ToV5_Comprehensive(t *testin
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -649,111 +649,111 @@ func TestMigrateZeroTrustDevicePostureIntegration_V4ToV5_Comprehensive(t *testin
 						[]statecheck.StateCheck{
 							// Resource 1: Verify deprecated name was renamed and identifier removed
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd1,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd1,
 								tfjsonpath.New("account_id"),
 								knownvalue.StringExact(accountID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd1,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd1,
 								tfjsonpath.New("name"),
 								knownvalue.StringExact(name1),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd1,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd1,
 								tfjsonpath.New("type"),
 								knownvalue.StringExact("crowdstrike_s2s"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd1,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd1,
 								tfjsonpath.New("interval"),
 								knownvalue.StringExact("1h"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd1,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd1,
 								tfjsonpath.New("config").AtMapKey("api_url"),
 								knownvalue.StringExact(apiURL),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd1,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd1,
 								tfjsonpath.New("config").AtMapKey("client_id"),
 								knownvalue.StringExact(clientID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd1,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd1,
 								tfjsonpath.New("config").AtMapKey("customer_id"),
 								knownvalue.StringExact(customerID),
 							),
 
 							// Resource 2: Verify current name preserved and unusual interval maintained
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd2,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd2,
 								tfjsonpath.New("account_id"),
 								knownvalue.StringExact(accountID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd2,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd2,
 								tfjsonpath.New("name"),
 								knownvalue.StringExact(name2),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd2,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd2,
 								tfjsonpath.New("type"),
 								knownvalue.StringExact("crowdstrike_s2s"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd2,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd2,
 								tfjsonpath.New("interval"),
 								knownvalue.StringExact("6h"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd2,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd2,
 								tfjsonpath.New("config").AtMapKey("api_url"),
 								knownvalue.StringExact(apiURL),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd2,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd2,
 								tfjsonpath.New("config").AtMapKey("client_id"),
 								knownvalue.StringExact(clientID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd2,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd2,
 								tfjsonpath.New("config").AtMapKey("customer_id"),
 								knownvalue.StringExact(customerID),
 							),
 
 							// Resource 3: Verify deprecated name renamed and standard interval preserved
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd3,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd3,
 								tfjsonpath.New("account_id"),
 								knownvalue.StringExact(accountID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd3,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd3,
 								tfjsonpath.New("name"),
 								knownvalue.StringExact(name3),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd3,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd3,
 								tfjsonpath.New("type"),
 								knownvalue.StringExact("crowdstrike_s2s"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd3,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd3,
 								tfjsonpath.New("interval"),
 								knownvalue.StringExact("24h"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd3,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd3,
 								tfjsonpath.New("config").AtMapKey("api_url"),
 								knownvalue.StringExact(apiURL),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd3,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd3,
 								tfjsonpath.New("config").AtMapKey("client_id"),
 								knownvalue.StringExact(clientID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_zero_trust_device_posture_integration."+rnd3,
+								"zenthcloud_zero_trust_device_posture_integration."+rnd3,
 								tfjsonpath.New("config").AtMapKey("customer_id"),
 								knownvalue.StringExact(customerID),
 							),

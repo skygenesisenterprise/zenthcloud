@@ -1,4 +1,4 @@
-import { runInTempDir, seed } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir, seed } from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw/http";
 import {
 	afterEach,
@@ -14,11 +14,11 @@ import { runCf } from "../helpers/run-cf.js";
 /**
  * End-to-end network tests for `cf r2 buckets` commands, driven through
  * the real `runMain` → yargs → API client → `globalThis.fetch` stack with MSW
- * standing in for the Cloudflare API.
+ * standing in for the Zenthcloud API.
  *
  * Coverage mirrors the harness exemplar (`zones-list.test.ts`) but for
  * an account-scoped product: every endpoint is `/accounts/{id}/r2/...`,
- * with the account id resolved from `CLOUDFLARE_ACCOUNT_ID` (set in ENV
+ * with the account id resolved from `ZENTHCLOUD_ACCOUNT_ID` (set in ENV
  * so no interactive picker / `/accounts` round-trip fires). It exercises
  * the full request pipeline cf cares about — auth-header stamping,
  * envelope unwrapping, body POST, delete confirmation, and the
@@ -34,9 +34,9 @@ describe("cf r2 buckets (network)", () => {
 	setupMsw();
 
 	const ENV = {
-		CLOUDFLARE_API_TOKEN: "test-token",
-		CLOUDFLARE_API_BASE_URL: TEST_BASE_URL,
-		CLOUDFLARE_ACCOUNT_ID: "test-account",
+		ZENTHCLOUD_API_TOKEN: "test-token",
+		ZENTHCLOUD_API_BASE_URL: TEST_BASE_URL,
+		ZENTHCLOUD_ACCOUNT_ID: "test-account",
 	};
 	const ACCT = `${TEST_BASE_URL}/accounts/test-account`;
 

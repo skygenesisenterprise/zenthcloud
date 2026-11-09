@@ -1,8 +1,8 @@
-// Copyright (c) 2024 Cloudflare, Inc.
+// Copyright (c) 2024 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-365:
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-365:
 // ZlibStream::constructor did not validate the mode byte.
 // An invalid mode caused KJ_UNREACHABLE in initializeZlib()
 // after writeStream() set writing=true, leaving the flag stuck.

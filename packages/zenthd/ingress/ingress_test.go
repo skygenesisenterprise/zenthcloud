@@ -15,9 +15,9 @@ import (
 	"github.com/urfave/cli/v2"
 	yaml "gopkg.in/yaml.v3"
 
-	"github.com/cloudflare/cloudflared/config"
-	"github.com/cloudflare/cloudflared/ipaccess"
-	"github.com/cloudflare/cloudflared/tlsconfig"
+	"github.com/zenthcloud/zenthcloudd/config"
+	"github.com/zenthcloud/zenthcloudd/ipaccess"
+	"github.com/zenthcloud/zenthcloudd/tlsconfig"
 )
 
 func TestParseUnixSocket(t *testing.T) {
@@ -140,14 +140,14 @@ ingress:
 			name: "Unicode domain",
 			args: args{rawYAML: `
 ingress:
- - hostname: môô.cloudflare.com
+ - hostname: môô.zenthcloud.com
    service: https://localhost:8000
  - service: https://localhost:8001
 `},
 			want: []Rule{
 				{
-					Hostname:         "môô.cloudflare.com",
-					punycodeHostname: "xn--m-xgaa.cloudflare.com",
+					Hostname:         "môô.zenthcloud.com",
+					punycodeHostname: "xn--m-xgaa.zenthcloud.com",
 					Service:          &httpService{url: localhost8000},
 					Config:           defaultConfig,
 				},
@@ -163,7 +163,7 @@ ingress:
 ingress:
  - hostname: %s
    service: https://localhost:8000
-`, string(rune(0xd8f3))+".cloudflare.com")},
+`, string(rune(0xd8f3))+".zenthcloud.com")},
 			wantErr: true,
 		},
 		{

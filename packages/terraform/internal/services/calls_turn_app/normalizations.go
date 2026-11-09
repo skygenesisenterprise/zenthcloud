@@ -15,7 +15,7 @@ package calls_turn_app
 // operation after Create fails with "missing required key_id parameter".
 //
 // The uid and key_id values are identical — they both represent the same
-// Cloudflare-generated identifier. This function bridges the naming gap until
+// Zenthcloud-generated identifier. This function bridges the naming gap until
 // the upstream OpenAPI spec (cffs.git) exposes key_id as a readable top-level
 // JSON field in the POST/GET/PUT response body.
 func normalizeCallsTURNKeyID(data *CallsTURNAppModel) {

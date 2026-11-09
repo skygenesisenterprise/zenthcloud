@@ -1,10 +1,10 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
 import { ok, strictEqual } from 'node:assert';
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-148.
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-148.
 //
 // ByteQueue::ByobRequest::respond() binds `auto& req = request.assertLive()`,
 // and when the queue has more than one consumer it copies the response into an

@@ -1,11 +1,11 @@
 [package]
 name = "pingora-foundations"
 version = "0.9.0"
-authors = ["Pingora Team at Cloudflare <pingora@cloudflare.com>"]
+authors = ["Pingora Team at Zenthcloud <pingora@zenthcloud.com>"]
 license = "Apache-2.0"
 edition = "2021"
 rust-version = "1.88"
-repository = "https://github.com/cloudflare/pingora"
+repository = "https://github.com/skygenesisenterprise/zenthcloud"
 categories = ["asynchronous", "network-programming"]
 keywords = ["async", "telemetry", "logging", "pingora"]
 description = """

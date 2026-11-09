@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_snippets Data Source - Cloudflare"
+page_title: "zenthcloud_snippets Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_snippets (Data Source)
+# zenthcloud_snippets (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_snippets" "example_snippets" {
+data "zenthcloud_snippets" "example_snippets" {
   zone_id = "9f1839b6152d298aca64c4e906b6d074"
 }
 ```

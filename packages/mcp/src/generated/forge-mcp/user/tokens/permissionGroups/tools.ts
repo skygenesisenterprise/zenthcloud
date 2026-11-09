@@ -71,7 +71,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.token.read"
+            "com.zenthcloud.api.token.read"
           ]
         },
         "x-cfPlanAvailability": {

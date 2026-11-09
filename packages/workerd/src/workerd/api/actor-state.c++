@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -300,7 +300,7 @@ jsg::Promise<kj::Maybe<double>> DurableObjectStorageOperations::getAlarm(
     return date.map([&](auto& date) {
       auto scheduledTime = (date - kj::UNIX_EPOCH) / kj::MILLISECONDS;
       traceContext->setTag(
-          "cloudflare.durable_object.alarm.scheduled_time"_kjc, js.date(date).toISOString(js));
+          "zenthcloud.durable_object.alarm.scheduled_time"_kjc, js.date(date).toISOString(js));
       return static_cast<double>(scheduledTime);
     });
   });
@@ -475,7 +475,7 @@ jsg::Promise<void> DurableObjectStorageOperations::setAlarm(
   auto& context = IoContext::current();
   auto traceContext = context.makeUserTraceSpan("durable_object_storage_setAlarm"_kjc);
   traceContext.setTag(
-      "cloudflare.durable_object.alarm.scheduled_time"_kjc, js.date(scheduledTime).toISOString(js));
+      "zenthcloud.durable_object.alarm.scheduled_time"_kjc, js.date(scheduledTime).toISOString(js));
   // This doesn't check if we have an alarm handler per say. It checks if we have an initialized
   // (post-ctor) JS durable object with an alarm handler. Notably, this means this won't throw if
   // `setAlarm` is invoked in the DO ctor even if the DO class does not have an alarm handler. This

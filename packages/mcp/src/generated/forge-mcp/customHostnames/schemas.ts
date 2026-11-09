@@ -74,8 +74,8 @@ export const tls$$certificates$$and$$hostnames_sslpost: JSONObject = {
       ],
       "type": "string"
     },
-    "cloudflare_branding": {
-      "description": "Whether or not to add Cloudflare Branding for the order.  This will add a subdomain of sni.cloudflaressl.com as the Common Name if set to true.",
+    "zenthcloud_branding": {
+      "description": "Whether or not to add Zenthcloud Branding for the order.  This will add a subdomain of sni.zenthcloudssl.com as the Common Name if set to true.",
       "type": "boolean"
     },
     "custom_cert_bundle": {

@@ -5,9 +5,9 @@ package account_member
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/accounts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/accounts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -28,17 +28,17 @@ type AccountMembersDataSourceModel struct {
 
 func (m *AccountMembersDataSourceModel) toListParams(_ context.Context) (params accounts.MemberListParams, diags diag.Diagnostics) {
 	params = accounts.MemberListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Direction.IsNull() {
-		params.Direction = cloudflare.F(accounts.MemberListParamsDirection(m.Direction.ValueString()))
+		params.Direction = zenthcloud.F(accounts.MemberListParamsDirection(m.Direction.ValueString()))
 	}
 	if !m.Order.IsNull() {
-		params.Order = cloudflare.F(accounts.MemberListParamsOrder(m.Order.ValueString()))
+		params.Order = zenthcloud.F(accounts.MemberListParamsOrder(m.Order.ValueString()))
 	}
 	if !m.Status.IsNull() {
-		params.Status = cloudflare.F(accounts.MemberListParamsStatus(m.Status.ValueString()))
+		params.Status = zenthcloud.F(accounts.MemberListParamsStatus(m.Status.ValueString()))
 	}
 
 	return

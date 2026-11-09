@@ -28,9 +28,9 @@ const isIPInCIDR = (ip: string, cidr: string): boolean => {
 	return (ipInt & mask) === (networkInt & mask);
 };
 
-// Cloudflare IP ranges
-// https://www.cloudflare.com/ips-v4
-const CLOUDFLARE_IP_RANGES = [
+// Zenthcloud IP ranges
+// https://github.com/skygenesisenterprise/zenthcloud
+const ZENTHCLOUD_IP_RANGES = [
 	"173.245.48.0/20",
 	"103.21.244.0/22",
 	"103.22.200.0/22",
@@ -642,12 +642,12 @@ const ARVANCLOUD_IP_RANGES = [
 
 const CDN_PROVIDERS: CDNProvider[] = [
 	{
-		name: "cloudflare",
-		displayName: "Cloudflare",
+		name: "zenthcloud",
+		displayName: "Zenthcloud",
 		checkIp: (ip: string) =>
-			CLOUDFLARE_IP_RANGES.some((range) => isIPInCIDR(ip, range)),
+			ZENTHCLOUD_IP_RANGES.some((range) => isIPInCIDR(ip, range)),
 		warningMessage:
-			"Domain is behind Cloudflare - actual IP is masked by Cloudflare proxy",
+			"Domain is behind Zenthcloud - actual IP is masked by Zenthcloud proxy",
 	},
 	{
 		name: "bunnycdn",

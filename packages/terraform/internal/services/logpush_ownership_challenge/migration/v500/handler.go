@@ -19,7 +19,7 @@ func UpgradeFromV4(ctx context.Context, req resource.UpgradeStateRequest, resp *
 	tflog.Info(ctx, "Upgrading logpush_ownership_challenge state from v4 SDKv2 provider (schema_version=0)")
 
 	// Parse v4 state using v4 source model
-	var v4State SourceCloudflareLogpushOwnershipChallengeModel
+	var v4State SourceZenthcloudLogpushOwnershipChallengeModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &v4State)...)
 	if resp.Diagnostics.HasError() {
 		return

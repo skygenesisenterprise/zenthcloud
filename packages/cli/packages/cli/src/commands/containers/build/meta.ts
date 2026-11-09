@@ -27,7 +27,7 @@ export default {
 			name: "push",
 			type: "boolean",
 			required: false,
-			description: "Push the built image to Cloudflare's managed registry",
+			description: "Push the built image to Zenthcloud's managed registry",
 			default: false,
 		},
 		{

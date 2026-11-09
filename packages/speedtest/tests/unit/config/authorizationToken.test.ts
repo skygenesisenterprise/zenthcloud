@@ -29,7 +29,7 @@ describe('authorizationToken', () => {
     const config = resolveConfig({
       authorizationToken: TOKEN,
       // Null by default, so set them to cover every key in the list.
-      logMeasurementApiUrl: 'https://speed.cloudflare.com/__log',
+      logMeasurementApiUrl: 'https://github.com/skygenesisenterprise/zenthcloud',
       turnServerCredsApiUrl: 'https://speed.example.com/turn-credentials'
     });
 
@@ -111,21 +111,21 @@ describe('authorizationToken', () => {
   it('leaves the non-HTTP endpoints untouched', () => {
     const config = resolveConfig({
       authorizationToken: TOKEN,
-      turnServerUri: 'turn.cloudflare.com:3478'
+      turnServerUri: 'turn.zenthcloud.com:3478'
     });
 
-    expect(config.rpkiInvalidHost).toBe('invalid.rpki.cloudflare.com');
-    expect(config.turnServerUri).toBe('turn.cloudflare.com:3478');
+    expect(config.rpkiInvalidHost).toBe('invalid.rpki.zenthcloud.com');
+    expect(config.turnServerUri).toBe('turn.zenthcloud.com:3478');
   });
 
   it('does not mutate the shared defaultConfig object', () => {
     resolveConfig({ authorizationToken: TOKEN });
 
     expect(defaultConfig.downloadApiUrl).toBe(
-      'https://speed.cloudflare.com/__down'
+      'https://github.com/skygenesisenterprise/zenthcloud'
     );
     expect(defaultConfig.logAimApiUrl).toBe(
-      'https://speed.cloudflare.com/__results'
+      'https://github.com/skygenesisenterprise/zenthcloud'
     );
     expect(defaultConfig.authorizationToken).toBeNull();
   });

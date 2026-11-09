@@ -17,14 +17,14 @@ export const tools: readonly Tool[] = [
   {
     name: "zones_h2Prioritization_edit",
     title: "Change HTTP/2 Prioritization setting",
-    description: "HTTP/2 Prioritization controls the order in which assets are delivered to browsers.\nCloudflare's HTTP/2 Prioritization overrides the default browser prioritization order,\nimproving the loading performance of web pages.\n\nPATCH /zones/{zone_id}/settings/h2_prioritization",
+    description: "HTTP/2 Prioritization controls the order in which assets are delivered to browsers.\nZenthcloud's HTTP/2 Prioritization overrides the default browser prioritization order,\nimproving the loading performance of web pages.\n\nPATCH /zones/{zone_id}/settings/h2_prioritization",
     inputSchema: {
       type: "object",
       properties: {
         "body": {
           "properties": {
             "value": {
-              "description": "Controls HTTP/2 Prioritization behavior:\n- \"off\": Use browser default prioritization.\n- \"on\": Use Cloudflare's optimized prioritization.\n- \"custom\": Use custom prioritization rules.",
+              "description": "Controls HTTP/2 Prioritization behavior:\n- \"off\": Use browser default prioritization.\n- \"on\": Use Zenthcloud's optimized prioritization.\n- \"custom\": Use custom prioritization rules.",
               "enum": [
                 "off",
                 "on",
@@ -141,7 +141,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zones_h2Prioritization_get",
     title: "Get HTTP/2 Prioritization setting",
-    description: "HTTP/2 Prioritization controls the order in which assets are delivered to browsers.\nCloudflare's HTTP/2 Prioritization overrides the default browser prioritization order,\nimproving the loading performance of web pages.\n\nGET /zones/{zone_id}/settings/h2_prioritization",
+    description: "HTTP/2 Prioritization controls the order in which assets are delivered to browsers.\nZenthcloud's HTTP/2 Prioritization overrides the default browser prioritization order,\nimproving the loading performance of web pages.\n\nGET /zones/{zone_id}/settings/h2_prioritization",
     inputSchema: {
       type: "object",
       properties: {

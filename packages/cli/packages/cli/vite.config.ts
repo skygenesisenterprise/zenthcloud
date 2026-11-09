@@ -79,7 +79,7 @@ export default defineConfig({
 		server: {
 			deps: {
 				// Native loading of workers-auth would bypass the Undici alias.
-				inline: ["@cloudflare/workers-utils", "@cloudflare/workers-auth"],
+				inline: ["@zenthcloud/workers-utils", "@zenthcloud/workers-auth"],
 			},
 		},
 	},

@@ -25,7 +25,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.positional("group-id", {
 			type: "string",
 			description:
-				"The group identifier for a SCIM Group resource. For system groups this is prefixed \`cloudflare-v1-<permissionGroupTag>\`; for custom user groups this is a UUID-style tag.",
+				"The group identifier for a SCIM Group resource. For system groups this is prefixed \`zenthcloud-v1-<permissionGroupTag>\`; for custom user groups this is a UUID-style tag.",
 			demandOption: true,
 		})
 		.option("dry-run", {
@@ -56,7 +56,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf scim groups get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/scim/v2/Groups/${argv["group-id"] == null ? "<group-id>" : encodeURIComponent(String(argv["group-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/scim/v2/Groups/${argv["group-id"] == null ? "<group-id>" : encodeURIComponent(String(argv["group-id"]))}`,
 						pathParams: { "group-id": String(argv["group-id"] ?? "") },
 						bodyKind: "none",
 					});

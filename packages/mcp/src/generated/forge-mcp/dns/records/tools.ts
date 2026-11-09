@@ -92,7 +92,7 @@ export const tools: readonly Tool[] = [
   {
     name: "dns_records_batch",
     title: "Batch DNS Records",
-    description: "Send a Batch of DNS Record API calls to be executed together.\n\nNotes:\n- Although Cloudflare will execute the batched operations in a single database transaction, Cloudflare's distributed KV store must treat each record change as a single key-value pair. This means that the propagation of changes is not atomic. See [the documentation](https://developers.cloudflare.com/dns/manage-dns-records/how-to/batch-record-changes/ \"Batch DNS records\") for more information.\n- The operations you specify within the /batch request body are always executed in the following order:\n\n    - Deletes\n    - Patches\n    - Puts\n    - Posts\n\nPOST /zones/{zone_id}/dns_records/batch",
+    description: "Send a Batch of DNS Record API calls to be executed together.\n\nNotes:\n- Although Zenthcloud will execute the batched operations in a single database transaction, Zenthcloud's distributed KV store must treat each record change as a single key-value pair. This means that the propagation of changes is not atomic. See [the documentation](https://github.com/skygenesisenterprise/zenthcloud \"Batch DNS records\") for more information.\n- The operations you specify within the /batch request body are always executed in the following order:\n\n    - Deletes\n    - Patches\n    - Puts\n    - Posts\n\nPOST /zones/{zone_id}/dns_records/batch",
     inputSchema: {
       type: "object",
       properties: {
@@ -117,7 +117,7 @@ export const tools: readonly Tool[] = [
           "properties": {
             "include_shadow_metadata": {
               "default": false,
-              "description": "Whether to include shadow metadata in the `meta` field of each record in the response. See [Shadowed records](https://developers.cloudflare.com/dns/manage-dns-records/reference/shadowed-records).",
+              "description": "Whether to include shadow metadata in the `meta` field of each record in the response. See [Shadowed records](https://github.com/skygenesisenterprise/zenthcloud).",
               "type": "boolean"
             }
           },
@@ -306,7 +306,7 @@ export const tools: readonly Tool[] = [
           "properties": {
             "include_shadow_metadata": {
               "default": false,
-              "description": "Whether to include shadow metadata in the `meta` field of each record in the response. See [Shadowed records](https://developers.cloudflare.com/dns/manage-dns-records/reference/shadowed-records).",
+              "description": "Whether to include shadow metadata in the `meta` field of each record in the response. See [Shadowed records](https://github.com/skygenesisenterprise/zenthcloud).",
               "type": "boolean"
             }
           },
@@ -606,7 +606,7 @@ export const tools: readonly Tool[] = [
           "properties": {
             "include_shadow_metadata": {
               "default": false,
-              "description": "Whether to include shadow metadata in the `meta` field of each record in the response. See [Shadowed records](https://developers.cloudflare.com/dns/manage-dns-records/reference/shadowed-records).",
+              "description": "Whether to include shadow metadata in the `meta` field of each record in the response. See [Shadowed records](https://github.com/skygenesisenterprise/zenthcloud).",
               "type": "boolean"
             }
           },
@@ -762,7 +762,7 @@ export const tools: readonly Tool[] = [
   {
     name: "dns_records_export",
     title: "Export DNS Records",
-    description: "You can export your [BIND config](https://en.wikipedia.org/wiki/Zone_file \"Zone file\") through this endpoint.\n\nSee [the documentation](https://developers.cloudflare.com/dns/manage-dns-records/how-to/import-and-export/ \"Import and export records\") for more information.\n\nGET /zones/{zone_id}/dns_records/export",
+    description: "You can export your [BIND config](https://en.wikipedia.org/wiki/Zone_file \"Zone file\") through this endpoint.\n\nSee [the documentation](https://github.com/skygenesisenterprise/zenthcloud \"Import and export records\") for more information.\n\nGET /zones/{zone_id}/dns_records/export",
     inputSchema: {
       type: "object",
       properties: {
@@ -857,7 +857,7 @@ export const tools: readonly Tool[] = [
           "properties": {
             "include_shadow_metadata": {
               "default": false,
-              "description": "Whether to include shadow metadata in the `meta` field of each record in the response. See [Shadowed records](https://developers.cloudflare.com/dns/manage-dns-records/reference/shadowed-records).",
+              "description": "Whether to include shadow metadata in the `meta` field of each record in the response. See [Shadowed records](https://github.com/skygenesisenterprise/zenthcloud).",
               "type": "boolean"
             }
           },
@@ -983,7 +983,7 @@ export const tools: readonly Tool[] = [
   {
     name: "dns_records_import",
     title: "Import DNS Records",
-    description: "You can upload your [BIND config](https://en.wikipedia.org/wiki/Zone_file \"Zone file\") through this endpoint. It assumes that cURL is called from a location with bind_config.txt (valid BIND config) present.\n\nSee [the documentation](https://developers.cloudflare.com/dns/manage-dns-records/how-to/import-and-export/ \"Import and export records\") for more information.\n\nPOST /zones/{zone_id}/dns_records/import",
+    description: "You can upload your [BIND config](https://en.wikipedia.org/wiki/Zone_file \"Zone file\") through this endpoint. It assumes that cURL is called from a location with bind_config.txt (valid BIND config) present.\n\nSee [the documentation](https://github.com/skygenesisenterprise/zenthcloud \"Import and export records\") for more information.\n\nPOST /zones/{zone_id}/dns_records/import",
     inputSchema: {
       type: "object",
       properties: {
@@ -995,7 +995,7 @@ export const tools: readonly Tool[] = [
             },
             "proxied": {
               "default": "false",
-              "description": "Whether or not proxiable records should receive the performance and security benefits of Cloudflare.\n\nThe value should be either `true` or `false`.",
+              "description": "Whether or not proxiable records should receive the performance and security benefits of Zenthcloud.\n\nThe value should be either `true` or `false`.",
               "type": "string"
             }
           },
@@ -1160,7 +1160,7 @@ export const tools: readonly Tool[] = [
             },
             "include_shadow_metadata": {
               "default": false,
-              "description": "Whether to include shadow metadata in the `meta` field of each record in the response. See [Shadowed records](https://developers.cloudflare.com/dns/manage-dns-records/reference/shadowed-records).",
+              "description": "Whether to include shadow metadata in the `meta` field of each record in the response. See [Shadowed records](https://github.com/skygenesisenterprise/zenthcloud).",
               "type": "boolean"
             },
             "match": {
@@ -1216,7 +1216,7 @@ export const tools: readonly Tool[] = [
             },
             "proxied": {
               "default": false,
-              "description": "Whether the record is receiving the performance and security benefits of Cloudflare.",
+              "description": "Whether the record is receiving the performance and security benefits of Zenthcloud.",
               "type": "boolean"
             },
             "search": {
@@ -1224,11 +1224,11 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "shadowed_by_name": {
-              "description": "Filters the response to records at or below the specified NS delegation name. NS, DS, and NSEC records at the delegation name are excluded because they are not shadowed by that delegation. Those record types are included only when they exist below the delegation. The value must be a non-apex subdomain of the zone. Requires `include_shadow_metadata=true`. See [Shadowed records](https://developers.cloudflare.com/dns/manage-dns-records/reference/shadowed-records).",
+              "description": "Filters the response to records at or below the specified NS delegation name. NS, DS, and NSEC records at the delegation name are excluded because they are not shadowed by that delegation. Those record types are included only when they exist below the delegation. The value must be a non-apex subdomain of the zone. Requires `include_shadow_metadata=true`. See [Shadowed records](https://github.com/skygenesisenterprise/zenthcloud).",
               "type": "string"
             },
             "shadowing_name": {
-              "description": "Returns NS records that shadow the given name, searching at the name itself and each of its ancestor names within the zone, excluding the zone apex. The value must be a subdomain of the zone; the zone apex is not accepted. See [Shadowed records](https://developers.cloudflare.com/dns/manage-dns-records/reference/shadowed-records).",
+              "description": "Returns NS records that shadow the given name, searching at the name itself and each of its ancestor names within the zone, excluding the zone apex. The value must be a subdomain of the zone; the zone apex is not accepted. See [Shadowed records](https://github.com/skygenesisenterprise/zenthcloud).",
               "type": "string"
             },
             "tag": {
@@ -1875,7 +1875,7 @@ export const tools: readonly Tool[] = [
           "properties": {
             "include_shadow_metadata": {
               "default": false,
-              "description": "Whether to include shadow metadata in the `meta` field of each record in the response. See [Shadowed records](https://developers.cloudflare.com/dns/manage-dns-records/reference/shadowed-records).",
+              "description": "Whether to include shadow metadata in the `meta` field of each record in the response. See [Shadowed records](https://github.com/skygenesisenterprise/zenthcloud).",
               "type": "boolean"
             }
           },

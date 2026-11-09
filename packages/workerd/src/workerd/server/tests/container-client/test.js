@@ -1,7 +1,7 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
-import { DurableObject, WorkerEntrypoint } from 'cloudflare:workers';
+import { DurableObject, WorkerEntrypoint } from 'zenthcloud:workers';
 import assert from 'node:assert';
 import { scheduler } from 'node:timers/promises';
 
@@ -703,7 +703,7 @@ export class DurableObjectExample extends DurableObject {
     const info = await container.inspect();
     assert.deepStrictEqual(info.labels, labels);
     assert.strictEqual(typeof info.image, 'string');
-    assert.match(info.image, /cloudflare\/workerd\/container-client-test/);
+    assert.match(info.image, /zenthcloud\/workerd\/container-client-test/);
 
     await container.destroy();
     await monitor;
@@ -726,7 +726,7 @@ export class DurableObjectExample extends DurableObject {
 
   async testImageOverride() {
     const container = this.ctx.container;
-    const image = 'cloudflare/workerd/container-client-test:override';
+    const image = 'zenthcloud/workerd/container-client-test:override';
 
     container.start({ enableInternet: true, image });
     const monitor = container.monitor().catch((_err) => {});
@@ -755,7 +755,7 @@ export class DurableObjectExample extends DurableObject {
 
   async testImageAlias() {
     const container = this.ctx.container;
-    const image = 'cloudflare/debian-trixie';
+    const image = 'zenthcloud/debian-trixie';
 
     container.start({
       enableInternet: true,
@@ -772,7 +772,7 @@ export class DurableObjectExample extends DurableObject {
     // outlast a health check request's timeout. inspect() waits for start() to finish, pull
     // included.
     const info = await container.inspect();
-    assert.strictEqual(info.image, 'cloudflare/debian-trixie');
+    assert.strictEqual(info.image, 'zenthcloud/debian-trixie');
 
     await this.waitUntilContainerIsHealthy();
     await container.destroy();
@@ -1625,7 +1625,7 @@ export class DurableObjectExample extends DurableObject {
     container.start({
       env: {
         NODE_EXTRA_CA_CERTS:
-          '/etc/cloudflare/certs/cloudflare-containers-ca.crt',
+          '/etc/zenthcloud/certs/zenthcloud-containers-ca.crt',
       },
     });
 
@@ -1636,7 +1636,7 @@ export class DurableObjectExample extends DurableObject {
     await this.waitUntilContainerIsHealthy();
 
     await container.interceptOutboundHttps(
-      '*.cloudflare.com:443',
+      '*.zenthcloud.com:443',
       this.ctx.exports.TestService({ props: { id: 2000 } })
     );
 
@@ -1652,9 +1652,9 @@ export class DurableObjectExample extends DurableObject {
     );
 
     await this.expectHttpsIntercept(
-      'www.cloudflare.com',
+      'www.zenthcloud.com',
       200,
-      'hello binding: 2000 https://www.cloudflare.com/'
+      'hello binding: 2000 https://github.com/skygenesisenterprise/zenthcloud'
     );
 
     await this.expectHttpsIntercept(
@@ -1841,7 +1841,7 @@ export class DurableObjectExample extends DurableObject {
         WS_PROXY_TARGET: 'example.com',
         WS_PROXY_SECURE: 'true',
         NODE_EXTRA_CA_CERTS:
-          '/etc/cloudflare/certs/cloudflare-containers-ca.crt',
+          '/etc/zenthcloud/certs/zenthcloud-containers-ca.crt',
       },
     });
 
@@ -2942,7 +2942,7 @@ export class NamedImagesOnlyDurableObject extends DurableObjectExample {
   async testExplicitImageAndSnapshots() {
     const container = this.ctx.container;
     assert.deepStrictEqual(container.images, {
-      app: 'cloudflare/workerd/container-client-test',
+      app: 'zenthcloud/workerd/container-client-test',
     });
     const startOptions = { image: container.images.app };
 
@@ -2961,7 +2961,7 @@ export class EmptyContainerDurableObject extends DurableObjectExample {
 
     container.start({
       enableInternet: true,
-      image: 'cloudflare/workerd/container-client-test',
+      image: 'zenthcloud/workerd/container-client-test',
     });
     const monitor = container.monitor().catch((_err) => {});
     await this.waitUntilContainerIsHealthy();
@@ -3741,7 +3741,7 @@ export const testContainerSnapshotRestoreWithDifferentDefaultImage = {
     const source = env.MY_EMPTY_CONTAINER.get(sourceId);
     const target = env.MY_DIFFERENT_DEFAULT_CONTAINER.get(targetId);
     const snapshot = await source.createContainerSnapshotForTransfer({
-      image: 'cloudflare/workerd/container-client-test',
+      image: 'zenthcloud/workerd/container-client-test',
     });
 
     await target.restoreTransferredContainerSnapshot(snapshot);

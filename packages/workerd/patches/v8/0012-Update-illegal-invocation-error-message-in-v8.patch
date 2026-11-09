@@ -3,7 +3,7 @@ From: James M Snell <jasnell@gmail.com>
 Date: Tue, 9 Jul 2024 08:37:05 -0700
 Subject: Update illegal invocation error message in v8
 
-Signed-off-by: James M Snell <jsnell@cloudflare.com>
+Signed-off-by: James M Snell <jsnell@zenthcloud.com>
 
 diff --git a/src/common/message-template.h b/src/common/message-template.h
 index 2900d2381fa3d9a6d0c1ded7dcfdae559d145064..e3b63554a796bcf261c083922bdc48d3eddd272b 100644
@@ -17,7 +17,7 @@ index 2900d2381fa3d9a6d0c1ded7dcfdae559d145064..e3b63554a796bcf261c083922bdc48d3
 +  T(IllegalInvocation,                                                         \
 +    "Illegal invocation: function called with incorrect `this` reference. "    \
 +    "See "                                                                     \
-+    "https://developers.cloudflare.com/workers/observability/errors/"          \
++    "https://github.com/skygenesisenterprise/zenthcloud"          \
 +    "#illegal-invocation-errors for details.")                                 \
    T(ImmutablePrototypeSet,                                                     \
      "Immutable prototype object '%' cannot have their prototype set")          \

@@ -5,9 +5,9 @@ package zero_trust_access_ai_controls_mcp_server
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -47,7 +47,7 @@ type ZeroTrustAccessAIControlsMcpServerDataSourceModel struct {
 
 func (m *ZeroTrustAccessAIControlsMcpServerDataSourceModel) toReadParams(_ context.Context) (params zero_trust.AccessAIControlMcpServerReadParams, diags diag.Diagnostics) {
 	params = zero_trust.AccessAIControlMcpServerReadParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -55,11 +55,11 @@ func (m *ZeroTrustAccessAIControlsMcpServerDataSourceModel) toReadParams(_ conte
 
 func (m *ZeroTrustAccessAIControlsMcpServerDataSourceModel) toListParams(_ context.Context) (params zero_trust.AccessAIControlMcpServerListParams, diags diag.Diagnostics) {
 	params = zero_trust.AccessAIControlMcpServerListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Filter.Search.IsNull() {
-		params.Search = cloudflare.F(m.Filter.Search.ValueString())
+		params.Search = zenthcloud.F(m.Filter.Search.ValueString())
 	}
 
 	return

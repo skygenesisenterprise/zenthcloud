@@ -116,12 +116,12 @@ export const tools: readonly Tool[] = [
               "id": {
                 "type": "string"
               },
-              "is_cloudflare_team": {
+              "is_zenthcloud_team": {
                 "type": "boolean"
               },
               "origin": {
                 "enum": [
-                  "cloudflare",
+                  "zenthcloud",
                   "self"
                 ],
                 "type": "string"
@@ -141,7 +141,7 @@ export const tools: readonly Tool[] = [
               "fileName",
               "fileSize",
               "id",
-              "is_cloudflare_team",
+              "is_zenthcloud_team",
               "origin",
               "state"
             ],
@@ -158,7 +158,7 @@ export const tools: readonly Tool[] = [
         "id": {
           "type": "integer"
         },
-        "is_cloudflare_team": {
+        "is_zenthcloud_team": {
           "type": "boolean"
         },
         "is_published": {
@@ -193,7 +193,7 @@ export const tools: readonly Tool[] = [
         "content",
         "created",
         "id",
-        "is_cloudflare_team",
+        "is_zenthcloud_team",
         "is_published",
         "published",
         "tlp",
@@ -241,12 +241,12 @@ export const tools: readonly Tool[] = [
                     "id": {
                       "type": "string"
                     },
-                    "is_cloudflare_team": {
+                    "is_zenthcloud_team": {
                       "type": "boolean"
                     },
                     "origin": {
                       "enum": [
-                        "cloudflare",
+                        "zenthcloud",
                         "self"
                       ],
                       "type": "string"
@@ -266,7 +266,7 @@ export const tools: readonly Tool[] = [
                     "fileName",
                     "fileSize",
                     "id",
-                    "is_cloudflare_team",
+                    "is_zenthcloud_team",
                     "origin",
                     "state"
                   ],
@@ -283,7 +283,7 @@ export const tools: readonly Tool[] = [
               "id": {
                 "type": "integer"
               },
-              "is_cloudflare_team": {
+              "is_zenthcloud_team": {
                 "type": "boolean"
               },
               "is_published": {
@@ -318,7 +318,7 @@ export const tools: readonly Tool[] = [
               "content",
               "created",
               "id",
-              "is_cloudflare_team",
+              "is_zenthcloud_team",
               "is_published",
               "published",
               "tlp",
@@ -391,12 +391,12 @@ export const tools: readonly Tool[] = [
               "id": {
                 "type": "string"
               },
-              "is_cloudflare_team": {
+              "is_zenthcloud_team": {
                 "type": "boolean"
               },
               "origin": {
                 "enum": [
-                  "cloudflare",
+                  "zenthcloud",
                   "self"
                 ],
                 "type": "string"
@@ -416,7 +416,7 @@ export const tools: readonly Tool[] = [
               "fileName",
               "fileSize",
               "id",
-              "is_cloudflare_team",
+              "is_zenthcloud_team",
               "origin",
               "state"
             ],
@@ -433,7 +433,7 @@ export const tools: readonly Tool[] = [
         "id": {
           "type": "integer"
         },
-        "is_cloudflare_team": {
+        "is_zenthcloud_team": {
           "type": "boolean"
         },
         "is_published": {
@@ -468,7 +468,7 @@ export const tools: readonly Tool[] = [
         "content",
         "created",
         "id",
-        "is_cloudflare_team",
+        "is_zenthcloud_team",
         "is_published",
         "published",
         "tlp",
@@ -515,12 +515,12 @@ export const tools: readonly Tool[] = [
                     "id": {
                       "type": "string"
                     },
-                    "is_cloudflare_team": {
+                    "is_zenthcloud_team": {
                       "type": "boolean"
                     },
                     "origin": {
                       "enum": [
-                        "cloudflare",
+                        "zenthcloud",
                         "self"
                       ],
                       "type": "string"
@@ -540,7 +540,7 @@ export const tools: readonly Tool[] = [
                     "fileName",
                     "fileSize",
                     "id",
-                    "is_cloudflare_team",
+                    "is_zenthcloud_team",
                     "origin",
                     "state"
                   ],
@@ -557,7 +557,7 @@ export const tools: readonly Tool[] = [
               "id": {
                 "type": "integer"
               },
-              "is_cloudflare_team": {
+              "is_zenthcloud_team": {
                 "type": "boolean"
               },
               "is_published": {
@@ -592,7 +592,7 @@ export const tools: readonly Tool[] = [
               "content",
               "created",
               "id",
-              "is_cloudflare_team",
+              "is_zenthcloud_team",
               "is_published",
               "published",
               "tlp",
@@ -676,12 +676,12 @@ export const tools: readonly Tool[] = [
                     "id": {
                       "type": "string"
                     },
-                    "is_cloudflare_team": {
+                    "is_zenthcloud_team": {
                       "type": "boolean"
                     },
                     "origin": {
                       "enum": [
-                        "cloudflare",
+                        "zenthcloud",
                         "self"
                       ],
                       "type": "string"
@@ -701,7 +701,7 @@ export const tools: readonly Tool[] = [
                     "fileName",
                     "fileSize",
                     "id",
-                    "is_cloudflare_team",
+                    "is_zenthcloud_team",
                     "origin",
                     "state"
                   ],
@@ -718,7 +718,7 @@ export const tools: readonly Tool[] = [
               "id": {
                 "type": "integer"
               },
-              "is_cloudflare_team": {
+              "is_zenthcloud_team": {
                 "type": "boolean"
               },
               "is_published": {
@@ -753,7 +753,7 @@ export const tools: readonly Tool[] = [
               "content",
               "created",
               "id",
-              "is_cloudflare_team",
+              "is_zenthcloud_team",
               "is_published",
               "published",
               "tlp",
@@ -839,12 +839,12 @@ export const tools: readonly Tool[] = [
                           "id": {
                             "type": "string"
                           },
-                          "is_cloudflare_team": {
+                          "is_zenthcloud_team": {
                             "type": "boolean"
                           },
                           "origin": {
                             "enum": [
-                              "cloudflare",
+                              "zenthcloud",
                               "self"
                             ],
                             "type": "string"
@@ -864,7 +864,7 @@ export const tools: readonly Tool[] = [
                           "fileName",
                           "fileSize",
                           "id",
-                          "is_cloudflare_team",
+                          "is_zenthcloud_team",
                           "origin",
                           "state"
                         ],
@@ -881,7 +881,7 @@ export const tools: readonly Tool[] = [
                     "id": {
                       "type": "integer"
                     },
-                    "is_cloudflare_team": {
+                    "is_zenthcloud_team": {
                       "type": "boolean"
                     },
                     "is_published": {
@@ -916,7 +916,7 @@ export const tools: readonly Tool[] = [
                     "content",
                     "created",
                     "id",
-                    "is_cloudflare_team",
+                    "is_zenthcloud_team",
                     "is_published",
                     "published",
                     "tlp",
@@ -1071,12 +1071,12 @@ export const tools: readonly Tool[] = [
                   "id": {
                     "type": "string"
                   },
-                  "is_cloudflare_team": {
+                  "is_zenthcloud_team": {
                     "type": "boolean"
                   },
                   "origin": {
                     "enum": [
-                      "cloudflare",
+                      "zenthcloud",
                       "self"
                     ],
                     "type": "string"
@@ -1096,7 +1096,7 @@ export const tools: readonly Tool[] = [
                   "fileName",
                   "fileSize",
                   "id",
-                  "is_cloudflare_team",
+                  "is_zenthcloud_team",
                   "origin",
                   "state"
                 ],
@@ -1113,7 +1113,7 @@ export const tools: readonly Tool[] = [
             "id": {
               "type": "integer"
             },
-            "is_cloudflare_team": {
+            "is_zenthcloud_team": {
               "type": "boolean"
             },
             "is_published": {
@@ -1148,7 +1148,7 @@ export const tools: readonly Tool[] = [
             "content",
             "created",
             "id",
-            "is_cloudflare_team",
+            "is_zenthcloud_team",
             "is_published",
             "published",
             "tlp",
@@ -1204,12 +1204,12 @@ export const tools: readonly Tool[] = [
                         "id": {
                           "type": "string"
                         },
-                        "is_cloudflare_team": {
+                        "is_zenthcloud_team": {
                           "type": "boolean"
                         },
                         "origin": {
                           "enum": [
-                            "cloudflare",
+                            "zenthcloud",
                             "self"
                           ],
                           "type": "string"
@@ -1229,7 +1229,7 @@ export const tools: readonly Tool[] = [
                         "fileName",
                         "fileSize",
                         "id",
-                        "is_cloudflare_team",
+                        "is_zenthcloud_team",
                         "origin",
                         "state"
                       ],
@@ -1246,7 +1246,7 @@ export const tools: readonly Tool[] = [
                   "id": {
                     "type": "integer"
                   },
-                  "is_cloudflare_team": {
+                  "is_zenthcloud_team": {
                     "type": "boolean"
                   },
                   "is_published": {
@@ -1281,7 +1281,7 @@ export const tools: readonly Tool[] = [
                   "content",
                   "created",
                   "id",
-                  "is_cloudflare_team",
+                  "is_zenthcloud_team",
                   "is_published",
                   "published",
                   "tlp",

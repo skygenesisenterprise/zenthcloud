@@ -600,7 +600,7 @@ export const tools: readonly Tool[] = [
   {
     name: "magicTransit_ipsecTunnels_pskGenerate",
     title: "Generate Pre-Shared Key (PSK) for IPsec tunnels",
-    description: "Generates a Pre-Shared Key for a specific IPsec tunnel used in the IKE session. Use `?validate_only=true` as an optional query parameter to only run validation without persisting changes. After a PSK is generated, the PSK is immediately persisted to Cloudflare's edge and cannot be retrieved later. Store the PSK in a safe place.\n\nPOST /accounts/{account_id}/magic/ipsec_tunnels/{ipsec_tunnel_id}/psk_generate",
+    description: "Generates a Pre-Shared Key for a specific IPsec tunnel used in the IKE session. Use `?validate_only=true` as an optional query parameter to only run validation without persisting changes. After a PSK is generated, the PSK is immediately persisted to Zenthcloud's edge and cannot be retrieved later. Store the PSK in a safe place.\n\nPOST /accounts/{account_id}/magic/ipsec_tunnels/{ipsec_tunnel_id}/psk_generate",
     inputSchema: {
       type: "object",
       properties: {
@@ -684,7 +684,7 @@ export const tools: readonly Tool[] = [
   {
     name: "magicTransit_ipsecTunnels_pskSet",
     title: "Set Pre-Shared Keys (PSK) for IPsec tunnels",
-    description: "Sets Pre-Shared Keys for multiple IPsec tunnels associated with an account. Use `?validate_only=true` as an optional query parameter to only run validation without persisting changes. After PSKs are applied, they are immediately persisted to Cloudflare's edge and cannot be retrieved later. Store the PSKs in a safe place.\n\nPOST /accounts/{account_id}/magic/ipsec_tunnels/psk",
+    description: "Sets Pre-Shared Keys for multiple IPsec tunnels associated with an account. Use `?validate_only=true` as an optional query parameter to only run validation without persisting changes. After PSKs are applied, they are immediately persisted to Zenthcloud's edge and cannot be retrieved later. Store the PSKs in a safe place.\n\nPOST /accounts/{account_id}/magic/ipsec_tunnels/psk",
     inputSchema: {
       type: "object",
       properties: {

@@ -23,7 +23,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 pay-per-use operator set-configuration\n\nCreates or updates the pay-per-use operator configuration for an account. Creating an enabled configuration or re-enabling a disabled billable operator requires completed Stripe onboarding, while non-billable operators do not; an already-enabled operator is not affected by later Stripe status changes. A Cloudflare-verified operator's name and default price cannot be changed."
+			"$0 pay-per-use operator set-configuration\n\nCreates or updates the pay-per-use operator configuration for an account. Creating an enabled configuration or re-enabling a disabled billable operator requires completed Stripe onboarding, while non-billable operators do not; an already-enabled operator is not affected by later Stripe status changes. A Zenthcloud-verified operator's name and default price cannot be changed."
 		)
 		.option("default-price-usd-microcents", {
 			type: "number",
@@ -64,7 +64,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf pay-per-use operator set-configuration",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/pay-per-use/operator/configuration`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/pay-per-use/operator/configuration`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

@@ -12,11 +12,11 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -92,7 +92,7 @@ func NewResource() resource.Resource {
 // resource exposes only the vendors and auth methods that can be created
 // non-interactively through the public API.
 type ZeroTrustCasbIntegrationResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *ZeroTrustCasbIntegrationResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -104,11 +104,11 @@ func (r *ZeroTrustCasbIntegrationResource) Configure(_ context.Context, req reso
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 		return
 	}
@@ -266,10 +266,10 @@ func (r *ZeroTrustCasbIntegrationResource) Update(ctx context.Context, req resou
 
 	if nameChanged || credentialsChanged || collectionsChanged {
 		params := zero_trust.CasbIntegrationUpdateParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		}
 		if nameChanged {
-			params.Name = cloudflare.F(data.Name.ValueString())
+			params.Name = zenthcloud.F(data.Name.ValueString())
 		}
 		if credentialsChanged {
 			credentials, err := config.credentials()
@@ -277,7 +277,7 @@ func (r *ZeroTrustCasbIntegrationResource) Update(ctx context.Context, req resou
 				resp.Diagnostics.AddError("invalid integration credentials", err.Error())
 				return
 			}
-			params.Credentials = cloudflare.F(credentials)
+			params.Credentials = zenthcloud.F(credentials)
 		}
 		if collectionsChanged {
 			resp.Diagnostics.Append(data.applyUpdateCollections(ctx, &params)...)
@@ -327,7 +327,7 @@ func (r *ZeroTrustCasbIntegrationResource) Read(ctx context.Context, req resourc
 		ctx,
 		data.ID.ValueString(),
 		zero_trust.CasbIntegrationGetParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithResponseInto(&httpResponse),
 	)
@@ -362,7 +362,7 @@ func (r *ZeroTrustCasbIntegrationResource) Delete(ctx context.Context, req resou
 		ctx,
 		data.ID.ValueString(),
 		zero_trust.CasbIntegrationDeleteParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithResponseInto(&httpResponse),
 	)
@@ -391,7 +391,7 @@ func (r *ZeroTrustCasbIntegrationResource) ImportState(ctx context.Context, req 
 		ctx,
 		integrationID,
 		zero_trust.CasbIntegrationGetParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		},
 	)
 	if err != nil {
@@ -422,7 +422,7 @@ func (r *ZeroTrustCasbIntegrationResource) setPaused(ctx context.Context, data *
 			ctx,
 			data.ID.ValueString(),
 			zero_trust.CasbIntegrationPauseParams{
-				AccountID: cloudflare.F(data.AccountID.ValueString()),
+				AccountID: zenthcloud.F(data.AccountID.ValueString()),
 			},
 		)
 		if err != nil {
@@ -437,7 +437,7 @@ func (r *ZeroTrustCasbIntegrationResource) setPaused(ctx context.Context, data *
 		ctx,
 		data.ID.ValueString(),
 		zero_trust.CasbIntegrationResumeParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 	)
 	if err != nil {
@@ -840,23 +840,23 @@ func (m ZeroTrustCasbIntegrationModel) newParams(ctx context.Context, config *Ze
 	}
 
 	params := zero_trust.CasbIntegrationNewParams{
-		AccountID:   cloudflare.F(m.AccountID.ValueString()),
-		Application: cloudflare.F(resolved.application),
-		Credentials: cloudflare.F(credentials),
-		Name:        cloudflare.F(m.Name.ValueString()),
-		AuthMethod:  cloudflare.F(resolved.authMethod),
+		AccountID:   zenthcloud.F(m.AccountID.ValueString()),
+		Application: zenthcloud.F(resolved.application),
+		Credentials: zenthcloud.F(credentials),
+		Name:        zenthcloud.F(m.Name.ValueString()),
+		AuthMethod:  zenthcloud.F(resolved.authMethod),
 	}
 
 	dlpProfiles, d := setToStrings(ctx, m.DLPProfiles)
 	diags.Append(d...)
 	if dlpProfiles != nil {
-		params.DLPProfiles = cloudflare.F(dlpProfiles)
+		params.DLPProfiles = zenthcloud.F(dlpProfiles)
 	}
 
 	permissions, d := setToStrings(ctx, m.Permissions)
 	diags.Append(d...)
 	if permissions != nil {
-		params.Permissions = cloudflare.F(permissions)
+		params.Permissions = zenthcloud.F(permissions)
 	}
 
 	useCases, d := setToStrings(ctx, m.UseCases)
@@ -866,7 +866,7 @@ func (m ZeroTrustCasbIntegrationModel) newParams(ctx context.Context, config *Ze
 		for _, useCase := range useCases {
 			converted = append(converted, zero_trust.CasbIntegrationNewParamsUseCase(useCase))
 		}
-		params.UseCases = cloudflare.F(converted)
+		params.UseCases = zenthcloud.F(converted)
 	}
 
 	return params, diags
@@ -878,13 +878,13 @@ func (m ZeroTrustCasbIntegrationModel) applyUpdateCollections(ctx context.Contex
 	dlpProfiles, d := setToStrings(ctx, m.DLPProfiles)
 	diags.Append(d...)
 	if dlpProfiles != nil {
-		params.DLPProfiles = cloudflare.F(dlpProfiles)
+		params.DLPProfiles = zenthcloud.F(dlpProfiles)
 	}
 
 	permissions, d := setToStrings(ctx, m.Permissions)
 	diags.Append(d...)
 	if permissions != nil {
-		params.Permissions = cloudflare.F(permissions)
+		params.Permissions = zenthcloud.F(permissions)
 	}
 
 	useCases, d := setToStrings(ctx, m.UseCases)
@@ -894,7 +894,7 @@ func (m ZeroTrustCasbIntegrationModel) applyUpdateCollections(ctx context.Contex
 		for _, useCase := range useCases {
 			converted = append(converted, zero_trust.CasbIntegrationUpdateParamsUseCase(useCase))
 		}
-		params.UseCases = cloudflare.F(converted)
+		params.UseCases = zenthcloud.F(converted)
 	}
 
 	return diags

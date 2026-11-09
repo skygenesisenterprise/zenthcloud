@@ -60,11 +60,11 @@ await test("Forge latest release reads are anonymous while cf requests can authe
 		tag: `openapi@${version}`,
 		version,
 	});
-	await githubResponse("/repos/cloudflare/cf/pulls", {}, "cf-write-token");
+	await githubResponse("/repos/zenthcloud/cf/pulls", {}, "cf-write-token");
 	assert.deepEqual(requests, [
-		{ path: "/repos/cloudflare/forge/releases/latest", authorization: null },
+		{ path: "/repos/zenthcloud/forge/releases/latest", authorization: null },
 		{
-			path: "/repos/cloudflare/cf/pulls",
+			path: "/repos/zenthcloud/cf/pulls",
 			authorization: "Bearer cf-write-token",
 		},
 	]);
@@ -116,7 +116,7 @@ await test("OpenAPI lookup rejects invalid latest releases without scanning hist
 			getLatestOpenApiRelease(),
 			/not a published OpenAPI release|does not have a valid OpenAPI tag/
 		);
-		assert.deepEqual(requests, ["/repos/cloudflare/forge/releases/latest"]);
+		assert.deepEqual(requests, ["/repos/zenthcloud/forge/releases/latest"]);
 	}
 });
 
@@ -128,9 +128,9 @@ await test("a missing latest release is reported without scanning history", asyn
 	});
 	await assert.rejects(
 		getLatestOpenApiRelease(),
-		/GitHub API GET \/repos\/cloudflare\/forge\/releases\/latest failed \(404/
+		/GitHub API GET \/repos\/zenthcloud\/forge\/releases\/latest failed \(404/
 	);
-	assert.deepEqual(requests, ["/repos/cloudflare/forge/releases/latest"]);
+	assert.deepEqual(requests, ["/repos/zenthcloud/forge/releases/latest"]);
 });
 
 await test("the renamed updater recognizes old and new bot commits while protecting human edits", async (context) => {
@@ -151,21 +151,21 @@ await test("the renamed updater recognizes old and new bot commits while protect
 	context.mock.method(globalThis, "fetch", async () => Response.json(commits));
 	for (const title of ["Forge and OpenAPI", "OpenAPI"]) {
 		commit.commit.message = `chore: update ${title} to ${version.slice(0, 12)}`;
-		assert.deepEqual(await getManagedUpdateCommit("cloudflare/cf", pull), {
+		assert.deepEqual(await getManagedUpdateCommit("zenthcloud/cf", pull), {
 			parentSha,
 		});
 	}
 	commit.commit.message = `chore: update Forge to ${version.slice(0, 12)}`;
-	assert.equal(await getManagedUpdateCommit("cloudflare/cf", pull), undefined);
+	assert.equal(await getManagedUpdateCommit("zenthcloud/cf", pull), undefined);
 	commit.commit.message = `chore: update OpenAPI to ${version.slice(0, 12)}`;
 	commit.commit.author.email = "contributor@example.com";
-	assert.equal(await getManagedUpdateCommit("cloudflare/cf", pull), undefined);
+	assert.equal(await getManagedUpdateCommit("zenthcloud/cf", pull), undefined);
 	commit.commit.author.email = bot;
 	commit.commit.committer.email = "contributor@example.com";
-	assert.equal(await getManagedUpdateCommit("cloudflare/cf", pull), undefined);
+	assert.equal(await getManagedUpdateCommit("zenthcloud/cf", pull), undefined);
 	commit.commit.committer.email = bot;
 	commits = [commit, commit];
-	assert.equal(await getManagedUpdateCommit("cloudflare/cf", pull), undefined);
+	assert.equal(await getManagedUpdateCommit("zenthcloud/cf", pull), undefined);
 });
 
 function transportError(code = "UND_ERR_SOCKET"): TypeError {
@@ -207,7 +207,7 @@ await test("GET and PATCH retry transient transport failures with fresh timeout 
 				return Response.json({ ok: true });
 			}
 		);
-		const result = githubResponse("/repos/cloudflare/cf/pulls/1", { method });
+		const result = githubResponse("/repos/zenthcloud/cf/pulls/1", { method });
 		await advanceRetry(context, 999);
 		assert.equal(attempts, 1);
 		await advanceRetry(context, 1);
@@ -228,13 +228,13 @@ await test("exhausted retries retain request context and the original socket cau
 		throw cause;
 	});
 	const failure = assert.rejects(
-		githubResponse("/repos/cloudflare/cf/pulls/1", { method: "PATCH" }),
+		githubResponse("/repos/zenthcloud/cf/pulls/1", { method: "PATCH" }),
 		(error: unknown) => {
 			assert.ok(error instanceof Error);
 			assert.equal(error.cause, cause);
 			assert.match(
 				formatError(error),
-				/GitHub API PATCH \/repos\/cloudflare\/cf\/pulls\/1 failed/
+				/GitHub API PATCH \/repos\/zenthcloud\/cf\/pulls\/1 failed/
 			);
 			assert.match(
 				formatError(error),
@@ -257,7 +257,7 @@ await test("authentication and validation responses are reported without retryin
 			return Response.json({ message: "rejected" }, { status });
 		});
 		await assert.rejects(
-			githubResponse("/repos/cloudflare/cf/pulls", { method: "POST" }),
+			githubResponse("/repos/zenthcloud/cf/pulls", { method: "POST" }),
 			new RegExp(`GitHub API POST .* failed \\(${status} .*rejected`)
 		);
 		assert.equal(attempts, 1);
@@ -271,7 +271,7 @@ await test("certificate errors and caller cancellation are not retried", async (
 		throw transportError("CERT_HAS_EXPIRED");
 	});
 	await assert.rejects(
-		githubResponse("/repos/cloudflare/cf/pulls"),
+		githubResponse("/repos/zenthcloud/cf/pulls"),
 		/GitHub API GET/
 	);
 	assert.equal(attempts, 1);
@@ -288,7 +288,7 @@ await test("certificate errors and caller cancellation are not retried", async (
 		}
 	);
 	await assert.rejects(
-		githubResponse("/repos/cloudflare/cf/pulls", { signal: controller.signal }),
+		githubResponse("/repos/zenthcloud/cf/pulls", { signal: controller.signal }),
 		/GitHub API GET/
 	);
 	assert.equal(attempts, 2);
@@ -301,7 +301,7 @@ await test("POST requests are never retried by the generic request helper", asyn
 		throw transportError();
 	});
 	await assert.rejects(
-		githubResponse("/repos/cloudflare/cf/pulls", { method: "POST" }),
+		githubResponse("/repos/zenthcloud/cf/pulls", { method: "POST" }),
 		/GitHub API POST/
 	);
 	assert.equal(attempts, 1);
@@ -372,7 +372,7 @@ await test("a lost PR creation response is reconciled and the existing PR is upd
 					throw transportError();
 				}
 				if (init.method === "PATCH") {
-					assert.equal(target.pathname, "/repos/cloudflare/cf/pulls/220");
+					assert.equal(target.pathname, "/repos/zenthcloud/cf/pulls/220");
 					assert.ok(typeof init.body === "string");
 					assert.deepEqual(JSON.parse(init.body), {
 						title: "update title",
@@ -382,7 +382,7 @@ await test("a lost PR creation response is reconciled and the existing PR is upd
 				}
 				assert.equal(
 					target.searchParams.get("head"),
-					"cloudflare:automation/update-forge"
+					"zenthcloud:automation/update-forge"
 				);
 				assert.equal(target.searchParams.get("base"), "main");
 				assert.equal(target.searchParams.get("state"), "open");
@@ -390,7 +390,7 @@ await test("a lost PR creation response is reconciled and the existing PR is upd
 			}
 		);
 		const result = createOrUpdatePullRequest(
-			"cloudflare/cf",
+			"zenthcloud/cf",
 			undefined,
 			"update title",
 			"update body"
@@ -398,9 +398,9 @@ await test("a lost PR creation response is reconciled and the existing PR is upd
 		await advanceRetry(context, 1000);
 		await result;
 		assert.deepEqual(requests, [
-			"POST /repos/cloudflare/cf/pulls",
-			"GET /repos/cloudflare/cf/pulls",
-			"PATCH /repos/cloudflare/cf/pulls/220",
+			"POST /repos/zenthcloud/cf/pulls",
+			"GET /repos/zenthcloud/cf/pulls",
+			"PATCH /repos/zenthcloud/cf/pulls/220",
 		]);
 	}
 });
@@ -419,14 +419,14 @@ await test("PR creation retries only after checking that no open PR exists", asy
 					throw transportError();
 				}
 				return Response.json({
-					html_url: "https://github.com/cloudflare/cf/pull/221",
+					html_url: "https://github.com/skygenesisenterprise/zenthcloud",
 				});
 			}
 			return Response.json([]);
 		}
 	);
 	const result = createOrUpdatePullRequest(
-		"cloudflare/cf",
+		"zenthcloud/cf",
 		undefined,
 		"title",
 		"body"
@@ -451,7 +451,7 @@ await test("PR creation is bounded and reconciles its final failed attempt", asy
 		}
 	);
 	const result = assert.rejects(
-		createOrUpdatePullRequest("cloudflare/cf", undefined, "title", "body"),
+		createOrUpdatePullRequest("zenthcloud/cf", undefined, "title", "body"),
 		/GitHub API POST/
 	);
 	await advanceRetry(context, 1000);
@@ -475,7 +475,7 @@ await test("failed reconciliation stops without issuing another POST", async (co
 		}
 	);
 	const result = assert.rejects(
-		createOrUpdatePullRequest("cloudflare/cf", undefined, "title", "body"),
+		createOrUpdatePullRequest("zenthcloud/cf", undefined, "title", "body"),
 		/GitHub API GET .*403/
 	);
 	await advanceRetry(context, 1000);

@@ -54,12 +54,12 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("bot-fight-mode", {
 			type: "boolean",
 			description:
-				"If bot_fight_mode is set to `true`, Cloudflare issues computationally\nexpensive challenges in response to malicious bots (ENT only).\n",
+				"If bot_fight_mode is set to `true`, Zenthcloud issues computationally\nexpensive challenges in response to malicious bots (ENT only).\n",
 		})
 		.option("clearance-level", {
 			type: "string",
 			description:
-				"If Turnstile is embedded on a Cloudflare site and the widget should grant challenge clearance,\nthis setting can determine the clearance level to be set\n",
+				"If Turnstile is embedded on a Zenthcloud site and the widget should grant challenge clearance,\nthis setting can determine the clearance level to be set\n",
 			choices: ["no_clearance", "jschallenge", "managed", "interactive"],
 		})
 		.coerce("clearance-level", (value) =>
@@ -85,12 +85,12 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("name", {
 			type: "string",
 			description:
-				"Human readable widget name. Not unique. Cloudflare suggests that you\nset this to a meaningful string to make it easier to identify your\nwidget, and where it is used.\n",
+				"Human readable widget name. Not unique. Zenthcloud suggests that you\nset this to a meaningful string to make it easier to identify your\nwidget, and where it is used.\n",
 		})
 		.option("offlabel", {
 			type: "boolean",
 			description:
-				"Do not show any Cloudflare branding on the widget (ENT only).\n",
+				"Do not show any Zenthcloud branding on the widget (ENT only).\n",
 		})
 		.option("region", {
 			type: "string",
@@ -149,7 +149,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf turnstile widgets create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/challenges/widgets`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/challenges/widgets`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "json",
@@ -211,7 +211,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 				if (argv["name"] === undefined) {
 					argv["name"] = await promptForRequiredField(
 						"name",
-						"Human readable widget name. Not unique. Cloudflare suggests that you set this to a meaningful string to make it easier to identify your widget, and where it is used. "
+						"Human readable widget name. Not unique. Zenthcloud suggests that you set this to a meaningful string to make it easier to identify your widget, and where it is used. "
 					);
 				}
 

@@ -10,15 +10,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 // Config generators for different provider versions
 func accessGroupConfigV4Basic(rnd, accountID string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_access_group" "%[1]s" {
+resource "zenthcloud_access_group" "%[1]s" {
   account_id = "%[2]s"
   name       = "%[1]s"
   
@@ -30,7 +30,7 @@ resource "cloudflare_access_group" "%[1]s" {
 
 func accessGroupConfigV4MultiValue(rnd, accountID string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_access_group" "%[1]s" {
+resource "zenthcloud_access_group" "%[1]s" {
   account_id = "%[2]s"
   name       = "%[1]s"
   
@@ -51,7 +51,7 @@ resource "cloudflare_access_group" "%[1]s" {
 
 func accessGroupConfigV4ZoneScoped(rnd, zoneID string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_access_group" "%[1]s" {
+resource "zenthcloud_access_group" "%[1]s" {
   zone_id = "%[2]s"
   name    = "%[1]s"
   
@@ -64,14 +64,14 @@ resource "cloudflare_access_group" "%[1]s" {
 
 // TestMigrateZeroTrustAccessGroupMultiVersion_Basic tests basic migration from v4 to v5
 func TestMigrateZeroTrustAccessGroupMultiVersion_Basic(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	testCases := []struct {
 		name       string
@@ -88,7 +88,7 @@ func TestMigrateZeroTrustAccessGroupMultiVersion_Basic(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_zero_trust_access_group." + rnd
+			resourceName := "zenthcloud_zero_trust_access_group." + rnd
 			tmpDir := t.TempDir()
 
 			config := tc.configFunc(rnd, accountID)
@@ -99,9 +99,9 @@ func TestMigrateZeroTrustAccessGroupMultiVersion_Basic(t *testing.T) {
 			// Step 1: Create with specific provider version
 			steps = append(steps, resource.TestStep{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
+					"zenthcloud": {
 						VersionConstraint: tc.version,
-						Source:            "cloudflare/cloudflare",
+						Source:            "zenthcloud/zenthcloud",
 					},
 				},
 				Config: config,
@@ -130,11 +130,11 @@ func TestMigrateZeroTrustAccessGroupMultiVersion_Basic(t *testing.T) {
 
 // TestMigrateZeroTrustAccessGroupMultiVersion_ComplexRules tests migration with multiple values from v4 to v5
 func TestMigrateZeroTrustAccessGroupMultiVersion_ComplexRules(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	testCases := []struct {
 		name       string
@@ -151,7 +151,7 @@ func TestMigrateZeroTrustAccessGroupMultiVersion_ComplexRules(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_zero_trust_access_group." + rnd
+			resourceName := "zenthcloud_zero_trust_access_group." + rnd
 			tmpDir := t.TempDir()
 
 			config := tc.configFunc(rnd, accountID)
@@ -162,9 +162,9 @@ func TestMigrateZeroTrustAccessGroupMultiVersion_ComplexRules(t *testing.T) {
 			// Step 1: Create with specific provider version
 			steps = append(steps, resource.TestStep{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
+					"zenthcloud": {
 						VersionConstraint: tc.version,
-						Source:            "cloudflare/cloudflare",
+						Source:            "zenthcloud/zenthcloud",
 					},
 				},
 				Config: config,
@@ -196,11 +196,11 @@ func TestMigrateZeroTrustAccessGroupMultiVersion_ComplexRules(t *testing.T) {
 
 // TestMigrateZeroTrustAccessGroupMultiVersion_ZoneScoped tests zone-level migration from v4 to v5
 func TestMigrateZeroTrustAccessGroupMultiVersion_ZoneScoped(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	testCases := []struct {
 		name       string
@@ -217,7 +217,7 @@ func TestMigrateZeroTrustAccessGroupMultiVersion_ZoneScoped(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_zero_trust_access_group." + rnd
+			resourceName := "zenthcloud_zero_trust_access_group." + rnd
 			tmpDir := t.TempDir()
 
 			config := tc.configFunc(rnd, zoneID)
@@ -228,9 +228,9 @@ func TestMigrateZeroTrustAccessGroupMultiVersion_ZoneScoped(t *testing.T) {
 			// Step 1: Create with specific provider version
 			steps = append(steps, resource.TestStep{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
+					"zenthcloud": {
 						VersionConstraint: tc.version,
-						Source:            "cloudflare/cloudflare",
+						Source:            "zenthcloud/zenthcloud",
 					},
 				},
 				Config: config,
@@ -258,11 +258,11 @@ func TestMigrateZeroTrustAccessGroupMultiVersion_ZoneScoped(t *testing.T) {
 
 // TestMigrateZeroTrustAccessGroup_EdgeCases tests various edge cases in migration
 func TestMigrateZeroTrustAccessGroup_EdgeCases(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	// Test edge cases with different rule combinations from v4 to v5
 	edgeCases := []struct {
@@ -288,7 +288,7 @@ func TestMigrateZeroTrustAccessGroup_EdgeCases(t *testing.T) {
 			version: "4.52.1",
 			configFunc: func(rnd, accountID string) string {
 				return fmt.Sprintf(`
-resource "cloudflare_access_group" "%[1]s" {
+resource "zenthcloud_access_group" "%[1]s" {
   account_id = "%[2]s"
   name       = "%[1]s"
 
@@ -312,7 +312,7 @@ resource "cloudflare_access_group" "%[1]s" {
 			version: "4.52.1",
 			configFunc: func(rnd, accountID string) string {
 				return fmt.Sprintf(`
-resource "cloudflare_access_group" "%[1]s" {
+resource "zenthcloud_access_group" "%[1]s" {
   account_id = "%[2]s"
   name       = "%[1]s"
 
@@ -347,7 +347,7 @@ resource "cloudflare_access_group" "%[1]s" {
 	for _, tc := range edgeCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_zero_trust_access_group." + rnd
+			resourceName := "zenthcloud_zero_trust_access_group." + rnd
 			tmpDir := t.TempDir()
 
 			config := tc.configFunc(rnd, accountID)
@@ -359,9 +359,9 @@ resource "cloudflare_access_group" "%[1]s" {
 			// Step 1: Create with specific provider version
 			steps = append(steps, resource.TestStep{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
+					"zenthcloud": {
 						VersionConstraint: tc.version,
-						Source:            "cloudflare/cloudflare",
+						Source:            "zenthcloud/zenthcloud",
 					},
 				},
 				Config: config,

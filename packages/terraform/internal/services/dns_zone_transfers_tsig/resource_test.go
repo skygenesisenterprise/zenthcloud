@@ -7,10 +7,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/dns"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/dns"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -20,29 +20,29 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_dns_zone_transfers_tsig", &resource.Sweeper{
-		Name: "cloudflare_dns_zone_transfers_tsig",
-		F:    testSweepCloudflareSecondaryDNSTSIG,
+	resource.AddTestSweepers("zenthcloud_dns_zone_transfers_tsig", &resource.Sweeper{
+		Name: "zenthcloud_dns_zone_transfers_tsig",
+		F:    testSweepZenthcloudSecondaryDNSTSIG,
 	})
 }
 
-func testSweepCloudflareSecondaryDNSTSIG(r string) error {
+func testSweepZenthcloudSecondaryDNSTSIG(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
 	// Clean up the account level tsigs
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		return errors.New("CLOUDFLARE_ACCOUNT_ID must be set")
+		return errors.New("ZENTHCLOUD_ACCOUNT_ID must be set")
 	}
 
-	tsigs, err := client.DNS.ZoneTransfers.TSIGs.List(context.Background(), dns.ZoneTransferTSIGListParams{AccountID: cloudflare.F(accountID)})
+	tsigs, err := client.DNS.ZoneTransfers.TSIGs.List(context.Background(), dns.ZoneTransferTSIGListParams{AccountID: zenthcloud.F(accountID)})
 	if err != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Cloudflare tsigs: %s", err))
+		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Zenthcloud tsigs: %s", err))
 	}
 
 	if len(tsigs.Result) == 0 {
-		tflog.Info(ctx, "No Cloudflare tsigs records to sweep")
+		tflog.Info(ctx, "No Zenthcloud tsigs records to sweep")
 		return nil
 	}
 
@@ -52,8 +52,8 @@ func testSweepCloudflareSecondaryDNSTSIG(r string) error {
 			continue
 		}
 
-		tflog.Info(ctx, fmt.Sprintf("Deleting Cloudflare TSIG: %s (%s)", tsig.Name, tsig.ID))
-		_, err := client.DNS.ZoneTransfers.TSIGs.Delete(context.TODO(), tsig.ID, dns.ZoneTransferTSIGDeleteParams{AccountID: cloudflare.F(accountID)})
+		tflog.Info(ctx, fmt.Sprintf("Deleting Zenthcloud TSIG: %s (%s)", tsig.Name, tsig.ID))
+		_, err := client.DNS.ZoneTransfers.TSIGs.Delete(context.TODO(), tsig.ID, dns.ZoneTransferTSIGDeleteParams{AccountID: zenthcloud.F(accountID)})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete DNS zone transfer TSIG %s (%s): %s", tsig.Name, tsig.ID, err))
 			continue
@@ -64,10 +64,10 @@ func testSweepCloudflareSecondaryDNSTSIG(r string) error {
 	return nil
 }
 
-func TestAccCloudflareSecondaryDNSTSIG_Basic(t *testing.T) {
+func TestAccZenthcloudSecondaryDNSTSIG_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_dns_zone_transfers_tsig." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_dns_zone_transfers_tsig." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -85,10 +85,10 @@ func TestAccCloudflareSecondaryDNSTSIG_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareSecondaryDNSTSIG_Update(t *testing.T) {
+func TestAccZenthcloudSecondaryDNSTSIG_Update(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_dns_zone_transfers_tsig." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_dns_zone_transfers_tsig." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },

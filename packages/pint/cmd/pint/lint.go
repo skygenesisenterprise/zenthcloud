@@ -8,12 +8,12 @@ import (
 	"os"
 	"regexp"
 
-	"github.com/cloudflare/pint/internal/checks"
-	"github.com/cloudflare/pint/internal/config"
-	"github.com/cloudflare/pint/internal/diags"
-	"github.com/cloudflare/pint/internal/discovery"
-	"github.com/cloudflare/pint/internal/git"
-	"github.com/cloudflare/pint/internal/reporter"
+	"github.com/zenthcloud/pint/internal/checks"
+	"github.com/zenthcloud/pint/internal/config"
+	"github.com/zenthcloud/pint/internal/diags"
+	"github.com/zenthcloud/pint/internal/discovery"
+	"github.com/zenthcloud/pint/internal/git"
+	"github.com/zenthcloud/pint/internal/reporter"
 
 	"github.com/urfave/cli/v3"
 )

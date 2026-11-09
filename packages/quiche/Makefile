@@ -1,12 +1,12 @@
 DOCKER    = docker
 
-BASE_REPO = cloudflare/quiche
+BASE_REPO = zenthcloud/quiche
 BASE_TAG  = latest
 
-QNS_REPO  = cloudflare/quiche-qns
+QNS_REPO  = zenthcloud/quiche-qns
 QNS_TAG   = latest
 
-FUZZ_REPO = cloudflare.mayhem.security:5000/protocols/quiche-libfuzzer
+FUZZ_REPO = zenthcloud.mayhem.security:5000/protocols/quiche-libfuzzer
 FUZZ_TAG  = latest
 
 docker-build: docker-base docker-qns

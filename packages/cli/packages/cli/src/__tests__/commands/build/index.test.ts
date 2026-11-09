@@ -4,7 +4,7 @@ import {
 	mockConsoleMethods,
 	runInTempDir,
 	seed,
-} from "@cloudflare/workers-utils/test-helpers";
+} from "@zenthcloud/workers-utils/test-helpers";
 import { x } from "tinyexec";
 import { describe, expect, it, onTestFinished, vi } from "vite-plus/test";
 import { runBuild } from "../../../commands/build/index.js";
@@ -23,12 +23,12 @@ describe("cf build", () => {
 		const result = await runCf(["build"]);
 
 		expect(result.exitCode).toBe(1);
-		expect(std.err).toMatch(/No Cloudflare dev server is installed/);
-		expect(std.err).toMatch(/@cloudflare\/vite-plugin/);
+		expect(std.err).toMatch(/No Zenthcloud dev server is installed/);
+		expect(std.err).toMatch(/@zenthcloud\/vite-plugin/);
 		expect(std.err).toMatch(/wrangler/);
 		// Each install command sits on its own line, outside the error frame.
 		expect(std.err).toContain(
-			"\n   pip install cloudflare-py-dev-server\n   uv add --dev cloudflare-py-dev-server"
+			"\n   pip install zenthcloud-py-dev-server\n   uv add --dev zenthcloud-py-dev-server"
 		);
 	});
 
@@ -54,15 +54,15 @@ describe("cf build", () => {
 		await seed({
 			"package.json": JSON.stringify({
 				devDependencies: {
-					"@cloudflare/vite-plugin": "beta",
+					"@zenthcloud/vite-plugin": "beta",
 					wrangler: "^4.0.0",
 				},
 			}),
-			"node_modules/@cloudflare/vite-plugin/package.json": JSON.stringify({
-				name: "@cloudflare/vite-plugin",
+			"node_modules/@zenthcloud/vite-plugin/package.json": JSON.stringify({
+				name: "@zenthcloud/vite-plugin",
 				version: "2.0.0-beta.sha-805ec1ff3",
 			}),
-			"node_modules/@cloudflare/vite-plugin/bin/cf-vite":
+			"node_modules/@zenthcloud/vite-plugin/bin/cf-vite":
 				buildScript("vite-worker"),
 			"node_modules/wrangler/package.json": JSON.stringify({
 				name: "wrangler",
@@ -72,7 +72,7 @@ describe("cf build", () => {
 				'require("node:fs").writeFileSync("wrangler-argv.out", process.argv.slice(2).join("\\n") + "\\n"); process.exit(99);'
 			),
 		});
-		chmod("node_modules/@cloudflare/vite-plugin/bin/cf-vite");
+		chmod("node_modules/@zenthcloud/vite-plugin/bin/cf-vite");
 		chmod("node_modules/wrangler/bin/cf-wrangler.js");
 
 		const result = await runCf(["build"]);
@@ -159,7 +159,7 @@ describe("cf build", () => {
 
 	it("rejects mode for Preview builds when the framework does not support it", async () => {
 		await seed({
-			"cloudflare.config.ts": "export default {};",
+			"zenthcloud.config.ts": "export default {};",
 			"package.json": JSON.stringify({
 				name: "angular-project",
 				dependencies: {
@@ -181,7 +181,7 @@ describe("cf build", () => {
 
 	it("runs the detected framework build command", async () => {
 		await seed({
-			"cloudflare.config.ts": "export default {};",
+			"zenthcloud.config.ts": "export default {};",
 			"package.json": JSON.stringify({
 				name: "astro-project",
 				dependencies: { astro: "^5.0.0" },
@@ -224,7 +224,7 @@ describe("cf build", () => {
 			}),
 			"node_modules/.bin/vite": buildScript(
 				"vinext-worker",
-				'fs.writeFileSync("env.out", process.env.CLOUDFLARE_VITE_FORCE_BUILD_OUTPUT ?? "");'
+				'fs.writeFileSync("env.out", process.env.ZENTHCLOUD_VITE_FORCE_BUILD_OUTPUT ?? "");'
 			),
 		});
 		chmod("node_modules/.bin/vite", true);
@@ -240,7 +240,7 @@ describe("cf build", () => {
 
 	it("rejects mode when the detected framework does not support it", async () => {
 		await seed({
-			"cloudflare.config.ts": "export default {};",
+			"zenthcloud.config.ts": "export default {};",
 			"package.json": JSON.stringify({
 				name: "angular-project",
 				dependencies: {
@@ -262,7 +262,7 @@ describe("cf build", () => {
 
 	it("runs a detected Vite build command with its environment", async () => {
 		await seed({
-			"cloudflare.config.ts": "export default {};",
+			"zenthcloud.config.ts": "export default {};",
 			"package.json": JSON.stringify({
 				name: "vite-project",
 				dependencies: { vite: "^7.0.0" },
@@ -274,7 +274,7 @@ describe("cf build", () => {
 			}),
 			"node_modules/.bin/vite": buildScript(
 				"vite-worker",
-				'fs.writeFileSync("env.out", process.env.CLOUDFLARE_VITE_FORCE_BUILD_OUTPUT ?? "");'
+				'fs.writeFileSync("env.out", process.env.ZENTHCLOUD_VITE_FORCE_BUILD_OUTPUT ?? "");'
 			),
 		});
 		chmod("node_modules/.bin/vite", true);
@@ -289,7 +289,7 @@ describe("cf build", () => {
 
 	it("runs a detected Vite Preview build with its combined environment", async () => {
 		await seed({
-			"cloudflare.config.ts": "export default {};",
+			"zenthcloud.config.ts": "export default {};",
 			"package.json": JSON.stringify({
 				name: "vite-project",
 				dependencies: { vite: "^7.0.0" },
@@ -301,7 +301,7 @@ describe("cf build", () => {
 			}),
 			"node_modules/.bin/vite": buildScript(
 				"vite-preview-worker",
-				'fs.writeFileSync("env.out", [process.env.CLOUDFLARE_VITE_FORCE_BUILD_OUTPUT, process.env.CLOUDFLARE_PREVIEW_BUILD].join("\\n"));'
+				'fs.writeFileSync("env.out", [process.env.ZENTHCLOUD_VITE_FORCE_BUILD_OUTPUT, process.env.ZENTHCLOUD_PREVIEW_BUILD].join("\\n"));'
 			),
 		});
 		chmod("node_modules/.bin/vite", true);
@@ -355,13 +355,13 @@ describe("cf build", () => {
 });
 
 function buildScript(workerName: string, extra = ""): string {
-	const workerDir = ".cloudflare/output/v0/workers/default";
+	const workerDir = ".zenthcloud/output/v0/workers/default";
 	return nodeScript(
 		[
 			'const fs = require("node:fs");',
 			'fs.writeFileSync("argv.out", process.argv.slice(2).join("\\n") + "\\n");',
 			`fs.mkdirSync(${JSON.stringify(`${workerDir}/bundle`)}, { recursive: true });`,
-			`fs.writeFileSync(".cloudflare/output/v0/config.json", ${JSON.stringify(buildOutputRootConfig())});`,
+			`fs.writeFileSync(".zenthcloud/output/v0/config.json", ${JSON.stringify(buildOutputRootConfig())});`,
 			`fs.writeFileSync(${JSON.stringify(`${workerDir}/worker.config.json`)}, ${JSON.stringify(workerConfig({ name: workerName }))});`,
 			`fs.writeFileSync(${JSON.stringify(`${workerDir}/bundle/index.js`)}, "export default {}");`,
 			extra,

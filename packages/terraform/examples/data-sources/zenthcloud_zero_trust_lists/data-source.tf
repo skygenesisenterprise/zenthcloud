@@ -1,0 +1,8 @@
+data "zenthcloud_zero_trust_lists" "example_zero_trust_lists" {
+  account_id = "699d98642c564d2e855e9661899b7252"
+  direction = "asc"
+  filter = ["string"]
+  order_by = "name"
+  search = "search"
+  type = "SERIAL"
+}

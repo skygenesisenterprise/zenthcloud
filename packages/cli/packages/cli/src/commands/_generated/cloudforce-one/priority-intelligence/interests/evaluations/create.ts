@@ -89,7 +89,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 						command:
 							"cf cloudforce-one priority-intelligence interests evaluations create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/cloudforce-one/v2/priority-intelligence/interests/evaluations`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/cloudforce-one/v2/priority-intelligence/interests/evaluations`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

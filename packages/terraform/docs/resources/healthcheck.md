@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_healthcheck Resource - Cloudflare"
+page_title: "zenthcloud_healthcheck Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Health Checks ReadHealth Checks Write
 ---
 
-# cloudflare_healthcheck (Resource)
+# zenthcloud_healthcheck (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_healthcheck" "example_healthcheck" {
+resource "zenthcloud_healthcheck" "example_healthcheck" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   address = "www.example.com"
   name = "server-1"
@@ -60,7 +60,7 @@ resource "cloudflare_healthcheck" "example_healthcheck" {
 
 ### Optional
 
-- `check_regions` (List of String) A list of regions from which to run health checks. Null means Cloudflare will pick a default region.
+- `check_regions` (List of String) A list of regions from which to run health checks. Null means Zenthcloud will pick a default region.
 - `consecutive_fails` (Number) The number of consecutive fails required from a health check before changing the health to unhealthy.
 - `consecutive_successes` (Number) The number of consecutive successes required from a health check before changing the health to healthy.
 - `description` (String) A human-readable description of the health check.
@@ -111,7 +111,7 @@ Available values: "connection_established".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_healthcheck.example '<zone_id>/<healthcheck_id>'
+$ terraform import zenthcloud_healthcheck.example '<zone_id>/<healthcheck_id>'
 ```
 
 

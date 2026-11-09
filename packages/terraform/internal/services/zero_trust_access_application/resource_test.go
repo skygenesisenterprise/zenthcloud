@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go"
+	"github.com/zenthcloud/zenthcloud-go"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -17,9 +17,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/pkg/errors"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 func TestMain(m *testing.M) {
@@ -27,39 +27,39 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zero_trust_access_application", &resource.Sweeper{
-		Name: "cloudflare_zero_trust_access_application",
-		F:    testSweepCloudflareAccessApplications,
+	resource.AddTestSweepers("zenthcloud_zero_trust_access_application", &resource.Sweeper{
+		Name: "zenthcloud_zero_trust_access_application",
+		F:    testSweepZenthcloudAccessApplications,
 	})
 }
 
-func testSweepCloudflareAccessApplications(r string) error {
+func testSweepZenthcloudAccessApplications(r string) error {
 	ctx := context.Background()
 
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 		return clientErr
 	}
 
 	// Zone level Access Applications.
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping zone-level Access Applications sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping zone-level Access Applications sweep: ZENTHCLOUD_ZONE_ID not set")
 		zoneID = "skip" // Use placeholder to skip zone sweep
 	}
-	zoneAccessApps, _, err := client.ListAccessApplications(context.Background(), cloudflare.ZoneIdentifier(zoneID), cloudflare.ListAccessApplicationsParams{})
+	zoneAccessApps, _, err := client.ListAccessApplications(context.Background(), zenthcloud.ZoneIdentifier(zoneID), zenthcloud.ListAccessApplicationsParams{})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch zone level Access Applications: %s", err))
 	}
 
 	if len(zoneAccessApps) == 0 {
-		tflog.Info(ctx, "No Cloudflare zone level Access Applications to sweep")
+		tflog.Info(ctx, "No Zenthcloud zone level Access Applications to sweep")
 	}
 
 	for _, accessApp := range zoneAccessApps {
 		tflog.Info(ctx, fmt.Sprintf("Deleting zone-level Access Application: %s (%s)", accessApp.Name, accessApp.ID))
-		if err := client.DeleteAccessApplication(context.Background(), cloudflare.ZoneIdentifier(zoneID), accessApp.ID); err != nil {
+		if err := client.DeleteAccessApplication(context.Background(), zenthcloud.ZoneIdentifier(zoneID), accessApp.ID); err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete zone-level Access Application %s (%s): %s", accessApp.Name, accessApp.ID, err))
 			continue
 		}
@@ -67,24 +67,24 @@ func testSweepCloudflareAccessApplications(r string) error {
 	}
 
 	// Account level Access Applications.
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping account-level Access Applications sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping account-level Access Applications sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
-	accountAccessApps, _, err := client.ListAccessApplications(context.Background(), cloudflare.AccountIdentifier(accountID), cloudflare.ListAccessApplicationsParams{})
+	accountAccessApps, _, err := client.ListAccessApplications(context.Background(), zenthcloud.AccountIdentifier(accountID), zenthcloud.ListAccessApplicationsParams{})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch account level Access Applications: %s", err))
 	}
 
 	if len(accountAccessApps) == 0 {
-		tflog.Info(ctx, "No Cloudflare account level Access Applications to sweep")
+		tflog.Info(ctx, "No Zenthcloud account level Access Applications to sweep")
 		return nil
 	}
 
 	for _, accessApp := range accountAccessApps {
 		tflog.Info(ctx, fmt.Sprintf("Deleting account-level Access Application: %s (%s)", accessApp.Name, accessApp.ID))
-		if err := client.DeleteAccessApplication(context.Background(), cloudflare.AccountIdentifier(accountID), accessApp.ID); err != nil {
+		if err := client.DeleteAccessApplication(context.Background(), zenthcloud.AccountIdentifier(accountID), accessApp.ID); err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete account-level Access Application %s (%s): %s", accessApp.Name, accessApp.ID, err))
 			continue
 		}
@@ -95,14 +95,14 @@ func testSweepCloudflareAccessApplications(r string) error {
 }
 
 var (
-	zoneID    = os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain    = os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID = os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	zoneID    = os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain    = os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID = os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 )
 
-func TestAccCloudflareAccessApplication_BasicZone(t *testing.T) {
+func TestAccZenthcloudAccessApplication_BasicZone(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 	resourceName := name
 
 	resource.Test(t, resource.TestCase{
@@ -110,10 +110,10 @@ func TestAccCloudflareAccessApplication_BasicZone(t *testing.T) {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationConfigBasic(rnd, domain, cloudflare.ZoneIdentifier(zoneID)),
+				Config: testAccZenthcloudAccessApplicationConfigBasic(rnd, domain, zenthcloud.ZoneIdentifier(zoneID)),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -140,16 +140,16 @@ func TestAccCloudflareAccessApplication_BasicZone(t *testing.T) {
 			},
 			{
 				// Ensures no diff on second plan
-				Config:   testAccCloudflareAccessApplicationConfigBasic(rnd, domain, cloudflare.ZoneIdentifier(zoneID)),
+				Config:   testAccZenthcloudAccessApplicationConfigBasic(rnd, domain, zenthcloud.ZoneIdentifier(zoneID)),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_BasicAccount(t *testing.T) {
+func TestAccZenthcloudAccessApplication_BasicAccount(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 	resourceName := name
 
 	resource.Test(t, resource.TestCase{
@@ -158,10 +158,10 @@ func TestAccCloudflareAccessApplication_BasicAccount(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationConfigBasic(rnd, domain, cloudflare.AccountIdentifier(accountID)),
+				Config: testAccZenthcloudAccessApplicationConfigBasic(rnd, domain, zenthcloud.AccountIdentifier(accountID)),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -181,16 +181,16 @@ func TestAccCloudflareAccessApplication_BasicAccount(t *testing.T) {
 			},
 			{
 				// Ensures no diff on second plan
-				Config:   testAccCloudflareAccessApplicationConfigBasic(rnd, domain, cloudflare.AccountIdentifier(accountID)),
+				Config:   testAccZenthcloudAccessApplicationConfigBasic(rnd, domain, zenthcloud.AccountIdentifier(accountID)),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithSCIMConfigHttpBasic(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithSCIMConfigHttpBasic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 	resourceName := name
 
 	resource.Test(t, resource.TestCase{
@@ -198,10 +198,10 @@ func TestAccCloudflareAccessApplication_WithSCIMConfigHttpBasic(t *testing.T) {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationSCIMConfigValidHttpBasic(rnd, accountID, domain),
+				Config: testAccZenthcloudAccessApplicationSCIMConfigValidHttpBasic(rnd, accountID, domain),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -232,16 +232,16 @@ func TestAccCloudflareAccessApplication_WithSCIMConfigHttpBasic(t *testing.T) {
 			},
 			{
 				// Ensures no diff on second plan
-				Config:   testAccCloudflareAccessApplicationSCIMConfigValidHttpBasic(rnd, accountID, domain),
+				Config:   testAccZenthcloudAccessApplicationSCIMConfigValidHttpBasic(rnd, accountID, domain),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_UpdateSCIMConfig(t *testing.T) {
+func TestAccZenthcloudAccessApplication_UpdateSCIMConfig(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 	resourceName := name
 
 	resource.Test(t, resource.TestCase{
@@ -249,10 +249,10 @@ func TestAccCloudflareAccessApplication_UpdateSCIMConfig(t *testing.T) {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationSCIMConfigValidHttpBasic(rnd, accountID, domain),
+				Config: testAccZenthcloudAccessApplicationSCIMConfigValidHttpBasic(rnd, accountID, domain),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -283,11 +283,11 @@ func TestAccCloudflareAccessApplication_UpdateSCIMConfig(t *testing.T) {
 			},
 			{
 				// Ensures no diff on second plan
-				Config:   testAccCloudflareAccessApplicationSCIMConfigValidHttpBasic(rnd, accountID, domain),
+				Config:   testAccZenthcloudAccessApplicationSCIMConfigValidHttpBasic(rnd, accountID, domain),
 				PlanOnly: true,
 			},
 			{
-				Config: testAccCloudflareAccessApplicationSCIMConfigValidOAuthBearerTokenNoMappings(rnd, accountID, domain),
+				Config: testAccZenthcloudAccessApplicationSCIMConfigValidOAuthBearerTokenNoMappings(rnd, accountID, domain),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -304,14 +304,14 @@ func TestAccCloudflareAccessApplication_UpdateSCIMConfig(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCloudflareAccessApplicationSCIMConfigValidOAuthBearerTokenNoMappings(rnd, accountID, domain),
+				Config:   testAccZenthcloudAccessApplicationSCIMConfigValidOAuthBearerTokenNoMappings(rnd, accountID, domain),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithSCIMConfigInvalidMappingSchema(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithSCIMConfigInvalidMappingSchema(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
 
 	resource.Test(t, resource.TestCase{
@@ -319,17 +319,17 @@ func TestAccCloudflareAccessApplication_WithSCIMConfigInvalidMappingSchema(t *te
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCloudflareAccessApplicationSCIMConfigInvalidMappingSchema(rnd, accountID, domain),
+				Config:      testAccZenthcloudAccessApplicationSCIMConfigInvalidMappingSchema(rnd, accountID, domain),
 				ExpectError: regexp.MustCompile(`.*invalid SCIM schema in mappings.*`),
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithSCIMConfigHttpBasicMissingRequired(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithSCIMConfigHttpBasicMissingRequired(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
 
 	resource.Test(t, resource.TestCase{
@@ -337,19 +337,19 @@ func TestAccCloudflareAccessApplication_WithSCIMConfigHttpBasicMissingRequired(t
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCloudflareAccessApplicationSCIMConfigHttpBasicMissingRequired(rnd, accountID, domain),
+				Config:      testAccZenthcloudAccessApplicationSCIMConfigHttpBasicMissingRequired(rnd, accountID, domain),
 				ExpectError: regexp.MustCompile(`.*password is a required field.*`),
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithSCIMConfigOAuthBearerToken(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithSCIMConfigOAuthBearerToken(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 	resourceName := name
 
 	resource.Test(t, resource.TestCase{
@@ -357,10 +357,10 @@ func TestAccCloudflareAccessApplication_WithSCIMConfigOAuthBearerToken(t *testin
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationSCIMConfigValidOAuthBearerToken(rnd, accountID, domain),
+				Config: testAccZenthcloudAccessApplicationSCIMConfigValidOAuthBearerToken(rnd, accountID, domain),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -390,16 +390,16 @@ func TestAccCloudflareAccessApplication_WithSCIMConfigOAuthBearerToken(t *testin
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCloudflareAccessApplicationSCIMConfigValidOAuthBearerToken(rnd, accountID, domain),
+				Config:   testAccZenthcloudAccessApplicationSCIMConfigValidOAuthBearerToken(rnd, accountID, domain),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithSCIMConfigOAuth2(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithSCIMConfigOAuth2(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 	resourceName := name
 
 	resource.Test(t, resource.TestCase{
@@ -407,10 +407,10 @@ func TestAccCloudflareAccessApplication_WithSCIMConfigOAuth2(t *testing.T) {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationSCIMConfigValidOAuth2(rnd, accountID, domain),
+				Config: testAccZenthcloudAccessApplicationSCIMConfigValidOAuth2(rnd, accountID, domain),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -444,14 +444,14 @@ func TestAccCloudflareAccessApplication_WithSCIMConfigOAuth2(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCloudflareAccessApplicationSCIMConfigValidOAuth2(rnd, accountID, domain),
+				Config:   testAccZenthcloudAccessApplicationSCIMConfigValidOAuth2(rnd, accountID, domain),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithSCIMConfigOAuth2MissingRequired(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithSCIMConfigOAuth2MissingRequired(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
 
 	resource.Test(t, resource.TestCase{
@@ -459,19 +459,19 @@ func TestAccCloudflareAccessApplication_WithSCIMConfigOAuth2MissingRequired(t *t
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCloudflareAccessApplicationSCIMConfigOAuth2MissingRequired(rnd, accountID, domain),
+				Config:      testAccZenthcloudAccessApplicationSCIMConfigOAuth2MissingRequired(rnd, accountID, domain),
 				ExpectError: regexp.MustCompile(`.*token_url is a required field.*`),
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithCORS(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithCORS(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 	resourceName := name
 
 	resource.Test(t, resource.TestCase{
@@ -479,10 +479,10 @@ func TestAccCloudflareAccessApplication_WithCORS(t *testing.T) {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationConfigWithCORS(rnd, zoneID, domain),
+				Config: testAccZenthcloudAccessApplicationConfigWithCORS(rnd, zoneID, domain),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -504,28 +504,28 @@ func TestAccCloudflareAccessApplication_WithCORS(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCloudflareAccessApplicationConfigWithCORS(rnd, zoneID, domain),
+				Config:   testAccZenthcloudAccessApplicationConfigWithCORS(rnd, zoneID, domain),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithSAMLSaas(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithSAMLSaas(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 	resourceName := name
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationConfigWithSAMLSaas(rnd, accountID),
+				Config: testAccZenthcloudAccessApplicationConfigWithSAMLSaas(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -559,18 +559,18 @@ func TestAccCloudflareAccessApplication_WithSAMLSaas(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCloudflareAccessApplicationConfigWithSAMLSaas(rnd, accountID),
+				Config:   testAccZenthcloudAccessApplicationConfigWithSAMLSaas(rnd, accountID),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithSAMLSaas_Import(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithSAMLSaas_Import(t *testing.T) {
 	t.Parallel()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_zero_trust_access_application." + rnd
+	name := "zenthcloud_zero_trust_access_application." + rnd
 	resourceName := name
 
 	stateChecks := []statecheck.StateCheck{
@@ -602,7 +602,7 @@ func TestAccCloudflareAccessApplication_WithSAMLSaas_Import(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:            testAccCloudflareAccessApplicationConfigWithSAMLSaas(rnd, accountID),
+				Config:            testAccZenthcloudAccessApplicationConfigWithSAMLSaas(rnd, accountID),
 				ConfigStateChecks: stateChecks,
 			},
 			{
@@ -613,27 +613,27 @@ func TestAccCloudflareAccessApplication_WithSAMLSaas_Import(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCloudflareAccessApplicationConfigWithSAMLSaas(rnd, accountID),
+				Config:   testAccZenthcloudAccessApplicationConfigWithSAMLSaas(rnd, accountID),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithOIDCSaas(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithOIDCSaas(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationConfigWithOIDCSaas(rnd, accountID),
+				Config: testAccZenthcloudAccessApplicationConfigWithOIDCSaas(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(name, "name", rnd),
@@ -666,18 +666,18 @@ func TestAccCloudflareAccessApplication_WithOIDCSaas(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCloudflareAccessApplicationConfigWithOIDCSaas(rnd, accountID),
+				Config:   testAccZenthcloudAccessApplicationConfigWithOIDCSaas(rnd, accountID),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithOIDCSaas_Import(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithOIDCSaas_Import(t *testing.T) {
 	t.Parallel()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_zero_trust_access_application." + rnd
+	name := "zenthcloud_zero_trust_access_application." + rnd
 
 	checkFn := resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
@@ -715,7 +715,7 @@ func TestAccCloudflareAccessApplication_WithOIDCSaas_Import(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationConfigWithOIDCSaas(rnd, accountID),
+				Config: testAccZenthcloudAccessApplicationConfigWithOIDCSaas(rnd, accountID),
 				Check:  checkFn,
 			},
 			{
@@ -728,26 +728,26 @@ func TestAccCloudflareAccessApplication_WithOIDCSaas_Import(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCloudflareAccessApplicationConfigWithOIDCSaas(rnd, accountID),
+				Config:   testAccZenthcloudAccessApplicationConfigWithOIDCSaas(rnd, accountID),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithAutoRedirectToIdentity(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithAutoRedirectToIdentity(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationConfigWithAutoRedirectToIdentity(rnd, zoneID, domain),
+				Config: testAccZenthcloudAccessApplicationConfigWithAutoRedirectToIdentity(rnd, zoneID, domain),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(name, "name", rnd),
@@ -760,26 +760,26 @@ func TestAccCloudflareAccessApplication_WithAutoRedirectToIdentity(t *testing.T)
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCloudflareAccessApplicationConfigWithAutoRedirectToIdentity(rnd, zoneID, domain),
+				Config:   testAccZenthcloudAccessApplicationConfigWithAutoRedirectToIdentity(rnd, zoneID, domain),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithEnableBindingCookie(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithEnableBindingCookie(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationConfigWithEnableBindingCookie(rnd, zoneID, domain),
+				Config: testAccZenthcloudAccessApplicationConfigWithEnableBindingCookie(rnd, zoneID, domain),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(name, "name", rnd),
@@ -791,26 +791,26 @@ func TestAccCloudflareAccessApplication_WithEnableBindingCookie(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCloudflareAccessApplicationConfigWithEnableBindingCookie(rnd, zoneID, domain),
+				Config:   testAccZenthcloudAccessApplicationConfigWithEnableBindingCookie(rnd, zoneID, domain),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithCustomDenyFields(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithCustomDenyFields(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationConfigWithCustomDenyFields(rnd, zoneID, domain),
+				Config: testAccZenthcloudAccessApplicationConfigWithCustomDenyFields(rnd, zoneID, domain),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(name, "name", rnd),
@@ -818,32 +818,32 @@ func TestAccCloudflareAccessApplication_WithCustomDenyFields(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "type", "self_hosted"),
 					resource.TestCheckResourceAttr(name, "session_duration", "24h"),
 					resource.TestCheckResourceAttr(name, "custom_deny_message", "denied!"),
-					resource.TestCheckResourceAttr(name, "custom_deny_url", "https://www.cloudflare.com"),
+					resource.TestCheckResourceAttr(name, "custom_deny_url", "https://github.com/skygenesisenterprise/zenthcloud"),
 					resource.TestCheckResourceAttr(name, "custom_non_identity_deny_url", "https://www.blocked.com"),
 				),
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCloudflareAccessApplicationConfigWithCustomDenyFields(rnd, zoneID, domain),
+				Config:   testAccZenthcloudAccessApplicationConfigWithCustomDenyFields(rnd, zoneID, domain),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithADefinedIdp(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithADefinedIdp(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationConfigWithADefinedIdp(rnd, zoneID, domain, accountID),
+				Config: testAccZenthcloudAccessApplicationConfigWithADefinedIdp(rnd, zoneID, domain, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(name, "name", rnd),
@@ -856,14 +856,14 @@ func TestAccCloudflareAccessApplication_WithADefinedIdp(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCloudflareAccessApplicationConfigWithADefinedIdp(rnd, zoneID, domain, accountID),
+				Config:   testAccZenthcloudAccessApplicationConfigWithADefinedIdp(rnd, zoneID, domain, accountID),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithMultipleIdpsReordered(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithMultipleIdpsReordered(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
 	idp1 := utils.GenerateRandomResourceName()
 	idp2 := utils.GenerateRandomResourceName()
@@ -873,36 +873,36 @@ func TestAccCloudflareAccessApplication_WithMultipleIdpsReordered(t *testing.T) 
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationConfigWithMultipleIdps(rnd, zoneID, domain, accountID, idp1, idp2),
+				Config: testAccZenthcloudAccessApplicationConfigWithMultipleIdps(rnd, zoneID, domain, accountID, idp1, idp2),
 			},
 			{
-				Config: testAccCloudflareAccessApplicationConfigWithMultipleIdps(rnd, zoneID, domain, accountID, idp2, idp1),
+				Config: testAccZenthcloudAccessApplicationConfigWithMultipleIdps(rnd, zoneID, domain, accountID, idp2, idp1),
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCloudflareAccessApplicationConfigWithMultipleIdps(rnd, zoneID, domain, accountID, idp2, idp1),
+				Config:   testAccZenthcloudAccessApplicationConfigWithMultipleIdps(rnd, zoneID, domain, accountID, idp2, idp1),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithHttpOnlyCookieAttribute(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithHttpOnlyCookieAttribute(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationConfigWithHTTPOnlyCookieAttribute(rnd, zoneID, domain),
+				Config: testAccZenthcloudAccessApplicationConfigWithHTTPOnlyCookieAttribute(rnd, zoneID, domain),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(name, "name", rnd),
@@ -914,26 +914,26 @@ func TestAccCloudflareAccessApplication_WithHttpOnlyCookieAttribute(t *testing.T
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCloudflareAccessApplicationConfigWithHTTPOnlyCookieAttribute(rnd, zoneID, domain),
+				Config:   testAccZenthcloudAccessApplicationConfigWithHTTPOnlyCookieAttribute(rnd, zoneID, domain),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithHTTPOnlyCookieAttributeSetToFalse(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithHTTPOnlyCookieAttributeSetToFalse(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationConfigWithHTTPOnlyCookieAttributeSetToFalse(rnd, zoneID, domain),
+				Config: testAccZenthcloudAccessApplicationConfigWithHTTPOnlyCookieAttributeSetToFalse(rnd, zoneID, domain),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(name, "name", rnd),
@@ -945,26 +945,26 @@ func TestAccCloudflareAccessApplication_WithHTTPOnlyCookieAttributeSetToFalse(t 
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCloudflareAccessApplicationConfigWithHTTPOnlyCookieAttributeSetToFalse(rnd, zoneID, domain),
+				Config:   testAccZenthcloudAccessApplicationConfigWithHTTPOnlyCookieAttributeSetToFalse(rnd, zoneID, domain),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithSameSiteCookieAttribute(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithSameSiteCookieAttribute(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationConfigSameSiteCookieAttribute(rnd, zoneID, domain),
+				Config: testAccZenthcloudAccessApplicationConfigSameSiteCookieAttribute(rnd, zoneID, domain),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(name, "name", rnd),
@@ -976,57 +976,57 @@ func TestAccCloudflareAccessApplication_WithSameSiteCookieAttribute(t *testing.T
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCloudflareAccessApplicationConfigSameSiteCookieAttribute(rnd, zoneID, domain),
+				Config:   testAccZenthcloudAccessApplicationConfigSameSiteCookieAttribute(rnd, zoneID, domain),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithLogoURL(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithLogoURL(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationConfigLogoURL(rnd, zoneID, domain),
+				Config: testAccZenthcloudAccessApplicationConfigLogoURL(rnd, zoneID, domain),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(name, "name", rnd),
 					resource.TestCheckResourceAttr(name, "domain", fmt.Sprintf("%s.%s", rnd, domain)),
 					resource.TestCheckResourceAttr(name, "type", "self_hosted"),
 					resource.TestCheckResourceAttr(name, "session_duration", "24h"),
-					resource.TestCheckResourceAttr(name, "logo_url", "https://www.cloudflare.com/img/logo-web-badges/cf-logo-on-white-bg.svg"),
+					resource.TestCheckResourceAttr(name, "logo_url", "https://github.com/skygenesisenterprise/zenthcloud"),
 				),
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCloudflareAccessApplicationConfigLogoURL(rnd, zoneID, domain),
+				Config:   testAccZenthcloudAccessApplicationConfigLogoURL(rnd, zoneID, domain),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithSkipInterstitial(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithSkipInterstitial(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationConfigSkipInterstitial(rnd, zoneID, domain),
+				Config: testAccZenthcloudAccessApplicationConfigSkipInterstitial(rnd, zoneID, domain),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(name, "name", rnd),
@@ -1038,26 +1038,26 @@ func TestAccCloudflareAccessApplication_WithSkipInterstitial(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCloudflareAccessApplicationConfigSkipInterstitial(rnd, zoneID, domain),
+				Config:   testAccZenthcloudAccessApplicationConfigSkipInterstitial(rnd, zoneID, domain),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithAppLauncherVisible(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithAppLauncherVisible(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationConfigWithAppLauncherVisible(rnd, zoneID, domain),
+				Config: testAccZenthcloudAccessApplicationConfigWithAppLauncherVisible(rnd, zoneID, domain),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(name, "name", rnd),
@@ -1069,16 +1069,16 @@ func TestAccCloudflareAccessApplication_WithAppLauncherVisible(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCloudflareAccessApplicationConfigWithAppLauncherVisible(rnd, zoneID, domain),
+				Config:   testAccZenthcloudAccessApplicationConfigWithAppLauncherVisible(rnd, zoneID, domain),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithSelfHostedDomains(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithSelfHostedDomains(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -1086,10 +1086,10 @@ func TestAccCloudflareAccessApplication_WithSelfHostedDomains(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationWithSelfHostedDomains(rnd, domain, cloudflare.AccountIdentifier(accountID)),
+				Config: testAccZenthcloudAccessApplicationWithSelfHostedDomains(rnd, domain, zenthcloud.AccountIdentifier(accountID)),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(name, "name", rnd),
@@ -1103,27 +1103,27 @@ func TestAccCloudflareAccessApplication_WithSelfHostedDomains(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCloudflareAccessApplicationWithSelfHostedDomains(rnd, domain, cloudflare.AccountIdentifier(accountID)),
+				Config:   testAccZenthcloudAccessApplicationWithSelfHostedDomains(rnd, domain, zenthcloud.AccountIdentifier(accountID)),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithDefinedTags(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithDefinedTags(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationConfigWithADefinedTag(rnd, zoneID, domain, accountID),
+				Config: testAccZenthcloudAccessApplicationConfigWithADefinedTag(rnd, zoneID, domain, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(name, "name", rnd),
@@ -1135,27 +1135,27 @@ func TestAccCloudflareAccessApplication_WithDefinedTags(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCloudflareAccessApplicationConfigWithADefinedTag(rnd, zoneID, domain, accountID),
+				Config:   testAccZenthcloudAccessApplicationConfigWithADefinedTag(rnd, zoneID, domain, accountID),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithLegacyPolicies(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithLegacyPolicies(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationConfigWithLegacyPolicies(rnd, domain, accountID),
+				Config: testAccZenthcloudAccessApplicationConfigWithLegacyPolicies(rnd, domain, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "name", rnd),
 					resource.TestCheckResourceAttr(name, "domain", fmt.Sprintf("%s.%s", rnd, domain)),
@@ -1165,18 +1165,18 @@ func TestAccCloudflareAccessApplication_WithLegacyPolicies(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCloudflareAccessApplicationConfigWithLegacyPolicies(rnd, domain, accountID),
+				Config:   testAccZenthcloudAccessApplicationConfigWithLegacyPolicies(rnd, domain, accountID),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithReusablePolicies(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithReusablePolicies(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 	resourceName := name
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -1184,10 +1184,10 @@ func TestAccCloudflareAccessApplication_WithReusablePolicies(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationConfigWithReusablePolicies(rnd, domain, accountID),
+				Config: testAccZenthcloudAccessApplicationConfigWithReusablePolicies(rnd, domain, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "name", rnd),
 					resource.TestCheckResourceAttr(name, "domain", fmt.Sprintf("%s.%s", rnd, domain)),
@@ -1243,43 +1243,43 @@ func TestAccCloudflareAccessApplication_WithReusablePolicies(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCloudflareAccessApplicationConfigWithReusablePolicies(rnd, domain, accountID),
+				Config:   testAccZenthcloudAccessApplicationConfigWithReusablePolicies(rnd, domain, accountID),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithReusablePolicies_InvalidPrecedence(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithReusablePolicies_InvalidPrecedence(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCloudflareAccessApplicationConfigWithReusablePoliciesInvalidPrecedence(rnd, domain, accountID),
+				Config:      testAccZenthcloudAccessApplicationConfigWithReusablePoliciesInvalidPrecedence(rnd, domain, accountID),
 				ExpectError: regexp.MustCompile(`Attribute policies\[0].precedence value must be at least 1, got: 0`),
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithAppLauncherCustomization(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithAppLauncherCustomization(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccessApplicationWithAppLauncherCustomizationFields(rnd, accountID),
@@ -1289,14 +1289,14 @@ func TestAccCloudflareAccessApplication_WithAppLauncherCustomization(t *testing.
 					resource.TestCheckResourceAttr(name, "session_duration", "24h"),
 					resource.TestCheckResourceAttr(name, "header_bg_color", "#000000"),
 					resource.TestCheckResourceAttr(name, "bg_color", "#000000"),
-					resource.TestCheckResourceAttr(name, "app_launcher_logo_url", "https://www.cloudflare.com/img/logo-web-badges/cf-logo-on-white-bg.svg"),
+					resource.TestCheckResourceAttr(name, "app_launcher_logo_url", "https://github.com/skygenesisenterprise/zenthcloud"),
 					resource.TestCheckResourceAttr(name, "landing_page_design.title", "title"),
 					resource.TestCheckResourceAttr(name, "landing_page_design.message", "message"),
 					resource.TestCheckResourceAttr(name, "landing_page_design.button_color", "#000000"),
 					resource.TestCheckResourceAttr(name, "landing_page_design.button_text_color", "#000000"),
-					resource.TestCheckResourceAttr(name, "landing_page_design.image_url", "https://www.cloudflare.com/img/logo-web-badges/cf-logo-on-white-bg.svg"),
+					resource.TestCheckResourceAttr(name, "landing_page_design.image_url", "https://github.com/skygenesisenterprise/zenthcloud"),
 					resource.TestCheckResourceAttr(name, "footer_links.0.name", "footer link"),
-					resource.TestCheckResourceAttr(name, "footer_links.0.url", "https://www.cloudflare.com"),
+					resource.TestCheckResourceAttr(name, "footer_links.0.url", "https://github.com/skygenesisenterprise/zenthcloud"),
 				),
 			},
 			{
@@ -1308,20 +1308,20 @@ func TestAccCloudflareAccessApplication_WithAppLauncherCustomization(t *testing.
 	})
 }
 
-func TestAccCloudflareAccessApplication_Infrastructure(t *testing.T) {
+func TestAccZenthcloudAccessApplication_Infrastructure(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationInfrastructure(rnd, accountID, ""),
+				Config: testAccZenthcloudAccessApplicationInfrastructure(rnd, accountID, ""),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(name, "session_duration", "24h"),
@@ -1338,36 +1338,36 @@ func TestAccCloudflareAccessApplication_Infrastructure(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCloudflareAccessApplicationInfrastructure(rnd, accountID, ""),
+				Config:   testAccZenthcloudAccessApplicationInfrastructure(rnd, accountID, ""),
 				PlanOnly: true,
 			},
 			{
-				Config: testAccCloudflareAccessApplicationInfrastructure(rnd, accountID, "8h"),
+				Config: testAccZenthcloudAccessApplicationInfrastructure(rnd, accountID, "8h"),
 				Check:  resource.TestCheckResourceAttr(name, "session_duration", "8h"),
 			},
 			{
-				Config:   testAccCloudflareAccessApplicationInfrastructure(rnd, accountID, "8h"),
+				Config:   testAccZenthcloudAccessApplicationInfrastructure(rnd, accountID, "8h"),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_RDP(t *testing.T) {
+func TestAccZenthcloudAccessApplication_RDP(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 	appDomain := fmt.Sprintf("%[1]s.%[2]s", rnd, domain)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationRDP(rnd, accountID, domain),
+				Config: testAccZenthcloudAccessApplicationRDP(rnd, accountID, domain),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(name, "session_duration", "24h"),
@@ -1385,22 +1385,22 @@ func TestAccCloudflareAccessApplication_RDP(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccCloudflareAccessApplicationRDP(rnd, accountID, domain),
+				Config:   testAccZenthcloudAccessApplicationRDP(rnd, accountID, domain),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func testAccCloudflareAccessApplicationConfigBasic(rnd string, domain string, identifier *cloudflare.ResourceContainer) string {
+func testAccZenthcloudAccessApplicationConfigBasic(rnd string, domain string, identifier *zenthcloud.ResourceContainer) string {
 	return acctest.LoadTestCase("accessapplicationconfigbasic.tf", rnd, domain, identifier.Type, identifier.Identifier)
 }
 
-func testAccCloudflareAccessApplicationConfigWithCORS(rnd, zoneID, domain string) string {
+func testAccZenthcloudAccessApplicationConfigWithCORS(rnd, zoneID, domain string) string {
 	return acctest.LoadTestCase("accessapplicationconfigwithcors.tf", rnd, zoneID, domain)
 }
 
-func testAccCloudflareAccessApplicationInfrastructure(rnd, accID, duration string) string {
+func testAccZenthcloudAccessApplicationInfrastructure(rnd, accID, duration string) string {
 	durationConfig := ""
 	if duration != "" {
 		durationConfig = fmt.Sprintf("session_duration = %q", duration)
@@ -1408,59 +1408,59 @@ func testAccCloudflareAccessApplicationInfrastructure(rnd, accID, duration strin
 	return acctest.LoadTestCase("accessapplicationconfiginfrastructure.tf", rnd, accID, durationConfig)
 }
 
-func testAccCloudflareAccessApplicationRDP(rnd, accID, domain string) string {
+func testAccZenthcloudAccessApplicationRDP(rnd, accID, domain string) string {
 	return acctest.LoadTestCase("accessapplicationconfigrdp.tf", rnd, accID, domain)
 }
 
-func testAccCloudflareAccessApplicationConfigWithSAMLSaas(rnd, accountID string) string {
+func testAccZenthcloudAccessApplicationConfigWithSAMLSaas(rnd, accountID string) string {
 	return acctest.LoadTestCase("accessapplicationconfigwithsamlsaas.tf", rnd, accountID)
 }
 
-func testAccCloudflareAccessApplicationConfigWithOIDCSaas(rnd, accountID string) string {
+func testAccZenthcloudAccessApplicationConfigWithOIDCSaas(rnd, accountID string) string {
 	return acctest.LoadTestCase("accessapplicationconfigwithoidcsaas.tf", rnd, accountID)
 }
 
-func testAccCloudflareAccessApplicationConfigWithAutoRedirectToIdentity(rnd, zoneID, domain string) string {
+func testAccZenthcloudAccessApplicationConfigWithAutoRedirectToIdentity(rnd, zoneID, domain string) string {
 	return acctest.LoadTestCase("accessapplicationconfigwithautoredirecttoidentity.tf", rnd, zoneID, domain)
 }
 
-func testAccCloudflareAccessApplicationConfigWithEnableBindingCookie(rnd, zoneID, domain string) string {
+func testAccZenthcloudAccessApplicationConfigWithEnableBindingCookie(rnd, zoneID, domain string) string {
 	return acctest.LoadTestCase("accessapplicationconfigwithenablebindingcookie.tf", rnd, zoneID, domain)
 }
 
-func testAccCloudflareAccessApplicationConfigWithCustomDenyFields(rnd, zoneID, domain string) string {
+func testAccZenthcloudAccessApplicationConfigWithCustomDenyFields(rnd, zoneID, domain string) string {
 	return acctest.LoadTestCase("accessapplicationconfigwithcustomdenyfields.tf", rnd, zoneID, domain)
 }
 
-func testAccCloudflareAccessApplicationConfigWithADefinedIdp(rnd, zoneID, domain string, accountID string) string {
+func testAccZenthcloudAccessApplicationConfigWithADefinedIdp(rnd, zoneID, domain string, accountID string) string {
 	return acctest.LoadTestCase("accessapplicationconfigwithadefinedidp.tf", rnd, zoneID, domain, accountID)
 }
 
-func testAccCloudflareAccessApplicationConfigWithMultipleIdps(rnd, zoneID, domain, accountID, idp1, idp2 string) string {
+func testAccZenthcloudAccessApplicationConfigWithMultipleIdps(rnd, zoneID, domain, accountID, idp1, idp2 string) string {
 	return acctest.LoadTestCase("accessapplicationconfigwithmultipleidps.tf", rnd, zoneID, domain, accountID, idp1, idp2)
 }
 
-func testAccCloudflareAccessApplicationConfigWithHTTPOnlyCookieAttribute(rnd, zoneID, domain string) string {
+func testAccZenthcloudAccessApplicationConfigWithHTTPOnlyCookieAttribute(rnd, zoneID, domain string) string {
 	return acctest.LoadTestCase("accessapplicationconfigwithhttponlycookieattribute.tf", rnd, zoneID, domain)
 }
 
-func testAccCloudflareAccessApplicationConfigWithHTTPOnlyCookieAttributeSetToFalse(rnd, zoneID, domain string) string {
+func testAccZenthcloudAccessApplicationConfigWithHTTPOnlyCookieAttributeSetToFalse(rnd, zoneID, domain string) string {
 	return acctest.LoadTestCase("accessapplicationconfigwithhttponlycookieattributesettofalse.tf", rnd, zoneID, domain)
 }
 
-func testAccCloudflareAccessApplicationConfigSameSiteCookieAttribute(rnd, zoneID, domain string) string {
+func testAccZenthcloudAccessApplicationConfigSameSiteCookieAttribute(rnd, zoneID, domain string) string {
 	return acctest.LoadTestCase("accessapplicationconfigsamesitecookieattribute.tf", rnd, zoneID, domain)
 }
 
-func testAccCloudflareAccessApplicationConfigSkipInterstitial(rnd, zoneID, domain string) string {
+func testAccZenthcloudAccessApplicationConfigSkipInterstitial(rnd, zoneID, domain string) string {
 	return acctest.LoadTestCase("accessapplicationconfigskipinterstitial.tf", rnd, zoneID, domain)
 }
 
-func testAccCloudflareAccessApplicationConfigWithAppLauncherVisible(rnd, zoneID, domain string) string {
+func testAccZenthcloudAccessApplicationConfigWithAppLauncherVisible(rnd, zoneID, domain string) string {
 	return acctest.LoadTestCase("accessapplicationconfigwithapplaunchervisible.tf", rnd, zoneID, domain)
 }
 
-func testAccCloudflareAccessApplicationConfigLogoURL(rnd, zoneID, domain string) string {
+func testAccZenthcloudAccessApplicationConfigLogoURL(rnd, zoneID, domain string) string {
 	return acctest.LoadTestCase("accessapplicationconfiglogourl.tf", rnd, zoneID, domain)
 }
 
@@ -1468,32 +1468,32 @@ func testAccessApplicationWithAppLauncherCustomizationFields(rnd, accountID stri
 	return acctest.LoadTestCase("accessapplicationwithapplaunchercustomizationfields.tf", rnd, accountID)
 }
 
-func testAccCloudflareAccessApplicationWithSelfHostedDomains(rnd string, domain string, identifier *cloudflare.ResourceContainer) string {
+func testAccZenthcloudAccessApplicationWithSelfHostedDomains(rnd string, domain string, identifier *zenthcloud.ResourceContainer) string {
 	return acctest.LoadTestCase("accessapplicationwithselfhosteddomains.tf", rnd, domain, identifier.Type, identifier.Identifier)
 }
 
-func testAccCheckCloudflareAccessApplicationDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudAccessApplicationDestroy(s *terraform.State) error {
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client for destroy check: %s", clientErr))
+		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client for destroy check: %s", clientErr))
 		return clientErr
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_zero_trust_access_application" {
+		if rs.Type != "zenthcloud_zero_trust_access_application" {
 			continue
 		}
 
-		var notFoundError *cloudflare.NotFoundError
+		var notFoundError *zenthcloud.NotFoundError
 		if rs.Primary.Attributes[consts.ZoneIDSchemaKey] != "" {
-			_, err := client.GetAccessApplication(context.Background(), cloudflare.ZoneIdentifier(rs.Primary.Attributes[consts.ZoneIDSchemaKey]), rs.Primary.ID)
+			_, err := client.GetAccessApplication(context.Background(), zenthcloud.ZoneIdentifier(rs.Primary.Attributes[consts.ZoneIDSchemaKey]), rs.Primary.ID)
 			if !errors.As(err, &notFoundError) {
 				return fmt.Errorf("AccessApplication still exists")
 			}
 		}
 
 		if rs.Primary.Attributes[consts.AccountIDSchemaKey] != "" {
-			_, err := client.GetAccessApplication(context.Background(), cloudflare.AccountIdentifier(rs.Primary.Attributes[consts.AccountIDSchemaKey]), rs.Primary.ID)
+			_, err := client.GetAccessApplication(context.Background(), zenthcloud.AccountIdentifier(rs.Primary.Attributes[consts.AccountIDSchemaKey]), rs.Primary.ID)
 			if !errors.As(err, &notFoundError) {
 				return fmt.Errorf("AccessApplication still exists")
 			}
@@ -1504,11 +1504,11 @@ func testAccCheckCloudflareAccessApplicationDestroy(s *terraform.State) error {
 	return nil
 }
 
-func TestAccCloudflareAccessApplicationWithZoneID(t *testing.T) {
+func TestAccZenthcloudAccessApplicationWithZoneID(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_zero_trust_access_application." + rnd
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	name := "zenthcloud_zero_trust_access_application." + rnd
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	updatedName := fmt.Sprintf("%s-updated", rnd)
 
 	resource.Test(t, resource.TestCase{
@@ -1541,10 +1541,10 @@ func TestAccCloudflareAccessApplicationWithZoneID(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareAccessApplicationWithMissingCORSMethods(t *testing.T) {
+func TestAccZenthcloudAccessApplicationWithMissingCORSMethods(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -1561,10 +1561,10 @@ func TestAccCloudflareAccessApplicationWithMissingCORSMethods(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareAccessApplicationWithMissingCORSOrigins(t *testing.T) {
+func TestAccZenthcloudAccessApplicationWithMissingCORSOrigins(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -1581,10 +1581,10 @@ func TestAccCloudflareAccessApplicationWithMissingCORSOrigins(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareAccessApplicationWithInvalidSessionDuration(t *testing.T) {
+func TestAccZenthcloudAccessApplicationWithInvalidSessionDuration(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -1601,7 +1601,7 @@ func TestAccCloudflareAccessApplicationWithInvalidSessionDuration(t *testing.T) 
 	})
 }
 
-func TestAccCloudflareAccessApplicationWithInvalidPrivateDestination(t *testing.T) {
+func TestAccZenthcloudAccessApplicationWithInvalidPrivateDestination(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
 
 	resource.Test(t, resource.TestCase{
@@ -1619,7 +1619,7 @@ func TestAccCloudflareAccessApplicationWithInvalidPrivateDestination(t *testing.
 	})
 }
 
-func TestAccCloudflareAccessApplicationWithInvalidWorkerDestination(t *testing.T) {
+func TestAccZenthcloudAccessApplicationWithInvalidWorkerDestination(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
 
 	resource.Test(t, resource.TestCase{
@@ -1637,10 +1637,10 @@ func TestAccCloudflareAccessApplicationWithInvalidWorkerDestination(t *testing.T
 	})
 }
 
-func TestAccCloudflareAccessApplicationWithDestinations(t *testing.T) {
+func TestAccZenthcloudAccessApplicationWithDestinations(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
 
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 	publicDomain := fmt.Sprintf("d1.%[1]s.%[2]s", rnd, domain)
 	privateDomain := fmt.Sprintf("%[1]s.private", rnd)
 
@@ -1650,10 +1650,10 @@ func TestAccCloudflareAccessApplicationWithDestinations(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccessApplicationWithDestinations(rnd, domain, cloudflare.AccountIdentifier(accountID)),
+				Config: testAccessApplicationWithDestinations(rnd, domain, zenthcloud.AccountIdentifier(accountID)),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(name, "name", rnd),
@@ -1666,17 +1666,17 @@ func TestAccCloudflareAccessApplicationWithDestinations(t *testing.T) {
 			},
 			{
 				// Ensures no diff on last plan
-				Config:   testAccessApplicationWithDestinations(rnd, domain, cloudflare.AccountIdentifier(accountID)),
+				Config:   testAccessApplicationWithDestinations(rnd, domain, zenthcloud.AccountIdentifier(accountID)),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplicationWithWorkerDestinations(t *testing.T) {
+func TestAccZenthcloudAccessApplicationWithWorkerDestinations(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
 
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -1684,7 +1684,7 @@ func TestAccCloudflareAccessApplicationWithWorkerDestinations(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccessApplicationWithWorkerDestinations(rnd, accountID),
@@ -1711,10 +1711,10 @@ func TestAccCloudflareAccessApplicationWithWorkerDestinations(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareAccessApplicationMisconfiguredCORSCredentialsAllowingAllOrigins(t *testing.T) {
+func TestAccZenthcloudAccessApplicationMisconfiguredCORSCredentialsAllowingAllOrigins(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -1731,9 +1731,9 @@ func TestAccCloudflareAccessApplicationMisconfiguredCORSCredentialsAllowingAllOr
 	})
 }
 
-func TestAccCloudflareAccessApplicationWithInvalidSaas(t *testing.T) {
+func TestAccZenthcloudAccessApplicationWithInvalidSaas(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accoundID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accoundID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -1750,19 +1750,19 @@ func TestAccCloudflareAccessApplicationWithInvalidSaas(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareAccessApplication_WarpInvalid(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WarpInvalid(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accoundID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accoundID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCloudflareAccessApplicationWarpInvalid(rnd, accoundID),
+				Config:      testAccZenthcloudAccessApplicationWarpInvalid(rnd, accoundID),
 				ExpectError: regexp.MustCompile(`"allow_authenticate_via_warp" can only be set if "type" is one of:\s"self_hosted", "ssh", "vnc", "rdp", "saas", "dash_sso"`),
 			},
 		},
@@ -1797,7 +1797,7 @@ func testAccessApplicationWithInvalidWorkerDestination(resourceID, accountID str
 	return acctest.LoadTestCase("accessapplicationconfiginvalidworkerdestination.tf", resourceID, accountID)
 }
 
-func testAccessApplicationWithDestinations(rnd string, domain string, identifier *cloudflare.ResourceContainer) string {
+func testAccessApplicationWithDestinations(rnd string, domain string, identifier *zenthcloud.ResourceContainer) string {
 	return acctest.LoadTestCase("accessapplicationconfigwithdestinations.tf", rnd, domain, identifier.Type, identifier.Identifier)
 }
 
@@ -1809,47 +1809,47 @@ func testAccessApplicationMisconfiguredCORSAllowAllOriginsWithCredentials(resour
 	return acctest.LoadTestCase("accessapplicationmisconfiguredcorsallowalloriginswithcredentials.tf", resourceID, zone, zoneID)
 }
 
-func testAccCloudflareAccessApplicationConfigWithADefinedTag(rnd, zoneID, domain string, accountID string) string {
+func testAccZenthcloudAccessApplicationConfigWithADefinedTag(rnd, zoneID, domain string, accountID string) string {
 	return acctest.LoadTestCase("accessapplicationconfigwithadefinedtag.tf", rnd, zoneID, domain, accountID)
 }
 
-func testAccCloudflareAccessApplicationSCIMConfigValidHttpBasic(rnd, accountID, domain string) string {
+func testAccZenthcloudAccessApplicationSCIMConfigValidHttpBasic(rnd, accountID, domain string) string {
 	return acctest.LoadTestCase("accessapplicationscimconfigvalidhttpbasic.tf", rnd, accountID, domain)
 }
 
-func testAccCloudflareAccessApplicationSCIMConfigValidOAuthBearerTokenNoMappings(rnd, accountID, domain string) string {
+func testAccZenthcloudAccessApplicationSCIMConfigValidOAuthBearerTokenNoMappings(rnd, accountID, domain string) string {
 	return acctest.LoadTestCase("accessapplicationscimconfigvalidoauthbearertokennomappings.tf", rnd, accountID, domain)
 }
 
-func testAccCloudflareAccessApplicationSCIMConfigValidOAuthBearerToken(rnd, accountID, domain string) string {
+func testAccZenthcloudAccessApplicationSCIMConfigValidOAuthBearerToken(rnd, accountID, domain string) string {
 	return acctest.LoadTestCase("accessapplicationscimconfigvalidoauthbearertoken.tf", rnd, accountID, domain)
 }
 
-func testAccCloudflareAccessApplicationSCIMConfigValidOAuth2(rnd, accountID, domain string) string {
+func testAccZenthcloudAccessApplicationSCIMConfigValidOAuth2(rnd, accountID, domain string) string {
 	return acctest.LoadTestCase("accessapplicationscimconfigvalidoauth2.tf", rnd, accountID, domain)
 }
 
-func testAccCloudflareAccessApplicationSCIMConfigOAuth2MissingRequired(rnd, accountID, domain string) string {
+func testAccZenthcloudAccessApplicationSCIMConfigOAuth2MissingRequired(rnd, accountID, domain string) string {
 	return acctest.LoadTestCase("accessapplicationscimconfigoauth2missingrequired.tf", rnd, accountID, domain)
 }
 
-func testAccCloudflareAccessApplicationSCIMConfigHttpBasicMissingRequired(rnd, accountID, domain string) string {
+func testAccZenthcloudAccessApplicationSCIMConfigHttpBasicMissingRequired(rnd, accountID, domain string) string {
 	return acctest.LoadTestCase("accessapplicationscimconfighttpbasicmissingrequired.tf", rnd, accountID, domain)
 }
 
-func testAccCloudflareAccessApplicationSCIMConfigInvalidMappingSchema(rnd, accountID, domain string) string {
+func testAccZenthcloudAccessApplicationSCIMConfigInvalidMappingSchema(rnd, accountID, domain string) string {
 	return acctest.LoadTestCase("accessapplicationscimconfiginvalidmappingschema.tf", rnd, accountID, domain)
 }
 
-func testAccCloudflareAccessApplicationConfigWithLegacyPolicies(rnd, domain string, accountID string) string {
+func testAccZenthcloudAccessApplicationConfigWithLegacyPolicies(rnd, domain string, accountID string) string {
 	return acctest.LoadTestCase("accessapplicationconfigwithlegacypolicies.tf", rnd, domain, accountID)
 }
 
-func testAccCloudflareAccessApplicationConfigWithReusablePolicies(rnd, domain string, accountID string) string {
+func testAccZenthcloudAccessApplicationConfigWithReusablePolicies(rnd, domain string, accountID string) string {
 	return acctest.LoadTestCase("accessapplicationconfigwithreusablepolicies.tf", rnd, domain, accountID)
 }
 
-func testAccCloudflareAccessApplicationConfigWithReusablePoliciesInvalidPrecedence(rnd, domain string, accountID string) string {
+func testAccZenthcloudAccessApplicationConfigWithReusablePoliciesInvalidPrecedence(rnd, domain string, accountID string) string {
 	return acctest.LoadTestCase("accessapplicationconfigwithreusablepolicies_invalid_precedence.tf", rnd, domain, accountID)
 }
 
@@ -1857,13 +1857,13 @@ func testAccessApplicationWithInvalidSaas(resourceID, accountID string) string {
 	return acctest.LoadTestCase("accessapplicationconfigwithinvalidsaas.tf", resourceID, accountID)
 }
 
-func testAccCloudflareAccessApplicationWarpInvalid(rnd, accountID string) string {
+func testAccZenthcloudAccessApplicationWarpInvalid(rnd, accountID string) string {
 	return acctest.LoadTestCase("accessapplicationconfigwarpinvalid.tf", rnd, accountID)
 }
 
-func TestAccCloudflareAccessApplication_BooleanFieldsPersistence(t *testing.T) {
+func TestAccZenthcloudAccessApplication_BooleanFieldsPersistence(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 	resourceName := name
 
 	resource.Test(t, resource.TestCase{
@@ -1872,10 +1872,10 @@ func TestAccCloudflareAccessApplication_BooleanFieldsPersistence(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationConfigBooleanFields(rnd, domain, accountID),
+				Config: testAccZenthcloudAccessApplicationConfigBooleanFields(rnd, domain, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -1891,16 +1891,16 @@ func TestAccCloudflareAccessApplication_BooleanFieldsPersistence(t *testing.T) {
 			},
 			{
 				// Ensures no diff on second plan - this is the key test for boolean persistence issues
-				Config:   testAccCloudflareAccessApplicationConfigBooleanFields(rnd, domain, accountID),
+				Config:   testAccZenthcloudAccessApplicationConfigBooleanFields(rnd, domain, accountID),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_AllowIframeFalsePersistence(t *testing.T) {
+func TestAccZenthcloudAccessApplication_AllowIframeFalsePersistence(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 	resourceName := name
 
 	resource.Test(t, resource.TestCase{
@@ -1909,17 +1909,17 @@ func TestAccCloudflareAccessApplication_AllowIframeFalsePersistence(t *testing.T
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationConfigAllowIframeFalse(rnd, domain, accountID),
+				Config: testAccZenthcloudAccessApplicationConfigAllowIframeFalse(rnd, domain, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("allow_iframe"), knownvalue.Bool(false)),
 				},
 			},
 			{
 				// Test that omitting allow_iframe doesn't cause a diff when API returns false
-				Config: testAccCloudflareAccessApplicationConfigAllowIframeOmitted(rnd, domain, accountID),
+				Config: testAccZenthcloudAccessApplicationConfigAllowIframeOmitted(rnd, domain, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					// Should be normalized to null without causing a diff
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("allow_iframe"), knownvalue.Null()),
@@ -1927,17 +1927,17 @@ func TestAccCloudflareAccessApplication_AllowIframeFalsePersistence(t *testing.T
 			},
 			{
 				// Ensures no diff on subsequent plan
-				Config:   testAccCloudflareAccessApplicationConfigAllowIframeOmitted(rnd, domain, accountID),
+				Config:   testAccZenthcloudAccessApplicationConfigAllowIframeOmitted(rnd, domain, accountID),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_BooleanFieldTransitions(t *testing.T) {
+func TestAccZenthcloudAccessApplication_BooleanFieldTransitions(t *testing.T) {
 	t.Skip("Account-level WARP setting keep gets toggled off")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 	resourceName := name
 
 	resource.Test(t, resource.TestCase{
@@ -1946,11 +1946,11 @@ func TestAccCloudflareAccessApplication_BooleanFieldTransitions(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
 				// Start with boolean fields set to true
-				Config: testAccCloudflareAccessApplicationConfigBooleanFieldsTrue(rnd, domain, accountID),
+				Config: testAccZenthcloudAccessApplicationConfigBooleanFieldsTrue(rnd, domain, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("allow_iframe"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("skip_interstitial"), knownvalue.Bool(true)),
@@ -1958,7 +1958,7 @@ func TestAccCloudflareAccessApplication_BooleanFieldTransitions(t *testing.T) {
 			},
 			{
 				// Change to false
-				Config: testAccCloudflareAccessApplicationConfigBooleanFieldsFalse(rnd, domain, accountID),
+				Config: testAccZenthcloudAccessApplicationConfigBooleanFieldsFalse(rnd, domain, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("allow_iframe"), knownvalue.Bool(false)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("skip_interstitial"), knownvalue.Bool(false)),
@@ -1966,7 +1966,7 @@ func TestAccCloudflareAccessApplication_BooleanFieldTransitions(t *testing.T) {
 			},
 			{
 				// Remove the boolean fields entirely (should not cause drift)
-				Config: testAccCloudflareAccessApplicationConfigBooleanFieldsOmitted(rnd, domain, accountID),
+				Config: testAccZenthcloudAccessApplicationConfigBooleanFieldsOmitted(rnd, domain, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					// Should be normalized to null without drift
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("allow_iframe"), knownvalue.Null()),
@@ -1975,16 +1975,16 @@ func TestAccCloudflareAccessApplication_BooleanFieldTransitions(t *testing.T) {
 			},
 			{
 				// Ensures no diff on final plan
-				Config:   testAccCloudflareAccessApplicationConfigBooleanFieldsOmitted(rnd, domain, accountID),
+				Config:   testAccZenthcloudAccessApplicationConfigBooleanFieldsOmitted(rnd, domain, accountID),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func testAccCloudflareAccessApplicationConfigBooleanFields(rnd, domain, accountID string) string {
+func testAccZenthcloudAccessApplicationConfigBooleanFields(rnd, domain, accountID string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_zero_trust_access_application" "%[1]s" {
+resource "zenthcloud_zero_trust_access_application" "%[1]s" {
   account_id                     = "%[3]s"
   name                           = "%[1]s"
   domain                         = "%[1]s.%[2]s"
@@ -2005,9 +2005,9 @@ resource "cloudflare_zero_trust_access_application" "%[1]s" {
 `, rnd, domain, accountID)
 }
 
-func testAccCloudflareAccessApplicationConfigAllowIframeFalse(rnd, domain, accountID string) string {
+func testAccZenthcloudAccessApplicationConfigAllowIframeFalse(rnd, domain, accountID string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_zero_trust_access_application" "%[1]s" {
+resource "zenthcloud_zero_trust_access_application" "%[1]s" {
   account_id       = "%[3]s"
   name             = "%[1]s"
   domain           = "%[1]s.%[2]s"
@@ -2018,9 +2018,9 @@ resource "cloudflare_zero_trust_access_application" "%[1]s" {
 `, rnd, domain, accountID)
 }
 
-func testAccCloudflareAccessApplicationConfigAllowIframeOmitted(rnd, domain, accountID string) string {
+func testAccZenthcloudAccessApplicationConfigAllowIframeOmitted(rnd, domain, accountID string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_zero_trust_access_application" "%[1]s" {
+resource "zenthcloud_zero_trust_access_application" "%[1]s" {
   account_id       = "%[3]s"
   name             = "%[1]s"
   domain           = "%[1]s.%[2]s"
@@ -2030,9 +2030,9 @@ resource "cloudflare_zero_trust_access_application" "%[1]s" {
 `, rnd, domain, accountID)
 }
 
-func testAccCloudflareAccessApplicationConfigBooleanFieldsTrue(rnd, domain, accountID string) string {
+func testAccZenthcloudAccessApplicationConfigBooleanFieldsTrue(rnd, domain, accountID string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_zero_trust_access_application" "%[1]s" {
+resource "zenthcloud_zero_trust_access_application" "%[1]s" {
   account_id                     = "%[3]s"
   name                           = "%[1]s"
   domain                         = "%[1]s.%[2]s"
@@ -2046,9 +2046,9 @@ resource "cloudflare_zero_trust_access_application" "%[1]s" {
 `, rnd, domain, accountID)
 }
 
-func testAccCloudflareAccessApplicationConfigBooleanFieldsFalse(rnd, domain, accountID string) string {
+func testAccZenthcloudAccessApplicationConfigBooleanFieldsFalse(rnd, domain, accountID string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_zero_trust_access_application" "%[1]s" {
+resource "zenthcloud_zero_trust_access_application" "%[1]s" {
   account_id                     = "%[3]s"
   name                           = "%[1]s"
   domain                         = "%[1]s.%[2]s"
@@ -2062,9 +2062,9 @@ resource "cloudflare_zero_trust_access_application" "%[1]s" {
 `, rnd, domain, accountID)
 }
 
-func testAccCloudflareAccessApplicationConfigBooleanFieldsOmitted(rnd, domain, accountID string) string {
+func testAccZenthcloudAccessApplicationConfigBooleanFieldsOmitted(rnd, domain, accountID string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_zero_trust_access_application" "%[1]s" {
+resource "zenthcloud_zero_trust_access_application" "%[1]s" {
   account_id       = "%[3]s"
   name             = "%[1]s"
   domain           = "%[1]s.%[2]s"
@@ -2074,9 +2074,9 @@ resource "cloudflare_zero_trust_access_application" "%[1]s" {
 `, rnd, domain, accountID)
 }
 
-func TestAccCloudflareAccessApplication_TagsOrderIgnored(t *testing.T) {
+func TestAccZenthcloudAccessApplication_TagsOrderIgnored(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 	resourceName := name
 
 	resource.Test(t, resource.TestCase{
@@ -2085,10 +2085,10 @@ func TestAccCloudflareAccessApplication_TagsOrderIgnored(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationConfigWithTagsOrdering(rnd, domain, accountID),
+				Config: testAccZenthcloudAccessApplicationConfigWithTagsOrdering(rnd, domain, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -2109,27 +2109,27 @@ func TestAccCloudflareAccessApplication_TagsOrderIgnored(t *testing.T) {
 				ImportStateVerifyIgnore: []string{"service_auth_401_redirect", "destinations", "enable_binding_cookie", "options_preflight_bypass", "self_hosted_domains", "tags", "auto_redirect_to_identity"},
 			},
 			{
-				Config: testAccCloudflareAccessApplicationConfigWithTagsOrdering(rnd, domain, accountID),
+				Config: testAccZenthcloudAccessApplicationConfigWithTagsOrdering(rnd, domain, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("tags"), knownvalue.SetSizeExact(3)),
 				},
 			},
 			{
-				Config:   testAccCloudflareAccessApplicationConfigWithTagsOrdering(rnd, domain, accountID),
+				Config:   testAccZenthcloudAccessApplicationConfigWithTagsOrdering(rnd, domain, accountID),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func testAccCloudflareAccessApplicationConfigWithTagsOrdering(rnd, domain, accountID string) string {
+func testAccZenthcloudAccessApplicationConfigWithTagsOrdering(rnd, domain, accountID string) string {
 	return acctest.LoadTestCase("accessapplicationconfigwithtagsordering.tf", rnd, domain, accountID)
 }
 
-func TestAccCloudflareAccessApplication_MCPSetup(t *testing.T) {
+func TestAccZenthcloudAccessApplication_MCPSetup(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	mcpAppName := fmt.Sprintf("cloudflare_zero_trust_access_application.%s_mcp_server", rnd)
-	mcpPortalAppName := fmt.Sprintf("cloudflare_zero_trust_access_application.%s_mcp_portal", rnd)
+	mcpAppName := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s_mcp_server", rnd)
+	mcpPortalAppName := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s_mcp_portal", rnd)
 	mcpPortalDomain := fmt.Sprintf("%[1]s.%[2]s", rnd, domain)
 
 	resource.Test(t, resource.TestCase{
@@ -2138,10 +2138,10 @@ func TestAccCloudflareAccessApplication_MCPSetup(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationMCPConfig(rnd, domain, accountID),
+				Config: testAccZenthcloudAccessApplicationMCPConfig(rnd, domain, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					// check mcp server app
 					statecheck.ExpectKnownValue(mcpAppName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
@@ -2182,30 +2182,30 @@ func TestAccCloudflareAccessApplication_MCPSetup(t *testing.T) {
 				ImportStateVerifyIgnore: []string{"service_auth_401_redirect", "destinations", "enable_binding_cookie", "options_preflight_bypass", "self_hosted_domains", "tags", "auto_redirect_to_identity"},
 			},
 			{
-				Config:   testAccCloudflareAccessApplicationMCPConfig(rnd, domain, accountID),
+				Config:   testAccZenthcloudAccessApplicationMCPConfig(rnd, domain, accountID),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func testAccCloudflareAccessApplicationMCPConfig(rnd, domain, accountID string) string {
+func testAccZenthcloudAccessApplicationMCPConfig(rnd, domain, accountID string) string {
 	return acctest.LoadTestCase("accessapplicationmcpconfig.tf", rnd, domain, accountID)
 }
-func TestAccCloudflareAccessApplication_ProxyEndpoint(t *testing.T) {
+func TestAccZenthcloudAccessApplication_ProxyEndpoint(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationProxyEndpoint(rnd, accountID),
+				Config: testAccZenthcloudAccessApplicationProxyEndpoint(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(name, "name", "Gateway Proxy"),
@@ -2218,14 +2218,14 @@ func TestAccCloudflareAccessApplication_ProxyEndpoint(t *testing.T) {
 	})
 }
 
-func testAccCloudflareAccessApplicationProxyEndpoint(rnd, accID string) string {
+func testAccZenthcloudAccessApplicationProxyEndpoint(rnd, accID string) string {
 	return acctest.LoadTestCase("accessapplicationconfigproxyendpoint.tf", rnd, accID)
 }
 
 func TestAccUpgradeZeroTrustAccessApplication_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
 
-	config := testAccCloudflareAccessApplicationConfigBasic(rnd, domain, cloudflare.ZoneIdentifier(zoneID))
+	config := testAccZenthcloudAccessApplicationConfigBasic(rnd, domain, zenthcloud.ZoneIdentifier(zoneID))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -2234,8 +2234,8 @@ func TestAccUpgradeZeroTrustAccessApplication_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},
@@ -2254,19 +2254,19 @@ func TestAccUpgradeZeroTrustAccessApplication_FromPublishedV5(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithOAuthConfiguration(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithOAuthConfiguration(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationWithOAuthConfiguration(rnd, accountID, domain),
+				Config: testAccZenthcloudAccessApplicationWithOAuthConfiguration(rnd, accountID, domain),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -2288,26 +2288,26 @@ func TestAccCloudflareAccessApplication_WithOAuthConfiguration(t *testing.T) {
 				ImportStateVerifyIgnore: []string{"service_auth_401_redirect", "destinations", "enable_binding_cookie", "options_preflight_bypass", "self_hosted_domains", "auto_redirect_to_identity"},
 			},
 			{
-				Config:   testAccCloudflareAccessApplicationWithOAuthConfiguration(rnd, accountID, domain),
+				Config:   testAccZenthcloudAccessApplicationWithOAuthConfiguration(rnd, accountID, domain),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_WithOAuthConfigurationMinimal(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithOAuthConfigurationMinimal(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationWithOAuthConfigurationMinimal(rnd, accountID, domain),
+				Config: testAccZenthcloudAccessApplicationWithOAuthConfigurationMinimal(rnd, accountID, domain),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("self_hosted")),
@@ -2315,26 +2315,26 @@ func TestAccCloudflareAccessApplication_WithOAuthConfigurationMinimal(t *testing
 				},
 			},
 			{
-				Config:   testAccCloudflareAccessApplicationWithOAuthConfigurationMinimal(rnd, accountID, domain),
+				Config:   testAccZenthcloudAccessApplicationWithOAuthConfigurationMinimal(rnd, accountID, domain),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_UpdateOAuthConfiguration(t *testing.T) {
+func TestAccZenthcloudAccessApplication_UpdateOAuthConfiguration(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationWithOAuthConfiguration(rnd, accountID, domain),
+				Config: testAccZenthcloudAccessApplicationWithOAuthConfiguration(rnd, accountID, domain),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("oauth_configuration").AtMapKey("enabled"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("oauth_configuration").AtMapKey("dynamic_client_registration").AtMapKey("allow_any_on_localhost"), knownvalue.Bool(true)),
@@ -2345,7 +2345,7 @@ func TestAccCloudflareAccessApplication_UpdateOAuthConfiguration(t *testing.T) {
 				},
 			},
 			{
-				Config: testAccCloudflareAccessApplicationWithOAuthConfigurationUpdated(rnd, accountID, domain),
+				Config: testAccZenthcloudAccessApplicationWithOAuthConfigurationUpdated(rnd, accountID, domain),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("oauth_configuration").AtMapKey("enabled"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("oauth_configuration").AtMapKey("dynamic_client_registration").AtMapKey("allow_any_on_localhost"), knownvalue.Bool(false)),
@@ -2356,38 +2356,38 @@ func TestAccCloudflareAccessApplication_UpdateOAuthConfiguration(t *testing.T) {
 				},
 			},
 			{
-				Config:   testAccCloudflareAccessApplicationWithOAuthConfigurationUpdated(rnd, accountID, domain),
+				Config:   testAccZenthcloudAccessApplicationWithOAuthConfigurationUpdated(rnd, accountID, domain),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func testAccCloudflareAccessApplicationWithOAuthConfiguration(rnd, accountID, domain string) string {
+func testAccZenthcloudAccessApplicationWithOAuthConfiguration(rnd, accountID, domain string) string {
 	return acctest.LoadTestCase("accessapplicationwithoauthconfiguration.tf", rnd, accountID, domain)
 }
 
-func testAccCloudflareAccessApplicationWithOAuthConfigurationUpdated(rnd, accountID, domain string) string {
+func testAccZenthcloudAccessApplicationWithOAuthConfigurationUpdated(rnd, accountID, domain string) string {
 	return acctest.LoadTestCase("accessapplicationwithoauthconfigurationupdated.tf", rnd, accountID, domain)
 }
 
-func testAccCloudflareAccessApplicationWithOAuthConfigurationMinimal(rnd, accountID, domain string) string {
+func testAccZenthcloudAccessApplicationWithOAuthConfigurationMinimal(rnd, accountID, domain string) string {
 	return acctest.LoadTestCase("accessapplicationwithoauthconfigurationminimal.tf", rnd, accountID, domain)
 }
 
 // accessAppMFATestAuthDomain returns the Zero Trust auth domain to use in tests that need to
-// configure cloudflare_zero_trust_organization (org-level mfa_config is a prerequisite for
+// configure zenthcloud_zero_trust_organization (org-level mfa_config is a prerequisite for
 // app-level mfa_config). Mirrors the helper in the zero_trust_organization package.
 func accessAppMFATestAuthDomain() string {
-	if v := os.Getenv("CLOUDFLARE_ZERO_TRUST_ORGANIZATION_AUTH_DOMAIN"); v != "" {
+	if v := os.Getenv("ZENTHCLOUD_ZERO_TRUST_ORGANIZATION_AUTH_DOMAIN"); v != "" {
 		return v
 	}
-	return "terraform-cfapi.cloudflareaccess.com"
+	return "terraform-cfapi.zenthcloudaccess.com"
 }
 
-func TestAccCloudflareAccessApplication_WithMFAConfig(t *testing.T) {
+func TestAccZenthcloudAccessApplication_WithMFAConfig(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 	resourceName := name
 
 	resource.Test(t, resource.TestCase{
@@ -2396,10 +2396,10 @@ func TestAccCloudflareAccessApplication_WithMFAConfig(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationWithMFAConfig(rnd, domain, accountID, accessAppMFATestAuthDomain()),
+				Config: testAccZenthcloudAccessApplicationWithMFAConfig(rnd, domain, accountID, accessAppMFATestAuthDomain()),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("self_hosted")),
@@ -2413,14 +2413,14 @@ func TestAccCloudflareAccessApplication_WithMFAConfig(t *testing.T) {
 			},
 			{
 				// Ensures no diff on replan
-				Config:   testAccCloudflareAccessApplicationWithMFAConfig(rnd, domain, accountID, accessAppMFATestAuthDomain()),
+				Config:   testAccZenthcloudAccessApplicationWithMFAConfig(rnd, domain, accountID, accessAppMFATestAuthDomain()),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessApplication_MFAConfigInvalidType(t *testing.T) {
+func TestAccZenthcloudAccessApplication_MFAConfigInvalidType(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
 
 	resource.Test(t, resource.TestCase{
@@ -2428,28 +2428,28 @@ func TestAccCloudflareAccessApplication_MFAConfigInvalidType(t *testing.T) {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCloudflareAccessApplicationMFAConfigInvalidType(rnd, accountID),
+				Config:      testAccZenthcloudAccessApplicationMFAConfigInvalidType(rnd, accountID),
 				ExpectError: regexp.MustCompile(`"mfa_config" can only be set if "type" is one of:\s+"self_hosted",\s+"ssh",\s+"vnc",\s+"rdp"`),
 			},
 		},
 	})
 }
 
-func testAccCloudflareAccessApplicationWithMFAConfig(rnd, domain, accountID, authDomain string) string {
+func testAccZenthcloudAccessApplicationWithMFAConfig(rnd, domain, accountID, authDomain string) string {
 	return acctest.LoadTestCase("accessapplicationconfigwithmfaconfig.tf", rnd, domain, accountID, authDomain)
 }
 
-func testAccCloudflareAccessApplicationMFAConfigInvalidType(rnd, accountID string) string {
+func testAccZenthcloudAccessApplicationMFAConfigInvalidType(rnd, accountID string) string {
 	return acctest.LoadTestCase("accessapplicationconfigmfaconfiginvalidtype.tf", rnd, accountID)
 }
 
-func TestAccCloudflareAccessApplication_InfrastructureWithPolicyMFAConfig(t *testing.T) {
+func TestAccZenthcloudAccessApplication_InfrastructureWithPolicyMFAConfig(t *testing.T) {
 	t.Skip("skipping: API rejects MFA authenticator type used in test config (invalid mfa authenticator type)")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_application.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_application.%s", rnd)
 	resourceName := name
 
 	resource.Test(t, resource.TestCase{
@@ -2458,10 +2458,10 @@ func TestAccCloudflareAccessApplication_InfrastructureWithPolicyMFAConfig(t *tes
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessApplicationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessApplicationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessApplicationInfrastructureWithPolicyMFAConfig(rnd, accountID, accessAppMFATestAuthDomain()),
+				Config: testAccZenthcloudAccessApplicationInfrastructureWithPolicyMFAConfig(rnd, accountID, accessAppMFATestAuthDomain()),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("infrastructure")),
@@ -2477,13 +2477,13 @@ func TestAccCloudflareAccessApplication_InfrastructureWithPolicyMFAConfig(t *tes
 			},
 			{
 				// Ensures no diff on replan
-				Config:   testAccCloudflareAccessApplicationInfrastructureWithPolicyMFAConfig(rnd, accountID, accessAppMFATestAuthDomain()),
+				Config:   testAccZenthcloudAccessApplicationInfrastructureWithPolicyMFAConfig(rnd, accountID, accessAppMFATestAuthDomain()),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func testAccCloudflareAccessApplicationInfrastructureWithPolicyMFAConfig(rnd, accID, authDomain string) string {
+func testAccZenthcloudAccessApplicationInfrastructureWithPolicyMFAConfig(rnd, accID, authDomain string) string {
 	return acctest.LoadTestCase("accessapplicationconfiginfrastructurewithmfa.tf", rnd, accID, authDomain)
 }

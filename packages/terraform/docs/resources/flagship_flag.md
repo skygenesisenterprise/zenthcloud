@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_flagship_flag Resource - Cloudflare"
+page_title: "zenthcloud_flagship_flag Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Flagship ReadFlagship Write
 ---
 
-# cloudflare_flagship_flag (Resource)
+# zenthcloud_flagship_flag (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_flagship_flag" "example_flagship_flag" {
+resource "zenthcloud_flagship_flag" "example_flagship_flag" {
   account_id = "account_id"
   app_id = "app_id"
   default_variation = "x"
@@ -48,7 +48,7 @@ resource "cloudflare_flagship_flag" "example_flagship_flag" {
 
 ### Required
 
-- `account_id` (String) Cloudflare account ID that owns the Flagship app.
+- `account_id` (String) Zenthcloud account ID that owns the Flagship app.
 - `app_id` (String) Flagship app ID returned when the app was created.
 - `default_variation` (String) Variation served when no rule matches or the flag is disabled. Must be a key in `variations`.
 - `enabled` (Boolean) When false, the flag bypasses all rules and always serves `default_variation`.
@@ -169,7 +169,7 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_flagship_flag.example '<account_id>/<app_id>/<flag_key>'
+$ terraform import zenthcloud_flagship_flag.example '<account_id>/<app_id>/<flag_key>'
 ```
 
 

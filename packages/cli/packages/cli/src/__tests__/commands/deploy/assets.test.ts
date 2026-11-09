@@ -1,12 +1,12 @@
 import { existsSync, readFileSync } from "node:fs";
 import { unlink } from "node:fs/promises";
 import { basename, resolve } from "node:path";
-import { toValidWorkerName } from "@cloudflare/workers-utils";
+import { toValidWorkerName } from "@zenthcloud/workers-utils";
 import {
 	mockConsoleMethods,
 	runInTempDir,
 	seed,
-} from "@cloudflare/workers-utils/test-helpers";
+} from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw/http";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { prepareStaticAssetsBuildOutput } from "../../../commands/deploy/static-assets.js";
@@ -35,8 +35,8 @@ describe("cf deploy — assets", () => {
 	const std = mockConsoleMethods();
 
 	beforeEach(async () => {
-		vi.stubEnv("CLOUDFLARE_API_TOKEN", "test-api-token");
-		vi.stubEnv("CLOUDFLARE_ACCOUNT_ID", ACCOUNT_ID);
+		vi.stubEnv("ZENTHCLOUD_API_TOKEN", "test-api-token");
+		vi.stubEnv("ZENTHCLOUD_ACCOUNT_ID", ACCOUNT_ID);
 		mockDefaultHandlers();
 		await seedBuildDelegate();
 	});
@@ -65,7 +65,7 @@ describe("cf deploy — assets", () => {
 				"package.json": JSON.stringify({ name: "static-site" }),
 				"public/index.html": "<html><body>direct</body></html>",
 				"public/nested/style.css": "body { color: blue; }",
-				".cloudflare/output/v0/workers/default/bundle/stale.js":
+				".zenthcloud/output/v0/workers/default/bundle/stale.js":
 					"export default {};",
 			});
 
@@ -85,7 +85,7 @@ describe("cf deploy — assets", () => {
 				"/nested/style.css",
 			]);
 
-			const outputRoot = resolve(".cloudflare/output/v0");
+			const outputRoot = resolve(".zenthcloud/output/v0");
 			const rootConfig = JSON.parse(
 				readFileSync(resolve(outputRoot, "config.json"), "utf8")
 			) as Record<string, unknown>;
@@ -114,13 +114,13 @@ describe("cf deploy — assets", () => {
 			);
 		});
 
-		it("deploys the project root without including .cloudflare", async () => {
+		it("deploys the project root without including .zenthcloud", async () => {
 			mockWorkerUpload();
 			const assets = mockAssetUpload();
 			await seed({
 				"index.html": "root asset",
-				".cloudflare/project-state.json": "not an asset",
-				".cloudflare/output/v0/workers/default/bundle/stale.js":
+				".zenthcloud/project-state.json": "not an asset",
+				".zenthcloud/output/v0/workers/default/bundle/stale.js":
 					"export default {};",
 			});
 
@@ -131,11 +131,11 @@ describe("cf deploy — assets", () => {
 			const manifestPaths = Object.keys(assets.manifest ?? {});
 			expect(manifestPaths).toContain("/index.html");
 			expect(
-				manifestPaths.some((assetPath) => assetPath.startsWith("/.cloudflare/"))
+				manifestPaths.some((assetPath) => assetPath.startsWith("/.zenthcloud/"))
 			).toBe(false);
 			expect(
 				existsSync(
-					resolve(".cloudflare/output/v0/workers/default/assets/.cloudflare")
+					resolve(".zenthcloud/output/v0/workers/default/assets/.zenthcloud")
 				)
 			).toBe(false);
 		});
@@ -151,7 +151,7 @@ describe("cf deploy — assets", () => {
 			).resolves.toBe(true);
 
 			expect(
-				JSON.parse(readFileSync(".cloudflare/output/v0/config.json", "utf8"))
+				JSON.parse(readFileSync(".zenthcloud/output/v0/config.json", "utf8"))
 			).toMatchObject({
 				buildContext: { isPreview: true, mode: "staging" },
 			});
@@ -176,7 +176,7 @@ describe("cf deploy — assets", () => {
 			mockAssetUpload();
 			await seed({
 				"package.json": JSON.stringify({ type: "module" }),
-				"cloudflare.config.ts": `export default {
+				"zenthcloud.config.ts": `export default {
 					accountId: "${ACCOUNT_ID}",
 					worker: {
 						name: "configured-static-site",
@@ -197,7 +197,7 @@ describe("cf deploy — assets", () => {
 			expect(
 				JSON.parse(
 					readFileSync(
-						".cloudflare/output/v0/workers/default/worker.config.json",
+						".zenthcloud/output/v0/workers/default/worker.config.json",
 						"utf8"
 					)
 				)
@@ -207,7 +207,7 @@ describe("cf deploy — assets", () => {
 				assets: { htmlHandling: "none" },
 			});
 			expect(
-				JSON.parse(readFileSync(".cloudflare/output/v0/config.json", "utf8"))
+				JSON.parse(readFileSync(".zenthcloud/output/v0/config.json", "utf8"))
 			).toMatchObject({ accountId: ACCOUNT_ID });
 			expect(buildDelegateWasCalled()).toBe(false);
 		});
@@ -215,20 +215,20 @@ describe("cf deploy — assets", () => {
 		it("rejects configured Containers before replacing Build Output", async () => {
 			await seed({
 				"package.json": JSON.stringify({ type: "module" }),
-				"cloudflare.config.ts": `export default {
+				"zenthcloud.config.ts": `export default {
 					containers: [{
 						name: "server-side-container",
-						image: { reference: "registry.cloudflare.com/app:latest" }
+						image: { reference: "registry.zenthcloud.com/app:latest" }
 					}]
 				};`,
 				"public/index.html": "hello",
-				".cloudflare/output/v0/config.json": "existing output",
+				".zenthcloud/output/v0/config.json": "existing output",
 			});
 
 			await expect(runCf(["deploy", "public"])).rejects.toThrow(
 				"configures Containers, so this is not an assets-only project"
 			);
-			expect(readFileSync(".cloudflare/output/v0/config.json", "utf8")).toBe(
+			expect(readFileSync(".zenthcloud/output/v0/config.json", "utf8")).toBe(
 				"existing output"
 			);
 			expect(buildDelegateWasCalled()).toBe(false);
@@ -237,7 +237,7 @@ describe("cf deploy — assets", () => {
 		it("rejects a configured Worker entrypoint before replacing Build Output", async () => {
 			await seed({
 				"package.json": JSON.stringify({ type: "module" }),
-				"cloudflare.config.ts": `export default {
+				"zenthcloud.config.ts": `export default {
 					worker: {
 						name: "server-side-site",
 						compatibilityDate: "2026-01-01",
@@ -245,13 +245,13 @@ describe("cf deploy — assets", () => {
 					}
 				};`,
 				"public/index.html": "hello",
-				".cloudflare/output/v0/config.json": "existing output",
+				".zenthcloud/output/v0/config.json": "existing output",
 			});
 
 			await expect(runCf(["deploy", "public"])).rejects.toThrow(
 				"configures a Worker entrypoint, so this is not an assets-only project"
 			);
-			expect(readFileSync(".cloudflare/output/v0/config.json", "utf8")).toBe(
+			expect(readFileSync(".zenthcloud/output/v0/config.json", "utf8")).toBe(
 				"existing output"
 			);
 			expect(buildDelegateWasCalled()).toBe(false);
@@ -259,13 +259,13 @@ describe("cf deploy — assets", () => {
 
 		it("validates the static directory before replacing Build Output", async () => {
 			await seed({
-				".cloudflare/output/v0/config.json": "existing output",
+				".zenthcloud/output/v0/config.json": "existing output",
 			});
 
 			await expect(runCf(["deploy", "missing"])).rejects.toThrow(
 				"Static assets directory not found: missing"
 			);
-			expect(readFileSync(".cloudflare/output/v0/config.json", "utf8")).toBe(
+			expect(readFileSync(".zenthcloud/output/v0/config.json", "utf8")).toBe(
 				"existing output"
 			);
 			expect(buildDelegateWasCalled()).toBe(false);
@@ -273,13 +273,13 @@ describe("cf deploy — assets", () => {
 
 		it("rejects an empty static directory before replacing Build Output", async () => {
 			await seed({
-				".cloudflare/output/v0/config.json": "existing output",
+				".zenthcloud/output/v0/config.json": "existing output",
 			});
 
 			await expect(runCf(["deploy", ""])).rejects.toThrow(
 				"The static assets directory argument cannot be empty."
 			);
-			expect(readFileSync(".cloudflare/output/v0/config.json", "utf8")).toBe(
+			expect(readFileSync(".zenthcloud/output/v0/config.json", "utf8")).toBe(
 				"existing output"
 			);
 			expect(buildDelegateWasCalled()).toBe(false);
@@ -287,15 +287,15 @@ describe("cf deploy — assets", () => {
 
 		it("rejects a static directory inside Build Output before cleaning it", async () => {
 			await seed({
-				".cloudflare/output/static/index.html": "existing asset",
+				".zenthcloud/output/static/index.html": "existing asset",
 			});
 
 			await expect(
-				runCf(["deploy", ".cloudflare/output/static"])
+				runCf(["deploy", ".zenthcloud/output/static"])
 			).rejects.toThrow(
-				"The static assets directory cannot be inside .cloudflare/output, because that directory is replaced during deployment."
+				"The static assets directory cannot be inside .zenthcloud/output, because that directory is replaced during deployment."
 			);
-			expect(readFileSync(".cloudflare/output/static/index.html", "utf8")).toBe(
+			expect(readFileSync(".zenthcloud/output/static/index.html", "utf8")).toBe(
 				"existing asset"
 			);
 			expect(buildDelegateWasCalled()).toBe(false);
@@ -303,14 +303,14 @@ describe("cf deploy — assets", () => {
 
 		it("rejects a static directory containing Build Output", async () => {
 			await seed({
-				".cloudflare/index.html": "asset",
-				".cloudflare/output/v0/config.json": "existing output",
+				".zenthcloud/index.html": "asset",
+				".zenthcloud/output/v0/config.json": "existing output",
 			});
 
-			await expect(runCf(["deploy", ".cloudflare"])).rejects.toThrow(
-				"The static assets directory cannot contain .cloudflare/output. Choose the specific directory containing the built assets."
+			await expect(runCf(["deploy", ".zenthcloud"])).rejects.toThrow(
+				"The static assets directory cannot contain .zenthcloud/output. Choose the specific directory containing the built assets."
 			);
-			expect(readFileSync(".cloudflare/output/v0/config.json", "utf8")).toBe(
+			expect(readFileSync(".zenthcloud/output/v0/config.json", "utf8")).toBe(
 				"existing output"
 			);
 			expect(buildDelegateWasCalled()).toBe(false);
@@ -342,16 +342,16 @@ describe("cf deploy — assets", () => {
 			const assets = mockAssetUpload();
 
 			await seed({
-				".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-				".cloudflare/output/v0/workers/default/worker.config.json":
+				".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+				".zenthcloud/output/v0/workers/default/worker.config.json":
 					workerConfig({
 						mainModule: undefined,
 						modules: undefined,
 					}),
-				".cloudflare/output/v0/workers/default/bundle/placeholder": "",
-				".cloudflare/output/v0/workers/default/assets/index.html":
+				".zenthcloud/output/v0/workers/default/bundle/placeholder": "",
+				".zenthcloud/output/v0/workers/default/assets/index.html":
 					"<html><body>hello</body></html>",
-				".cloudflare/output/v0/workers/default/assets/style.css":
+				".zenthcloud/output/v0/workers/default/assets/style.css":
 					"body { color: red; }",
 			});
 
@@ -392,15 +392,15 @@ describe("cf deploy — assets", () => {
 			const cssContent = "body {}";
 
 			await seed({
-				".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-				".cloudflare/output/v0/workers/default/worker.config.json":
+				".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+				".zenthcloud/output/v0/workers/default/worker.config.json":
 					workerConfig({
 						mainModule: undefined,
 						modules: undefined,
 					}),
-				".cloudflare/output/v0/workers/default/bundle/placeholder": "",
-				".cloudflare/output/v0/workers/default/assets/page.html": htmlContent,
-				".cloudflare/output/v0/workers/default/assets/sub/style.css":
+				".zenthcloud/output/v0/workers/default/bundle/placeholder": "",
+				".zenthcloud/output/v0/workers/default/assets/page.html": htmlContent,
+				".zenthcloud/output/v0/workers/default/assets/sub/style.css":
 					cssContent,
 			});
 
@@ -428,18 +428,18 @@ describe("cf deploy — assets", () => {
 			const headersContent = "/*\n  X-Custom: value";
 
 			await seed({
-				".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-				".cloudflare/output/v0/workers/default/worker.config.json":
+				".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+				".zenthcloud/output/v0/workers/default/worker.config.json":
 					workerConfig({
 						mainModule: undefined,
 						modules: undefined,
 					}),
-				".cloudflare/output/v0/workers/default/bundle/placeholder": "",
-				".cloudflare/output/v0/workers/default/assets/index.html":
+				".zenthcloud/output/v0/workers/default/bundle/placeholder": "",
+				".zenthcloud/output/v0/workers/default/assets/index.html":
 					"<html></html>",
-				".cloudflare/output/v0/workers/default/assets/_redirects":
+				".zenthcloud/output/v0/workers/default/assets/_redirects":
 					redirectsContent,
-				".cloudflare/output/v0/workers/default/assets/_headers": headersContent,
+				".zenthcloud/output/v0/workers/default/assets/_headers": headersContent,
 			});
 
 			await runCf(["deploy"]);
@@ -487,14 +487,14 @@ describe("cf deploy — assets", () => {
 			);
 
 			await seed({
-				".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-				".cloudflare/output/v0/workers/default/worker.config.json":
+				".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+				".zenthcloud/output/v0/workers/default/worker.config.json":
 					workerConfig({
 						mainModule: undefined,
 						modules: undefined,
 					}),
-				".cloudflare/output/v0/workers/default/bundle/placeholder": "",
-				".cloudflare/output/v0/workers/default/assets/file.txt":
+				".zenthcloud/output/v0/workers/default/bundle/placeholder": "",
+				".zenthcloud/output/v0/workers/default/assets/file.txt":
 					"Hello, world!",
 			});
 
@@ -522,14 +522,14 @@ describe("cf deploy — assets", () => {
 			const assets = mockAssetUpload();
 
 			await seed({
-				".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-				".cloudflare/output/v0/workers/default/worker.config.json":
+				".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+				".zenthcloud/output/v0/workers/default/worker.config.json":
 					workerConfig(),
-				".cloudflare/output/v0/workers/default/bundle/index.js":
+				".zenthcloud/output/v0/workers/default/bundle/index.js":
 					"export default { fetch() { return new Response('ok'); } }",
-				".cloudflare/output/v0/workers/default/assets/index.html":
+				".zenthcloud/output/v0/workers/default/assets/index.html":
 					"<html><body>app</body></html>",
-				".cloudflare/output/v0/workers/default/assets/app.js":
+				".zenthcloud/output/v0/workers/default/assets/app.js":
 					"console.log('app');",
 			});
 
@@ -556,17 +556,17 @@ describe("cf deploy — assets", () => {
 			mockAssetUpload();
 
 			await seed({
-				".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-				".cloudflare/output/v0/workers/default/worker.config.json":
+				".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+				".zenthcloud/output/v0/workers/default/worker.config.json":
 					workerConfig({
 						assets: {
 							htmlHandling: "none",
 							notFoundHandling: "404-page",
 						},
 					}),
-				".cloudflare/output/v0/workers/default/bundle/index.js":
+				".zenthcloud/output/v0/workers/default/bundle/index.js":
 					"export default { fetch() { return new Response('ok'); } }",
-				".cloudflare/output/v0/workers/default/assets/index.html":
+				".zenthcloud/output/v0/workers/default/assets/index.html":
 					"<html></html>",
 			});
 

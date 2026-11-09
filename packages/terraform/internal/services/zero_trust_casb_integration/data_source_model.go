@@ -5,9 +5,9 @@ package zero_trust_casb_integration
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
@@ -40,7 +40,7 @@ type ZeroTrustCasbIntegrationDataSourceModel struct {
 
 func (m *ZeroTrustCasbIntegrationDataSourceModel) toReadParams(_ context.Context) (params zero_trust.CasbIntegrationGetParams, diags diag.Diagnostics) {
 	params = zero_trust.CasbIntegrationGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -48,35 +48,35 @@ func (m *ZeroTrustCasbIntegrationDataSourceModel) toReadParams(_ context.Context
 
 func (m *ZeroTrustCasbIntegrationDataSourceModel) toListParams(_ context.Context) (params zero_trust.CasbIntegrationListParams, diags diag.Diagnostics) {
 	params = zero_trust.CasbIntegrationListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Filter.Application.IsNull() {
-		params.Application = cloudflare.F(m.Filter.Application.ValueString())
+		params.Application = zenthcloud.F(m.Filter.Application.ValueString())
 	}
 	if !m.Filter.Direction.IsNull() {
-		params.Direction = cloudflare.F(zero_trust.CasbIntegrationListParamsDirection(m.Filter.Direction.ValueString()))
+		params.Direction = zenthcloud.F(zero_trust.CasbIntegrationListParamsDirection(m.Filter.Direction.ValueString()))
 	}
 	if !m.Filter.DLPEnabled.IsNull() {
-		params.DLPEnabled = cloudflare.F(m.Filter.DLPEnabled.ValueBool())
+		params.DLPEnabled = zenthcloud.F(m.Filter.DLPEnabled.ValueBool())
 	}
 	if !m.Filter.Order.IsNull() {
-		params.Order = cloudflare.F(zero_trust.CasbIntegrationListParamsOrder(m.Filter.Order.ValueString()))
+		params.Order = zenthcloud.F(zero_trust.CasbIntegrationListParamsOrder(m.Filter.Order.ValueString()))
 	}
 	if !m.Filter.Page.IsNull() {
-		params.Page = cloudflare.F(m.Filter.Page.ValueInt64())
+		params.Page = zenthcloud.F(m.Filter.Page.ValueInt64())
 	}
 	if !m.Filter.PageSize.IsNull() {
-		params.PageSize = cloudflare.F(m.Filter.PageSize.ValueInt64())
+		params.PageSize = zenthcloud.F(m.Filter.PageSize.ValueInt64())
 	}
 	if !m.Filter.Search.IsNull() {
-		params.Search = cloudflare.F(m.Filter.Search.ValueString())
+		params.Search = zenthcloud.F(m.Filter.Search.ValueString())
 	}
 	if !m.Filter.Status.IsNull() {
-		params.Status = cloudflare.F(zero_trust.CasbIntegrationListParamsStatus(m.Filter.Status.ValueString()))
+		params.Status = zenthcloud.F(zero_trust.CasbIntegrationListParamsStatus(m.Filter.Status.ValueString()))
 	}
 	if !m.Filter.UseCases.IsNull() {
-		params.UseCases = cloudflare.F(m.Filter.UseCases.ValueString())
+		params.UseCases = zenthcloud.F(m.Filter.UseCases.ValueString())
 	}
 
 	return

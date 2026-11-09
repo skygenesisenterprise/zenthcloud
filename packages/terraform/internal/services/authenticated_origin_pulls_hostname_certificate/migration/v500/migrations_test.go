@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -22,8 +22,8 @@ var (
 
 // Migration Test Configuration
 //
-// IMPORTANT: This resource was renamed from v4's cloudflare_authenticated_origin_pulls_certificate
-// (with type="per-hostname") to v5's cloudflare_authenticated_origin_pulls_hostname_certificate.
+// IMPORTANT: This resource was renamed from v4's zenthcloud_authenticated_origin_pulls_certificate
+// (with type="per-hostname") to v5's zenthcloud_authenticated_origin_pulls_hostname_certificate.
 // Because of this rename, we cannot test v4→v5 migration using ExternalProviders (Terraform validates
 // against local schema which doesn't recognize the old resource name).
 //
@@ -45,10 +45,10 @@ var v5HostnameCertMinimalConfig string
 // TestMigrateAuthenticatedOriginPullsHostnameCertificateBasic tests v5→v5 migration (schema version bump)
 // for per-hostname AOP certificates
 func TestMigrateAuthenticatedOriginPullsHostnameCertificateBasic(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	if domain == "" {
-		t.Skip("CLOUDFLARE_DOMAIN must be set for this test")
+		t.Skip("ZENTHCLOUD_DOMAIN must be set for this test")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
@@ -80,35 +80,35 @@ func TestMigrateAuthenticatedOriginPullsHostnameCertificateBasic(t *testing.T) {
 			acctest.MigrationV2TestStep(t, testConfig, tmpDir, currentProviderVersion, "v5", "v5", []statecheck.StateCheck{
 				// Verify zone_id preserved
 				statecheck.ExpectKnownValue(
-					"cloudflare_authenticated_origin_pulls_hostname_certificate."+rnd,
+					"zenthcloud_authenticated_origin_pulls_hostname_certificate."+rnd,
 					tfjsonpath.New("zone_id"),
 					knownvalue.StringExact(zoneID),
 				),
 				// Verify certificate preserved
 				statecheck.ExpectKnownValue(
-					"cloudflare_authenticated_origin_pulls_hostname_certificate."+rnd,
+					"zenthcloud_authenticated_origin_pulls_hostname_certificate."+rnd,
 					tfjsonpath.New("certificate"),
 					knownvalue.NotNull(),
 				),
 				// Verify private_key preserved
 				statecheck.ExpectKnownValue(
-					"cloudflare_authenticated_origin_pulls_hostname_certificate."+rnd,
+					"zenthcloud_authenticated_origin_pulls_hostname_certificate."+rnd,
 					tfjsonpath.New("private_key"),
 					knownvalue.NotNull(),
 				),
 				// Verify computed fields present
 				statecheck.ExpectKnownValue(
-					"cloudflare_authenticated_origin_pulls_hostname_certificate."+rnd,
+					"zenthcloud_authenticated_origin_pulls_hostname_certificate."+rnd,
 					tfjsonpath.New("issuer"),
 					knownvalue.NotNull(),
 				),
 				statecheck.ExpectKnownValue(
-					"cloudflare_authenticated_origin_pulls_hostname_certificate."+rnd,
+					"zenthcloud_authenticated_origin_pulls_hostname_certificate."+rnd,
 					tfjsonpath.New("signature"),
 					knownvalue.NotNull(),
 				),
 				statecheck.ExpectKnownValue(
-					"cloudflare_authenticated_origin_pulls_hostname_certificate."+rnd,
+					"zenthcloud_authenticated_origin_pulls_hostname_certificate."+rnd,
 					tfjsonpath.New("status"),
 					knownvalue.NotNull(),
 				),
@@ -120,10 +120,10 @@ func TestMigrateAuthenticatedOriginPullsHostnameCertificateBasic(t *testing.T) {
 // TestMigrateAuthenticatedOriginPullsHostnameCertificateMinimal tests v5→v5 migration
 // for minimal per-hostname certificate configuration
 func TestMigrateAuthenticatedOriginPullsHostnameCertificateMinimal(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	if domain == "" {
-		t.Skip("CLOUDFLARE_DOMAIN must be set for this test")
+		t.Skip("ZENTHCLOUD_DOMAIN must be set for this test")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
@@ -155,19 +155,19 @@ func TestMigrateAuthenticatedOriginPullsHostnameCertificateMinimal(t *testing.T)
 			acctest.MigrationV2TestStep(t, testConfig, tmpDir, currentProviderVersion, "v5", "v5", []statecheck.StateCheck{
 				// Verify zone_id preserved
 				statecheck.ExpectKnownValue(
-					"cloudflare_authenticated_origin_pulls_hostname_certificate."+rnd,
+					"zenthcloud_authenticated_origin_pulls_hostname_certificate."+rnd,
 					tfjsonpath.New("zone_id"),
 					knownvalue.StringExact(zoneID),
 				),
 				// Verify certificate preserved
 				statecheck.ExpectKnownValue(
-					"cloudflare_authenticated_origin_pulls_hostname_certificate."+rnd,
+					"zenthcloud_authenticated_origin_pulls_hostname_certificate."+rnd,
 					tfjsonpath.New("certificate"),
 					knownvalue.NotNull(),
 				),
 				// Verify private_key preserved
 				statecheck.ExpectKnownValue(
-					"cloudflare_authenticated_origin_pulls_hostname_certificate."+rnd,
+					"zenthcloud_authenticated_origin_pulls_hostname_certificate."+rnd,
 					tfjsonpath.New("private_key"),
 					knownvalue.NotNull(),
 				),

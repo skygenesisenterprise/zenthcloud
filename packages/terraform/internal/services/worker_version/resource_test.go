@@ -7,8 +7,8 @@ import (
 	"path"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/compare"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -24,13 +24,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_worker_version", &resource.Sweeper{
-		Name: "cloudflare_worker_version",
-		F:    testSweepCloudflareWorkerVersion,
+	resource.AddTestSweepers("zenthcloud_worker_version", &resource.Sweeper{
+		Name: "zenthcloud_worker_version",
+		F:    testSweepZenthcloudWorkerVersion,
 	})
 }
 
-func testSweepCloudflareWorkerVersion(r string) error {
+func testSweepZenthcloudWorkerVersion(r string) error {
 	ctx := context.Background()
 	// Worker Version is a worker script-level resource.
 	// When worker scripts are swept, versions are cleaned up automatically.
@@ -39,11 +39,11 @@ func testSweepCloudflareWorkerVersion(r string) error {
 	return nil
 }
 
-func TestAccCloudflareWorkerVersion_Basic(t *testing.T) {
+func TestAccZenthcloudWorkerVersion_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	workerName := "cloudflare_worker." + rnd
-	resourceName := "cloudflare_worker_version." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	workerName := "zenthcloud_worker." + rnd
+	resourceName := "zenthcloud_worker_version." + rnd
 
 	tmpDir := t.TempDir()
 	contentFile := path.Join(tmpDir, "index.js")
@@ -72,7 +72,7 @@ func TestAccCloudflareWorkerVersion_Basic(t *testing.T) {
 				PreConfig: func() {
 					writeContentFile(t, `export default {fetch() {return new Response()}}`)
 				},
-				Config: testAccCloudflareWorkerVersionConfig(rnd, accountID, contentFile),
+				Config: testAccZenthcloudWorkerVersionConfig(rnd, accountID, contentFile),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 					statecheck.CompareValuePairs(workerName, tfjsonpath.New("id"), resourceName, tfjsonpath.New("worker_id"), compare.ValuesSame()),
@@ -111,7 +111,7 @@ func TestAccCloudflareWorkerVersion_Basic(t *testing.T) {
 					// Update the content file
 					writeContentFile(t, `export default {fetch() {return new Response("Hello World!")}}`)
 				},
-				Config: testAccCloudflareWorkerVersionConfigUpdate(rnd, accountID, contentFile),
+				Config: testAccZenthcloudWorkerVersionConfigUpdate(rnd, accountID, contentFile),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionDestroyBeforeCreate),
@@ -164,7 +164,7 @@ func TestAccCloudflareWorkerVersion_Basic(t *testing.T) {
 				PreConfig: func() {
 					writeContentFile(t, `export default {fetch() {return new Response("Hello World!")}}`)
 				},
-				Config: testAccCloudflareWorkerVersionConfigBindingOrder(rnd, accountID, contentFile),
+				Config: testAccZenthcloudWorkerVersionConfigBindingOrder(rnd, accountID, contentFile),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionDestroyBeforeCreate),
@@ -211,7 +211,7 @@ func TestAccCloudflareWorkerVersion_Basic(t *testing.T) {
 			},
 			{
 				ResourceName:            resourceName,
-				ImportStateIdFunc:       testAccCloudflareWorkerVersionImportStateIdFunc(resourceName, accountID),
+				ImportStateIdFunc:       testAccZenthcloudWorkerVersionImportStateIdFunc(resourceName, accountID),
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"modules.0.content_file", "modules.0.content_base64", "bindings"}, // content_file not stored in API, content_base64 populated on import; binding order is different
@@ -220,19 +220,19 @@ func TestAccCloudflareWorkerVersion_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareWorkerVersion_ContentBase64(t *testing.T) {
+func TestAccZenthcloudWorkerVersion_ContentBase64(t *testing.T) {
 	t.Parallel()
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	workerName := "cloudflare_worker." + rnd
-	resourceName := "cloudflare_worker_version." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	workerName := "zenthcloud_worker." + rnd
+	resourceName := "zenthcloud_worker_version." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareWorkerVersionConfigContentBase64(rnd, accountID),
+				Config: testAccZenthcloudWorkerVersionConfigContentBase64(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 					statecheck.CompareValuePairs(workerName, tfjsonpath.New("id"), resourceName, tfjsonpath.New("worker_id"), compare.ValuesSame()),
@@ -253,7 +253,7 @@ func TestAccCloudflareWorkerVersion_ContentBase64(t *testing.T) {
 				},
 			},
 			{
-				Config: testAccCloudflareWorkerVersionConfigContentBase64Updated(rnd, accountID),
+				Config: testAccZenthcloudWorkerVersionConfigContentBase64Updated(rnd, accountID),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionDestroyBeforeCreate),
@@ -273,7 +273,7 @@ func TestAccCloudflareWorkerVersion_ContentBase64(t *testing.T) {
 			},
 			{
 				ResourceName:            resourceName,
-				ImportStateIdFunc:       testAccCloudflareWorkerVersionImportStateIdFunc(resourceName, accountID),
+				ImportStateIdFunc:       testAccZenthcloudWorkerVersionImportStateIdFunc(resourceName, accountID),
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"bindings"},
@@ -282,11 +282,11 @@ func TestAccCloudflareWorkerVersion_ContentBase64(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareWorkerVersion_WithAssets(t *testing.T) {
+func TestAccZenthcloudWorkerVersion_WithAssets(t *testing.T) {
 	t.Parallel()
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_worker_version." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_worker_version." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	assetsDir := t.TempDir()
 	assetFile := path.Join(assetsDir, "index.html")
 
@@ -317,7 +317,7 @@ func TestAccCloudflareWorkerVersion_WithAssets(t *testing.T) {
 				PreConfig: func() {
 					writeAssetFile(t, "v1")
 				},
-				Config: testAccCloudflareWorkerVersionConfigWithAssets(rnd, accountID, assetsDir),
+				Config: testAccZenthcloudWorkerVersionConfigWithAssets(rnd, accountID, assetsDir),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("assets").AtMapKey("directory"), knownvalue.StringExact(assetsDir)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("assets").AtMapKey("asset_manifest_sha256"), knownvalue.StringExact("b098d2898ca7ae5677c7291d97323e7894137515043f3e560f3bd155870eea9e")),
@@ -327,7 +327,7 @@ func TestAccCloudflareWorkerVersion_WithAssets(t *testing.T) {
 				PreConfig: func() {
 					writeAssetFile(t, "v2")
 				},
-				Config: testAccCloudflareWorkerVersionConfigWithAssets(rnd, accountID, assetsDir),
+				Config: testAccZenthcloudWorkerVersionConfigWithAssets(rnd, accountID, assetsDir),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("assets").AtMapKey("directory"), knownvalue.StringExact(assetsDir)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("assets").AtMapKey("asset_manifest_sha256"), knownvalue.StringExact("46f07eb8a3fa881af81ce2b6b3fc1627edccf115526aa5c631308c45c75d2fb1")),
@@ -339,7 +339,7 @@ func TestAccCloudflareWorkerVersion_WithAssets(t *testing.T) {
 				},
 			},
 			{
-				Config: testAccCloudflareWorkerVersionConfigWithAssets(rnd, accountID, assetsDir),
+				Config: testAccZenthcloudWorkerVersionConfigWithAssets(rnd, accountID, assetsDir),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -348,7 +348,7 @@ func TestAccCloudflareWorkerVersion_WithAssets(t *testing.T) {
 			},
 			{
 				ResourceName:      resourceName,
-				ImportStateIdFunc: testAccCloudflareWorkerVersionImportStateIdFunc(resourceName, accountID),
+				ImportStateIdFunc: testAccZenthcloudWorkerVersionImportStateIdFunc(resourceName, accountID),
 				ImportState:       true,
 				ImportStateVerify: true,
 				// FIXME: handle refreshing assets.config
@@ -358,28 +358,28 @@ func TestAccCloudflareWorkerVersion_WithAssets(t *testing.T) {
 	})
 }
 
-func testAccCloudflareWorkerVersionConfig(rnd, accountID, contentFile string) string {
+func testAccZenthcloudWorkerVersionConfig(rnd, accountID, contentFile string) string {
 	return acctest.LoadTestCase("basic.tf", rnd, accountID, contentFile)
 }
 
-func testAccCloudflareWorkerVersionConfigUpdate(rnd, accountID, contentFile string) string {
+func testAccZenthcloudWorkerVersionConfigUpdate(rnd, accountID, contentFile string) string {
 	return acctest.LoadTestCase("basic_update.tf", rnd, accountID, contentFile)
 }
 
-func testAccCloudflareWorkerVersionConfigWithAssets(rnd, accountID, assetsDir string) string {
+func testAccZenthcloudWorkerVersionConfigWithAssets(rnd, accountID, assetsDir string) string {
 	return acctest.LoadTestCase("assets.tf", rnd, accountID, assetsDir)
 }
 
-func testAccCloudflareWorkerVersionConfigBindingOrder(rnd, accountID, contentFile string) string {
+func testAccZenthcloudWorkerVersionConfigBindingOrder(rnd, accountID, contentFile string) string {
 	return acctest.LoadTestCase("basic_binding_order.tf", rnd, accountID, contentFile)
 }
 
-func TestAccCloudflareWorkerVersion_AssetsConfigRunWorkerFirst(t *testing.T) {
+func TestAccZenthcloudWorkerVersion_AssetsConfigRunWorkerFirst(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_worker_version." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_worker_version." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	tmpDir := t.TempDir()
 	assetsDir := path.Join(tmpDir, "assets")
@@ -427,13 +427,13 @@ func TestAccCloudflareWorkerVersion_AssetsConfigRunWorkerFirst(t *testing.T) {
 				PreConfig: func() {
 					writeFiles(t)
 				},
-				Config: testAccCloudflareWorkerVersionConfigWithAssetsWithRunWorkerFirst(rnd, accountID, assetsDir, workerFile, `false`),
+				Config: testAccZenthcloudWorkerVersionConfigWithAssetsWithRunWorkerFirst(rnd, accountID, assetsDir, workerFile, `false`),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("assets").AtMapKey("config").AtMapKey("run_worker_first"), knownvalue.Bool(false)),
 				},
 			},
 			{
-				Config: testAccCloudflareWorkerVersionConfigWithAssetsWithRunWorkerFirst(rnd, accountID, assetsDir, workerFile, `["/api/*"]`),
+				Config: testAccZenthcloudWorkerVersionConfigWithAssetsWithRunWorkerFirst(rnd, accountID, assetsDir, workerFile, `["/api/*"]`),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("assets").AtMapKey("config").AtMapKey("run_worker_first"), knownvalue.ListExact([]knownvalue.Check{
 						knownvalue.StringExact("/api/*"),
@@ -441,13 +441,13 @@ func TestAccCloudflareWorkerVersion_AssetsConfigRunWorkerFirst(t *testing.T) {
 				},
 			},
 			{
-				Config: testAccCloudflareWorkerVersionConfigWithAssetsWithRunWorkerFirst(rnd, accountID, assetsDir, workerFile, `true`),
+				Config: testAccZenthcloudWorkerVersionConfigWithAssetsWithRunWorkerFirst(rnd, accountID, assetsDir, workerFile, `true`),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("assets").AtMapKey("config").AtMapKey("run_worker_first"), knownvalue.Bool(true)),
 				},
 			},
 			{
-				Config: testAccCloudflareWorkerVersionConfigWithAssetsWithRunWorkerFirst(rnd, accountID, assetsDir, workerFile, `["/api/*", "!/api/health"]`),
+				Config: testAccZenthcloudWorkerVersionConfigWithAssetsWithRunWorkerFirst(rnd, accountID, assetsDir, workerFile, `["/api/*", "!/api/health"]`),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("assets").AtMapKey("config").AtMapKey("run_worker_first"), knownvalue.ListExact([]knownvalue.Check{
 						knownvalue.StringExact("/api/*"),
@@ -459,12 +459,12 @@ func TestAccCloudflareWorkerVersion_AssetsConfigRunWorkerFirst(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareWorkerVersion_AssetsConfigNoDirectory(t *testing.T) {
+func TestAccZenthcloudWorkerVersion_AssetsConfigNoDirectory(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_worker_version." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_worker_version." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	tmpDir := t.TempDir()
 	workerFile := path.Join(tmpDir, "index.js")
@@ -495,7 +495,7 @@ func TestAccCloudflareWorkerVersion_AssetsConfigNoDirectory(t *testing.T) {
 				PreConfig: func() {
 					writeWorkerFile(t)
 				},
-				Config: testAccCloudflareWorkerVersionConfigAssetsConfigNoDirectory(rnd, accountID, workerFile),
+				Config: testAccZenthcloudWorkerVersionConfigAssetsConfigNoDirectory(rnd, accountID, workerFile),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("main_module"), knownvalue.StringExact("index.js")),
@@ -513,22 +513,22 @@ func TestAccCloudflareWorkerVersion_AssetsConfigNoDirectory(t *testing.T) {
 	})
 }
 
-func testAccCloudflareWorkerVersionConfigAssetsConfigNoDirectory(rnd, accountID, workerFile string) string {
+func testAccZenthcloudWorkerVersionConfigAssetsConfigNoDirectory(rnd, accountID, workerFile string) string {
 	return acctest.LoadTestCase("assets_config_no_directory.tf", rnd, accountID, workerFile)
 }
 
-func testAccCloudflareWorkerVersionConfigContentBase64(rnd, accountID string) string {
+func testAccZenthcloudWorkerVersionConfigContentBase64(rnd, accountID string) string {
 	return acctest.LoadTestCase("content_base64.tf", rnd, accountID)
 }
 
-func testAccCloudflareWorkerVersionConfigContentBase64Updated(rnd, accountID string) string {
+func testAccZenthcloudWorkerVersionConfigContentBase64Updated(rnd, accountID string) string {
 	return acctest.LoadTestCase("content_base64_update.tf", rnd, accountID)
 }
 
-func testAccCloudflareWorkerVersionImportStateIdFunc(resourceName, accountID string) resource.ImportStateIdFunc {
+func testAccZenthcloudWorkerVersionImportStateIdFunc(resourceName, accountID string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
-		rnd := resourceName[len("cloudflare_worker_version."):]
-		workerResourceName := "cloudflare_worker." + rnd
+		rnd := resourceName[len("zenthcloud_worker_version."):]
+		workerResourceName := "zenthcloud_worker." + rnd
 
 		worker, ok := s.RootModule().Resources[workerResourceName]
 		if !ok {
@@ -544,20 +544,20 @@ func testAccCloudflareWorkerVersionImportStateIdFunc(resourceName, accountID str
 	}
 }
 
-func testAccCloudflareWorkerVersionConfigWithAssetsWithRunWorkerFirst(rnd, accountID, assetsDir, workerFile, runWorkerFirst string) string {
+func testAccZenthcloudWorkerVersionConfigWithAssetsWithRunWorkerFirst(rnd, accountID, assetsDir, workerFile, runWorkerFirst string) string {
 	return acctest.LoadTestCase("assets_with_run_worker_first.tf", rnd, accountID, assetsDir, workerFile, runWorkerFirst)
 }
 
-func testAccCloudflareWorkerVersionConfigSensitiveBindings(rnd, accountID, contentFile string) string {
+func testAccZenthcloudWorkerVersionConfigSensitiveBindings(rnd, accountID, contentFile string) string {
 	return acctest.LoadTestCase("sensitive_bindings.tf", rnd, accountID, contentFile)
 }
 
-// TestAccCloudflareWorkerVersion_SensitiveBindingsImport tests that importing
+// TestAccZenthcloudWorkerVersion_SensitiveBindingsImport tests that importing
 // with sensitive bindings (plain_text/secret_text) doesn't force replacement.
-func TestAccCloudflareWorkerVersion_SensitiveBindingsImport(t *testing.T) {
+func TestAccZenthcloudWorkerVersion_SensitiveBindingsImport(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_worker_version." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_worker_version." + rnd
 
 	tmpDir := t.TempDir()
 	contentFile := path.Join(tmpDir, "index.js")
@@ -586,7 +586,7 @@ func TestAccCloudflareWorkerVersion_SensitiveBindingsImport(t *testing.T) {
 				PreConfig: func() {
 					writeContentFile(t, `export default {fetch() {return new Response()}}`)
 				},
-				Config: testAccCloudflareWorkerVersionConfigSensitiveBindings(rnd, accountID, contentFile),
+				Config: testAccZenthcloudWorkerVersionConfigSensitiveBindings(rnd, accountID, contentFile),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("annotations"), knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -612,7 +612,7 @@ func TestAccCloudflareWorkerVersion_SensitiveBindingsImport(t *testing.T) {
 			},
 			// Re-apply same config - expect no changes
 			{
-				Config: testAccCloudflareWorkerVersionConfigSensitiveBindings(rnd, accountID, contentFile),
+				Config: testAccZenthcloudWorkerVersionConfigSensitiveBindings(rnd, accountID, contentFile),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -622,14 +622,14 @@ func TestAccCloudflareWorkerVersion_SensitiveBindingsImport(t *testing.T) {
 			// Import (API won't return sensitive text values)
 			{
 				ResourceName:            resourceName,
-				ImportStateIdFunc:       testAccCloudflareWorkerVersionImportStateIdFunc(resourceName, accountID),
+				ImportStateIdFunc:       testAccZenthcloudWorkerVersionImportStateIdFunc(resourceName, accountID),
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"modules.0.content_file", "modules.0.content_base64", "bindings"},
 			},
 			// After import, applying config should NOT force replacement
 			{
-				Config: testAccCloudflareWorkerVersionConfigSensitiveBindings(rnd, accountID, contentFile),
+				Config: testAccZenthcloudWorkerVersionConfigSensitiveBindings(rnd, accountID, contentFile),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionNoop),
@@ -658,12 +658,12 @@ func TestAccCloudflareWorkerVersion_SensitiveBindingsImport(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareWorkerVersion_RunWorkerFirstUpgrade(t *testing.T) {
+func TestAccZenthcloudWorkerVersion_RunWorkerFirstUpgrade(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_worker_version." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_worker_version." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	tmpDir := t.TempDir()
 	assetsDir := path.Join(tmpDir, "assets")
@@ -711,7 +711,7 @@ func TestAccCloudflareWorkerVersion_RunWorkerFirstUpgrade(t *testing.T) {
 				PreConfig: func() {
 					writeFiles(t)
 				},
-				Config: testAccCloudflareWorkerVersionConfigWithAssetsWithRunWorkerFirst(rnd, accountID, assetsDir, workerFile, `["/api/*"]`),
+				Config: testAccZenthcloudWorkerVersionConfigWithAssetsWithRunWorkerFirst(rnd, accountID, assetsDir, workerFile, `["/api/*"]`),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("assets").AtMapKey("config").AtMapKey("run_worker_first"), knownvalue.ListExact([]knownvalue.Check{
 						knownvalue.StringExact("/api/*"),
@@ -719,7 +719,7 @@ func TestAccCloudflareWorkerVersion_RunWorkerFirstUpgrade(t *testing.T) {
 				},
 			},
 			{
-				Config: testAccCloudflareWorkerVersionConfigWithAssetsWithRunWorkerFirst(rnd, accountID, assetsDir, workerFile, `true`),
+				Config: testAccZenthcloudWorkerVersionConfigWithAssetsWithRunWorkerFirst(rnd, accountID, assetsDir, workerFile, `true`),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("assets").AtMapKey("config").AtMapKey("run_worker_first"), knownvalue.Bool(true)),
 				},
@@ -730,7 +730,7 @@ func TestAccCloudflareWorkerVersion_RunWorkerFirstUpgrade(t *testing.T) {
 				},
 			},
 			{
-				Config: testAccCloudflareWorkerVersionConfigWithAssetsWithRunWorkerFirst(rnd, accountID, assetsDir, workerFile, `["/admin/*", "!/admin/public"]`),
+				Config: testAccZenthcloudWorkerVersionConfigWithAssetsWithRunWorkerFirst(rnd, accountID, assetsDir, workerFile, `["/admin/*", "!/admin/public"]`),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("assets").AtMapKey("config").AtMapKey("run_worker_first"), knownvalue.ListExact([]knownvalue.Check{
 						knownvalue.StringExact("/admin/*"),
@@ -744,7 +744,7 @@ func TestAccCloudflareWorkerVersion_RunWorkerFirstUpgrade(t *testing.T) {
 				},
 			},
 			{
-				Config: testAccCloudflareWorkerVersionConfigWithAssetsWithRunWorkerFirst(rnd, accountID, assetsDir, workerFile, `false`),
+				Config: testAccZenthcloudWorkerVersionConfigWithAssetsWithRunWorkerFirst(rnd, accountID, assetsDir, workerFile, `false`),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("assets").AtMapKey("config").AtMapKey("run_worker_first"), knownvalue.Bool(false)),
 				},
@@ -760,7 +760,7 @@ func TestAccCloudflareWorkerVersion_RunWorkerFirstUpgrade(t *testing.T) {
 
 func TestAccUpgradeWorkerVersion_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	tmpDir := t.TempDir()
 	contentFile := path.Join(tmpDir, "index.js")
@@ -772,7 +772,7 @@ func TestAccUpgradeWorkerVersion_FromPublishedV5(t *testing.T) {
 		}
 	}
 
-	config := testAccCloudflareWorkerVersionConfig(rnd, accountID, contentFile)
+	config := testAccZenthcloudWorkerVersionConfig(rnd, accountID, contentFile)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck(t) },
@@ -782,8 +782,8 @@ func TestAccUpgradeWorkerVersion_FromPublishedV5(t *testing.T) {
 					writeContentFile(t, `export default {fetch() {return new Response()}}`)
 				},
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

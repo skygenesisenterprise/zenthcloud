@@ -15,11 +15,11 @@ import (
 	"github.com/neilotoole/slogt/v2"
 	"github.com/stretchr/testify/require"
 
-	"github.com/cloudflare/pint/internal/checks"
-	"github.com/cloudflare/pint/internal/diags"
-	"github.com/cloudflare/pint/internal/discovery"
-	"github.com/cloudflare/pint/internal/git"
-	"github.com/cloudflare/pint/internal/parser"
+	"github.com/zenthcloud/pint/internal/checks"
+	"github.com/zenthcloud/pint/internal/diags"
+	"github.com/zenthcloud/pint/internal/discovery"
+	"github.com/zenthcloud/pint/internal/git"
+	"github.com/zenthcloud/pint/internal/parser"
 )
 
 var (
@@ -119,7 +119,7 @@ func TestCommenter(t *testing.T) {
 		path:   "foo.txt",
 		line:   2,
 		author: "pint",
-		text: AddPintMarker(`:stop_sign: **Fatal** reported by [pint](https://cloudflare.github.io/pint/) **foo** check.
+		text: AddPintMarker(`:stop_sign: **Fatal** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **foo** check.
 
 ------
 
@@ -132,7 +132,7 @@ foo details
 
 ------
 
-:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/foo.html).
+:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 `),
 		meta: nil,
 	}
@@ -160,7 +160,7 @@ foo details
 		path:   "bar.txt",
 		line:   1,
 		author: "pint",
-		text: AddPintMarker(`:warning: **Warning** reported by [pint](https://cloudflare.github.io/pint/) **bar** check.
+		text: AddPintMarker(`:warning: **Warning** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **bar** check.
 
 ------
 
@@ -168,7 +168,7 @@ bar warning
 
 ------
 
-:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/bar.html).
+:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 `),
 		meta: nil,
 	}
@@ -511,7 +511,7 @@ bar warning
 					if p.line != 3 {
 						return fmt.Errorf("wrong line: %d", p.line)
 					}
-					expected := `:stop_sign: **Bug** reported by [pint](https://cloudflare.github.io/pint/) **foo** check.
+					expected := `:stop_sign: **Bug** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **foo** check.
 
 ------
 
@@ -537,7 +537,7 @@ foo details
 
 ------
 
-:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/foo.html).
+:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 `
 					if p.text != AddPintMarker(expected) {
 						return fmt.Errorf("wrong text: %s", cmp.Diff(expected, p.text))
@@ -606,7 +606,7 @@ foo details
 					if p.line != 3 {
 						return fmt.Errorf("wrong line: %d", p.line)
 					}
-					expected := `:stop_sign: **Bug** reported by [pint](https://cloudflare.github.io/pint/) **foo** check.
+					expected := `:stop_sign: **Bug** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **foo** check.
 
 ------
 
@@ -621,7 +621,7 @@ foo details
 
 ------
 
-:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/foo.html).
+:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 `
 					if p.text != AddPintMarker(expected) {
 						return fmt.Errorf("wrong text: %s", cmp.Diff(expected, p.text))
@@ -764,7 +764,7 @@ foo details
 					if p.line != 2 && p.line != 3 {
 						return fmt.Errorf("wrong line: %d", p.line)
 					}
-					expected := `:stop_sign: **Bug** reported by [pint](https://cloudflare.github.io/pint/) **foo** check.
+					expected := `:stop_sign: **Bug** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **foo** check.
 
 ------
 
@@ -777,12 +777,12 @@ foo details
 
 ------
 
-:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/foo.html).
+:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 `
 					if p.line == 3 && p.text != AddPintMarker(expected) {
 						return fmt.Errorf("wrong text on first report: %s", cmp.Diff(expected, p.text))
 					}
-					expected2 := `:stop_sign: **Bug** reported by [pint](https://cloudflare.github.io/pint/) **foo** check.
+					expected2 := `:stop_sign: **Bug** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **foo** check.
 
 ------
 
@@ -795,7 +795,7 @@ foo details
 
 ------
 
-:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/foo.html).
+:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 `
 					if p.line == 2 && p.text != AddPintMarker(expected2) {
 						return fmt.Errorf("wrong text on second report: %s", cmp.Diff(expected2, p.text))

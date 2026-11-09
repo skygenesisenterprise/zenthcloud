@@ -21,7 +21,7 @@ import (
 //   - config[0].enabled
 //
 // This function handles the restructuring from flat fields to nested config list.
-func Transform(ctx context.Context, source SourceCloudflareAuthenticatedOriginPullsModel) (*TargetAuthenticatedOriginPullsModel, diag.Diagnostics) {
+func Transform(ctx context.Context, source SourceZenthcloudAuthenticatedOriginPullsModel) (*TargetAuthenticatedOriginPullsModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Step 1: Validate required fields
@@ -37,7 +37,7 @@ func Transform(ctx context.Context, source SourceCloudflareAuthenticatedOriginPu
 	if source.Hostname.IsNull() || source.Hostname.IsUnknown() {
 		diags.AddError(
 			"Missing required field",
-			"hostname is required for authenticated_origin_pulls migration. Resources without hostname should migrate to cloudflare_authenticated_origin_pulls_settings instead.",
+			"hostname is required for authenticated_origin_pulls migration. Resources without hostname should migrate to zenthcloud_authenticated_origin_pulls_settings instead.",
 		)
 		return nil, diags
 	}

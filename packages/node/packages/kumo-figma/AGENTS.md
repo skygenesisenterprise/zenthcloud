@@ -1,4 +1,4 @@
-# Figma Plugin (`@cloudflare/kumo-figma`)
+# Figma Plugin (`@zenthcloud/kumo-figma`)
 
 Generates production-quality Figma components from `component-registry.json`. Destructive sync: purges and recreates all components per run.
 

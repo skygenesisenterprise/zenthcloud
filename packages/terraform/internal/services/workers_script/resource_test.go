@@ -12,11 +12,11 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/workers"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/workers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -30,7 +30,7 @@ const (
 	resourcePrefix    = "tfacctest-"
 	scriptContent1    = `addEventListener('fetch', event => {event.respondWith(new Response('test 1'))});`
 	scriptContent2    = `addEventListener('fetch', event => {event.respondWith(new Response('test 2'))});`
-	moduleContent     = `import {DurableObject} from 'cloudflare:workers'; export class MyDurableObject extends DurableObject {}; export default { fetch() { return new Response('Hello world'); }, };`
+	moduleContent     = `import {DurableObject} from 'zenthcloud:workers'; export class MyDurableObject extends DurableObject {}; export default { fetch() { return new Response('Hello world'); }, };`
 	encodedWasm       = "AGFzbQEAAAAGgYCAgAAA" // wat source: `(module)`, so literally just an empty wasm module
 	compatibilityDate = "2023-03-19"
 	d1DatabaseID      = "ce8b95dc-b376-4ff8-9b9e-1801ed6d745d"
@@ -41,24 +41,24 @@ var (
 )
 
 func init() {
-	resource.AddTestSweepers("cloudflare_workers_script", &resource.Sweeper{
-		Name: "cloudflare_workers_script",
-		F:    testSweepCloudflareWorkerScripts,
+	resource.AddTestSweepers("zenthcloud_workers_script", &resource.Sweeper{
+		Name: "zenthcloud_workers_script",
+		F:    testSweepZenthcloudWorkerScripts,
 	})
 }
 
-func testSweepCloudflareWorkerScripts(r string) error {
+func testSweepZenthcloudWorkerScripts(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping worker scripts sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping worker scripts sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
 	list, err := client.Workers.Scripts.List(ctx, workers.ScriptListParams{
-		AccountID: cloudflare.F(accountID),
+		AccountID: zenthcloud.F(accountID),
 	})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to list worker scripts: %s", err))
@@ -99,7 +99,7 @@ func testSweepCloudflareWorkerScripts(r string) error {
 			defer func() { <-sem }()
 			tflog.Info(ctx, fmt.Sprintf("Deleting worker script: %s", id))
 			_, err := client.Workers.Scripts.Delete(ctx, id, workers.ScriptDeleteParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			})
 			if err != nil {
 				tflog.Error(ctx, fmt.Sprintf("Failed to delete worker script %s: %s", id, err))
@@ -111,14 +111,14 @@ func testSweepCloudflareWorkerScripts(r string) error {
 	return nil
 }
 
-func TestAccCloudflareWorkerScript_ServiceWorker(t *testing.T) {
+func TestAccZenthcloudWorkerScript_ServiceWorker(t *testing.T) {
 	t.Skip("Skipping: post-apply refresh plan is non-empty due to computed field drift (etag, handlers, has_modules, files.content_sha256); pre-existing issue unrelated to files/body_part fix")
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
 	resourceName := resourcePrefix + rnd
-	name := "cloudflare_workers_script." + resourceName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_workers_script." + resourceName
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -128,21 +128,21 @@ func TestAccCloudflareWorkerScript_ServiceWorker(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareWorkerScriptConfigServiceWorkerInitial(resourceName, accountID),
+				Config: testAccCheckZenthcloudWorkerScriptConfigServiceWorkerInitial(resourceName, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("script_name"), knownvalue.StringExact(resourceName)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("content"), knownvalue.StringExact(scriptContent1)),
 				},
 			},
 			{
-				Config: testAccCheckCloudflareWorkerScriptConfigServiceWorkerUpdate(resourceName, accountID),
+				Config: testAccCheckZenthcloudWorkerScriptConfigServiceWorkerUpdate(resourceName, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("script_name"), knownvalue.StringExact(resourceName)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("content"), knownvalue.StringExact(scriptContent2)),
 				},
 			},
 			{
-				Config: testAccCheckCloudflareWorkerScriptConfigServiceWorkerUpdateBinding(resourceName, accountID),
+				Config: testAccCheckZenthcloudWorkerScriptConfigServiceWorkerUpdateBinding(resourceName, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("script_name"), knownvalue.StringExact(resourceName)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("content"), knownvalue.StringExact(scriptContent2)),
@@ -154,7 +154,7 @@ func TestAccCloudflareWorkerScript_ServiceWorker(t *testing.T) {
 			{
 				PreConfig: func() {
 					client := acctest.SharedClient()
-					result, err := client.Workers.Scripts.Settings.Edit(context.Background(), resourceName, workers.ScriptSettingEditParams{AccountID: cloudflare.F(accountID), ScriptSetting: workers.ScriptSettingParam{Logpush: cloudflare.Bool(true)}})
+					result, err := client.Workers.Scripts.Settings.Edit(context.Background(), resourceName, workers.ScriptSettingEditParams{AccountID: zenthcloud.F(accountID), ScriptSetting: workers.ScriptSettingParam{Logpush: zenthcloud.Bool(true)}})
 					if err != nil {
 						t.Errorf("Error updating script settings out-of-band to test drift detection: %s", err)
 					}
@@ -181,14 +181,14 @@ func TestAccCloudflareWorkerScript_ServiceWorker(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareWorkerScript_ModuleUpload(t *testing.T) {
+func TestAccZenthcloudWorkerScript_ModuleUpload(t *testing.T) {
 	t.Skip("issue: API behavior change has caused this test to start failing")
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
 	resourceName := resourcePrefix + rnd
-	name := "cloudflare_workers_script." + resourceName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_workers_script." + resourceName
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -196,10 +196,10 @@ func TestAccCloudflareWorkerScript_ModuleUpload(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		// CheckDestroy:             testAccCheckCloudflareWorkerScriptDestroy,
+		// CheckDestroy:             testAccCheckZenthcloudWorkerScriptDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareWorkerScriptUploadModule(resourceName, accountID),
+				Config: testAccCheckZenthcloudWorkerScriptUploadModule(resourceName, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("script_name"), knownvalue.StringExact(resourceName)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("content"), knownvalue.StringExact(moduleContent)),
@@ -213,7 +213,7 @@ func TestAccCloudflareWorkerScript_ModuleUpload(t *testing.T) {
 			{
 				PreConfig: func() {
 					client := acctest.SharedClient()
-					result, err := client.Workers.Scripts.Settings.Edit(context.Background(), resourceName, workers.ScriptSettingEditParams{AccountID: cloudflare.F(accountID), ScriptSetting: workers.ScriptSettingParam{Logpush: cloudflare.Bool(true)}})
+					result, err := client.Workers.Scripts.Settings.Edit(context.Background(), resourceName, workers.ScriptSettingEditParams{AccountID: zenthcloud.F(accountID), ScriptSetting: workers.ScriptSettingParam{Logpush: zenthcloud.Bool(true)}})
 					if err != nil {
 						t.Errorf("Error updating script settings out-of-band to test drift detection: %s", err)
 					}
@@ -244,8 +244,8 @@ func TestAcc_WorkerScriptWithContentFile(t *testing.T) {
 	t.Parallel()
 	rnd := utils.GenerateRandomResourceName()
 	resourceName := resourcePrefix + rnd
-	name := "cloudflare_workers_script." + resourceName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_workers_script." + resourceName
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	tmpDir := t.TempDir()
 	contentFile := path.Join(tmpDir, "worker.mjs")
 
@@ -322,7 +322,7 @@ Content-Type: application/json
 					))
 					result, err := client.Workers.Scripts.Update(context.Background(),
 						resourceName,
-						workers.ScriptUpdateParams{AccountID: cloudflare.F(accountID)},
+						workers.ScriptUpdateParams{AccountID: zenthcloud.F(accountID)},
 						option.WithRequestBody("multipart/form-data;boundary="+boundary, body),
 					)
 					if err != nil {
@@ -355,7 +355,7 @@ func TestAcc_WorkerScriptWithInvalidContentSHA256(t *testing.T) {
 	t.Parallel()
 	rnd := utils.GenerateRandomResourceName()
 	resourceName := resourcePrefix + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	tmpDir := t.TempDir()
 	contentFile := path.Join(tmpDir, "worker.mjs")
 
@@ -393,13 +393,13 @@ func TestAcc_WorkerScriptWithInvalidContentSHA256(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareWorkerScript_PythonWorker(t *testing.T) {
+func TestAccZenthcloudWorkerScript_PythonWorker(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
 	resourceName := resourcePrefix + rnd
-	name := "cloudflare_workers_script." + resourceName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_workers_script." + resourceName
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -430,8 +430,8 @@ func TestAcc_WorkerScriptWithAssets(t *testing.T) {
 	t.Parallel()
 	rnd := utils.GenerateRandomResourceName()
 	resourceName := resourcePrefix + rnd
-	name := "cloudflare_workers_script." + resourceName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_workers_script." + resourceName
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	assetsDir := t.TempDir()
 	assetFile := path.Join(assetsDir, "index.html")
 
@@ -504,13 +504,13 @@ func TestAcc_WorkerScriptWithAssets(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareWorkerScript_ModuleWithDurableObject(t *testing.T) {
+func TestAccZenthcloudWorkerScript_ModuleWithDurableObject(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
 	resourceName := resourcePrefix + rnd
-	name := "cloudflare_workers_script." + resourceName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_workers_script." + resourceName
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -537,13 +537,13 @@ func TestAccCloudflareWorkerScript_ModuleWithDurableObject(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareWorkerScript_Issue6852DurableObjectMigrationWithWASM(t *testing.T) {
+func TestAccZenthcloudWorkerScript_Issue6852DurableObjectMigrationWithWASM(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
 	resourceName := resourcePrefix + rnd
-	name := "cloudflare_workers_script." + resourceName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_workers_script." + resourceName
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	config := acctest.LoadTestCase("issue_6852_durable_object_migration_with_wasm.tf", resourceName, accountID, encodedWasm)
 
 	resource.Test(t, resource.TestCase{
@@ -578,12 +578,12 @@ func TestAccCloudflareWorkerScript_Issue6852DurableObjectMigrationWithWASM(t *te
 	})
 }
 
-func TestAccCloudflareWorkerScript_AssetsConfigRunWorkerFirst(t *testing.T) {
+func TestAccZenthcloudWorkerScript_AssetsConfigRunWorkerFirst(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_workers_script." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_workers_script." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	contentDir := t.TempDir()
 	contentFile := path.Join(contentDir, "index.js")
@@ -625,13 +625,13 @@ func TestAccCloudflareWorkerScript_AssetsConfigRunWorkerFirst(t *testing.T) {
 					writeContentFile(t)
 					writeAssetFile(t)
 				},
-				Config: testAccCheckCloudflareWorkerScriptConfigWithAssetsWithRunWorkerFirst(rnd, accountID, contentFile, assetsDir, `false`),
+				Config: testAccCheckZenthcloudWorkerScriptConfigWithAssetsWithRunWorkerFirst(rnd, accountID, contentFile, assetsDir, `false`),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("assets").AtMapKey("config").AtMapKey("run_worker_first"), knownvalue.Bool(false)),
 				},
 			},
 			{
-				Config: testAccCheckCloudflareWorkerScriptConfigWithAssetsWithRunWorkerFirst(rnd, accountID, contentFile, assetsDir, `["/api/*"]`),
+				Config: testAccCheckZenthcloudWorkerScriptConfigWithAssetsWithRunWorkerFirst(rnd, accountID, contentFile, assetsDir, `["/api/*"]`),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("assets").AtMapKey("config").AtMapKey("run_worker_first"), knownvalue.ListExact([]knownvalue.Check{
 						knownvalue.StringExact("/api/*"),
@@ -639,13 +639,13 @@ func TestAccCloudflareWorkerScript_AssetsConfigRunWorkerFirst(t *testing.T) {
 				},
 			},
 			{
-				Config: testAccCheckCloudflareWorkerScriptConfigWithAssetsWithRunWorkerFirst(rnd, accountID, contentFile, assetsDir, `true`),
+				Config: testAccCheckZenthcloudWorkerScriptConfigWithAssetsWithRunWorkerFirst(rnd, accountID, contentFile, assetsDir, `true`),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("assets").AtMapKey("config").AtMapKey("run_worker_first"), knownvalue.Bool(true)),
 				},
 			},
 			{
-				Config: testAccCheckCloudflareWorkerScriptConfigWithAssetsWithRunWorkerFirst(rnd, accountID, contentFile, assetsDir, `["/api/*", "!/api/health"]`),
+				Config: testAccCheckZenthcloudWorkerScriptConfigWithAssetsWithRunWorkerFirst(rnd, accountID, contentFile, assetsDir, `["/api/*", "!/api/health"]`),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("assets").AtMapKey("config").AtMapKey("run_worker_first"), knownvalue.ListExact([]knownvalue.Check{
 						knownvalue.StringExact("/api/*"),
@@ -657,12 +657,12 @@ func TestAccCloudflareWorkerScript_AssetsConfigRunWorkerFirst(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareWorkerScript_AssetsConfigRunWorkerFirstMigration(t *testing.T) {
+func TestAccZenthcloudWorkerScript_AssetsConfigRunWorkerFirstMigration(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_workers_script." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_workers_script." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	contentDir := t.TempDir()
 	contentFile := path.Join(contentDir, "index.js")
@@ -704,18 +704,18 @@ func TestAccCloudflareWorkerScript_AssetsConfigRunWorkerFirstMigration(t *testin
 					writeAssetFile(t)
 				},
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.10.1",
 					},
 				},
-				Config: testAccCheckCloudflareWorkerScriptConfigWithAssetsWithRunWorkerFirst(rnd, accountID, contentFile, assetsDir, `false`),
+				Config: testAccCheckZenthcloudWorkerScriptConfigWithAssetsWithRunWorkerFirst(rnd, accountID, contentFile, assetsDir, `false`),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("assets").AtMapKey("config").AtMapKey("run_worker_first"), knownvalue.Bool(false)),
 				},
 			},
 			{
-				Config:                   testAccCheckCloudflareWorkerScriptConfigWithAssetsWithRunWorkerFirst(rnd, accountID, contentFile, assetsDir, `["/api/*"]`),
+				Config:                   testAccCheckZenthcloudWorkerScriptConfigWithAssetsWithRunWorkerFirst(rnd, accountID, contentFile, assetsDir, `["/api/*"]`),
 				ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("assets").AtMapKey("config").AtMapKey("run_worker_first"), knownvalue.ListExact([]knownvalue.Check{
@@ -727,16 +727,16 @@ func TestAccCloudflareWorkerScript_AssetsConfigRunWorkerFirstMigration(t *testin
 	})
 }
 
-// TestAccCloudflareWorkerScript_UnmanagedSecretNoDrift verifies that unmanaged secrets
+// TestAccZenthcloudWorkerScript_UnmanagedSecretNoDrift verifies that unmanaged secrets
 // (secrets that exist on the Worker but are not defined in Terraform config) do not cause drift.
-// This is a regression test for https://github.com/cloudflare/terraform-provider-cloudflare/issues/5892
-func TestAccCloudflareWorkerScript_UnmanagedSecretNoDrift(t *testing.T) {
+// This is a regression test for https://github.com/skygenesisenterprise/zenthcloud
+func TestAccZenthcloudWorkerScript_UnmanagedSecretNoDrift(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
 	resourceName := resourcePrefix + rnd
-	name := "cloudflare_workers_script." + resourceName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_workers_script." + resourceName
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -775,7 +775,7 @@ Content-Type: application/json
 					))
 					result, err := client.Workers.Scripts.Update(context.Background(),
 						resourceName,
-						workers.ScriptUpdateParams{AccountID: cloudflare.F(accountID)},
+						workers.ScriptUpdateParams{AccountID: zenthcloud.F(accountID)},
 						option.WithRequestBody("multipart/form-data;boundary="+boundary, body),
 					)
 					if err != nil {
@@ -811,16 +811,16 @@ Content-Type: application/json
 	})
 }
 
-// TestAccCloudflareWorkerScript_NoSecretsInConfigWithUnmanagedSecrets verifies that workers with
+// TestAccZenthcloudWorkerScript_NoSecretsInConfigWithUnmanagedSecrets verifies that workers with
 // unmanaged secrets do not cause drift when config has no secrets at all.
 // This is a common scenario where users manage secrets outside of Terraform (e.g., via wrangler or dashboard).
-func TestAccCloudflareWorkerScript_NoSecretsInConfigWithUnmanagedSecrets(t *testing.T) {
+func TestAccZenthcloudWorkerScript_NoSecretsInConfigWithUnmanagedSecrets(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
 	resourceName := resourcePrefix + rnd
-	name := "cloudflare_workers_script." + resourceName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_workers_script." + resourceName
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -856,7 +856,7 @@ Content-Type: application/json
 					))
 					result, err := client.Workers.Scripts.Update(context.Background(),
 						resourceName,
-						workers.ScriptUpdateParams{AccountID: cloudflare.F(accountID)},
+						workers.ScriptUpdateParams{AccountID: zenthcloud.F(accountID)},
 						option.WithRequestBody("multipart/form-data;boundary="+boundary, body),
 					)
 					if err != nil {
@@ -887,25 +887,25 @@ Content-Type: application/json
 	})
 }
 
-// testAccCheckCloudflareWorkerScriptDestroy verifies that the worker script has been
+// testAccCheckZenthcloudWorkerScriptDestroy verifies that the worker script has been
 // deleted from the API after the test completes.
-func testAccCheckCloudflareWorkerScriptDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudWorkerScriptDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_workers_script" {
+		if rs.Type != "zenthcloud_workers_script" {
 			continue
 		}
 
 		_, err := client.Workers.Scripts.Get(context.Background(), rs.Primary.ID, workers.ScriptGetParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		})
 		if err == nil {
 			return fmt.Errorf("workers script %s still exists", rs.Primary.ID)
 		}
 
-		var apierr *cloudflare.Error
+		var apierr *zenthcloud.Error
 		if errors.As(err, &apierr) && apierr.StatusCode != http.StatusNotFound {
 			return fmt.Errorf("error checking if workers script %s was destroyed: %w", rs.Primary.ID, err)
 		}
@@ -914,15 +914,15 @@ func testAccCheckCloudflareWorkerScriptDestroy(s *terraform.State) error {
 	return nil
 }
 
-// TestAccCloudflareWorkerScript_SecretTextBasic verifies that a worker script can be created
+// TestAccZenthcloudWorkerScript_SecretTextBasic verifies that a worker script can be created
 // with a single secret_text binding and that all binding attributes are correctly stored in state.
-func TestAccCloudflareWorkerScript_SecretTextBasic(t *testing.T) {
+func TestAccZenthcloudWorkerScript_SecretTextBasic(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
 	resourceName := resourcePrefix + rnd
-	name := "cloudflare_workers_script." + resourceName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_workers_script." + resourceName
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	secretValue := "my-secret-value-" + rnd
 
 	resource.Test(t, resource.TestCase{
@@ -931,7 +931,7 @@ func TestAccCloudflareWorkerScript_SecretTextBasic(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWorkerScriptDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWorkerScriptDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccWorkersScriptConfigWithSecretText(resourceName, accountID, secretValue),
@@ -949,15 +949,15 @@ func TestAccCloudflareWorkerScript_SecretTextBasic(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareWorkerScript_SecretTextUpdate verifies that updating the text value of
+// TestAccZenthcloudWorkerScript_SecretTextUpdate verifies that updating the text value of
 // a secret_text binding triggers an update (not replacement) and the new value is stored.
-func TestAccCloudflareWorkerScript_SecretTextUpdate(t *testing.T) {
+func TestAccZenthcloudWorkerScript_SecretTextUpdate(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
 	resourceName := resourcePrefix + rnd
-	name := "cloudflare_workers_script." + resourceName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_workers_script." + resourceName
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	secretValue1 := "initial-secret-" + rnd
 	secretValue2 := "updated-secret-" + rnd
 
@@ -967,7 +967,7 @@ func TestAccCloudflareWorkerScript_SecretTextUpdate(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWorkerScriptDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWorkerScriptDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccWorkersScriptConfigWithSecretText(resourceName, accountID, secretValue1),
@@ -994,16 +994,16 @@ func TestAccCloudflareWorkerScript_SecretTextUpdate(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareWorkerScript_SecretTextAddRemove verifies the lifecycle of adding and
+// TestAccZenthcloudWorkerScript_SecretTextAddRemove verifies the lifecycle of adding and
 // removing secret_text bindings from a worker script. Starts with one secret, adds a second,
 // then removes the first — proving independent secret lifecycle management.
-func TestAccCloudflareWorkerScript_SecretTextAddRemove(t *testing.T) {
+func TestAccZenthcloudWorkerScript_SecretTextAddRemove(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
 	resourceName := resourcePrefix + rnd
-	name := "cloudflare_workers_script." + resourceName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_workers_script." + resourceName
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	secretValue1 := "secret-one-" + rnd
 	secretValue2 := "secret-two-" + rnd
 
@@ -1013,7 +1013,7 @@ func TestAccCloudflareWorkerScript_SecretTextAddRemove(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWorkerScriptDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWorkerScriptDestroy,
 		Steps: []resource.TestStep{
 			{
 				// Step 1: Create with one secret
@@ -1057,15 +1057,15 @@ func TestAccCloudflareWorkerScript_SecretTextAddRemove(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareWorkerScript_SecretTextMultiple verifies that a worker script can be
+// TestAccZenthcloudWorkerScript_SecretTextMultiple verifies that a worker script can be
 // created with multiple secret_text bindings simultaneously and all are stored correctly.
-func TestAccCloudflareWorkerScript_SecretTextMultiple(t *testing.T) {
+func TestAccZenthcloudWorkerScript_SecretTextMultiple(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
 	resourceName := resourcePrefix + rnd
-	name := "cloudflare_workers_script." + resourceName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_workers_script." + resourceName
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	secretValue1 := "secret-one-" + rnd
 	secretValue2 := "secret-two-" + rnd
 
@@ -1075,7 +1075,7 @@ func TestAccCloudflareWorkerScript_SecretTextMultiple(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWorkerScriptDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWorkerScriptDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccWorkersScriptConfigWithTwoSecrets(resourceName, accountID, secretValue1, secretValue2),
@@ -1094,15 +1094,15 @@ func TestAccCloudflareWorkerScript_SecretTextMultiple(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareWorkerScript_SecretTextWithOtherBindings verifies that secret_text
+// TestAccZenthcloudWorkerScript_SecretTextWithOtherBindings verifies that secret_text
 // bindings coexist correctly with other binding types (plain_text) on the same worker.
-func TestAccCloudflareWorkerScript_SecretTextWithOtherBindings(t *testing.T) {
+func TestAccZenthcloudWorkerScript_SecretTextWithOtherBindings(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
 	resourceName := resourcePrefix + rnd
-	name := "cloudflare_workers_script." + resourceName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_workers_script." + resourceName
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	secretValue := "my-secret-" + rnd
 	plainValue := "my-plain-value-" + rnd
 
@@ -1112,7 +1112,7 @@ func TestAccCloudflareWorkerScript_SecretTextWithOtherBindings(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWorkerScriptDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWorkerScriptDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccWorkersScriptConfigWithSecretAndPlainText(resourceName, accountID, secretValue, plainValue),
@@ -1131,16 +1131,16 @@ func TestAccCloudflareWorkerScript_SecretTextWithOtherBindings(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareWorkerScript_SecretTextRename verifies that renaming a secret_text
+// TestAccZenthcloudWorkerScript_SecretTextRename verifies that renaming a secret_text
 // binding (changing its name attribute while keeping the same text) triggers an update
 // and the new binding name is stored correctly.
-func TestAccCloudflareWorkerScript_SecretTextRename(t *testing.T) {
+func TestAccZenthcloudWorkerScript_SecretTextRename(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
 	resourceName := resourcePrefix + rnd
-	name := "cloudflare_workers_script." + resourceName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_workers_script." + resourceName
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	secretValue := "rename-secret-" + rnd
 
 	resource.Test(t, resource.TestCase{
@@ -1149,7 +1149,7 @@ func TestAccCloudflareWorkerScript_SecretTextRename(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWorkerScriptDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWorkerScriptDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccWorkersScriptConfigWithSecretText(resourceName, accountID, secretValue),
@@ -1177,16 +1177,16 @@ func TestAccCloudflareWorkerScript_SecretTextRename(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareWorkerScript_SecretTextImport verifies that a worker script with a
+// TestAccZenthcloudWorkerScript_SecretTextImport verifies that a worker script with a
 // secret_text binding can be imported. The secret text value is write-only and not returned
 // by the API, so it must be in ImportStateVerifyIgnore.
-func TestAccCloudflareWorkerScript_SecretTextImport(t *testing.T) {
+func TestAccZenthcloudWorkerScript_SecretTextImport(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
 	resourceName := resourcePrefix + rnd
-	name := "cloudflare_workers_script." + resourceName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_workers_script." + resourceName
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	secretValue := "import-secret-" + rnd
 
 	resource.Test(t, resource.TestCase{
@@ -1195,7 +1195,7 @@ func TestAccCloudflareWorkerScript_SecretTextImport(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWorkerScriptDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWorkerScriptDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccWorkersScriptConfigWithSecretText(resourceName, accountID, secretValue),
@@ -1216,16 +1216,16 @@ func TestAccCloudflareWorkerScript_SecretTextImport(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareWorkerScript_SecretTextIdempotency verifies that reapplying the same
+// TestAccZenthcloudWorkerScript_SecretTextIdempotency verifies that reapplying the same
 // config with a secret_text binding produces an empty plan — proving that the sensitive
 // text value is correctly preserved from state across apply+refresh cycles.
-func TestAccCloudflareWorkerScript_SecretTextIdempotency(t *testing.T) {
+func TestAccZenthcloudWorkerScript_SecretTextIdempotency(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
 	resourceName := resourcePrefix + rnd
-	name := "cloudflare_workers_script." + resourceName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_workers_script." + resourceName
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	secretValue := "idempotent-secret-" + rnd
 
 	resource.Test(t, resource.TestCase{
@@ -1234,7 +1234,7 @@ func TestAccCloudflareWorkerScript_SecretTextIdempotency(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWorkerScriptDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWorkerScriptDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccWorkersScriptConfigWithSecretText(resourceName, accountID, secretValue),
@@ -1290,7 +1290,7 @@ func testAccWorkersScriptConfigWithManagedSecret(rnd, accountID string) string {
 
 func testAccWorkersScriptConfigNoSecrets(rnd, accountID string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_workers_script" "%[1]s" {
+resource "zenthcloud_workers_script" "%[1]s" {
   account_id = "%[2]s"
   script_name = "%[1]s"
   content = "export default { fetch() { return new Response('Hello world'); } };"
@@ -1299,19 +1299,19 @@ resource "cloudflare_workers_script" "%[1]s" {
 `, rnd, accountID)
 }
 
-func testAccCheckCloudflareWorkerScriptConfigServiceWorkerInitial(rnd, accountID string) string {
+func testAccCheckZenthcloudWorkerScriptConfigServiceWorkerInitial(rnd, accountID string) string {
 	return acctest.LoadTestCase("service_worker_initial.tf", rnd, scriptContent1, accountID)
 }
 
-func testAccCheckCloudflareWorkerScriptConfigServiceWorkerUpdate(rnd, accountID string) string {
+func testAccCheckZenthcloudWorkerScriptConfigServiceWorkerUpdate(rnd, accountID string) string {
 	return acctest.LoadTestCase("service_worker_update.tf", rnd, scriptContent2, accountID)
 }
 
-func testAccCheckCloudflareWorkerScriptConfigServiceWorkerUpdateBinding(rnd, accountID string) string {
+func testAccCheckZenthcloudWorkerScriptConfigServiceWorkerUpdateBinding(rnd, accountID string) string {
 	return acctest.LoadTestCase("service_worker_update_binding.tf", rnd, scriptContent2, encodedWasm, accountID)
 }
 
-func testAccCheckCloudflareWorkerScriptUploadModule(rnd, accountID string) string {
+func testAccCheckZenthcloudWorkerScriptUploadModule(rnd, accountID string) string {
 	// Use non-migration template to support Terraform < 1.11
 	return acctest.LoadTestCase("module_no_migrations.tf", rnd, moduleContent, accountID, compatibilityDate, strings.Join(compatibilityFlags, `","`))
 }
@@ -1328,20 +1328,20 @@ func testAccWorkersScriptConfigWithAssets(rnd, accountID, assetsDir string) stri
 	return acctest.LoadTestCase("module_with_assets.tf", rnd, accountID, assetsDir)
 }
 
-func testAccCheckCloudflareWorkerScriptConfigWithAssetsWithRunWorkerFirst(rnd, accountID, contentFile, assetsDir, runWorkerFirst string) string {
+func testAccCheckZenthcloudWorkerScriptConfigWithAssetsWithRunWorkerFirst(rnd, accountID, contentFile, assetsDir, runWorkerFirst string) string {
 	return acctest.LoadTestCase("module_with_assets_with_run_worker_first.tf", rnd, accountID, contentFile, assetsDir, runWorkerFirst)
 }
 
-// TestAccCloudflareWorkerScript_RatelimitBinding verifies that a ratelimit binding type
-// is accepted and applied correctly on cloudflare_workers_script.
+// TestAccZenthcloudWorkerScript_RatelimitBinding verifies that a ratelimit binding type
+// is accepted and applied correctly on zenthcloud_workers_script.
 // This is a regression test for the missing "ratelimit" type in the schema validator.
-func TestAccCloudflareWorkerScript_RatelimitBinding(t *testing.T) {
+func TestAccZenthcloudWorkerScript_RatelimitBinding(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
 	resourceName := resourcePrefix + rnd
-	name := "cloudflare_workers_script." + resourceName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_workers_script." + resourceName
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -1351,7 +1351,7 @@ func TestAccCloudflareWorkerScript_RatelimitBinding(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareWorkerScriptWithRatelimitBinding(resourceName, accountID),
+				Config: testAccCheckZenthcloudWorkerScriptWithRatelimitBinding(resourceName, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("script_name"), knownvalue.StringExact(resourceName)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("bindings"), knownvalue.ListSizeExact(1)),
@@ -1370,22 +1370,22 @@ func TestAccCloudflareWorkerScript_RatelimitBinding(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareWorkerScriptWithRatelimitBinding(rnd, accountID string) string {
+func testAccCheckZenthcloudWorkerScriptWithRatelimitBinding(rnd, accountID string) string {
 	return acctest.LoadTestCase("module_with_ratelimit.tf", rnd, accountID)
 }
 
-// TestAccCloudflareWorkerScript_ObservabilityTraces is a regression test for
-// https://github.com/cloudflare/terraform-provider-cloudflare/issues/7177.
+// TestAccZenthcloudWorkerScript_ObservabilityTraces is a regression test for
+// https://github.com/skygenesisenterprise/zenthcloud
 // It verifies that the observability.traces block (including propagation_policy)
 // is present in both the schema and the model, so that plan/refresh and import
 // do not fail with a "mismatch between struct and object type" error.
-func TestAccCloudflareWorkerScript_ObservabilityTraces(t *testing.T) {
+func TestAccZenthcloudWorkerScript_ObservabilityTraces(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
 	resourceName := resourcePrefix + rnd
-	name := "cloudflare_workers_script." + resourceName
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_workers_script." + resourceName
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -1395,7 +1395,7 @@ func TestAccCloudflareWorkerScript_ObservabilityTraces(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:             testAccCloudflareWorkerScriptWithObservabilityTraces(resourceName, accountID),
+				Config:             testAccZenthcloudWorkerScriptWithObservabilityTraces(resourceName, accountID),
 				ExpectNonEmptyPlan: true,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("script_name"), knownvalue.StringExact(resourceName)),
@@ -1416,16 +1416,16 @@ func TestAccCloudflareWorkerScript_ObservabilityTraces(t *testing.T) {
 	})
 }
 
-func testAccCloudflareWorkerScriptWithObservabilityTraces(rnd, accountID string) string {
+func testAccZenthcloudWorkerScriptWithObservabilityTraces(rnd, accountID string) string {
 	return acctest.LoadTestCase("module_with_observability_traces.tf", rnd, accountID, moduleContent)
 }
 
 func TestAccUpgradeWorkersScript_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
 	resourceName := resourcePrefix + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
-	config := testAccCheckCloudflareWorkerScriptConfigServiceWorkerInitial(resourceName, accountID)
+	config := testAccCheckZenthcloudWorkerScriptConfigServiceWorkerInitial(resourceName, accountID)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -1435,8 +1435,8 @@ func TestAccUpgradeWorkersScript_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

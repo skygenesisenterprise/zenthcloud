@@ -1,4 +1,4 @@
-import { normalizeString } from "@cloudflare/workers-utils/test-helpers";
+import { normalizeString } from "@zenthcloud/workers-utils/test-helpers";
 import { CliExit, runMain } from "cf";
 import { parse as parseShell } from "shell-quote";
 import { vi } from "vite-plus/test";

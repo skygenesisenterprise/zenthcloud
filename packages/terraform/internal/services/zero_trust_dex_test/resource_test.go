@@ -6,11 +6,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -23,21 +23,21 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zero_trust_dex_test", &resource.Sweeper{
-		Name: "cloudflare_zero_trust_dex_test",
-		F:    testSweepCloudflareZeroTrustDEXTest,
+	resource.AddTestSweepers("zenthcloud_zero_trust_dex_test", &resource.Sweeper{
+		Name: "zenthcloud_zero_trust_dex_test",
+		F:    testSweepZenthcloudZeroTrustDEXTest,
 	})
 }
 
-func testSweepCloudflareZeroTrustDEXTest(r string) error {
+func testSweepZenthcloudZeroTrustDEXTest(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	testsResp, err := client.ZeroTrust.Devices.DEXTests.List(
 		ctx,
 		zero_trust.DeviceDEXTestListParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		},
 	)
 	if err != nil {
@@ -55,7 +55,7 @@ func testSweepCloudflareZeroTrustDEXTest(r string) error {
 			ctx,
 			test.TestID,
 			zero_trust.DeviceDEXTestDeleteParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			},
 		)
 		if err != nil {
@@ -66,10 +66,10 @@ func testSweepCloudflareZeroTrustDEXTest(r string) error {
 	return nil
 }
 
-func TestAccCloudflareDeviceDexTest_Traceroute(t *testing.T) {
+func TestAccZenthcloudDeviceDexTest_Traceroute(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_dex_test.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_dex_test.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	sharedChecks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
@@ -89,7 +89,7 @@ func TestAccCloudflareDeviceDexTest_Traceroute(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create test
 			{
-				Config: testAccCloudflareDeviceDexTestsTraceroute(accountID, rnd, "dash.cloudflare.com", "My Test"),
+				Config: testAccZenthcloudDeviceDexTestsTraceroute(accountID, rnd, "dash.zenthcloud.com", "My Test"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -102,12 +102,12 @@ func TestAccCloudflareDeviceDexTest_Traceroute(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					append(sharedChecks,
 						resource.TestCheckResourceAttr(name, "description", "My Test"),
-						resource.TestCheckResourceAttr(name, "data.host", "dash.cloudflare.com"))...,
+						resource.TestCheckResourceAttr(name, "data.host", "dash.zenthcloud.com"))...,
 				),
 			},
 			// Update test in place
 			{
-				Config: testAccCloudflareDeviceDexTestsTraceroute(accountID, rnd, "dash.cloudflare.com", "My Test Updated"),
+				Config: testAccZenthcloudDeviceDexTestsTraceroute(accountID, rnd, "dash.zenthcloud.com", "My Test Updated"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -122,13 +122,13 @@ func TestAccCloudflareDeviceDexTest_Traceroute(t *testing.T) {
 					append(
 						sharedChecks,
 						resource.TestCheckResourceAttr(name, "description", "My Test Updated"),
-						resource.TestCheckResourceAttr(name, "data.host", "dash.cloudflare.com"),
+						resource.TestCheckResourceAttr(name, "data.host", "dash.zenthcloud.com"),
 					)...,
 				),
 			},
 			// Update test with replace
 			{
-				Config: testAccCloudflareDeviceDexTestsTraceroute(accountID, rnd, "1.1.1.1", "My Test Updated"),
+				Config: testAccZenthcloudDeviceDexTestsTraceroute(accountID, rnd, "1.1.1.1", "My Test Updated"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -157,10 +157,10 @@ func TestAccCloudflareDeviceDexTest_Traceroute(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareDeviceDexTest_HTTP(t *testing.T) {
+func TestAccZenthcloudDeviceDexTest_HTTP(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_dex_test.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_dex_test.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	sharedChecks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
@@ -180,7 +180,7 @@ func TestAccCloudflareDeviceDexTest_HTTP(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareDeviceDexTestsHttp(accountID, rnd, "https://dash.cloudflare.com/home", "My Test"),
+				Config: testAccZenthcloudDeviceDexTestsHttp(accountID, rnd, "https://github.com/skygenesisenterprise/zenthcloud", "My Test"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -193,12 +193,12 @@ func TestAccCloudflareDeviceDexTest_HTTP(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					append(sharedChecks,
 						resource.TestCheckResourceAttr(name, "description", "My Test"),
-						resource.TestCheckResourceAttr(name, "data.host", "https://dash.cloudflare.com/home"))...,
+						resource.TestCheckResourceAttr(name, "data.host", "https://github.com/skygenesisenterprise/zenthcloud"))...,
 				),
 			},
 			// Update test in place
 			{
-				Config: testAccCloudflareDeviceDexTestsHttp(accountID, rnd, "https://dash.cloudflare.com/home", "My Test Updated"),
+				Config: testAccZenthcloudDeviceDexTestsHttp(accountID, rnd, "https://github.com/skygenesisenterprise/zenthcloud", "My Test Updated"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -213,12 +213,12 @@ func TestAccCloudflareDeviceDexTest_HTTP(t *testing.T) {
 					append(
 						sharedChecks,
 						resource.TestCheckResourceAttr(name, "description", "My Test Updated"),
-						resource.TestCheckResourceAttr(name, "data.host", "https://dash.cloudflare.com/home"),
+						resource.TestCheckResourceAttr(name, "data.host", "https://github.com/skygenesisenterprise/zenthcloud"),
 					)...,
 				),
 			},
 			{
-				Config: testAccCloudflareDeviceDexTestsHttp(accountID, rnd, "https://one.dash.cloudflare.com/home/quick-start", "My Test Updated"),
+				Config: testAccZenthcloudDeviceDexTestsHttp(accountID, rnd, "https://github.com/skygenesisenterprise/zenthcloud", "My Test Updated"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -232,7 +232,7 @@ func TestAccCloudflareDeviceDexTest_HTTP(t *testing.T) {
 					append(
 						sharedChecks,
 						resource.TestCheckResourceAttr(name, "description", "My Test Updated"),
-						resource.TestCheckResourceAttr(name, "data.host", "https://one.dash.cloudflare.com/home/quick-start"),
+						resource.TestCheckResourceAttr(name, "data.host", "https://github.com/skygenesisenterprise/zenthcloud"),
 					)...,
 				),
 			},
@@ -248,9 +248,9 @@ func TestAccCloudflareDeviceDexTest_HTTP(t *testing.T) {
 
 func TestAccUpgradeZeroTrustDexTest_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
-	config := testAccCloudflareDeviceDexTestsTraceroute(accountID, rnd, "dash.cloudflare.com", "My Test")
+	config := testAccZenthcloudDeviceDexTestsTraceroute(accountID, rnd, "dash.zenthcloud.com", "My Test")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -260,8 +260,8 @@ func TestAccUpgradeZeroTrustDexTest_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},
@@ -280,11 +280,11 @@ func TestAccUpgradeZeroTrustDexTest_FromPublishedV5(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareDeviceDexTest_TracerouteTargeted(t *testing.T) {
+func TestAccZenthcloudDeviceDexTest_TracerouteTargeted(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
 	ruleRnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_dex_test.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_dex_test.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	sharedChecks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
@@ -306,7 +306,7 @@ func TestAccCloudflareDeviceDexTest_TracerouteTargeted(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create test
 			{
-				Config: testAccCloudflareDeviceDexTestsTracerouteTargeted(accountID, rnd, "dash.cloudflare.com", "My Test", ruleRnd, `group_policy_id == \"bd2f8f7b-d0b0-4d24-ba2b-bdfdf244d9f9\"`, "My Rule"),
+				Config: testAccZenthcloudDeviceDexTestsTracerouteTargeted(accountID, rnd, "dash.zenthcloud.com", "My Test", ruleRnd, `group_policy_id == \"bd2f8f7b-d0b0-4d24-ba2b-bdfdf244d9f9\"`, "My Rule"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -319,12 +319,12 @@ func TestAccCloudflareDeviceDexTest_TracerouteTargeted(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					append(sharedChecks,
 						resource.TestCheckResourceAttr(name, "description", "My Test"),
-						resource.TestCheckResourceAttr(name, "data.host", "dash.cloudflare.com"))...,
+						resource.TestCheckResourceAttr(name, "data.host", "dash.zenthcloud.com"))...,
 				),
 			},
 			// Update test in place
 			{
-				Config: testAccCloudflareDeviceDexTestsTracerouteTargeted(accountID, rnd, "dash.cloudflare.com", "My Test Updated", ruleRnd, `group_policy_id == \"bd2f8f7b-d0b0-4d24-ba2b-bdfdf244d9f9\"`, "My Rule"),
+				Config: testAccZenthcloudDeviceDexTestsTracerouteTargeted(accountID, rnd, "dash.zenthcloud.com", "My Test Updated", ruleRnd, `group_policy_id == \"bd2f8f7b-d0b0-4d24-ba2b-bdfdf244d9f9\"`, "My Rule"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -339,13 +339,13 @@ func TestAccCloudflareDeviceDexTest_TracerouteTargeted(t *testing.T) {
 					append(
 						sharedChecks,
 						resource.TestCheckResourceAttr(name, "description", "My Test Updated"),
-						resource.TestCheckResourceAttr(name, "data.host", "dash.cloudflare.com"),
+						resource.TestCheckResourceAttr(name, "data.host", "dash.zenthcloud.com"),
 					)...,
 				),
 			},
 			// // Update test with replace
 			{
-				Config: testAccCloudflareDeviceDexTestsTracerouteTargeted(accountID, rnd, "1.1.1.1", "My Test Updated", ruleRnd, `group_policy_id == \"bd2f8f7b-d0b0-4d24-ba2b-bdfdf244d9f9\"`, "My Rule"),
+				Config: testAccZenthcloudDeviceDexTestsTracerouteTargeted(accountID, rnd, "1.1.1.1", "My Test Updated", ruleRnd, `group_policy_id == \"bd2f8f7b-d0b0-4d24-ba2b-bdfdf244d9f9\"`, "My Rule"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -374,11 +374,11 @@ func TestAccCloudflareDeviceDexTest_TracerouteTargeted(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareDeviceDexTest_HTTPTargeted(t *testing.T) {
+func TestAccZenthcloudDeviceDexTest_HTTPTargeted(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
 	ruleRnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_dex_test.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_dex_test.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	sharedChecks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
@@ -400,7 +400,7 @@ func TestAccCloudflareDeviceDexTest_HTTPTargeted(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareDeviceDexTestsHttpTargeted(accountID, rnd, "https://dash.cloudflare.com/home", "My Test", ruleRnd, `group_policy_id == \"bd2f8f7b-d0b0-4d24-ba2b-bdfdf244d9f9\"`, "My Rule"),
+				Config: testAccZenthcloudDeviceDexTestsHttpTargeted(accountID, rnd, "https://github.com/skygenesisenterprise/zenthcloud", "My Test", ruleRnd, `group_policy_id == \"bd2f8f7b-d0b0-4d24-ba2b-bdfdf244d9f9\"`, "My Rule"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -413,12 +413,12 @@ func TestAccCloudflareDeviceDexTest_HTTPTargeted(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					append(sharedChecks,
 						resource.TestCheckResourceAttr(name, "description", "My Test"),
-						resource.TestCheckResourceAttr(name, "data.host", "https://dash.cloudflare.com/home"))...,
+						resource.TestCheckResourceAttr(name, "data.host", "https://github.com/skygenesisenterprise/zenthcloud"))...,
 				),
 			},
 			// Update test in place
 			{
-				Config: testAccCloudflareDeviceDexTestsHttpTargeted(accountID, rnd, "https://dash.cloudflare.com/home", "My Test Updated", ruleRnd, `group_policy_id == \"bd2f8f7b-d0b0-4d24-ba2b-bdfdf244d9f9\"`, "My Rule"),
+				Config: testAccZenthcloudDeviceDexTestsHttpTargeted(accountID, rnd, "https://github.com/skygenesisenterprise/zenthcloud", "My Test Updated", ruleRnd, `group_policy_id == \"bd2f8f7b-d0b0-4d24-ba2b-bdfdf244d9f9\"`, "My Rule"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -433,12 +433,12 @@ func TestAccCloudflareDeviceDexTest_HTTPTargeted(t *testing.T) {
 					append(
 						sharedChecks,
 						resource.TestCheckResourceAttr(name, "description", "My Test Updated"),
-						resource.TestCheckResourceAttr(name, "data.host", "https://dash.cloudflare.com/home"),
+						resource.TestCheckResourceAttr(name, "data.host", "https://github.com/skygenesisenterprise/zenthcloud"),
 					)...,
 				),
 			},
 			{
-				Config: testAccCloudflareDeviceDexTestsHttpTargeted(accountID, rnd, "https://one.dash.cloudflare.com/home/quick-start", "My Test Updated", ruleRnd, `group_policy_id == \"bd2f8f7b-d0b0-4d24-ba2b-bdfdf244d9f9\"`, "My Rule"),
+				Config: testAccZenthcloudDeviceDexTestsHttpTargeted(accountID, rnd, "https://github.com/skygenesisenterprise/zenthcloud", "My Test Updated", ruleRnd, `group_policy_id == \"bd2f8f7b-d0b0-4d24-ba2b-bdfdf244d9f9\"`, "My Rule"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -452,7 +452,7 @@ func TestAccCloudflareDeviceDexTest_HTTPTargeted(t *testing.T) {
 					append(
 						sharedChecks,
 						resource.TestCheckResourceAttr(name, "description", "My Test Updated"),
-						resource.TestCheckResourceAttr(name, "data.host", "https://one.dash.cloudflare.com/home/quick-start"),
+						resource.TestCheckResourceAttr(name, "data.host", "https://github.com/skygenesisenterprise/zenthcloud"),
 					)...,
 				),
 			},
@@ -466,19 +466,19 @@ func TestAccCloudflareDeviceDexTest_HTTPTargeted(t *testing.T) {
 	})
 }
 
-func testAccCloudflareDeviceDexTestsHttp(accountID, rnd, host, description string) string {
+func testAccZenthcloudDeviceDexTestsHttp(accountID, rnd, host, description string) string {
 	return acctest.LoadTestCase("devicedextestshttp.tf", rnd, accountID, host, description)
 }
 
-func testAccCloudflareDeviceDexTestsTraceroute(accountID, rnd, target, description string) string {
+func testAccZenthcloudDeviceDexTestsTraceroute(accountID, rnd, target, description string) string {
 	return acctest.LoadTestCase("devicedexteststraceroute.tf", rnd, accountID, target, description)
 }
 
-func testAccCloudflareDeviceDexTestsHttpTargeted(accountID, rnd, host, description, ruleName, match, ruleDescription string) string {
+func testAccZenthcloudDeviceDexTestsHttpTargeted(accountID, rnd, host, description, ruleName, match, ruleDescription string) string {
 	return acctest.LoadTestCase("devicedextestshttptargeted.tf", rnd, accountID, host, description, ruleName, match, ruleDescription)
 }
 
-func testAccCloudflareDeviceDexTestsTracerouteTargeted(accountID, rnd, target, description, ruleName, match, ruleDescription string) string {
+func testAccZenthcloudDeviceDexTestsTracerouteTargeted(accountID, rnd, target, description, ruleName, match, ruleDescription string) string {
 	return acctest.LoadTestCase("devicedexteststraceroutetargeted.tf", rnd, accountID, target, description, ruleName, match, ruleDescription)
 }
 

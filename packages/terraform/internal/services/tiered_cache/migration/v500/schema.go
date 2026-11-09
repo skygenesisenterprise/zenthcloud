@@ -7,9 +7,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
-// SourceTieredCacheSchema returns the source schema for legacy cloudflare_tiered_cache resource.
+// SourceTieredCacheSchema returns the source schema for legacy zenthcloud_tiered_cache resource.
 // Schema version: 0 (SDKv2 default - v4 provider didn't set explicit version)
-// Resource type: cloudflare_tiered_cache
+// Resource type: zenthcloud_tiered_cache
 //
 // This minimal schema is used only for reading v4 state during migration.
 // It includes only the properties needed for state parsing (Required, Optional, Computed, ElementType).

@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_gateway_certificate/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_gateway_certificate/migration/v500"
 )
 
 var _ resource.ResourceWithUpgradeState = (*ZeroTrustGatewayCertificateResource)(nil)
@@ -19,7 +19,7 @@ var _ resource.ResourceWithUpgradeState = (*ZeroTrustGatewayCertificateResource)
 // 2. v5 state (version=1) → v5 (version=500): No-op upgrade
 func (r *ZeroTrustGatewayCertificateResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
 	// v4 schema for version=0 upgrader
-	v4Schema := v500.SourceCloudflareZeroTrustGatewayCertificateSchema()
+	v4Schema := v500.SourceZenthcloudZeroTrustGatewayCertificateSchema()
 
 	// v5 schema for version=1 upgrader (override version to match production state)
 	v5SchemaVersion1 := ResourceSchema(ctx)

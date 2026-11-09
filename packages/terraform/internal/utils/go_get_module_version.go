@@ -4,7 +4,7 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"github.com/cloudflare/cloudflare-go"
+	"github.com/zenthcloud/zenthcloud-go"
 )
 
 // FindGoModuleVersion digs into the build information and extracts the version
@@ -26,7 +26,7 @@ func FindGoModuleVersion(modulePath string) *string {
 			version = strings.TrimPrefix(version, "v")
 		}
 
-		return cloudflare.StringPtr(version)
+		return zenthcloud.StringPtr(version)
 	}
 
 	return nil

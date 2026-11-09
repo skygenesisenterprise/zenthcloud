@@ -17,7 +17,7 @@ func TestMarshalCustom(t *testing.T) {
 		{
 			Effect:           types.StringValue("effect"),
 			PermissionGroups: &permGroups,
-			Resources:        types.StringValue("{\"com.cloudflare.api.account.123\": \"*\"}"),
+			Resources:        types.StringValue("{\"com.zenthcloud.api.account.123\": \"*\"}"),
 		},
 	}
 	tt := AccountTokenModel{
@@ -30,7 +30,7 @@ func TestMarshalCustom(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	expectedData := json.RawMessage("{\"name\":\"name\",\"policies\":[{\"effect\":\"effect\",\"permission_groups\":[{\"id\":\"permgroup1\"}],\"resources\":{\"com.cloudflare.api.account.123\":\"*\"}}]}")
+	expectedData := json.RawMessage("{\"name\":\"name\",\"policies\":[{\"effect\":\"effect\",\"permission_groups\":[{\"id\":\"permgroup1\"}],\"resources\":{\"com.zenthcloud.api.account.123\":\"*\"}}]}")
 	if string(data) != string(expectedData) {
 		t.Fatalf("expected %s, got %s", string(expectedData), string(data))
 	}
@@ -46,7 +46,7 @@ func TestMarshalCustom_BadJson(t *testing.T) {
 		{
 			Effect:           types.StringValue("effect"),
 			PermissionGroups: &permGroups,
-			Resources:        types.StringValue("{\"com.cloudflare.api.account.123\": \"*\""),
+			Resources:        types.StringValue("{\"com.zenthcloud.api.account.123\": \"*\""),
 		},
 	}
 	tt := AccountTokenModel{
@@ -69,12 +69,12 @@ func TestUnmarshalCustom(t *testing.T) {
 				{
 					"effect":"effect",
 					"permission_groups":[{"id":"permgroup1"}],
-					"resources":{"com.cloudflare.api.account.123":"*"}
+					"resources":{"com.zenthcloud.api.account.123":"*"}
 				},
 				{
 					"effect":"effect",
 					"permission_groups":[{"id":"permgroup1"}],
-					"resources":{"com.cloudflare.api.account.123":{"com.cloudflare.api.account.zone.*":"*"}}
+					"resources":{"com.zenthcloud.api.account.123":{"com.zenthcloud.api.account.zone.*":"*"}}
 				}
 			]
 		}
@@ -88,11 +88,11 @@ func TestUnmarshalCustom(t *testing.T) {
 		t.Fatalf("expected %s, got %s", "name", env.Result.Name)
 	}
 	policies := env.Result.Policies
-	if (*policies)[0].Resources != types.StringValue("{\"com.cloudflare.api.account.123\":\"*\"}") {
-		t.Fatalf("expected %s, got %s", "{\"com.cloudflare.api.account.123\":\"*\"}", (*policies)[0].Resources)
+	if (*policies)[0].Resources != types.StringValue("{\"com.zenthcloud.api.account.123\":\"*\"}") {
+		t.Fatalf("expected %s, got %s", "{\"com.zenthcloud.api.account.123\":\"*\"}", (*policies)[0].Resources)
 	}
-	if (*policies)[1].Resources != types.StringValue("{\"com.cloudflare.api.account.123\":{\"com.cloudflare.api.account.zone.*\":\"*\"}}") {
-		t.Fatalf("expected %s, got %s", "{\"com.cloudflare.api.account.123\":{\"com.cloudflare.api.account.zone.*\":\"*\"}}", (*policies)[0].Resources)
+	if (*policies)[1].Resources != types.StringValue("{\"com.zenthcloud.api.account.123\":{\"com.zenthcloud.api.account.zone.*\":\"*\"}}") {
+		t.Fatalf("expected %s, got %s", "{\"com.zenthcloud.api.account.123\":{\"com.zenthcloud.api.account.zone.*\":\"*\"}}", (*policies)[0].Resources)
 	}
 }
 
@@ -105,12 +105,12 @@ func TestUnmarshalComputedCustom(t *testing.T) {
 				{
 					"effect":"effect",
 					"permission_groups":[{"id":"permgroup1"}],
-					"resources":{"com.cloudflare.api.account.123":"*"}
+					"resources":{"com.zenthcloud.api.account.123":"*"}
 				},
 				{
 					"effect":"effect",
 					"permission_groups":[{"id":"permgroup1"}],
-					"resources":{"com.cloudflare.api.account.123":{"com.cloudflare.api.account.zone.*":"*"}}
+					"resources":{"com.zenthcloud.api.account.123":{"com.zenthcloud.api.account.zone.*":"*"}}
 				}
 			]
 		}
@@ -125,12 +125,12 @@ func TestUnmarshalComputedCustom(t *testing.T) {
 		{
 			Effect:           types.StringValue("effect"),
 			PermissionGroups: &permGroups1,
-			Resources:        types.StringValue("{\"com.cloudflare.api.account.123\":{\"com.cloudflare.api.account.zone.*\":\"*\"}}"),
+			Resources:        types.StringValue("{\"com.zenthcloud.api.account.123\":{\"com.zenthcloud.api.account.zone.*\":\"*\"}}"),
 		},
 		{
 			Effect:           types.StringValue("effect"),
 			PermissionGroups: &permGroups1,
-			Resources:        types.StringValue("{\"com.cloudflare.api.account.123\": \"*\"}"),
+			Resources:        types.StringValue("{\"com.zenthcloud.api.account.123\": \"*\"}"),
 		},
 	}
 	env := AccountTokenResultEnvelope{
@@ -145,10 +145,10 @@ func TestUnmarshalComputedCustom(t *testing.T) {
 	}
 	// With reorder-to-match-prior, result should be [nested_resources, flat] matching prior order
 	foundPolicies := env.Result.Policies
-	if (*foundPolicies)[0].Resources != types.StringValue("{\"com.cloudflare.api.account.123\":{\"com.cloudflare.api.account.zone.*\":\"*\"}}") {
+	if (*foundPolicies)[0].Resources != types.StringValue("{\"com.zenthcloud.api.account.123\":{\"com.zenthcloud.api.account.zone.*\":\"*\"}}") {
 		t.Fatalf("expected nested resources first, got %s", (*foundPolicies)[0].Resources)
 	}
-	if (*foundPolicies)[1].Resources != types.StringValue("{\"com.cloudflare.api.account.123\":\"*\"}") {
+	if (*foundPolicies)[1].Resources != types.StringValue("{\"com.zenthcloud.api.account.123\":\"*\"}") {
 		t.Fatalf("expected flat resources second, got %s", (*foundPolicies)[1].Resources)
 	}
 }
@@ -206,7 +206,7 @@ func TestSortPolicies_SortsPoliciesByEffectThenResources(t *testing.T) {
 }
 
 // TestUnmarshalComputedCustom_GitHub7125 reproduces the bug from
-// https://github.com/cloudflare/terraform-provider-cloudflare/issues/7125.
+// https://github.com/skygenesisenterprise/zenthcloud
 //
 // On update, the planned model contains the user's two policies (each with a
 // distinct set of permission_groups and distinct resources). The user changed
@@ -225,8 +225,8 @@ func TestSortPolicies_SortsPoliciesByEffectThenResources(t *testing.T) {
 // A correct implementation must match API policies to model policies by
 // identity (effect + permission_group set), not by positional index.
 func TestUnmarshalComputedCustom_GitHub7125(t *testing.T) {
-	const resA = `{"com.cloudflare.api.account.acct123":"*"}`
-	const resB = `{"com.cloudflare.api.account.acct123":{"com.cloudflare.api.account.zone.*":"*"}}`
+	const resA = `{"com.zenthcloud.api.account.acct123":"*"}`
+	const resB = `{"com.zenthcloud.api.account.acct123":{"com.zenthcloud.api.account.zone.*":"*"}}`
 
 	// Planned model: policy A (R2-ish PGs, flat resources) then policy B
 	// (DNS/Zone PGs, nested resources). One PG ID in A was just changed by
@@ -364,7 +364,7 @@ func TestUnmarshalCustom_SortsPermissionGroups(t *testing.T) {
 				{
 					"effect":"allow",
 					"permission_groups":[{"id":"zzz"},{"id":"aaa"},{"id":"mmm"}],
-					"resources":{"com.cloudflare.api.account.123":"*"}
+					"resources":{"com.zenthcloud.api.account.123":"*"}
 				}
 			]
 		}

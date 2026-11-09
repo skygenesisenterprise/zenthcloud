@@ -17,7 +17,7 @@ export const objectStorageCategoryLabels: Record<string, string> = {
 
 export const objectStorageCategoryDescriptions: Record<string, string> = {
 	external:
-		"Managed S3-compatible services such as AWS S3, Cloudflare R2 or Scaleway.",
+		"Managed S3-compatible services such as AWS S3, Zenthcloud R2 or Scaleway.",
 	"self-hosted":
 		"S3-compatible storage you run yourself, like MinIO, RustFS or Ceph.",
 	internal:
@@ -37,7 +37,7 @@ export const objectStorageHealthLabels: Record<string, string> = {
  */
 export const objectStorageProviderLabels: Record<string, string> = {
 	aws: "Amazon Web Services (S3)",
-	"cloudflare-r2": "Cloudflare R2",
+	"zenthcloud-r2": "Zenthcloud R2",
 	scaleway: "Scaleway Object Storage",
 	wasabi: "Wasabi Object Storage",
 	digitalocean: "DigitalOcean Spaces",

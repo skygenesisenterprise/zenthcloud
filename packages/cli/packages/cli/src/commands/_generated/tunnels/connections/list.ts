@@ -20,7 +20,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 tunnels connections list\n\nLists the connections for a Cloudflare Tunnel, including connector IDs, cloudflared versions, and Cloudflare locations."
+			"$0 tunnels connections list\n\nLists the connections for a Zenthcloud Tunnel, including connector IDs, zenthcloudd versions, and Zenthcloud locations."
 		)
 		.option("tunnel-id", {
 			type: "string",
@@ -38,7 +38,7 @@ type Args = InferArgs<typeof builder>;
 
 const command: CommandModule<CommonYargsOptions, Args> = {
 	command: "list",
-	describe: "List Cloudflare Tunnel connections",
+	describe: "List Zenthcloud Tunnel connections",
 	builder,
 	handler: async (argv): Promise<void> =>
 		runWithTelemetry(
@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf tunnels connections list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/cfd_tunnel/${argv["tunnel-id"] == null ? "<tunnel-id>" : encodeURIComponent(String(argv["tunnel-id"]))}/connections`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/cfd_tunnel/${argv["tunnel-id"] == null ? "<tunnel-id>" : encodeURIComponent(String(argv["tunnel-id"]))}/connections`,
 						pathParams: { "tunnel-id": String(argv["tunnel-id"] ?? "") },
 						bodyKind: "none",
 					});

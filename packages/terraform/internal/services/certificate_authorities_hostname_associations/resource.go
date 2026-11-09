@@ -9,11 +9,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/certificate_authorities"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/certificate_authorities"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -29,7 +29,7 @@ func NewResource() resource.Resource {
 
 // CertificateAuthoritiesHostnameAssociationsResource defines the resource implementation.
 type CertificateAuthoritiesHostnameAssociationsResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *CertificateAuthoritiesHostnameAssociationsResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -41,12 +41,12 @@ func (r *CertificateAuthoritiesHostnameAssociationsResource) Configure(ctx conte
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -74,7 +74,7 @@ func (r *CertificateAuthoritiesHostnameAssociationsResource) Create(ctx context.
 	_, err = r.client.CertificateAuthorities.HostnameAssociations.Update(
 		ctx,
 		certificate_authorities.HostnameAssociationUpdateParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -123,7 +123,7 @@ func (r *CertificateAuthoritiesHostnameAssociationsResource) Update(ctx context.
 	_, err = r.client.CertificateAuthorities.HostnameAssociations.Update(
 		ctx,
 		certificate_authorities.HostnameAssociationUpdateParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -155,11 +155,11 @@ func (r *CertificateAuthoritiesHostnameAssociationsResource) Read(ctx context.Co
 	}
 
 	params := certificate_authorities.HostnameAssociationGetParams{
-		ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 	}
 
 	if !data.MTLSCertificateID.IsNull() && !data.MTLSCertificateID.IsUnknown() {
-		params.MTLSCertificateID = cloudflare.F(data.MTLSCertificateID.ValueString())
+		params.MTLSCertificateID = zenthcloud.F(data.MTLSCertificateID.ValueString())
 	}
 
 	res := new(http.Response)
@@ -212,11 +212,11 @@ func (r *CertificateAuthoritiesHostnameAssociationsResource) ImportState(ctx con
 
 	data.ZoneID = types.StringValue(parts[0])
 	getParams := certificate_authorities.HostnameAssociationGetParams{
-		ZoneID: cloudflare.F(parts[0]),
+		ZoneID: zenthcloud.F(parts[0]),
 	}
 	if len(parts) == 2 && parts[1] != "" {
 		data.MTLSCertificateID = types.StringValue(parts[1])
-		getParams.MTLSCertificateID = cloudflare.F(parts[1])
+		getParams.MTLSCertificateID = zenthcloud.F(parts[1])
 	}
 
 	res := new(http.Response)

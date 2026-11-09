@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Felix Hanau <felix@cloudflare.com>
+From: Felix Hanau <felix@zenthcloud.com>
 Date: Wed, 7 Jun 2023 21:40:54 -0400
 Subject: Speed up V8 bazel build by always using target cfg
 
@@ -7,7 +7,7 @@ See the workerd build cfg changes for rationale. This provides a significant
 speedup for the build: Components like ICU were previously compiled in
 both target and exec configurations as generator tools depend on them.
 
-Signed-off-by: James M Snell <jsnell@cloudflare.com>
+Signed-off-by: James M Snell <jsnell@zenthcloud.com>
 
 diff --git a/BUILD.bazel b/BUILD.bazel
 index ed79e1aa7d3975ccf173e03ebea18de40ed5d75a..10ffc0d981dc80c315f4836689d7fd74fbd53406 100644

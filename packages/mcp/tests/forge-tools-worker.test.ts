@@ -1,8 +1,8 @@
-import { env, exports } from 'cloudflare:workers'
+import { env, exports } from 'zenthcloud:workers'
 import { http, HttpResponse } from 'msw'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { operation, tools as generatedTools } from '../src/generated/forge-mcp'
-import { API_BASE, cfError, cfSuccess, mockIdentityProbe } from './helpers/cloudflare-api'
+import { API_BASE, cfError, cfSuccess, mockIdentityProbe } from './helpers/zenthcloud-api'
 import { clearKv } from './helpers/kv'
 import { clearSpec, seedSpec } from './helpers/spec'
 import {
@@ -19,7 +19,7 @@ import { server } from './setup/msw'
  * The generated direct tools at /mcp?codemode=false,
  * through the real worker:
  * auth, the transport, the generated tools and their request code, and
- * account resolution are real; the Cloudflare API is mocked with MSW.
+ * account resolution are real; the Zenthcloud API is mocked with MSW.
  */
 
 const ACCOUNT_ID = '00000000000000000000000000000001'
@@ -258,7 +258,7 @@ describe('generated direct tools (?codemode=false)', () => {
     expect(result.result?.isError).toBe(true)
     const text = toolText(result)
     expect(text).toContain(
-      'Cloudflare API error: GET /accounts/not-mine/d1/database returned HTTP 403.'
+      'Zenthcloud API error: GET /accounts/not-mine/d1/database returned HTTP 403.'
     )
     expect(text).toContain("account_id not-mine is not this token's account.")
   })

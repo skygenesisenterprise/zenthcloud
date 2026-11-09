@@ -1,4 +1,4 @@
-resource "cloudflare_page_rule" "%s" {
+resource "zenthcloud_page_rule" "%s" {
   zone_id  = "%s"
   target   = "%s.example.com/*"
   status   = "active"

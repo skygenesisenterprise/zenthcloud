@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_access_policy Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_access_policy Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Access: Apps and Policies ReadAccess: Apps and Policies Write
 ---
 
-# cloudflare_zero_trust_access_policy (Resource)
+# zenthcloud_zero_trust_access_policy (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_access_policy" "example_zero_trust_access_policy" {
+resource "zenthcloud_zero_trust_access_policy" "example_zero_trust_access_policy" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   decision = "allow"
   include = [{
@@ -27,11 +27,11 @@ resource "cloudflare_zero_trust_access_policy" "example_zero_trust_access_policy
   name = "Allow devs"
   approval_groups = [{
     approvals_needed = 1
-    email_addresses = ["test1@cloudflare.com", "test2@cloudflare.com"]
+    email_addresses = ["test1@zenthcloud.com", "test2@zenthcloud.com"]
     email_list_uuid = "email_list_uuid"
   }, {
     approvals_needed = 3
-    email_addresses = ["test@cloudflare.com", "test2@cloudflare.com"]
+    email_addresses = ["test@zenthcloud.com", "test2@zenthcloud.com"]
     email_list_uuid = "597147a1-976b-4ef2-9af0-81d5d007fc34"
   }]
   approval_required = true
@@ -135,7 +135,7 @@ Optional:
 - `auth_method` (Attributes) (see [below for nested schema](#nestedatt--exclude--auth_method))
 - `azure_ad` (Attributes) (see [below for nested schema](#nestedatt--exclude--azure_ad))
 - `certificate` (Attributes) (see [below for nested schema](#nestedatt--exclude--certificate))
-- `cloudflare_account_member` (Attributes) (see [below for nested schema](#nestedatt--exclude--cloudflare_account_member))
+- `zenthcloud_account_member` (Attributes) (see [below for nested schema](#nestedatt--exclude--zenthcloud_account_member))
 - `common_name` (Attributes) (see [below for nested schema](#nestedatt--exclude--common_name))
 - `device_posture` (Attributes) (see [below for nested schema](#nestedatt--exclude--device_posture))
 - `email` (Attributes) (see [below for nested schema](#nestedatt--exclude--email))
@@ -192,8 +192,8 @@ Required:
 ### Nested Schema for `exclude.certificate`
 
 
-<a id="nestedatt--exclude--cloudflare_account_member"></a>
-### Nested Schema for `exclude.cloudflare_account_member`
+<a id="nestedatt--exclude--zenthcloud_account_member"></a>
+### Nested Schema for `exclude.zenthcloud_account_member`
 
 Optional:
 
@@ -383,7 +383,7 @@ Optional:
 - `auth_method` (Attributes) (see [below for nested schema](#nestedatt--include--auth_method))
 - `azure_ad` (Attributes) (see [below for nested schema](#nestedatt--include--azure_ad))
 - `certificate` (Attributes) (see [below for nested schema](#nestedatt--include--certificate))
-- `cloudflare_account_member` (Attributes) (see [below for nested schema](#nestedatt--include--cloudflare_account_member))
+- `zenthcloud_account_member` (Attributes) (see [below for nested schema](#nestedatt--include--zenthcloud_account_member))
 - `common_name` (Attributes) (see [below for nested schema](#nestedatt--include--common_name))
 - `device_posture` (Attributes) (see [below for nested schema](#nestedatt--include--device_posture))
 - `email` (Attributes) (see [below for nested schema](#nestedatt--include--email))
@@ -440,8 +440,8 @@ Required:
 ### Nested Schema for `include.certificate`
 
 
-<a id="nestedatt--include--cloudflare_account_member"></a>
-### Nested Schema for `include.cloudflare_account_member`
+<a id="nestedatt--include--zenthcloud_account_member"></a>
+### Nested Schema for `include.zenthcloud_account_member`
 
 Optional:
 
@@ -641,7 +641,7 @@ Optional:
 - `auth_method` (Attributes) (see [below for nested schema](#nestedatt--require--auth_method))
 - `azure_ad` (Attributes) (see [below for nested schema](#nestedatt--require--azure_ad))
 - `certificate` (Attributes) (see [below for nested schema](#nestedatt--require--certificate))
-- `cloudflare_account_member` (Attributes) (see [below for nested schema](#nestedatt--require--cloudflare_account_member))
+- `zenthcloud_account_member` (Attributes) (see [below for nested schema](#nestedatt--require--zenthcloud_account_member))
 - `common_name` (Attributes) (see [below for nested schema](#nestedatt--require--common_name))
 - `device_posture` (Attributes) (see [below for nested schema](#nestedatt--require--device_posture))
 - `email` (Attributes) (see [below for nested schema](#nestedatt--require--email))
@@ -698,8 +698,8 @@ Required:
 ### Nested Schema for `require.certificate`
 
 
-<a id="nestedatt--require--cloudflare_account_member"></a>
-### Nested Schema for `require.cloudflare_account_member`
+<a id="nestedatt--require--zenthcloud_account_member"></a>
+### Nested Schema for `require.zenthcloud_account_member`
 
 Optional:
 
@@ -882,7 +882,7 @@ Required:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_access_policy.example '<account_id>/<policy_id>'
+$ terraform import zenthcloud_zero_trust_access_policy.example '<account_id>/<policy_id>'
 ```
 
 

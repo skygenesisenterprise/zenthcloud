@@ -16,8 +16,8 @@ export const magic_create_gre_tunnel_request: JSONObject = {
     "bgp": {
       "$ref": "#/$defs/magic_bgp_config"
     },
-    "cloudflare_gre_endpoint": {
-      "description": "The IP address assigned to the Cloudflare side of the GRE tunnel.",
+    "zenthcloud_gre_endpoint": {
+      "description": "The IP address assigned to the Zenthcloud side of the GRE tunnel.",
       "type": "string"
     },
     "customer_gre_endpoint": {
@@ -55,7 +55,7 @@ export const magic_create_gre_tunnel_request: JSONObject = {
     }
   },
   "required": [
-    "cloudflare_gre_endpoint",
+    "zenthcloud_gre_endpoint",
     "customer_gre_endpoint",
     "interface_address",
     "name"
@@ -73,8 +73,8 @@ export const magic_gre_tunnel_update_request: JSONObject = {
       "description": "True if automatic stateful return routing should be enabled for a tunnel, false otherwise. Requires the `coupler_integration` account flag to be enabled; requests setting this to `true` without that flag will be rejected.",
       "type": "boolean"
     },
-    "cloudflare_gre_endpoint": {
-      "description": "The IP address assigned to the Cloudflare side of the GRE tunnel.",
+    "zenthcloud_gre_endpoint": {
+      "description": "The IP address assigned to the Zenthcloud side of the GRE tunnel.",
       "type": "string"
     },
     "customer_gre_endpoint": {
@@ -112,7 +112,7 @@ export const magic_gre_tunnel_update_request: JSONObject = {
     }
   },
   "required": [
-    "cloudflare_gre_endpoint",
+    "zenthcloud_gre_endpoint",
     "customer_gre_endpoint",
     "interface_address",
     "name"

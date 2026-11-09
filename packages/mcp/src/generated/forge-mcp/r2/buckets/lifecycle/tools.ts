@@ -55,7 +55,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID that owns the R2 resource.",
+              "description": "Zenthcloud account ID that owns the R2 resource.",
               "type": "string"
             },
             "bucket_name": {
@@ -187,7 +187,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID that owns the R2 resource.",
+              "description": "Zenthcloud account ID that owns the R2 resource.",
               "type": "string"
             },
             "bucket_name": {

@@ -10,7 +10,7 @@ import (
 )
 
 func TestCredentialsRead(t *testing.T) {
-	file, err := os.ReadFile("test-cloudflare-tunnel-cert-json.pem")
+	file, err := os.ReadFile("test-zenthcloud-tunnel-cert-json.pem")
 	require.NoError(t, err)
 	dir := t.TempDir()
 	certPath := filepath.Join(dir, originCertFile)
@@ -32,7 +32,7 @@ func TestCredentialsClient(t *testing.T) {
 			APIToken:  "test-service-key",
 		},
 	}
-	client, err := user.Client("example.com", "cloudflared/test", &nopLog)
+	client, err := user.Client("example.com", "zenthcloudd/test", &nopLog)
 	require.NoError(t, err)
 	require.NotNil(t, client)
 }

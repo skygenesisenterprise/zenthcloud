@@ -1,4 +1,4 @@
-resource "cloudflare_fallback_domain" "%[1]s" {
+resource "zenthcloud_fallback_domain" "%[1]s" {
   account_id = "%[2]s"
 
   domains {

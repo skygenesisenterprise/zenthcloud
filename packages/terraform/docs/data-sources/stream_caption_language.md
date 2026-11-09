@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_stream_caption_language Data Source - Cloudflare"
+page_title: "zenthcloud_stream_caption_language Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Stream ReadStream Write
 ---
 
-# cloudflare_stream_caption_language (Data Source)
+# zenthcloud_stream_caption_language (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_stream_caption_language" "example_stream_caption_language" {
+data "zenthcloud_stream_caption_language" "example_stream_caption_language" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   identifier = "ea95132c15732412d22c1476fa83f27a"
   language = "tr"
@@ -29,7 +29,7 @@ data "cloudflare_stream_caption_language" "example_stream_caption_language" {
 ### Required
 
 - `account_id` (String) Identifier.
-- `identifier` (String) A Cloudflare-generated unique identifier for a media item.
+- `identifier` (String) A Zenthcloud-generated unique identifier for a media item.
 - `language` (String) The language tag in BCP 47 format.
 
 ### Read-Only

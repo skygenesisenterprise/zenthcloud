@@ -60,7 +60,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf intel indicator-feeds uploads get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/intel/indicator-feeds/${argv["feed-id"] == null ? "<feed-id>" : encodeURIComponent(String(argv["feed-id"]))}/uploads/${argv["upload-id"] == null ? "<upload-id>" : encodeURIComponent(String(argv["upload-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/intel/indicator-feeds/${argv["feed-id"] == null ? "<feed-id>" : encodeURIComponent(String(argv["feed-id"]))}/uploads/${argv["upload-id"] == null ? "<upload-id>" : encodeURIComponent(String(argv["upload-id"]))}`,
 						pathParams: {
 							"feed-id": String(argv["feed-id"] ?? ""),
 							"upload-id": String(argv["upload-id"] ?? ""),

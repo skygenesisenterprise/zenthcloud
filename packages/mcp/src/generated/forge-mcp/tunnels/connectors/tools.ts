@@ -18,8 +18,8 @@ import { tunnel_tunnel_client_response } from "./outputs.js";
 export const tools: readonly Tool[] = [
   {
     name: "tunnels_connectors_get",
-    title: "Get Cloudflare Tunnel connector",
-    description: "Retrieves a connector and its connection details for a Cloudflare Tunnel, including its cloudflared version, architecture, and connected Cloudflare locations.\n\nGET /accounts/{account_id}/cfd_tunnel/{tunnel_id}/connectors/{connector_id}",
+    title: "Get Zenthcloud Tunnel connector",
+    description: "Retrieves a connector and its connection details for a Zenthcloud Tunnel, including its zenthcloudd version, architecture, and connected Zenthcloud locations.\n\nGET /accounts/{account_id}/cfd_tunnel/{tunnel_id}/connectors/{connector_id}",
     inputSchema: {
       type: "object",
       properties: {
@@ -27,11 +27,11 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID",
+              "description": "Zenthcloud account ID",
               "type": "string"
             },
             "connector_id": {
-              "description": "UUID of the Cloudflare Tunnel connector.",
+              "description": "UUID of the Zenthcloud Tunnel connector.",
               "format": "uuid",
               "type": "string"
             },
@@ -71,7 +71,7 @@ export const tools: readonly Tool[] = [
       "idempotentHint": true,
       "openWorldHint": true,
       "readOnlyHint": true,
-      "title": "Get Cloudflare Tunnel connector"
+      "title": "Get Zenthcloud Tunnel connector"
     },
     [OPERATION]: {
       method: "GET",
@@ -79,12 +79,12 @@ export const tools: readonly Tool[] = [
       pathOf: encodePath`/accounts/${"account_id"}/cfd_tunnel/${"tunnel_id"}/connectors/${"connector_id"}`,
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Connectors Write",
-          "Cloudflare One Connectors Read",
-          "Cloudflare One Connector: cloudflared Write",
-          "Cloudflare One Connector: cloudflared Read",
-          "Cloudflare Tunnel Write",
-          "Cloudflare Tunnel Read"
+          "Zenthcloud One Connectors Write",
+          "Zenthcloud One Connectors Read",
+          "Zenthcloud One Connector: zenthcloudd Write",
+          "Zenthcloud One Connector: zenthcloudd Read",
+          "Zenthcloud Tunnel Write",
+          "Zenthcloud Tunnel Read"
         ]
       },
       responses: {

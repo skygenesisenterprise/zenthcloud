@@ -12,9 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -23,8 +23,8 @@ var (
 
 // Migration Test Configuration
 //
-// IMPORTANT: This resource was renamed from v4's cloudflare_authenticated_origin_pulls (zone-wide mode)
-// to v5's cloudflare_authenticated_origin_pulls_settings. Because of this rename, we cannot test
+// IMPORTANT: This resource was renamed from v4's zenthcloud_authenticated_origin_pulls (zone-wide mode)
+// to v5's zenthcloud_authenticated_origin_pulls_settings. Because of this rename, we cannot test
 // v4→v5 migration using ExternalProviders (Terraform validates against local schema which doesn't
 // recognize the old resource name).
 //
@@ -49,7 +49,7 @@ var v5WithCertificateResourceConfig string
 // TestMigrateAuthenticatedOriginPullsSettingsBasic tests v5→v5 migration (schema version bump)
 // for basic zone-wide AOP settings
 func TestMigrateAuthenticatedOriginPullsSettingsBasic(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
 	testConfig := fmt.Sprintf(v5ZoneWideConfig, rnd, zoneID)
@@ -69,17 +69,17 @@ func TestMigrateAuthenticatedOriginPullsSettingsBasic(t *testing.T) {
 			// Step 2: Run migration (v5→v5 version bump)
 			acctest.MigrationV2TestStep(t, testConfig, tmpDir, currentProviderVersion, "v5", "v5", []statecheck.StateCheck{
 				statecheck.ExpectKnownValue(
-					"cloudflare_authenticated_origin_pulls_settings."+rnd,
+					"zenthcloud_authenticated_origin_pulls_settings."+rnd,
 					tfjsonpath.New("zone_id"),
 					knownvalue.StringExact(zoneID),
 				),
 				statecheck.ExpectKnownValue(
-					"cloudflare_authenticated_origin_pulls_settings."+rnd,
+					"zenthcloud_authenticated_origin_pulls_settings."+rnd,
 					tfjsonpath.New("id"),
 					knownvalue.StringExact(zoneID),
 				),
 				statecheck.ExpectKnownValue(
-					"cloudflare_authenticated_origin_pulls_settings."+rnd,
+					"zenthcloud_authenticated_origin_pulls_settings."+rnd,
 					tfjsonpath.New("enabled"),
 					knownvalue.Bool(true),
 				),
@@ -91,7 +91,7 @@ func TestMigrateAuthenticatedOriginPullsSettingsBasic(t *testing.T) {
 // TestMigrateAuthenticatedOriginPullsSettingsDisabled tests v5→v5 migration (schema version bump)
 // for disabled AOP settings
 func TestMigrateAuthenticatedOriginPullsSettingsDisabled(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
 	testConfig := fmt.Sprintf(v5DisabledConfig, rnd, zoneID)
@@ -111,17 +111,17 @@ func TestMigrateAuthenticatedOriginPullsSettingsDisabled(t *testing.T) {
 			// Step 2: Run migration (v5→v5 version bump)
 			acctest.MigrationV2TestStep(t, testConfig, tmpDir, currentProviderVersion, "v5", "v5", []statecheck.StateCheck{
 				statecheck.ExpectKnownValue(
-					"cloudflare_authenticated_origin_pulls_settings."+rnd,
+					"zenthcloud_authenticated_origin_pulls_settings."+rnd,
 					tfjsonpath.New("zone_id"),
 					knownvalue.StringExact(zoneID),
 				),
 				statecheck.ExpectKnownValue(
-					"cloudflare_authenticated_origin_pulls_settings."+rnd,
+					"zenthcloud_authenticated_origin_pulls_settings."+rnd,
 					tfjsonpath.New("id"),
 					knownvalue.StringExact(zoneID),
 				),
 				statecheck.ExpectKnownValue(
-					"cloudflare_authenticated_origin_pulls_settings."+rnd,
+					"zenthcloud_authenticated_origin_pulls_settings."+rnd,
 					tfjsonpath.New("enabled"),
 					knownvalue.Bool(false),
 				),
@@ -133,10 +133,10 @@ func TestMigrateAuthenticatedOriginPullsSettingsDisabled(t *testing.T) {
 // TestMigrateAuthenticatedOriginPullsSettingsWithCertificateResource tests v5→v5 migration
 // with a certificate resource reference (validates that references are preserved across migration)
 func TestMigrateAuthenticatedOriginPullsSettingsWithCertificateResource(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	if domain == "" {
-		t.Skip("CLOUDFLARE_DOMAIN must be set for this test")
+		t.Skip("ZENTHCLOUD_DOMAIN must be set for this test")
 	}
 	rnd := utils.GenerateRandomResourceName()
 
@@ -167,18 +167,18 @@ func TestMigrateAuthenticatedOriginPullsSettingsWithCertificateResource(t *testi
 			acctest.MigrationV2TestStep(t, testConfig, tmpDir, currentProviderVersion, "v5", "v5", []statecheck.StateCheck{
 				// Verify AOP settings resource
 				statecheck.ExpectKnownValue(
-					"cloudflare_authenticated_origin_pulls_settings."+rnd,
+					"zenthcloud_authenticated_origin_pulls_settings."+rnd,
 					tfjsonpath.New("zone_id"),
 					knownvalue.StringExact(zoneID),
 				),
 				statecheck.ExpectKnownValue(
-					"cloudflare_authenticated_origin_pulls_settings."+rnd,
+					"zenthcloud_authenticated_origin_pulls_settings."+rnd,
 					tfjsonpath.New("enabled"),
 					knownvalue.Bool(true),
 				),
 				// Verify certificate resource still exists and is preserved
 				statecheck.ExpectKnownValue(
-					"cloudflare_authenticated_origin_pulls_certificate."+rnd+"_cert",
+					"zenthcloud_authenticated_origin_pulls_certificate."+rnd+"_cert",
 					tfjsonpath.New("zone_id"),
 					knownvalue.StringExact(zoneID),
 				),

@@ -61,7 +61,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf user invites respond",
 						method: "PATCH",
-						url: `https://api.cloudflare.com/client/v4/user/invites/${argv["invite-id"] == null ? "<invite-id>" : encodeURIComponent(String(argv["invite-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["invite-id"] == null ? "<invite-id>" : encodeURIComponent(String(argv["invite-id"]))}`,
 						pathParams: { "invite-id": String(argv["invite-id"] ?? "") },
 						bodyKind: "json",
 						body:

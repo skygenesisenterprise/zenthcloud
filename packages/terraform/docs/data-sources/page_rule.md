@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_page_rule Data Source - Cloudflare"
+page_title: "zenthcloud_page_rule Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Access: Apps and Policies ReadAccess: Apps and Policies RevokeAccess: Apps and Policies WriteAccess: Mutual TLS Certificates WriteAccess: Organizations, Identity Providers, and Groups WriteAnalytics ReadApps WriteCache PurgeDNS ReadDNS WriteFirewall Services ReadFirewall Services WriteLoad Balancers ReadLoad Balancers WriteLogs ReadLogs WritePage Rules ReadPage Rules WriteSSL and Certificates ReadSSL and Certificates WriteStream ReadStream WriteTrust and Safety ReadTrust and Safety WriteWorkers Routes ReadWorkers Routes WriteWorkers Scripts ReadWorkers Scripts WriteZaraz AdminZaraz EditZaraz ReadZero Trust: PII ReadZone ReadZone Settings ReadZone Settings WriteZone Write
 ---
 
-# cloudflare_page_rule (Data Source)
+# zenthcloud_page_rule (Data Source)
 
 Accepted Permissions
 
@@ -50,7 +50,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_page_rule" "example_page_rule" {
+data "zenthcloud_page_rule" "example_page_rule" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   pagerule_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }

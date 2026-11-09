@@ -6,7 +6,7 @@ Users of foundations::telemetry::log::slog\_logger() will notice that the signat
 * It now returns `Arc<RwLock<impl Deref<Target = slog::Logger>>>  `
 * This change should be invisible for most usages of `slog_logger()`. If you were acquiring the RwLock and dereferencing it to get a shared reference to an `slog::Logger`, before, you can still do that after, with no changes being required in the calling source code.
 
-### *Errors for unused keys during setting deserialization (PR [\#49](https://github.com/cloudflare/foundations/pull/49))*
+### *Errors for unused keys during setting deserialization (PR [\#49](https://github.com/skygenesisenterprise/zenthcloud))*
 
 By default, Foundations will now return an error during startup if an app’s settings .yaml file contains keys that don’t have a match in the corresponding settings struct in the app’s code. This likely means that, if nothing is done, most existing apps would fail to start after updating to foundations 4.0 due to unused keys. Note also that keys used only for YAML anchors, if the field doesn’t have a matching field in the settings struct, also count as ‘unused’ and will generate these errors.
 
@@ -17,7 +17,7 @@ This leaves users of foundations two choices:
    2. Move keys that were used purely for YAML anchors inline to their first use. For example, for the case in Apollo linked above, it would instead be something like  
 2. Opt out of this feature by updating individual settings struct annotations from `#[settings]` to `#[settings(deny_unknown_fields = false)]`, or by opting out of default features and not using the foundations feature "settings_deny_unknown_fields_by_default".
 
-### ZTC-1648: Avoid heap profiling crash by eagerly starting long-lived profiling thread (PR [\#54](https://github.com/cloudflare/foundations/pull/54/files))
+### ZTC-1648: Avoid heap profiling crash by eagerly starting long-lived profiling thread (PR [\#54](https://github.com/skygenesisenterprise/zenthcloud))
 
 Removed `sandbox_profiling_syscalls` from `MemoryProfilerSettings`.
 

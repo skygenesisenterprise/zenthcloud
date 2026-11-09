@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_snippet_list Data Source - Cloudflare"
+page_title: "zenthcloud_snippet_list Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Snippets ReadSnippets Write
 ---
 
-# cloudflare_snippet_list (Data Source)
+# zenthcloud_snippet_list (Data Source)
 
 Accepted Permissions
 

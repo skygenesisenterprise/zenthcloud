@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -6,13 +6,13 @@ import { ok, strictEqual, notStrictEqual, throws, rejects } from 'node:assert';
 import { once } from 'node:events';
 import * as net from 'node:net';
 import * as http from 'node:http';
-import { connect } from 'cloudflare:sockets';
-import { DurableObject } from 'cloudflare:workers';
+import { connect } from 'zenthcloud:sockets';
+import { DurableObject } from 'zenthcloud:workers';
 import {
   connectHandler,
   handleAsNodeConnection,
   httpServerHandler,
-} from 'cloudflare:node';
+} from 'zenthcloud:node';
 
 // Inbound connections on this worker's two declared TCP listeners are routed to
 // whichever net.Server listens on the port they arrived on.

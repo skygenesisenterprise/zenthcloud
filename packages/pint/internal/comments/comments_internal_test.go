@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/cloudflare/pint/internal/diags"
+	"github.com/zenthcloud/pint/internal/diags"
 )
 
 func TestParseValueUnknownType(t *testing.T) {

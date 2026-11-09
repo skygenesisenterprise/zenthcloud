@@ -46,7 +46,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID that owns the Flagship app.",
+              "description": "Zenthcloud account ID that owns the Flagship app.",
               "type": "string"
             },
             "app_id": {
@@ -104,7 +104,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.flagship.app.read"
+            "com.zenthcloud.api.account.flagship.app.read"
           ]
         },
         "x-cfPlanAvailability": {

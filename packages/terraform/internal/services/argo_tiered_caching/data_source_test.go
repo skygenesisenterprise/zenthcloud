@@ -5,19 +5,19 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
-func TestAccCloudflareArgoTieredCachingDataSource_Basic(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudArgoTieredCachingDataSource_Basic(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_argo_tiered_caching.%s", rnd)
-	dataSourceName := fmt.Sprintf("data.cloudflare_argo_tiered_caching.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_argo_tiered_caching.%s", rnd)
+	dataSourceName := fmt.Sprintf("data.zenthcloud_argo_tiered_caching.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -27,7 +27,7 @@ func TestAccCloudflareArgoTieredCachingDataSource_Basic(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareArgoTieredCachingDataSourceBasic(zoneID, rnd),
+				Config: testAccCheckZenthcloudArgoTieredCachingDataSourceBasic(zoneID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					// Check the resource attributes
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
@@ -45,6 +45,6 @@ func TestAccCloudflareArgoTieredCachingDataSource_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareArgoTieredCachingDataSourceBasic(zoneID, name string) string {
+func testAccCheckZenthcloudArgoTieredCachingDataSourceBasic(zoneID, name string) string {
 	return acctest.LoadTestCase("datasource_basic.tf", zoneID, name)
 }

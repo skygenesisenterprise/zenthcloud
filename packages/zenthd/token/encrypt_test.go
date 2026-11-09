@@ -31,8 +31,8 @@ func writePEM(t *testing.T, path, pemType string, key *[32]byte) {
 }
 
 // TestNewEncrypterIgnoresPlantedCWDKeys is the regression test for the login transfer
-// keypair vulnerability: NewEncrypter used to load "cloudflared_priv.pem" and
-// "cloudflared_pub.pem" from the process working directory, so an attacker who planted
+// keypair vulnerability: NewEncrypter used to load "zenthcloudd_priv.pem" and
+// "zenthcloudd_pub.pem" from the process working directory, so an attacker who planted
 // those files (via a cloned repo, extracted archive, or shared directory) could predict
 // the transfer-service capability URL and steal the victim's origin cert or Access JWTs.
 //
@@ -43,8 +43,8 @@ func TestNewEncrypterIgnoresPlantedCWDKeys(t *testing.T) {
 	attackerPub, attackerPriv, err := box.GenerateKey(rand.Reader)
 	require.NoError(t, err)
 
-	writePEM(t, filepath.Join(dir, "cloudflared_priv.pem"), "BOX PRIVATE KEY", attackerPriv)
-	writePEM(t, filepath.Join(dir, "cloudflared_pub.pem"), "PUBLIC KEY", attackerPub)
+	writePEM(t, filepath.Join(dir, "zenthcloudd_priv.pem"), "BOX PRIVATE KEY", attackerPriv)
+	writePEM(t, filepath.Join(dir, "zenthcloudd_pub.pem"), "PUBLIC KEY", attackerPub)
 
 	t.Chdir(dir)
 

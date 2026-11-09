@@ -24,7 +24,7 @@ export const tools: readonly Tool[] = [
   {
     name: "containers_registries_create",
     title: "Configure a private external image registry",
-    description: "Registers credentials for a supported private external image registry so\nContainers can pull images from it. This endpoint does not create a registry\nor upload an image. Public Docker Hub images and images in the Cloudflare\nmanaged registry do not require this configuration.\n\nRefer to [Image management](https://developers.cloudflare.com/containers/platform-details/image-management/)\nfor supported registries and instructions for storing registry credentials.\n\nPOST /accounts/{account_id}/containers/registries",
+    description: "Registers credentials for a supported private external image registry so\nContainers can pull images from it. This endpoint does not create a registry\nor upload an image. Public Docker Hub images and images in the Zenthcloud\nmanaged registry do not require this configuration.\n\nRefer to [Image management](https://github.com/skygenesisenterprise/zenthcloud)\nfor supported registries and instructions for storing registry credentials.\n\nPOST /accounts/{account_id}/containers/registries",
     inputSchema: {
       type: "object",
       properties: {

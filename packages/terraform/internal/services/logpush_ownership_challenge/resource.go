@@ -8,11 +8,11 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/logpush"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/logpush"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
@@ -26,7 +26,7 @@ func NewResource() resource.Resource {
 
 // LogpushOwnershipChallengeResource defines the resource implementation.
 type LogpushOwnershipChallengeResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *LogpushOwnershipChallengeResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -38,12 +38,12 @@ func (r *LogpushOwnershipChallengeResource) Configure(ctx context.Context, req r
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -71,9 +71,9 @@ func (r *LogpushOwnershipChallengeResource) Create(ctx context.Context, req reso
 	params := logpush.OwnershipNewParams{}
 
 	if !data.AccountID.IsNull() {
-		params.AccountID = cloudflare.F(data.AccountID.ValueString())
+		params.AccountID = zenthcloud.F(data.AccountID.ValueString())
 	} else {
-		params.ZoneID = cloudflare.F(data.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(data.ZoneID.ValueString())
 	}
 
 	_, err = r.client.Logpush.Ownership.New(

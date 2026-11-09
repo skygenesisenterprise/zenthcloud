@@ -6,9 +6,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
-// SourceRegionalHostnameSchema returns the source schema for legacy cloudflare_regional_hostname resource.
+// SourceRegionalHostnameSchema returns the source schema for legacy zenthcloud_regional_hostname resource.
 // Schema version: 0 (v4 provider default)
-// Resource type: cloudflare_regional_hostname
+// Resource type: zenthcloud_regional_hostname
 //
 // This minimal schema is used only for reading v4 state during migration.
 // Fields are identical between v4 and v5.

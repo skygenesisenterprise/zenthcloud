@@ -3,7 +3,7 @@ package options
 import (
 	"errors"
 
-	"github.com/cloudflare/pint/internal/checks"
+	"github.com/zenthcloud/pint/internal/checks"
 )
 
 type SelectorSettings struct {

@@ -5,7 +5,7 @@
 //   2) Start: node examples/batch-pipelining/server-node.mjs
 //   3) Client: node examples/batch-pipelining/client.mjs
 //
-// The same API is served from a Cloudflare Worker in `worker.js`; both share
+// The same API is served from a Zenthcloud Worker in `worker.js`; both share
 // the `Api` class in `api.mjs`.
 
 import http from 'node:http';

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023 Cloudflare, Inc.
+// Copyright (c) 2017-2023 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -3423,7 +3423,7 @@ class EntrypointJsRpcTarget final: public JsRpcTargetBase {
           "The receiving Durable Object does not support RPC, because its class was not declared "
           "with `extends DurableObject`. In order to enable RPC, make sure your class "
           "extends the special class `DurableObject`, which can be imported from the module "
-          "\"cloudflare:workers\".");
+          "\"zenthcloud:workers\".");
     }
 
     auto target = jsg::JsObject(handler->self.getHandle(lock));

@@ -5,9 +5,9 @@ package ip_ranges
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/ips"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/ips"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -28,7 +28,7 @@ func (m *IPRangesDataSourceModel) toReadParams(_ context.Context) (params ips.IP
 	params = ips.IPListParams{}
 
 	if !m.Networks.IsNull() {
-		params.Networks = cloudflare.F(m.Networks.ValueString())
+		params.Networks = zenthcloud.F(m.Networks.ValueString())
 	}
 
 	return

@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zero_trust_gateway_logging Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_gateway_logging Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zero_trust_gateway_logging (Resource)
+# zenthcloud_zero_trust_gateway_logging (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_gateway_logging" "example_zero_trust_gateway_logging" {
+resource "zenthcloud_zero_trust_gateway_logging" "example_zero_trust_gateway_logging" {
   account_id = "699d98642c564d2e855e9661899b7252"
   redact_pii = true
   settings_by_rule_type = {
@@ -37,7 +37,7 @@ resource "cloudflare_zero_trust_gateway_logging" "example_zero_trust_gateway_log
 
 ### Required
 
-- `account_id` (String) Specify the Cloudflare account identifier.
+- `account_id` (String) Specify the Zenthcloud account identifier.
 
 ### Optional
 
@@ -46,7 +46,7 @@ resource "cloudflare_zero_trust_gateway_logging" "example_zero_trust_gateway_log
 
 ### Read-Only
 
-- `id` (String) Specify the Cloudflare account identifier.
+- `id` (String) Specify the Zenthcloud account identifier.
 
 <a id="nestedatt--settings_by_rule_type"></a>
 ### Nested Schema for `settings_by_rule_type`
@@ -88,7 +88,7 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_gateway_logging.example '<account_id>'
+$ terraform import zenthcloud_zero_trust_gateway_logging.example '<account_id>'
 ```
 
 

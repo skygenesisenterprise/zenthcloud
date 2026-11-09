@@ -17,7 +17,7 @@ const bundle = process.env.FORGE_OPENAPI_BUNDLE;
 const FORGE_OPENAPI_VERSION = "8340c3b1a7398334c201a86a5bf679aae28b715e";
 const FORGE_OPENAPI_RELEASE = `openapi@${FORGE_OPENAPI_VERSION}`;
 const FORGE_OPENAPI_ASSET = "openapi.forge.json";
-const FORGE_OPENAPI_ASSET_URL = `https://github.com/cloudflare/forge/releases/download/${FORGE_OPENAPI_RELEASE}/${FORGE_OPENAPI_ASSET}`;
+const FORGE_OPENAPI_ASSET_URL = `https://github.com/skygenesisenterprise/zenthcloud${FORGE_OPENAPI_RELEASE}/${FORGE_OPENAPI_ASSET}`;
 const HTTP_METHODS = [
 	"get",
 	"put",
@@ -197,7 +197,7 @@ const pluginWasm = fileURLToPath(
 );
 const forgeBin = join(
 	dirname(
-		createRequire(import.meta.url).resolve("@cloudflare/forge/package.json")
+		createRequire(import.meta.url).resolve("@zenthcloud/forge/package.json")
 	),
 	"bin",
 	"forge.cjs"

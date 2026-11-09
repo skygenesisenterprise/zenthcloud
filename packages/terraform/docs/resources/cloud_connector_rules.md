@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_cloud_connector_rules Resource - Cloudflare"
+page_title: "zenthcloud_cloud_connector_rules Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Cloud Connector ReadCloud Connector Write
 ---
 
-# cloudflare_cloud_connector_rules (Resource)
+# zenthcloud_cloud_connector_rules (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_cloud_connector_rules" "example_cloud_connector_rules" {
+resource "zenthcloud_cloud_connector_rules" "example_cloud_connector_rules" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   rules = [{
     id = "95c365e17e1b46599cd99e5b231fac4e"
@@ -49,7 +49,7 @@ resource "cloudflare_cloud_connector_rules" "example_cloud_connector_rules" {
 Optional:
 
 - `cloud_connector_rules_provider` (String) Cloud Provider type
-Available values: "aws_s3", "cloudflare_r2", "gcp_storage", "azure_storage", "oci_storage".
+Available values: "aws_s3", "zenthcloud_r2", "gcp_storage", "azure_storage", "oci_storage".
 - `description` (String)
 - `enabled` (Boolean)
 - `expression` (String)
@@ -71,7 +71,7 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_cloud_connector_rules.example '<zone_id>'
+$ terraform import zenthcloud_cloud_connector_rules.example '<zone_id>'
 ```
 
 

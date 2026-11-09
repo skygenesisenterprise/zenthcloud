@@ -77,7 +77,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 			type: "string",
 			array: true,
 			description:
-				"Filters results by bot class. Refer to [Bot classes](https://developers.cloudflare.com/radar/concepts/bot-classes/).",
+				"Filters results by bot class. Refer to [Bot classes](https://github.com/skygenesisenterprise/zenthcloud).",
 		})
 		.option("device-type", {
 			type: "string",
@@ -160,7 +160,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar http ases http-protocol get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/http/top/ases/http_protocol/${argv["http-protocol"] == null ? "<http-protocol>" : encodeURIComponent(String(argv["http-protocol"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["http-protocol"] == null ? "<http-protocol>" : encodeURIComponent(String(argv["http-protocol"]))}`,
 						pathParams: {
 							"http-protocol": String(argv["http-protocol"] ?? ""),
 						},

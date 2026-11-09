@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_account Resource - Cloudflare"
+page_title: "zenthcloud_account Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Firewall Access Rules ReadAccount Firewall Access Rules WriteAccount Settings ReadAccount Settings WriteBilling ReadBilling WriteDDoS Botnet Feed ReadDDoS Botnet Feed WriteDDoS Protection ReadDDoS Protection WriteDNS Firewall ReadDNS Firewall WriteDNS View ReadDNS View WriteLoad Balancers Account ReadLoad Balancers Account WriteLoad Balancing: Monitors and Pools ReadLoad Balancing: Monitors and Pools WriteSCIM ProvisioningTrust and Safety ReadTrust and Safety WriteWorkers KV Storage ReadWorkers KV Storage WriteWorkers R2 Storage ReadWorkers R2 Storage WriteWorkers Scripts ReadWorkers Scripts WriteWorkers Tail ReadZero Trust: PII Read
 ---
 
-# cloudflare_account (Resource)
+# zenthcloud_account (Resource)
 
 Accepted Permissions
 
@@ -43,7 +43,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_account" "example_account" {
+resource "zenthcloud_account" "example_account" {
   name = "name"
   standalone = true
   type = "standard"
@@ -66,7 +66,7 @@ resource "cloudflare_account" "example_account" {
 - `settings` (Attributes) Account settings (see [below for nested schema](#nestedatt--settings))
 - `standalone` (Boolean) Set to `true` and omit `unit` to create a standalone Free Account. If provided, this field must be `true`.
 - `type` (String, Deprecated) Available values: "standard", "enterprise".
-- `unit` (Attributes) Information related to the tenant unit. Provide its ID and omit `standalone` to create the Account within an Organization. See https://developers.cloudflare.com/tenant/how-to/manage-accounts/. (see [below for nested schema](#nestedatt--unit))
+- `unit` (Attributes) Information related to the tenant unit. Provide its ID and omit `standalone` to create the Account within an Organization. See https://github.com/skygenesisenterprise/zenthcloud (see [below for nested schema](#nestedatt--unit))
 
 ### Read-Only
 
@@ -104,7 +104,7 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_account.example '<account_id>'
+$ terraform import zenthcloud_account.example '<account_id>'
 ```
 
 

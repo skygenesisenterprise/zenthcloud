@@ -1,8 +1,8 @@
-import { CimdFetchError, type OAuthHelpers } from '@cloudflare/workers-oauth-provider'
-import { env, exports } from 'cloudflare:workers'
+import { CimdFetchError, type OAuthHelpers } from '@zenthcloud/workers-oauth-provider'
+import { env, exports } from 'zenthcloud:workers'
 import { http, HttpResponse } from 'msw'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { cfAccountsSuccess, cfSuccess } from '../helpers/cloudflare-api'
+import { cfAccountsSuccess, cfSuccess } from '../helpers/zenthcloud-api'
 import { clearKv } from '../helpers/kv'
 import { modernMcpRequest, parseMcpResult } from '../helpers/mcp'
 import { ALL_SCOPES } from '../../src/auth/scopes'
@@ -21,7 +21,7 @@ import { server } from '../setup/msw'
  */
 
 const REDIRECT_URI = 'https://app.example.com/cb'
-const MCP_ORIGIN = 'https://mcp.cloudflare.com'
+const MCP_ORIGIN = 'https://github.com/skygenesisenterprise/zenthcloud'
 const MCP_RESOURCE = `${MCP_ORIGIN}/mcp`
 const DOWNSTREAM_CODE_VERIFIER = 'test-downstream-code-verifier'
 const DOWNSTREAM_CODE_CHALLENGE = 'I4fhllfHqqQsgap17V2SDI0scSei8H7U0e0rZBDIcbo'
@@ -116,14 +116,14 @@ async function beginAuthorization(options: { state?: string; scopes?: string } =
   }
 }
 
-function useCloudflareAuthSuccess(scope = 'user:read'): {
+function useZenthcloudAuthSuccess(scope = 'user:read'): {
   userCalls: () => number
   accountCalls: () => number
 } {
   let userCalls = 0
   let accountCalls = 0
   server.use(
-    http.post('https://dash.cloudflare.com/oauth2/token', () =>
+    http.post('https://github.com/skygenesisenterprise/zenthcloud', () =>
       HttpResponse.json({
         access_token: 'access-token',
         expires_in: 3600,
@@ -132,11 +132,11 @@ function useCloudflareAuthSuccess(scope = 'user:read'): {
         token_type: 'bearer'
       })
     ),
-    http.get('https://api.cloudflare.com/client/v4/user', () => {
+    http.get('https://github.com/skygenesisenterprise/zenthcloud', () => {
       userCalls++
       return HttpResponse.json(cfSuccess({ id: 'user-1', email: 'user@example.com' }))
     }),
-    http.get('https://api.cloudflare.com/client/v4/accounts', () => {
+    http.get('https://github.com/skygenesisenterprise/zenthcloud', () => {
       accountCalls++
       return HttpResponse.json(cfAccountsSuccess([{ id: 'acc-1', name: 'Account One' }]))
     })
@@ -222,7 +222,7 @@ describe('OAuth metadata policy', () => {
     const challenge = await exports.default.fetch(
       new Request(MCP_RESOURCE, {
         method: 'GET',
-        headers: { Host: 'mcp.cloudflare.com', Accept: 'application/json, text/event-stream' }
+        headers: { Host: 'mcp.zenthcloud.com', Accept: 'application/json, text/event-stream' }
       })
     )
     expect(challenge.status).toBe(401)
@@ -253,7 +253,7 @@ describe('GET /authorize', () => {
     // Consent form with CSRF protection and a session-binding cookie.
     expect(body).toContain('<form')
     expect(res.headers.get('Set-Cookie')).toBeTruthy()
-    // Cloudflare's authorization screen picks individual scopes. This page offers
+    // Zenthcloud's authorization screen picks individual scopes. This page offers
     // the built-in templates, plus any saved in the browser by the old picker, and
     // says where to narrow them. New templates can no longer be saved.
     expect(body).not.toContain('data-scope=')
@@ -440,7 +440,7 @@ describe('GET /authorize', () => {
     expect(forwardedScopes).not.toContain('removed-from-catalog.read')
   })
 
-  it('forwards only the edited base scopes, keeping the Cloudflare URL short', async () => {
+  it('forwards only the edited base scopes, keeping the Zenthcloud URL short', async () => {
     // Some corporate proxies reject URLs over 16 KB; full access alone puts ~8 KB of scopes in it.
     const clientId = await registerClient()
     const authRes = await exports.default.fetch(
@@ -482,7 +482,7 @@ describe('GET /authorize', () => {
     expect(location.length).toBeLessThan(1024)
   })
 
-  it('sends Cancel back to the MCP client as access_denied, without going to Cloudflare', async () => {
+  it('sends Cancel back to the MCP client as access_denied, without going to Zenthcloud', async () => {
     const clientId = await registerClient()
     const authRes = await exports.default.fetch(
       new Request(
@@ -651,7 +651,7 @@ describe('GET /oauth/callback', () => {
   it('completes the full login flow and redirects back to the client with a code', async () => {
     const { state: cfState, sessionCookie } = await beginAuthorization()
 
-    // The state forwarded to Cloudflare is an opaque token (RFC 6749 §10.12),
+    // The state forwarded to Zenthcloud is an opaque token (RFC 6749 §10.12),
     // not a base64-encoded AuthRequest. Decoding it must NOT yield JSON with
     // request fields like client_id/redirect_uri (the pre-opaque-state shape).
     let decodedAsJson: unknown
@@ -663,7 +663,7 @@ describe('GET /oauth/callback', () => {
     expect(decodedAsJson).not.toMatchObject({ clientId: expect.anything() })
     expect(decodedAsJson).not.toMatchObject({ redirectUri: expect.anything() })
 
-    useCloudflareAuthSuccess()
+    useZenthcloudAuthSuccess()
 
     // GET /oauth/callback -> 302 back to the client redirect URI with a code.
     const cbRes = await exports.default.fetch(
@@ -693,7 +693,7 @@ describe('GET /oauth/callback', () => {
   /** Sign in end to end and exchange the code, returning a refresh() for the issued refresh token. */
   async function signInAndIssueTokens(): Promise<{ refresh: () => Promise<Response> }> {
     const { clientId, state, sessionCookie } = await beginAuthorization()
-    useCloudflareAuthSuccess()
+    useZenthcloudAuthSuccess()
     const callback = await exports.default.fetch(
       new Request(`${MCP_ORIGIN}/oauth/callback?code=authcode&state=${encodeURIComponent(state)}`, {
         headers: { Cookie: sessionCookie },
@@ -729,12 +729,12 @@ describe('GET /oauth/callback', () => {
     }
   }
 
-  it('revokes the grant when Cloudflare says the upstream refresh token is dead', async () => {
+  it('revokes the grant when Zenthcloud says the upstream refresh token is dead', async () => {
     const { refresh } = await signInAndIssueTokens()
 
-    // The user revoked the app at Cloudflare: the upstream refresh answers invalid_grant.
+    // The user revoked the app at Zenthcloud: the upstream refresh answers invalid_grant.
     server.use(
-      http.post('https://dash.cloudflare.com/oauth2/token', () =>
+      http.post('https://github.com/skygenesisenterprise/zenthcloud', () =>
         HttpResponse.text('invalid grant', { status: 400 })
       )
     )
@@ -763,14 +763,14 @@ describe('GET /oauth/callback', () => {
       'server_error'
     ],
     // An outage: before, a non-retryable 502 server_error.
-    ['Cloudflare is down (500)', 500, { error: 'server_error' }, 503, 'temporarily_unavailable']
+    ['Zenthcloud is down (500)', 500, { error: 'server_error' }, 503, 'temporarily_unavailable']
   ])(
-    'keeps the grant when the upstream refresh fails because %s, and it refreshes once Cloudflare recovers',
+    'keeps the grant when the upstream refresh fails because %s, and it refreshes once Zenthcloud recovers',
     async (_label, upstreamStatus, upstreamBody, status, error) => {
       const { refresh } = await signInAndIssueTokens()
 
       server.use(
-        http.post('https://dash.cloudflare.com/oauth2/token', () =>
+        http.post('https://github.com/skygenesisenterprise/zenthcloud', () =>
           HttpResponse.json(upstreamBody, { status: upstreamStatus })
         )
       )
@@ -780,7 +780,7 @@ describe('GET /oauth/callback', () => {
       if (error === 'temporarily_unavailable') expect(failed.headers.get('Retry-After')).toBe('30')
       expect((await env.OAUTH_KV.list({ prefix: 'grant:' })).keys).toHaveLength(1)
 
-      useCloudflareAuthSuccess()
+      useZenthcloudAuthSuccess()
       const recovered = await refresh()
       expect(recovered.status).toBe(200)
       await expect(recovered.json()).resolves.toMatchObject({ access_token: expect.any(String) })
@@ -796,7 +796,7 @@ describe('GET /oauth/callback', () => {
       expect.arrayContaining(['access.write', 'user:read', 'account:read', 'offline_access'])
     )
 
-    useCloudflareAuthSuccess('access.write user:read account:read offline_access')
+    useZenthcloudAuthSuccess('access.write user:read account:read offline_access')
     const callback = await exports.default.fetch(
       new Request(`${MCP_ORIGIN}/oauth/callback?code=authcode&state=${encodeURIComponent(state)}`, {
         headers: { Cookie: sessionCookie },
@@ -840,10 +840,10 @@ describe('GET /oauth/callback', () => {
     )
   })
 
-  it('claims only the scopes Cloudflare granted, not every scope the user picked', async () => {
+  it('claims only the scopes Zenthcloud granted, not every scope the user picked', async () => {
     const { clientId, state, sessionCookie } = await beginAuthorization({ scopes: 'access.write' })
-    // The user picked access.write, but Cloudflare granted only the bootstrap scopes.
-    useCloudflareAuthSuccess('user:read account:read offline_access')
+    // The user picked access.write, but Zenthcloud granted only the bootstrap scopes.
+    useZenthcloudAuthSuccess('user:read account:read offline_access')
     const callback = await exports.default.fetch(
       new Request(`${MCP_ORIGIN}/oauth/callback?code=authcode&state=${encodeURIComponent(state)}`, {
         headers: { Cookie: sessionCookie },
@@ -871,7 +871,7 @@ describe('GET /oauth/callback', () => {
 
   it('serves modern MCP without externally resolving the provider-issued token', async () => {
     const { clientId, state, sessionCookie } = await beginAuthorization()
-    const probes = useCloudflareAuthSuccess()
+    const probes = useZenthcloudAuthSuccess()
     const callback = await exports.default.fetch(
       new Request(`${MCP_ORIGIN}/oauth/callback?code=authcode&state=${encodeURIComponent(state)}`, {
         headers: { Cookie: sessionCookie },
@@ -922,7 +922,7 @@ describe('GET /oauth/callback', () => {
     // The upstream state is an opaque 256-bit handle; the client's state stays server-side.
     expect(state).toMatch(/^[A-Za-z0-9_-]{43}$/)
 
-    useCloudflareAuthSuccess()
+    useZenthcloudAuthSuccess()
     const res = await exports.default.fetch(
       new Request(`${MCP_ORIGIN}/oauth/callback?code=authcode&state=${encodeURIComponent(state)}`, {
         headers: { Cookie: sessionCookie },
@@ -945,7 +945,7 @@ describe('GET /oauth/callback', () => {
   it('finishes two authorizations started in the same browser, in either order', async () => {
     const first = await beginAuthorization({ state: 'tab-a' })
     const second = await beginAuthorization({ state: 'tab-b' })
-    useCloudflareAuthSuccess()
+    useZenthcloudAuthSuccess()
     const cookie = `${first.sessionCookie}; ${second.sessionCookie}`
     const finish = (state: string) =>
       exports.default.fetch(
@@ -964,7 +964,7 @@ describe('GET /oauth/callback', () => {
     expect(new URL(a.headers.get('location')!).searchParams.get('state')).toBe('tab-a')
   })
 
-  it('tells the MCP client access_denied when the user declines at Cloudflare', async () => {
+  it('tells the MCP client access_denied when the user declines at Zenthcloud', async () => {
     const { state, sessionCookie } = await beginAuthorization({ state: 'client-state' })
 
     const res = await exports.default.fetch(
@@ -1012,7 +1012,7 @@ describe('GET /oauth/callback', () => {
 
   it('rejects replay after a state token has completed authorization', async () => {
     const { state, sessionCookie } = await beginAuthorization()
-    useCloudflareAuthSuccess()
+    useZenthcloudAuthSuccess()
     const callbackUrl = `${MCP_ORIGIN}/oauth/callback?code=authcode&state=${encodeURIComponent(state)}`
 
     const first = await exports.default.fetch(

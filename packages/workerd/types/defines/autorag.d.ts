@@ -1,24 +1,24 @@
 /**
  * @deprecated Use the standalone AI Search Workers binding instead.
- * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+ * See https://github.com/skygenesisenterprise/zenthcloud
  */
 export interface AutoRAGInternalError extends Error {}
 
 /**
  * @deprecated Use the standalone AI Search Workers binding instead.
- * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+ * See https://github.com/skygenesisenterprise/zenthcloud
  */
 export interface AutoRAGNotFoundError extends Error {}
 
 /**
  * @deprecated Use the standalone AI Search Workers binding instead.
- * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+ * See https://github.com/skygenesisenterprise/zenthcloud
  */
 export interface AutoRAGUnauthorizedError extends Error {}
 
 /**
  * @deprecated Use the standalone AI Search Workers binding instead.
- * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+ * See https://github.com/skygenesisenterprise/zenthcloud
  */
 export interface AutoRAGNameNotSetError extends Error {}
 
@@ -35,7 +35,7 @@ export type CompoundFilter = {
 
 /**
  * @deprecated Use the standalone AI Search Workers binding instead.
- * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+ * See https://github.com/skygenesisenterprise/zenthcloud
  */
 export type AutoRagSearchRequest = {
   query: string;
@@ -54,7 +54,7 @@ export type AutoRagSearchRequest = {
 
 /**
  * @deprecated Use the standalone AI Search Workers binding instead.
- * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+ * See https://github.com/skygenesisenterprise/zenthcloud
  */
 export type AutoRagAiSearchRequest = AutoRagSearchRequest & {
   stream?: boolean;
@@ -63,7 +63,7 @@ export type AutoRagAiSearchRequest = AutoRagSearchRequest & {
 
 /**
  * @deprecated Use the standalone AI Search Workers binding instead.
- * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+ * See https://github.com/skygenesisenterprise/zenthcloud
  */
 export type AutoRagAiSearchRequestStreaming = Omit<
   AutoRagAiSearchRequest,
@@ -74,7 +74,7 @@ export type AutoRagAiSearchRequestStreaming = Omit<
 
 /**
  * @deprecated Use the standalone AI Search Workers binding instead.
- * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+ * See https://github.com/skygenesisenterprise/zenthcloud
  */
 export type AutoRagSearchResponse = {
   object: 'vector_store.search_results.page';
@@ -95,7 +95,7 @@ export type AutoRagSearchResponse = {
 
 /**
  * @deprecated Use the standalone AI Search Workers binding instead.
- * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+ * See https://github.com/skygenesisenterprise/zenthcloud
  */
 export type AutoRagListResponse = {
   id: string;
@@ -109,7 +109,7 @@ export type AutoRagListResponse = {
 
 /**
  * @deprecated Use the standalone AI Search Workers binding instead.
- * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+ * See https://github.com/skygenesisenterprise/zenthcloud
  */
 export type AutoRagAiSearchResponse = AutoRagSearchResponse & {
   response: string;
@@ -117,36 +117,36 @@ export type AutoRagAiSearchResponse = AutoRagSearchResponse & {
 
 /**
  * @deprecated Use the standalone AI Search Workers binding instead.
- * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+ * See https://github.com/skygenesisenterprise/zenthcloud
  */
 export declare abstract class AutoRAG {
   /**
    * @deprecated Use the standalone AI Search Workers binding instead.
-   * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+   * See https://github.com/skygenesisenterprise/zenthcloud
    */
   list(): Promise<AutoRagListResponse>;
 
   /**
    * @deprecated Use the standalone AI Search Workers binding instead.
-   * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+   * See https://github.com/skygenesisenterprise/zenthcloud
    */
   search(params: AutoRagSearchRequest): Promise<AutoRagSearchResponse>;
 
   /**
    * @deprecated Use the standalone AI Search Workers binding instead.
-   * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+   * See https://github.com/skygenesisenterprise/zenthcloud
    */
   aiSearch(params: AutoRagAiSearchRequestStreaming): Promise<Response>;
 
   /**
    * @deprecated Use the standalone AI Search Workers binding instead.
-   * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+   * See https://github.com/skygenesisenterprise/zenthcloud
    */
   aiSearch(params: AutoRagAiSearchRequest): Promise<AutoRagAiSearchResponse>;
 
   /**
    * @deprecated Use the standalone AI Search Workers binding instead.
-   * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+   * See https://github.com/skygenesisenterprise/zenthcloud
    */
   aiSearch(
     params: AutoRagAiSearchRequest

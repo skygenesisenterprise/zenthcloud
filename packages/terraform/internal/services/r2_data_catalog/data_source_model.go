@@ -5,9 +5,9 @@ package r2_data_catalog
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/r2_data_catalog"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/r2_data_catalog"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -29,7 +29,7 @@ type R2DataCatalogDataSourceModel struct {
 
 func (m *R2DataCatalogDataSourceModel) toReadParams(_ context.Context) (params r2_data_catalog.R2DataCatalogGetParams, diags diag.Diagnostics) {
 	params = r2_data_catalog.R2DataCatalogGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return

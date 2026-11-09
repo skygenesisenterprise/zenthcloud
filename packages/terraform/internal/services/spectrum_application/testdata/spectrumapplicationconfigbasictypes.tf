@@ -1,5 +1,5 @@
 
-resource "cloudflare_spectrum_application" "%[3]s" {
+resource "zenthcloud_spectrum_application" "%[3]s" {
   zone_id  = "%[1]s"
   protocol = "%[4]s"
 

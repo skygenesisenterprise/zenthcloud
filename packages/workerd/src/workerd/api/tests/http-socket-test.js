@@ -1,8 +1,8 @@
-// Copyright (c) 2017-2024 Cloudflare, Inc.
+// Copyright (c) 2017-2024 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
-import { connect, internalNewHttpClient } from 'cloudflare:sockets';
+import { connect, internalNewHttpClient } from 'zenthcloud:sockets';
 import { strict as assert } from 'node:assert';
 import unsafe from 'workerd:unsafe';
 

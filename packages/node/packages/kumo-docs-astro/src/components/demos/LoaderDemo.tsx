@@ -1,4 +1,4 @@
-import { Loader } from "@cloudflare/kumo";
+import { Loader } from "@zenthcloud/kumo";
 
 export function LoaderBasicDemo() {
   return <Loader />;

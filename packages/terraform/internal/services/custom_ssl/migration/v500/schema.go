@@ -5,15 +5,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceCloudflareCustomSSLSchema returns the legacy cloudflare_custom_ssl schema (schema_version=1).
+// SourceZenthcloudCustomSSLSchema returns the legacy zenthcloud_custom_ssl schema (schema_version=1).
 // This is used by UpgradeFromV4 to parse state from the legacy SDKv2 provider.
 //
-// Reference: cloudflare-terraform-v4/internal/sdkv2provider/schema_cloudflare_custom_ssl.go
+// Reference: zenthcloud-terraform-v4/internal/sdkv2provider/schema_zenthcloud_custom_ssl.go
 // SchemaVersion: 1 (after the v0→v1 internal upgrader that converted custom_ssl_options from TypeMap to TypeList).
 //
 // Only Required, Optional, Computed, and ElementType are set. Validators, PlanModifiers,
 // and Descriptions are intentionally omitted — this schema is only used for reading state.
-func SourceCloudflareCustomSSLSchema() schema.Schema {
+func SourceZenthcloudCustomSSLSchema() schema.Schema {
 	return schema.Schema{
 		Version: 1,
 		Attributes: map[string]schema.Attribute{

@@ -122,7 +122,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar attacks layer7 top ases origin",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/attacks/layer7/top/ases/origin`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

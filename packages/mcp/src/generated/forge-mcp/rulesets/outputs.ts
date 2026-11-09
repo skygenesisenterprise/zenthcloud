@@ -1497,7 +1497,7 @@ export const rulesets_SetCacheControlDirective: JSONObject = {
   "oneOf": [
     {
       "properties": {
-        "cloudflare_only": {
+        "zenthcloud_only": {
           "type": "boolean"
         },
         "operation": {
@@ -1525,7 +1525,7 @@ export const rulesets_SetCacheControlDirective: JSONObject = {
     },
     {
       "properties": {
-        "cloudflare_only": {
+        "zenthcloud_only": {
           "type": "boolean"
         },
         "operation": {
@@ -1561,7 +1561,7 @@ export const rulesets_SetCacheControlDirectiveWithQualifiers: JSONObject = {
   "oneOf": [
     {
       "properties": {
-        "cloudflare_only": {
+        "zenthcloud_only": {
           "type": "boolean"
         },
         "operation": {
@@ -1595,7 +1595,7 @@ export const rulesets_SetCacheControlDirectiveWithQualifiers: JSONObject = {
     },
     {
       "properties": {
-        "cloudflare_only": {
+        "zenthcloud_only": {
           "type": "boolean"
         },
         "operation": {
@@ -1631,7 +1631,7 @@ export const rulesets_SetCacheControlDirectiveWithValue: JSONObject = {
   "oneOf": [
     {
       "properties": {
-        "cloudflare_only": {
+        "zenthcloud_only": {
           "type": "boolean"
         },
         "operation": {
@@ -1663,7 +1663,7 @@ export const rulesets_SetCacheControlDirectiveWithValue: JSONObject = {
     },
     {
       "properties": {
-        "cloudflare_only": {
+        "zenthcloud_only": {
           "type": "boolean"
         },
         "operation": {

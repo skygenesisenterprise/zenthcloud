@@ -326,7 +326,7 @@ export const zero$$trust$$gateway_rule$$settings: JSONObject = {
       ]
     },
     "dns_resolvers": {
-      "description": "Configure custom resolvers to route queries that match the resolver policy. Unused with 'resolve_dns_through_cloudflare' or 'resolve_dns_internally' settings. DNS queries get routed to the address closest to their origin. Only valid when a rule's action set to 'resolve'. Settable only for `dns_resolver` rules.",
+      "description": "Configure custom resolvers to route queries that match the resolver policy. Unused with 'resolve_dns_through_zenthcloud' or 'resolve_dns_internally' settings. DNS queries get routed to the address closest to their origin. Only valid when a rule's action set to 'resolve'. Settable only for `dns_resolver` rules.",
       "oneOf": [
         {
           "properties": {
@@ -577,7 +577,7 @@ export const zero$$trust$$gateway_rule$$settings: JSONObject = {
       ]
     },
     "resolve_dns_internally": {
-      "description": "Configure to forward the query to the internal DNS service, passing the specified 'view_id' as input. Not used when 'dns_resolvers' is specified or 'resolve_dns_through_cloudflare' is set. Only valid when a rule's action set to 'resolve'. Settable only for `dns_resolver` rules.",
+      "description": "Configure to forward the query to the internal DNS service, passing the specified 'view_id' as input. Not used when 'dns_resolvers' is specified or 'resolve_dns_through_zenthcloud' is set. Only valid when a rule's action set to 'resolve'. Settable only for `dns_resolver` rules.",
       "oneOf": [
         {
           "properties": {
@@ -601,8 +601,8 @@ export const zero$$trust$$gateway_rule$$settings: JSONObject = {
         }
       ]
     },
-    "resolve_dns_through_cloudflare": {
-      "description": "Enable to send queries that match the policy to Cloudflare's default 1.1.1.1 DNS resolver. Cannot set when 'dns_resolvers' specified or 'resolve_dns_internally' is set. Only valid when a rule's action set to 'resolve'. Settable only for `dns_resolver` rules.",
+    "resolve_dns_through_zenthcloud": {
+      "description": "Enable to send queries that match the policy to Zenthcloud's default 1.1.1.1 DNS resolver. Cannot set when 'dns_resolvers' specified or 'resolve_dns_internally' is set. Only valid when a rule's action set to 'resolve'. Settable only for `dns_resolver` rules.",
       "oneOf": [
         {
           "type": "boolean"

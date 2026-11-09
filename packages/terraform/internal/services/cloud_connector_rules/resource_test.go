@@ -6,12 +6,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/cloud_connector"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/cloud_connector"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -21,19 +21,19 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_cloud_connector_rules", &resource.Sweeper{
-		Name: "cloudflare_cloud_connector_rules",
-		F:    testSweepCloudflareCloudConnectorRules,
+	resource.AddTestSweepers("zenthcloud_cloud_connector_rules", &resource.Sweeper{
+		Name: "zenthcloud_cloud_connector_rules",
+		F:    testSweepZenthcloudCloudConnectorRules,
 	})
 }
 
-func testSweepCloudflareCloudConnectorRules(r string) error {
+func testSweepZenthcloudCloudConnectorRules(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping cloud connector rules sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping cloud connector rules sweep: ZENTHCLOUD_ZONE_ID not set")
 		return nil
 	}
 
@@ -41,7 +41,7 @@ func testSweepCloudflareCloudConnectorRules(r string) error {
 	_, err := client.CloudConnector.Rules.Update(
 		ctx,
 		cloud_connector.RuleUpdateParams{
-			ZoneID: cloudflare.F(zoneID),
+			ZoneID: zenthcloud.F(zoneID),
 		},
 		option.WithRequestBody("application/json", []byte(`[]`)),
 	)
@@ -54,18 +54,18 @@ func testSweepCloudflareCloudConnectorRules(r string) error {
 	return nil
 }
 
-func TestAccCloudflareCloudConnectorRules(t *testing.T) {
+func TestAccZenthcloudCloudConnectorRules(t *testing.T) {
 	t.Parallel()
 
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	resourceName := "cloudflare_cloud_connector_rules." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	resourceName := "zenthcloud_cloud_connector_rules." + rnd
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareCloudConnectorRules(rnd, zoneID),
+				Config: testAccCheckZenthcloudCloudConnectorRules(rnd, zoneID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(resourceName, "rules.#", "3"),
@@ -89,7 +89,7 @@ func TestAccCloudflareCloudConnectorRules(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckCloudflareCloudConnectorRulesRemovedRule(rnd, zoneID),
+				Config: testAccCheckZenthcloudCloudConnectorRulesRemovedRule(rnd, zoneID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(resourceName, "rules.#", "2"),
@@ -111,9 +111,9 @@ func TestAccCloudflareCloudConnectorRules(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareCloudConnectorRules(rnd, zoneID string) string {
+func testAccCheckZenthcloudCloudConnectorRules(rnd, zoneID string) string {
 	return fmt.Sprintf(`
-  resource "cloudflare_cloud_connector_rules" "%[1]s" {
+  resource "zenthcloud_cloud_connector_rules" "%[1]s" {
 	zone_id  = "%[2]s"
 	rules = [{
 		enabled = true
@@ -145,9 +145,9 @@ func testAccCheckCloudflareCloudConnectorRules(rnd, zoneID string) string {
   }`, rnd, zoneID)
 }
 
-func testAccCheckCloudflareCloudConnectorRulesRemovedRule(rnd, zoneID string) string {
+func testAccCheckZenthcloudCloudConnectorRulesRemovedRule(rnd, zoneID string) string {
 	return fmt.Sprintf(`
-  resource "cloudflare_cloud_connector_rules" "%[1]s" {
+  resource "zenthcloud_cloud_connector_rules" "%[1]s" {
 	zone_id  = "%[2]s"
 	rules = [{
 		enabled = true

@@ -20,7 +20,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			'$0 zero-trust casb webhooks evaluate-existing <webhook-id>\n\nSends a test webhook event using an existing webhook configuration. This allows customers to verify their webhook endpoint is still reachable and properly configured after creating the webhook resource. The test payload includes: - event_type: "webhook.test" - timestamp: Current UTC timestamp - message: Test message indicating this is from Cloudflare CASB - data: Object with test: true'
+			'$0 zero-trust casb webhooks evaluate-existing <webhook-id>\n\nSends a test webhook event using an existing webhook configuration. This allows customers to verify their webhook endpoint is still reachable and properly configured after creating the webhook resource. The test payload includes: - event_type: "webhook.test" - timestamp: Current UTC timestamp - message: Test message indicating this is from Zenthcloud CASB - data: Object with test: true'
 		)
 		.positional("webhook-id", {
 			type: "string",
@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust casb webhooks evaluate-existing",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/data-security/posture/webhooks/${argv["webhook-id"] == null ? "<webhook-id>" : encodeURIComponent(String(argv["webhook-id"]))}/evaluate`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/data-security/posture/webhooks/${argv["webhook-id"] == null ? "<webhook-id>" : encodeURIComponent(String(argv["webhook-id"]))}/evaluate`,
 						pathParams: { "webhook-id": String(argv["webhook-id"] ?? "") },
 						bodyKind: "none",
 					});

@@ -86,7 +86,7 @@ impl Context {
     /// # }
     /// ```
     ///
-    /// See: <https://developers.cloudflare.com/workers/runtime-apis/context/#props>
+    /// See: <https://github.com/skygenesisenterprise/zenthcloud>
     pub fn props<T: DeserializeOwned>(&self) -> Result<T> {
         Ok(serde_wasm_bindgen::from_value(self.inner.props())?)
     }

@@ -1,6 +1,6 @@
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import {
 	getAccountId,
@@ -12,7 +12,7 @@ import {
 import { MissingCredentialsError } from "../../lib/errors.js";
 import { setTemporaryAccountRequested } from "../../lib/oauth/index.js";
 import { clearLoadedProjectSettings } from "../../lib/project-settings.js";
-import type { ParsedInputSettingsConfig } from "@cloudflare/config";
+import type { ParsedInputSettingsConfig } from "@zenthcloud/config";
 
 const getOrSelectAccountIdMock = vi.hoisted(() => vi.fn());
 const requireAuthMock = vi.hoisted(() => vi.fn());
@@ -20,7 +20,7 @@ const getActiveAccountIdMock = vi.hoisted(() => vi.fn());
 const fetchAllAccountsMock = vi.hoisted(() => vi.fn());
 const getAPITokenMock = vi.hoisted(() => vi.fn());
 
-vi.mock("@cloudflare/workers-auth/cf", () => ({
+vi.mock("@zenthcloud/workers-auth/cf", () => ({
 	createCfAuth: () => ({
 		getOrSelectAccountId: getOrSelectAccountIdMock,
 		requireAuth: requireAuthMock,
@@ -36,7 +36,7 @@ vi.mock("@cloudflare/workers-auth/cf", () => ({
 
 function writeProjectSettings(settings: ParsedInputSettingsConfig): void {
 	writeFileSync(
-		join(process.cwd(), "cloudflare.config.ts"),
+		join(process.cwd(), "zenthcloud.config.ts"),
 		`export default ${JSON.stringify(settings)};`
 	);
 }
@@ -54,9 +54,9 @@ describe("context", () => {
 		fetchAllAccountsMock.mockResolvedValue([]);
 		getAPITokenMock.mockReset();
 		clearLoadedProjectSettings();
-		vi.stubEnv("CLOUDFLARE_ACCOUNT_ID", undefined);
-		vi.stubEnv("CLOUDFLARE_ZONE_ID", undefined);
-		vi.stubEnv("CLOUDFLARE_COMPLIANCE_REGION", undefined);
+		vi.stubEnv("ZENTHCLOUD_ACCOUNT_ID", undefined);
+		vi.stubEnv("ZENTHCLOUD_ZONE_ID", undefined);
+		vi.stubEnv("ZENTHCLOUD_COMPLIANCE_REGION", undefined);
 	});
 
 	describe("getAccountId", () => {
@@ -79,7 +79,7 @@ describe("context", () => {
 			}
 		);
 
-		it("loads account id from cloudflare.config.ts settings", async () => {
+		it("loads account id from zenthcloud.config.ts settings", async () => {
 			writeProjectSettings({ accountId: "settings-acct" });
 			getOrSelectAccountIdMock.mockResolvedValue("settings-acct");
 
@@ -115,7 +115,7 @@ describe("context", () => {
 
 		it("uses an explicit region without reading project settings", async () => {
 			writeFileSync(
-				join(process.cwd(), "cloudflare.config.ts"),
+				join(process.cwd(), "zenthcloud.config.ts"),
 				`export default () => { throw new Error("Project config should not be reevaluated"); };`
 			);
 			getOrSelectAccountIdMock.mockResolvedValue("selected-account");
@@ -135,7 +135,7 @@ describe("context", () => {
 
 	describe("resolveAccountIdSilent", () => {
 		it("returns the env account ID", async () => {
-			vi.stubEnv("CLOUDFLARE_ACCOUNT_ID", "env-acct");
+			vi.stubEnv("ZENTHCLOUD_ACCOUNT_ID", "env-acct");
 			expect(await resolveAccountIdSilent()).toBe("env-acct");
 		});
 
@@ -161,12 +161,12 @@ describe("context", () => {
 
 	describe("getZoneId", () => {
 		it("uses the global zone flag before the environment", async () => {
-			vi.stubEnv("CLOUDFLARE_ZONE_ID", "env-zone");
+			vi.stubEnv("ZENTHCLOUD_ZONE_ID", "env-zone");
 			await expect(getZoneId({ zone: "flag-zone" })).resolves.toBe("flag-zone");
 		});
 
-		it("uses CLOUDFLARE_ZONE_ID when no zone is passed", async () => {
-			vi.stubEnv("CLOUDFLARE_ZONE_ID", "env-zone");
+		it("uses ZENTHCLOUD_ZONE_ID when no zone is passed", async () => {
+			vi.stubEnv("ZENTHCLOUD_ZONE_ID", "env-zone");
 			await expect(
 				getZoneId(undefined, undefined, { quiet: true })
 			).resolves.toBe("env-zone");
@@ -193,7 +193,7 @@ describe("context", () => {
 			await expect(getComplianceRegion()).resolves.toBe("public");
 		});
 
-		it("reads the value from cloudflare.config.ts settings", async () => {
+		it("reads the value from zenthcloud.config.ts settings", async () => {
 			writeProjectSettings({ complianceRegion: "fedramp-high" });
 
 			await expect(getComplianceRegion()).resolves.toBe("fedramp_high");
@@ -201,15 +201,15 @@ describe("context", () => {
 
 		it("reads the environment before loading project settings", async () => {
 			writeFileSync(
-				join(process.cwd(), "cloudflare.config.ts"),
+				join(process.cwd(), "zenthcloud.config.ts"),
 				`throw new Error("project config should not be loaded");`
 			);
-			vi.stubEnv("CLOUDFLARE_COMPLIANCE_REGION", "fedramp_high");
+			vi.stubEnv("ZENTHCLOUD_COMPLIANCE_REGION", "fedramp_high");
 			await expect(getComplianceRegion()).resolves.toBe("fedramp_high");
 		});
 
 		it("throws on an invalid value", async () => {
-			vi.stubEnv("CLOUDFLARE_COMPLIANCE_REGION", "invalid");
+			vi.stubEnv("ZENTHCLOUD_COMPLIANCE_REGION", "invalid");
 			await expect(getComplianceRegion()).rejects.toThrow(
 				/Invalid compliance region/
 			);

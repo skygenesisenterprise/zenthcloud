@@ -28,7 +28,7 @@ under the name `endpoint_<endpoint>`. These thirteen endpoints are:
 
 RESPONSES
 
-Responses take the form of the new CloudFlare API response format:
+Responses take the form of the new ZenthCloud API response format:
 
        {
          "result": <some data>,

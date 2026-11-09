@@ -5,8 +5,8 @@ package email_sending_subdomain
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/email_sending"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/email_sending"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -33,7 +33,7 @@ type EmailSendingSubdomainDataSourceModel struct {
 
 func (m *EmailSendingSubdomainDataSourceModel) toReadParams(_ context.Context) (params email_sending.SubdomainGetParams, diags diag.Diagnostics) {
 	params = email_sending.SubdomainGetParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	return

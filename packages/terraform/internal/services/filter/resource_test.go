@@ -6,10 +6,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -21,33 +21,33 @@ func TestMain(m *testing.M) {
 
 
 func init() {
-	resource.AddTestSweepers("cloudflare_filter", &resource.Sweeper{
-		Name: "cloudflare_filter",
-		F:    testSweepCloudflareFilterSweeper,
+	resource.AddTestSweepers("zenthcloud_filter", &resource.Sweeper{
+		Name: "zenthcloud_filter",
+		F:    testSweepZenthcloudFilterSweeper,
 	})
 }
 
-func testSweepCloudflareFilterSweeper(r string) error {
+func testSweepZenthcloudFilterSweeper(r string) error {
 	ctx := context.Background()
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s",clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s",clientErr))
 		return clientErr
 	}
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping filters sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping filters sweep: ZENTHCLOUD_ZONE_ID not set")
 		return nil
 	}
-	filters, _, filtersErr := client.Filters(ctx, cloudflare.ZoneIdentifier(zoneID), cloudflare.FilterListParams{})
+	filters, _, filtersErr := client.Filters(ctx, zenthcloud.ZoneIdentifier(zoneID), zenthcloud.FilterListParams{})
 
 	if filtersErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Cloudflare filters: %s",filtersErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Zenthcloud filters: %s",filtersErr))
 		return filtersErr
 	}
 	if len(filters) == 0 {
-		tflog.Info(ctx, "No Cloudflare filters to sweep")
+		tflog.Info(ctx, "No Zenthcloud filters to sweep")
 		return nil
 	}
 
@@ -58,7 +58,7 @@ func testSweepCloudflareFilterSweeper(r string) error {
 		}
 
 		tflog.Info(ctx, fmt.Sprintf("Deleting filter: %s (zone: %s)", filter.ID, zoneID))
-		err := client.DeleteFilter(ctx, cloudflare.ZoneIdentifier(zoneID), filter.ID)
+		err := client.DeleteFilter(ctx, zenthcloud.ZoneIdentifier(zoneID), filter.ID)
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete filter %s: %s", filter.ID, err))
 			continue
@@ -71,8 +71,8 @@ func testSweepCloudflareFilterSweeper(r string) error {
 
 func TestAccFilterSimple(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_filter." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	name := "zenthcloud_filter." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	filterQuoted := `(http.request.uri.path ~ \".*wp-login-` + rnd + `.php\" or http.request.uri.path ~ \".*xmlrpc.php\") and ip.src ne 192.0.2.1`
 	filterUnquoted := `(http.request.uri.path ~ ".*wp-login-` + rnd + `.php" or http.request.uri.path ~ ".*xmlrpc.php") and ip.src ne 192.0.2.1`
@@ -99,7 +99,7 @@ func testFilterConfig(resourceID, zoneID, paused, description, expression string
 }
 
 const multiLineFilter = `
-resource "cloudflare_filter" "%[1]s" {
+resource "zenthcloud_filter" "%[1]s" {
 	zone_id = "%[2]s"
 	paused = "%[3]s"
 	description = "%[4]s"
@@ -111,7 +111,7 @@ EOF
 
 func TestAccFilterWhitespace(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -127,9 +127,9 @@ func TestAccFilterWhitespace(t *testing.T) {
 
 func TestAccFilterHTMLEntity(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_filter." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	name := "zenthcloud_filter." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	filter := `(http.host eq \"` + domain + `\")`
 
@@ -154,7 +154,7 @@ func testFilterWithHTMLEntityConfig(resourceID, zoneID, paused, description, exp
 
 func TestAccUpgradeFilter_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	filterQuoted := `(http.request.uri.path ~ \".*wp-login-` + rnd + `.php\" or http.request.uri.path ~ \".*xmlrpc.php\") and ip.src ne 192.0.2.1`
 
 	config := testFilterConfig(rnd, zoneID, "true", "this is notes", filterQuoted)
@@ -164,8 +164,8 @@ func TestAccUpgradeFilter_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

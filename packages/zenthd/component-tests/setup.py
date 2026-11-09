@@ -6,7 +6,7 @@ import os
 import subprocess
 import uuid
 
-import CloudFlare
+import ZenthCloud
 import yaml
 from retrying import retry
 
@@ -42,7 +42,7 @@ def persist_origin_cert(config):
 @retry(stop_max_attempt_number=MAX_RETRIES, wait_fixed=BACKOFF_SECS * 1000)
 def create_tunnel(config, origincert_path, random_uuid):
     # Delete any previous existing credentials file. If the agent keeps files around (that's the case in Windows) then
-    # cloudflared tunnel create will refuse to create the tunnel because it does not want to overwrite credentials
+    # zenthcloudd tunnel create will refuse to create the tunnel because it does not want to overwrite credentials
     # files.
     credentials_path = config["credentials_file"]
     try:
@@ -51,22 +51,22 @@ def create_tunnel(config, origincert_path, random_uuid):
         pass
 
     tunnel_name = "cfd_component_test-" + random_uuid
-    create_cmd = [config["cloudflared_binary"], "tunnel", "--origincert", origincert_path, "create",
+    create_cmd = [config["zenthcloudd_binary"], "tunnel", "--origincert", origincert_path, "create",
                   "--credentials-file", credentials_path, tunnel_name]
     LOGGER.info(f"Creating tunnel with {create_cmd}")
     subprocess.run(create_cmd, check=True)
 
-    list_cmd = [config["cloudflared_binary"], "tunnel", "--origincert", origincert_path, "list", "--name",
+    list_cmd = [config["zenthcloudd_binary"], "tunnel", "--origincert", origincert_path, "list", "--name",
                 tunnel_name, "--output", "json"]
     LOGGER.info(f"Listing tunnel with {list_cmd}")
-    cloudflared = subprocess.run(list_cmd, check=True, capture_output=True)
-    return json.loads(cloudflared.stdout)[0]["id"]
+    zenthcloudd = subprocess.run(list_cmd, check=True, capture_output=True)
+    return json.loads(zenthcloudd.stdout)[0]["id"]
 
 
 @retry(stop_max_attempt_number=MAX_RETRIES, wait_fixed=BACKOFF_SECS * 1000)
 def delete_tunnel(config):
     credentials_path = config["credentials_file"]
-    delete_cmd = [config["cloudflared_binary"], "tunnel", "--origincert", config["origincert"], "delete",
+    delete_cmd = [config["zenthcloudd_binary"], "tunnel", "--origincert", config["origincert"], "delete",
                   "--credentials-file", credentials_path, "-f", config["tunnel"]]
     LOGGER.info(f"Deleting tunnel with {delete_cmd}")
     subprocess.run(delete_cmd, check=True)
@@ -74,7 +74,7 @@ def delete_tunnel(config):
 
 @retry(stop_max_attempt_number=MAX_RETRIES, wait_fixed=BACKOFF_SECS * 1000)
 def create_dns(config, hostname, type, content):
-    cf = CloudFlare.CloudFlare(debug=False, token=get_env("DNS_API_TOKEN"))
+    cf = ZenthCloud.ZenthCloud(debug=False, token=get_env("DNS_API_TOKEN"))
     cf.zones.dns_records.post(
         config["zone_tag"],
         data={'name': hostname, 'type': type, 'content': content, 'proxied': True}
@@ -89,7 +89,7 @@ def create_named_dns(config, random_uuid):
 
 @retry(stop_max_attempt_number=MAX_RETRIES, wait_fixed=BACKOFF_SECS * 1000)
 def delete_dns(config, hostname):
-    cf = CloudFlare.CloudFlare(debug=False, token=get_env("DNS_API_TOKEN"))
+    cf = ZenthCloud.ZenthCloud(debug=False, token=get_env("DNS_API_TOKEN"))
     zone_tag = config["zone_tag"]
     dns_records = cf.zones.dns_records.get(zone_tag, params={'name': hostname})
     if len(dns_records) > 0:

@@ -5,8 +5,8 @@ package filter
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/filters"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/filters"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -28,7 +28,7 @@ type FilterDataSourceModel struct {
 
 func (m *FilterDataSourceModel) toReadParams(_ context.Context) (params filters.FilterGetParams, diags diag.Diagnostics) {
 	params = filters.FilterGetParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	return
@@ -36,23 +36,23 @@ func (m *FilterDataSourceModel) toReadParams(_ context.Context) (params filters.
 
 func (m *FilterDataSourceModel) toListParams(_ context.Context) (params filters.FilterListParams, diags diag.Diagnostics) {
 	params = filters.FilterListParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	if !m.Filter.ID.IsNull() {
-		params.ID = cloudflare.F(m.Filter.ID.ValueString())
+		params.ID = zenthcloud.F(m.Filter.ID.ValueString())
 	}
 	if !m.Filter.Description.IsNull() {
-		params.Description = cloudflare.F(m.Filter.Description.ValueString())
+		params.Description = zenthcloud.F(m.Filter.Description.ValueString())
 	}
 	if !m.Filter.Expression.IsNull() {
-		params.Expression = cloudflare.F(m.Filter.Expression.ValueString())
+		params.Expression = zenthcloud.F(m.Filter.Expression.ValueString())
 	}
 	if !m.Filter.Paused.IsNull() {
-		params.Paused = cloudflare.F(m.Filter.Paused.ValueBool())
+		params.Paused = zenthcloud.F(m.Filter.Paused.ValueBool())
 	}
 	if !m.Filter.Ref.IsNull() {
-		params.Ref = cloudflare.F(m.Filter.Ref.ValueString())
+		params.Ref = zenthcloud.F(m.Filter.Ref.ValueString())
 	}
 
 	return

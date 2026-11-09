@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_user Data Source - Cloudflare"
+page_title: "zenthcloud_user Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   User Details ReadUser Details Write
 ---
 
-# cloudflare_user (Data Source)
+# zenthcloud_user (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_user" "example_user" {
+data "zenthcloud_user" "example_user" {
 
 }
 ```

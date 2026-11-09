@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_spectrum_applications Data Source - Cloudflare"
+page_title: "zenthcloud_spectrum_applications Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zone Settings ReadZone Settings Write
 ---
 
-# cloudflare_spectrum_applications (Data Source)
+# zenthcloud_spectrum_applications (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_spectrum_applications" "example_spectrum_applications" {
+data "zenthcloud_spectrum_applications" "example_spectrum_applications" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```
@@ -55,12 +55,12 @@ Notes: Only available for TCP applications.
 - `origin_dns` (Attributes) The name and type of DNS record for the Spectrum application. (see [below for nested schema](#nestedatt--result--origin_dns))
 - `origin_port` (Dynamic) The destination port at the origin. Only specified in conjunction with origin_dns. May use an integer to specify a single origin port, for example `1000`, or a string to specify a range of origin ports, for example `"1000-2000"`.
 Notes: If specifying a port range, the number of ports in the range must match the number of ports specified in the "protocol" field.
-- `protocol` (String) The port configuration at Cloudflare's edge. May specify a single port, for example `"tcp/1000"`, or a range of ports, for example `"tcp/1000-2000"`.
-- `proxy_protocol` (String) Enables Proxy Protocol to the origin. Refer to [Enable Proxy protocol](https://developers.cloudflare.com/spectrum/getting-started/proxy-protocol/) for implementation details on PROXY Protocol V1, PROXY Protocol V2, and Simple Proxy Protocol.
+- `protocol` (String) The port configuration at Zenthcloud's edge. May specify a single port, for example `"tcp/1000"`, or a range of ports, for example `"tcp/1000-2000"`.
+- `proxy_protocol` (String) Enables Proxy Protocol to the origin. Refer to [Enable Proxy protocol](https://github.com/skygenesisenterprise/zenthcloud) for implementation details on PROXY Protocol V1, PROXY Protocol V2, and Simple Proxy Protocol.
 Available values: "off", "v1", "v2", "simple".
 - `tls` (String) The type of TLS termination associated with the application.
 Available values: "off", "flexible", "full", "strict".
-- `traffic_type` (String) Determines how data travels from the edge to your origin. When set to "direct", Spectrum will send traffic directly to your origin, and the application's type is derived from the `protocol`. When set to "http" or "https", Spectrum will apply Cloudflare's HTTP/HTTPS features as it sends traffic to your origin, and the application type matches this property exactly.
+- `traffic_type` (String) Determines how data travels from the edge to your origin. When set to "direct", Spectrum will send traffic directly to your origin, and the application's type is derived from the `protocol`. When set to "http" or "https", Spectrum will apply Zenthcloud's HTTP/HTTPS features as it sends traffic to your origin, and the application type matches this property exactly.
 Available values: "direct", "http", "https".
 
 <a id="nestedatt--result--dns"></a>

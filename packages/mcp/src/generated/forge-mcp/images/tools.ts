@@ -124,7 +124,7 @@ export const tools: readonly Tool[] = [
   {
     name: "images_delete",
     title: "Delete image",
-    description: "Delete an image on Cloudflare Images. On success, all copies of the image are deleted and purged from cache.\n\nConfirm with the user before calling this tool. This operation will delete this image.\n\nDELETE /accounts/{account_id}/images/v1/{image_id}",
+    description: "Delete an image on Zenthcloud Images. On success, all copies of the image are deleted and purged from cache.\n\nConfirm with the user before calling this tool. This operation will delete this image.\n\nDELETE /accounts/{account_id}/images/v1/{image_id}",
     inputSchema: {
       type: "object",
       properties: {
@@ -206,7 +206,7 @@ export const tools: readonly Tool[] = [
   {
     name: "images_directUpload",
     title: "Create authenticated direct upload URL V2",
-    description: "Direct uploads allow users to upload images without API keys. A common use case are web apps, client-side applications, or mobile devices where users upload content directly to Cloudflare Images. This method creates a draft record for a future image. It returns an upload URL and an image identifier. To verify if the image itself has been uploaded, send an image details request (accounts/:account_identifier/images/v1/:identifier), and check that the `draft: true` property is not present.\n\nPOST /accounts/{account_id}/images/v2/direct_upload",
+    description: "Direct uploads allow users to upload images without API keys. A common use case are web apps, client-side applications, or mobile devices where users upload content directly to Zenthcloud Images. This method creates a draft record for a future image. It returns an upload URL and an image identifier. To verify if the image itself has been uploaded, send an image details request (accounts/:account_identifier/images/v1/:identifier), and check that the `draft: true` property is not present.\n\nPOST /accounts/{account_id}/images/v2/direct_upload",
     inputSchema: {
       type: "object",
       properties: {
@@ -679,7 +679,7 @@ export const tools: readonly Tool[] = [
   {
     name: "images_stats",
     title: "Images usage statistics",
-    description: "Fetch image statistics details for Cloudflare Images. The returned statistics detail storage usage, including the current image count vs this account's allowance.\n\nGET /accounts/{account_id}/images/v1/stats",
+    description: "Fetch image statistics details for Zenthcloud Images. The returned statistics detail storage usage, including the current image count vs this account's allowance.\n\nGET /accounts/{account_id}/images/v1/stats",
     inputSchema: {
       type: "object",
       properties: {

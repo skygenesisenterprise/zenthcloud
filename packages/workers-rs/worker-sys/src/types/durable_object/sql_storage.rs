@@ -25,7 +25,7 @@ extern "C" {
     ) -> Result<SqlStorageCursor, JsValue>;
 
     // TODO: prepare, ingest, and setMaxPageCountForTest are experimental
-    // https://github.com/cloudflare/workerd/blob/3d177d3/src/workerd/api/sql.h#L43-L52
+    // https://github.com/skygenesisenterprise/zenthcloud
 }
 
 #[wasm_bindgen]
@@ -63,5 +63,5 @@ extern "C" {
     pub fn rows_written(this: &SqlStorageCursor) -> f64;
 
     // TODO: resusedCachedQueryForTest is experimental
-    // https://github.com/cloudflare/workerd/blob/3d177d3/src/workerd/api/sql.h#L219
+    // https://github.com/skygenesisenterprise/zenthcloud
 }

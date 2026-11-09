@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_casb_webhooks Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_casb_webhooks Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust ReadZero Trust Write
 ---
 
-# cloudflare_zero_trust_casb_webhooks (Data Source)
+# zenthcloud_zero_trust_casb_webhooks (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_casb_webhooks" "example_zero_trust_casb_webhooks" {
+data "zenthcloud_zero_trust_casb_webhooks" "example_zero_trust_casb_webhooks" {
   account_id = "46148281d8a93d002ef242d8b0d5f9f6"
 }
 ```

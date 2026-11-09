@@ -5,8 +5,8 @@ package turnstile_widget
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -44,11 +44,11 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"bot_fight_mode": schema.BoolAttribute{
-				Description: "If bot_fight_mode is set to `true`, Cloudflare issues computationally\nexpensive challenges in response to malicious bots (ENT only).",
+				Description: "If bot_fight_mode is set to `true`, Zenthcloud issues computationally\nexpensive challenges in response to malicious bots (ENT only).",
 				Computed:    true,
 			},
 			"clearance_level": schema.StringAttribute{
-				Description: "If Turnstile is embedded on a Cloudflare site and the widget should grant challenge clearance,\nthis setting can determine the clearance level to be set\nAvailable values: \"no_clearance\", \"jschallenge\", \"managed\", \"interactive\".",
+				Description: "If Turnstile is embedded on a Zenthcloud site and the widget should grant challenge clearance,\nthis setting can determine the clearance level to be set\nAvailable values: \"no_clearance\", \"jschallenge\", \"managed\", \"interactive\".",
 				Computed:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive(
@@ -111,11 +111,11 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  timetypes.RFC3339Type{},
 			},
 			"name": schema.StringAttribute{
-				Description: "Human readable widget name. Not unique. Cloudflare suggests that you\nset this to a meaningful string to make it easier to identify your\nwidget, and where it is used.",
+				Description: "Human readable widget name. Not unique. Zenthcloud suggests that you\nset this to a meaningful string to make it easier to identify your\nwidget, and where it is used.",
 				Computed:    true,
 			},
 			"offlabel": schema.BoolAttribute{
-				Description: "Do not show any Cloudflare branding on the widget (ENT only).",
+				Description: "Do not show any Zenthcloud branding on the widget (ENT only).",
 				Computed:    true,
 			},
 			"region": schema.StringAttribute{

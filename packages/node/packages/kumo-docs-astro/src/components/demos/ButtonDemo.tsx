@@ -1,4 +1,4 @@
-import { Button, LinkButton } from "@cloudflare/kumo";
+import { Button, LinkButton } from "@zenthcloud/kumo";
 import { ArrowSquareOutIcon, PlusIcon } from "@phosphor-icons/react";
 
 export function ButtonBasicDemo() {
@@ -138,12 +138,12 @@ export function ButtonLinkAsButtonDemo() {
         Read Link docs
       </LinkButton>
       <LinkButton
-        href="https://developers.cloudflare.com"
+        href="https://github.com/skygenesisenterprise/zenthcloud"
         variant="ghost"
         icon={ArrowSquareOutIcon}
         external
       >
-        Cloudflare Docs
+        Zenthcloud Docs
       </LinkButton>
     </div>
   );

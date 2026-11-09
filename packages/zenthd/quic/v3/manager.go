@@ -6,10 +6,10 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"github.com/cloudflare/cloudflared/ingress"
-	"github.com/cloudflare/cloudflared/management"
+	"github.com/zenthcloud/zenthcloudd/ingress"
+	"github.com/zenthcloud/zenthcloudd/management"
 
-	cfdflow "github.com/cloudflare/cloudflared/flow"
+	cfdflow "github.com/zenthcloud/zenthcloudd/flow"
 )
 
 var (

@@ -12,9 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -70,14 +70,14 @@ func TestMigrateLoadBalancerPool_V4ToV5_Basic(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Test setup
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := rnd // Name suffix for pool
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID, name)
 			// Infer source/target versions from test version
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
-			resourceName := fmt.Sprintf("cloudflare_load_balancer_pool.%s", rnd)
+			resourceName := fmt.Sprintf("zenthcloud_load_balancer_pool.%s", rnd)
 
 			// For v5 tests, use local provider; for v4 tests, use external provider
 			var firstStep resource.TestStep
@@ -91,8 +91,8 @@ func TestMigrateLoadBalancerPool_V4ToV5_Basic(t *testing.T) {
 				// Use external v4 provider (will create version=0 state)
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -168,15 +168,15 @@ func TestMigrateLoadBalancerPool_V4ToV5_FullConfig(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-			domain := os.Getenv("CLOUDFLARE_DOMAIN")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+			domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 			rnd := utils.GenerateRandomResourceName()
 			name := rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID, name, domain)
 			// Infer source/target versions from test version
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
-			resourceName := fmt.Sprintf("cloudflare_load_balancer_pool.%s", rnd)
+			resourceName := fmt.Sprintf("zenthcloud_load_balancer_pool.%s", rnd)
 
 			resource.Test(t, resource.TestCase{
 				PreCheck: func() {
@@ -188,8 +188,8 @@ func TestMigrateLoadBalancerPool_V4ToV5_FullConfig(t *testing.T) {
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -311,14 +311,14 @@ func TestMigrateLoadBalancerPool_V4ToV5_CheckRegions(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID, name)
 			// Infer source/target versions from test version
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
-			resourceName := fmt.Sprintf("cloudflare_load_balancer_pool.%s", rnd)
+			resourceName := fmt.Sprintf("zenthcloud_load_balancer_pool.%s", rnd)
 
 			// For v5 tests, use local provider; for v4 tests, use external provider
 			var firstStep resource.TestStep
@@ -332,8 +332,8 @@ func TestMigrateLoadBalancerPool_V4ToV5_CheckRegions(t *testing.T) {
 				// Use external v4 provider (will create version=0 state)
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -391,12 +391,12 @@ func TestMigrateLoadBalancerPool_V4ToV5_CheckRegions(t *testing.T) {
 // the origin address, which would fail in CI for synthetic test domains and mask the
 // real regression we care about.
 func TestMigrateLoadBalancerPool_FromEarlyV5_ObjectAttrs(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	name := rnd
 	tmpDir := t.TempDir()
 	testConfig := fmt.Sprintf(v5ObjectAttrsConfig, rnd, accountID, name)
-	resourceName := fmt.Sprintf("cloudflare_load_balancer_pool.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_load_balancer_pool.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -409,8 +409,8 @@ func TestMigrateLoadBalancerPool_FromEarlyV5_ObjectAttrs(t *testing.T) {
 			// State written at schema_version=0 with v5 object shape for load_shedding / origin_steering.
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.18.0",
 					},
 				},

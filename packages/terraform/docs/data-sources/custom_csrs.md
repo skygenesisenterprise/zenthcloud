@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_custom_csrs Data Source - Cloudflare"
+page_title: "zenthcloud_custom_csrs Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account: SSL and Certificates ReadAccount: SSL and Certificates Write
 ---
 
-# cloudflare_custom_csrs (Data Source)
+# zenthcloud_custom_csrs (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_custom_csrs" "example_custom_csrs" {
+data "zenthcloud_custom_csrs" "example_custom_csrs" {
   account_id = "account_id"
   zone_id = "zone_id"
 }

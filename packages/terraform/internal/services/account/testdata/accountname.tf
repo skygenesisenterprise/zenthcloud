@@ -1,3 +1,3 @@
-resource "cloudflare_account" "%[1]s" {
+resource "zenthcloud_account" "%[1]s" {
   name = "%[2]s"
 }

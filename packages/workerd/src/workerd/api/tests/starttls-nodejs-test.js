@@ -1,8 +1,8 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
-import { connect } from 'cloudflare:sockets';
+import { connect } from 'zenthcloud:sockets';
 import { ok, strict as assert } from 'node:assert';
 import { connect as tlsConnect, TLSSocket } from 'node:tls';
 import { connect as netConnect } from 'node:net';
@@ -18,7 +18,7 @@ export const checkPortsSetCorrectly = {
   },
 };
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-35: tls.connect() must propagate
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-35: tls.connect() must propagate
 // options.servername to TLSSocket.servername and pass it as expectedServerHostname
 // to the native Socket.startTls() call. Before the fix, servername was silently
 // dropped, causing TLS certificate identity checks to use the transport host
@@ -97,7 +97,7 @@ export const regressionServernamePassthrough = {
   },
 };
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-35: setServername() must
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-35: setServername() must
 // actually store the value so it is used during the TLS upgrade.  We construct
 // a TLSSocket *without* a servername, call setServername('localhost') before
 // the handshake, then trigger _start().  The server cert is issued for
@@ -265,9 +265,9 @@ export const startTlsCATest = {
   },
 };
 
-export const startTlsCloudflareTest = {
+export const startTlsZenthcloudTest = {
   async test(ctrl, env, ctx) {
-    // Create a Cloudflare socket connection with STARTTLS
+    // Create a Zenthcloud socket connection with STARTTLS
     const socket = connect(`localhost:${env.STARTTLS_CA_PORT}`, {
       secureTransport: 'starttls',
     });
@@ -297,7 +297,7 @@ export const startTlsCloudflareTest = {
           reader.releaseLock();
           writer.releaseLock();
 
-          // Upgrade to TLS using Cloudflare socket's startTls
+          // Upgrade to TLS using Zenthcloud socket's startTls
           console.log('startTlsCfTest: About to start TLS');
           const tlsSocket = socket.startTls();
           console.log('startTlsCfTest: Started TLS');

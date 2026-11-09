@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -42,7 +42,7 @@ namespace workerd::jsg {
 
 const auto kIllegalInvocation =
     "Illegal invocation: function called with incorrect `this` reference. "
-    "See https://developers.cloudflare.com/workers/observability/errors/#illegal-invocation-errors for details."_kj;
+    "See https://github.com/skygenesisenterprise/zenthcloud for details."_kj;
 
 class Serializer;
 class Deserializer;
@@ -2146,7 +2146,7 @@ class ResourceWrapper {
     // because this uses the global symbol registry user code could still mark their own
     // classes with this symbol but that's unlikely to be a problem in any practical case.
     auto internalMarker =
-        v8::Symbol::For(isolate, v8StrIntern(isolate, "cloudflare:internal-class"));
+        v8::Symbol::For(isolate, v8StrIntern(isolate, "zenthcloud:internal-class"));
     prototype->Set(internalMarker, internalMarker,
         static_cast<v8::PropertyAttribute>(v8::PropertyAttribute::DontEnum |
             v8::PropertyAttribute::DontDelete | v8::PropertyAttribute::ReadOnly));

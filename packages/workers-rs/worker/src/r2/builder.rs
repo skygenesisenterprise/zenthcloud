@@ -23,14 +23,14 @@ pub struct GetOptionsBuilder<'bucket> {
 
 impl GetOptionsBuilder<'_> {
     /// Specifies that the object should only be returned given satisfaction of certain conditions
-    /// in the [R2Conditional]. Refer to [Conditional operations](https://developers.cloudflare.com/r2/runtime-apis/#conditional-operations).
+    /// in the [R2Conditional]. Refer to [Conditional operations](https://github.com/skygenesisenterprise/zenthcloud).
     pub fn only_if(mut self, only_if: Conditional) -> Self {
         self.only_if = Some(only_if);
         self
     }
 
     /// Specifies that only a specific length (from an optional offset) or suffix of bytes from the
-    /// object should be returned. Refer to [Ranged reads](https://developers.cloudflare.com/r2/runtime-apis/#ranged-reads).
+    /// object should be returned. Refer to [Ranged reads](https://github.com/skygenesisenterprise/zenthcloud).
     pub fn range(mut self, range: Range) -> Self {
         self.range = Some(range);
         self
@@ -222,7 +222,7 @@ impl PutOptionsBuilder<'_> {
     }
 
     /// Specifies that the object should only be returned given satisfaction of certain conditions
-    /// in the [Conditional]. Refer to [Conditional operations](https://developers.cloudflare.com/r2/runtime-apis/#conditional-operations).
+    /// in the [Conditional]. Refer to [Conditional operations](https://github.com/skygenesisenterprise/zenthcloud).
     pub fn only_if(mut self, only_if: Conditional) -> Self {
         self.only_if = Some(only_if);
         self

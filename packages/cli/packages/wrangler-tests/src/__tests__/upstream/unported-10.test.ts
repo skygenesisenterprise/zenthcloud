@@ -1,4 +1,4 @@
-// Generated from cloudflare/workers-sdk@c2bb4c815. Do not rename cases.
+// Generated from zenthcloud/workers-sdk@c2bb4c815. Do not rename cases.
 import { describe, it } from "vite-plus/test";
 
 const groups = [
@@ -274,7 +274,7 @@ const groups = [
 		file: "dev/remote.test.ts",
 		ancestors: [
 			"RemoteSessionAuthenticationError",
-			"when authenticating via CLOUDFLARE_API_TOKEN",
+			"when authenticating via ZENTHCLOUD_API_TOKEN",
 		],
 		status: "skip",
 		names: ["mentions the API token environment variable in the message"],
@@ -283,7 +283,7 @@ const groups = [
 		file: "dev/remote.test.ts",
 		ancestors: [
 			"RemoteSessionAuthenticationError",
-			"when authenticating via CLOUDFLARE_API_KEY + CLOUDFLARE_EMAIL",
+			"when authenticating via ZENTHCLOUD_API_KEY + ZENTHCLOUD_EMAIL",
 		],
 		status: "skip",
 		names: ["mentions the Global API Key environment variable in the message"],
@@ -757,7 +757,7 @@ const groups = [
 		status: "skip",
 		names: [
 			"errors helpfully if you use --experimental-include-runtime",
-			"prints something helpful if you have @cloudflare/workers-types",
+			"prints something helpful if you have @zenthcloud/workers-types",
 			"prints something helpful if you have a runtime file at the old default location",
 		],
 	},
@@ -794,7 +794,7 @@ const groups = [
 			"should fall back to generic type when API call fails",
 			"should handle multiple pipelines with different schemas",
 			"should handle nested struct types in schema",
-			"should generate pipeline types without Cloudflare namespace prefix for service-worker format",
+			"should generate pipeline types without Zenthcloud namespace prefix for service-worker format",
 		],
 	},
 	{

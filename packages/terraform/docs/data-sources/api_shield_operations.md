@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_api_shield_operations Data Source - Cloudflare"
+page_title: "zenthcloud_api_shield_operations Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account API GatewayAccount API Gateway ReadDomain API GatewayDomain API Gateway Read
 ---
 
-# cloudflare_api_shield_operations (Data Source)
+# zenthcloud_api_shield_operations (Data Source)
 
 Accepted Permissions
 
@@ -18,12 +18,12 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_api_shield_operations" "example_api_shield_operations" {
+data "zenthcloud_api_shield_operations" "example_api_shield_operations" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   direction = "desc"
   endpoint = "/api/v1"
   feature = ["thresholds"]
-  host = ["api.cloudflare.com"]
+  host = ["api.zenthcloud.com"]
   method = ["GET"]
   order = "method"
 }
@@ -54,7 +54,7 @@ Available values: "method", "host", "endpoint", "thresholds.$key".
 
 Read-Only:
 
-- `endpoint` (String) The endpoint which can contain path parameter templates in curly braces, each will be replaced from left to right with {varN}, starting with {var1}, during insertion. This will further be Cloudflare-normalized upon insertion. See: https://developers.cloudflare.com/rules/normalization/how-it-works/.
+- `endpoint` (String) The endpoint which can contain path parameter templates in curly braces, each will be replaced from left to right with {varN}, starting with {var1}, during insertion. This will further be Zenthcloud-normalized upon insertion. See: https://github.com/skygenesisenterprise/zenthcloud
 - `features` (Attributes) (see [below for nested schema](#nestedatt--result--features))
 - `host` (String) RFC3986-compliant host.
 - `id` (String) UUID.

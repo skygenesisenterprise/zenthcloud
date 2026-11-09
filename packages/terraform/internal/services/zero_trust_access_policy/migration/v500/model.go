@@ -5,7 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceAccessPolicyModel represents the v4 cloudflare_access_policy state structure.
+// SourceAccessPolicyModel represents the v4 zenthcloud_access_policy state structure.
 // This is used by MoveState to parse the source state from v4 provider.
 type SourceAccessPolicyModel struct {
 	ID                           types.String `tfsdk:"id"`
@@ -131,7 +131,7 @@ type SourceAuthContextModel struct {
 	IdentityProviderID types.String `tfsdk:"identity_provider_id"`
 }
 
-// TargetAccessPolicyModel represents the v5 cloudflare_zero_trust_access_policy state structure.
+// TargetAccessPolicyModel represents the v5 zenthcloud_zero_trust_access_policy state structure.
 // This is a copy of the main model to avoid import cycles.
 type TargetAccessPolicyModel struct {
 	ID                           types.String                  `tfsdk:"id"`
@@ -204,10 +204,10 @@ type TargetConditionModel struct {
 	ServiceToken            *TargetServiceTokenModel            `tfsdk:"service_token"`
 	LinkedAppToken          *TargetLinkedAppTokenModel          `tfsdk:"linked_app_token"`
 	UserRiskScore           *TargetUserRiskScoreModel           `tfsdk:"user_risk_score"`
-	CloudflareAccountMember *TargetCloudflareAccountMemberModel `tfsdk:"cloudflare_account_member"`
+	ZenthcloudAccountMember *TargetZenthcloudAccountMemberModel `tfsdk:"zenthcloud_account_member"`
 }
 
-type TargetCloudflareAccountMemberModel struct {
+type TargetZenthcloudAccountMemberModel struct {
 	AccountID types.String `tfsdk:"account_id"`
 }
 

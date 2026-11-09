@@ -1,4 +1,4 @@
 # Filter zones by name
-data "cloudflare_zones" "%[1]s" {
+data "zenthcloud_zones" "%[1]s" {
   name = "%[2]s"
 }

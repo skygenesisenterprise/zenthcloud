@@ -1,27 +1,27 @@
-import { env } from 'cloudflare:workers'
+import { env } from 'zenthcloud:workers'
 import { http, HttpResponse } from 'msw'
 import { afterEach, describe, expect, it } from 'vitest'
-import { API_BASE, cfAccountsSuccess, cfSuccess } from './helpers/cloudflare-api'
+import { API_BASE, cfAccountsSuccess, cfSuccess } from './helpers/zenthcloud-api'
 import { clearKv } from './helpers/kv'
 import { callTool, toolText } from './helpers/mcp'
 import { server } from './setup/msw'
 
 /**
  * Worker-seam tests: drive the real worker entrypoint (`src/index.ts`) end to
- * end through the @cloudflare/vitest-plugin runtime. A JSON-RPC `tools/call` for the
+ * end through the @zenthcloud/vitest-plugin runtime. A JSON-RPC `tools/call` for the
  * `execute` tool runs actual code inside a Worker Loader isolate, whose
- * `cloudflare.request()` is forwarded by the real `GlobalOutbound` binding.
+ * `zenthcloud.request()` is forwarded by the real `GlobalOutbound` binding.
  *
  * Auth, the MCP transport, tool dispatch, Worker Loader and the outbound proxy
  * are all real. The ONLY mock is outbound `fetch()` (declared with MSW), since
- * we don't want to hit the live Cloudflare API.
+ * we don't want to hit the live Zenthcloud API.
  *
- * https://developers.cloudflare.com/workers/testing/vitest-integration/recipes/
+ * https://github.com/skygenesisenterprise/zenthcloud
  */
 
 const ACCOUNT_ID = '00000000000000000000000000000001'
 
-// A prefixed account-owned Cloudflare API token. The OAuth provider tries its
+// A prefixed account-owned Zenthcloud API token. The OAuth provider tries its
 // own token store first, then delegates the miss to the external token resolver.
 const API_TOKEN = 'cfat_test-api-token-e2e'
 
@@ -39,7 +39,7 @@ describe('worker: execute tool call', () => {
       })
     )
 
-    // The Cloudflare API call the executed code makes, forwarded by GlobalOutbound.
+    // The Zenthcloud API call the executed code makes, forwarded by GlobalOutbound.
     let verifyCalled = false
     server.use(
       http.get(`${API_BASE}/accounts/${ACCOUNT_ID}/tokens/verify`, () => {
@@ -49,7 +49,7 @@ describe('worker: execute tool call', () => {
     )
 
     const code = `async () => {
-      return await cloudflare.request({
+      return await zenthcloud.request({
         method: "GET",
         path: "/accounts/${ACCOUNT_ID}/tokens/verify"
       })
@@ -61,7 +61,7 @@ describe('worker: execute tool call', () => {
     expect(result.result?.isError).toBeFalsy()
 
     const text = toolText(result)
-    // The executed code returns the cloudflare.request() envelope; assert the
+    // The executed code returns the zenthcloud.request() envelope; assert the
     // mocked result round-tripped all the way back through the isolate.
     expect(text).toContain('"status": "active"')
     expect(text).toContain('token-1')

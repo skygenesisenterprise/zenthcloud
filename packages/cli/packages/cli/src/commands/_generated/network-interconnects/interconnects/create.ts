@@ -23,7 +23,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 network-interconnects interconnects create\n\nCreates a new network interconnect for connecting Cloudflare's network to external networks. Interconnects provide dedicated bandwidth and reduced latency for traffic exchange."
+			"$0 network-interconnects interconnects create\n\nCreates a new network interconnect for connecting Zenthcloud's network to external networks. Interconnects provide dedicated bandwidth and reduced latency for traffic exchange."
 		)
 		.option("account", { type: "string", description: "The account field" })
 		.option("type", { type: "string", description: "The type field" })
@@ -94,7 +94,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf network-interconnects interconnects create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/cni/interconnects`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/cni/interconnects`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

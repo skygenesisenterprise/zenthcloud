@@ -10,8 +10,8 @@ import (
 
 // UpgradeFromV0 handles the upgrade from v4 (version 0) to v5 (version 500).
 // This handles both:
-//   - cloudflare_workers_for_platforms_dispatch_namespace v4 state (upgrading provider directly)
-//   - cloudflare_workers_for_platforms_namespace v4 state (when using terraform state mv instead of moved blocks)
+//   - zenthcloud_workers_for_platforms_dispatch_namespace v4 state (upgrading provider directly)
+//   - zenthcloud_workers_for_platforms_namespace v4 state (when using terraform state mv instead of moved blocks)
 func UpgradeFromV0(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
 	// Step 1: Parse v4 state using source schema
 	var v4State SourceWorkersForPlatformsNamespaceModel

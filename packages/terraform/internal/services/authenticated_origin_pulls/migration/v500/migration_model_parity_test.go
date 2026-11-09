@@ -8,9 +8,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/authenticated_origin_pulls"
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/authenticated_origin_pulls/migration/v500"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/test_helpers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/authenticated_origin_pulls"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/authenticated_origin_pulls/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 // TestAuthenticatedOriginPullsMigrationModelSchemaParity verifies that TargetAuthenticatedOriginPullsModel

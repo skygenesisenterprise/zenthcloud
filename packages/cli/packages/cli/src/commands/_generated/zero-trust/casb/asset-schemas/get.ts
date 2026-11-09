@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust casb asset-schemas get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/data-security/posture/asset_schemas/${argv["asset-class"] == null ? "<asset-class>" : encodeURIComponent(String(argv["asset-class"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/data-security/posture/asset_schemas/${argv["asset-class"] == null ? "<asset-class>" : encodeURIComponent(String(argv["asset-class"]))}`,
 						pathParams: { "asset-class": String(argv["asset-class"] ?? "") },
 						bodyKind: "none",
 					});

@@ -16,16 +16,16 @@ import (
 	"github.com/rs/zerolog"
 	"golang.org/x/net/http2"
 
-	"github.com/cloudflare/cloudflared/client"
-	cfdflow "github.com/cloudflare/cloudflared/flow"
+	"github.com/zenthcloud/zenthcloudd/client"
+	cfdflow "github.com/zenthcloud/zenthcloudd/flow"
 
-	"github.com/cloudflare/cloudflared/tracing"
+	"github.com/zenthcloud/zenthcloudd/tracing"
 )
 
 // note: these constants are exported so we can reuse them in the edge-side code
 const (
-	InternalUpgradeHeader     = "Cf-Cloudflared-Proxy-Connection-Upgrade"
-	InternalTCPProxySrcHeader = "Cf-Cloudflared-Proxy-Src"
+	InternalUpgradeHeader     = "Cf-Zenthcloudd-Proxy-Connection-Upgrade"
+	InternalTCPProxySrcHeader = "Cf-Zenthcloudd-Proxy-Src"
 	WebsocketUpgrade          = "websocket"
 	ControlStreamUpgrade      = "control-stream"
 	ConfigurationUpdate       = "update-configuration"
@@ -33,7 +33,7 @@ const (
 
 var errEdgeConnectionClosed = fmt.Errorf("connection with edge closed")
 
-// HTTP2Connection represents a net.Conn that uses HTTP2 frames to proxy traffic from the edge to cloudflared on the
+// HTTP2Connection represents a net.Conn that uses HTTP2 frames to proxy traffic from the edge to zenthcloudd on the
 // origin.
 type HTTP2Connection struct {
 	conn         net.Conn
@@ -140,7 +140,7 @@ func (c *HTTP2Connection) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case TypeTCP:
 		host, err := getRequestHost(r)
 		if err != nil {
-			requestErr = fmt.Errorf(`cloudflared received a warp-routing request with an empty host value: %w`, err)
+			requestErr = fmt.Errorf(`zenthcloudd received a warp-routing request with an empty host value: %w`, err)
 			break
 		}
 
@@ -168,7 +168,7 @@ func (c *HTTP2Connection) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// ConfigurationUpdateBody is the representation followed by the edge to send updates to cloudflared.
+// ConfigurationUpdateBody is the representation followed by the edge to send updates to zenthcloudd.
 type ConfigurationUpdateBody struct {
 	Version int32             `json:"version"`
 	Config  gojson.RawMessage `json:"config"`
@@ -255,9 +255,9 @@ func (rp *http2RespWriter) WriteRespHeaders(status int, header http.Header) erro
 			dest[name] = values
 		}
 
-		if h2name == tracing.IntCloudflaredTracingHeader {
-			// Add cf-int-cloudflared-tracing header outside of serialized userHeaders
-			dest[tracing.CanonicalCloudflaredTracingHeader] = values
+		if h2name == tracing.IntZenthclouddTracingHeader {
+			// Add cf-int-zenthcloudd-tracing header outside of serialized userHeaders
+			dest[tracing.CanonicalZenthclouddTracingHeader] = values
 			continue
 		}
 

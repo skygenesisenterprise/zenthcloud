@@ -5,8 +5,8 @@ package notification_policy_webhooks
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -61,7 +61,7 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 							CustomType:  timetypes.RFC3339Type{},
 						},
 						"last_success": schema.StringAttribute{
-							Description: "Timestamp of the last time Cloudflare was able to successfully dispatch a notification using this webhook.",
+							Description: "Timestamp of the last time Zenthcloud was able to successfully dispatch a notification using this webhook.",
 							Computed:    true,
 							CustomType:  timetypes.RFC3339Type{},
 						},

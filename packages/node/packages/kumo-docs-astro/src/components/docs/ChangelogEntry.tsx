@@ -1,9 +1,9 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { cn } from "@cloudflare/kumo";
-import { Text } from "@cloudflare/kumo";
+import { cn } from "@zenthcloud/kumo";
+import { Text } from "@zenthcloud/kumo";
 
-const GITHUB_COMMIT_URL = "https://github.com/cloudflare/kumo/commit/";
+const GITHUB_COMMIT_URL = "https://github.com/skygenesisenterprise/zenthcloud";
 
 // Override prose defaults for rendered markdown inside changelog entries.
 const proseStyles = cn(

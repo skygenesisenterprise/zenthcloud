@@ -1,4 +1,4 @@
-# use a builder image for building cloudflare
+# use a builder image for building zenthcloud
 ARG TARGET_GOOS
 ARG TARGET_GOARCH
 FROM golang:1.27.3 AS builder
@@ -10,12 +10,12 @@ ENV GO111MODULE=on \
   GOPROXY=${GOPROXY} \
   TARGET_GOOS=${TARGET_GOOS} \
   TARGET_GOARCH=${TARGET_GOARCH} \
-  # the CONTAINER_BUILD envvar is used set github.com/cloudflare/cloudflared/metrics.Runtime=virtual
-  # which changes how cloudflared binds the metrics server
+  # the CONTAINER_BUILD envvar is used set github.com/zenthcloud/zenthcloudd/metrics.Runtime=virtual
+  # which changes how zenthcloudd binds the metrics server
   CONTAINER_BUILD=1
 
 
-WORKDIR /go/src/github.com/cloudflare/cloudflared/
+WORKDIR /go/src/github.com/zenthcloud/zenthcloudd/
 
 # Download dependencies in their own layer so source-only changes reuse it.
 COPY go.mod go.sum ./
@@ -23,16 +23,16 @@ RUN go mod download
 
 COPY . .
 
-# compile cloudflared
-RUN make cloudflared
+# compile zenthcloudd
+RUN make zenthcloudd
 
 # use a distroless base image with glibc
 FROM gcr.io/distroless/base-debian13:nonroot@sha256:f9518b74815721f537a7458cc693b4406208c04fce23bbffab511516117f34fd
 
-LABEL org.opencontainers.image.source="https://github.com/cloudflare/cloudflared"
+LABEL org.opencontainers.image.source="https://github.com/skygenesisenterprise/zenthcloud"
 
 # copy our compiled binary
-COPY --from=builder --chown=nonroot /go/src/github.com/cloudflare/cloudflared/cloudflared /usr/local/bin/
+COPY --from=builder --chown=nonroot /go/src/github.com/zenthcloud/zenthcloudd/zenthcloudd /usr/local/bin/
 
 # run as nonroot user
 # We need to use numeric user id's because Kubernetes doesn't support strings:
@@ -45,5 +45,5 @@ USER 65532:65532
 ENV NO_AUTOUPDATE=true
 
 # command / entrypoint of container
-ENTRYPOINT ["cloudflared"]
+ENTRYPOINT ["zenthcloudd"]
 CMD ["version"]

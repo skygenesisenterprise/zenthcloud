@@ -1,4 +1,4 @@
-import { Text } from "@cloudflare/kumo";
+import { Text } from "@zenthcloud/kumo";
 
 export function TextVariantsDemo() {
   return (

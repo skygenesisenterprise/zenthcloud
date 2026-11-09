@@ -5,7 +5,7 @@ package zero_trust_resource_library_application
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -107,7 +107,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"supported": schema.SetAttribute{
-				Description: "Cloudflare products that support this application.",
+				Description: "Zenthcloud products that support this application.",
 				Computed:    true,
 				CustomType:  customfield.NewSetType[types.String](ctx),
 				ElementType: types.StringType,

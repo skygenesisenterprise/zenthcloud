@@ -3,7 +3,7 @@ package v500
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -164,8 +164,8 @@ func transformSettings(ctx context.Context, source SourceV4ZeroTrustGatewaySetti
 	}
 
 	// logging, proxy, ssh_session_log, payload_log: dropped
-	// These are handled by tf-migrate (logging → cloudflare_zero_trust_gateway_logging,
-	// proxy → cloudflare_zero_trust_device_settings; ssh_session_log and payload_log dropped)
+	// These are handled by tf-migrate (logging → zenthcloud_zero_trust_gateway_logging,
+	// proxy → zenthcloud_zero_trust_device_settings; ssh_session_log and payload_log dropped)
 
 	return settings, diags
 }

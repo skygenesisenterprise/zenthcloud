@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_api_shield_operation_schema_validation_settings Resource - Cloudflare"
+page_title: "zenthcloud_api_shield_operation_schema_validation_settings Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account API GatewayAccount API Gateway ReadDomain API GatewayDomain API Gateway Read
 ---
 
-# cloudflare_api_shield_operation_schema_validation_settings (Resource)
+# zenthcloud_api_shield_operation_schema_validation_settings (Resource)
 
 Accepted Permissions
 
@@ -15,13 +15,13 @@ Accepted Permissions
 - `Domain API Gateway`
 - `Domain API Gateway Read`
 
-~> `cloudflare_api_shield_operation_schema_validation_settings` is in a deprecation phase and will be removed in the future.
-  Instead, please utilize the [cloudflare_schema_validation_operation_settings](./schema_validation_operation_settings) resource instead.
+~> `zenthcloud_api_shield_operation_schema_validation_settings` is in a deprecation phase and will be removed in the future.
+  Instead, please utilize the [zenthcloud_schema_validation_operation_settings](./schema_validation_operation_settings) resource instead.
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_api_shield_operation_schema_validation_settings" "example_api_shield_operation_schema_validation_settings" {
+resource "zenthcloud_api_shield_operation_schema_validation_settings" "example_api_shield_operation_schema_validation_settings" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   operation_id = "f174e90a-fafe-4643-bbbc-4a0ed4fc8415"
   mitigation_action = "block"
@@ -55,5 +55,5 @@ Available values: "log", "block", "none".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_api_shield_operation_schema_validation_settings.example '<zone_id>/<operation_id>'
+$ terraform import zenthcloud_api_shield_operation_schema_validation_settings.example '<zone_id>/<operation_id>'
 ```

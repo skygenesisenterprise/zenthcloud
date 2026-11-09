@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -31,7 +31,7 @@ var (
 // Based on breaking changes analysis:
 // - All breaking changes happened between 4.x and 5.0.0
 // - No breaking changes between v5 releases (testing against latest v5)
-// - Key changes: cloudflare_record → cloudflare_dns_record, data block → attribute
+// - Key changes: zenthcloud_record → zenthcloud_dns_record, data block → attribute
 
 // Embed migration test configuration files
 //
@@ -129,11 +129,11 @@ func TestMigrateDNSRecordBasicA(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := fmt.Sprintf("tf-test-a-%s", rnd)
 			tmpDir := t.TempDir()
-			domain := os.Getenv("CLOUDFLARE_DOMAIN")
+			domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 			testConfig := tc.configFn(rnd, zoneID, name)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
 
@@ -149,8 +149,8 @@ func TestMigrateDNSRecordBasicA(t *testing.T) {
 				// Use external v4 provider (will create version=0 state)
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -168,14 +168,14 @@ func TestMigrateDNSRecordBasicA(t *testing.T) {
 					firstStep,
 					// Step 2: Run migration and verify state
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
-						// Resource should be renamed to cloudflare_dns_record
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("%s.%s", name, domain))),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("A")),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("content"), knownvalue.StringExact("52.152.96.252")),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("ttl"), knownvalue.Float64Exact(1)),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("proxied"), knownvalue.Bool(true)),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("tags"), knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("tf-applied")})),
+						// Resource should be renamed to zenthcloud_dns_record
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("%s.%s", name, domain))),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("A")),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("content"), knownvalue.StringExact("52.152.96.252")),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("ttl"), knownvalue.Float64Exact(1)),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("proxied"), knownvalue.Bool(true)),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("tags"), knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("tf-applied")})),
 					}),
 				},
 			})
@@ -205,11 +205,11 @@ func TestMigrateDNSRecordCAARecord(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := fmt.Sprintf("tf-test-caa-%s", rnd)
 			tmpDir := t.TempDir()
-			domain := os.Getenv("CLOUDFLARE_DOMAIN")
+			domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 			testConfig := tc.configFn(rnd, zoneID, name)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
 
@@ -225,8 +225,8 @@ func TestMigrateDNSRecordCAARecord(t *testing.T) {
 				// Use external v4 provider (will create version=0 state)
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -244,15 +244,15 @@ func TestMigrateDNSRecordCAARecord(t *testing.T) {
 					firstStep,
 					// Step 2: Run migration and verify state
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("%s.%s", name, domain))),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("CAA")),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("ttl"), knownvalue.Float64Exact(1)),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("proxied"), knownvalue.Bool(false)),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("%s.%s", name, domain))),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("CAA")),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("ttl"), knownvalue.Float64Exact(1)),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("proxied"), knownvalue.Bool(false)),
 						// Data should be converted from block to attribute
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("data").AtMapKey("flags"), knownvalue.Float64Exact(0)),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("data").AtMapKey("tag"), knownvalue.StringExact("issue")),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("data").AtMapKey("value"), knownvalue.StringExact("letsencrypt.org")),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("data").AtMapKey("flags"), knownvalue.Float64Exact(0)),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("data").AtMapKey("tag"), knownvalue.StringExact("issue")),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("data").AtMapKey("value"), knownvalue.StringExact("letsencrypt.org")),
 					}),
 				},
 			})
@@ -282,11 +282,11 @@ func TestMigrateDNSRecordMXRecord(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := fmt.Sprintf("tf-test-mx-%s", rnd)
 			tmpDir := t.TempDir()
-			domain := os.Getenv("CLOUDFLARE_DOMAIN")
+			domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 			testConfig := tc.configFn(rnd, zoneID, name)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
 
@@ -302,8 +302,8 @@ func TestMigrateDNSRecordMXRecord(t *testing.T) {
 				// Use external v4 provider (will create version=0 state)
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -320,11 +320,11 @@ func TestMigrateDNSRecordMXRecord(t *testing.T) {
 				Steps: []resource.TestStep{
 					firstStep,
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("%s.%s", name, domain))),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("MX")),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("content"), knownvalue.StringExact("mail.example.com")),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("priority"), knownvalue.Float64Exact(10)),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("%s.%s", name, domain))),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("MX")),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("content"), knownvalue.StringExact("mail.example.com")),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("priority"), knownvalue.Float64Exact(10)),
 					}),
 				},
 			})
@@ -353,11 +353,11 @@ func TestMigrateDNSRecordSRVRecord(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := fmt.Sprintf("_sip._tcp.tf-test-%s", rnd)
 			tmpDir := t.TempDir()
-			domain := os.Getenv("CLOUDFLARE_DOMAIN")
+			domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 			testConfig := tc.configFn(rnd, zoneID, name)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
 
@@ -373,8 +373,8 @@ func TestMigrateDNSRecordSRVRecord(t *testing.T) {
 				// Use external v4 provider (will create version=0 state)
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -391,14 +391,14 @@ func TestMigrateDNSRecordSRVRecord(t *testing.T) {
 				Steps: []resource.TestStep{
 					firstStep,
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("%s.%s", name, domain))),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("SRV")),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("priority"), knownvalue.Float64Exact(10)),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("data").AtMapKey("priority"), knownvalue.Float64Exact(10)),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("data").AtMapKey("weight"), knownvalue.Float64Exact(60)),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("data").AtMapKey("port"), knownvalue.Float64Exact(5060)),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("data").AtMapKey("target"), knownvalue.StringExact("sipserver.example.com")),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("%s.%s", name, domain))),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("SRV")),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("priority"), knownvalue.Float64Exact(10)),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("data").AtMapKey("priority"), knownvalue.Float64Exact(10)),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("data").AtMapKey("weight"), knownvalue.Float64Exact(60)),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("data").AtMapKey("port"), knownvalue.Float64Exact(5060)),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("data").AtMapKey("target"), knownvalue.StringExact("sipserver.example.com")),
 					}),
 				},
 			})
@@ -427,11 +427,11 @@ func TestMigrateDNSRecordTXTRecord(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := fmt.Sprintf("tf-test-txt-%s", rnd)
 			tmpDir := t.TempDir()
-			domain := os.Getenv("CLOUDFLARE_DOMAIN")
+			domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 			testConfig := tc.configFn(rnd, zoneID, name)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
 
@@ -447,8 +447,8 @@ func TestMigrateDNSRecordTXTRecord(t *testing.T) {
 				// Use external v4 provider (will create version=0 state)
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -465,12 +465,12 @@ func TestMigrateDNSRecordTXTRecord(t *testing.T) {
 				Steps: []resource.TestStep{
 					firstStep,
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("%s.%s", name, domain))),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("TXT")),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("content"), knownvalue.StringExact("v=spf1 -all")),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("ttl"), knownvalue.Float64Exact(1)),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("proxied"), knownvalue.Bool(false)),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("%s.%s", name, domain))),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("TXT")),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("content"), knownvalue.StringExact("v=spf1 -all")),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("ttl"), knownvalue.Float64Exact(1)),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("proxied"), knownvalue.Bool(false)),
 					}),
 				},
 			})
@@ -499,11 +499,11 @@ func TestMigrateDNSRecordCNAMERecord(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := fmt.Sprintf("tf-test-cname-%s", rnd)
 			tmpDir := t.TempDir()
-			domain := os.Getenv("CLOUDFLARE_DOMAIN")
+			domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 			testConfig := tc.configFn(rnd, zoneID, name)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
 
@@ -519,8 +519,8 @@ func TestMigrateDNSRecordCNAMERecord(t *testing.T) {
 				// Use external v4 provider (will create version=0 state)
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -537,13 +537,13 @@ func TestMigrateDNSRecordCNAMERecord(t *testing.T) {
 				Steps: []resource.TestStep{
 					firstStep,
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("%s.%s", name, domain))),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("CNAME")),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("content"), knownvalue.StringExact("abc-browser-external.foo.com")),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("ttl"), knownvalue.Float64Exact(1)),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("proxied"), knownvalue.Bool(true)),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("tags"), knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("tf-applied")})),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("%s.%s", name, domain))),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("CNAME")),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("content"), knownvalue.StringExact("abc-browser-external.foo.com")),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("ttl"), knownvalue.Float64Exact(1)),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("proxied"), knownvalue.Bool(true)),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("tags"), knownvalue.ListExact([]knownvalue.Check{knownvalue.StringExact("tf-applied")})),
 					}),
 				},
 			})
@@ -553,11 +553,11 @@ func TestMigrateDNSRecordCNAMERecord(t *testing.T) {
 
 // TestMigrateDNSRecordWithAllowOverwrite tests migration with v4-only attribute allow_overwrite
 func TestMigrateDNSRecordWithAllowOverwrite(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 	name := fmt.Sprintf("tf-test-overwrite-%s", rnd)
 	tmpDir := t.TempDir()
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	version := acctest.GetLastV4Version()
 	sourceVer, targetVer := acctest.InferMigrationVersions(version)
 
@@ -573,18 +573,18 @@ func TestMigrateDNSRecordWithAllowOverwrite(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
 				Config: v4Config,
 			},
 			acctest.MigrationV2TestStep(t, v4Config, tmpDir, version, sourceVer, targetVer, []statecheck.StateCheck{
-				statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
-				statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("%s.%s", name, domain))),
-				statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("A")),
-				statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("content"), knownvalue.StringExact("192.0.2.2")),
+				statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
+				statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("%s.%s", name, domain))),
+				statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("A")),
+				statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("content"), knownvalue.StringExact("192.0.2.2")),
 				// allow_overwrite should not exist in v5 state
 			}),
 		},
@@ -593,7 +593,7 @@ func TestMigrateDNSRecordWithAllowOverwrite(t *testing.T) {
 
 // TestMigrateDNSRecordMultipleRecords tests migration of multiple records showing real usage patterns
 func TestMigrateDNSRecordMultipleRecords(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
 	version := acctest.GetLastV4Version()
@@ -611,8 +611,8 @@ func TestMigrateDNSRecordMultipleRecords(t *testing.T) {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
@@ -621,20 +621,20 @@ func TestMigrateDNSRecordMultipleRecords(t *testing.T) {
 			// Step 2: Run migration and verify state for all records
 			acctest.MigrationV2TestStep(t, v4Config, tmpDir, version, sourceVer, targetVer, []statecheck.StateCheck{
 				// A record checks
-				statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd+"_a", tfjsonpath.New("content"), knownvalue.StringExact("52.152.96.252")),
-				statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd+"_a", tfjsonpath.New("tags"), knownvalue.ListSizeExact(2)),
+				statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd+"_a", tfjsonpath.New("content"), knownvalue.StringExact("52.152.96.252")),
+				statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd+"_a", tfjsonpath.New("tags"), knownvalue.ListSizeExact(2)),
 
 				// CNAME record checks (value should be migrated to content)
-				statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd+"_cname", tfjsonpath.New("content"), knownvalue.StringExact(fmt.Sprintf("api-%s.%s", rnd, "terraform.cfapi.net"))),
+				statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd+"_cname", tfjsonpath.New("content"), knownvalue.StringExact(fmt.Sprintf("api-%s.%s", rnd, "terraform.cfapi.net"))),
 
 				// CAA record checks
-				statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd+"_caa", tfjsonpath.New("data").AtMapKey("flags"), knownvalue.Float64Exact(0)),
-				statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd+"_caa", tfjsonpath.New("data").AtMapKey("tag"), knownvalue.StringExact("issue")),
-				statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd+"_caa", tfjsonpath.New("data").AtMapKey("value"), knownvalue.StringExact("pki.goog")),
+				statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd+"_caa", tfjsonpath.New("data").AtMapKey("flags"), knownvalue.Float64Exact(0)),
+				statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd+"_caa", tfjsonpath.New("data").AtMapKey("tag"), knownvalue.StringExact("issue")),
+				statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd+"_caa", tfjsonpath.New("data").AtMapKey("value"), knownvalue.StringExact("pki.goog")),
 
 				// TXT record checks
-				statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd+"_txt", tfjsonpath.New("content"), knownvalue.StringExact("v=DMARC1; p=reject; sp=reject;")),
-				statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd+"_txt", tfjsonpath.New("ttl"), knownvalue.Float64Exact(300)),
+				statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd+"_txt", tfjsonpath.New("content"), knownvalue.StringExact("v=DMARC1; p=reject; sp=reject;")),
+				statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd+"_txt", tfjsonpath.New("ttl"), knownvalue.Float64Exact(300)),
 			}),
 		},
 	})
@@ -661,11 +661,11 @@ func TestMigrateDNSRecordAAAARecord(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := fmt.Sprintf("tf-test-aaaa-%s", rnd)
 			tmpDir := t.TempDir()
-			domain := os.Getenv("CLOUDFLARE_DOMAIN")
+			domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 			testConfig := tc.configFn(rnd, zoneID, name)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
 
@@ -681,8 +681,8 @@ func TestMigrateDNSRecordAAAARecord(t *testing.T) {
 				// Use external v4 provider (will create version=0 state)
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -699,10 +699,10 @@ func TestMigrateDNSRecordAAAARecord(t *testing.T) {
 				Steps: []resource.TestStep{
 					firstStep,
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("%s.%s", name, domain))),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("AAAA")),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("content"), knownvalue.StringExact("2001:db8::1")),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("%s.%s", name, domain))),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("AAAA")),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("content"), knownvalue.StringExact("2001:db8::1")),
 					}),
 				},
 			})
@@ -731,11 +731,11 @@ func TestMigrateDNSRecordNSRecord(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := fmt.Sprintf("tf-test-ns-%s", rnd)
 			tmpDir := t.TempDir()
-			domain := os.Getenv("CLOUDFLARE_DOMAIN")
+			domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 			testConfig := tc.configFn(rnd, zoneID, name)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
 
@@ -751,8 +751,8 @@ func TestMigrateDNSRecordNSRecord(t *testing.T) {
 				// Use external v4 provider (will create version=0 state)
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -769,10 +769,10 @@ func TestMigrateDNSRecordNSRecord(t *testing.T) {
 				Steps: []resource.TestStep{
 					firstStep,
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("%s.%s", name, domain))),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("NS")),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("content"), knownvalue.StringExact("ns1.example.com")),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("%s.%s", name, domain))),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("NS")),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("content"), knownvalue.StringExact("ns1.example.com")),
 					}),
 				},
 			})
@@ -801,11 +801,11 @@ func TestMigrateDNSRecordWithTags(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := fmt.Sprintf("tf-test-tags-%s", rnd)
 			tmpDir := t.TempDir()
-			domain := os.Getenv("CLOUDFLARE_DOMAIN")
+			domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 			testConfig := tc.configFn(rnd, zoneID, name)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
 
@@ -821,8 +821,8 @@ func TestMigrateDNSRecordWithTags(t *testing.T) {
 				// Use external v4 provider (will create version=0 state)
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -839,11 +839,11 @@ func TestMigrateDNSRecordWithTags(t *testing.T) {
 				Steps: []resource.TestStep{
 					firstStep,
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("%s.%s", name, domain))),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("A")),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("content"), knownvalue.StringExact("192.0.2.3")),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("tags"), knownvalue.ListExact([]knownvalue.Check{
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("%s.%s", name, domain))),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("A")),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("content"), knownvalue.StringExact("192.0.2.3")),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("tags"), knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.StringExact("env:test"),
 							knownvalue.StringExact("managed:terraform"),
 						})),
@@ -875,11 +875,11 @@ func TestMigrateDNSRecordPTRRecord(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := fmt.Sprintf("1.2.0.192.in-addr.%s.arpa", rnd)
 			tmpDir := t.TempDir()
-			domain := os.Getenv("CLOUDFLARE_DOMAIN")
+			domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 			testConfig := tc.configFn(rnd, zoneID, name)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
 
@@ -895,8 +895,8 @@ func TestMigrateDNSRecordPTRRecord(t *testing.T) {
 				// Use external v4 provider (will create version=0 state)
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -913,10 +913,10 @@ func TestMigrateDNSRecordPTRRecord(t *testing.T) {
 				Steps: []resource.TestStep{
 					firstStep,
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("%s.%s", name, domain))),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("PTR")),
-						statecheck.ExpectKnownValue("cloudflare_dns_record."+rnd, tfjsonpath.New("content"), knownvalue.StringExact("example.com")),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("%s.%s", name, domain))),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("PTR")),
+						statecheck.ExpectKnownValue("zenthcloud_dns_record."+rnd, tfjsonpath.New("content"), knownvalue.StringExact("example.com")),
 					}),
 				},
 			})
@@ -926,10 +926,10 @@ func TestMigrateDNSRecordPTRRecord(t *testing.T) {
 
 // TestMigrateDNSRecord_Issue6076 tests for GitHub issue #6076
 func TestMigrateDNSRecord_Issue6076(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 	name := fmt.Sprintf("tf-test-6076-%s", rnd)
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	// Config that reproduces the issue
 	config := fmt.Sprintf(v5Issue6076BasicConfig, rnd, zoneID, name)
@@ -943,8 +943,8 @@ func TestMigrateDNSRecord_Issue6076(t *testing.T) {
 			{
 				// Step 1: Create with v5.8.4 (last version before the rewrite)
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.8.4",
 					},
 				},
@@ -954,8 +954,8 @@ func TestMigrateDNSRecord_Issue6076(t *testing.T) {
 			{
 				// Step 2: Create with v5.9.0, expect apply error
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.9.0",
 					},
 				},
@@ -968,15 +968,15 @@ func TestMigrateDNSRecord_Issue6076(t *testing.T) {
 				ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 				Config:                   config,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("cloudflare_dns_record."+rnd, "zone_id", zoneID),
-					resource.TestCheckResourceAttr("cloudflare_dns_record."+rnd, "name", name+"."+domain),
-					resource.TestCheckResourceAttr("cloudflare_dns_record."+rnd, "type", "CNAME"),
-					resource.TestCheckResourceAttr("cloudflare_dns_record."+rnd, "content", "kay.ns.cloudflare.com"),
-					resource.TestCheckResourceAttr("cloudflare_dns_record."+rnd, "ttl", "1"),
-					resource.TestCheckResourceAttr("cloudflare_dns_record."+rnd, "proxied", "true"),
-					resource.TestCheckResourceAttr("cloudflare_dns_record."+rnd, "comment", "a comment"),
-					resource.TestCheckResourceAttrSet("cloudflare_dns_record."+rnd, "modified_on"),
-					resource.TestCheckResourceAttrSet("cloudflare_dns_record."+rnd, "created_on"),
+					resource.TestCheckResourceAttr("zenthcloud_dns_record."+rnd, "zone_id", zoneID),
+					resource.TestCheckResourceAttr("zenthcloud_dns_record."+rnd, "name", name+"."+domain),
+					resource.TestCheckResourceAttr("zenthcloud_dns_record."+rnd, "type", "CNAME"),
+					resource.TestCheckResourceAttr("zenthcloud_dns_record."+rnd, "content", "kay.ns.zenthcloud.com"),
+					resource.TestCheckResourceAttr("zenthcloud_dns_record."+rnd, "ttl", "1"),
+					resource.TestCheckResourceAttr("zenthcloud_dns_record."+rnd, "proxied", "true"),
+					resource.TestCheckResourceAttr("zenthcloud_dns_record."+rnd, "comment", "a comment"),
+					resource.TestCheckResourceAttrSet("zenthcloud_dns_record."+rnd, "modified_on"),
+					resource.TestCheckResourceAttrSet("zenthcloud_dns_record."+rnd, "created_on"),
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PostApplyPostRefresh: []plancheck.PlanCheck{
@@ -999,12 +999,12 @@ func TestMigrateDNSRecord_Issue6076(t *testing.T) {
 				ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 				Config:                   fmt.Sprintf(v5Issue6076UpdatedConfig, rnd, zoneID, name),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("cloudflare_dns_record."+rnd, "comment", "updated comment for testing"),
-					resource.TestCheckResourceAttr("cloudflare_dns_record."+rnd, "tags.#", "2"),
-					resource.TestCheckResourceAttr("cloudflare_dns_record."+rnd, "tags.0", "migration"),
-					resource.TestCheckResourceAttr("cloudflare_dns_record."+rnd, "tags.1", "test"),
-					resource.TestCheckResourceAttrSet("cloudflare_dns_record."+rnd, "comment_modified_on"),
-					resource.TestCheckResourceAttrSet("cloudflare_dns_record."+rnd, "tags_modified_on"),
+					resource.TestCheckResourceAttr("zenthcloud_dns_record."+rnd, "comment", "updated comment for testing"),
+					resource.TestCheckResourceAttr("zenthcloud_dns_record."+rnd, "tags.#", "2"),
+					resource.TestCheckResourceAttr("zenthcloud_dns_record."+rnd, "tags.0", "migration"),
+					resource.TestCheckResourceAttr("zenthcloud_dns_record."+rnd, "tags.1", "test"),
+					resource.TestCheckResourceAttrSet("zenthcloud_dns_record."+rnd, "comment_modified_on"),
+					resource.TestCheckResourceAttrSet("zenthcloud_dns_record."+rnd, "tags_modified_on"),
 				),
 			},
 			{

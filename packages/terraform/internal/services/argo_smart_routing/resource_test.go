@@ -7,8 +7,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -22,13 +22,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_argo_smart_routing", &resource.Sweeper{
-		Name: "cloudflare_argo_smart_routing",
-		F:    testSweepCloudflareArgoSmartRouting,
+	resource.AddTestSweepers("zenthcloud_argo_smart_routing", &resource.Sweeper{
+		Name: "zenthcloud_argo_smart_routing",
+		F:    testSweepZenthcloudArgoSmartRouting,
 	})
 }
 
-func testSweepCloudflareArgoSmartRouting(r string) error {
+func testSweepZenthcloudArgoSmartRouting(r string) error {
 	ctx := context.Background()
 	// Argo Smart Routing is a zone-level feature toggle (on/off).
 	// It's a singleton setting per zone, not something that accumulates.
@@ -37,10 +37,10 @@ func testSweepCloudflareArgoSmartRouting(r string) error {
 	return nil
 }
 
-func TestAccCloudflareArgoSmartRouting_Basic(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudArgoSmartRouting_Basic(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_argo_smart_routing.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_argo_smart_routing.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -50,7 +50,7 @@ func TestAccCloudflareArgoSmartRouting_Basic(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareArgoSmartRoutingEnable(zoneID, rnd),
+				Config: testAccCheckZenthcloudArgoSmartRoutingEnable(zoneID, rnd),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "id", zoneID),
 					resource.TestCheckResourceAttr(name, "zone_id", zoneID),
@@ -62,7 +62,7 @@ func TestAccCloudflareArgoSmartRouting_Basic(t *testing.T) {
 				},
 			},
 			{
-				Config: testAccCheckCloudflareArgoSmartRoutingEnable(zoneID, rnd),
+				Config: testAccCheckZenthcloudArgoSmartRoutingEnable(zoneID, rnd),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "id", zoneID),
 					resource.TestCheckResourceAttr(name, "zone_id", zoneID),
@@ -72,7 +72,7 @@ func TestAccCloudflareArgoSmartRouting_Basic(t *testing.T) {
 				ExpectNonEmptyPlan: false,
 			},
 			{
-				Config: testAccCheckCloudflareArgoSmartRoutingDisable(zoneID, rnd),
+				Config: testAccCheckZenthcloudArgoSmartRoutingDisable(zoneID, rnd),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "id", zoneID),
 					resource.TestCheckResourceAttr(name, "zone_id", zoneID),
@@ -98,8 +98,8 @@ func TestAccCloudflareArgoSmartRouting_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareArgoSmartRouting_InvalidValue(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudArgoSmartRouting_InvalidValue(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 
 	resource.Test(t, resource.TestCase{
@@ -110,30 +110,30 @@ func TestAccCloudflareArgoSmartRouting_InvalidValue(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCheckCloudflareArgoSmartRoutingInvalidValue(zoneID, rnd),
+				Config:      testAccCheckZenthcloudArgoSmartRoutingInvalidValue(zoneID, rnd),
 				ExpectError: regexp.MustCompile(regexp.QuoteMeta("Invalid Attribute Value Match")),
 			},
 		},
 	})
 }
 
-func testAccCheckCloudflareArgoSmartRoutingEnable(zoneID, name string) string {
+func testAccCheckZenthcloudArgoSmartRoutingEnable(zoneID, name string) string {
 	return acctest.LoadTestCase("enable.tf", zoneID, name)
 }
 
-func testAccCheckCloudflareArgoSmartRoutingDisable(zoneID, name string) string {
+func testAccCheckZenthcloudArgoSmartRoutingDisable(zoneID, name string) string {
 	return acctest.LoadTestCase("disable.tf", zoneID, name)
 }
 
-func testAccCheckCloudflareArgoSmartRoutingInvalidValue(zoneID, name string) string {
+func testAccCheckZenthcloudArgoSmartRoutingInvalidValue(zoneID, name string) string {
 	return acctest.LoadTestCase("invalid_value.tf", zoneID, name)
 }
 
-func TestAccCloudflareArgoSmartRoutingDataSource_Basic(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudArgoSmartRoutingDataSource_Basic(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_argo_smart_routing.%s", rnd)
-	dataSourceName := fmt.Sprintf("data.cloudflare_argo_smart_routing.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_argo_smart_routing.%s", rnd)
+	dataSourceName := fmt.Sprintf("data.zenthcloud_argo_smart_routing.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -143,7 +143,7 @@ func TestAccCloudflareArgoSmartRoutingDataSource_Basic(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareArgoSmartRoutingDataSourceBasic(zoneID, rnd),
+				Config: testAccCheckZenthcloudArgoSmartRoutingDataSourceBasic(zoneID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					// Check the resource attributes
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
@@ -161,15 +161,15 @@ func TestAccCloudflareArgoSmartRoutingDataSource_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareArgoSmartRoutingDataSourceBasic(zoneID, name string) string {
+func testAccCheckZenthcloudArgoSmartRoutingDataSourceBasic(zoneID, name string) string {
 	return acctest.LoadTestCase("datasource_basic.tf", zoneID, name)
 }
 
 func TestAccUpgradeArgoSmartRouting_FromPublishedV5(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 
-	config := testAccCheckCloudflareArgoSmartRoutingEnable(zoneID, rnd)
+	config := testAccCheckZenthcloudArgoSmartRoutingEnable(zoneID, rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -179,8 +179,8 @@ func TestAccUpgradeArgoSmartRouting_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

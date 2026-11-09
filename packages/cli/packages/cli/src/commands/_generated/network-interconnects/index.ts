@@ -12,7 +12,7 @@ import type { CommandModule } from "yargs";
 const command: CommandModule<CommonYargsOptions> = {
 	command: "network-interconnects",
 	describe:
-		"Physical and virtual private interconnects between your infrastructure and Cloudflare's network",
+		"Physical and virtual private interconnects between your infrastructure and Zenthcloud's network",
 
 	builder: (yargs) => {
 		return yargs

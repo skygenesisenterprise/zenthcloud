@@ -26,18 +26,18 @@ import {
 export const tools: readonly Tool[] = [
   {
     name: "tunnels_create",
-    title: "Create a Cloudflare Tunnel",
-    description: "Creates a remotely or locally managed Cloudflare Tunnel in an account. After creation, retrieve its token and run cloudflared to establish the connector connection.\n\nPOST /accounts/{account_id}/cfd_tunnel",
+    title: "Create a Zenthcloud Tunnel",
+    description: "Creates a remotely or locally managed Zenthcloud Tunnel in an account. After creation, retrieve its token and run zenthcloudd to establish the connector connection.\n\nPOST /accounts/{account_id}/cfd_tunnel",
     inputSchema: {
       type: "object",
       properties: {
         "body": {
           "properties": {
             "config_src": {
-              "description": "Indicates if this is a locally or remotely configured tunnel. If `local`, manage the tunnel using a YAML file on the origin machine. If `cloudflare`, manage the tunnel on the Zero Trust dashboard.",
+              "description": "Indicates if this is a locally or remotely configured tunnel. If `local`, manage the tunnel using a YAML file on the origin machine. If `zenthcloud`, manage the tunnel on the Zero Trust dashboard.",
               "enum": [
                 "local",
-                "cloudflare"
+                "zenthcloud"
               ],
               "type": "string"
             },
@@ -59,7 +59,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID",
+              "description": "Zenthcloud account ID",
               "type": "string"
             }
           },
@@ -92,7 +92,7 @@ export const tools: readonly Tool[] = [
       "idempotentHint": false,
       "openWorldHint": true,
       "readOnlyHint": false,
-      "title": "Create a Cloudflare Tunnel"
+      "title": "Create a Zenthcloud Tunnel"
     },
     [OPERATION]: {
       method: "POST",
@@ -101,9 +101,9 @@ export const tools: readonly Tool[] = [
       body: { mediaTypes: ["application/json"] },
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Connectors Write",
-          "Cloudflare One Connector: cloudflared Write",
-          "Cloudflare Tunnel Write"
+          "Zenthcloud One Connectors Write",
+          "Zenthcloud One Connector: zenthcloudd Write",
+          "Zenthcloud Tunnel Write"
         ]
       },
       responses: {
@@ -137,8 +137,8 @@ export const tools: readonly Tool[] = [
   },
   {
     name: "tunnels_delete",
-    title: "Delete a Cloudflare Tunnel",
-    description: "Permanently deletes a Cloudflare Tunnel from an account. The tunnel must have no active connections.\n\nConfirm with the user before calling this tool. This operation permanently deletes a Cloudflare Tunnel.\n\nDELETE /accounts/{account_id}/cfd_tunnel/{tunnel_id}",
+    title: "Delete a Zenthcloud Tunnel",
+    description: "Permanently deletes a Zenthcloud Tunnel from an account. The tunnel must have no active connections.\n\nConfirm with the user before calling this tool. This operation permanently deletes a Zenthcloud Tunnel.\n\nDELETE /accounts/{account_id}/cfd_tunnel/{tunnel_id}",
     inputSchema: {
       type: "object",
       properties: {
@@ -146,7 +146,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID",
+              "description": "Zenthcloud account ID",
               "type": "string"
             },
             "tunnel_id": {
@@ -184,7 +184,7 @@ export const tools: readonly Tool[] = [
       "idempotentHint": true,
       "openWorldHint": true,
       "readOnlyHint": false,
-      "title": "Delete a Cloudflare Tunnel"
+      "title": "Delete a Zenthcloud Tunnel"
     },
     [OPERATION]: {
       method: "DELETE",
@@ -192,9 +192,9 @@ export const tools: readonly Tool[] = [
       pathOf: encodePath`/accounts/${"account_id"}/cfd_tunnel/${"tunnel_id"}`,
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Connectors Write",
-          "Cloudflare One Connector: cloudflared Write",
-          "Cloudflare Tunnel Write"
+          "Zenthcloud One Connectors Write",
+          "Zenthcloud One Connector: zenthcloudd Write",
+          "Zenthcloud Tunnel Write"
         ]
       },
       responses: {
@@ -228,8 +228,8 @@ export const tools: readonly Tool[] = [
   },
   {
     name: "tunnels_edit",
-    title: "Update a Cloudflare Tunnel",
-    description: "Updates the name or secret of an existing Cloudflare Tunnel.\n\nPATCH /accounts/{account_id}/cfd_tunnel/{tunnel_id}",
+    title: "Update a Zenthcloud Tunnel",
+    description: "Updates the name or secret of an existing Zenthcloud Tunnel.\n\nPATCH /accounts/{account_id}/cfd_tunnel/{tunnel_id}",
     inputSchema: {
       type: "object",
       properties: {
@@ -250,7 +250,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID",
+              "description": "Zenthcloud account ID",
               "type": "string"
             },
             "tunnel_id": {
@@ -289,7 +289,7 @@ export const tools: readonly Tool[] = [
       "idempotentHint": false,
       "openWorldHint": true,
       "readOnlyHint": false,
-      "title": "Update a Cloudflare Tunnel"
+      "title": "Update a Zenthcloud Tunnel"
     },
     [OPERATION]: {
       method: "PATCH",
@@ -298,9 +298,9 @@ export const tools: readonly Tool[] = [
       body: { mediaTypes: ["application/json"] },
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Connectors Write",
-          "Cloudflare One Connector: cloudflared Write",
-          "Cloudflare Tunnel Write"
+          "Zenthcloud One Connectors Write",
+          "Zenthcloud One Connector: zenthcloudd Write",
+          "Zenthcloud Tunnel Write"
         ]
       },
       responses: {
@@ -334,8 +334,8 @@ export const tools: readonly Tool[] = [
   },
   {
     name: "tunnels_get",
-    title: "Get a Cloudflare Tunnel",
-    description: "Fetches a single Cloudflare Tunnel.\n\nGET /accounts/{account_id}/cfd_tunnel/{tunnel_id}",
+    title: "Get a Zenthcloud Tunnel",
+    description: "Fetches a single Zenthcloud Tunnel.\n\nGET /accounts/{account_id}/cfd_tunnel/{tunnel_id}",
     inputSchema: {
       type: "object",
       properties: {
@@ -343,7 +343,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID",
+              "description": "Zenthcloud account ID",
               "type": "string"
             },
             "tunnel_id": {
@@ -381,7 +381,7 @@ export const tools: readonly Tool[] = [
       "idempotentHint": true,
       "openWorldHint": true,
       "readOnlyHint": true,
-      "title": "Get a Cloudflare Tunnel"
+      "title": "Get a Zenthcloud Tunnel"
     },
     [OPERATION]: {
       method: "GET",
@@ -389,12 +389,12 @@ export const tools: readonly Tool[] = [
       pathOf: encodePath`/accounts/${"account_id"}/cfd_tunnel/${"tunnel_id"}`,
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Connectors Write",
-          "Cloudflare One Connectors Read",
-          "Cloudflare One Connector: cloudflared Write",
-          "Cloudflare One Connector: cloudflared Read",
-          "Cloudflare Tunnel Write",
-          "Cloudflare Tunnel Read"
+          "Zenthcloud One Connectors Write",
+          "Zenthcloud One Connectors Read",
+          "Zenthcloud One Connector: zenthcloudd Write",
+          "Zenthcloud One Connector: zenthcloudd Read",
+          "Zenthcloud Tunnel Write",
+          "Zenthcloud Tunnel Read"
         ]
       },
       responses: {
@@ -437,7 +437,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID",
+              "description": "Zenthcloud account ID",
               "type": "string"
             }
           },
@@ -477,7 +477,7 @@ export const tools: readonly Tool[] = [
               "type": "number"
             },
             "status": {
-              "description": "The status of the tunnel. Valid values are `inactive` (tunnel has never been run), `degraded` (tunnel is active and able to serve traffic but in an unhealthy state), `healthy` (tunnel is active and able to serve traffic), or `down` (tunnel can not serve traffic as it has no connections to the Cloudflare Edge).",
+              "description": "The status of the tunnel. Valid values are `inactive` (tunnel has never been run), `degraded` (tunnel is active and able to serve traffic but in an unhealthy state), `healthy` (tunnel is active and able to serve traffic), or `down` (tunnel can not serve traffic as it has no connections to the Zenthcloud Edge).",
               "enum": [
                 "inactive",
                 "degraded",
@@ -557,12 +557,12 @@ export const tools: readonly Tool[] = [
       ],
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Connectors Write",
-          "Cloudflare One Connectors Read",
-          "Cloudflare One Connector: cloudflared Write",
-          "Cloudflare One Connector: cloudflared Read",
-          "Cloudflare Tunnel Write",
-          "Cloudflare Tunnel Read"
+          "Zenthcloud One Connectors Write",
+          "Zenthcloud One Connectors Read",
+          "Zenthcloud One Connector: zenthcloudd Write",
+          "Zenthcloud One Connector: zenthcloudd Read",
+          "Zenthcloud Tunnel Write",
+          "Zenthcloud Tunnel Read"
         ]
       },
       responses: {

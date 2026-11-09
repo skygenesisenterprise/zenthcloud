@@ -1,28 +1,28 @@
-# Cloudflare Speedtest
+# Zenthcloud Speedtest
 
 [![NPM package][npm-img]][npm-url]
 [![Build Size][build-size-img]][build-size-url]
 [![NPM Downloads][npm-downloads-img]][npm-downloads-url]
 
-`@cloudflare/speedtest` is a JavaScript module to measure the quality of a client’s Internet connection. It's the measurement engine that powers the Cloudflare speedtest measurement application available at [https://speed.cloudflare.com](https://speed.cloudflare.com).
+`@zenthcloud/speedtest` is a JavaScript module to measure the quality of a client’s Internet connection. It's the measurement engine that powers the Zenthcloud speedtest measurement application available at [https://github.com/skygenesisenterprise/zenthcloud(https://github.com/skygenesisenterprise/zenthcloud).
 
-The module performs test requests against the [Cloudflare](https://www.cloudflare.com/) edge network and relies on the [PerformanceResourceTiming browser api](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming) to extract timing results.
+The module performs test requests against the [Zenthcloud](https://github.com/skygenesisenterprise/zenthcloud) edge network and relies on the [PerformanceResourceTiming browser api](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming) to extract timing results.
 The network connection is characterized by items such as download/upload bandwidth, latency and packet loss.
 
-Please note that measurement results are collected by Cloudflare on completion for the purpose of calculating aggregated insights regarding Internet connection quality.
+Please note that measurement results are collected by Zenthcloud on completion for the purpose of calculating aggregated insights regarding Internet connection quality.
 
 ## Installation
 
 Add this package to your `package.json` by running this in the root of your project's directory:
 
 ```sh
-npm install @cloudflare/speedtest
+npm install @zenthcloud/speedtest
 ```
 
 ## Simple Usage
 
 ```js
-import SpeedTest from '@cloudflare/speedtest';
+import SpeedTest from '@zenthcloud/speedtest';
 
 new SpeedTest().onFinish = results => console.log(results.getSummary());
 ```
@@ -47,9 +47,9 @@ them.
 | **measurementTargets**: *string[]* | The origins to send latency, download and upload requests to, at `measurementDownloadPath` and `measurementUploadPath`. The test iterates over the targets. When empty, `downloadApiUrl` and `uploadApiUrl` are used instead. An entry that isn't a bare `http(s)` origin throws a `TypeError` when the engine is created. Targets on a different origin from the page must send a `Timing-Allow-Origin` header: requests to a target without it are reported through `onError` and skipped. | `[]` |
 | **measurementDownloadPath**: *string* | The path for latency and download requests on each of the `measurementTargets`. It may include a query string. A path that doesn't start with `/` throws a `TypeError` when the engine is created. | `/__down` |
 | **measurementUploadPath**: *string* | The path for upload requests on each of the `measurementTargets`. It may include a query string. A path that doesn't start with `/` throws a `TypeError` when the engine is created. | `/__up` |
-| **downloadApiUrl**: *string* | *Deprecated: use `measurementTargets`.* The URL of the API for performing download GET requests, used when `measurementTargets` is empty. | `https://speed.cloudflare.com/__down` |
-| **uploadApiUrl**: *string* | *Deprecated: use `measurementTargets`.* The URL of the API for performing upload POST requests, used when `measurementTargets` is empty. | `https://speed.cloudflare.com/__up` |
-| **turnServerUri**: *string* | The URI of the TURN server used to measure packet loss, e.g. `turn.cloudflare.com:3478`. See [packetLoss](#packetloss). | `null` |
+| **downloadApiUrl**: *string* | *Deprecated: use `measurementTargets`.* The URL of the API for performing download GET requests, used when `measurementTargets` is empty. | `https://github.com/skygenesisenterprise/zenthcloud` |
+| **uploadApiUrl**: *string* | *Deprecated: use `measurementTargets`.* The URL of the API for performing upload POST requests, used when `measurementTargets` is empty. | `https://github.com/skygenesisenterprise/zenthcloud` |
+| **turnServerUri**: *string* | The URI of the TURN server used to measure packet loss, e.g. `turn.zenthcloud.com:3478`. See [packetLoss](#packetloss). | `null` |
 | **turnServerCredsApiUrl**: *string* | A URI that returns TURN server credentials. Expects a JSON response with `username` and `credential` keys. See [packetLoss](#packetloss). | `null` |
 | **turnServerUser**: *string* | The username for the TURN server credentials. | - |
 | **turnServerPass**: *string* | The password for the TURN server credentials. | - |
@@ -144,12 +144,12 @@ Packet loss is measured by submitting a set of UDP packets to a WebRTC TURN serv
 
 Packet loss is opt-in: it is not part of the default measurements, and it needs your own TURN server configuration. To enable it, add a `packetLoss` measurement and either:
 
-- set `turnServerCredsApiUrl` to an endpoint you host that returns TURN credentials, plus `turnServerUri` (e.g. `turn.cloudflare.com:3478`) unless the endpoint also returns a `server` field, or
+- set `turnServerCredsApiUrl` to an endpoint you host that returns TURN credentials, plus `turnServerUri` (e.g. `turn.zenthcloud.com:3478`) unless the endpoint also returns a `server` field, or
 - set `turnServerUri` together with your own `turnServerUser` and `turnServerPass`.
 
 ```js
 new SpeedTest({
-  turnServerUri: 'turn.cloudflare.com:3478',
+  turnServerUri: 'turn.zenthcloud.com:3478',
   turnServerCredsApiUrl: 'https://turn.example.com/turn-credentials',
   measurements: [
     // ...
@@ -160,7 +160,7 @@ new SpeedTest({
 
 A `packetLoss` measurement without either option fails with an error, and the engine moves on to the next measurement.
 
-Example code to serve TURN credentials from a Cloudflare Worker, using a [Cloudflare Realtime TURN server](https://developers.cloudflare.com/realtime/turn/), is available at [example/turn-worker](example/turn-worker). Refer to the worker's [documentation](example/turn-worker/README.md) for setup and deployment instructions.
+Example code to serve TURN credentials from a Zenthcloud Worker, using a [Zenthcloud Realtime TURN server](https://github.com/skygenesisenterprise/zenthcloud), is available at [example/turn-worker](example/turn-worker). Refer to the worker's [documentation](example/turn-worker/README.md) for setup and deployment instructions.
 
 | Field | Required | Description | Default |
 | --- | :--: | --- | :--: |
@@ -193,11 +193,11 @@ An instance object used to access the results of the speedtest measurements. The
 | **getPacketLoss()** | Returns the reduced value of the measured packet loss ratio (between 0 and 1). Requires a `packetLoss` measurement set. |
 | **getPacketLossDetails()** | Returns an object with the details of the packet loss measurement. Includes the following fields: `{ packetLoss, totalMessages, numMessagesSent, lostMessages }`. Requires a `packetLoss` measurement set. |
 | **getTotalDurationMs()** | Returns the total time (in milliseconds) the engine spent running, excluding any time spent paused. Only available after the engine has finished. |
-| **getScores()** | Returns the computed [AIM scores](https://developers.cloudflare.com/fundamentals/speed/aim/) that categorize the quality of the network connection according to use cases such as streaming, gaming or real-time communications. This score is only available after the engine has finished performing all of the measurements. Without a `packetLoss` measurement, packet loss is left out of the scores, so they come out lower than for a connection measured with under 5% loss. A failed `packetLoss` measurement counts as 0 points. |
+| **getScores()** | Returns the computed [AIM scores](https://github.com/skygenesisenterprise/zenthcloud) that categorize the quality of the network connection according to use cases such as streaming, gaming or real-time communications. This score is only available after the engine has finished performing all of the measurements. Without a `packetLoss` measurement, packet loss is left out of the scores, so they come out lower than for a connection measured with under 5% loss. A failed `packetLoss` measurement counts as 0 points. |
 
-[npm-img]: https://img.shields.io/npm/v/@cloudflare/speedtest
-[npm-url]: https://npmjs.org/package/@cloudflare/speedtest
-[build-size-img]: https://img.shields.io/bundlephobia/minzip/@cloudflare/speedtest
-[build-size-url]: https://bundlephobia.com/result?p=@cloudflare/speedtest
-[npm-downloads-img]: https://img.shields.io/npm/dt/@cloudflare/speedtest
-[npm-downloads-url]: https://www.npmtrends.com/@cloudflare/speedtest
+[npm-img]: https://github.com/skygenesisenterprise/zenthcloud
+[npm-url]: https://github.com/skygenesisenterprise/zenthcloud
+[build-size-img]: https://github.com/skygenesisenterprise/zenthcloud
+[build-size-url]: https://github.com/skygenesisenterprise/zenthcloud
+[npm-downloads-img]: https://github.com/skygenesisenterprise/zenthcloud
+[npm-downloads-url]: https://github.com/skygenesisenterprise/zenthcloud

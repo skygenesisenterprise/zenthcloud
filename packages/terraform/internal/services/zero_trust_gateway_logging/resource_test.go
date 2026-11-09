@@ -5,18 +5,18 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccUpgradeZeroTrustGatewayLogging_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_gateway_logging.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_gateway_logging.%s", rnd)
 
 	config := fmt.Sprintf(`
-resource "cloudflare_zero_trust_gateway_logging" "%[1]s" {
+resource "zenthcloud_zero_trust_gateway_logging" "%[1]s" {
   account_id = "%[2]s"
 }
 `, rnd, accountID)
@@ -29,8 +29,8 @@ resource "cloudflare_zero_trust_gateway_logging" "%[1]s" {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

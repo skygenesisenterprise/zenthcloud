@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_access_custom_page Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_access_custom_page Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Access: Custom Pages ReadAccess: Custom Pages Write
 ---
 
-# cloudflare_zero_trust_access_custom_page (Resource)
+# zenthcloud_zero_trust_access_custom_page (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_access_custom_page" "example_zero_trust_access_custom_page" {
+resource "zenthcloud_zero_trust_access_custom_page" "example_zero_trust_access_custom_page" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   custom_html = "<html><body><h1>Access Denied</h1></body></html>"
   name = "name"
@@ -60,7 +60,7 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_access_custom_page.example '<account_id>/<custom_page_id>'
+$ terraform import zenthcloud_zero_trust_access_custom_page.example '<account_id>/<custom_page_id>'
 ```
 
 

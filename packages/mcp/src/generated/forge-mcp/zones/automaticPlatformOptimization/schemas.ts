@@ -16,7 +16,7 @@ export const speed_automatic_platform_optimization_value: JSONObject = {
           "type": "boolean"
         },
         "cf": {
-          "description": "Whether the zone is proxied through Cloudflare.",
+          "description": "Whether the zone is proxied through Zenthcloud.",
           "type": "boolean"
         },
         "enabled": {
@@ -39,7 +39,7 @@ export const speed_automatic_platform_optimization_value: JSONObject = {
           "type": "boolean"
         },
         "wp_plugin": {
-          "description": "Whether the Cloudflare WordPress plugin is installed.",
+          "description": "Whether the Zenthcloud WordPress plugin is installed.",
           "type": "boolean"
         }
       },

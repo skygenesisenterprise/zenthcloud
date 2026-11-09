@@ -85,7 +85,7 @@ notploy object-storage create-provider --name <value> --providerType <value> --c
 | Option | Type | Required | Allowed values |
 | --- | --- | --- | --- |
 | `--name <value>` | string | Yes | — |
-| `--providerType <value>` | string | Yes | `aws`, `cloudflare-r2`, `scaleway`, `wasabi`, `digitalocean`, `backblaze`, `ovh`, `linode`, `storj`, `idrive`, `minio`, `rustfs`, `ceph`, `seaweedfs`, `garage`, `s3-compatible`, `notploy-internal` |
+| `--providerType <value>` | string | Yes | `aws`, `zenthcloud-r2`, `scaleway`, `wasabi`, `digitalocean`, `backblaze`, `ovh`, `linode`, `storj`, `idrive`, `minio`, `rustfs`, `ceph`, `seaweedfs`, `garage`, `s3-compatible`, `notploy-internal` |
 | `--category <value>` | string | Yes | `external`, `self-hosted`, `internal` |
 | `--config <json>` | object | Yes | — |
 | `--serverId <value>` | string | No | — |
@@ -192,7 +192,7 @@ notploy object-storage test-connection [options]
 | Option | Type | Required | Allowed values |
 | --- | --- | --- | --- |
 | `--objectStorageProviderId <value>` | string | No | — |
-| `--providerType <value>` | string | No | `aws`, `cloudflare-r2`, `scaleway`, `wasabi`, `digitalocean`, `backblaze`, `ovh`, `linode`, `storj`, `idrive`, `minio`, `rustfs`, `ceph`, `seaweedfs`, `garage`, `s3-compatible`, `notploy-internal` |
+| `--providerType <value>` | string | No | `aws`, `zenthcloud-r2`, `scaleway`, `wasabi`, `digitalocean`, `backblaze`, `ovh`, `linode`, `storj`, `idrive`, `minio`, `rustfs`, `ceph`, `seaweedfs`, `garage`, `s3-compatible`, `notploy-internal` |
 | `--category <value>` | string | No | `external`, `self-hosted`, `internal` |
 | `--config <json>` | object | No | — |
 | `--bucket <value>` | string | No | — |
@@ -231,7 +231,7 @@ notploy object-storage update-provider --name <value> --providerType <value> --c
 | Option | Type | Required | Allowed values |
 | --- | --- | --- | --- |
 | `--name <value>` | string | Yes | — |
-| `--providerType <value>` | string | Yes | `aws`, `cloudflare-r2`, `scaleway`, `wasabi`, `digitalocean`, `backblaze`, `ovh`, `linode`, `storj`, `idrive`, `minio`, `rustfs`, `ceph`, `seaweedfs`, `garage`, `s3-compatible`, `notploy-internal` |
+| `--providerType <value>` | string | Yes | `aws`, `zenthcloud-r2`, `scaleway`, `wasabi`, `digitalocean`, `backblaze`, `ovh`, `linode`, `storj`, `idrive`, `minio`, `rustfs`, `ceph`, `seaweedfs`, `garage`, `s3-compatible`, `notploy-internal` |
 | `--category <value>` | string | Yes | `external`, `self-hosted`, `internal` |
 | `--config <json>` | object | Yes | — |
 | `--serverId <value>` | string | No | — |

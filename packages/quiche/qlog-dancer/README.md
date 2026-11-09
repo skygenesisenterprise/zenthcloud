@@ -36,7 +36,7 @@ $ cargo run --release -- --report-text /path/to/chrome-net-export-log.json
 Both the `--report-text` and `--report-html` options will produce a table
 summary of the qlog events contained in the qlog file. This table can be
 filtered using the `--qlog-wirefilter` option, which uses
-[Wirefilter](https://github.com/cloudflare/wirefilter) for Wireshark-like
+[Wirefilter](https://github.com/skygenesisenterprise/zenthcloud) for Wireshark-like
 expressions and matching behavior. The fields supported are:
 
 * category: A string representing the qlog category of the event

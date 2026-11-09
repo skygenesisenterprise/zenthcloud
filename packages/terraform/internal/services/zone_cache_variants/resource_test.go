@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -21,24 +21,24 @@ func TestMain(m *testing.M) {
 
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zone_cache_variants", &resource.Sweeper{
-		Name: "cloudflare_zone_cache_variants",
-		F:    testSweepCloudflareZoneCacheVariants,
+	resource.AddTestSweepers("zenthcloud_zone_cache_variants", &resource.Sweeper{
+		Name: "zenthcloud_zone_cache_variants",
+		F:    testSweepZenthcloudZoneCacheVariants,
 	})
 }
 
-func testSweepCloudflareZoneCacheVariants(r string) error {
+func testSweepZenthcloudZoneCacheVariants(r string) error {
 	ctx := context.Background()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping zone cache variants sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping zone cache variants sweep: ZENTHCLOUD_ZONE_ID not set")
 		return nil
 	}
 
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 		return clientErr
 	}
 
@@ -58,17 +58,17 @@ func testSweepCloudflareZoneCacheVariants(r string) error {
 	return nil
 }
 
-func TestAccCloudflareZoneCacheVariants_OneExt(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudZoneCacheVariants_OneExt(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zone_cache_variants.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zone_cache_variants.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareZoneCacheVariants_OneExt(zoneID, rnd),
+				Config: testAccZenthcloudZoneCacheVariants_OneExt(zoneID, rnd),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "id", zoneID),
 					resource.TestCheckResourceAttr(name, consts.ZoneIDSchemaKey, zoneID),
@@ -91,17 +91,17 @@ func TestAccCloudflareZoneCacheVariants_OneExt(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareZoneCacheVariants_AllExt(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudZoneCacheVariants_AllExt(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zone_cache_variants.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zone_cache_variants.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareZoneCacheVariants_AllExt(zoneID, rnd),
+				Config: testAccZenthcloudZoneCacheVariants_AllExt(zoneID, rnd),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "id", zoneID),
 					resource.TestCheckResourceAttr(name, consts.ZoneIDSchemaKey, zoneID),
@@ -142,27 +142,27 @@ func TestAccCloudflareZoneCacheVariants_AllExt(t *testing.T) {
 	})
 }
 
-func testAccCloudflareZoneCacheVariants_OneExt(zoneID, name string) string {
+func testAccZenthcloudZoneCacheVariants_OneExt(zoneID, name string) string {
 	return acctest.LoadTestCase("oneext.tf", zoneID, name)
 }
 
-func testAccCloudflareZoneCacheVariants_AllExt(zoneID, name string) string {
+func testAccZenthcloudZoneCacheVariants_AllExt(zoneID, name string) string {
 	return acctest.LoadTestCase("allext.tf", zoneID, name)
 }
 
 func TestAccUpgradeZoneCacheVariants_FromPublishedV5(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 
-	config := testAccCloudflareZoneCacheVariants_OneExt(zoneID, rnd)
+	config := testAccZenthcloudZoneCacheVariants_OneExt(zoneID, rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

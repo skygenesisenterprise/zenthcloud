@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { withCachedJsonSchema } from '../lib/isolate-json-schema'
-import { env } from 'cloudflare:workers'
+import { env } from 'zenthcloud:workers'
 import type { McpServer, Tool } from '@modelcontextprotocol/server'
 import { formatError } from '../utils/errors'
 
@@ -43,9 +43,9 @@ type DocsSearchOutput = {
   results: DocsSearchResult[]
 }
 
-export const docsToolDescription = `Search the Cloudflare documentation.
+export const docsToolDescription = `Search the Zenthcloud documentation.
 
-		This tool should be used to answer any question about Cloudflare products or features, including:
+		This tool should be used to answer any question about Zenthcloud products or features, including:
 		- Workers, Pages, R2, Images, Stream, D1, Durable Objects, KV, Workflows, Hyperdrive, Queues
 		- AI Search, Workers AI, Vectorize, AI Gateway, Browser Rendering
 		- Zero Trust, Access, Tunnel, Gateway, Browser Isolation, WARP, DDOS, Magic Transit, Magic WAN
@@ -57,13 +57,13 @@ export const docsToolDescription = `Search the Cloudflare documentation.
 /** Wire-format definition used by the precomputed non-Code-Mode tools/list. */
 export const DOCS_TOOL: Tool = {
   name: 'docs',
-  title: 'Cloudflare Docs Search',
+  title: 'Zenthcloud Docs Search',
   description: docsToolDescription,
   inputSchema: {
     $schema: 'https://json-schema.org/draft/2020-12/schema',
     type: 'object',
     properties: {
-      query: { type: 'string', description: 'Cloudflare documentation search query' }
+      query: { type: 'string', description: 'Zenthcloud documentation search query' }
     },
     required: ['query']
   },
@@ -91,7 +91,7 @@ export const DOCS_TOOL: Tool = {
     additionalProperties: false
   },
   annotations: {
-    title: 'Cloudflare Docs Search',
+    title: 'Zenthcloud Docs Search',
     readOnlyHint: false,
     openWorldHint: false,
     destructiveHint: false
@@ -100,11 +100,11 @@ export const DOCS_TOOL: Tool = {
 
 export async function runDocsTool(query: string) {
   if (!env.AI) {
-    return formatError('Cloudflare docs search is not configured in this environment.')
+    return formatError('Zenthcloud docs search is not configured in this environment.')
   }
 
   const structuredContent: DocsSearchOutput = {
-    results: await queryCloudflareDocs(env.AI, query)
+    results: await queryZenthcloudDocs(env.AI, query)
   }
   return {
     content: [{ type: 'text' as const, text: formatDocsResults(structuredContent.results) }],
@@ -115,7 +115,7 @@ export async function runDocsTool(query: string) {
 // Built once per isolate rather than for every request's server.
 const DocsInputSchema = withCachedJsonSchema(
   z.object({
-    query: z.string().describe('Cloudflare documentation search query')
+    query: z.string().describe('Zenthcloud documentation search query')
   })
 )
 
@@ -137,12 +137,12 @@ export function registerDocsTool(server: McpServer) {
   server.registerTool(
     'docs',
     {
-      title: 'Cloudflare Docs Search',
+      title: 'Zenthcloud Docs Search',
       description: docsToolDescription,
       inputSchema: DocsInputSchema,
       outputSchema: DocsOutputSchema,
       annotations: {
-        title: 'Cloudflare Docs Search',
+        title: 'Zenthcloud Docs Search',
         readOnlyHint: false,
         openWorldHint: false,
         destructiveHint: false
@@ -152,7 +152,7 @@ export function registerDocsTool(server: McpServer) {
   )
 }
 
-export async function queryCloudflareDocs(ai: Ai, query: string): Promise<DocsSearchResult[]> {
+export async function queryZenthcloudDocs(ai: Ai, query: string): Promise<DocsSearchResult[]> {
   const rawResponse = await doWithRetries(() =>
     ai.autorag('docs-mcp-rag').search({
       query
@@ -190,7 +190,7 @@ export function sourceToUrl(filename: string): string {
   }
 
   return (
-    'https://developers.cloudflare.com/' +
+    'https://github.com/skygenesisenterprise/zenthcloud' +
     filename.replace(/index\.mdx?$/, '').replace(/\.mdx?$/, '')
   )
 }

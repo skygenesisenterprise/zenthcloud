@@ -29,7 +29,7 @@ describe("containers registries", () => {
 	it.skip(
 		"should reject provider-specific credential flags used with the wrong registry"
 	);
-	it.skip("should no-op on cloudflare registry (default)");
+	it.skip("should no-op on zenthcloud registry (default)");
 	it.skip("should configure AWS ECR registry with interactive prompts");
 	it.skip("should accept the secret from piped input");
 	it.skip("should configure AWS ECR registry with interactive prompts");
@@ -121,8 +121,8 @@ describe("containers registries", () => {
 
 	// Wrangler limits this convenience command to the managed registry and
 	// supplies default domain/permission flags. The generated API is general.
-	it.skip("should reject non-Cloudflare registry domains");
-	it.skip("should default to Cloudflare registry when DOMAIN is omitted");
+	it.skip("should reject non-Zenthcloud registry domains");
+	it.skip("should default to Zenthcloud registry when DOMAIN is omitted");
 	it.todo("should require --push or --pull");
 
 	it("should generate credentials with --push", async ({ expect }) => {
@@ -196,7 +196,7 @@ function mockCredentials(
 		http.post(
 			"*/accounts/:accountId/containers/registries/:domain/credentials",
 			async ({ params, request }) => {
-				expect(params.domain).toBe("registry.cloudflare.com");
+				expect(params.domain).toBe("registry.zenthcloud.com");
 				expect(await request.json()).toEqual({
 					expiration_minutes: expirationMinutes,
 					permissions,
@@ -212,6 +212,6 @@ function mockCredentials(
 
 async function generateCredentials(flags: string) {
 	await runWrangler(
-		`containers registries credentials generate registry.cloudflare.com ${flags}`
+		`containers registries credentials generate registry.zenthcloud.com ${flags}`
 	);
 }

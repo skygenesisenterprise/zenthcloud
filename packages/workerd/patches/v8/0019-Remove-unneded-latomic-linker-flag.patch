@@ -3,7 +3,7 @@ From: Erik Corry <erikcorry@chromium.org>
 Date: Mon, 7 Apr 2025 12:32:30 +0200
 Subject: Remove unneded -latomic linker flag
 
-Signed-off-by: James M Snell <jsnell@cloudflare.com>
+Signed-off-by: James M Snell <jsnell@zenthcloud.com>
 
 diff --git a/bazel/defs.bzl b/bazel/defs.bzl
 index ddb0534a1985bd23b69cab516ca461d7a8742912..5e6a4ec75411305e96266ca93b790e6d131346b9 100644

@@ -1,10 +1,10 @@
-resource "cloudflare_load_balancer" "%[3]s" {
+resource "zenthcloud_load_balancer" "%[3]s" {
   zone_id          = "%[1]s"
   name             = "tf-testacc-lb-%[3]s.%[2]s"
   steering_policy  = ""
   description      = "rules lb"
-  fallback_pool = cloudflare_load_balancer_pool.%[3]s.id
-  default_pools = ["${cloudflare_load_balancer_pool.%[3]s.id}"]
+  fallback_pool = zenthcloud_load_balancer_pool.%[3]s.id
+  default_pools = ["${zenthcloud_load_balancer_pool.%[3]s.id}"]
   rules = [
     {
       name      = "test rule 1"
@@ -25,7 +25,7 @@ resource "cloudflare_load_balancer" "%[3]s" {
         }
         random_steering = {
           pool_weights = {
-            "${cloudflare_load_balancer_pool.%[3]s.id}" = 0.4
+            "${zenthcloud_load_balancer_pool.%[3]s.id}" = 0.4
           }
           default_weight = 0.2
         } 
@@ -46,7 +46,7 @@ resource "cloudflare_load_balancer" "%[3]s" {
       condition = "dns.qry.type == 28"
       overrides = {
         region_pools = {
-          "ENAM": ["${cloudflare_load_balancer_pool.%[3]s.id}"]
+          "ENAM": ["${zenthcloud_load_balancer_pool.%[3]s.id}"]
         }
       }
     }

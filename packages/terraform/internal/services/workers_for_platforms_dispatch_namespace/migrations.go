@@ -7,19 +7,19 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/workers_for_platforms_dispatch_namespace/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_for_platforms_dispatch_namespace/migration/v500"
 )
 
 var _ resource.ResourceWithMoveState = (*WorkersForPlatformsDispatchNamespaceResource)(nil)
 var _ resource.ResourceWithUpgradeState = (*WorkersForPlatformsDispatchNamespaceResource)(nil)
 
-// MoveState handles moves from cloudflare_workers_for_platforms_namespace (deprecated v4) to
-// cloudflare_workers_for_platforms_dispatch_namespace (v5).
+// MoveState handles moves from zenthcloud_workers_for_platforms_namespace (deprecated v4) to
+// zenthcloud_workers_for_platforms_dispatch_namespace (v5).
 // This is triggered when users use the `moved` block (Terraform 1.8+):
 //
 //	moved {
-//	    from = cloudflare_workers_for_platforms_namespace.example
-//	    to   = cloudflare_workers_for_platforms_dispatch_namespace.example
+//	    from = zenthcloud_workers_for_platforms_namespace.example
+//	    to   = zenthcloud_workers_for_platforms_dispatch_namespace.example
 //	}
 func (r *WorkersForPlatformsDispatchNamespaceResource) MoveState(ctx context.Context) []resource.StateMover {
 	sourceSchema := v500.SourceWorkersForPlatformsNamespaceSchema()
@@ -31,7 +31,7 @@ func (r *WorkersForPlatformsDispatchNamespaceResource) MoveState(ctx context.Con
 	}
 }
 
-// UpgradeState handles schema version upgrades for cloudflare_workers_for_platforms_dispatch_namespace.
+// UpgradeState handles schema version upgrades for zenthcloud_workers_for_platforms_dispatch_namespace.
 // Version 0 handles state from v4 provider (both resource type variants had schema version 0).
 // Version 1 handles v5 state that needs a version bump (no-op).
 func (r *WorkersForPlatformsDispatchNamespaceResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
@@ -39,8 +39,8 @@ func (r *WorkersForPlatformsDispatchNamespaceResource) UpgradeState(ctx context.
 	sourceSchema := v500.SourceWorkersForPlatformsNamespaceSchema()
 
 	return map[int64]resource.StateUpgrader{
-		// Handle upgrades from v4 state (both cloudflare_workers_for_platforms_dispatch_namespace
-		// and cloudflare_workers_for_platforms_namespace had schema version 0)
+		// Handle upgrades from v4 state (both zenthcloud_workers_for_platforms_dispatch_namespace
+		// and zenthcloud_workers_for_platforms_namespace had schema version 0)
 		0: {
 			PriorSchema:   &sourceSchema,
 			StateUpgrader: v500.UpgradeFromV0,

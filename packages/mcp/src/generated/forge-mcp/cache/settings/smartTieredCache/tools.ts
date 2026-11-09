@@ -25,7 +25,7 @@ export const tools: readonly Tool[] = [
   {
     name: "cache_settings_smartTieredCache_create",
     title: "Create Smart Tiered Cache setting",
-    description: "Smart Tiered Cache dynamically selects the single closest upper tier for each of your website's origins with no configuration required, using our in-house performance and routing data. Cloudflare collects latency data for each request to an origin, and uses the latency data to determine how well any upper-tier data center is connected with an origin. As a result, Cloudflare can select the data center with the lowest latency to be the upper-tier for an origin.\n\nPOST /zones/{zone_id}/cache/tiered_cache_smart_topology_enable",
+    description: "Smart Tiered Cache dynamically selects the single closest upper tier for each of your website's origins with no configuration required, using our in-house performance and routing data. Zenthcloud collects latency data for each request to an origin, and uses the latency data to determine how well any upper-tier data center is connected with an origin. As a result, Zenthcloud can select the data center with the lowest latency to be the upper-tier for an origin.\n\nPOST /zones/{zone_id}/cache/tiered_cache_smart_topology_enable",
     inputSchema: {
       type: "object",
       properties: {
@@ -136,7 +136,7 @@ export const tools: readonly Tool[] = [
   {
     name: "cache_settings_smartTieredCache_delete",
     title: "Delete Smart Tiered Cache setting",
-    description: "Smart Tiered Cache dynamically selects the single closest upper tier for each of your website’s origins with no configuration required, using our in-house performance and routing data. Cloudflare collects latency data for each request to an origin, and uses the latency data to determine how well any upper-tier data center is connected with an origin. As a result, Cloudflare can select the data center with the lowest latency to be the upper-tier for an origin.\n\nDELETE /zones/{zone_id}/cache/tiered_cache_smart_topology_enable",
+    description: "Smart Tiered Cache dynamically selects the single closest upper tier for each of your website’s origins with no configuration required, using our in-house performance and routing data. Zenthcloud collects latency data for each request to an origin, and uses the latency data to determine how well any upper-tier data center is connected with an origin. As a result, Zenthcloud can select the data center with the lowest latency to be the upper-tier for an origin.\n\nDELETE /zones/{zone_id}/cache/tiered_cache_smart_topology_enable",
     inputSchema: {
       type: "object",
       properties: {
@@ -246,7 +246,7 @@ export const tools: readonly Tool[] = [
   {
     name: "cache_settings_smartTieredCache_edit",
     title: "Patch Smart Tiered Cache setting",
-    description: "Smart Tiered Cache dynamically selects the single closest upper tier for each of your website’s origins with no configuration required, using our in-house performance and routing data. Cloudflare collects latency data for each request to an origin, and uses the latency data to determine how well any upper-tier data center is connected with an origin. As a result, Cloudflare can select the data center with the lowest latency to be the upper-tier for an origin.\n\nPATCH /zones/{zone_id}/cache/tiered_cache_smart_topology_enable",
+    description: "Smart Tiered Cache dynamically selects the single closest upper tier for each of your website’s origins with no configuration required, using our in-house performance and routing data. Zenthcloud collects latency data for each request to an origin, and uses the latency data to determine how well any upper-tier data center is connected with an origin. As a result, Zenthcloud can select the data center with the lowest latency to be the upper-tier for an origin.\n\nPATCH /zones/{zone_id}/cache/tiered_cache_smart_topology_enable",
     inputSchema: {
       type: "object",
       properties: {
@@ -357,7 +357,7 @@ export const tools: readonly Tool[] = [
   {
     name: "cache_settings_smartTieredCache_get",
     title: "Get Smart Tiered Cache setting",
-    description: "Smart Tiered Cache dynamically selects the single closest upper tier for each of your website’s origins with no configuration required, using our in-house performance and routing data. Cloudflare collects latency data for each request to an origin, and uses the latency data to determine how well any upper-tier data center is connected with an origin. As a result, Cloudflare can select the data center with the lowest latency to be the upper-tier for an origin.\n\nGET /zones/{zone_id}/cache/tiered_cache_smart_topology_enable",
+    description: "Smart Tiered Cache dynamically selects the single closest upper tier for each of your website’s origins with no configuration required, using our in-house performance and routing data. Zenthcloud collects latency data for each request to an origin, and uses the latency data to determine how well any upper-tier data center is connected with an origin. As a result, Zenthcloud can select the data center with the lowest latency to be the upper-tier for an origin.\n\nGET /zones/{zone_id}/cache/tiered_cache_smart_topology_enable",
     inputSchema: {
       type: "object",
       properties: {

@@ -8,10 +8,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -22,8 +22,8 @@ import (
 )
 
 var (
-	accountID = os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	zoneID    = os.Getenv("CLOUDFLARE_ZONE_ID")
+	accountID = os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	zoneID    = os.Getenv("ZENTHCLOUD_ZONE_ID")
 )
 
 func TestMain(m *testing.M) {
@@ -31,36 +31,36 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zero_trust_access_service_token", &resource.Sweeper{
-		Name: "cloudflare_zero_trust_access_service_token",
-		F:    testSweepCloudflareAccessServiceTokens,
+	resource.AddTestSweepers("zenthcloud_zero_trust_access_service_token", &resource.Sweeper{
+		Name: "zenthcloud_zero_trust_access_service_token",
+		F:    testSweepZenthcloudAccessServiceTokens,
 	})
 }
 
-func testSweepCloudflareAccessServiceTokens(r string) error {
+func testSweepZenthcloudAccessServiceTokens(r string) error {
 	ctx := context.Background()
 
 	client, clientErr := acctest.SharedV1Client()
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 	}
 
 	// Zone level Access Service Tokens.
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	zoneTokens, _, err := client.ListAccessServiceTokens(context.Background(), cloudflare.ZoneIdentifier(zoneID), cloudflare.ListAccessServiceTokensParams{})
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	zoneTokens, _, err := client.ListAccessServiceTokens(context.Background(), zenthcloud.ZoneIdentifier(zoneID), zenthcloud.ListAccessServiceTokensParams{})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch zone level Access Service Tokens: %s", err))
 	}
 
 	if len(zoneTokens) == 0 {
-		log.Print("[DEBUG] No Cloudflare zone level Access Service Tokens to sweep")
+		log.Print("[DEBUG] No Zenthcloud zone level Access Service Tokens to sweep")
 	} else {
 		for _, token := range zoneTokens {
 			if !utils.ShouldSweepResource(token.Name) {
 				continue
 			}
 			tflog.Info(ctx, fmt.Sprintf("Deleting zone-level Access Service Token: %s (%s)", token.Name, token.ID))
-			if _, err := client.DeleteAccessServiceToken(context.Background(), cloudflare.ZoneIdentifier(zoneID), token.ID); err != nil {
+			if _, err := client.DeleteAccessServiceToken(context.Background(), zenthcloud.ZoneIdentifier(zoneID), token.ID); err != nil {
 				tflog.Error(ctx, fmt.Sprintf("Failed to delete zone-level Access Service Token %s (%s): %s", token.Name, token.ID, err))
 				continue
 			}
@@ -69,14 +69,14 @@ func testSweepCloudflareAccessServiceTokens(r string) error {
 	}
 
 	// Account level Access Service Tokens.
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	accountTokens, _, err := client.ListAccessServiceTokens(context.Background(), cloudflare.AccountIdentifier(accountID), cloudflare.ListAccessServiceTokensParams{})
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	accountTokens, _, err := client.ListAccessServiceTokens(context.Background(), zenthcloud.AccountIdentifier(accountID), zenthcloud.ListAccessServiceTokensParams{})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch account level Access Service Tokens: %s", err))
 	}
 
 	if len(accountTokens) == 0 {
-		log.Print("[DEBUG] No Cloudflare account level Access Service Tokens to sweep")
+		log.Print("[DEBUG] No Zenthcloud account level Access Service Tokens to sweep")
 		return nil
 	}
 
@@ -85,7 +85,7 @@ func testSweepCloudflareAccessServiceTokens(r string) error {
 			continue
 		}
 		tflog.Info(ctx, fmt.Sprintf("Deleting account-level Access Service Token: %s (%s)", token.Name, token.ID))
-		if _, err := client.DeleteAccessServiceToken(context.Background(), cloudflare.AccountIdentifier(accountID), token.ID); err != nil {
+		if _, err := client.DeleteAccessServiceToken(context.Background(), zenthcloud.AccountIdentifier(accountID), token.ID); err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete account-level Access Service Token %s (%s): %s", token.Name, token.ID, err))
 			continue
 		}
@@ -95,25 +95,25 @@ func testSweepCloudflareAccessServiceTokens(r string) error {
 	return nil
 }
 
-func TestAccCloudflareAccessServiceToken_BasicAccount(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudAccessServiceToken_BasicAccount(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// Service Tokens endpoint does not yet support the API tokens and it
 	// results in misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_service_token.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_service_token.%s", rnd)
 	resourceName := strings.Split(name, ".")[1]
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessServiceTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessServiceTokenDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareAccessServiceTokenBasicConfig(resourceName, resourceName, cloudflare.AccountIdentifier(accountID)),
+				Config: testZenthcloudAccessServiceTokenBasicConfig(resourceName, resourceName, zenthcloud.AccountIdentifier(accountID)),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(resourceName)),
@@ -124,7 +124,7 @@ func TestAccCloudflareAccessServiceToken_BasicAccount(t *testing.T) {
 				},
 			},
 			{
-				Config: testCloudflareAccessServiceTokenBasicConfig(resourceName, resourceName+"-updated", cloudflare.AccountIdentifier(accountID)),
+				Config: testZenthcloudAccessServiceTokenBasicConfig(resourceName, resourceName+"-updated", zenthcloud.AccountIdentifier(accountID)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(name, plancheck.ResourceActionUpdate),
@@ -143,32 +143,32 @@ func TestAccCloudflareAccessServiceToken_BasicAccount(t *testing.T) {
 				ResourceName:            name,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateIdFunc:       testAccCloudflareAccessServiceTokenImportStateIdFunc(name, "accounts", accountID),
+				ImportStateIdFunc:       testAccZenthcloudAccessServiceTokenImportStateIdFunc(name, "accounts", accountID),
 				ImportStateVerifyIgnore: []string{"client_secret", "previous_client_secret_expires_at"},
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessServiceToken_BasicZone(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudAccessServiceToken_BasicZone(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// Service Tokens endpoint does not yet support the API tokens and it
 	// results in misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_service_token.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_service_token.%s", rnd)
 	resourceName := strings.Split(name, ".")[1]
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessServiceTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessServiceTokenDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareAccessServiceTokenBasicConfig(resourceName, resourceName, cloudflare.ZoneIdentifier(zoneID)),
+				Config: testZenthcloudAccessServiceTokenBasicConfig(resourceName, resourceName, zenthcloud.ZoneIdentifier(zoneID)),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(resourceName)),
@@ -179,7 +179,7 @@ func TestAccCloudflareAccessServiceToken_BasicZone(t *testing.T) {
 				},
 			},
 			{
-				Config: testCloudflareAccessServiceTokenBasicConfig(resourceName, resourceName+"-updated", cloudflare.ZoneIdentifier(zoneID)),
+				Config: testZenthcloudAccessServiceTokenBasicConfig(resourceName, resourceName+"-updated", zenthcloud.ZoneIdentifier(zoneID)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(name, plancheck.ResourceActionUpdate),
@@ -198,23 +198,23 @@ func TestAccCloudflareAccessServiceToken_BasicZone(t *testing.T) {
 				ResourceName:            name,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateIdFunc:       testAccCloudflareAccessServiceTokenImportStateIdFunc(name, "zones", zoneID),
+				ImportStateIdFunc:       testAccZenthcloudAccessServiceTokenImportStateIdFunc(name, "zones", zoneID),
 				ImportStateVerifyIgnore: []string{"client_secret", "previous_client_secret_expires_at"},
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessServiceToken_DeleteAccount(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudAccessServiceToken_DeleteAccount(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// Service Tokens endpoint does not yet support the API tokens and it
 	// results in misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_service_token.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_service_token.%s", rnd)
 	resourceName := strings.Split(name, ".")[1]
 
 	resource.Test(t, resource.TestCase{
@@ -223,10 +223,10 @@ func TestAccCloudflareAccessServiceToken_DeleteAccount(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessServiceTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessServiceTokenDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareAccessServiceTokenBasicConfig(resourceName, resourceName, cloudflare.AccountIdentifier(accountID)),
+				Config: testZenthcloudAccessServiceTokenBasicConfig(resourceName, resourceName, zenthcloud.AccountIdentifier(accountID)),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(resourceName)),
@@ -240,25 +240,25 @@ func TestAccCloudflareAccessServiceToken_DeleteAccount(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareAccessServiceToken_DeleteZone(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudAccessServiceToken_DeleteZone(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// Service Tokens endpoint does not yet support the API tokens and it
 	// results in misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_service_token.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_service_token.%s", rnd)
 	resourceName := strings.Split(name, ".")[1]
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessServiceTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessServiceTokenDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareAccessServiceTokenBasicConfig(resourceName, resourceName, cloudflare.ZoneIdentifier(zoneID)),
+				Config: testZenthcloudAccessServiceTokenBasicConfig(resourceName, resourceName, zenthcloud.ZoneIdentifier(zoneID)),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(resourceName)),
@@ -272,16 +272,16 @@ func TestAccCloudflareAccessServiceToken_DeleteZone(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareAccessServiceToken_WithDurationAccount(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudAccessServiceToken_WithDurationAccount(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// Service Tokens endpoint does not yet support the API tokens and it
 	// results in misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_service_token.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_service_token.%s", rnd)
 	resourceName := strings.Split(name, ".")[1]
 
 	resource.Test(t, resource.TestCase{
@@ -290,10 +290,10 @@ func TestAccCloudflareAccessServiceToken_WithDurationAccount(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessServiceTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessServiceTokenDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareAccessServiceTokenBasicConfigWithDuration(resourceName, resourceName, cloudflare.AccountIdentifier(accountID), "forever"),
+				Config: testZenthcloudAccessServiceTokenBasicConfigWithDuration(resourceName, resourceName, zenthcloud.AccountIdentifier(accountID), "forever"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(resourceName)),
@@ -304,7 +304,7 @@ func TestAccCloudflareAccessServiceToken_WithDurationAccount(t *testing.T) {
 				},
 			},
 			{
-				Config: testCloudflareAccessServiceTokenBasicConfigWithDuration(resourceName, resourceName, cloudflare.AccountIdentifier(accountID), "8760h"),
+				Config: testZenthcloudAccessServiceTokenBasicConfigWithDuration(resourceName, resourceName, zenthcloud.AccountIdentifier(accountID), "8760h"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(name, plancheck.ResourceActionUpdate),
@@ -323,32 +323,32 @@ func TestAccCloudflareAccessServiceToken_WithDurationAccount(t *testing.T) {
 				ResourceName:            name,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateIdFunc:       testAccCloudflareAccessServiceTokenImportStateIdFunc(name, "accounts", accountID),
+				ImportStateIdFunc:       testAccZenthcloudAccessServiceTokenImportStateIdFunc(name, "accounts", accountID),
 				ImportStateVerifyIgnore: []string{"client_secret", "previous_client_secret_expires_at"},
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessServiceToken_WithDurationZone(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudAccessServiceToken_WithDurationZone(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// Service Tokens endpoint does not yet support the API tokens and it
 	// results in misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_service_token.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_service_token.%s", rnd)
 	resourceName := strings.Split(name, ".")[1]
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessServiceTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessServiceTokenDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareAccessServiceTokenBasicConfigWithDuration(resourceName, resourceName, cloudflare.ZoneIdentifier(zoneID), "forever"),
+				Config: testZenthcloudAccessServiceTokenBasicConfigWithDuration(resourceName, resourceName, zenthcloud.ZoneIdentifier(zoneID), "forever"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(resourceName)),
@@ -359,7 +359,7 @@ func TestAccCloudflareAccessServiceToken_WithDurationZone(t *testing.T) {
 				},
 			},
 			{
-				Config: testCloudflareAccessServiceTokenBasicConfigWithDuration(resourceName, resourceName, cloudflare.ZoneIdentifier(zoneID), "8760h"),
+				Config: testZenthcloudAccessServiceTokenBasicConfigWithDuration(resourceName, resourceName, zenthcloud.ZoneIdentifier(zoneID), "8760h"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(name, plancheck.ResourceActionUpdate),
@@ -378,23 +378,23 @@ func TestAccCloudflareAccessServiceToken_WithDurationZone(t *testing.T) {
 				ResourceName:            name,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateIdFunc:       testAccCloudflareAccessServiceTokenImportStateIdFunc(name, "zones", zoneID),
+				ImportStateIdFunc:       testAccZenthcloudAccessServiceTokenImportStateIdFunc(name, "zones", zoneID),
 				ImportStateVerifyIgnore: []string{"client_secret", "previous_client_secret_expires_at"},
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessServiceToken_PlanModifiers_ClientSecretPersistence(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudAccessServiceToken_PlanModifiers_ClientSecretPersistence(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// Service Tokens endpoint does not yet support the API tokens and it
 	// results in misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_service_token.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_service_token.%s", rnd)
 	resourceName := strings.Split(name, ".")[1]
 
 	resource.Test(t, resource.TestCase{
@@ -403,10 +403,10 @@ func TestAccCloudflareAccessServiceToken_PlanModifiers_ClientSecretPersistence(t
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessServiceTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessServiceTokenDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareAccessServiceTokenBasicConfig(resourceName, resourceName, cloudflare.AccountIdentifier(accountID)),
+				Config: testZenthcloudAccessServiceTokenBasicConfig(resourceName, resourceName, zenthcloud.AccountIdentifier(accountID)),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(resourceName)),
@@ -418,7 +418,7 @@ func TestAccCloudflareAccessServiceToken_PlanModifiers_ClientSecretPersistence(t
 			},
 			{
 				// Update the name to test that client_secret is preserved and doesn't show changes in plan
-				Config: testCloudflareAccessServiceTokenBasicConfig(resourceName, resourceName+"-updated", cloudflare.AccountIdentifier(accountID)),
+				Config: testZenthcloudAccessServiceTokenBasicConfig(resourceName, resourceName+"-updated", zenthcloud.AccountIdentifier(accountID)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(name, plancheck.ResourceActionUpdate),
@@ -438,7 +438,7 @@ func TestAccCloudflareAccessServiceToken_PlanModifiers_ClientSecretPersistence(t
 				ResourceName:            name,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateIdFunc:       testAccCloudflareAccessServiceTokenImportStateIdFunc(name, "accounts", accountID),
+				ImportStateIdFunc:       testAccZenthcloudAccessServiceTokenImportStateIdFunc(name, "accounts", accountID),
 				ImportStateVerifyIgnore: []string{"client_secret", "previous_client_secret_expires_at"},
 			},
 		},
@@ -447,10 +447,10 @@ func TestAccCloudflareAccessServiceToken_PlanModifiers_ClientSecretPersistence(t
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessServiceTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessServiceTokenDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareAccessServiceTokenBasicConfig(resourceName, resourceName, cloudflare.ZoneIdentifier(zoneID)),
+				Config: testZenthcloudAccessServiceTokenBasicConfig(resourceName, resourceName, zenthcloud.ZoneIdentifier(zoneID)),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(name, "name", resourceName),
@@ -462,7 +462,7 @@ func TestAccCloudflareAccessServiceToken_PlanModifiers_ClientSecretPersistence(t
 			},
 			{
 				// Update the name to test that client_secret is preserved and doesn't show changes in plan
-				Config: testCloudflareAccessServiceTokenBasicConfig(resourceName, resourceName+"-updated", cloudflare.ZoneIdentifier(zoneID)),
+				Config: testZenthcloudAccessServiceTokenBasicConfig(resourceName, resourceName+"-updated", zenthcloud.ZoneIdentifier(zoneID)),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(name, "name", resourceName+"-updated"),
@@ -474,23 +474,23 @@ func TestAccCloudflareAccessServiceToken_PlanModifiers_ClientSecretPersistence(t
 			},
 			{
 				// Ensures no diff on plan - verifies plan modifier keeps client_secret from showing as change
-				Config:   testCloudflareAccessServiceTokenBasicConfig(resourceName, resourceName+"-updated", cloudflare.ZoneIdentifier(zoneID)),
+				Config:   testZenthcloudAccessServiceTokenBasicConfig(resourceName, resourceName+"-updated", zenthcloud.ZoneIdentifier(zoneID)),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessServiceToken_Import(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudAccessServiceToken_Import(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// Service Tokens endpoint does not yet support the API tokens and it
 	// results in misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_service_token.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_service_token.%s", rnd)
 	resourceName := strings.Split(name, ".")[1]
 
 	resource.Test(t, resource.TestCase{
@@ -499,10 +499,10 @@ func TestAccCloudflareAccessServiceToken_Import(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessServiceTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessServiceTokenDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareAccessServiceTokenBasicConfig(resourceName, resourceName, cloudflare.AccountIdentifier(accountID)),
+				Config: testZenthcloudAccessServiceTokenBasicConfig(resourceName, resourceName, zenthcloud.AccountIdentifier(accountID)),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(name, "name", resourceName),
@@ -516,7 +516,7 @@ func TestAccCloudflareAccessServiceToken_Import(t *testing.T) {
 				ResourceName:            name,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateIdFunc:       testAccCloudflareAccessServiceTokenImportStateIdFunc(name, "accounts", accountID),
+				ImportStateIdFunc:       testAccZenthcloudAccessServiceTokenImportStateIdFunc(name, "accounts", accountID),
 				ImportStateVerifyIgnore: []string{"client_secret", "previous_client_secret_expires_at"},
 			},
 		},
@@ -525,10 +525,10 @@ func TestAccCloudflareAccessServiceToken_Import(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessServiceTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessServiceTokenDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareAccessServiceTokenBasicConfig(resourceName, resourceName, cloudflare.ZoneIdentifier(zoneID)),
+				Config: testZenthcloudAccessServiceTokenBasicConfig(resourceName, resourceName, zenthcloud.ZoneIdentifier(zoneID)),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(name, "name", resourceName),
@@ -542,23 +542,23 @@ func TestAccCloudflareAccessServiceToken_Import(t *testing.T) {
 				ResourceName:            name,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateIdFunc:       testAccCloudflareAccessServiceTokenImportStateIdFunc(name, "zones", zoneID),
+				ImportStateIdFunc:       testAccZenthcloudAccessServiceTokenImportStateIdFunc(name, "zones", zoneID),
 				ImportStateVerifyIgnore: []string{"client_secret", "previous_client_secret_expires_at"},
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessServiceToken_ClientSecretBehavior(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudAccessServiceToken_ClientSecretBehavior(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// Service Tokens endpoint does not yet support the API tokens and it
 	// results in misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_service_token.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_service_token.%s", rnd)
 	resourceName := strings.Split(name, ".")[1]
 
 	resource.Test(t, resource.TestCase{
@@ -567,10 +567,10 @@ func TestAccCloudflareAccessServiceToken_ClientSecretBehavior(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessServiceTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessServiceTokenDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareAccessServiceTokenBasicConfig(resourceName, resourceName, cloudflare.AccountIdentifier(accountID)),
+				Config: testZenthcloudAccessServiceTokenBasicConfig(resourceName, resourceName, zenthcloud.AccountIdentifier(accountID)),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(resourceName)),
@@ -585,7 +585,7 @@ func TestAccCloudflareAccessServiceToken_ClientSecretBehavior(t *testing.T) {
 				ResourceName:            name,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateIdFunc:       testAccCloudflareAccessServiceTokenImportStateIdFunc(name, "accounts", accountID),
+				ImportStateIdFunc:       testAccZenthcloudAccessServiceTokenImportStateIdFunc(name, "accounts", accountID),
 				ImportStateVerifyIgnore: []string{"client_secret", "previous_client_secret_expires_at"},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckNoResourceAttr(name, "client_secret"),
@@ -594,7 +594,7 @@ func TestAccCloudflareAccessServiceToken_ClientSecretBehavior(t *testing.T) {
 			{
 				// Update without changing client_secret_version should preserve client_secret from Step 1
 				// (Import step doesn't actually replace state, so client_secret from Create is still present)
-				Config: testCloudflareAccessServiceTokenBasicConfig(resourceName, resourceName+"-updated", cloudflare.AccountIdentifier(accountID)),
+				Config: testZenthcloudAccessServiceTokenBasicConfig(resourceName, resourceName+"-updated", zenthcloud.AccountIdentifier(accountID)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(name, plancheck.ResourceActionUpdate),
@@ -613,15 +613,15 @@ func TestAccCloudflareAccessServiceToken_ClientSecretBehavior(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareAccessServiceToken_ClientSecretPersistsAcrossUpdates(t *testing.T) {
+func TestAccZenthcloudAccessServiceToken_ClientSecretPersistsAcrossUpdates(t *testing.T) {
 	// Tests that client_secret is preserved during updates when client_secret_version doesn't change
 	// Validates: Update preserves client_secret from state when API doesn't return a new one (resource.go:161-162)
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_service_token.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_service_token.%s", rnd)
 	resourceName := strings.Split(name, ".")[1]
 
 	resource.Test(t, resource.TestCase{
@@ -630,11 +630,11 @@ func TestAccCloudflareAccessServiceToken_ClientSecretPersistsAcrossUpdates(t *te
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessServiceTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessServiceTokenDestroy,
 		Steps: []resource.TestStep{
 			{
 				// Create - client_secret will be populated from API
-				Config: testCloudflareAccessServiceTokenBasicConfig(resourceName, resourceName, cloudflare.AccountIdentifier(accountID)),
+				Config: testZenthcloudAccessServiceTokenBasicConfig(resourceName, resourceName, zenthcloud.AccountIdentifier(accountID)),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(resourceName)),
@@ -647,7 +647,7 @@ func TestAccCloudflareAccessServiceToken_ClientSecretPersistsAcrossUpdates(t *te
 			{
 				// Update name without changing client_secret_version
 				// client_secret should be preserved from state since API won't return it
-				Config: testCloudflareAccessServiceTokenBasicConfig(resourceName, resourceName+"-updated", cloudflare.AccountIdentifier(accountID)),
+				Config: testZenthcloudAccessServiceTokenBasicConfig(resourceName, resourceName+"-updated", zenthcloud.AccountIdentifier(accountID)),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(resourceName+"-updated")),
@@ -662,16 +662,16 @@ func TestAccCloudflareAccessServiceToken_ClientSecretPersistsAcrossUpdates(t *te
 	})
 }
 
-func TestAccCloudflareAccessServiceToken_ClientSecretNoRefresh(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudAccessServiceToken_ClientSecretNoRefresh(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// Service Tokens endpoint does not yet support the API tokens and it
 	// results in misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_service_token.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_service_token.%s", rnd)
 	resourceName := strings.Split(name, ".")[1]
 
 	resource.Test(t, resource.TestCase{
@@ -680,10 +680,10 @@ func TestAccCloudflareAccessServiceToken_ClientSecretNoRefresh(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessServiceTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessServiceTokenDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareAccessServiceTokenBasicConfig(resourceName, resourceName, cloudflare.AccountIdentifier(accountID)),
+				Config: testZenthcloudAccessServiceTokenBasicConfig(resourceName, resourceName, zenthcloud.AccountIdentifier(accountID)),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(resourceName)),
@@ -711,14 +711,14 @@ func TestAccCloudflareAccessServiceToken_ClientSecretNoRefresh(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareAccessServiceToken_Minimal(t *testing.T) {
+func TestAccZenthcloudAccessServiceToken_Minimal(t *testing.T) {
 	// Test service token with only required attributes (name + account_id/zone_id)
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_service_token.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_service_token.%s", rnd)
 	resourceName := strings.Split(name, ".")[1]
 
 	resource.Test(t, resource.TestCase{
@@ -727,10 +727,10 @@ func TestAccCloudflareAccessServiceToken_Minimal(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessServiceTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessServiceTokenDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareAccessServiceTokenMinimalConfig(resourceName, resourceName, cloudflare.AccountIdentifier(accountID)),
+				Config: testZenthcloudAccessServiceTokenMinimalConfig(resourceName, resourceName, zenthcloud.AccountIdentifier(accountID)),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(resourceName)),
@@ -748,21 +748,21 @@ func TestAccCloudflareAccessServiceToken_Minimal(t *testing.T) {
 				ResourceName:            name,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateIdFunc:       testAccCloudflareAccessServiceTokenImportStateIdFunc(name, "accounts", accountID),
+				ImportStateIdFunc:       testAccZenthcloudAccessServiceTokenImportStateIdFunc(name, "accounts", accountID),
 				ImportStateVerifyIgnore: []string{"client_secret", "previous_client_secret_expires_at"},
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessServiceToken_SecretRotation(t *testing.T) {
+func TestAccZenthcloudAccessServiceToken_SecretRotation(t *testing.T) {
 	// Test client_secret_version increments for secret rotation
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_service_token.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_service_token.%s", rnd)
 	resourceName := strings.Split(name, ".")[1]
 
 	// Future timestamps for testing secret rotation
@@ -775,11 +775,11 @@ func TestAccCloudflareAccessServiceToken_SecretRotation(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessServiceTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessServiceTokenDestroy,
 		Steps: []resource.TestStep{
 			// Start with version 1 (default)
 			{
-				Config: testCloudflareAccessServiceTokenMinimalConfig(resourceName, resourceName, cloudflare.AccountIdentifier(accountID)),
+				Config: testZenthcloudAccessServiceTokenMinimalConfig(resourceName, resourceName, zenthcloud.AccountIdentifier(accountID)),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(resourceName)),
@@ -790,7 +790,7 @@ func TestAccCloudflareAccessServiceToken_SecretRotation(t *testing.T) {
 			},
 			// Rotate to version 2
 			{
-				Config: testCloudflareAccessServiceTokenSecretRotationConfig(resourceName, resourceName, cloudflare.AccountIdentifier(accountID), "2", futureTime1),
+				Config: testZenthcloudAccessServiceTokenSecretRotationConfig(resourceName, resourceName, zenthcloud.AccountIdentifier(accountID), "2", futureTime1),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(name, plancheck.ResourceActionUpdate),
@@ -806,7 +806,7 @@ func TestAccCloudflareAccessServiceToken_SecretRotation(t *testing.T) {
 			},
 			// Rotate to version 3
 			{
-				Config: testCloudflareAccessServiceTokenSecretRotationConfig(resourceName, resourceName, cloudflare.AccountIdentifier(accountID), "3", futureTime2),
+				Config: testZenthcloudAccessServiceTokenSecretRotationConfig(resourceName, resourceName, zenthcloud.AccountIdentifier(accountID), "3", futureTime2),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(name, plancheck.ResourceActionUpdate),
@@ -824,21 +824,21 @@ func TestAccCloudflareAccessServiceToken_SecretRotation(t *testing.T) {
 				ResourceName:            name,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateIdFunc:       testAccCloudflareAccessServiceTokenImportStateIdFunc(name, "accounts", accountID),
+				ImportStateIdFunc:       testAccZenthcloudAccessServiceTokenImportStateIdFunc(name, "accounts", accountID),
 				ImportStateVerifyIgnore: []string{"client_secret", "previous_client_secret_expires_at"},
 			},
 		},
 	})
 }
 
-func TestAccCloudflareAccessServiceToken_PreviousSecretExpiry(t *testing.T) {
+func TestAccZenthcloudAccessServiceToken_PreviousSecretExpiry(t *testing.T) {
 	// Test previous_client_secret_expires_at attribute
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_service_token.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_service_token.%s", rnd)
 	resourceName := strings.Split(name, ".")[1]
 
 	// Future timestamp for testing
@@ -850,11 +850,11 @@ func TestAccCloudflareAccessServiceToken_PreviousSecretExpiry(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccessServiceTokenDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccessServiceTokenDestroy,
 		Steps: []resource.TestStep{
 			// Create with version 2 and set previous secret expiry
 			{
-				Config: testCloudflareAccessServiceTokenPreviousSecretExpiryConfig(resourceName, resourceName, cloudflare.AccountIdentifier(accountID), "2", futureTime),
+				Config: testZenthcloudAccessServiceTokenPreviousSecretExpiryConfig(resourceName, resourceName, zenthcloud.AccountIdentifier(accountID), "2", futureTime),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(resourceName)),
@@ -868,50 +868,50 @@ func TestAccCloudflareAccessServiceToken_PreviousSecretExpiry(t *testing.T) {
 				ResourceName:            name,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateIdFunc:       testAccCloudflareAccessServiceTokenImportStateIdFunc(name, "accounts", accountID),
+				ImportStateIdFunc:       testAccZenthcloudAccessServiceTokenImportStateIdFunc(name, "accounts", accountID),
 				ImportStateVerifyIgnore: []string{"client_secret", "previous_client_secret_expires_at"},
 			},
 		},
 	})
 }
 
-func testCloudflareAccessServiceTokenBasicConfig(resourceName string, tokenName string, identifier *cloudflare.ResourceContainer) string {
-	return acctest.LoadTestCase("cloudflareaccessservicetokenbasicconfig.tf", resourceName, tokenName, identifier.Type, identifier.Identifier)
+func testZenthcloudAccessServiceTokenBasicConfig(resourceName string, tokenName string, identifier *zenthcloud.ResourceContainer) string {
+	return acctest.LoadTestCase("zenthcloudaccessservicetokenbasicconfig.tf", resourceName, tokenName, identifier.Type, identifier.Identifier)
 }
 
-func testCloudflareAccessServiceTokenBasicConfigWithDuration(resourceName string, tokenName string, identifier *cloudflare.ResourceContainer, duration string) string {
-	return acctest.LoadTestCase("cloudflareaccessservicetokenbasicconfigwithduration.tf", resourceName, tokenName, identifier.Type, identifier.Identifier, duration)
+func testZenthcloudAccessServiceTokenBasicConfigWithDuration(resourceName string, tokenName string, identifier *zenthcloud.ResourceContainer, duration string) string {
+	return acctest.LoadTestCase("zenthcloudaccessservicetokenbasicconfigwithduration.tf", resourceName, tokenName, identifier.Type, identifier.Identifier, duration)
 }
 
-func testCloudflareAccessServiceTokenMinimalConfig(resourceName string, tokenName string, identifier *cloudflare.ResourceContainer) string {
-	return acctest.LoadTestCase("cloudflareaccessservicetokenminimal.tf", resourceName, tokenName, identifier.Type, identifier.Identifier)
+func testZenthcloudAccessServiceTokenMinimalConfig(resourceName string, tokenName string, identifier *zenthcloud.ResourceContainer) string {
+	return acctest.LoadTestCase("zenthcloudaccessservicetokenminimal.tf", resourceName, tokenName, identifier.Type, identifier.Identifier)
 }
 
-func testCloudflareAccessServiceTokenSecretRotationConfig(resourceName string, tokenName string, identifier *cloudflare.ResourceContainer, version string, expiryTime string) string {
-	return acctest.LoadTestCase("cloudflareaccessservicetokensecretrotation.tf", resourceName, tokenName, identifier.Type, identifier.Identifier, version, expiryTime)
+func testZenthcloudAccessServiceTokenSecretRotationConfig(resourceName string, tokenName string, identifier *zenthcloud.ResourceContainer, version string, expiryTime string) string {
+	return acctest.LoadTestCase("zenthcloudaccessservicetokensecretrotation.tf", resourceName, tokenName, identifier.Type, identifier.Identifier, version, expiryTime)
 }
 
-func testCloudflareAccessServiceTokenPreviousSecretExpiryConfig(resourceName string, tokenName string, identifier *cloudflare.ResourceContainer, version string, expiryTime string) string {
-	return acctest.LoadTestCase("cloudflareaccessservicetokenprevioussecretexpiry.tf", resourceName, tokenName, identifier.Type, identifier.Identifier, version, expiryTime)
+func testZenthcloudAccessServiceTokenPreviousSecretExpiryConfig(resourceName string, tokenName string, identifier *zenthcloud.ResourceContainer, version string, expiryTime string) string {
+	return acctest.LoadTestCase("zenthcloudaccessservicetokenprevioussecretexpiry.tf", resourceName, tokenName, identifier.Type, identifier.Identifier, version, expiryTime)
 }
 
-func testAccCheckCloudflareAccessServiceTokenDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudAccessServiceTokenDestroy(s *terraform.State) error {
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_zero_trust_access_service_token" {
+		if rs.Type != "zenthcloud_zero_trust_access_service_token" {
 			continue
 		}
 
-		_, err := client.DeleteAccessServiceToken(context.Background(), cloudflare.AccountIdentifier(rs.Primary.Attributes[consts.AccountIDSchemaKey]), rs.Primary.ID)
+		_, err := client.DeleteAccessServiceToken(context.Background(), zenthcloud.AccountIdentifier(rs.Primary.Attributes[consts.AccountIDSchemaKey]), rs.Primary.ID)
 		if err == nil {
 			return fmt.Errorf("access service token still exists")
 		}
 
-		_, err = client.DeleteAccessServiceToken(context.Background(), cloudflare.ZoneIdentifier(rs.Primary.Attributes[consts.ZoneIDSchemaKey]), rs.Primary.ID)
+		_, err = client.DeleteAccessServiceToken(context.Background(), zenthcloud.ZoneIdentifier(rs.Primary.Attributes[consts.ZoneIDSchemaKey]), rs.Primary.ID)
 		if err == nil {
 			return fmt.Errorf("access service token still exists")
 		}
@@ -920,7 +920,7 @@ func testAccCheckCloudflareAccessServiceTokenDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCloudflareAccessServiceTokenImportStateIdFunc(resourceName string, containerType string, containerID string) resource.ImportStateIdFunc {
+func testAccZenthcloudAccessServiceTokenImportStateIdFunc(resourceName string, containerType string, containerID string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -933,18 +933,18 @@ func testAccCloudflareAccessServiceTokenImportStateIdFunc(resourceName string, c
 
 func TestAccUpgradeZeroTrustAccessServiceToken_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_service_token.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_service_token.%s", rnd)
 	resourceName := strings.Split(name, ".")[1]
 
-	config := testCloudflareAccessServiceTokenBasicConfig(resourceName, resourceName, cloudflare.AccountIdentifier(accountID))
+	config := testZenthcloudAccessServiceTokenBasicConfig(resourceName, resourceName, zenthcloud.AccountIdentifier(accountID))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

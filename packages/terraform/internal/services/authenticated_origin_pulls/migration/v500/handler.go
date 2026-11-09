@@ -15,7 +15,7 @@ func UpgradeFromV4(ctx context.Context, req resource.UpgradeStateRequest, resp *
 	tflog.Info(ctx, "Upgrading authenticated_origin_pulls state from v4 SDKv2 provider (schema_version=0)")
 
 	// Parse v4 state using v4 model
-	var v4State SourceCloudflareAuthenticatedOriginPullsModel
+	var v4State SourceZenthcloudAuthenticatedOriginPullsModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &v4State)...)
 	if resp.Diagnostics.HasError() {
 		return

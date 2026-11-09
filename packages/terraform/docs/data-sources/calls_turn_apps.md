@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_calls_turn_apps Data Source - Cloudflare"
+page_title: "zenthcloud_calls_turn_apps Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Calls ReadCalls Write
 ---
 
-# cloudflare_calls_turn_apps (Data Source)
+# zenthcloud_calls_turn_apps (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_calls_turn_apps" "example_calls_turn_apps" {
+data "zenthcloud_calls_turn_apps" "example_calls_turn_apps" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```
@@ -41,6 +41,6 @@ Read-Only:
 - `created` (String) The date and time the item was created.
 - `modified` (String) The date and time the item was last modified.
 - `name` (String) A short description of a Realtime SFU app, not shown to end users.
-- `uid` (String) A Cloudflare-generated unique identifier for a item.
+- `uid` (String) A Zenthcloud-generated unique identifier for a item.
 
 

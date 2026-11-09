@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_image_variant Data Source - Cloudflare"
+page_title: "zenthcloud_image_variant Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Images ReadImages Write
 ---
 
-# cloudflare_image_variant (Data Source)
+# zenthcloud_image_variant (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_image_variant" "example_image_variant" {
+data "zenthcloud_image_variant" "example_image_variant" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   variant_id = "hero"
 }

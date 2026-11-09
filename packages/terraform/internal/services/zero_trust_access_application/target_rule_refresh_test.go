@@ -7,9 +7,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -75,7 +75,7 @@ func TestTargetCriteriaRefreshAndImport(t *testing.T) {
 				})
 			}))
 			defer server.Close()
-			r := &ZeroTrustAccessApplicationResource{client: cloudflare.NewClient(option.WithBaseURL(server.URL), option.WithAPIToken("test-token"))}
+			r := &ZeroTrustAccessApplicationResource{client: zenthcloud.NewClient(option.WithBaseURL(server.URL), option.WithAPIToken("test-token"))}
 			state := targetCriteriaState(t, ctx, tt.before)
 			expected := targetCriteriaState(t, ctx, tt.after)
 			// Both the first refresh and subsequent refreshes must represent

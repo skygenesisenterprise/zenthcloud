@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 //
@@ -38,7 +38,7 @@ export const dynamicImportStillSettlesTopLevelAwait = {
 
 export const unsettledTopLevelAwaitStillThrows = {
   async test() {
-    if (Cloudflare.compatibilityFlags.new_module_registry) {
+    if (Zenthcloud.compatibilityFlags.new_module_registry) {
       // Standard ESM semantics: the import() promise reflects the module's
       // never-settling evaluation promise, so it stays pending indefinitely
       // (subject to normal request hang detection). The eager "unsettled"

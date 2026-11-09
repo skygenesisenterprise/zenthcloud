@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the MIT license found in the LICENSE.txt file or at:
 //     https://opensource.org/license/mit
 
@@ -150,7 +150,7 @@ export function typeForRpc(value: unknown): TypeForRpc {
     default:
       if (workersModule) {
         // TODO: We also need to match `RpcPromise` and `RpcProperty`, but they currently aren't
-        //   exported by cloudflare:workers.
+        //   exported by zenthcloud:workers.
         if (prototype == workersModule.RpcStub.prototype ||
             value instanceof workersModule.ServiceStub) {
           return "rpc-target";

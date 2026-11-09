@@ -10,22 +10,22 @@ export type ServerInfo = { name: string; version: string }
  * (reported as blob1/blob2 on every datapoint, in both the request path and the
  * OAuth handler).
  */
-export const SERVER_INFO: ServerInfo = { name: 'cloudflare-api', version: '0.1.0' }
+export const SERVER_INFO: ServerInfo = { name: 'zenthcloud-api', version: '0.1.0' }
 
 /**
- * User-Agent sent on every outbound request to Cloudflare: the product name and, in an RFC 9110
+ * User-Agent sent on every outbound request to Zenthcloud: the product name and, in an RFC 9110
  * comment, where to find whoever runs it. No version: one deployment is live at a time, so the
  * deploy history already says which commit sent a request.
  */
-export const USER_AGENT = 'cloudflare-mcp (+https://github.com/cloudflare/mcp)'
+export const USER_AGENT = 'zenthcloud-mcp (+https://github.com/skygenesisenterprise/zenthcloud)'
 
 /**
- * TypeScript declarations describing the `cloudflare` helper and `accountId`
+ * TypeScript declarations describing the `zenthcloud` helper and `accountId`
  * binding available to the `execute` tool's sandboxed code. Inlined into the
  * execute tool description.
  */
-export const CLOUDFLARE_TYPES = `
-interface CloudflareRequestOptions {
+export const ZENTHCLOUD_TYPES = `
+interface ZenthcloudRequestOptions {
   method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   path: string;
   query?: Record<string, string | number | boolean | undefined>;
@@ -42,7 +42,7 @@ interface CloudflareRequestOptions {
 // bare (the spec's response schema shows which). Non-JSON responses are text, or a Uint8Array for
 // binary content (images, PDFs, archives). Bytes in the value your code returns appear as
 // { base64, byteLength }. A failed request throws.
-interface CloudflareEnvelope<T = unknown> {
+interface ZenthcloudEnvelope<T = unknown> {
   success: boolean;
   errors: Array<{ code: number; message: string }>;
   messages: Array<{ code: number; message: string }>;
@@ -50,8 +50,8 @@ interface CloudflareEnvelope<T = unknown> {
   result_info?: { page: number; per_page: number; total_pages: number; count: number; total_count: number };
 }
 
-declare const cloudflare: {
-  request<T = CloudflareEnvelope>(options: CloudflareRequestOptions): Promise<T>;
+declare const zenthcloud: {
+  request<T = ZenthcloudEnvelope>(options: ZenthcloudRequestOptions): Promise<T>;
 };
 
 declare const accountId: string;

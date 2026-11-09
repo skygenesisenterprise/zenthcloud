@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Account-based sweeper script for Terraform Cloudflare Provider
+# Account-based sweeper script for Terraform Zenthcloud Provider
 # This script runs sweepers for all zones under a specified account
 # Usage: ./scripts/run-account-sweeper <account_id>
 
@@ -36,12 +36,12 @@ debug_log() {
 # Usage information
 show_usage() {
     echo "Usage: $0 --account <account_id> [options]"
-    echo "       $0 [options]               (uses CLOUDFLARE_ACCOUNT_ID env var)"
+    echo "       $0 [options]               (uses ZENTHCLOUD_ACCOUNT_ID env var)"
     echo "       $0 <account_id> [options]  (legacy format)"
     echo "       $0 --list                  (list available sweepers)"
     echo ""
     echo "Arguments:"
-    echo "  --account ID       Cloudflare Account ID to sweep resources for (optional if CLOUDFLARE_ACCOUNT_ID is set)"
+    echo "  --account ID       Zenthcloud Account ID to sweep resources for (optional if ZENTHCLOUD_ACCOUNT_ID is set)"
     echo ""
     echo "Options:"
     echo "  --help, -h                      Show this help message"
@@ -54,13 +54,13 @@ show_usage() {
     echo "  --dangerously-delete-resources  DANGEROUS: Skip resource name validation and delete ALL resources"
     echo ""
     echo "Environment variables (authentication):"
-    echo "  CLOUDFLARE_API_TOKEN              Your Cloudflare API token"
+    echo "  ZENTHCLOUD_API_TOKEN              Your Zenthcloud API token"
     echo "  OR"
-    echo "  CLOUDFLARE_API_KEY + CLOUDFLARE_EMAIL   Your Cloudflare API key and email"
+    echo "  ZENTHCLOUD_API_KEY + ZENTHCLOUD_EMAIL   Your Zenthcloud API key and email"
     echo ""
     echo "Environment variables (optional defaults):"
-    echo "  CLOUDFLARE_ACCOUNT_ID             Default account ID (used when --account not specified)"
-    echo "  CLOUDFLARE_ZONE_ID                Default zone ID (used when --zone not specified)"
+    echo "  ZENTHCLOUD_ACCOUNT_ID             Default account ID (used when --account not specified)"
+    echo "  ZENTHCLOUD_ZONE_ID                Default zone ID (used when --zone not specified)"
     echo ""
     echo "Other environment variables:"
     echo "  DEBUG_LOGS                        Enable debug logging (default: false)"
@@ -77,7 +77,7 @@ show_usage() {
     echo "  DEBUG_LOGS=true $0 --account c03814971cc44525d34173ca738b615b"
     echo ""
     echo "  # Using environment variables:"
-    echo "  export CLOUDFLARE_ACCOUNT_ID=c03814971cc44525d34173ca738b615b"
+    echo "  export ZENTHCLOUD_ACCOUNT_ID=c03814971cc44525d34173ca738b615b"
     echo "  $0 --resource load_balancer"
     echo "  $0 --zone 32b08b824a1707e468c6e839df23e57f --resource ruleset"
     echo ""
@@ -109,7 +109,7 @@ validate_prerequisites() {
     local account_id="$1"
     local target_resource="$2"
     
-    # Check if account_id is provided and looks like a valid Cloudflare account ID
+    # Check if account_id is provided and looks like a valid Zenthcloud account ID
     if [ -z "$account_id" ]; then
         log "${RED}Error: Account ID is required${NC}"
         show_usage
@@ -147,15 +147,15 @@ validate_prerequisites() {
         log "${GREEN}Target resource '$target_resource' validated${NC}"
     fi
     
-    # Check if either CLOUDFLARE_API_TOKEN or (CLOUDFLARE_API_KEY + CLOUDFLARE_EMAIL) is set
-    if [ -z "$CLOUDFLARE_API_TOKEN" ] && [ -z "$CLOUDFLARE_API_KEY" ]; then
-        log "${RED}Error: Either CLOUDFLARE_API_TOKEN or CLOUDFLARE_API_KEY + CLOUDFLARE_EMAIL environment variables are required${NC}"
+    # Check if either ZENTHCLOUD_API_TOKEN or (ZENTHCLOUD_API_KEY + ZENTHCLOUD_EMAIL) is set
+    if [ -z "$ZENTHCLOUD_API_TOKEN" ] && [ -z "$ZENTHCLOUD_API_KEY" ]; then
+        log "${RED}Error: Either ZENTHCLOUD_API_TOKEN or ZENTHCLOUD_API_KEY + ZENTHCLOUD_EMAIL environment variables are required${NC}"
         exit 1
     fi
 
     # If using API key, ensure email is also set
-    if [ -n "$CLOUDFLARE_API_KEY" ] && [ -z "$CLOUDFLARE_EMAIL" ]; then
-        log "${RED}Error: CLOUDFLARE_EMAIL is required when using CLOUDFLARE_API_KEY${NC}"
+    if [ -n "$ZENTHCLOUD_API_KEY" ] && [ -z "$ZENTHCLOUD_EMAIL" ]; then
+        log "${RED}Error: ZENTHCLOUD_EMAIL is required when using ZENTHCLOUD_API_KEY${NC}"
         exit 1
     fi
     
@@ -180,7 +180,7 @@ validate_prerequisites() {
     log "${GREEN}Prerequisites validated successfully${NC}"
 }
 
-# Function to fetch zones for an account using Cloudflare API
+# Function to fetch zones for an account using Zenthcloud API
 fetch_zones_for_account() {
     local account_id="$1"
     local zones_file="$LOG_DIR/zones_${account_id}.json"
@@ -189,20 +189,20 @@ fetch_zones_for_account() {
 
     # Build authentication headers based on available credentials
     local auth_headers
-    if [ -n "$CLOUDFLARE_API_TOKEN" ]; then
-        auth_headers="-H \"Authorization: Bearer $CLOUDFLARE_API_TOKEN\""
+    if [ -n "$ZENTHCLOUD_API_TOKEN" ]; then
+        auth_headers="-H \"Authorization: Bearer $ZENTHCLOUD_API_TOKEN\""
     else
-        auth_headers="-H \"X-Auth-Email: $CLOUDFLARE_EMAIL\" -H \"X-Auth-Key: $CLOUDFLARE_API_KEY\""
+        auth_headers="-H \"X-Auth-Email: $ZENTHCLOUD_EMAIL\" -H \"X-Auth-Key: $ZENTHCLOUD_API_KEY\""
     fi
 
     # Make API request to list zones for the account
-    local api_response=$(eval curl -s -X GET "https://api.cloudflare.com/client/v4/zones?account.id=${account_id}" \
+    local api_response=$(eval curl -s -X GET "https://github.com/skygenesisenterprise/zenthcloud${account_id}" \
         $auth_headers \
         -H "Content-Type: application/json")
     
     # Check if we got any response
     if [ -z "$api_response" ]; then
-        log "${RED}Error: No response from Cloudflare API${NC}" >&2
+        log "${RED}Error: No response from Zenthcloud API${NC}" >&2
         exit 1
     fi
     
@@ -210,7 +210,7 @@ fetch_zones_for_account() {
     local success=$(echo "$api_response" | jq -r '.success // false' 2>/dev/null)
     if [ "$success" != "true" ]; then
         local errors=$(echo "$api_response" | jq -r '.errors[]?.message // "Unknown error"' 2>/dev/null || echo "Invalid API response")
-        log "${RED}Error fetching zones from Cloudflare API: $errors${NC}" >&2
+        log "${RED}Error fetching zones from Zenthcloud API: $errors${NC}" >&2
         debug_log "${WHITE}API Response: $api_response${NC}" >&2
         # Create empty zones file and return it instead of exiting
         echo "[]" > "$zones_file"
@@ -275,19 +275,19 @@ discover_sweepers() {
         local is_account=false
         local is_zone=false
 
-        # Look for CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_ZONE_ID usage in test files
+        # Look for ZENTHCLOUD_ACCOUNT_ID and ZENTHCLOUD_ZONE_ID usage in test files
         for test_file in "$service_dir"/*_test.go; do
             if [ ! -f "$test_file" ]; then
                 continue
             fi
 
-            # Check if the sweeper function references CLOUDFLARE_ACCOUNT_ID
-            if grep -q 'CLOUDFLARE_ACCOUNT_ID' "$test_file" 2>/dev/null; then
+            # Check if the sweeper function references ZENTHCLOUD_ACCOUNT_ID
+            if grep -q 'ZENTHCLOUD_ACCOUNT_ID' "$test_file" 2>/dev/null; then
                 is_account=true
             fi
 
-            # Check if the sweeper function references CLOUDFLARE_ZONE_ID
-            if grep -q 'CLOUDFLARE_ZONE_ID' "$test_file" 2>/dev/null; then
+            # Check if the sweeper function references ZENTHCLOUD_ZONE_ID
+            if grep -q 'ZENTHCLOUD_ZONE_ID' "$test_file" 2>/dev/null; then
                 is_zone=true
             fi
         done
@@ -357,9 +357,9 @@ run_sweeper() {
     fi
     
     # Set environment variables
-    export CLOUDFLARE_ACCOUNT_ID="$account_id"
+    export ZENTHCLOUD_ACCOUNT_ID="$account_id"
     if [ -n "$zone_id" ]; then
-        export CLOUDFLARE_ZONE_ID="$zone_id"
+        export ZENTHCLOUD_ZONE_ID="$zone_id"
         log "${WHITE}Sweeping zone-level service: $service (zone: $zone_id)${NC}"
     else
         log "${WHITE}Sweeping account-level service: $service (account: $account_id)${NC}"
@@ -372,7 +372,7 @@ run_sweeper() {
     
     # Build sweeper command
     local service_path="./internal/services/$service"
-    local sweeper_name="cloudflare_${service}"
+    local sweeper_name="zenthcloud_${service}"
     # NOTE: Do NOT set TF_ACC=1 when running sweepers, as that triggers acceptance tests
     local test_cmd="go test -v \"$service_path\" -sweep=all -sweep-run=\"$sweeper_name\" -timeout \"$SWEEP_TIMEOUT\""
     
@@ -716,14 +716,14 @@ if [ "$LIST_ONLY" = "true" ]; then
 fi
 
 # Use environment variables as defaults if not provided via command line
-if [ -z "$ACCOUNT_ID" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ]; then
-    ACCOUNT_ID="$CLOUDFLARE_ACCOUNT_ID"
-    log "${WHITE}Using CLOUDFLARE_ACCOUNT_ID from environment: $ACCOUNT_ID${NC}"
+if [ -z "$ACCOUNT_ID" ] && [ -n "$ZENTHCLOUD_ACCOUNT_ID" ]; then
+    ACCOUNT_ID="$ZENTHCLOUD_ACCOUNT_ID"
+    log "${WHITE}Using ZENTHCLOUD_ACCOUNT_ID from environment: $ACCOUNT_ID${NC}"
 fi
 
-if [ -z "$TARGET_ZONE" ] && [ -n "$CLOUDFLARE_ZONE_ID" ]; then
-    TARGET_ZONE="$CLOUDFLARE_ZONE_ID"
-    log "${WHITE}Using CLOUDFLARE_ZONE_ID from environment: $TARGET_ZONE${NC}"
+if [ -z "$TARGET_ZONE" ] && [ -n "$ZENTHCLOUD_ZONE_ID" ]; then
+    TARGET_ZONE="$ZENTHCLOUD_ZONE_ID"
+    log "${WHITE}Using ZENTHCLOUD_ZONE_ID from environment: $TARGET_ZONE${NC}"
 fi
 
 # Validate arguments and prerequisites

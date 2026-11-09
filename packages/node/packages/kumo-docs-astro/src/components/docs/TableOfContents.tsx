@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   TableOfContents as TOC,
   useTableOfContentsActiveId,
-} from "@cloudflare/kumo";
+} from "@zenthcloud/kumo";
 import { CaretDownIcon } from "@phosphor-icons/react";
 
 export interface TocHeading {

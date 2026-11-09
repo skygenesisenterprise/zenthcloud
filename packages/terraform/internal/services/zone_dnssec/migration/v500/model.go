@@ -6,9 +6,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceCloudflareZoneDNSSECModel represents the v4 (SDKv2) state structure
+// SourceZenthcloudZoneDNSSECModel represents the v4 (SDKv2) state structure
 // This model is used to read the old state format before migration
-type SourceCloudflareZoneDNSSECModel struct {
+type SourceZenthcloudZoneDNSSECModel struct {
 	ID              types.String `tfsdk:"id"`
 	ZoneID          types.String `tfsdk:"zone_id"`
 	Status          types.String `tfsdk:"status"`

@@ -4,7 +4,7 @@ package argo_smart_routing
 
 import (
 	"context"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/argo_smart_routing/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/argo_smart_routing/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
@@ -14,7 +14,7 @@ var _ resource.ResourceWithMoveState = (*ArgoSmartRoutingResource)(nil)
 // MoveState registers state movers for resource renames.
 // This enables Terraform 1.8+ `moved` blocks to automatically trigger state migration.
 func (r *ArgoSmartRoutingResource) MoveState(ctx context.Context) []resource.StateMover {
-	sourceSchema := v500.SourceCloudflareArgoSchema()
+	sourceSchema := v500.SourceZenthcloudArgoSchema()
 
 	return []resource.StateMover{
 		{
@@ -27,7 +27,7 @@ func (r *ArgoSmartRoutingResource) MoveState(ctx context.Context) []resource.Sta
 // UpgradeState registers state upgraders for schema version changes.
 //
 // This handles two upgrade paths:
-// 1. v4 state (schema_version=0) → v5 (version=500): Full transformation from cloudflare_argo
+// 1. v4 state (schema_version=0) → v5 (version=500): Full transformation from zenthcloud_argo
 // 2. v5 state (version=1) → v5 (version=500): No-op upgrade
 //
 // The separation of schema versions (v4=0, v5=1/500) eliminates the need for
@@ -35,10 +35,10 @@ func (r *ArgoSmartRoutingResource) MoveState(ctx context.Context) []resource.Sta
 func (r *ArgoSmartRoutingResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
 	targetSchema := ResourceSchema(ctx)
 
-	sourceSchema := v500.SourceCloudflareArgoSchema()
+	sourceSchema := v500.SourceZenthcloudArgoSchema()
 
 	return map[int64]resource.StateUpgrader{
-		// Handle state from v4 SDKv2 provider cloudflare_argo (schema_version=0)
+		// Handle state from v4 SDKv2 provider zenthcloud_argo (schema_version=0)
 		0: {
 			PriorSchema:   &sourceSchema,
 			StateUpgrader: v500.UpgradeArgoToSmartRouting,

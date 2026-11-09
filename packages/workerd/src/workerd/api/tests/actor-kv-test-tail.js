@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import * as assert from 'node:assert';
@@ -40,13 +40,13 @@ export const test = {
       {
         name: 'durable_object_storage_setAlarm',
         closed: true,
-        'cloudflare.durable_object.alarm.scheduled_time':
+        'zenthcloud.durable_object.alarm.scheduled_time':
           '2100-01-01T00:00:00.000Z',
       },
       {
         name: 'durable_object_storage_getAlarm',
         closed: true,
-        'cloudflare.durable_object.alarm.scheduled_time':
+        'zenthcloud.durable_object.alarm.scheduled_time':
           '2100-01-01T00:00:00.000Z',
       },
       { name: 'durable_object_storage_deleteAlarm', closed: true },

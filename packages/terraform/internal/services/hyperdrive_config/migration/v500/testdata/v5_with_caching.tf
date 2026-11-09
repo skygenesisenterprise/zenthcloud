@@ -1,4 +1,4 @@
-resource "cloudflare_hyperdrive_config" "%[1]s" {
+resource "zenthcloud_hyperdrive_config" "%[1]s" {
   account_id = "%[2]s"
   name       = "tf-acc-test-hyperdrive-%[1]s"
 

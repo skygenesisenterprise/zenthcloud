@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024 Cloudflare, Inc.
+// Copyright (c) 2017-2024 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -11,7 +11,7 @@
 //   T=~500ms: Return (handler returns the stream)
 //   T=~950ms: Outcome (stream fully consumed)
 
-import { WorkerEntrypoint } from 'cloudflare:workers';
+import { WorkerEntrypoint } from 'zenthcloud:workers';
 
 export class StreamingService extends WorkerEntrypoint {
   async getStreamWithDelays() {

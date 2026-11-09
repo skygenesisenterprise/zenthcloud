@@ -7,8 +7,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/api_token/migration/v500"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/api_token/migration/v501"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/api_token/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/api_token/migration/v501"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -37,7 +37,7 @@ var _ resource.ResourceWithUpgradeState = (*APITokenResource)(nil)
 // 3. v500 state (schema_version=500) → v501: Set→List migration
 //   - Converts Set-typed policies and permission_groups to sorted Lists
 func (r *APITokenResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
-	v4Schema := v500.SourceCloudflareAPITokenSchema()
+	v4Schema := v500.SourceZenthcloudAPITokenSchema()
 	v500Schema := v501.SourceSchemaV500()
 
 	// v5.16-v5.18 stored state at schema_version=1 with the same Set-based schema

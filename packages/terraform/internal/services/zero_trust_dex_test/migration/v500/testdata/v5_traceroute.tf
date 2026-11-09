@@ -1,7 +1,7 @@
-resource "cloudflare_zero_trust_dex_test" "%s" {
+resource "zenthcloud_zero_trust_dex_test" "%s" {
   account_id  = "%s"
   name        = "%s"
-  description = "Test network path to Cloudflare DNS"
+  description = "Test network path to Zenthcloud DNS"
   interval    = "1h0m0s"
   enabled     = true
 

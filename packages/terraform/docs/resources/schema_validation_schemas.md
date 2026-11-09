@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_schema_validation_schemas Resource - Cloudflare"
+page_title: "zenthcloud_schema_validation_schemas Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account API GatewayAccount API Gateway ReadDomain API GatewayDomain API Gateway Read
 ---
 
-# cloudflare_schema_validation_schemas (Resource)
+# zenthcloud_schema_validation_schemas (Resource)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_schema_validation_schemas" "example_schema_validation_schemas" {
+resource "zenthcloud_schema_validation_schemas" "example_schema_validation_schemas" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   kind = "openapi_v3"
   name = "petstore schema"
@@ -54,7 +54,7 @@ Available values: "openapi_v3".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_schema_validation_schemas.example '<zone_id>/<schema_id>'
+$ terraform import zenthcloud_schema_validation_schemas.example '<zone_id>/<schema_id>'
 ```
 
 

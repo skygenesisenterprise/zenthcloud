@@ -5,8 +5,8 @@ package keyless_certificate
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -77,7 +77,7 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 							ElementType: types.StringType,
 						},
 						"port": schema.Float64Attribute{
-							Description: "The keyless SSL port used to communicate between Cloudflare and the client's Keyless SSL server.",
+							Description: "The keyless SSL port used to communicate between Zenthcloud and the client's Keyless SSL server.",
 							Computed:    true,
 						},
 						"status": schema.StringAttribute{
@@ -88,7 +88,7 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 							},
 						},
 						"tunnel": schema.SingleNestedAttribute{
-							Description: "Configuration for using Keyless SSL through a Cloudflare Tunnel.",
+							Description: "Configuration for using Keyless SSL through a Zenthcloud Tunnel.",
 							Computed:    true,
 							CustomType:  customfield.NewNestedObjectType[KeylessCertificatesTunnelDataSourceModel](ctx),
 							Attributes: map[string]schema.Attribute{
@@ -97,7 +97,7 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 									Computed:    true,
 								},
 								"vnet_id": schema.StringAttribute{
-									Description: "Cloudflare Tunnel Virtual Network ID.",
+									Description: "Zenthcloud Tunnel Virtual Network ID.",
 									Computed:    true,
 								},
 							},

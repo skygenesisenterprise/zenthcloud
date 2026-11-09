@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_image_variant Resource - Cloudflare"
+page_title: "zenthcloud_image_variant Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Images ReadImages Write
 ---
 
-# cloudflare_image_variant (Resource)
+# zenthcloud_image_variant (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_image_variant" "example_image_variant" {
+resource "zenthcloud_image_variant" "example_image_variant" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   id = "hero"
   options = {
@@ -62,7 +62,7 @@ Available values: "keep", "copyright", "none".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_image_variant.example '<account_id>/<variant_id>'
+$ terraform import zenthcloud_image_variant.example '<account_id>/<variant_id>'
 ```
 
 

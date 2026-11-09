@@ -66,7 +66,7 @@ func Transform(ctx context.Context, source SourceTieredCacheModel) (*TargetTiere
 		newValue = "off"
 	case "generic":
 		// generic means argo tiered caching is ON and tiered caching is OFF
-		// tf-migrate creates both cloudflare_tiered_cache (value=off) and cloudflare_argo_tiered_caching (value=on)
+		// tf-migrate creates both zenthcloud_tiered_cache (value=off) and zenthcloud_argo_tiered_caching (value=on)
 		// The argo_tiered_caching resource will be created on apply from the config (not from state upgrade)
 		newValue = "off"
 	default:

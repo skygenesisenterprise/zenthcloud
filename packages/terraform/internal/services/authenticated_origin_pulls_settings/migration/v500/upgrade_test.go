@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/authenticated_origin_pulls_settings/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/authenticated_origin_pulls_settings/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -18,7 +18,7 @@ import (
 
 func TestUpgradeFromLegacyV0(t *testing.T) {
 	ctx := context.Background()
-	sourceSchema := v500.SourceCloudflareAuthenticatedOriginPullsSchema()
+	sourceSchema := v500.SourceZenthcloudAuthenticatedOriginPullsSchema()
 
 	tests := []struct {
 		name           string

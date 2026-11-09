@@ -40,7 +40,7 @@ export const tunnel_configuration: JSONObject = {
     "source": {
       "enum": [
         "local",
-        "cloudflare"
+        "zenthcloud"
       ],
       "type": "string"
     },

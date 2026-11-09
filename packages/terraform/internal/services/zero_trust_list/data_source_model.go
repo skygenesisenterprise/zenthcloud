@@ -5,9 +5,9 @@ package zero_trust_list
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -33,7 +33,7 @@ type ZeroTrustListDataSourceModel struct {
 
 func (m *ZeroTrustListDataSourceModel) toReadParams(_ context.Context) (params zero_trust.GatewayListGetParams, diags diag.Diagnostics) {
 	params = zero_trust.GatewayListGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -48,21 +48,21 @@ func (m *ZeroTrustListDataSourceModel) toListParams(_ context.Context) (params z
 	}
 
 	params = zero_trust.GatewayListListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
-		Filter:    cloudflare.F(mFilterFilter),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
+		Filter:    zenthcloud.F(mFilterFilter),
 	}
 
 	if !m.Filter.Direction.IsNull() {
-		params.Direction = cloudflare.F(zero_trust.GatewayListListParamsDirection(m.Filter.Direction.ValueString()))
+		params.Direction = zenthcloud.F(zero_trust.GatewayListListParamsDirection(m.Filter.Direction.ValueString()))
 	}
 	if !m.Filter.OrderBy.IsNull() {
-		params.OrderBy = cloudflare.F(zero_trust.GatewayListListParamsOrderBy(m.Filter.OrderBy.ValueString()))
+		params.OrderBy = zenthcloud.F(zero_trust.GatewayListListParamsOrderBy(m.Filter.OrderBy.ValueString()))
 	}
 	if !m.Filter.Search.IsNull() {
-		params.Search = cloudflare.F(m.Filter.Search.ValueString())
+		params.Search = zenthcloud.F(m.Filter.Search.ValueString())
 	}
 	if !m.Filter.Type.IsNull() {
-		params.Type = cloudflare.F(zero_trust.GatewayListListParamsType(m.Filter.Type.ValueString()))
+		params.Type = zenthcloud.F(zero_trust.GatewayListListParamsType(m.Filter.Type.ValueString()))
 	}
 
 	return

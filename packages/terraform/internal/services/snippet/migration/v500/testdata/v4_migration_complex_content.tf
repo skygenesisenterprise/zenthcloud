@@ -1,4 +1,4 @@
-resource "cloudflare_snippet" "%[2]s" {
+resource "zenthcloud_snippet" "%[2]s" {
   zone_id     = "%[1]s"
   name        = "%[2]s"
   main_module = "worker.js"
@@ -14,7 +14,7 @@ resource "cloudflare_snippet" "%[2]s" {
           // Handle different paths
           if (url.pathname === '/api/data') {
             return new Response(JSON.stringify({
-              message: "Hello from Cloudflare",
+              message: "Hello from Zenthcloud",
               path: url.pathname,
               timestamp: Date.now()
             }), {

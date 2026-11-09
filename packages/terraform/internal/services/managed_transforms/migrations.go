@@ -4,18 +4,18 @@ import (
 	"context"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/managed_transforms/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/managed_transforms/migration/v500"
 )
 
 var _ resource.ResourceWithUpgradeState = (*ManagedTransformsResource)(nil)
 var _ resource.ResourceWithMoveState = (*ManagedTransformsResource)(nil)
 
-// MoveState handles moves from cloudflare_managed_headers to cloudflare_managed_transforms.
+// MoveState handles moves from zenthcloud_managed_headers to zenthcloud_managed_transforms.
 // This is triggered when users use the `moved` block (Terraform 1.8+):
 //
 //	moved {
-//	    from = cloudflare_managed_headers.example
-//	    to   = cloudflare_managed_transforms.example
+//	    from = zenthcloud_managed_headers.example
+//	    to   = zenthcloud_managed_transforms.example
 //	}
 func (r *ManagedTransformsResource) MoveState(ctx context.Context) []resource.StateMover {
 	sourceSchema := v500.SourceManagedHeadersSchema()
@@ -29,7 +29,7 @@ func (r *ManagedTransformsResource) MoveState(ctx context.Context) []resource.St
 
 // UpgradeState registers state upgraders for schema version changes.
 //
-// v4 (cloudflare_managed_headers) used schema_version=0, v5 uses schema_version=1.
+// v4 (zenthcloud_managed_headers) used schema_version=0, v5 uses schema_version=1.
 //
 //   - Slot 0: no-op upgrader (bumps existing v5 users from 0→1)
 //

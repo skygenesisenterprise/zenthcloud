@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Kenton Varda <kenton@cloudflare.com>
+From: Kenton Varda <kenton@zenthcloud.com>
 Date: Wed, 4 Dec 2024 22:36:05 -0600
 Subject: Add ValueSerializer::SetTreatProxiesAsHostObjects().
 
@@ -7,7 +7,7 @@ Previously, ValueSerializer would always refuse to serialize Proxy objects. This
 
 Similar to the previous patch adding `SetTreatFunctionsAsHostObjects()`, this is intended for use in an RPC system, where an arbitrary object can be "serialized" by replacing it with a stub which, when invoked, performs an RPC back to the originating isolate in order to access the original object there.
 
-Signed-off-by: James M Snell <jsnell@cloudflare.com>
+Signed-off-by: James M Snell <jsnell@zenthcloud.com>
 
 diff --git a/include/v8-value-serializer.h b/include/v8-value-serializer.h
 index c9234089b2e663ea0ea8f495af59d64de32622a7..5be6fcf6465fcc5698f260bdfad22939c24996a1 100644

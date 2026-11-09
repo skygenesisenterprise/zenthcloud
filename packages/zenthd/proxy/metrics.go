@@ -3,10 +3,10 @@ package proxy
 import (
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/cloudflare/cloudflared/connection"
+	"github.com/zenthcloud/zenthcloudd/connection"
 )
 
-// Metrics uses connection.MetricsNamespace(aka cloudflared) as namespace and connection.TunnelSubsystem
+// Metrics uses connection.MetricsNamespace(aka zenthcloudd) as namespace and connection.TunnelSubsystem
 // (tunnel) as subsystem to keep them consistent with the previous qualifier.
 
 var (

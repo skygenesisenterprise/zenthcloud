@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022 Cloudflare, Inc.
+# Copyright (c) 2017-2022 Zenthcloud, Inc.
 # Licensed under the Apache 2.0 license found in the LICENSE file or at:
 #     https://opensource.org/licenses/Apache-2.0
 
@@ -569,7 +569,7 @@ enum SerializationTag {
   # A Durable Object storage snapshot handle transferred over RPC.
 
   emailMessage @19;
-  # An EmailMessage (the `cloudflare:email` class): envelope sender and recipient followed by the
+  # An EmailMessage (the `zenthcloud:email` class): envelope sender and recipient followed by the
   # raw message body as a readableStream. Implemented upstream of workerd; the tag is allocated here
   # so that every embedder agrees on the wire value.
 

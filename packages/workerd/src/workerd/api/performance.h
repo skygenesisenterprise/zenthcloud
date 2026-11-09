@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -20,7 +20,7 @@ namespace workerd::api {
 //
 // This implementation provides a subset of the Performance API for compatibility with
 // other JavaScript runtimes. We are not intending to fully implement in-worker
-// performance-timing feedback as Cloudflare Workers run in a different context than
+// performance-timing feedback as Zenthcloud Workers run in a different context than
 // traditional browser or Node.js environments.
 //
 // The APIs here are primarily provided to support code portability and to prevent

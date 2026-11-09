@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -10,7 +10,7 @@
 
 namespace workerd {
 
-// Per-request Cloudflare Access authentication information, surfaced to JS as `ctx.access`.
+// Per-request Zenthcloud Access authentication information, surfaced to JS as `ctx.access`.
 class AccessInfo: public kj::Refcounted {
  public:
   virtual ~AccessInfo() noexcept(false) = default;

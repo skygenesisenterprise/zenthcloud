@@ -7,13 +7,13 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7/url_normalization"
+	"github.com/zenthcloud/zenthcloud-go/v7/url_normalization"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
-	cloudflare "github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	zenthcloud "github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -26,24 +26,24 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_url_normalization_settings", &resource.Sweeper{
-		Name: "cloudflare_url_normalization_settings",
-		F:    testSweepCloudflareURLNormalizationSettings,
+	resource.AddTestSweepers("zenthcloud_url_normalization_settings", &resource.Sweeper{
+		Name: "zenthcloud_url_normalization_settings",
+		F:    testSweepZenthcloudURLNormalizationSettings,
 	})
 }
 
-func testSweepCloudflareURLNormalizationSettings(r string) error {
+func testSweepZenthcloudURLNormalizationSettings(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping URL normalization settings sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping URL normalization settings sweep: ZENTHCLOUD_ZONE_ID not set")
 		return nil
 	}
 
 	settings, err := client.URLNormalization.Get(ctx, url_normalization.URLNormalizationGetParams{
-		ZoneID: cloudflare.F(zoneID),
+		ZoneID: zenthcloud.F(zoneID),
 	})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch URL normalization settings: %s", err))
@@ -57,7 +57,7 @@ func testSweepCloudflareURLNormalizationSettings(r string) error {
 
 	tflog.Info(ctx, fmt.Sprintf("Deleting URL normalization settings (zone: %s)", zoneID))
 	err = client.URLNormalization.Delete(ctx, url_normalization.URLNormalizationDeleteParams{
-		ZoneID: cloudflare.F(zoneID),
+		ZoneID: zenthcloud.F(zoneID),
 	})
 
 	if err != nil {
@@ -69,23 +69,23 @@ func testSweepCloudflareURLNormalizationSettings(r string) error {
 	return nil
 }
 
-func TestAccCloudflareURLNormalizationSettings_CreateThenUpdate(t *testing.T) {
+func TestAccZenthcloudURLNormalizationSettings_CreateThenUpdate(t *testing.T) {
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_url_normalization_settings.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_url_normalization_settings.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareURLNormalizationSettingsConfig(zoneID, "cloudflare", "incoming", rnd),
+				Config: testAccCheckZenthcloudURLNormalizationSettingsConfig(zoneID, "zenthcloud", "incoming", rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("cloudflare")),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("zenthcloud")),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("scope"), knownvalue.StringExact("incoming")),
 				},
 			},
@@ -96,11 +96,11 @@ func TestAccCloudflareURLNormalizationSettings_CreateThenUpdate(t *testing.T) {
 				ImportStateId:     zoneID,
 			},
 			{
-				Config: testAccCheckCloudflareURLNormalizationSettingsConfig(zoneID, "cloudflare", "both", rnd),
+				Config: testAccCheckZenthcloudURLNormalizationSettingsConfig(zoneID, "zenthcloud", "both", rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("cloudflare")),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("zenthcloud")),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("scope"), knownvalue.StringExact("both")),
 				},
 			},
@@ -114,12 +114,12 @@ func TestAccCloudflareURLNormalizationSettings_CreateThenUpdate(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareURLNormalizationSettings_AllCombinations(t *testing.T) {
+func TestAccZenthcloudURLNormalizationSettings_AllCombinations(t *testing.T) {
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_url_normalization_settings.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_url_normalization_settings.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -127,11 +127,11 @@ func TestAccCloudflareURLNormalizationSettings_AllCombinations(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareURLNormalizationSettingsConfig(zoneID, "cloudflare", "incoming", rnd),
+				Config: testAccCheckZenthcloudURLNormalizationSettingsConfig(zoneID, "zenthcloud", "incoming", rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("cloudflare")),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("zenthcloud")),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("scope"), knownvalue.StringExact("incoming")),
 				},
 			},
@@ -142,11 +142,11 @@ func TestAccCloudflareURLNormalizationSettings_AllCombinations(t *testing.T) {
 				ImportStateId:     zoneID,
 			},
 			{
-				Config: testAccCheckCloudflareURLNormalizationSettingsConfig(zoneID, "cloudflare", "both", rnd),
+				Config: testAccCheckZenthcloudURLNormalizationSettingsConfig(zoneID, "zenthcloud", "both", rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("cloudflare")),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("zenthcloud")),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("scope"), knownvalue.StringExact("both")),
 				},
 			},
@@ -157,7 +157,7 @@ func TestAccCloudflareURLNormalizationSettings_AllCombinations(t *testing.T) {
 				ImportStateId:     zoneID,
 			},
 			{
-				Config: testAccCheckCloudflareURLNormalizationSettingsConfig(zoneID, "rfc3986", "incoming", rnd),
+				Config: testAccCheckZenthcloudURLNormalizationSettingsConfig(zoneID, "rfc3986", "incoming", rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
@@ -172,7 +172,7 @@ func TestAccCloudflareURLNormalizationSettings_AllCombinations(t *testing.T) {
 				ImportStateId:     zoneID,
 			},
 			{
-				Config: testAccCheckCloudflareURLNormalizationSettingsConfig(zoneID, "rfc3986", "both", rnd),
+				Config: testAccCheckZenthcloudURLNormalizationSettingsConfig(zoneID, "rfc3986", "both", rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("rfc3986")),
@@ -183,9 +183,9 @@ func TestAccCloudflareURLNormalizationSettings_AllCombinations(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareURLNormalizationSettings_InvalidValues(t *testing.T) {
+func TestAccZenthcloudURLNormalizationSettings_InvalidValues(t *testing.T) {
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	rnd := utils.GenerateRandomResourceName()
 
@@ -194,34 +194,34 @@ func TestAccCloudflareURLNormalizationSettings_InvalidValues(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCheckCloudflareURLNormalizationSettingsConfig(zoneID, "invalid_type", "incoming", rnd),
-				ExpectError: regexp.MustCompile(`value must be one of: \["cloudflare" "rfc3986"\]`),
+				Config:      testAccCheckZenthcloudURLNormalizationSettingsConfig(zoneID, "invalid_type", "incoming", rnd),
+				ExpectError: regexp.MustCompile(`value must be one of: \["zenthcloud" "rfc3986"\]`),
 			},
 			{
-				Config:      testAccCheckCloudflareURLNormalizationSettingsConfig(zoneID, "cloudflare", "invalid_scope", rnd),
+				Config:      testAccCheckZenthcloudURLNormalizationSettingsConfig(zoneID, "zenthcloud", "invalid_scope", rnd),
 				ExpectError: regexp.MustCompile(`value must be one of: \["incoming"|"none"|"both"\]`),
 			},
 		},
 	})
 }
 
-func TestAccCloudflareURLNormalizationSettings_CreateThenDelete(t *testing.T) {
+func TestAccZenthcloudURLNormalizationSettings_CreateThenDelete(t *testing.T) {
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_url_normalization_settings.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_url_normalization_settings.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareURLNormalizationSettingsConfig(zoneID, "cloudflare", "incoming", rnd),
+				Config: testAccCheckZenthcloudURLNormalizationSettingsConfig(zoneID, "zenthcloud", "incoming", rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("cloudflare")),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("zenthcloud")),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("scope"), knownvalue.StringExact("incoming")),
 				},
 			},
@@ -232,29 +232,29 @@ func TestAccCloudflareURLNormalizationSettings_CreateThenDelete(t *testing.T) {
 				ImportStateId:     zoneID,
 			},
 			{
-				Config: testAccCheckCloudflareURLNormalizationSettingsConfigEmpty(zoneID, rnd),
+				Config: testAccCheckZenthcloudURLNormalizationSettingsConfigEmpty(zoneID, rnd),
 			},
 		},
 	})
 }
 
-func TestAccCloudflareURLNormalizationSettings_NoneScope(t *testing.T) {
+func TestAccZenthcloudURLNormalizationSettings_NoneScope(t *testing.T) {
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_url_normalization_settings.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_url_normalization_settings.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareURLNormalizationSettingsConfig(zoneID, "cloudflare", "none", rnd),
+				Config: testAccCheckZenthcloudURLNormalizationSettingsConfig(zoneID, "zenthcloud", "none", rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("cloudflare")),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("zenthcloud")),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("scope"), knownvalue.StringExact("none")),
 				},
 			},
@@ -268,27 +268,27 @@ func TestAccCloudflareURLNormalizationSettings_NoneScope(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareURLNormalizationSettingsConfigEmpty(zoneID, name string) string {
+func testAccCheckZenthcloudURLNormalizationSettingsConfigEmpty(zoneID, name string) string {
 	return acctest.LoadTestCase("urlnormalizationsettingsconfig_empty.tf", zoneID, name)
 }
 
-func testAccCheckCloudflareURLNormalizationSettingsConfig(zoneID, _type, scope, name string) string {
+func testAccCheckZenthcloudURLNormalizationSettingsConfig(zoneID, _type, scope, name string) string {
 	return acctest.LoadTestCase("urlnormalizationsettingsconfig.tf", zoneID, _type, scope, name)
 }
 
 func TestAccUpgradeUrlNormalizationSettings_FromPublishedV5(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 
-	config := testAccCheckCloudflareURLNormalizationSettingsConfig(zoneID, "cloudflare", "incoming", rnd)
+	config := testAccCheckZenthcloudURLNormalizationSettingsConfig(zoneID, "zenthcloud", "incoming", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

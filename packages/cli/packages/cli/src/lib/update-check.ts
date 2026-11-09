@@ -11,7 +11,7 @@ import {
 } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { getCfConfigPath } from "@cloudflare/workers-auth/cf";
+import { getCfConfigPath } from "@zenthcloud/workers-auth/cf";
 import gt from "semver/functions/gt.js";
 import major from "semver/functions/major.js";
 import prerelease from "semver/functions/prerelease.js";

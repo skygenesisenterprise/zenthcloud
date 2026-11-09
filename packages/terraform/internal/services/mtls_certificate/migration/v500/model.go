@@ -9,12 +9,12 @@ import (
 // Source Models (Legacy Provider - v4.x)
 // ============================================================================
 
-// SourceCloudflareMTLSCertificateModel represents the source cloudflare_mtls_certificate state structure.
-// This corresponds to schema_version=0 from the legacy (SDKv2) cloudflare provider.
+// SourceZenthcloudMTLSCertificateModel represents the source zenthcloud_mtls_certificate state structure.
+// This corresponds to schema_version=0 from the legacy (SDKv2) zenthcloud provider.
 // Used by UpgradeFromV4 to parse legacy state.
 //
-// Reference: cloudflare-terraform-v4/internal/sdkv2provider/schema_cloudflare_mtls_certificate.go
-type SourceCloudflareMTLSCertificateModel struct {
+// Reference: zenthcloud-terraform-v4/internal/sdkv2provider/schema_zenthcloud_mtls_certificate.go
+type SourceZenthcloudMTLSCertificateModel struct {
 	ID           types.String `tfsdk:"id"`
 	AccountID    types.String `tfsdk:"account_id"`
 	CA           types.Bool   `tfsdk:"ca"`
@@ -34,7 +34,7 @@ type SourceCloudflareMTLSCertificateModel struct {
 // Target Models (Current Provider - v5.x+)
 // ============================================================================
 
-// TargetMTLSCertificateModel represents the target cloudflare_mtls_certificate state structure (v500).
+// TargetMTLSCertificateModel represents the target zenthcloud_mtls_certificate state structure (v500).
 // This matches the structure in the parent package's model.go file (MTLSCertificateModel).
 type TargetMTLSCertificateModel struct {
 	ID           types.String `tfsdk:"id"`

@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -68,7 +68,7 @@ func TestMigrateTurnstileWidget_V4ToV5_Basic(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := fmt.Sprintf("tf-test-%s", rnd)
 			tmpDir := t.TempDir()
@@ -87,8 +87,8 @@ func TestMigrateTurnstileWidget_V4ToV5_Basic(t *testing.T) {
 				// Use external v4 provider (will create version=0 state)
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -108,33 +108,33 @@ func TestMigrateTurnstileWidget_V4ToV5_Basic(t *testing.T) {
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer,
 						[]statecheck.StateCheck{
 							statecheck.ExpectKnownValue(
-								"cloudflare_turnstile_widget."+rnd,
+								"zenthcloud_turnstile_widget."+rnd,
 								tfjsonpath.New("id"),
 								knownvalue.NotNull(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_turnstile_widget."+rnd,
+								"zenthcloud_turnstile_widget."+rnd,
 								tfjsonpath.New("account_id"),
 								knownvalue.StringExact(accountID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_turnstile_widget."+rnd,
+								"zenthcloud_turnstile_widget."+rnd,
 								tfjsonpath.New("name"),
 								knownvalue.StringExact(name),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_turnstile_widget."+rnd,
+								"zenthcloud_turnstile_widget."+rnd,
 								tfjsonpath.New("mode"),
 								knownvalue.StringExact("managed"),
 							),
 							// Verify domains transformed to List
 							statecheck.ExpectKnownValue(
-								"cloudflare_turnstile_widget."+rnd,
+								"zenthcloud_turnstile_widget."+rnd,
 								tfjsonpath.New("domains"),
 								knownvalue.ListSizeExact(1),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_turnstile_widget."+rnd,
+								"zenthcloud_turnstile_widget."+rnd,
 								tfjsonpath.New("domains").AtSliceIndex(0),
 								knownvalue.StringExact("example.com"),
 							),
@@ -175,7 +175,7 @@ func TestMigrateTurnstileWidget_V4ToV5_AllOptionalFields(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := fmt.Sprintf("tf-test-full-%s", rnd)
 			tmpDir := t.TempDir()
@@ -191,8 +191,8 @@ func TestMigrateTurnstileWidget_V4ToV5_AllOptionalFields(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -211,43 +211,43 @@ func TestMigrateTurnstileWidget_V4ToV5_AllOptionalFields(t *testing.T) {
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer,
 						[]statecheck.StateCheck{
 							statecheck.ExpectKnownValue(
-								"cloudflare_turnstile_widget."+rnd,
+								"zenthcloud_turnstile_widget."+rnd,
 								tfjsonpath.New("id"),
 								knownvalue.NotNull(),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_turnstile_widget."+rnd,
+								"zenthcloud_turnstile_widget."+rnd,
 								tfjsonpath.New("account_id"),
 								knownvalue.StringExact(accountID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_turnstile_widget."+rnd,
+								"zenthcloud_turnstile_widget."+rnd,
 								tfjsonpath.New("name"),
 								knownvalue.StringExact(name),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_turnstile_widget."+rnd,
+								"zenthcloud_turnstile_widget."+rnd,
 								tfjsonpath.New("mode"),
 								knownvalue.StringExact("invisible"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_turnstile_widget."+rnd,
+								"zenthcloud_turnstile_widget."+rnd,
 								tfjsonpath.New("region"),
 								knownvalue.StringExact("world"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_turnstile_widget."+rnd,
+								"zenthcloud_turnstile_widget."+rnd,
 								tfjsonpath.New("bot_fight_mode"),
 								knownvalue.Bool(false),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_turnstile_widget."+rnd,
+								"zenthcloud_turnstile_widget."+rnd,
 								tfjsonpath.New("offlabel"),
 								knownvalue.Bool(false),
 							),
 							// Verify multiple domains
 							statecheck.ExpectKnownValue(
-								"cloudflare_turnstile_widget."+rnd,
+								"zenthcloud_turnstile_widget."+rnd,
 								tfjsonpath.New("domains"),
 								knownvalue.ListSizeExact(2),
 							),
@@ -263,7 +263,7 @@ func TestMigrateTurnstileWidget_V4ToV5_AllOptionalFields(t *testing.T) {
 // alphabetically sorted after migration. This is CRITICAL because:
 // 1. v4 uses SetAttribute (unordered)
 // 2. v5 uses ListAttribute (ordered)
-// 3. The Cloudflare API returns domains alphabetically
+// 3. The Zenthcloud API returns domains alphabetically
 // 4. Without sorting, every terraform apply would show drift
 func TestMigrateTurnstileWidget_V4ToV5_DomainsSorted(t *testing.T) {
 	testCases := []struct {
@@ -289,7 +289,7 @@ func TestMigrateTurnstileWidget_V4ToV5_DomainsSorted(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			name := fmt.Sprintf("tf-test-sorted-%s", rnd)
 			tmpDir := t.TempDir()
@@ -305,8 +305,8 @@ func TestMigrateTurnstileWidget_V4ToV5_DomainsSorted(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -326,22 +326,22 @@ func TestMigrateTurnstileWidget_V4ToV5_DomainsSorted(t *testing.T) {
 						[]statecheck.StateCheck{
 							// Verify domains are in alphabetical order
 							statecheck.ExpectKnownValue(
-								"cloudflare_turnstile_widget."+rnd,
+								"zenthcloud_turnstile_widget."+rnd,
 								tfjsonpath.New("domains"),
 								knownvalue.ListSizeExact(3),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_turnstile_widget."+rnd,
+								"zenthcloud_turnstile_widget."+rnd,
 								tfjsonpath.New("domains").AtSliceIndex(0),
 								knownvalue.StringExact("aaa.example.com"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_turnstile_widget."+rnd,
+								"zenthcloud_turnstile_widget."+rnd,
 								tfjsonpath.New("domains").AtSliceIndex(1),
 								knownvalue.StringExact("mmm.example.com"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_turnstile_widget."+rnd,
+								"zenthcloud_turnstile_widget."+rnd,
 								tfjsonpath.New("domains").AtSliceIndex(2),
 								knownvalue.StringExact("zzz.example.com"),
 							),

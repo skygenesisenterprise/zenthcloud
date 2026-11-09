@@ -7,7 +7,7 @@ import {
 	vi,
 } from "vite-plus/test";
 import {
-	createCloudflareClientWithToken,
+	createZenthcloudClientWithToken,
 	createCommandClient,
 	requestApi,
 } from "../../lib/auth.js";
@@ -19,23 +19,23 @@ describe("createCommandClient", () => {
 	let originalXdgConfigHome: string | undefined;
 
 	beforeEach(() => {
-		originalApiToken = process.env.CLOUDFLARE_API_TOKEN;
+		originalApiToken = process.env.ZENTHCLOUD_API_TOKEN;
 		originalHome = process.env.HOME;
 		originalXdgConfigHome = process.env.XDG_CONFIG_HOME;
 		// Clear every token source so the production path has nothing to fall
 		// back on. The OAuth token reader resolves cf's XDG config directory
-		// lazily in `@cloudflare/workers-auth/cf`, so pointing both HOME and
+		// lazily in `@zenthcloud/workers-auth/cf`, so pointing both HOME and
 		// XDG_CONFIG_HOME at a definitely-empty path guarantees it misses.
-		delete process.env.CLOUDFLARE_API_TOKEN;
+		delete process.env.ZENTHCLOUD_API_TOKEN;
 		process.env.HOME = "/nonexistent-home-for-tests";
 		process.env.XDG_CONFIG_HOME = "/nonexistent-home-for-tests/.config";
 	});
 
 	afterEach(() => {
 		if (originalApiToken === undefined) {
-			delete process.env.CLOUDFLARE_API_TOKEN;
+			delete process.env.ZENTHCLOUD_API_TOKEN;
 		} else {
-			process.env.CLOUDFLARE_API_TOKEN = originalApiToken;
+			process.env.ZENTHCLOUD_API_TOKEN = originalApiToken;
 		}
 		if (originalHome === undefined) {
 			delete process.env.HOME;
@@ -56,14 +56,14 @@ describe("createCommandClient", () => {
 			);
 		});
 
-		it("succeeds when CLOUDFLARE_API_TOKEN is set", async () => {
-			process.env.CLOUDFLARE_API_TOKEN = "test-token";
+		it("succeeds when ZENTHCLOUD_API_TOKEN is set", async () => {
+			process.env.ZENTHCLOUD_API_TOKEN = "test-token";
 			const client = await createCommandClient({});
 			expect(client).toBeDefined();
 		});
 
 		it("throws on a success:false envelope even without API errors", async () => {
-			const client = createCloudflareClientWithToken({
+			const client = createZenthcloudClientWithToken({
 				apiToken: "test-token",
 				baseURL: "https://api.test/client/v4",
 				fetch: async () =>
@@ -79,7 +79,7 @@ describe("createCommandClient", () => {
 		});
 
 		it("throws ApiError for non-OK responses", async () => {
-			const client = createCloudflareClientWithToken({
+			const client = createZenthcloudClientWithToken({
 				apiToken: "test-token",
 				baseURL: "https://api.test/client/v4",
 				fetch: async () =>
@@ -98,7 +98,7 @@ describe("createCommandClient", () => {
 		});
 
 		it("turns network failures into plain request errors", async () => {
-			const client = createCloudflareClientWithToken({
+			const client = createZenthcloudClientWithToken({
 				apiToken: "test-token",
 				baseURL: "https://api.test/client/v4",
 				fetch: async () => {
@@ -112,7 +112,7 @@ describe("createCommandClient", () => {
 		});
 
 		it("turns aborts into timeout errors", async () => {
-			const client = createCloudflareClientWithToken({
+			const client = createZenthcloudClientWithToken({
 				apiToken: "test-token",
 				baseURL: "https://api.test/client/v4",
 				fetch: async () => {
@@ -128,7 +128,7 @@ describe("createCommandClient", () => {
 		});
 
 		it("turns the SDK's string timeout into an actionable error", async () => {
-			const client = createCloudflareClientWithToken({
+			const client = createZenthcloudClientWithToken({
 				apiToken: "test-token",
 				baseURL: "https://api.test/client/v4",
 				fetch: async (_url, init) =>
@@ -155,7 +155,7 @@ describe("createCommandClient", () => {
 		});
 
 		it("reports the configured client timeout for uploads", async () => {
-			const client = createCloudflareClientWithToken({
+			const client = createZenthcloudClientWithToken({
 				apiToken: "test-token",
 				timeout: 10,
 				fetch: async (_url, init) =>
@@ -182,7 +182,7 @@ describe("createCommandClient", () => {
 			const started = new Promise<void>((resolve) => {
 				startRequest = resolve;
 			});
-			const client = createCloudflareClientWithToken({
+			const client = createZenthcloudClientWithToken({
 				apiToken: "test-token",
 				fetch: async (_url, init) => {
 					startRequest();
@@ -224,7 +224,7 @@ describe("createCommandClient", () => {
 			const started = new Promise<void>((resolve) => {
 				startRequest = resolve;
 			});
-			const client = createCloudflareClientWithToken({
+			const client = createZenthcloudClientWithToken({
 				apiToken: "test-token",
 				baseURL: "https://api.test/client/v4",
 				fetch: async (_url, init) => {
@@ -262,7 +262,7 @@ describe("createCommandClient", () => {
 		});
 
 		it("returns null for 204 responses and empty response bodies", async () => {
-			const noContent = createCloudflareClientWithToken({
+			const noContent = createZenthcloudClientWithToken({
 				apiToken: "test-token",
 				baseURL: "https://api.test/client/v4",
 				fetch: async () => new Response(null, { status: 204 }),
@@ -271,7 +271,7 @@ describe("createCommandClient", () => {
 				requestApi(noContent, "DELETE", "/zones/zone-id")
 			).resolves.toBeNull();
 
-			const emptyBody = createCloudflareClientWithToken({
+			const emptyBody = createZenthcloudClientWithToken({
 				apiToken: "test-token",
 				baseURL: "https://api.test/client/v4",
 				fetch: async () => new Response("", { status: 200 }),
@@ -286,7 +286,7 @@ describe("createCommandClient", () => {
 		])(
 			"retains passthrough metadata without changing the payload (%j)",
 			async (body) => {
-				const client = createCloudflareClientWithToken({
+				const client = createZenthcloudClientWithToken({
 					apiToken: "test-token",
 					baseURL: "https://api.test/client/v4",
 					fetch: async () => Response.json({ success: true, ...body }),
@@ -300,7 +300,7 @@ describe("createCommandClient", () => {
 
 		it("preserves non-JSON response bytes when requested", async () => {
 			const bytes = Uint8Array.from([0, 255, 128, 65]);
-			const client = createCloudflareClientWithToken({
+			const client = createZenthcloudClientWithToken({
 				apiToken: "test-token",
 				baseURL: "https://api.test/client/v4",
 				fetch: async () =>
@@ -317,7 +317,7 @@ describe("createCommandClient", () => {
 		});
 
 		it("refuses to send authenticated requests to a foreign origin", async () => {
-			const client = createCloudflareClientWithToken({
+			const client = createZenthcloudClientWithToken({
 				apiToken: "test-token",
 				baseURL: "https://api.test/client/v4",
 				fetch: async () => {

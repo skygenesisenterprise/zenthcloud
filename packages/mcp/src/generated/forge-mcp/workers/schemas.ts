@@ -120,7 +120,7 @@ export const workers_Worker: JSONObject = {
             },
             "invocation_logs": {
               "default": true,
-              "description": "Whether [invocation logs](https://developers.cloudflare.com/workers/observability/logs/workers-logs/#invocation-logs) are enabled for the Worker.",
+              "description": "Whether [invocation logs](https://github.com/skygenesisenterprise/zenthcloud) are enabled for the Worker.",
               "type": "boolean"
             },
             "persist": {
@@ -196,7 +196,7 @@ export const workers_Worker: JSONObject = {
           "type": "boolean"
         },
         "previews_enabled": {
-          "description": "Whether [preview URLs](https://developers.cloudflare.com/workers/configuration/previews/) are enabled for the Worker.",
+          "description": "Whether [preview URLs](https://github.com/skygenesisenterprise/zenthcloud) are enabled for the Worker.",
           "type": "boolean"
         }
       },
@@ -353,7 +353,7 @@ export const workers_observability: JSONObject = {
         },
         "invocation_logs": {
           "default": true,
-          "description": "Whether [invocation logs](https://developers.cloudflare.com/workers/observability/logs/workers-logs/#invocation-logs) are enabled for the Worker.",
+          "description": "Whether [invocation logs](https://github.com/skygenesisenterprise/zenthcloud) are enabled for the Worker.",
           "type": "boolean"
         },
         "persist": {
@@ -423,7 +423,7 @@ export const workers_observability: JSONObject = {
 export const workers_route: JSONObject = {
   "properties": {
     "pattern": {
-      "description": "Pattern to match incoming requests against. [Learn more](https://developers.cloudflare.com/workers/configuration/routing/routes/#matching-behavior).",
+      "description": "Pattern to match incoming requests against. [Learn more](https://github.com/skygenesisenterprise/zenthcloud).",
       "type": "string"
     },
     "script": {

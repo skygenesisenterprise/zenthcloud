@@ -1,6 +1,6 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw";
 import {
 	afterEach,
@@ -23,9 +23,9 @@ describe("multipart binary fields beyond the payload", () => {
 	setupMsw();
 
 	const ENV = {
-		CLOUDFLARE_API_TOKEN: "test-token",
-		CLOUDFLARE_API_BASE_URL: TEST_BASE_URL,
-		CLOUDFLARE_ACCOUNT_ID: "test-account",
+		ZENTHCLOUD_API_TOKEN: "test-token",
+		ZENTHCLOUD_API_BASE_URL: TEST_BASE_URL,
+		ZENTHCLOUD_ACCOUNT_ID: "test-account",
 		DO_NOT_TRACK: "1",
 	};
 	const DEPLOYMENTS_URL = `${TEST_BASE_URL}/accounts/test-account/pages/projects/site/deployments`;

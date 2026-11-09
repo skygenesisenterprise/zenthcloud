@@ -5,7 +5,7 @@ import {
 	type MigrationFollowUp,
 	type WranglerToCfMigrationOptions,
 	type WranglerToCfMigrationResult,
-} from "@cloudflare/codemods";
+} from "@zenthcloud/codemods";
 import { CliExit } from "./cli-exit.js";
 import { success, theme, warning } from "./ui/index.js";
 
@@ -97,7 +97,7 @@ export async function detectWranglerMigrationBundler(
 ): Promise<MigrationBundler> {
 	const { discoverImpls } = await import("../commands/dev/discover.js");
 	return discoverImpls(path.dirname(configPath)).some(
-		({ impl }) => impl.pkg === "@cloudflare/vite-plugin"
+		({ impl }) => impl.pkg === "@zenthcloud/vite-plugin"
 	)
 		? "vite"
 		: "wrangler";

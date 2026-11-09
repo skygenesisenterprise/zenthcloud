@@ -2,7 +2,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { Writable } from "node:stream";
 import { stripVTControlCharacters } from "node:util";
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import chalk from "chalk";
 import { describe, expect, it } from "vite-plus/test";
 import { printAccountConfigHint } from "../../lib/oauth/account-hint.js";
@@ -28,13 +28,13 @@ describe("printAccountConfigHint", () => {
 	runInTempDir();
 
 	it("shows only the property to add to the project's config", () => {
-		writeFileSync(join(process.cwd(), "cloudflare.config.ts"), "");
+		writeFileSync(join(process.cwd(), "zenthcloud.config.ts"), "");
 		const nested = join(process.cwd(), "src");
 		mkdirSync(nested);
 
 		expect(render({ cwd: nested })).toMatchInlineSnapshot(`
 			"│
-			●  To make this the project's default account, add accountId to ../cloudflare.config.ts:
+			●  To make this the project's default account, add accountId to ../zenthcloud.config.ts:
 
 			   accountId: "023e105f4ecef8ad9ca31a8372d0c353",
 
@@ -43,7 +43,7 @@ describe("printAccountConfigHint", () => {
 	});
 
 	it("wraps inside clack's guide, keeping names and the account ID emphasized", () => {
-		writeFileSync(join(process.cwd(), "cloudflare.config.ts"), "");
+		writeFileSync(join(process.cwd(), "zenthcloud.config.ts"), "");
 		// Below truecolor, the theme emphasizes with bold.
 		const level = chalk.level;
 		chalk.level = 1;
@@ -51,7 +51,7 @@ describe("printAccountConfigHint", () => {
 			expect(render({ columns: 50 })).toMatchInlineSnapshot(`
 				"│
 				●  To make this the project's default account, add
-				│  **accountId** to **cloudflare.config.ts**:
+				│  **accountId** to **zenthcloud.config.ts**:
 
 				   accountId: **"023e105f4ecef8ad9ca31a8372d0c353"**,
 

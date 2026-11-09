@@ -6,12 +6,12 @@ import (
 	"os"
 	"testing"
 
-	cloudflare "github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	zenthcloud "github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -22,36 +22,36 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zero_trust_gateway_settings", &resource.Sweeper{
-		Name: "cloudflare_zero_trust_gateway_settings",
-		F:    testSweepCloudflareZeroTrustGatewaySettings,
+	resource.AddTestSweepers("zenthcloud_zero_trust_gateway_settings", &resource.Sweeper{
+		Name: "zenthcloud_zero_trust_gateway_settings",
+		F:    testSweepZenthcloudZeroTrustGatewaySettings,
 	})
 }
 
-func testSweepCloudflareZeroTrustGatewaySettings(r string) error {
+func testSweepZenthcloudZeroTrustGatewaySettings(r string) error {
 	ctx := context.Background()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		tflog.Warn(ctx, "CLOUDFLARE_ACCOUNT_ID not set, skipping gateway settings sweep")
+		tflog.Warn(ctx, "ZENTHCLOUD_ACCOUNT_ID not set, skipping gateway settings sweep")
 		return nil
 	}
 
-	apiKey := os.Getenv("CLOUDFLARE_API_KEY")
-	email := os.Getenv("CLOUDFLARE_EMAIL")
-	apiToken := os.Getenv("CLOUDFLARE_API_TOKEN")
+	apiKey := os.Getenv("ZENTHCLOUD_API_KEY")
+	email := os.Getenv("ZENTHCLOUD_EMAIL")
+	apiToken := os.Getenv("ZENTHCLOUD_API_TOKEN")
 
-	var client *cloudflare.Client
+	var client *zenthcloud.Client
 	var err error
 	if apiToken != "" {
-		client = cloudflare.NewClient(option.WithAPIToken(apiToken))
+		client = zenthcloud.NewClient(option.WithAPIToken(apiToken))
 	} else {
-		client = cloudflare.NewClient(
+		client = zenthcloud.NewClient(
 			option.WithAPIKey(apiKey),
 			option.WithAPIEmail(email),
 		)
 	}
 	if err != nil {
-		return fmt.Errorf("error creating Cloudflare client: %w", err)
+		return fmt.Errorf("error creating Zenthcloud client: %w", err)
 	}
 
 	// Reset gateway settings to clean defaults so subsequent test runs start
@@ -61,12 +61,12 @@ func testSweepCloudflareZeroTrustGatewaySettings(r string) error {
 	// for any test that follows.
 	tflog.Info(ctx, "Sweeping Zero Trust Gateway Settings — resetting to clean defaults")
 	_, err = client.ZeroTrust.Gateway.Configurations.Update(ctx, zero_trust.GatewayConfigurationUpdateParams{
-		AccountID: cloudflare.F(accountID),
-		Settings: cloudflare.F(zero_trust.GatewayConfigurationSettingsParam{
-			ActivityLog:       cloudflare.F(zero_trust.ActivityLogSettingsParam{Enabled: cloudflare.F(false)}),
-			TLSDecrypt:        cloudflare.F(zero_trust.TLSSettingsParam{Enabled: cloudflare.F(false)}),
-			ProtocolDetection: cloudflare.F(zero_trust.ProtocolDetectionParam{Enabled: cloudflare.F(false)}),
-			BodyScanning:      cloudflare.F(zero_trust.BodyScanningSettingsParam{InspectionMode: cloudflare.F(zero_trust.BodyScanningSettingsInspectionModeShallow)}),
+		AccountID: zenthcloud.F(accountID),
+		Settings: zenthcloud.F(zero_trust.GatewayConfigurationSettingsParam{
+			ActivityLog:       zenthcloud.F(zero_trust.ActivityLogSettingsParam{Enabled: zenthcloud.F(false)}),
+			TLSDecrypt:        zenthcloud.F(zero_trust.TLSSettingsParam{Enabled: zenthcloud.F(false)}),
+			ProtocolDetection: zenthcloud.F(zero_trust.ProtocolDetectionParam{Enabled: zenthcloud.F(false)}),
+			BodyScanning:      zenthcloud.F(zero_trust.BodyScanningSettingsParam{InspectionMode: zenthcloud.F(zero_trust.BodyScanningSettingsInspectionModeShallow)}),
 		}),
 	})
 	if err != nil {
@@ -78,20 +78,20 @@ func testSweepCloudflareZeroTrustGatewaySettings(r string) error {
 	return nil
 }
 
-func TestAccCloudflareTeamsAccounts_ConfigurationBasic(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudTeamsAccounts_ConfigurationBasic(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_gateway_settings.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	certID := os.Getenv("CLOUDFLARE_GATEWAY_CERTIFICATE_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_gateway_settings.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	certID := os.Getenv("ZENTHCLOUD_GATEWAY_CERTIFICATE_ID")
 	if certID == "" {
-		t.Skip("CLOUDFLARE_GATEWAY_CERTIFICATE_ID must be set for this acceptance test.")
+		t.Skip("ZENTHCLOUD_GATEWAY_CERTIFICATE_ID must be set for this acceptance test.")
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -101,7 +101,7 @@ func TestAccCloudflareTeamsAccounts_ConfigurationBasic(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareTeamsAccountBasic(rnd, accountID, certID),
+				Config: testAccZenthcloudTeamsAccountBasic(rnd, accountID, certID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(name, "settings.tls_decrypt.enabled", "true"),
@@ -114,7 +114,7 @@ func TestAccCloudflareTeamsAccounts_ConfigurationBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "settings.block_page.footer_text", "footer"),
 					resource.TestCheckResourceAttr(name, "settings.block_page.header_text", "header"),
 					resource.TestCheckResourceAttr(name, "settings.block_page.mailto_subject", "hello"),
-					resource.TestCheckResourceAttr(name, "settings.block_page.mailto_address", "test@cloudflare.com"),
+					resource.TestCheckResourceAttr(name, "settings.block_page.mailto_address", "test@zenthcloud.com"),
 					resource.TestCheckResourceAttr(name, "settings.block_page.background_color", "#000000"),
 					resource.TestCheckResourceAttr(name, "settings.block_page.logo_path", "https://example.com"),
 					resource.TestCheckResourceAttr(name, "settings.antivirus.enabled_download_phase", "true"),
@@ -130,7 +130,7 @@ func TestAccCloudflareTeamsAccounts_ConfigurationBasic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCloudflareTeamsAccountBasicMinimal1(rnd, accountID, certID),
+				Config: testAccZenthcloudTeamsAccountBasicMinimal1(rnd, accountID, certID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(name, "settings.tls_decrypt.enabled", "true"),
@@ -146,7 +146,7 @@ func TestAccCloudflareTeamsAccounts_ConfigurationBasic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCloudflareTeamsAccountBasicMinimal2(rnd, accountID),
+				Config: testAccZenthcloudTeamsAccountBasicMinimal2(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(name, "settings.browser_isolation.url_browser_isolation_enabled", "true"),
@@ -156,7 +156,7 @@ func TestAccCloudflareTeamsAccounts_ConfigurationBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "settings.block_page.footer_text", "footer"),
 					resource.TestCheckResourceAttr(name, "settings.block_page.header_text", "header"),
 					resource.TestCheckResourceAttr(name, "settings.block_page.mailto_subject", "hello"),
-					resource.TestCheckResourceAttr(name, "settings.block_page.mailto_address", "test@cloudflare.com"),
+					resource.TestCheckResourceAttr(name, "settings.block_page.mailto_address", "test@zenthcloud.com"),
 					resource.TestCheckResourceAttr(name, "settings.block_page.background_color", "#000000"),
 					resource.TestCheckResourceAttr(name, "settings.block_page.logo_path", "https://example.com"),
 					resource.TestCheckResourceAttr(name, "settings.body_scanning.inspection_mode", "deep"),
@@ -169,27 +169,27 @@ func TestAccCloudflareTeamsAccounts_ConfigurationBasic(t *testing.T) {
 	})
 }
 
-func testAccCloudflareTeamsAccountBasic(rnd, accountID, certID string) string {
+func testAccZenthcloudTeamsAccountBasic(rnd, accountID, certID string) string {
 	return acctest.LoadTestCase("teamsaccountbasic.tf", rnd, accountID, certID)
 }
 
-func testAccCloudflareTeamsAccountBasicMinimal1(rnd, accountID, certID string) string {
+func testAccZenthcloudTeamsAccountBasicMinimal1(rnd, accountID, certID string) string {
 	return acctest.LoadTestCase("teamsaccountminimal1.tf", rnd, accountID, certID)
 }
 
-func testAccCloudflareTeamsAccountBasicMinimal2(rnd, accountID string) string {
+func testAccZenthcloudTeamsAccountBasicMinimal2(rnd, accountID string) string {
 	return acctest.LoadTestCase("teamsaccountminimal2.tf", rnd, accountID)
 }
 
 func TestAccUpgradeZeroTrustGatewaySettings_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	certID := os.Getenv("CLOUDFLARE_GATEWAY_CERTIFICATE_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	certID := os.Getenv("ZENTHCLOUD_GATEWAY_CERTIFICATE_ID")
 	if certID == "" {
-		t.Skip("CLOUDFLARE_GATEWAY_CERTIFICATE_ID must be set for this acceptance test.")
+		t.Skip("ZENTHCLOUD_GATEWAY_CERTIFICATE_ID must be set for this acceptance test.")
 	}
 
-	config := testAccCloudflareTeamsAccountBasic(rnd, accountID, certID)
+	config := testAccZenthcloudTeamsAccountBasic(rnd, accountID, certID)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -198,8 +198,8 @@ func TestAccUpgradeZeroTrustGatewaySettings_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

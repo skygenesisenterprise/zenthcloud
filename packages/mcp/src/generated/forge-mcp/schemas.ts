@@ -127,7 +127,7 @@ export const analytics$$sql_SqlQueryZoneScope: JSONObject = {
 export const api$$shield_basic_operation: JSONObject = {
   "properties": {
     "endpoint": {
-      "description": "The endpoint which can contain path parameter templates in curly braces, each will be replaced from left to right with {varN}, starting with {var1}, during insertion. This will further be Cloudflare-normalized upon insertion. See: https://developers.cloudflare.com/rules/normalization/how-it-works/.",
+      "description": "The endpoint which can contain path parameter templates in curly braces, each will be replaced from left to right with {varN}, starting with {var1}, during insertion. This will further be Zenthcloud-normalized upon insertion. See: https://github.com/skygenesisenterprise/zenthcloud",
       "type": "string"
     },
     "host": {
@@ -219,7 +219,7 @@ export const bill$$subs$$api_rate_plan: JSONObject = {
       "type": "string"
     },
     "externally_managed": {
-      "description": "Whether this rate plan is managed externally from Cloudflare.",
+      "description": "Whether this rate plan is managed externally from Zenthcloud.",
       "type": "boolean"
     },
     "id": {
@@ -256,7 +256,7 @@ export const bill$$subs$$api_subscription$$v2: JSONObject = {
   "properties": {
     "app": {
       "deprecated": true,
-      "description": "Cloudflare Apps Marketplace is sunset. This field is retained for legacy grandfathered app subscriptions only.",
+      "description": "Zenthcloud Apps Marketplace is sunset. This field is retained for legacy grandfathered app subscriptions only.",
       "properties": {
         "install_id": {
           "deprecated": true,
@@ -611,7 +611,7 @@ export const firewall_country_configuration: JSONObject = {
       "type": "string"
     },
     "value": {
-      "description": "The two-letter ISO-3166-1 alpha-2 code to match. For more information, refer to [IP Access rules: Parameters](https://developers.cloudflare.com/waf/tools/ip-access-rules/parameters/#country).",
+      "description": "The two-letter ISO-3166-1 alpha-2 code to match. For more information, refer to [IP Access rules: Parameters](https://github.com/skygenesisenterprise/zenthcloud).",
       "type": "string"
     }
   },
@@ -976,7 +976,7 @@ export const load$$balancing_Host: JSONObject = {
  * The schema of `load-balancing_check_regions`.
  */
 export const load$$balancing_check_regions: JSONObject = {
-  "description": "A list of regions from which to run health checks. Null means every Cloudflare data center.",
+  "description": "A list of regions from which to run health checks. Null means every Zenthcloud data center.",
   "oneOf": [
     {
       "items": {
@@ -1268,7 +1268,7 @@ export const load$$balancing_notification_filter: JSONObject = {
 export const load$$balancing_origin: JSONObject = {
   "properties": {
     "address": {
-      "description": "The IP address (IPv4 or IPv6) of the origin, or its publicly addressable hostname. Hostnames entered here should resolve directly to the origin, and not be a hostname proxied by Cloudflare. To set an internal/reserved address, virtual_network_id must also be set.",
+      "description": "The IP address (IPv4 or IPv6) of the origin, or its publicly addressable hostname. Hostnames entered here should resolve directly to the origin, and not be a hostname proxied by Zenthcloud. To set an internal/reserved address, virtual_network_id must also be set.",
       "type": "string"
     },
     "enabled": {
@@ -1441,7 +1441,7 @@ export const r2$$data$$catalog_catalog$$credential$$request: JSONObject = {
   "description": "Contains request to store catalog credentials.",
   "properties": {
     "token": {
-      "description": "Provides the Cloudflare API token for accessing R2.",
+      "description": "Provides the Zenthcloud API token for accessing R2.",
       "type": "string"
     }
   },
@@ -1666,9 +1666,9 @@ export const security$$center_severityQueryParam: JSONObject = {
  */
 export const security$$center_sources: JSONObject = {
   "items": {
-    "description": "Who generated the insight. `cloudflare` for Cloudflare-generated insights, otherwise the partner.",
+    "description": "Who generated the insight. `zenthcloud` for Zenthcloud-generated insights, otherwise the partner.",
     "enum": [
-      "cloudflare",
+      "zenthcloud",
       "riskrecon"
     ],
     "type": "string"
@@ -2665,7 +2665,7 @@ export const workers_binding_kind_r2_bucket: JSONObject = {
       "type": "string"
     },
     "jurisdiction": {
-      "description": "The [jurisdiction](https://developers.cloudflare.com/r2/reference/data-location/#jurisdictional-restrictions) of the R2 bucket.",
+      "description": "The [jurisdiction](https://github.com/skygenesisenterprise/zenthcloud) of the R2 bucket.",
       "enum": [
         "eu",
         "fedramp",
@@ -3059,7 +3059,7 @@ export const workers_binding_kind_vpc_network: JSONObject = {
       "type": "string"
     },
     "tunnel_id": {
-      "description": "UUID of the Cloudflare Tunnel to bind to. Mutually exclusive with network_id.",
+      "description": "UUID of the Zenthcloud Tunnel to bind to. Mutually exclusive with network_id.",
       "type": "string"
     },
     "type": {
@@ -3177,7 +3177,7 @@ export const workers_binding_kind_workflow: JSONObject = {
  * The schema of `workers_bindings`.
  */
 export const workers_bindings: JSONObject = {
-  "description": "List of bindings attached to a Worker. You can find more about bindings on our docs: https://developers.cloudflare.com/workers/configuration/multipart-upload-metadata/#bindings.",
+  "description": "List of bindings attached to a Worker. You can find more about bindings on our docs: https://github.com/skygenesisenterprise/zenthcloud",
   "items": {
     "$ref": "#/$defs/workers_binding_item"
   },
@@ -3188,7 +3188,7 @@ export const workers_bindings: JSONObject = {
  * The schema of `workers_cache_options`.
  */
 export const workers_cache_options: JSONObject = {
-  "description": "Global CacheW configuration for the Worker. When caching is on,\nthe platform provisions a `cloudflare.app` zone for the Worker.\nA `type: worker` entry in the `exports` map can override this\nvalue for a single entrypoint.",
+  "description": "Global CacheW configuration for the Worker. When caching is on,\nthe platform provisions a `zenthcloud.app` zone for the Worker.\nA `type: worker` entry in the `exports` map can override this\nvalue for a single entrypoint.",
   "properties": {
     "cross_version_cache": {
       "default": false,
@@ -3697,7 +3697,7 @@ export const workers_multipart$$script: JSONObject = {
         },
         "bindings": {
           "$ref": "#/$defs/workers_bindings",
-          "description": "List of bindings attached to a Worker. You can find more about bindings on our docs: https://developers.cloudflare.com/workers/configuration/multipart-upload-metadata/#bindings."
+          "description": "List of bindings attached to a Worker. You can find more about bindings on our docs: https://github.com/skygenesisenterprise/zenthcloud"
         },
         "body_part": {
           "description": "Name of the uploaded file that contains the script (e.g. the file adding a listener to the `fetch` event). Indicates a `service worker syntax` Worker.",
@@ -3705,7 +3705,7 @@ export const workers_multipart$$script: JSONObject = {
         },
         "cache_options": {
           "$ref": "#/$defs/workers_cache_options",
-          "description": "Global CacheW configuration for the Worker. When caching is on,\nthe platform provisions a `cloudflare.app` zone for the Worker.\nA `type: worker` entry in the `exports` map can override this\nvalue for a single entrypoint."
+          "description": "Global CacheW configuration for the Worker. When caching is on,\nthe platform provisions a `zenthcloud.app` zone for the Worker.\nA `type: worker` entry in the `exports` map can override this\nvalue for a single entrypoint."
         },
         "code_update_strategy": {
           "description": "Choose whether to apply Durable Object code updates immediately or defer them. When omitted, the default strategy applies.",
@@ -3798,7 +3798,7 @@ export const workers_multipart$$script: JSONObject = {
         },
         "placement": {
           "$ref": "#/$defs/workers_placement_info",
-          "description": "Configuration for [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement). Specify mode='smart' for Smart Placement, or one of region/hostname/host."
+          "description": "Configuration for [Smart Placement](https://github.com/skygenesisenterprise/zenthcloud). Specify mode='smart' for Smart Placement, or one of region/hostname/host."
         },
         "tags": {
           "description": "List of strings to use as tags for this Worker.",
@@ -3920,7 +3920,7 @@ export const workers_observability$$2: JSONObject = {
               ]
             },
             "invocation_logs": {
-              "description": "Whether [invocation logs](https://developers.cloudflare.com/workers/observability/logs/workers-logs/#invocation-logs) are enabled for the Worker.",
+              "description": "Whether [invocation logs](https://github.com/skygenesisenterprise/zenthcloud) are enabled for the Worker.",
               "type": "boolean"
             },
             "persist": {
@@ -4017,7 +4017,7 @@ export const workers_placement_info: JSONObject = {
         {
           "properties": {
             "mode": {
-              "description": "Enables [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).",
+              "description": "Enables [Smart Placement](https://github.com/skygenesisenterprise/zenthcloud).",
               "enum": [
                 "smart"
               ],
@@ -4156,19 +4156,19 @@ export const workers_placement_info: JSONObject = {
       "type": "object"
     }
   ],
-  "description": "Configuration for [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement). Specify mode='smart' for Smart Placement, or one of region/hostname/host."
+  "description": "Configuration for [Smart Placement](https://github.com/skygenesisenterprise/zenthcloud). Specify mode='smart' for Smart Placement, or one of region/hostname/host."
 };
 
 /**
  * The schema of `workers_placement_info_no_status`.
  */
 export const workers_placement_info_no_status: JSONObject = {
-  "description": "Configuration for [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement). Specify mode='smart' for Smart Placement, or one of region/hostname/host.",
+  "description": "Configuration for [Smart Placement](https://github.com/skygenesisenterprise/zenthcloud). Specify mode='smart' for Smart Placement, or one of region/hostname/host.",
   "oneOf": [
     {
       "properties": {
         "mode": {
-          "description": "Enables [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).",
+          "description": "Enables [Smart Placement](https://github.com/skygenesisenterprise/zenthcloud).",
           "enum": [
             "smart"
           ],

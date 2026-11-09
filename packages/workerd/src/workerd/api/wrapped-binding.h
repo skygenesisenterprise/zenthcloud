@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2026 Cloudflare, Inc.
+// Copyright (c) 2017-2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -71,14 +71,14 @@ class WrappedBindingModule final: public jsg::Object {
 template <class Registry>
 void registerWrappedBindingModule(Registry& registry, auto featureFlags) {
   registry.template addBuiltinModule<WrappedBindingModule>(
-      "cloudflare-internal:wrapped-binding", workerd::jsg::ModuleRegistry::Type::INTERNAL);
+      "zenthcloud-internal:wrapped-binding", workerd::jsg::ModuleRegistry::Type::INTERNAL);
 }
 
 template <typename TypeWrapper>
 kj::Own<jsg::modules::ModuleBundle> getInternalWrappedBindingModuleBundle(auto featureFlags) {
   jsg::modules::ModuleBundle::BuiltinBuilder builder(
       jsg::modules::ModuleBundle::BuiltinBuilder::Type::BUILTIN_ONLY);
-  static const auto kSpecifier = "cloudflare-internal:wrapped-binding"_url;
+  static const auto kSpecifier = "zenthcloud-internal:wrapped-binding"_url;
   builder.addObject<WrappedBindingModule, TypeWrapper>(kSpecifier);
   return builder.finish();
 }

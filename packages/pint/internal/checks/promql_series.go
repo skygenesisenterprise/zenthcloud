@@ -10,13 +10,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cloudflare/pint/internal/comments"
-	"github.com/cloudflare/pint/internal/diags"
-	"github.com/cloudflare/pint/internal/discovery"
-	"github.com/cloudflare/pint/internal/output"
-	"github.com/cloudflare/pint/internal/parser"
-	"github.com/cloudflare/pint/internal/parser/source"
-	"github.com/cloudflare/pint/internal/promapi"
+	"github.com/zenthcloud/pint/internal/comments"
+	"github.com/zenthcloud/pint/internal/diags"
+	"github.com/zenthcloud/pint/internal/discovery"
+	"github.com/zenthcloud/pint/internal/output"
+	"github.com/zenthcloud/pint/internal/parser"
+	"github.com/zenthcloud/pint/internal/parser/source"
+	"github.com/zenthcloud/pint/internal/promapi"
 
 	"github.com/prometheus/common/model"
 	"github.com/prometheus/prometheus/model/labels"
@@ -92,15 +92,15 @@ const (
 	SeriesCheckRuleDetails = `This usually means that you're deploying a set of rules where one is using the metric produced by another rule.
 To avoid false positives pint won't run series checks here but that doesn't guarantee that there are no problems here.
 To fully validate your changes it's best to first deploy the rules that generate the time series needed by other rules.
-[Click here](https://cloudflare.github.io/pint/checks/promql/series.html#your-query-is-using-recording-rules) for more details.
+[Click here](https://github.com/skygenesisenterprise/zenthcloud) for more details.
 `
 
-	SeriesCheckSometimesPresentDetail = "If this metric is expected to exist only under certain conditions, you might want to add a `# pint disable promql/series(...)` comment to avoid pint reports when it's missing. [Click here](https://cloudflare.github.io/pint/checks/promql/series.html#how-to-disable-it) for docs about disable comment syntax."
-	SeriesCheckCommonProblemDetails   = `[Click here](https://cloudflare.github.io/pint/checks/promql/series.html#common-problems) to see a list of common problems that might cause this.`
+	SeriesCheckSometimesPresentDetail = "If this metric is expected to exist only under certain conditions, you might want to add a `# pint disable promql/series(...)` comment to avoid pint reports when it's missing. [Click here](https://github.com/skygenesisenterprise/zenthcloud) for docs about disable comment syntax."
+	SeriesCheckCommonProblemDetails   = `[Click here](https://github.com/skygenesisenterprise/zenthcloud) to see a list of common problems that might cause this.`
 	SeriesCheckMinAgeDetails          = `You have a comment that tells pint how long a metric can be missing before it warns you about it but this comment is not formatted correctly.
-[Click here](https://cloudflare.github.io/pint/checks/promql/series.html#min-age) to see supported syntax.`
-	SeriesCheckUnusedDisableComment = "One of the `# pint disable promql/series` comments used in this rule doesn't have any effect and won't disable anything. Make sure that the comment targets series that are used in the rule query and are not already ignored.\n[Click here](https://cloudflare.github.io/pint/checks/promql/series.html#how-to-disable-it) to see docs about disable comment syntax."
-	SeriesCheckUnusedRuleSetComment = "One of the `# pint rule/set promql/series` comments used in this rule doesn't have any effect. Make sure that the comment targets series and labels that are used in the rule query and are not already ignored.\n[Click here](https://cloudflare.github.io/pint/checks/promql/series.html#ignorelabel-value) for docs about comment syntax."
+[Click here](https://github.com/skygenesisenterprise/zenthcloud) to see supported syntax.`
+	SeriesCheckUnusedDisableComment = "One of the `# pint disable promql/series` comments used in this rule doesn't have any effect and won't disable anything. Make sure that the comment targets series that are used in the rule query and are not already ignored.\n[Click here](https://github.com/skygenesisenterprise/zenthcloud) to see docs about disable comment syntax."
+	SeriesCheckUnusedRuleSetComment = "One of the `# pint rule/set promql/series` comments used in this rule doesn't have any effect. Make sure that the comment targets series and labels that are used in the rule query and are not already ignored.\n[Click here](https://github.com/skygenesisenterprise/zenthcloud) for docs about comment syntax."
 )
 
 func NewSeriesCheck(prom *promapi.FailoverGroup) SeriesCheck {

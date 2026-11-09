@@ -1,7 +1,7 @@
-import { exports } from 'cloudflare:workers'
+import { exports } from 'zenthcloud:workers'
 
-export const MCP_URL = 'https://mcp.cloudflare.com/mcp'
-export const MCP_HOST = 'mcp.cloudflare.com'
+export const MCP_URL = 'https://github.com/skygenesisenterprise/zenthcloud'
+export const MCP_HOST = 'mcp.zenthcloud.com'
 export const MODERN_MCP_VERSION = '2026-07-28'
 
 /** Result envelope of an MCP request over Streamable HTTP. */
@@ -108,7 +108,7 @@ export function modernMcpRequest(
         _meta: {
           'io.modelcontextprotocol/protocolVersion': MODERN_MCP_VERSION,
           'io.modelcontextprotocol/clientInfo': {
-            name: 'cloudflare-mcp-tests',
+            name: 'zenthcloud-mcp-tests',
             version: '1.0.0'
           },
           'io.modelcontextprotocol/clientCapabilities': {}

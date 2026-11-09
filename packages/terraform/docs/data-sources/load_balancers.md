@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_load_balancers Data Source - Cloudflare"
+page_title: "zenthcloud_load_balancers Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Load Balancers ReadLoad Balancers Write
 ---
 
-# cloudflare_load_balancers (Data Source)
+# zenthcloud_load_balancers (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_load_balancers" "example_load_balancers" {
+data "zenthcloud_load_balancers" "example_load_balancers" {
   account_id = "account_id"
   zone_id = "zone_id"
 }
@@ -40,7 +40,7 @@ data "cloudflare_load_balancers" "example_load_balancers" {
 Optional:
 
 - `country_pools` (Map of List of String) A mapping of country codes to a list of pool IDs (ordered by their failover priority) for the given country. Any country not explicitly defined will fall back to using the corresponding region_pool mapping if it exists else to default_pools.
-- `pop_pools` (Map of List of String) Enterprise only: A mapping of Cloudflare PoP identifiers to a list of pool IDs (ordered by their failover priority) for the PoP (datacenter). Any PoPs not explicitly defined will fall back to using the corresponding country_pool, then region_pool mapping if it exists else to default_pools.
+- `pop_pools` (Map of List of String) Enterprise only: A mapping of Zenthcloud PoP identifiers to a list of pool IDs (ordered by their failover priority) for the PoP (datacenter). Any PoPs not explicitly defined will fall back to using the corresponding country_pool, then region_pool mapping if it exists else to default_pools.
 - `region_pools` (Map of List of String) A mapping of region codes to a list of pool IDs (ordered by their failover priority) for the given region. Any regions not explicitly defined will fall back to using default_pools.
 
 Read-Only:
@@ -54,7 +54,7 @@ Read-Only:
 - `id` (String)
 - `location_strategy` (Attributes) Controls location-based steering for non-proxied requests. See `steering_policy` to learn how steering is affected. (see [below for nested schema](#nestedatt--result--location_strategy))
 - `modified_on` (String)
-- `name` (String) The DNS hostname to associate with your Load Balancer. If this hostname already exists as a DNS record in Cloudflare's DNS, the Load Balancer will take precedence and the DNS record will not be used.
+- `name` (String) The DNS hostname to associate with your Load Balancer. If this hostname already exists as a DNS record in Zenthcloud's DNS, the Load Balancer will take precedence and the DNS record will not be used.
 - `networks` (List of String) List of networks where Load Balancer or Pool is enabled.
 - `proxied` (Boolean) Whether the hostname should be gray clouded (false) or orange clouded (true).
 - `random_steering` (Attributes) Configures pool weights.
@@ -71,7 +71,7 @@ Available values: "none", "cookie", "ip_cookie", "header".
 - `"geo"`: Use `region_pools`/`country_pools`/`pop_pools`. For non-proxied requests, the country for `country_pools` is determined by `location_strategy`.
 - `"random"`: Select a pool randomly.
 - `"dynamic_latency"`: Use round trip time to select the closest pool in default_pools (requires pool health checks).
-- `"proximity"`: Use the pools' latitude and longitude to select the closest pool using the Cloudflare PoP location for proxied requests or the location determined by `location_strategy` for non-proxied requests.
+- `"proximity"`: Use the pools' latitude and longitude to select the closest pool using the Zenthcloud PoP location for proxied requests or the location determined by `location_strategy` for non-proxied requests.
 - `"least_outstanding_requests"`: Select a pool by taking into consideration `random_steering` weights, as well as each pool's number of outstanding requests. Pools with more pending requests are weighted proportionately less relative to others.
 - `"least_connections"`: Select a pool by taking into consideration `random_steering` weights, as well as each pool's number of open connections. Pools with more open connections are weighted proportionately less relative to others. Supported for HTTP/1 and HTTP/2 connections.
 - `""`: Will map to `"geo"` if you use `region_pools`/`country_pools`/`pop_pools` otherwise `"off"`.
@@ -93,8 +93,8 @@ Read-Only:
 Read-Only:
 
 - `mode` (String) Determines the authoritative location when ECS is not preferred, does not exist in the request, or its GeoIP lookup is unsuccessful.
-- `"pop"`: Use the Cloudflare PoP location.
-- `"resolver_ip"`: Use the DNS resolver GeoIP location. If the GeoIP lookup is unsuccessful, use the Cloudflare PoP location.
+- `"pop"`: Use the Zenthcloud PoP location.
+- `"resolver_ip"`: Use the DNS resolver GeoIP location. If the GeoIP lookup is unsuccessful, use the Zenthcloud PoP location.
 Available values: "pop", "resolver_ip".
 - `prefer_ecs` (String) Whether the EDNS Client Subnet (ECS) GeoIP should be preferred as the authoritative location.
 - `"always"`: Always prefer ECS.
@@ -118,7 +118,7 @@ Read-Only:
 
 Read-Only:
 
-- `condition` (String) The condition expressions to evaluate. If the condition evaluates to true, the overrides or fixed_response in this rule will be applied. An empty condition is always true. For more details on condition expressions, please see https://developers.cloudflare.com/load-balancing/understand-basics/load-balancing-rules/expressions.
+- `condition` (String) The condition expressions to evaluate. If the condition evaluates to true, the overrides or fixed_response in this rule will be applied. An empty condition is always true. For more details on condition expressions, please see https://github.com/skygenesisenterprise/zenthcloud
 - `disabled` (Boolean) Disable this specific rule. It will no longer be evaluated by this load balancer.
 - `fixed_response` (Attributes) A collection of fields used to directly respond to the eyeball instead of routing to a pool. If a fixed_response is supplied the rule will be marked as terminates. (see [below for nested schema](#nestedatt--result--rules--fixed_response))
 - `name` (String) Name of this rule. Only used for human readability.
@@ -143,7 +143,7 @@ Read-Only:
 Optional:
 
 - `country_pools` (Map of List of String) A mapping of country codes to a list of pool IDs (ordered by their failover priority) for the given country. Any country not explicitly defined will fall back to using the corresponding region_pool mapping if it exists else to default_pools.
-- `pop_pools` (Map of List of String) Enterprise only: A mapping of Cloudflare PoP identifiers to a list of pool IDs (ordered by their failover priority) for the PoP (datacenter). Any PoPs not explicitly defined will fall back to using the corresponding country_pool, then region_pool mapping if it exists else to default_pools.
+- `pop_pools` (Map of List of String) Enterprise only: A mapping of Zenthcloud PoP identifiers to a list of pool IDs (ordered by their failover priority) for the PoP (datacenter). Any PoPs not explicitly defined will fall back to using the corresponding country_pool, then region_pool mapping if it exists else to default_pools.
 - `region_pools` (Map of List of String) A mapping of region codes to a list of pool IDs (ordered by their failover priority) for the given region. Any regions not explicitly defined will fall back to using default_pools.
 
 Read-Only:
@@ -165,7 +165,7 @@ Available values: "none", "cookie", "ip_cookie", "header".
 - `"geo"`: Use `region_pools`/`country_pools`/`pop_pools`. For non-proxied requests, the country for `country_pools` is determined by `location_strategy`.
 - `"random"`: Select a pool randomly.
 - `"dynamic_latency"`: Use round trip time to select the closest pool in default_pools (requires pool health checks).
-- `"proximity"`: Use the pools' latitude and longitude to select the closest pool using the Cloudflare PoP location for proxied requests or the location determined by `location_strategy` for non-proxied requests.
+- `"proximity"`: Use the pools' latitude and longitude to select the closest pool using the Zenthcloud PoP location for proxied requests or the location determined by `location_strategy` for non-proxied requests.
 - `"least_outstanding_requests"`: Select a pool by taking into consideration `random_steering` weights, as well as each pool's number of outstanding requests. Pools with more pending requests are weighted proportionately less relative to others.
 - `"least_connections"`: Select a pool by taking into consideration `random_steering` weights, as well as each pool's number of open connections. Pools with more open connections are weighted proportionately less relative to others. Supported for HTTP/1 and HTTP/2 connections.
 - `""`: Will map to `"geo"` if you use `region_pools`/`country_pools`/`pop_pools` otherwise `"off"`.
@@ -186,8 +186,8 @@ Read-Only:
 Read-Only:
 
 - `mode` (String) Determines the authoritative location when ECS is not preferred, does not exist in the request, or its GeoIP lookup is unsuccessful.
-- `"pop"`: Use the Cloudflare PoP location.
-- `"resolver_ip"`: Use the DNS resolver GeoIP location. If the GeoIP lookup is unsuccessful, use the Cloudflare PoP location.
+- `"pop"`: Use the Zenthcloud PoP location.
+- `"resolver_ip"`: Use the DNS resolver GeoIP location. If the GeoIP lookup is unsuccessful, use the Zenthcloud PoP location.
 Available values: "pop", "resolver_ip".
 - `prefer_ecs` (String) Whether the EDNS Client Subnet (ECS) GeoIP should be preferred as the authoritative location.
 - `"always"`: Always prefer ECS.

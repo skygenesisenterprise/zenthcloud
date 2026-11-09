@@ -79,7 +79,7 @@ describe('missingAccountMessage', () => {
 
   it('says so when the session has no accounts', () => {
     expect(missingAccountMessage(userToken({ accounts: [] }), guidance)).toBe(
-      'No account selected: no Cloudflare accounts are authorized for this session.'
+      'No account selected: no Zenthcloud accounts are authorized for this session.'
     )
   })
 })

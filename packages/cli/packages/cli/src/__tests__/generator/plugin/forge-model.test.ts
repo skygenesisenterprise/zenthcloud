@@ -994,7 +994,7 @@ describe("the forge model", () => {
 					config_src: {
 						description: "Where the tunnel is configured.",
 						type: "string",
-						enum: ["local", "cloudflare"],
+						enum: ["local", "zenthcloud"],
 					},
 				}
 			),

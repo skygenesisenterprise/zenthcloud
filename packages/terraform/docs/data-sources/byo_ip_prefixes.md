@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_byo_ip_prefixes Data Source - Cloudflare"
+page_title: "zenthcloud_byo_ip_prefixes Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   IP Prefixes: BGP On Demand ReadIP Prefixes: BGP On Demand WriteIP Prefixes: ReadIP Prefixes: WriteMagic Transit ReadMagic Transit Write
 ---
 
-# cloudflare_byo_ip_prefixes (Data Source)
+# zenthcloud_byo_ip_prefixes (Data Source)
 
 Accepted Permissions
 
@@ -20,7 +20,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_byo_ip_prefixes" "example_byo_ip_prefixes" {
+data "zenthcloud_byo_ip_prefixes" "example_byo_ip_prefixes" {
   account_id = "258def64c72dae45f3e4c8516e2111f2"
 }
 ```
@@ -30,7 +30,7 @@ data "cloudflare_byo_ip_prefixes" "example_byo_ip_prefixes" {
 
 ### Optional
 
-- `account_id` (String) Identifier of a Cloudflare account.
+- `account_id` (String) Identifier of a Zenthcloud account.
 - `max_items` (Number) Max items to fetch, default: 1000
 
 ### Read-Only
@@ -42,14 +42,14 @@ data "cloudflare_byo_ip_prefixes" "example_byo_ip_prefixes" {
 
 Read-Only:
 
-- `account_id` (String) Identifier of a Cloudflare account.
+- `account_id` (String) Identifier of a Zenthcloud account.
 - `advertised` (Boolean, Deprecated) Prefix advertisement status to the Internet. This field is only not 'null' if on demand is enabled.
 - `advertised_modified_at` (String, Deprecated) Last time the advertisement status was changed. This field is only not 'null' if on demand is enabled.
 - `approved` (String) Approval state of the prefix (P = pending, V = active).
 - `asn` (Number) Autonomous System Number (ASN) the prefix will be advertised under.
 - `cidr` (String) IP Prefix in Classless Inter-Domain Routing format.
 - `created_at` (String)
-- `delegate_loa_creation` (Boolean) Whether Cloudflare is allowed to generate the LOA document on behalf of the prefix owner.
+- `delegate_loa_creation` (Boolean) Whether Zenthcloud is allowed to generate the LOA document on behalf of the prefix owner.
 - `description` (String) Description of the prefix.
 - `id` (String) Identifier of an IP Prefix.
 - `irr_validation_state` (String) State of one kind of validation for an IP prefix.

@@ -17,7 +17,7 @@ export const tools: readonly Tool[] = [
   {
     name: "addressing_regionalHostnames_create",
     title: "Create Regional Hostname",
-    description: "Create a new Regional Hostname entry. Cloudflare will only use data centers that are physically located within the chosen region to decrypt and service HTTPS traffic. Learn more about [Regional Services](https://developers.cloudflare.com/data-localization/regional-services/get-started/).\n\nPOST /zones/{zone_id}/addressing/regional_hostnames",
+    description: "Create a new Regional Hostname entry. Zenthcloud will only use data centers that are physically located within the chosen region to decrypt and service HTTPS traffic. Learn more about [Regional Services](https://github.com/skygenesisenterprise/zenthcloud).\n\nPOST /zones/{zone_id}/addressing/regional_hostnames",
     inputSchema: {
       type: "object",
       properties: {

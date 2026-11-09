@@ -1,19 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import { runCloudflared } from "../../../commands/cloudflared.js";
+import { runZenthcloudd } from "../../../commands/zenthcloudd.js";
 import { runCf } from "../../helpers/run-cf.js";
 
-vi.mock("../../../commands/cloudflared.js", async (importOriginal) => ({
+vi.mock("../../../commands/zenthcloudd.js", async (importOriginal) => ({
 	...(await importOriginal<Record<string, unknown>>()),
-	runCloudflared: vi.fn(),
+	runZenthcloudd: vi.fn(),
 }));
 
 describe("cf tunnels quick-start", () => {
 	beforeEach(() => {
-		vi.mocked(runCloudflared).mockReset();
+		vi.mocked(runZenthcloudd).mockReset();
 	});
 
-	it("forwards quick-tunnel arguments to cloudflared", async () => {
-		vi.mocked(runCloudflared).mockResolvedValueOnce(0);
+	it("forwards quick-tunnel arguments to zenthcloudd", async () => {
+		vi.mocked(runZenthcloudd).mockResolvedValueOnce(0);
 
 		const result = await runCf([
 			"tunnels",
@@ -24,7 +24,7 @@ describe("cf tunnels quick-start", () => {
 		]);
 
 		expect(result.exitCode).toBe(0);
-		expect(runCloudflared).toHaveBeenCalledWith([
+		expect(runZenthcloudd).toHaveBeenCalledWith([
 			"tunnel",
 			"--url",
 			"http://localhost:3000",
@@ -60,9 +60,9 @@ describe("cf tunnels quick-start", () => {
 			recipients: ["alice@example.com"],
 		},
 	])(
-		"forwards $name unchanged to cloudflared",
+		"forwards $name unchanged to zenthcloudd",
 		async ({ flags, recipients }) => {
-			vi.mocked(runCloudflared).mockResolvedValueOnce(0);
+			vi.mocked(runZenthcloudd).mockResolvedValueOnce(0);
 
 			const result = await runCf([
 				"tunnels",
@@ -72,7 +72,7 @@ describe("cf tunnels quick-start", () => {
 			]);
 
 			expect(result.exitCode).toBe(0);
-			expect(runCloudflared).toHaveBeenCalledWith([
+			expect(runZenthcloudd).toHaveBeenCalledWith([
 				"tunnel",
 				"--url",
 				"http://localhost:3000",
@@ -84,7 +84,7 @@ describe("cf tunnels quick-start", () => {
 	);
 
 	it("accepts allowed mail before the positional URL", async () => {
-		vi.mocked(runCloudflared).mockResolvedValueOnce(0);
+		vi.mocked(runZenthcloudd).mockResolvedValueOnce(0);
 
 		await runCf([
 			"tunnels",
@@ -94,7 +94,7 @@ describe("cf tunnels quick-start", () => {
 			"http://localhost:3000",
 		]);
 
-		expect(runCloudflared).toHaveBeenCalledWith([
+		expect(runZenthcloudd).toHaveBeenCalledWith([
 			"tunnel",
 			"--url",
 			"http://localhost:3000",
@@ -114,7 +114,7 @@ describe("cf tunnels quick-start", () => {
 			runCf(["tunnels", "quick-start", "http://localhost:3000", ...flags])
 		).rejects.toThrow("Not enough arguments following: allowed-mail");
 
-		expect(runCloudflared).not.toHaveBeenCalled();
+		expect(runZenthcloudd).not.toHaveBeenCalled();
 	});
 
 	it("rejects local mode instead of silently ignoring it", async () => {
@@ -130,8 +130,8 @@ describe("cf tunnels quick-start", () => {
 		).rejects.toThrow("--local is not supported by cf tunnels quick-start.");
 	});
 
-	it("propagates cloudflared's exit code", async () => {
-		vi.mocked(runCloudflared).mockResolvedValueOnce(7);
+	it("propagates zenthcloudd's exit code", async () => {
+		vi.mocked(runZenthcloudd).mockResolvedValueOnce(7);
 
 		const result = await runCf([
 			"tunnels",

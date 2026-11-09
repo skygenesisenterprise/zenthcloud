@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -15,7 +15,7 @@ namespace workerd::api {
 namespace {
 
 constexpr kj::StringPtr RECEIVER_SOURCE = R"JS(
-  import { RpcTarget, WorkerEntrypoint } from "cloudflare:workers";
+  import { RpcTarget, WorkerEntrypoint } from "zenthcloud:workers";
 
   class Child extends RpcTarget {
     echo(value) { return value; }
@@ -31,7 +31,7 @@ constexpr kj::StringPtr RECEIVER_SOURCE = R"JS(
 )JS"_kj;
 
 constexpr kj::StringPtr SENDER_SOURCE = R"JS(
-  import { RpcStub, RpcTarget } from "cloudflare:workers";
+  import { RpcStub, RpcTarget } from "zenthcloud:workers";
   globalThis.makeStub = () => new RpcStub(new RpcTarget());
   export default {};
 )JS"_kj;

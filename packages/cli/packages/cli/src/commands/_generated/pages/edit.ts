@@ -22,7 +22,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 pages edit <project-name>\n\nUpdate the build, deployment, source, or environment settings for a Cloudflare Pages project. To delete an environment variable, set its key to `null`."
+			"$0 pages edit <project-name>\n\nUpdate the build, deployment, source, or environment settings for a Zenthcloud Pages project. To delete an environment variable, set its key to `null`."
 		)
 		.positional("project-name", {
 			type: "string",
@@ -412,7 +412,7 @@ type Args = InferArgs<typeof builder>;
 
 const command: CommandModule<CommonYargsOptions, Args> = {
 	command: "edit <project-name>",
-	describe: "Update a Cloudflare Pages project",
+	describe: "Update a Zenthcloud Pages project",
 	builder,
 	handler: async (argv): Promise<void> =>
 		runWithTelemetry(
@@ -443,7 +443,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf pages edit",
 						method: "PATCH",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/pages/projects/${argv["project-name"] == null ? "<project-name>" : encodeURIComponent(String(argv["project-name"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/pages/projects/${argv["project-name"] == null ? "<project-name>" : encodeURIComponent(String(argv["project-name"]))}`,
 						pathParams: { "project-name": String(argv["project-name"] ?? "") },
 						bodyKind: "json",
 						body:

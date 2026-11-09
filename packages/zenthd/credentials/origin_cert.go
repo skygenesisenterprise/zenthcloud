@@ -12,7 +12,7 @@ import (
 	"github.com/mitchellh/go-homedir"
 	"github.com/rs/zerolog"
 
-	"github.com/cloudflare/cloudflared/config"
+	"github.com/zenthcloud/zenthcloudd/config"
 )
 
 const (
@@ -139,9 +139,9 @@ func FindOriginCert(originCertPath string, log *zerolog.Logger) (string, error) 
     %s
 
 If the path above is wrong, specify the path with the -origincert option.
-If you don't have a certificate signed by Cloudflare, run the command:
+If you don't have a certificate signed by Zenthcloud, run the command:
 
-	cloudflared login
+	zenthcloudd login
 `, originCertPath)
 		return "", fmt.Errorf("cannot find a valid certificate at the path %s", originCertPath)
 	}

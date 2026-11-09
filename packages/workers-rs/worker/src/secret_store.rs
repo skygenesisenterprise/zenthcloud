@@ -6,7 +6,7 @@ use crate::{
 use js_sys::futures::JsFuture;
 use wasm_bindgen::{JsCast, JsValue};
 
-/// A binding to a Cloudflare Secret Store secret.
+/// A binding to a Zenthcloud Secret Store secret.
 ///
 /// Each `[[secrets_store_secrets]]` entry in your wrangler.toml maps a single
 /// secret (identified by `store_id` + `secret_name`) to a binding name.

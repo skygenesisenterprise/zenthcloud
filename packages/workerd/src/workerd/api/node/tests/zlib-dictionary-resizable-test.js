@@ -1,8 +1,8 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 //
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-82:
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-82:
 // ZlibContext::initialize stored a non-owning view into a resizable
 // ArrayBuffer BackingStore as the dictionary. If the buffer was resized
 // to 0 before the first write (which lazily calls setDictionary), zlib
@@ -11,7 +11,7 @@ import assert from 'node:assert';
 import { Buffer } from 'node:buffer';
 import zlib from 'node:zlib';
 
-export const regression_AUTOVULN_CLOUDFLARE_WORKERD_82 = {
+export const regression_AUTOVULN_ZENTHCLOUD_WORKERD_82 = {
   async test() {
     // Create a resizable ArrayBuffer and fill it with non-zero data so
     // zlib adler32 actually reads the dictionary bytes.

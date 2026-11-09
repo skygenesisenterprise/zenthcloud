@@ -1,4 +1,4 @@
-/// <reference types="@cloudflare/workers-types" />
+/// <reference types="@zenthcloud/workers-types" />
 
 import { RpcStub, RpcTarget, type RpcCompatible } from "../src/index-workers.js"
 import {
@@ -6,7 +6,7 @@ import {
   RpcStub as NativeRpcStub,
   RpcTarget as NativeRpcTarget,
   WorkerEntrypoint,
-} from "cloudflare:workers"
+} from "zenthcloud:workers"
 import { expectAssignable, type Expect } from "./helpers.js"
 
 interface CounterSurface {

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_healthcheck Data Source - Cloudflare"
+page_title: "zenthcloud_healthcheck Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Health Checks ReadHealth Checks Write
 ---
 
-# cloudflare_healthcheck (Data Source)
+# zenthcloud_healthcheck (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_healthcheck" "example_healthcheck" {
+data "zenthcloud_healthcheck" "example_healthcheck" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   healthcheck_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
@@ -36,7 +36,7 @@ data "cloudflare_healthcheck" "example_healthcheck" {
 ### Read-Only
 
 - `address` (String) The hostname or IP address of the origin server to run health checks on.
-- `check_regions` (List of String) A list of regions from which to run health checks. Null means Cloudflare will pick a default region.
+- `check_regions` (List of String) A list of regions from which to run health checks. Null means Zenthcloud will pick a default region.
 - `consecutive_fails` (Number) The number of consecutive fails required from a health check before changing the health to unhealthy.
 - `consecutive_successes` (Number) The number of consecutive successes required from a health check before changing the health to healthy.
 - `created_on` (String)

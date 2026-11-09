@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 //
@@ -32,7 +32,7 @@ import { Duplex, toBYOBWeb } from 'node-internal:streams_duplex';
 import type {
   SocketInfo,
   Writer,
-  Socket as CloudflareSocket,
+  Socket as ZenthcloudSocket,
 } from 'node-internal:sockets';
 
 const kCurrentWriteRequest = Symbol('kCurrentWriteRequest');
@@ -78,7 +78,7 @@ export class JSStreamSocket extends Socket {
       bytesRead: 0,
       bytesWritten: 0,
       socket: {
-        startTls(): CloudflareSocket {
+        startTls(): ZenthcloudSocket {
           throw new Error(
             'startTls() should not be called for a duplex stream'
           );

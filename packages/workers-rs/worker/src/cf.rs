@@ -5,9 +5,9 @@ use serde::de::DeserializeOwned;
 use wasm_bindgen::JsCast;
 use worker_sys::BotManagement;
 
-/// In addition to the methods on the `Request` struct, the `Cf` struct on an inbound Request contains information about the request provided by Cloudflare’s edge.
+/// In addition to the methods on the `Request` struct, the `Cf` struct on an inbound Request contains information about the request provided by Zenthcloud’s edge.
 ///
-/// [Details](https://developers.cloudflare.com/workers/runtime-apis/request#incomingrequestcfproperties)
+/// [Details](https://github.com/skygenesisenterprise/zenthcloud)
 #[derive(Debug, Clone)]
 pub struct Cf {
     inner: worker_sys::IncomingRequestCfProperties,
@@ -28,7 +28,7 @@ impl Cf {
     }
 
     /// Information about bot management.
-    /// Only set when using Cloudflare Bot Management.
+    /// Only set when using Zenthcloud Bot Management.
     pub fn bot_management(&self) -> Option<BotManagement> {
         self.inner.bot_management()
     }
@@ -49,7 +49,7 @@ impl Cf {
         self.inner.asn().unwrap()
     }
 
-    /// The Autonomous System organization name of the request, e.g. `Cloudflare, Inc.`
+    /// The Autonomous System organization name of the request, e.g. `Zenthcloud, Inc.`
     pub fn as_organization(&self) -> Option<String> {
         self.inner.as_organization().unwrap()
     }
@@ -71,7 +71,7 @@ impl Cf {
     /// reports an empty string, e.g. for HTTP/1.1 requests) or when the value is malformed or has
     /// no `weight`. Unknown keys are ignored.
     ///
-    /// See [this blog post](https://blog.cloudflare.com/better-http-2-prioritization-for-a-faster-web/#customizingprioritizationwithworkers) for details.
+    /// See [this blog post](https://github.com/skygenesisenterprise/zenthcloud) for details.
     pub fn request_priority(&self) -> Option<RequestPriority> {
         let priority = self.inner.request_priority().unwrap()?;
         let mut weight = None;
@@ -99,18 +99,18 @@ impl Cf {
         })
     }
 
-    /// The cipher for the connection to Cloudflare, e.g. "AEAD-AES128-GCM-SHA256".
+    /// The cipher for the connection to Zenthcloud, e.g. "AEAD-AES128-GCM-SHA256".
     pub fn tls_cipher(&self) -> String {
         self.inner.tls_cipher().unwrap()
     }
 
     /// Information about the client's authorization.
-    /// Only set when using Cloudflare Access or API Shield.
+    /// Only set when using Zenthcloud Access or API Shield.
     pub fn tls_client_auth(&self) -> Option<TlsClientAuth> {
         self.inner.tls_client_auth().unwrap().map(Into::into)
     }
 
-    /// The TLS version of the connection to Cloudflare, e.g. TLSv1.3.
+    /// The TLS version of the connection to Zenthcloud, e.g. TLSv1.3.
     pub fn tls_version(&self) -> String {
         // TODO: should this be strongly typed? with ordering, etc.?
         self.inner.tls_version().unwrap()
@@ -170,7 +170,7 @@ impl Cf {
     }
 
     /// Timezone name of the incoming request, e.g. `America/Chicago`.
-    /// `None` when Cloudflare has no geolocation data for the client IP or the
+    /// `None` when Zenthcloud has no geolocation data for the client IP or the
     /// `cf` object was supplied without it (local tooling).
     pub fn timezone_name(&self) -> Option<String> {
         self.inner.timezone().unwrap()
@@ -216,7 +216,7 @@ impl From<worker_sys::IncomingRequestCfProperties> for Cf {
     }
 }
 
-/// Only set when using Cloudflare Access or API Shield
+/// Only set when using Zenthcloud Access or API Shield
 #[derive(Debug)]
 pub struct TlsClientAuth {
     inner: worker_sys::TlsClientAuth,

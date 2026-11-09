@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_managed_transforms Resource - Cloudflare"
+page_title: "zenthcloud_managed_transforms Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Rulesets ReadAccount Rulesets WriteAccount WAF ReadAccount WAF WriteBot Management ReadBot Management WriteCache Settings ReadCache Settings WriteConfig Settings ReadConfig Settings WriteCustom Errors ReadCustom Errors WriteDynamic URL Redirects ReadDynamic URL Redirects WriteHTTP DDoS Managed Ruleset ReadHTTP DDoS Managed Ruleset WriteL4 DDoS Managed Ruleset ReadL4 DDoS Managed Ruleset WriteLogs ReadLogs WriteMagic Firewall ReadMagic Firewall WriteManaged headers ReadManaged headers WriteMass URL Redirects ReadMass URL Redirects WriteOrigin ReadOrigin WriteResponse Compression ReadResponse Compression WriteSanitize ReadSanitize WriteSelect Configuration ReadSelect Configuration WriteTransform Rules ReadTransform Rules WriteZone Transform Rules ReadZone Transform Rules WriteZone WAF ReadZone WAF Write
 ---
 
-# cloudflare_managed_transforms (Resource)
+# zenthcloud_managed_transforms (Resource)
 
 Accepted Permissions
 
@@ -54,7 +54,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_managed_transforms" "example_managed_transforms" {
+resource "zenthcloud_managed_transforms" "example_managed_transforms" {
   zone_id = "9f1839b6152d298aca64c4e906b6d074"
   managed_request_headers = [{
     id = "add_bot_protection_headers"
@@ -105,7 +105,7 @@ Required:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_managed_transforms.example '<zone_id>'
+$ terraform import zenthcloud_managed_transforms.example '<zone_id>'
 ```
 
 

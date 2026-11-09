@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import { tools } from '../src/generated/forge-mcp'
-import { cloudflareTool } from '../src/forge-tools/cloudflare'
+import { zenthcloudTool } from '../src/forge-tools/zenthcloud'
 import { planCall, type PlanOptions } from '../src/forge-tools/plan'
 
-const BASE = 'https://api.cloudflare.com/client/v4'
+const BASE = 'https://github.com/skygenesisenterprise/zenthcloud'
 const ACCOUNT = '00000000000000000000000000000001'
 
 function plan(name: string, args: Record<string, unknown>, options: Partial<PlanOptions> = {}) {
   const tool = tools.find((t) => t.name === name)
   if (!tool) throw new Error(`no generated tool ${name}`)
-  return planCall(cloudflareTool(tool), args, { baseUrl: BASE, ...options })
+  return planCall(zenthcloudTool(tool), args, { baseUrl: BASE, ...options })
 }
 
 describe('planning a generated tool call', () => {

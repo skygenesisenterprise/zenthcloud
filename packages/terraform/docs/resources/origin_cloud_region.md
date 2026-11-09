@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_origin_cloud_region Resource - Cloudflare"
+page_title: "zenthcloud_origin_cloud_region Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_origin_cloud_region (Resource)
+# zenthcloud_origin_cloud_region (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_origin_cloud_region" "example_origin_cloud_region" {
+resource "zenthcloud_origin_cloud_region" "example_origin_cloud_region" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   origin_ip = "192.0.2.1"
   region = "us-east-1"
@@ -41,7 +41,7 @@ Available values: "aws", "azure", "gcp", "oci".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_origin_cloud_region.example '<zone_id>/<origin_ip>'
+$ terraform import zenthcloud_origin_cloud_region.example '<zone_id>/<origin_ip>'
 ```
 
 

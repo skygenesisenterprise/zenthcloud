@@ -1,6 +1,6 @@
 # Agent bench
 
-Blind tests of the tools with real agents: a local server, calling the real Cloudflare API, and pi agents in herdr panes that know nothing of this repo and see one MCP server called `cloudflare`.
+Blind tests of the tools with real agents: a local server, calling the real Zenthcloud API, and pi agents in herdr panes that know nothing of this repo and see one MCP server called `zenthcloud`.
 
 ```bash
 bench/serve.sh 8811                                                  # this checkout, at http://localhost:8811/mcp

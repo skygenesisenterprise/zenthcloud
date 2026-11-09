@@ -4,8 +4,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/compare"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -13,11 +13,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
-func TestAccCloudflareWorkerDataSource_Basic(t *testing.T) {
+func TestAccZenthcloudWorkerDataSource_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_worker." + rnd
-	dataSourceName := "data.cloudflare_worker." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_worker." + rnd
+	dataSourceName := "data.zenthcloud_worker." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -80,7 +80,7 @@ func TestAccCloudflareWorkerDataSource_Basic(t *testing.T) {
 							"enabled":            knownvalue.Bool(false),
 							"head_sampling_rate": knownvalue.Float64Exact(1),
 							"persist":            knownvalue.Bool(true),
-							// The Cloudflare Workers API does not currently echo
+							// The Zenthcloud Workers API does not currently echo
 							// observability.traces.propagation_policy in responses, so
 							// the data source surfaces it as null. The resource has a
 							// targeted state-preservation fallback for this field;

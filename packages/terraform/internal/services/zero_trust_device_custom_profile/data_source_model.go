@@ -5,9 +5,9 @@ package zero_trust_device_custom_profile
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -57,7 +57,7 @@ type ZeroTrustDeviceCustomProfileDataSourceModel struct {
 
 func (m *ZeroTrustDeviceCustomProfileDataSourceModel) toReadParams(_ context.Context) (params zero_trust.DevicePolicyCustomGetParams, diags diag.Diagnostics) {
 	params = zero_trust.DevicePolicyCustomGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -65,11 +65,11 @@ func (m *ZeroTrustDeviceCustomProfileDataSourceModel) toReadParams(_ context.Con
 
 func (m *ZeroTrustDeviceCustomProfileDataSourceModel) toListParams(_ context.Context) (params zero_trust.DevicePolicyCustomListParams, diags diag.Diagnostics) {
 	params = zero_trust.DevicePolicyCustomListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Filter.ProfileType.IsNull() {
-		params.ProfileType = cloudflare.F(zero_trust.DevicePolicyCustomListParamsProfileType(m.Filter.ProfileType.ValueString()))
+		params.ProfileType = zenthcloud.F(zero_trust.DevicePolicyCustomListParamsProfileType(m.Filter.ProfileType.ValueString()))
 	}
 
 	return

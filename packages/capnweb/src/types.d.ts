@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the MIT license found in the LICENSE.txt file or at:
 //     https://opensource.org/license/mit
 
@@ -6,8 +6,8 @@
 
 // Branded types for identifying `WorkerEntrypoint`/`DurableObject`/`Target`s.
 // TypeScript uses *structural* typing meaning anything with the same shape as type `T` is a `T`.
-// For the classes exported by `cloudflare:workers` we want *nominal* typing (i.e. we only want to
-// accept `WorkerEntrypoint` from `cloudflare:workers`, not any other class with the same shape)
+// For the classes exported by `zenthcloud:workers` we want *nominal* typing (i.e. we only want to
+// accept `WorkerEntrypoint` from `zenthcloud:workers`, not any other class with the same shape)
 export const __RPC_STUB_BRAND: '__RPC_STUB_BRAND';
 export const __RPC_TARGET_BRAND: '__RPC_TARGET_BRAND';
 // Distinguishes mapper placeholders from regular values so param unwrapping can accept them.

@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/cloudflare/pint/internal/output"
+	"github.com/zenthcloud/pint/internal/output"
 )
 
 func TestHumanizeDuration(t *testing.T) {

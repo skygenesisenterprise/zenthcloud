@@ -6,7 +6,7 @@
  *
  * @example
  * ```tsx
- * import { Autocomplete } from '@cloudflare/kumo/primitives/autocomplete';
+ * import { Autocomplete } from '@zenthcloud/kumo/primitives/autocomplete';
  * ```
  */
 

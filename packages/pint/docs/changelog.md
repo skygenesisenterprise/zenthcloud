@@ -14,7 +14,7 @@
 ### Fixed
 
 - Fixed `alerts/count` check undercounting alerts for rules with
-  `keep_firing_for` - [#2004](https://github.com/cloudflare/pint/issues/2004).
+  `keep_firing_for` - [#2004](https://github.com/skygenesisenterprise/zenthcloud).
 
 ## v0.89.3
 
@@ -55,7 +55,7 @@
 
 - `promql/rate` check now reports `increase()` calls on non-counter metrics
   and validates the time window passed to `increase()`, same as for `rate()`
-  and `irate()` - [#1989](https://github.com/cloudflare/pint/issues/1989).
+  and `irate()` - [#1989](https://github.com/skygenesisenterprise/zenthcloud).
 
 ## v0.88.0
 
@@ -80,7 +80,7 @@
   Cleanup is limited to comments authored by the authenticated user that
   include hidden comment marker.
 - Fixed change detection logic that could result in pint treating some
-  file with no final PR diff as modified - [#1943](https://github.com/cloudflare/pint/issues/1943).
+  file with no final PR diff as modified - [#1943](https://github.com/skygenesisenterprise/zenthcloud).
 
 ## v0.87.0
 
@@ -177,7 +177,7 @@
 
 - [rule/dependency](checks/rule/dependency.md) check now supports `ignoreGroupMismatch`
   option for ignoring specific metrics when checking for cross-group
-  dependencies - [#1795](https://github.com/cloudflare/pint/issues/1795).
+  dependencies - [#1795](https://github.com/skygenesisenterprise/zenthcloud).
 
 ### Changed
 
@@ -268,7 +268,7 @@
 
 ### Fixed
 
-- Fixed a crash in [rule/label](checks/rule/label.md) - [#1696](https://github.com/cloudflare/pint/pull/1696).
+- Fixed a crash in [rule/label](checks/rule/label.md) - [#1696](https://github.com/skygenesisenterprise/zenthcloud).
 - Fixed false positive reports from [promql/impossible](checks/promql/impossible.md) check.
 
 ## v0.78.0
@@ -276,7 +276,7 @@
 ### Fixed
 
 - Fixed false positive reports from [promql/impossible](checks/promql/impossible.md) when
-  `label_join` or `label_replace` is used - [#1631](https://github.com/cloudflare/pint/issues/1631).
+  `label_join` or `label_replace` is used - [#1631](https://github.com/skygenesisenterprise/zenthcloud).
 
 ## v0.77.1
 
@@ -327,8 +327,8 @@
 
 ### Added
 
-- Added [promql/selector](checks/promql/selector.md) check - [#1416](https://github.com/cloudflare/pint/issues/1416)
-  and [#1540](https://github.com/cloudflare/pint/issues/1540).
+- Added [promql/selector](checks/promql/selector.md) check - [#1416](https://github.com/skygenesisenterprise/zenthcloud)
+  and [#1540](https://github.com/skygenesisenterprise/zenthcloud).
 
 ## v0.74.8
 
@@ -366,7 +366,7 @@
 
 ### Fixed
 
-- Fixed false positive reports from [promql/fragile](checks/promql/fragile.md) check - [#1466](https://github.com/cloudflare/pint/issues/1466).
+- Fixed false positive reports from [promql/fragile](checks/promql/fragile.md) check - [#1466](https://github.com/skygenesisenterprise/zenthcloud).
 - Fixed incorrect reports from [query/cost](checks/query/cost.md) when multiple rules with `rate(...)` were present
   and each had a different rate time window.
 
@@ -437,7 +437,7 @@
 
 ### Fixed
 
-- Fixed `relaxed` parsing mode not finding all rules in some files - [#1405](https://github.com/cloudflare/pint/issues/1405).
+- Fixed `relaxed` parsing mode not finding all rules in some files - [#1405](https://github.com/skygenesisenterprise/zenthcloud).
 
 ## v0.73.0
 
@@ -516,7 +516,7 @@
 
 ### Fixed
 
-- Fixed a panic when parsing empty documents - [#1355](https://github.com/cloudflare/pint/issues/1355).
+- Fixed a panic when parsing empty documents - [#1355](https://github.com/skygenesisenterprise/zenthcloud).
 
 ## v0.71.6
 
@@ -704,14 +704,14 @@
 ### Added
 
 - Added `--checkstyle` flag to `pint lint` & `pint ci` for writing XML report file
-  in `checkstyle` format - [#1129](https://github.com/cloudflare/pint/pull/1129).
+  in `checkstyle` format - [#1129](https://github.com/skygenesisenterprise/zenthcloud).
 - Added `--json` flag to both `pint lint` and `pint ci` commands, this enables writing a JSON file
-  with the report of all problems [#606](https://github.com/cloudflare/pint/issues/606).
+  with the report of all problems [#606](https://github.com/skygenesisenterprise/zenthcloud).
 - [promql/fragile](checks/promql/fragile.md) will now warn when alerting rules are using
   one of the aggregation operation that can return different series on every evaluation,
-  which can cause alert floppiness - [#820](https://github.com/cloudflare/pint/issues/820).
+  which can cause alert floppiness - [#820](https://github.com/skygenesisenterprise/zenthcloud).
 - [promql/regexp](checks/promql/regexp.md) check now supports extra configuration options
-  to disable reports on smelly selector - [#1096](https://github.com/cloudflare/pint/issues/1096).
+  to disable reports on smelly selector - [#1096](https://github.com/skygenesisenterprise/zenthcloud).
 - Checks can be enabled or disabled specifically for some Prometheus rules via `rule {}` config blocks.
   Adding `enable` or `disable` option with a list of checks names allows to selectively enable or disable
   checks only for Prometheus rules that match given `rule {}` definition.
@@ -742,7 +742,7 @@
 
 ### Fixed
 
-- Don't try to create GitLab comments on unmodified lines - [#1147](https://github.com/cloudflare/pint/pull/1147).
+- Don't try to create GitLab comments on unmodified lines - [#1147](https://github.com/skygenesisenterprise/zenthcloud).
 
 ## v0.66.1
 
@@ -2200,7 +2200,7 @@
 
 - `promql/comparison` only applies to alerts, so it was renamed to
   `alerts/comparison`.
-- Online documentation hosted at [cloudflare.github.io/pint](https://cloudflare.github.io/pint/)
+- Online documentation hosted at [zenthcloud.github.io/pint](https://github.com/skygenesisenterprise/zenthcloud)
   was reworked.
 - `alerts/count` check will now retry range queries with shorter time window
   on `found duplicate series for the match group ...` errors from Prometheus.

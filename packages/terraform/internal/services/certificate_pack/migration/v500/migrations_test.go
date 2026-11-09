@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -66,8 +66,8 @@ func TestMigrateCertificatePack_V4ToV5_Basic(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Test setup
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-			domain := os.Getenv("CLOUDFLARE_DOMAIN")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+			domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID, domain)
@@ -85,8 +85,8 @@ func TestMigrateCertificatePack_V4ToV5_Basic(t *testing.T) {
 				// Use external v4 provider (will create version=0 state)
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -107,33 +107,33 @@ func TestMigrateCertificatePack_V4ToV5_Basic(t *testing.T) {
 						[]statecheck.StateCheck{
 							// Verify core fields
 							statecheck.ExpectKnownValue(
-								"cloudflare_certificate_pack."+rnd,
+								"zenthcloud_certificate_pack."+rnd,
 								tfjsonpath.New("zone_id"),
 								knownvalue.StringExact(zoneID),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_certificate_pack."+rnd,
+								"zenthcloud_certificate_pack."+rnd,
 								tfjsonpath.New("type"),
 								knownvalue.StringExact("advanced"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_certificate_pack."+rnd,
+								"zenthcloud_certificate_pack."+rnd,
 								tfjsonpath.New("validation_method"),
 								knownvalue.StringExact("txt"),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_certificate_pack."+rnd,
+								"zenthcloud_certificate_pack."+rnd,
 								tfjsonpath.New("validity_days"),
 								knownvalue.Int64Exact(90),
 							),
 							statecheck.ExpectKnownValue(
-								"cloudflare_certificate_pack."+rnd,
+								"zenthcloud_certificate_pack."+rnd,
 								tfjsonpath.New("certificate_authority"),
 								knownvalue.StringExact("lets_encrypt"),
 							),
 							// Verify hosts are preserved
 							statecheck.ExpectKnownValue(
-								"cloudflare_certificate_pack."+rnd,
+								"zenthcloud_certificate_pack."+rnd,
 								tfjsonpath.New("hosts"),
 								knownvalue.SetSizeExact(2),
 							),
@@ -177,8 +177,8 @@ func TestMigrateCertificatePack_V4ToV5_WaitForActiveStatus(t *testing.T) {
 			}
 
 			// Test setup
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-			domain := os.Getenv("CLOUDFLARE_DOMAIN")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+			domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID, domain)
@@ -196,8 +196,8 @@ func TestMigrateCertificatePack_V4ToV5_WaitForActiveStatus(t *testing.T) {
 				// Use external v4 provider (will create version=0 state)
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -216,16 +216,16 @@ func TestMigrateCertificatePack_V4ToV5_WaitForActiveStatus(t *testing.T) {
 					// Step 2: Run migration and verify state
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer,
 						[]statecheck.StateCheck{
-							// Verify cloudflare_branding is preserved
+							// Verify zenthcloud_branding is preserved
 							statecheck.ExpectKnownValue(
-								"cloudflare_certificate_pack."+rnd,
-								tfjsonpath.New("cloudflare_branding"),
+								"zenthcloud_certificate_pack."+rnd,
+								tfjsonpath.New("zenthcloud_branding"),
 								knownvalue.Bool(true),
 							),
 							// Verify wait_for_active_status is NOT in state (removed in v5)
 							// Note: In v4, this field exists but won't be checked in v5 state
 							statecheck.ExpectKnownValue(
-								"cloudflare_certificate_pack."+rnd,
+								"zenthcloud_certificate_pack."+rnd,
 								tfjsonpath.New("zone_id"),
 								knownvalue.StringExact(zoneID),
 							),
@@ -269,8 +269,8 @@ func TestMigrateCertificatePack_V4ToV5_DifferentValidation(t *testing.T) {
 			}
 
 			// Test setup
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-			domain := os.Getenv("CLOUDFLARE_DOMAIN")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+			domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID, domain)
@@ -288,8 +288,8 @@ func TestMigrateCertificatePack_V4ToV5_DifferentValidation(t *testing.T) {
 				// Use external v4 provider (will create version=0 state)
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -310,25 +310,25 @@ func TestMigrateCertificatePack_V4ToV5_DifferentValidation(t *testing.T) {
 						[]statecheck.StateCheck{
 							// Verify validation_method is preserved
 							statecheck.ExpectKnownValue(
-								"cloudflare_certificate_pack."+rnd,
+								"zenthcloud_certificate_pack."+rnd,
 								tfjsonpath.New("validation_method"),
 								knownvalue.StringExact("http"),
 							),
 							// Verify certificate_authority is preserved
 							statecheck.ExpectKnownValue(
-								"cloudflare_certificate_pack."+rnd,
+								"zenthcloud_certificate_pack."+rnd,
 								tfjsonpath.New("certificate_authority"),
 								knownvalue.StringExact("google"),
 							),
 							// Verify validity_days is preserved (different value)
 							statecheck.ExpectKnownValue(
-								"cloudflare_certificate_pack."+rnd,
+								"zenthcloud_certificate_pack."+rnd,
 								tfjsonpath.New("validity_days"),
 								knownvalue.Int64Exact(90),
 							),
 							// Verify single host
 							statecheck.ExpectKnownValue(
-								"cloudflare_certificate_pack."+rnd,
+								"zenthcloud_certificate_pack."+rnd,
 								tfjsonpath.New("hosts"),
 								knownvalue.SetSizeExact(1),
 							),

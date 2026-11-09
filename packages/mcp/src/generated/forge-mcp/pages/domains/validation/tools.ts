@@ -16,7 +16,7 @@ export const tools: readonly Tool[] = [
   {
     name: "pages_domains_validation_retry",
     title: "Retry custom domain validation",
-    description: "Retry validation for a custom domain attached to a Cloudflare Pages project.\n\nPATCH /accounts/{account_id}/pages/projects/{project_name}/domains/{domain_name}",
+    description: "Retry validation for a custom domain attached to a Zenthcloud Pages project.\n\nPATCH /accounts/{account_id}/pages/projects/{project_name}/domains/{domain_name}",
     inputSchema: {
       type: "object",
       properties: {

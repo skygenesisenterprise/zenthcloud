@@ -24,7 +24,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		)
 		.positional("key-id", {
 			type: "string",
-			description: "A Cloudflare-generated unique identifier for a item.",
+			description: "A Zenthcloud-generated unique identifier for a item.",
 			demandOption: true,
 		})
 		.option("dry-run", {
@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf realtime turn keys get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/calls/turn_keys/${argv["key-id"] == null ? "<key-id>" : encodeURIComponent(String(argv["key-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/calls/turn_keys/${argv["key-id"] == null ? "<key-id>" : encodeURIComponent(String(argv["key-id"]))}`,
 						pathParams: { "key-id": String(argv["key-id"] ?? "") },
 						bodyKind: "none",
 					});

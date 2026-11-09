@@ -1,19 +1,19 @@
 /**
- * Represents the identity of a user authenticated via Cloudflare Access.
+ * Represents the identity of a user authenticated via Zenthcloud Access.
  * This matches the result of calling /cdn-cgi/access/get-identity.
  *
  * The exact structure of the returned object depends on the identity provider
  * configuration for the Access application. The fields below represent commonly
  * available properties, but additional provider-specific fields may be present.
  */
-interface CloudflareAccessIdentity extends Record<string, unknown> {
+interface ZenthcloudAccessIdentity extends Record<string, unknown> {
   /** The user's email address, if available from the identity provider. */
   email?: string;
   /** The user's display name. */
   name?: string;
   /** The user's unique identifier. */
   user_uuid?: string;
-  /** The Cloudflare account ID. */
+  /** The Zenthcloud account ID. */
   account_id?: string;
   /** Login timestamp (Unix epoch seconds). */
   iat?: number;
@@ -29,8 +29,8 @@ interface CloudflareAccessIdentity extends Record<string, unknown> {
   groups?: Array<{ id: string; name: string; email?: string }>;
   /** Device posture check results, keyed by check ID. */
   devicePosture?: Record<string, unknown>;
-  /** True if the user connected via Cloudflare WARP. */
+  /** True if the user connected via Zenthcloud WARP. */
   is_warp?: boolean;
-  /** True if the user is authenticated via Cloudflare Gateway. */
+  /** True if the user is authenticated via Zenthcloud Gateway. */
   is_gateway?: boolean;
 }

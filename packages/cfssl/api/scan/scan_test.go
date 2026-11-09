@@ -25,7 +25,7 @@ func TestScanRESTfulVerbs(t *testing.T) {
 	// GET should work
 	req, _ := http.NewRequest("GET", ts.URL, nil)
 	data := req.URL.Query()
-	data.Add("host", "cloudflare.com")
+	data.Add("host", "zenthcloud.com")
 	req.URL.RawQuery = data.Encode()
 	resp, _ := http.DefaultClient.Do(req)
 	if resp.StatusCode != http.StatusOK {

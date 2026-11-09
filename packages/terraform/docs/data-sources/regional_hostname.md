@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_regional_hostname Data Source - Cloudflare"
+page_title: "zenthcloud_regional_hostname Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   DNS ReadDNS Write
 ---
 
-# cloudflare_regional_hostname (Data Source)
+# zenthcloud_regional_hostname (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_regional_hostname" "example_regional_hostname" {
+data "zenthcloud_regional_hostname" "example_regional_hostname" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   hostname = "foo.example.com"
 }

@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -19,11 +19,11 @@ var v4TimeoutsConfig string
 
 // TestMigrateRegionalHostname_TimeoutsRemoval tests v4→v5 migration with timeouts block removal
 func TestMigrateRegionalHostname_TimeoutsRemoval(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
 	hostname := fmt.Sprintf("%s.%s", rnd, zoneName)
-	resourceName := "cloudflare_regional_hostname." + rnd
+	resourceName := "zenthcloud_regional_hostname." + rnd
 	tmpDir := t.TempDir()
 	testConfig := fmt.Sprintf(v4TimeoutsConfig, rnd, zoneID, hostname)
 	version := acctest.GetLastV4Version()
@@ -37,8 +37,8 @@ func TestMigrateRegionalHostname_TimeoutsRemoval(t *testing.T) {
 		Steps: append([]resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},

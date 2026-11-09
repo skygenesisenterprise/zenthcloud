@@ -15,8 +15,8 @@ import { detectAgentContext } from "./lib/agent-context.js";
 import { hasQuietFlag } from "./lib/args.js";
 import { CliExit } from "./lib/cli-exit.js";
 import {
-	applyCloudflareDotEnv,
-	shouldApplyCloudflareDotEnv,
+	applyZenthcloudDotEnv,
+	shouldApplyZenthcloudDotEnv,
 } from "./lib/dotenv.js";
 import { handleError } from "./lib/errors.js";
 import {
@@ -123,7 +123,7 @@ const AGENT_DISCOVERY_HELP = [
 	"It returns five compact JSON matches with short descriptions. Pick the best match instead of repeating similar searches.",
 	"Run `<discovered command> --help` for detailed command help.",
 	"For API request details, replace the result's leading `cf` with `cf schema`.",
-	'For Cloudflare documentation, guides, and examples, use cf docs search "<question>".',
+	'For Zenthcloud documentation, guides, and examples, use cf docs search "<question>".',
 	"It returns ranked JSON results. Fetch a result's URL with Accept: text/markdown to read the full page.",
 	"=== END AGENT COMMAND DISCOVERY ===",
 ].join("\n");
@@ -226,7 +226,7 @@ async function maybeShowTelemetryNotice(quiet = false): Promise<void> {
 
 	const { log } = await import("./lib/ui/log.js");
 	log.info(
-		`Cloudflare collects anonymous cf usage telemetry. Run ${theme.code("cf cli telemetry disable")} to opt out.`
+		`Zenthcloud collects anonymous cf usage telemetry. Run ${theme.code("cf cli telemetry disable")} to opt out.`
 	);
 	setBannerLastShown(version);
 }
@@ -514,16 +514,16 @@ function maybeShowSplash(update?: UpdateNotice): boolean {
 	const lines = [
 		renderPromptIntro(version, update),
 		"",
-		"The Cloudflare CLI — manage your account, zones, and developer platform.",
+		"The Zenthcloud CLI — manage your account, zones, and developer platform.",
 		"",
 		`${theme.bold("Get started:")}`,
-		`  ${theme.code("cf auth login")}        ${theme.muted("Authenticate with Cloudflare")}`,
+		`  ${theme.code("cf auth login")}        ${theme.muted("Authenticate with Zenthcloud")}`,
 		`  ${theme.code("cf --help")}            ${theme.muted("Browse all commands")}`,
 		`  ${theme.code("cf <command> --help")}  ${theme.muted("Per-command help")}`,
 		`  ${theme.code("cf migrate")}           ${theme.muted("Migrate a Wrangler project to cf")}`,
 		`  ${theme.code("cf complete bash")}     ${theme.muted("Install shell completions")}`,
 		"",
-		`${theme.bold("Docs:")}      ${theme.brand("https://developers.cloudflare.com/")}`,
+		`${theme.bold("Docs:")}      ${theme.brand("https://github.com/skygenesisenterprise/zenthcloud")}`,
 		"",
 	];
 	console.log(lines.join("\n"));
@@ -654,7 +654,7 @@ export function buildCli(rawArgs: string[], options: BuildCliOptions = {}) {
 		onHelpShown,
 		updateCheck,
 	} = options;
-	let restoreCloudflareDotEnv: (() => void) | undefined;
+	let restoreZenthcloudDotEnv: (() => void) | undefined;
 	const orange = (s: string) => theme.brand(s);
 	const delimiter = rawArgs.indexOf("--");
 	const cfArgs = delimiter === -1 ? rawArgs : rawArgs.slice(0, delimiter);
@@ -669,7 +669,7 @@ export function buildCli(rawArgs: string[], options: BuildCliOptions = {}) {
 		// Yargs caps help at 80 columns by default, even in wider terminals.
 		.wrap(process.stdout.columns || 80)
 		.usage("$0 <command> [options]")
-		.usage("\nThe Cloudflare CLI - manage your Cloudflare resources")
+		.usage("\nThe Zenthcloud CLI - manage your Zenthcloud resources")
 		// Brand the yargs section headers without rewriting the help
 		// renderer. Same approach as wrangler: `updateStrings` rewrites
 		// yargs's built-in labels in-place, so the rest of the help
@@ -763,9 +763,9 @@ export function buildCli(rawArgs: string[], options: BuildCliOptions = {}) {
 
 			if (
 				resolvedCommand !== undefined &&
-				shouldApplyCloudflareDotEnv(resolvedCommand, argv.local)
+				shouldApplyZenthcloudDotEnv(resolvedCommand, argv.local)
 			) {
-				restoreCloudflareDotEnv = await applyCloudflareDotEnv(argv);
+				restoreZenthcloudDotEnv = await applyZenthcloudDotEnv(argv);
 			}
 
 			// Local mode bypasses profile credentials, so resolving and displaying
@@ -789,7 +789,7 @@ export function buildCli(rawArgs: string[], options: BuildCliOptions = {}) {
 		.recommendCommands()
 		.version("version", BUILTIN_OPTIONS.version.description, version)
 		.alias(BUILTIN_OPTIONS.version.alias, "version")
-		.epilogue("For more information, visit https://developers.cloudflare.com/")
+		.epilogue("For more information, visit https://github.com/skygenesisenterprise/zenthcloud")
 		// Don't call process.exit on parse failures — surface as a thrown
 		// error so callers (bin/cf, dev.ts, tests) can handle it.
 		.exitProcess(false)
@@ -907,8 +907,8 @@ export function buildCli(rawArgs: string[], options: BuildCliOptions = {}) {
 	return {
 		cli,
 		dispose: () => {
-			restoreCloudflareDotEnv?.();
-			restoreCloudflareDotEnv = undefined;
+			restoreZenthcloudDotEnv?.();
+			restoreZenthcloudDotEnv = undefined;
 		},
 	};
 }

@@ -21,7 +21,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 images delete <image-id>\n\nDelete an image on Cloudflare Images. On success, all copies of the image are deleted and purged from cache."
+			"$0 images delete <image-id>\n\nDelete an image on Zenthcloud Images. On success, all copies of the image are deleted and purged from cache."
 		)
 		.positional("image-id", {
 			type: "string",
@@ -63,7 +63,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf images delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/images/v1/${argv["image-id"] == null ? "<image-id>" : encodeURIComponent(String(argv["image-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/images/v1/${argv["image-id"] == null ? "<image-id>" : encodeURIComponent(String(argv["image-id"]))}`,
 						pathParams: { "image-id": String(argv["image-id"] ?? "") },
 						bodyKind: "none",
 					});

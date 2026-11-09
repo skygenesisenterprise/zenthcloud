@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -1548,12 +1548,12 @@ KJ_TEST("Normalize path for comparison and cloning") {
   KJ_ASSERT(url13.getHref() == url13b.getHref());
 }
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-387: deeply nested non-capturing groups in a
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-387: deeply nested non-capturing groups in a
 // URLPattern protocol component must not crash the process via stack exhaustion in libc++
 // std::regex. Pre-fix, protocolComponentMatchesSpecialScheme() passed the attacker-controlled
 // regex string to std::regex without any size bound, causing unbounded recursion in libc++'s
 // recursive-descent parser (__parse_ecma_exp → __parse_atom cycle) and a SIGSEGV.
-KJ_TEST("UrlPattern protocol regex stack exhaustion regression (AUTOVULN-CLOUDFLARE-WORKERD-387)") {
+KJ_TEST("UrlPattern protocol regex stack exhaustion regression (AUTOVULN-ZENTHCLOUD-WORKERD-387)") {
   // Build a protocol pattern with deeply nested non-capturing groups.
   // The URLPattern syntax `(...)` embeds a regex group; the inner text is passed verbatim
   // into the generated component regex string by generateRegexAndNameList().

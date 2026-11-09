@@ -1,4 +1,4 @@
-resource "cloudflare_zero_trust_organization" "%[1]s" {
+resource "zenthcloud_zero_trust_organization" "%[1]s" {
   account_id       = "%[2]s"
   name             = "%[4]s"
   auth_domain      = "%[1]s-%[3]s"
@@ -13,6 +13,6 @@ resource "cloudflare_zero_trust_organization" "%[1]s" {
   }
 }
 
-data "cloudflare_zero_trust_organization" "%[1]s" {
-  account_id = cloudflare_zero_trust_organization.%[1]s.account_id
+data "zenthcloud_zero_trust_organization" "%[1]s" {
+  account_id = zenthcloud_zero_trust_organization.%[1]s.account_id
 }

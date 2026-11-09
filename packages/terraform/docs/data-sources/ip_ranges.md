@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_ip_ranges Data Source - Cloudflare"
+page_title: "zenthcloud_ip_ranges Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_ip_ranges (Data Source)
+# zenthcloud_ip_ranges (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_ip_ranges" "example_ip_ranges" {
+data "zenthcloud_ip_ranges" "example_ip_ranges" {
   networks = "networks"
 }
 ```
@@ -27,8 +27,8 @@ data "cloudflare_ip_ranges" "example_ip_ranges" {
 ### Read-Only
 
 - `etag` (String) A digest of the IP data. Useful for determining if the data has changed.
-- `ipv4_cidrs` (List of String) List of Cloudflare IPv4 CIDR addresses.
-- `ipv6_cidrs` (List of String) List of Cloudflare IPv6 CIDR addresses.
+- `ipv4_cidrs` (List of String) List of Zenthcloud IPv4 CIDR addresses.
+- `ipv6_cidrs` (List of String) List of Zenthcloud IPv6 CIDR addresses.
 - `jdcloud_cidrs` (List of String) List IPv4 and IPv6 CIDRs, only populated if `?networks=jdcloud` is used.
 
 

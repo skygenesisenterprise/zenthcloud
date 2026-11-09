@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zone_subscription Resource - Cloudflare"
+page_title: "zenthcloud_zone_subscription Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Billing ReadBilling Write
 ---
 
-# cloudflare_zone_subscription (Resource)
+# zenthcloud_zone_subscription (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zone_subscription" "example_zone_subscription" {
+resource "zenthcloud_zone_subscription" "example_zone_subscription" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   frequency = "monthly"
   rate_plan = {
@@ -67,7 +67,7 @@ Available values: "free", "lite", "pro", "pro_plus", "business", "enterprise", "
 Read-Only:
 
 - `currency` (String) The currency applied to the rate plan subscription.
-- `externally_managed` (Boolean) Whether this rate plan is managed externally from Cloudflare.
+- `externally_managed` (Boolean) Whether this rate plan is managed externally from Zenthcloud.
 - `is_contract` (Boolean) Whether a rate plan is enterprise-based (or newly adopted term contract).
 - `public_name` (String) The full name of the rate plan.
 - `sets` (List of String) The list of sets this rate plan applies to. Returns array of strings.
@@ -77,7 +77,7 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zone_subscription.example '<zone_id>'
+$ terraform import zenthcloud_zone_subscription.example '<zone_id>'
 ```
 
 

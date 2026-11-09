@@ -1,10 +1,10 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
 import { strictEqual } from 'node:assert';
 
-// https://github.com/cloudflare/workerd/issues/5934
+// https://github.com/skygenesisenterprise/zenthcloud
 export const formDataUnionTypeOverloads = {
   test(): void {
     const formData = new FormData();

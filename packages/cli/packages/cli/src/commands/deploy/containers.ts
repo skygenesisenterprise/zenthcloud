@@ -2,21 +2,21 @@ import {
 	InstanceType,
 	SchedulingPolicy,
 	resolveImageName,
-} from "@cloudflare/containers-shared";
-import { isLiveDurableObjectExport } from "@cloudflare/workers-utils";
+} from "@zenthcloud/containers-shared";
+import { isLiveDurableObjectExport } from "@zenthcloud/workers-utils";
 import { BuildOutputConfigError } from "../../lib/build-output-error.js";
-import type { BuildOutputContainers } from "@cloudflare/build-output-utils";
-import type { ParsedOutputContainerConfig } from "@cloudflare/config";
+import type { BuildOutputContainers } from "@zenthcloud/build-output-utils";
+import type { ParsedOutputContainerConfig } from "@zenthcloud/config";
 import type {
 	BuiltContainerImage,
 	ContainerNormalizedConfig,
 	InstanceTypeOrLimits,
 	SharedContainerConfig,
-} from "@cloudflare/containers-shared";
+} from "@zenthcloud/containers-shared";
 import type {
 	BuiltDurableObjectContainerImage,
 	ContainerDeployConfig,
-} from "@cloudflare/deploy-helpers";
+} from "@zenthcloud/deploy-helpers";
 import type {
 	Config,
 	ContainerApp,
@@ -24,7 +24,7 @@ import type {
 	DurableObjectExport,
 	Exports,
 	Observability,
-} from "@cloudflare/workers-utils";
+} from "@zenthcloud/workers-utils";
 
 type OutputImage = { reference: string } | { localReference: string };
 

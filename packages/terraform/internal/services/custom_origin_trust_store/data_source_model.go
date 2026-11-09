@@ -5,8 +5,8 @@ package custom_origin_trust_store
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/acm"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/acm"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -32,7 +32,7 @@ type CustomOriginTrustStoreDataSourceModel struct {
 
 func (m *CustomOriginTrustStoreDataSourceModel) toReadParams(_ context.Context) (params acm.CustomTrustStoreGetParams, diags diag.Diagnostics) {
 	params = acm.CustomTrustStoreGetParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	return
@@ -40,14 +40,14 @@ func (m *CustomOriginTrustStoreDataSourceModel) toReadParams(_ context.Context) 
 
 func (m *CustomOriginTrustStoreDataSourceModel) toListParams(_ context.Context) (params acm.CustomTrustStoreListParams, diags diag.Diagnostics) {
 	params = acm.CustomTrustStoreListParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	if !m.Filter.Limit.IsNull() {
-		params.Limit = cloudflare.F(m.Filter.Limit.ValueInt64())
+		params.Limit = zenthcloud.F(m.Filter.Limit.ValueInt64())
 	}
 	if !m.Filter.Offset.IsNull() {
-		params.Offset = cloudflare.F(m.Filter.Offset.ValueInt64())
+		params.Offset = zenthcloud.F(m.Filter.Offset.ValueInt64())
 	}
 
 	return

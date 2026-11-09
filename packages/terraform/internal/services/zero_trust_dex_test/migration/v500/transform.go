@@ -3,14 +3,14 @@ package v500
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // Transform converts source (legacy v4) state to target (current v5) state.
 // This function is shared by both UpgradeFromV4 and MoveState handlers.
-func Transform(ctx context.Context, source SourceCloudflareDeviceDexTestModel) (*ZeroTrustDEXTestModel, diag.Diagnostics) {
+func Transform(ctx context.Context, source SourceZenthcloudDeviceDexTestModel) (*ZeroTrustDEXTestModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Step 1: Validate required fields

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_workers_custom_domains Data Source - Cloudflare"
+page_title: "zenthcloud_workers_custom_domains Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Workers Scripts ReadWorkers Scripts Write
 ---
 
-# cloudflare_workers_custom_domains (Data Source)
+# zenthcloud_workers_custom_domains (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_workers_custom_domains" "example_workers_custom_domains" {
+data "zenthcloud_workers_custom_domains" "example_workers_custom_domains" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   environment = "production"
   hostname = "app.example.com"

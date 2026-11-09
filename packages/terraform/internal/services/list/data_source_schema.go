@@ -5,8 +5,8 @@ package list
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -76,7 +76,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"items": schema.SetNestedAttribute{
-				Description: "The items in the list. If set, this overwrites all items in the list. Do not use with `cloudflare_list_item`.",
+				Description: "The items in the list. If set, this overwrites all items in the list. Do not use with `zenthcloud_list_item`.",
 				CustomType:  customfield.NewNestedObjectSetType[ListItemDataSourceModel](ctx),
 				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{

@@ -10,7 +10,7 @@ import {
 import {
 	DEFAULT_COMPAT_DATE,
 	toValidWorkerName,
-} from "@cloudflare/workers-utils";
+} from "@zenthcloud/workers-utils";
 import { CliExit } from "../../index.js";
 import {
 	analyzeProject,
@@ -20,7 +20,7 @@ import {
 import { isEphemeralExecRun } from "../../lib/delegate.js";
 import { prompt, select } from "../../lib/dialog.js";
 import { withProgress } from "../../lib/progress.js";
-import { CLOUDFLARE_CONFIG_FILENAME } from "../../lib/project-settings.js";
+import { ZENTHCLOUD_CONFIG_FILENAME } from "../../lib/project-settings.js";
 import { theme } from "../../lib/ui/index.js";
 import { GUIDE_WIDTH, log } from "../../lib/ui/log.js";
 import { VERSION } from "../../version.js";
@@ -172,7 +172,7 @@ async function createWorkerProject(
 			);
 			throw new CliExit(result.exitCode, { signal: result.signal });
 		}
-		// Loading cloudflare.config.ts resolves `cf/config` from the project,
+		// Loading zenthcloud.config.ts resolves `cf/config` from the project,
 		// so types can only be generated once dependencies are installed.
 		await generateProjectTypes(target, options.mode);
 	}
@@ -200,7 +200,7 @@ async function generateProjectTypes(
 			await import("../workers/types/generate.js");
 		const outputPath = await withProgress("Generating types", () =>
 			generateWorkerTypes({
-				configPath: join(target, CLOUDFLARE_CONFIG_FILENAME),
+				configPath: join(target, ZENTHCLOUD_CONFIG_FILENAME),
 				mode,
 				includeRuntime: true,
 			})
@@ -266,9 +266,9 @@ async function setUpExistingProject(
 	}
 
 	if (alreadyConfigured) {
-		log.info(`Found an existing Cloudflare configuration in ${description}.`);
+		log.info(`Found an existing Zenthcloud configuration in ${description}.`);
 	} else {
-		log.success(`Set up ${description} for Cloudflare.`);
+		log.success(`Set up ${description} for Zenthcloud.`);
 	}
 	logNextSteps(target, projectSteps());
 }
@@ -284,7 +284,7 @@ function projectSteps(): NextStep[] {
 			command: `${cf} dev`,
 			description: "Start a local development server",
 		},
-		{ command: `${cf} deploy`, description: "Deploy to Cloudflare" },
+		{ command: `${cf} deploy`, description: "Deploy to Zenthcloud" },
 	];
 }
 

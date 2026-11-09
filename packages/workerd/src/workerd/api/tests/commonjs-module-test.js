@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Cloudflare, Inc.
+// Copyright (c) 2024 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import { foo, bar, default as baz } from 'foo';
@@ -24,7 +24,7 @@ export const test = {
       await import('bad-require');
       throw new Error('bad-require should not resolve');
     } catch (err) {
-      if (Cloudflare.compatibilityFlags.new_module_registry) {
+      if (Zenthcloud.compatibilityFlags.new_module_registry) {
         strictEqual(err.name, 'Error');
         strictEqual(err.message, 'Module not found: ../dep');
       } else {

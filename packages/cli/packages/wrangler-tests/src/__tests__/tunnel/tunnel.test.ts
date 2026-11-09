@@ -8,7 +8,7 @@ import { createFetchResult, msw } from "../helpers/msw";
 import { runInTempDir } from "../helpers/run-in-tmp";
 import { runWrangler } from "../helpers/run-wrangler";
 
-interface CloudflareTunnel {
+interface ZenthcloudTunnel {
 	id: string;
 	name: string;
 	status: string;
@@ -17,7 +17,7 @@ interface CloudflareTunnel {
 	account_tag: string;
 }
 
-const defaultTunnel: CloudflareTunnel = {
+const defaultTunnel: ZenthcloudTunnel = {
 	id: "f70ff985-a4ef-4643-bbbc-4a0ed4fc8415",
 	name: "my-tunnel",
 	status: "healthy",
@@ -26,7 +26,7 @@ const defaultTunnel: CloudflareTunnel = {
 	account_tag: "some-account-id",
 };
 
-const secondTunnel: CloudflareTunnel = {
+const secondTunnel: ZenthcloudTunnel = {
 	id: "550e8400-e29b-41d4-a716-446655440000",
 	name: "api-tunnel",
 	status: "inactive",
@@ -36,7 +36,7 @@ const secondTunnel: CloudflareTunnel = {
 };
 
 // The API-backed help and CRUD commands have direct cf equivalents.
-// Wrangler's cloudflared process management remains outside cf.
+// Wrangler's zenthcloudd process management remains outside cf.
 describe("tunnel help", () => {
 	const std = mockConsoleMethods();
 	runInTempDir();
@@ -83,12 +83,12 @@ describe("tunnel commands", () => {
 			const request = mockTunnelCreate();
 
 			await runWrangler(
-				"tunnels create --name my-new-tunnel --config-source cloudflare"
+				"tunnels create --name my-new-tunnel --config-source zenthcloud"
 			);
 
 			await expect(request).resolves.toEqual({
 				name: "my-new-tunnel",
-				config_src: "cloudflare",
+				config_src: "zenthcloud",
 			});
 			expect(JSON.parse(std.out)).toMatchObject({
 				id: defaultTunnel.id,
@@ -99,7 +99,7 @@ describe("tunnel commands", () => {
 		it("should require a tunnel name", async ({ expect }) => {
 			setIsTTY(false);
 			await expect(
-				runWrangler("tunnels create --config-source cloudflare")
+				runWrangler("tunnels create --config-source zenthcloud")
 			).rejects.toThrow("--name is required");
 		});
 	});
@@ -146,7 +146,7 @@ describe("tunnel commands", () => {
 	describe("tunnel delete", () => {
 		it("should delete tunnel with confirmation", async ({ expect }) => {
 			mockConfirm({
-				text: "This operation permanently deletes a Cloudflare Tunnel. Continue?",
+				text: "This operation permanently deletes a Zenthcloud Tunnel. Continue?",
 				result: true,
 			});
 			const requests = mockTunnelDelete(defaultTunnel.id);
@@ -158,7 +158,7 @@ describe("tunnel commands", () => {
 
 		it("should cancel deletion when not confirmed", async ({ expect }) => {
 			mockConfirm({
-				text: "This operation permanently deletes a Cloudflare Tunnel. Continue?",
+				text: "This operation permanently deletes a Zenthcloud Tunnel. Continue?",
 				result: false,
 			});
 			const requests = mockTunnelDelete(defaultTunnel.id);
@@ -184,7 +184,7 @@ describe("tunnel commands", () => {
 	});
 
 	describe("tunnel quick-start", () => {
-		it.skip("should spawn cloudflared with correct args for quick tunnel");
+		it.skip("should spawn zenthcloudd with correct args for quick tunnel");
 		it.skip("should require a URL argument");
 	});
 
@@ -242,7 +242,7 @@ function mockTunnelCreate(): Promise<{
 	});
 }
 
-function mockTunnelList(tunnels: CloudflareTunnel[]) {
+function mockTunnelList(tunnels: ZenthcloudTunnel[]) {
 	msw.use(
 		http.get("*/accounts/:accountId/tunnels", ({ request, params }) => {
 			expect(params.accountId).toBe("some-account-id");
@@ -263,7 +263,7 @@ function mockTunnelList(tunnels: CloudflareTunnel[]) {
 	);
 }
 
-function mockTunnelGet(tunnel: CloudflareTunnel) {
+function mockTunnelGet(tunnel: ZenthcloudTunnel) {
 	msw.use(
 		http.get(
 			"*/accounts/:accountId/cfd_tunnel/:tunnelId",

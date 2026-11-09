@@ -8,7 +8,7 @@ import {
   speed_base,
   speed_messages,
 } from "../../outputs.js";
-import { speed_cloudflare_fonts } from "./outputs.js";
+import { speed_zenthcloud_fonts } from "./outputs.js";
 
 /**
  * The tools of `zones.fonts`.
@@ -16,8 +16,8 @@ import { speed_cloudflare_fonts } from "./outputs.js";
 export const tools: readonly Tool[] = [
   {
     name: "zones_fonts_edit",
-    title: "Change Cloudflare Fonts setting",
-    description: "Enhance your website's font delivery with Cloudflare Fonts. Deliver Google Hosted fonts from your own domain,\nboost performance, and enhance user privacy. Refer to the Cloudflare Fonts documentation for more information.\n\nPATCH /zones/{zone_id}/settings/fonts",
+    title: "Change Zenthcloud Fonts setting",
+    description: "Enhance your website's font delivery with Zenthcloud Fonts. Deliver Google Hosted fonts from your own domain,\nboost performance, and enhance user privacy. Refer to the Zenthcloud Fonts documentation for more information.\n\nPATCH /zones/{zone_id}/settings/fonts",
     inputSchema: {
       type: "object",
       properties: {
@@ -66,7 +66,7 @@ export const tools: readonly Tool[] = [
         {
           "properties": {
             "result": {
-              "$ref": "#/$defs/speed_cloudflare_fonts"
+              "$ref": "#/$defs/speed_zenthcloud_fonts"
             }
           },
           "type": "object"
@@ -75,7 +75,7 @@ export const tools: readonly Tool[] = [
       $defs: {
         "speed_api-response-common": speed_api$$response$$common,
         "speed_base": speed_base,
-        "speed_cloudflare_fonts": speed_cloudflare_fonts,
+        "speed_zenthcloud_fonts": speed_zenthcloud_fonts,
         "speed_messages": speed_messages,
       },
     },
@@ -84,7 +84,7 @@ export const tools: readonly Tool[] = [
       "idempotentHint": false,
       "openWorldHint": true,
       "readOnlyHint": false,
-      "title": "Change Cloudflare Fonts setting"
+      "title": "Change Zenthcloud Fonts setting"
     },
     [OPERATION]: {
       method: "PATCH",
@@ -117,7 +117,7 @@ export const tools: readonly Tool[] = [
               {
                 "properties": {
                   "result": {
-                    "$ref": "#/$defs/speed_cloudflare_fonts"
+                    "$ref": "#/$defs/speed_zenthcloud_fonts"
                   }
                 },
                 "type": "object"
@@ -132,7 +132,7 @@ export const tools: readonly Tool[] = [
           "speed_api-response-common": speed_api$$response$$common,
           "speed_api-response-common-failure": speed_api$$response$$common$$failure,
           "speed_base": speed_base,
-          "speed_cloudflare_fonts": speed_cloudflare_fonts,
+          "speed_zenthcloud_fonts": speed_zenthcloud_fonts,
           "speed_messages": speed_messages,
         },
       },
@@ -140,8 +140,8 @@ export const tools: readonly Tool[] = [
   },
   {
     name: "zones_fonts_get",
-    title: "Get Cloudflare Fonts setting",
-    description: "Enhance your website's font delivery with Cloudflare Fonts. Deliver Google Hosted fonts from your own domain,\nboost performance, and enhance user privacy. Refer to the Cloudflare Fonts documentation for more information.\n\nGET /zones/{zone_id}/settings/fonts",
+    title: "Get Zenthcloud Fonts setting",
+    description: "Enhance your website's font delivery with Zenthcloud Fonts. Deliver Google Hosted fonts from your own domain,\nboost performance, and enhance user privacy. Refer to the Zenthcloud Fonts documentation for more information.\n\nGET /zones/{zone_id}/settings/fonts",
     inputSchema: {
       type: "object",
       properties: {
@@ -172,7 +172,7 @@ export const tools: readonly Tool[] = [
         {
           "properties": {
             "result": {
-              "$ref": "#/$defs/speed_cloudflare_fonts"
+              "$ref": "#/$defs/speed_zenthcloud_fonts"
             }
           },
           "type": "object"
@@ -181,7 +181,7 @@ export const tools: readonly Tool[] = [
       $defs: {
         "speed_api-response-common": speed_api$$response$$common,
         "speed_base": speed_base,
-        "speed_cloudflare_fonts": speed_cloudflare_fonts,
+        "speed_zenthcloud_fonts": speed_zenthcloud_fonts,
         "speed_messages": speed_messages,
       },
     },
@@ -190,7 +190,7 @@ export const tools: readonly Tool[] = [
       "idempotentHint": true,
       "openWorldHint": true,
       "readOnlyHint": true,
-      "title": "Get Cloudflare Fonts setting"
+      "title": "Get Zenthcloud Fonts setting"
     },
     [OPERATION]: {
       method: "GET",
@@ -223,7 +223,7 @@ export const tools: readonly Tool[] = [
               {
                 "properties": {
                   "result": {
-                    "$ref": "#/$defs/speed_cloudflare_fonts"
+                    "$ref": "#/$defs/speed_zenthcloud_fonts"
                   }
                 },
                 "type": "object"
@@ -238,7 +238,7 @@ export const tools: readonly Tool[] = [
           "speed_api-response-common": speed_api$$response$$common,
           "speed_api-response-common-failure": speed_api$$response$$common$$failure,
           "speed_base": speed_base,
-          "speed_cloudflare_fonts": speed_cloudflare_fonts,
+          "speed_zenthcloud_fonts": speed_zenthcloud_fonts,
           "speed_messages": speed_messages,
         },
       },

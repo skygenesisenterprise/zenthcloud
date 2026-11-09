@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_custom_origin_trust_stores Data Source - Cloudflare"
+page_title: "zenthcloud_custom_origin_trust_stores Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   SSL and Certificates ReadSSL and Certificates Write
 ---
 
-# cloudflare_custom_origin_trust_stores (Data Source)
+# zenthcloud_custom_origin_trust_stores (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_custom_origin_trust_stores" "example_custom_origin_trust_stores" {
+data "zenthcloud_custom_origin_trust_stores" "example_custom_origin_trust_stores" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   limit = 10
   offset = 10
@@ -50,6 +50,6 @@ Read-Only:
 - `status` (String) Status of the zone's custom SSL.
 Available values: "initializing", "pending_deployment", "active", "pending_deletion", "deleted", "expired".
 - `updated_at` (String) When the certificate was last modified.
-- `uploaded_on` (String) When the certificate was uploaded to Cloudflare.
+- `uploaded_on` (String) When the certificate was uploaded to Zenthcloud.
 
 

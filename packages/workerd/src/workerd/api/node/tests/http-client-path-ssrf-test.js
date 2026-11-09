@@ -1,8 +1,8 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-16:
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-16:
 // Verify that node:http ClientRequest rejects absolute-form and network-path
 // request targets in options.path, preventing SSRF via URL authority override.
 

@@ -4,7 +4,7 @@
 #   - Rules are auto-generated and you cannot add comments to them.
 #   - The same exception applies to many rules.
 #   - You want all linting policy exceptions in one place.
-# See: https://github.com/cloudflare/pint/discussions/830
+# See: https://github.com/skygenesisenterprise/zenthcloud
 
 # --- Disabling checks with advanced match features ---
 

@@ -2,7 +2,7 @@ import { describe, test } from "vite-plus/test";
 
 // `wrangler setup` is the wrangler-internal autoconfig wizard (uses
 // `../autoconfig/run`, `../output`, `../package-manager`,
-// `@cloudflare/cli-shared-helpers/packages`). cf performs setup through
+// `@zenthcloud/cli-shared-helpers/packages`). cf performs setup through
 // autoconfig inside dev/build, or explicitly through `cf init` in a non-empty
 // directory, rather than exposing `cf setup` or `cf workers setup`. Out of
 // scope.

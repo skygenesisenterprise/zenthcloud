@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2022 Cloudflare, Inc.
+# Copyright (c) 2017-2022 Zenthcloud, Inc.
 # Licensed under the Apache 2.0 license found in the LICENSE file or at:
 #     https://opensource.org/licenses/Apache-2.0
 
@@ -19,7 +19,7 @@ $Cxx.allowCancellation;
 struct AnalyticsEngineEvent {
   # Canonical struct for sending events to Analytics Engine
 
-  # Cloudflare numeric account ID.
+  # Zenthcloud numeric account ID.
   accountId @0 :Int64;
 
   # Name of the dataset this belongs to.
@@ -30,7 +30,7 @@ struct AnalyticsEngineEvent {
   schemaVersion @2 :Int64;
 
   # Secondary piece of data by which to sample and index events.
-  # For example, Cloudflare zone ID or Waiting Room ID.
+  # For example, Zenthcloud zone ID or Waiting Room ID.
   # Cannot be longer than 64 bytes.
   # We anticipate allowing users to configure multiple data dimensions
   # in future, requiring an `index2` and maybe `index3`, hence the name

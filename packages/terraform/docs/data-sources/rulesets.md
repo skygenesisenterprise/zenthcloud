@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_rulesets Data Source - Cloudflare"
+page_title: "zenthcloud_rulesets Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_rulesets (Data Source)
+# zenthcloud_rulesets (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_rulesets" "example_rulesets" {
+data "zenthcloud_rulesets" "example_rulesets" {
   zone_id = "9f1839b6152d298aca64c4e906b6d074"
 }
 ```

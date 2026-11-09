@@ -75,7 +75,7 @@ func UpgradeFromV0Ambiguous(ctx context.Context, req resource.UpgradeStateReques
 // req.RawState with the v4 source schema and running Transform. Used when the
 // upgrader was registered with PriorSchema=nil (req.State is empty).
 func upgradeFromV4ViaRawState(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
-	v4Schema := SourceCloudflareLoadBalancerPoolSchema()
+	v4Schema := SourceZenthcloudLoadBalancerPoolSchema()
 	v4Type := v4Schema.Type().TerraformType(ctx)
 
 	rawValue, err := req.RawState.Unmarshal(v4Type)
@@ -89,7 +89,7 @@ func upgradeFromV4ViaRawState(ctx context.Context, req resource.UpgradeStateRequ
 
 	syntheticState := tfsdk.State{Raw: rawValue, Schema: v4Schema}
 
-	var sourceState SourceCloudflareLoadBalancerPoolModel
+	var sourceState SourceZenthcloudLoadBalancerPoolModel
 	resp.Diagnostics.Append(syntheticState.Get(ctx, &sourceState)...)
 	if resp.Diagnostics.HasError() {
 		tflog.Error(ctx, "Failed to parse v4 state from raw value", map[string]interface{}{

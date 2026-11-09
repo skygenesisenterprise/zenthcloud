@@ -4,7 +4,7 @@ use std::panic::AssertUnwindSafe;
 use wasm_bindgen::prelude::*;
 use worker_sys::{ScheduleContext as EdgeScheduleContext, ScheduledEvent as EdgeScheduledEvent};
 
-/// [Schedule](https://developers.cloudflare.com/workers/runtime-apis/scheduled-event#syntax-module-worker)
+/// [Schedule](https://github.com/skygenesisenterprise/zenthcloud)
 #[derive(Debug, Clone)]
 pub struct ScheduledEvent {
     cron: String,

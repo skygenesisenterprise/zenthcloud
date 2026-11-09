@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_r2_bucket_sippy Resource - Cloudflare"
+page_title: "zenthcloud_r2_bucket_sippy Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Workers R2 Storage Write
 ---
 
-# cloudflare_r2_bucket_sippy (Resource)
+# zenthcloud_r2_bucket_sippy (Resource)
 
 Accepted Permissions
 
@@ -15,7 +15,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_r2_bucket_sippy" "example_r2_bucket_sippy" {
+resource "zenthcloud_r2_bucket_sippy" "example_r2_bucket_sippy" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   bucket_name = "example-bucket"
   destination = {
@@ -38,7 +38,7 @@ resource "cloudflare_r2_bucket_sippy" "example_r2_bucket_sippy" {
 
 ### Required
 
-- `account_id` (String) Cloudflare account ID that owns the R2 resource.
+- `account_id` (String) Zenthcloud account ID that owns the R2 resource.
 - `bucket_name` (String) Name of the bucket.
 
 ### Optional
@@ -56,16 +56,16 @@ resource "cloudflare_r2_bucket_sippy" "example_r2_bucket_sippy" {
 
 Optional:
 
-- `access_key_id` (String) ID of a Cloudflare API token.
+- `access_key_id` (String) ID of a Zenthcloud API token.
 This is the value labelled "Access Key ID" when creating an API.
-token from the [R2 dashboard](https://dash.cloudflare.com/?to=/:account/r2/api-tokens).
+token from the [R2 dashboard](https://github.com/skygenesisenterprise/zenthcloud).
 
 Sippy will use this token when writing objects to R2, so it is
 best to scope this token to the bucket you're enabling Sippy for.
 - `cloud_provider` (String) Available values: "r2".
-- `secret_access_key` (String, Sensitive) Value of a Cloudflare API token.
+- `secret_access_key` (String, Sensitive) Value of a Zenthcloud API token.
 This is the value labelled "Secret Access Key" when creating an API.
-token from the [R2 dashboard](https://dash.cloudflare.com/?to=/:account/r2/api-tokens).
+token from the [R2 dashboard](https://github.com/skygenesisenterprise/zenthcloud).
 
 Sippy will use this token when writing objects to R2, so it is
 best to scope this token to the bucket you're enabling Sippy for.

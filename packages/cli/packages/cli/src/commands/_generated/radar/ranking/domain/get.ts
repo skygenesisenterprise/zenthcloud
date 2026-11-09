@@ -15,7 +15,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 radar ranking domain get <domain>\n\nRetrieves domain rank details. Cloudflare provides an ordered rank for the top 100 domains, but for the remainder it only provides ranking buckets like top 200 thousand, top one million, etc.. These are available through Radar datasets endpoints."
+			"$0 radar ranking domain get <domain>\n\nRetrieves domain rank details. Zenthcloud provides an ordered rank for the top 100 domains, but for the remainder it only provides ranking buckets like top 200 thousand, top one million, etc.. These are available through Radar datasets endpoints."
 		)
 		.positional("domain", {
 			type: "string",
@@ -90,7 +90,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar ranking domain get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/ranking/domain/${argv["domain"] == null ? "<domain>" : encodeURIComponent(String(argv["domain"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["domain"] == null ? "<domain>" : encodeURIComponent(String(argv["domain"]))}`,
 						pathParams: { domain: String(argv["domain"] ?? "") },
 						query: queryParams,
 						bodyKind: "none",

@@ -3,7 +3,7 @@ package v500
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -19,7 +19,7 @@ import (
 //   - meta (TypeMap[Bool]) → null (incompatible type in v5; API repopulates)
 //   - vanity_name_servers / name_servers: types.List → customfield.List[types.String]
 //   - All new v5 computed fields → null (API repopulates on first read)
-func Transform(ctx context.Context, source SourceCloudflareZoneModel) (*TargetZoneModel, diag.Diagnostics) {
+func Transform(ctx context.Context, source SourceZenthcloudZoneModel) (*TargetZoneModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Step 1: Validate required fields

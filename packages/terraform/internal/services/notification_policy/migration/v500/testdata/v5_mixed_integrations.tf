@@ -1,10 +1,10 @@
-resource "cloudflare_notification_policy_webhooks" "test_webhook" {
+resource "zenthcloud_notification_policy_webhooks" "test_webhook" {
   account_id = "%s"
   name       = "tf-test-webhook-%s"
-  url        = "https://www.cloudflare.com/cdn-cgi/trace"
+  url        = "https://github.com/skygenesisenterprise/zenthcloud"
 }
 
-resource "cloudflare_notification_policy" "%s" {
+resource "zenthcloud_notification_policy" "%s" {
   account_id  = "%s"
   name        = "%s"
   description = "Test notification policy with mixed integrations"
@@ -21,7 +21,7 @@ resource "cloudflare_notification_policy" "%s" {
       }
     ]
     webhooks = [{
-      id = cloudflare_notification_policy_webhooks.test_webhook.id
+      id = zenthcloud_notification_policy_webhooks.test_webhook.id
     }]
   }
 }

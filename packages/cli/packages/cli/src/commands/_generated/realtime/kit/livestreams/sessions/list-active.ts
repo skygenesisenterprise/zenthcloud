@@ -60,7 +60,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf realtime kit livestreams sessions list-active",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/realtime/kit/${argv["app-id"] == null ? "<app-id>" : encodeURIComponent(String(argv["app-id"]))}/livestreams/${argv["livestream-id"] == null ? "<livestream-id>" : encodeURIComponent(String(argv["livestream-id"]))}/active-livestream-session`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/realtime/kit/${argv["app-id"] == null ? "<app-id>" : encodeURIComponent(String(argv["app-id"]))}/livestreams/${argv["livestream-id"] == null ? "<livestream-id>" : encodeURIComponent(String(argv["livestream-id"]))}/active-livestream-session`,
 						pathParams: {
 							"app-id": String(argv["app-id"] ?? ""),
 							"livestream-id": String(argv["livestream-id"] ?? ""),

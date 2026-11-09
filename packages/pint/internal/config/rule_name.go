@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/cloudflare/pint/internal/checks"
+	"github.com/zenthcloud/pint/internal/checks"
 )
 
 type RuleNameSettings struct {

@@ -10,7 +10,7 @@ import (
 
 // SourceSchemaV500 returns the schema for version 500 (Set-based policies).
 // Schema version: 500
-// Resource type: cloudflare_api_token
+// Resource type: zenthcloud_api_token
 //
 // This schema is used only for reading v500 state during migration to v501.
 // The key difference from v501 is that policies and permission_groups use

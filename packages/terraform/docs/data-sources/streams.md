@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_streams Data Source - Cloudflare"
+page_title: "zenthcloud_streams Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Stream ReadStream Write
 ---
 
-# cloudflare_streams (Data Source)
+# zenthcloud_streams (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_streams" "example_streams" {
+data "zenthcloud_streams" "example_streams" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   id = "ea95132c15732412d22c1476fa83f27a"
   after = "2019-12-27T18:11:19.117Z"
@@ -89,7 +89,7 @@ Read-Only:
 - `status` (Attributes) Specifies a detailed status for a video. If the `state` is `inprogress` or `error`, the `step` field returns `encoding` or `manifest`. If the `state` is `inprogress`, `pctComplete` returns a number between 0 and 100 to indicate the approximate percent of completion. If the `state` is `error`, `errorReasonCode` and `errorReasonText` provide additional details. (see [below for nested schema](#nestedatt--result--status))
 - `thumbnail` (String) The media item's thumbnail URI. This field is omitted until encoding is complete.
 - `thumbnail_timestamp_pct` (Number) The timestamp for a thumbnail image calculated as a percentage value of the video's duration. To convert from a second-wise timestamp to a percentage, divide the desired timestamp by the total duration of the video.  If this value is not set, the default thumbnail image is taken from 0s of the video.
-- `uid` (String) A Cloudflare-generated unique identifier for a media item.
+- `uid` (String) A Zenthcloud-generated unique identifier for a media item.
 - `upload_expiry` (String) The date and time when the video upload URL is no longer valid for direct user uploads.
 - `uploaded` (String) The date and time the media item was uploaded.
 - `watermark` (Attributes) (see [below for nested schema](#nestedatt--result--watermark))

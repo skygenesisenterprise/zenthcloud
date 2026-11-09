@@ -64,7 +64,7 @@ func upgradeFromV4ViaRawState(ctx context.Context, req resource.UpgradeStateRequ
 	}
 
 	// Parse raw state using v4 source schema
-	v4Schema := SourceCloudflareHyperdriveConfigSchema()
+	v4Schema := SourceZenthcloudHyperdriveConfigSchema()
 	v4Type := v4Schema.Type().TerraformType(ctx)
 
 	rawValue, err := req.RawState.Unmarshal(v4Type)
@@ -78,7 +78,7 @@ func upgradeFromV4ViaRawState(ctx context.Context, req resource.UpgradeStateRequ
 
 	// Build a synthetic State from the raw value so Transform can read it
 	syntheticState := tfsdk.State{Raw: rawValue, Schema: v4Schema}
-	var sourceState SourceCloudflareHyperdriveConfigModel
+	var sourceState SourceZenthcloudHyperdriveConfigModel
 	resp.Diagnostics.Append(syntheticState.Get(ctx, &sourceState)...)
 	if resp.Diagnostics.HasError() {
 		return

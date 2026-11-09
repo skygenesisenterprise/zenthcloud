@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_connectivity_directory_service Resource - Cloudflare"
+page_title: "zenthcloud_connectivity_directory_service Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_connectivity_directory_service (Resource)
+# zenthcloud_connectivity_directory_service (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_connectivity_directory_service" "example_connectivity_directory_service" {
+resource "zenthcloud_connectivity_directory_service" "example_connectivity_directory_service" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   host = {
     ipv4 = "10.0.0.1"
@@ -105,7 +105,7 @@ Required:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_connectivity_directory_service.example '<account_id>/<service_id>'
+$ terraform import zenthcloud_connectivity_directory_service.example '<account_id>/<service_id>'
 ```
 
 

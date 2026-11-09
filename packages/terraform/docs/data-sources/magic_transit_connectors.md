@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_magic_transit_connectors Data Source - Cloudflare"
+page_title: "zenthcloud_magic_transit_connectors Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Magic WAN ReadMagic WAN Write
 ---
 
-# cloudflare_magic_transit_connectors (Data Source)
+# zenthcloud_magic_transit_connectors (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_magic_transit_connectors" "example_magic_transit_connectors" {
+data "zenthcloud_magic_transit_connectors" "example_magic_transit_connectors" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   device_type = "MANAGED"
 }

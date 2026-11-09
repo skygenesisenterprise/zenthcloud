@@ -1,7 +1,7 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
-import { WorkerEntrypoint, DurableObject } from 'cloudflare:workers';
+import { WorkerEntrypoint, DurableObject } from 'zenthcloud:workers';
 import assert from 'node:assert';
 
 export class GreeterLoopback extends WorkerEntrypoint {
@@ -18,7 +18,7 @@ export let basics = {
         mainModule: 'foo.js',
         modules: {
           'foo.js': `
-            import {WorkerEntrypoint} from "cloudflare:workers";
+            import {WorkerEntrypoint} from "zenthcloud:workers";
             export default {
               greet(name) { return "Hello, " + name; }
             }
@@ -470,7 +470,7 @@ export class FacetTestActor extends DurableObject {
         mainModule: 'foo.js',
         modules: {
           'foo.js': `
-            import {DurableObject} from "cloudflare:workers";
+            import {DurableObject} from "zenthcloud:workers";
             export class MyActor extends DurableObject {
               i = 0;
 
@@ -564,7 +564,7 @@ export let isolateUniqueness = {
         mainModule: 'foo.js',
         modules: {
           'foo.js': `
-            import {WorkerEntrypoint} from "cloudflare:workers";
+            import {WorkerEntrypoint} from "zenthcloud:workers";
             let i = 0;
             export default class extends WorkerEntrypoint {
               increment() {
@@ -653,7 +653,7 @@ export let moduleTypes = {
         modules: {
           'main.js': {
             js: `
-              import {WorkerEntrypoint} from "cloudflare:workers";
+              import {WorkerEntrypoint} from "zenthcloud:workers";
               import textModule from './text.txt';
               import jsonModule from './data.json';
               import cjsModule from './cjs.cjs';
@@ -730,7 +730,7 @@ export let wasmModules = {
         modules: {
           'main.js': {
             js: `
-              import {WorkerEntrypoint} from "cloudflare:workers";
+              import {WorkerEntrypoint} from "zenthcloud:workers";
               import wasmModule from './math.wasm';
 
               export default class extends WorkerEntrypoint {
@@ -768,7 +768,7 @@ export let compatDateFlags = {
         mainModule: 'main.js',
         modules: {
           'main.js': `
-            import {WorkerEntrypoint} from "cloudflare:workers";
+            import {WorkerEntrypoint} from "zenthcloud:workers";
             export default class extends WorkerEntrypoint {
               hasNodeCompat() {
                 return typeof process !== 'undefined';
@@ -821,7 +821,7 @@ export let asyncCodeLoader = {
         mainModule: 'main.js',
         modules: {
           'main.js': `
-            import {WorkerEntrypoint} from "cloudflare:workers";
+            import {WorkerEntrypoint} from "zenthcloud:workers";
             export default class extends WorkerEntrypoint {
               getMessage() {
                 return 'Hello from async loaded worker!';
@@ -864,7 +864,7 @@ export let ctxExports = {
         mainModule: 'foo.js',
         modules: {
           'foo.js': `
-            import {WorkerEntrypoint} from "cloudflare:workers";
+            import {WorkerEntrypoint} from "zenthcloud:workers";
             export default class extends WorkerEntrypoint {
               async greet(name) {
                 let greeting = await this.ctx.exports.AltEntrypoint.greet(name);
@@ -943,7 +943,7 @@ export let suggestWorkerBundlerForTypeScriptModules = {
           name: 'TypeError',
           message:
             `Module name must end with '.js' or '.py' (or the content must be an object indicating the type explicitly). Got: ${mainModule}. ` +
-            "If you're trying to load TypeScript, bundle it first with '@cloudflare/worker-bundler' and pass the generated JavaScript modules.",
+            "If you're trying to load TypeScript, bundle it first with '@zenthcloud/worker-bundler' and pass the generated JavaScript modules.",
         }
       );
     }
@@ -959,7 +959,7 @@ export let startupException = {
         mainModule: 'main.js',
         modules: {
           'main.js': `
-            import {WorkerEntrypoint} from "cloudflare:workers";
+            import {WorkerEntrypoint} from "zenthcloud:workers";
 
             // This will throw during startup (global scope)
             throw new Error('intentional startup error');
@@ -1000,7 +1000,7 @@ export let justLoad = {
       mainModule: 'foo.js',
       modules: {
         'foo.js': `
-          import {WorkerEntrypoint} from "cloudflare:workers";
+          import {WorkerEntrypoint} from "zenthcloud:workers";
           export default {
             greet(name) { return "Hello, " + name; }
           }
@@ -1062,7 +1062,7 @@ export let abortIsolateDynamic = {
             mainModule: 'worker.js',
             modules: {
               'worker.js': `
-            import {WorkerEntrypoint, abortIsolate} from "cloudflare:workers";
+            import {WorkerEntrypoint, abortIsolate} from "zenthcloud:workers";
             let counter = 0;
             export class TestEntrypoint extends WorkerEntrypoint {
               async crash() {
@@ -1103,7 +1103,7 @@ export let abortIsolateDynamic = {
   },
 };
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-256: the getCode() promise can be resolved
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-256: the getCode() promise can be resolved
 // after its originating IoContext has been destroyed, and it can be resolved from a different
 // IoContext. The continuation must reject rather than accessing the destroyed context. This test:
 //   1. Makes a sub-request (IoContext B) that calls env.loader.get() with a pending getCode
@@ -1167,7 +1167,7 @@ export let regressionDeadIoContextGetCode = {
   },
 };
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-147: heap use-after-free of dynamically-loaded
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-147: heap use-after-free of dynamically-loaded
 // WorkerService when a facet actor is torn down via monitorOnBroken(). The bug was that
 // `Server::WorkerService::startRequest` created a `WorkerEntrypoint` with the `LimitEnforcer`
 // being a `NullDisposer`-backed (i.e. not refcounted) `Own` instance to `WorkerService`.
@@ -1184,7 +1184,7 @@ export class FacetUafTestActor extends DurableObject {
         mainModule: 'child.js',
         modules: {
           'child.js': `
-            import {DurableObject} from "cloudflare:workers";
+            import {DurableObject} from "zenthcloud:workers";
             export class ChildActor extends DurableObject {
               ping() {
                 // Schedule a self-abort after a short delay. This will trigger
@@ -1241,7 +1241,7 @@ export let abortIsolateDynamicAnonymous = {
         mainModule: 'worker.js',
         modules: {
           'worker.js': `
-            import {WorkerEntrypoint, abortIsolate} from "cloudflare:workers";
+            import {WorkerEntrypoint, abortIsolate} from "zenthcloud:workers";
             let counter = 0;
             export class TestEntrypoint extends WorkerEntrypoint {
               async crash() {
@@ -1290,7 +1290,7 @@ export let doStubViaRpcParam = {
         mainModule: 'foo.js',
         modules: {
           'foo.js': `
-            import { WorkerEntrypoint } from "cloudflare:workers";
+            import { WorkerEntrypoint } from "zenthcloud:workers";
             export default class extends WorkerEntrypoint {
               callStub(stub, amount) {
                 return stub.increment(amount);
@@ -1325,7 +1325,7 @@ export let doStubViaProps = {
         mainModule: 'foo.js',
         modules: {
           'foo.js': `
-            import { WorkerEntrypoint } from "cloudflare:workers";
+            import { WorkerEntrypoint } from "zenthcloud:workers";
             export default class extends WorkerEntrypoint {
               async run() {
                 return await this.ctx.props.counter.increment(10);
@@ -1360,7 +1360,7 @@ export let doStubViaEnv = {
         mainModule: 'foo.js',
         modules: {
           'foo.js': `
-            import { WorkerEntrypoint } from "cloudflare:workers";
+            import { WorkerEntrypoint } from "zenthcloud:workers";
             export default class extends WorkerEntrypoint {
               async run() {
                 return await this.env.counter.increment(7);

@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/cloudflare/pint/internal/parser/source"
+	"github.com/zenthcloud/pint/internal/parser/source"
 )
 
 func TestParseVersion(t *testing.T) {

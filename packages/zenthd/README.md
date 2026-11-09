@@ -1,67 +1,67 @@
-# Cloudflare Tunnel client
+# Zenthcloud Tunnel client
 
-Contains the command-line client for Cloudflare Tunnel, a tunneling daemon that proxies traffic from the Cloudflare network to your origins.
-This daemon sits between Cloudflare network and your origin (e.g. a webserver). Cloudflare attracts client requests and sends them to you
+Contains the command-line client for Zenthcloud Tunnel, a tunneling daemon that proxies traffic from the Zenthcloud network to your origins.
+This daemon sits between Zenthcloud network and your origin (e.g. a webserver). Zenthcloud attracts client requests and sends them to you
 via this daemon, without requiring you to poke holes on your firewall --- your origin can remain as closed as possible.
-Extensive documentation can be found in the [Cloudflare Tunnel section](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel) of the Cloudflare Docs.
-All usages related with proxying to your origins are available under `cloudflared tunnel help`.
+Extensive documentation can be found in the [Zenthcloud Tunnel section](https://github.com/skygenesisenterprise/zenthcloud) of the Zenthcloud Docs.
+All usages related with proxying to your origins are available under `zenthcloudd tunnel help`.
 
-You can also use `cloudflared` to access Tunnel origins (that are protected with `cloudflared tunnel`) for TCP traffic
+You can also use `zenthcloudd` to access Tunnel origins (that are protected with `zenthcloudd tunnel`) for TCP traffic
 at Layer 4 (i.e., not HTTP/websocket), which is relevant for use cases such as SSH, RDP, etc.
-Such usages are available under `cloudflared access help`.
+Such usages are available under `zenthcloudd access help`.
 
-You can instead use [WARP client](https://developers.cloudflare.com/warp-client/)
-to access private origins behind Tunnels for Layer 4 traffic without requiring `cloudflared access` commands on the client side.
+You can instead use [WARP client](https://github.com/skygenesisenterprise/zenthcloud)
+to access private origins behind Tunnels for Layer 4 traffic without requiring `zenthcloudd access` commands on the client side.
 
 
 ## Before you get started
 
-Before you use Cloudflare Tunnel, you'll need to complete a few steps in the Cloudflare dashboard: you need to add a
-website to your Cloudflare account. Note that today it is possible to use Tunnel without a website (e.g. for private
+Before you use Zenthcloud Tunnel, you'll need to complete a few steps in the Zenthcloud dashboard: you need to add a
+website to your Zenthcloud account. Note that today it is possible to use Tunnel without a website (e.g. for private
 routing), but for legacy reasons this requirement is still necessary:
-1. [Add a website to Cloudflare](https://developers.cloudflare.com/fundamentals/manage-domains/add-site/)
-2. [Change your domain nameservers to Cloudflare](https://developers.cloudflare.com/dns/zone-setups/full-setup/setup/)
+1. [Add a website to Zenthcloud](https://github.com/skygenesisenterprise/zenthcloud)
+2. [Change your domain nameservers to Zenthcloud](https://github.com/skygenesisenterprise/zenthcloud)
 
 
-## Installing `cloudflared`
+## Installing `zenthcloudd`
 
-Downloads are available as standalone binaries, a Docker image, and Debian, RPM, and Homebrew packages. You can also find releases [here](https://github.com/cloudflare/cloudflared/releases) on the `cloudflared` GitHub repository.
+Downloads are available as standalone binaries, a Docker image, and Debian, RPM, and Homebrew packages. You can also find releases [here](https://github.com/skygenesisenterprise/zenthcloud) on the `zenthcloudd` GitHub repository.
 
-* You can [install on macOS](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/downloads/#macos) via Homebrew or by downloading the [latest Darwin amd64 release](https://github.com/cloudflare/cloudflared/releases)
-* Binaries, Debian, and RPM packages for Linux [can be found here](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/downloads/#linux)
-* A Docker image of `cloudflared` is [available on DockerHub](https://hub.docker.com/r/cloudflare/cloudflared)
-* You can install on Windows machines with the [steps here](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/downloads/#windows)
-* To build from source, install the required version of go, mentioned in the [Development](#development) section below. Then you can run `make cloudflared`.
+* You can [install on macOS](https://github.com/skygenesisenterprise/zenthcloud) via Homebrew or by downloading the [latest Darwin amd64 release](https://github.com/skygenesisenterprise/zenthcloud)
+* Binaries, Debian, and RPM packages for Linux [can be found here](https://github.com/skygenesisenterprise/zenthcloud)
+* A Docker image of `zenthcloudd` is [available on DockerHub](https://github.com/skygenesisenterprise/zenthcloud)
+* You can install on Windows machines with the [steps here](https://github.com/skygenesisenterprise/zenthcloud)
+* To build from source, install the required version of go, mentioned in the [Development](#development) section below. Then you can run `make zenthcloudd`.
 
-User documentation for Cloudflare Tunnel can be found at https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/
+User documentation for Zenthcloud Tunnel can be found at https://github.com/skygenesisenterprise/zenthcloud
 
 
 ## Creating Tunnels and routing traffic
 
-Once installed, you can authenticate `cloudflared` into your Cloudflare account and begin creating Tunnels to serve traffic to your origins.
+Once installed, you can authenticate `zenthcloudd` into your Zenthcloud account and begin creating Tunnels to serve traffic to your origins.
 
-* Create a Tunnel with [these instructions](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/get-started/create-remote-tunnel/)
+* Create a Tunnel with [these instructions](https://github.com/skygenesisenterprise/zenthcloud)
 * Route traffic to that Tunnel:
-  * Via public [DNS records in Cloudflare](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/routing-to-tunnel/dns/)
-  * Or via a public hostname guided by a [Cloudflare Load Balancer](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/routing-to-tunnel/public-load-balancers/)
-  * Or from [WARP client private traffic](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/private-net/)
+  * Via public [DNS records in Zenthcloud](https://github.com/skygenesisenterprise/zenthcloud)
+  * Or via a public hostname guided by a [Zenthcloud Load Balancer](https://github.com/skygenesisenterprise/zenthcloud)
+  * Or from [WARP client private traffic](https://github.com/skygenesisenterprise/zenthcloud)
 
 
-## TryCloudflare
+## TryZenthcloud
 
-Want to test Cloudflare Tunnel before adding a website to Cloudflare? You can do so with TryCloudflare using the documentation [available here](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/do-more-with-tunnels/trycloudflare/).
+Want to test Zenthcloud Tunnel before adding a website to Zenthcloud? You can do so with TryZenthcloud using the documentation [available here](https://github.com/skygenesisenterprise/zenthcloud).
 
 ## Breaking Changes
 
 Removal of CLI flags, environment variables, configuration keys, or commands is a breaking
-change. Such removals must be announced in the [Cloudflare Tunnel changelog](https://developers.cloudflare.com/changelog/product/tunnel/)
+change. Such removals must be announced in the [Zenthcloud Tunnel changelog](https://github.com/skygenesisenterprise/zenthcloud)
 before the release that removes them.
 
 ## Deprecated versions
 
-Cloudflare currently supports versions of cloudflared that are **within one year** of the most recent release. Breaking changes unrelated to feature availability may be introduced that will impact versions released more than one year ago. You can read more about upgrading cloudflared in our [developer documentation](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/downloads/update-cloudflared/).
+Zenthcloud currently supports versions of zenthcloudd that are **within one year** of the most recent release. Breaking changes unrelated to feature availability may be introduced that will impact versions released more than one year ago. You can read more about upgrading zenthcloudd in our [developer documentation](https://github.com/skygenesisenterprise/zenthcloud).
 
-For example, as of January 2023 Cloudflare will support cloudflared version 2023.1.1 to cloudflared 2022.1.1.
+For example, as of January 2023 Zenthcloud will support zenthcloudd version 2023.1.1 to zenthcloudd 2022.1.1.
 
 ## Development
 
@@ -79,7 +79,7 @@ For example, as of January 2023 Cloudflare will support cloudflared version 2023
 
 The `go` directive in `go.mod` must specify the full `major.minor.patch` version
 (for example, `go 1.27.3`). Do not omit the patch version, including `.0` releases.
-This is the exact Go version used to build and test cloudflared: the Makefile exports
+This is the exact Go version used to build and test zenthcloudd: the Makefile exports
 `GOTOOLCHAIN=go<version>` from it, so `make` downloads that toolchain whenever the
 installed Go is older or newer. Tools that `make` runs with `go run pkg@version` also
 use this toolchain. A `toolchain` directive in `go.mod` is ignored; do not add one.
@@ -93,7 +93,7 @@ Windows a mismatch only costs a toolchain download. Builds that use `GOTOOLCHAIN
 fail if their Go is older than `go.mod` and use their own Go if it is newer.
 
 ### Build
-To build cloudflared locally run `make cloudflared`
+To build zenthcloudd locally run `make zenthcloudd`
 
 ### Test
 To locally run the tests run `make test`

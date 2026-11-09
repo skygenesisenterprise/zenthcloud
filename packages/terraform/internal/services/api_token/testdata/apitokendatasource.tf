@@ -1,4 +1,4 @@
-resource "cloudflare_api_token" "%[1]s" {
+resource "zenthcloud_api_token" "%[1]s" {
   name = "%[1]s"
   status = "active"
 
@@ -8,12 +8,12 @@ resource "cloudflare_api_token" "%[1]s" {
       id = "%[2]s"
     }]
     resources = jsonencode({
-      "com.cloudflare.api.account.zone.*" = "*"
+      "com.zenthcloud.api.account.zone.*" = "*"
     })
   }]
 }
 
-data "cloudflare_api_token" "%[1]s" {
-  token_id = cloudflare_api_token.%[1]s.id
-  depends_on = [cloudflare_api_token.%[1]s]
+data "zenthcloud_api_token" "%[1]s" {
+  token_id = zenthcloud_api_token.%[1]s.id
+  depends_on = [zenthcloud_api_token.%[1]s]
 }

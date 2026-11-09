@@ -1,11 +1,11 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceListItemModel represents the v4 (SDKv2) cloudflare_list_item state structure.
+// SourceListItemModel represents the v4 (SDKv2) zenthcloud_list_item state structure.
 // In v4, hostname and redirect were TypeList with MaxItems: 1 (stored as arrays in state).
 type SourceListItemModel struct {
 	AccountID types.String             `tfsdk:"account_id"`
@@ -36,7 +36,7 @@ type SourceRedirectModel struct {
 	PreservePathSuffix  types.String `tfsdk:"preserve_path_suffix"`
 }
 
-// TargetListItemModel represents the v5 cloudflare_list_item state structure.
+// TargetListItemModel represents the v5 zenthcloud_list_item state structure.
 type TargetListItemModel struct {
 	AccountID   types.String                                    `tfsdk:"account_id"`
 	ListID      types.String                                    `tfsdk:"list_id"`
@@ -51,7 +51,7 @@ type TargetListItemModel struct {
 	CreatedOn   types.String                                    `tfsdk:"created_on"`
 }
 
-// SourceListItemV1Model represents the v4.52.5 framework cloudflare_list_item state (schema_version=1).
+// SourceListItemV1Model represents the v4.52.5 framework zenthcloud_list_item state (schema_version=1).
 // In v4.52.5, hostname and redirect are ListNestedBlocks.
 // Redirect boolean fields are actual bools (v4.52.5's 0→1 upgrader converted from strings).
 type SourceListItemV1Model struct {

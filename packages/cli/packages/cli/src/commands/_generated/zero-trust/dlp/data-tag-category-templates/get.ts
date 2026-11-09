@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust dlp data-tag-category-templates get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/dlp/data_tag_category_templates/${argv["template-id"] == null ? "<template-id>" : encodeURIComponent(String(argv["template-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/dlp/data_tag_category_templates/${argv["template-id"] == null ? "<template-id>" : encodeURIComponent(String(argv["template-id"]))}`,
 						pathParams: { "template-id": String(argv["template-id"] ?? "") },
 						bodyKind: "none",
 					});

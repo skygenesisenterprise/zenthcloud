@@ -1,6 +1,6 @@
-import { env, exports } from 'cloudflare:workers'
+import { env, exports } from 'zenthcloud:workers'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { mockIdentityProbe } from './helpers/cloudflare-api'
+import { mockIdentityProbe } from './helpers/zenthcloud-api'
 import { clearKv } from './helpers/kv'
 import { clearSpec, seedSpec } from './helpers/spec'
 import { MCP_HOST, MCP_URL, parseMcpResult } from './helpers/mcp'

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_workers_route Resource - Cloudflare"
+page_title: "zenthcloud_workers_route Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Workers Routes ReadWorkers Routes Write
 ---
 
-# cloudflare_workers_route (Resource)
+# zenthcloud_workers_route (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_workers_route" "example_workers_route" {
+resource "zenthcloud_workers_route" "example_workers_route" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   pattern = "example.com/*"
   script = "my-workers-script"
@@ -28,7 +28,7 @@ resource "cloudflare_workers_route" "example_workers_route" {
 
 ### Required
 
-- `pattern` (String) Pattern to match incoming requests against. [Learn more](https://developers.cloudflare.com/workers/configuration/routing/routes/#matching-behavior).
+- `pattern` (String) Pattern to match incoming requests against. [Learn more](https://github.com/skygenesisenterprise/zenthcloud).
 - `zone_id` (String) Identifier.
 
 ### Optional
@@ -44,7 +44,7 @@ resource "cloudflare_workers_route" "example_workers_route" {
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_workers_route.example '<zone_id>/<route_id>'
+$ terraform import zenthcloud_workers_route.example '<zone_id>/<route_id>'
 ```
 
 

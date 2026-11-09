@@ -84,7 +84,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.member.create"
+            "com.zenthcloud.api.account.member.create"
           ]
         },
         "x-cfPlanAvailability": {
@@ -115,7 +115,7 @@ export const tools: readonly Tool[] = [
   {
     name: "scim_users_delete",
     title: "Delete SCIM User",
-    description: "Deprovisions a SCIM User by removing their membership from this account (RFC 7644 Section 3.6). This does not delete the global Cloudflare user.\n\nConfirm with the user before calling this tool. Are you sure you want to remove this user from the account?\n\nDELETE /accounts/{account_id}/scim/v2/Users/{user_id}",
+    description: "Deprovisions a SCIM User by removing their membership from this account (RFC 7644 Section 3.6). This does not delete the global Zenthcloud user.\n\nConfirm with the user before calling this tool. Are you sure you want to remove this user from the account?\n\nDELETE /accounts/{account_id}/scim/v2/Users/{user_id}",
     inputSchema: {
       type: "object",
       properties: {
@@ -161,7 +161,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.member.delete"
+            "com.zenthcloud.api.account.member.delete"
           ]
         },
         "x-cfPlanAvailability": {
@@ -250,7 +250,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.member.update"
+            "com.zenthcloud.api.account.member.update"
           ]
         },
         "x-cfPlanAvailability": {
@@ -336,7 +336,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.member.read"
+            "com.zenthcloud.api.account.member.read"
           ]
         },
         "x-cfPlanAvailability": {
@@ -442,7 +442,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.member.list"
+            "com.zenthcloud.api.account.member.list"
           ]
         },
         "x-cfPlanAvailability": {
@@ -538,7 +538,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.member.update"
+            "com.zenthcloud.api.account.member.update"
           ]
         },
         "x-cfPlanAvailability": {

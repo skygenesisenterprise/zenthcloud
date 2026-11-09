@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_device_default_profile_certificates Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_device_default_profile_certificates Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   SSL and Certificates ReadSSL and Certificates Write
 ---
 
-# cloudflare_zero_trust_device_default_profile_certificates (Data Source)
+# zenthcloud_zero_trust_device_default_profile_certificates (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_device_default_profile_certificates" "example_zero_trust_device_default_profile_certificates" {
+data "zenthcloud_zero_trust_device_default_profile_certificates" "example_zero_trust_device_default_profile_certificates" {
   zone_id = "699d98642c564d2e855e9661899b7252"
 }
 ```

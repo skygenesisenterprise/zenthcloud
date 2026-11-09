@@ -7,12 +7,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/custom_hostnames"
-	"github.com/cloudflare/cloudflare-go/v7/dns"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/custom_hostnames"
+	"github.com/zenthcloud/zenthcloud-go/v7/dns"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -27,13 +27,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_custom_hostname_fallback_origin", &resource.Sweeper{
-		Name: "cloudflare_custom_hostname_fallback_origin",
-		F:    testSweepCloudflareCustomHostnameFallbackOrigin,
+	resource.AddTestSweepers("zenthcloud_custom_hostname_fallback_origin", &resource.Sweeper{
+		Name: "zenthcloud_custom_hostname_fallback_origin",
+		F:    testSweepZenthcloudCustomHostnameFallbackOrigin,
 	})
 }
 
-func testSweepCloudflareCustomHostnameFallbackOrigin(r string) error {
+func testSweepZenthcloudCustomHostnameFallbackOrigin(r string) error {
 	ctx := context.Background()
 	// Custom Hostname Fallback Origin is a zone-level configuration setting.
 	// It's a singleton setting per zone, not something that accumulates.
@@ -42,11 +42,11 @@ func testSweepCloudflareCustomHostnameFallbackOrigin(r string) error {
 	return nil
 }
 
-func testAccCheckCloudflareCustomHostnameFallbackOrigin(zoneID, rnd, subdomain, domain string) string {
+func testAccCheckZenthcloudCustomHostnameFallbackOrigin(zoneID, rnd, subdomain, domain string) string {
 	return acctest.LoadTestCase("customhostnamefallbackorigin.tf", zoneID, rnd, subdomain, domain)
 }
 
-func testAccCheckCloudflareCustomHostnameFallbackOriginUpdated(zoneID, rnd, subdomain, domain string) string {
+func testAccCheckZenthcloudCustomHostnameFallbackOriginUpdated(zoneID, rnd, subdomain, domain string) string {
 	return acctest.LoadTestCase("customhostnamefallbackorigin_updated.tf", zoneID, rnd, subdomain, domain)
 }
 
@@ -57,13 +57,13 @@ func createTestDNSRecord(t *testing.T, zoneID, name, domain string) string {
 	ctx := context.Background()
 
 	record, err := client.DNS.Records.New(ctx, dns.RecordNewParams{
-		ZoneID: cloudflare.F(zoneID),
+		ZoneID: zenthcloud.F(zoneID),
 		Body: dns.CNAMERecordParam{
-			Name:    cloudflare.F(name),
-			Type:    cloudflare.F(dns.CNAMERecordTypeCNAME),
-			Content: cloudflare.F(domain),
-			Proxied: cloudflare.F(true),
-			TTL:     cloudflare.F(dns.TTL1),
+			Name:    zenthcloud.F(name),
+			Type:    zenthcloud.F(dns.CNAMERecordTypeCNAME),
+			Content: zenthcloud.F(domain),
+			Proxied: zenthcloud.F(true),
+			TTL:     zenthcloud.F(dns.TTL1),
 		},
 	})
 	if err != nil {
@@ -82,7 +82,7 @@ func deleteTestDNSRecord(t *testing.T, zoneID, recordID string) {
 	maxRetries := 15
 	for i := range maxRetries {
 		_, err := client.DNS.Records.Delete(ctx, recordID, dns.RecordDeleteParams{
-			ZoneID: cloudflare.F(zoneID),
+			ZoneID: zenthcloud.F(zoneID),
 		})
 		if err == nil {
 			return // Successfully deleted
@@ -96,11 +96,11 @@ func deleteTestDNSRecord(t *testing.T, zoneID, recordID string) {
 	t.Logf("Warning: Could not delete DNS record %s after retries", recordID)
 }
 
-func testAccCheckCloudflareCustomHostnameFallbackOriginDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudCustomHostnameFallbackOriginDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_custom_hostname_fallback_origin" {
+		if rs.Type != "zenthcloud_custom_hostname_fallback_origin" {
 			continue
 		}
 
@@ -108,7 +108,7 @@ func testAccCheckCloudflareCustomHostnameFallbackOriginDestroy(s *terraform.Stat
 		fallbackOrigin, err := client.CustomHostnames.FallbackOrigin.Get(
 			context.Background(),
 			custom_hostnames.FallbackOriginGetParams{
-				ZoneID: cloudflare.F(zoneID),
+				ZoneID: zenthcloud.F(zoneID),
 			},
 		)
 
@@ -128,21 +128,21 @@ func testAccCheckCloudflareCustomHostnameFallbackOriginDestroy(s *terraform.Stat
 	return nil
 }
 
-func TestAccCloudflareCustomHostnameFallbackOrigin_FullLifecycle(t *testing.T) {
+func TestAccZenthcloudCustomHostnameFallbackOrigin_FullLifecycle(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
 	}
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the custom hostname
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the custom hostname
 	// fallback endpoint does not yet support the API tokens for updates and it
 	// results in state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_hostname_fallback_origin." + rnd
+	resourceName := "zenthcloud_custom_hostname_fallback_origin." + rnd
 
 	// Create DNS records via API before the test (not managed by Terraform)
 	// This avoids destruction order issues with the async fallback origin delete API
@@ -161,11 +161,11 @@ func TestAccCloudflareCustomHostnameFallbackOrigin_FullLifecycle(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareCustomHostnameFallbackOriginDestroy,
+		CheckDestroy:             testAccCheckZenthcloudCustomHostnameFallbackOriginDestroy,
 		Steps: []resource.TestStep{
 			// Step 1: Create
 			{
-				Config: testAccCheckCloudflareCustomHostnameFallbackOrigin(zoneID, rnd, rnd, domain),
+				Config: testAccCheckZenthcloudCustomHostnameFallbackOrigin(zoneID, rnd, rnd, domain),
 				ConfigStateChecks: []statecheck.StateCheck{
 					// Required attributes
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
@@ -177,7 +177,7 @@ func TestAccCloudflareCustomHostnameFallbackOrigin_FullLifecycle(t *testing.T) {
 			},
 			// Step 2: Drift check - same config, expect empty plan
 			{
-				Config: testAccCheckCloudflareCustomHostnameFallbackOrigin(zoneID, rnd, rnd, domain),
+				Config: testAccCheckZenthcloudCustomHostnameFallbackOrigin(zoneID, rnd, rnd, domain),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -186,7 +186,7 @@ func TestAccCloudflareCustomHostnameFallbackOrigin_FullLifecycle(t *testing.T) {
 			},
 			// Step 3: Update origin
 			{
-				Config: testAccCheckCloudflareCustomHostnameFallbackOriginUpdated(zoneID, rnd, rnd, domain),
+				Config: testAccCheckZenthcloudCustomHostnameFallbackOriginUpdated(zoneID, rnd, rnd, domain),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -204,7 +204,7 @@ func TestAccCloudflareCustomHostnameFallbackOrigin_FullLifecycle(t *testing.T) {
 			},
 			// Step 4: Drift check after update
 			{
-				Config: testAccCheckCloudflareCustomHostnameFallbackOriginUpdated(zoneID, rnd, rnd, domain),
+				Config: testAccCheckZenthcloudCustomHostnameFallbackOriginUpdated(zoneID, rnd, rnd, domain),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -217,7 +217,7 @@ func TestAccCloudflareCustomHostnameFallbackOrigin_FullLifecycle(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				// status transitions asynchronously from "initializing" to "active"
-				// after Cloudflare provisions the fallback origin; the test can
+				// after Zenthcloud provisions the fallback origin; the test can
 				// observe either value depending on timing.
 				ImportStateVerifyIgnore: []string{"created_at", "updated_at", "status"},
 			},
@@ -229,15 +229,15 @@ func TestAccUpgradeCustomHostnameFallbackOrigin_FromPublishedV5(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
 	}
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the custom hostname
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the custom hostname
 	// fallback endpoint does not yet support the API tokens for updates and it
 	// results in state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
 
 	// Create DNS record via API before the test
@@ -249,15 +249,15 @@ func TestAccUpgradeCustomHostnameFallbackOrigin_FromPublishedV5(t *testing.T) {
 		deleteTestDNSRecord(t, zoneID, dnsRecordID)
 	})
 
-	config := testAccCheckCloudflareCustomHostnameFallbackOrigin(zoneID, rnd, rnd, domain)
+	config := testAccCheckZenthcloudCustomHostnameFallbackOrigin(zoneID, rnd, rnd, domain)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

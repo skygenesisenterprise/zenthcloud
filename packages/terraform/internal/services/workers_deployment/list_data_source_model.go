@@ -5,9 +5,9 @@ package workers_deployment
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/workers"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/workers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -33,14 +33,14 @@ func (m *WorkersDeploymentsDataSourceModel) toListParams(_ context.Context) (par
 	diags.Append(errs...)
 
 	params = workers.ScriptDeploymentListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Since.IsNull() {
-		params.Since = cloudflare.F(mSince)
+		params.Since = zenthcloud.F(mSince)
 	}
 	if !m.Until.IsNull() {
-		params.Until = cloudflare.F(mUntil)
+		params.Until = zenthcloud.F(mUntil)
 	}
 
 	return

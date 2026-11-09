@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -21,13 +21,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zero_trust_organization", &resource.Sweeper{
-		Name: "cloudflare_zero_trust_organization",
-		F:    testSweepCloudflareZeroTrustOrganization,
+	resource.AddTestSweepers("zenthcloud_zero_trust_organization", &resource.Sweeper{
+		Name: "zenthcloud_zero_trust_organization",
+		F:    testSweepZenthcloudZeroTrustOrganization,
 	})
 }
 
-func testSweepCloudflareZeroTrustOrganization(r string) error {
+func testSweepZenthcloudZeroTrustOrganization(r string) error {
 	ctx := context.Background()
 	// Zero Trust Organization is an account-level organization configuration setting.
 	// It's a singleton setting per account, not something that accumulates.
@@ -36,20 +36,20 @@ func testSweepCloudflareZeroTrustOrganization(r string) error {
 	return nil
 }
 
-const DEFAULT_AUTHDOMAIN = "terraform-cfapi.cloudflareaccess.com"
+const DEFAULT_AUTHDOMAIN = "terraform-cfapi.zenthcloudaccess.com"
 
 func testAuthDomain() string {
-	result := os.Getenv("CLOUDFLARE_ZERO_TRUST_ORGANIZATION_AUTH_DOMAIN")
+	result := os.Getenv("ZENTHCLOUD_ZERO_TRUST_ORGANIZATION_AUTH_DOMAIN")
 	if result == "" {
 		result = DEFAULT_AUTHDOMAIN
 	}
 	return result
 }
 
-func TestAccCloudflareAccessOrganization(t *testing.T) {
+func TestAccZenthcloudAccessOrganization(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_organization.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_organization.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	headerText := "My header text"
 	resource.Test(t, resource.TestCase{
@@ -59,7 +59,7 @@ func TestAccCloudflareAccessOrganization(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessOrganizationConfigBasic(rnd, accountID, headerText, testAuthDomain()),
+				Config: testAccZenthcloudAccessOrganizationConfigBasic(rnd, accountID, headerText, testAuthDomain()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(name, "name", testAuthDomain()),
@@ -78,7 +78,7 @@ func TestAccCloudflareAccessOrganization(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCloudflareAccessOrganizationConfigBasic(rnd, accountID, headerText, testAuthDomain()),
+				Config: testAccZenthcloudAccessOrganizationConfigBasic(rnd, accountID, headerText, testAuthDomain()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(name, "name", testAuthDomain()),
@@ -109,7 +109,7 @@ func TestAccCloudflareAccessOrganization(t *testing.T) {
 				ImportStateCheck: accessOrgImportStateCheck,
 			},
 			{
-				Config: testAccCloudflareAccessOrganizationConfigEmpty(rnd, accountID, testAuthDomain()),
+				Config: testAccZenthcloudAccessOrganizationConfigEmpty(rnd, accountID, testAuthDomain()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(name, "name", testAuthDomain()),
@@ -132,7 +132,7 @@ func accessOrgImportStateCheck(instanceStates []*terraform.InstanceState) error 
 	state := instanceStates[0]
 	attrs := state.Attributes
 	wantAuthDomain := testAuthDomain()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	if stateName := attrs["name"]; !strings.HasSuffix(stateName, wantAuthDomain) {
 		return fmt.Errorf("name has value %q and does not match expected suffix %q", stateName, wantAuthDomain)
@@ -162,11 +162,11 @@ func accessOrgImportStateCheck(instanceStates []*terraform.InstanceState) error 
 	return nil
 }
 
-func testAccCloudflareAccessOrganizationConfigBasic(rnd, accountID, headerText, authDomain string) string {
+func testAccZenthcloudAccessOrganizationConfigBasic(rnd, accountID, headerText, authDomain string) string {
 	return acctest.LoadTestCase("accessorganizationconfigbasic.tf", rnd, accountID, headerText, authDomain)
 }
 
-func testAccCloudflareAccessOrganizationConfigEmpty(rnd, accountID, authDomain string) string {
+func testAccZenthcloudAccessOrganizationConfigEmpty(rnd, accountID, authDomain string) string {
 	return acctest.LoadTestCase("accessorganizationconfigempty.tf", rnd, accountID, authDomain)
 }
 
@@ -174,7 +174,7 @@ func accessOrgImportStateCheckEmpty(instanceStates []*terraform.InstanceState) e
 	state := instanceStates[0]
 	attrs := state.Attributes
 	wantAuthDomain := testAuthDomain()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	if stateName := attrs["name"]; !strings.HasSuffix(stateName, wantAuthDomain) {
 		return fmt.Errorf("name has value %q and does not match expected suffix %q", stateName, wantAuthDomain)
@@ -209,7 +209,7 @@ func accessOrgImportStateCheckEmpty(instanceStates []*terraform.InstanceState) e
 	return nil
 }
 
-// TestAccCloudflareAccessOrganization_DenyUnmatchedRequests tests the deny_unmatched_requests
+// TestAccZenthcloudAccessOrganization_DenyUnmatchedRequests tests the deny_unmatched_requests
 // attribute and its companion deny_unmatched_requests_exempted_zone_names list.
 // This is the attribute that caused the SIRT incident (Finding #1 in RM-30061).
 //
@@ -219,10 +219,10 @@ func accessOrgImportStateCheckEmpty(instanceStates []*terraform.InstanceState) e
 // 3. Import and verify deny_unmatched_requests survives import
 // 4. Disable deny_unmatched_requests (set to false, remove exempted zones)
 // 5. Import and verify the disabled state
-func TestAccCloudflareAccessOrganization_DenyUnmatchedRequests(t *testing.T) {
+func TestAccZenthcloudAccessOrganization_DenyUnmatchedRequests(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_organization.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_organization.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -231,14 +231,14 @@ func TestAccCloudflareAccessOrganization_DenyUnmatchedRequests(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessOrganizationConfigDenyUnmatched(rnd, accountID, testAuthDomain()),
+				Config: testAccZenthcloudAccessOrganizationConfigDenyUnmatched(rnd, accountID, testAuthDomain()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(name, "deny_unmatched_requests", "true"),
 				),
 			},
 			{
-				Config: testAccCloudflareAccessOrganizationConfigDenyUnmatched(rnd, accountID, testAuthDomain()),
+				Config: testAccZenthcloudAccessOrganizationConfigDenyUnmatched(rnd, accountID, testAuthDomain()),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -259,7 +259,7 @@ func TestAccCloudflareAccessOrganization_DenyUnmatchedRequests(t *testing.T) {
 				},
 			},
 			{
-				Config: testAccCloudflareAccessOrganizationConfigDenyUnmatchedDisabled(rnd, accountID, testAuthDomain()),
+				Config: testAccZenthcloudAccessOrganizationConfigDenyUnmatchedDisabled(rnd, accountID, testAuthDomain()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "deny_unmatched_requests", "false"),
 					resource.TestCheckNoResourceAttr(name, "deny_unmatched_requests_exempted_zone_names.#"),
@@ -282,14 +282,14 @@ func TestAccCloudflareAccessOrganization_DenyUnmatchedRequests(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareAccessOrganization_DenyUnmatchedOmitted verifies the behavior when
+// TestAccZenthcloudAccessOrganization_DenyUnmatchedOmitted verifies the behavior when
 // deny_unmatched_requests is omitted entirely from config. This is the exact scenario
 // from the SIRT incident: omitting the field should NOT silently disable it if it was
 // previously enabled.
-func TestAccCloudflareAccessOrganization_DenyUnmatchedOmitted(t *testing.T) {
+func TestAccZenthcloudAccessOrganization_DenyUnmatchedOmitted(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_organization.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_organization.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -299,7 +299,7 @@ func TestAccCloudflareAccessOrganization_DenyUnmatchedOmitted(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				// Step 1: Enable deny_unmatched_requests
-				Config: testAccCloudflareAccessOrganizationConfigDenyUnmatched(rnd, accountID, testAuthDomain()),
+				Config: testAccZenthcloudAccessOrganizationConfigDenyUnmatched(rnd, accountID, testAuthDomain()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "deny_unmatched_requests", "true"),
 				),
@@ -307,7 +307,7 @@ func TestAccCloudflareAccessOrganization_DenyUnmatchedOmitted(t *testing.T) {
 			{
 				// Step 2: Apply config that omits deny_unmatched_requests entirely.
 				// The key question: does this silently clear it to false?
-				Config: testAccCloudflareAccessOrganizationConfigEmpty(rnd, accountID, testAuthDomain()),
+				Config: testAccZenthcloudAccessOrganizationConfigEmpty(rnd, accountID, testAuthDomain()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 				),
@@ -324,7 +324,7 @@ func TestAccCloudflareAccessOrganization_DenyUnmatchedOmitted(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareAccessOrganization_ValueUpdate tests changing attribute values
+// TestAccZenthcloudAccessOrganization_ValueUpdate tests changing attribute values
 // (not just adding/removing). Covers the update code path where MarshalJSONForUpdate
 // sends only changed fields.
 //
@@ -334,10 +334,10 @@ func TestAccCloudflareAccessOrganization_DenyUnmatchedOmitted(t *testing.T) {
 // 3. Verify updated values
 // 4. Idempotency check
 // 5. Import and verify
-func TestAccCloudflareAccessOrganization_ValueUpdate(t *testing.T) {
+func TestAccZenthcloudAccessOrganization_ValueUpdate(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_organization.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_organization.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -346,7 +346,7 @@ func TestAccCloudflareAccessOrganization_ValueUpdate(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessOrganizationConfigBasic(rnd, accountID, "Initial header", testAuthDomain()),
+				Config: testAccZenthcloudAccessOrganizationConfigBasic(rnd, accountID, "Initial header", testAuthDomain()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "session_duration", "12h"),
 					resource.TestCheckResourceAttr(name, "warp_auth_session_duration", "36h"),
@@ -359,7 +359,7 @@ func TestAccCloudflareAccessOrganization_ValueUpdate(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCloudflareAccessOrganizationConfigUpdate(rnd, accountID, "Updated header", testAuthDomain()),
+				Config: testAccZenthcloudAccessOrganizationConfigUpdate(rnd, accountID, "Updated header", testAuthDomain()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "session_duration", "24h"),
 					resource.TestCheckResourceAttr(name, "warp_auth_session_duration", "48h"),
@@ -372,7 +372,7 @@ func TestAccCloudflareAccessOrganization_ValueUpdate(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCloudflareAccessOrganizationConfigUpdate(rnd, accountID, "Updated header", testAuthDomain()),
+				Config: testAccZenthcloudAccessOrganizationConfigUpdate(rnd, accountID, "Updated header", testAuthDomain()),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -408,12 +408,12 @@ func TestAccCloudflareAccessOrganization_ValueUpdate(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareAccessOrganization_BooleansTrue tests setting boolean attributes to true.
+// TestAccZenthcloudAccessOrganization_BooleansTrue tests setting boolean attributes to true.
 // Existing tests only set them to false; this verifies the true->false->true lifecycle.
-func TestAccCloudflareAccessOrganization_BooleansTrue(t *testing.T) {
+func TestAccZenthcloudAccessOrganization_BooleansTrue(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_organization.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_organization.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -422,14 +422,14 @@ func TestAccCloudflareAccessOrganization_BooleansTrue(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessOrganizationConfigBoolsTrue(rnd, accountID, testAuthDomain()),
+				Config: testAccZenthcloudAccessOrganizationConfigBoolsTrue(rnd, accountID, testAuthDomain()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "auto_redirect_to_identity", "true"),
 					resource.TestCheckResourceAttr(name, "allow_authenticate_via_warp", "true"),
 				),
 			},
 			{
-				Config: testAccCloudflareAccessOrganizationConfigBoolsTrue(rnd, accountID, testAuthDomain()),
+				Config: testAccZenthcloudAccessOrganizationConfigBoolsTrue(rnd, accountID, testAuthDomain()),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -454,7 +454,7 @@ func TestAccCloudflareAccessOrganization_BooleansTrue(t *testing.T) {
 			},
 			{
 				// Flip back to false
-				Config: testAccCloudflareAccessOrganizationConfigEmpty(rnd, accountID, testAuthDomain()),
+				Config: testAccZenthcloudAccessOrganizationConfigEmpty(rnd, accountID, testAuthDomain()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 				),
@@ -463,12 +463,12 @@ func TestAccCloudflareAccessOrganization_BooleansTrue(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareAccessOrganization_LoginDesignLifecycle tests the full lifecycle of
+// TestAccZenthcloudAccessOrganization_LoginDesignLifecycle tests the full lifecycle of
 // the login_design block: create -> remove -> re-add with different values.
-func TestAccCloudflareAccessOrganization_LoginDesignLifecycle(t *testing.T) {
+func TestAccZenthcloudAccessOrganization_LoginDesignLifecycle(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_organization.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_organization.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -478,7 +478,7 @@ func TestAccCloudflareAccessOrganization_LoginDesignLifecycle(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				// Step 1: Create with login_design
-				Config: testAccCloudflareAccessOrganizationConfigBasic(rnd, accountID, "Original header", testAuthDomain()),
+				Config: testAccZenthcloudAccessOrganizationConfigBasic(rnd, accountID, "Original header", testAuthDomain()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "login_design.background_color", "#FFFFFF"),
 					resource.TestCheckResourceAttr(name, "login_design.header_text", "Original header"),
@@ -486,14 +486,14 @@ func TestAccCloudflareAccessOrganization_LoginDesignLifecycle(t *testing.T) {
 			},
 			{
 				// Step 2: Remove login_design
-				Config: testAccCloudflareAccessOrganizationConfigEmpty(rnd, accountID, testAuthDomain()),
+				Config: testAccZenthcloudAccessOrganizationConfigEmpty(rnd, accountID, testAuthDomain()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckNoResourceAttr(name, "login_design"),
 				),
 			},
 			{
 				// Step 3: Re-add login_design with different values
-				Config: testAccCloudflareAccessOrganizationConfigLoginDesignReAdd(rnd, accountID, testAuthDomain()),
+				Config: testAccZenthcloudAccessOrganizationConfigLoginDesignReAdd(rnd, accountID, testAuthDomain()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "login_design.background_color", "#FF0000"),
 					resource.TestCheckResourceAttr(name, "login_design.text_color", "#00FF00"),
@@ -503,7 +503,7 @@ func TestAccCloudflareAccessOrganization_LoginDesignLifecycle(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCloudflareAccessOrganizationConfigLoginDesignReAdd(rnd, accountID, testAuthDomain()),
+				Config: testAccZenthcloudAccessOrganizationConfigLoginDesignReAdd(rnd, accountID, testAuthDomain()),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -514,12 +514,12 @@ func TestAccCloudflareAccessOrganization_LoginDesignLifecycle(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareAccessOrganization_MfaConfig tests the mfa_config block including
+// TestAccZenthcloudAccessOrganization_MfaConfig tests the mfa_config block including
 // allowed_authenticators, session_duration, and amr_matching_session_duration.
-func TestAccCloudflareAccessOrganization_MfaConfig(t *testing.T) {
+func TestAccZenthcloudAccessOrganization_MfaConfig(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_organization.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_organization.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -528,7 +528,7 @@ func TestAccCloudflareAccessOrganization_MfaConfig(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessOrganizationConfigMfa(rnd, accountID, testAuthDomain()),
+				Config: testAccZenthcloudAccessOrganizationConfigMfa(rnd, accountID, testAuthDomain()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(name, "mfa_config.allowed_authenticators.#", "2"),
@@ -539,7 +539,7 @@ func TestAccCloudflareAccessOrganization_MfaConfig(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCloudflareAccessOrganizationConfigMfa(rnd, accountID, testAuthDomain()),
+				Config: testAccZenthcloudAccessOrganizationConfigMfa(rnd, accountID, testAuthDomain()),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -561,7 +561,7 @@ func TestAccCloudflareAccessOrganization_MfaConfig(t *testing.T) {
 			},
 			{
 				// Remove mfa_config
-				Config: testAccCloudflareAccessOrganizationConfigEmpty(rnd, accountID, testAuthDomain()),
+				Config: testAccZenthcloudAccessOrganizationConfigEmpty(rnd, accountID, testAuthDomain()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckNoResourceAttr(name, "mfa_config"),
 				),
@@ -573,11 +573,11 @@ func TestAccCloudflareAccessOrganization_MfaConfig(t *testing.T) {
 // PIV requirements must round-trip through the API and survive an unrelated
 // organization update. A successful PUT alone does not prove that the API used
 // the field, since it silently ignores the obsolete JSON key.
-func TestAccCloudflareAccessOrganization_PivKeyRequirements(t *testing.T) {
+func TestAccZenthcloudAccessOrganization_PivKeyRequirements(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_organization.%s", rnd)
-	dataName := fmt.Sprintf("data.cloudflare_zero_trust_organization.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_organization.%s", rnd)
+	dataName := fmt.Sprintf("data.zenthcloud_zero_trust_organization.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	config := func(orgName string) string {
 		return acctest.LoadTestCase("accessorganizationconfigpiv.tf", rnd, accountID, testAuthDomain(), orgName)
 	}
@@ -638,13 +638,13 @@ func TestAccCloudflareAccessOrganization_PivKeyRequirements(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareAccessOrganization_ImportVerifyAll uses ImportStateVerify to
+// TestAccZenthcloudAccessOrganization_ImportVerifyAll uses ImportStateVerify to
 // automatically compare all state attributes after import. This is the most
 // comprehensive import check available.
-func TestAccCloudflareAccessOrganization_ImportVerifyAll(t *testing.T) {
+func TestAccZenthcloudAccessOrganization_ImportVerifyAll(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_organization.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_organization.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -653,7 +653,7 @@ func TestAccCloudflareAccessOrganization_ImportVerifyAll(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccessOrganizationConfigBasic(rnd, accountID, "Import verify header", testAuthDomain()),
+				Config: testAccZenthcloudAccessOrganizationConfigBasic(rnd, accountID, "Import verify header", testAuthDomain()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(name, "session_duration", "12h"),
@@ -686,36 +686,36 @@ func TestAccCloudflareAccessOrganization_ImportVerifyAll(t *testing.T) {
 
 // Config helper functions for new tests.
 
-func testAccCloudflareAccessOrganizationConfigDenyUnmatched(rnd, accountID, authDomain string) string {
+func testAccZenthcloudAccessOrganizationConfigDenyUnmatched(rnd, accountID, authDomain string) string {
 	return acctest.LoadTestCase("accessorganizationconfigdenyunmatched.tf", rnd, accountID, authDomain)
 }
 
-func testAccCloudflareAccessOrganizationConfigDenyUnmatchedDisabled(rnd, accountID, authDomain string) string {
+func testAccZenthcloudAccessOrganizationConfigDenyUnmatchedDisabled(rnd, accountID, authDomain string) string {
 	return acctest.LoadTestCase("accessorganizationconfigdenyunmatcheddisabled.tf", rnd, accountID, authDomain)
 }
 
-func testAccCloudflareAccessOrganizationConfigUpdate(rnd, accountID, headerText, authDomain string) string {
+func testAccZenthcloudAccessOrganizationConfigUpdate(rnd, accountID, headerText, authDomain string) string {
 	return acctest.LoadTestCase("accessorganizationconfigupdate.tf", rnd, accountID, authDomain, headerText)
 }
 
-func testAccCloudflareAccessOrganizationConfigBoolsTrue(rnd, accountID, authDomain string) string {
+func testAccZenthcloudAccessOrganizationConfigBoolsTrue(rnd, accountID, authDomain string) string {
 	return acctest.LoadTestCase("accessorganizationconfigboolstrue.tf", rnd, accountID, authDomain)
 }
 
-func testAccCloudflareAccessOrganizationConfigLoginDesignReAdd(rnd, accountID, authDomain string) string {
+func testAccZenthcloudAccessOrganizationConfigLoginDesignReAdd(rnd, accountID, authDomain string) string {
 	return acctest.LoadTestCase("accessorganizationconfiglogindesignreadd.tf", rnd, accountID, authDomain)
 }
 
-func testAccCloudflareAccessOrganizationConfigMfa(rnd, accountID, authDomain string) string {
+func testAccZenthcloudAccessOrganizationConfigMfa(rnd, accountID, authDomain string) string {
 	return acctest.LoadTestCase("accessorganizationconfigmfa.tf", rnd, accountID, authDomain)
 }
 
 func TestAccUpgradeZeroTrustOrganization_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	headerText := "My header text"
 
-	config := testAccCloudflareAccessOrganizationConfigBasic(rnd, accountID, headerText, testAuthDomain())
+	config := testAccZenthcloudAccessOrganizationConfigBasic(rnd, accountID, headerText, testAuthDomain())
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -724,8 +724,8 @@ func TestAccUpgradeZeroTrustOrganization_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_accounts Data Source - Cloudflare"
+page_title: "zenthcloud_accounts Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_accounts (Data Source)
+# zenthcloud_accounts (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_accounts" "example_accounts" {
+data "zenthcloud_accounts" "example_accounts" {
   direction = "desc"
   name = "example.com"
 }

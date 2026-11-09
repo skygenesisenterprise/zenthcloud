@@ -1,5 +1,5 @@
 import { CliExit } from "../../../lib/cli-exit.js";
-import { runCloudflared } from "../../cloudflared.js";
+import { runZenthcloudd } from "../../zenthcloudd.js";
 import type { CommonYargsOptions } from "../../../lib/cli-types.js";
 import type { ArgumentsCamelCase, Argv, CommandModule } from "yargs";
 
@@ -16,13 +16,13 @@ interface TunnelDiagArgs extends CommonYargsOptions {
 
 const command: CommandModule<CommonYargsOptions, TunnelDiagArgs> = {
 	command: "diag",
-	describe: "Create a diagnostic report from a local cloudflared instance.",
+	describe: "Create a diagnostic report from a local zenthcloudd instance.",
 	builder: (yargs: Argv<CommonYargsOptions>): Argv<TunnelDiagArgs> =>
 		yargs
 			.parserConfiguration({ "boolean-negation": false })
 			.option("metrics", {
 				type: "string",
-				description: "Metrics server address for the cloudflared instance",
+				description: "Metrics server address for the zenthcloudd instance",
 			})
 			.option("diag-container-id", {
 				type: "string",
@@ -77,7 +77,7 @@ const command: CommandModule<CommonYargsOptions, TunnelDiagArgs> = {
 				args.push(`--${flag}`);
 			}
 		}
-		throw new CliExit(await runCloudflared(args));
+		throw new CliExit(await runZenthcloudd(args));
 	},
 };
 

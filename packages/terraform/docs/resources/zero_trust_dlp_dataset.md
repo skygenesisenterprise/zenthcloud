@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_dlp_dataset Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_dlp_dataset Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust ReadZero Trust Write
 ---
 
-# cloudflare_zero_trust_dlp_dataset (Resource)
+# zenthcloud_zero_trust_dlp_dataset (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_dlp_dataset" "example_zero_trust_dlp_dataset" {
+resource "zenthcloud_zero_trust_dlp_dataset" "example_zero_trust_dlp_dataset" {
   account_id = "account_id"
   name = "name"
   case_sensitive = true

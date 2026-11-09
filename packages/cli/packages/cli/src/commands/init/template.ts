@@ -1,7 +1,7 @@
 import type { PackageManager } from "./workers.js";
 
 export const WORKER_TEMPLATE_DEV_DEPENDENCIES = {
-	"@cloudflare/vite-plugin": "beta",
+	"@zenthcloud/vite-plugin": "beta",
 	typescript: "^7.0.2",
 	vite: "^8.3.0",
 } as const;
@@ -18,7 +18,7 @@ export function renderWorkerTemplate(
 ): Record<string, string> {
 	return {
 		".gitignore": renderGitignore(),
-		"cloudflare.config.ts": renderCloudflareConfig(options),
+		"zenthcloud.config.ts": renderZenthcloudConfig(options),
 		"package.json": renderPackageJson(options),
 		...(options.packageManager === "pnpm"
 			? { "pnpm-workspace.yaml": renderPnpmWorkspace() }
@@ -43,7 +43,7 @@ export function cfDependencyRange(version: string): string {
 		: "latest";
 }
 
-function renderCloudflareConfig(options: WorkerTemplateOptions): string {
+function renderZenthcloudConfig(options: WorkerTemplateOptions): string {
 	return `import { bindings, defineConfig } from "cf/config";
 import * as entrypoint from "./src/index.ts" with { type: "cf-worker" };
 
@@ -61,17 +61,17 @@ export default defineConfig({
 }
 
 function renderViteConfig(): string {
-	return `import { cloudflare } from "@cloudflare/vite-plugin";
+	return `import { zenthcloud } from "@zenthcloud/vite-plugin";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-	plugins: [cloudflare()],
+	plugins: [zenthcloud()],
 });
 `;
 }
 
 function renderEntrypoint(): string {
-	return `import { env } from "cloudflare:workers";
+	return `import { env } from "zenthcloud:workers";
 
 export default {
 	fetch() {
@@ -93,8 +93,8 @@ function renderPackageJson(options: WorkerTemplateOptions): string {
 			typecheck: "cf workers types && tsc",
 		},
 		devDependencies: {
-			"@cloudflare/vite-plugin":
-				WORKER_TEMPLATE_DEV_DEPENDENCIES["@cloudflare/vite-plugin"],
+			"@zenthcloud/vite-plugin":
+				WORKER_TEMPLATE_DEV_DEPENDENCIES["@zenthcloud/vite-plugin"],
 			cf: cfDependencyRange(options.cfVersion),
 			typescript: WORKER_TEMPLATE_DEV_DEPENDENCIES.typescript,
 			vite: WORKER_TEMPLATE_DEV_DEPENDENCIES.vite,
@@ -118,7 +118,7 @@ function renderTsconfig(): string {
 			verbatimModuleSyntax: true,
 			skipLibCheck: true,
 		},
-		include: ["src", "cloudflare.config.ts", ".cloudflare/types"],
+		include: ["src", "zenthcloud.config.ts", ".zenthcloud/types"],
 	};
 	return `${JSON.stringify(tsconfig, null, "\t")}\n`;
 }
@@ -126,7 +126,7 @@ function renderTsconfig(): string {
 function renderGitignore(): string {
 	return `node_modules/
 dist/
-.cloudflare/
+.zenthcloud/
 .wrangler/
 .dev.vars*
 !.dev.vars.example

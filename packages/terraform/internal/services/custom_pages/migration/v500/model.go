@@ -1,7 +1,7 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -10,18 +10,18 @@ import (
 // Source Models (Legacy Provider - v4.x SDKv2)
 // ============================================================================
 
-// SourceCloudflareCustomPagesModel represents the legacy custom_pages resource
+// SourceZenthcloudCustomPagesModel represents the legacy custom_pages resource
 // state from v4.x provider (SDKv2).
 //
 // Schema version: 0 (v4 SDKv2 resources don't have explicit schema versions)
-// Resource type: cloudflare_custom_pages
+// Resource type: zenthcloud_custom_pages
 //
 // Key differences from v5:
 // - Uses "type" field instead of "identifier"
 // - state field is Optional (not Required)
 // - url field is Required (not Optional+Computed)
 // - Missing computed fields: created_on, modified_on, description, preview_target, required_tokens
-type SourceCloudflareCustomPagesModel struct {
+type SourceZenthcloudCustomPagesModel struct {
 	ID        types.String `tfsdk:"id"`         // Computed in v4, also Computed in v5
 	Type      types.String `tfsdk:"type"`       // Renamed to Identifier in v5
 	State     types.String `tfsdk:"state"`      // Optional in v4, Required in v5
@@ -38,7 +38,7 @@ type SourceCloudflareCustomPagesModel struct {
 // from v5.x+ provider (Plugin Framework).
 //
 // Schema version: 500 (or 1 with migrations.schema version)
-// Resource type: cloudflare_custom_pages
+// Resource type: zenthcloud_custom_pages
 //
 // This matches the structure in the parent package's model.go.
 // We duplicate it here to keep the migration package self-contained.

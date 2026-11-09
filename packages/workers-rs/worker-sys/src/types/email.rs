@@ -477,7 +477,7 @@ pub mod email {
     use super::*;
     use js_sys::*;
     use wasm_bindgen::prelude::*;
-    #[wasm_bindgen(module = "cloudflare:email")]
+    #[wasm_bindgen(module = "zenthcloud:email")]
     extern "C" {
         # [wasm_bindgen (extends = Object)]
         #[derive(Debug, Clone, PartialEq, Eq)]

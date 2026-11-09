@@ -11,7 +11,7 @@ if (!dataFile) {
 const upgrades = JSON.parse(readFileSync(dataFile, "utf8"));
 const [upgrade, ...rest] = Array.isArray(upgrades) ? upgrades : [];
 if (
-	upgrade?.depName !== "@cloudflare/forge" ||
+	upgrade?.depName !== "@zenthcloud/forge" ||
 	typeof upgrade.newDigest !== "string" ||
 	!/^[0-9a-f]{40}$/.test(upgrade.newDigest) ||
 	rest.length > 0
@@ -35,7 +35,7 @@ writeFileSync(
 "cf": patch
 ---
 
-Update the generated command surface for \`@cloudflare/forge\` build
+Update the generated command surface for \`@zenthcloud/forge\` build
 \`${sha}\`.
 `
 );

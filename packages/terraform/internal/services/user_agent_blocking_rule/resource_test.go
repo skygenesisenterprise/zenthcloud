@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -20,23 +20,23 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_user_agent_blocking_rule", &resource.Sweeper{
-		Name: "cloudflare_user_agent_blocking_rule",
-		F:    testSweepCloudflareUserAgentBlockingRules,
+	resource.AddTestSweepers("zenthcloud_user_agent_blocking_rule", &resource.Sweeper{
+		Name: "zenthcloud_user_agent_blocking_rule",
+		F:    testSweepZenthcloudUserAgentBlockingRules,
 	})
 }
 
-func testSweepCloudflareUserAgentBlockingRules(r string) error {
+func testSweepZenthcloudUserAgentBlockingRules(r string) error {
 	ctx := context.Background()
 	client, clientErr := acctest.SharedV1Client()
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 		return clientErr
 	}
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping user agent blocking rules sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping user agent blocking rules sweep: ZENTHCLOUD_ZONE_ID not set")
 		return nil
 	}
 
@@ -69,17 +69,17 @@ func testSweepCloudflareUserAgentBlockingRules(r string) error {
 	return nil
 }
 
-func TestAccCloudflareUserAgentBlockingRule_Basic(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the UA
+func TestAccZenthcloudUserAgentBlockingRule_Basic(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the UA
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_user_agent_blocking_rule.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_user_agent_blocking_rule.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -88,7 +88,7 @@ func TestAccCloudflareUserAgentBlockingRule_Basic(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareUserAgentBlockingRule(rnd, zoneID, "js_challenge"),
+				Config: testAccZenthcloudUserAgentBlockingRule(rnd, zoneID, "js_challenge"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(name, "mode", "js_challenge"),
@@ -105,22 +105,22 @@ func TestAccCloudflareUserAgentBlockingRule_Basic(t *testing.T) {
 			// 	ImportStateVerify:   true,
 			// },
 		},
-		CheckDestroy: testAccCheckCloudflareUserAgentBlockingRulesDestroy,
+		CheckDestroy: testAccCheckZenthcloudUserAgentBlockingRulesDestroy,
 	})
 }
 
-func testAccCloudflareUserAgentBlockingRule(rnd, zoneID, mode string) string {
+func testAccZenthcloudUserAgentBlockingRule(rnd, zoneID, mode string) string {
 	return acctest.LoadTestCase("useragentblockingrule.tf", rnd, zoneID, mode)
 }
 
-func testAccCheckCloudflareUserAgentBlockingRulesDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudUserAgentBlockingRulesDestroy(s *terraform.State) error {
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_user_agent_blocking_rule" {
+		if rs.Type != "zenthcloud_user_agent_blocking_rule" {
 			continue
 		}
 
@@ -134,10 +134,10 @@ func testAccCheckCloudflareUserAgentBlockingRulesDestroy(s *terraform.State) err
 }
 
 func TestAccUpgradeUserAgentBlockingRule_FromPublishedV5(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 
-	config := testAccCloudflareUserAgentBlockingRule(rnd, zoneID, "js_challenge")
+	config := testAccZenthcloudUserAgentBlockingRule(rnd, zoneID, "js_challenge")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -146,8 +146,8 @@ func TestAccUpgradeUserAgentBlockingRule_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

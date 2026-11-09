@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_account_dns_settings_internal_views Data Source - Cloudflare"
+page_title: "zenthcloud_account_dns_settings_internal_views Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   DNS View ReadDNS View Write
 ---
 
-# cloudflare_account_dns_settings_internal_views (Data Source)
+# zenthcloud_account_dns_settings_internal_views (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_account_dns_settings_internal_views" "example_account_dns_settings_internal_views" {
+data "zenthcloud_account_dns_settings_internal_views" "example_account_dns_settings_internal_views" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name = {
     contains = "view"

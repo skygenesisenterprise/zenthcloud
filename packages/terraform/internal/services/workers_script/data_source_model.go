@@ -5,8 +5,8 @@ package workers_script
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/workers"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/workers"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -21,7 +21,7 @@ type WorkersScriptDataSourceModel struct {
 
 func (m *WorkersScriptDataSourceModel) toReadParams(_ context.Context) (params workers.ScriptGetParams, diags diag.Diagnostics) {
 	params = workers.ScriptGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -29,11 +29,11 @@ func (m *WorkersScriptDataSourceModel) toReadParams(_ context.Context) (params w
 
 func (m *WorkersScriptDataSourceModel) toListParams(_ context.Context) (params workers.ScriptListParams, diags diag.Diagnostics) {
 	params = workers.ScriptListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Filter.Tags.IsNull() {
-		params.Tags = cloudflare.F(m.Filter.Tags.ValueString())
+		params.Tags = zenthcloud.F(m.Filter.Tags.ValueString())
 	}
 
 	return

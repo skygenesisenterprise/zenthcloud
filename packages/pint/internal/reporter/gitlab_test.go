@@ -20,13 +20,13 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go/v3"
 	"go.nhat.io/httpmock"
 
-	"github.com/cloudflare/pint/internal/checks"
-	"github.com/cloudflare/pint/internal/diags"
-	"github.com/cloudflare/pint/internal/discovery"
-	"github.com/cloudflare/pint/internal/git"
-	"github.com/cloudflare/pint/internal/parser"
-	"github.com/cloudflare/pint/internal/promapi"
-	"github.com/cloudflare/pint/internal/reporter"
+	"github.com/zenthcloud/pint/internal/checks"
+	"github.com/zenthcloud/pint/internal/diags"
+	"github.com/zenthcloud/pint/internal/discovery"
+	"github.com/zenthcloud/pint/internal/git"
+	"github.com/zenthcloud/pint/internal/parser"
+	"github.com/zenthcloud/pint/internal/promapi"
+	"github.com/zenthcloud/pint/internal/reporter"
 )
 
 func TestGitLabReporterBadBaseURI(t *testing.T) {
@@ -158,7 +158,7 @@ func TestGitLabReporter(t *testing.T) {
 		return path
 	}
 	discBody := func(check, summary, details string) *string {
-		return new(reporter.AddPintMarker(fmt.Sprintf(`:stop_sign: **Fatal** reported by [pint](https://cloudflare.github.io/pint/) **%s** check.
+		return new(reporter.AddPintMarker(fmt.Sprintf(`:stop_sign: **Fatal** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **%s** check.
 
 ------
 
@@ -171,11 +171,11 @@ func TestGitLabReporter(t *testing.T) {
 
 ------
 
-:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/%s.html).
+:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 `, check, summary, details, check)))
 	}
 	symlinkedDiscBody := func(check, summary, details, link string) *string {
-		return new(reporter.AddPintMarker(fmt.Sprintf(`:warning: **Warning** reported by [pint](https://cloudflare.github.io/pint/) **%s** check.
+		return new(reporter.AddPintMarker(fmt.Sprintf(`:warning: **Warning** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **%s** check.
 
 ------
 
@@ -190,12 +190,12 @@ func TestGitLabReporter(t *testing.T) {
 
 ------
 
-:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/%s.html).
+:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 `, check, summary, details, link, check)))
 	}
 	discBodyWithDiag := func(check, summary, details, yml, diag string) *string {
 		return new(reporter.AddPintMarker(fmt.Sprintf(
-			`:stop_sign: **Fatal** reported by [pint](https://cloudflare.github.io/pint/) **%s** check.
+			`:stop_sign: **Fatal** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **%s** check.
 
 <details>
 <summary>%s</summary>
@@ -210,7 +210,7 @@ func TestGitLabReporter(t *testing.T) {
 
 ------
 
-:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/a.html).
+:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 `, check, summary, yml, diag, details,
 		)))
 	}
@@ -408,7 +408,7 @@ func TestGitLabReporter(t *testing.T) {
 				}
 
 				s.ExpectPost(apiDiscussions(5, false)).WithBodyJSON(gitlab.CreateMergeRequestDiscussionOptions{
-					Body:     new(reporter.AddPintMarker(":stop_sign: **Fatal** reported by [pint](https://cloudflare.github.io/pint/) **foo** check.\n\n------\n\nfoo error\n\n\u003cdetails\u003e\n\u003csummary\u003eMore information\u003c/summary\u003e\nfoo details\n\u003c/details\u003e\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/foo.html).\n")),
+					Body:     new(reporter.AddPintMarker(":stop_sign: **Fatal** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **foo** check.\n\n------\n\nfoo error\n\n\u003cdetails\u003e\n\u003csummary\u003eMore information\u003c/summary\u003e\nfoo details\n\u003c/details\u003e\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).\n")),
 					Position: discPosition("foo.txt", 2),
 				}).ReturnJSON(gitlab.Response{})
 			}),
@@ -595,12 +595,12 @@ Below is the list of checks that were disabled for each Prometheus server define
 
 - ` + "`prom1`" + `
   - ` + "`/api/v1/status/config` " + `is unsupported, disabled checks:
-    - [check1](https://cloudflare.github.io/pint/checks/check1.html)
-    - [check2](https://cloudflare.github.io/pint/checks/check2.html)
-    - [check3](https://cloudflare.github.io/pint/checks/check3.html)
+    - [check1](https://github.com/skygenesisenterprise/zenthcloud)
+    - [check2](https://github.com/skygenesisenterprise/zenthcloud)
+    - [check3](https://github.com/skygenesisenterprise/zenthcloud)
 - ` + "`prom2`" + `
   - ` + "`/api/v1/metadata` " + `is unsupported, disabled checks:
-    - [check1](https://cloudflare.github.io/pint/checks/check1.html)
+    - [check1](https://github.com/skygenesisenterprise/zenthcloud)
 `)),
 				}).ReturnJSON(gitlab.Response{})
 			}),
@@ -1494,7 +1494,7 @@ func getHTTPHandlerForCommentingLines(expectedNewLine, expectedOldLine int, t *t
 				}
 
 				expected := `{
-		"body":":stop_sign: **Fatal** reported by [pint](https://cloudflare.github.io/pint/) **mock** check.\n\n------\n\nsyntax error\n\n\u003cdetails\u003e\n\u003csummary\u003eMore information\u003c/summary\u003e\nsyntax details\n\u003c/details\u003e\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/mock.html).\n\n\u003c!-- pint --\u003e",
+		"body":":stop_sign: **Fatal** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **mock** check.\n\n------\n\nsyntax error\n\n\u003cdetails\u003e\n\u003csummary\u003eMore information\u003c/summary\u003e\nsyntax details\n\u003c/details\u003e\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).\n\n\u003c!-- pint --\u003e",
 		"position":{
 			"base_sha":"base",
 			"head_sha":"head",

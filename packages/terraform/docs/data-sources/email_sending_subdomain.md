@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_email_sending_subdomain Data Source - Cloudflare"
+page_title: "zenthcloud_email_sending_subdomain Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_email_sending_subdomain (Data Source)
+# zenthcloud_email_sending_subdomain (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_email_sending_subdomain" "example_email_sending_subdomain" {
+data "zenthcloud_email_sending_subdomain" "example_email_sending_subdomain" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   subdomain_id = "aabbccdd11223344aabbccdd11223344"
 }

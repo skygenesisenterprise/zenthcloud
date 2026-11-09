@@ -1,4 +1,4 @@
-resource "cloudflare_authenticated_origin_pulls_certificate" "%[1]s_cert" {
+resource "zenthcloud_authenticated_origin_pulls_certificate" "%[1]s_cert" {
   zone_id     = "%[2]s"
   certificate = <<-EOT
 %[3]s
@@ -9,8 +9,8 @@ resource "cloudflare_authenticated_origin_pulls_certificate" "%[1]s_cert" {
   type        = "per-zone"
 }
 
-resource "cloudflare_authenticated_origin_pulls" "%[1]s" {
+resource "zenthcloud_authenticated_origin_pulls" "%[1]s" {
   zone_id                                = "%[2]s"
-  authenticated_origin_pulls_certificate = cloudflare_authenticated_origin_pulls_certificate.%[1]s_cert.id
+  authenticated_origin_pulls_certificate = zenthcloud_authenticated_origin_pulls_certificate.%[1]s_cert.id
   enabled                                = true
 }

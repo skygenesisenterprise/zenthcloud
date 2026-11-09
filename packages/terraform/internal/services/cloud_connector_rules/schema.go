@@ -5,7 +5,7 @@ package cloud_connector_rules
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -63,12 +63,12 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 							},
 						},
 						"cloud_connector_rules_provider": schema.StringAttribute{
-							Description: "Cloud Provider type\nAvailable values: \"aws_s3\", \"cloudflare_r2\", \"gcp_storage\", \"azure_storage\", \"oci_storage\".",
+							Description: "Cloud Provider type\nAvailable values: \"aws_s3\", \"zenthcloud_r2\", \"gcp_storage\", \"azure_storage\", \"oci_storage\".",
 							Optional:    true,
 							Validators: []validator.String{
 								stringvalidator.OneOfCaseInsensitive(
 									"aws_s3",
-									"cloudflare_r2",
+									"zenthcloud_r2",
 									"gcp_storage",
 									"azure_storage",
 									"oci_storage",

@@ -41,7 +41,7 @@ func extractPolicyID(compositeID types.String) types.String {
 // - Direct copy: account_id, policy_id
 // - Transform ID: "account_id/policy_id" → "policy_id"
 // - Transform domains: Set → SetNestedAttribute (with empty dns_server filtering)
-func TransformToCustomProfile(ctx context.Context, source SourceCloudflareFallbackDomainModel) (*TargetZeroTrustDeviceCustomProfileLocalDomainFallbackModel, diag.Diagnostics) {
+func TransformToCustomProfile(ctx context.Context, source SourceZenthcloudFallbackDomainModel) (*TargetZeroTrustDeviceCustomProfileLocalDomainFallbackModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Validate required fields

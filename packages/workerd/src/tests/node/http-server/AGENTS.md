@@ -9,7 +9,7 @@ the normative artifact**; this document maps behaviors to the tests that
 assert them. Every test runs against the C++ streams implementation
 (`http-server-cpp.wd-test`) and the TypeScript one
 (`http-server-ts.wd-test`). The general server surface (headers, options,
-ports, `listen`/`close` lifecycle, `cloudflare:node` helpers) is owned by
+ports, `listen`/`close` lifecycle, `zenthcloud:node` helpers) is owned by
 `src/workerd/api/node/tests/http-server-nodejs-test.js`; this suite owns
 the STREAMS interaction only.
 

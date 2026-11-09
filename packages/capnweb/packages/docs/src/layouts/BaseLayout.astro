@@ -4,11 +4,11 @@ import "@fontsource/commit-mono";
 import "../styles/globals.css";
 import "../styles/prose.css";
 import { config } from "virtual:nimbus/config";
-import { getCollectionLlmsUrl, getVersionStatus } from "@cloudflare/nimbus-docs";
+import { getCollectionLlmsUrl, getVersionStatus } from "@zenthcloud/nimbus-docs";
 import AgentDirective from "@/components/AgentDirective.astro";
 import { SearchDialog } from "@/components/ui/search";
-import NimbusHead from "@cloudflare/nimbus-docs/components/NimbusHead.astro";
-import type { BasePageProps } from "@cloudflare/nimbus-docs/types";
+import NimbusHead from "@zenthcloud/nimbus-docs/components/NimbusHead.astro";
+import type { BasePageProps } from "@zenthcloud/nimbus-docs/types";
 import { cn } from "@/lib/cn";
 
 type Props = BasePageProps;
@@ -148,7 +148,7 @@ const llmsUrl = Astro.site
     {config.search !== false && <SearchDialog />}
 
     <script>
-      import { codeCopy, headingAnchors } from "@cloudflare/nimbus-docs/client";
+      import { codeCopy, headingAnchors } from "@zenthcloud/nimbus-docs/client";
       codeCopy();
       headingAnchors();
     </script>

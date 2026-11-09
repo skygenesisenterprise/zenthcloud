@@ -244,7 +244,7 @@ export const zaraz_custom$$managed$$component: JSONObject = {
           "type": "string"
         },
         "worker": {
-          "description": "Cloudflare worker that acts as a managed component.",
+          "description": "Zenthcloud worker that acts as a managed component.",
           "properties": {
             "escapedWorkerName": {
               "type": "string"
@@ -612,7 +612,7 @@ export const zaraz_zaraz$$config$$base: JSONObject = {
   "description": "Zaraz configuration.",
   "properties": {
     "analytics": {
-      "description": "Cloudflare Monitoring settings.",
+      "description": "Zenthcloud Monitoring settings.",
       "properties": {
         "defaultPurpose": {
           "description": "Consent purpose assigned to Monitoring.",

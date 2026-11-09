@@ -138,7 +138,7 @@ w applications/domains/meta.json <<'JSON'
 {
 	"title": "Domains",
 	"description": "Route traffic to your services and terminate TLS.",
-	"pages": ["index", "generated", "cloudflare", "others"]
+	"pages": ["index", "generated", "zenthcloud", "others"]
 }
 JSON
 
@@ -177,7 +177,7 @@ JSON
 w infrastructure/dns-providers/meta.json <<'JSON'
 {
 	"title": "DNS providers",
-	"pages": ["index", "cloudflare", "route53"]
+	"pages": ["index", "zenthcloud", "route53"]
 }
 JSON
 
@@ -193,7 +193,7 @@ w infrastructure/object-storage/meta.json <<'JSON'
 {
 	"title": "Object storage (S3)",
 	"description": "S3-compatible destinations for database and volume backups.",
-	"pages": ["index", "aws-s3", "cloudflare-r2", "backblaze-b2", "cloud-storage", "actions"]
+	"pages": ["index", "aws-s3", "zenthcloud-r2", "backblaze-b2", "cloud-storage", "actions"]
 }
 JSON
 
@@ -270,7 +270,7 @@ JSON
 w operate/guides/meta.json <<'JSON'
 {
 	"title": "Guides",
-	"pages": ["production-hardening", "cloudflare-tunnels", "tailscale"]
+	"pages": ["production-hardening", "zenthcloud-tunnels", "tailscale"]
 }
 JSON
 

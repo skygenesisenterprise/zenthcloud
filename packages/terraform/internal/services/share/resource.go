@@ -8,12 +8,12 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/resource_sharing"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/resource_sharing"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -29,7 +29,7 @@ func NewResource() resource.Resource {
 
 // ShareResource defines the resource implementation.
 type ShareResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *ShareResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -41,12 +41,12 @@ func (r *ShareResource) Configure(ctx context.Context, req resource.ConfigureReq
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -74,7 +74,7 @@ func (r *ShareResource) Create(ctx context.Context, req resource.CreateRequest, 
 	_, err = r.client.ResourceSharing.New(
 		ctx,
 		resource_sharing.ResourceSharingNewParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -123,7 +123,7 @@ func (r *ShareResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		ctx,
 		data.ID.ValueString(),
 		resource_sharing.ResourceSharingUpdateParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -154,15 +154,15 @@ func (r *ShareResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	}
 
 	params := resource_sharing.ResourceSharingGetParams{
-		AccountID: cloudflare.F(data.AccountID.ValueString()),
+		AccountID: zenthcloud.F(data.AccountID.ValueString()),
 	}
 
 	if !data.IncludeRecipientCounts.IsNull() && !data.IncludeRecipientCounts.IsUnknown() {
-		params.IncludeRecipientCounts = cloudflare.F(data.IncludeRecipientCounts.ValueBool())
+		params.IncludeRecipientCounts = zenthcloud.F(data.IncludeRecipientCounts.ValueBool())
 	}
 
 	if !data.IncludeResources.IsNull() && !data.IncludeResources.IsUnknown() {
-		params.IncludeResources = cloudflare.F(data.IncludeResources.ValueBool())
+		params.IncludeResources = zenthcloud.F(data.IncludeResources.ValueBool())
 	}
 
 	res := new(http.Response)
@@ -207,7 +207,7 @@ func (r *ShareResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 		ctx,
 		data.ID.ValueString(),
 		resource_sharing.ResourceSharingDeleteParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
@@ -244,7 +244,7 @@ func (r *ShareResource) ImportState(ctx context.Context, req resource.ImportStat
 		ctx,
 		path_share_id,
 		resource_sharing.ResourceSharingGetParams{
-			AccountID: cloudflare.F(path_account_id),
+			AccountID: zenthcloud.F(path_account_id),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),

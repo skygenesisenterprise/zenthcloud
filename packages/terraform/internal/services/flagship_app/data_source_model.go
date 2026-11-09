@@ -5,8 +5,8 @@ package flagship_app
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/flagship"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/flagship"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -27,7 +27,7 @@ type FlagshipAppDataSourceModel struct {
 
 func (m *FlagshipAppDataSourceModel) toReadParams(_ context.Context) (params flagship.AppGetParams, diags diag.Diagnostics) {
 	params = flagship.AppGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return

@@ -5,9 +5,9 @@ package user_group
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/iam"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/iam"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -30,7 +30,7 @@ type UserGroupDataSourceModel struct {
 
 func (m *UserGroupDataSourceModel) toReadParams(_ context.Context) (params iam.UserGroupGetParams, diags diag.Diagnostics) {
 	params = iam.UserGroupGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -38,20 +38,20 @@ func (m *UserGroupDataSourceModel) toReadParams(_ context.Context) (params iam.U
 
 func (m *UserGroupDataSourceModel) toListParams(_ context.Context) (params iam.UserGroupListParams, diags diag.Diagnostics) {
 	params = iam.UserGroupListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Filter.ID.IsNull() {
-		params.ID = cloudflare.F(m.Filter.ID.ValueString())
+		params.ID = zenthcloud.F(m.Filter.ID.ValueString())
 	}
 	if !m.Filter.Direction.IsNull() {
-		params.Direction = cloudflare.F(iam.UserGroupListParamsDirection(m.Filter.Direction.ValueString()))
+		params.Direction = zenthcloud.F(iam.UserGroupListParamsDirection(m.Filter.Direction.ValueString()))
 	}
 	if !m.Filter.FuzzyName.IsNull() {
-		params.FuzzyName = cloudflare.F(m.Filter.FuzzyName.ValueString())
+		params.FuzzyName = zenthcloud.F(m.Filter.FuzzyName.ValueString())
 	}
 	if !m.Filter.Name.IsNull() {
-		params.Name = cloudflare.F(m.Filter.Name.ValueString())
+		params.Name = zenthcloud.F(m.Filter.Name.ValueString())
 	}
 
 	return

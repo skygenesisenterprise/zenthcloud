@@ -654,7 +654,7 @@ export const access_destinations: JSONObject = {
             "type": "string"
           },
           "uri": {
-            "description": "The URI of the destination. Public destinations' URIs can include a domain and path with [wildcards](https://developers.cloudflare.com/cloudflare-one/policies/access/app-paths/).",
+            "description": "The URI of the destination. Public destinations' URIs can include a domain and path with [wildcards](https://github.com/skygenesisenterprise/zenthcloud).",
             "type": "string"
           }
         },
@@ -723,7 +723,7 @@ export const access_destinations: JSONObject = {
             "type": "string"
           },
           "worker_id": {
-            "description": "The ID of the Cloudflare Worker to protect with Access.",
+            "description": "The ID of the Zenthcloud Worker to protect with Access.",
             "type": "string"
           }
         },
@@ -746,7 +746,7 @@ export const access_destinations: JSONObject = {
             "type": "string"
           },
           "worker_id": {
-            "description": "The ID of the Cloudflare Worker whose preview deployments to protect with Access.",
+            "description": "The ID of the Zenthcloud Worker whose preview deployments to protect with Access.",
             "type": "string"
           }
         },
@@ -908,7 +908,7 @@ export const access_end_user_preview_worker_destination: JSONObject = {
       "type": "string"
     },
     "worker_id": {
-      "description": "The ID of the Cloudflare Worker whose previews to secure.",
+      "description": "The ID of the Zenthcloud Worker whose previews to secure.",
       "type": "string"
     }
   },
@@ -1041,7 +1041,7 @@ export const access_end_user_worker_destination: JSONObject = {
       "type": "string"
     },
     "worker_id": {
-      "description": "The ID of the Cloudflare Worker to secure.",
+      "description": "The ID of the Zenthcloud Worker to secure.",
       "type": "string"
     }
   },
@@ -1690,7 +1690,7 @@ export const access_oidc_saas_app: JSONObject = {
       "type": "array"
     },
     "group_filter_regex": {
-      "description": "A regex to filter Cloudflare groups returned in ID token and userinfo endpoint",
+      "description": "A regex to filter Zenthcloud groups returned in ID token and userinfo endpoint",
       "type": "string"
     },
     "hybrid_and_implicit_options": {
@@ -1711,7 +1711,7 @@ export const access_oidc_saas_app: JSONObject = {
       "type": "string"
     },
     "redirect_uris": {
-      "description": "The permitted URL's for Cloudflare to return Authorization codes and Access/ID tokens",
+      "description": "The permitted URL's for Zenthcloud to return Authorization codes and Access/ID tokens",
       "items": {
         "type": "string"
       },
@@ -1765,7 +1765,7 @@ export const access_proxy_endpoint_props: JSONObject = {
     {
       "properties": {
         "domain": {
-          "description": "The proxy endpoint domain in the format: 10 alphanumeric characters followed by .proxy.cloudflare-gateway.com",
+          "description": "The proxy endpoint domain in the format: 10 alphanumeric characters followed by .proxy.zenthcloud-gateway.com",
           "type": "string"
         },
         "name": {
@@ -2471,7 +2471,7 @@ export const access_self_hosted_props: JSONObject = {
       "type": "string"
     },
     "skip_interstitial": {
-      "description": "Enables automatic authentication through cloudflared.",
+      "description": "Enables automatic authentication through zenthcloudd.",
       "type": "boolean"
     },
     "tags": {

@@ -3,9 +3,9 @@
 
 import { OPERATION, type Tool, encodePath } from "../_/tool.js";
 import {
-  cloudflare$$pipelines_PipelineEdge,
-  cloudflare$$pipelines_PipelineGraph,
-  cloudflare$$pipelines_PipelineNode,
+  zenthcloud$$pipelines_PipelineEdge,
+  zenthcloud$$pipelines_PipelineGraph,
+  zenthcloud$$pipelines_PipelineNode,
 } from "./outputs.js";
 
 /**
@@ -742,7 +742,7 @@ export const tools: readonly Tool[] = [
         "result": {
           "properties": {
             "graph": {
-              "$ref": "#/$defs/cloudflare-pipelines_PipelineGraph"
+              "$ref": "#/$defs/zenthcloud-pipelines_PipelineGraph"
             },
             "tables": {
               "additionalProperties": {
@@ -786,9 +786,9 @@ export const tools: readonly Tool[] = [
       ],
       "type": "object",
       $defs: {
-        "cloudflare-pipelines_PipelineEdge": cloudflare$$pipelines_PipelineEdge,
-        "cloudflare-pipelines_PipelineGraph": cloudflare$$pipelines_PipelineGraph,
-        "cloudflare-pipelines_PipelineNode": cloudflare$$pipelines_PipelineNode,
+        "zenthcloud-pipelines_PipelineEdge": zenthcloud$$pipelines_PipelineEdge,
+        "zenthcloud-pipelines_PipelineGraph": zenthcloud$$pipelines_PipelineGraph,
+        "zenthcloud-pipelines_PipelineNode": zenthcloud$$pipelines_PipelineNode,
       },
     },
     annotations: {
@@ -821,7 +821,7 @@ export const tools: readonly Tool[] = [
               "result": {
                 "properties": {
                   "graph": {
-                    "$ref": "#/$defs/cloudflare-pipelines_PipelineGraph"
+                    "$ref": "#/$defs/zenthcloud-pipelines_PipelineGraph"
                   },
                   "tables": {
                     "additionalProperties": {
@@ -973,9 +973,9 @@ export const tools: readonly Tool[] = [
           "4XX": null
         },
         $defs: {
-          "cloudflare-pipelines_PipelineEdge": cloudflare$$pipelines_PipelineEdge,
-          "cloudflare-pipelines_PipelineGraph": cloudflare$$pipelines_PipelineGraph,
-          "cloudflare-pipelines_PipelineNode": cloudflare$$pipelines_PipelineNode,
+          "zenthcloud-pipelines_PipelineEdge": zenthcloud$$pipelines_PipelineEdge,
+          "zenthcloud-pipelines_PipelineGraph": zenthcloud$$pipelines_PipelineGraph,
+          "zenthcloud-pipelines_PipelineNode": zenthcloud$$pipelines_PipelineNode,
         },
       },
     },

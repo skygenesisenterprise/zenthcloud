@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -7,7 +7,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { build, type PluginBuild, type OnResolveArgs, type OnLoadArgs } from "esbuild";
 import { CommentsData } from "src/transforms";
-import cloudflareComments from "../src/cloudflare";
+import zenthcloudComments from "../src/zenthcloud";
 import { collateStandardComments } from "../src/standards";
 import { getFilePath } from "../src/utils";
 
@@ -89,7 +89,7 @@ export function readComments(): CommentsData {
   );
 
   // We want to deep merge here so that our comment overrides can be very targeted
-  for (const [name, members] of Object.entries(cloudflareComments)) {
+  for (const [name, members] of Object.entries(zenthcloudComments)) {
     comments[name] ??= {};
     for (const [member, comment] of Object.entries(members)) {
       const apiEntry = comments[name];

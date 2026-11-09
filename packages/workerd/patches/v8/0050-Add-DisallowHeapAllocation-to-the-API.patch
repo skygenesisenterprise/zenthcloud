@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Erik Corry <ecorry@cloudflare.com>
+From: Erik Corry <ecorry@zenthcloud.com>
 Date: Thu, 5 Nov 2026 13:30:17 +0100
 Subject: Add DisallowHeapAllocation to the API
 

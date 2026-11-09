@@ -37,7 +37,7 @@ export const tunnel_subnet: JSONObject = {
     },
     "subnet_type": {
       "enum": [
-        "cloudflare_source",
+        "zenthcloud_source",
         "initial_resolved_ip",
         "warp"
       ],

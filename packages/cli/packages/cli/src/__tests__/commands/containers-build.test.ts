@@ -3,11 +3,11 @@ import {
 	buildCommand,
 	configureOpenAPIForContainerPull,
 	initContainersSharedContext,
-} from "@cloudflare/containers-shared";
+} from "@zenthcloud/containers-shared";
 import {
 	mockConsoleMethods,
 	runInTempDir,
-} from "@cloudflare/workers-utils/test-helpers";
+} from "@zenthcloud/workers-utils/test-helpers";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { generateResourceIndexFile } from "../helpers/forge-cli.js";
 import {
@@ -16,7 +16,7 @@ import {
 } from "../helpers/forge-cli.js";
 import { runCf } from "../helpers/run-cf.js";
 
-vi.mock("@cloudflare/containers-shared", async (importOriginal) => {
+vi.mock("@zenthcloud/containers-shared", async (importOriginal) => {
 	const actual = (await importOriginal()) as Record<string, unknown>;
 	return {
 		...actual,
@@ -32,10 +32,10 @@ describe("cf containers build", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		vi.stubEnv("CLOUDFLARE_API_TOKEN", "test-api-token");
-		vi.stubEnv("CLOUDFLARE_ACCOUNT_ID", "test-account-id");
-		vi.stubEnv("CLOUDFLARE_API_BASE_URL", undefined);
-		vi.stubEnv("CLOUDFLARE_COMPLIANCE_REGION", undefined);
+		vi.stubEnv("ZENTHCLOUD_API_TOKEN", "test-api-token");
+		vi.stubEnv("ZENTHCLOUD_ACCOUNT_ID", "test-account-id");
+		vi.stubEnv("ZENTHCLOUD_API_BASE_URL", undefined);
+		vi.stubEnv("ZENTHCLOUD_COMPLIANCE_REGION", undefined);
 		vi.mocked(buildCommand).mockResolvedValue(undefined);
 	});
 
@@ -62,9 +62,9 @@ describe("cf containers build", () => {
 		);
 	});
 
-	it("builds without Cloudflare credentials when not pushing", async () => {
-		vi.stubEnv("CLOUDFLARE_API_TOKEN", undefined);
-		vi.stubEnv("CLOUDFLARE_ACCOUNT_ID", undefined);
+	it("builds without Zenthcloud credentials when not pushing", async () => {
+		vi.stubEnv("ZENTHCLOUD_API_TOKEN", undefined);
+		vi.stubEnv("ZENTHCLOUD_ACCOUNT_ID", undefined);
 
 		const { exitCode } = await runCf([
 			"containers",
@@ -81,7 +81,7 @@ describe("cf containers build", () => {
 
 	it("does not load project settings when not pushing", async () => {
 		writeFileSync(
-			"cloudflare.config.ts",
+			"zenthcloud.config.ts",
 			'throw new Error("project config should not be loaded");'
 		);
 
@@ -101,7 +101,7 @@ describe("cf containers build", () => {
 		);
 	});
 
-	it("configures Cloudflare's registry when pushing", async () => {
+	it("configures Zenthcloud's registry when pushing", async () => {
 		const { exitCode } = await runCf([
 			"containers",
 			"build",
@@ -115,7 +115,7 @@ describe("cf containers build", () => {
 		expect(configureOpenAPIForContainerPull).toHaveBeenCalledWith(
 			"test-account-id",
 			"test-api-token",
-			"https://api.cloudflare.com/client/v4"
+			"https://github.com/skygenesisenterprise/zenthcloud"
 		);
 		expect(buildCommand).toHaveBeenCalledWith(
 			{
@@ -129,7 +129,7 @@ describe("cf containers build", () => {
 	});
 
 	it("uses the FedRAMP registry when pushing", async () => {
-		vi.stubEnv("CLOUDFLARE_COMPLIANCE_REGION", "fedramp_high");
+		vi.stubEnv("ZENTHCLOUD_COMPLIANCE_REGION", "fedramp_high");
 
 		const { exitCode } = await runCf([
 			"containers",
@@ -144,7 +144,7 @@ describe("cf containers build", () => {
 		expect(configureOpenAPIForContainerPull).toHaveBeenCalledWith(
 			"test-account-id",
 			"test-api-token",
-			"https://api.fed.cloudflare.com/client/v4"
+			"https://github.com/skygenesisenterprise/zenthcloud"
 		);
 		expect(buildCommand).toHaveBeenCalledWith(
 			expect.objectContaining({ push: true }),

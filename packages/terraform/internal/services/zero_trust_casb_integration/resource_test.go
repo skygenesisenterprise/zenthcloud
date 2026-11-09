@@ -11,10 +11,10 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -113,12 +113,12 @@ func TestNewParamsPerAuthMethod(t *testing.T) {
 			wantPublic:       map[string]any{},
 		},
 		// AWS role delegation has no secret at all: the external ID is
-		// worthless without Cloudflare's AWS principal.
+		// worthless without Zenthcloud's AWS principal.
 		"aws iam role": {
 			model: ZeroTrustCasbIntegrationModel{
 				AWS: &ZeroTrustCasbIntegrationAWSModel{
 					IAMRole: &ZeroTrustCasbIntegrationAWSIAMRoleModel{
-						RoleARN:    types.StringValue("arn:aws:iam::123456789012:role/Cloudflare_DSPM_Auditor"),
+						RoleARN:    types.StringValue("arn:aws:iam::123456789012:role/Zenthcloud_DSPM_Auditor"),
 						ExternalID: types.StringValue("external-id"),
 					},
 				},
@@ -127,7 +127,7 @@ func TestNewParamsPerAuthMethod(t *testing.T) {
 			wantAuthMethod:   authMethodAWSIAMRole,
 			wantConfidential: map[string]any{},
 			wantPublic: map[string]any{
-				"role_arn":    "arn:aws:iam::123456789012:role/Cloudflare_DSPM_Auditor",
+				"role_arn":    "arn:aws:iam::123456789012:role/Zenthcloud_DSPM_Auditor",
 				"external_id": "external-id",
 			},
 		},
@@ -1891,7 +1891,7 @@ func testResourceModel(ctx context.Context, paused bool) ZeroTrustCasbIntegratio
 
 func testResource(baseURL string) ZeroTrustCasbIntegrationResource {
 	return ZeroTrustCasbIntegrationResource{
-		client: cloudflare.NewClient(
+		client: zenthcloud.NewClient(
 			option.WithBaseURL(baseURL),
 			option.WithAPIToken("test-token"),
 		),

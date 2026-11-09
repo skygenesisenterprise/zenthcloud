@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_email_security_impersonation_registries Data Source - Cloudflare"
+page_title: "zenthcloud_email_security_impersonation_registries Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Cloud Email Security: ReadCloud Email Security: Write
 ---
 
-# cloudflare_email_security_impersonation_registries (Data Source)
+# zenthcloud_email_security_impersonation_registries (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_email_security_impersonation_registries" "example_email_security_impersonation_registries" {
+data "zenthcloud_email_security_impersonation_registries" "example_email_security_impersonation_registries" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   direction = "asc"
   order = "name"

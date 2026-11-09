@@ -1,4 +1,4 @@
-resource "cloudflare_authenticated_origin_pulls_hostname_certificate" "%s" {
+resource "zenthcloud_authenticated_origin_pulls_hostname_certificate" "%s" {
   zone_id     = "%s"
   certificate = <<-EOT
 %s
@@ -8,11 +8,11 @@ resource "cloudflare_authenticated_origin_pulls_hostname_certificate" "%s" {
   EOT
 }
 
-resource "cloudflare_authenticated_origin_pulls" "%s" {
+resource "zenthcloud_authenticated_origin_pulls" "%s" {
   zone_id = "%s"
   config = [{
     hostname = "%s"
-    cert_id  = cloudflare_authenticated_origin_pulls_hostname_certificate.%s.id
+    cert_id  = zenthcloud_authenticated_origin_pulls_hostname_certificate.%s.id
     enabled  = true
   }]
 }

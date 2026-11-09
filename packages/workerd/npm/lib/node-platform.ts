@@ -13,12 +13,12 @@ import path from "path";
 declare const WORKERD_VERSION: string;
 
 export const knownPackages: Record<string, string> = {
-  "darwin arm64 LE": "@cloudflare/workerd-darwin-arm64",
-  "darwin x64 LE": "@cloudflare/workerd-darwin-64",
-  "linux arm64 LE": "@cloudflare/workerd-linux-arm64",
-  "linux x64 LE": "@cloudflare/workerd-linux-64",
-  "win32 x64 LE": "@cloudflare/workerd-windows-64",
-  "win32 arm64 LE": "@cloudflare/workerd-windows-64",
+  "darwin arm64 LE": "@zenthcloud/workerd-darwin-arm64",
+  "darwin x64 LE": "@zenthcloud/workerd-darwin-64",
+  "linux arm64 LE": "@zenthcloud/workerd-linux-arm64",
+  "linux x64 LE": "@zenthcloud/workerd-linux-64",
+  "win32 x64 LE": "@zenthcloud/workerd-windows-64",
+  "win32 arm64 LE": "@zenthcloud/workerd-windows-64",
 };
 
 const maybeExeExtension = process.platform === "win32" ? ".exe" : "";

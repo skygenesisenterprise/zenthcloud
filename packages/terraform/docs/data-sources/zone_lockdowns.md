@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zone_lockdowns Data Source - Cloudflare"
+page_title: "zenthcloud_zone_lockdowns Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Firewall Services ReadFirewall Services Write
 ---
 
-# cloudflare_zone_lockdowns (Data Source)
+# zenthcloud_zone_lockdowns (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_zone_lockdowns" "example_zone_lockdowns" {
+data "zenthcloud_zone_lockdowns" "example_zone_lockdowns" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   created_on = "2014-01-01T05:20:00.12345Z"
   description = "endpoints"

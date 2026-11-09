@@ -9,18 +9,18 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/workers"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/workers"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -34,7 +34,7 @@ func NewResource() resource.Resource {
 
 // WorkerVersionResource defines the resource implementation.
 type WorkerVersionResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *WorkerVersionResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -46,12 +46,12 @@ func (r *WorkerVersionResource) Configure(ctx context.Context, req resource.Conf
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -70,11 +70,11 @@ func (r *WorkerVersionResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	params := workers.BetaWorkerVersionNewParams{
-		AccountID: cloudflare.F(data.AccountID.ValueString()),
+		AccountID: zenthcloud.F(data.AccountID.ValueString()),
 	}
 
 	if !data.Deploy.IsNull() && !data.Deploy.IsUnknown() {
-		params.Deploy = cloudflare.F(data.Deploy.ValueBool())
+		params.Deploy = zenthcloud.F(data.Deploy.ValueBool())
 	}
 	var assets *WorkerVersionAssetsModel
 	if !data.Assets.IsNull() && !data.Assets.IsUnknown() {
@@ -177,7 +177,7 @@ func (r *WorkerVersionResource) Create(ctx context.Context, req resource.CreateR
 			data.WorkerID.ValueString(),
 			data.ID.ValueString(),
 			workers.BetaWorkerVersionGetParams{
-				AccountID: cloudflare.F(data.AccountID.ValueString()),
+				AccountID: zenthcloud.F(data.AccountID.ValueString()),
 			},
 			option.WithResponseBodyInto(&getRes),
 			option.WithMiddleware(logging.Middleware(ctx)),
@@ -309,8 +309,8 @@ func (r *WorkerVersionResource) Read(ctx context.Context, req resource.ReadReque
 		data.WorkerID.ValueString(),
 		data.ID.ValueString(),
 		workers.BetaWorkerVersionGetParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
-			Include:   cloudflare.F(workers.BetaWorkerVersionGetParamsIncludeModules),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
+			Include:   zenthcloud.F(workers.BetaWorkerVersionGetParamsIncludeModules),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -435,8 +435,8 @@ func (r *WorkerVersionResource) ImportState(ctx context.Context, req resource.Im
 		path_worker_id,
 		path_version_id,
 		workers.BetaWorkerVersionGetParams{
-			AccountID: cloudflare.F(path_account_id),
-			Include:   cloudflare.F(workers.BetaWorkerVersionGetParamsIncludeModules),
+			AccountID: zenthcloud.F(path_account_id),
+			Include:   zenthcloud.F(workers.BetaWorkerVersionGetParamsIncludeModules),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),

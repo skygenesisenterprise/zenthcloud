@@ -7,10 +7,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/dns"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/dns"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -20,29 +20,29 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_dns_settings_internal_view", &resource.Sweeper{
-		Name: "cloudflare_dns_settings_internal_view",
-		F:    testSweepCloudflareDNSSettingsInternalView,
+	resource.AddTestSweepers("zenthcloud_dns_settings_internal_view", &resource.Sweeper{
+		Name: "zenthcloud_dns_settings_internal_view",
+		F:    testSweepZenthcloudDNSSettingsInternalView,
 	})
 }
 
-func testSweepCloudflareDNSSettingsInternalView(r string) error {
+func testSweepZenthcloudDNSSettingsInternalView(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
 	// Clean up the account level views
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		return errors.New("CLOUDFLARE_ACCOUNT_ID must be set")
+		return errors.New("ZENTHCLOUD_ACCOUNT_ID must be set")
 	}
 
-	views, err := client.DNS.Settings.Account.Views.List(context.Background(), dns.SettingAccountViewListParams{AccountID: cloudflare.F(accountID)})
+	views, err := client.DNS.Settings.Account.Views.List(context.Background(), dns.SettingAccountViewListParams{AccountID: zenthcloud.F(accountID)})
 	if err != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Cloudflare DNS internal views: %s", err))
+		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Zenthcloud DNS internal views: %s", err))
 	}
 
 	if len(views.Result) == 0 {
-		tflog.Info(ctx, "No Cloudflare views to sweep")
+		tflog.Info(ctx, "No Zenthcloud views to sweep")
 		return nil
 	}
 
@@ -52,8 +52,8 @@ func testSweepCloudflareDNSSettingsInternalView(r string) error {
 			continue
 		}
 
-		tflog.Info(ctx, fmt.Sprintf("Deleting Cloudflare View: %s (%s)", view.Name, view.ID))
-		_, err := client.DNS.Settings.Account.Views.Delete(context.TODO(), view.ID, dns.SettingAccountViewDeleteParams{AccountID: cloudflare.F(accountID)})
+		tflog.Info(ctx, fmt.Sprintf("Deleting Zenthcloud View: %s (%s)", view.Name, view.ID))
+		_, err := client.DNS.Settings.Account.Views.Delete(context.TODO(), view.ID, dns.SettingAccountViewDeleteParams{AccountID: zenthcloud.F(accountID)})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete DNS internal view %s (%s): %s", view.Name, view.ID, err))
 			continue
@@ -64,13 +64,13 @@ func testSweepCloudflareDNSSettingsInternalView(r string) error {
 	return nil
 }
 
-func TestAccCloudflareDNSInternalView_Basic(t *testing.T) {
+func TestAccZenthcloudDNSInternalView_Basic(t *testing.T) {
 	acctest.TestAccPreCheck_InternalZoneID(t)
 
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_dns_settings_internal_view." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	internalZoneID := os.Getenv("CLOUDFLARE_INTERNAL_ZONE_ID")
+	name := "zenthcloud_dns_settings_internal_view." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	internalZoneID := os.Getenv("ZENTHCLOUD_INTERNAL_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -87,13 +87,13 @@ func TestAccCloudflareDNSInternalView_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareDNSInternalView_Update(t *testing.T) {
+func TestAccZenthcloudDNSInternalView_Update(t *testing.T) {
 	acctest.TestAccPreCheck_InternalZoneID(t)
 
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_dns_settings_internal_view." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	internalZoneID := os.Getenv("CLOUDFLARE_INTERNAL_ZONE_ID")
+	name := "zenthcloud_dns_settings_internal_view." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	internalZoneID := os.Getenv("ZENTHCLOUD_INTERNAL_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },

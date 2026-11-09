@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Cloudflare, Inc.
+// Copyright (c) 2023 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -11,7 +11,7 @@
 namespace workerd {
 namespace {
 
-// Ref: https://developers.cloudflare.com/workers/runtime-apis/request/#the-cf-property-requestinitcfproperties
+// Ref: https://github.com/skygenesisenterprise/zenthcloud
 static constexpr kj::StringPtr cfProperty = R"DATA({
   "apps": false,
   "cacheEverything": false,

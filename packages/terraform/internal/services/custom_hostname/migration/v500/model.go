@@ -1,12 +1,12 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceCustomHostnameModel represents legacy v4 state from cloudflare_custom_hostname.
+// SourceCustomHostnameModel represents legacy v4 state from zenthcloud_custom_hostname.
 type SourceCustomHostnameModel struct {
 	ID                          types.String              `tfsdk:"id"`
 	ZoneID                      types.String              `tfsdk:"zone_id"`
@@ -76,7 +76,7 @@ type TargetCustomHostnameModel struct {
 type TargetCustomHostnameSSLModel struct {
 	BundleMethod         types.String                               `tfsdk:"bundle_method"`
 	CertificateAuthority types.String                               `tfsdk:"certificate_authority"`
-	CloudflareBranding   types.Bool                                 `tfsdk:"cloudflare_branding"`
+	ZenthcloudBranding   types.Bool                                 `tfsdk:"zenthcloud_branding"`
 	CustomCERTBundle     *[]*TargetCustomHostnameSSLCustomCERTModel `tfsdk:"custom_cert_bundle"`
 	CustomCertificate    types.String                               `tfsdk:"custom_certificate"`
 	CustomCSRID          types.String                               `tfsdk:"custom_csr_id"`

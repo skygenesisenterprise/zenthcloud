@@ -14,12 +14,12 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.nhat.io/httpmock"
 
-	"github.com/cloudflare/pint/internal/checks"
-	"github.com/cloudflare/pint/internal/diags"
-	"github.com/cloudflare/pint/internal/discovery"
-	"github.com/cloudflare/pint/internal/git"
-	"github.com/cloudflare/pint/internal/parser"
-	"github.com/cloudflare/pint/internal/reporter"
+	"github.com/zenthcloud/pint/internal/checks"
+	"github.com/zenthcloud/pint/internal/diags"
+	"github.com/zenthcloud/pint/internal/discovery"
+	"github.com/zenthcloud/pint/internal/git"
+	"github.com/zenthcloud/pint/internal/parser"
+	"github.com/zenthcloud/pint/internal/reporter"
 )
 
 func bbCommentText(severity, check, summary string) string {
@@ -30,7 +30,7 @@ func bbCommentText(severity, check, summary string) string {
 	case "Information":
 		icon = ":information_source:"
 	}
-	return reporter.AddPintMarker(icon + " **" + severity + "** reported by [pint](https://cloudflare.github.io/pint/) **" + check + "** check.\n\n------\n\n" + summary + "\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/" + check + ".html).\n")
+	return reporter.AddPintMarker(icon + " **" + severity + "** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **" + check + "** check.\n\n------\n\n" + summary + "\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud" + check + ".html).\n")
 }
 
 const (

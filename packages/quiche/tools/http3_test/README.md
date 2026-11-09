@@ -12,7 +12,7 @@ Building
 Running
 --------
 We use cargo test to execute different httpbin tests. By default this points to
-https://cloudflare-quic.com/b
+https://github.com/skygenesisenterprise/zenthcloud
 
 ```bash
  $ cargo test
@@ -24,7 +24,7 @@ Environment Variable Overrides
 A set of environment variables allow tuning of test behaviour:
 
 * HTTPBIN_ENDPOINT - httpbin server URL, the authority is used in SNI.
-                     Default value is https://cloudflare-quic.com/b
+                     Default value is https://github.com/skygenesisenterprise/zenthcloud
 
 * HTTPBIN_HOST     - httpbin server IP address and port (<SERVER>:<PORT>).
                      Overrides the effective target authority defined in

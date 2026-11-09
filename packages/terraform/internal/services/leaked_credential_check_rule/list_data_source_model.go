@@ -5,9 +5,9 @@ package leaked_credential_check_rule
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/leaked_credential_checks"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/leaked_credential_checks"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -24,7 +24,7 @@ type LeakedCredentialCheckRulesDataSourceModel struct {
 
 func (m *LeakedCredentialCheckRulesDataSourceModel) toListParams(_ context.Context) (params leaked_credential_checks.DetectionListParams, diags diag.Diagnostics) {
 	params = leaked_credential_checks.DetectionListParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	return

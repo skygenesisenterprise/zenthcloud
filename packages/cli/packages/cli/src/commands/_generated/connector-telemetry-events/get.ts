@@ -65,7 +65,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf connector-telemetry-events get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/magic/connectors/${argv["connector-id"] == null ? "<connector-id>" : encodeURIComponent(String(argv["connector-id"]))}/telemetry/events/${argv["event-t"] == null ? "<event-t>" : encodeURIComponent(String(argv["event-t"]))}.${argv["event-n"] == null ? "<event-n>" : encodeURIComponent(String(argv["event-n"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/magic/connectors/${argv["connector-id"] == null ? "<connector-id>" : encodeURIComponent(String(argv["connector-id"]))}/telemetry/events/${argv["event-t"] == null ? "<event-t>" : encodeURIComponent(String(argv["event-t"]))}.${argv["event-n"] == null ? "<event-n>" : encodeURIComponent(String(argv["event-n"]))}`,
 						pathParams: {
 							"connector-id": String(argv["connector-id"] ?? ""),
 							"event-t": String(argv["event-t"] ?? ""),

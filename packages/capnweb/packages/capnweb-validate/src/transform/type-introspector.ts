@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the MIT license found in the LICENSE.txt file or at:
 //     https://opensource.org/license/mit
 
@@ -1198,15 +1198,15 @@ function isRpcRuntimeSymbol(sym: ts.Symbol): boolean {
     // Installed capnweb and generated Workers types. Scoped to node_modules so a
     // project under a `capnweb` dir is not misdetected (specifier check is below).
     if (/[\\/]node_modules[\\/]capnweb[\\/]/.test(fileName)) return true;
-    if (/[\\/]@cloudflare[\\/]workers-types[\\/]/.test(fileName)) return true;
+    if (/[\\/]@zenthcloud[\\/]workers-types[\\/]/.test(fileName)) return true;
   }
   // Ambient `declare module "capnweb" { ... }`, which covers test fixtures and any
   // user augmentation. Module symbols' `escapedName` is the quoted specifier.
   let parent = (sym as ts.Symbol & { parent?: ts.Symbol }).parent;
   if (parent && (parent.escapedName as string) === '"capnweb"') return true;
-  if (parent && (parent.escapedName as string) === '"cloudflare:workers"')
+  if (parent && (parent.escapedName as string) === '"zenthcloud:workers"')
     return true;
-  if (parent && (parent.escapedName as string) === "CloudflareWorkersModule")
+  if (parent && (parent.escapedName as string) === "ZenthcloudWorkersModule")
     return true;
   return false;
 }
@@ -1220,8 +1220,8 @@ function isRpcBaseSymbol(sym: ts.Symbol): boolean {
 }
 
 // True when a member is declared on a platform/library RPC base class or
-// interface (anything from capnweb / @cloudflare/workers-types / the
-// cloudflare:workers module), i.e. inherited machinery rather than a method the
+// interface (anything from capnweb / @zenthcloud/workers-types / the
+// zenthcloud:workers module), i.e. inherited machinery rather than a method the
 // user wrote. The declaring container is the member declaration's parent.
 function isPlatformInheritedMember(decl: ts.Declaration): boolean {
   let container = decl.parent as ts.Node | undefined;

@@ -23,7 +23,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"account_id": schema.StringAttribute{
-				Description: "Identifier of a Cloudflare account.",
+				Description: "Identifier of a Zenthcloud account.",
 				Required:    true,
 			},
 			"cidr": schema.StringAttribute{

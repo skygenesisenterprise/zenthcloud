@@ -5,7 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceTeamsListModel represents the v4 cloudflare_teams_list state (schema_version=0).
+// SourceTeamsListModel represents the v4 zenthcloud_teams_list state (schema_version=0).
 //
 // Key differences from v5:
 // - "items" is a list of strings (not a set of objects)
@@ -26,7 +26,7 @@ type SourceItemsWithDescriptionModel struct {
 	Description types.String `tfsdk:"description"`
 }
 
-// TargetZeroTrustListModel represents the v5 cloudflare_zero_trust_list state.
+// TargetZeroTrustListModel represents the v5 zenthcloud_zero_trust_list state.
 // Must include ALL fields from the current schema for resp.State.Set() to work.
 type TargetZeroTrustListModel struct {
 	ID          types.String              `tfsdk:"id"`

@@ -4,14 +4,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-// SourceCloudflareWorkersKVSchema returns the source schema for legacy resource.
+// SourceZenthcloudWorkersKVSchema returns the source schema for legacy resource.
 // Schema version: 0 (SDKv2 default - no explicit SchemaVersion means 0)
-// Resource type: cloudflare_workers_kv
+// Resource type: zenthcloud_workers_kv
 //
 // This minimal schema is used only for reading v4 state during migration.
 // It includes only the properties needed for state parsing (Required, Optional, Computed).
 // Validators, PlanModifiers, and Descriptions are intentionally omitted.
-func SourceCloudflareWorkersKVSchema() schema.Schema {
+func SourceZenthcloudWorkersKVSchema() schema.Schema {
 	return schema.Schema{
 		Version: 0, // SDKv2 resources without explicit SchemaVersion default to 0
 		Attributes: map[string]schema.Attribute{

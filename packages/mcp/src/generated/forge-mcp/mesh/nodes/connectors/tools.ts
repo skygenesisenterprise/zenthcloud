@@ -30,11 +30,11 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID",
+              "description": "Zenthcloud account ID",
               "type": "string"
             },
             "connector_id": {
-              "description": "UUID of the Cloudflare Tunnel connector.",
+              "description": "UUID of the Zenthcloud Tunnel connector.",
               "format": "uuid",
               "type": "string"
             },
@@ -82,10 +82,10 @@ export const tools: readonly Tool[] = [
       pathOf: encodePath`/accounts/${"account_id"}/warp_connector/${"tunnel_id"}/connectors/${"connector_id"}`,
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Connectors Write",
-          "Cloudflare One Connectors Read",
-          "Cloudflare One Connector: WARP Write",
-          "Cloudflare One Connector: WARP Read"
+          "Zenthcloud One Connectors Write",
+          "Zenthcloud One Connectors Read",
+          "Zenthcloud One Connector: WARP Write",
+          "Zenthcloud One Connector: WARP Read"
         ]
       },
       responses: {

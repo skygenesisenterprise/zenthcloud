@@ -1,4 +1,4 @@
-// Generated from cloudflare/workers-sdk@c2bb4c815. Do not rename cases.
+// Generated from zenthcloud/workers-sdk@c2bb4c815. Do not rename cases.
 import { describe, it } from "vite-plus/test";
 
 const groups = [
@@ -315,7 +315,7 @@ const groups = [
 	},
 	{
 		file: "logger.test.ts",
-		ancestors: ["logger", "@cloudflare/cli-shared-helpers logRaw"],
+		ancestors: ["logger", "@zenthcloud/cli-shared-helpers logRaw"],
 		status: "skip",
 		names: [
 			"should output at log level",
@@ -327,7 +327,7 @@ const groups = [
 	},
 	{
 		file: "logger.test.ts",
-		ancestors: ["logger", "@cloudflare/cli-shared-helpers error"],
+		ancestors: ["logger", "@zenthcloud/cli-shared-helpers error"],
 		status: "skip",
 		names: [
 			"should output at error level",
@@ -366,7 +366,7 @@ const groups = [
 		names: [
 			"should make request to list projects",
 			"should make multiple requests for paginated results",
-			"should error before making a request when CLOUDFLARE_ACCOUNT_ID contains characters that are invalid in a URL",
+			"should error before making a request when ZENTHCLOUD_ACCOUNT_ID contains characters that are invalid in a URL",
 		],
 	},
 	{
@@ -374,7 +374,7 @@ const groups = [
 		ancestors: ["pages project list"],
 		status: "skip",
 		names: [
-			"should override cached accountId with CLOUDFLARE_ACCOUNT_ID environmental variable if provided",
+			"should override cached accountId with ZENTHCLOUD_ACCOUNT_ID environmental variable if provided",
 		],
 	},
 	{

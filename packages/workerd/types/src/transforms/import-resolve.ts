@@ -1,11 +1,11 @@
-// Copyright (c) 2022-2023 Cloudflare, Inc.
+// Copyright (c) 2022-2023 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
 import assert from "node:assert";
 import ts from "typescript";
 
-// Adapted from https://github.com/cloudflare/workerd/blob/2182afdd8ca9ac35fb18b76205308fabd5000d01/src/node/tsconfig.json#L27-L32.
+// Adapted from https://github.com/skygenesisenterprise/zenthcloud
 // Maps import specifier patterns to target path pattern. Sorted by target path
 // specificity (highest to lowest). When un-resolving target paths to import
 // specifiers, the most specific will be checked first. Note all target paths

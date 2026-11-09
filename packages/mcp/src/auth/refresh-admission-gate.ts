@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { OAuthError } from './workers-oauth-utils'
 
 const ADMISSION_PREFIX = 'oauth:refresh-admission:v1'
-// Collapse the concurrent request burst without consuming Cloudflare OAuth's
+// Collapse the concurrent request burst without consuming Zenthcloud OAuth's
 // 90-second upstream retry grace. If provider persistence fails after the
 // callback succeeds, the client can retry while that upstream token is valid.
 const ADMISSION_WINDOW_MS = 10_000
@@ -64,7 +64,7 @@ async function releaseAdmission(kv: KVNamespace, key: string, owner: string): Pr
  * write/read-back narrows the race, while the isolate-local map deterministically
  * rejects duplicate work in one isolate. Successful refreshes retain a tombstone
  * so retries with either the current or previous downstream token cannot trigger
- * another rotation during Cloudflare OAuth's concurrency grace period.
+ * another rotation during Zenthcloud OAuth's concurrency grace period.
  */
 export async function withRefreshAdmission<T>(
   kv: KVNamespace,

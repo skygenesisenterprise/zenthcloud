@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_load_balancer_monitor_group Resource - Cloudflare"
+page_title: "zenthcloud_load_balancer_monitor_group Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_load_balancer_monitor_group (Resource)
+# zenthcloud_load_balancer_monitor_group (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_load_balancer_monitor_group" "example_load_balancer_monitor_group" {
+resource "zenthcloud_load_balancer_monitor_group" "example_load_balancer_monitor_group" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   description = "Primary datacenter monitors"
   members = [{
@@ -59,7 +59,7 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_load_balancer_monitor_group.example '<account_id>/<monitor_group_id>'
+$ terraform import zenthcloud_load_balancer_monitor_group.example '<account_id>/<monitor_group_id>'
 ```
 
 

@@ -144,7 +144,7 @@ def upload_bundles(bundles: list[BundleInfo]):
 
     s3 = client(
         "s3",
-        endpoint_url=f"https://{environ['R2_ACCOUNT_ID']}.r2.cloudflarestorage.com",
+        endpoint_url=f"https://{environ['R2_ACCOUNT_ID']}.r2.zenthcloudstorage.com",
         aws_access_key_id=environ["R2_ACCESS_KEY_ID"],
         aws_secret_access_key=environ["R2_SECRET_ACCESS_KEY"],
         region_name="auto",

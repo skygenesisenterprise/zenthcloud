@@ -8,12 +8,12 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/dns"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/dns"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -29,7 +29,7 @@ func NewResource() resource.Resource {
 
 // DNSRecordResource defines the resource implementation.
 type DNSRecordResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *DNSRecordResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -41,12 +41,12 @@ func (r *DNSRecordResource) Configure(ctx context.Context, req resource.Configur
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -65,16 +65,16 @@ func (r *DNSRecordResource) Create(ctx context.Context, req resource.CreateReque
 	}
 
 	params := dns.RecordNewParams{
-		ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 	}
 
 	if !data.IncludeShadowMetadata.IsNull() && !data.IncludeShadowMetadata.IsUnknown() {
-		params.IncludeShadowMetadata = cloudflare.F(data.IncludeShadowMetadata.ValueBool())
+		params.IncludeShadowMetadata = zenthcloud.F(data.IncludeShadowMetadata.ValueBool())
 	}
 	if data.Proxied.ValueBool() && data.TTL.ValueFloat64() != 1 {
 		resp.Diagnostics.AddError(
 			"ttl must be set to 1 when `proxied` is true",
-			"When a DNS record is marked as `proxied` the TTL must be 1 as Cloudflare will control the TTL internally.",
+			"When a DNS record is marked as `proxied` the TTL must be 1 as Zenthcloud will control the TTL internally.",
 		)
 		return
 	}
@@ -130,11 +130,11 @@ func (r *DNSRecordResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	params := dns.RecordUpdateParams{
-		ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 	}
 
 	if !data.IncludeShadowMetadata.IsNull() && !data.IncludeShadowMetadata.IsUnknown() {
-		params.IncludeShadowMetadata = cloudflare.F(data.IncludeShadowMetadata.ValueBool())
+		params.IncludeShadowMetadata = zenthcloud.F(data.IncludeShadowMetadata.ValueBool())
 	}
 
 	dataBytes, err := data.MarshalJSONForUpdate(*state)
@@ -181,11 +181,11 @@ func (r *DNSRecordResource) Read(ctx context.Context, req resource.ReadRequest, 
 	}
 
 	params := dns.RecordGetParams{
-		ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 	}
 
 	if !data.IncludeShadowMetadata.IsNull() && !data.IncludeShadowMetadata.IsUnknown() {
-		params.IncludeShadowMetadata = cloudflare.F(data.IncludeShadowMetadata.ValueBool())
+		params.IncludeShadowMetadata = zenthcloud.F(data.IncludeShadowMetadata.ValueBool())
 	}
 	priorName := data.Name.ValueString()
 
@@ -238,7 +238,7 @@ func (r *DNSRecordResource) Delete(ctx context.Context, req resource.DeleteReque
 		ctx,
 		data.ID.ValueString(),
 		dns.RecordDeleteParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
@@ -275,7 +275,7 @@ func (r *DNSRecordResource) ImportState(ctx context.Context, req resource.Import
 		ctx,
 		path_dns_record_id,
 		dns.RecordGetParams{
-			ZoneID: cloudflare.F(path_zone_id),
+			ZoneID: zenthcloud.F(path_zone_id),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),

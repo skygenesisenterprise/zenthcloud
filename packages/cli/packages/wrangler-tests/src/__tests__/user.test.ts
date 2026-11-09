@@ -84,7 +84,7 @@ describe("User", () => {
 		it.skip("should output JSON with oauth type when logged in with --json");
 
 		it.skip(
-			"should output JSON with api_token type when using CLOUDFLARE_API_TOKEN with --json"
+			"should output JSON with api_token type when using ZENTHCLOUD_API_TOKEN with --json"
 		);
 
 		it.skip("should error when token refresh fails and user is not logged in");
@@ -102,7 +102,7 @@ describe("User", () => {
 
 	describe("account caching", () => {
 		beforeEach(() => {
-			vi.stubEnv("CLOUDFLARE_API_TOKEN", "test-api-token");
+			vi.stubEnv("ZENTHCLOUD_API_TOKEN", "test-api-token");
 		});
 
 		it.todo(

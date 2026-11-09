@@ -5,7 +5,7 @@ package custom_origin_trust_store
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -75,7 +75,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  timetypes.RFC3339Type{},
 			},
 			"uploaded_on": schema.StringAttribute{
-				Description: "When the certificate was uploaded to Cloudflare.",
+				Description: "When the certificate was uploaded to Zenthcloud.",
 				Computed:    true,
 				CustomType:  timetypes.RFC3339Type{},
 			},

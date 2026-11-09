@@ -1,4 +1,4 @@
-import { Pagination } from "@cloudflare/kumo";
+import { Pagination } from "@zenthcloud/kumo";
 
 interface ChangelogPaginationProps {
   page: number;

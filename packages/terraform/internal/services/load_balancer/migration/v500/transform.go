@@ -3,7 +3,7 @@ package v500
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -16,7 +16,7 @@ import (
 // - Type conversions: Int64 → Float64 for ttl, session_affinity_ttl, drain_duration
 // - Structure changes: Arrays → single objects, Sets → maps
 // - Nested transformations: Rules with overrides
-func Transform(ctx context.Context, source SourceCloudflareLoadBalancerModel) (*TargetLoadBalancerModel, diag.Diagnostics) {
+func Transform(ctx context.Context, source SourceZenthcloudLoadBalancerModel) (*TargetLoadBalancerModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Step 1: Validate required fields

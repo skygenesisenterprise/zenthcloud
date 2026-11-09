@@ -3,7 +3,7 @@ package v500
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/migrations"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/migrations"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -12,20 +12,20 @@ import (
 // This is triggered by Terraform 1.8+ when it encounters a `moved` block:
 //
 //	moved {
-//	  from = cloudflare_teams_rule.example
-//	  to   = cloudflare_zero_trust_gateway_policy.example
+//	  from = zenthcloud_teams_rule.example
+//	  to   = zenthcloud_zero_trust_gateway_policy.example
 //	}
 //
 // For Terraform < 1.8, users must manually run:
 //
-//	terraform state mv cloudflare_teams_rule.example cloudflare_zero_trust_gateway_policy.example
+//	terraform state mv zenthcloud_teams_rule.example zenthcloud_zero_trust_gateway_policy.example
 //
 // which will preserve the source schema_version and trigger UpgradeFromV4 instead.
 func MoveState(ctx context.Context, req resource.MoveStateRequest, resp *resource.MoveStateResponse) {
-	tflog.Info(ctx, "Moving state from legacy cloudflare_teams_rule to cloudflare_zero_trust_gateway_policy")
+	tflog.Info(ctx, "Moving state from legacy zenthcloud_teams_rule to zenthcloud_zero_trust_gateway_policy")
 
 	// Parse the source state (legacy v4 format)
-	var sourceState SourceCloudflareTeamsRuleModel
+	var sourceState SourceZenthcloudTeamsRuleModel
 	if migrations.DiagnoseMoveStateNilSourceState(req, resp) {
 		return
 	}
@@ -44,5 +44,5 @@ func MoveState(ctx context.Context, req resource.MoveStateRequest, resp *resourc
 	// Set the moved state
 	resp.Diagnostics.Append(resp.TargetState.Set(ctx, targetState)...)
 
-	tflog.Info(ctx, "State move from legacy cloudflare_teams_rule completed successfully")
+	tflog.Info(ctx, "State move from legacy zenthcloud_teams_rule completed successfully")
 }

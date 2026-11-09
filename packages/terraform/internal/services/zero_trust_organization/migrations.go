@@ -5,27 +5,27 @@ package zero_trust_organization
 import (
 	"context"
 
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_organization/migration/v500"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_organization/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
 var _ resource.ResourceWithMoveState = (*ZeroTrustOrganizationResource)(nil)
 var _ resource.ResourceWithUpgradeState = (*ZeroTrustOrganizationResource)(nil)
 
-// MoveState handles moves from v4 resource names to cloudflare_zero_trust_organization (v500).
+// MoveState handles moves from v4 resource names to zenthcloud_zero_trust_organization (v500).
 //
 // Handles BOTH v4 resource names (they share identical schemas):
-//   - cloudflare_access_organization (deprecated v4 name)
-//   - cloudflare_zero_trust_access_organization (current v4 name)
+//   - zenthcloud_access_organization (deprecated v4 name)
+//   - zenthcloud_zero_trust_access_organization (current v4 name)
 //
 // This is triggered when users use the `moved` block (Terraform 1.8+):
 //
 //	moved {
-//	    from = cloudflare_access_organization.example
-//	    to   = cloudflare_zero_trust_organization.example
+//	    from = zenthcloud_access_organization.example
+//	    to   = zenthcloud_zero_trust_organization.example
 //	}
 func (r *ZeroTrustOrganizationResource) MoveState(ctx context.Context) []resource.StateMover {
-	sourceSchema := v500.SourceCloudflareAccessOrganizationSchema()
+	sourceSchema := v500.SourceZenthcloudAccessOrganizationSchema()
 	return []resource.StateMover{
 		{
 			SourceSchema: &sourceSchema,
@@ -34,7 +34,7 @@ func (r *ZeroTrustOrganizationResource) MoveState(ctx context.Context) []resourc
 	}
 }
 
-// UpgradeState handles schema version upgrades for cloudflare_zero_trust_organization.
+// UpgradeState handles schema version upgrades for zenthcloud_zero_trust_organization.
 //
 // This handles two upgrade paths:
 // 1. Published v5 (schema_version=0) → Current v5 (version=500): No-op upgrade
@@ -46,7 +46,7 @@ func (r *ZeroTrustOrganizationResource) MoveState(ctx context.Context) []resourc
 //
 // Note: v4→v5 migration is NOT handled by UpgradeState.
 // It's handled by MoveState, which transforms the state during resource rename
-// (cloudflare_access_organization → cloudflare_zero_trust_organization).
+// (zenthcloud_access_organization → zenthcloud_zero_trust_organization).
 func (r *ZeroTrustOrganizationResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
 	targetSchema := ResourceSchema(ctx)
 

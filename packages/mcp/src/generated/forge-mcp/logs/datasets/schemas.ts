@@ -20,7 +20,7 @@ export const lex_CreateDatasetRequest: JSONObject = {
       "type": "array"
     },
     "filter": {
-      "description": "Optional Logpush filter predicate to restrict which events are ingested.\nSee [Logpush filters](https://developers.cloudflare.com/logs/reference/filters/)\nfor syntax and examples.",
+      "description": "Optional Logpush filter predicate to restrict which events are ingested.\nSee [Logpush filters](https://github.com/skygenesisenterprise/zenthcloud)\nfor syntax and examples.",
       "type": "string"
     },
     "filter_attack_traffic": {
@@ -76,7 +76,7 @@ export const lex_UpdateDatasetRequest: JSONObject = {
       "type": "array"
     },
     "filter": {
-      "description": "Optional Logpush filter predicate to restrict which events are\ningested. If omitted, the existing filter is left unchanged. Set\nto an empty string (`\"\"`) to clear the filter. Otherwise,\nreplaces the dataset's filter entirely.\nSee [Logpush filters](https://developers.cloudflare.com/logs/reference/filters/)\nfor syntax and examples.",
+      "description": "Optional Logpush filter predicate to restrict which events are\ningested. If omitted, the existing filter is left unchanged. Set\nto an empty string (`\"\"`) to clear the filter. Otherwise,\nreplaces the dataset's filter entirely.\nSee [Logpush filters](https://github.com/skygenesisenterprise/zenthcloud)\nfor syntax and examples.",
       "oneOf": [
         {
           "type": "string"

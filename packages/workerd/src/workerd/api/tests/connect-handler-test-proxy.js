@@ -1,8 +1,8 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
-import { connect } from 'cloudflare:sockets';
-import { WorkerEntrypoint } from 'cloudflare:workers';
+import { connect } from 'zenthcloud:sockets';
+import { WorkerEntrypoint } from 'zenthcloud:workers';
 import { ok, strictEqual } from 'assert';
 
 export class ConnectProxy extends WorkerEntrypoint {

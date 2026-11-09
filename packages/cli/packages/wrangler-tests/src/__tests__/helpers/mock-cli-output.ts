@@ -1,6 +1,6 @@
 import * as util from "node:util";
-import * as streams from "@cloudflare/cli-shared-helpers/streams";
-import { normalizeString } from "@cloudflare/workers-utils/test-helpers";
+import * as streams from "@zenthcloud/cli-shared-helpers/streams";
+import { normalizeString } from "@zenthcloud/workers-utils/test-helpers";
 import { afterEach, beforeEach, vi } from "vite-plus/test";
 import type { MockInstance } from "vite-plus/test";
 

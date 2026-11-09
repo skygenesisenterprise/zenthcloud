@@ -62,7 +62,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf tenant-custom-nameservers delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/tenants/${argv["tenant-id"] == null ? "<tenant-id>" : encodeURIComponent(String(argv["tenant-id"]))}/custom_ns/${argv["custom-ns-id"] == null ? "<custom-ns-id>" : encodeURIComponent(String(argv["custom-ns-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["tenant-id"] == null ? "<tenant-id>" : encodeURIComponent(String(argv["tenant-id"]))}/custom_ns/${argv["custom-ns-id"] == null ? "<custom-ns-id>" : encodeURIComponent(String(argv["custom-ns-id"]))}`,
 						pathParams: {
 							"tenant-id": String(argv["tenant-id"] ?? ""),
 							"custom-ns-id": String(argv["custom-ns-id"] ?? ""),

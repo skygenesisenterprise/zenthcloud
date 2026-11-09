@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_email_security_domain Resource - Cloudflare"
+page_title: "zenthcloud_email_security_domain Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Cloud Email Security: ReadCloud Email Security: Write
 ---
 
-# cloudflare_email_security_domain (Resource)
+# zenthcloud_email_security_domain (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_email_security_domain" "example_email_security_domain" {
+resource "zenthcloud_email_security_domain" "example_email_security_domain" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   allowed_delivery_modes = ["DIRECT"]
   domain = "domain"
@@ -52,7 +52,7 @@ Available values: "AllItems", "Inbox".
 - `lookback_hops` (Number) Number of hops to trace back through received headers when reconstructing the original message (1-20).
 - `require_tls_inbound` (Boolean) Require TLS on inbound connections.
 - `require_tls_outbound` (Boolean) Require TLS on outbound connections.
-- `transport` (String) The mail transport hostname for MX/Inline delivery — the MX record Cloudflare delivers email to (e.g. `mx.example.com`).
+- `transport` (String) The mail transport hostname for MX/Inline delivery — the MX record Zenthcloud delivers email to (e.g. `mx.example.com`).
 
 ### Read-Only
 
@@ -92,7 +92,7 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_email_security_domain.example '<account_id>/<domain_id>'
+$ terraform import zenthcloud_email_security_domain.example '<account_id>/<domain_id>'
 ```
 
 

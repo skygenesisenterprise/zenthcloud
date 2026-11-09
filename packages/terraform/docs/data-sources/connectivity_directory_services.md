@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_connectivity_directory_services Data Source - Cloudflare"
+page_title: "zenthcloud_connectivity_directory_services Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_connectivity_directory_services (Data Source)
+# zenthcloud_connectivity_directory_services (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_connectivity_directory_services" "example_connectivity_directory_services" {
+data "zenthcloud_connectivity_directory_services" "example_connectivity_directory_services" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   type = "tcp"
 }

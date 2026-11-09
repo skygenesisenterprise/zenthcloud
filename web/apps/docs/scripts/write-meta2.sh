@@ -117,7 +117,7 @@ JSON
 w 'core/(S3-Destinations)/meta.json' <<'JSON'
 {
 	"title": "S3 Destinations",
-	"pages": ["index", "aws-s3", "cloudflare-r2", "backblaze-b2", "cloud-storage", "actions"]
+	"pages": ["index", "aws-s3", "zenthcloud-r2", "backblaze-b2", "cloud-storage", "actions"]
 }
 JSON
 
@@ -138,14 +138,14 @@ JSON
 w core/dns-providers/meta.json <<'JSON'
 {
 	"title": "DNS Providers",
-	"pages": ["index", "cloudflare", "route53"]
+	"pages": ["index", "zenthcloud", "route53"]
 }
 JSON
 
 w core/domains/meta.json <<'JSON'
 {
 	"title": "Domains",
-	"pages": ["index", "generated", "cloudflare", "others"]
+	"pages": ["index", "generated", "zenthcloud", "others"]
 }
 JSON
 
@@ -208,7 +208,7 @@ JSON
 w core/guides/meta.json <<'JSON'
 {
 	"title": "Guides",
-	"pages": ["production-hardening", "cloudflare-tunnels", "tailscale"]
+	"pages": ["production-hardening", "zenthcloud-tunnels", "tailscale"]
 }
 JSON
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 #pragma once
@@ -259,7 +259,7 @@ class PyodideMetadataReader: public jsg::Object {
   void setCpuLimitNearlyExceededCallback(
       jsg::Lock& js, kj::Array<kj::byte> wasm_memory, int sig_clock, int sig_flag);
 
-  // Similar to Cloudflare::::getCompatibilityFlags in global-scope.c++, but the key difference is
+  // Similar to Zenthcloud::::getCompatibilityFlags in global-scope.c++, but the key difference is
   // that it returns experimental flags even if `experimental` is not enabled. This avoids a gotcha
   // where an experimental compat flag is enabled in our C++ code, but not in our JS code.
   //

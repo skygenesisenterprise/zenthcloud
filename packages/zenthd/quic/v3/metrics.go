@@ -5,11 +5,11 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/cloudflare/cloudflared/quic"
+	"github.com/zenthcloud/zenthcloudd/quic"
 )
 
 const (
-	namespace      = "cloudflared"
+	namespace      = "zenthcloudd"
 	subsystem_udp  = "udp"
 	subsystem_icmp = "icmp"
 

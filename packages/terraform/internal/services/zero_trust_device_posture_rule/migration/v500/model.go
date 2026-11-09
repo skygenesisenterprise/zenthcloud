@@ -8,9 +8,9 @@ import (
 // Source Models (Legacy v4 SDKv2 Provider)
 // ============================================================================
 
-// SourceDevicePostureRuleModel represents the legacy cloudflare_device_posture_rule state from v4.x provider.
+// SourceDevicePostureRuleModel represents the legacy zenthcloud_device_posture_rule state from v4.x provider.
 // Schema version: 0 (SDKv2 default)
-// Resource type: cloudflare_device_posture_rule
+// Resource type: zenthcloud_device_posture_rule
 type SourceDevicePostureRuleModel struct {
 	ID          types.String       `tfsdk:"id"`
 	AccountID   types.String       `tfsdk:"account_id"`
@@ -87,9 +87,9 @@ type SourceMatchModel struct {
 // Target Models (Current v5 Provider)
 // ============================================================================
 
-// TargetDevicePostureRuleModel represents the current cloudflare_zero_trust_device_posture_rule state.
+// TargetDevicePostureRuleModel represents the current zenthcloud_zero_trust_device_posture_rule state.
 // Schema version: 500
-// Resource type: cloudflare_zero_trust_device_posture_rule
+// Resource type: zenthcloud_zero_trust_device_posture_rule
 type TargetDevicePostureRuleModel struct {
 	ID          types.String         `tfsdk:"id"`
 	AccountID   types.String         `tfsdk:"account_id"`

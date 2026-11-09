@@ -1,4 +1,4 @@
-import { seed } from "@cloudflare/workers-utils/test-helpers";
+import { seed } from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw/http";
 import { describe, it, test } from "vite-plus/test";
 import { mockAccountId, mockApiToken } from "../helpers/mock-account-id";
@@ -113,7 +113,7 @@ describe("versions upload", () => {
 			"should not warn if the wrangler config doesn't contain environments and none was specified in the command"
 		);
 		it.skip(
-			"should not warn if the wrangler config contains environments and CLOUDFLARE_ENV is set"
+			"should not warn if the wrangler config contains environments and ZENTHCLOUD_ENV is set"
 		);
 		it.skip(
 			'should not warn if --env="" is passed to explicitly target the top-level environment'
@@ -178,7 +178,7 @@ describe("versions upload", () => {
 
 		await expect(
 			runWrangler("workers versions create --prebuilt --dry-run", {
-				CLOUDFLARE_API_TOKEN: undefined,
+				ZENTHCLOUD_API_TOKEN: undefined,
 			})
 		).resolves.toBeUndefined();
 	});
@@ -241,12 +241,12 @@ async function seedBuildOutput({ name }: { name: string | undefined }) {
 				};
 
 	await seed({
-		".cloudflare/output/v0/config.json": JSON.stringify({
+		".zenthcloud/output/v0/config.json": JSON.stringify({
 			buildContext: { isPreview: false },
 		}),
-		".cloudflare/output/v0/workers/default/worker.config.json":
+		".zenthcloud/output/v0/workers/default/worker.config.json":
 			JSON.stringify(config),
-		".cloudflare/output/v0/workers/default/bundle/index.js":
+		".zenthcloud/output/v0/workers/default/bundle/index.js":
 			"export default { fetch() { return new Response('ok'); } }",
 	});
 }

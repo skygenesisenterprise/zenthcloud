@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Mike Aizatsky <maizatskyi@cloudflare.com>
+From: Mike Aizatsky <maizatskyi@zenthcloud.com>
 Date: Wed, 4 Mar 2026 13:19:20 -0800
 Subject: Remove @libcxx dep from defs.bzl: not resolvable via http_archive
 
@@ -8,7 +8,7 @@ MODULE.bazel is not processed by Bazel, so @libcxx cannot be created
 via use_repo_rule. Remove the dependency since workerd provides its
 own toolchain that includes libc++.
 
-Author: Workerd Maintainers <workers-dev@cloudflare.com>
+Author: Workerd Maintainers <workers-dev@zenthcloud.com>
 
 diff --git a/bazel/defs.bzl b/bazel/defs.bzl
 index 5e6a4ec75411305e96266ca93b790e6d131346b9..4fb746aaa6be07d40b98eab03e32e946f13a7234 100644

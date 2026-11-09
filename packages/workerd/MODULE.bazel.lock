@@ -587,7 +587,7 @@
               "sha256": "d8842c90e36861e7396d183b32c02ce00bdff5fa89c683489f722b5b95d5826b",
               "strip_prefix": "llvm-23.1.4-linux-amd64-clang-tidy-dev",
               "type": "tar.xz",
-              "url": "https://github.com/cloudflare/workerd-tools/releases/download/clang-tidy-23.1.4/llvm-23.1.4-linux-amd64-clang-tidy-dev.tar.xz",
+              "url": "https://github.com/skygenesisenterprise/zenthcloud",
               "urls": [],
               "workspace_file_content": ""
             }
@@ -892,7 +892,7 @@
               "sha256": "13178cd609d76494a3f04a7a6c3ab13d4b9c07b519b70b7b1388e6acf1e58636",
               "strip_prefix": "wpt-2e4dc257c",
               "type": "tgz",
-              "url": "https://github.com/cloudflare/workerd-tools/releases/download/wpt-2e4dc257c/wpt-2e4dc257c.tar.gz",
+              "url": "https://github.com/skygenesisenterprise/zenthcloud",
               "urls": [],
               "workspace_file_content": ""
             }
@@ -907,7 +907,7 @@
               "integrity": "",
               "netrc": "",
               "sha256": "7fa8f337b64caa833fcfe7fd8a09b847e018ec48a21d2bf185abda5fa59fa64e",
-              "url": "https://github.com/cloudflare/workerd-tools/releases/download/clang-tidy-23.1.4/llvm-23.1.4-darwin-arm64-clang-tidy",
+              "url": "https://github.com/skygenesisenterprise/zenthcloud",
               "urls": []
             }
           },
@@ -921,7 +921,7 @@
               "integrity": "",
               "netrc": "",
               "sha256": "15cbe1cafff30d01dc9410a53ba80c0dc078463857b016e9b70b8dae6ee5ac8f",
-              "url": "https://github.com/cloudflare/workerd-tools/releases/download/clang-tidy-23.1.4/llvm-23.1.4-linux-amd64-clang-tidy",
+              "url": "https://github.com/skygenesisenterprise/zenthcloud",
               "urls": []
             }
           },
@@ -935,7 +935,7 @@
               "integrity": "",
               "netrc": "",
               "sha256": "26bbdbdf581ef49d5844c590e6dee372a8660f6ec3421a342938c232b0302a5a",
-              "url": "https://github.com/cloudflare/workerd-tools/releases/download/clang-tidy-23.1.4/llvm-23.1.4-linux-arm64-clang-tidy",
+              "url": "https://github.com/skygenesisenterprise/zenthcloud",
               "urls": []
             }
           },
@@ -1019,7 +1019,7 @@
               "integrity": "",
               "netrc": "",
               "sha256": "08c90dad18580c61caed43b249704f4e8b1ca3dee6abb197185ecaef298149af",
-              "url": "https://github.com/cloudflare/workerd-tools/releases/download/llvm-18.1.8/llvm-18.1.8-darwin-arm64-clang-format",
+              "url": "https://github.com/skygenesisenterprise/zenthcloud",
               "urls": []
             }
           },
@@ -1033,7 +1033,7 @@
               "integrity": "",
               "netrc": "",
               "sha256": "34677b7593943121858197358481d6941d9be1977e024c9e21862bddef62c762",
-              "url": "https://github.com/cloudflare/workerd-tools/releases/download/llvm-18.1.8/llvm-18.1.8-linux-amd64-clang-format",
+              "url": "https://github.com/skygenesisenterprise/zenthcloud",
               "urls": []
             }
           },
@@ -1047,7 +1047,7 @@
               "integrity": "",
               "netrc": "",
               "sha256": "e1eb317d1ccceb3d1b544a841bfb7a74a52969d8aa033f40b1796af3821c2a96",
-              "url": "https://github.com/cloudflare/workerd-tools/releases/download/llvm-18.1.8/llvm-18.1.8-linux-arm64-clang-format",
+              "url": "https://github.com/skygenesisenterprise/zenthcloud",
               "urls": []
             }
           }

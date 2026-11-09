@@ -8,7 +8,7 @@
 import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { getCfConfigPath } from "@cloudflare/workers-auth/cf";
+import { getCfConfigPath } from "@zenthcloud/workers-auth/cf";
 import { VERSION } from "../version.js";
 
 interface CacheEntry {

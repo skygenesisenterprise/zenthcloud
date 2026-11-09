@@ -499,14 +499,14 @@
       }
     },
     {
-      "command": "cf zero-trust tunnels cloudflared-create",
+      "command": "cf zero-trust tunnels zenthcloudd-create",
       "args": ["--dry-run"],
       "env": {
         "scope": "account"
       }
     },
     {
-      "command": "cf zero-trust tunnels cloudflared-management-create",
+      "command": "cf zero-trust tunnels zenthcloudd-management-create",
       "args": ["placeholder_tunnel_id", "--dry-run"],
       "env": {
         "scope": "account"
@@ -989,7 +989,7 @@
       }
     },
     {
-      "command": "cf zero-trust tunnels cloudflared-list",
+      "command": "cf zero-trust tunnels zenthcloudd-list",
       "args": [],
       "env": {
         "scope": "account"
@@ -1605,35 +1605,35 @@
       }
     },
     {
-      "command": "cf zero-trust tunnels cloudflared-configurations-get",
+      "command": "cf zero-trust tunnels zenthcloudd-configurations-get",
       "args": ["placeholder_tunnel_id"],
       "env": {
         "scope": "account"
       }
     },
     {
-      "command": "cf zero-trust tunnels cloudflared-connections-get",
+      "command": "cf zero-trust tunnels zenthcloudd-connections-get",
       "args": ["placeholder_tunnel_id"],
       "env": {
         "scope": "account"
       }
     },
     {
-      "command": "cf zero-trust tunnels cloudflared-connectors-get",
+      "command": "cf zero-trust tunnels zenthcloudd-connectors-get",
       "args": ["placeholder_tunnel_id", "placeholder_connector_id"],
       "env": {
         "scope": "account"
       }
     },
     {
-      "command": "cf zero-trust tunnels cloudflared-get",
+      "command": "cf zero-trust tunnels zenthcloudd-get",
       "args": ["placeholder_tunnel_id"],
       "env": {
         "scope": "account"
       }
     },
     {
-      "command": "cf zero-trust tunnels cloudflared-token-get",
+      "command": "cf zero-trust tunnels zenthcloudd-token-get",
       "args": ["placeholder_tunnel_id"],
       "env": {
         "scope": "account"
@@ -2074,7 +2074,7 @@
       }
     },
     {
-      "command": "cf zero-trust networks subnets-cloudflare-source-update",
+      "command": "cf zero-trust networks subnets-zenthcloud-source-update",
       "args": ["placeholder_address_family", "--dry-run"],
       "env": {
         "scope": "account"
@@ -2130,14 +2130,14 @@
       }
     },
     {
-      "command": "cf zero-trust tunnels cloudflared-configurations-update",
+      "command": "cf zero-trust tunnels zenthcloudd-configurations-update",
       "args": ["placeholder_tunnel_id", "--dry-run"],
       "env": {
         "scope": "account"
       }
     },
     {
-      "command": "cf zero-trust tunnels cloudflared-edit",
+      "command": "cf zero-trust tunnels zenthcloudd-edit",
       "args": ["placeholder_tunnel_id", "--dry-run"],
       "env": {
         "scope": "account"
@@ -2487,14 +2487,14 @@
       }
     },
     {
-      "command": "cf zero-trust tunnels cloudflared-connections-delete",
+      "command": "cf zero-trust tunnels zenthcloudd-connections-delete",
       "args": ["placeholder_tunnel_id", "--dry-run"],
       "env": {
         "scope": "account"
       }
     },
     {
-      "command": "cf zero-trust tunnels cloudflared-delete",
+      "command": "cf zero-trust tunnels zenthcloudd-delete",
       "args": ["placeholder_tunnel_id", "--dry-run"],
       "env": {
         "scope": "account"
@@ -3404,14 +3404,14 @@
       }
     },
     {
-      "command": "cf zero-trust tunnels-cloudflared create",
+      "command": "cf zero-trust tunnels-zenthcloudd create",
       "args": ["--dry-run"],
       "env": {
         "scope": "account"
       }
     },
     {
-      "command": "cf zero-trust tunnels-cloudflared-management create",
+      "command": "cf zero-trust tunnels-zenthcloudd-management create",
       "args": ["placeholder_tunnel_id", "--dry-run"],
       "env": {
         "scope": "account"
@@ -3817,7 +3817,7 @@
       }
     },
     {
-      "command": "cf zero-trust tunnels-cloudflared list",
+      "command": "cf zero-trust tunnels-zenthcloudd list",
       "args": [],
       "env": {
         "scope": "account"
@@ -4349,35 +4349,35 @@
       }
     },
     {
-      "command": "cf zero-trust tunnels-cloudflared get",
+      "command": "cf zero-trust tunnels-zenthcloudd get",
       "args": ["placeholder_tunnel_id"],
       "env": {
         "scope": "account"
       }
     },
     {
-      "command": "cf zero-trust tunnels-cloudflared-configurations get",
+      "command": "cf zero-trust tunnels-zenthcloudd-configurations get",
       "args": ["placeholder_tunnel_id"],
       "env": {
         "scope": "account"
       }
     },
     {
-      "command": "cf zero-trust tunnels-cloudflared-connections get",
+      "command": "cf zero-trust tunnels-zenthcloudd-connections get",
       "args": ["placeholder_tunnel_id"],
       "env": {
         "scope": "account"
       }
     },
     {
-      "command": "cf zero-trust tunnels-cloudflared-connectors get",
+      "command": "cf zero-trust tunnels-zenthcloudd-connectors get",
       "args": ["placeholder_tunnel_id", "placeholder_connector_id"],
       "env": {
         "scope": "account"
       }
     },
     {
-      "command": "cf zero-trust tunnels-cloudflared-token get",
+      "command": "cf zero-trust tunnels-zenthcloudd-token get",
       "args": ["placeholder_tunnel_id"],
       "env": {
         "scope": "account"
@@ -4762,7 +4762,7 @@
       }
     },
     {
-      "command": "cf zero-trust networks-subnets-cloudflare-source update",
+      "command": "cf zero-trust networks-subnets-zenthcloud-source update",
       "args": ["v4", "--dry-run"],
       "env": {
         "scope": "account"
@@ -4804,14 +4804,14 @@
       }
     },
     {
-      "command": "cf zero-trust tunnels-cloudflared edit",
+      "command": "cf zero-trust tunnels-zenthcloudd edit",
       "args": ["placeholder_tunnel_id", "--dry-run"],
       "env": {
         "scope": "account"
       }
     },
     {
-      "command": "cf zero-trust tunnels-cloudflared-configurations update",
+      "command": "cf zero-trust tunnels-zenthcloudd-configurations update",
       "args": ["placeholder_tunnel_id", "--dry-run"],
       "env": {
         "scope": "account"
@@ -5119,14 +5119,14 @@
       }
     },
     {
-      "command": "cf zero-trust tunnels-cloudflared delete",
+      "command": "cf zero-trust tunnels-zenthcloudd delete",
       "args": ["placeholder_tunnel_id", "--dry-run"],
       "env": {
         "scope": "account"
       }
     },
     {
-      "command": "cf zero-trust tunnels-cloudflared-connections delete",
+      "command": "cf zero-trust tunnels-zenthcloudd-connections delete",
       "args": ["placeholder_tunnel_id", "--dry-run"],
       "env": {
         "scope": "account"
@@ -5546,14 +5546,14 @@
       }
     },
     {
-      "command": "cf zero-trust tunnels cloudflared create",
+      "command": "cf zero-trust tunnels zenthcloudd create",
       "args": ["--dry-run"],
       "env": {
         "scope": "account"
       }
     },
     {
-      "command": "cf zero-trust tunnels cloudflared management create",
+      "command": "cf zero-trust tunnels zenthcloudd management create",
       "args": ["placeholder_tunnel_id", "--dry-run"],
       "env": {
         "scope": "account"
@@ -5959,7 +5959,7 @@
       }
     },
     {
-      "command": "cf zero-trust tunnels cloudflared list",
+      "command": "cf zero-trust tunnels zenthcloudd list",
       "args": [],
       "env": {
         "scope": "account"
@@ -6491,35 +6491,35 @@
       }
     },
     {
-      "command": "cf zero-trust tunnels cloudflared configurations get",
+      "command": "cf zero-trust tunnels zenthcloudd configurations get",
       "args": ["placeholder_tunnel_id"],
       "env": {
         "scope": "account"
       }
     },
     {
-      "command": "cf zero-trust tunnels cloudflared connections get",
+      "command": "cf zero-trust tunnels zenthcloudd connections get",
       "args": ["placeholder_tunnel_id"],
       "env": {
         "scope": "account"
       }
     },
     {
-      "command": "cf zero-trust tunnels cloudflared connectors get",
+      "command": "cf zero-trust tunnels zenthcloudd connectors get",
       "args": ["placeholder_tunnel_id", "placeholder_connector_id"],
       "env": {
         "scope": "account"
       }
     },
     {
-      "command": "cf zero-trust tunnels cloudflared get",
+      "command": "cf zero-trust tunnels zenthcloudd get",
       "args": ["placeholder_tunnel_id"],
       "env": {
         "scope": "account"
       }
     },
     {
-      "command": "cf zero-trust tunnels cloudflared token get",
+      "command": "cf zero-trust tunnels zenthcloudd token get",
       "args": ["placeholder_tunnel_id"],
       "env": {
         "scope": "account"
@@ -6890,7 +6890,7 @@
       }
     },
     {
-      "command": "cf zero-trust networks subnets cloudflare-source update",
+      "command": "cf zero-trust networks subnets zenthcloud-source update",
       "args": ["v4", "--dry-run"],
       "env": {
         "scope": "account"
@@ -6932,14 +6932,14 @@
       }
     },
     {
-      "command": "cf zero-trust tunnels cloudflared configurations update",
+      "command": "cf zero-trust tunnels zenthcloudd configurations update",
       "args": ["placeholder_tunnel_id", "--dry-run"],
       "env": {
         "scope": "account"
       }
     },
     {
-      "command": "cf zero-trust tunnels cloudflared edit",
+      "command": "cf zero-trust tunnels zenthcloudd edit",
       "args": ["placeholder_tunnel_id", "--dry-run"],
       "env": {
         "scope": "account"
@@ -7240,14 +7240,14 @@
       }
     },
     {
-      "command": "cf zero-trust tunnels cloudflared connections delete",
+      "command": "cf zero-trust tunnels zenthcloudd connections delete",
       "args": ["placeholder_tunnel_id", "--dry-run"],
       "env": {
         "scope": "account"
       }
     },
     {
-      "command": "cf zero-trust tunnels cloudflared delete",
+      "command": "cf zero-trust tunnels zenthcloudd delete",
       "args": ["placeholder_tunnel_id", "--dry-run"],
       "env": {
         "scope": "account"
@@ -8647,7 +8647,7 @@
       }
     },
     {
-      "command": "cf zero-trust networks subnets cloudflare source update",
+      "command": "cf zero-trust networks subnets zenthcloud source update",
       "args": ["v4", "--dry-run"],
       "env": {
         "scope": "account"

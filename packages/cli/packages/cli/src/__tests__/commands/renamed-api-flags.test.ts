@@ -1,4 +1,4 @@
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw/http";
 import {
 	afterEach,
@@ -24,9 +24,9 @@ describe("API fields renamed off cf-owned flags", () => {
 	setupMsw();
 
 	const ENV = {
-		CLOUDFLARE_API_TOKEN: "test-token",
-		CLOUDFLARE_API_BASE_URL: TEST_BASE_URL,
-		CLOUDFLARE_ACCOUNT_ID: "test-account",
+		ZENTHCLOUD_API_TOKEN: "test-token",
+		ZENTHCLOUD_API_BASE_URL: TEST_BASE_URL,
+		ZENTHCLOUD_ACCOUNT_ID: "test-account",
 		CI: "true",
 	};
 	const ZONE = "023e105f4ecef8ad9ca31a8372d0c353";
@@ -74,7 +74,7 @@ describe("API fields renamed off cf-owned flags", () => {
 			"update",
 			"--zone",
 			ZONE,
-			"--cloudflare-version",
+			"--zenthcloud-version",
 			"1.0",
 			"--detection-mode",
 			"arm",

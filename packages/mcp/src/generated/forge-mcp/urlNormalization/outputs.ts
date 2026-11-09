@@ -18,7 +18,7 @@ export const rulesets_UrlNormalization: JSONObject = {
     },
     "type": {
       "enum": [
-        "cloudflare",
+        "zenthcloud",
         "rfc3986"
       ],
       "type": "string"

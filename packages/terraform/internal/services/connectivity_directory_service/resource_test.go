@@ -6,11 +6,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/connectivity"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/connectivity"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -20,18 +20,18 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_connectivity_directory_service", &resource.Sweeper{
-		Name: "cloudflare_connectivity_directory_service",
+	resource.AddTestSweepers("zenthcloud_connectivity_directory_service", &resource.Sweeper{
+		Name: "zenthcloud_connectivity_directory_service",
 		F: func(region string) error {
 			client := acctest.SharedClient()
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 			ctx := context.Background()
 
 			page, err := client.Connectivity.Directory.Services.List(
 				ctx,
 				connectivity.DirectoryServiceListParams{
-					AccountID: cloudflare.F(accountID),
+					AccountID: zenthcloud.F(accountID),
 				},
 			)
 			if err != nil {
@@ -48,7 +48,7 @@ func init() {
 						ctx,
 						service.ServiceID,
 						connectivity.DirectoryServiceDeleteParams{
-							AccountID: cloudflare.F(accountID),
+							AccountID: zenthcloud.F(accountID),
 						},
 					)
 					if err != nil {
@@ -69,10 +69,10 @@ func init() {
 	})
 }
 
-func TestAccCloudflareConnectivityDirectoryService_Basic(t *testing.T) {
+func TestAccZenthcloudConnectivityDirectoryService_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_connectivity_directory_service." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_connectivity_directory_service." + rnd
 
 	// Test configuration values
 	serviceName := fmt.Sprintf("test-directory-service-%s", rnd)
@@ -95,7 +95,7 @@ func TestAccCloudflareConnectivityDirectoryService_Basic(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareConnectivityDirectoryService_Basic(
+				Config: testAccZenthcloudConnectivityDirectoryService_Basic(
 					rnd,
 					accountID,
 					serviceName,
@@ -129,7 +129,7 @@ func TestAccCloudflareConnectivityDirectoryService_Basic(t *testing.T) {
 			},
 			// Update test step
 			{
-				Config: testAccCloudflareConnectivityDirectoryService_Update(
+				Config: testAccZenthcloudConnectivityDirectoryService_Update(
 					rnd,
 					accountID,
 					updatedServiceName,
@@ -172,7 +172,7 @@ func TestAccCloudflareConnectivityDirectoryService_Basic(t *testing.T) {
 	})
 }
 
-func testAccCloudflareConnectivityDirectoryService_Basic(rnd, accountID, serviceName, hostname, resolverIP1, resolverIP2 string, httpPort, httpsPort int) string {
+func testAccZenthcloudConnectivityDirectoryService_Basic(rnd, accountID, serviceName, hostname, resolverIP1, resolverIP2 string, httpPort, httpsPort int) string {
 	return acctest.LoadTestCase("basic.tf",
 		rnd,
 		accountID,
@@ -185,7 +185,7 @@ func testAccCloudflareConnectivityDirectoryService_Basic(rnd, accountID, service
 	)
 }
 
-func testAccCloudflareConnectivityDirectoryService_Update(rnd, accountID, serviceName, hostname, resolverIP1, resolverIP2 string, httpPort, httpsPort int) string {
+func testAccZenthcloudConnectivityDirectoryService_Update(rnd, accountID, serviceName, hostname, resolverIP1, resolverIP2 string, httpPort, httpsPort int) string {
 	return acctest.LoadTestCase("update.tf",
 		rnd,
 		accountID,

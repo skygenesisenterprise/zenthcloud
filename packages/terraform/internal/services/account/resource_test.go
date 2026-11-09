@@ -7,11 +7,11 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	cfaccounts "github.com/cloudflare/cloudflare-go/v7/accounts"
-	"github.com/cloudflare/cloudflare-go/v7/organizations"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	cfaccounts "github.com/zenthcloud/zenthcloud-go/v7/accounts"
+	"github.com/zenthcloud/zenthcloud-go/v7/organizations"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -26,13 +26,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_account", &resource.Sweeper{
-		Name: "cloudflare_account",
-		F:    testSweepCloudflareAccount,
+	resource.AddTestSweepers("zenthcloud_account", &resource.Sweeper{
+		Name: "zenthcloud_account",
+		F:    testSweepZenthcloudAccount,
 	})
 }
 
-func testSweepCloudflareAccount(r string) error {
+func testSweepZenthcloudAccount(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
@@ -44,7 +44,7 @@ func testSweepCloudflareAccount(r string) error {
 	}
 
 	if len(accountsResp.Result) == 0 {
-		tflog.Info(ctx, "No Cloudflare accounts to sweep")
+		tflog.Info(ctx, "No Zenthcloud accounts to sweep")
 		return nil
 	}
 
@@ -55,7 +55,7 @@ func testSweepCloudflareAccount(r string) error {
 
 		tflog.Info(ctx, fmt.Sprintf("Deleting account: %s (%s)", account.Name, account.ID))
 		_, err := client.Accounts.Delete(ctx, cfaccounts.AccountDeleteParams{
-			AccountID: cloudflare.F(account.ID),
+			AccountID: zenthcloud.F(account.ID),
 		})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete account %s (%s): %s", account.Name, account.ID, err))
@@ -67,20 +67,20 @@ func testSweepCloudflareAccount(r string) error {
 	return nil
 }
 
-func TestAccCloudflareAccount_Basic(t *testing.T) {
+func TestAccZenthcloudAccount_Basic(t *testing.T) {
 	acctest.TestAccSkipForDefaultAccount(t, "Requires account creation permissions not available on default test account.")
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_account.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_account.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccountDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccountDestroy,
 		Steps: []resource.TestStep{
 			// Create an enterprise account
 			{
-				Config: testAccCheckCloudflareAccountWithType(rnd, fmt.Sprintf("%s_old", rnd), "enterprise"),
+				Config: testAccCheckZenthcloudAccountWithType(rnd, fmt.Sprintf("%s_old", rnd), "enterprise"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("%s_old", rnd))),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("enterprise")),
@@ -89,7 +89,7 @@ func TestAccCloudflareAccount_Basic(t *testing.T) {
 			},
 			// Update step
 			{
-				Config: testAccCheckCloudflareAccountName(rnd, fmt.Sprintf("%s_new", rnd)),
+				Config: testAccCheckZenthcloudAccountName(rnd, fmt.Sprintf("%s_new", rnd)),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -104,7 +104,7 @@ func TestAccCloudflareAccount_Basic(t *testing.T) {
 			},
 			// 2FA update step
 			{
-				Config: testAccCheckCloudflareAccountWith2FA(rnd, rnd, true),
+				Config: testAccCheckZenthcloudAccountWith2FA(rnd, rnd, true),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -127,22 +127,22 @@ func TestAccCloudflareAccount_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareAccount_2FAEnforced(t *testing.T) {
+func TestAccZenthcloudAccount_2FAEnforced(t *testing.T) {
 	acctest.TestAccSkipForDefaultAccount(t, "Requires account creation permissions not available on default test account.")
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_account.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_account.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccountDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccountDestroy,
 		Steps: []resource.TestStep{
 			// The POST endpoint ignores the settings on the create so we
 			// need to first create and then update for 2FA enforcement.
 			// Tracking with the service team via PT-792.
 			{
-				Config: testAccCheckCloudflareAccountName(rnd, rnd),
+				Config: testAccCheckZenthcloudAccountName(rnd, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("standard")),
@@ -150,7 +150,7 @@ func TestAccCloudflareAccount_2FAEnforced(t *testing.T) {
 				},
 			},
 			{
-				Config: testAccCheckCloudflareAccountWith2FA(rnd, rnd, true),
+				Config: testAccCheckZenthcloudAccountWith2FA(rnd, rnd, true),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -164,7 +164,7 @@ func TestAccCloudflareAccount_2FAEnforced(t *testing.T) {
 				},
 			},
 			{
-				Config: testAccCheckCloudflareAccountWith2FA(rnd, rnd, false),
+				Config: testAccCheckZenthcloudAccountWith2FA(rnd, rnd, false),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -186,19 +186,19 @@ func TestAccCloudflareAccount_2FAEnforced(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareAccount_WithMulti(t *testing.T) {
+func TestAccZenthcloudAccount_WithMulti(t *testing.T) {
 	t.Skip(`Skipped: 403 Forbidden {"success":false,"errors":[{"code":1002,"message":"Forbidden. Account creation is not allowed"}],"messages":[],"result":null}`)
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_account.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_account.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccountDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccountDestroy,
 		Steps: []resource.TestStep{
 			// Create an enterprise account
 			{
-				Config: testAccCheckCloudflareAccountWithType(rnd, rnd, "enterprise"),
+				Config: testAccCheckZenthcloudAccountWithType(rnd, rnd, "enterprise"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("enterprise")),
@@ -207,7 +207,7 @@ func TestAccCloudflareAccount_WithMulti(t *testing.T) {
 			},
 			// Update to add abuse email
 			{
-				Config: testAccCheckCloudflareAccountWithMulti(rnd, rnd, "enterprise", false, "abuse@example.com"),
+				Config: testAccCheckZenthcloudAccountWithMulti(rnd, rnd, "enterprise", false, "abuse@example.com"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("enterprise")),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("settings").AtMapKey("abuse_contact_email"), knownvalue.StringExact("abuse@example.com")),
@@ -215,7 +215,7 @@ func TestAccCloudflareAccount_WithMulti(t *testing.T) {
 			},
 			// Update to enable 2FA
 			{
-				Config: testAccCheckCloudflareAccountWithMulti(rnd, rnd, "enterprise", true, "abuse@example.com"),
+				Config: testAccCheckZenthcloudAccountWithMulti(rnd, rnd, "enterprise", true, "abuse@example.com"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("enterprise")),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("settings").AtMapKey("enforce_twofactor"), knownvalue.Bool(true)),
@@ -224,7 +224,7 @@ func TestAccCloudflareAccount_WithMulti(t *testing.T) {
 			},
 			// Update email
 			{
-				Config: testAccCheckCloudflareAccountWithMulti(rnd, rnd, "enterprise", true, "updated@example.com"),
+				Config: testAccCheckZenthcloudAccountWithMulti(rnd, rnd, "enterprise", true, "updated@example.com"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("enterprise")),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("settings").AtMapKey("abuse_contact_email"), knownvalue.StringExact("updated@example.com")),
@@ -240,10 +240,10 @@ func TestAccCloudflareAccount_WithMulti(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareAccount_WithUnit(t *testing.T) {
+func TestAccZenthcloudAccount_WithUnit(t *testing.T) {
 	t.Skip(`Skipped: 403 Forbidden {"success":false,"errors":[{"code":1002,"message":"Forbidden. Account creation is not allowed"}],"messages":[],"result":null}`)
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_account.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_account.%s", rnd)
 
 	// Get organization IDs to determine unit_id and alternate_unit_id
 	orgIDs, err := getOrganizationIDs(t)
@@ -261,10 +261,10 @@ func TestAccCloudflareAccount_WithUnit(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareAccountDestroy,
+		CheckDestroy:             testAccCheckZenthcloudAccountDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareAccountWithUnit(rnd, rnd, unitID),
+				Config: testAccCheckZenthcloudAccountWithUnit(rnd, rnd, unitID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", rnd),
 					resource.TestCheckResourceAttr(resourceName, "type", "standard"),
@@ -292,7 +292,7 @@ func TestAccCloudflareAccount_WithUnit(t *testing.T) {
 			// Use second org (if exists) or "invalid-unit-id"
 			func() resource.TestStep {
 				step := resource.TestStep{
-					Config: testAccCheckCloudflareAccountWithUnit(rnd, rnd, alternateUnitID),
+					Config: testAccCheckZenthcloudAccountWithUnit(rnd, rnd, alternateUnitID),
 					ConfigPlanChecks: resource.ConfigPlanChecks{
 						PreApply: []plancheck.PlanCheck{
 							plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionDestroyBeforeCreate),
@@ -328,7 +328,7 @@ func TestAccCloudflareAccount_WithUnit(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareAccount_InvalidType(t *testing.T) {
+func TestAccZenthcloudAccount_InvalidType(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
 
 	resource.Test(t, resource.TestCase{
@@ -336,30 +336,30 @@ func TestAccCloudflareAccount_InvalidType(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCheckCloudflareAccountWithType(rnd, rnd, "invalid_type"),
+				Config:      testAccCheckZenthcloudAccountWithType(rnd, rnd, "invalid_type"),
 				ExpectError: regexp.MustCompile(`Attribute type value must be one of`),
 			},
 		},
 	})
 }
 
-func testAccCheckCloudflareAccountName(rnd, name string) string {
+func testAccCheckZenthcloudAccountName(rnd, name string) string {
 	return acctest.LoadTestCase("accountname.tf", rnd, name)
 }
 
-func testAccCheckCloudflareAccountWithType(rnd, name, account_type string) string {
+func testAccCheckZenthcloudAccountWithType(rnd, name, account_type string) string {
 	return acctest.LoadTestCase("accountwithtype.tf", rnd, name, account_type)
 }
 
-func testAccCheckCloudflareAccountWith2FA(rnd, name string, enforce_twofactor bool) string {
+func testAccCheckZenthcloudAccountWith2FA(rnd, name string, enforce_twofactor bool) string {
 	return acctest.LoadTestCase("accountwith2fa.tf", rnd, name, enforce_twofactor)
 }
 
-func testAccCheckCloudflareAccountWithMulti(rnd, name, accountType string, enforce2FA bool, email string) string {
+func testAccCheckZenthcloudAccountWithMulti(rnd, name, accountType string, enforce2FA bool, email string) string {
 	return acctest.LoadTestCase("accountwithmulti.tf", rnd, name, accountType, enforce2FA, email)
 }
 
-func testAccCheckCloudflareAccountWithUnit(rnd, name, unitID string) string {
+func testAccCheckZenthcloudAccountWithUnit(rnd, name, unitID string) string {
 	return acctest.LoadTestCase("accountwithunit.tf", rnd, name, unitID)
 }
 
@@ -386,16 +386,16 @@ func getOrganizationIDs(t *testing.T) ([]string, error) {
 	return orgIDs, nil
 }
 
-func testAccCheckCloudflareAccountDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudAccountDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_account" {
+		if rs.Type != "zenthcloud_account" {
 			continue
 		}
 
 		_, err := client.Accounts.Get(context.Background(), cfaccounts.AccountGetParams{
-			AccountID: cloudflare.F(rs.Primary.ID),
+			AccountID: zenthcloud.F(rs.Primary.ID),
 		})
 		if err == nil {
 			return fmt.Errorf("account %s still exists", rs.Primary.ID)
@@ -412,15 +412,15 @@ func TestAccUpgradeAccount_FromPublishedV5(t *testing.T) {
 	// Use a config without "type" to avoid API normalization issues.
 	// The API may return type="standard" regardless of what was configured,
 	// causing "inconsistent result after apply" errors when type is explicitly set.
-	config := testAccCheckCloudflareAccountName(rnd, fmt.Sprintf("%s_old", rnd))
+	config := testAccCheckZenthcloudAccountName(rnd, fmt.Sprintf("%s_old", rnd))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

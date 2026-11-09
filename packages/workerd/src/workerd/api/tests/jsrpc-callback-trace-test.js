@@ -1,11 +1,11 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
 // Regression test for JSRPC callback tracing across both sides of a re-entrant call.
 // The tail worker checks callee async propagation and caller transient dispatch ancestry.
 
-import { WorkerEntrypoint, RpcTarget } from 'cloudflare:workers';
+import { WorkerEntrypoint, RpcTarget } from 'zenthcloud:workers';
 
 class TargetCallback extends RpcTarget {
   invokeTarget() {

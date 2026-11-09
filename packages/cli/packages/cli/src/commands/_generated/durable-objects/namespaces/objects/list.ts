@@ -69,7 +69,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf durable-objects namespaces objects list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/workers/durable_objects/namespaces/${argv["id"] == null ? "<id>" : encodeURIComponent(String(argv["id"]))}/objects`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/workers/durable_objects/namespaces/${argv["id"] == null ? "<id>" : encodeURIComponent(String(argv["id"]))}/objects`,
 						pathParams: { id: String(argv["id"] ?? "") },
 						query: queryParams,
 						bodyKind: "none",

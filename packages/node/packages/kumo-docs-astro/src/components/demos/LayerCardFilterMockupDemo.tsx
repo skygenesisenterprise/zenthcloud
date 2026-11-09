@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Badge, Input, LayerCard, Tabs } from "@cloudflare/kumo";
+import { Badge, Input, LayerCard, Tabs } from "@zenthcloud/kumo";
 
 // ─── Data ────────────────────────────────────────────────────────────
 
 const ORIGINS = [
-  { origin: "challenges.cloudflare.com", s2xx: 1, s4xx: 0, duration: "95.4ms" },
+  { origin: "challenges.zenthcloud.com", s2xx: 1, s4xx: 0, duration: "95.4ms" },
   { origin: "Unknown", s2xx: 19, s4xx: 7, duration: "463.7ms" },
   { origin: "api.example.com", s2xx: 42, s4xx: 3, duration: "128.1ms" },
 ];

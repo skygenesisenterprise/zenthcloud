@@ -9,9 +9,9 @@ import (
 
 	"github.com/prometheus/common/model"
 
-	"github.com/cloudflare/pint/internal/checks"
-	"github.com/cloudflare/pint/internal/discovery"
-	"github.com/cloudflare/pint/internal/promapi"
+	"github.com/zenthcloud/pint/internal/checks"
+	"github.com/zenthcloud/pint/internal/discovery"
+	"github.com/zenthcloud/pint/internal/promapi"
 )
 
 func newSeriesCheck(prom *promapi.FailoverGroup) checks.RuleChecker {

@@ -71,7 +71,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("expression", {
 			type: "string",
 			description:
-				"Rego expression body for the policy. `package cloudflare.casb.custom` and `import rego.v1` are added automatically. Do not include package or import declarations. This field cannot be changed after creation. Maximum 4096 characters.",
+				"Rego expression body for the policy. `package zenthcloud.casb.custom` and `import rego.v1` are added automatically. Do not include package or import declarations. This field cannot be changed after creation. Maximum 4096 characters.",
 		})
 		.option("integration-ids", {
 			type: "string",
@@ -127,7 +127,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust casb finding-types create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/data-security/posture/finding_types`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/data-security/posture/finding_types`,
 						pathParams: {},
 						bodyKind: "json",
 						body:
@@ -221,7 +221,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 				if (argv["expression"] === undefined) {
 					argv["expression"] = await promptForRequiredField(
 						"expression",
-						"Rego expression body for the policy. \`package cloudflare.casb.custom\` and \`import rego.v1\` are added automatically. Do not include package or import declarations. This field cannot be changed after creation. Maximum 4096 characters."
+						"Rego expression body for the policy. \`package zenthcloud.casb.custom\` and \`import rego.v1\` are added automatically. Do not include package or import declarations. This field cannot be changed after creation. Maximum 4096 characters."
 					);
 				}
 				if (argv["name"] === undefined) {

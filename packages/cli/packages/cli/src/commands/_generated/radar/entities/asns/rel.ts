@@ -64,7 +64,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar entities asns rel",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/entities/asns/${argv["asn"] == null ? "<asn>" : encodeURIComponent(String(argv["asn"]))}/rel`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["asn"] == null ? "<asn>" : encodeURIComponent(String(argv["asn"]))}/rel`,
 						pathParams: { asn: String(argv["asn"] ?? "") },
 						query: queryParams,
 						bodyKind: "none",

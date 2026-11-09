@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/ruleset"
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/ruleset/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/ruleset"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/ruleset/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	providerschema "github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -172,7 +172,7 @@ func upgradeThroughProtocol(t *testing.T, version int64, input map[string]interf
 	require.NoError(t, err)
 	server := providerserver.NewProtocol6(&rulesetMigrationTestProvider{})()
 	response, err := server.UpgradeResourceState(context.Background(), &tfprotov6.UpgradeResourceStateRequest{
-		TypeName: "cloudflare_ruleset", Version: version, RawState: &tfprotov6.RawState{JSON: raw},
+		TypeName: "zenthcloud_ruleset", Version: version, RawState: &tfprotov6.RawState{JSON: raw},
 	})
 	require.NoError(t, err)
 	return response
@@ -190,7 +190,7 @@ func upgradedState(t *testing.T, response *tfprotov6.UpgradeResourceStateRespons
 type rulesetMigrationTestProvider struct{}
 
 func (*rulesetMigrationTestProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
-	resp.TypeName = "cloudflare"
+	resp.TypeName = "zenthcloud"
 	resp.Version = "test"
 }
 

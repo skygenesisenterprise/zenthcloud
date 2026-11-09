@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -134,7 +134,7 @@ static void compileCompatibilityFlags(kj::StringPtr compatDate,
       }
       break;
 
-    case CompatibilityDateValidation::CURRENT_DATE_FOR_CLOUDFLARE:
+    case CompatibilityDateValidation::CURRENT_DATE_FOR_ZENTHCLOUD:
       if (CompatDate::today() < parsedCompatDate) {
         errorReporter.addError(
             kj::str("Can't set compatibility date in the future: ", parsedCompatDate));
@@ -254,9 +254,9 @@ static void compileCompatibilityFlags(kj::StringPtr compatDate,
         }
       }
       if (!experimentalFlagAllowlisted) {
-        if (dateValidation == CompatibilityDateValidation::CURRENT_DATE_FOR_CLOUDFLARE) {
+        if (dateValidation == CompatibilityDateValidation::CURRENT_DATE_FOR_ZENTHCLOUD) {
           errorReporter.addError(kj::str("The compatibility flag ", enableFlagName,
-              " is experimental and cannot yet be used in Workers deployed to Cloudflare."));
+              " is experimental and cannot yet be used in Workers deployed to Zenthcloud."));
         } else {
           errorReporter.addError(kj::str("The compatibility flag ", enableFlagName,
               " is experimental and may break or be removed in a future version of workerd. To use "

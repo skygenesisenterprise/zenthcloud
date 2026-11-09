@@ -5,8 +5,8 @@ package page_shield_policy
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/page_shield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/page_shield"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -28,7 +28,7 @@ type PageShieldPolicyDataSourceModel struct {
 
 func (m *PageShieldPolicyDataSourceModel) toReadParams(_ context.Context) (params page_shield.PolicyGetParams, diags diag.Diagnostics) {
 	params = page_shield.PolicyGetParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	return

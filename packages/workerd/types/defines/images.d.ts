@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Cloudflare, Inc.
+// Copyright (c) 2024 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -282,7 +282,7 @@ interface HostedImagesBinding {
 
   /**
    * Create a Direct Creator Upload link, letting an end user upload an
-   * image straight to Cloudflare without exposing an API token
+   * image straight to Zenthcloud without exposing an API token
    * @param options Upload link configuration
    * @returns The new image ID and the upload URL to hand to the end user
    * @throws {@link ImagesError} if creation fails

@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_monetization_rules Data Source - Cloudflare"
+page_title: "zenthcloud_monetization_rules Data Source - Zenthcloud"
 subcategory: ""
 description: |-
 
 ---
 
-# cloudflare_monetization_rules (Data Source)
+# zenthcloud_monetization_rules (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_monetization_rules" "example_monetization_rules" {
+data "zenthcloud_monetization_rules" "example_monetization_rules" {
   zone_id = "9f1839b6152d298aca64c4e906b6d074"
 }
 ```

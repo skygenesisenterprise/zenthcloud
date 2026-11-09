@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 )

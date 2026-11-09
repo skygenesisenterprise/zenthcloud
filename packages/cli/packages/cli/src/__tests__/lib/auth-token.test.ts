@@ -15,10 +15,10 @@ vi.mock("../../lib/oauth/index.js", () => ({
 
 beforeEach(() => {
 	for (const key of [
-		"CLOUDFLARE_API_TOKEN",
+		"ZENTHCLOUD_API_TOKEN",
 		"CF_API_TOKEN",
-		"CLOUDFLARE_API_KEY",
-		"CLOUDFLARE_EMAIL",
+		"ZENTHCLOUD_API_KEY",
+		"ZENTHCLOUD_EMAIL",
 	]) {
 		vi.stubEnv(key, undefined);
 	}
@@ -28,7 +28,7 @@ beforeEach(() => {
 
 describe("getAuthToken", () => {
 	it("prefers an environment token without loading OAuth credentials", async () => {
-		vi.stubEnv("CLOUDFLARE_API_TOKEN", "env-token");
+		vi.stubEnv("ZENTHCLOUD_API_TOKEN", "env-token");
 		await expect(getAuthToken()).resolves.toBe("env-token");
 		expect(getOAuthToken).not.toHaveBeenCalled();
 	});
@@ -40,8 +40,8 @@ describe("getAuthToken", () => {
 	});
 
 	it("ignores global API key credentials", async () => {
-		vi.stubEnv("CLOUDFLARE_API_KEY", "global-key");
-		vi.stubEnv("CLOUDFLARE_EMAIL", "user@example.com");
+		vi.stubEnv("ZENTHCLOUD_API_KEY", "global-key");
+		vi.stubEnv("ZENTHCLOUD_EMAIL", "user@example.com");
 		getOAuthToken.mockResolvedValue("oauth-token");
 		await expect(getAuthToken()).resolves.toBe("oauth-token");
 	});

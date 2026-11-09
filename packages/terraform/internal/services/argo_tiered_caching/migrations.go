@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/argo_tiered_caching/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/argo_tiered_caching/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -22,7 +22,7 @@ var _ resource.ResourceWithMoveState = (*ArgoTieredCachingResource)(nil)
 // UpgradeState registers state upgraders for schema version changes.
 //
 // This handles two upgrade paths:
-// 1. v4 state (schema_version=0) → v5 (version=500): Full transformation from cloudflare_argo
+// 1. v4 state (schema_version=0) → v5 (version=500): Full transformation from zenthcloud_argo
 // 2. v5 state (version=1) → v5 (version=500): No-op upgrade
 //
 // The separation of schema versions (v4=0, v5=1/500) eliminates the need for
@@ -30,10 +30,10 @@ var _ resource.ResourceWithMoveState = (*ArgoTieredCachingResource)(nil)
 func (r *ArgoTieredCachingResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
 	targetSchema := ResourceSchema(ctx)
 
-	sourceSchema := v500.SourceCloudflareArgoSchema()
+	sourceSchema := v500.SourceZenthcloudArgoSchema()
 
 	return map[int64]resource.StateUpgrader{
-		// Handle state from v4 SDKv2 provider cloudflare_argo (schema_version=0)
+		// Handle state from v4 SDKv2 provider zenthcloud_argo (schema_version=0)
 		0: {
 			PriorSchema:   &sourceSchema,
 			StateUpgrader: v500.UpgradeArgoToTieredCaching,
@@ -48,8 +48,8 @@ func (r *ArgoTieredCachingResource) UpgradeState(ctx context.Context) map[int64]
 	}
 }
 
-// tieredCacheSourceSchema defines the source schema for moves from cloudflare_tiered_cache
-// This represents the v4 cloudflare_tiered_cache schema that we're moving FROM
+// tieredCacheSourceSchema defines the source schema for moves from zenthcloud_tiered_cache
+// This represents the v4 zenthcloud_tiered_cache schema that we're moving FROM
 var tieredCacheSourceSchema = schema.Schema{
 	Attributes: map[string]schema.Attribute{
 		"id": schema.StringAttribute{
@@ -75,24 +75,24 @@ var tieredCacheSourceSchema = schema.Schema{
 
 // MoveState implements ResourceWithMoveState interface
 // This enables moving state from TWO different source resources:
-// 1. cloudflare_tiered_cache (with cache_type="generic") → cloudflare_argo_tiered_caching (with value="on")
-// 2. cloudflare_argo (with tiered_caching attribute) → cloudflare_argo_tiered_caching (with value from tiered_caching)
+// 1. zenthcloud_tiered_cache (with cache_type="generic") → zenthcloud_argo_tiered_caching (with value="on")
+// 2. zenthcloud_argo (with tiered_caching attribute) → zenthcloud_argo_tiered_caching (with value from tiered_caching)
 func (r *ArgoTieredCachingResource) MoveState(ctx context.Context) []resource.StateMover {
-	argoSourceSchema := v500.SourceCloudflareArgoSchema()
+	argoSourceSchema := v500.SourceZenthcloudArgoSchema()
 
 	return []resource.StateMover{
-		// StateMover 1: cloudflare_argo → cloudflare_argo_tiered_caching
+		// StateMover 1: zenthcloud_argo → zenthcloud_argo_tiered_caching
 		{
 			SourceSchema: &argoSourceSchema,
 			StateMover:   v500.MoveArgoToTieredCaching,
 		},
-		// StateMover 2: cloudflare_tiered_cache → cloudflare_argo_tiered_caching
+		// StateMover 2: zenthcloud_tiered_cache → zenthcloud_argo_tiered_caching
 		{
 			SourceSchema: &tieredCacheSourceSchema,
 			StateMover: func(ctx context.Context, req resource.MoveStateRequest, resp *resource.MoveStateResponse) {
-				tflog.Info(ctx, "Starting state move from cloudflare_tiered_cache to cloudflare_argo_tiered_caching")
+				tflog.Info(ctx, "Starting state move from zenthcloud_tiered_cache to zenthcloud_argo_tiered_caching")
 
-				// Define source state structure (from cloudflare_tiered_cache)
+				// Define source state structure (from zenthcloud_tiered_cache)
 				var sourceState struct {
 					ID         types.String      `tfsdk:"id"`
 					ZoneID     types.String      `tfsdk:"zone_id"`
@@ -118,12 +118,12 @@ func (r *ArgoTieredCachingResource) MoveState(ctx context.Context) []resource.St
 				if !sourceState.CacheType.IsNull() && sourceState.CacheType.ValueString() != "generic" {
 					resp.Diagnostics.AddError(
 						"Invalid State Move",
-						fmt.Sprintf("Cannot move cloudflare_tiered_cache with cache_type='%s' to cloudflare_argo_tiered_caching. Only cache_type='generic' should be moved to this resource type.", sourceState.CacheType.ValueString()),
+						fmt.Sprintf("Cannot move zenthcloud_tiered_cache with cache_type='%s' to zenthcloud_argo_tiered_caching. Only cache_type='generic' should be moved to this resource type.", sourceState.CacheType.ValueString()),
 					)
 					return
 				}
 
-				// Create the target state (for cloudflare_argo_tiered_caching)
+				// Create the target state (for zenthcloud_argo_tiered_caching)
 				targetState := ArgoTieredCachingModel{
 					ID:       sourceState.ID,       // Preserve ID
 					ZoneID:   sourceState.ZoneID,   // Preserve zone_id
@@ -150,7 +150,7 @@ func (r *ArgoTieredCachingResource) MoveState(ctx context.Context) []resource.St
 					return
 				}
 
-				tflog.Info(ctx, "State move from cloudflare_tiered_cache to cloudflare_argo_tiered_caching completed successfully")
+				tflog.Info(ctx, "State move from zenthcloud_tiered_cache to zenthcloud_argo_tiered_caching completed successfully")
 			},
 		},
 	}

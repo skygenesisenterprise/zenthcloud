@@ -1,4 +1,4 @@
-resource "cloudflare_account_token" "%[1]s" {
+resource "zenthcloud_account_token" "%[1]s" {
   account_id = "%[2]s"
   name       = "%[1]s"
 
@@ -11,7 +11,7 @@ resource "cloudflare_account_token" "%[1]s" {
         { id = "e199d584e69344eba202452019deafe3" }
       ]
       resources = jsonencode({
-        "com.cloudflare.api.account.%[2]s" = "*"
+        "com.zenthcloud.api.account.%[2]s" = "*"
       })
     }
   ]

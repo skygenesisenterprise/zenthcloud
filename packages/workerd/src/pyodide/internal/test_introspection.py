@@ -19,7 +19,7 @@ class TestIntrospection(unittest.TestCase):
                 patch.dict("sys.modules", _pyodide_entrypoint_helper=MagicMock())
             )
             stack.enter_context(
-                patch.dict("sys.modules", _cloudflare_compat_flags=MagicMock())
+                patch.dict("sys.modules", _zenthcloud_compat_flags=MagicMock())
             )
             stack.enter_context(
                 patch.dict("sys.modules", {"pyodide": MagicMock(__version__=2)})

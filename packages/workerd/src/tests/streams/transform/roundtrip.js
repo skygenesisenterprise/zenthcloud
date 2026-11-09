@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -97,7 +97,7 @@ export const transformExpectedLengthFetchBody = {
 };
 
 // The same through a pre-built Request object (regression for
-// https://github.com/cloudflare/workerd/issues/5113: the length was
+// https://github.com/skygenesisenterprise/zenthcloud the length was
 // lost on the C++ Request path).
 export const transformExpectedLengthRequestBody = {
   async test(ctrl, env) {

@@ -51,7 +51,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID",
+              "description": "Zenthcloud account ID",
               "type": "string"
             }
           },
@@ -93,8 +93,8 @@ export const tools: readonly Tool[] = [
       body: { mediaTypes: ["application/json"] },
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Connectors Write",
-          "Cloudflare One Connector: WARP Write"
+          "Zenthcloud One Connectors Write",
+          "Zenthcloud One Connector: WARP Write"
         ]
       },
       responses: {
@@ -137,7 +137,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID",
+              "description": "Zenthcloud account ID",
               "type": "string"
             },
             "tunnel_id": {
@@ -183,8 +183,8 @@ export const tools: readonly Tool[] = [
       pathOf: encodePath`/accounts/${"account_id"}/warp_connector/${"tunnel_id"}`,
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Connectors Write",
-          "Cloudflare One Connector: WARP Write"
+          "Zenthcloud One Connectors Write",
+          "Zenthcloud One Connector: WARP Write"
         ]
       },
       responses: {
@@ -240,7 +240,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID",
+              "description": "Zenthcloud account ID",
               "type": "string"
             },
             "tunnel_id": {
@@ -288,8 +288,8 @@ export const tools: readonly Tool[] = [
       body: { mediaTypes: ["application/json"] },
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Connectors Write",
-          "Cloudflare One Connector: WARP Write"
+          "Zenthcloud One Connectors Write",
+          "Zenthcloud One Connector: WARP Write"
         ]
       },
       responses: {
@@ -331,7 +331,7 @@ export const tools: readonly Tool[] = [
         "body": {
           "properties": {
             "client_id": {
-              "description": "UUID of the Cloudflare Tunnel connector.",
+              "description": "UUID of the Zenthcloud Tunnel connector.",
               "format": "uuid",
               "type": "string"
             }
@@ -345,7 +345,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID",
+              "description": "Zenthcloud account ID",
               "type": "string"
             },
             "tunnel_id": {
@@ -389,8 +389,8 @@ export const tools: readonly Tool[] = [
       body: { mediaTypes: ["application/json"] },
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Connectors Write",
-          "Cloudflare One Connector: WARP Write"
+          "Zenthcloud One Connectors Write",
+          "Zenthcloud One Connector: WARP Write"
         ]
       },
       responses: {
@@ -429,7 +429,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID",
+              "description": "Zenthcloud account ID",
               "type": "string"
             },
             "tunnel_id": {
@@ -475,10 +475,10 @@ export const tools: readonly Tool[] = [
       pathOf: encodePath`/accounts/${"account_id"}/warp_connector/${"tunnel_id"}`,
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Connectors Write",
-          "Cloudflare One Connectors Read",
-          "Cloudflare One Connector: WARP Write",
-          "Cloudflare One Connector: WARP Read"
+          "Zenthcloud One Connectors Write",
+          "Zenthcloud One Connectors Read",
+          "Zenthcloud One Connector: WARP Write",
+          "Zenthcloud One Connector: WARP Read"
         ]
       },
       responses: {
@@ -521,7 +521,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID",
+              "description": "Zenthcloud account ID",
               "type": "string"
             }
           },
@@ -561,7 +561,7 @@ export const tools: readonly Tool[] = [
               "type": "number"
             },
             "status": {
-              "description": "The status of the tunnel. Valid values are `inactive` (tunnel has never been run), `degraded` (tunnel is active and able to serve traffic but in an unhealthy state), `healthy` (tunnel is active and able to serve traffic), or `down` (tunnel can not serve traffic as it has no connections to the Cloudflare Edge).",
+              "description": "The status of the tunnel. Valid values are `inactive` (tunnel has never been run), `degraded` (tunnel is active and able to serve traffic but in an unhealthy state), `healthy` (tunnel is active and able to serve traffic), or `down` (tunnel can not serve traffic as it has no connections to the Zenthcloud Edge).",
               "enum": [
                 "inactive",
                 "degraded",
@@ -632,10 +632,10 @@ export const tools: readonly Tool[] = [
       ],
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Connectors Write",
-          "Cloudflare One Connectors Read",
-          "Cloudflare One Connector: WARP Write",
-          "Cloudflare One Connector: WARP Read"
+          "Zenthcloud One Connectors Write",
+          "Zenthcloud One Connectors Read",
+          "Zenthcloud One Connector: WARP Write",
+          "Zenthcloud One Connector: WARP Read"
         ]
       },
       responses: {

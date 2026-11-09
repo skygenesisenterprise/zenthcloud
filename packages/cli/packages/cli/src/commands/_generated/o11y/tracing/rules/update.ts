@@ -16,7 +16,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 o11y tracing rules update\n\nReplace all sampling overrides in a zone's managed Cloudflare Traces ruleset. Rules are evaluated in the supplied order."
+			"$0 o11y tracing rules update\n\nReplace all sampling overrides in a zone's managed Zenthcloud Traces ruleset. Rules are evaluated in the supplied order."
 		)
 		.option("rules", {
 			type: "string",
@@ -54,7 +54,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf o11y tracing rules update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/observability/tracing/rules`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/observability/tracing/rules`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 						},

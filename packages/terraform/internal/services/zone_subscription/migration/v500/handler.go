@@ -9,8 +9,8 @@ import (
 
 // UpgradeFromV0 handles state upgrades from early v5 provider (schema_version=0) to v5 (version=500).
 //
-// cloudflare_zone_subscription is a new v5 resource with no v4 counterpart (zone subscriptions
-// were previously managed via the `plan` attribute on cloudflare_zone). All state at version 0
+// zenthcloud_zone_subscription is a new v5 resource with no v4 counterpart (zone subscriptions
+// were previously managed via the `plan` attribute on zenthcloud_zone). All state at version 0
 // is already in v5 format, so this is a no-op that just bumps the schema version.
 func UpgradeFromV0(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
 	tflog.Info(ctx, "Upgrading zone_subscription state from version=0 to version=500 (no-op)")

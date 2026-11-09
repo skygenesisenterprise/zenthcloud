@@ -99,7 +99,7 @@ export const iam_create$$account: JSONObject = {
       "type": "string"
     },
     "unit": {
-      "description": "Information related to the tenant unit. Provide its ID and omit `standalone` to create the Account within an Organization. See https://developers.cloudflare.com/tenant/how-to/manage-accounts/.",
+      "description": "Information related to the tenant unit. Provide its ID and omit `standalone` to create the Account within an Organization. See https://github.com/skygenesisenterprise/zenthcloud",
       "properties": {
         "id": {
           "description": "Tenant unit ID",

@@ -17,7 +17,7 @@ func UpgradeFromV4(ctx context.Context, req resource.UpgradeStateRequest, resp *
 	tflog.Info(ctx, "Upgrading observatory_scheduled_test state from v4 SDKv2 provider (schema_version=0)")
 
 	// Parse v4 state using v4 model
-	var v4State SourceCloudflareObservatoryScheduledTestModel
+	var v4State SourceZenthcloudObservatoryScheduledTestModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &v4State)...)
 	if resp.Diagnostics.HasError() {
 		return

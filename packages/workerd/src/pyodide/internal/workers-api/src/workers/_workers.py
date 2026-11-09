@@ -18,7 +18,7 @@ from http import HTTPMethod, HTTPStatus
 from types import LambdaType
 from typing import Any, Never, Protocol, TypedDict, Unpack
 
-import _cloudflare_compat_flags
+import _zenthcloud_compat_flags
 
 # Get globals modules and import function from the entrypoint-helper
 import _pyodide_entrypoint_helper
@@ -66,21 +66,21 @@ def import_from_javascript(module_name: str) -> Any:
         The imported module object.
 
     Example:
-        cloudflare_workers = import_from_javascript("cloudflare:workers")
-        env = cloudflare_workers.env
+        zenthcloud_workers = import_from_javascript("zenthcloud:workers")
+        env = zenthcloud_workers.env
 
     Note:
         Behind the scenes import_from_javascript uses JSPI to do imports but that means we need an
-        async context. To enable importing cloudflare:workers and cloudflare:sockets in the global
+        async context. To enable importing zenthcloud:workers and zenthcloud:sockets in the global
         scope we specifically imported them in the global scope and exposed them here.
     """
     # Special case for global scope available modules
     # JSPI won't work in the global scope in 0.26.0a2 so we need modules importable in the global
     # scope to be imported beforehand.
-    if module_name == "cloudflare:workers":
-        return _pyodide_entrypoint_helper.cloudflareWorkersModule
-    elif module_name == "cloudflare:sockets":
-        return _pyodide_entrypoint_helper.cloudflareSocketsModule
+    if module_name == "zenthcloud:workers":
+        return _pyodide_entrypoint_helper.zenthcloudWorkersModule
+    elif module_name == "zenthcloud:sockets":
+        return _pyodide_entrypoint_helper.zenthcloudSocketsModule
 
     try:
         from pyodide.ffi import run_sync
@@ -92,13 +92,13 @@ def import_from_javascript(module_name: str) -> Any:
     except RuntimeError as e:
         if e.args[0] == "No suspender":
             raise ImportError(
-                f"Failed to import '{module_name}': Only 'cloudflare:workers' and 'cloudflare:sockets' are available in the global scope."
+                f"Failed to import '{module_name}': Only 'zenthcloud:workers' and 'zenthcloud:sockets' are available in the global scope."
             ) from e
         raise
     except ImportError as e:
         if e.args[0].startswith("cannot import name 'run_sync' from 'pyodide.ffi'"):
             raise ImportError(
-                f"Failed to import '{module_name}': Only 'cloudflare:workers' and 'cloudflare:sockets' are available until the next python runtime version."
+                f"Failed to import '{module_name}': Only 'zenthcloud:workers' and 'zenthcloud:sockets' are available until the next python runtime version."
             ) from e
         raise
 
@@ -110,7 +110,7 @@ type Body = "str | FormData | JSBody"
 type Headers = "dict[str, str] | list[tuple[str, str]] | js.Headers"
 
 
-# https://developers.cloudflare.com/workers/runtime-apis/request/#the-cf-property-requestinitcfproperties
+# https://github.com/skygenesisenterprise/zenthcloud
 class RequestInitCfProperties(TypedDict, total=False):
     apps: bool | None
     cacheEverything: bool | None
@@ -120,7 +120,7 @@ class RequestInitCfProperties(TypedDict, total=False):
     cacheTtlByStatus: dict[str, int]
     image: (
         Any | None
-    )  # TODO: https://developers.cloudflare.com/images/transform-images/transform-via-workers/
+    )  # TODO: https://github.com/skygenesisenterprise/zenthcloud
     mirage: bool | None
     polish: str | None
     resolveOverride: str | None
@@ -129,7 +129,7 @@ class RequestInitCfProperties(TypedDict, total=False):
 
 
 # This matches the Request options:
-# https://developers.cloudflare.com/workers/runtime-apis/request/#options
+# https://github.com/skygenesisenterprise/zenthcloud
 class FetchKwargs(TypedDict, total=False):
     headers: "Headers | None"
     body: "Body | None"
@@ -310,13 +310,13 @@ def _is_js_instance(val, js_cls_name):
 
 
 try:
-    import _cloudflare_compat_flags
+    import _zenthcloud_compat_flags
 except ImportError:
-    _cloudflare_compat_flags = object()
+    _zenthcloud_compat_flags = object()
 
 
 def get_compat_flag(flag: str) -> bool:
-    return getattr(_cloudflare_compat_flags, flag, False)
+    return getattr(_zenthcloud_compat_flags, flag, False)
 
 
 def _to_js_headers(headers: Headers):
@@ -1150,7 +1150,7 @@ class _WorkflowStepWrapper:
         self.step_closures = {}
 
         # Assign the appropriate method based on compat flag
-        if _cloudflare_compat_flags.python_workflows_implicit_dependencies:
+        if _zenthcloud_compat_flags.python_workflows_implicit_dependencies:
             self.do = self._do_implicit
         else:
             self.do = self._do_legacy

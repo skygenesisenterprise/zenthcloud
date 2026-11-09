@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Cloudflare Workers Team <workers@cloudflare.com>
+From: Zenthcloud Workers Team <workers@zenthcloud.com>
 Date: Mon, 10 Aug 2026 18:00:00 +0000
 Subject: Fix TSan build without the V8 sandbox
 

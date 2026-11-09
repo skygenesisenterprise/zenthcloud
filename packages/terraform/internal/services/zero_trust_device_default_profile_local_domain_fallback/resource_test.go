@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -18,7 +18,7 @@ import (
 )
 
 var (
-	accountID = os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID = os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 )
 
 func TestMain(m *testing.M) {
@@ -26,13 +26,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zero_trust_device_default_profile_local_domain_fallback", &resource.Sweeper{
-		Name: "cloudflare_zero_trust_device_default_profile_local_domain_fallback",
-		F:    testSweepCloudflareZeroTrustDeviceDefaultProfileLocalDomainFallback,
+	resource.AddTestSweepers("zenthcloud_zero_trust_device_default_profile_local_domain_fallback", &resource.Sweeper{
+		Name: "zenthcloud_zero_trust_device_default_profile_local_domain_fallback",
+		F:    testSweepZenthcloudZeroTrustDeviceDefaultProfileLocalDomainFallback,
 	})
 }
 
-func testSweepCloudflareZeroTrustDeviceDefaultProfileLocalDomainFallback(r string) error {
+func testSweepZenthcloudZeroTrustDeviceDefaultProfileLocalDomainFallback(r string) error {
 	ctx := context.Background()
 	// Device Default Profile Local Domain Fallback is an account-level fallback domain setting for the default device profile.
 	// It's a singleton setting per account, not something that accumulates.
@@ -41,17 +41,17 @@ func testSweepCloudflareZeroTrustDeviceDefaultProfileLocalDomainFallback(r strin
 	return nil
 }
 
-func TestAccCloudflareFallbackDomain_Basic(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudFallbackDomain_Basic(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_device_default_profile_local_domain_fallback.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_device_default_profile_local_domain_fallback.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -60,7 +60,7 @@ func TestAccCloudflareFallbackDomain_Basic(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareDefaultFallbackDomain(rnd, accountID, "example domain", "example.com", "1.0.0.1"),
+				Config: testAccZenthcloudDefaultFallbackDomain(rnd, accountID, "example domain", "example.com", "1.0.0.1"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("domains"), knownvalue.SetSizeExact(1)),
@@ -74,7 +74,7 @@ func TestAccCloudflareFallbackDomain_Basic(t *testing.T) {
 				},
 			},
 			{
-				Config:   testAccCloudflareDefaultFallbackDomain(rnd, accountID, "example domain", "example.com", "1.0.0.1"),
+				Config:   testAccZenthcloudDefaultFallbackDomain(rnd, accountID, "example domain", "example.com", "1.0.0.1"),
 				PlanOnly: true,
 			},
 			{
@@ -84,23 +84,23 @@ func TestAccCloudflareFallbackDomain_Basic(t *testing.T) {
 				ImportStateId:     accountID,
 			},
 			{
-				Config:   testAccCloudflareDefaultFallbackDomain(rnd, accountID, "example domain", "example.com", "1.0.0.1"),
+				Config:   testAccZenthcloudDefaultFallbackDomain(rnd, accountID, "example domain", "example.com", "1.0.0.1"),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareFallbackDomain_DefaultPolicy(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudFallbackDomain_DefaultPolicy(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_device_default_profile_local_domain_fallback.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_device_default_profile_local_domain_fallback.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -109,7 +109,7 @@ func TestAccCloudflareFallbackDomain_DefaultPolicy(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareDefaultFallbackDomain(rnd, accountID, "second example domain", "example.net", "1.1.1.1"),
+				Config: testAccZenthcloudDefaultFallbackDomain(rnd, accountID, "second example domain", "example.net", "1.1.1.1"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("domains"), knownvalue.SetSizeExact(1)),
@@ -123,7 +123,7 @@ func TestAccCloudflareFallbackDomain_DefaultPolicy(t *testing.T) {
 				},
 			},
 			{
-				Config:   testAccCloudflareDefaultFallbackDomain(rnd, accountID, "second example domain", "example.net", "1.1.1.1"),
+				Config:   testAccZenthcloudDefaultFallbackDomain(rnd, accountID, "second example domain", "example.net", "1.1.1.1"),
 				PlanOnly: true,
 			},
 			{
@@ -133,23 +133,23 @@ func TestAccCloudflareFallbackDomain_DefaultPolicy(t *testing.T) {
 				ImportStateId:     accountID,
 			},
 			{
-				Config:   testAccCloudflareDefaultFallbackDomain(rnd, accountID, "second example domain", "example.net", "1.1.1.1"),
+				Config:   testAccZenthcloudDefaultFallbackDomain(rnd, accountID, "second example domain", "example.net", "1.1.1.1"),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareFallbackDomain_MultipleDomains(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudFallbackDomain_MultipleDomains(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_device_default_profile_local_domain_fallback.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_device_default_profile_local_domain_fallback.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -158,14 +158,14 @@ func TestAccCloudflareFallbackDomain_MultipleDomains(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareDefaultFallbackDomain_MultipleDomains(rnd, accountID),
+				Config: testAccZenthcloudDefaultFallbackDomain_MultipleDomains(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("domains"), knownvalue.SetSizeExact(4)),
 				},
 			},
 			{
-				Config:   testAccCloudflareDefaultFallbackDomain_MultipleDomains(rnd, accountID),
+				Config:   testAccZenthcloudDefaultFallbackDomain_MultipleDomains(rnd, accountID),
 				PlanOnly: true,
 			},
 			{
@@ -175,41 +175,41 @@ func TestAccCloudflareFallbackDomain_MultipleDomains(t *testing.T) {
 				ImportStateId:     accountID,
 			},
 			{
-				Config:   testAccCloudflareDefaultFallbackDomain_MultipleDomains(rnd, accountID),
+				Config:   testAccZenthcloudDefaultFallbackDomain_MultipleDomains(rnd, accountID),
 				PlanOnly: true,
 			},
 			{
-				Config: testAccCloudflareDefaultFallbackDomain_MultipleDomainsUpdated(rnd, accountID),
+				Config: testAccZenthcloudDefaultFallbackDomain_MultipleDomainsUpdated(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("domains"), knownvalue.SetSizeExact(3)),
 				},
 			},
 			{
-				Config:   testAccCloudflareDefaultFallbackDomain_MultipleDomainsUpdated(rnd, accountID),
+				Config:   testAccZenthcloudDefaultFallbackDomain_MultipleDomainsUpdated(rnd, accountID),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func testAccCloudflareDefaultFallbackDomain(rnd, accountID string, description string, suffix string, dns_server string) string {
+func testAccZenthcloudDefaultFallbackDomain(rnd, accountID string, description string, suffix string, dns_server string) string {
 	return acctest.LoadTestCase("defaultfallbackdomain.tf", rnd, accountID, description, suffix, dns_server)
 }
 
-func testAccCloudflareDefaultFallbackDomain_MultipleDomains(rnd, accountID string) string {
+func testAccZenthcloudDefaultFallbackDomain_MultipleDomains(rnd, accountID string) string {
 	return acctest.LoadTestCase("defaultfallbackdomain_multiple-domains.tf", rnd, accountID)
 }
 
-func testAccCloudflareDefaultFallbackDomain_MultipleDomainsUpdated(rnd, accountID string) string {
+func testAccZenthcloudDefaultFallbackDomain_MultipleDomainsUpdated(rnd, accountID string) string {
 	return acctest.LoadTestCase("defaultfallbackdomain_multiple-domains_updated.tf", rnd, accountID)
 }
 
 func TestAccUpgradeZeroTrustDeviceDefaultProfileLocalDomainFallback_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
-	config := testAccCloudflareDefaultFallbackDomain(rnd, accountID, "example domain", "example.com", "1.0.0.1")
+	config := testAccZenthcloudDefaultFallbackDomain(rnd, accountID, "example domain", "example.com", "1.0.0.1")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -218,8 +218,8 @@ func TestAccUpgradeZeroTrustDeviceDefaultProfileLocalDomainFallback_FromPublishe
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},
@@ -238,13 +238,13 @@ func TestAccUpgradeZeroTrustDeviceDefaultProfileLocalDomainFallback_FromPublishe
 	})
 }
 
-func TestAccCloudflareFallbackDomain_MultipleDnsServers(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+func TestAccZenthcloudFallbackDomain_MultipleDnsServers(t *testing.T) {
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_device_default_profile_local_domain_fallback.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_device_default_profile_local_domain_fallback.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -253,7 +253,7 @@ func TestAccCloudflareFallbackDomain_MultipleDnsServers(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareDefaultFallbackDomain_MultipleDnsServers(rnd, accountID),
+				Config: testAccZenthcloudDefaultFallbackDomain_MultipleDnsServers(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("domains"), knownvalue.SetSizeExact(1)),
@@ -271,7 +271,7 @@ func TestAccCloudflareFallbackDomain_MultipleDnsServers(t *testing.T) {
 				},
 			},
 			{
-				Config:   testAccCloudflareDefaultFallbackDomain_MultipleDnsServers(rnd, accountID),
+				Config:   testAccZenthcloudDefaultFallbackDomain_MultipleDnsServers(rnd, accountID),
 				PlanOnly: true,
 			},
 			{
@@ -281,20 +281,20 @@ func TestAccCloudflareFallbackDomain_MultipleDnsServers(t *testing.T) {
 				ImportStateId:     accountID,
 			},
 			{
-				Config:   testAccCloudflareDefaultFallbackDomain_MultipleDnsServers(rnd, accountID),
+				Config:   testAccZenthcloudDefaultFallbackDomain_MultipleDnsServers(rnd, accountID),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareFallbackDomain_UpdateDomainAttributes(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+func TestAccZenthcloudFallbackDomain_UpdateDomainAttributes(t *testing.T) {
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_device_default_profile_local_domain_fallback.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zero_trust_device_default_profile_local_domain_fallback.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -303,7 +303,7 @@ func TestAccCloudflareFallbackDomain_UpdateDomainAttributes(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareDefaultFallbackDomain_UpdateAttrs(rnd, accountID, "Initial description", "192.168.1.1"),
+				Config: testAccZenthcloudDefaultFallbackDomain_UpdateAttrs(rnd, accountID, "Initial description", "192.168.1.1"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("domains"), knownvalue.SetSizeExact(1)),
@@ -317,7 +317,7 @@ func TestAccCloudflareFallbackDomain_UpdateDomainAttributes(t *testing.T) {
 				},
 			},
 			{
-				Config: testAccCloudflareDefaultFallbackDomain_UpdateAttrs(rnd, accountID, "Updated description", "10.10.10.10"),
+				Config: testAccZenthcloudDefaultFallbackDomain_UpdateAttrs(rnd, accountID, "Updated description", "10.10.10.10"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("domains"), knownvalue.SetSizeExact(1)),
@@ -331,7 +331,7 @@ func TestAccCloudflareFallbackDomain_UpdateDomainAttributes(t *testing.T) {
 				},
 			},
 			{
-				Config:   testAccCloudflareDefaultFallbackDomain_UpdateAttrs(rnd, accountID, "Updated description", "10.10.10.10"),
+				Config:   testAccZenthcloudDefaultFallbackDomain_UpdateAttrs(rnd, accountID, "Updated description", "10.10.10.10"),
 				PlanOnly: true,
 			},
 			{
@@ -341,17 +341,17 @@ func TestAccCloudflareFallbackDomain_UpdateDomainAttributes(t *testing.T) {
 				ImportStateId:     accountID,
 			},
 			{
-				Config:   testAccCloudflareDefaultFallbackDomain_UpdateAttrs(rnd, accountID, "Updated description", "10.10.10.10"),
+				Config:   testAccZenthcloudDefaultFallbackDomain_UpdateAttrs(rnd, accountID, "Updated description", "10.10.10.10"),
 				PlanOnly: true,
 			},
 		},
 	})
 }
 
-func testAccCloudflareDefaultFallbackDomain_MultipleDnsServers(rnd, accountID string) string {
+func testAccZenthcloudDefaultFallbackDomain_MultipleDnsServers(rnd, accountID string) string {
 	return acctest.LoadTestCase("defaultfallbackdomain_multiple-dns-servers.tf", rnd, accountID)
 }
 
-func testAccCloudflareDefaultFallbackDomain_UpdateAttrs(rnd, accountID, description, dnsServer string) string {
+func testAccZenthcloudDefaultFallbackDomain_UpdateAttrs(rnd, accountID, description, dnsServer string) string {
 	return acctest.LoadTestCase("defaultfallbackdomain_update-attrs.tf", rnd, accountID, description, dnsServer)
 }

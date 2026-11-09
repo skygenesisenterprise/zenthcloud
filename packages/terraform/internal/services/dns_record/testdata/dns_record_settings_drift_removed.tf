@@ -1,4 +1,4 @@
-resource "cloudflare_dns_record" "%[1]s_a_with_settings" {
+resource "zenthcloud_dns_record" "%[1]s_a_with_settings" {
   zone_id = "%[2]s"
   name    = "tf-acctest-settings.%[1]s.%[3]s"
   type    = "CNAME"
@@ -8,7 +8,7 @@ resource "cloudflare_dns_record" "%[1]s_a_with_settings" {
   # Settings removed
 }
 
-resource "cloudflare_dns_record" "%[1]s_a_empty_settings" {
+resource "zenthcloud_dns_record" "%[1]s_a_empty_settings" {
   zone_id = "%[2]s"
   name    = "tf-acctest-empty-settings.%[1]s.%[3]s"
   type    = "A"

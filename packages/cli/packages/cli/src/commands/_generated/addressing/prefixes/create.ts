@@ -28,7 +28,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("asn", {
 			type: "number",
 			description:
-				"Autonomous System Number (ASN) the prefix will be advertised under. Use 13335 for Cloudflare's ASN, or your own ASN as an integer without the AS prefix. The IRR route and RPKI ROA must authorize this ASN.",
+				"Autonomous System Number (ASN) the prefix will be advertised under. Use 13335 for Zenthcloud's ASN, or your own ASN as an integer without the AS prefix. The IRR route and RPKI ROA must authorize this ASN.",
 		})
 		.option("cidr", {
 			type: "string",
@@ -37,7 +37,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("delegate-loa-creation", {
 			type: "boolean",
 			description:
-				"Whether Cloudflare is allowed to generate the LOA document on behalf of the prefix owner.",
+				"Whether Zenthcloud is allowed to generate the LOA document on behalf of the prefix owner.",
 			default: false,
 		})
 		.option("description", {
@@ -80,7 +80,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf addressing prefixes create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/addressing/prefixes`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/addressing/prefixes`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

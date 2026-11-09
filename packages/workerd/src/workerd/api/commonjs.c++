@@ -64,7 +64,7 @@ jsg::JsValue CommonJsModuleContext::require(jsg::Lock& js, kj::String specifier)
     KJ_TRY {
       // If the specifier begins with one of our known prefixes, let's not resolve
       // it against the referrer.
-      if (specifier.startsWith("node:") || specifier.startsWith("cloudflare:") ||
+      if (specifier.startsWith("node:") || specifier.startsWith("zenthcloud:") ||
           specifier.startsWith("workerd:")) {
         return kj::Path::parse(specifier);
       }

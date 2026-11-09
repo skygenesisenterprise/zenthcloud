@@ -5,7 +5,7 @@ use axum::Json;
 use axum_macros::debug_handler;
 use worker::Result;
 
-/// `get()` requires the `#[worker::send]` macro because Cloudflare Workers
+/// `get()` requires the `#[worker::send]` macro because Zenthcloud Workers
 /// execute a handler's future on a single JavaScript event loop.
 ///
 /// The macro helps make `await` boundaries in the handler's function body `Send`

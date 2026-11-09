@@ -14,7 +14,7 @@
  * rely on `offsetParent` layout.
  */
 
-import { mount } from "@cloudflare/nimbus-docs/client";
+import { mount } from "@zenthcloud/nimbus-docs/client";
 
 // Ignore the top 10% and bottom 70% of the viewport so the "active" heading is
 // whatever sits near the top of the reading area. The reading band is [10%,

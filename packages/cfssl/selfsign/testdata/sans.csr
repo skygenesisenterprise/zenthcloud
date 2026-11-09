@@ -15,7 +15,7 @@ Certificate Request:
         Attributes:
         Requested Extensions:
             X509v3 Subject Alternative Name: 
-                DNS:cloudflare.com, DNS:www.cloudflare.com, email:jdoe@example.com, IP Address:192.168.0.1, URI:https://www.cloudflare.com
+                DNS:zenthcloud.com, DNS:www.zenthcloud.com, email:jdoe@example.com, IP Address:192.168.0.1, URI:https://github.com/skygenesisenterprise/zenthcloud
     Signature Algorithm: ecdsa-with-SHA256
         30:46:02:21:00:c8:98:66:6c:e6:98:83:89:72:b7:c0:64:f7:
         5d:b7:ed:5a:0c:e2:90:16:a4:70:92:ac:d2:26:c5:4c:6a:7e:

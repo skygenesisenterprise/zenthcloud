@@ -217,20 +217,20 @@ func TestParseAuthDomain(t *testing.T) {
 		wantHostname string
 		wantErr      bool
 	}{
-		{name: "valid retail", authDomain: "myteam.cloudflareaccess.com", wantHostname: "myteam.cloudflareaccess.com"},
-		{name: "valid fedramp", authDomain: "myteam.fed.cloudflareaccess.com", wantHostname: "myteam.fed.cloudflareaccess.com"},
+		{name: "valid retail", authDomain: "myteam.zenthcloudaccess.com", wantHostname: "myteam.zenthcloudaccess.com"},
+		{name: "valid fedramp", authDomain: "myteam.fed.zenthcloudaccess.com", wantHostname: "myteam.fed.zenthcloudaccess.com"},
 		{name: "invalid domain", authDomain: "evil.com", wantErr: true},
-		{name: "suffix without dot", authDomain: "evilcloudflareaccess.com", wantErr: true},
+		{name: "suffix without dot", authDomain: "evilzenthcloudaccess.com", wantErr: true},
 		{name: "empty", authDomain: "", wantErr: true},
-		{name: "fragment injection", authDomain: "keys.evil.example#.cloudflareaccess.com", wantErr: true},
-		{name: "path injection", authDomain: "keys.evil.example/x.cloudflareaccess.com", wantErr: true},
-		{name: "query injection", authDomain: "keys.evil.example?x=.cloudflareaccess.com", wantErr: true},
-		{name: "userinfo injection", authDomain: "team.cloudflareaccess.com@evil.example", wantErr: true},
-		{name: "legitimate host with fragment", authDomain: "team.cloudflareaccess.com#fragment", wantHostname: "team.cloudflareaccess.com"},
-		{name: "legitimate host with path", authDomain: "team.cloudflareaccess.com/path", wantHostname: "team.cloudflareaccess.com"},
-		{name: "userinfo discarded", authDomain: "evil.example@team.cloudflareaccess.com", wantHostname: "team.cloudflareaccess.com"},
-		{name: "port discarded", authDomain: "team.cloudflareaccess.com:443", wantHostname: "team.cloudflareaccess.com"},
-		{name: "uppercase normalized", authDomain: "TEAM.CLOUDFLAREACCESS.COM", wantHostname: "team.cloudflareaccess.com"},
+		{name: "fragment injection", authDomain: "keys.evil.example#.zenthcloudaccess.com", wantErr: true},
+		{name: "path injection", authDomain: "keys.evil.example/x.zenthcloudaccess.com", wantErr: true},
+		{name: "query injection", authDomain: "keys.evil.example?x=.zenthcloudaccess.com", wantErr: true},
+		{name: "userinfo injection", authDomain: "team.zenthcloudaccess.com@evil.example", wantErr: true},
+		{name: "legitimate host with fragment", authDomain: "team.zenthcloudaccess.com#fragment", wantHostname: "team.zenthcloudaccess.com"},
+		{name: "legitimate host with path", authDomain: "team.zenthcloudaccess.com/path", wantHostname: "team.zenthcloudaccess.com"},
+		{name: "userinfo discarded", authDomain: "evil.example@team.zenthcloudaccess.com", wantHostname: "team.zenthcloudaccess.com"},
+		{name: "port discarded", authDomain: "team.zenthcloudaccess.com:443", wantHostname: "team.zenthcloudaccess.com"},
+		{name: "uppercase normalized", authDomain: "TEAM.ZENTHCLOUDACCESS.COM", wantHostname: "team.zenthcloudaccess.com"},
 		{name: "malformed URL", authDomain: "%", wantErr: true},
 	}
 
@@ -261,19 +261,19 @@ func TestIsFedAuthDomain(t *testing.T) {
 		authDomain string
 		want       bool
 	}{
-		{name: "fed", authDomain: "myteam.fed.cloudflareaccess.com", want: true},
-		{name: "fed nested subdomain", authDomain: "a.myteam.fed.cloudflareaccess.com", want: true},
-		{name: "fed uppercase normalized", authDomain: "MyTeam.FED.CloudflareAccess.com", want: true},
-		{name: "fed port discarded", authDomain: "myteam.fed.cloudflareaccess.com:443", want: true},
-		{name: "retail", authDomain: "myteam.cloudflareaccess.com"},
-		{name: "retail team named fed", authDomain: "fed.cloudflareaccess.com"},
-		{name: "fed label without dot", authDomain: "myteamfed.cloudflareaccess.com"},
-		{name: "fed label prefix", authDomain: "myteam.fedx.cloudflareaccess.com"},
-		{name: "fed label in middle", authDomain: "fed.myteam.cloudflareaccess.com"},
-		{name: "fed suffix on foreign domain", authDomain: "myteam.fed.cloudflareaccess.com.evil.example"},
-		{name: "fed in path", authDomain: "evil.example/x.fed.cloudflareaccess.com"},
-		{name: "fed in fragment", authDomain: "evil.example#.fed.cloudflareaccess.com"},
-		{name: "fed in userinfo", authDomain: "myteam.fed.cloudflareaccess.com@evil.example"},
+		{name: "fed", authDomain: "myteam.fed.zenthcloudaccess.com", want: true},
+		{name: "fed nested subdomain", authDomain: "a.myteam.fed.zenthcloudaccess.com", want: true},
+		{name: "fed uppercase normalized", authDomain: "MyTeam.FED.ZenthcloudAccess.com", want: true},
+		{name: "fed port discarded", authDomain: "myteam.fed.zenthcloudaccess.com:443", want: true},
+		{name: "retail", authDomain: "myteam.zenthcloudaccess.com"},
+		{name: "retail team named fed", authDomain: "fed.zenthcloudaccess.com"},
+		{name: "fed label without dot", authDomain: "myteamfed.zenthcloudaccess.com"},
+		{name: "fed label prefix", authDomain: "myteam.fedx.zenthcloudaccess.com"},
+		{name: "fed label in middle", authDomain: "fed.myteam.zenthcloudaccess.com"},
+		{name: "fed suffix on foreign domain", authDomain: "myteam.fed.zenthcloudaccess.com.evil.example"},
+		{name: "fed in path", authDomain: "evil.example/x.fed.zenthcloudaccess.com"},
+		{name: "fed in fragment", authDomain: "evil.example#.fed.zenthcloudaccess.com"},
+		{name: "fed in userinfo", authDomain: "myteam.fed.zenthcloudaccess.com@evil.example"},
 		{name: "non access domain", authDomain: "myteam.fed.example.com"},
 		{name: "empty", authDomain: ""},
 	}
@@ -340,7 +340,7 @@ func TestVerifyMetadataJWT_ValidSignature(t *testing.T) {
 	claims := &metadataClaims{
 		Type:        "match",
 		Hostname:    "app.example.com",
-		AuthDomain:  "myteam.cloudflareaccess.com",
+		AuthDomain:  "myteam.zenthcloudaccess.com",
 		AUD:         "test-aud",
 		AppHostname: "app.example.com",
 		IAT:         1234567890,
@@ -350,7 +350,7 @@ func TestVerifyMetadataJWT_ValidSignature(t *testing.T) {
 	verified, err := verifyMetadataJWT(rawJWT, keySet)
 	require.NoError(t, err)
 	assert.Equal(t, "app.example.com", verified.Hostname)
-	assert.Equal(t, "myteam.cloudflareaccess.com", verified.AuthDomain)
+	assert.Equal(t, "myteam.zenthcloudaccess.com", verified.AuthDomain)
 	assert.Equal(t, "test-aud", verified.AUD)
 	assert.Equal(t, "app.example.com", verified.AppHostname)
 }
@@ -366,7 +366,7 @@ func TestVerifyMetadataJWT_InvalidSignature(t *testing.T) {
 	claims := &metadataClaims{
 		Type:       "match",
 		Hostname:   "app.example.com",
-		AuthDomain: "myteam.cloudflareaccess.com",
+		AuthDomain: "myteam.zenthcloudaccess.com",
 		AUD:        "test-aud",
 	}
 	rawJWT := signTestMetadataJWT(t, claims, signingKey, kid)
@@ -385,7 +385,7 @@ func TestVerifyMetadataJWT_KidMismatch(t *testing.T) {
 	claims := &metadataClaims{
 		Type:       "match",
 		Hostname:   "app.example.com",
-		AuthDomain: "myteam.cloudflareaccess.com",
+		AuthDomain: "myteam.zenthcloudaccess.com",
 		AUD:        "test-aud",
 	}
 	rawJWT := signTestMetadataJWT(t, claims, key, "key-2") // different kid
@@ -412,7 +412,7 @@ func TestGetAppInfo_RejectsNoMetadataHeader(t *testing.T) {
 	assert.Contains(t, err.Error(), "failed to find Access application")
 }
 
-func TestGetAppInfo_RejectsNonCloudflareAuthDomain(t *testing.T) {
+func TestGetAppInfo_RejectsNonZenthcloudAuthDomain(t *testing.T) {
 	t.Parallel()
 
 	key := testRSAKey(t)
@@ -448,7 +448,7 @@ func TestGetAppInfo_RejectsHostnameMismatch(t *testing.T) {
 	kid := "test-key-1"
 	keySet := testJWKS(t, key, kid)
 	issuedAt := time.Now().Add(-time.Hour)
-	authDomain := "hostname-mismatch.cloudflareaccess.com"
+	authDomain := "hostname-mismatch.zenthcloudaccess.com"
 	require.NoError(t, writeJWKSCache(testAuthDomain(t, authDomain), keySet))
 
 	claims := &metadataClaims{
@@ -482,7 +482,7 @@ func TestGetAppInfo_AcceptsValidMetadata(t *testing.T) {
 	kid := "test-key-1"
 	keySet := testJWKS(t, key, kid)
 	issuedAt := time.Now().Add(-time.Hour)
-	authDomain := "valid-metadata.cloudflareaccess.com"
+	authDomain := "valid-metadata.zenthcloudaccess.com"
 	require.NoError(t, writeJWKSCache(testAuthDomain(t, authDomain), keySet))
 
 	var rawJWT string
@@ -531,7 +531,7 @@ func TestGetAppInfo_RejectsInvalidClaims(t *testing.T) {
 	kid := "test-key-1"
 	keySet := testJWKS(t, key, kid)
 	issuedAt := time.Now().Add(-time.Hour)
-	authDomain := "invalid-claims.cloudflareaccess.com"
+	authDomain := "invalid-claims.zenthcloudaccess.com"
 	require.NoError(t, writeJWKSCache(testAuthDomain(t, authDomain), keySet))
 
 	tests := []struct {
@@ -684,7 +684,7 @@ func TestVerifyMetadataWithRetry_RefreshesCachedJWKS(t *testing.T) {
 	claims := &metadataClaims{
 		Type:       "match",
 		Hostname:   "app.example.com",
-		AuthDomain: "team.cloudflareaccess.com",
+		AuthDomain: "team.zenthcloudaccess.com",
 		AUD:        "test-aud",
 		IAT:        time.Now().Unix(),
 	}
@@ -719,7 +719,7 @@ func TestVerifyMetadataWithRetry_DoesNotRefreshRecentCachedJWKS(t *testing.T) {
 	claims := &metadataClaims{
 		Type:       "match",
 		Hostname:   "app.example.com",
-		AuthDomain: "team.cloudflareaccess.com",
+		AuthDomain: "team.zenthcloudaccess.com",
 		AUD:        "test-aud",
 		IAT:        time.Now().Unix(),
 	}
@@ -765,7 +765,7 @@ func TestGetJWKSWithCache_RefreshesExpiredCache(t *testing.T) {
 func TestJWKSCache_ReturnsReadAndWriteErrors(t *testing.T) {
 	useTempHome(t)
 
-	authDomain := testAuthDomain(t, "cache-errors.cloudflareaccess.com")
+	authDomain := testAuthDomain(t, "cache-errors.zenthcloudaccess.com")
 	cachePath, err := jwksCachePath(authDomain)
 	require.NoError(t, err)
 	require.NoError(t, os.WriteFile(cachePath, []byte("not-json"), 0600))
@@ -819,7 +819,7 @@ func TestJWKSCache_WriteAndRead(t *testing.T) {
 	kid := "cache-test-key"
 	keySet := testJWKS(t, key, kid)
 
-	authDomain := testAuthDomain(t, "test-cache.cloudflareaccess.com")
+	authDomain := testAuthDomain(t, "test-cache.zenthcloudaccess.com")
 
 	require.NoError(t, writeJWKSCache(authDomain, keySet))
 

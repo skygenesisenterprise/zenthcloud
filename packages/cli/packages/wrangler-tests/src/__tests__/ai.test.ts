@@ -83,7 +83,7 @@ describe("ai commands", () => {
 			    "source": 1,
 			    "task": null,
 			    "tags": [],
-			    "name": "@cloudflare/embeddings_bge_large_en",
+			    "name": "@zenthcloud/embeddings_bge_large_en",
 			    "description": null
 			  },
 			  {
@@ -95,7 +95,7 @@ describe("ai commands", () => {
 			      "description": null
 			    },
 			    "tags": [],
-			    "name": "@cloudflare/resnet50",
+			    "name": "@zenthcloud/resnet50",
 			    "description": null
 			  }
 			]"
@@ -173,7 +173,7 @@ function mockAISearchRequest() {
 								source: 1,
 								task: null,
 								tags: [],
-								name: "@cloudflare/embeddings_bge_large_en",
+								name: "@zenthcloud/embeddings_bge_large_en",
 								description: null,
 							},
 							{
@@ -185,7 +185,7 @@ function mockAISearchRequest() {
 									description: null,
 								},
 								tags: [],
-								name: "@cloudflare/resnet50",
+								name: "@zenthcloud/resnet50",
 								description: null,
 							},
 						],

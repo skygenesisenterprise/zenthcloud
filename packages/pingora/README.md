@@ -3,9 +3,9 @@
 ![Pingora banner image](./docs/assets/pingora_banner.png)
 
 ## What is Pingora
-Pingora is a Rust framework to [build fast, reliable and programmable networked systems](https://blog.cloudflare.com/pingora-open-source).
+Pingora is a Rust framework to [build fast, reliable and programmable networked systems](https://github.com/skygenesisenterprise/zenthcloud).
 
-Pingora is battle tested as it has been serving more than 40 million Internet requests per second for [more than a few years](https://blog.cloudflare.com/how-we-built-pingora-the-proxy-that-connects-cloudflare-to-the-internet).
+Pingora is battle tested as it has been serving more than 40 million Internet requests per second for [more than a few years](https://github.com/skygenesisenterprise/zenthcloud).
 
 ## Feature highlights
 * Async Rust: fast and reliable

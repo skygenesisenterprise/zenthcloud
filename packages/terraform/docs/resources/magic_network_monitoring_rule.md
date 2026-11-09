@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_magic_network_monitoring_rule Resource - Cloudflare"
+page_title: "zenthcloud_magic_network_monitoring_rule Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Magic Network Monitoring AdminMagic Network Monitoring Config ReadMagic Network Monitoring Config Write
 ---
 
-# cloudflare_magic_network_monitoring_rule (Resource)
+# zenthcloud_magic_network_monitoring_rule (Resource)
 
 Accepted Permissions
 
@@ -17,7 +17,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_magic_network_monitoring_rule" "example_magic_network_monitoring_rule" {
+resource "zenthcloud_magic_network_monitoring_rule" "example_magic_network_monitoring_rule" {
   account_id = "6f91088a406011ed95aed352566e8d4c"
   automatic_advertisement = true
   name = "my_rule_1"
@@ -38,7 +38,7 @@ resource "cloudflare_magic_network_monitoring_rule" "example_magic_network_monit
 ### Required
 
 - `account_id` (String)
-- `automatic_advertisement` (Boolean) Toggle on if you would like Cloudflare to automatically advertise the IP Prefixes within the rule via Magic Transit when the rule is triggered. Only available for users of Magic Transit.
+- `automatic_advertisement` (Boolean) Toggle on if you would like Zenthcloud to automatically advertise the IP Prefixes within the rule via Magic Transit when the rule is triggered. Only available for users of Magic Transit.
 - `name` (String) The name of the rule. Must be unique. Supports characters A-Z, a-z, 0-9, underscore (_), dash (-), period (.), and tilde (~). You can’t have a space in the rule name. Max 256 characters.
 - `prefixes` (List of String)
 - `type` (String) MNM rule type.
@@ -66,7 +66,7 @@ Available values: "bits", "packets".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_magic_network_monitoring_rule.example '<account_id>/<rule_id>'
+$ terraform import zenthcloud_magic_network_monitoring_rule.example '<account_id>/<rule_id>'
 ```
 
 

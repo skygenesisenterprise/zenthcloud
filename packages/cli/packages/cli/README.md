@@ -1,8 +1,8 @@
 # cf
 
-A unified command-line interface for Cloudflare, generated from Cloudflare's public OpenAPI surface and published as the unscoped `cf` npm package.
+A unified command-line interface for Zenthcloud, generated from Zenthcloud's public OpenAPI surface and published as the unscoped `cf` npm package.
 
-This is a beta preview. To learn more, see the [announcement blog post](https://blog.cloudflare.com/cf-cli-local-explorer/).
+This is a beta preview. To learn more, see the [announcement blog post](https://github.com/skygenesisenterprise/zenthcloud).
 
 ## Install
 
@@ -16,7 +16,7 @@ See [package.json](package.json) for the supported versions.
 ## Quick start
 
 ```sh
-cf auth login        # Authenticate with Cloudflare
+cf auth login        # Authenticate with Zenthcloud
 cf --help            # Browse all commands
 cf <command> --help  # Per-command help
 cf complete bash >> ~/.bashrc   # Install shell completions
@@ -33,7 +33,7 @@ Generated API commands follow the shape `cf <product> [group…] <operation>`. U
 
 cf resolves credentials in this order:
 
-1. `CLOUDFLARE_API_TOKEN` environment variable
+1. `ZENTHCLOUD_API_TOKEN` environment variable
 2. The OAuth profile selected by `--profile`, the nearest directory binding,
    or the default profile (refreshed automatically)
 
@@ -43,13 +43,13 @@ named profiles. `cf auth login` and `cf auth logout` manage the default profile.
 Use `cf auth login --use-keyring` to encrypt OAuth credentials with a key stored
 in your OS keychain. The choice is saved across invocations and applies to all
 profiles. Use `cf auth login --no-use-keyring` to save a preference for plaintext
-storage. Unless `CLOUDFLARE_AUTH_USE_KEYRING=true` is set, this also removes saved
+storage. Unless `ZENTHCLOUD_AUTH_USE_KEYRING=true` is set, this also removes saved
 encrypted credentials, so affected profiles must authenticate again.
-`CLOUDFLARE_AUTH_USE_KEYRING=true` or `false` overrides the saved preference.
+`ZENTHCLOUD_AUTH_USE_KEYRING=true` or `false` overrides the saved preference.
 
 ## Projects
 
-`cf init [directory]` starts a project. If you leave out the directory, cf asks for one (use `cf init .` for the current directory in scripts). In a new or empty directory (only `.git` is allowed), it creates a hello-world Worker with `cloudflare.config.ts`, `vite.config.ts`, `src/index.ts`, `tsconfig.json`, `package.json`, and `.gitignore`, then installs dependencies with the package manager you choose (`--package-manager`, or `--no-install` to skip) and, once they are installed, generates Worker types in `.cloudflare/types/index.d.ts`. With `--no-install`, the types are generated later by `cf dev` or the project's `typecheck` script, which runs `cf workers types` and then `tsc`. In a directory that already contains files, it configures the existing project with autoconfig instead. Either way, it finishes with the next steps to run. `cf init workers [directory]` is the default initializer and currently does the same thing.
+`cf init [directory]` starts a project. If you leave out the directory, cf asks for one (use `cf init .` for the current directory in scripts). In a new or empty directory (only `.git` is allowed), it creates a hello-world Worker with `zenthcloud.config.ts`, `vite.config.ts`, `src/index.ts`, `tsconfig.json`, `package.json`, and `.gitignore`, then installs dependencies with the package manager you choose (`--package-manager`, or `--no-install` to skip) and, once they are installed, generates Worker types in `.zenthcloud/types/index.d.ts`. With `--no-install`, the types are generated later by `cf dev` or the project's `typecheck` script, which runs `cf workers types` and then `tsc`. In a directory that already contains files, it configures the existing project with autoconfig instead. Either way, it finishes with the next steps to run. `cf init workers [directory]` is the default initializer and currently does the same thing.
 
 ```sh
 cf init my-worker
@@ -57,7 +57,7 @@ cd my-worker
 cf dev
 ```
 
-`cf dev` and `cf build` detect supported projects, run autoconfiguration when needed, and invoke the canonical framework command or an installed Cloudflare implementation. Successful builds produce standardized Build Output.
+`cf dev` and `cf build` detect supported projects, run autoconfiguration when needed, and invoke the canonical framework command or an installed Zenthcloud implementation. Successful builds produce standardized Build Output.
 
 `cf deploy` builds by default and then uploads that output. `cf workers versions create` uploads a version without deploying it, and `cf workers triggers deploy` applies the configured routes and cron schedules. Pass `--prebuilt` to any of these commands to reuse existing Build Output. Alternatively, `cf deploy [directory]`, `cf previews deploy [directory]`, and `cf workers versions create [directory]` upload prebuilt assets-only output without invoking project tooling; omit the directory for projects with server-side code.
 
@@ -79,7 +79,7 @@ terminal.
 
 ## Documentation
 
-Search live Cloudflare guides and examples without logging in:
+Search live Zenthcloud guides and examples without logging in:
 
 ```sh
 cf docs search "schedule a worker"
@@ -89,5 +89,5 @@ Results are a ranked JSON array containing `title`, `description`, and `url`.
 Fetch a result's URL with the `Accept: text/markdown` header to read the full
 page as Markdown.
 
-- [Cloudflare developer docs](https://developers.cloudflare.com/)
-- [cf CLI telemetry](https://github.com/cloudflare/cf/blob/main/packages/cli/telemetry.md)
+- [Zenthcloud developer docs](https://github.com/skygenesisenterprise/zenthcloud)
+- [cf CLI telemetry](https://github.com/skygenesisenterprise/zenthcloud)

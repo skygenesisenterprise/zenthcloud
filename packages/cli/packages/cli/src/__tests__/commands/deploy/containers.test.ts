@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vite-plus/test";
 import { createContainerDeployConfig } from "../../../commands/deploy/containers.js";
 import { BuildOutputConfigError } from "../../../lib/build-output-error.js";
-import type { BuildOutputContainers } from "@cloudflare/build-output-utils";
-import type { ParsedOutputContainerConfig } from "@cloudflare/config";
-import type { Config, Exports } from "@cloudflare/workers-utils";
+import type { BuildOutputContainers } from "@zenthcloud/build-output-utils";
+import type { ParsedOutputContainerConfig } from "@zenthcloud/config";
+import type { Config, Exports } from "@zenthcloud/workers-utils";
 
 const config = {
 	observability: { enabled: true },

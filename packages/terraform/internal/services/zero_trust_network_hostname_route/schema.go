@@ -5,7 +5,7 @@ package zero_trust_network_hostname_route
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -21,10 +21,10 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		MarkdownDescription: schemata.Description{
 			Scopes: []string{
-				"Cloudflare One Networks Read",
-				"Cloudflare One Networks Write",
-				"Cloudflare Tunnel Read",
-				"Cloudflare Tunnel Write",
+				"Zenthcloud One Networks Read",
+				"Zenthcloud One Networks Write",
+				"Zenthcloud Tunnel Read",
+				"Zenthcloud Tunnel Write",
 			},
 		}.String(),
 		Version: 500,
@@ -35,7 +35,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()},
 			},
 			"account_id": schema.StringAttribute{
-				Description:   "Cloudflare account ID",
+				Description:   "Zenthcloud account ID",
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},

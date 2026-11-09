@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_casb_policy Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_casb_policy Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust ReadZero Trust Write
 ---
 
-# cloudflare_zero_trust_casb_policy (Resource)
+# zenthcloud_zero_trust_casb_policy (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_casb_policy" "example_zero_trust_casb_policy" {
+resource "zenthcloud_zero_trust_casb_policy" "example_zero_trust_casb_policy" {
   account_id = "46148281d8a93d002ef242d8b0d5f9f6"
   actions = {
     remediation_types = [{
@@ -94,7 +94,7 @@ Required:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_casb_policy.example '<account_id>/<policy_id>'
+$ terraform import zenthcloud_zero_trust_casb_policy.example '<account_id>/<policy_id>'
 ```
 
 

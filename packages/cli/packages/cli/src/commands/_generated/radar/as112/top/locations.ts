@@ -98,7 +98,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar as112 top locations",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/as112/top/locations`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

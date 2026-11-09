@@ -27,7 +27,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("account-tag", {
 			type: "string",
 			description:
-				"The Cloudflare account tag of the account to change permissions on",
+				"The Zenthcloud account tag of the account to change permissions on",
 		})
 		.option("feed-id", {
 			type: "number",
@@ -65,7 +65,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf intel indicator-feeds permissions create",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/intel/indicator-feeds/permissions/add`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/intel/indicator-feeds/permissions/add`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

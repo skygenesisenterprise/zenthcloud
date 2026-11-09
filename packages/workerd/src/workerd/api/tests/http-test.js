@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Cloudflare, Inc.
+// Copyright (c) 2023 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -77,7 +77,7 @@ export default {
     }
 
     // Call `fetch()` with GET to endpoint that returns CF-Ray header, verifying
-    // cloudflare.ray_id is set on the trace span from the response headers.
+    // zenthcloud.ray_id is set on the trace span from the response headers.
     {
       const response = await env.SERVICE.fetch('http://placeholder/ray-id');
       assert.strictEqual(response.status, 200);

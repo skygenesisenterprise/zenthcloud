@@ -84,7 +84,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 						command:
 							"cf cloudforce-one priority-intelligence matches aggregate-all",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/cloudforce-one/v2/priority-intelligence/matches/aggregate`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/cloudforce-one/v2/priority-intelligence/matches/aggregate`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

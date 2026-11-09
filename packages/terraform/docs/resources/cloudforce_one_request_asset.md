@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_cloudforce_one_request_asset Resource - Cloudflare"
+page_title: "zenthcloud_cloudforce_one_request_asset Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Cloudforce One ReadCloudforce One Write
 ---
 
-# cloudflare_cloudforce_one_request_asset (Resource)
+# zenthcloud_cloudforce_one_request_asset (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_cloudforce_one_request_asset" "example_cloudforce_one_request_asset" {
+resource "zenthcloud_cloudforce_one_request_asset" "example_cloudforce_one_request_asset" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   request_id = "f174e90a-fafe-4643-bbbc-4a0ed4fc8415"
   page = 0
@@ -51,7 +51,7 @@ resource "cloudflare_cloudforce_one_request_asset" "example_cloudforce_one_reque
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_cloudforce_one_request_asset.example '<account_id>/<request_id>/<asset_id>'
+$ terraform import zenthcloud_cloudforce_one_request_asset.example '<account_id>/<request_id>/<asset_id>'
 ```
 
 

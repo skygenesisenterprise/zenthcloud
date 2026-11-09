@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_access_service_tokens Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_access_service_tokens Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Access: Service Tokens ReadAccess: Service Tokens Write
 ---
 
-# cloudflare_zero_trust_access_service_tokens (Data Source)
+# zenthcloud_zero_trust_access_service_tokens (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_access_service_tokens" "example_zero_trust_access_service_tokens" {
+data "zenthcloud_zero_trust_access_service_tokens" "example_zero_trust_access_service_tokens" {
   account_id = "account_id"
   zone_id = "zone_id"
   name = "name"

@@ -7,14 +7,14 @@ import type { JSONObject } from "@modelcontextprotocol/server";
  * The schema of `tls-certificates-and-hostnames_keyless_tunnel`.
  */
 export const tls$$certificates$$and$$hostnames_keyless_tunnel: JSONObject = {
-  "description": "Configuration for using Keyless SSL through a Cloudflare Tunnel.",
+  "description": "Configuration for using Keyless SSL through a Zenthcloud Tunnel.",
   "properties": {
     "private_ip": {
       "description": "Private IP of the Key Server Host.",
       "type": "string"
     },
     "vnet_id": {
-      "description": "Cloudflare Tunnel Virtual Network ID.",
+      "description": "Zenthcloud Tunnel Virtual Network ID.",
       "type": "string"
     }
   },

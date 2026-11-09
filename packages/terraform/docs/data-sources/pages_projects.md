@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_pages_projects Data Source - Cloudflare"
+page_title: "zenthcloud_pages_projects Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Pages ReadPages Write
 ---
 
-# cloudflare_pages_projects (Data Source)
+# zenthcloud_pages_projects (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_pages_projects" "example_pages_projects" {
+data "zenthcloud_pages_projects" "example_pages_projects" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```
@@ -53,7 +53,7 @@ Read-Only:
 - `production_branch` (String) Production branch of the project. Used to identify production deployments.
 - `production_script_name` (String) Name of the production script.
 - `source` (Attributes) Configs for the project source control. (see [below for nested schema](#nestedatt--result--source))
-- `subdomain` (String) The Cloudflare subdomain associated with the project.
+- `subdomain` (String) The Zenthcloud subdomain associated with the project.
 - `uses_functions` (Boolean) Whether the project uses functions.
 
 <a id="nestedatt--result--build_config"></a>

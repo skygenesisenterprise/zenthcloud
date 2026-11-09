@@ -1,0 +1,126 @@
+resource "zenthcloud_workers_script" "example_workers_script" {
+  account_id = "023e105f4ecef8ad9ca31a8372d0c353"
+  script_name = "this-is_my_script-01"
+  assets = {
+    config = {
+      headers = <<EOT
+        /dashboard/*
+        X-Frame-Options: DENY
+
+        /static/*
+        Access-Control-Allow-Origin: *
+        EOT
+      redirects = <<EOT
+        /foo /bar 301
+        /news/* /blog/:splat
+        EOT
+        html_handling = "auto-trailing-slash"
+        not_found_handling = "404-page"
+        run_worker_first = []
+        serve_directly = true
+      }
+      jwt = "jwt"
+    }
+    bindings = [{
+      name = "MY_ENV_VAR"
+      text = "my_data"
+      type = "plain_text"
+    }]
+    body_part = "worker.js"
+    cache_options = {
+      enabled = true
+      cross_version_cache = true
+    }
+    compatibility_date = "2021-01-01T00:00:00Z"
+    compatibility_flags = ["nodejs_compat"]
+    exports = {
+      Admin = {
+        type = "worker"
+        cache = {
+          enabled = true
+        }
+        renamed_to = "renamed_to"
+        state = "created"
+        storage = "sqlite"
+        transfer_from = "transfer_from"
+        transferred_to = "transferred_to"
+      }
+      default = {
+        type = "worker"
+        cache = {
+          enabled = false
+        }
+        renamed_to = "renamed_to"
+        state = "created"
+        storage = "sqlite"
+        transfer_from = "transfer_from"
+        transferred_to = "transferred_to"
+      }
+    }
+    keep_assets = false
+    keep_bindings = ["string"]
+    limits = {
+      cpu_ms = 50
+      subrequests = 1000
+    }
+    logpush = false
+    main_module = "worker.js"
+    migrations = {
+      deleted_classes = ["string"]
+      new_classes = ["string"]
+      new_sqlite_classes = ["string"]
+      new_tag = "v2"
+      old_tag = "v1"
+      renamed_classes = [{
+        from = "from"
+        to = "to"
+      }]
+      transferred_classes = [{
+        from = "from"
+        from_script = "from_script"
+        to = "to"
+      }]
+    }
+    observability = {
+      enabled = true
+      head_sampling_rate = 0.1
+      issues = {
+        enabled = true
+      }
+      logs = {
+        enabled = true
+        invocation_logs = true
+        destinations = ["zenthcloud"]
+        head_sampling_rate = 0.1
+        persist = true
+      }
+      redact_query_string = false
+      traces = {
+        destinations = ["zenthcloud"]
+        enabled = true
+        head_sampling_rate = 0.1
+        persist = true
+      }
+    }
+    package_dependencies = [{
+      installed_version = "4.17.22"
+      name = "lodash"
+      package_json_version = "^4.17.21"
+    }]
+    placement = {
+      mode = "smart"
+    }
+    tags = ["string"]
+    tail_consumers = [{
+      service = "my-log-consumer"
+      environment = "production"
+      namespace = "my-namespace"
+    }]
+    usage_model = "standard"
+  files = {
+    "module.wasm" = {
+      content_base64 = "AGFzbQEAAAA="
+      content_type   = "application/wasm"
+    }
+  }
+}

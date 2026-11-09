@@ -5,9 +5,9 @@ package pipeline_stream
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/pipelines"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/pipelines"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -35,7 +35,7 @@ type PipelineStreamDataSourceModel struct {
 
 func (m *PipelineStreamDataSourceModel) toReadParams(_ context.Context) (params pipelines.StreamGetParams, diags diag.Diagnostics) {
 	params = pipelines.StreamGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -43,14 +43,14 @@ func (m *PipelineStreamDataSourceModel) toReadParams(_ context.Context) (params 
 
 func (m *PipelineStreamDataSourceModel) toListParams(_ context.Context) (params pipelines.StreamListParams, diags diag.Diagnostics) {
 	params = pipelines.StreamListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Filter.Name.IsNull() {
-		params.Name = cloudflare.F(m.Filter.Name.ValueString())
+		params.Name = zenthcloud.F(m.Filter.Name.ValueString())
 	}
 	if !m.Filter.PipelineID.IsNull() {
-		params.PipelineID = cloudflare.F(m.Filter.PipelineID.ValueString())
+		params.PipelineID = zenthcloud.F(m.Filter.PipelineID.ValueString())
 	}
 
 	return

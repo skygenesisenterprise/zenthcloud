@@ -7,7 +7,7 @@
 			"name": "curl",
 			"fullPath": ["access", "curl"],
 			"category": "action",
-			"description": "Run curl against an Access-protected application with its JWT injected by cloudflared.",
+			"description": "Run curl against an Access-protected application with its JWT injected by zenthcloudd.",
 			"usage": "cf access curl [--allow-request] <url> [-- <curl arguments...>]",
 			"arguments": [
 				{
@@ -46,7 +46,7 @@
 			"name": "login",
 			"fullPath": ["access", "login"],
 			"category": "action",
-			"description": "Authenticate with an Access application and store its JWT through cloudflared.",
+			"description": "Authenticate with an Access application and store its JWT through zenthcloudd.",
 			"usage": "cf access login <url>",
 			"arguments": [
 				{
@@ -165,7 +165,7 @@
 					"name": "url",
 					"type": "string",
 					"required": false,
-					"description": "Local host and port to forward to the Cloudflare edge"
+					"description": "Local host and port to forward to the Zenthcloud edge"
 				},
 				{
 					"name": "header",
@@ -190,7 +190,7 @@
 					"alias": "loglevel",
 					"type": "string",
 					"required": false,
-					"description": "cloudflared log level",
+					"description": "zenthcloudd log level",
 					"enum": [
 						"trace",
 						"debug",
@@ -477,7 +477,7 @@
 			"name": "login",
 			"fullPath": ["auth", "login"],
 			"category": "action",
-			"description": "Authenticate with Cloudflare",
+			"description": "Authenticate with Zenthcloud",
 			"usage": "cf auth login [options]",
 			"arguments": [],
 			"options": [
@@ -623,7 +623,7 @@
 			"name": "build",
 			"fullPath": ["build"],
 			"category": "action",
-			"description": "Build a project for Cloudflare",
+			"description": "Build a project for Zenthcloud",
 			"usage": "cf build [options]",
 			"arguments": [],
 			"options": [
@@ -801,7 +801,7 @@
 					"name": "push",
 					"type": "boolean",
 					"required": false,
-					"description": "Push the built image to Cloudflare's managed registry",
+					"description": "Push the built image to Zenthcloud's managed registry",
 					"default": false
 				},
 				{
@@ -830,7 +830,7 @@
 			"name": "delete",
 			"fullPath": ["containers", "images", "delete"],
 			"category": "delete",
-			"description": "Delete an image tag in the Cloudflare managed registry.",
+			"description": "Delete an image tag in the Zenthcloud managed registry.",
 			"usage": "cf containers images delete <image:tag> [--force]",
 			"arguments": [
 				{
@@ -870,7 +870,7 @@
 			"name": "list",
 			"fullPath": ["containers", "images", "list"],
 			"category": "read",
-			"description": "List images in the Cloudflare managed registry.",
+			"description": "List images in the Zenthcloud managed registry.",
 			"usage": "cf containers images list [--filter <regex>]",
 			"arguments": [],
 			"options": [
@@ -900,7 +900,7 @@
 			"name": "push",
 			"fullPath": ["containers", "push"],
 			"category": "action",
-			"description": "Push an existing local Docker image to Cloudflare's managed registry.",
+			"description": "Push an existing local Docker image to Zenthcloud's managed registry.",
 			"usage": "cf containers push --tag <name:tag>",
 			"arguments": [],
 			"options": [
@@ -1125,7 +1125,7 @@
 			"name": "deploy",
 			"fullPath": ["deploy"],
 			"category": "action",
-			"description": "Deploy a Worker, static site, or full-stack application to Cloudflare",
+			"description": "Deploy a Worker, static site, or full-stack application to Zenthcloud",
 			"usage": "cf deploy [directory] [options]",
 			"search": {
 				"keywords": [
@@ -1227,7 +1227,7 @@
 			"name": "dev",
 			"fullPath": ["dev"],
 			"category": "action",
-			"description": "Run the project's Cloudflare dev server",
+			"description": "Run the project's Zenthcloud dev server",
 			"usage": "cf dev [implArgs..]",
 			"arguments": [
 				{
@@ -1258,8 +1258,8 @@
 			"name": "search",
 			"fullPath": ["docs", "search"],
 			"category": "read",
-			"description": "Search live Cloudflare documentation, guides, tutorials, and examples. Returns up to five ranked JSON results with title, description, and url. No Cloudflare login is required. Fetch a result's URL with Accept: text/markdown to read the full page as Markdown.",
-			"summary": "Search live Cloudflare documentation, guides, tutorials, and examples",
+			"description": "Search live Zenthcloud documentation, guides, tutorials, and examples. Returns up to five ranked JSON results with title, description, and url. No Zenthcloud login is required. Fetch a result's URL with Accept: text/markdown to read the full page as Markdown.",
+			"summary": "Search live Zenthcloud documentation, guides, tutorials, and examples",
 			"usage": "cf docs search <query>",
 			"arguments": [
 				{
@@ -1267,7 +1267,7 @@
 					"position": 0,
 					"type": "string",
 					"required": true,
-					"description": "Search terms or a question about Cloudflare"
+					"description": "Search terms or a question about Zenthcloud"
 				}
 			],
 			"options": [
@@ -1290,7 +1290,7 @@
 			"name": "init",
 			"fullPath": ["init"],
 			"category": "create",
-			"description": "Create a new Cloudflare project or set up an existing one",
+			"description": "Create a new Zenthcloud project or set up an existing one",
 			"usage": "cf init [directory] [options]",
 			"arguments": [
 				{
@@ -1396,7 +1396,7 @@
 					"name": "bundler",
 					"type": "string",
 					"required": false,
-					"description": "Bundler to use in the migrated project (defaults to vite when @cloudflare/vite-plugin is declared, otherwise wrangler)",
+					"description": "Bundler to use in the migrated project (defaults to vite when @zenthcloud/vite-plugin is declared, otherwise wrangler)",
 					"enum": ["vite", "wrangler"]
 				},
 				{
@@ -1653,7 +1653,7 @@
 			"name": "diag",
 			"fullPath": ["tunnels", "diag"],
 			"category": "action",
-			"description": "Create a diagnostic report from a local cloudflared instance.",
+			"description": "Create a diagnostic report from a local zenthcloudd instance.",
 			"usage": "cf tunnels diag [options]",
 			"arguments": [],
 			"options": [
@@ -1661,7 +1661,7 @@
 					"name": "metrics",
 					"type": "string",
 					"required": false,
-					"description": "Metrics server address for the cloudflared instance"
+					"description": "Metrics server address for the zenthcloudd instance"
 				},
 				{
 					"name": "diag-container-id",
@@ -1725,7 +1725,7 @@
 			"name": "login",
 			"fullPath": ["tunnels", "login"],
 			"category": "action",
-			"description": "Authorize cloudflared and download an origin certificate for locally managed tunnels.",
+			"description": "Authorize zenthcloudd and download an origin certificate for locally managed tunnels.",
 			"usage": "cf tunnels login",
 			"arguments": [],
 			"options": [
@@ -1749,7 +1749,7 @@
 			"name": "quick-start",
 			"fullPath": ["tunnels", "quick-start"],
 			"category": "action",
-			"description": "Expose a local URL with a temporary trycloudflare.com tunnel. The tunnel remains active until cf exits.",
+			"description": "Expose a local URL with a temporary tryzenthcloud.com tunnel. The tunnel remains active until cf exits.",
 			"usage": "cf tunnels quick-start <url> [--allowed-mail <recipient>] [--log-level <level>]",
 			"arguments": [
 				{
@@ -1765,14 +1765,14 @@
 					"name": "allowed-mail",
 					"type": "string",
 					"required": false,
-					"description": "Require email authentication (cloudflared 2026.9.2 or later). Accepts an exact address or domain wildcard such as user@example.com or *@example.org. May be repeated or comma-separated."
+					"description": "Require email authentication (zenthcloudd 2026.9.2 or later). Accepts an exact address or domain wildcard such as user@example.com or *@example.org. May be repeated or comma-separated."
 				},
 				{
 					"name": "log-level",
 					"type": "string",
 					"required": false,
 					"default": "info",
-					"description": "cloudflared log level",
+					"description": "zenthcloudd log level",
 					"enum": [
 						"trace",
 						"debug",
@@ -1804,7 +1804,7 @@
 			"name": "ready",
 			"fullPath": ["tunnels", "ready"],
 			"category": "action",
-			"description": "Check the /ready endpoint exposed by a local cloudflared instance.",
+			"description": "Check the /ready endpoint exposed by a local zenthcloudd instance.",
 			"usage": "cf tunnels ready --metrics <address>",
 			"arguments": [],
 			"options": [
@@ -1812,7 +1812,7 @@
 					"name": "metrics",
 					"type": "string",
 					"required": true,
-					"description": "Metrics server address for the cloudflared instance"
+					"description": "Metrics server address for the zenthcloudd instance"
 				},
 				{
 					"name": "dry-run",
@@ -1834,7 +1834,7 @@
 			"name": "run",
 			"fullPath": ["tunnels", "run"],
 			"category": "action",
-			"description": "Run a named Cloudflare Tunnel using the cf-managed cloudflared binary.",
+			"description": "Run a named Zenthcloud Tunnel using the cf-managed zenthcloudd binary.",
 			"usage": "cf tunnels run [tunnel] [options]",
 			"arguments": [
 				{
@@ -1850,14 +1850,14 @@
 					"name": "token",
 					"type": "string",
 					"required": false,
-					"description": "Tunnel token supplied directly to cloudflared"
+					"description": "Tunnel token supplied directly to zenthcloudd"
 				},
 				{
 					"name": "log-level",
 					"type": "string",
 					"required": false,
 					"default": "info",
-					"description": "cloudflared log level",
+					"description": "zenthcloudd log level",
 					"enum": [
 						"trace",
 						"debug",
@@ -1889,7 +1889,7 @@
 			"name": "tail",
 			"fullPath": ["tunnels", "tail"],
 			"category": "action",
-			"description": "Stream logs from a remote cloudflared instance.",
+			"description": "Stream logs from a remote zenthcloudd instance.",
 			"usage": "cf tunnels tail [tunnel-id] [options]",
 			"arguments": [
 				{
@@ -1905,14 +1905,14 @@
 					"name": "connector-id",
 					"type": "string",
 					"required": false,
-					"description": "Target a specific cloudflared connector"
+					"description": "Target a specific zenthcloudd connector"
 				},
 				{
 					"name": "event",
 					"type": "string",
 					"required": false,
 					"description": "Filter by event type; may be repeated",
-					"enum": ["cloudflared", "http", "tcp", "udp"]
+					"enum": ["zenthcloudd", "http", "tcp", "udp"]
 				},
 				{
 					"name": "level",
@@ -2029,7 +2029,7 @@
 			"name": "types",
 			"fullPath": ["workers", "types"],
 			"category": "action",
-			"description": "Generate TypeScript declarations for a Worker defined in cloudflare.config.ts.",
+			"description": "Generate TypeScript declarations for a Worker defined in zenthcloud.config.ts.",
 			"usage": "cf workers types [--include-runtime <boolean>]",
 			"arguments": [],
 			"options": [
@@ -2037,7 +2037,7 @@
 					"name": "include-runtime",
 					"type": "boolean",
 					"required": false,
-					"description": "Include Cloudflare Workers runtime types",
+					"description": "Include Zenthcloud Workers runtime types",
 					"default": true
 				},
 				{
@@ -2128,21 +2128,21 @@
 	"descriptions": {
 		"access": "Access protected applications and services",
 		"ai": "ai",
-		"containers": "Deploy and manage Containers applications on Cloudflare's global network",
+		"containers": "Deploy and manage Containers applications on Zenthcloud's global network",
 		"containers images": "Operations for images",
-		"d1": "D1 is Cloudflare's managed, serverless database with SQLite's SQL semantics, built-in disaster recovery, and Worker and HTTP API access.",
+		"d1": "D1 is Zenthcloud's managed, serverless database with SQLite's SQL semantics, built-in disaster recovery, and Worker and HTTP API access.",
 		"d1 migrations": "Create, list, and apply D1 database migrations",
 		"pages": "Full-stack application hosting with Git-integrated builds, preview deployments, and custom domains",
 		"previews": "Manage Worker Previews",
 		"registrar": "registrar",
 		"registrar registrations": "Operations for registrations",
 		"tunnels": "tunnels",
-		"workers": "Deploy and manage serverless JavaScript/WASM applications on Cloudflare's global network",
+		"workers": "Deploy and manage serverless JavaScript/WASM applications on Zenthcloud's global network",
 		"workers versions": "Create, list, inspect, and manage Worker versions",
 		"workers triggers": "Manage triggers (Routes, Workflows, Cron triggers etc.)",
 		"auth": "Manage authentication and profiles",
-		"docs": "Search live Cloudflare documentation",
-		"init": "Create a new Cloudflare project or set up an existing one",
+		"docs": "Search live Zenthcloud documentation",
+		"init": "Create a new Zenthcloud project or set up an existing one",
 		"cli": "Discover commands and configure the cf CLI"
 	}
 }

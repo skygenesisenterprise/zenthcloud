@@ -6,10 +6,10 @@ import (
 	"os"
 	"testing"
 
-	cloudflare "github.com/cloudflare/cloudflare-go"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	zenthcloud "github.com/zenthcloud/zenthcloud-go"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -21,27 +21,27 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_web_analytics_site", &resource.Sweeper{
-		Name: "cloudflare_web_analytics_site",
-		F:    testSweepCloudflareWebAnalyticsSites,
+	resource.AddTestSweepers("zenthcloud_web_analytics_site", &resource.Sweeper{
+		Name: "zenthcloud_web_analytics_site",
+		F:    testSweepZenthcloudWebAnalyticsSites,
 	})
 }
 
-func testSweepCloudflareWebAnalyticsSites(r string) error {
+func testSweepZenthcloudWebAnalyticsSites(r string) error {
 	ctx := context.Background()
 	client, clientErr := acctest.SharedV1Client()
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 		return clientErr
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping web analytics sites sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping web analytics sites sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
-	sites, _, err := client.ListWebAnalyticsSites(ctx, cloudflare.AccountIdentifier(accountID), cloudflare.ListWebAnalyticsSitesParams{})
+	sites, _, err := client.ListWebAnalyticsSites(ctx, zenthcloud.AccountIdentifier(accountID), zenthcloud.ListWebAnalyticsSitesParams{})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch web analytics sites: %s", err))
 		return fmt.Errorf("failed to fetch web analytics sites: %w", err)
@@ -59,7 +59,7 @@ func testSweepCloudflareWebAnalyticsSites(r string) error {
 		}
 
 		tflog.Info(ctx, fmt.Sprintf("Deleting web analytics site: %s (account: %s)", site.SiteTag, accountID))
-		_, err := client.DeleteWebAnalyticsSite(ctx, cloudflare.AccountIdentifier(accountID), cloudflare.DeleteWebAnalyticsSiteParams{
+		_, err := client.DeleteWebAnalyticsSite(ctx, zenthcloud.AccountIdentifier(accountID), zenthcloud.DeleteWebAnalyticsSiteParams{
 			SiteTag: site.SiteTag,
 		})
 		if err != nil {
@@ -72,20 +72,20 @@ func testSweepCloudflareWebAnalyticsSites(r string) error {
 	return nil
 }
 
-func TestAccCloudflareWebAnalyticsSite_Create_ImportState(t *testing.T) {
+func TestAccZenthcloudWebAnalyticsSite_Create_ImportState(t *testing.T) {
 	t.Parallel()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_web_analytics_site.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_web_analytics_site.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWebAnalyticsSiteDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWebAnalyticsSiteDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareWebAnalyticsSite(rnd, accountID, domain),
+				Config: testAccZenthcloudWebAnalyticsSite(rnd, accountID, domain),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttrSet(name, "site_tag"),
@@ -103,24 +103,24 @@ func TestAccCloudflareWebAnalyticsSite_Create_ImportState(t *testing.T) {
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
-				ImportStateIdFunc: testAccCloudflareWebAnalyticsSiteImportStateIdFunc(name),
+				ImportStateIdFunc: testAccZenthcloudWebAnalyticsSiteImportStateIdFunc(name),
 			},
 		},
 	})
 }
 
-func testAccCheckCloudflareWebAnalyticsSiteDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudWebAnalyticsSiteDestroy(s *terraform.State) error {
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_web_analytics_site" {
+		if rs.Type != "zenthcloud_web_analytics_site" {
 			continue
 		}
 
-		_, err := client.GetWebAnalyticsSite(context.Background(), cloudflare.AccountIdentifier(rs.Primary.Attributes[consts.AccountIDSchemaKey]), cloudflare.GetWebAnalyticsSiteParams{
+		_, err := client.GetWebAnalyticsSite(context.Background(), zenthcloud.AccountIdentifier(rs.Primary.Attributes[consts.AccountIDSchemaKey]), zenthcloud.GetWebAnalyticsSiteParams{
 			SiteTag: rs.Primary.Attributes["site_tag"],
 		})
 		if err == nil {
@@ -131,11 +131,11 @@ func testAccCheckCloudflareWebAnalyticsSiteDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCloudflareWebAnalyticsSite(resourceName, accountID, domain string) string {
+func testAccZenthcloudWebAnalyticsSite(resourceName, accountID, domain string) string {
 	return acctest.LoadTestCase("webanalyticssite.tf", resourceName, accountID, domain)
 }
 
-func testAccCloudflareWebAnalyticsSiteImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
+func testAccZenthcloudWebAnalyticsSiteImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {

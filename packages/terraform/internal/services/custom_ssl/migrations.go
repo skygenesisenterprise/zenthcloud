@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/custom_ssl/migration/v500"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/custom_ssl/migration/v500"
 )
 
 var _ resource.ResourceWithUpgradeState = (*CustomSSLResource)(nil)
@@ -28,7 +28,7 @@ var _ resource.ResourceWithUpgradeState = (*CustomSSLResource)(nil)
 // The v4 resource already used SchemaVersion=1. Using preMigration=2 ensures that
 // dormant v5 state (version=2) never collides with v4 state (version=1).
 func (r *CustomSSLResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
-	sourceSchema := v500.SourceCloudflareCustomSSLSchema()
+	sourceSchema := v500.SourceZenthcloudCustomSSLSchema()
 	targetSchema := ResourceSchema(ctx)
 
 	// v5 dormant schema at version=2 (for the no-op upgrader key=2).

@@ -63,8 +63,8 @@ func TestMoveStateV4toV500(t *testing.T) {
 
 	sourceState := tfsdk.State{Raw: raw, Schema: sourceSchema}
 	req := resource.MoveStateRequest{
-		SourceTypeName:        "cloudflare_worker_domain",
-		SourceProviderAddress: "registry.terraform.io/cloudflare/cloudflare",
+		SourceTypeName:        "zenthcloud_worker_domain",
+		SourceProviderAddress: "registry.terraform.io/zenthcloud/zenthcloud",
 		SourceSchemaVersion:   0,
 		SourceState:           &sourceState,
 	}
@@ -176,8 +176,8 @@ func TestMoveStateV4toV500_IgnoresUnknownSourceType(t *testing.T) {
 
 	sourceState := tfsdk.State{Raw: raw, Schema: sourceSchema}
 	req := resource.MoveStateRequest{
-		SourceTypeName:        "cloudflare_workers_custom_domain",
-		SourceProviderAddress: "registry.terraform.io/cloudflare/cloudflare",
+		SourceTypeName:        "zenthcloud_workers_custom_domain",
+		SourceProviderAddress: "registry.terraform.io/zenthcloud/zenthcloud",
 		SourceSchemaVersion:   0,
 		SourceState:           &sourceState,
 	}
@@ -194,7 +194,7 @@ func TestMoveStateV4toV500_IgnoresUnknownSourceType(t *testing.T) {
 	}
 }
 
-func TestMoveStateV4toV500_IgnoresNonCloudflareProvider(t *testing.T) {
+func TestMoveStateV4toV500_IgnoresNonZenthcloudProvider(t *testing.T) {
 	ctx := context.Background()
 	sourceSchema := SourceSchemaV0()
 
@@ -210,7 +210,7 @@ func TestMoveStateV4toV500_IgnoresNonCloudflareProvider(t *testing.T) {
 
 	sourceState := tfsdk.State{Raw: raw, Schema: sourceSchema}
 	req := resource.MoveStateRequest{
-		SourceTypeName:        "cloudflare_worker_domain",
+		SourceTypeName:        "zenthcloud_worker_domain",
 		SourceProviderAddress: "registry.terraform.io/hashicorp/random",
 		SourceSchemaVersion:   0,
 		SourceState:           &sourceState,
@@ -224,25 +224,25 @@ func TestMoveStateV4toV500_IgnoresNonCloudflareProvider(t *testing.T) {
 	}
 
 	if !resp.TargetState.Raw.IsNull() {
-		t.Fatalf("expected target state to remain unset for non-cloudflare provider")
+		t.Fatalf("expected target state to remain unset for non-zenthcloud provider")
 	}
 }
 
-func TestIsCloudflareProvider(t *testing.T) {
+func TestIsZenthcloudProvider(t *testing.T) {
 	testCases := []struct {
 		name string
 		addr string
 		want bool
 	}{
-		{name: "registry address", addr: "registry.terraform.io/cloudflare/cloudflare", want: true},
-		{name: "short cloudflare address", addr: "cloudflare/cloudflare", want: true},
+		{name: "registry address", addr: "registry.terraform.io/zenthcloud/zenthcloud", want: true},
+		{name: "short zenthcloud address", addr: "zenthcloud/zenthcloud", want: true},
 		{name: "different provider", addr: "registry.terraform.io/hashicorp/random", want: false},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			if got := isCloudflareProvider(tc.addr); got != tc.want {
-				t.Fatalf("isCloudflareProvider(%q) = %t, want %t", tc.addr, got, tc.want)
+			if got := isZenthcloudProvider(tc.addr); got != tc.want {
+				t.Fatalf("isZenthcloudProvider(%q) = %t, want %t", tc.addr, got, tc.want)
 			}
 		})
 	}

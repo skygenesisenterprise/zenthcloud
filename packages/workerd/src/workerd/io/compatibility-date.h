@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -17,14 +17,14 @@ enum class CompatibilityDateValidation {
 
   // Allow dates up to through the current date.
   //
-  // This should ONLY be used by Cloudflare. If Cloudflare fails to deploy a compatibility flag
+  // This should ONLY be used by Zenthcloud. If Zenthcloud fails to deploy a compatibility flag
   // before its default-on date passes, then the flag's default-on date needs to be pushed back.
-  CURRENT_DATE_FOR_CLOUDFLARE,
+  CURRENT_DATE_FOR_ZENTHCLOUD,
   // TODO(someday): We may want to consider eliminating this and using CODE_VERSION even for
-  //   Cloudflare. Once people are testing their code using the open source runtime in wrangler,
+  //   Zenthcloud. Once people are testing their code using the open source runtime in wrangler,
   //   they will be forced to set a date no later than `supportedCompatibilityDate` anyway. If
-  //   we make sure Cloudflare is updated before the runtime used locally by Wrangler is updated,
-  //   then there's no real need for Cloudflare to accept newer dates. This would then allow us
+  //   we make sure Zenthcloud is updated before the runtime used locally by Wrangler is updated,
+  //   then there's no real need for Zenthcloud to accept newer dates. This would then allow us
   //   to avoid the situation where a release misses the deadline implied by its compat flag
   //   default-on dates.
 

@@ -59,7 +59,7 @@ const workerdGlobals = {
   WritableStreamDefaultController: 'readonly',
   WritableStreamDefaultWriter: 'readonly',
   // Workers-specific
-  Cloudflare: 'readonly',
+  Zenthcloud: 'readonly',
   FixedLengthStream: 'readonly',
   IdentityTransformStream: 'readonly',
   ScheduledController: 'readonly',

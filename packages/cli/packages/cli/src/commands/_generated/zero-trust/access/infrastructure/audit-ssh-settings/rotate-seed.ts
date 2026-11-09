@@ -20,7 +20,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 zero-trust access infrastructure audit-ssh-settings rotate-seed\n\nRotate the SSH account seed that generates the host key identity when connecting through the Cloudflare SSH Proxy."
+			"$0 zero-trust access infrastructure audit-ssh-settings rotate-seed\n\nRotate the SSH account seed that generates the host key identity when connecting through the Zenthcloud SSH Proxy."
 		)
 		.option("dry-run", {
 			type: "boolean",
@@ -52,7 +52,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 						command:
 							"cf zero-trust access infrastructure audit-ssh-settings rotate-seed",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/gateway/audit_ssh_settings/rotate_seed`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/gateway/audit_ssh_settings/rotate_seed`,
 						pathParams: {},
 						bodyKind: "none",
 					});

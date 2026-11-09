@@ -1,10 +1,10 @@
-import { writeWorkerConfig } from "@cloudflare/build-output-utils";
-import { InputWorkerSchema } from "@cloudflare/config";
+import { writeWorkerConfig } from "@zenthcloud/build-output-utils";
+import { InputWorkerSchema } from "@zenthcloud/config";
 import {
 	mockConsoleMethods,
 	runInTempDir,
 	seed,
-} from "@cloudflare/workers-utils/test-helpers";
+} from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw/http";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { createMockDeployContext } from "../helpers/mock-deploy-context.js";
@@ -28,8 +28,8 @@ describe("cf previews deploy — custom domains", () => {
 	const std = mockConsoleMethods();
 
 	beforeEach(() => {
-		vi.stubEnv("CLOUDFLARE_API_TOKEN", "test-api-token");
-		vi.stubEnv("CLOUDFLARE_ACCOUNT_ID", ACCOUNT_ID);
+		vi.stubEnv("ZENTHCLOUD_API_TOKEN", "test-api-token");
+		vi.stubEnv("ZENTHCLOUD_ACCOUNT_ID", ACCOUNT_ID);
 	});
 
 	it("uses the parent's hosting and returns custom domain URLs", async () => {
@@ -64,10 +64,10 @@ describe("cf previews deploy — custom domains", () => {
 			})
 		);
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig({
 				buildContext: { isPreview: true },
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export default { fetch() { return new Response('ok'); } }",
 		});
 		await writeWorkerConfig({

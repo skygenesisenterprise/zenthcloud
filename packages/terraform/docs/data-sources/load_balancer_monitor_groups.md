@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_load_balancer_monitor_groups Data Source - Cloudflare"
+page_title: "zenthcloud_load_balancer_monitor_groups Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_load_balancer_monitor_groups (Data Source)
+# zenthcloud_load_balancer_monitor_groups (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_load_balancer_monitor_groups" "example_load_balancer_monitor_groups" {
+data "zenthcloud_load_balancer_monitor_groups" "example_load_balancer_monitor_groups" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```

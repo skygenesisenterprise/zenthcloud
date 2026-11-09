@@ -5,26 +5,26 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
-func TestAccCloudflareSnippetRulesListDataSource_Basic(t *testing.T) {
+func TestAccZenthcloudSnippetRulesListDataSource_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	dataSourceName := fmt.Sprintf("data.cloudflare_snippet_rules_list.%s", rnd)
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	dataSourceName := fmt.Sprintf("data.zenthcloud_snippet_rules_list.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareSnippetRulesDestroy,
+		CheckDestroy:             testAccCheckZenthcloudSnippetRulesDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareSnippetRulesListDataSourceConfig(rnd, zoneID),
+				Config: testAccZenthcloudSnippetRulesListDataSourceConfig(rnd, zoneID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("result"), knownvalue.ListSizeExact(1)),
@@ -38,6 +38,6 @@ func TestAccCloudflareSnippetRulesListDataSource_Basic(t *testing.T) {
 	})
 }
 
-func testAccCloudflareSnippetRulesListDataSourceConfig(rnd, zoneID string) string {
+func testAccZenthcloudSnippetRulesListDataSourceConfig(rnd, zoneID string) string {
 	return acctest.LoadTestCase("datasource_basic.tf", rnd, zoneID)
 }

@@ -94,7 +94,7 @@ export const cws_TenantNodeBody: JSONObject = {
       "type": "string"
     },
     "node_kind": {
-      "description": "Position in the tree. Legal values depend on the structure's application (aws: root/ou/account; cloudflare: org/account/zone). At most one root per structure. Immutable after create.",
+      "description": "Position in the tree. Legal values depend on the structure's application (aws: root/ou/account; zenthcloud: org/account/zone). At most one root per structure. Immutable after create.",
       "type": "string"
     },
     "parent": {

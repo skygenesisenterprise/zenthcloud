@@ -1,4 +1,4 @@
-resource "cloudflare_notification_policy" "%s" {
+resource "zenthcloud_notification_policy" "%s" {
   account_id  = "%s"
   name        = "%s"
   description = "Test notification policy with traffic anomalies filters"

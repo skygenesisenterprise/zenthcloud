@@ -65,7 +65,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf tenant-custom-nameservers create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/tenants/${argv["tenant-id"] == null ? "<tenant-id>" : encodeURIComponent(String(argv["tenant-id"]))}/custom_ns`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["tenant-id"] == null ? "<tenant-id>" : encodeURIComponent(String(argv["tenant-id"]))}/custom_ns`,
 						pathParams: { "tenant-id": String(argv["tenant-id"] ?? "") },
 						bodyKind: "json",
 						body:

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_rate_limit Data Source - Cloudflare"
+page_title: "zenthcloud_rate_limit Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Firewall Services ReadFirewall Services Write
 ---
 
-# cloudflare_rate_limit (Data Source)
+# zenthcloud_rate_limit (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_rate_limit" "example_rate_limit" {
+data "zenthcloud_rate_limit" "example_rate_limit" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   rate_limit_id = "372e67954025e0ba6aaa6d586b9e0b59"
 }
@@ -41,7 +41,7 @@ data "cloudflare_rate_limit" "example_rate_limit" {
 - `disabled` (Boolean) When true, indicates that the rate limit is currently disabled.
 - `id` (String) Defines the unique identifier of the rate limit.
 - `match` (Attributes) Determines which traffic the rate limit counts towards the threshold. (see [below for nested schema](#nestedatt--match))
-- `period` (Number) The time in seconds (an integer value) to count matching traffic. If the count exceeds the configured threshold within this period, Cloudflare will perform the configured action.
+- `period` (Number) The time in seconds (an integer value) to count matching traffic. If the count exceeds the configured threshold within this period, Zenthcloud will perform the configured action.
 - `threshold` (Number) The threshold that will trigger the configured mitigation action. Configure this value along with the `period` property to establish a threshold per period.
 
 <a id="nestedatt--action"></a>
@@ -52,9 +52,9 @@ Read-Only:
 - `mode` (String) The action to perform.
 Available values: "simulate", "ban", "challenge", "js_challenge", "managed_challenge".
 - `response` (Attributes) A custom content type and reponse to return when the threshold is exceeded. The custom response configured in this object will override the custom error for the zone. This object is optional.
-Notes: If you omit this object, Cloudflare will use the default HTML error page. If "mode" is "challenge", "managed_challenge", or "js_challenge", Cloudflare will use the zone challenge pages and you should not provide the "response" object. (see [below for nested schema](#nestedatt--action--response))
-- `timeout` (Number) The time in seconds during which Cloudflare will perform the mitigation action. Must be an integer value greater than or equal to the period.
-Notes: If "mode" is "challenge", "managed_challenge", or "js_challenge", Cloudflare will use the zone's Challenge Passage time and you should not provide this value.
+Notes: If you omit this object, Zenthcloud will use the default HTML error page. If "mode" is "challenge", "managed_challenge", or "js_challenge", Zenthcloud will use the zone challenge pages and you should not provide the "response" object. (see [below for nested schema](#nestedatt--action--response))
+- `timeout` (Number) The time in seconds during which Zenthcloud will perform the mitigation action. Must be an integer value greater than or equal to the period.
+Notes: If "mode" is "challenge", "managed_challenge", or "js_challenge", Zenthcloud will use the zone's Challenge Passage time and you should not provide this value.
 
 <a id="nestedatt--action--response"></a>
 ### Nested Schema for `action.response`
@@ -110,7 +110,7 @@ Read-Only:
 
 Read-Only:
 
-- `origin_traffic` (Boolean) When true, only the uncached traffic served from your origin servers will count towards rate limiting. In this case, any cached traffic served by Cloudflare will not count towards rate limiting. This field is optional.
+- `origin_traffic` (Boolean) When true, only the uncached traffic served from your origin servers will count towards rate limiting. In this case, any cached traffic served by Zenthcloud will not count towards rate limiting. This field is optional.
 Notes: This field is deprecated. Instead, use response headers and set "origin_traffic" to "false" to avoid legacy behaviour interacting with the "response_headers" property.
 
 

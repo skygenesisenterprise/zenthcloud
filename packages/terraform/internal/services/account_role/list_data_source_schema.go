@@ -5,8 +5,8 @@ package account_role
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -24,7 +24,7 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 				"SCIM Provisioning",
 			},
 		}.String(),
-		DeprecationMessage: "Please use the `cloudflare_account_permission_group` data source instead",
+		DeprecationMessage: "Please use the `zenthcloud_account_permission_group` data source instead",
 		Attributes: map[string]schema.Attribute{
 			"account_id": schema.StringAttribute{
 				Description: "Account identifier tag.",

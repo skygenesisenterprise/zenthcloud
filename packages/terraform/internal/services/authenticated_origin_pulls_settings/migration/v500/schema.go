@@ -4,14 +4,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-// SourceCloudflareAuthenticatedOriginPullsSchema returns the source schema for legacy resource.
+// SourceZenthcloudAuthenticatedOriginPullsSchema returns the source schema for legacy resource.
 // Schema version: 0 (v4 schema version)
-// Resource type: cloudflare_authenticated_origin_pulls
+// Resource type: zenthcloud_authenticated_origin_pulls
 //
 // This minimal schema is used only for reading v4 state during migration.
 // It includes only the properties needed for state parsing (Required, Optional, Computed).
 // Validators, PlanModifiers, and Descriptions are intentionally omitted.
-func SourceCloudflareAuthenticatedOriginPullsSchema() schema.Schema {
+func SourceZenthcloudAuthenticatedOriginPullsSchema() schema.Schema {
 	return schema.Schema{
 		Version: 0, // v4 schema version
 		Attributes: map[string]schema.Attribute{

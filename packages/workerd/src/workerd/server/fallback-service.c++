@@ -174,7 +174,7 @@ void FallbackServiceClient::threadMain() {
 
         KJ_IF_SOME(pos, specifier.findLast('/')) {
           auto segment = specifier.slice(pos + 1);
-          if (segment.startsWith("node:") || segment.startsWith("cloudflare:") ||
+          if (segment.startsWith("node:") || segment.startsWith("zenthcloud:") ||
               segment.startsWith("workerd:")) {
             actualSpecifier = segment;
             url.query.add(

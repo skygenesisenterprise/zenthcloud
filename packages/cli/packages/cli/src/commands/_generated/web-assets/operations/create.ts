@@ -26,7 +26,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("endpoint", {
 			type: "string",
 			description:
-				"The endpoint which can contain path parameter templates in curly braces, each will be replaced from left to right with {varN}, starting with {var1}, during insertion. This will further be Cloudflare-normalized upon insertion. See: https://developers.cloudflare.com/rules/normalization/how-it-works/.",
+				"The endpoint which can contain path parameter templates in curly braces, each will be replaced from left to right with {varN}, starting with {var1}, during insertion. This will further be Zenthcloud-normalized upon insertion. See: https://github.com/skygenesisenterprise/zenthcloud",
 		})
 		.option("host", { type: "string", description: "RFC3986-compliant host." })
 		.option("method", {
@@ -76,7 +76,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf web-assets operations create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/api_gateway/operations/item`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/api_gateway/operations/item`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 						},
@@ -119,7 +119,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 				if (argv["endpoint"] === undefined) {
 					argv["endpoint"] = await promptForRequiredField(
 						"endpoint",
-						"The endpoint which can contain path parameter templates in curly braces, each will be replaced from left to right with {varN}, starting with {var1}, during insertion. This will further be Cloudflare-normalized upon insertion. See: https://developers.cloudflare.com/rules/normalization/how-it-works/."
+						"The endpoint which can contain path parameter templates in curly braces, each will be replaced from left to right with {varN}, starting with {var1}, during insertion. This will further be Zenthcloud-normalized upon insertion. See: https://github.com/skygenesisenterprise/zenthcloud"
 					);
 				}
 				if (argv["host"] === undefined) {

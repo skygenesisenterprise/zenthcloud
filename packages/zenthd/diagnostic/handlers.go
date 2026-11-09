@@ -13,8 +13,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 
-	"github.com/cloudflare/cloudflared/prechecks"
-	"github.com/cloudflare/cloudflared/tunnelstate"
+	"github.com/zenthcloud/zenthcloudd/prechecks"
+	"github.com/zenthcloud/zenthcloudd/tunnelstate"
 )
 
 type Handler struct {

@@ -2116,14 +2116,14 @@ packages:
     peerDependencies:
       '@better-auth/utils': 0.4.2
       '@better-fetch/fetch': 1.3.1
-      '@cloudflare/workers-types': '>=4'
+      '@zenthcloud/workers-types': '>=4'
       '@opentelemetry/api': ^1.9.0
       better-call: 1.3.7
       jose: ^6.1.0
       kysely: ^0.28.5 || ^0.29.0
       nanostores: ^1.0.1
     peerDependenciesMeta:
-      '@cloudflare/workers-types':
+      '@zenthcloud/workers-types':
         optional: true
       '@opentelemetry/api':
         optional: true
@@ -8476,7 +8476,7 @@ packages:
     resolution: {integrity: sha512-Te0FOdKIistGNPMq2jscdqngBRfBpC8uMFVwqjf6gtTVJHIQ/dosgV/CLBU2N4ZJBsXL5savCba9b0YJskKdcA==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
-      '@cloudflare/workers-types': '>=4'
+      '@zenthcloud/workers-types': '>=4'
       '@electric-sql/pglite': '>=0.2.0'
       '@libsql/client': '>=0.10.0'
       '@libsql/client-wasm': '>=0.10.0'
@@ -8507,7 +8507,7 @@ packages:
     peerDependenciesMeta:
       '@aws-sdk/client-rds-data':
         optional: true
-      '@cloudflare/workers-types':
+      '@zenthcloud/workers-types':
         optional: true
       '@electric-sql/pglite':
         optional: true
@@ -8568,7 +8568,7 @@ packages:
     resolution: {integrity: sha512-kY0BSaTNYWnoDMVoyY8uxmyHjpJW1geOmBMdSSicKo9CIIWkSxMIj2rkeSR51b8KAPB7m+qysjuHme5nKP+E5Q==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
-      '@cloudflare/workers-types': '>=4'
+      '@zenthcloud/workers-types': '>=4'
       '@electric-sql/pglite': '>=0.2.0'
       '@libsql/client': '>=0.10.0'
       '@libsql/client-wasm': '>=0.10.0'
@@ -8599,7 +8599,7 @@ packages:
     peerDependenciesMeta:
       '@aws-sdk/client-rds-data':
         optional: true
-      '@cloudflare/workers-types':
+      '@zenthcloud/workers-types':
         optional: true
       '@electric-sql/pglite':
         optional: true
@@ -20884,7 +20884,7 @@ snapshots:
       react-dom: 19.2.7(react@19.2.7)
       vitest: 4.1.12(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(vite@8.3.6(@types/node@24.19.2)(esbuild@0.20.2)(jiti@1.21.7)(tsx@4.23.15)(yaml@2.8.1))
     transitivePeerDependencies:
-      - '@cloudflare/workers-types'
+      - '@zenthcloud/workers-types'
       - '@opentelemetry/api'
 
   better-auth@1.6.23(@opentelemetry/api@1.10.0)(drizzle-kit@0.31.11)(drizzle-orm@0.45.2(@opentelemetry/api@1.10.0)(@types/pg@8.6.1)(kysely@0.29.8)(postgres@3.4.9))(next@16.3.4(@babel/core@7.29.13(supports-color@8.1.1))(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(vitest@4.1.12(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(vite@8.3.6(@types/node@24.19.2)(esbuild@0.20.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.8.1))):
@@ -20914,7 +20914,7 @@ snapshots:
       react-dom: 19.2.7(react@19.2.7)
       vitest: 4.1.12(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(vite@8.3.6(@types/node@24.19.2)(esbuild@0.20.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.8.1))
     transitivePeerDependencies:
-      - '@cloudflare/workers-types'
+      - '@zenthcloud/workers-types'
       - '@opentelemetry/api'
 
   better-call@1.3.7(zod@4.6.7):

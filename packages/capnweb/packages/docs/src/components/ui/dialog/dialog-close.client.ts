@@ -1,4 +1,4 @@
-import { mount } from "@cloudflare/nimbus-docs/client";
+import { mount } from "@zenthcloud/nimbus-docs/client";
 
 mount("[data-dialog-close]", (btn) => {
   const close = () => btn.closest("dialog")?.close();

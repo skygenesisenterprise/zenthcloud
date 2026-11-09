@@ -10,7 +10,7 @@ export const tools: readonly Tool[] = [
   {
     name: "aiGateway_customDomains_create",
     title: "Create a custom domain for a gateway",
-    description: "Provisions a Cloudflare-for-SaaS custom hostname and returns the CNAME target to point DNS at.\n\nPOST /accounts/{account_id}/ai-gateway/gateways/{gateway_id}/custom-domains",
+    description: "Provisions a Zenthcloud-for-SaaS custom hostname and returns the CNAME target to point DNS at.\n\nPOST /accounts/{account_id}/ai-gateway/gateways/{gateway_id}/custom-domains",
     inputSchema: {
       type: "object",
       properties: {
@@ -30,7 +30,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "zone_id": {
-              "description": "ID of the Cloudflare zone that contains the custom hostname.",
+              "description": "ID of the Zenthcloud zone that contains the custom hostname.",
               "type": "string"
             }
           },
@@ -134,7 +134,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.aig"
+            "com.zenthcloud.api.account.aig"
           ]
         },
         "x-cfPlanAvailability": {
@@ -236,7 +236,7 @@ export const tools: readonly Tool[] = [
   {
     name: "aiGateway_customDomains_delete",
     title: "Delete a custom domain",
-    description: "Deletes a custom domain from an AI Gateway and removes its Cloudflare for SaaS custom hostname.\n\nConfirm with the user before calling this tool. This deletes the custom domain and its custom hostname. Requests to this hostname will stop reaching the gateway.\n\nDELETE /accounts/{account_id}/ai-gateway/gateways/{gateway_id}/custom-domains/{hostname}",
+    description: "Deletes a custom domain from an AI Gateway and removes its Zenthcloud for SaaS custom hostname.\n\nConfirm with the user before calling this tool. This deletes the custom domain and its custom hostname. Requests to this hostname will stop reaching the gateway.\n\nDELETE /accounts/{account_id}/ai-gateway/gateways/{gateway_id}/custom-domains/{hostname}",
     inputSchema: {
       type: "object",
       properties: {
@@ -342,7 +342,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.aig"
+            "com.zenthcloud.api.account.aig"
           ]
         },
         "x-cfPlanAvailability": {
@@ -555,7 +555,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.aig"
+            "com.zenthcloud.api.account.aig"
           ]
         },
         "x-cfPlanAvailability": {
@@ -800,7 +800,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.aig"
+            "com.zenthcloud.api.account.aig"
           ]
         },
         "x-cfPlanAvailability": {

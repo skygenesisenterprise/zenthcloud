@@ -4,15 +4,15 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 )
 
-func TestAccCloudflareFieldExtractorDataSource_Basic(t *testing.T) {
+func TestAccZenthcloudFieldExtractorDataSource_Basic(t *testing.T) {
 	t.Skip("Skipping: test account does not have permission for this API (403)")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	dataSourceName := "data.cloudflare_field_extractor.test"
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	dataSourceName := "data.zenthcloud_field_extractor.test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {

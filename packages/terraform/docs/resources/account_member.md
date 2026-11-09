@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_account_member Resource - Cloudflare"
+page_title: "zenthcloud_account_member Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Settings ReadAccount Settings WriteSCIM Provisioning
 ---
 
-# cloudflare_account_member (Resource)
+# zenthcloud_account_member (Resource)
 
 Accepted Permissions
 
@@ -17,7 +17,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_account_member" "example_account_member" {
+resource "zenthcloud_account_member" "example_account_member" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   email = "user@example.com"
   roles = ["3536bcfad5faccb999b47003c79917fb"]
@@ -89,7 +89,7 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_account_member.example '<account_id>/<member_id>'
+$ terraform import zenthcloud_account_member.example '<account_id>/<member_id>'
 ```
 
 

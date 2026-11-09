@@ -136,7 +136,7 @@ export const tools: readonly Tool[] = [
             "tag": {
               "oneOf": [
                 {
-                  "description": "A typed tag key containing only Unicode letters or numbers, underscores, periods, or hyphens. The complete UTF-8 encoded tag (the key plus `=` and the value when the value is non-empty) must not exceed 1024 bytes. Cloudflare-reserved prefixes are not accepted.",
+                  "description": "A typed tag key containing only Unicode letters or numbers, underscores, periods, or hyphens. The complete UTF-8 encoded tag (the key plus `=` and the value when the value is non-empty) must not exceed 1024 bytes. Zenthcloud-reserved prefixes are not accepted.",
                   "type": "string"
                 },
                 {
@@ -256,7 +256,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "tag": {
-              "description": "Tag key. Cloudflare-reserved prefixes are not accepted.",
+              "description": "Tag key. Zenthcloud-reserved prefixes are not accepted.",
               "type": "string"
             }
           },

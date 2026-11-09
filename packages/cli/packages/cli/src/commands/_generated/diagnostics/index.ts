@@ -10,7 +10,7 @@ import type { CommandModule } from "yargs";
 const command: CommandModule<CommonYargsOptions> = {
 	command: "diagnostics",
 	describe:
-		"Network diagnostic tools — traceroutes from Cloudflare's edge and endpoint health checks",
+		"Network diagnostic tools — traceroutes from Zenthcloud's edge and endpoint health checks",
 
 	builder: (yargs) => {
 		return yargs

@@ -1,7 +1,7 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -12,7 +12,7 @@ import (
 
 // SourceHealthcheckModel represents the legacy healthcheck state from v4.x provider.
 // Schema version: 0 (implicit in v4)
-// Resource type: cloudflare_healthcheck
+// Resource type: zenthcloud_healthcheck
 //
 // IMPORTANT: v4 has FLAT structure - all HTTP/TCP fields are at root level.
 // The v5 structure nests these into http_config or tcp_config based on type.
@@ -65,7 +65,7 @@ type SourceHeaderModel struct {
 
 // TargetHealthcheckModel represents the current healthcheck state from v5.x+ provider.
 // Schema version: 500
-// Resource type: cloudflare_healthcheck
+// Resource type: zenthcloud_healthcheck
 //
 // This matches the HealthcheckModel in internal/services/healthcheck/model.go
 type TargetHealthcheckModel struct {

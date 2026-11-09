@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2023 Cloudflare, Inc.
+// Copyright (c) 2022-2023 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -27,9 +27,9 @@
 //
 // To see an example configuration for uploading module-based Workers, check out the wrangler.toml
 // file or one of our Durable Object templates for Wrangler:
-//   * https://github.com/cloudflare/durable-objects-template
-//   * https://github.com/cloudflare/durable-objects-rollup-esm
-//   * https://github.com/cloudflare/durable-objects-webpack-commonjs
+//   * https://github.com/skygenesisenterprise/zenthcloud
+//   * https://github.com/skygenesisenterprise/zenthcloud
+//   * https://github.com/skygenesisenterprise/zenthcloud
 
 // ===============================
 // Required Environment

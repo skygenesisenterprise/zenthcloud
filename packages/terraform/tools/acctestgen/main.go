@@ -180,12 +180,12 @@ func printNextStep(service string) {
 	fmt.Println()
 	fmt.Println(fmt.Sprintf(`
 The files have been created. To run the acceptance tests, you will need to first
-set the necessary environment variables. See https://github.com/cloudflare/terraform-provider-cloudflare/blob/v4.39.0/contributing/environment-variable-dictionary.md
+set the necessary environment variables. See https://github.com/skygenesisenterprise/zenthcloud
 for the list of variables. The values will vary depending on the account and zone
 being used for the tests. Once the environment variables are set, you can run the
 tests using the command:
 
-TF_ACC=1 go test ./internal/services/%s -run "^TestAccCloudflare" -v -count 1s`, service))
+TF_ACC=1 go test ./internal/services/%s -run "^TestAccZenthcloud" -v -count 1s`, service))
 }
 
 type formattedServiceNames struct {
@@ -204,11 +204,11 @@ func toPascalCase(s string) string {
 }
 
 func resourceConfigTmpl() string {
-	return `resource "cloudflare_{{.SnakeCase}}" "%[1]s" {}`
+	return `resource "zenthcloud_{{.SnakeCase}}" "%[1]s" {}`
 }
 
 func datasourceConfigTmpl() string {
-	return `data "cloudflare_{{.SnakeCase}}" "%[1]s" {}`
+	return `data "zenthcloud_{{.SnakeCase}}" "%[1]s" {}`
 }
 
 func resourceAccTestTmpl() string {
@@ -218,15 +218,15 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-func TestAccCloudflare{{.PascalCase}}_Basic(t *testing.T) {
+func TestAccZenthcloud{{.PascalCase}}_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_{{.SnakeCase}}." + rnd
+	name := "zenthcloud_{{.SnakeCase}}." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -258,15 +258,15 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-func TestAccCloudflare{{.PascalCase}}DataSource_Basic(t *testing.T) {
+func TestAccZenthcloud{{.PascalCase}}DataSource_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_{{.SnakeCase}}." + rnd
+	name := "zenthcloud_{{.SnakeCase}}." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },

@@ -30,7 +30,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Unique Cloudflare account ID.",
+              "description": "Unique Zenthcloud account ID.",
               "type": "string"
             },
             "device_id": {
@@ -146,8 +146,8 @@ export const tools: readonly Tool[] = [
       ],
       extensions: {
         "x-api-token-group": [
-          "Cloudflare DEX Write",
-          "Cloudflare DEX Read",
+          "Zenthcloud DEX Write",
+          "Zenthcloud DEX Read",
           "Zero Trust Report",
           "Zero Trust Read"
         ]

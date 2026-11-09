@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -19,13 +19,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zero_trust_device_settings", &resource.Sweeper{
-		Name: "cloudflare_zero_trust_device_settings",
-		F:    testSweepCloudflareZeroTrustDeviceSettings,
+	resource.AddTestSweepers("zenthcloud_zero_trust_device_settings", &resource.Sweeper{
+		Name: "zenthcloud_zero_trust_device_settings",
+		F:    testSweepZenthcloudZeroTrustDeviceSettings,
 	})
 }
 
-func testSweepCloudflareZeroTrustDeviceSettings(r string) error {
+func testSweepZenthcloudZeroTrustDeviceSettings(r string) error {
 	ctx := context.Background()
 	// Device Settings is an account-level device configuration setting.
 	// It's a singleton setting per account, not something that accumulates.
@@ -34,27 +34,27 @@ func testSweepCloudflareZeroTrustDeviceSettings(r string) error {
 	return nil
 }
 
-func TestAccCloudflareZTDeviceSettings(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudZTDeviceSettings(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_device_settings.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_device_settings.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareTeamsDeviceSettingsDestroy,
+		CheckDestroy:             testAccCheckZenthcloudTeamsDeviceSettingsDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareZTDeviceSettings(rnd, accountID),
+				Config: testAccZenthcloudZTDeviceSettings(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(name, "disable_for_time", "20"),
@@ -65,7 +65,7 @@ func TestAccCloudflareZTDeviceSettings(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCloudflareZTDeviceSomeSettings(rnd, accountID),
+				Config: testAccZenthcloudZTDeviceSomeSettings(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(name, "disable_for_time", "0"),
@@ -79,22 +79,22 @@ func TestAccCloudflareZTDeviceSettings(t *testing.T) {
 	})
 }
 
-func testAccCloudflareZTDeviceSettings(rnd, accountID string) string {
+func testAccZenthcloudZTDeviceSettings(rnd, accountID string) string {
 	return acctest.LoadTestCase("zt_device_settings_init.tf", rnd, accountID)
 }
 
-func testAccCloudflareZTDeviceSomeSettings(rnd, accountID string) string {
+func testAccZenthcloudZTDeviceSomeSettings(rnd, accountID string) string {
 	return acctest.LoadTestCase("zt_device_settings_update.tf", rnd, accountID)
 }
 
-func testAccCheckCloudflareTeamsDeviceSettingsDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudTeamsDeviceSettingsDestroy(s *terraform.State) error {
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_zero_trust_device_settings" {
+		if rs.Type != "zenthcloud_zero_trust_device_settings" {
 			continue
 		}
 

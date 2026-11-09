@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_waiting_room_event Resource - Cloudflare"
+page_title: "zenthcloud_waiting_room_event Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Waiting Rooms ReadWaiting Rooms Write
 ---
 
-# cloudflare_waiting_room_event (Resource)
+# zenthcloud_waiting_room_event (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_waiting_room_event" "example_waiting_room_event" {
+resource "zenthcloud_waiting_room_event" "example_waiting_room_event" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   waiting_room_id = "699d98642c564d2e855e9661899b7252"
   event_end_time = "2021-09-28T17:00:00Z"
@@ -76,7 +76,7 @@ Available values: "off", "invisible", "visible_non_interactive", "visible_manage
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_waiting_room_event.example '<zone_id>/<waiting_room_id>/<event_id>'
+$ terraform import zenthcloud_waiting_room_event.example '<zone_id>/<waiting_room_id>/<event_id>'
 ```
 
 

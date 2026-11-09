@@ -18,7 +18,7 @@ cc_ast_dump(
         "//conditions:default": [],
     }),
     deps = [
-        "//src/cloudflare",
+        "//src/zenthcloud",
         "//src/node",
         "//src/workerd/api:analytics-engine",
         "//src/workerd/api:base64",

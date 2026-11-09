@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_organization_profile Data Source - Cloudflare"
+page_title: "zenthcloud_organization_profile Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_organization_profile (Data Source)
+# zenthcloud_organization_profile (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_organization_profile" "example_organization_profile" {
+data "zenthcloud_organization_profile" "example_organization_profile" {
   organization_id = "a7b9c3d2e8f4a1b5c6d0e9f2a3b7c4d8"
 }
 ```

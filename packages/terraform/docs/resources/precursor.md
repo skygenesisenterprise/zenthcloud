@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_precursor Resource - Cloudflare"
+page_title: "zenthcloud_precursor Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_precursor (Resource)
+# zenthcloud_precursor (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_precursor" "example_precursor" {
+resource "zenthcloud_precursor" "example_precursor" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   default_mode = "min-friction"
   enforcement_rules = [{
@@ -59,14 +59,14 @@ Optional:
 
 Read-Only:
 
-- `id` (String) The read-only identifier that Cloudflare assigns to the rule.
+- `id` (String) The read-only identifier that Zenthcloud assigns to the rule.
 
 ## Import
 
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_precursor.example '<zone_id>'
+$ terraform import zenthcloud_precursor.example '<zone_id>'
 ```
 
 

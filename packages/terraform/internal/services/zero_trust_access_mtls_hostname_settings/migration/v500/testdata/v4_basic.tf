@@ -1,4 +1,4 @@
-resource "cloudflare_zero_trust_access_mtls_hostname_settings" "%[1]s" {
+resource "zenthcloud_zero_trust_access_mtls_hostname_settings" "%[1]s" {
   account_id = "%[2]s"
   settings {
     hostname                     = "%[3]s"

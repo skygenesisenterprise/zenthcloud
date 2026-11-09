@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_access_key_configuration Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_access_key_configuration Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Access: Organizations, Identity Providers, and Groups ReadAccess: Organizations, Identity Providers, and Groups Write
 ---
 
-# cloudflare_zero_trust_access_key_configuration (Resource)
+# zenthcloud_zero_trust_access_key_configuration (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_access_key_configuration" "example_zero_trust_access_key_configuration" {
+resource "zenthcloud_zero_trust_access_key_configuration" "example_zero_trust_access_key_configuration" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   key_rotation_interval_days = 30
 }
@@ -41,7 +41,7 @@ resource "cloudflare_zero_trust_access_key_configuration" "example_zero_trust_ac
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_access_key_configuration.example '<account_id>'
+$ terraform import zenthcloud_zero_trust_access_key_configuration.example '<account_id>'
 ```
 
 

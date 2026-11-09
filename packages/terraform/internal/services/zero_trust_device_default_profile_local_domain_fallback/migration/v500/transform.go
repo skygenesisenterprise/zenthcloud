@@ -13,7 +13,7 @@ import (
 // - AccountID: Direct copy
 // - Domains: Transform from v4 TypeSet to v5 SetNestedAttribute (pointers)
 // - PolicyID: Must not be present in source (validate during move)
-func TransformToDefaultProfile(ctx context.Context, source SourceCloudflareFallbackDomainModel) (TargetZeroTrustDeviceDefaultProfileLocalDomainFallbackModel, diag.Diagnostics) {
+func TransformToDefaultProfile(ctx context.Context, source SourceZenthcloudFallbackDomainModel) (TargetZeroTrustDeviceDefaultProfileLocalDomainFallbackModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	target := TargetZeroTrustDeviceDefaultProfileLocalDomainFallbackModel{}
 

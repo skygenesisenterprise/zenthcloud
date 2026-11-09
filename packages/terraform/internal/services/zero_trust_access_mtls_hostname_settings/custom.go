@@ -1,7 +1,7 @@
 package zero_trust_access_mtls_hostname_settings
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )

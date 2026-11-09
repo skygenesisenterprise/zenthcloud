@@ -81,7 +81,7 @@ describe("no-cross-package-imports", () => {
     });
 
     it("ignores package imports", () => {
-      expect(getCrossPackageImport("@cloudflare/kumo")).toBeNull();
+      expect(getCrossPackageImport("@zenthcloud/kumo")).toBeNull();
     });
 
     it("ignores node_modules imports", () => {

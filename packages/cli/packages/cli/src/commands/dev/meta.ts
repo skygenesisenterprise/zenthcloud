@@ -6,7 +6,7 @@ export default [
 		name: "dev",
 		fullPath: ["dev"],
 		category: "action",
-		description: "Run the project's Cloudflare dev server",
+		description: "Run the project's Zenthcloud dev server",
 		usage: "cf dev [implArgs..]",
 		arguments: [
 			{

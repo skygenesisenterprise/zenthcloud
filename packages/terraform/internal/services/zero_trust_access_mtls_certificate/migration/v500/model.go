@@ -9,9 +9,9 @@ import (
 // Source Models (Legacy v4 SDKv2 Provider)
 // ============================================================================
 
-// SourceAccessMutualTLSCertificateModel represents the legacy cloudflare_access_mutual_tls_certificate state from v4.x provider.
+// SourceAccessMutualTLSCertificateModel represents the legacy zenthcloud_access_mutual_tls_certificate state from v4.x provider.
 // Schema version: 0 (SDKv2 default)
-// Resource type: cloudflare_access_mutual_tls_certificate
+// Resource type: zenthcloud_access_mutual_tls_certificate
 type SourceAccessMutualTLSCertificateModel struct {
 	ID                  types.String `tfsdk:"id"`
 	AccountID           types.String `tfsdk:"account_id"`
@@ -27,9 +27,9 @@ type SourceAccessMutualTLSCertificateModel struct {
 // Target Models (Current v5 Provider)
 // ============================================================================
 
-// TargetAccessMTLSCertificateModel represents the current cloudflare_zero_trust_access_mtls_certificate state.
+// TargetAccessMTLSCertificateModel represents the current zenthcloud_zero_trust_access_mtls_certificate state.
 // Schema version: 500
-// Resource type: cloudflare_zero_trust_access_mtls_certificate
+// Resource type: zenthcloud_zero_trust_access_mtls_certificate
 type TargetAccessMTLSCertificateModel struct {
 	ID                  types.String      `tfsdk:"id"`
 	AccountID           types.String      `tfsdk:"account_id"`

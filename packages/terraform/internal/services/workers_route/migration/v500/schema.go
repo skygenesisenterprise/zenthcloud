@@ -4,7 +4,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-// SourceWorkerRouteSchema returns the v4 cloudflare_worker_route schema.
+// SourceWorkerRouteSchema returns the v4 zenthcloud_worker_route schema.
 // Used by MoveState for reading v4 state during singular→plural rename.
 func SourceWorkerRouteSchema() schema.Schema {
 	return schema.Schema{

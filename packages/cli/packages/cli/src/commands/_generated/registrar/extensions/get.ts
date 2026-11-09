@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf registrar extensions get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/registrar/extensions/${argv["extension"] == null ? "<extension>" : encodeURIComponent(String(argv["extension"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/registrar/extensions/${argv["extension"] == null ? "<extension>" : encodeURIComponent(String(argv["extension"]))}`,
 						pathParams: { extension: String(argv["extension"] ?? "") },
 						bodyKind: "none",
 					});

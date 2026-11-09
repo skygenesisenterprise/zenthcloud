@@ -1,9 +1,9 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import http from 'node:http';
 import { strictEqual } from 'node:assert';
-import { httpServerHandler } from 'cloudflare:node';
+import { httpServerHandler } from 'zenthcloud:node';
 
 const server = http.createServer((req, res) => {
   res.end('hello world');

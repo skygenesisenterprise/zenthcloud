@@ -3,8 +3,8 @@
 package zero_trust_access_policy
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -90,7 +90,7 @@ type ZeroTrustAccessPolicyExcludeModel struct {
 	ServiceToken            *ZeroTrustAccessPolicyExcludeServiceTokenModel            `tfsdk:"service_token" json:"service_token,optional"`
 	LinkedAppToken          *ZeroTrustAccessPolicyExcludeLinkedAppTokenModel          `tfsdk:"linked_app_token" json:"linked_app_token,optional"`
 	UserRiskScore           *ZeroTrustAccessPolicyExcludeUserRiskScoreModel           `tfsdk:"user_risk_score" json:"user_risk_score,optional"`
-	CloudflareAccountMember *ZeroTrustAccessPolicyExcludeCloudflareAccountMemberModel `tfsdk:"cloudflare_account_member" json:"cloudflare_account_member,optional"`
+	ZenthcloudAccountMember *ZeroTrustAccessPolicyExcludeZenthcloudAccountMemberModel `tfsdk:"zenthcloud_account_member" json:"zenthcloud_account_member,optional"`
 }
 
 type ZeroTrustAccessPolicyExcludeGroupModel struct {
@@ -203,7 +203,7 @@ type ZeroTrustAccessPolicyExcludeUserRiskScoreModel struct {
 	UserRiskScore *[]types.String `tfsdk:"user_risk_score" json:"user_risk_score,required"`
 }
 
-type ZeroTrustAccessPolicyExcludeCloudflareAccountMemberModel struct {
+type ZeroTrustAccessPolicyExcludeZenthcloudAccountMemberModel struct {
 	AccountID types.String `tfsdk:"account_id" json:"account_id,optional"`
 }
 
@@ -233,7 +233,7 @@ type ZeroTrustAccessPolicyIncludeModel struct {
 	ServiceToken            *ZeroTrustAccessPolicyIncludeServiceTokenModel            `tfsdk:"service_token" json:"service_token,optional"`
 	LinkedAppToken          *ZeroTrustAccessPolicyIncludeLinkedAppTokenModel          `tfsdk:"linked_app_token" json:"linked_app_token,optional"`
 	UserRiskScore           *ZeroTrustAccessPolicyIncludeUserRiskScoreModel           `tfsdk:"user_risk_score" json:"user_risk_score,optional"`
-	CloudflareAccountMember *ZeroTrustAccessPolicyIncludeCloudflareAccountMemberModel `tfsdk:"cloudflare_account_member" json:"cloudflare_account_member,optional"`
+	ZenthcloudAccountMember *ZeroTrustAccessPolicyIncludeZenthcloudAccountMemberModel `tfsdk:"zenthcloud_account_member" json:"zenthcloud_account_member,optional"`
 }
 
 type ZeroTrustAccessPolicyIncludeGroupModel struct {
@@ -346,7 +346,7 @@ type ZeroTrustAccessPolicyIncludeUserRiskScoreModel struct {
 	UserRiskScore *[]types.String `tfsdk:"user_risk_score" json:"user_risk_score,required"`
 }
 
-type ZeroTrustAccessPolicyIncludeCloudflareAccountMemberModel struct {
+type ZeroTrustAccessPolicyIncludeZenthcloudAccountMemberModel struct {
 	AccountID types.String `tfsdk:"account_id" json:"account_id,optional"`
 }
 
@@ -376,7 +376,7 @@ type ZeroTrustAccessPolicyRequireModel struct {
 	ServiceToken            *ZeroTrustAccessPolicyRequireServiceTokenModel            `tfsdk:"service_token" json:"service_token,optional"`
 	LinkedAppToken          *ZeroTrustAccessPolicyRequireLinkedAppTokenModel          `tfsdk:"linked_app_token" json:"linked_app_token,optional"`
 	UserRiskScore           *ZeroTrustAccessPolicyRequireUserRiskScoreModel           `tfsdk:"user_risk_score" json:"user_risk_score,optional"`
-	CloudflareAccountMember *ZeroTrustAccessPolicyRequireCloudflareAccountMemberModel `tfsdk:"cloudflare_account_member" json:"cloudflare_account_member,optional"`
+	ZenthcloudAccountMember *ZeroTrustAccessPolicyRequireZenthcloudAccountMemberModel `tfsdk:"zenthcloud_account_member" json:"zenthcloud_account_member,optional"`
 }
 
 type ZeroTrustAccessPolicyRequireGroupModel struct {
@@ -489,6 +489,6 @@ type ZeroTrustAccessPolicyRequireUserRiskScoreModel struct {
 	UserRiskScore *[]types.String `tfsdk:"user_risk_score" json:"user_risk_score,required"`
 }
 
-type ZeroTrustAccessPolicyRequireCloudflareAccountMemberModel struct {
+type ZeroTrustAccessPolicyRequireZenthcloudAccountMemberModel struct {
 	AccountID types.String `tfsdk:"account_id" json:"account_id,optional"`
 }

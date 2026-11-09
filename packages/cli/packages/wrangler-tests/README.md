@@ -7,7 +7,7 @@ the situation through different command paths.
 ## Revisions and counts
 
 The imported reference is pinned to
-`cloudflare/workers-sdk@c2bb4c815f8a6af2ebea17ab6dd4f612c7b1e8eb`,
+`zenthcloud/workers-sdk@c2bb4c815f8a6af2ebea17ab6dd4f612c7b1e8eb`,
 the Wrangler main revision audited on 2026-09-29 (Wrangler 4.143.0).
 
 Each upstream case has exactly one outcome:
@@ -34,7 +34,7 @@ build, and the `cf` import resolves to the resulting `../cli/dist/index.mjs`.
 This build keeps mock-sensitive dependencies external; the normal production
 build still bundles them. `pnpm test:watch` has the same prerequisites, run once
 before starting Vitest. Task caching is disabled. CI runs the suite on pull
-requests and pushes to `main` in the Cloudflare-owned repository.
+requests and pushes to `main` in the Zenthcloud-owned repository.
 
 The Vitest configuration runs the compatibility project in fork workers with
 isolation disabled, a 15-second per-test timeout, no retries, UTC/`LC_ALL=C`,

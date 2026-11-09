@@ -6,59 +6,59 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccCloudflareAccessIdentityProviderDataSource_PreventZoneIdAndAccountIdConflicts(t *testing.T) {
+func TestAccZenthcloudAccessIdentityProviderDataSource_PreventZoneIdAndAccountIdConflicts(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      testCloudflareAccessIdentityProviderDataSourceConfigConflictingFields(rnd),
+				Config:      testZenthcloudAccessIdentityProviderDataSourceConfigConflictingFields(rnd),
 				ExpectError: regexp.MustCompile(regexp.QuoteMeta("Exactly one of these attributes must be configured")),
 			},
 		},
 	})
 }
 
-func testCloudflareAccessIdentityProviderDataSourceConfigConflictingFields(rnd string) string {
+func testZenthcloudAccessIdentityProviderDataSourceConfigConflictingFields(rnd string) string {
 	return fmt.Sprintf(`
-data "cloudflare_zero_trust_access_identity_provider" "%[1]s" {
+data "zenthcloud_zero_trust_access_identity_provider" "%[1]s" {
   account_id = "123abc"
   zone_id    = "abc123"
 }
 `, rnd)
 }
 
-func TestAccCloudflareAccessIdentityProviderDataSource_PreventNoInputSpecify(t *testing.T) {
+func TestAccZenthcloudAccessIdentityProviderDataSource_PreventNoInputSpecify(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      testCloudflareAccessIdentityProviderDataSourceNoInput(rnd),
+				Config:      testZenthcloudAccessIdentityProviderDataSourceNoInput(rnd),
 				ExpectError: regexp.MustCompile(regexp.QuoteMeta("Exactly one of these attributes must be configured")),
 			},
 		},
 	})
 }
 
-func testCloudflareAccessIdentityProviderDataSourceNoInput(rnd string) string {
+func testZenthcloudAccessIdentityProviderDataSourceNoInput(rnd string) string {
 	return fmt.Sprintf(`
-data "cloudflare_zero_trust_access_identity_provider" "%[1]s" {
+data "zenthcloud_zero_trust_access_identity_provider" "%[1]s" {
 }
 `, rnd)
 }
 
-func TestAccCloudflareAccessIdentityProviderDataSourceNotFound(t *testing.T) {
+func TestAccZenthcloudAccessIdentityProviderDataSourceNotFound(t *testing.T) {
 	t.Skip(`FIXME: "message": "access.api.error.not_found"`)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 
 	resource.Test(t, resource.TestCase{
@@ -69,23 +69,23 @@ func TestAccCloudflareAccessIdentityProviderDataSourceNotFound(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCheckCloudflareAccessIdentityProviderDataSource_NotFound(accountID, rnd),
+				Config:      testAccCheckZenthcloudAccessIdentityProviderDataSource_NotFound(accountID, rnd),
 				ExpectError: regexp.MustCompile(`no Access Identity Providers found|no Access Identity Provider matching name`),
 			},
 		},
 	})
 }
 
-func testAccCheckCloudflareAccessIdentityProviderDataSource_NotFound(accountID, name string) string {
+func testAccCheckZenthcloudAccessIdentityProviderDataSource_NotFound(accountID, name string) string {
 	return acctest.LoadTestCase("notfound.tf", name, accountID)
 }
 
-func TestAccCloudflareAccessIdentityProviderDataSource_GitHub(t *testing.T) {
+func TestAccZenthcloudAccessIdentityProviderDataSource_GitHub(t *testing.T) {
 	t.Skip(`FIXME: Exactly one of these attributes must be configured: [identity_provider_id,filter]`)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 
-	name := "data.cloudflare_zero_trust_access_identity_provider." + rnd
+	name := "data.zenthcloud_zero_trust_access_identity_provider." + rnd
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
@@ -94,7 +94,7 @@ func TestAccCloudflareAccessIdentityProviderDataSource_GitHub(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareAccessIdentityProviderDataSourceGitHub(accountID, rnd),
+				Config: testAccCheckZenthcloudAccessIdentityProviderDataSourceGitHub(accountID, rnd),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(name, "type", "github"),
@@ -104,6 +104,6 @@ func TestAccCloudflareAccessIdentityProviderDataSource_GitHub(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareAccessIdentityProviderDataSourceGitHub(accountID, name string) string {
+func testAccCheckZenthcloudAccessIdentityProviderDataSourceGitHub(accountID, name string) string {
 	return acctest.LoadTestCase("accessidentityproviderdatasourcegithub.tf", name, accountID)
 }

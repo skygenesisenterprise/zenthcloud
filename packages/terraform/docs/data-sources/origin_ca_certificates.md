@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_origin_ca_certificates Data Source - Cloudflare"
+page_title: "zenthcloud_origin_ca_certificates Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_origin_ca_certificates (Data Source)
+# zenthcloud_origin_ca_certificates (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_origin_ca_certificates" "example_origin_ca_certificates" {
+data "zenthcloud_origin_ca_certificates" "example_origin_ca_certificates" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   limit = 10
   offset = 10

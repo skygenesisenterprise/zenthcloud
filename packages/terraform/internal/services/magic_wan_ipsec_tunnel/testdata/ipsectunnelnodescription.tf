@@ -1,9 +1,9 @@
 
-  resource "cloudflare_magic_wan_ipsec_tunnel" "%[1]s" {
+  resource "zenthcloud_magic_wan_ipsec_tunnel" "%[1]s" {
 	account_id = "%[2]s"
 	name = "%[1]s"
 	customer_endpoint = "203.0.113.1"
-	cloudflare_endpoint = "%[3]s"
+	zenthcloud_endpoint = "%[3]s"
 	interface_address = "%[4]s"
 	health_check = {
 		enabled = true

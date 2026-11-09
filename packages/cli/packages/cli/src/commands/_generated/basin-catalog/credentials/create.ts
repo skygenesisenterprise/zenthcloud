@@ -32,7 +32,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		})
 		.option("token", {
 			type: "string",
-			description: "Provides the Cloudflare API token for accessing R2.",
+			description: "Provides the Zenthcloud API token for accessing R2.",
 		})
 		.option("dry-run", {
 			type: "boolean",
@@ -66,7 +66,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf basin-catalog credentials create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/basin-catalog/${argv["bucket-name"] == null ? "<bucket-name>" : encodeURIComponent(String(argv["bucket-name"]))}/credential`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/basin-catalog/${argv["bucket-name"] == null ? "<bucket-name>" : encodeURIComponent(String(argv["bucket-name"]))}/credential`,
 						pathParams: { "bucket-name": String(argv["bucket-name"] ?? "") },
 						bodyKind: "json",
 						body:
@@ -104,7 +104,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 				if (argv["token"] === undefined) {
 					argv["token"] = await promptForRequiredField(
 						"token",
-						"Provides the Cloudflare API token for accessing R2.",
+						"Provides the Zenthcloud API token for accessing R2.",
 						{ kind: "secret" }
 					);
 				}

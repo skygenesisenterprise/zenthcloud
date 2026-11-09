@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -17,13 +17,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zero_trust_dlp_predefined_profile", &resource.Sweeper{
-		Name: "cloudflare_zero_trust_dlp_predefined_profile",
-		F:    testSweepCloudflareZeroTrustDLPPredefinedProfile,
+	resource.AddTestSweepers("zenthcloud_zero_trust_dlp_predefined_profile", &resource.Sweeper{
+		Name: "zenthcloud_zero_trust_dlp_predefined_profile",
+		F:    testSweepZenthcloudZeroTrustDLPPredefinedProfile,
 	})
 }
 
-func testSweepCloudflareZeroTrustDLPPredefinedProfile(r string) error {
+func testSweepZenthcloudZeroTrustDLPPredefinedProfile(r string) error {
 	ctx := context.Background()
 	// DLP Predefined Profile is an account-level predefined profile configuration.
 	// It's a singleton setting per account, not something that accumulates.
@@ -32,15 +32,15 @@ func testSweepCloudflareZeroTrustDLPPredefinedProfile(r string) error {
 	return nil
 }
 
-func TestAccCloudflareZeroTrustDlpPredefinedProfile_Basic(t *testing.T) {
+func TestAccZenthcloudZeroTrustDlpPredefinedProfile_Basic(t *testing.T) {
 	t.Skip("skipping: account-level OCR is not enabled on the test account")
 	// Generate a random resource name to avoid conflicts during testing
 	rnd := utils.GenerateRandomResourceName()
 	// Define the full resource name for checks
-	resourceName := "cloudflare_zero_trust_dlp_predefined_profile." + rnd
+	resourceName := "zenthcloud_zero_trust_dlp_predefined_profile." + rnd
 
-	// Retrieve Cloudflare Account ID from environment variables
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	// Retrieve Zenthcloud Account ID from environment variables
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		// PreCheck ensures necessary environment variables are set
@@ -74,15 +74,15 @@ func TestAccCloudflareZeroTrustDlpPredefinedProfile_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareZeroTrustDlpPredefinedProfileEnabledEntries_Basic(t *testing.T) {
+func TestAccZenthcloudZeroTrustDlpPredefinedProfileEnabledEntries_Basic(t *testing.T) {
 	t.Skip("skipping: account-level OCR is not enabled on the test account")
 	// Generate a random resource name to avoid conflicts during testing
 	rnd := utils.GenerateRandomResourceName()
 	// Define the full resource name for checks
-	resourceName := "cloudflare_zero_trust_dlp_predefined_profile." + rnd
+	resourceName := "zenthcloud_zero_trust_dlp_predefined_profile." + rnd
 
-	// Retrieve Cloudflare Account ID from environment variables
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	// Retrieve Zenthcloud Account ID from environment variables
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		// PreCheck ensures necessary environment variables are set
@@ -123,7 +123,7 @@ func testAccZeroTrustDlpPredefinedProfileConfigEnabledEntries(rnd, accountID, en
 func TestAccUpgradeZeroTrustDlpPredefinedProfile_FromPublishedV5(t *testing.T) {
 	t.Skip("skipping: account-level OCR is not enabled on the test account")
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	config := testAccZeroTrustDlpPredefinedProfileConfigEnabledEntries(rnd, accountID, "true")
 
@@ -132,8 +132,8 @@ func TestAccUpgradeZeroTrustDlpPredefinedProfile_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

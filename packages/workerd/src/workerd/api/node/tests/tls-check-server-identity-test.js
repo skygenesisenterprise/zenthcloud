@@ -1,8 +1,8 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-33:
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-33:
 // node:tls silently accepted and ignored the checkServerIdentity option,
 // creating a false sense of security for applications relying on certificate
 // pinning or custom hostname verification. The fix rejects the option with

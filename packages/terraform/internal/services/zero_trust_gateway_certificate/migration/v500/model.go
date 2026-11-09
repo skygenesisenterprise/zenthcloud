@@ -9,11 +9,11 @@ import (
 // Source Models (Legacy Provider - v4.x)
 // ============================================================================
 
-// SourceCloudflareZeroTrustGatewayCertificateModel represents the legacy resource
-// state from the v4.x SDKv2 provider (resource: cloudflare_zero_trust_gateway_certificate,
-// implemented as resourceCloudflareTeamsCertificate in the SDKv2 provider).
+// SourceZenthcloudZeroTrustGatewayCertificateModel represents the legacy resource
+// state from the v4.x SDKv2 provider (resource: zenthcloud_zero_trust_gateway_certificate,
+// implemented as resourceZenthcloudTeamsCertificate in the SDKv2 provider).
 // Schema version: 0 (SDKv2 default, no explicit SchemaVersion was set).
-type SourceCloudflareZeroTrustGatewayCertificateModel struct {
+type SourceZenthcloudZeroTrustGatewayCertificateModel struct {
 	ID                 types.String `tfsdk:"id"`
 	AccountID          types.String `tfsdk:"account_id"`
 	Custom             types.Bool   `tfsdk:"custom"`
@@ -33,7 +33,7 @@ type SourceCloudflareZeroTrustGatewayCertificateModel struct {
 // ============================================================================
 
 // TargetZeroTrustGatewayCertificateModel represents the current resource state
-// from the v5.x+ provider (resource: cloudflare_zero_trust_gateway_certificate).
+// from the v5.x+ provider (resource: zenthcloud_zero_trust_gateway_certificate).
 // Schema version: 500.
 //
 // Note: This mirrors ZeroTrustGatewayCertificateModel in the parent package.

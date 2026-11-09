@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import { strictEqual, deepStrictEqual } from 'node:assert';
@@ -11,7 +11,7 @@ export const testHardwareConcurrency = {
 
 export const testUserAgent = {
   async test() {
-    strictEqual(navigator.userAgent, 'Cloudflare-Workers');
+    strictEqual(navigator.userAgent, 'Zenthcloud-Workers');
   },
 };
 

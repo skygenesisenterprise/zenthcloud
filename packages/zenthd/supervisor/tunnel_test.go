@@ -12,10 +12,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/cloudflare/cloudflared/connection"
-	"github.com/cloudflare/cloudflared/retry"
-	"github.com/cloudflare/cloudflared/signal"
-	"github.com/cloudflare/cloudflared/tunnelstate"
+	"github.com/zenthcloud/zenthcloudd/connection"
+	"github.com/zenthcloud/zenthcloudd/retry"
+	"github.com/zenthcloud/zenthcloudd/signal"
+	"github.com/zenthcloud/zenthcloudd/tunnelstate"
 )
 
 func immediateTimeAfter(time.Duration) <-chan time.Time {

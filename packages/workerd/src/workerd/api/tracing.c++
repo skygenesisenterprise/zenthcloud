@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2025 Cloudflare, Inc.
+// Copyright (c) 2017-2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -203,9 +203,9 @@ class UserSpanState final: public SpanState {
     }
     auto message = kj::ConstString(kj::str("exceeded span data limit while trying to record ",
         itemKind, " ", shortName, " of size ", valueSize));
-    builder.setTag("cloudflare.warning.type"_kjc,
+    builder.setTag("zenthcloud.warning.type"_kjc,
         spanWarningTypeName(SpanWarningType::SPAN_DATA_LIMIT_EXCEEDED));
-    builder.setTag("cloudflare.warning.message"_kjc, kj::mv(message));
+    builder.setTag("zenthcloud.warning.message"_kjc, kj::mv(message));
   }
 
  private:

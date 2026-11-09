@@ -5,8 +5,8 @@ package api_token_permission_groups
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -53,7 +53,7 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 							Computed:    true,
 						},
 						"category": schema.StringAttribute{
-							Description: "Product category that this permission group belongs to.\nAvailable values: \"developer_platform\", \"ai_and_machine_learning\", \"dns_and_zones\", \"app_security\", \"rules_and_configuration\", \"cloudflare_one_and_zero_trust\", \"analytics_and_logs\", \"network_services\", \"media\", \"email_and_messaging\", \"cache_and_performance\", \"account_and_billing\", \"other\".",
+							Description: "Product category that this permission group belongs to.\nAvailable values: \"developer_platform\", \"ai_and_machine_learning\", \"dns_and_zones\", \"app_security\", \"rules_and_configuration\", \"zenthcloud_one_and_zero_trust\", \"analytics_and_logs\", \"network_services\", \"media\", \"email_and_messaging\", \"cache_and_performance\", \"account_and_billing\", \"other\".",
 							Computed:    true,
 							Validators: []validator.String{
 								stringvalidator.OneOfCaseInsensitive(
@@ -62,7 +62,7 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 									"dns_and_zones",
 									"app_security",
 									"rules_and_configuration",
-									"cloudflare_one_and_zero_trust",
+									"zenthcloud_one_and_zero_trust",
 									"analytics_and_logs",
 									"network_services",
 									"media",
@@ -87,10 +87,10 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 							Validators: []validator.List{
 								listvalidator.ValueStringsAre(
 									stringvalidator.OneOfCaseInsensitive(
-										"com.cloudflare.api.account",
-										"com.cloudflare.api.account.zone",
-										"com.cloudflare.api.user",
-										"com.cloudflare.edge.r2.bucket",
+										"com.zenthcloud.api.account",
+										"com.zenthcloud.api.account.zone",
+										"com.zenthcloud.api.user",
+										"com.zenthcloud.edge.r2.bucket",
 									),
 								),
 							},

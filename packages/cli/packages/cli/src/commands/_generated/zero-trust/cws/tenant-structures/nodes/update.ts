@@ -48,7 +48,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("node-kind", {
 			type: "string",
 			description:
-				"Position in the tree. Legal values depend on the structure's application (aws: root/ou/account; cloudflare: org/account/zone). At most one root per structure. Immutable after create.",
+				"Position in the tree. Legal values depend on the structure's application (aws: root/ou/account; zenthcloud: org/account/zone). At most one root per structure. Immutable after create.",
 		})
 		.option("parent", {
 			type: "string",
@@ -87,7 +87,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust cws tenant-structures nodes update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/cws/tenant-structures/${argv["structure-id"] == null ? "<structure-id>" : encodeURIComponent(String(argv["structure-id"]))}/nodes/${argv["node-id"] == null ? "<node-id>" : encodeURIComponent(String(argv["node-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/cws/tenant-structures/${argv["structure-id"] == null ? "<structure-id>" : encodeURIComponent(String(argv["structure-id"]))}/nodes/${argv["node-id"] == null ? "<node-id>" : encodeURIComponent(String(argv["node-id"]))}`,
 						pathParams: {
 							"structure-id": String(argv["structure-id"] ?? ""),
 							"node-id": String(argv["node-id"] ?? ""),
@@ -149,7 +149,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 				if (argv["node-kind"] === undefined) {
 					argv["node-kind"] = await promptForRequiredField(
 						"node-kind",
-						"Position in the tree. Legal values depend on the structure's application (aws: root/ou/account; cloudflare: org/account/zone). At most one root per structure. Immutable after create."
+						"Position in the tree. Legal values depend on the structure's application (aws: root/ou/account; zenthcloud: org/account/zone). At most one root per structure. Immutable after create."
 					);
 				}
 

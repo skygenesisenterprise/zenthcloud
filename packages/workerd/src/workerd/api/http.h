@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -31,7 +31,7 @@ namespace workerd::api {
 // Whether a Fetcher is exempt from the `fetcher_rpc` compatibility gate that Fetcher::getRpcMethod
 // applies, so its JSRPC wildcard resolves regardless of the worker's compatibility date.
 
-// For fetchers a `cloudflare-internal:` wrapper module keeps private. An ungated wildcard makes
+// For fetchers a `zenthcloud-internal:` wrapper module keeps private. An ungated wildcard makes
 // every otherwise-missing property resolve to an RPC method, which user code can observe.
 WD_STRONG_BOOL(RpcCompatGateBypassed);
 
@@ -651,7 +651,7 @@ struct RequestInitializerDict {
 
   jsg::Optional<kj::Maybe<jsg::Ref<Fetcher>>> fetcher;
 
-  // Cloudflare-specific feature flags.
+  // Zenthcloud-specific feature flags.
   jsg::Optional<jsg::V8Ref<v8::Object>> cf;
   // TODO(someday): We should generalize this concept to sending control information to
   //   downstream workers in the pipeline. That is, when multiple workers apply to the same
@@ -659,7 +659,7 @@ struct RequestInitializerDict {
   //   first worker should be able to set flags on the request that the second worker can see.
   //   Perhaps we should say that any field you set on a Request object will be JSON-serialized
   //   and passed on to the next worker? Then `cf` is just one such field: it's not special,
-  //   it's only named `cf` because the consumer is Cloudflare code.
+  //   it's only named `cf` because the consumer is Zenthcloud code.
 
   // The fetch standard defines additional properties that are really only relevant in browser
   // implementations that implement CORS. The WinterTC has determined that for non-browser
@@ -671,8 +671,8 @@ struct RequestInitializerDict {
   //  * keepalive
   //  * window
 
-  // In browsers this controls the local browser cache. For Cloudflare Workers it could control the
-  // Cloudflare edge cache. While the standard defines a number of values for this property, our
+  // In browsers this controls the local browser cache. For Zenthcloud Workers it could control the
+  // Zenthcloud edge cache. While the standard defines a number of values for this property, our
   // implementation supports only three: undefined (identifying the default caching behavior that
   // has been implemented by the runtime), "no-store", and "no-cache".
   jsg::Optional<kj::String> cache;
@@ -869,7 +869,7 @@ class Request final: public Body {
   // aborting the subrequest in that case.
   void clearSignalIfIgnoredForSubrequest(jsg::Lock& js);
 
-  // Returns the `cf` field containing Cloudflare feature flags.
+  // Returns the `cf` field containing Zenthcloud feature flags.
   jsg::Optional<jsg::JsObject> getCf(jsg::Lock& js);
 
   // The duplex option controls whether or not a fetch is expected to send the entire request
@@ -1066,7 +1066,7 @@ class Response final: public Body {
     jsg::Optional<kj::String> statusText;
     jsg::Optional<Headers::Initializer> headers;
 
-    // Cloudflare-specific feature flags.
+    // Zenthcloud-specific feature flags.
     jsg::Optional<jsg::V8Ref<v8::Object>> cf;
 
     jsg::Optional<kj::Maybe<jsg::Ref<WebSocket>>> webSocket;
@@ -1141,7 +1141,7 @@ class Response final: public Body {
 
   kj::Maybe<jsg::Ref<WebSocket>> getWebSocket(jsg::Lock& js);
 
-  // Returns the `cf` field containing Cloudflare feature flags.
+  // Returns the `cf` field containing Zenthcloud feature flags.
   jsg::Optional<jsg::JsObject> getCf(jsg::Lock& js);
 
   // This relates to CORS, which doesn't apply on the edge -- see Request::Initializer::mode.

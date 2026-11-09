@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_hyperdrive_configs Data Source - Cloudflare"
+page_title: "zenthcloud_hyperdrive_configs Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Hyperdrive ReadHyperdrive Write
 ---
 
-# cloudflare_hyperdrive_configs (Data Source)
+# zenthcloud_hyperdrive_configs (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_hyperdrive_configs" "example_hyperdrive_configs" {
+data "zenthcloud_hyperdrive_configs" "example_hyperdrive_configs" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```
@@ -41,17 +41,17 @@ Read-Only:
 - `caching` (Attributes) (see [below for nested schema](#nestedatt--result--caching))
 - `created_on` (String) Defines the creation time of the Hyperdrive configuration.
 - `id` (String) Define configurations using a unique string identifier.
-- `integration` (Attributes) Selects a PlanetScale database and provisions credentials managed by Cloudflare when creating a Hyperdrive configuration. The Cloudflare account must already be linked to PlanetScale in the Hyperdrive dashboard. The selection is returned as read-only metadata and cannot be changed with replace or update operations. (see [below for nested schema](#nestedatt--result--integration))
+- `integration` (Attributes) Selects a PlanetScale database and provisions credentials managed by Zenthcloud when creating a Hyperdrive configuration. The Zenthcloud account must already be linked to PlanetScale in the Hyperdrive dashboard. The selection is returned as read-only metadata and cannot be changed with replace or update operations. (see [below for nested schema](#nestedatt--result--integration))
 - `modified_on` (String) Defines the last modified time of the Hyperdrive configuration.
 - `mtls` (Attributes) mTLS configuration for the origin connection. Cannot be used with VPC Service origins; TLS must be managed on the VPC Service. (see [below for nested schema](#nestedatt--result--mtls))
-- `name` (String) The name of the Hyperdrive configuration. Used to identify the configuration in the Cloudflare dashboard and API.
+- `name` (String) The name of the Hyperdrive configuration. Used to identify the configuration in the Zenthcloud dashboard and API.
 - `origin` (Attributes) Combines database connection fields with exactly one supported network location. (see [below for nested schema](#nestedatt--result--origin))
 - `origin_connection_limit` (Number) The (soft) maximum number of connections the Hyperdrive is allowed to make to the origin database.
 
 Maximum allowed: 20 for free tier accounts, 100 for paid tier accounts.
 If not specified, defaults to 20 for free tier and 60 for paid tier.
-Certain Cloudflare-managed origins may be permitted a higher limit.
-Contact Cloudflare if you need a higher limit.
+Certain Zenthcloud-managed origins may be permitted a higher limit.
+Contact Zenthcloud if you need a higher limit.
 - `restarted_on` (String) Defines the last time the Hyperdrive connection pool was explicitly restarted via the restart endpoint. Omitted if the pool has never been explicitly restarted.
 
 <a id="nestedatt--result--caching"></a>

@@ -1,15 +1,15 @@
 import { readFile, stat, utimes } from "node:fs/promises";
 import path from "node:path";
-import * as runtimeTypes from "@cloudflare/runtime-types";
-import { runInTempDir, seed } from "@cloudflare/workers-utils/test-helpers";
+import * as runtimeTypes from "@zenthcloud/runtime-types";
+import { runInTempDir, seed } from "@zenthcloud/workers-utils/test-helpers";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { captureOutput } from "../helpers/capture-output.js";
 import { runCf } from "../helpers/run-cf.js";
 
 const RUNTIME_TYPES_MARKER = "// Begin mocked runtime types";
-const TYPES_PATH = path.join(".cloudflare", "types", "index.d.ts");
+const TYPES_PATH = path.join(".zenthcloud", "types", "index.d.ts");
 
-vi.mock("@cloudflare/runtime-types", () => ({
+vi.mock("@zenthcloud/runtime-types", () => ({
 	RUNTIME_TYPES_MARKER: "// Begin mocked runtime types",
 	generateRuntimeTypes: vi.fn(),
 }));
@@ -42,7 +42,7 @@ describe("cf workers types", () => {
 	});
 
 	it("generates inferred and runtime types by default", async () => {
-		await seed({ "cloudflare.config.ts": workerConfig() });
+		await seed({ "zenthcloud.config.ts": workerConfig() });
 
 		await runCf(["workers", "types"]);
 
@@ -53,7 +53,7 @@ describe("cf workers types", () => {
 		});
 		const generated = await readFile(TYPES_PATH, "utf8");
 		expect(generated).toContain('import("cf/config").UnwrapConfig');
-		expect(generated).toContain('import("../../cloudflare.config").default');
+		expect(generated).toContain('import("../../zenthcloud.config").default');
 		expect(generated).toContain("// Runtime types header");
 		expect(generated).toContain(RUNTIME_TYPES_MARKER);
 		expect(generated).toContain("declare const runtimeBinding: Fetcher;");
@@ -61,7 +61,7 @@ describe("cf workers types", () => {
 	});
 
 	it("omits runtime types when --include-runtime=false", async () => {
-		await seed({ "cloudflare.config.ts": workerConfig() });
+		await seed({ "zenthcloud.config.ts": workerConfig() });
 
 		await runCf(["workers", "types", "--include-runtime", "false"]);
 
@@ -73,7 +73,7 @@ describe("cf workers types", () => {
 
 	it("passes the existing declaration to the runtime-types cache", async () => {
 		await seed({
-			"cloudflare.config.ts": workerConfig(),
+			"zenthcloud.config.ts": workerConfig(),
 			[TYPES_PATH]: "existing declaration",
 		});
 
@@ -85,7 +85,7 @@ describe("cf workers types", () => {
 	});
 
 	it("does not rewrite unchanged output", async () => {
-		await seed({ "cloudflare.config.ts": workerConfig() });
+		await seed({ "zenthcloud.config.ts": workerConfig() });
 		await runCf(["workers", "types"]);
 		const unchangedTime = new Date("2020-01-01T00:00:00.000Z");
 		await utimes(TYPES_PATH, unchangedTime, unchangedTime);
@@ -97,7 +97,7 @@ describe("cf workers types", () => {
 
 	it("uses --mode when evaluating function-form config", async () => {
 		await seed({
-			"cloudflare.config.ts": `export default ({ mode }) => ({
+			"zenthcloud.config.ts": `export default ({ mode }) => ({
 	worker: {
 		name: "example-worker",
 		compatibilityDate: mode === "staging" ? "2026-09-02" : "2026-09-01",
@@ -112,17 +112,17 @@ describe("cf workers types", () => {
 		);
 	});
 
-	it("requires cloudflare.config.ts", async () => {
+	it("requires zenthcloud.config.ts", async () => {
 		await expect(runCf(["workers", "types"])).rejects.toThrow(
-			"cloudflare.config.ts is required by cf workers types."
+			"zenthcloud.config.ts is required by cf workers types."
 		);
 	});
 
 	it("requires a Worker definition", async () => {
-		await seed({ "cloudflare.config.ts": "export default {};" });
+		await seed({ "zenthcloud.config.ts": "export default {};" });
 
 		await expect(runCf(["workers", "types"])).rejects.toThrow(
-			"cloudflare.config.ts must define a Worker to generate types."
+			"zenthcloud.config.ts must define a Worker to generate types."
 		);
 	});
 

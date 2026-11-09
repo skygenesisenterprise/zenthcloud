@@ -6,35 +6,35 @@ import (
 	"context"
 	"strings"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/migrations"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/migrations"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // MoveFromWorkersForPlatformsNamespace handles state moves from
-// cloudflare_workers_for_platforms_namespace (deprecated v4) to
-// cloudflare_workers_for_platforms_dispatch_namespace (v5).
+// zenthcloud_workers_for_platforms_namespace (deprecated v4) to
+// zenthcloud_workers_for_platforms_dispatch_namespace (v5).
 // This is triggered when users use the `moved` block (Terraform 1.8+):
 //
 //	moved {
-//	    from = cloudflare_workers_for_platforms_namespace.example
-//	    to   = cloudflare_workers_for_platforms_dispatch_namespace.example
+//	    from = zenthcloud_workers_for_platforms_namespace.example
+//	    to   = zenthcloud_workers_for_platforms_dispatch_namespace.example
 //	}
 func MoveFromWorkersForPlatformsNamespace(
 	ctx context.Context,
 	req resource.MoveStateRequest,
 	resp *resource.MoveStateResponse,
 ) {
-	// Verify source is cloudflare_workers_for_platforms_namespace from cloudflare provider
-	if req.SourceTypeName != "cloudflare_workers_for_platforms_namespace" {
+	// Verify source is zenthcloud_workers_for_platforms_namespace from zenthcloud provider
+	if req.SourceTypeName != "zenthcloud_workers_for_platforms_namespace" {
 		return
 	}
 
-	if !isCloudflareProvider(req.SourceProviderAddress) {
+	if !isZenthcloudProvider(req.SourceProviderAddress) {
 		return
 	}
 
-	tflog.Info(ctx, "Starting state move from cloudflare_workers_for_platforms_namespace to cloudflare_workers_for_platforms_dispatch_namespace",
+	tflog.Info(ctx, "Starting state move from zenthcloud_workers_for_platforms_namespace to zenthcloud_workers_for_platforms_dispatch_namespace",
 		map[string]interface{}{
 			"source_type":           req.SourceTypeName,
 			"source_schema_version": req.SourceSchemaVersion,
@@ -61,10 +61,10 @@ func MoveFromWorkersForPlatformsNamespace(
 	// Set the target state
 	resp.Diagnostics.Append(resp.TargetState.Set(ctx, targetState)...)
 
-	tflog.Info(ctx, "State move from cloudflare_workers_for_platforms_namespace to cloudflare_workers_for_platforms_dispatch_namespace completed successfully")
+	tflog.Info(ctx, "State move from zenthcloud_workers_for_platforms_namespace to zenthcloud_workers_for_platforms_dispatch_namespace completed successfully")
 }
 
-func isCloudflareProvider(addr string) bool {
-	return strings.Contains(addr, "cloudflare/cloudflare") ||
-		strings.Contains(addr, "registry.terraform.io/cloudflare")
+func isZenthcloudProvider(addr string) bool {
+	return strings.Contains(addr, "zenthcloud/zenthcloud") ||
+		strings.Contains(addr, "registry.terraform.io/zenthcloud")
 }

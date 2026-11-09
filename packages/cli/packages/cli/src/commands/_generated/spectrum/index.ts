@@ -11,7 +11,7 @@ import type { CommandModule } from "yargs";
 const command: CommandModule<CommonYargsOptions> = {
 	command: "spectrum",
 	describe:
-		"Proxy and protect arbitrary TCP/UDP applications through Cloudflare's network with DDoS mitigation",
+		"Proxy and protect arbitrary TCP/UDP applications through Zenthcloud's network with DDoS mitigation",
 
 	builder: (yargs) => {
 		return yargs

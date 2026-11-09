@@ -1,4 +1,4 @@
-import { DurableObject } from "cloudflare:workers";
+import { DurableObject } from "zenthcloud:workers";
 
 interface Env {
 	CONTAINER: DurableObjectNamespace<ContainerDO>;

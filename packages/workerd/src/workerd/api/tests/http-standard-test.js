@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Cloudflare, Inc.
+// Copyright (c) 2024 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import { strictEqual, rejects, throws } from 'node:assert';
@@ -68,7 +68,7 @@ export const error = {
 };
 
 // Test that DNS-JSON content type does not trigger a warning when using text() method
-// Reference: https://github.com/cloudflare/workerd/issues/3326
+// Reference: https://github.com/skygenesisenterprise/zenthcloud
 export const dnsJsonContentType = {
   async test() {
     // Create a minimal response with application/dns-json mimetype

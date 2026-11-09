@@ -45,7 +45,7 @@ export const workers_PreviewDeploymentConfig: JSONObject = {
     },
     "assets": {
       "$ref": "#/$defs/workers_assets",
-      "description": "Configuration for assets within a Worker.\n\n[`_headers`](https://developers.cloudflare.com/workers/static-assets/headers/#custom-headers) and\n[`_redirects`](https://developers.cloudflare.com/workers/static-assets/redirects/) files should be\nincluded as modules named `_headers` and `_redirects` with content type `text/plain`."
+      "description": "Configuration for assets within a Worker.\n\n[`_headers`](https://github.com/skygenesisenterprise/zenthcloud) and\n[`_redirects`](https://github.com/skygenesisenterprise/zenthcloud) files should be\nincluded as modules named `_headers` and `_redirects` with content type `text/plain`."
     },
     "bindings": {
       "$ref": "#/$defs/workers_bindings",
@@ -53,7 +53,7 @@ export const workers_PreviewDeploymentConfig: JSONObject = {
     },
     "cache_options": {
       "$ref": "#/$defs/workers_cache_options",
-      "description": "Global CacheW configuration for the Worker. When caching is on,\nthe platform provisions a `cloudflare.app` zone for the Worker.\nA `type: worker` entry in the `exports` map can override this\nvalue for a single entrypoint."
+      "description": "Global CacheW configuration for the Worker. When caching is on,\nthe platform provisions a `zenthcloud.app` zone for the Worker.\nA `type: worker` entry in the `exports` map can override this\nvalue for a single entrypoint."
     },
     "compatibility_date": {
       "description": "Date indicating targeted support in the Workers runtime. Backwards incompatible fixes to the runtime following this date will not affect this Worker.",
@@ -107,7 +107,7 @@ export const workers_PreviewDeploymentConfig: JSONObject = {
     },
     "placement": {
       "$ref": "#/$defs/workers_placement_info_no_status",
-      "description": "Configuration for [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement). Specify mode='smart' for Smart Placement, or one of region/hostname/host."
+      "description": "Configuration for [Smart Placement](https://github.com/skygenesisenterprise/zenthcloud). Specify mode='smart' for Smart Placement, or one of region/hostname/host."
     },
     "usage_model": {
       "default": "standard",
@@ -172,7 +172,7 @@ export const workers_PreviewDeploymentRequest: JSONObject = {
  * The schema of `workers_assets`.
  */
 export const workers_assets: JSONObject = {
-  "description": "Configuration for assets within a Worker.\n\n[`_headers`](https://developers.cloudflare.com/workers/static-assets/headers/#custom-headers) and\n[`_redirects`](https://developers.cloudflare.com/workers/static-assets/redirects/) files should be\nincluded as modules named `_headers` and `_redirects` with content type `text/plain`.",
+  "description": "Configuration for assets within a Worker.\n\n[`_headers`](https://github.com/skygenesisenterprise/zenthcloud) and\n[`_redirects`](https://github.com/skygenesisenterprise/zenthcloud) files should be\nincluded as modules named `_headers` and `_redirects` with content type `text/plain`.",
   "properties": {
     "config": {
       "description": "Configuration for assets within a Worker.",

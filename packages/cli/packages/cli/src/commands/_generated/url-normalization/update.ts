@@ -28,8 +28,8 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.coerce("scope", (value) => resolveFileToken(value, "scope", "text"))
 		.option("type", {
 			type: "string",
-			description: "The type of URL normalization performed by Cloudflare.",
-			choices: ["cloudflare", "rfc3986"],
+			description: "The type of URL normalization performed by Zenthcloud.",
+			choices: ["zenthcloud", "rfc3986"],
 		})
 		.coerce("type", (value) => resolveFileToken(value, "type", "text"))
 		.option("dry-run", {
@@ -63,7 +63,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf url-normalization update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/url_normalization`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/url_normalization`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 						},
@@ -104,8 +104,8 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 				if (argv["type"] === undefined) {
 					argv["type"] = await promptForRequiredEnumField(
 						"type",
-						"The type of URL normalization performed by Cloudflare.",
-						["cloudflare", "rfc3986"] as const
+						"The type of URL normalization performed by Zenthcloud.",
+						["zenthcloud", "rfc3986"] as const
 					);
 				}
 

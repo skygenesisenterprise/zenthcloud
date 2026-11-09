@@ -6,8 +6,8 @@
 		"dev": "vp dev"
 	},
 	"devDependencies": {
-		"@cloudflare/vite-plugin": "2.0.0-beta.v.12",
-		"@cloudflare/workers-types": "5.20261109.1",
+		"@zenthcloud/vite-plugin": "2.0.0-beta.v.12",
+		"@zenthcloud/workers-types": "5.20261109.1",
 		"cf": "workspace:*",
 		"vite": "catalog:",
 		"wrangler": "4.158.0"

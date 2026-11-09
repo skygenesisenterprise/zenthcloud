@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_cloud_connector_rules Data Source - Cloudflare"
+page_title: "zenthcloud_cloud_connector_rules Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Cloud Connector ReadCloud Connector Write
 ---
 
-# cloudflare_cloud_connector_rules (Data Source)
+# zenthcloud_cloud_connector_rules (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_cloud_connector_rules" "example_cloud_connector_rules" {
+data "zenthcloud_cloud_connector_rules" "example_cloud_connector_rules" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```
@@ -31,7 +31,7 @@ data "cloudflare_cloud_connector_rules" "example_cloud_connector_rules" {
 ### Read-Only
 
 - `cloud_connector_rules_provider` (String) Cloud Provider type
-Available values: "aws_s3", "cloudflare_r2", "gcp_storage", "azure_storage", "oci_storage".
+Available values: "aws_s3", "zenthcloud_r2", "gcp_storage", "azure_storage", "oci_storage".
 - `description` (String)
 - `enabled` (Boolean)
 - `expression` (String)

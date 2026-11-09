@@ -1,11 +1,11 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import http from 'node:http';
 import net from 'node:net';
-import { WorkerEntrypoint } from 'cloudflare:workers';
+import { WorkerEntrypoint } from 'zenthcloud:workers';
 import { strictEqual, ok, throws, notStrictEqual, rejects } from 'node:assert';
-import { httpServerHandler, handleAsNodeRequest } from 'cloudflare:node';
+import { httpServerHandler, handleAsNodeRequest } from 'zenthcloud:node';
 import { mock } from 'node:test';
 import url from 'node:url';
 import qs from 'node:querystring';
@@ -76,7 +76,7 @@ export const testGlobalHttpServe = {
     strictEqual(globalServer.listening, true);
     ok(globalServer.address().port > 0);
 
-    const res = await env.GLOBAL_SERVICE.fetch('https://cloudflare.com');
+    const res = await env.GLOBAL_SERVICE.fetch('https://github.com/skygenesisenterprise/zenthcloud');
     strictEqual(res.status, 200);
     strictEqual(await res.text(), 'Hello, World!');
 
@@ -109,7 +109,7 @@ export const testHttpServerMethodQuery = {
     await new Promise((resolve) => server.listen(0, resolve));
     currentTestPort = server.address().port;
 
-    const res = await env.SERVICE.fetch('https://cloudflare.com', {
+    const res = await env.SERVICE.fetch('https://github.com/skygenesisenterprise/zenthcloud', {
       method: 'QUERY',
     });
     strictEqual(res.status, 200);
@@ -143,7 +143,7 @@ export const testHttpServerMultiHeaders = {
     await new Promise((resolve) => server.listen(0, resolve));
     currentTestPort = server.address().port;
 
-    const res = await env.SERVICE.fetch('https://cloudflare.com', {
+    const res = await env.SERVICE.fetch('https://github.com/skygenesisenterprise/zenthcloud', {
       headers: [
         ['accept', 'abc'],
         ['accept', 'def'],
@@ -180,7 +180,7 @@ export const testHttpServerMultiHeaders = {
 // Test is taken from test/parallel/test-http-server-multiheaders2.js
 export const testHttpServerMultiHeaders2 = {
   async test(_ctrl, env) {
-    // One difference between Node.js and Cloudflare workers is that Cookie is allowed
+    // One difference between Node.js and Zenthcloud workers is that Cookie is allowed
     // to have multiple values but in Workers it is not supported.
     const multipleAllowed = [
       'Accept',
@@ -256,7 +256,7 @@ export const testHttpServerMultiHeaders2 = {
     await new Promise((resolve) => server.listen(0, resolve));
     currentTestPort = server.address().port;
 
-    const res = await env.SERVICE.fetch('https://cloudflare.com/', {
+    const res = await env.SERVICE.fetch('https://github.com/skygenesisenterprise/zenthcloud', {
       headers,
     });
     strictEqual(res.status, 200);
@@ -287,7 +287,7 @@ export const testHttpServerQuotedStringHeaders = {
 
     await new Promise((resolve) => server.listen(0, resolve));
     currentTestPort = server.address().port;
-    const res = await env.SERVICE.fetch('https://cloudflare.com', {
+    const res = await env.SERVICE.fetch('https://github.com/skygenesisenterprise/zenthcloud', {
       method: 'GET',
       headers: [
         // Basic quoted string tests
@@ -325,7 +325,7 @@ export const testHttpServerNonUtf8Header = {
 
       await new Promise((resolve) => server.listen(0, resolve));
       currentTestPort = server.address().port;
-      const res = await env.SERVICE.fetch('https://cloudflare.com', {
+      const res = await env.SERVICE.fetch('https://github.com/skygenesisenterprise/zenthcloud', {
         method: 'GET',
       });
       strictEqual(res.status, 200);
@@ -344,7 +344,7 @@ export const testHttpServerNonUtf8Header = {
 
       await new Promise((resolve) => server.listen(0, resolve));
       currentTestPort = server.address().port;
-      const res = await env.SERVICE.fetch('https://cloudflare.com');
+      const res = await env.SERVICE.fetch('https://github.com/skygenesisenterprise/zenthcloud');
       strictEqual(res.status, 200);
       strictEqual(res.headers.get('content-disposition'), nonUtf8ToLatin1);
     }
@@ -363,7 +363,7 @@ export const testHttpServerNonUtf8Header = {
       await new Promise((resolve) => server.listen(0, resolve));
       currentTestPort = server.address().port;
 
-      const res = await env.SERVICE.fetch('https://cloudflare.com');
+      const res = await env.SERVICE.fetch('https://github.com/skygenesisenterprise/zenthcloud');
       strictEqual(res.status, 200);
       // The issue is that Content-Length causes different header encoding behavior
       // We expect the raw bytes to be interpreted as UTF-8 by the fetch API
@@ -394,7 +394,7 @@ export const testHttpServerOptionsIncomingMessage = {
     await new Promise((resolve) => server.listen(0, resolve));
     currentTestPort = server.address().port;
 
-    const res = await env.SERVICE.fetch('https://cloudflare.com', {
+    const res = await env.SERVICE.fetch('https://github.com/skygenesisenterprise/zenthcloud', {
       headers: { 'User-Agent': 'node-test' },
     });
     strictEqual(res.status, 200);
@@ -422,7 +422,7 @@ export const testHttpServerOptionsServerResponse = {
     await new Promise((resolve) => server.listen(0, resolve));
     currentTestPort = server.address().port;
 
-    const res = await env.SERVICE.fetch('https://cloudflare.com');
+    const res = await env.SERVICE.fetch('https://github.com/skygenesisenterprise/zenthcloud');
     strictEqual(res.status, 200);
     strictEqual(res.headers.get('content-type'), 'text/plain');
   },
@@ -503,7 +503,7 @@ export const testIncomingMessageSetTimeout = {
     await new Promise((resolve) => server.listen(0, resolve));
     currentTestPort = server.address().port;
 
-    const res = await env.SERVICE.fetch('https://cloudflare.com');
+    const res = await env.SERVICE.fetch('https://github.com/skygenesisenterprise/zenthcloud');
     strictEqual(await res.text(), 'ok');
   },
 };
@@ -567,7 +567,7 @@ export const testUnreferencedServerSurvivesGc = {
     await scheduler.wait(0);
     const res = await handleAsNodeRequest(
       { port: 18080 },
-      new Request('https://cloudflare.com/')
+      new Request('https://github.com/skygenesisenterprise/zenthcloud')
     );
     strictEqual(await res.text(), 'alive');
   },
@@ -755,7 +755,7 @@ export const testIncomingMessageSocket = {
     serverPort = server.address().port;
     currentTestPort = serverPort;
 
-    const res = await env.SERVICE.fetch('https://cloudflare.com');
+    const res = await env.SERVICE.fetch('https://github.com/skygenesisenterprise/zenthcloud');
     strictEqual(res.status, 200);
     strictEqual(await res.text(), 'Hello, World!');
   },
@@ -805,7 +805,7 @@ export const testHttpRequestFields = {
     });
     await new Promise((resolve) => server.listen(0, resolve));
     currentTestPort = server.address().port;
-    await env.SERVICE.fetch('https://cloudflare.com');
+    await env.SERVICE.fetch('https://github.com/skygenesisenterprise/zenthcloud');
   },
 };
 

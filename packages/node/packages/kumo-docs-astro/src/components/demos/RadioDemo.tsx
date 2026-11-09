@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Badge, Radio } from "@cloudflare/kumo";
+import { Badge, Radio } from "@zenthcloud/kumo";
 
 /** Shows a basic controlled radio group */
 export function RadioBasicDemo() {
@@ -250,7 +250,7 @@ export function RadioControlPositionDemo() {
   );
 }
 
-/** Shows radio card appearance with Cloudflare plan options */
+/** Shows radio card appearance with Zenthcloud plan options */
 export function RadioCardDemo() {
   const [value, setValue] = useState("free");
   return (

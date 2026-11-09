@@ -10,24 +10,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 // TestMigrateZeroTrustGatewayPolicy_V4ToV5_Minimal tests migration of a minimal gateway policy
 func TestMigrateZeroTrustGatewayPolicy_V4ToV5_Minimal(t *testing.T) {
 	// Zero Trust resources don't support API token authentication yet
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_gateway_policy." + rnd
+	resourceName := "zenthcloud_zero_trust_gateway_policy." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_teams_rule" "%[1]s" {
+resource "zenthcloud_teams_rule" "%[1]s" {
   account_id  = "%[2]s"
   name        = "tf-test-minimal-%[1]s"
   description = "Minimal policy for migration testing"
@@ -47,8 +47,8 @@ resource "cloudflare_teams_rule" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -56,7 +56,7 @@ resource "cloudflare_teams_rule" "%[1]s" {
 			},
 			// Step 2: Run migration and verify state
 			acctest.MigrationV2TestStepForGatewayPolicy(t, v4Config, tmpDir, "4.52.1", "v4", "v5", false, []statecheck.StateCheck{
-				// Resource should be renamed to cloudflare_zero_trust_gateway_policy
+				// Resource should be renamed to zenthcloud_zero_trust_gateway_policy
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.NotNull()),
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("tf-test-minimal-%s", rnd))),
@@ -71,17 +71,17 @@ resource "cloudflare_teams_rule" "%[1]s" {
 
 // TestMigrateZeroTrustGatewayPolicy_V4ToV5_WithRuleSettings tests migration with rule_settings and field renames
 func TestMigrateZeroTrustGatewayPolicy_V4ToV5_WithRuleSettings(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_gateway_policy." + rnd
+	resourceName := "zenthcloud_zero_trust_gateway_policy." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_teams_rule" "%[1]s" {
+resource "zenthcloud_teams_rule" "%[1]s" {
   account_id  = "%[2]s"
   name        = "tf-test-settings-%[1]s"
   description = "Policy with rule settings"
@@ -109,8 +109,8 @@ resource "cloudflare_teams_rule" "%[1]s" {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -135,17 +135,17 @@ resource "cloudflare_teams_rule" "%[1]s" {
 
 // TestMigrateZeroTrustGatewayPolicy_V4ToV5_WithNestedBlocks tests migration with nested blocks
 func TestMigrateZeroTrustGatewayPolicy_V4ToV5_WithNestedBlocks(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_gateway_policy." + rnd
+	resourceName := "zenthcloud_zero_trust_gateway_policy." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_teams_rule" "%[1]s" {
+resource "zenthcloud_teams_rule" "%[1]s" {
   account_id  = "%[2]s"
   name        = "tf-test-nested-%[1]s"
   description = "Policy with nested blocks"
@@ -177,8 +177,8 @@ resource "cloudflare_teams_rule" "%[1]s" {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -204,17 +204,17 @@ resource "cloudflare_teams_rule" "%[1]s" {
 
 // TestMigrateZeroTrustGatewayPolicy_V4ToV5_ComplexSettings tests migration with multiple nested structures
 func TestMigrateZeroTrustGatewayPolicy_V4ToV5_ComplexSettings(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_gateway_policy." + rnd
+	resourceName := "zenthcloud_zero_trust_gateway_policy." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_teams_rule" "%[1]s" {
+resource "zenthcloud_teams_rule" "%[1]s" {
   account_id  = "%[2]s"
   name        = "tf-test-complex-%[1]s"
   description = "Policy with complex settings"
@@ -248,8 +248,8 @@ resource "cloudflare_teams_rule" "%[1]s" {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -274,17 +274,17 @@ resource "cloudflare_teams_rule" "%[1]s" {
 
 // TestMigrateZeroTrustGatewayPolicy_V4ToV5_EmptyRuleSettings tests migration without rule_settings
 func TestMigrateZeroTrustGatewayPolicy_V4ToV5_EmptyRuleSettings(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_gateway_policy." + rnd
+	resourceName := "zenthcloud_zero_trust_gateway_policy." + rnd
 	tmpDir := t.TempDir()
 
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_teams_rule" "%[1]s" {
+resource "zenthcloud_teams_rule" "%[1]s" {
   account_id  = "%[2]s"
   name        = "tf-test-empty-%[1]s"
   description = "Policy without rule settings"
@@ -304,8 +304,8 @@ resource "cloudflare_teams_rule" "%[1]s" {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},

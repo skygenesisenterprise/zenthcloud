@@ -5,8 +5,8 @@ package bot_management
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -82,7 +82,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"auto_update_model": schema.BoolAttribute{
-				Description: "Automatically update to the newest bot detection models created by Cloudflare as they are released. [Learn more.](https://developers.cloudflare.com/bots/reference/machine-learning-models#model-versions-and-release-notes)",
+				Description: "Automatically update to the newest bot detection models created by Zenthcloud as they are released. [Learn more.](https://github.com/skygenesisenterprise/zenthcloud)",
 				Computed:    true,
 			},
 			"bm_cookie_enabled": schema.BoolAttribute{
@@ -90,7 +90,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"bot_preference_sync_enabled": schema.BoolAttribute{
-				Description: "Enable Bot Preference Sync for this zone. When enabled, Cloudflare can serve robots.txt content derived from the zone's AI Search, AI User, and AI Training preferences.",
+				Description: "Enable Bot Preference Sync for this zone. When enabled, Zenthcloud can serve robots.txt content derived from the zone's AI Search, AI User, and AI Training preferences.",
 				Computed:    true,
 			},
 			"cf_robots_variant": schema.StringAttribute{
@@ -115,7 +115,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"enable_js": schema.BoolAttribute{
-				Description: "Use lightweight, invisible JavaScript detections to improve Bot Management. [Learn more about JavaScript Detections](https://developers.cloudflare.com/bots/reference/javascript-detections/).",
+				Description: "Use lightweight, invisible JavaScript detections to improve Bot Management. [Learn more about JavaScript Detections](https://github.com/skygenesisenterprise/zenthcloud).",
 				Computed:    true,
 			},
 			"fight_mode": schema.BoolAttribute{
@@ -123,7 +123,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"is_robots_txt_managed": schema.BoolAttribute{
-				Description: "Enable cloudflare managed robots.txt. If an existing robots.txt is detected, then managed robots.txt will be prepended to the existing robots.txt.",
+				Description: "Enable zenthcloud managed robots.txt. If an existing robots.txt is detected, then managed robots.txt will be prepended to the existing robots.txt.",
 				Computed:    true,
 			},
 			"jsd_api_results_enabled": schema.BoolAttribute{

@@ -3,10 +3,10 @@ package zone_dnssec
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/dns"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/dns"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
@@ -15,8 +15,8 @@ func disableDNSSECRecord(ctx context.Context, r *ZoneDNSSECResource, zoneID stri
 	_, err = r.client.DNS.DNSSEC.Edit(
 		ctx,
 		dns.DNSSECEditParams{
-			ZoneID: cloudflare.F(zoneID),
-			Status: cloudflare.F[dns.DNSSECEditParamsStatus](dns.DNSSECEditParamsStatusDisabled),
+			ZoneID: zenthcloud.F(zoneID),
+			Status: zenthcloud.F[dns.DNSSECEditParamsStatus](dns.DNSSECEditParamsStatusDisabled),
 		},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)

@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/spectrum_application"
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/spectrum_application/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/spectrum_application"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/spectrum_application/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"

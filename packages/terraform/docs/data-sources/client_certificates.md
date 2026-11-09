@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_client_certificates Data Source - Cloudflare"
+page_title: "zenthcloud_client_certificates Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   SSL and Certificates ReadSSL and Certificates Write
 ---
 
-# cloudflare_client_certificates (Data Source)
+# zenthcloud_client_certificates (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_client_certificates" "example_client_certificates" {
+data "zenthcloud_client_certificates" "example_client_certificates" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   limit = 10
   offset = 10

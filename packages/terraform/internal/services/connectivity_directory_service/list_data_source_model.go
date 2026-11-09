@@ -5,9 +5,9 @@ package connectivity_directory_service
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/connectivity"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/connectivity"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -26,11 +26,11 @@ type ConnectivityDirectoryServicesDataSourceModel struct {
 
 func (m *ConnectivityDirectoryServicesDataSourceModel) toListParams(_ context.Context) (params connectivity.DirectoryServiceListParams, diags diag.Diagnostics) {
 	params = connectivity.DirectoryServiceListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Type.IsNull() {
-		params.Type = cloudflare.F(connectivity.DirectoryServiceListParamsType(m.Type.ValueString()))
+		params.Type = zenthcloud.F(connectivity.DirectoryServiceListParamsType(m.Type.ValueString()))
 	}
 
 	return

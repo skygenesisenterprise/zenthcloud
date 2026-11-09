@@ -5,8 +5,8 @@ import (
 	"path"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/compare"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -14,12 +14,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
-func TestAccCloudflareWorkerVersionDataSource_Basic(t *testing.T) {
+func TestAccZenthcloudWorkerVersionDataSource_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	workerName := "cloudflare_worker." + rnd
-	resourceName := "cloudflare_worker_version." + rnd
-	dataSourceName := "data.cloudflare_worker_version." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	workerName := "zenthcloud_worker." + rnd
+	resourceName := "zenthcloud_worker_version." + rnd
+	dataSourceName := "data.zenthcloud_worker_version." + rnd
 
 	tmpDir := t.TempDir()
 	contentFile := path.Join(tmpDir, "index.js")

@@ -22,47 +22,47 @@ stages: [build]
   secrets:
     GCP_CREDS:
       # pre-existing _dev secret for edgeworker build
-      vault: gitlab/cloudflare/ew/edgeworker/_dev/gcp_creds/data@kv
+      vault: gitlab/zenthcloud/ew/edgeworker/_dev/gcp_creds/data@kv
       file: false
 
 include:
-  - component: $CI_SERVER_FQDN/cloudflare/ci/cfsetup/build@~latest
+  - component: $CI_SERVER_FQDN/zenthcloud/ci/cfsetup/build@~latest
     inputs:
       <<: *cfsetup-input-template
       jobPrefix: "linux-x64"
       CFSETUP_TARGET: "ci-bazel-x64"
 
-  - component: $CI_SERVER_FQDN/cloudflare/ci/cfsetup/build@~latest
+  - component: $CI_SERVER_FQDN/zenthcloud/ci/cfsetup/build@~latest
     inputs:
       <<: *cfsetup-input-template
       jobPrefix: "linux-x64-release"
       CFSETUP_TARGET: "ci-bazel-x64-release"
 
-  - component: $CI_SERVER_FQDN/cloudflare/ci/cfsetup/build@~latest
+  - component: $CI_SERVER_FQDN/zenthcloud/ci/cfsetup/build@~latest
     inputs:
       <<: *cfsetup-input-template
       jobPrefix: "linux-x64-asan"
       CFSETUP_TARGET: "ci-bazel-x64-asan"
 
-  - component: $CI_SERVER_FQDN/cloudflare/ci/cfsetup/build@~latest
+  - component: $CI_SERVER_FQDN/zenthcloud/ci/cfsetup/build@~latest
     inputs:
       <<: *cfsetup-input-template
       jobPrefix: "linux-x64-lint"
       CFSETUP_TARGET: "ci-bazel-x64-lint"
 
-  - component: $CI_SERVER_FQDN/cloudflare/ci/ai/opencode@canary
+  - component: $CI_SERVER_FQDN/zenthcloud/ci/ai/opencode@canary
     inputs:
       stage: build
       runOnMR: true
       runOnBranches: false
       USE_COORDINATOR: true
-      OPENCODE_MODEL: "cloudflare-ai-gateway/anthropic/claude-opus-5"
+      OPENCODE_MODEL: "zenthcloud-ai-gateway/anthropic/claude-opus-5"
       # Auto reviewer assignment is off for now due to developers getting assigned to an excessive
       # amount of PRs
       # Docs: https://backstage.cfdata.org/docs/default/component/ai-code-reviewer/reviewer-assignment/
       ASSIGN_REVIEWERS: false
 
-  - component: $CI_SERVER_FQDN/cloudflare/ci/python/run@~latest
+  - component: $CI_SERVER_FQDN/zenthcloud/ci/python/run@~latest
     inputs:
       stage: build
       jobPrefix: edgeworker-internal-build

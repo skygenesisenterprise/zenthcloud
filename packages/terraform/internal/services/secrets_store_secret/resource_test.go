@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/secrets_store"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/secrets_store"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -15,9 +15,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 func TestMain(m *testing.M) {
@@ -25,8 +25,8 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_secrets_store_secret", &resource.Sweeper{
-		Name: "cloudflare_secrets_store_secret",
+	resource.AddTestSweepers("zenthcloud_secrets_store_secret", &resource.Sweeper{
+		Name: "zenthcloud_secrets_store_secret",
 		F:    testSweepSecretsStoreSecrets,
 	})
 }
@@ -35,16 +35,16 @@ func init() {
 // "cftftest") from all stores in the account. It does not delete the stores
 // themselves or any non-test secrets.
 func testSweepSecretsStoreSecrets(_ string) error {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		return fmt.Errorf("CLOUDFLARE_ACCOUNT_ID must be set")
+		return fmt.Errorf("ZENTHCLOUD_ACCOUNT_ID must be set")
 	}
 
 	client := acctest.SharedClient()
 	ctx := context.Background()
 
 	stores, err := client.SecretsStore.Stores.List(ctx, secrets_store.StoreListParams{
-		AccountID: cloudflare.F(accountID),
+		AccountID: zenthcloud.F(accountID),
 	})
 	if err != nil {
 		return fmt.Errorf("listing secrets stores: %w", err)
@@ -52,7 +52,7 @@ func testSweepSecretsStoreSecrets(_ string) error {
 
 	for _, store := range stores.Result {
 		secrets, err := client.SecretsStore.Stores.Secrets.List(ctx, store.ID, secrets_store.StoreSecretListParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		})
 		if err != nil {
 			return fmt.Errorf("listing secrets in store %s: %w", store.ID, err)
@@ -61,7 +61,7 @@ func testSweepSecretsStoreSecrets(_ string) error {
 			// Only delete secrets created by acceptance tests.
 			if len(secret.Name) >= 8 && secret.Name[:8] == "cftftest" {
 				_, err := client.SecretsStore.Stores.Secrets.Delete(ctx, store.ID, secret.ID, secrets_store.StoreSecretDeleteParams{
-					AccountID: cloudflare.F(accountID),
+					AccountID: zenthcloud.F(accountID),
 				})
 				if err != nil {
 					return fmt.Errorf("deleting secret %s: %w", secret.ID, err)
@@ -77,10 +77,10 @@ func testSweepSecretsStoreSecrets(_ string) error {
 // Secrets Store currently has a one-store-per-account limit.
 func getExistingStoreID(t *testing.T) string {
 	t.Helper()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	client := acctest.SharedClient()
 	stores, err := client.SecretsStore.Stores.List(context.Background(), secrets_store.StoreListParams{
-		AccountID: cloudflare.F(accountID),
+		AccountID: zenthcloud.F(accountID),
 	})
 	if err != nil {
 		t.Fatalf("listing stores: %s", err)
@@ -91,19 +91,19 @@ func getExistingStoreID(t *testing.T) string {
 	return stores.Result[0].ID
 }
 
-func TestAccCloudflareSecretsStoreSecret_Workflow(t *testing.T) {
+func TestAccZenthcloudSecretsStoreSecret_Workflow(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("acceptance tests skipped unless TF_ACC is set")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		t.Skip("acceptance test requires CLOUDFLARE_ACCOUNT_ID")
+		t.Skip("acceptance test requires ZENTHCLOUD_ACCOUNT_ID")
 	}
 
 	storeID := getExistingStoreID(t)
-	secretResourceName := "cloudflare_secrets_store_secret." + rnd
+	secretResourceName := "zenthcloud_secrets_store_secret." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -211,7 +211,7 @@ func testAccCheckSecretsStoreSecretDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_secrets_store_secret" {
+		if rs.Type != "zenthcloud_secrets_store_secret" {
 			continue
 		}
 
@@ -222,7 +222,7 @@ func testAccCheckSecretsStoreSecretDestroy(s *terraform.State) error {
 			storeID,
 			rs.Primary.ID,
 			secrets_store.StoreSecretGetParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			},
 		)
 		if err == nil {

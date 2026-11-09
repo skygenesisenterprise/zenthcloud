@@ -1,7 +1,7 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -9,10 +9,10 @@ import (
 // Source Models (Legacy Provider - v4.x)
 // ============================================================================
 
-// SourceCloudflareBotManagementModel represents the legacy cloudflare_bot_management resource state from v4.x provider.
+// SourceZenthcloudBotManagementModel represents the legacy zenthcloud_bot_management resource state from v4.x provider.
 // Schema version: 0 (SDKv2 provider)
-// Resource type: cloudflare_bot_management
-type SourceCloudflareBotManagementModel struct {
+// Resource type: zenthcloud_bot_management
+type SourceZenthcloudBotManagementModel struct {
 	ID                           types.String `tfsdk:"id"`
 	ZoneID                       types.String `tfsdk:"zone_id"`
 	AIBotsProtection             types.String `tfsdk:"ai_bots_protection"`
@@ -32,9 +32,9 @@ type SourceCloudflareBotManagementModel struct {
 // Target Models (Current Provider - v5.x+)
 // ============================================================================
 
-// TargetBotManagementModel represents the current cloudflare_bot_management resource state from v5.x+ provider.
+// TargetBotManagementModel represents the current zenthcloud_bot_management resource state from v5.x+ provider.
 // Schema version: 500
-// Resource type: cloudflare_bot_management
+// Resource type: zenthcloud_bot_management
 type TargetBotManagementModel struct {
 	ID                           types.String                                                      `tfsdk:"id"`
 	ZoneID                       types.String                                                      `tfsdk:"zone_id"`

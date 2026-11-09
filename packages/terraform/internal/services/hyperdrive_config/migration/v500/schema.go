@@ -4,10 +4,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-// SourceCloudflareHyperdriveConfigSchema returns the legacy cloudflare_hyperdrive_config schema (schema_version=0).
+// SourceZenthcloudHyperdriveConfigSchema returns the legacy zenthcloud_hyperdrive_config schema (schema_version=0).
 // This is used by UpgradeFromV0 to parse state from the legacy framework provider v4.
-// Reference: https://github.com/cloudflare/terraform-provider-cloudflare/blob/v4/internal/framework/service/hyperdrive_config/schema.go
-func SourceCloudflareHyperdriveConfigSchema() schema.Schema {
+// Reference: https://github.com/skygenesisenterprise/zenthcloud
+func SourceZenthcloudHyperdriveConfigSchema() schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{

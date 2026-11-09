@@ -15,7 +15,7 @@ import (
 // - main_module → metadata.main_module (restructured into nested object)
 // - files blocks → files list attribute (blocks to list of objects)
 // - created_on, modified_on: String → timetypes.RFC3339 (custom type conversion)
-func Transform(ctx context.Context, source SourceCloudflareSnippetModel) (*TargetSnippetModel, diag.Diagnostics) {
+func Transform(ctx context.Context, source SourceZenthcloudSnippetModel) (*TargetSnippetModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Validate required fields

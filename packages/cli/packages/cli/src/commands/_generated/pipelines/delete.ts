@@ -61,7 +61,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf pipelines delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/pipelines/v1/pipelines/${argv["pipeline-id"] == null ? "<pipeline-id>" : encodeURIComponent(String(argv["pipeline-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/pipelines/v1/pipelines/${argv["pipeline-id"] == null ? "<pipeline-id>" : encodeURIComponent(String(argv["pipeline-id"]))}`,
 						pathParams: { "pipeline-id": String(argv["pipeline-id"] ?? "") },
 						bodyKind: "none",
 					});

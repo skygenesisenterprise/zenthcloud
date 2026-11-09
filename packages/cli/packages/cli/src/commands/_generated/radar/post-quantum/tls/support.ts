@@ -53,7 +53,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar post-quantum tls support",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/post_quantum/tls/support`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

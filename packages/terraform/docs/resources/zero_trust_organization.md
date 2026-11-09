@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_organization Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_organization Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Access: Organizations, Identity Providers, and Groups ReadAccess: Organizations, Identity Providers, and Groups RevokeAccess: Organizations, Identity Providers, and Groups Write
 ---
 
-# cloudflare_zero_trust_organization (Resource)
+# zenthcloud_zero_trust_organization (Resource)
 
 Accepted Permissions
 
@@ -17,10 +17,10 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_organization" "example_zero_trust_organization" {
+resource "zenthcloud_zero_trust_organization" "example_zero_trust_organization" {
   zone_id = "zone_id"
   allow_authenticate_via_warp = true
-  auth_domain = "test.cloudflareaccess.com"
+  auth_domain = "test.zenthcloudaccess.com"
   auto_redirect_to_identity = true
   custom_pages = {
     forbidden = "699d98642c564d2e855e9661899b7252"
@@ -72,10 +72,10 @@ resource "cloudflare_zero_trust_organization" "example_zero_trust_organization" 
 
 - `account_id` (String) The Account ID to use for this endpoint. Mutually exclusive with the Zone ID.
 - `allow_authenticate_via_warp` (Boolean) When set to true, users can authenticate via WARP for any application in your organization. Application settings will take precedence over this value.
-- `auth_domain` (String) The unique subdomain assigned to your Zero Trust organization. If omitted on creation, a unique subdomain is auto-generated in the format `adjective-noun-hex4` (e.g. `frosty-moon-7a3b.cloudflareaccess.com`).
+- `auth_domain` (String) The unique subdomain assigned to your Zero Trust organization. If omitted on creation, a unique subdomain is auto-generated in the format `adjective-noun-hex4` (e.g. `frosty-moon-7a3b.zenthcloudaccess.com`).
 - `auto_redirect_to_identity` (Boolean) When set to `true`, users skip the identity provider selection step during login.
 - `custom_pages` (Attributes) (see [below for nested schema](#nestedatt--custom_pages))
-- `deny_unmatched_requests` (Boolean) Determines whether to deny all requests to Cloudflare-protected resources that lack an associated Access application. If enabled, you must explicitly configure an Access application and policy to allow traffic to your Cloudflare-protected resources. For domains you want to be public across all subdomains, add the domain to the `deny_unmatched_requests_exempted_zone_names` array.
+- `deny_unmatched_requests` (Boolean) Determines whether to deny all requests to Zenthcloud-protected resources that lack an associated Access application. If enabled, you must explicitly configure an Access application and policy to allow traffic to your Zenthcloud-protected resources. For domains you want to be public across all subdomains, add the domain to the `deny_unmatched_requests_exempted_zone_names` array.
 - `deny_unmatched_requests_exempted_zone_names` (List of String) Contains zone names to exempt from the `deny_unmatched_requests` feature. Requests to a subdomain in an exempted zone will block unauthenticated traffic by default if there is a configured Access application and policy that matches the request.
 - `is_ui_read_only` (Boolean) Lock all settings as Read-Only in the Dashboard, regardless of user permission. Updates may only be made via the API or Terraform for this account when enabled.
 - `login_design` (Attributes) (see [below for nested schema](#nestedatt--login_design))
@@ -125,7 +125,7 @@ Optional:
 
 - `allowed_authenticators` (List of String) Lists the MFA methods that users can authenticate with. The `piv_key` and `ssh_fido2_key` values are supported only for infrastructure applications.
 - `amr_matching_session_duration` (String) Allows a user to skip MFA via Authentication Method Reference (AMR) matching when the AMR claim provided by the IdP the user used to authenticate contains "mfa". Must be in minutes (m) or hours (h). Minimum: 0m. Maximum: 720h (30 days).
-- `required_aaguids` (String) Specifies a Cloudflare List of required FIDO2 authenticator device AAGUIDs.
+- `required_aaguids` (String) Specifies a Zenthcloud List of required FIDO2 authenticator device AAGUIDs.
 - `session_duration` (String) Defines the duration of an MFA session. Must be in minutes (m) or hours (h). Minimum: 0m. Maximum: 720h (30 days). Examples:`5m` or `24h`.
 
 
@@ -158,7 +158,7 @@ Available values: "disable", "delete".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_organization.example '<account_id>'
+$ terraform import zenthcloud_zero_trust_organization.example '<account_id>'
 ```
 
 

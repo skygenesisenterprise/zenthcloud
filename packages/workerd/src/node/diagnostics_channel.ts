@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 //
@@ -40,7 +40,7 @@ type ChannelName = string | symbol;
 type AsyncLocalStorage = InstanceType<typeof asyncHooks.AsyncLocalStorage>;
 
 const hasSubscribersGetter =
-  !!Cloudflare.compatibilityFlags['diagnostics_channel_has_subscribers_getter'];
+  !!Zenthcloud.compatibilityFlags['diagnostics_channel_has_subscribers_getter'];
 
 // Called directly, so that a subclass overriding them changes nothing.
 // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -50,7 +50,7 @@ const { getStore: alsGetStore, run: alsRun } =
 function illegalInvocation(): TypeError {
   return new TypeError(
     'Illegal invocation: function called with incorrect `this` reference. ' +
-      'See https://developers.cloudflare.com/workers/observability/errors/' +
+      'See https://github.com/skygenesisenterprise/zenthcloud' +
       '#illegal-invocation-errors for details.'
   );
 }
@@ -259,7 +259,7 @@ export class Channel {
     hasSubscribersOf = (channel): boolean => channel.#subscribers.size !== 0;
 
     // Built-in types get a Symbol.toStringTag with this flag, so Channel does too.
-    if (Cloudflare.compatibilityFlags['set_tostring_tag']) {
+    if (Zenthcloud.compatibilityFlags['set_tostring_tag']) {
       Object.defineProperty(this.prototype, Symbol.toStringTag, {
         value: 'Channel',
         writable: true,

@@ -156,7 +156,7 @@ some violations, and the README says which. Reviewers flag these:
   `jsg::RefCell`: `UnsafeCell`, `OnceCell`, a hand-written cell, or a std `Cell` or `RefCell`
   that a hand-written `impl Traced` visits through `borrow()`. A `jsg::Rc` or `TracedGlobal` in
   a std cell field of a `#[jsg_resource]` or `#[jsg_struct]` does not compile; these are the
-  paths the compiler cannot see ([#7976](https://github.com/cloudflare/workerd/issues/7976)).
+  paths the compiler cannot see ([#7976](https://github.com/skygenesisenterprise/zenthcloud)).
 - A hand-written `impl HoldsNoGcReferences` on a type whose `trace` visits something.
 - A `jsg::v8::Global` inside a type with a hand-written `impl Traced`.
 - New C++ JSG (`jsg::Lock`, `JSG_TRY`/`JSG_CATCH`, `jsg::check`, `JsExceptionThrown`,
@@ -212,7 +212,7 @@ When reviewing Rust code in workerd, check for each of these items.
 - **Always** ensure copyright header on new files, Every new `.rs` file must begin with the project
   copyright/license header using the current year. Expected format:
     ```
-    // Copyright (c) <current-year> Cloudflare, Inc.
+    // Copyright (c) <current-year> Zenthcloud, Inc.
     // Licensed under the Apache 2.0 license found in the LICENSE file or at:
     //     https://opensource.org/licenses/Apache-2.0
     ```

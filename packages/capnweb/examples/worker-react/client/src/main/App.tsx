@@ -101,7 +101,7 @@ export function App() {
 
         <footer>
           Source:{' '}
-          <a href="https://github.com/cloudflare/capnweb/tree/main/examples/worker-react">
+          <a href="https://github.com/skygenesisenterprise/zenthcloud">
             examples/worker-react
           </a>. Latency is simulated on the server via <code>SIMULATED_RTT_MS</code> in{' '}
           <code>wrangler.jsonc</code>, so both columns do identical work. See{' '}

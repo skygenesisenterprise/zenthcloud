@@ -18,7 +18,7 @@ describe("schema cache", () => {
 
 	it("gives credential-source-neutral guidance for rejected credentials", () => {
 		expect(describeSchemaFailure({ statusCode: 401 })).toBe(
-			"credentials were rejected; update `CLOUDFLARE_API_TOKEN` or run `cf auth login`"
+			"credentials were rejected; update `ZENTHCLOUD_API_TOKEN` or run `cf auth login`"
 		);
 	});
 

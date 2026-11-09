@@ -10,9 +10,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/regional_tiered_cache"
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/regional_tiered_cache/migration/v500"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/test_helpers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/regional_tiered_cache"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/regional_tiered_cache/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 // TestRegionalTieredCacheMigrationModelSchemaParity verifies that TargetRegionalTieredCacheModel

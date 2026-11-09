@@ -5,7 +5,7 @@ import {
 	mockConsoleMethods,
 	runInTempDir,
 	seed,
-} from "@cloudflare/workers-utils/test-helpers";
+} from "@zenthcloud/workers-utils/test-helpers";
 import { x } from "tinyexec";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import {
@@ -44,12 +44,12 @@ describe("cf dev", () => {
 			const result = await runCf(["dev"]);
 
 			expect(result.exitCode).toBe(1);
-			expect(std.err).toMatch(/No Cloudflare dev server is installed/);
+			expect(std.err).toMatch(/No Zenthcloud dev server is installed/);
 			// Should list every known impl as an install option.
-			expect(std.err).toMatch(/@cloudflare\/vite-plugin/);
+			expect(std.err).toMatch(/@zenthcloud\/vite-plugin/);
 			expect(std.err).toMatch(/wrangler/);
-			expect(std.err).toMatch(/cloudflare-py-dev-server/);
-			expect(std.err).toMatch(/cloudflare-rs-dev-server/);
+			expect(std.err).toMatch(/zenthcloud-py-dev-server/);
+			expect(std.err).toMatch(/zenthcloud-rs-dev-server/);
 			// And surface install commands.
 			expect(std.err).toMatch(/npm install --save-dev/);
 			expect(std.err).toMatch(/pip install/);
@@ -65,7 +65,7 @@ describe("cf dev", () => {
 
 			const result = await runCf(["dev"]);
 			expect(result.exitCode).toBe(1);
-			expect(std.err).toMatch(/No Cloudflare dev server is installed/);
+			expect(std.err).toMatch(/No Zenthcloud dev server is installed/);
 		});
 	});
 
@@ -73,12 +73,12 @@ describe("cf dev", () => {
 		it("errors when two ecosystems each declare an impl", async () => {
 			await seed({
 				"package.json": JSON.stringify({
-					devDependencies: { "@cloudflare/vite-plugin": "beta" },
+					devDependencies: { "@zenthcloud/vite-plugin": "beta" },
 				}),
 				"pyproject.toml": [
 					"[project]",
 					'name = "x"',
-					'dependencies = ["cloudflare-py-dev-server"]',
+					'dependencies = ["zenthcloud-py-dev-server"]',
 					"",
 				].join("\n"),
 			});
@@ -86,10 +86,10 @@ describe("cf dev", () => {
 			const result = await runCf(["dev"]);
 			expect(result.exitCode).toBe(1);
 			expect(std.err).toMatch(
-				/Multiple Cloudflare dev-server implementations are configured/
+				/Multiple Zenthcloud dev-server implementations are configured/
 			);
-			expect(std.err).toMatch(/@cloudflare\/vite-plugin/);
-			expect(std.err).toMatch(/cloudflare-py-dev-server/);
+			expect(std.err).toMatch(/@zenthcloud\/vite-plugin/);
+			expect(std.err).toMatch(/zenthcloud-py-dev-server/);
 			expect(std.err).toMatch(/A project can only use one dev-server/);
 		});
 
@@ -97,7 +97,7 @@ describe("cf dev", () => {
 			await seed({
 				"package.json": JSON.stringify({
 					devDependencies: {
-						"@cloudflare/vite-plugin": "beta",
+						"@zenthcloud/vite-plugin": "beta",
 						wrangler: "^4.0.0",
 					},
 				}),
@@ -105,9 +105,9 @@ describe("cf dev", () => {
 
 			const result = await runCf(["dev"]);
 			expect(result.exitCode).toBe(1);
-			expect(std.err).not.toMatch(/Multiple Cloudflare dev-server/);
+			expect(std.err).not.toMatch(/Multiple Zenthcloud dev-server/);
 			expect(unframe(std.err)).toMatch(
-				/@cloudflare\/vite-plugin .* is not installed/
+				/@zenthcloud\/vite-plugin .* is not installed/
 			);
 		});
 	});
@@ -116,7 +116,7 @@ describe("cf dev", () => {
 		it("surfaces an install hint specific to the declared impl", async () => {
 			await seed({
 				"package.json": JSON.stringify({
-					devDependencies: { "@cloudflare/vite-plugin": "beta" },
+					devDependencies: { "@zenthcloud/vite-plugin": "beta" },
 				}),
 				// No node_modules: declared but not installed.
 			});
@@ -124,20 +124,20 @@ describe("cf dev", () => {
 			const result = await runCf(["dev"]);
 			expect(result.exitCode).toBe(1);
 			expect(unframe(std.err)).toMatch(
-				/@cloudflare\/vite-plugin .* is not installed/
+				/@zenthcloud\/vite-plugin .* is not installed/
 			);
 			expect(std.err).toMatch(
-				/npm install --save-dev @cloudflare\/vite-plugin@beta/
+				/npm install --save-dev @zenthcloud\/vite-plugin@beta/
 			);
 		});
 
 		it("surfaces the vite version requirement when the delegate is missing", async () => {
 			await seed({
 				"package.json": JSON.stringify({
-					devDependencies: { "@cloudflare/vite-plugin": "beta" },
+					devDependencies: { "@zenthcloud/vite-plugin": "beta" },
 				}),
-				"node_modules/@cloudflare/vite-plugin/package.json": JSON.stringify({
-					name: "@cloudflare/vite-plugin",
+				"node_modules/@zenthcloud/vite-plugin/package.json": JSON.stringify({
+					name: "@zenthcloud/vite-plugin",
 					version: "2.0.0-beta.sha-805ec1ff3",
 				}),
 			});
@@ -145,13 +145,13 @@ describe("cf dev", () => {
 			const result = await runCf(["dev"]);
 			expect(result.exitCode).toBe(1);
 			expect(unframe(std.err)).toMatch(/does not include the cf delegate/);
-			expect(std.err).toMatch(/@cloudflare\/vite-plugin v2 beta/);
+			expect(std.err).toMatch(/@zenthcloud\/vite-plugin v2 beta/);
 			expect(std.err).toContain("cf dev");
 			expect(std.err).toContain("cf build");
 			expect(std.err).toContain("cf deploy");
 			expect(unframe(std.err)).toContain("cf previews deploy");
 			expect(unframe(std.err)).not.toMatch(
-				/@cloudflare\/vite-plugin .* is not installed/
+				/@zenthcloud\/vite-plugin .* is not installed/
 			);
 		});
 
@@ -180,7 +180,7 @@ describe("cf dev", () => {
 					'name = "my-worker"',
 					"",
 					"[dependencies]",
-					'cloudflare-rs-dev-server = "0.1"',
+					'zenthcloud-rs-dev-server = "0.1"',
 					"",
 				].join("\n"),
 			});
@@ -188,9 +188,9 @@ describe("cf dev", () => {
 			const result = await runCf(["dev"]);
 			expect(result.exitCode).toBe(1);
 			expect(unframe(std.err)).toMatch(
-				/cloudflare-rs-dev-server .* is not installed/
+				/zenthcloud-rs-dev-server .* is not installed/
 			);
-			expect(std.err).toMatch(/cargo install cloudflare-rs-dev-server/);
+			expect(std.err).toMatch(/cargo install zenthcloud-rs-dev-server/);
 		});
 	});
 
@@ -198,22 +198,22 @@ describe("cf dev", () => {
 		it("rejects an installed Vite plugin v1 delegate", async () => {
 			await seed({
 				"package.json": JSON.stringify({
-					devDependencies: { "@cloudflare/vite-plugin": "1.61.0" },
+					devDependencies: { "@zenthcloud/vite-plugin": "1.61.0" },
 				}),
-				"node_modules/@cloudflare/vite-plugin/package.json": JSON.stringify({
-					name: "@cloudflare/vite-plugin",
+				"node_modules/@zenthcloud/vite-plugin/package.json": JSON.stringify({
+					name: "@zenthcloud/vite-plugin",
 					version: "1.61.0",
 				}),
-				"node_modules/@cloudflare/vite-plugin/bin/cf-vite":
+				"node_modules/@zenthcloud/vite-plugin/bin/cf-vite":
 					nodeScript("process.exit(0);"),
 			});
-			makeExecutable("node_modules/@cloudflare/vite-plugin/bin/cf-vite");
+			makeExecutable("node_modules/@zenthcloud/vite-plugin/bin/cf-vite");
 
 			const result = await runCf(["dev"]);
 
 			expect(result.exitCode).toBe(1);
-			expect(std.err).toMatch(/@cloudflare\/vite-plugin v2 beta/);
-			expect(std.err).toMatch(/@cloudflare\/vite-plugin@1\.61\.0 is installed/);
+			expect(std.err).toMatch(/@zenthcloud\/vite-plugin v2 beta/);
+			expect(std.err).toMatch(/@zenthcloud\/vite-plugin@1\.61\.0 is installed/);
 			expect(std.err).toContain("cf dev");
 			expect(std.err).toContain("cf build");
 			expect(std.err).toContain("cf deploy");
@@ -222,7 +222,7 @@ describe("cf dev", () => {
 
 		it("runs the detected framework dev command", async () => {
 			await seed({
-				"cloudflare.config.ts": "export default {};",
+				"zenthcloud.config.ts": "export default {};",
 				"package.json": JSON.stringify({
 					name: "astro-project",
 					dependencies: { astro: "^5.0.0" },
@@ -273,7 +273,7 @@ describe("cf dev", () => {
 					version: "0.0.1",
 				}),
 				"node_modules/.bin/vite": nodeScript(
-					'require("node:fs").writeFileSync("vite-argv.out", [...process.argv.slice(2), process.env.CLOUDFLARE_VITE_FORCE_BUILD_OUTPUT].join("\\n") + "\\n");'
+					'require("node:fs").writeFileSync("vite-argv.out", [...process.argv.slice(2), process.env.ZENTHCLOUD_VITE_FORCE_BUILD_OUTPUT].join("\\n") + "\\n");'
 				),
 			});
 			makeExecutable("node_modules/.bin/vite", { npmBin: true });
@@ -290,7 +290,7 @@ describe("cf dev", () => {
 
 		it("does not treat an undeclared vinext installation (installed but not present in the project's manifest) as a vinext project", async () => {
 			await seed({
-				"cloudflare.config.ts": "export default {};",
+				"zenthcloud.config.ts": "export default {};",
 				"package.json": JSON.stringify({
 					name: "next-project",
 					dependencies: { next: "^16.0.0" },
@@ -320,7 +320,7 @@ describe("cf dev", () => {
 
 		it("rejects mode when the detected framework does not support it", async () => {
 			await seed({
-				"cloudflare.config.ts": "export default {};",
+				"zenthcloud.config.ts": "export default {};",
 				"package.json": JSON.stringify({
 					name: "angular-project",
 					dependencies: {
@@ -347,10 +347,10 @@ describe("cf dev", () => {
 					.spyOn(clack.log, "message")
 					.mockImplementation(() => {});
 				const registryEnv = {
-					CLOUDFLARE_DEV_REGISTRY_PATH: configured
+					ZENTHCLOUD_DEV_REGISTRY_PATH: configured
 						? "canonical registry"
 						: undefined,
-					CLOUDFLARE_REGISTRY_PATH: configured
+					ZENTHCLOUD_REGISTRY_PATH: configured
 						? "legacy cf registry"
 						: undefined,
 					WRANGLER_REGISTRY_PATH: configured ? "wrangler registry" : undefined,
@@ -363,7 +363,7 @@ describe("cf dev", () => {
 				}
 				vi.stubEnv("DEBUG", "");
 				await seed({
-					"cloudflare.config.ts": "export default {};",
+					"zenthcloud.config.ts": "export default {};",
 					"package.json": JSON.stringify({
 						name: "vite-project",
 						dependencies: { vite: "^7.0.0" },
@@ -374,7 +374,7 @@ describe("cf dev", () => {
 						version: "7.0.0",
 					}),
 					"node_modules/.bin/vite": nodeScript(
-						`require("node:fs").writeFileSync("env.out", JSON.stringify(["CLOUDFLARE_VITE_FORCE_BUILD_OUTPUT", ...${JSON.stringify(Object.keys(registryEnv))}].map(name => process.env[name])));`
+						`require("node:fs").writeFileSync("env.out", JSON.stringify(["ZENTHCLOUD_VITE_FORCE_BUILD_OUTPUT", ...${JSON.stringify(Object.keys(registryEnv))}].map(name => process.env[name])));`
 					),
 				});
 				makeExecutable("node_modules/.bin/vite", { npmBin: true });
@@ -546,7 +546,7 @@ describe("cf dev", () => {
 
 		it("rejects arguments for a detected framework command", async () => {
 			await seed({
-				"cloudflare.config.ts": "export default {};",
+				"zenthcloud.config.ts": "export default {};",
 				"package.json": JSON.stringify({
 					name: "astro-project",
 					dependencies: { astro: "^5.0.0" },
@@ -567,16 +567,16 @@ describe("cf dev", () => {
 			// Lay down a fake implementation at the conventional delegate path.
 			await seed({
 				"package.json": JSON.stringify({
-					devDependencies: { "@cloudflare/vite-plugin": "beta" },
+					devDependencies: { "@zenthcloud/vite-plugin": "beta" },
 				}),
-				"node_modules/@cloudflare/vite-plugin/package.json": JSON.stringify({
-					name: "@cloudflare/vite-plugin",
+				"node_modules/@zenthcloud/vite-plugin/package.json": JSON.stringify({
+					name: "@zenthcloud/vite-plugin",
 					version: "2.0.0-beta.sha-805ec1ff3",
 				}),
-				"node_modules/@cloudflare/vite-plugin/bin/cf-vite":
+				"node_modules/@zenthcloud/vite-plugin/bin/cf-vite":
 					nodeScript("process.exit(0);"),
 			});
-			makeExecutable("node_modules/@cloudflare/vite-plugin/bin/cf-vite");
+			makeExecutable("node_modules/@zenthcloud/vite-plugin/bin/cf-vite");
 
 			const result = await runCf(["dev"]);
 			expect(result.exitCode).toBe(0);
@@ -591,38 +591,38 @@ describe("cf dev", () => {
 		it("rejects future Vite plugin major versions", async () => {
 			await seed({
 				"package.json": JSON.stringify({
-					devDependencies: { "@cloudflare/vite-plugin": "next" },
+					devDependencies: { "@zenthcloud/vite-plugin": "next" },
 				}),
-				"node_modules/@cloudflare/vite-plugin/package.json": JSON.stringify({
-					name: "@cloudflare/vite-plugin",
+				"node_modules/@zenthcloud/vite-plugin/package.json": JSON.stringify({
+					name: "@zenthcloud/vite-plugin",
 					version: "3.0.0-beta.1",
 				}),
-				"node_modules/@cloudflare/vite-plugin/bin/cf-vite":
+				"node_modules/@zenthcloud/vite-plugin/bin/cf-vite":
 					nodeScript("process.exit(0);"),
 			});
-			makeExecutable("node_modules/@cloudflare/vite-plugin/bin/cf-vite");
+			makeExecutable("node_modules/@zenthcloud/vite-plugin/bin/cf-vite");
 
 			const result = await runCf(["dev"]);
 			expect(result.exitCode).toBe(1);
-			expect(std.err).toMatch(/@cloudflare\/vite-plugin v2 beta/);
+			expect(std.err).toMatch(/@zenthcloud\/vite-plugin v2 beta/);
 			expect(std.err).toMatch(
-				/@cloudflare\/vite-plugin@3\.0\.0-beta\.1 is installed/
+				/@zenthcloud\/vite-plugin@3\.0\.0-beta\.1 is installed/
 			);
 		});
 
 		it("propagates a non-zero impl exit code", async () => {
 			await seed({
 				"package.json": JSON.stringify({
-					devDependencies: { "@cloudflare/vite-plugin": "beta" },
+					devDependencies: { "@zenthcloud/vite-plugin": "beta" },
 				}),
-				"node_modules/@cloudflare/vite-plugin/package.json": JSON.stringify({
-					name: "@cloudflare/vite-plugin",
+				"node_modules/@zenthcloud/vite-plugin/package.json": JSON.stringify({
+					name: "@zenthcloud/vite-plugin",
 					version: "2.0.0-beta.sha-805ec1ff3",
 				}),
-				"node_modules/@cloudflare/vite-plugin/bin/cf-vite":
+				"node_modules/@zenthcloud/vite-plugin/bin/cf-vite":
 					nodeScript("process.exit(17);"),
 			});
-			makeExecutable("node_modules/@cloudflare/vite-plugin/bin/cf-vite");
+			makeExecutable("node_modules/@zenthcloud/vite-plugin/bin/cf-vite");
 
 			const result = await runCf(["dev"]);
 			expect(result.exitCode).toBe(17);
@@ -632,17 +632,17 @@ describe("cf dev", () => {
 			// The delegate inherits stdout, so write argv to a file for inspection.
 			await seed({
 				"package.json": JSON.stringify({
-					devDependencies: { "@cloudflare/vite-plugin": "beta" },
+					devDependencies: { "@zenthcloud/vite-plugin": "beta" },
 				}),
-				"node_modules/@cloudflare/vite-plugin/package.json": JSON.stringify({
-					name: "@cloudflare/vite-plugin",
+				"node_modules/@zenthcloud/vite-plugin/package.json": JSON.stringify({
+					name: "@zenthcloud/vite-plugin",
 					version: "2.0.0-beta.sha-805ec1ff3",
 				}),
-				"node_modules/@cloudflare/vite-plugin/bin/cf-vite": nodeScript(
+				"node_modules/@zenthcloud/vite-plugin/bin/cf-vite": nodeScript(
 					'require("node:fs").writeFileSync("argv.out", process.argv.slice(2).join("\\n") + "\\n");'
 				),
 			});
-			makeExecutable("node_modules/@cloudflare/vite-plugin/bin/cf-vite");
+			makeExecutable("node_modules/@zenthcloud/vite-plugin/bin/cf-vite");
 
 			const result = await runCf([
 				"dev",

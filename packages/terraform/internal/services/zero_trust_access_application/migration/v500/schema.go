@@ -5,7 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceAccessApplicationSchema returns the v4 cloudflare_access_application schema.
+// SourceAccessApplicationSchema returns the v4 zenthcloud_access_application schema.
 // This is used by MoveState and UpgradeFromV4 to parse the source state from v4 provider.
 func SourceAccessApplicationSchema() schema.Schema {
 	return schema.Schema{

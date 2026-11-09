@@ -7,9 +7,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceCloudflareLoadBalancerPoolSchema returns the source schema for legacy load_balancer_pool resource.
+// SourceZenthcloudLoadBalancerPoolSchema returns the source schema for legacy load_balancer_pool resource.
 // Schema version: 0 (v4 had no explicit schema version, defaults to 0)
-// Resource type: cloudflare_load_balancer_pool
+// Resource type: zenthcloud_load_balancer_pool
 //
 // This minimal schema is used only for reading v4 state during migration.
 // It includes only the properties needed for state parsing (Required, Optional, Computed, ElementType).
@@ -18,7 +18,7 @@ import (
 // Note: SDK v2 storage quirks:
 // - TypeSet fields are stored as arrays in state
 // - TypeList MaxItems:1 fields are stored as arrays with single element: [{...}]
-func SourceCloudflareLoadBalancerPoolSchema() schema.Schema {
+func SourceZenthcloudLoadBalancerPoolSchema() schema.Schema {
 	return schema.Schema{
 		Version: 0, // v4 had no explicit schema version
 		Attributes: map[string]schema.Attribute{

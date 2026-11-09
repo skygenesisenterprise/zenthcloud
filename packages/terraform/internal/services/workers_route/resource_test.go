@@ -7,11 +7,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/workers"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/workers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -26,25 +26,25 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_workers_route", &resource.Sweeper{
-		Name: "cloudflare_workers_route",
-		F:    testSweepCloudflareWorkersRoute,
+	resource.AddTestSweepers("zenthcloud_workers_route", &resource.Sweeper{
+		Name: "zenthcloud_workers_route",
+		F:    testSweepZenthcloudWorkersRoute,
 	})
 }
 
-func testSweepCloudflareWorkersRoute(r string) error {
+func testSweepZenthcloudWorkersRoute(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping workers routes sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping workers routes sweep: ZENTHCLOUD_ZONE_ID not set")
 		return nil
 	}
 
 	// List all routes in the zone
 	page, err := client.Workers.Routes.List(ctx, workers.RouteListParams{
-		ZoneID: cloudflare.F(zoneID),
+		ZoneID: zenthcloud.F(zoneID),
 	})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to list workers routes: %s", err))
@@ -65,7 +65,7 @@ func testSweepCloudflareWorkersRoute(r string) error {
 			hasRoutes = true
 			tflog.Info(ctx, fmt.Sprintf("Deleting worker route: %s (zone: %s)", route.Pattern, zoneID))
 			_, err := client.Workers.Routes.Delete(ctx, route.ID, workers.RouteDeleteParams{
-				ZoneID: cloudflare.F(zoneID),
+				ZoneID: zenthcloud.F(zoneID),
 			})
 			if err != nil {
 				tflog.Error(ctx, fmt.Sprintf("Failed to delete worker route %s: %s", route.ID, err))
@@ -87,20 +87,20 @@ func testSweepCloudflareWorkersRoute(r string) error {
 	return nil
 }
 
-func TestAccCloudflareWorkersRoute_Basic(t *testing.T) {
+func TestAccZenthcloudWorkersRoute_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	resourceName := "cloudflare_workers_route." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	resourceName := "zenthcloud_workers_route." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWorkersRouteDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWorkersRouteDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareWorkersRouteConfig(rnd, accountID, zoneID, domain),
+				Config: testAccZenthcloudWorkersRouteConfig(rnd, accountID, zoneID, domain),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("pattern"), knownvalue.StringExact(fmt.Sprintf("%s.%s/*", rnd, domain))),
@@ -110,7 +110,7 @@ func TestAccCloudflareWorkersRoute_Basic(t *testing.T) {
 				},
 			},
 			{
-				Config: testAccCloudflareWorkersRouteConfigUpdate(rnd, accountID, zoneID, domain),
+				Config: testAccZenthcloudWorkersRouteConfigUpdate(rnd, accountID, zoneID, domain),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("pattern"), knownvalue.StringExact(fmt.Sprintf("%s-updated.%s/*", rnd, domain))),
@@ -129,17 +129,17 @@ func TestAccCloudflareWorkersRoute_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareWorkersRouteDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudWorkersRouteDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_workers_route" {
+		if rs.Type != "zenthcloud_workers_route" {
 			continue
 		}
 
 		zoneID := rs.Primary.Attributes[consts.ZoneIDSchemaKey]
 		_, err := client.Workers.Routes.Get(context.Background(), rs.Primary.ID, workers.RouteGetParams{
-			ZoneID: cloudflare.F(zoneID),
+			ZoneID: zenthcloud.F(zoneID),
 		})
 		if err == nil {
 			return fmt.Errorf("workers route still exists")
@@ -149,27 +149,27 @@ func testAccCheckCloudflareWorkersRouteDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCloudflareWorkersRouteConfig(rnd, accountID, zoneID, domain string) string {
+func testAccZenthcloudWorkersRouteConfig(rnd, accountID, zoneID, domain string) string {
 	return acctest.LoadTestCase("basic.tf", rnd, accountID, zoneID, domain)
 }
 
-func testAccCloudflareWorkersRouteConfigUpdate(rnd, accountID, zoneID, domain string) string {
+func testAccZenthcloudWorkersRouteConfigUpdate(rnd, accountID, zoneID, domain string) string {
 	return acctest.LoadTestCase("basic_update.tf", rnd, accountID, zoneID, domain)
 }
 
-func TestAccCloudflareWorkersRoute_NoScript(t *testing.T) {
+func TestAccZenthcloudWorkersRoute_NoScript(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	resourceName := "cloudflare_workers_route." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	resourceName := "zenthcloud_workers_route." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWorkersRouteDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWorkersRouteDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareWorkersRouteConfigNoScript(rnd, zoneID, domain),
+				Config: testAccZenthcloudWorkersRouteConfigNoScript(rnd, zoneID, domain),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("pattern"), knownvalue.StringExact(fmt.Sprintf("%s.%s/*", rnd, domain))),
@@ -189,25 +189,25 @@ func TestAccCloudflareWorkersRoute_NoScript(t *testing.T) {
 	})
 }
 
-func testAccCloudflareWorkersRouteConfigNoScript(rnd, zoneID, domain string) string {
+func testAccZenthcloudWorkersRouteConfigNoScript(rnd, zoneID, domain string) string {
 	return acctest.LoadTestCase("no_script.tf", rnd, zoneID, domain)
 }
 
 func TestAccUpgradeWorkersRoute_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
-	config := testAccCloudflareWorkersRouteConfig(rnd, accountID, zoneID, domain)
+	config := testAccZenthcloudWorkersRouteConfig(rnd, accountID, zoneID, domain)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

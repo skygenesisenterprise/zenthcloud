@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -37,7 +37,7 @@ import type { CPUProfileHandle, HeapInfo, HeapProfileHandle } from 'node:v8';
 
 // Import MessageChannel and MessagePort from the internal module to avoid
 // dependency on the expose_global_message_channel compatibility flag.
-import internalMessageChannel from 'cloudflare-internal:messagechannel';
+import internalMessageChannel from 'zenthcloud-internal:messagechannel';
 
 export const MessageChannel = internalMessageChannel.MessageChannel;
 export const MessagePort = internalMessageChannel.MessagePort;

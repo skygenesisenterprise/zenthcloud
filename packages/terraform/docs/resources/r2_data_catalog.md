@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_r2_data_catalog Resource - Cloudflare"
+page_title: "zenthcloud_r2_data_catalog Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Workers R2 Data Catalog ReadWorkers R2 Data Catalog Write
 ---
 
-# cloudflare_r2_data_catalog (Resource)
+# zenthcloud_r2_data_catalog (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_r2_data_catalog" "example_r2_data_catalog" {
+resource "zenthcloud_r2_data_catalog" "example_r2_data_catalog" {
   account_id = "0123456789abcdef0123456789abcdef"
   bucket_name = "my-data-bucket"
 }
@@ -79,7 +79,7 @@ Available values: "enabled", "disabled".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_r2_data_catalog.example '<account_id>/<bucket_name>'
+$ terraform import zenthcloud_r2_data_catalog.example '<account_id>/<bucket_name>'
 ```
 
 

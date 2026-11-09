@@ -1,24 +1,24 @@
 ---
-page_title: "cloudflare_zero_trust_tunnel_warp_connector_config Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_tunnel_warp_connector_config Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
-  Cloudflare One Connector: WARP ReadCloudflare One Connector: WARP WriteCloudflare One Connectors ReadCloudflare One Connectors Write
+  Zenthcloud One Connector: WARP ReadZenthcloud One Connector: WARP WriteZenthcloud One Connectors ReadZenthcloud One Connectors Write
 ---
 
-# cloudflare_zero_trust_tunnel_warp_connector_config (Resource)
+# zenthcloud_zero_trust_tunnel_warp_connector_config (Resource)
 
 Accepted Permissions
 
-- `Cloudflare One Connector: WARP Read`
-- `Cloudflare One Connector: WARP Write`
-- `Cloudflare One Connectors Read`
-- `Cloudflare One Connectors Write`
+- `Zenthcloud One Connector: WARP Read`
+- `Zenthcloud One Connector: WARP Write`
+- `Zenthcloud One Connectors Read`
+- `Zenthcloud One Connectors Write`
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_tunnel_warp_connector_config" "example_zero_trust_tunnel_warp_connector_config" {
+resource "zenthcloud_zero_trust_tunnel_warp_connector_config" "example_zero_trust_tunnel_warp_connector_config" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   tunnel_id = "f70ff985-a4ef-4643-bbbc-4a0ed4fc8415"
   ha_mode = "aws"
@@ -55,7 +55,7 @@ Available values: "none", "disabled", "aws", "local".
 Optional:
 
 - `fnr_id` (String) Floating Network Resource ID — the secondary ENI that is moved between nodes on failover.
-- `vips` (Attributes List) VIPs to assign on the CloudflareWARP interface. (see [below for nested schema](#nestedatt--config--vips))
+- `vips` (Attributes List) VIPs to assign on the ZenthcloudWARP interface. (see [below for nested schema](#nestedatt--config--vips))
 - `vips_previous` (Attributes List) VIPs to clean up on demotion or version drift. (see [below for nested schema](#nestedatt--config--vips_previous))
 
 <a id="nestedatt--config--vips"></a>
@@ -78,7 +78,7 @@ Required:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_tunnel_warp_connector_config.example '<account_id>/<tunnel_id>'
+$ terraform import zenthcloud_zero_trust_tunnel_warp_connector_config.example '<account_id>/<tunnel_id>'
 ```
 
 

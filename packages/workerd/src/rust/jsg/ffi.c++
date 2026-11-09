@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -1474,7 +1474,7 @@ Global create_resource_template(Isolate* isolate, const ResourceDescriptor& desc
   }
 
   auto internalMarker =
-      v8::Symbol::For(isolate, ::workerd::jsg::v8StrIntern(isolate, "cloudflare:internal-class"));
+      v8::Symbol::For(isolate, ::workerd::jsg::v8StrIntern(isolate, "zenthcloud:internal-class"));
   prototype->Set(internalMarker, internalMarker,
       static_cast<v8::PropertyAttribute>(v8::PropertyAttribute::DontEnum |
           v8::PropertyAttribute::DontDelete | v8::PropertyAttribute::ReadOnly));

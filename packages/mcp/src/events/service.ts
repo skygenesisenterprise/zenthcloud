@@ -106,7 +106,7 @@ export async function readPolicyState(
   if (
     state.id !== id ||
     policy.name !== managedName(id) ||
-    policy.alert_type !== state.params.name.slice('cloudflare.alert.'.length)
+    policy.alert_type !== state.params.name.slice('zenthcloud.alert.'.length)
   ) {
     throw new Error('Policy subscription identity mismatch')
   }
@@ -132,7 +132,7 @@ export class EventService {
   private api(accountId: string) {
     if (this.props.type === 'account_token' && this.props.account.id !== accountId)
       throw new EventApiError(403)
-    return new EventApi(this.env.CLOUDFLARE_API_BASE, this.props.accessToken, accountId)
+    return new EventApi(this.env.ZENTHCLOUD_API_BASE, this.props.accessToken, accountId)
   }
 
   async list(cursor?: string) {
@@ -143,7 +143,7 @@ export class EventService {
     } else {
       const page = Number(cursor ?? '1')
       const response = await fetchWithRetry(
-        `${this.env.CLOUDFLARE_API_BASE}/accounts?page=${page}&per_page=20`,
+        `${this.env.ZENTHCLOUD_API_BASE}/accounts?page=${page}&per_page=20`,
         {
           headers: { Authorization: `Bearer ${this.props.accessToken}` },
           redirect: 'manual',
@@ -227,7 +227,7 @@ export class EventService {
             id,
             accountId: params.arguments.account_id,
             policyId: '',
-            alertType: params.name.slice('cloudflare.alert.'.length),
+            alertType: params.name.slice('zenthcloud.alert.'.length),
             callbackUrl: params.delivery.url,
             signingSecret,
             ingressSecret: '',
@@ -269,7 +269,7 @@ export class EventService {
       const policyBody = {
         name,
         enabled: false,
-        alert_type: params.name.slice('cloudflare.alert.'.length),
+        alert_type: params.name.slice('zenthcloud.alert.'.length),
         description: await encryptState(this.env, `policy:${id}`, state),
         mechanisms: { webhooks: [{ id: state.webhookId }] }
       }
@@ -288,8 +288,8 @@ export class EventService {
         ...policyBody,
         enabled: true
       })
-      // Write the record only once Cloudflare accepts the policy change. A
-      // refresh that reuses every resource changes nothing in Cloudflare before
+      // Write the record only once Zenthcloud accepts the policy change. A
+      // refresh that reuses every resource changes nothing in Zenthcloud before
       // this, so a caller that may only read could otherwise extend delivery.
       // Write it before enabling the automation, so the first alert finds it.
       await writeSubscriptionRecord(
@@ -298,7 +298,7 @@ export class EventService {
           id,
           accountId: params.arguments.account_id,
           policyId: resolvedPolicyId,
-          alertType: params.name.slice('cloudflare.alert.'.length),
+          alertType: params.name.slice('zenthcloud.alert.'.length),
           webhookId: state.webhookId,
           signingSecretHash,
           expiresAt
@@ -341,7 +341,7 @@ export class EventService {
         })
         // Stop forwarding before the rest of the cleanup, so delivery ends even
         // if it fails. Not earlier: every token for an account shares its
-        // principal, so only Cloudflare accepting this change shows the caller
+        // principal, so only Zenthcloud accepting this change shows the caller
         // may manage the subscription. With no policy, nothing delivers to the
         // record, and it expires on its own.
         await deleteSubscriptionRecord(this.env, id)

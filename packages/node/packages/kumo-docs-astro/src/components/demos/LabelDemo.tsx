@@ -4,7 +4,7 @@ import {
   Select,
   Checkbox,
   KumoLocaleProvider,
-} from "@cloudflare/kumo";
+} from "@zenthcloud/kumo";
 
 export function LabelBasicDemo() {
   return (

@@ -77,7 +77,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 			type: "string",
 			array: true,
 			description:
-				"Filters results by bot class. Refer to [Bot classes](https://developers.cloudflare.com/radar/concepts/bot-classes/).",
+				"Filters results by bot class. Refer to [Bot classes](https://github.com/skygenesisenterprise/zenthcloud).",
 		})
 		.option("device-type", {
 			type: "string",
@@ -160,7 +160,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar http locations ip-version get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/http/top/locations/ip_version/${argv["ip-version"] == null ? "<ip-version>" : encodeURIComponent(String(argv["ip-version"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["ip-version"] == null ? "<ip-version>" : encodeURIComponent(String(argv["ip-version"]))}`,
 						pathParams: { "ip-version": String(argv["ip-version"] ?? "") },
 						query: queryParams,
 						bodyKind: "none",

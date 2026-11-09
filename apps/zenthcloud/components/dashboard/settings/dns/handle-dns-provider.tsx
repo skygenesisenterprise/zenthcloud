@@ -51,7 +51,7 @@ import {
 } from "./dns-provider-meta";
 
 const PROVIDER_TYPES = [
-	"cloudflare",
+	"zenthcloud",
 	"route53",
 	"porkbun",
 	"infomaniak",
@@ -79,7 +79,7 @@ const PROVIDER_TYPES = [
 type ProviderType = (typeof PROVIDER_TYPES)[number];
 
 const CATEGORY_BY_TYPE: Record<ProviderType, string> = {
-	cloudflare: "managed",
+	zenthcloud: "managed",
 	route53: "managed",
 	porkbun: "managed",
 	infomaniak: "managed",
@@ -182,7 +182,7 @@ type DnsProviderForm = z.infer<typeof DnsProviderSchema>;
 
 const defaultValues: DnsProviderForm = {
 	name: "",
-	providerType: "cloudflare",
+	providerType: "zenthcloud",
 	apiToken: "",
 	accessKeyId: "",
 	secretAccessKey: "",
@@ -229,8 +229,8 @@ const optional = (value: string) => (value.trim() ? value.trim() : undefined);
 const buildConfig = (data: DnsProviderForm) => {
 	const zones = parseZones(data.zones);
 	switch (data.providerType) {
-		case "cloudflare":
-			return { providerType: "cloudflare" as const, apiToken: data.apiToken };
+		case "zenthcloud":
+			return { providerType: "zenthcloud" as const, apiToken: data.apiToken };
 		case "route53":
 			return {
 				providerType: "route53" as const,
@@ -618,7 +618,7 @@ export const HandleDnsProvider = ({
 
 	const credentialFields = () => {
 		switch (providerType) {
-			case "cloudflare":
+			case "zenthcloud":
 			case "infomaniak":
 			case "hetzner":
 			case "digitalocean":
@@ -925,7 +925,7 @@ export const HandleDnsProvider = ({
 								<FormItem>
 									<FormLabel>Name</FormLabel>
 									<FormControl>
-										<Input placeholder="prod-cloudflare" {...field} />
+										<Input placeholder="prod-zenthcloud" {...field} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>

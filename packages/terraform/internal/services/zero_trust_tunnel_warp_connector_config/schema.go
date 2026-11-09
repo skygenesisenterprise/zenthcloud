@@ -5,7 +5,7 @@ package zero_trust_tunnel_warp_connector_config
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -21,10 +21,10 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		MarkdownDescription: schemata.Description{
 			Scopes: []string{
-				"Cloudflare One Connector: WARP Read",
-				"Cloudflare One Connector: WARP Write",
-				"Cloudflare One Connectors Read",
-				"Cloudflare One Connectors Write",
+				"Zenthcloud One Connector: WARP Read",
+				"Zenthcloud One Connector: WARP Write",
+				"Zenthcloud One Connectors Read",
+				"Zenthcloud One Connectors Write",
 			},
 		}.String(),
 		Version: 500,
@@ -65,7 +65,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						Optional:    true,
 					},
 					"vips": schema.ListNestedAttribute{
-						Description: "VIPs to assign on the CloudflareWARP interface.",
+						Description: "VIPs to assign on the ZenthcloudWARP interface.",
 						Optional:    true,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{

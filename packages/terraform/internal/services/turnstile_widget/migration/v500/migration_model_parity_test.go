@@ -10,9 +10,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/turnstile_widget"
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/turnstile_widget/migration/v500"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/test_helpers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/turnstile_widget"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/turnstile_widget/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 // TestTurnstileWidgetMigrationModelSchemaParity verifies that TargetTurnstileWidgetModel

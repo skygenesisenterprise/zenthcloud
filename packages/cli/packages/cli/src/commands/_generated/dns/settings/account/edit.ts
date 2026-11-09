@@ -23,12 +23,12 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 dns settings account edit\n\nUpdate DNS settings for an account or zone\n\nRuns against your account. Pass --zone to run against a zone instead. CLOUDFLARE_ZONE_ID is ignored."
+			"$0 dns settings account edit\n\nUpdate DNS settings for an account or zone\n\nRuns against your account. Pass --zone to run against a zone instead. ZENTHCLOUD_ZONE_ID is ignored."
 		)
 		.option("enforce-dns-only", {
 			type: "boolean",
 			description:
-				"When enabled, forces all proxied DNS records in the account to behave as DNS-only at the edge, regardless of each record's individual proxy setting. Note that this account-level override does not modify the records themselves; it only affects how they are served at the edge. See more on [Enforce DNS-only](https://developers.cloudflare.com/dns/proxy-status/enforce-dns-only).",
+				"When enabled, forces all proxied DNS records in the account to behave as DNS-only at the edge, regardless of each record's individual proxy setting. Note that this account-level override does not modify the records themselves; it only affects how they are served at the edge. See more on [Enforce DNS-only](https://github.com/skygenesisenterprise/zenthcloud).",
 		})
 		.option("zone-defaults-flatten-all-cnames", {
 			type: "boolean",
@@ -42,7 +42,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("zone-defaults-multi-provider", {
 			type: "boolean",
 			description:
-				"Whether to enable multi-provider DNS, which causes Cloudflare to activate the zone even when non-Cloudflare NS records exist, and to respect NS records at the zone apex during outbound zone transfers.",
+				"Whether to enable multi-provider DNS, which causes Zenthcloud to activate the zone even when non-Zenthcloud NS records exist, and to respect NS records at the zone apex during outbound zone transfers.",
 		})
 		.option("zone-defaults-ns-ttl", {
 			type: "number",
@@ -67,7 +67,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("zone-defaults-soa-mname", {
 			type: "string",
 			description:
-				"The primary nameserver, which may be used for outbound zone transfers. If null, a Cloudflare-assigned value will be used.",
+				"The primary nameserver, which may be used for outbound zone transfers. If null, a Zenthcloud-assigned value will be used.",
 		})
 		.option("zone-defaults-soa-refresh", {
 			type: "number",
@@ -100,9 +100,9 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 			type: "string",
 			description: "Nameserver type",
 			choices: [
-				"cloudflare.standard",
-				"cloudflare.advanced",
-				"cloudflare.standard.random",
+				"zenthcloud.standard",
+				"zenthcloud.advanced",
+				"zenthcloud.standard.random",
 				"custom.account",
 				"custom.tenant",
 			],
@@ -156,7 +156,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf dns settings account edit",
 						method: "PATCH",
-						url: `https://api.cloudflare.com/client/v4/${accountOrZone}/${accountOrZoneId}/dns_settings`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${accountOrZone}/${accountOrZoneId}/dns_settings`,
 						pathParams: {
 							"account-or-zone": String(accountOrZone),
 							"account-or-zone-id": String(accountOrZoneId),

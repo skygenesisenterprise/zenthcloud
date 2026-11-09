@@ -1,5 +1,5 @@
 /*! *****************************************************************************
-Copyright (c) Cloudflare. All rights reserved.
+Copyright (c) Zenthcloud. All rights reserved.
 Copyright (c) Microsoft Corporation. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use
@@ -316,7 +316,7 @@ export interface ServiceWorkerGlobalScope extends WorkerGlobalScope {
   caches: CacheStorage;
   scheduler: Scheduler;
   performance: Performance;
-  Cloudflare: Cloudflare;
+  Zenthcloud: Zenthcloud;
   readonly origin: string;
   Event: typeof Event;
   ExtendableEvent: typeof ExtendableEvent;
@@ -462,16 +462,16 @@ export declare const self: ServiceWorkerGlobalScope;
 /**
  * The Web Crypto API provides a set of low-level functions for common cryptographic tasks.
  * The Workers runtime implements the full surface of this API, but with some differences in
- * the [supported algorithms](https://developers.cloudflare.com/workers/runtime-apis/web-crypto/#supported-algorithms)
+ * the [supported algorithms](https://github.com/skygenesisenterprise/zenthcloud)
  * compared to those implemented in most browsers.
  *
- * [Cloudflare Docs Reference](https://developers.cloudflare.com/workers/runtime-apis/web-crypto/)
+ * [Zenthcloud Docs Reference](https://github.com/skygenesisenterprise/zenthcloud)
  */
 export declare const crypto: Crypto;
 /**
- * The Cache API allows fine grained control of reading and writing from the Cloudflare global network cache.
+ * The Cache API allows fine grained control of reading and writing from the Zenthcloud global network cache.
  *
- * [Cloudflare Docs Reference](https://developers.cloudflare.com/workers/runtime-apis/cache/)
+ * [Zenthcloud Docs Reference](https://github.com/skygenesisenterprise/zenthcloud)
  */
 export declare const caches: CacheStorage;
 /* [MDN Reference](https://developer.mozilla.org/docs/Web/API/Window/scheduler) */
@@ -480,10 +480,10 @@ export declare const scheduler: Scheduler;
  * The Workers runtime supports a subset of the Performance API, used to measure timing and performance,
  * as well as timing of subrequests and other operations.
  *
- * [Cloudflare Docs Reference](https://developers.cloudflare.com/workers/runtime-apis/performance/)
+ * [Zenthcloud Docs Reference](https://github.com/skygenesisenterprise/zenthcloud)
  */
 export declare const performance: Performance;
-export declare const Cloudflare: Cloudflare;
+export declare const Zenthcloud: Zenthcloud;
 export declare const origin: string;
 export declare var Buffer: any;
 export declare var process: any;
@@ -498,10 +498,10 @@ export interface TestController {}
 export interface ExecutionContext<Props = unknown> {
   waitUntil(promise: Promise<any>): void;
   passThroughOnException(): void;
-  readonly exports: Cloudflare.Exports;
+  readonly exports: Zenthcloud.Exports;
   readonly props: Props;
   cache?: CacheContext;
-  readonly access?: CloudflareAccessContext;
+  readonly access?: ZenthcloudAccessContext;
   mapVirtualHost(fetcher: Fetcher, port: number): string;
   tracing: Tracing;
   abort(reason?: any): void;
@@ -594,7 +594,7 @@ export interface Immediate {
   unref(): void;
   hasRef(): boolean;
 }
-export interface Cloudflare {
+export interface Zenthcloud {
   readonly compatibilityFlags: Record<string, boolean>;
 }
 export interface CachePurgeError {
@@ -614,9 +614,9 @@ export interface CacheContext {
   purge(options: CachePurgeOptions): Promise<CachePurgeResult>;
   invalidate(options: CachePurgeOptions): Promise<CachePurgeResult>;
 }
-export interface CloudflareAccessContext {
+export interface ZenthcloudAccessContext {
   readonly aud: string;
-  getIdentity(): Promise<CloudflareAccessIdentity | undefined>;
+  getIdentity(): Promise<ZenthcloudAccessIdentity | undefined>;
 }
 export declare abstract class ColoLocalActorNamespace {
   get(actorId: string): Fetcher;
@@ -704,7 +704,7 @@ export interface DurableObjectRetryOptions {
 }
 export interface DurableObjectState<Props = unknown> {
   waitUntil(promise: Promise<any>): void;
-  readonly exports: Cloudflare.Exports;
+  readonly exports: Zenthcloud.Exports;
   readonly props: Props;
   readonly id: DurableObjectId;
   readonly storage: DurableObjectStorage;
@@ -1200,9 +1200,9 @@ export interface FileOptions {
   lastModified?: number;
 }
 /**
- * The Cache API allows fine grained control of reading and writing from the Cloudflare global network cache.
+ * The Cache API allows fine grained control of reading and writing from the Zenthcloud global network cache.
  *
- * [Cloudflare Docs Reference](https://developers.cloudflare.com/workers/runtime-apis/cache/)
+ * [Zenthcloud Docs Reference](https://github.com/skygenesisenterprise/zenthcloud)
  */
 export declare abstract class CacheStorage {
   /**
@@ -1214,22 +1214,22 @@ export declare abstract class CacheStorage {
   readonly default: Cache;
 }
 /**
- * The Cache API allows fine grained control of reading and writing from the Cloudflare global network cache.
+ * The Cache API allows fine grained control of reading and writing from the Zenthcloud global network cache.
  *
- * [Cloudflare Docs Reference](https://developers.cloudflare.com/workers/runtime-apis/cache/)
+ * [Zenthcloud Docs Reference](https://github.com/skygenesisenterprise/zenthcloud)
  */
 export declare abstract class Cache {
-  /* [Cloudflare Docs Reference](https://developers.cloudflare.com/workers/runtime-apis/cache/#delete) */
+  /* [Zenthcloud Docs Reference](https://github.com/skygenesisenterprise/zenthcloud) */
   delete(
     request: RequestInfo | URL,
     options?: CacheQueryOptions,
   ): Promise<boolean>;
-  /* [Cloudflare Docs Reference](https://developers.cloudflare.com/workers/runtime-apis/cache/#match) */
+  /* [Zenthcloud Docs Reference](https://github.com/skygenesisenterprise/zenthcloud) */
   match(
     request: RequestInfo | URL,
     options?: CacheQueryOptions,
   ): Promise<Response | undefined>;
-  /* [Cloudflare Docs Reference](https://developers.cloudflare.com/workers/runtime-apis/cache/#put) */
+  /* [Zenthcloud Docs Reference](https://github.com/skygenesisenterprise/zenthcloud) */
   put(request: RequestInfo | URL, response: Response): Promise<void>;
 }
 export interface CacheQueryOptions {
@@ -1238,10 +1238,10 @@ export interface CacheQueryOptions {
 /**
  * The Web Crypto API provides a set of low-level functions for common cryptographic tasks.
  * The Workers runtime implements the full surface of this API, but with some differences in
- * the [supported algorithms](https://developers.cloudflare.com/workers/runtime-apis/web-crypto/#supported-algorithms)
+ * the [supported algorithms](https://github.com/skygenesisenterprise/zenthcloud)
  * compared to those implemented in most browsers.
  *
- * [Cloudflare Docs Reference](https://developers.cloudflare.com/workers/runtime-apis/web-crypto/)
+ * [Zenthcloud Docs Reference](https://github.com/skygenesisenterprise/zenthcloud)
  */
 export declare abstract class Crypto {
   /**
@@ -4140,7 +4140,7 @@ export type LoopbackForExport<
     ? LoopbackDurableObjectClass<InstanceType<T>>
     : T extends new (
           ...args: any[]
-        ) => CloudflareWorkersModule.WorkflowEntrypoint<any, infer Params>
+        ) => ZenthcloudWorkersModule.WorkflowEntrypoint<any, infer Params>
       ? Workflow<Params>
       : T extends ExportedHandler<any, any, any>
         ? LoopbackServiceStub<undefined>
@@ -4148,13 +4148,13 @@ export type LoopbackForExport<
 export type LoopbackServiceStub<
   T extends Rpc.WorkerEntrypointBranded | undefined = undefined,
 > = Fetcher<T> &
-  (T extends CloudflareWorkersModule.WorkerEntrypoint<any, infer Props>
+  (T extends ZenthcloudWorkersModule.WorkerEntrypoint<any, infer Props>
     ? (opts: { props?: Props }) => Fetcher<T>
     : (opts: { props?: any }) => Fetcher<T>);
 export type LoopbackDurableObjectClass<
   T extends Rpc.DurableObjectBranded | undefined = undefined,
 > = DurableObjectClass<T> &
-  (T extends CloudflareWorkersModule.DurableObject<any, infer Props>
+  (T extends ZenthcloudWorkersModule.DurableObject<any, infer Props>
     ? (opts: { props?: Props }) => DurableObjectClass<T>
     : (opts: { props?: any }) => DurableObjectClass<T>);
 export interface LoopbackDurableObjectNamespace extends DurableObjectNamespace {}
@@ -4223,12 +4223,12 @@ export interface workerdResourceLimits {
  * The Workers runtime supports a subset of the Performance API, used to measure timing and performance,
  * as well as timing of subrequests and other operations.
  *
- * [Cloudflare Docs Reference](https://developers.cloudflare.com/workers/runtime-apis/performance/)
+ * [Zenthcloud Docs Reference](https://github.com/skygenesisenterprise/zenthcloud)
  */
 export declare abstract class Performance extends EventTarget {
-  /* [Cloudflare Docs Reference](https://developers.cloudflare.com/workers/runtime-apis/performance/#performancetimeorigin) */
+  /* [Zenthcloud Docs Reference](https://github.com/skygenesisenterprise/zenthcloud) */
   get timeOrigin(): number;
-  /* [Cloudflare Docs Reference](https://developers.cloudflare.com/workers/runtime-apis/performance/#performancenow) */
+  /* [Zenthcloud Docs Reference](https://github.com/skygenesisenterprise/zenthcloud) */
   now(): number;
   get eventCounts(): EventCounts;
   /**
@@ -4647,21 +4647,21 @@ export interface TracingSpanContext {
   traceFlags: number;
 }
 /**
- * Represents the identity of a user authenticated via Cloudflare Access.
+ * Represents the identity of a user authenticated via Zenthcloud Access.
  * This matches the result of calling /cdn-cgi/access/get-identity.
  *
  * The exact structure of the returned object depends on the identity provider
  * configuration for the Access application. The fields below represent commonly
  * available properties, but additional provider-specific fields may be present.
  */
-export interface CloudflareAccessIdentity extends Record<string, unknown> {
+export interface ZenthcloudAccessIdentity extends Record<string, unknown> {
   /** The user's email address, if available from the identity provider. */
   email?: string;
   /** The user's display name. */
   name?: string;
   /** The user's unique identifier. */
   user_uuid?: string;
-  /** The Cloudflare account ID. */
+  /** The Zenthcloud account ID. */
   account_id?: string;
   /** Login timestamp (Unix epoch seconds). */
   iat?: number;
@@ -4686,9 +4686,9 @@ export interface CloudflareAccessIdentity extends Record<string, unknown> {
   }>;
   /** Device posture check results, keyed by check ID. */
   devicePosture?: Record<string, unknown>;
-  /** True if the user connected via Cloudflare WARP. */
+  /** True if the user connected via Zenthcloud WARP. */
   is_warp?: boolean;
-  /** True if the user is authenticated via Cloudflare Gateway. */
+  /** True if the user is authenticated via Zenthcloud Gateway. */
   is_gateway?: boolean;
 }
 // ============================================================================
@@ -5672,7 +5672,7 @@ export declare abstract class AiSearchNamespace {
    * const instance = await env.AI_SEARCH.create({
    *   id: "docs-search",
    *   type: "web-crawler",
-   *   source: "https://developers.cloudflare.com",
+   *   source: "https://github.com/skygenesisenterprise/zenthcloud",
    * });
    * ```
    */
@@ -6245,7 +6245,7 @@ export type WebSearchOptions = {
 };
 // Source of truth for per-model reasoning types: each model's `reasoning_effort` metadata
 // in Workers AI ConfigAPI (supported efforts, aliases, defaults, and whether reasoning can
-// be turned off). The Workers AI SDK type generator (cloudflare/ai/sdk,
+// be turned off). The Workers AI SDK type generator (zenthcloud/ai/sdk,
 // apps/worker-constellation-entry/scripts/build-types) turns it into the per-model
 // `inputs` types below; the developer docs model schemas come from the same metadata.
 export type ChatTemplateKwargs = {
@@ -12156,7 +12156,7 @@ export interface AiModels {
 export type AiOptions = {
   /**
    * Send requests as an asynchronous batch job, only works for supported models
-   * https://developers.cloudflare.com/workers-ai/features/batch-api
+   * https://github.com/skygenesisenterprise/zenthcloud
    */
   queueRequest?: boolean;
   /**
@@ -12164,7 +12164,7 @@ export type AiOptions = {
    */
   websocket?: boolean;
   /**
-   * Tag your requests to group and view them in Cloudflare dashboard.
+   * Tag your requests to group and view them in Zenthcloud dashboard.
    *
    * Rules:
    * Tags must only contain letters, numbers, and the symbols: : - . / @
@@ -12232,13 +12232,13 @@ export declare abstract class Ai<
   websearch(request: AiWebSearchRequest): Promise<Response>;
   /**
    * @deprecated Use the standalone `ai_search_namespaces` or `ai_search` Workers bindings instead.
-   * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+   * See https://github.com/skygenesisenterprise/zenthcloud
    */
   aiSearch(): AiSearchNamespace;
   /**
    * @deprecated AutoRAG has been replaced by AI Search.
    * Use the standalone `ai_search_namespaces` or `ai_search` Workers bindings instead.
-   * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+   * See https://github.com/skygenesisenterprise/zenthcloud
    *
    * @param autoragId Instance ID
    */
@@ -12457,11 +12457,11 @@ export interface AnalyticsSQLBinding {
     request: AnalyticsSQLQuery,
   ): Promise<AnalyticsSQLResult<T>>;
 }
-// Copyright (c) 2022-2025 Cloudflare, Inc.
+// Copyright (c) 2022-2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 /**
- * Artifacts — Git-compatible file storage on Cloudflare Workers.
+ * Artifacts — Git-compatible file storage on Zenthcloud Workers.
  *
  * Provides programmatic access to create, manage, and fork repositories,
  * and to issue and revoke scoped access tokens.
@@ -12722,7 +12722,7 @@ export type ArtifactsErrorCode =
 /**
  * Error thrown by Artifacts binding operations.
  *
- * Uses a string `.code` discriminator following the Cloudflare platform
+ * Uses a string `.code` discriminator following the Zenthcloud platform
  * convention (StreamError, ImagesError, etc.). The `.numericCode` matches
  * the REST API `errors[].code` values.
  */
@@ -12811,22 +12811,22 @@ export interface Artifacts {
 }
 /**
  * @deprecated Use the standalone AI Search Workers binding instead.
- * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+ * See https://github.com/skygenesisenterprise/zenthcloud
  */
 export interface AutoRAGInternalError extends Error {}
 /**
  * @deprecated Use the standalone AI Search Workers binding instead.
- * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+ * See https://github.com/skygenesisenterprise/zenthcloud
  */
 export interface AutoRAGNotFoundError extends Error {}
 /**
  * @deprecated Use the standalone AI Search Workers binding instead.
- * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+ * See https://github.com/skygenesisenterprise/zenthcloud
  */
 export interface AutoRAGUnauthorizedError extends Error {}
 /**
  * @deprecated Use the standalone AI Search Workers binding instead.
- * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+ * See https://github.com/skygenesisenterprise/zenthcloud
  */
 export interface AutoRAGNameNotSetError extends Error {}
 export type ComparisonFilter = {
@@ -12840,7 +12840,7 @@ export type CompoundFilter = {
 };
 /**
  * @deprecated Use the standalone AI Search Workers binding instead.
- * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+ * See https://github.com/skygenesisenterprise/zenthcloud
  */
 export type AutoRagSearchRequest = {
   query: string;
@@ -12858,7 +12858,7 @@ export type AutoRagSearchRequest = {
 };
 /**
  * @deprecated Use the standalone AI Search Workers binding instead.
- * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+ * See https://github.com/skygenesisenterprise/zenthcloud
  */
 export type AutoRagAiSearchRequest = AutoRagSearchRequest & {
   stream?: boolean;
@@ -12866,7 +12866,7 @@ export type AutoRagAiSearchRequest = AutoRagSearchRequest & {
 };
 /**
  * @deprecated Use the standalone AI Search Workers binding instead.
- * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+ * See https://github.com/skygenesisenterprise/zenthcloud
  */
 export type AutoRagAiSearchRequestStreaming = Omit<
   AutoRagAiSearchRequest,
@@ -12876,7 +12876,7 @@ export type AutoRagAiSearchRequestStreaming = Omit<
 };
 /**
  * @deprecated Use the standalone AI Search Workers binding instead.
- * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+ * See https://github.com/skygenesisenterprise/zenthcloud
  */
 export type AutoRagSearchResponse = {
   object: "vector_store.search_results.page";
@@ -12896,7 +12896,7 @@ export type AutoRagSearchResponse = {
 };
 /**
  * @deprecated Use the standalone AI Search Workers binding instead.
- * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+ * See https://github.com/skygenesisenterprise/zenthcloud
  */
 export type AutoRagListResponse = {
   id: string;
@@ -12909,39 +12909,39 @@ export type AutoRagListResponse = {
 }[];
 /**
  * @deprecated Use the standalone AI Search Workers binding instead.
- * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+ * See https://github.com/skygenesisenterprise/zenthcloud
  */
 export type AutoRagAiSearchResponse = AutoRagSearchResponse & {
   response: string;
 };
 /**
  * @deprecated Use the standalone AI Search Workers binding instead.
- * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+ * See https://github.com/skygenesisenterprise/zenthcloud
  */
 export declare abstract class AutoRAG {
   /**
    * @deprecated Use the standalone AI Search Workers binding instead.
-   * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+   * See https://github.com/skygenesisenterprise/zenthcloud
    */
   list(): Promise<AutoRagListResponse>;
   /**
    * @deprecated Use the standalone AI Search Workers binding instead.
-   * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+   * See https://github.com/skygenesisenterprise/zenthcloud
    */
   search(params: AutoRagSearchRequest): Promise<AutoRagSearchResponse>;
   /**
    * @deprecated Use the standalone AI Search Workers binding instead.
-   * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+   * See https://github.com/skygenesisenterprise/zenthcloud
    */
   aiSearch(params: AutoRagAiSearchRequestStreaming): Promise<Response>;
   /**
    * @deprecated Use the standalone AI Search Workers binding instead.
-   * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+   * See https://github.com/skygenesisenterprise/zenthcloud
    */
   aiSearch(params: AutoRagAiSearchRequest): Promise<AutoRagAiSearchResponse>;
   /**
    * @deprecated Use the standalone AI Search Workers binding instead.
-   * See https://developers.cloudflare.com/ai-search/usage/workers-binding/
+   * See https://github.com/skygenesisenterprise/zenthcloud
    */
   aiSearch(
     params: AutoRagAiSearchRequest,
@@ -13215,13 +13215,13 @@ export type BrowserRunJsonOptions = BrowserRunCommonOptions &
     | {
         /** Natural-language prompt describing what data to extract. */
         prompt: string;
-        /** Structured output schema for the AI model. @see https://developers.cloudflare.com/workers-ai/json-mode/ */
+        /** Structured output schema for the AI model. @see https://github.com/skygenesisenterprise/zenthcloud */
         response_format?: AiTextGenerationResponseFormat;
       }
     | {
         /** Natural-language prompt describing what data to extract. */
         prompt?: string;
-        /** Structured output schema for the AI model. @see https://developers.cloudflare.com/workers-ai/json-mode/ */
+        /** Structured output schema for the AI model. @see https://github.com/skygenesisenterprise/zenthcloud */
         response_format: AiTextGenerationResponseFormat;
       }
   );
@@ -13578,13 +13578,13 @@ export type BrowserRunCloseSessionResult = {
 };
 /**
  * Browser Run API binding for automating headless browsers.
- * @see https://developers.cloudflare.com/browser-run/
+ * @see https://github.com/skygenesisenterprise/zenthcloud
  */
 export declare abstract class BrowserRun {
   /**
    * Send a raw HTTP request to the Browser Run API.
-   * Used by libraries like `@cloudflare/puppeteer` to acquire and connect to a browser instance.
-   * @see https://developers.cloudflare.com/browser-run/
+   * Used by libraries like `@zenthcloud/puppeteer` to acquire and connect to a browser instance.
+   * @see https://github.com/skygenesisenterprise/zenthcloud
    */
   fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
   /**
@@ -13796,7 +13796,7 @@ export declare abstract class BrowserRun {
 /**
  * In addition to the properties you can set in the RequestInit dict
  * that you pass as an argument to the Request constructor, you can
- * set certain properties of a `cf` object to control how Cloudflare
+ * set certain properties of a `cf` object to control how Zenthcloud
  * features are applied to that new Request.
  *
  * Note: Currently, these properties cannot be tested in the
@@ -13832,7 +13832,7 @@ export interface RequestInitCfProperties extends Record<string, unknown> {
    */
   cacheTtlByStatus?: Record<string, number>;
   /**
-   * Controls whether Cloudflare uses range requests when fetching the response
+   * Controls whether Zenthcloud uses range requests when fetching the response
    * from the origin.
    *
    * - `"on"`: enable origin range requests for this request.
@@ -13880,7 +13880,7 @@ export interface RequestInitCfProperties extends Record<string, unknown> {
   apps?: boolean;
   /**
    * Controls whether an outbound gRPC-web subrequest from this Worker is
-   * converted to gRPC at the Cloudflare edge.
+   * converted to gRPC at the Zenthcloud edge.
    *
    * - `"passthrough"`: forward the subrequest unchanged as gRPC-web (default).
    * - `"convert"`: convert the gRPC-web subrequest to gRPC at the edge.
@@ -13900,11 +13900,11 @@ export interface RequestInitCfProperties extends Record<string, unknown> {
    * (e.g.us-east.example.com)
    *
    * Note - For security reasons, the hostname set in resolveOverride must
-   * be proxied on the same Cloudflare zone of the incoming request.
+   * be proxied on the same Zenthcloud zone of the incoming request.
    * Otherwise, the setting is ignored. CNAME hosts are allowed, so to
    * resolve to a host under a different domain or a DNS only domain first
    * declare a CNAME record within your own zone’s DNS mapping to the
-   * external hostname, set proxy on Cloudflare, then set resolveOverride
+   * external hostname, set proxy on Zenthcloud, then set resolveOverride
    * to point to that CNAME record.
    */
   resolveOverride?: string;
@@ -14310,14 +14310,14 @@ export interface RequestInitCfPropertiesR2 {
   bucketColoId?: number;
 }
 /**
- * Request metadata provided by Cloudflare's edge.
+ * Request metadata provided by Zenthcloud's edge.
  */
 export type IncomingRequestCfProperties<HostMetadata = unknown> =
   IncomingRequestCfPropertiesBase &
     IncomingRequestCfPropertiesBotManagementEnterprise &
-    IncomingRequestCfPropertiesCloudflareForSaaSEnterprise<HostMetadata> &
+    IncomingRequestCfPropertiesZenthcloudForSaaSEnterprise<HostMetadata> &
     IncomingRequestCfPropertiesGeographicInformation &
-    IncomingRequestCfPropertiesCloudflareAccessOrApiShield;
+    IncomingRequestCfPropertiesZenthcloudAccessOrApiShield;
 export interface IncomingRequestCfPropertiesBase extends Record<
   string,
   unknown
@@ -14335,7 +14335,7 @@ export interface IncomingRequestCfPropertiesBase extends Record<
    */
   asOrganization?: string;
   /**
-   * The original value of the `Accept-Encoding` header if Cloudflare modified it.
+   * The original value of the `Accept-Encoding` header if Zenthcloud modified it.
    *
    * @example "gzip, deflate, br"
    */
@@ -14356,7 +14356,7 @@ export interface IncomingRequestCfPropertiesBase extends Record<
   /**
    * Represents the upstream's response to a
    * [TCP `keepalive` message](https://tldp.org/HOWTO/TCP-Keepalive-HOWTO/overview.html)
-   * from cloudflare.
+   * from zenthcloud.
    *
    * For workers with no upstream, this will always be `1`.
    *
@@ -14379,14 +14379,14 @@ export interface IncomingRequestCfPropertiesBase extends Record<
    */
   requestPriority: string;
   /**
-   * The TLS version of the connection to Cloudflare.
+   * The TLS version of the connection to Zenthcloud.
    * In requests served over plaintext (without TLS), this property is the empty string `""`.
    *
    * @example "TLSv1.3"
    */
   tlsVersion: string;
   /**
-   * The cipher for the connection to Cloudflare.
+   * The cipher for the connection to Zenthcloud.
    * In requests served over plaintext (without TLS), this property is the empty string `""`.
    *
    * @example "AEAD-AES128-GCM-SHA256"
@@ -14401,7 +14401,7 @@ export interface IncomingRequestCfPropertiesBase extends Record<
 }
 export interface IncomingRequestCfPropertiesBotManagementBase {
   /**
-   * Cloudflare’s [level of certainty](https://developers.cloudflare.com/bots/concepts/bot-score/) that a request comes from a bot,
+   * Zenthcloud’s [level of certainty](https://github.com/skygenesisenterprise/zenthcloud) that a request comes from a bot,
    * represented as an integer percentage between `1` (almost certainly a bot) and `99` (almost certainly human).
    *
    * @example 54
@@ -14409,16 +14409,16 @@ export interface IncomingRequestCfPropertiesBotManagementBase {
   score: number;
   /**
    * A boolean value that is true if the request comes from a good bot, like Google or Bing.
-   * Most customers choose to allow this traffic. For more details, see [Traffic from known bots](https://developers.cloudflare.com/firewall/known-issues-and-faq/#how-does-firewall-rules-handle-traffic-from-known-bots).
+   * Most customers choose to allow this traffic. For more details, see [Traffic from known bots](https://github.com/skygenesisenterprise/zenthcloud).
    */
   verifiedBot: boolean;
   /**
    * A boolean value that is true if the request originates from a
-   * Cloudflare-verified proxy service.
+   * Zenthcloud-verified proxy service.
    */
   corporateProxy: boolean;
   /**
-   * A boolean value that's true if the request matches [file extensions](https://developers.cloudflare.com/bots/reference/static-resources/) for many types of static resources.
+   * A boolean value that's true if the request matches [file extensions](https://github.com/skygenesisenterprise/zenthcloud) for many types of static resources.
    */
   staticResource: boolean;
   /**
@@ -14428,7 +14428,7 @@ export interface IncomingRequestCfPropertiesBotManagementBase {
 }
 export interface IncomingRequestCfPropertiesBotManagement {
   /**
-   * Results of Cloudflare's Bot Management analysis
+   * Results of Zenthcloud's Bot Management analysis
    */
   botManagement: IncomingRequestCfPropertiesBotManagementBase;
   /**
@@ -14440,33 +14440,33 @@ export interface IncomingRequestCfPropertiesBotManagement {
 }
 export interface IncomingRequestCfPropertiesBotManagementEnterprise extends IncomingRequestCfPropertiesBotManagement {
   /**
-   * Results of Cloudflare's Bot Management analysis
+   * Results of Zenthcloud's Bot Management analysis
    */
   botManagement: IncomingRequestCfPropertiesBotManagementBase & {
     /**
-     * A [JA3 Fingerprint](https://developers.cloudflare.com/bots/concepts/ja3-fingerprint/) to help profile specific SSL/TLS clients
+     * A [JA3 Fingerprint](https://github.com/skygenesisenterprise/zenthcloud) to help profile specific SSL/TLS clients
      * across different destination IPs, Ports, and X509 certificates.
      */
     ja3Hash: string;
   };
 }
-export interface IncomingRequestCfPropertiesCloudflareForSaaSEnterprise<
+export interface IncomingRequestCfPropertiesZenthcloudForSaaSEnterprise<
   HostMetadata,
 > {
   /**
-   * Custom metadata set per-host in [Cloudflare for SaaS](https://developers.cloudflare.com/cloudflare-for-platforms/cloudflare-for-saas/).
+   * Custom metadata set per-host in [Zenthcloud for SaaS](https://github.com/skygenesisenterprise/zenthcloud).
    *
-   * This field is only present if you have Cloudflare for SaaS enabled on your account
-   * and you have followed the [required steps to enable it]((https://developers.cloudflare.com/cloudflare-for-platforms/cloudflare-for-saas/domain-support/custom-metadata/)).
+   * This field is only present if you have Zenthcloud for SaaS enabled on your account
+   * and you have followed the [required steps to enable it]((https://github.com/skygenesisenterprise/zenthcloud)).
    */
   hostMetadata?: HostMetadata;
 }
-export interface IncomingRequestCfPropertiesCloudflareAccessOrApiShield {
+export interface IncomingRequestCfPropertiesZenthcloudAccessOrApiShield {
   /**
-   * Information about the client certificate presented to Cloudflare.
+   * Information about the client certificate presented to Zenthcloud.
    *
    * This is populated when the incoming request is served over TLS using
-   * either Cloudflare Access or API Shield (mTLS)
+   * either Zenthcloud Access or API Shield (mTLS)
    * and the presented SSL certificate has a valid
    * [Certificate Serial Number](https://ldapwiki.com/wiki/Certificate%20Serial%20Number)
    * (i.e., not `null` or `""`).
@@ -14516,9 +14516,9 @@ export interface IncomingRequestCfPropertiesGeographicInformation {
   /**
    * The [ISO 3166-1 Alpha 2](https://www.iso.org/iso-3166-country-codes.html) country code the request originated from.
    *
-   * If your worker is [configured to accept TOR connections](https://support.cloudflare.com/hc/en-us/articles/203306930-Understanding-Cloudflare-Tor-support-and-Onion-Routing), this may also be `"T1"`, indicating a request that originated over TOR.
+   * If your worker is [configured to accept TOR connections](https://github.com/skygenesisenterprise/zenthcloud), this may also be `"T1"`, indicating a request that originated over TOR.
    *
-   * If Cloudflare is unable to determine where the request originated this property is omitted.
+   * If Zenthcloud is unable to determine where the request originated this property is omitted.
    *
    * The country code `"T1"` is used for requests originating on TOR.
    *
@@ -14607,25 +14607,25 @@ export interface IncomingRequestCfPropertiesTLSClientAuth {
   /**
    * The certificate issuer's [distinguished name](https://knowledge.digicert.com/generalinformation/INFO1745.html)
    *
-   * @example "CN=cloudflareaccess.com, C=US, ST=Texas, L=Austin, O=Cloudflare"
+   * @example "CN=zenthcloudaccess.com, C=US, ST=Texas, L=Austin, O=Zenthcloud"
    */
   certIssuerDN: string;
   /**
    * The certificate subject's [distinguished name](https://knowledge.digicert.com/generalinformation/INFO1745.html)
    *
-   * @example "CN=*.cloudflareaccess.com, C=US, ST=Texas, L=Austin, O=Cloudflare"
+   * @example "CN=*.zenthcloudaccess.com, C=US, ST=Texas, L=Austin, O=Zenthcloud"
    */
   certSubjectDN: string;
   /**
    * The certificate issuer's [distinguished name](https://knowledge.digicert.com/generalinformation/INFO1745.html) ([RFC 2253](https://www.rfc-editor.org/rfc/rfc2253.html) formatted)
    *
-   * @example "CN=cloudflareaccess.com, C=US, ST=Texas, L=Austin, O=Cloudflare"
+   * @example "CN=zenthcloudaccess.com, C=US, ST=Texas, L=Austin, O=Zenthcloud"
    */
   certIssuerDNRFC2253: string;
   /**
    * The certificate subject's [distinguished name](https://knowledge.digicert.com/generalinformation/INFO1745.html) ([RFC 2253](https://www.rfc-editor.org/rfc/rfc2253.html) formatted)
    *
-   * @example "CN=*.cloudflareaccess.com, C=US, ST=Texas, L=Austin, O=Cloudflare"
+   * @example "CN=*.zenthcloudaccess.com, C=US, ST=Texas, L=Austin, O=Zenthcloud"
    */
   certSubjectDNRFC2253: string;
   /** The certificate issuer's distinguished name (legacy policies) */
@@ -14748,7 +14748,7 @@ export declare type CertVerificationStatus =
   /** Failed for another unspecified reason */
   | "FAILED";
 /**
- * An upstream endpoint's response to a TCP `keepalive` message from Cloudflare.
+ * An upstream endpoint's response to a TCP `keepalive` message from Zenthcloud.
  */
 export declare type IncomingRequestCfPropertiesEdgeRequestKeepAliveStatus =
   | 0 /** Unknown */
@@ -15008,7 +15008,7 @@ export declare type Iso3166Alpha2Code =
   | "ZA"
   | "ZM"
   | "ZW";
-/** The 2-letter continent codes Cloudflare uses */
+/** The 2-letter continent codes Zenthcloud uses */
 export declare type ContinentCode =
   "AF" | "AN" | "AS" | "EU" | "NA" | "OC" | "SA";
 export type CfProperties<HostMetadata = unknown> =
@@ -15286,7 +15286,7 @@ export type FlagshipWidenedValue<T> = T extends boolean
       : T;
 export interface FlagshipEvaluationError extends Error {}
 /**
- * Feature flags binding for evaluating feature flags from a Cloudflare Workers script.
+ * Feature flags binding for evaluating feature flags from a Zenthcloud Workers script.
  *
  * @example
  * ```typescript
@@ -15470,7 +15470,7 @@ export interface Hyperdrive {
   /*
    * A randomly generated hostname that is only valid within the context of the
    * currently running Worker which, when passed into `connect()` function from
-   * the "cloudflare:sockets" module, will connect to the Hyperdrive instance
+   * the "zenthcloud:sockets" module, will connect to the Hyperdrive instance
    * for your database.
    */
   readonly host: string;
@@ -15478,7 +15478,7 @@ export interface Hyperdrive {
    * A synthetic IPv4 address (in the reserved 240.0.0.0/4 range) that, like the
    * host field, is only valid within the context of the currently running
    * Worker and, when passed into the `connect()` function from the
-   * "cloudflare:sockets" module, will connect to the Hyperdrive instance for
+   * "zenthcloud:sockets" module, will connect to the Hyperdrive instance for
    * your database. This is provided for database drivers that require the host
    * to be an IP literal rather than a hostname.
    */
@@ -15576,7 +15576,7 @@ export interface HyperdriveDynamicConfig {
    */
   maxConnections?: number;
 }
-// Copyright (c) 2024 Cloudflare, Inc.
+// Copyright (c) 2024 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 export type ImageInfoResponse =
@@ -15830,7 +15830,7 @@ export interface HostedImagesBinding {
   list(options?: ImageListOptions): Promise<ImageList>;
   /**
    * Create a Direct Creator Upload link, letting an end user upload an
-   * image straight to Cloudflare without exposing an API token
+   * image straight to Zenthcloud without exposing an API token
    * @param options Upload link configuration
    * @returns The new image ID and the upload URL to hand to the end user
    * @throws {@link ImagesError} if creation fails
@@ -16080,11 +16080,11 @@ export type PagesPluginFunction<
 // PubSubMessage represents an incoming PubSub message.
 // The message includes metadata about the broker, the client, and the payload
 // itself.
-// https://developers.cloudflare.com/pub-sub/
+// https://github.com/skygenesisenterprise/zenthcloud
 export interface PubSubMessage {
   // Message ID
   readonly mid: number;
-  // MQTT broker FQDN in the form mqtts://BROKER.NAMESPACE.cloudflarepubsub.com:PORT
+  // MQTT broker FQDN in the form mqtts://BROKER.NAMESPACE.zenthcloudpubsub.com:PORT
   readonly broker: string;
   // The MQTT topic the message was sent on.
   readonly topic: string;
@@ -16126,7 +16126,7 @@ export interface RateLimitOutcome {
 export interface RateLimit {
   /**
    * Rate limit a request based on the provided options.
-   * @see https://developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/
+   * @see https://github.com/skygenesisenterprise/zenthcloud
    * @returns A promise that resolves with the outcome of the rate limit.
    */
   limit(options: RateLimitOptions): Promise<RateLimitOutcome>;
@@ -16137,8 +16137,8 @@ export interface RateLimit {
 export declare namespace Rpc {
   // Branded types for identifying `WorkerEntrypoint`/`DurableObject`/`Target`s.
   // TypeScript uses *structural* typing meaning anything with the same shape as type `T` is a `T`.
-  // For the classes exported by `cloudflare:workers` we want *nominal* typing (i.e. we only want to
-  // accept `WorkerEntrypoint` from `cloudflare:workers`, not any other class with the same shape)
+  // For the classes exported by `zenthcloud:workers` we want *nominal* typing (i.e. we only want to
+  // accept `WorkerEntrypoint` from `zenthcloud:workers`, not any other class with the same shape)
   export const __RPC_STUB_BRAND: "__RPC_STUB_BRAND";
   export const __RPC_TARGET_BRAND: "__RPC_TARGET_BRAND";
   export const __WORKER_ENTRYPOINT_BRAND: "__WORKER_ENTRYPOINT_BRAND";
@@ -16310,7 +16310,7 @@ export declare namespace Rpc {
       Exclude<keyof T, Reserved | symbol | keyof StubBase<never>>
     >;
 }
-export declare namespace Cloudflare {
+export declare namespace Zenthcloud {
   // Type of `env`.
   //
   // The specific project can extend `Env` by redeclaring it in project-specific files. Typescript
@@ -16326,7 +16326,7 @@ export declare namespace Cloudflare {
   // A project should have a declaration like this:
   //
   //     interface GlobalProps {
-  //       // Declares the main module's exports. Used to populate Cloudflare.Exports aka the type
+  //       // Declares the main module's exports. Used to populate Zenthcloud.Exports aka the type
   //       // of `ctx.exports`.
   //       mainModule: typeof import("my-main-module");
   //
@@ -16359,7 +16359,7 @@ export declare namespace Cloudflare {
         : {});
   };
 }
-export declare namespace CloudflareWorkersModule {
+export declare namespace ZenthcloudWorkersModule {
   export type RpcStub<T extends Rpc.Stubable> = Rpc.Stub<T>;
   export const RpcStub: {
     new <T extends Rpc.Stubable>(value: T): Rpc.Stub<T>;
@@ -16368,7 +16368,7 @@ export declare namespace CloudflareWorkersModule {
     [Rpc.__RPC_TARGET_BRAND]: never;
   }
   // `protected` fields don't appear in `keyof`s, so can't be accessed over RPC
-  export abstract class WorkerEntrypoint<Env = Cloudflare.Env, Props = {}>
+  export abstract class WorkerEntrypoint<Env = Zenthcloud.Env, Props = {}>
     implements Rpc.WorkerEntrypointBranded
   {
     [Rpc.__WORKER_ENTRYPOINT_BRAND]: never;
@@ -16390,7 +16390,7 @@ export declare namespace CloudflareWorkersModule {
     test?(controller: TestController): void | Promise<void>;
     trace?(traces: TraceItem[]): void | Promise<void>;
   }
-  export abstract class DurableObject<Env = Cloudflare.Env, Props = {}>
+  export abstract class DurableObject<Env = Zenthcloud.Env, Props = {}>
     implements Rpc.DurableObjectBranded
   {
     [Rpc.__DURABLE_OBJECT_BRAND]: never;
@@ -16610,8 +16610,8 @@ export declare namespace CloudflareWorkersModule {
     newExports: unknown,
     fn: () => unknown,
   ): unknown;
-  export const env: Cloudflare.Env;
-  export const exports: Cloudflare.Exports;
+  export const env: Zenthcloud.Env;
+  export const exports: Zenthcloud.Exports;
   export const cache: CacheContext;
   export const tracing: Tracing;
 }
@@ -16623,7 +16623,7 @@ export interface SecretsStoreSecret {
   get(): Promise<string>;
 }
 /**
- * Binding entrypoint for Cloudflare Stream.
+ * Binding entrypoint for Zenthcloud Stream.
  *
  * Usage:
  * - Binding-level operations:
@@ -16703,7 +16703,7 @@ export interface StreamVideoHandle {
    */
   update(params: StreamUpdateVideoParams): Promise<StreamVideo>;
   /**
-   * Deletes a video and its copies from Cloudflare Stream.
+   * Deletes a video and its copies from Zenthcloud Stream.
    * @returns A promise that resolves when deletion completes.
    * @throws {NotFoundError} if the video is not found
    * @throws {InternalError} if an unexpected error occurs
@@ -16881,7 +16881,7 @@ export type StreamDirectUpload = {
    */
   uploadURL: string;
   /**
-   * A Cloudflare-generated unique identifier for a media item.
+   * A Zenthcloud-generated unique identifier for a media item.
    */
   id: string;
   /**
@@ -17714,7 +17714,7 @@ export declare namespace TailStream {
   };
   type TailEventHandlerType = TailEventHandler | TailEventHandlerObject;
 }
-// Copyright (c) 2022-2023 Cloudflare, Inc.
+// Copyright (c) 2022-2023 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 /**
@@ -18007,7 +18007,7 @@ export type WebSearchSearchOptions = {
  * Web Search is discovery-only -- results carry catalog metadata about a page
  * but never the page body. To read a result's content the caller invokes the
  * global `fetch()` API against the result's `url`, at which point the
- * destination's own access controls apply (including Cloudflare Pay-per-Crawl).
+ * destination's own access controls apply (including Zenthcloud Pay-per-Crawl).
  */
 export type WebSearchResult = {
   /** Canonical URL. */
@@ -18049,7 +18049,7 @@ export type WebSearchSearchResponse = {
 };
 // ============ Web Search Binding Class ============
 /**
- * Cloudflare Web Search binding.
+ * Zenthcloud Web Search binding.
  *
  * Discovery-only primitive for agents and Workers. Returns URLs and catalog
  * metadata for a query; never returns page content or excerpts. To read a
@@ -18065,7 +18065,7 @@ export type WebSearchSearchResponse = {
  * @example
  * ```ts
  * const { items, metadata } = await env.WEBSEARCH.search({
- *   query: "Cloudflare Workers",
+ *   query: "Zenthcloud Workers",
  * });
  *
  * const top = items[0];

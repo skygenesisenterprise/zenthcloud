@@ -1,4 +1,4 @@
-// Generated from cloudflare/workers-sdk@c2bb4c815. Do not rename cases.
+// Generated from zenthcloud/workers-sdk@c2bb4c815. Do not rename cases.
 import { describe, it } from "vite-plus/test";
 
 const groups = [
@@ -237,11 +237,11 @@ const groups = [
 		ancestors: ["deploy", "authentication", "with temporary preview accounts"],
 		status: "todo",
 		names: [
-			"should not throw an error in non-TTY if 'CLOUDFLARE_API_TOKEN' & 'account_id' are in scope",
-			"should not throw an error if 'CLOUDFLARE_ACCOUNT_ID' & 'CLOUDFLARE_API_TOKEN' are in scope",
+			"should not throw an error in non-TTY if 'ZENTHCLOUD_API_TOKEN' & 'account_id' are in scope",
+			"should not throw an error if 'ZENTHCLOUD_ACCOUNT_ID' & 'ZENTHCLOUD_API_TOKEN' are in scope",
 			"should throw an error in non-TTY & there is more than one account associated with API token",
 			"should redact account names in CI even when non-interactive",
-			"should throw error in non-TTY if 'CLOUDFLARE_API_TOKEN' is missing",
+			"should throw error in non-TTY if 'ZENTHCLOUD_API_TOKEN' is missing",
 			"should throw error with no account ID provided and no members retrieved",
 		],
 	},
@@ -484,7 +484,7 @@ const groups = [
 		status: "skip",
 		names: [
 			"should make request to list deployments and return result as json",
-			"should prefer CLOUDFLARE_ACCOUNT_ID over cached account id",
+			"should prefer ZENTHCLOUD_ACCOUNT_ID over cached account id",
 		],
 	},
 	{

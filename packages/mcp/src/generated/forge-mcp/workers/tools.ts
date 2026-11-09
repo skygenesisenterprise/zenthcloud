@@ -124,7 +124,7 @@ export const tools: readonly Tool[] = [
                     },
                     "invocation_logs": {
                       "default": true,
-                      "description": "Whether [invocation logs](https://developers.cloudflare.com/workers/observability/logs/workers-logs/#invocation-logs) are enabled for the Worker.",
+                      "description": "Whether [invocation logs](https://github.com/skygenesisenterprise/zenthcloud) are enabled for the Worker.",
                       "type": "boolean"
                     },
                     "persist": {
@@ -200,7 +200,7 @@ export const tools: readonly Tool[] = [
                   "type": "boolean"
                 },
                 "previews_enabled": {
-                  "description": "Whether [preview URLs](https://developers.cloudflare.com/workers/configuration/previews/) are enabled for the Worker.",
+                  "description": "Whether [preview URLs](https://github.com/skygenesisenterprise/zenthcloud) are enabled for the Worker.",
                   "type": "boolean"
                 }
               },
@@ -1495,7 +1495,7 @@ export const tools: readonly Tool[] = [
                     },
                     "invocation_logs": {
                       "default": true,
-                      "description": "Whether [invocation logs](https://developers.cloudflare.com/workers/observability/logs/workers-logs/#invocation-logs) are enabled for the Worker.",
+                      "description": "Whether [invocation logs](https://github.com/skygenesisenterprise/zenthcloud) are enabled for the Worker.",
                       "type": "boolean"
                     },
                     "persist": {
@@ -1571,7 +1571,7 @@ export const tools: readonly Tool[] = [
                   "type": "boolean"
                 },
                 "previews_enabled": {
-                  "description": "Whether [preview URLs](https://developers.cloudflare.com/workers/configuration/previews/) are enabled for the Worker.",
+                  "description": "Whether [preview URLs](https://github.com/skygenesisenterprise/zenthcloud) are enabled for the Worker.",
                   "type": "boolean"
                 }
               },

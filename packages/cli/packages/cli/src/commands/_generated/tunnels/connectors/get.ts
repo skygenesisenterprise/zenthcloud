@@ -20,11 +20,11 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 tunnels connectors get <connector-id>\n\nRetrieves a connector and its connection details for a Cloudflare Tunnel, including its cloudflared version, architecture, and connected Cloudflare locations."
+			"$0 tunnels connectors get <connector-id>\n\nRetrieves a connector and its connection details for a Zenthcloud Tunnel, including its zenthcloudd version, architecture, and connected Zenthcloud locations."
 		)
 		.positional("connector-id", {
 			type: "string",
-			description: "UUID of the Cloudflare Tunnel connector.",
+			description: "UUID of the Zenthcloud Tunnel connector.",
 			demandOption: true,
 		})
 		.option("tunnel-id", {
@@ -43,7 +43,7 @@ type Args = InferArgs<typeof builder>;
 
 const command: CommandModule<CommonYargsOptions, Args> = {
 	command: "get <connector-id>",
-	describe: "Get Cloudflare Tunnel connector",
+	describe: "Get Zenthcloud Tunnel connector",
 	builder,
 	handler: async (argv): Promise<void> =>
 		runWithTelemetry(
@@ -60,7 +60,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf tunnels connectors get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/cfd_tunnel/${argv["tunnel-id"] == null ? "<tunnel-id>" : encodeURIComponent(String(argv["tunnel-id"]))}/connectors/${argv["connector-id"] == null ? "<connector-id>" : encodeURIComponent(String(argv["connector-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/cfd_tunnel/${argv["tunnel-id"] == null ? "<tunnel-id>" : encodeURIComponent(String(argv["tunnel-id"]))}/connectors/${argv["connector-id"] == null ? "<connector-id>" : encodeURIComponent(String(argv["connector-id"]))}`,
 						pathParams: {
 							"tunnel-id": String(argv["tunnel-id"] ?? ""),
 							"connector-id": String(argv["connector-id"] ?? ""),

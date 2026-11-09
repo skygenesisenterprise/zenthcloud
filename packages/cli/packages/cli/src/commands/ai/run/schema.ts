@@ -1,4 +1,4 @@
-import type { Cloudflare } from "#lib/auth.js";
+import type { Zenthcloud } from "#lib/auth.js";
 import type { SchemaLookup } from "#lib/schema-cache.js";
 /**
  * `cf ai run`'s model input-schema lookup.
@@ -29,7 +29,7 @@ const CACHE_NAMESPACE = "ai-model-schema";
 export async function getModelInputSchema(
 	model: string,
 	accountId: string,
-	createClient: () => Promise<Cloudflare>,
+	createClient: () => Promise<Zenthcloud>,
 	deadline?: number
 ): Promise<SchemaLookup> {
 	const cached = readCachedSchema(CACHE_NAMESPACE, [accountId, model]);

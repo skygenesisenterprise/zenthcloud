@@ -6,11 +6,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/pipelines"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/pipelines"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -19,18 +19,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
-func TestAccCloudflarePipelineSink_R2(t *testing.T) {
+func TestAccZenthcloudPipelineSink_R2(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	accessKeyID := os.Getenv("CLOUDFLARE_R2_ACCESS_KEY_ID")
-	accessKeySecret := os.Getenv("CLOUDFLARE_R2_ACCESS_KEY_SECRET")
-	resourceName := "cloudflare_pipeline_sink." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	accessKeyID := os.Getenv("ZENTHCLOUD_R2_ACCESS_KEY_ID")
+	accessKeySecret := os.Getenv("ZENTHCLOUD_R2_ACCESS_KEY_SECRET")
+	resourceName := "zenthcloud_pipeline_sink." + rnd
 
 	if accessKeyID == "" {
-		t.Skip("CLOUDFLARE_R2_ACCESS_KEY_ID must be set for this acceptance test")
+		t.Skip("ZENTHCLOUD_R2_ACCESS_KEY_ID must be set for this acceptance test")
 	}
 	if accessKeySecret == "" {
-		t.Skip("CLOUDFLARE_R2_ACCESS_KEY_SECRET must be set for this acceptance test")
+		t.Skip("ZENTHCLOUD_R2_ACCESS_KEY_SECRET must be set for this acceptance test")
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -39,7 +39,7 @@ func TestAccCloudflarePipelineSink_R2(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflarePipelineSinkDestroy,
+		CheckDestroy:             testAccCheckZenthcloudPipelineSinkDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccPipelineSinkR2Config(rnd, accountID, accessKeyID, accessKeySecret),
@@ -72,10 +72,10 @@ func TestAccCloudflarePipelineSink_R2(t *testing.T) {
 	})
 }
 
-func TestAccCloudflarePipelineSink_R2DataCatalog(t *testing.T) {
+func TestAccZenthcloudPipelineSink_R2DataCatalog(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_pipeline_sink." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_pipeline_sink." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -83,7 +83,7 @@ func TestAccCloudflarePipelineSink_R2DataCatalog(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflarePipelineSinkDestroy,
+		CheckDestroy:             testAccCheckZenthcloudPipelineSinkDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccPipelineSinkR2DCConfig(rnd, accountID),
@@ -116,11 +116,11 @@ func TestAccCloudflarePipelineSink_R2DataCatalog(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflarePipelineSinkDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudPipelineSinkDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_pipeline_sink" {
+		if rs.Type != "zenthcloud_pipeline_sink" {
 			continue
 		}
 
@@ -131,7 +131,7 @@ func testAccCheckCloudflarePipelineSinkDestroy(s *terraform.State) error {
 			context.Background(),
 			sinkID,
 			pipelines.SinkGetParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			},
 		)
 		if err == nil {

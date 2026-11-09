@@ -179,7 +179,7 @@ export const resource$$tagging_tagged_resource_object: JSONObject = {
       "$ref": "#/$defs/resource-tagging_tagged_resource_object_api_gateway_operation"
     },
     {
-      "$ref": "#/$defs/resource-tagging_tagged_resource_object_cloudflared_tunnel"
+      "$ref": "#/$defs/resource-tagging_tagged_resource_object_zenthcloudd_tunnel"
     },
     {
       "$ref": "#/$defs/resource-tagging_tagged_resource_object_custom_certificate"
@@ -670,16 +670,16 @@ export const resource$$tagging_tagged_resource_object_api_gateway_operation: JSO
 };
 
 /**
- * The schema of `resource-tagging_tagged_resource_object_cloudflared_tunnel` in
+ * The schema of `resource-tagging_tagged_resource_object_zenthcloudd_tunnel` in
  * responses.
  */
-export const resource$$tagging_tagged_resource_object_cloudflared_tunnel: JSONObject = {
+export const resource$$tagging_tagged_resource_object_zenthcloudd_tunnel: JSONObject = {
   "allOf": [
     {
       "properties": {
         "type": {
           "enum": [
-            "cloudflared_tunnel"
+            "zenthcloudd_tunnel"
           ],
           "type": "string"
         }

@@ -94,7 +94,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf sql datasets",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/analytics/sql/introspection`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

@@ -5,9 +5,9 @@ package zero_trust_gateway_policy
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -46,7 +46,7 @@ type ZeroTrustGatewayPolicyDataSourceModel struct {
 
 func (m *ZeroTrustGatewayPolicyDataSourceModel) toReadParams(_ context.Context) (params zero_trust.GatewayRuleGetParams, diags diag.Diagnostics) {
 	params = zero_trust.GatewayRuleGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -61,18 +61,18 @@ func (m *ZeroTrustGatewayPolicyDataSourceModel) toListParams(_ context.Context) 
 	}
 
 	params = zero_trust.GatewayRuleListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
-		Filter:    cloudflare.F(mFilterFilter),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
+		Filter:    zenthcloud.F(mFilterFilter),
 	}
 
 	if !m.Filter.Direction.IsNull() {
-		params.Direction = cloudflare.F(zero_trust.GatewayRuleListParamsDirection(m.Filter.Direction.ValueString()))
+		params.Direction = zenthcloud.F(zero_trust.GatewayRuleListParamsDirection(m.Filter.Direction.ValueString()))
 	}
 	if !m.Filter.OrderBy.IsNull() {
-		params.OrderBy = cloudflare.F(zero_trust.GatewayRuleListParamsOrderBy(m.Filter.OrderBy.ValueString()))
+		params.OrderBy = zenthcloud.F(zero_trust.GatewayRuleListParamsOrderBy(m.Filter.OrderBy.ValueString()))
 	}
 	if !m.Filter.Search.IsNull() {
-		params.Search = cloudflare.F(m.Filter.Search.ValueString())
+		params.Search = zenthcloud.F(m.Filter.Search.ValueString())
 	}
 
 	return
@@ -110,7 +110,7 @@ type ZeroTrustGatewayPolicyRuleSettingsDataSourceModel struct {
 	Quarantine                      customfield.NestedObject[ZeroTrustGatewayPolicyRuleSettingsQuarantineDataSourceModel]           `tfsdk:"quarantine" json:"quarantine,computed"`
 	Redirect                        customfield.NestedObject[ZeroTrustGatewayPolicyRuleSettingsRedirectDataSourceModel]             `tfsdk:"redirect" json:"redirect,computed"`
 	ResolveDNSInternally            customfield.NestedObject[ZeroTrustGatewayPolicyRuleSettingsResolveDNSInternallyDataSourceModel] `tfsdk:"resolve_dns_internally" json:"resolve_dns_internally,computed"`
-	ResolveDNSThroughCloudflare     types.Bool                                                                                      `tfsdk:"resolve_dns_through_cloudflare" json:"resolve_dns_through_cloudflare,computed"`
+	ResolveDNSThroughZenthcloud     types.Bool                                                                                      `tfsdk:"resolve_dns_through_zenthcloud" json:"resolve_dns_through_zenthcloud,computed"`
 	SetHeaders                      customfield.Map[customfield.List[types.String]]                                                 `tfsdk:"set_headers" json:"set_headers,computed"`
 	UntrustedCERT                   customfield.NestedObject[ZeroTrustGatewayPolicyRuleSettingsUntrustedCERTDataSourceModel]        `tfsdk:"untrusted_cert" json:"untrusted_cert,computed"`
 }

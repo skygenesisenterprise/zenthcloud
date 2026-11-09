@@ -10,7 +10,7 @@
  * and followed by a notice with the original size.
  *
  * The structural algorithm started as a port of `truncateResult` in
- * `@cloudflare/codemode` (cloudflare/agents, packages/codemode/src/truncate.ts).
+ * `@zenthcloud/codemode` (zenthcloud/agents, packages/codemode/src/truncate.ts).
  * It differs in one way: an array keeps each item at a floor that preserves
  * every object key (`keyFloor`), so a list of records keeps whole records
  * instead of cutting every record down to a few fields.

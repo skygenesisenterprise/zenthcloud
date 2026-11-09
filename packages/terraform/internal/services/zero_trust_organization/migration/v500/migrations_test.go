@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -38,8 +38,8 @@ import (
 
 // createV4StateWithResourceType creates a v4 state file with a configurable resource type.
 // This allows testing both v4 resource names:
-// - cloudflare_access_organization (older v4 name)
-// - cloudflare_zero_trust_access_organization (newer v4 name)
+// - zenthcloud_access_organization (older v4 name)
+// - zenthcloud_zero_trust_access_organization (newer v4 name)
 func createV4StateWithResourceType(accountID, name, authDomain string, loginDesign, customPages map[string]string, resourceType string) string {
 	// Build login_design JSON array (v4 uses list, not object)
 	loginDesignJSON := ""
@@ -88,7 +88,7 @@ func createV4StateWithResourceType(accountID, name, authDomain string, loginDesi
       "mode": "managed",
       "type": %q,
       "name": "test",
-      "provider": "provider[\"registry.terraform.io/cloudflare/cloudflare\"]",
+      "provider": "provider[\"registry.terraform.io/zenthcloud/zenthcloud\"]",
       "instances": [
         {
           "schema_version": 0,
@@ -161,7 +161,7 @@ func extractCustomPagesFromImport(importedState *terraform.InstanceState) map[st
 
 // generateV4ConfigWithResourceType generates a v4 HCL configuration with real org values.
 // Uses v4 syntax:
-// - Resource type: configurable (cloudflare_access_organization or cloudflare_zero_trust_access_organization)
+// - Resource type: configurable (zenthcloud_access_organization or zenthcloud_zero_trust_access_organization)
 // - login_design { ... } - block syntax (not object syntax)
 // - custom_pages { ... } - block syntax (not object syntax)
 //
@@ -236,14 +236,14 @@ func generateV4ConfigWithResourceType(accountID, name, authDomain string, loginD
 //
 // This tests the full migration flow:
 // - tf-migrate generates moved {} blocks
-// - MoveState renames resource (cloudflare_access_organization → cloudflare_zero_trust_organization)
+// - MoveState renames resource (zenthcloud_access_organization → zenthcloud_zero_trust_organization)
 // - UpgradeState transforms schema (list → object for login_design/custom_pages)
 // - No drift after migration (real values ensure state matches config)
 //
 // Parameters:
-//   - accountID: Cloudflare account ID
+//   - accountID: Zenthcloud account ID
 //   - tmpDir: Temporary directory for test files
-//   - v4ResourceType: v4 resource name ("cloudflare_access_organization" or "cloudflare_zero_trust_access_organization")
+//   - v4ResourceType: v4 resource name ("zenthcloud_access_organization" or "zenthcloud_zero_trust_access_organization")
 //   - isMinimal: If true, generates minimal config (only required fields)
 //   - includeLoginDesign: If true, extracts and includes login_design
 //   - includeCustomPages: If true, extracts and includes custom_pages
@@ -268,7 +268,7 @@ func buildV4ToV5MigrationTestSteps(
 			PreConfig: func() {
 				// Write minimal v5 config for import
 				v5ImportConfig := fmt.Sprintf(`
-resource "cloudflare_zero_trust_organization" "test" {
+resource "zenthcloud_zero_trust_organization" "test" {
   account_id = "%s"
 }
 `, accountID)
@@ -276,7 +276,7 @@ resource "cloudflare_zero_trust_organization" "test" {
 			},
 			ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 			ConfigDirectory:          config.StaticDirectory(tmpDir),
-			ResourceName:             "cloudflare_zero_trust_organization.test",
+			ResourceName:             "zenthcloud_zero_trust_organization.test",
 			ImportState:              true,
 			ImportStateId:            accountID,
 			ImportStateVerify:        false,
@@ -405,9 +405,9 @@ func accessOrgImportStateCheckBasic(accountID string) resource.ImportStateCheckF
 // - Org is left in modified state after test completes
 // - Use a dedicated test account, NOT production
 func TestMigrateZeroTrustOrganization_V4ToV5_Basic(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		t.Skip("CLOUDFLARE_ACCOUNT_ID must be set for this test")
+		t.Skip("ZENTHCLOUD_ACCOUNT_ID must be set for this test")
 	}
 
 	// TF_MIG_TEST must be set to activate migration testing
@@ -425,21 +425,21 @@ func TestMigrateZeroTrustOrganization_V4ToV5_Basic(t *testing.T) {
 			t,
 			accountID,
 			tmpDir,
-			"cloudflare_access_organization", // v4 resource type (older name)
+			"zenthcloud_access_organization", // v4 resource type (older name)
 			false,                            // not minimal
 			true,                             // include login_design
 			false,                            // no custom_pages
 			[]statecheck.StateCheck{
 				// Verify core identity fields migrated correctly
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_organization.test", tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_organization.test", tfjsonpath.New("name"), knownvalue.NotNull()),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_organization.test", tfjsonpath.New("auth_domain"), knownvalue.NotNull()),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_organization.test", tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_organization.test", tfjsonpath.New("name"), knownvalue.NotNull()),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_organization.test", tfjsonpath.New("auth_domain"), knownvalue.NotNull()),
 
 				// CRITICAL: Verify login_design was transformed from list to object
 				// Structure exists, even if real org doesn't have login_design configured
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_organization.test", tfjsonpath.New("allow_authenticate_via_warp"), knownvalue.NotNull()),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_organization.test", tfjsonpath.New("auto_redirect_to_identity"), knownvalue.NotNull()),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_organization.test", tfjsonpath.New("is_ui_read_only"), knownvalue.NotNull()),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_organization.test", tfjsonpath.New("allow_authenticate_via_warp"), knownvalue.NotNull()),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_organization.test", tfjsonpath.New("auto_redirect_to_identity"), knownvalue.NotNull()),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_organization.test", tfjsonpath.New("is_ui_read_only"), knownvalue.NotNull()),
 			},
 		),
 	})
@@ -450,12 +450,12 @@ func TestMigrateZeroTrustOrganization_V4ToV5_Basic(t *testing.T) {
 //
 // This test uses import-only pattern (read-only, does NOT modify org).
 func TestMigrateZeroTrustOrganization_V5Import_Basic(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		t.Skip("CLOUDFLARE_ACCOUNT_ID must be set for this test")
+		t.Skip("ZENTHCLOUD_ACCOUNT_ID must be set for this test")
 	}
 
-	resourceName := "cloudflare_zero_trust_organization.test"
+	resourceName := "zenthcloud_zero_trust_organization.test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -466,7 +466,7 @@ func TestMigrateZeroTrustOrganization_V5Import_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-resource "cloudflare_zero_trust_organization" "test" {
+resource "zenthcloud_zero_trust_organization" "test" {
   account_id = "%s"
 }`, accountID),
 				ResourceName:     resourceName,
@@ -483,9 +483,9 @@ resource "cloudflare_zero_trust_organization" "test" {
 // WARNING: This test will MODIFY your real Zero Trust organization!
 // Use a dedicated test account, NOT production.
 func TestMigrateZeroTrustOrganization_V4ToV5_WithCustomPages(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		t.Skip("CLOUDFLARE_ACCOUNT_ID must be set for this test")
+		t.Skip("ZENTHCLOUD_ACCOUNT_ID must be set for this test")
 	}
 
 	// TF_MIG_TEST must be set to activate migration testing
@@ -502,15 +502,15 @@ func TestMigrateZeroTrustOrganization_V4ToV5_WithCustomPages(t *testing.T) {
 			t,
 			accountID,
 			tmpDir,
-			"cloudflare_access_organization", // v4 resource type
+			"zenthcloud_access_organization", // v4 resource type
 			false,                            // not minimal
 			false,                            // no login_design
 			true,                             // include custom_pages
 			[]statecheck.StateCheck{
 				// Verify core fields
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_organization.test", tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_organization.test", tfjsonpath.New("name"), knownvalue.NotNull()),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_organization.test", tfjsonpath.New("auth_domain"), knownvalue.NotNull()),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_organization.test", tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_organization.test", tfjsonpath.New("name"), knownvalue.NotNull()),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_organization.test", tfjsonpath.New("auth_domain"), knownvalue.NotNull()),
 			},
 		),
 	})
@@ -521,12 +521,12 @@ func TestMigrateZeroTrustOrganization_V4ToV5_WithCustomPages(t *testing.T) {
 //
 // This test uses import-only pattern (read-only, does NOT modify org).
 func TestMigrateZeroTrustOrganization_V5Import_WithCustomPages(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		t.Skip("CLOUDFLARE_ACCOUNT_ID must be set for this test")
+		t.Skip("ZENTHCLOUD_ACCOUNT_ID must be set for this test")
 	}
 
-	resourceName := "cloudflare_zero_trust_organization.test"
+	resourceName := "zenthcloud_zero_trust_organization.test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -537,7 +537,7 @@ func TestMigrateZeroTrustOrganization_V5Import_WithCustomPages(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-resource "cloudflare_zero_trust_organization" "test" {
+resource "zenthcloud_zero_trust_organization" "test" {
   account_id = "%s"
 }`, accountID),
 				ResourceName:     resourceName,
@@ -554,9 +554,9 @@ resource "cloudflare_zero_trust_organization" "test" {
 // WARNING: This test will MODIFY your real Zero Trust organization!
 // Use a dedicated test account, NOT production.
 func TestMigrateZeroTrustOrganization_V4ToV5_Minimal(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		t.Skip("CLOUDFLARE_ACCOUNT_ID must be set for this test")
+		t.Skip("ZENTHCLOUD_ACCOUNT_ID must be set for this test")
 	}
 
 	// TF_MIG_TEST must be set to activate migration testing
@@ -573,20 +573,20 @@ func TestMigrateZeroTrustOrganization_V4ToV5_Minimal(t *testing.T) {
 			t,
 			accountID,
 			tmpDir,
-			"cloudflare_zero_trust_access_organization", // v4 resource type (newer name)
+			"zenthcloud_zero_trust_access_organization", // v4 resource type (newer name)
 			true,  // minimal mode
 			false, // no login_design
 			false, // no custom_pages
 			[]statecheck.StateCheck{
 				// Verify core fields migrated correctly
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_organization.test", tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_organization.test", tfjsonpath.New("name"), knownvalue.NotNull()),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_organization.test", tfjsonpath.New("auth_domain"), knownvalue.NotNull()),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_organization.test", tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_organization.test", tfjsonpath.New("name"), knownvalue.NotNull()),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_organization.test", tfjsonpath.New("auth_domain"), knownvalue.NotNull()),
 
 				// CRITICAL: Verify boolean defaults exist after migration
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_organization.test", tfjsonpath.New("allow_authenticate_via_warp"), knownvalue.NotNull()),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_organization.test", tfjsonpath.New("auto_redirect_to_identity"), knownvalue.NotNull()),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_organization.test", tfjsonpath.New("is_ui_read_only"), knownvalue.NotNull()),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_organization.test", tfjsonpath.New("allow_authenticate_via_warp"), knownvalue.NotNull()),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_organization.test", tfjsonpath.New("auto_redirect_to_identity"), knownvalue.NotNull()),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_organization.test", tfjsonpath.New("is_ui_read_only"), knownvalue.NotNull()),
 			},
 		),
 	})
@@ -597,12 +597,12 @@ func TestMigrateZeroTrustOrganization_V4ToV5_Minimal(t *testing.T) {
 //
 // This test uses import-only pattern (read-only, does NOT modify org).
 func TestMigrateZeroTrustOrganization_V5Import_Minimal(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		t.Skip("CLOUDFLARE_ACCOUNT_ID must be set for this test")
+		t.Skip("ZENTHCLOUD_ACCOUNT_ID must be set for this test")
 	}
 
-	resourceName := "cloudflare_zero_trust_organization.test"
+	resourceName := "zenthcloud_zero_trust_organization.test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -613,7 +613,7 @@ func TestMigrateZeroTrustOrganization_V5Import_Minimal(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-resource "cloudflare_zero_trust_organization" "test" {
+resource "zenthcloud_zero_trust_organization" "test" {
   account_id = "%s"
 }`, accountID),
 				ResourceName:     resourceName,
@@ -630,9 +630,9 @@ resource "cloudflare_zero_trust_organization" "test" {
 // WARNING: This test will MODIFY your real Zero Trust organization!
 // Use a dedicated test account, NOT production.
 func TestMigrateZeroTrustOrganization_V4ToV5_NoDrift(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		t.Skip("CLOUDFLARE_ACCOUNT_ID must be set for this test")
+		t.Skip("ZENTHCLOUD_ACCOUNT_ID must be set for this test")
 	}
 
 	// TF_MIG_TEST must be set to activate migration testing
@@ -650,15 +650,15 @@ func TestMigrateZeroTrustOrganization_V4ToV5_NoDrift(t *testing.T) {
 			t,
 			accountID,
 			tmpDir,
-			"cloudflare_access_organization", // v4 resource type
+			"zenthcloud_access_organization", // v4 resource type
 			false,                            // not minimal
 			true,                             // include login_design for comprehensive drift check
 			false,                            // no custom_pages
 			[]statecheck.StateCheck{
 				// Verify the resource exists after migration (PlanOnly ensures no drift)
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_organization.test", tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_organization.test", tfjsonpath.New("name"), knownvalue.NotNull()),
-				statecheck.ExpectKnownValue("cloudflare_zero_trust_organization.test", tfjsonpath.New("auth_domain"), knownvalue.NotNull()),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_organization.test", tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_organization.test", tfjsonpath.New("name"), knownvalue.NotNull()),
+				statecheck.ExpectKnownValue("zenthcloud_zero_trust_organization.test", tfjsonpath.New("auth_domain"), knownvalue.NotNull()),
 			},
 		),
 	})

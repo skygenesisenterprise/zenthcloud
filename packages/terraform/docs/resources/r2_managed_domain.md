@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_r2_managed_domain Resource - Cloudflare"
+page_title: "zenthcloud_r2_managed_domain Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_r2_managed_domain (Resource)
+# zenthcloud_r2_managed_domain (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_r2_managed_domain" "example_r2_managed_domain" {
+resource "zenthcloud_r2_managed_domain" "example_r2_managed_domain" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   bucket_name = "example-bucket"
   enabled = true
@@ -24,7 +24,7 @@ resource "cloudflare_r2_managed_domain" "example_r2_managed_domain" {
 
 ### Required
 
-- `account_id` (String) Cloudflare account ID that owns the R2 resource.
+- `account_id` (String) Zenthcloud account ID that owns the R2 resource.
 - `bucket_name` (String) Name of the bucket.
 - `enabled` (Boolean) Whether to enable public bucket access at the r2.dev domain.
 

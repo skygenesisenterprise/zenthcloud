@@ -42,7 +42,7 @@ import {
 import themeData from "../generated/theme-data.json";
 
 // Import registry as source of truth
-import registry from "@cloudflare/kumo/ai/component-registry.json";
+import registry from "@zenthcloud/kumo/ai/component-registry.json";
 
 /**
  * Tooltip dimensions

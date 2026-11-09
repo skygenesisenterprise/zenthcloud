@@ -1,8 +1,8 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-70:
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-70:
 // WorkerLoader::extractSource() must copy data/wasm module bytes out of
 // V8's BackingStore before going async, because a resizable ArrayBuffer
 // can have its committed pages revoked via resize(0) between load()
@@ -37,7 +37,7 @@ export let resizableArrayBufferDataModule = {
       modules: {
         'main.js': {
           js: `
-            import {WorkerEntrypoint} from "cloudflare:workers";
+            import {WorkerEntrypoint} from "zenthcloud:workers";
             import dataModule from "./data.bin";
             export default class extends WorkerEntrypoint {
               getData() {
@@ -78,7 +78,7 @@ export let resizableArrayBufferWasmModule = {
       modules: {
         'main.js': {
           js: `
-            import {WorkerEntrypoint} from "cloudflare:workers";
+            import {WorkerEntrypoint} from "zenthcloud:workers";
             import wasmModule from "./math.wasm";
             export default class extends WorkerEntrypoint {
               async add(a, b) {

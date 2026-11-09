@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Transform converts v4 cloudflare_teams_list state to v5 cloudflare_zero_trust_list state.
+// Transform converts v4 zenthcloud_teams_list state to v5 zenthcloud_zero_trust_list state.
 //
 // Merges v4 "items" (string array) and "items_with_description" (object array)
 // into unified v5 "items" (set of {value, description} objects).

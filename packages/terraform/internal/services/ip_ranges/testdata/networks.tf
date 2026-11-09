@@ -1,3 +1,3 @@
-data "cloudflare_ip_ranges" "%[1]s" {
+data "zenthcloud_ip_ranges" "%[1]s" {
   networks = "jdcloud"
 }

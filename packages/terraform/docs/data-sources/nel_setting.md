@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_nel_setting Data Source - Cloudflare"
+page_title: "zenthcloud_nel_setting Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zone Settings Read
 ---
 
-# cloudflare_nel_setting (Data Source)
+# zenthcloud_nel_setting (Data Source)
 
 Accepted Permissions
 
@@ -15,7 +15,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_nel_setting" "example_nel_setting" {
+data "zenthcloud_nel_setting" "example_nel_setting" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```
@@ -39,6 +39,6 @@ data "cloudflare_nel_setting" "example_nel_setting" {
 
 Read-Only:
 
-- `enabled` (Boolean) Whether Network Error Logging is enabled for the zone. When enabled, browsers report network errors to Cloudflare's NEL endpoint.
+- `enabled` (Boolean) Whether Network Error Logging is enabled for the zone. When enabled, browsers report network errors to Zenthcloud's NEL endpoint.
 
 

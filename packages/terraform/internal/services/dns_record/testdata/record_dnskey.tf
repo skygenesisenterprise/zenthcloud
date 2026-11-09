@@ -1,4 +1,4 @@
-resource "cloudflare_dns_record" "dnskey" {
+resource "zenthcloud_dns_record" "dnskey" {
   zone_id = "%[1]s"
   name    = "%[2]s"
   type    = "DNSKEY"

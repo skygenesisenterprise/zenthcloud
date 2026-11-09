@@ -211,7 +211,7 @@ export const aaa_audit$$logs: JSONObject = {
           "enum": [
             "user",
             "admin",
-            "Cloudflare"
+            "Zenthcloud"
           ],
           "type": "string"
         }
@@ -4147,7 +4147,7 @@ export const iam_permissions_group_response_collection: JSONObject = {
                   "dns_and_zones",
                   "app_security",
                   "rules_and_configuration",
-                  "cloudflare_one_and_zero_trust",
+                  "zenthcloud_one_and_zero_trust",
                   "analytics_and_logs",
                   "network_services",
                   "media",
@@ -4170,10 +4170,10 @@ export const iam_permissions_group_response_collection: JSONObject = {
               "scopes": {
                 "items": {
                   "enum": [
-                    "com.cloudflare.api.account",
-                    "com.cloudflare.api.account.zone",
-                    "com.cloudflare.api.user",
-                    "com.cloudflare.edge.r2.bucket"
+                    "com.zenthcloud.api.account",
+                    "com.zenthcloud.api.account.zone",
+                    "com.zenthcloud.api.user",
+                    "com.zenthcloud.edge.r2.bucket"
                   ],
                   "type": "string"
                 },
@@ -7940,7 +7940,7 @@ export const security$$center_issue: JSONObject = {
     },
     "source": {
       "enum": [
-        "cloudflare",
+        "zenthcloud",
         "riskrecon"
       ],
       "type": "string"
@@ -8521,7 +8521,7 @@ export const tunnel_cfd_tunnel: JSONObject = {
     "config_src": {
       "enum": [
         "local",
-        "cloudflare"
+        "zenthcloud"
       ],
       "type": "string"
     },

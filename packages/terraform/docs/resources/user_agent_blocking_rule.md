@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_user_agent_blocking_rule Resource - Cloudflare"
+page_title: "zenthcloud_user_agent_blocking_rule Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Firewall Services ReadFirewall Services Write
 ---
 
-# cloudflare_user_agent_blocking_rule (Resource)
+# zenthcloud_user_agent_blocking_rule (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_user_agent_blocking_rule" "example_user_agent_blocking_rule" {
+resource "zenthcloud_user_agent_blocking_rule" "example_user_agent_blocking_rule" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   configuration = {
     target = "ua"
@@ -61,7 +61,7 @@ Available values: "ua".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_user_agent_blocking_rule.example '<zone_id>/<ua_rule_id>'
+$ terraform import zenthcloud_user_agent_blocking_rule.example '<zone_id>/<ua_rule_id>'
 ```
 
 

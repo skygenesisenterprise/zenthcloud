@@ -114,7 +114,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.token.create"
+            "com.zenthcloud.api.token.create"
           ]
         },
         "x-cfPlanAvailability": {
@@ -205,7 +205,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.token.delete"
+            "com.zenthcloud.api.token.delete"
           ]
         },
         "x-cfPlanAvailability": {
@@ -296,7 +296,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.token.read"
+            "com.zenthcloud.api.token.read"
           ]
         },
         "x-cfPlanAvailability": {
@@ -419,7 +419,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.token.list"
+            "com.zenthcloud.api.token.list"
           ]
         },
         "x-cfPlanAvailability": {
@@ -511,7 +511,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.token.update"
+            "com.zenthcloud.api.token.update"
           ]
         },
         "x-cfPlanAvailability": {
@@ -619,7 +619,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.token.update"
+            "com.zenthcloud.api.token.update"
           ]
         },
         "x-cfPlanAvailability": {

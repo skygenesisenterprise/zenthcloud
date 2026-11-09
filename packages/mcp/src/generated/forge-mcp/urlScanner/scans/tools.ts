@@ -10,7 +10,7 @@ export const tools: readonly Tool[] = [
   {
     name: "urlScanner_scans_bulkCreate",
     title: "Bulk create URL Scans",
-    description: "Submit URLs to scan. Check limits at https://developers.cloudflare.com/security-center/investigate/scan-limits/ and take into account scans submitted in bulk have lower priority and may take longer to finish.\n\nPOST /accounts/{account_id}/urlscanner/v2/bulk",
+    description: "Submit URLs to scan. Check limits at https://github.com/skygenesisenterprise/zenthcloud and take into account scans submitted in bulk have lower priority and may take longer to finish.\n\nPOST /accounts/{account_id}/urlscanner/v2/bulk",
     inputSchema: {
       type: "object",
       properties: {
@@ -286,7 +286,7 @@ export const tools: readonly Tool[] = [
   {
     name: "urlScanner_scans_create",
     title: "Create URL Scan",
-    description: "Submit a URL to scan. Check limits at https://developers.cloudflare.com/security-center/investigate/scan-limits/.\n\nPOST /accounts/{account_id}/urlscanner/v2/scan",
+    description: "Submit a URL to scan. Check limits at https://github.com/skygenesisenterprise/zenthcloud\n\nPOST /accounts/{account_id}/urlscanner/v2/scan",
     inputSchema: {
       type: "object",
       properties: {

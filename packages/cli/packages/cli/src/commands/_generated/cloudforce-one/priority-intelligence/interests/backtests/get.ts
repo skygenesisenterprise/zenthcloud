@@ -56,7 +56,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 						command:
 							"cf cloudforce-one priority-intelligence interests backtests get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/cloudforce-one/v2/priority-intelligence/interests/backtests/${argv["backtest-id"] == null ? "<backtest-id>" : encodeURIComponent(String(argv["backtest-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/cloudforce-one/v2/priority-intelligence/interests/backtests/${argv["backtest-id"] == null ? "<backtest-id>" : encodeURIComponent(String(argv["backtest-id"]))}`,
 						pathParams: { "backtest-id": String(argv["backtest-id"] ?? "") },
 						bodyKind: "none",
 					});

@@ -20,7 +20,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 zero-trust dex colos list\n\nList Cloudflare colos that account's devices were connected to during a time period, sorted by usage starting from the most used colo. Colos without traffic are also returned and sorted alphabetically."
+			"$0 zero-trust dex colos list\n\nList Zenthcloud colos that account's devices were connected to during a time period, sorted by usage starting from the most used colo. Colos without traffic are also returned and sorted alphabetically."
 		)
 		.option("from", {
 			type: "string",
@@ -37,7 +37,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("sort-by", {
 			type: "string",
 			description:
-				"Type of usage that colos should be sorted by. If unspecified, returns all Cloudflare colos sorted alphabetically.",
+				"Type of usage that colos should be sorted by. If unspecified, returns all Zenthcloud colos sorted alphabetically.",
 			choices: ["fleet-status-usage", "application-tests-usage"],
 		})
 		.option("dry-run", {
@@ -51,7 +51,7 @@ type Args = InferArgs<typeof builder>;
 
 const command: CommandModule<CommonYargsOptions, Args> = {
 	command: "list",
-	describe: "List Cloudflare colos",
+	describe: "List Zenthcloud colos",
 	builder,
 	handler: async (argv): Promise<void> =>
 		runWithTelemetry(
@@ -73,7 +73,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust dex colos list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/dex/colos`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/dex/colos`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_calls_sfu_app Resource - Cloudflare"
+page_title: "zenthcloud_calls_sfu_app Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Calls ReadCalls Write
 ---
 
-# cloudflare_calls_sfu_app (Resource)
+# zenthcloud_calls_sfu_app (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_calls_sfu_app" "example_calls_sfu_app" {
+resource "zenthcloud_calls_sfu_app" "example_calls_sfu_app" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name = "production-realtime-app"
 }
@@ -31,7 +31,7 @@ resource "cloudflare_calls_sfu_app" "example_calls_sfu_app" {
 
 ### Optional
 
-- `app_id` (String) A Cloudflare-generated unique identifier for a item.
+- `app_id` (String) A Zenthcloud-generated unique identifier for a item.
 - `name` (String) A short description of a Realtime SFU app, not shown to end users.
 
 ### Read-Only
@@ -39,7 +39,7 @@ resource "cloudflare_calls_sfu_app" "example_calls_sfu_app" {
 - `created` (String) The date and time the item was created.
 - `modified` (String) The date and time the item was last modified.
 - `secret` (String, Sensitive) Bearer token
-- `uid` (String) A Cloudflare-generated unique identifier for a item.
+- `uid` (String) A Zenthcloud-generated unique identifier for a item.
 
 ## Import
 

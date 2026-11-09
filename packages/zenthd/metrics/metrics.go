@@ -17,7 +17,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 
-	"github.com/cloudflare/cloudflared/diagnostic"
+	"github.com/zenthcloud/zenthcloudd/diagnostic"
 )
 
 const (
@@ -223,7 +223,7 @@ func ServeMetrics(
 func RegisterBuildInfo(buildType, buildTime, version string) {
 	buildInfo := prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
-			// Don't namespace build_info, since we want it to be consistent across all Cloudflare services
+			// Don't namespace build_info, since we want it to be consistent across all Zenthcloud services
 			Name: "build_info",
 			Help: "Build and version information",
 		},

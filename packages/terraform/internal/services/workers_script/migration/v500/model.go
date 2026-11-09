@@ -1,7 +1,7 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -11,8 +11,8 @@ import (
 // Source Models (Legacy Provider - v4.x)
 // ============================================================================
 
-// SourceWorkerScriptModel represents the v4 cloudflare_worker_script state (schema_version=0).
-// Resource type: cloudflare_worker_script (singular) or cloudflare_workers_script (plural)
+// SourceWorkerScriptModel represents the v4 zenthcloud_worker_script state (schema_version=0).
+// Resource type: zenthcloud_worker_script (singular) or zenthcloud_workers_script (plural)
 //
 // Key differences from v5:
 // - "name" field instead of "script_name"
@@ -107,7 +107,7 @@ type SourcePlacementModel struct {
 // Target Models (Current Provider - v5.x+)
 // ============================================================================
 
-// TargetWorkersScriptModel represents the v5 cloudflare_workers_script state.
+// TargetWorkersScriptModel represents the v5 zenthcloud_workers_script state.
 // Must match the current schema exactly for resp.TargetState.Set() to work.
 type TargetWorkersScriptModel struct {
 	ID               types.String                                           `tfsdk:"id"`

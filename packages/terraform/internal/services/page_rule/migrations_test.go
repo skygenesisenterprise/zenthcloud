@@ -12,17 +12,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
-// TestMigrateCloudflarePageRule_Basic tests the most fundamental
+// TestMigrateZenthcloudPageRule_Basic tests the most fundamental
 // page rule migration scenario with minimal configuration. This test ensures that:
 // 1. The actions block is converted to an attribute (actions {} → actions = {})
 // 2. Boolean string values are properly converted ("on" → true, "off" → false)
 // 3. State transformation handles schema_version reset to 0
 // 4. Resources remain functional after migration without requiring manual intervention
-func TestMigrateCloudflarePageRule_Basic(t *testing.T) {
+func TestMigrateZenthcloudPageRule_Basic(t *testing.T) {
 	testCases := []struct {
 		name     string
 		version  string
@@ -31,16 +31,16 @@ func TestMigrateCloudflarePageRule_Basic(t *testing.T) {
 		{
 			name:     "from_v4_52_1", // Last v4 release
 			version:  "4.52.1",
-			configFn: testAccCloudflarePageRuleMigrationConfigV4Basic,
+			configFn: testAccZenthcloudPageRuleMigrationConfigV4Basic,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-			zone := os.Getenv("CLOUDFLARE_DOMAIN")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+			zone := os.Getenv("ZENTHCLOUD_DOMAIN")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_page_rule." + rnd
+			resourceName := "zenthcloud_page_rule." + rnd
 			target := fmt.Sprintf("%s.%s/*", rnd, zone)
 			testConfig := tc.configFn(zoneID, target, rnd)
 			tmpDir := t.TempDir()
@@ -51,15 +51,15 @@ func TestMigrateCloudflarePageRule_Basic(t *testing.T) {
 					acctest.TestAccPreCheck_ZoneID(t)
 					acctest.TestAccPreCheck_Domain(t)
 				},
-				CheckDestroy: testAccCheckCloudflarePageRuleDestroy,
+				CheckDestroy: testAccCheckZenthcloudPageRuleDestroy,
 				WorkingDir:   tmpDir,
 				Steps: []resource.TestStep{
 					{
 						// Step 1: Create page rule with specific version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
+							"zenthcloud": {
 								VersionConstraint: tc.version,
-								Source:            "cloudflare/cloudflare",
+								Source:            "zenthcloud/zenthcloud",
 							},
 						},
 						Config: testConfig,
@@ -67,7 +67,7 @@ func TestMigrateCloudflarePageRule_Basic(t *testing.T) {
 							statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
 							statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("target"), knownvalue.StringExact(target)),
 							statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("status"), knownvalue.StringExact("active")),
-							// Note: priority is auto-managed by Cloudflare API, so we don't validate it
+							// Note: priority is auto-managed by Zenthcloud API, so we don't validate it
 						},
 					},
 					// Step 2: Migrate to v5 provider
@@ -97,9 +97,9 @@ func TestMigrateCloudflarePageRule_Basic(t *testing.T) {
 	}
 }
 
-// TestMigrateCloudflarePageRule_CacheDeceptionArmor tests migration of
+// TestMigrateZenthcloudPageRule_CacheDeceptionArmor tests migration of
 // cache deception armor settings, which is commonly used for security.
-func TestMigrateCloudflarePageRule_CacheDeceptionArmor(t *testing.T) {
+func TestMigrateZenthcloudPageRule_CacheDeceptionArmor(t *testing.T) {
 	testCases := []struct {
 		name     string
 		version  string
@@ -108,16 +108,16 @@ func TestMigrateCloudflarePageRule_CacheDeceptionArmor(t *testing.T) {
 		{
 			name:     "from_v4_52_1",
 			version:  "4.52.1",
-			configFn: testAccCloudflarePageRuleMigrationConfigV4CacheDeceptionArmor,
+			configFn: testAccZenthcloudPageRuleMigrationConfigV4CacheDeceptionArmor,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-			zone := os.Getenv("CLOUDFLARE_DOMAIN")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+			zone := os.Getenv("ZENTHCLOUD_DOMAIN")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_page_rule." + rnd
+			resourceName := "zenthcloud_page_rule." + rnd
 			target := fmt.Sprintf("*.%s.%s/*", rnd, zone)
 			testConfig := tc.configFn(zoneID, target, rnd)
 			tmpDir := t.TempDir()
@@ -128,21 +128,21 @@ func TestMigrateCloudflarePageRule_CacheDeceptionArmor(t *testing.T) {
 					acctest.TestAccPreCheck_ZoneID(t)
 					acctest.TestAccPreCheck_Domain(t)
 				},
-				CheckDestroy: testAccCheckCloudflarePageRuleDestroy,
+				CheckDestroy: testAccCheckZenthcloudPageRuleDestroy,
 				WorkingDir:   tmpDir,
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
+							"zenthcloud": {
 								VersionConstraint: tc.version,
-								Source:            "cloudflare/cloudflare",
+								Source:            "zenthcloud/zenthcloud",
 							},
 						},
 						Config: testConfig,
 						ConfigStateChecks: []statecheck.StateCheck{
 							statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
 							statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("target"), knownvalue.StringExact(target)),
-							// Note: priority is auto-managed by Cloudflare API, so we don't validate it
+							// Note: priority is auto-managed by Zenthcloud API, so we don't validate it
 						},
 					},
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, "v4", "v5", []statecheck.StateCheck{
@@ -169,9 +169,9 @@ func TestMigrateCloudflarePageRule_CacheDeceptionArmor(t *testing.T) {
 	}
 }
 
-// TestMigrateCloudflarePageRule_CacheKeyFields tests migration of
+// TestMigrateZenthcloudPageRule_CacheKeyFields tests migration of
 // cache key fields configuration, including the ignore → exclude/include transformation.
-func TestMigrateCloudflarePageRule_CacheKeyFields(t *testing.T) {
+func TestMigrateZenthcloudPageRule_CacheKeyFields(t *testing.T) {
 	testCases := []struct {
 		name     string
 		version  string
@@ -180,16 +180,16 @@ func TestMigrateCloudflarePageRule_CacheKeyFields(t *testing.T) {
 		{
 			name:     "from_v4_52_1",
 			version:  "4.52.1",
-			configFn: testAccCloudflarePageRuleMigrationConfigV4CacheKeyFields,
+			configFn: testAccZenthcloudPageRuleMigrationConfigV4CacheKeyFields,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-			zone := os.Getenv("CLOUDFLARE_DOMAIN")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+			zone := os.Getenv("ZENTHCLOUD_DOMAIN")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_page_rule." + rnd
+			resourceName := "zenthcloud_page_rule." + rnd
 			target := fmt.Sprintf("%s.%s/api/*", rnd, zone)
 			testConfig := tc.configFn(zoneID, target, rnd)
 			tmpDir := t.TempDir()
@@ -200,14 +200,14 @@ func TestMigrateCloudflarePageRule_CacheKeyFields(t *testing.T) {
 					acctest.TestAccPreCheck_ZoneID(t)
 					acctest.TestAccPreCheck_Domain(t)
 				},
-				CheckDestroy: testAccCheckCloudflarePageRuleDestroy,
+				CheckDestroy: testAccCheckZenthcloudPageRuleDestroy,
 				WorkingDir:   tmpDir,
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
+							"zenthcloud": {
 								VersionConstraint: tc.version,
-								Source:            "cloudflare/cloudflare",
+								Source:            "zenthcloud/zenthcloud",
 							},
 						},
 						Config: testConfig,
@@ -282,9 +282,9 @@ func TestMigrateCloudflarePageRule_CacheKeyFields(t *testing.T) {
 	}
 }
 
-// TestMigrateCloudflarePageRule_ForwardingURL tests migration of
+// TestMigrateZenthcloudPageRule_ForwardingURL tests migration of
 // forwarding URL configuration (redirect rules).
-func TestMigrateCloudflarePageRule_ForwardingURL(t *testing.T) {
+func TestMigrateZenthcloudPageRule_ForwardingURL(t *testing.T) {
 	testCases := []struct {
 		name     string
 		version  string
@@ -293,16 +293,16 @@ func TestMigrateCloudflarePageRule_ForwardingURL(t *testing.T) {
 		{
 			name:     "from_v4_52_1",
 			version:  "4.52.1",
-			configFn: testAccCloudflarePageRuleMigrationConfigV4ForwardingURL,
+			configFn: testAccZenthcloudPageRuleMigrationConfigV4ForwardingURL,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-			zone := os.Getenv("CLOUDFLARE_DOMAIN")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+			zone := os.Getenv("ZENTHCLOUD_DOMAIN")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_page_rule." + rnd
+			resourceName := "zenthcloud_page_rule." + rnd
 			target := fmt.Sprintf("%s.%s/old-path/*", rnd, zone)
 			testConfig := tc.configFn(zoneID, target, rnd)
 			tmpDir := t.TempDir()
@@ -313,14 +313,14 @@ func TestMigrateCloudflarePageRule_ForwardingURL(t *testing.T) {
 					acctest.TestAccPreCheck_ZoneID(t)
 					acctest.TestAccPreCheck_Domain(t)
 				},
-				CheckDestroy: testAccCheckCloudflarePageRuleDestroy,
+				CheckDestroy: testAccCheckZenthcloudPageRuleDestroy,
 				WorkingDir:   tmpDir,
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
+							"zenthcloud": {
 								VersionConstraint: tc.version,
-								Source:            "cloudflare/cloudflare",
+								Source:            "zenthcloud/zenthcloud",
 							},
 						},
 						Config: testConfig,
@@ -359,9 +359,9 @@ func TestMigrateCloudflarePageRule_ForwardingURL(t *testing.T) {
 	}
 }
 
-// TestMigrateCloudflarePageRule_CompleteSettings tests migration with
+// TestMigrateZenthcloudPageRule_CompleteSettings tests migration with
 // a comprehensive set of page rule settings including cache, security, and performance options.
-func TestMigrateCloudflarePageRule_CompleteSettings(t *testing.T) {
+func TestMigrateZenthcloudPageRule_CompleteSettings(t *testing.T) {
 	testCases := []struct {
 		name     string
 		version  string
@@ -370,16 +370,16 @@ func TestMigrateCloudflarePageRule_CompleteSettings(t *testing.T) {
 		{
 			name:     "from_v4_52_1",
 			version:  "4.52.1",
-			configFn: testAccCloudflarePageRuleMigrationConfigV4Complete,
+			configFn: testAccZenthcloudPageRuleMigrationConfigV4Complete,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-			zone := os.Getenv("CLOUDFLARE_DOMAIN")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+			zone := os.Getenv("ZENTHCLOUD_DOMAIN")
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_page_rule." + rnd
+			resourceName := "zenthcloud_page_rule." + rnd
 			target := fmt.Sprintf("%s.%s/assets/*", rnd, zone)
 			testConfig := tc.configFn(zoneID, target, rnd)
 			tmpDir := t.TempDir()
@@ -390,14 +390,14 @@ func TestMigrateCloudflarePageRule_CompleteSettings(t *testing.T) {
 					acctest.TestAccPreCheck_ZoneID(t)
 					acctest.TestAccPreCheck_Domain(t)
 				},
-				CheckDestroy: testAccCheckCloudflarePageRuleDestroy,
+				CheckDestroy: testAccCheckZenthcloudPageRuleDestroy,
 				WorkingDir:   tmpDir,
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
+							"zenthcloud": {
 								VersionConstraint: tc.version,
-								Source:            "cloudflare/cloudflare",
+								Source:            "zenthcloud/zenthcloud",
 							},
 						},
 						Config:                 testConfig,
@@ -458,9 +458,9 @@ func TestMigrateCloudflarePageRule_CompleteSettings(t *testing.T) {
 
 // V4 Configuration Functions
 
-func testAccCloudflarePageRuleMigrationConfigV4Basic(zoneID, target, rnd string) string {
+func testAccZenthcloudPageRuleMigrationConfigV4Basic(zoneID, target, rnd string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_page_rule" "%[3]s" {
+resource "zenthcloud_page_rule" "%[3]s" {
   zone_id  = "%[1]s"
   target   = "%[2]s"
   priority = 1
@@ -472,9 +472,9 @@ resource "cloudflare_page_rule" "%[3]s" {
 }`, zoneID, target, rnd)
 }
 
-func testAccCloudflarePageRuleMigrationConfigV4CacheDeceptionArmor(zoneID, target, rnd string) string {
+func testAccZenthcloudPageRuleMigrationConfigV4CacheDeceptionArmor(zoneID, target, rnd string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_page_rule" "%[3]s" {
+resource "zenthcloud_page_rule" "%[3]s" {
   zone_id  = "%[1]s"
   target   = "%[2]s"
   priority = 1
@@ -486,9 +486,9 @@ resource "cloudflare_page_rule" "%[3]s" {
 }`, zoneID, target, rnd)
 }
 
-func testAccCloudflarePageRuleMigrationConfigV4CacheKeyFields(zoneID, target, rnd string) string {
+func testAccZenthcloudPageRuleMigrationConfigV4CacheKeyFields(zoneID, target, rnd string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_page_rule" "%[3]s" {
+resource "zenthcloud_page_rule" "%[3]s" {
   zone_id  = "%[1]s"
   target   = "%[2]s"
   priority = 1
@@ -516,9 +516,9 @@ resource "cloudflare_page_rule" "%[3]s" {
 }`, zoneID, target, rnd)
 }
 
-func testAccCloudflarePageRuleMigrationConfigV4ForwardingURL(zoneID, target, rnd string) string {
+func testAccZenthcloudPageRuleMigrationConfigV4ForwardingURL(zoneID, target, rnd string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_page_rule" "%[3]s" {
+resource "zenthcloud_page_rule" "%[3]s" {
   zone_id  = "%[1]s"
   target   = "%[2]s"
   priority = 1
@@ -533,9 +533,9 @@ resource "cloudflare_page_rule" "%[3]s" {
 }`, zoneID, target, rnd)
 }
 
-func testAccCloudflarePageRuleMigrationConfigV4Complete(zoneID, target, rnd string) string {
+func testAccZenthcloudPageRuleMigrationConfigV4Complete(zoneID, target, rnd string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_page_rule" "%[3]s" {
+resource "zenthcloud_page_rule" "%[3]s" {
   zone_id  = "%[1]s"
   target   = "%[2]s"
   priority = 1
@@ -569,9 +569,9 @@ resource "cloudflare_page_rule" "%[3]s" {
 
 // V5 Configuration Functions
 
-func testAccCloudflarePageRuleMigrationConfigV5Basic(zoneID, target, rnd string) string {
+func testAccZenthcloudPageRuleMigrationConfigV5Basic(zoneID, target, rnd string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_page_rule" "%[3]s" {
+resource "zenthcloud_page_rule" "%[3]s" {
   zone_id  = "%[1]s"
   target   = "%[2]s"
   status   = "active"
@@ -582,9 +582,9 @@ resource "cloudflare_page_rule" "%[3]s" {
 }`, zoneID, target, rnd)
 }
 
-func testAccCloudflarePageRuleMigrationConfigV5CacheDeceptionArmor(zoneID, target, rnd string) string {
+func testAccZenthcloudPageRuleMigrationConfigV5CacheDeceptionArmor(zoneID, target, rnd string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_page_rule" "%[3]s" {
+resource "zenthcloud_page_rule" "%[3]s" {
   zone_id  = "%[1]s"
   target   = "%[2]s"
   status   = "active"
@@ -595,9 +595,9 @@ resource "cloudflare_page_rule" "%[3]s" {
 }`, zoneID, target, rnd)
 }
 
-func testAccCloudflarePageRuleMigrationConfigV5ForwardingURL(zoneID, target, rnd string) string {
+func testAccZenthcloudPageRuleMigrationConfigV5ForwardingURL(zoneID, target, rnd string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_page_rule" "%[3]s" {
+resource "zenthcloud_page_rule" "%[3]s" {
   zone_id  = "%[1]s"
   target   = "%[2]s"
   status   = "active"

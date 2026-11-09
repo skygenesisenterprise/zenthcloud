@@ -1,10 +1,10 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the MIT license found in the LICENSE.txt file or at:
 //     https://opensource.org/license/mit
 
-/// <reference types="@cloudflare/workers-types" />
+/// <reference types="@zenthcloud/workers-types" />
 import { expect, it, describe } from "vitest";
-import { RpcStub as NativeRpcStub, RpcTarget as NativeRpcTarget, env, DurableObject } from "cloudflare:workers";
+import { RpcStub as NativeRpcStub, RpcTarget as NativeRpcTarget, env, DurableObject } from "zenthcloud:workers";
 import { newHttpBatchRpcSession, newWebSocketRpcSession, RpcStub, RpcPromise, RpcTarget } from "../src/index-workers.js";
 import { v, wrapServerTarget, type ServiceValidator } from "../packages/capnweb-validate/src/internal/core.js";
 import { Counter, TestTarget } from "./test-util.js";

@@ -1,4 +1,4 @@
-import { APIError as WorkersUtilsAPIError } from "@cloudflare/workers-utils";
+import { APIError as WorkersUtilsAPIError } from "@zenthcloud/workers-utils";
 import type { SanitizedError } from "./types.js";
 import { ApiError } from "#api";
 

@@ -10,8 +10,8 @@ import (
 	"github.com/urfave/cli/v2"
 	yaml "gopkg.in/yaml.v3"
 
-	"github.com/cloudflare/cloudflared/config"
-	"github.com/cloudflare/cloudflared/ipaccess"
+	"github.com/zenthcloud/zenthcloudd/config"
+	"github.com/zenthcloud/zenthcloudd/ipaccess"
 )
 
 // Ensure that the nullable config from `config` package and the
@@ -271,7 +271,7 @@ ingress:
 
 func TestOriginRequestConfigDefaults(t *testing.T) {
 	validate := func(ing Ingress) {
-		// Rule 0 didn't override anything, so it inherits the cloudflared defaults
+		// Rule 0 didn't override anything, so it inherits the zenthcloudd defaults
 		actual0 := ing.Rules[0].Config
 		expected0 := OriginRequestConfig{
 			ConnectTimeout:       defaultHTTPConnectTimeout,

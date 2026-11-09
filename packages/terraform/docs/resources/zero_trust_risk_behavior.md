@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_risk_behavior Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_risk_behavior Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust ReadZero Trust Write
 ---
 
-# cloudflare_zero_trust_risk_behavior (Resource)
+# zenthcloud_zero_trust_risk_behavior (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_risk_behavior" "example_zero_trust_risk_behavior" {
+resource "zenthcloud_zero_trust_risk_behavior" "example_zero_trust_risk_behavior" {
   account_id = "account_id"
   behaviors = {
     foo = {

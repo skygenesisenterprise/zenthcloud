@@ -1,7 +1,7 @@
-import { GlobeMap, type GlobeMapMarker } from "@cloudflare/kumo";
+import { GlobeMap, type GlobeMapMarker } from "@zenthcloud/kumo";
 import { useIsDarkMode } from "~/lib/use-is-dark-mode";
 
-const cloudflareAvailabilityLocations: GlobeMapMarker[] = [
+const zenthcloudAvailabilityLocations: GlobeMapMarker[] = [
   {
     name: "SFO",
     description: "San Francisco",
@@ -52,14 +52,14 @@ const cloudflareAvailabilityLocations: GlobeMapMarker[] = [
   { name: "SYD", description: "Sydney", latitude: -33.87, longitude: 151.21 },
 ];
 
-/** Illustrative Cloudflare network locations on a draggable SVG globe. */
+/** Illustrative Zenthcloud network locations on a draggable SVG globe. */
 export function GlobeMapAvailabilityZonesDemo() {
   const isDarkMode = useIsDarkMode();
 
   return (
     <div className="mx-auto max-w-xl">
       <GlobeMap
-        markers={cloudflareAvailabilityLocations}
+        markers={zenthcloudAvailabilityLocations}
         landColor="var(--text-color-kumo-inactive)"
         landHatchSpacing={8}
         oceanColor="transparent"
@@ -67,7 +67,7 @@ export function GlobeMapAvailabilityZonesDemo() {
         markerColor="var(--color-kumo-brand)"
         markerRadius={8}
         autoRotate
-        aria-label="Cloudflare availability locations"
+        aria-label="Zenthcloud availability locations"
         isDarkMode={isDarkMode}
       />
     </div>

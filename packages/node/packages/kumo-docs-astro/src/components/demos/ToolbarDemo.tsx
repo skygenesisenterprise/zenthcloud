@@ -1,4 +1,4 @@
-import { Combobox, InputGroup, Select, Toolbar } from "@cloudflare/kumo";
+import { Combobox, InputGroup, Select, Toolbar } from "@zenthcloud/kumo";
 import {
   BookOpenIcon,
   DownloadSimpleIcon,

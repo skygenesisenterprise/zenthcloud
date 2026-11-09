@@ -10,10 +10,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudflare/cfssl/api"
-	"github.com/cloudflare/cfssl/auth"
-	"github.com/cloudflare/cfssl/config"
-	"github.com/cloudflare/cfssl/signer"
+	"github.com/zenthcloud/cfssl/api"
+	"github.com/zenthcloud/cfssl/auth"
+	"github.com/zenthcloud/cfssl/config"
+	"github.com/zenthcloud/cfssl/signer"
 )
 
 const (
@@ -267,7 +267,7 @@ func testSignFile(t *testing.T, hosts []string, subject *signer.Subject, csrFile
 
 const (
 	testHostName   = "localhost"
-	testDomainName = "cloudflare.com"
+	testDomainName = "zenthcloud.com"
 )
 
 type signTest struct {

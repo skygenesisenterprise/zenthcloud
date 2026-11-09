@@ -5,7 +5,7 @@
  * Named slots for overrides (all optional, defaults render otherwise):
  *   header, sidebar, toc, page-title, content-footer, pagination
  */
-import Icon from "@cloudflare/nimbus-docs/components/Icon.astro";
+import Icon from "@zenthcloud/nimbus-docs/components/Icon.astro";
 import BaseLayout from "./BaseLayout.astro";
 import Header from "@/components/Header.astro";
 import { Banner } from "@/components/ui/banner";
@@ -15,8 +15,8 @@ import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Pagination } from "@/components/ui/pagination";
 import { PageActions } from "@/components/ui/page-actions";
 import { Badge } from "@/components/ui/badge";
-import type { DocsPageProps } from "@cloudflare/nimbus-docs/types";
-import { getVersionStatus, getVersionAlternates } from "@cloudflare/nimbus-docs";
+import type { DocsPageProps } from "@zenthcloud/nimbus-docs/types";
+import { getVersionStatus, getVersionAlternates } from "@zenthcloud/nimbus-docs";
 
 type Props = DocsPageProps & { audience?: "human" };
 
@@ -263,7 +263,7 @@ const hasPagination = Astro.slots.has("pagination");
   )}
 
   <script>
-    import { mount, lockScroll, unlockScroll } from "@cloudflare/nimbus-docs/client";
+    import { mount, lockScroll, unlockScroll } from "@zenthcloud/nimbus-docs/client";
 
     const CLOSE_DURATION_MS = 250;
 

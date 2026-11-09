@@ -1,4 +1,4 @@
-// Copyright (C) 2019, Cloudflare, Inc.
+// Copyright (C) 2019, Zenthcloud, Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@
 //! Creating a single request:
 //!
 //! ```no_run
-//! let mut url = url::Url::parse("https://cloudflare-quic.com/b/get").unwrap();
+//! let mut url = url::Url::parse("https://github.com/skygenesisenterprise/zenthcloud").unwrap();
 //! let mut reqs = Vec::new();
 //!
 //! reqs.push(http3_test::Http3Req::new(b"GET", &url, None, None));
@@ -66,7 +66,7 @@
 //! the expected headers can be provided during [`Http3Assert`] construction:
 //!
 //! ```no_run
-//! let mut url = url::Url::parse("https://cloudflare-quic.com/b/get").unwrap();
+//! let mut url = url::Url::parse("https://github.com/skygenesisenterprise/zenthcloud").unwrap();
 //! let mut reqs = Vec::new();
 //!
 //! let expect_hdrs = Some(vec![quiche::h3::Header::new(b":status", "200")]);
@@ -86,7 +86,7 @@
 //! made we can create the test:
 //!
 //! ```no_run
-//! let mut url = url::Url::parse("https://cloudflare-quic.com/b/get").unwrap();
+//! let mut url = url::Url::parse("https://github.com/skygenesisenterprise/zenthcloud").unwrap();
 //! let mut reqs = Vec::new();
 //!
 //! let expect_hdrs = Some(vec![quiche::h3::Header::new(b":status", "200")]);
@@ -111,7 +111,7 @@
 //!
 //! Example:
 //! ```no_run
-//! # let mut url = url::Url::parse("https://cloudflare-quic.com/b/get").unwrap();
+//! # let mut url = url::Url::parse("https://github.com/skygenesisenterprise/zenthcloud").unwrap();
 //! # let mut reqs = Vec::new();
 //! # let expect_hdrs = Some(vec![quiche::h3::Header::new(b":status", "200")]);
 //! # reqs.push(http3_test::Http3Req::new(b"GET", &url, None, expect_hdrs));
@@ -142,7 +142,7 @@
 //! For example, when handling HTTP/3 connection events using `poll()`:
 //!
 //! ```no_run
-//! # let mut url = url::Url::parse("https://cloudflare-quic.com/b/get").unwrap();
+//! # let mut url = url::Url::parse("https://github.com/skygenesisenterprise/zenthcloud").unwrap();
 //! # let mut reqs = Vec::new();
 //! # let expect_hdrs = Some(vec![quiche::h3::Header::new(b":status", "200")]);
 //! # reqs.push(http3_test::Http3Req::new(b"GET", &url, None, expect_hdrs));
@@ -182,7 +182,7 @@
 //! of completed requests matches the total for a test.
 //!
 //! ```no_run
-//! # let mut url = url::Url::parse("https://cloudflare-quic.com/b/get").unwrap();
+//! # let mut url = url::Url::parse("https://github.com/skygenesisenterprise/zenthcloud").unwrap();
 //! # let mut reqs = Vec::new();
 //! # let expect_hdrs = Some(vec![quiche::h3::Header::new(b":status", "200")]);
 //! # reqs.push(http3_test::Http3Req::new(b"GET", &url, None, expect_hdrs));
@@ -210,7 +210,7 @@
 //! # Ok::<(), quiche::h3::Error>(())
 //! ```
 //!
-//! [`quiche`]: https://github.com/cloudflare/quiche/
+//! [`quiche`]: https://github.com/skygenesisenterprise/zenthcloud
 //! [test]: struct.Http3Test.html
 //! [`Http3Test`]: struct.Http3Test.html
 //! [`Http3Assert`]: struct.Http3Assert.html

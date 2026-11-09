@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf url-scanner responses get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/urlscanner/v2/responses/${argv["response-id"] == null ? "<response-id>" : encodeURIComponent(String(argv["response-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/urlscanner/v2/responses/${argv["response-id"] == null ? "<response-id>" : encodeURIComponent(String(argv["response-id"]))}`,
 						pathParams: { "response-id": String(argv["response-id"] ?? "") },
 						bodyKind: "none",
 					});

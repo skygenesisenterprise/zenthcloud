@@ -26,7 +26,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zones_originTlsComplianceModes_delete",
     title: "Delete Origin TLS Compliance Modes setting",
-    description: "Delete the Origin TLS Compliance Modes setting for the zone, removing any configured compliance constraint. After deletion, Cloudflare's default behavior applies (no compliance filtering of the key-exchange algorithm list sent to the origin).\n\nDELETE /zones/{zone_id}/settings/origin_tls_compliance_modes",
+    description: "Delete the Origin TLS Compliance Modes setting for the zone, removing any configured compliance constraint. After deletion, Zenthcloud's default behavior applies (no compliance filtering of the key-exchange algorithm list sent to the origin).\n\nDELETE /zones/{zone_id}/settings/origin_tls_compliance_modes",
     inputSchema: {
       type: "object",
       properties: {
@@ -135,7 +135,7 @@ export const tools: readonly Tool[] = [
           "properties": {
             "value": {
               "$ref": "#/$defs/cache-settings_origin_tls_compliance_modes_value",
-              "description": "List of TLS compliance modes that constrain the key-exchange algorithms Cloudflare may use when establishing the TLS connection to the zone's origin. Currently supported values are `fips` (FIPS-approved curves) and `pqh` (post-quantum hybrid). Future modes (e.g. `cnsa2`) may be added; clients should treat unknown values as opaque strings. Multiple modes are combined as the intersection of their permitted algorithm lists; selections whose intersection is empty are rejected. An empty list clears the constraint."
+              "description": "List of TLS compliance modes that constrain the key-exchange algorithms Zenthcloud may use when establishing the TLS connection to the zone's origin. Currently supported values are `fips` (FIPS-approved curves) and `pqh` (post-quantum hybrid). Future modes (e.g. `cnsa2`) may be added; clients should treat unknown values as opaque strings. Multiple modes are combined as the intersection of their permitted algorithm lists; selections whose intersection is empty are rejected. An empty list clears the constraint."
             }
           },
           "required": [
@@ -239,7 +239,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zones_originTlsComplianceModes_get",
     title: "Get Origin TLS Compliance Modes setting",
-    description: "Origin TLS Compliance Modes constrains the set of TLS key-exchange algorithms Cloudflare may use when establishing the TLS connection to the zone's origin. The value is a list of named compliance modes (currently `fips` and `pqh`). Multiple modes are combined as the intersection of their permitted algorithm lists. An empty list (or no rule configured) means no compliance constraint is applied.\n\nGET /zones/{zone_id}/settings/origin_tls_compliance_modes",
+    description: "Origin TLS Compliance Modes constrains the set of TLS key-exchange algorithms Zenthcloud may use when establishing the TLS connection to the zone's origin. The value is a list of named compliance modes (currently `fips` and `pqh`). Multiple modes are combined as the intersection of their permitted algorithm lists. An empty list (or no rule configured) means no compliance constraint is applied.\n\nGET /zones/{zone_id}/settings/origin_tls_compliance_modes",
     inputSchema: {
       type: "object",
       properties: {
@@ -342,7 +342,7 @@ export const tools: readonly Tool[] = [
           "properties": {
             "value": {
               "$ref": "#/$defs/cache-settings_origin_tls_compliance_modes_value",
-              "description": "List of TLS compliance modes that constrain the key-exchange algorithms Cloudflare may use when establishing the TLS connection to the zone's origin. Currently supported values are `fips` (FIPS-approved curves) and `pqh` (post-quantum hybrid). Future modes (e.g. `cnsa2`) may be added; clients should treat unknown values as opaque strings. Multiple modes are combined as the intersection of their permitted algorithm lists; selections whose intersection is empty are rejected. An empty list clears the constraint."
+              "description": "List of TLS compliance modes that constrain the key-exchange algorithms Zenthcloud may use when establishing the TLS connection to the zone's origin. Currently supported values are `fips` (FIPS-approved curves) and `pqh` (post-quantum hybrid). Future modes (e.g. `cnsa2`) may be added; clients should treat unknown values as opaque strings. Multiple modes are combined as the intersection of their permitted algorithm lists; selections whose intersection is empty are rejected. An empty list clears the constraint."
             }
           },
           "required": [

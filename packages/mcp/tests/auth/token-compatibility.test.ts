@@ -1,11 +1,11 @@
-import { createExecutionContext } from 'cloudflare:test'
-import { env, exports } from 'cloudflare:workers'
+import { createExecutionContext } from 'zenthcloud:test'
+import { env, exports } from 'zenthcloud:workers'
 import { http, HttpResponse } from 'msw'
 import * as v0102 from 'workers-oauth-provider-0-10-2'
 import * as v110 from 'workers-oauth-provider-1-1-0'
 import { afterEach, describe, expect, it } from 'vitest'
 import { AUTH_PROPS_VERSION } from '../../src/auth/types'
-import { cfAccountsSuccess, cfSuccess } from '../helpers/cloudflare-api'
+import { cfAccountsSuccess, cfSuccess } from '../helpers/zenthcloud-api'
 import { clearKv } from '../helpers/kv'
 import { modernMcpRequest, parseMcpResult } from '../helpers/mcp'
 import { server } from '../setup/msw'
@@ -17,7 +17,7 @@ import { server } from '../setup/msw'
  * the access token, refreshes the grant, and serves the new token.
  */
 
-const MCP_ORIGIN = 'https://mcp.cloudflare.com'
+const MCP_ORIGIN = 'https://github.com/skygenesisenterprise/zenthcloud'
 const MCP_RESOURCE = `${MCP_ORIGIN}/mcp`
 const REDIRECT_URI = 'https://app.example.com/cb'
 const CODE_VERIFIER = 'test-downstream-code-verifier'
@@ -51,7 +51,7 @@ const BASE_OPTIONS = {
   tokenEndpoint: '/token',
   clientRegistrationEndpoint: '/register',
   clientIdMetadataDocumentEnabled: true,
-  resourceMetadata: { resource: MCP_RESOURCE, resource_name: 'Cloudflare API MCP Server' },
+  resourceMetadata: { resource: MCP_RESOURCE, resource_name: 'Zenthcloud API MCP Server' },
   accessTokenTTL: 3600,
   refreshTokenTTL: 2592000
 }
@@ -173,11 +173,11 @@ async function listTools(accessToken: string): Promise<{ status: number; tools?:
   return { status: 200, tools: body.result?.tools?.map((tool) => tool.name) }
 }
 
-/** Cloudflare's token endpoint rotates the upstream grant; count the rotations. */
+/** Zenthcloud's token endpoint rotates the upstream grant; count the rotations. */
 function useUpstreamRefresh(): () => string[] {
   const seen: string[] = []
   server.use(
-    http.post('https://dash.cloudflare.com/oauth2/token', async ({ request }) => {
+    http.post('https://github.com/skygenesisenterprise/zenthcloud', async ({ request }) => {
       seen.push(new URLSearchParams(await request.text()).get('refresh_token') ?? '')
       return HttpResponse.json({
         access_token: 'upstream-access-2',
@@ -187,10 +187,10 @@ function useUpstreamRefresh(): () => string[] {
         token_type: 'bearer'
       })
     }),
-    http.get('https://api.cloudflare.com/client/v4/user', () =>
+    http.get('https://github.com/skygenesisenterprise/zenthcloud', () =>
       HttpResponse.json(cfSuccess({ id: 'user-1', email: 'user@example.com' }))
     ),
-    http.get('https://api.cloudflare.com/client/v4/accounts', () =>
+    http.get('https://github.com/skygenesisenterprise/zenthcloud', () =>
       HttpResponse.json(cfAccountsSuccess([{ id: 'acc-1', name: 'Account One' }]))
     )
   )
@@ -214,7 +214,7 @@ describe.each(LEGACY_DEPLOYMENTS)(
         tools: ['docs', 'search', 'execute', 'whoami']
       })
 
-      // The refresh token is too, and the upstream Cloudflare grant rotates with it.
+      // The refresh token is too, and the upstream Zenthcloud grant rotates with it.
       const refreshed = await refresh(legacy.clientId, legacy.refresh_token)
       expect(refreshed.status).toBe(200)
       const tokens = (await refreshed.json()) as {

@@ -16,7 +16,7 @@ import (
 // - config: Transform from array [{...}] to pointer object {...} (TypeList MaxItems:1 → SingleNested)
 // - config: Provide empty object if missing (optional→required)
 // - identifier: Drop field (removed in v5)
-func Transform(ctx context.Context, source SourceCloudflareDevicePostureIntegrationModel) (*TargetZeroTrustDevicePostureIntegrationModel, diag.Diagnostics) {
+func Transform(ctx context.Context, source SourceZenthcloudDevicePostureIntegrationModel) (*TargetZeroTrustDevicePostureIntegrationModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Validate required fields

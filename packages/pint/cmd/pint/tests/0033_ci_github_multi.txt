@@ -1,9 +1,9 @@
 http method github GET /api/v3/user 200 {"id":42,"login":"ci-user"}
-http method github GET /api/v3/repos/cloudflare/pint/pulls/1/reviews 200 []
-http method github POST /api/v3/repos/cloudflare/pint/pulls/1/reviews 200 {}
-http method github GET /api/v3/repos/cloudflare/pint/pulls/1/comments 200 []
-http method github GET /api/v3/repos/cloudflare/pint/issues/1/comments 200 []
-http method github POST /api/v3/repos/cloudflare/pint/pulls/1/comments 200 {}
+http method github GET /api/v3/repos/zenthcloud/pint/pulls/1/reviews 200 []
+http method github POST /api/v3/repos/zenthcloud/pint/pulls/1/reviews 200 {}
+http method github GET /api/v3/repos/zenthcloud/pint/pulls/1/comments 200 []
+http method github GET /api/v3/repos/zenthcloud/pint/issues/1/comments 200 []
+http method github POST /api/v3/repos/zenthcloud/pint/pulls/1/comments 200 {}
 http start github 127.0.0.1:6033
 
 mkdir testrepo
@@ -62,7 +62,7 @@ repository {
     baseuri   = "http://127.0.0.1:6033"
     uploaduri = "http://127.0.0.1:6033"
     timeout   = "10s"
-    owner     = "cloudflare"
+    owner     = "zenthcloud"
     repo      = "pint"
   }
 }
@@ -74,19 +74,19 @@ GET /api/v3/user
   Authorization: Bearer 12345
   X-Github-Api-Version: 2022-11-28
 
-GET /api/v3/repos/cloudflare/pint/pulls/1/comments
+GET /api/v3/repos/zenthcloud/pint/pulls/1/comments
   Accept: application/vnd.github.squirrel-girl-preview, application/vnd.github.comfort-fade-preview+json
   Accept-Encoding: gzip
   Authorization: Bearer 12345
   X-Github-Api-Version: 2022-11-28
 
-GET /api/v3/repos/cloudflare/pint/issues/1/comments
+GET /api/v3/repos/zenthcloud/pint/issues/1/comments
   Accept: application/vnd.github.squirrel-girl-preview
   Accept-Encoding: gzip
   Authorization: Bearer 12345
   X-Github-Api-Version: 2022-11-28
 
-POST /api/v3/repos/cloudflare/pint/pulls/1/comments
+POST /api/v3/repos/zenthcloud/pint/pulls/1/comments
   Accept: application/vnd.github.squirrel-girl-preview, application/vnd.github.comfort-fade-preview+json
   Accept-Encoding: gzip
   Authorization: Bearer 12345
@@ -94,7 +94,7 @@ POST /api/v3/repos/cloudflare/pint/pulls/1/comments
   X-Github-Api-Version: 2022-11-28
 --- BODY ---
 body: |-
-    :stop_sign: **Bug** reported by [pint](https://cloudflare.github.io/pint/) **alerts/template** check.
+    :stop_sign: **Bug** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **alerts/template** check.
 
     <details>
     <summary>template uses non-existent label</summary>
@@ -128,7 +128,7 @@ body: |-
 
     ------
 
-    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/alerts/template.html).
+    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 
     <!-- pint -->
 commit_id: <COMMIT ID>
@@ -137,7 +137,7 @@ line: 4
 side: RIGHT
 --- END ---
 
-POST /api/v3/repos/cloudflare/pint/pulls/1/comments
+POST /api/v3/repos/zenthcloud/pint/pulls/1/comments
   Accept: application/vnd.github.squirrel-girl-preview, application/vnd.github.comfort-fade-preview+json
   Accept-Encoding: gzip
   Authorization: Bearer 12345
@@ -145,7 +145,7 @@ POST /api/v3/repos/cloudflare/pint/pulls/1/comments
   X-Github-Api-Version: 2022-11-28
 --- BODY ---
 body: |-
-    :warning: **Warning** reported by [pint](https://cloudflare.github.io/pint/) **alerts/comparison** check.
+    :warning: **Warning** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **alerts/comparison** check.
 
     <details>
     <summary>always firing alert</summary>
@@ -178,7 +178,7 @@ body: |-
 
     ------
 
-    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/alerts/comparison.html).
+    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 
     <!-- pint -->
 commit_id: <COMMIT ID>
@@ -187,13 +187,13 @@ line: 2
 side: RIGHT
 --- END ---
 
-GET /api/v3/repos/cloudflare/pint/pulls/1/reviews
+GET /api/v3/repos/zenthcloud/pint/pulls/1/reviews
   Accept: application/vnd.github.v3+json
   Accept-Encoding: gzip
   Authorization: Bearer 12345
   X-Github-Api-Version: 2022-11-28
 
-POST /api/v3/repos/cloudflare/pint/pulls/1/reviews
+POST /api/v3/repos/zenthcloud/pint/pulls/1/reviews
   Accept: application/vnd.github.v3+json
   Accept-Encoding: gzip
   Authorization: Bearer 12345
@@ -202,7 +202,7 @@ POST /api/v3/repos/cloudflare/pint/pulls/1/reviews
 --- BODY ---
 commit_id: <COMMIT ID>
 body: |+
-    ### This pull request was validated by [pint](https://github.com/cloudflare/pint).
+    ### This pull request was validated by [pint](https://github.com/skygenesisenterprise/zenthcloud).
     :heavy_exclamation_mark:	Problems found.
     | Severity | Number of problems |
     | --- | --- |

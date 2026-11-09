@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_stream_live_input Data Source - Cloudflare"
+page_title: "zenthcloud_stream_live_input Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Stream ReadStream Write
 ---
 
-# cloudflare_stream_live_input (Data Source)
+# zenthcloud_stream_live_input (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_stream_live_input" "example_stream_live_input" {
+data "zenthcloud_stream_live_input" "example_stream_live_input" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   live_input_identifier = "66be4bf738797e01e1fca35a7bdecdcd"
 }
@@ -40,7 +40,7 @@ data "cloudflare_stream_live_input" "example_stream_live_input" {
 - `modified` (String) The date and time the live input was last modified.
 - `playback` (Attributes) Details for playing a live input's broadcast using the HLS or DASH manifests. URLs reference the live input ID. (see [below for nested schema](#nestedatt--playback))
 - `prefer_low_latency` (Boolean) When enabled, the live stream is delivered using Low-Latency HLS (LL-HLS), reducing glass-to-glass latency for viewers at the cost of reduced player compatibility.
-- `recording` (Attributes) Records the input to a Cloudflare Stream video. Behavior depends on the mode. In most cases, the video will initially be viewable as a live video and transition to on-demand after a condition is satisfied. (see [below for nested schema](#nestedatt--recording))
+- `recording` (Attributes) Records the input to a Zenthcloud Stream video. Behavior depends on the mode. In most cases, the video will initially be viewable as a live video and transition to on-demand after a condition is satisfied. (see [below for nested schema](#nestedatt--recording))
 - `rtmps` (Attributes) Details for streaming to an live input using RTMPS. (see [below for nested schema](#nestedatt--rtmps))
 - `rtmps_playback` (Attributes) Details for playback from an live input using RTMPS. (see [below for nested schema](#nestedatt--rtmps_playback))
 - `srt` (Attributes) Details for streaming to a live input using SRT. (see [below for nested schema](#nestedatt--srt))

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_leaked_credential_check_rules Data Source - Cloudflare"
+page_title: "zenthcloud_leaked_credential_check_rules Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account WAF ReadAccount WAF WriteZone WAF ReadZone WAF Write
 ---
 
-# cloudflare_leaked_credential_check_rules (Data Source)
+# zenthcloud_leaked_credential_check_rules (Data Source)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_leaked_credential_check_rules" "example_leaked_credential_check_rules" {
+data "zenthcloud_leaked_credential_check_rules" "example_leaked_credential_check_rules" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```

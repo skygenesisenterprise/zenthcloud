@@ -4,22 +4,22 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccCloudflareZone_NameLookup(t *testing.T) {
+func TestAccZenthcloudZone_NameLookup(t *testing.T) {
 	t.Parallel()
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("data.cloudflare_zone.%s", rnd)
+	name := fmt.Sprintf("data.zenthcloud_zone.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareZoneConfigBasic(rnd),
+				Config: testAccZenthcloudZoneConfigBasic(rnd),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "name", "terraform.cfapi.net"),
 					resource.TestCheckResourceAttr(name, "status", "active"),
@@ -29,9 +29,9 @@ func TestAccCloudflareZone_NameLookup(t *testing.T) {
 	})
 }
 
-func testAccCloudflareZoneConfigBasic(rnd string) string {
+func testAccZenthcloudZoneConfigBasic(rnd string) string {
 	return fmt.Sprintf(`
-data "cloudflare_zone" "%[1]s" {
+data "zenthcloud_zone" "%[1]s" {
   filter = {
   	name = "terraform.cfapi.net"
   }

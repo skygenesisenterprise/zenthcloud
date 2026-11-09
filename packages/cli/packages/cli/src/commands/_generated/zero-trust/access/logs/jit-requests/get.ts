@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust access logs jit-requests get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/access/logs/jit_requests/${argv["knock-request-id"] == null ? "<knock-request-id>" : encodeURIComponent(String(argv["knock-request-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/access/logs/jit_requests/${argv["knock-request-id"] == null ? "<knock-request-id>" : encodeURIComponent(String(argv["knock-request-id"]))}`,
 						pathParams: {
 							"knock-request-id": String(argv["knock-request-id"] ?? ""),
 						},

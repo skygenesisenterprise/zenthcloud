@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_byo_ip_prefix Resource - Cloudflare"
+page_title: "zenthcloud_byo_ip_prefix Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   IP Prefixes: BGP On Demand ReadIP Prefixes: BGP On Demand WriteIP Prefixes: ReadIP Prefixes: WriteMagic Transit ReadMagic Transit Write
 ---
 
-# cloudflare_byo_ip_prefix (Resource)
+# zenthcloud_byo_ip_prefix (Resource)
 
 Accepted Permissions
 
@@ -20,7 +20,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_byo_ip_prefix" "example_byo_ip_prefix" {
+resource "zenthcloud_byo_ip_prefix" "example_byo_ip_prefix" {
   account_id = "258def64c72dae45f3e4c8516e2111f2"
   asn = 13335
   cidr = "192.0.2.0/24"
@@ -35,13 +35,13 @@ resource "cloudflare_byo_ip_prefix" "example_byo_ip_prefix" {
 
 ### Required
 
-- `account_id` (String) Identifier of a Cloudflare account.
+- `account_id` (String) Identifier of a Zenthcloud account.
 - `asn` (Number) Autonomous System Number (ASN) the prefix will be advertised under.
 - `cidr` (String) IP Prefix in Classless Inter-Domain Routing format.
 
 ### Optional
 
-- `delegate_loa_creation` (Boolean) Whether Cloudflare is allowed to generate the LOA document on behalf of the prefix owner.
+- `delegate_loa_creation` (Boolean) Whether Zenthcloud is allowed to generate the LOA document on behalf of the prefix owner.
 - `description` (String) Description of the prefix.
 - `loa_document_id` (String) Identifier for the uploaded LOA document.
 
@@ -65,7 +65,7 @@ resource "cloudflare_byo_ip_prefix" "example_byo_ip_prefix" {
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_byo_ip_prefix.example '<account_id>/<prefix_id>'
+$ terraform import zenthcloud_byo_ip_prefix.example '<account_id>/<prefix_id>'
 ```
 
 

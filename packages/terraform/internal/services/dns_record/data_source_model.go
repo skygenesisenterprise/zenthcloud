@@ -5,10 +5,10 @@ package dns_record
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/dns"
-	"github.com/cloudflare/cloudflare-go/v7/shared"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/dns"
+	"github.com/zenthcloud/zenthcloud-go/v7/shared"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -47,11 +47,11 @@ func (m *DNSRecordDataSourceModel) toReadParams(_ context.Context) (params dns.R
 	params = dns.RecordGetParams{}
 
 	if !m.ZoneID.IsNull() {
-		params.ZoneID = cloudflare.F(m.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(m.ZoneID.ValueString())
 	}
 
 	if !m.IncludeShadowMetadata.IsNull() {
-		params.IncludeShadowMetadata = cloudflare.F(m.IncludeShadowMetadata.ValueBool())
+		params.IncludeShadowMetadata = zenthcloud.F(m.IncludeShadowMetadata.ValueBool())
 	}
 
 	return
@@ -61,113 +61,113 @@ func (m *DNSRecordDataSourceModel) toListParams(_ context.Context) (params dns.R
 	params = dns.RecordListParams{}
 
 	if !m.ZoneID.IsNull() {
-		params.ZoneID = cloudflare.F(m.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(m.ZoneID.ValueString())
 	}
 	if m.Filter.Comment != nil {
 		paramsComment := dns.RecordListParamsComment{}
 		if !m.Filter.Comment.Absent.IsNull() {
-			paramsComment.Absent = cloudflare.F(m.Filter.Comment.Absent.ValueString())
+			paramsComment.Absent = zenthcloud.F(m.Filter.Comment.Absent.ValueString())
 		}
 		if !m.Filter.Comment.Contains.IsNull() {
-			paramsComment.Contains = cloudflare.F(m.Filter.Comment.Contains.ValueString())
+			paramsComment.Contains = zenthcloud.F(m.Filter.Comment.Contains.ValueString())
 		}
 		if !m.Filter.Comment.Endswith.IsNull() {
-			paramsComment.Endswith = cloudflare.F(m.Filter.Comment.Endswith.ValueString())
+			paramsComment.Endswith = zenthcloud.F(m.Filter.Comment.Endswith.ValueString())
 		}
 		if !m.Filter.Comment.Exact.IsNull() {
-			paramsComment.Exact = cloudflare.F(m.Filter.Comment.Exact.ValueString())
+			paramsComment.Exact = zenthcloud.F(m.Filter.Comment.Exact.ValueString())
 		}
 		if !m.Filter.Comment.Present.IsNull() {
-			paramsComment.Present = cloudflare.F(m.Filter.Comment.Present.ValueString())
+			paramsComment.Present = zenthcloud.F(m.Filter.Comment.Present.ValueString())
 		}
 		if !m.Filter.Comment.Startswith.IsNull() {
-			paramsComment.Startswith = cloudflare.F(m.Filter.Comment.Startswith.ValueString())
+			paramsComment.Startswith = zenthcloud.F(m.Filter.Comment.Startswith.ValueString())
 		}
-		params.Comment = cloudflare.F(paramsComment)
+		params.Comment = zenthcloud.F(paramsComment)
 	}
 	if m.Filter.Content != nil {
 		paramsContent := dns.RecordListParamsContent{}
 		if !m.Filter.Content.Contains.IsNull() {
-			paramsContent.Contains = cloudflare.F(m.Filter.Content.Contains.ValueString())
+			paramsContent.Contains = zenthcloud.F(m.Filter.Content.Contains.ValueString())
 		}
 		if !m.Filter.Content.Endswith.IsNull() {
-			paramsContent.Endswith = cloudflare.F(m.Filter.Content.Endswith.ValueString())
+			paramsContent.Endswith = zenthcloud.F(m.Filter.Content.Endswith.ValueString())
 		}
 		if !m.Filter.Content.Exact.IsNull() {
-			paramsContent.Exact = cloudflare.F(m.Filter.Content.Exact.ValueString())
+			paramsContent.Exact = zenthcloud.F(m.Filter.Content.Exact.ValueString())
 		}
 		if !m.Filter.Content.Startswith.IsNull() {
-			paramsContent.Startswith = cloudflare.F(m.Filter.Content.Startswith.ValueString())
+			paramsContent.Startswith = zenthcloud.F(m.Filter.Content.Startswith.ValueString())
 		}
-		params.Content = cloudflare.F(paramsContent)
+		params.Content = zenthcloud.F(paramsContent)
 	}
 	if !m.Filter.Direction.IsNull() {
-		params.Direction = cloudflare.F(shared.SortDirection(m.Filter.Direction.ValueString()))
+		params.Direction = zenthcloud.F(shared.SortDirection(m.Filter.Direction.ValueString()))
 	}
 	if !m.IncludeShadowMetadata.IsNull() {
-		params.IncludeShadowMetadata = cloudflare.F(m.IncludeShadowMetadata.ValueBool())
+		params.IncludeShadowMetadata = zenthcloud.F(m.IncludeShadowMetadata.ValueBool())
 	}
 	if !m.Filter.Match.IsNull() {
-		params.Match = cloudflare.F(dns.RecordListParamsMatch(m.Filter.Match.ValueString()))
+		params.Match = zenthcloud.F(dns.RecordListParamsMatch(m.Filter.Match.ValueString()))
 	}
 	if m.Filter.Name != nil {
 		paramsName := dns.RecordListParamsName{}
 		if !m.Filter.Name.Contains.IsNull() {
-			paramsName.Contains = cloudflare.F(m.Filter.Name.Contains.ValueString())
+			paramsName.Contains = zenthcloud.F(m.Filter.Name.Contains.ValueString())
 		}
 		if !m.Filter.Name.Endswith.IsNull() {
-			paramsName.Endswith = cloudflare.F(m.Filter.Name.Endswith.ValueString())
+			paramsName.Endswith = zenthcloud.F(m.Filter.Name.Endswith.ValueString())
 		}
 		if !m.Filter.Name.Exact.IsNull() {
-			paramsName.Exact = cloudflare.F(m.Filter.Name.Exact.ValueString())
+			paramsName.Exact = zenthcloud.F(m.Filter.Name.Exact.ValueString())
 		}
 		if !m.Filter.Name.Startswith.IsNull() {
-			paramsName.Startswith = cloudflare.F(m.Filter.Name.Startswith.ValueString())
+			paramsName.Startswith = zenthcloud.F(m.Filter.Name.Startswith.ValueString())
 		}
-		params.Name = cloudflare.F(paramsName)
+		params.Name = zenthcloud.F(paramsName)
 	}
 	if !m.Filter.Order.IsNull() {
-		params.Order = cloudflare.F(dns.RecordListParamsOrder(m.Filter.Order.ValueString()))
+		params.Order = zenthcloud.F(dns.RecordListParamsOrder(m.Filter.Order.ValueString()))
 	}
 	if !m.Filter.Proxied.IsNull() {
-		params.Proxied = cloudflare.F(m.Filter.Proxied.ValueBool())
+		params.Proxied = zenthcloud.F(m.Filter.Proxied.ValueBool())
 	}
 	if !m.Filter.Search.IsNull() {
-		params.Search = cloudflare.F(m.Filter.Search.ValueString())
+		params.Search = zenthcloud.F(m.Filter.Search.ValueString())
 	}
 	if !m.Filter.ShadowedByName.IsNull() {
-		params.ShadowedByName = cloudflare.F(m.Filter.ShadowedByName.ValueString())
+		params.ShadowedByName = zenthcloud.F(m.Filter.ShadowedByName.ValueString())
 	}
 	if !m.Filter.ShadowingName.IsNull() {
-		params.ShadowingName = cloudflare.F(m.Filter.ShadowingName.ValueString())
+		params.ShadowingName = zenthcloud.F(m.Filter.ShadowingName.ValueString())
 	}
 	if m.Filter.Tag != nil {
 		paramsTag := dns.RecordListParamsTag{}
 		if !m.Filter.Tag.Absent.IsNull() {
-			paramsTag.Absent = cloudflare.F(m.Filter.Tag.Absent.ValueString())
+			paramsTag.Absent = zenthcloud.F(m.Filter.Tag.Absent.ValueString())
 		}
 		if !m.Filter.Tag.Contains.IsNull() {
-			paramsTag.Contains = cloudflare.F(m.Filter.Tag.Contains.ValueString())
+			paramsTag.Contains = zenthcloud.F(m.Filter.Tag.Contains.ValueString())
 		}
 		if !m.Filter.Tag.Endswith.IsNull() {
-			paramsTag.Endswith = cloudflare.F(m.Filter.Tag.Endswith.ValueString())
+			paramsTag.Endswith = zenthcloud.F(m.Filter.Tag.Endswith.ValueString())
 		}
 		if !m.Filter.Tag.Exact.IsNull() {
-			paramsTag.Exact = cloudflare.F(m.Filter.Tag.Exact.ValueString())
+			paramsTag.Exact = zenthcloud.F(m.Filter.Tag.Exact.ValueString())
 		}
 		if !m.Filter.Tag.Present.IsNull() {
-			paramsTag.Present = cloudflare.F(m.Filter.Tag.Present.ValueString())
+			paramsTag.Present = zenthcloud.F(m.Filter.Tag.Present.ValueString())
 		}
 		if !m.Filter.Tag.Startswith.IsNull() {
-			paramsTag.Startswith = cloudflare.F(m.Filter.Tag.Startswith.ValueString())
+			paramsTag.Startswith = zenthcloud.F(m.Filter.Tag.Startswith.ValueString())
 		}
-		params.Tag = cloudflare.F(paramsTag)
+		params.Tag = zenthcloud.F(paramsTag)
 	}
 	if !m.Filter.TagMatch.IsNull() {
-		params.TagMatch = cloudflare.F(dns.RecordListParamsTagMatch(m.Filter.TagMatch.ValueString()))
+		params.TagMatch = zenthcloud.F(dns.RecordListParamsTagMatch(m.Filter.TagMatch.ValueString()))
 	}
 	if !m.Filter.Type.IsNull() {
-		params.Type = cloudflare.F(dns.RecordListParamsType(m.Filter.Type.ValueString()))
+		params.Type = zenthcloud.F(dns.RecordListParamsType(m.Filter.Type.ValueString()))
 	}
 
 	return

@@ -1,10 +1,10 @@
-resource "cloudflare_load_balancer" "%[3]s" {
+resource "zenthcloud_load_balancer" "%[3]s" {
   zone_id          = "%[1]s"
   name             = "tf-testacc-lb-%[3]s.%[2]s"
   steering_policy  = "off"
   session_affinity = "none"
-  fallback_pool    = "${cloudflare_load_balancer_pool.%[3]s.id}"
+  fallback_pool    = "${zenthcloud_load_balancer_pool.%[3]s.id}"
   default_pools    = [
-    "${cloudflare_load_balancer_pool.%[3]s.id}"
+    "${zenthcloud_load_balancer_pool.%[3]s.id}"
   ]
 }

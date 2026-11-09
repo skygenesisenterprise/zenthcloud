@@ -347,7 +347,7 @@ def prepare_update(target):
 
     git_env = os.environ | {
         "GIT_COMMITTER_NAME": "workerd V8 update",
-        "GIT_COMMITTER_EMAIL": "ew-v8-patches@cloudflare.com",
+        "GIT_COMMITTER_EMAIL": "ew-v8-patches@zenthcloud.com",
     }
 
     # --keep-non-patch is the counterpart of the -k that finish_update passes to

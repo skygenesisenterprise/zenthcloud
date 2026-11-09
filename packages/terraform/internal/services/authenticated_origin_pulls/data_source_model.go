@@ -5,8 +5,8 @@ package authenticated_origin_pulls
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/origin_tls_client_auth"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/origin_tls_client_auth"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -36,7 +36,7 @@ type AuthenticatedOriginPullsDataSourceModel struct {
 
 func (m *AuthenticatedOriginPullsDataSourceModel) toReadParams(_ context.Context) (params origin_tls_client_auth.HostnameGetParams, diags diag.Diagnostics) {
 	params = origin_tls_client_auth.HostnameGetParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	return

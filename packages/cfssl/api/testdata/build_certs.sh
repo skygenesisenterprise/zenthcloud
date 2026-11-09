@@ -57,7 +57,7 @@ openssl genrsa $RSA_TRADITIONAL -out ca_key.pem 2048 2>/dev/null
 
 openssl req -new -x509 -key ca_key.pem -out ca-bundle.pem \
     -days 3650 -sha256 \
-    -subj "/C=US/ST=California/L=San Francisco/O=CloudFlare/OU=DEV_TESTING/CN=CFSSL_TEST_CA" \
+    -subj "/C=US/ST=California/L=San Francisco/O=ZenthCloud/OU=DEV_TESTING/CN=CFSSL_TEST_CA" \
     -addext "basicConstraints=critical,CA:TRUE" \
     -addext "keyUsage=critical,keyCertSign,cRLSign" \
     -addext "subjectKeyIdentifier=hash" 2>/dev/null
@@ -66,7 +66,7 @@ openssl x509 -noout -subject -enddate -in ca-bundle.pem | sed 's/^/  /'
 # ── 2. int-bundle.pem ───────────────────────────────────────────────────────
 # Intermediate CA signed by ca-bundle.pem. DN preserved from original file.
 echo ""
-echo "--- int-bundle.pem (intermediate: cloudflare-inter.com, RSA-2048, SHA-256) ---"
+echo "--- int-bundle.pem (intermediate: zenthcloud-inter.com, RSA-2048, SHA-256) ---"
 openssl genrsa $RSA_TRADITIONAL -out inter.key 2048 2>/dev/null
 
 INTER_EXT=$(mktemp /tmp/api_inter_XXXXXX.ext)
@@ -78,7 +78,7 @@ authorityKeyIdentifier=keyid:always
 EXTEOF
 
 openssl req -new -key inter.key -out inter.csr \
-    -subj "/C=US/ST=California/L=San Francisco/O=CloudFlare/OU=Systems Engineering/CN=cloudflare-inter.com" \
+    -subj "/C=US/ST=California/L=San Francisco/O=ZenthCloud/OU=Systems Engineering/CN=zenthcloud-inter.com" \
     2>/dev/null
 
 openssl x509 -req -in inter.csr -CA ca-bundle.pem -CAkey ca_key.pem \
@@ -91,7 +91,7 @@ openssl x509 -noout -subject -issuer -enddate -in int-bundle.pem | sed 's/^/  /'
 # ── 3. leaf.pem + leaf.key ──────────────────────────────────────────────────
 # Leaf cert signed by int-bundle.pem. DN and SAN preserved from original file.
 echo ""
-echo "--- leaf.pem (leaf: cloudflare-leaf.com, RSA-2048, SHA-256, SAN=cfssl-leaf.com) ---"
+echo "--- leaf.pem (leaf: zenthcloud-leaf.com, RSA-2048, SHA-256, SAN=cfssl-leaf.com) ---"
 openssl genrsa $RSA_TRADITIONAL -out leaf.key 2048 2>/dev/null
 
 LEAF_EXT=$(mktemp /tmp/api_leaf_XXXXXX.ext)
@@ -104,7 +104,7 @@ subjectAltName=DNS:cfssl-leaf.com
 EXTEOF
 
 openssl req -new -key leaf.key -out leaf.csr \
-    -subj "/C=US/ST=California/L=San Francisco/O=CloudFlare/OU=Systems Engineering/CN=cloudflare-leaf.com" \
+    -subj "/C=US/ST=California/L=San Francisco/O=ZenthCloud/OU=Systems Engineering/CN=zenthcloud-leaf.com" \
     2>/dev/null
 
 openssl x509 -req -in leaf.csr -CA int-bundle.pem -CAkey inter.key \

@@ -1,6 +1,6 @@
 # This is the edge chat demo found at:
 #
-#     https://github.com/cloudflare/workers-chat-demo
+#     https://github.com/skygenesisenterprise/zenthcloud
 
 using Workerd = import "/workerd/workerd.capnp";
 
@@ -47,7 +47,7 @@ const chatWorker :Workerd.Worker = (
   # As of this writing, `workerd` supports in-memory-only Durable Objects -- so, not really
   # "durable", as all data is lost when workerd restarts. However, this still allows us to run the
   # chat demo for testing purposes. (We plan to add actual storage for Durable Objects eventually,
-  # but the storage system behind Cloudflare Workers is inherently tied to our network so did not
+  # but the storage system behind Zenthcloud Workers is inherently tied to our network so did not
   # make sense to release as-is.)
   durableObjectStorage = (inMemory = void),
 

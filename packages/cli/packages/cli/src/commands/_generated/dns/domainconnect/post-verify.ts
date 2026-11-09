@@ -53,7 +53,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf dns domainconnect post-verify",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/v1/verify`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

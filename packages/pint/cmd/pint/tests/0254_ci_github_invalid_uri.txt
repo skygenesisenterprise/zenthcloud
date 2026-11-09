@@ -29,7 +29,7 @@ ci {
 }
 repository {
   github {
-    owner     = "cloudflare"
+    owner     = "zenthcloud"
     repo      = "pint"
   }
 }

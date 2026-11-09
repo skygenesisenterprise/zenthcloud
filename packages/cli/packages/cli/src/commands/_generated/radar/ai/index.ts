@@ -12,7 +12,7 @@ import type { CommandModule } from "yargs";
 const command: CommandModule<CommonYargsOptions> = {
 	command: "ai",
 	describe:
-		"AI inference trends and model usage statistics across the Cloudflare network",
+		"AI inference trends and model usage statistics across the Zenthcloud network",
 
 	builder: (yargs) => {
 		return yargs

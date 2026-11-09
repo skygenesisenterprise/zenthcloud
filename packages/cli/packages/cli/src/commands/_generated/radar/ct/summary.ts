@@ -137,7 +137,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("normalization", {
 			type: "string",
 			description:
-				"Normalization method applied to the results. Refer to [Normalization methods](https://developers.cloudflare.com/radar/concepts/normalization/).",
+				"Normalization method applied to the results. Refer to [Normalization methods](https://github.com/skygenesisenterprise/zenthcloud).",
 			choices: ["RAW_VALUES", "PERCENTAGE"],
 		})
 		.option("format", {
@@ -196,7 +196,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar ct summary",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/ct/summary/${argv["dimension"] == null ? "<dimension>" : encodeURIComponent(String(argv["dimension"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["dimension"] == null ? "<dimension>" : encodeURIComponent(String(argv["dimension"]))}`,
 						pathParams: { dimension: String(argv["dimension"] ?? "") },
 						query: queryParams,
 						bodyKind: "none",

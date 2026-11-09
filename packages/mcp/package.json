@@ -1,7 +1,7 @@
 {
-  "name": "cloudflare-mcp",
+  "name": "zenthcloud-mcp",
   "version": "0.1.0",
-  "description": "MCP server for the entire Cloudflare API using codemode",
+  "description": "MCP server for the entire Zenthcloud API using codemode",
   "type": "module",
   "scripts": {
     "dev": "wrangler dev -c wrangler.jsonc -c wrangler.forge-tools.jsonc",
@@ -26,15 +26,15 @@
   },
   "dependencies": {
     "@cfworker/json-schema": "^4.1.1",
-    "@cloudflare/workers-oauth-provider": "^1.2.3",
+    "@zenthcloud/workers-oauth-provider": "^1.2.3",
     "@modelcontextprotocol/server": "2.3.1",
     "hono": "^4.13.11",
     "yaml": "^2.9.1",
     "zod": "^4.6.6"
   },
   "devDependencies": {
-    "@cloudflare/forge": "https://pkg.pr.new/cloudflare/forge/@cloudflare/forge@0d1877431691b07cbe3b042a4b64cb0bd8e81c03",
-    "@cloudflare/vitest-plugin": "^1.4.9",
+    "@zenthcloud/forge": "https://github.com/skygenesisenterprise/zenthcloud",
+    "@zenthcloud/vitest-plugin": "^1.4.9",
     "@modelcontextprotocol/client": "2.3.1",
     "@types/node": "^25.0.6",
     "msw": "^2.14.6",
@@ -43,8 +43,8 @@
     "tsx": "^4.22.4",
     "typescript": "^5.7.0",
     "vitest": "^4.1.12",
-    "workers-oauth-provider-0-10-2": "npm:@cloudflare/workers-oauth-provider@^0.10.2",
-    "workers-oauth-provider-1-1-0": "npm:@cloudflare/workers-oauth-provider@^1.1.0",
+    "workers-oauth-provider-0-10-2": "npm:@zenthcloud/workers-oauth-provider@^0.10.2",
+    "workers-oauth-provider-1-1-0": "npm:@zenthcloud/workers-oauth-provider@^1.1.0",
     "wrangler": "^4.154.0"
   }
 }

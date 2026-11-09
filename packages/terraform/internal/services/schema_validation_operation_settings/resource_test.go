@@ -5,9 +5,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -18,13 +18,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_schema_validation_operation_settings", &resource.Sweeper{
-		Name: "cloudflare_schema_validation_operation_settings",
-		F:    testSweepCloudflareSchemaValidationOperationSettings,
+	resource.AddTestSweepers("zenthcloud_schema_validation_operation_settings", &resource.Sweeper{
+		Name: "zenthcloud_schema_validation_operation_settings",
+		F:    testSweepZenthcloudSchemaValidationOperationSettings,
 	})
 }
 
-func testSweepCloudflareSchemaValidationOperationSettings(r string) error {
+func testSweepZenthcloudSchemaValidationOperationSettings(r string) error {
 	ctx := context.Background()
 	// Schema Validation Operation Settings is per-operation configuration.
 	// Settings are tied to operations, not something that accumulates.
@@ -33,12 +33,12 @@ func testSweepCloudflareSchemaValidationOperationSettings(r string) error {
 	return nil
 }
 
-func TestAccCloudflarePerOperationSetting(t *testing.T) {
+func TestAccZenthcloudPerOperationSetting(t *testing.T) {
 	rndResourceName := utils.GenerateRandomResourceName()
 
 	// resourceID is resourceIdentifier . resourceName
-	resourceID := "cloudflare_schema_validation_operation_settings." + rndResourceName
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceID := "zenthcloud_schema_validation_operation_settings." + rndResourceName
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		IsUnitTest:               false,
@@ -47,7 +47,7 @@ func TestAccCloudflarePerOperationSetting(t *testing.T) {
 		Steps: []resource.TestStep{
 			// this sets up a schema and a block per-operation mitigation action (note: we're not testing log as it might require further permissions)
 			{
-				Config: testAccCloudflareSchemaValidationWithOperationMitigationAction(rndResourceName, zoneID, "block"),
+				Config: testAccZenthcloudSchemaValidationWithOperationMitigationAction(rndResourceName, zoneID, "block"),
 
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceID, consts.ZoneIDSchemaKey, zoneID),
@@ -60,7 +60,7 @@ func TestAccCloudflarePerOperationSetting(t *testing.T) {
 			},
 			// update to skip this operation
 			{
-				Config: testAccCloudflareSchemaValidationWithOperationMitigationAction(rndResourceName, zoneID, "none"),
+				Config: testAccZenthcloudSchemaValidationWithOperationMitigationAction(rndResourceName, zoneID, "none"),
 
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceID, consts.ZoneIDSchemaKey, zoneID),
@@ -75,6 +75,6 @@ func TestAccCloudflarePerOperationSetting(t *testing.T) {
 	})
 }
 
-func testAccCloudflareSchemaValidationWithOperationMitigationAction(resourceName string, zone string, action string) string {
+func testAccZenthcloudSchemaValidationWithOperationMitigationAction(resourceName string, zone string, action string) string {
 	return acctest.LoadTestCase("schema.tf", resourceName, zone, action)
 }

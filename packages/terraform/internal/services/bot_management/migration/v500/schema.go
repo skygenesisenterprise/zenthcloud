@@ -4,13 +4,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-// SourceCloudflareBotManagementSchema returns the source schema for legacy cloudflare_bot_management resource.
+// SourceZenthcloudBotManagementSchema returns the source schema for legacy zenthcloud_bot_management resource.
 // Schema version: 0 (SDKv2 provider - v4.x)
 //
 // This minimal schema is used only for reading v4 state during migration.
 // It includes only the properties needed for state parsing (Required, Optional, Computed).
 // Validators, PlanModifiers, and Descriptions are intentionally omitted.
-func SourceCloudflareBotManagementSchema() schema.Schema {
+func SourceZenthcloudBotManagementSchema() schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{

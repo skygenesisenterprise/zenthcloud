@@ -8,12 +8,12 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/zones"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/zones"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -29,7 +29,7 @@ func NewResource() resource.Resource {
 
 // ZoneHoldResource defines the resource implementation.
 type ZoneHoldResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *ZoneHoldResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -41,12 +41,12 @@ func (r *ZoneHoldResource) Configure(ctx context.Context, req resource.Configure
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -65,7 +65,7 @@ func (r *ZoneHoldResource) Create(ctx context.Context, req resource.CreateReques
 	}
 
 	params := zones.HoldNewParams{
-		ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 	}
 
 	dataBytes, err := data.MarshalJSON()
@@ -75,7 +75,7 @@ func (r *ZoneHoldResource) Create(ctx context.Context, req resource.CreateReques
 	}
 
 	if !data.IncludeSubdomains.IsNull() && !data.IncludeSubdomains.IsUnknown() {
-		params.IncludeSubdomains = cloudflare.F(data.IncludeSubdomains.ValueBool())
+		params.IncludeSubdomains = zenthcloud.F(data.IncludeSubdomains.ValueBool())
 	}
 
 	res := new(http.Response)
@@ -130,7 +130,7 @@ func (r *ZoneHoldResource) Update(ctx context.Context, req resource.UpdateReques
 	_, err = r.client.Zones.Holds.Edit(
 		ctx,
 		zones.HoldEditParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -166,7 +166,7 @@ func (r *ZoneHoldResource) Read(ctx context.Context, req resource.ReadRequest, r
 	_, err := r.client.Zones.Holds.Get(
 		ctx,
 		zones.HoldGetParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -202,11 +202,11 @@ func (r *ZoneHoldResource) Delete(ctx context.Context, req resource.DeleteReques
 	}
 
 	params := zones.HoldDeleteParams{
-		ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 	}
 
 	if !data.HoldAfter.IsNull() && !data.HoldAfter.IsUnknown() {
-		params.HoldAfter = cloudflare.F(data.HoldAfter.ValueString())
+		params.HoldAfter = zenthcloud.F(data.HoldAfter.ValueString())
 	}
 
 	_, err := r.client.Zones.Holds.Delete(
@@ -244,7 +244,7 @@ func (r *ZoneHoldResource) ImportState(ctx context.Context, req resource.ImportS
 	_, err := r.client.Zones.Holds.Get(
 		ctx,
 		zones.HoldGetParams{
-			ZoneID: cloudflare.F(path),
+			ZoneID: zenthcloud.F(path),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),

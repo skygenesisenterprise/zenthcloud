@@ -1,4 +1,4 @@
-resource "cloudflare_zero_trust_device_settings" "%[1]s" {
+resource "zenthcloud_zero_trust_device_settings" "%[1]s" {
   account_id = "%[2]s"
   disable_for_time = 20
   gateway_proxy_enabled = true

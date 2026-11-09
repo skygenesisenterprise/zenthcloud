@@ -21,7 +21,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 ssl mtls-certificates delete <mtls-certificate-id>\n\nDeletes the mTLS certificate unless the certificate is in use by one or more Cloudflare services."
+			"$0 ssl mtls-certificates delete <mtls-certificate-id>\n\nDeletes the mTLS certificate unless the certificate is in use by one or more Zenthcloud services."
 		)
 		.positional("mtls-certificate-id", {
 			type: "string",
@@ -63,7 +63,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf ssl mtls-certificates delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/mtls_certificates/${argv["mtls-certificate-id"] == null ? "<mtls-certificate-id>" : encodeURIComponent(String(argv["mtls-certificate-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/mtls_certificates/${argv["mtls-certificate-id"] == null ? "<mtls-certificate-id>" : encodeURIComponent(String(argv["mtls-certificate-id"]))}`,
 						pathParams: {
 							"mtls-certificate-id": String(argv["mtls-certificate-id"] ?? ""),
 						},

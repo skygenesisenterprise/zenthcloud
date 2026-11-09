@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/authenticated_origin_pulls_settings/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/authenticated_origin_pulls_settings/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -15,13 +15,13 @@ func TestTransform(t *testing.T) {
 
 	tests := []struct {
 		name           string
-		source         v500.SourceCloudflareAuthenticatedOriginPullsModel
+		source         v500.SourceZenthcloudAuthenticatedOriginPullsModel
 		expectedTarget v500.TargetAuthenticatedOriginPullsSettingsModel
 		expectError    bool
 	}{
 		{
 			name: "basic transformation - all fields present",
-			source: v500.SourceCloudflareAuthenticatedOriginPullsModel{
+			source: v500.SourceZenthcloudAuthenticatedOriginPullsModel{
 				ID:                                   types.StringValue("zone-123"),
 				ZoneID:                              types.StringValue("zone-123"),
 				Hostname:                            types.StringValue("example.com"),
@@ -37,7 +37,7 @@ func TestTransform(t *testing.T) {
 		},
 		{
 			name: "disabled state",
-			source: v500.SourceCloudflareAuthenticatedOriginPullsModel{
+			source: v500.SourceZenthcloudAuthenticatedOriginPullsModel{
 				ID:                                   types.StringValue("zone-456"),
 				ZoneID:                              types.StringValue("zone-456"),
 				Hostname:                            types.StringValue("test.example.com"),
@@ -53,7 +53,7 @@ func TestTransform(t *testing.T) {
 		},
 		{
 			name: "null optional fields",
-			source: v500.SourceCloudflareAuthenticatedOriginPullsModel{
+			source: v500.SourceZenthcloudAuthenticatedOriginPullsModel{
 				ID:                                   types.StringValue("zone-789"),
 				ZoneID:                              types.StringValue("zone-789"),
 				Hostname:                            types.StringNull(),
@@ -69,7 +69,7 @@ func TestTransform(t *testing.T) {
 		},
 		{
 			name: "unknown values",
-			source: v500.SourceCloudflareAuthenticatedOriginPullsModel{
+			source: v500.SourceZenthcloudAuthenticatedOriginPullsModel{
 				ID:                                   types.StringUnknown(),
 				ZoneID:                              types.StringValue("zone-999"),
 				Hostname:                            types.StringUnknown(),
@@ -106,7 +106,7 @@ func TestTransform(t *testing.T) {
 func TestTransform_FieldsDropped(t *testing.T) {
 	ctx := context.Background()
 
-	source := v500.SourceCloudflareAuthenticatedOriginPullsModel{
+	source := v500.SourceZenthcloudAuthenticatedOriginPullsModel{
 		ID:                                   types.StringValue("zone-123"),
 		ZoneID:                              types.StringValue("zone-123"),
 		Hostname:                            types.StringValue("should-be-dropped.example.com"),

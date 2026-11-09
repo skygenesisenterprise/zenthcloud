@@ -8,7 +8,7 @@ import (
 )
 
 // UpgradeFromV0 handles state upgrades from schema_version=0 to schema_version=500.
-// This is a no-op upgrade: cloudflare_queue_consumer is a v5-native resource with no v4
+// This is a no-op upgrade: zenthcloud_queue_consumer is a v5-native resource with no v4
 // predecessor. States at version=0 were created before explicit schema versioning was
 // applied to this resource. The schema is fully compatible — just copy state through.
 func UpgradeFromV0(

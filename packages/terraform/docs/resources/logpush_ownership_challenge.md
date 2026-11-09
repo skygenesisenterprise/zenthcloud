@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_logpush_ownership_challenge Resource - Cloudflare"
+page_title: "zenthcloud_logpush_ownership_challenge Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Logs Write
 ---
 
-# cloudflare_logpush_ownership_challenge (Resource)
+# zenthcloud_logpush_ownership_challenge (Resource)
 
 Accepted Permissions
 
@@ -15,7 +15,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_logpush_ownership_challenge" "example_logpush_ownership_challenge" {
+resource "zenthcloud_logpush_ownership_challenge" "example_logpush_ownership_challenge" {
   destination_conf = "s3://mybucket/logs?region=us-west-2"
   zone_id = "zone_id"
 }

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_dlp_sensitivity_level Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_dlp_sensitivity_level Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust ReadZero Trust Write
 ---
 
-# cloudflare_zero_trust_dlp_sensitivity_level (Resource)
+# zenthcloud_zero_trust_dlp_sensitivity_level (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_dlp_sensitivity_level" "example_zero_trust_dlp_sensitivity_level" {
+resource "zenthcloud_zero_trust_dlp_sensitivity_level" "example_zero_trust_dlp_sensitivity_level" {
   account_id = "account_id"
   sensitivity_group_id = "182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e"
   name = "name"
@@ -48,7 +48,7 @@ resource "cloudflare_zero_trust_dlp_sensitivity_level" "example_zero_trust_dlp_s
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_dlp_sensitivity_level.example '<account_id>/<sensitivity_group_id>/<sensitivity_level_id>'
+$ terraform import zenthcloud_zero_trust_dlp_sensitivity_level.example '<account_id>/<sensitivity_group_id>/<sensitivity_level_id>'
 ```
 
 

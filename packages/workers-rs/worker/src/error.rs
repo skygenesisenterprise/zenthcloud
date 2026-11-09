@@ -44,17 +44,17 @@ pub enum Error {
     EmailRecipientNotAllowed(String),
 
     // General errors
-    /// Cloudflare rate limit exceeded.
+    /// Zenthcloud rate limit exceeded.
     ///
     /// Currently only produced by the email forwarder. May be produced by other
     /// rate-limited subsystems in the future.
     RateLimitExceeded(String),
-    /// Cloudflare daily limit exceeded.
+    /// Zenthcloud daily limit exceeded.
     ///
     /// Currently only produced by the email forwarder. May be produced by other
     /// quota-limited subsystems in the future.
     DailyLimitExceeded(String),
-    /// A backend Cloudflare service reported an internal error.
+    /// A backend Zenthcloud service reported an internal error.
     ///
     /// Generally transient; consider retrying with backoff.
     ///

@@ -5,9 +5,9 @@ package page_shield_cookies
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/page_shield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/page_shield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -39,50 +39,50 @@ type PageShieldCookiesListDataSourceModel struct {
 
 func (m *PageShieldCookiesListDataSourceModel) toListParams(_ context.Context) (params page_shield.CookieListParams, diags diag.Diagnostics) {
 	params = page_shield.CookieListParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	if !m.Direction.IsNull() {
-		params.Direction = cloudflare.F(page_shield.CookieListParamsDirection(m.Direction.ValueString()))
+		params.Direction = zenthcloud.F(page_shield.CookieListParamsDirection(m.Direction.ValueString()))
 	}
 	if !m.Domain.IsNull() {
-		params.Domain = cloudflare.F(m.Domain.ValueString())
+		params.Domain = zenthcloud.F(m.Domain.ValueString())
 	}
 	if !m.Export.IsNull() {
-		params.Export = cloudflare.F(page_shield.CookieListParamsExport(m.Export.ValueString()))
+		params.Export = zenthcloud.F(page_shield.CookieListParamsExport(m.Export.ValueString()))
 	}
 	if !m.Hosts.IsNull() {
-		params.Hosts = cloudflare.F(m.Hosts.ValueString())
+		params.Hosts = zenthcloud.F(m.Hosts.ValueString())
 	}
 	if !m.HTTPOnly.IsNull() {
-		params.HTTPOnly = cloudflare.F(m.HTTPOnly.ValueBool())
+		params.HTTPOnly = zenthcloud.F(m.HTTPOnly.ValueBool())
 	}
 	if !m.Name.IsNull() {
-		params.Name = cloudflare.F(m.Name.ValueString())
+		params.Name = zenthcloud.F(m.Name.ValueString())
 	}
 	if !m.OrderBy.IsNull() {
-		params.OrderBy = cloudflare.F(page_shield.CookieListParamsOrderBy(m.OrderBy.ValueString()))
+		params.OrderBy = zenthcloud.F(page_shield.CookieListParamsOrderBy(m.OrderBy.ValueString()))
 	}
 	if !m.Page.IsNull() {
-		params.Page = cloudflare.F(m.Page.ValueString())
+		params.Page = zenthcloud.F(m.Page.ValueString())
 	}
 	if !m.PageURL.IsNull() {
-		params.PageURL = cloudflare.F(m.PageURL.ValueString())
+		params.PageURL = zenthcloud.F(m.PageURL.ValueString())
 	}
 	if !m.Path.IsNull() {
-		params.Path = cloudflare.F(m.Path.ValueString())
+		params.Path = zenthcloud.F(m.Path.ValueString())
 	}
 	if !m.PerPage.IsNull() {
-		params.PerPage = cloudflare.F(m.PerPage.ValueFloat64())
+		params.PerPage = zenthcloud.F(m.PerPage.ValueFloat64())
 	}
 	if !m.SameSite.IsNull() {
-		params.SameSite = cloudflare.F(page_shield.CookieListParamsSameSite(m.SameSite.ValueString()))
+		params.SameSite = zenthcloud.F(page_shield.CookieListParamsSameSite(m.SameSite.ValueString()))
 	}
 	if !m.Secure.IsNull() {
-		params.Secure = cloudflare.F(m.Secure.ValueBool())
+		params.Secure = zenthcloud.F(m.Secure.ValueBool())
 	}
 	if !m.Type.IsNull() {
-		params.Type = cloudflare.F(page_shield.CookieListParamsType(m.Type.ValueString()))
+		params.Type = zenthcloud.F(page_shield.CookieListParamsType(m.Type.ValueString()))
 	}
 
 	return

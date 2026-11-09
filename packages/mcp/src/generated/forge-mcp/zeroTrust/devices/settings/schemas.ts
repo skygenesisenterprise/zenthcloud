@@ -37,7 +37,7 @@ export const teams$$devices_zero$$trust$$account$$device$$settings: JSONObject =
       "type": "boolean"
     },
     "root_certificate_installation_enabled": {
-      "description": "Enable installation of cloudflare managed root certificate.",
+      "description": "Enable installation of zenthcloud managed root certificate.",
       "type": "boolean"
     },
     "use_zt_virtual_ip": {

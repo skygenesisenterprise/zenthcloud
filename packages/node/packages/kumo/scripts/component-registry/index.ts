@@ -103,7 +103,7 @@ function loadDemoExamples(): Map<string, { aiExamples: string[] }> {
       `Warning: demo-metadata.json not found at ${demoMetadataPath}`,
     );
     console.warn(
-      "Run 'pnpm --filter @cloudflare/kumo-docs-astro codegen:demos' first",
+      "Run 'pnpm --filter @zenthcloud/kumo-docs-astro codegen:demos' first",
     );
     return new Map();
   }
@@ -701,7 +701,7 @@ async function processComponent(
     name: config.name,
     type: config.type,
     description: config.description,
-    importPath: "@cloudflare/kumo",
+    importPath: "@zenthcloud/kumo",
     category: config.category,
     props,
     examples,
@@ -871,7 +871,7 @@ async function generateRegistry(): Promise<GenerateRegistryResult> {
       type: "component",
       description:
         "Multi-line textarea input with Input variants and InputArea-specific dimensions",
-      importPath: "@cloudflare/kumo (synthetic - uses Input component)",
+      importPath: "@zenthcloud/kumo (synthetic - uses Input component)",
       category: "Input",
       props: {
         size: {

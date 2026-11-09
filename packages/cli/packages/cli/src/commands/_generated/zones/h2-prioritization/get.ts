@@ -15,7 +15,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 zones h2-prioritization get\n\nHTTP/2 Prioritization controls the order in which assets are delivered to browsers. Cloudflare's HTTP/2 Prioritization overrides the default browser prioritization order, improving the loading performance of web pages."
+			"$0 zones h2-prioritization get\n\nHTTP/2 Prioritization controls the order in which assets are delivered to browsers. Zenthcloud's HTTP/2 Prioritization overrides the default browser prioritization order, improving the loading performance of web pages."
 		)
 		.option("dry-run", {
 			type: "boolean",
@@ -44,7 +44,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zones h2-prioritization get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/settings/h2_prioritization`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/settings/h2_prioritization`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 						},

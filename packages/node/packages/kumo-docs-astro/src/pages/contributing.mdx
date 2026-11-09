@@ -36,10 +36,10 @@ Recommended local setup:
 
 ### Repository Access and Branching
 
-Internal contributors normally clone and push directly to `cloudflare/kumo`:
+Internal contributors normally clone and push directly to `zenthcloud/kumo`:
 
 ```bash
-git clone https://github.com/cloudflare/kumo.git
+git clone https://github.com/skygenesisenterprise/zenthcloud
 git switch -c <branch-name>
 git push -u origin <branch-name>
 ```
@@ -59,7 +59,7 @@ Use this to decide where your change belongs:
 When adding a new **component**, scaffold it (do not create files manually):
 
 ```bash
-pnpm --filter @cloudflare/kumo new:component
+pnpm --filter @zenthcloud/kumo new:component
 ```
 
 ---
@@ -70,7 +70,7 @@ Run these in separate terminals:
 
 ```bash
 # Terminal 1: watch Kumo package output
-pnpm --filter @cloudflare/kumo dev
+pnpm --filter @zenthcloud/kumo dev
 
 # Terminal 2: docs site
 pnpm dev
@@ -109,20 +109,20 @@ Run these from repo root before opening or updating your PR:
 ```bash
 pnpm lint
 pnpm typecheck
-pnpm --filter @cloudflare/kumo test
+pnpm --filter @zenthcloud/kumo test
 ```
 
 If you changed exports/build behavior, also run:
 
 ```bash
-pnpm --filter @cloudflare/kumo build
+pnpm --filter @zenthcloud/kumo build
 ```
 
 Optional (when relevant):
 
 ```bash
 pnpm format
-pnpm --filter @cloudflare/kumo test:run
+pnpm --filter @zenthcloud/kumo test:run
 ```
 
 Windsurf and hooks catch additional issues, but you should still run checks locally before requesting review.
@@ -198,4 +198,4 @@ Common pitfalls to avoid:
 
 ## Related Docs
 
-Follow the [changeset guide](https://github.com/cloudflare/kumo/blob/main/.changeset/README.md) to document releasable library changes and see the [AGENTS.md](https://github.com/cloudflare/kumo/blob/main/packages/kumo/AGENTS.md) for conventions and patterns.
+Follow the [changeset guide](https://github.com/skygenesisenterprise/zenthcloud) to document releasable library changes and see the [AGENTS.md](https://github.com/skygenesisenterprise/zenthcloud) for conventions and patterns.

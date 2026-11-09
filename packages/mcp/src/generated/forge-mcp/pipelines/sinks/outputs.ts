@@ -4,26 +4,26 @@
 import type { JSONObject } from "@modelcontextprotocol/server";
 
 /**
- * The schema of `cloudflare-pipelines_SinkFormat` in responses.
+ * The schema of `zenthcloud-pipelines_SinkFormat` in responses.
  */
-export const cloudflare$$pipelines_SinkFormat: JSONObject = {
+export const zenthcloud$$pipelines_SinkFormat: JSONObject = {
   "oneOf": [
     {
-      "$ref": "#/$defs/cloudflare-pipelines_SinkJsonFormat"
+      "$ref": "#/$defs/zenthcloud-pipelines_SinkJsonFormat"
     },
     {
-      "$ref": "#/$defs/cloudflare-pipelines_SinkParquetFormat"
+      "$ref": "#/$defs/zenthcloud-pipelines_SinkParquetFormat"
     }
   ]
 };
 
 /**
- * The schema of `cloudflare-pipelines_SinkJsonFormat` in responses.
+ * The schema of `zenthcloud-pipelines_SinkJsonFormat` in responses.
  */
-export const cloudflare$$pipelines_SinkJsonFormat: JSONObject = {
+export const zenthcloud$$pipelines_SinkJsonFormat: JSONObject = {
   "allOf": [
     {
-      "$ref": "#/$defs/cloudflare-pipelines_JsonFormat"
+      "$ref": "#/$defs/zenthcloud-pipelines_JsonFormat"
     },
     {
       "properties": {
@@ -50,12 +50,12 @@ export const cloudflare$$pipelines_SinkJsonFormat: JSONObject = {
 };
 
 /**
- * The schema of `cloudflare-pipelines_SinkParquetFormat` in responses.
+ * The schema of `zenthcloud-pipelines_SinkParquetFormat` in responses.
  */
-export const cloudflare$$pipelines_SinkParquetFormat: JSONObject = {
+export const zenthcloud$$pipelines_SinkParquetFormat: JSONObject = {
   "allOf": [
     {
-      "$ref": "#/$defs/cloudflare-pipelines_ParquetFormat"
+      "$ref": "#/$defs/zenthcloud-pipelines_ParquetFormat"
     },
     {
       "properties": {
@@ -75,9 +75,9 @@ export const cloudflare$$pipelines_SinkParquetFormat: JSONObject = {
 };
 
 /**
- * The schema of `cloudflare-pipelines_r2Table` in responses.
+ * The schema of `zenthcloud-pipelines_r2Table` in responses.
  */
-export const cloudflare$$pipelines_r2Table: JSONObject = {
+export const zenthcloud$$pipelines_r2Table: JSONObject = {
   "properties": {
     "account_id": {
       "type": "string"
@@ -158,9 +158,9 @@ export const cloudflare$$pipelines_r2Table: JSONObject = {
 };
 
 /**
- * The schema of `cloudflare-pipelines_r2TablePublic` in responses.
+ * The schema of `zenthcloud-pipelines_r2TablePublic` in responses.
  */
-export const cloudflare$$pipelines_r2TablePublic: JSONObject = {
+export const zenthcloud$$pipelines_r2TablePublic: JSONObject = {
   "properties": {
     "account_id": {
       "type": "string"
@@ -225,9 +225,9 @@ export const cloudflare$$pipelines_r2TablePublic: JSONObject = {
 };
 
 /**
- * The schema of `cloudflare-pipelines_r2_data_catalogTable` in responses.
+ * The schema of `zenthcloud-pipelines_r2_data_catalogTable` in responses.
  */
-export const cloudflare$$pipelines_r2_data_catalogTable: JSONObject = {
+export const zenthcloud$$pipelines_r2_data_catalogTable: JSONObject = {
   "properties": {
     "account_id": {
       "type": "string"
@@ -269,9 +269,9 @@ export const cloudflare$$pipelines_r2_data_catalogTable: JSONObject = {
 };
 
 /**
- * The schema of `cloudflare-pipelines_r2_data_catalogTablePublic` in responses.
+ * The schema of `zenthcloud-pipelines_r2_data_catalogTablePublic` in responses.
  */
-export const cloudflare$$pipelines_r2_data_catalogTablePublic: JSONObject = {
+export const zenthcloud$$pipelines_r2_data_catalogTablePublic: JSONObject = {
   "properties": {
     "account_id": {
       "type": "string"

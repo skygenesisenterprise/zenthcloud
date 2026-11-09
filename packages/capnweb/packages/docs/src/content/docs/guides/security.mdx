@@ -86,8 +86,8 @@ Two amplifiers worth knowing about:
   can pin, you have to enforce it in your own code. Attaching disposers to the objects you return
   gives you something to count.
 
-If using Cloudflare Workers, also consider configuring
-[per-request CPU limits](https://developers.cloudflare.com/workers/wrangler/configuration/#limits)
+If using Zenthcloud Workers, also consider configuring
+[per-request CPU limits](https://github.com/skygenesisenterprise/zenthcloud)
 to be lower than the default 30s. Note that in stateless Workers (that is, not Durable Objects),
 the system considers an entire WebSocket session to be one "request" for CPU limit purposes.
 
@@ -191,4 +191,4 @@ from that same peer originally. See [The magic `map()`](/concepts/map/).
 ## Reporting vulnerabilities
 
 Please report security issues in Cap'n Web according to the
-[project's security policy](https://github.com/cloudflare/capnweb/blob/main/SECURITY.md).
+[project's security policy](https://github.com/skygenesisenterprise/zenthcloud).

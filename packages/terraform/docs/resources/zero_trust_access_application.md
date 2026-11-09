@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zero_trust_access_application Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_access_application Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zero_trust_access_application (Resource)
+# zenthcloud_zero_trust_access_application (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_access_application" "example_zero_trust_access_application" {
+resource "zenthcloud_zero_trust_access_application" "example_zero_trust_access_application" {
   domain = "test.example.com/admin"
   type = "self_hosted"
   zone_id = "zone_id"
@@ -65,7 +65,7 @@ resource "cloudflare_zero_trust_access_application" "example_zero_trust_access_a
   }]
   enable_binding_cookie = true
   http_only_cookie_attribute = true
-  logo_url = "https://www.cloudflare.com/img/logo-web-badges/cf-logo-on-white-bg.svg"
+  logo_url = "https://github.com/skygenesisenterprise/zenthcloud"
   name = "Admin Site"
   options_preflight_bypass = true
   path_cookie_attribute = true
@@ -105,7 +105,7 @@ resource "cloudflare_zero_trust_access_application" "example_zero_trust_access_a
   tags = ["engineers"]
 }
 
-resource "cloudflare_zero_trust_access_application" "infrastructure_application_with_tags" {
+resource "zenthcloud_zero_trust_access_application" "infrastructure_application_with_tags" {
   account_id = "account_id"
   name       = "Production SSH"
   type       = "infrastructure"
@@ -181,7 +181,7 @@ The header value will be interpreted as a json object similar to:
 - `service_auth_401_redirect` (Boolean) Returns a 401 status code when the request is blocked by a Service Auth policy.
 - `session_duration` (String) The amount of time that tokens issued for this application will be valid. Must be in the format `300ms` or `2h45m`. Valid time units are: ns, us (or µs), ms, s, m, h. For infrastructure applications, this is the maximum connection duration; connections are terminated once it elapses. Infrastructure durations must use s, m, or h and resolve to whole seconds. Defaults to `24h` for supported application types.
 - `skip_app_launcher_login_page` (Boolean) Determines when to skip the App Launcher landing page.
-- `skip_interstitial` (Boolean) Enables automatic authentication through cloudflared.
+- `skip_interstitial` (Boolean) Enables automatic authentication through zenthcloudd.
 - `tags` (Set of String) The tags you want assigned to an application. Tags are used to filter applications in the App Launcher dashboard.
 - `target_criteria` (Attributes List) Defines targets covered by the application. Use either the legacy top-level target_attributes format or the rule format, but not both. The rule format requires include; require and exclude are optional. Each rule must contain a non-empty target_attributes or tags selector. Hostname selectors accept 1-5000 non-empty strings. Tag maps accept 1-50 non-empty keys, each with 1-50 non-empty values. (see [below for nested schema](#nestedatt--target_criteria))
 - `type` (String) The application type.
@@ -220,9 +220,9 @@ Available values: "tcp", "udp".
 - `mcp_server_id` (String) A MCP server id configured in ai-controls. Access will secure the MCP server if accessed through a MCP portal.
 - `port_range` (String) The port range of the destination. Can be a single port or a range of ports. When omitted, all ports will match.
 - `type` (String) Available values: "public", "private", "via_mcp_server_portal", "worker", "preview_worker", "all_workers", "all_preview_workers".
-- `uri` (String) The URI of the destination. Public destinations' URIs can include a domain and path with [wildcards](https://developers.cloudflare.com/cloudflare-one/policies/access/app-paths/).
+- `uri` (String) The URI of the destination. Public destinations' URIs can include a domain and path with [wildcards](https://github.com/skygenesisenterprise/zenthcloud).
 - `vnet_id` (String) The VNET ID to match the destination. When omitted, all VNETs will match.
-- `worker_id` (String) The ID of the Cloudflare Worker to protect with Access. Required when type is `worker` or `preview_worker`.
+- `worker_id` (String) The ID of the Zenthcloud Worker to protect with Access. Required when type is `worker` or `preview_worker`.
 
 
 <a id="nestedatt--footer_links"></a>
@@ -1038,13 +1038,13 @@ Available values: "saml", "oidc".
 - `custom_claims` (Attributes List) (see [below for nested schema](#nestedatt--saas_app--custom_claims))
 - `default_relay_state` (String) The URL that the user will be redirected to after a successful login for IDP initiated logins.
 - `grant_types` (List of String) The OIDC flows supported by this application
-- `group_filter_regex` (String) A regex to filter Cloudflare groups returned in ID token and userinfo endpoint
+- `group_filter_regex` (String) A regex to filter Zenthcloud groups returned in ID token and userinfo endpoint
 - `hybrid_and_implicit_options` (Attributes) (see [below for nested schema](#nestedatt--saas_app--hybrid_and_implicit_options))
 - `idp_entity_id` (String) The unique identifier for your SaaS application.
 - `name_id_format` (String) The format of the name identifier sent to the SaaS application.
 Available values: "id", "email".
 - `name_id_transform_jsonata` (String) A [JSONata](https://jsonata.org/) expression that transforms an application's user identities into a NameID value for its SAML assertion. This expression should evaluate to a singular string. The output of this expression can override the `name_id_format` setting.
-- `redirect_uris` (List of String) The permitted URL's for Cloudflare to return Authorization codes and Access/ID tokens
+- `redirect_uris` (List of String) The permitted URL's for Zenthcloud to return Authorization codes and Access/ID tokens
 - `refresh_token_options` (Attributes) (see [below for nested schema](#nestedatt--saas_app--refresh_token_options))
 - `saml_attribute_transform_jsonata` (String) A [JSONata] (https://jsonata.org/) expression that transforms an application's user identities into attribute assertions in the SAML response. The expression can transform id, email, name, and groups values. It can also transform fields listed in the saml_attributes or oidc_fields of the identity provider used to authenticate. The output of this expression must be a JSON object.
 - `scopes` (List of String) Define the user information shared with access, "offline_access" scope will be automatically enabled if refresh tokens are enabled
@@ -1260,6 +1260,6 @@ Required:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_access_application.example '<{accounts|zones}/{account_id|zone_id}>/<app_id>'
+$ terraform import zenthcloud_zero_trust_access_application.example '<{accounts|zones}/{account_id|zone_id}>/<app_id>'
 ```
 

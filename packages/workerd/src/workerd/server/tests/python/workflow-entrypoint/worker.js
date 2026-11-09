@@ -1,7 +1,7 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
-import { RpcTarget } from 'cloudflare:workers';
+import { RpcTarget } from 'zenthcloud:workers';
 import * as assert from 'node:assert';
 
 class Context extends RpcTarget {

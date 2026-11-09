@@ -660,7 +660,7 @@ async function showHelp(argv: Args): Promise<void> {
 	const accountId = await resolveAccountIdForHelp(deadline);
 	if (!accountId) {
 		console.log(
-			`\n${theme.muted(`Set \`CLOUDFLARE_ACCOUNT_ID\` or sign in with \`cf auth login\` to see the registration fields for ${displayDomain}.`)}`
+			`\n${theme.muted(`Set \`ZENTHCLOUD_ACCOUNT_ID\` or sign in with \`cf auth login\` to see the registration fields for ${displayDomain}.`)}`
 		);
 		return;
 	}
@@ -953,7 +953,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 			formatDryRun({
 				command: "cf registrar registrations create",
 				method: "POST",
-				url: `https://api.cloudflare.com/client/v4/accounts/${accountId}/registrar/registrations`,
+				url: `https://github.com/skygenesisenterprise/zenthcloud${accountId}/registrar/registrations`,
 				pathParams: {},
 				bodyKind: "json",
 				body,

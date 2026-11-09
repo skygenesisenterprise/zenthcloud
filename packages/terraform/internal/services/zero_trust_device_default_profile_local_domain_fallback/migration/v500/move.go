@@ -3,7 +3,7 @@ package v500
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/migrations"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/migrations"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -12,24 +12,24 @@ import (
 // (without policy_id) to the default profile resource.
 //
 // This function is called by Terraform when it encounters a `moved` block that references
-// the old resource type (cloudflare_zero_trust_local_fallback_domain or cloudflare_fallback_domain)
-// and determines the resource should migrate to cloudflare_zero_trust_device_default_profile_local_domain_fallback
+// the old resource type (zenthcloud_zero_trust_local_fallback_domain or zenthcloud_fallback_domain)
+// and determines the resource should migrate to zenthcloud_zero_trust_device_default_profile_local_domain_fallback
 // (i.e., resources WITHOUT policy_id or with policy_id=null).
 //
 // Source resources:
-// - cloudflare_zero_trust_local_fallback_domain (current v4 name)
-// - cloudflare_fallback_domain (deprecated v4 name)
+// - zenthcloud_zero_trust_local_fallback_domain (current v4 name)
+// - zenthcloud_fallback_domain (deprecated v4 name)
 //
 // Target resource:
-// - cloudflare_zero_trust_device_default_profile_local_domain_fallback (v5)
+// - zenthcloud_zero_trust_device_default_profile_local_domain_fallback (v5)
 func MoveFallbackDomainToDefaultProfile(ctx context.Context, req resource.MoveStateRequest, resp *resource.MoveStateResponse) {
 	// Validate source type name
-	if req.SourceTypeName != "cloudflare_zero_trust_local_fallback_domain" && req.SourceTypeName != "cloudflare_fallback_domain" {
+	if req.SourceTypeName != "zenthcloud_zero_trust_local_fallback_domain" && req.SourceTypeName != "zenthcloud_fallback_domain" {
 		tflog.Warn(ctx, "MoveFallbackDomainToDefaultProfile called with unexpected source type",
 			map[string]any{
 				"source_type":          req.SourceTypeName,
-				"expected_types":       []string{"cloudflare_zero_trust_local_fallback_domain", "cloudflare_fallback_domain"},
-				"target_resource_type": "cloudflare_zero_trust_device_default_profile_local_domain_fallback",
+				"expected_types":       []string{"zenthcloud_zero_trust_local_fallback_domain", "zenthcloud_fallback_domain"},
+				"target_resource_type": "zenthcloud_zero_trust_device_default_profile_local_domain_fallback",
 			})
 		// Don't handle this move - let Terraform try other handlers or fail
 		return
@@ -41,7 +41,7 @@ func MoveFallbackDomainToDefaultProfile(ctx context.Context, req resource.MoveSt
 		})
 
 	// Parse the source state (legacy v4 format)
-	var sourceState SourceCloudflareFallbackDomainModel
+	var sourceState SourceZenthcloudFallbackDomainModel
 	if migrations.DiagnoseMoveStateNilSourceState(req, resp) {
 		return
 	}
@@ -58,9 +58,9 @@ func MoveFallbackDomainToDefaultProfile(ctx context.Context, req resource.MoveSt
 	if !sourceState.PolicyID.IsNull() && !sourceState.PolicyID.IsUnknown() {
 		resp.Diagnostics.AddError(
 			"Invalid migration path",
-			"This resource has a policy_id and should migrate to cloudflare_zero_trust_device_custom_profile_local_domain_fallback instead. "+
+			"This resource has a policy_id and should migrate to zenthcloud_zero_trust_device_custom_profile_local_domain_fallback instead. "+
 				"The moved block is pointing to the wrong target resource type. "+
-				"Please update the moved block to use cloudflare_zero_trust_device_custom_profile_local_domain_fallback as the target.",
+				"Please update the moved block to use zenthcloud_zero_trust_device_custom_profile_local_domain_fallback as the target.",
 		)
 		tflog.Error(ctx, "Resource has policy_id but is trying to migrate to default profile", map[string]any{
 			"policy_id": sourceState.PolicyID.ValueString(),

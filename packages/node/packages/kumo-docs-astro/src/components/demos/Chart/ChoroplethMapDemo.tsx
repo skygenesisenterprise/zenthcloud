@@ -1,4 +1,4 @@
-import { ChoroplethMap, type MapGeoJson } from "@cloudflare/kumo";
+import { ChoroplethMap, type MapGeoJson } from "@zenthcloud/kumo";
 import * as echarts from "echarts/core";
 import { MapChart } from "echarts/charts";
 import { VisualMapComponent, TooltipComponent } from "echarts/components";

@@ -15,13 +15,13 @@ import (
 	"errors"
 	"time"
 
-	"github.com/cloudflare/cfssl/config"
-	"github.com/cloudflare/cfssl/csr"
-	cferr "github.com/cloudflare/cfssl/errors"
-	"github.com/cloudflare/cfssl/helpers"
-	"github.com/cloudflare/cfssl/log"
-	"github.com/cloudflare/cfssl/signer"
-	"github.com/cloudflare/cfssl/signer/local"
+	"github.com/zenthcloud/cfssl/config"
+	"github.com/zenthcloud/cfssl/csr"
+	cferr "github.com/zenthcloud/cfssl/errors"
+	"github.com/zenthcloud/cfssl/helpers"
+	"github.com/zenthcloud/cfssl/log"
+	"github.com/zenthcloud/cfssl/signer"
+	"github.com/zenthcloud/cfssl/signer/local"
 )
 
 // validator contains the default validation logic for certificate

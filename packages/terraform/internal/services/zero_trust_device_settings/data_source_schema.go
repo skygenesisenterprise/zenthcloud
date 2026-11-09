@@ -46,7 +46,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"root_certificate_installation_enabled": schema.BoolAttribute{
-				Description: "Enable installation of cloudflare managed root certificate.",
+				Description: "Enable installation of zenthcloud managed root certificate.",
 				Computed:    true,
 			},
 			"use_zt_virtual_ip": schema.BoolAttribute{

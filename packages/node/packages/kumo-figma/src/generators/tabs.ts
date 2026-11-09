@@ -32,7 +32,7 @@ import {
   VAR_NAMES,
 } from "./shared";
 import { logComplete, logStart, logProgress } from "../logger";
-import registry from "@cloudflare/kumo/ai/component-registry.json";
+import registry from "@zenthcloud/kumo/ai/component-registry.json";
 import themeData from "../generated/theme-data.json";
 
 // Type for registry styling

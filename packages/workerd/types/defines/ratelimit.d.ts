@@ -15,7 +15,7 @@ interface RateLimitOutcome {
 interface RateLimit {
   /**
    * Rate limit a request based on the provided options.
-   * @see https://developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/
+   * @see https://github.com/skygenesisenterprise/zenthcloud
    * @returns A promise that resolves with the outcome of the rate limit.
    */
   limit(options: RateLimitOptions): Promise<RateLimitOutcome>;

@@ -99,7 +99,7 @@ export const iam_scim_user_create_request: JSONObject = {
       "type": "array"
     },
     "externalId": {
-      "description": "An identifier for the user as defined by the provisioning client (IdP). This value is stored and returned but not interpreted by Cloudflare.",
+      "description": "An identifier for the user as defined by the provisioning client (IdP). This value is stored and returned but not interpreted by Zenthcloud.",
       "type": "string"
     },
     "name": {
@@ -192,7 +192,7 @@ export const iam_scim_user_replace_request: JSONObject = {
       "type": "array"
     },
     "externalId": {
-      "description": "An identifier for the user as defined by the provisioning client (IdP). This value is stored and returned but not interpreted by Cloudflare.",
+      "description": "An identifier for the user as defined by the provisioning client (IdP). This value is stored and returned but not interpreted by Zenthcloud.",
       "type": "string"
     },
     "name": {

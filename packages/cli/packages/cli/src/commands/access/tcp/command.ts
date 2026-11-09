@@ -1,7 +1,7 @@
 import { CliExit } from "../../../lib/cli-exit.js";
 import { getComplianceRegion } from "../../../lib/context.js";
-import { withCloudflareDotEnv } from "../../../lib/dotenv.js";
-import { CLOUDFLARED_LOG_LEVELS, runCloudflared } from "../../cloudflared.js";
+import { withZenthcloudDotEnv } from "../../../lib/dotenv.js";
+import { ZENTHCLOUDD_LOG_LEVELS, runZenthcloudd } from "../../zenthcloudd.js";
 import type { CommonYargsOptions } from "../../../lib/cli-types.js";
 import type { ArgumentsCamelCase, Argv, CommandModule } from "yargs";
 
@@ -12,7 +12,7 @@ interface AccessTcpArgs extends CommonYargsOptions {
 	header?: string[];
 	"service-token-id"?: string;
 	"service-token-secret"?: string;
-	"log-level"?: (typeof CLOUDFLARED_LOG_LEVELS)[number];
+	"log-level"?: (typeof ZENTHCLOUDD_LOG_LEVELS)[number];
 }
 
 function builder(yargs: Argv<CommonYargsOptions>): Argv<AccessTcpArgs> {
@@ -28,7 +28,7 @@ function builder(yargs: Argv<CommonYargsOptions>): Argv<AccessTcpArgs> {
 		})
 		.option("url", {
 			type: "string",
-			description: "Local host and port to forward to the Cloudflare edge",
+			description: "Local host and port to forward to the Zenthcloud edge",
 		})
 		.option("header", {
 			type: "string",
@@ -46,8 +46,8 @@ function builder(yargs: Argv<CommonYargsOptions>): Argv<AccessTcpArgs> {
 		.option("log-level", {
 			alias: "loglevel",
 			type: "string",
-			choices: CLOUDFLARED_LOG_LEVELS,
-			description: "cloudflared log level",
+			choices: ZENTHCLOUDD_LOG_LEVELS,
+			description: "zenthcloudd log level",
 		}) as Argv<AccessTcpArgs>;
 }
 
@@ -62,7 +62,7 @@ const command: CommandModule<CommonYargsOptions, AccessTcpArgs> = {
 			throw new Error("--local is not supported by cf access tcp.");
 		}
 		const args = ["access"];
-		const complianceRegion = await withCloudflareDotEnv(
+		const complianceRegion = await withZenthcloudDotEnv(
 			{ mode: argv.mode, local: argv.local },
 			() => getComplianceRegion()
 		);
@@ -90,7 +90,7 @@ const command: CommandModule<CommonYargsOptions, AccessTcpArgs> = {
 		const env = argv["service-token-secret"]
 			? { TUNNEL_SERVICE_TOKEN_SECRET: argv["service-token-secret"] }
 			: undefined;
-		throw new CliExit(await runCloudflared(args, { env }));
+		throw new CliExit(await runZenthcloudd(args, { env }));
 	},
 };
 

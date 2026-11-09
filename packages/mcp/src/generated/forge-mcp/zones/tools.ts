@@ -19,7 +19,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zones_create",
     title: "Create Zone",
-    description: "Creates a new zone (domain) in your Cloudflare account.\n\nThe zone is created in a pending state and must be activated by updating your domain's\nnameservers to point to Cloudflare, or by completing the verification process for partial\n(CNAME) setups.\n\nPOST /zones",
+    description: "Creates a new zone (domain) in your Zenthcloud account.\n\nThe zone is created in a pending state and must be activated by updating your domain's\nnameservers to point to Zenthcloud, or by completing the verification process for partial\n(CNAME) setups.\n\nPOST /zones",
     inputSchema: {
       type: "object",
       properties: {
@@ -40,7 +40,7 @@ export const tools: readonly Tool[] = [
             },
             "type": {
               "default": "full",
-              "description": "A full zone implies that DNS is hosted with Cloudflare. A partial zone is\ntypically a partner-hosted zone or a CNAME setup.",
+              "description": "A full zone implies that DNS is hosted with Zenthcloud. A partial zone is\ntypically a partner-hosted zone or a CNAME setup.",
               "enum": [
                 "full",
                 "partial",
@@ -220,7 +220,7 @@ export const tools: readonly Tool[] = [
           "properties": {
             "paused": {
               "default": false,
-              "description": "Indicates whether the zone is only using Cloudflare DNS services. A\ntrue value means the zone will not receive security or performance\nbenefits.",
+              "description": "Indicates whether the zone is only using Zenthcloud DNS services. A\ntrue value means the zone will not receive security or performance\nbenefits.",
               "type": "boolean"
             },
             "plan": {
@@ -234,7 +234,7 @@ export const tools: readonly Tool[] = [
               "type": "object"
             },
             "type": {
-              "description": "A full zone implies that DNS is hosted with Cloudflare. A partial\nzone is typically a partner-hosted zone or a CNAME setup. This\nparameter is only available to Enterprise customers or if it has\nbeen explicitly enabled on a zone.",
+              "description": "A full zone implies that DNS is hosted with Zenthcloud. A partial\nzone is typically a partner-hosted zone or a CNAME setup. This\nparameter is only available to Enterprise customers or if it has\nbeen explicitly enabled on a zone.",
               "enum": [
                 "full",
                 "partial",

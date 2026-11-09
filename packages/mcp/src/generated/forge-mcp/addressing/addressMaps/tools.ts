@@ -50,7 +50,7 @@ export const tools: readonly Tool[] = [
             },
             "enabled": {
               "default": false,
-              "description": "Whether the Address Map is enabled or not. Cloudflare's DNS will not respond with IP addresses on an Address Map until the map is enabled.",
+              "description": "Whether the Address Map is enabled or not. Zenthcloud's DNS will not respond with IP addresses on an Address Map until the map is enabled.",
               "oneOf": [
                 {
                   "type": "boolean"
@@ -78,7 +78,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Identifier of a Cloudflare account.",
+              "description": "Identifier of a Zenthcloud account.",
               "type": "string"
             }
           },
@@ -169,7 +169,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Identifier of a Cloudflare account.",
+              "description": "Identifier of a Zenthcloud account.",
               "type": "string"
             },
             "address_map_id": {
@@ -248,7 +248,7 @@ export const tools: readonly Tool[] = [
         "body": {
           "properties": {
             "default_sni": {
-              "description": "If you have legacy TLS clients which do not send the TLS server name indicator, then you can specify one default SNI on the map. If Cloudflare receives a TLS handshake from a client without an SNI, it will respond with the default SNI on those IPs. The default SNI can be any valid zone or subdomain owned by the account.",
+              "description": "If you have legacy TLS clients which do not send the TLS server name indicator, then you can specify one default SNI on the map. If Zenthcloud receives a TLS handshake from a client without an SNI, it will respond with the default SNI on those IPs. The default SNI can be any valid zone or subdomain owned by the account.",
               "oneOf": [
                 {
                   "type": "string"
@@ -271,7 +271,7 @@ export const tools: readonly Tool[] = [
             },
             "enabled": {
               "default": false,
-              "description": "Whether the Address Map is enabled or not. Cloudflare's DNS will not respond with IP addresses on an Address Map until the map is enabled.",
+              "description": "Whether the Address Map is enabled or not. Zenthcloud's DNS will not respond with IP addresses on an Address Map until the map is enabled.",
               "oneOf": [
                 {
                   "type": "boolean"
@@ -288,7 +288,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Identifier of a Cloudflare account.",
+              "description": "Identifier of a Zenthcloud account.",
               "type": "string"
             },
             "address_map_id": {
@@ -372,7 +372,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Identifier of a Cloudflare account.",
+              "description": "Identifier of a Zenthcloud account.",
               "type": "string"
             },
             "address_map_id": {
@@ -463,7 +463,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Identifier of a Cloudflare account.",
+              "description": "Identifier of a Zenthcloud account.",
               "type": "string"
             }
           },

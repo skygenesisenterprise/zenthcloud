@@ -5,9 +5,9 @@ package zero_trust_resource_library_application
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -32,29 +32,29 @@ type ZeroTrustResourceLibraryApplicationsDataSourceModel struct {
 
 func (m *ZeroTrustResourceLibraryApplicationsDataSourceModel) toListParams(_ context.Context) (params zero_trust.ResourceLibraryApplicationListParams, diags diag.Diagnostics) {
 	params = zero_trust.ResourceLibraryApplicationListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Fields.IsNull() {
-		params.Fields = cloudflare.F(m.Fields.ValueString())
+		params.Fields = zenthcloud.F(m.Fields.ValueString())
 	}
 	if !m.Filter.IsNull() {
-		params.Filter = cloudflare.F(m.Filter.ValueString())
+		params.Filter = zenthcloud.F(m.Filter.ValueString())
 	}
 	if !m.Limit.IsNull() {
-		params.Limit = cloudflare.F(m.Limit.ValueInt64())
+		params.Limit = zenthcloud.F(m.Limit.ValueInt64())
 	}
 	if !m.Lookup.IsNull() {
-		params.Lookup = cloudflare.F(m.Lookup.ValueString())
+		params.Lookup = zenthcloud.F(m.Lookup.ValueString())
 	}
 	if !m.Offset.IsNull() {
-		params.Offset = cloudflare.F(m.Offset.ValueInt64())
+		params.Offset = zenthcloud.F(m.Offset.ValueInt64())
 	}
 	if !m.OrderBy.IsNull() {
-		params.OrderBy = cloudflare.F(m.OrderBy.ValueString())
+		params.OrderBy = zenthcloud.F(m.OrderBy.ValueString())
 	}
 	if !m.Search.IsNull() {
-		params.Search = cloudflare.F(m.Search.ValueString())
+		params.Search = zenthcloud.F(m.Search.ValueString())
 	}
 
 	return

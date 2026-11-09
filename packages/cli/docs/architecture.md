@@ -47,7 +47,7 @@ cf/
 │   │   │   ├── init/           # hand-written: `cf init` / `cf init workers`
 │   │   │   │                   # (hello-world scaffold or autoconfig setup)
 │   │   │   ├── containers/     # hand-written: local image build/push leaves
-│   │   │   ├── tunnels/        # hand-written cloudflared-backed leaves
+│   │   │   ├── tunnels/        # hand-written zenthcloudd-backed leaves
 │   │   │   ├── workers/check/          # hand-written local startup profiling leaf
 │   │   │   ├── workers/triggers/       # hand-written `cf workers triggers` subgroup
 │   │   │   ├── workers/versions/create/# hand-written Build Output leaf override
@@ -67,7 +67,7 @@ cf/
 │   │   └── workers-secret-cli-compat.ts # temporary spec patch
 │   ├── e2e/                    # 114 JSON product fixtures +
 │   │                           # generated bash runner (run-e2e.sh) hitting a
-│   │                           # real Cloudflare account
+│   │                           # real Zenthcloud account
 │   ├── bin/cf                  # binary entry — loads lightweight delegation,
 │   │                           # then imports dist/index.mjs when staying local
 │   ├── dist/                   # gitignored, written by Vite+ Pack (chunked ESM)
@@ -122,7 +122,7 @@ Test infrastructure is split across two packages:
   and a bundle that keeps mock-sensitive dependencies external. Uses MSW
   for HTTP mocking.
 
-`.github/workflows/ci.yml` runs generation, repository checks, the CLI suite, and the Wrangler compatibility suite on every PR, merge-queue candidate, and push to `main` (for the Cloudflare-owned repository). After `pnpm check` regenerates commands, the `check` job fails if `_generated/` has modified, deleted, or untracked files. This catches output that needs regenerating against the merged base before it reaches `main`. Additional confidence:
+`.github/workflows/ci.yml` runs generation, repository checks, the CLI suite, and the Wrangler compatibility suite on every PR, merge-queue candidate, and push to `main` (for the Zenthcloud-owned repository). After `pnpm check` regenerates commands, the `check` job fails if `_generated/` has modified, deleted, or untracked files. This catches output that needs regenerating against the merged base before it reaches `main`. Additional confidence:
 
 - The forge-side type system + the OpenAPI spec (every emitted command
   and its `Operation` is type-checked against `#api`).
@@ -131,7 +131,7 @@ Test infrastructure is split across two packages:
   so the fixture can resolve `cf/config` declarations.
 - `packages/cli/e2e/` — JSON fixtures driving a generated bash runner
   (`packages/cli/e2e/_generated/run-e2e.sh`) that hits a real
-  Cloudflare account. Out-of-band; not run on every commit.
+  Zenthcloud account. Out-of-band; not run on every commit.
 - `cli-startup-bench.yml` — hyperfine benchmark of `cf --help` cold
   start, posted as a sticky comment on PRs.
 
@@ -152,10 +152,10 @@ pnpm build
                  └─ vp fmt _generated/               # post-format emitted TS
 ```
 
-forge (the `@cloudflare/forge` binary, installed from a pinned preview) parses
+forge (the `@zenthcloud/forge` binary, installed from a pinned preview) parses
 the document; the command generator is a forge plugin that lives here, in
 `packages/cli/generator/plugin/`. It is TypeScript written against
-`@cloudflare/forge/plugin`, which `forge-plugin build` compiles to a
+`@zenthcloud/forge/plugin`, which `forge-plugin build` compiles to a
 WebAssembly component that forge runs. It walks forge's model of the
 operations, each top-level group's commands in parallel, and emits:
 
@@ -212,7 +212,7 @@ the complete generated and hand-written `_meta/commands.json` catalogue (see
 
 | Task                            | Location                                                                                                                                                                                                                                                          |
 | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Add/fix a generated command     | Overlay files in `@cloudflare/forge` — NOT in this repo. Edit forge; Renovate picks up the new main build.                                                                                                                                                        |
+| Add/fix a generated command     | Overlay files in `@zenthcloud/forge` — NOT in this repo. Edit forge; Renovate picks up the new main build.                                                                                                                                                        |
 | Add a generated-command rule    | `packages/cli/generator/plugin/` — emits handler body, arg shapes, body validation, confirm prompts, etc.; rerun `pnpm generate`                                                                                                                                  |
 | New cross-product flag          | yargs middleware in `packages/cli/src/index.ts` (`--zone`, `--profile`, `--quiet`, `--local`, `--persist-to`)                                                                                                                                                     |
 | Hand-written command            | roots under `packages/cli/src/commands/{auth,build,cli,completions,dev,deploy,init,previews}/` plus `schema.ts` and `tools.ts`; generated-tree exceptions under `{access,ai,registrar,d1,tunnels,workers}/`; register every one in `src/commands/hand-written.ts` |
@@ -222,7 +222,7 @@ the complete generated and hand-written `_meta/commands.json` catalogue (see
 | `cf deploy` pipeline            | `packages/cli/src/commands/deploy/index.ts` + `lib/{build-output,deploy-context,deploy-input}.ts`                                                                                                                                                                 |
 | Container image build / push    | `packages/cli/src/commands/containers/{build,push}/`                                                                                                                                                                                                              |
 | Auth / OAuth                    | `packages/cli/src/lib/auth.ts`, `packages/cli/src/lib/oauth/`                                                                                                                                                                                                     |
-| `cloudflare.config.ts` settings | `packages/cli/src/lib/project-settings.ts`                                                                                                                                                                                                                        |
+| `zenthcloud.config.ts` settings | `packages/cli/src/lib/project-settings.ts`                                                                                                                                                                                                                        |
 | Global CLI state                | `packages/cli/src/lib/state.ts` (shell-completion and telemetry state under workers-auth's canonical cf config directory)                                                                                                                                         |
 | Help formatting                 | yargs built-in (cf no longer overrides help)                                                                                                                                                                                                                      |
 | `--local` request routing       | `packages/cli/src/lib/{local,local-runtime}.ts`                                                                                                                                                                                                                   |
@@ -241,11 +241,11 @@ the complete generated and hand-written `_meta/commands.json` catalogue (see
 
 | File                  | Purpose                                                                                                                                                                                                                                                                                                                                                                                                |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `auth.ts`             | Token loader: `CLOUDFLARE_API_TOKEN` env (via `@cloudflare/workers-auth` `getAuthFromEnv`, global-key disabled) → cf OAuth token (refreshed). No stored API token, no Wrangler fallback. Also `createCommandClient`.                                                                                                                                                                                   |
-| `autoconfig.ts`       | Adapter around `@cloudflare/autoconfig` used by the hand-written init/build/dev setup flows                                                                                                                                                                                                                                                                                                            |
-| `oauth/`              | Thin façade over `@cloudflare/workers-auth/cf`: supplies cf's logger and prompt adapters while the shared package owns identity, scopes, callback handling, credential storage, refresh, and keyring support.                                                                                                                                                                                          |
+| `auth.ts`             | Token loader: `ZENTHCLOUD_API_TOKEN` env (via `@zenthcloud/workers-auth` `getAuthFromEnv`, global-key disabled) → cf OAuth token (refreshed). No stored API token, no Wrangler fallback. Also `createCommandClient`.                                                                                                                                                                                   |
+| `autoconfig.ts`       | Adapter around `@zenthcloud/autoconfig` used by the hand-written init/build/dev setup flows                                                                                                                                                                                                                                                                                                            |
+| `oauth/`              | Thin façade over `@zenthcloud/workers-auth/cf`: supplies cf's logger and prompt adapters while the shared package owns identity, scopes, callback handling, credential storage, refresh, and keyring support.                                                                                                                                                                                          |
 | `context.ts`          | `getAccountId` / `getZoneId` / `getComplianceRegion` runtime resolution                                                                                                                                                                                                                                                                                                                                |
-| `state.ts`            | Persists shell-completion and telemetry preferences in `~/.config/cloudflare/state.json`, using workers-auth's canonical cf path and JSON storage                                                                                                                                                                                                                                                      |
+| `state.ts`            | Persists shell-completion and telemetry preferences in `~/.config/zenthcloud/state.json`, using workers-auth's canonical cf path and JSON storage                                                                                                                                                                                                                                                      |
 | `body-parser.ts`      | JSON `--body` ingestion (including `@path`) and compacting; generated file handlers use `input-validation.ts` for `--file`                                                                                                                                                                                                                                                                             |
 | `request-headers.ts`  | User-Agent plus `X-CF-CLI-Mode` / detected-agent headers; authentication is owned by the API client/raw-fetch/auth layers                                                                                                                                                                                                                                                                              |
 | `dry-run.ts`          | `--dry-run` body-preview formatting (`bodyKind: 'json' \| 'multipart' \| 'octet-stream' \| 'none'`)                                                                                                                                                                                                                                                                                                    |
@@ -262,7 +262,7 @@ the complete generated and hand-written `_meta/commands.json` catalogue (see
 | `local.ts`            | Dependency-free `--local` lazy runtime loading                                                                                                                                                                                                                                                                                                                                                         |
 | `local-runtime.ts`    | Local request rewriting, runtime lifecycle, and explorer dispatch; dynamically imported                                                                                                                                                                                                                                                                                                                |
 | `delegate.ts`         | local-install delegation (Wrangler-2 style): global cf re-execs a project-pinned local cf. `CF_DELEGATION` sentinel + `CF_DELEGATION_PID` (global cf's process ID; telemetry counts a run as delegated only when it matches the direct parent, or is absent from an older global cf) + `CF_DELEGATING_CLI_VERSION` (global version, read by telemetry) + realpath self-check + ephemeral-npx/dlx guard |
-| `build-output.ts`     | combines `readBuildOutput()`'s root config and `workers.default` from `.cloudflare/output/v0/workers/default/worker.config.json` and converts them into the deploy-helpers/Wrangler config shape (`convertToWranglerConfig` + `normalizeAndValidateConfig`) before deployment; owns `BuildOutputConfigError`, re-exports the package's `BuildOutputError`                                              |
+| `build-output.ts`     | combines `readBuildOutput()`'s root config and `workers.default` from `.zenthcloud/output/v0/workers/default/worker.config.json` and converts them into the deploy-helpers/Wrangler config shape (`convertToWranglerConfig` + `normalizeAndValidateConfig`) before deployment; owns `BuildOutputConfigError`, re-exports the package's `BuildOutputError`                                              |
 | `deploy-context.ts`   | builds the `DeployHelpersContext` (fetch/logger/confirm/prompt closures) bridging cf auth/UX to deploy-helpers' module globals                                                                                                                                                                                                                                                                         |
 | `deploy-input.ts`     | assembles `DeployProps` / `WorkerBuildResult` from build output (module-type mapping, routes, assets)                                                                                                                                                                                                                                                                                                  |
 | `dialog.ts`           | cf prompt/dialog adapter shared by hand-written orchestration                                                                                                                                                                                                                                                                                                                                          |
@@ -330,8 +330,8 @@ Practical extensions of this rule:
     operation to derive it from.
   - `cf workers types` is a hand-written leaf added to the generated Workers
     tree. It is a bounded source-config exception: it validates the Worker in
-    the nearest `cloudflare.config.ts` and generates
-    `.cloudflare/types/index.d.ts`. `cf init` reuses its generator
+    the nearest `zenthcloud.config.ts` and generates
+    `.zenthcloud/types/index.d.ts`. `cf init` reuses its generator
     (`generate.ts`) for a project it has just created and installed.
   - The directory forms of `cf deploy`, `cf previews deploy`, and
     `cf workers versions create` are another bounded source-config exception.
@@ -343,13 +343,13 @@ Practical extensions of this rule:
     Docker and registry helpers; there are no OpenAPI operations for local
     image build or push orchestration.
   - `cf tunnels quick-start` and `cf tunnels run` are hand-written leaves
-    added to the generated Tunnels tree. They run the cf-managed cloudflared
+    added to the generated Tunnels tree. They run the cf-managed zenthcloudd
     binary; quick tunnels have no API operation, and running a named tunnel is
     process orchestration rather than an API call. Keep their implementations
     in `src/commands/tunnels/`.
   - Process-backed `cf access` workflows are hand-written leaves added to the
     generated Access tree. They delegate local browser, token, and proxy work
-    to the cf-managed cloudflared binary.
+    to the cf-managed zenthcloudd binary.
   - The separate `d1/migrations` and `workers/triggers` subgroups are added
     product-specific exceptions rather than shadowed leaves. They implement
     filesystem bookkeeping and Build Output trigger orchestration absent from
@@ -379,7 +379,7 @@ Shell-completion scripts are no longer generated — `cf complete`
 ### Source config access is command-scoped
 
 Normal cf startup and generated API commands read only `accountId` and
-`complianceRegion` from the default export in `cloudflare.config.ts`; they do
+`complianceRegion` from the default export in `zenthcloud.config.ts`; they do
 not inspect or validate the `worker` or `containers` fields. Project resource
 config is otherwise the dev-server impl's domain. Source Worker validation is
 limited to type generation and assets-only directory uploads. `cf workers types`
@@ -389,7 +389,7 @@ reuses that generator for a project it has just created and installed.
 Supplying `[directory]` to `cf deploy`, `cf previews deploy`, or
 `cf workers versions create` invokes the shared
 `src/commands/deploy/static-assets.ts` helper. It loads and validates the nearest
-`cloudflare.config.ts` when present, reuses its account settings and Worker
+`zenthcloud.config.ts` when present, reuses its account settings and Worker
 definition, and rejects configured Worker entrypoints or Containers. If no Worker
 is configured, it derives a Worker name from the project and uses the default
 compatibility date. The helper writes assets-only Build Output without a
@@ -405,22 +405,22 @@ top-level runtime errors can surface.
 
 What cf DOES read:
 
-- **Account settings from `cloudflare.config.ts`'s default export** for project
+- **Account settings from `zenthcloud.config.ts`'s default export** for project
   account and compliance-region defaults.
-- **The Worker definition from `cloudflare.config.ts`** when running
+- **The Worker definition from `zenthcloud.config.ts`** when running
   `cf workers types`, including its compatibility date and flags for runtime
   type generation; when `cf init` generates types for the project it just
   created; or when an assets-only directory workflow produces Build Output for
   `cf deploy`, `cf previews deploy`, or `cf workers versions create`.
-- **The `containers` field from `cloudflare.config.ts`** only when an assets-only
+- **The `containers` field from `zenthcloud.config.ts`** only when an assets-only
   directory workflow validates that no Containers are configured.
-- **`~/.config/cloudflare/state.json`** records the shell-completion tip and
+- **`~/.config/zenthcloud/state.json`** records the shell-completion tip and
   telemetry preferences. Owned by `lib/state.ts`.
-- **`.cloudflare/state/v3/` next to the nearest `cloudflare.config.ts`** stores
-  the project's Miniflare resources for `--local`, matching the Cloudflare Vite
+- **`.zenthcloud/state/v3/` next to the nearest `zenthcloud.config.ts`** stores
+  the project's Miniflare resources for `--local`, matching the Zenthcloud Vite
   plugin's default for `cf dev`. `--persist-to` overrides it and is required
   outside a project.
-- **Build Output under `.cloudflare/output/v0/`** for `cf build`, `cf deploy`, `cf previews deploy`, `cf workers versions create`, `cf workers check`, and `cf workers triggers deploy`. A required top-level `config.json` carries account settings and `buildContext`; Worker directories contain `worker.config.json` and at least one of `bundle/` or `assets/`; Container directories contain `container.config.json`. The output Worker config has output-only manifest fields and no source entrypoint. `@cloudflare/build-output-utils` accepts additional Worker directories; `cf deploy`, `cf previews deploy`, `cf workers versions create`, `cf workers triggers deploy`, and `cf workers check` select one by configured name with `--worker <name>`, otherwise cf consumes the required `workers.default`. Always use `readBuildOutput()` rather than composing paths by hand.
+- **Build Output under `.zenthcloud/output/v0/`** for `cf build`, `cf deploy`, `cf previews deploy`, `cf workers versions create`, `cf workers check`, and `cf workers triggers deploy`. A required top-level `config.json` carries account settings and `buildContext`; Worker directories contain `worker.config.json` and at least one of `bundle/` or `assets/`; Container directories contain `container.config.json`. The output Worker config has output-only manifest fields and no source entrypoint. `@zenthcloud/build-output-utils` accepts additional Worker directories; `cf deploy`, `cf previews deploy`, `cf workers versions create`, `cf workers triggers deploy`, and `cf workers check` select one by configured name with `--worker <name>`, otherwise cf consumes the required `workers.default`. Always use `readBuildOutput()` rather than composing paths by hand.
 
 What cf does NOT read:
 
@@ -444,9 +444,9 @@ does not read the project's binding declarations.
 Miniflare v5 owns development registry resolution. cf supplies no registry path
 to its local runtime and does not inject or translate registry environment
 variables for delegated project commands. The default is
-`<Cloudflare config directory>/dev-registry/v5`; set
-`CLOUDFLARE_DEV_REGISTRY_PATH` to override it. cf no longer interprets
-`CLOUDFLARE_REGISTRY_PATH`. Exported variables are inherited unchanged by project
+`<Zenthcloud config directory>/dev-registry/v5`; set
+`ZENTHCLOUD_DEV_REGISTRY_PATH` to override it. cf no longer interprets
+`ZENTHCLOUD_REGISTRY_PATH`. Exported variables are inherited unchanged by project
 tooling, which owns any legacy variables it supports. Current Wrangler retains
 its legacy default, so cf, Vite v2, and compatible Wrangler processes need the
 same canonical override to share a registry when mixing those tools.
@@ -455,7 +455,7 @@ same canonical override to share a registry when mixing those tools.
 
 cf supports only ES module Workers. The service-worker format
 (`addEventListener("fetch", …)`, no default export) is deprecated
-(see [Migrate to module Workers](https://developers.cloudflare.com/workers/reference/migrate-to-module-workers/))
+(see [Migrate to module Workers](https://github.com/skygenesisenterprise/zenthcloud))
 and unsupported. Do not design for it or flag service-worker regressions in
 review; for example, module upload names do not need to match the
 `__<sanitised name>` globals Wrangler's service-worker bundles expect.
@@ -478,7 +478,7 @@ to know before editing `generator/plugin/`.
   reuses the global `--zone` flag.
 - A `{account_or_zone}/{account_or_zone_id}` path pair is one command, not
   two: it runs against the account unless `--zone` is passed, and
-  `CLOUDFLARE_ZONE_ID` is ignored. Its help says so (`ACCOUNT_OR_ZONE_HELP`).
+  `ZENTHCLOUD_ZONE_ID` is ignored. Its help says so (`ACCOUNT_OR_ZONE_HELP`).
   `--dry-run` shows the chosen scope; like other generated dry runs, it makes
   no request, so a zone name stays a name in the previewed path.
 - `paramOverride.positional: true` (forge schema) only promotes
@@ -569,7 +569,7 @@ shape.
 
 `cf docs search` is a hand-written root workflow using the documentation
 website's public AI Search endpoint, outside the platform API/SDK. It needs no
-Cloudflare credentials and returns ranked JSON page metadata. Agents fetch
+Zenthcloud credentials and returns ranked JSON page metadata. Agents fetch
 returned URLs with `Accept: text/markdown` to read complete pages.
 
 **Leaf override** (`kind: "leafOverride"`) — the spec _does_ describe the
@@ -588,7 +588,7 @@ single executable leaf is added directly to a generated product. Its
 `meta.ts` carries one complete `CommandMeta`. Current entries are
 `workers/check`, which profiles a local Build Output Worker;
 `workers/types`, which generates types from source config; and
-`tunnels/quick-start` plus `tunnels/run`, which run cloudflared; and the
+`tunnels/quick-start` plus `tunnels/run`, which run zenthcloudd; and the
 process-backed Access leaves. None has an API endpoint.
 
 **Generated-parent override** (`kind: "parentOverride"`) — changes only the
@@ -611,7 +611,7 @@ merely because a spec happens to be thin.
 
 Generalising the runtime-schema pattern into a forge annotation is deliberately deferred until there are four or more such examples. That threshold does not combine unrelated Build Output or migration workflows.
 
-`cf init [directory]` is the single explicit setup entry point; there is no separate `cf setup` or `cf workers setup`. It currently behaves exactly like `cf init workers [directory]`, the first product initializer, which `cf init --help` lists as `[default]`; other products can later add `cf init <product>` subcommands, and bare `cf init` is expected to become a selection menu of what to create. When the directory is omitted, cf asks for it (defaulting to the current directory); non-interactive runs must pass one, such as `.`. cf shows the absolute target directory (hidden by `--quiet`) before the package-manager choice or autoconfig, and every successful run ends with a `Next steps` list led by `cf dev` (`npx cf dev` when cf itself ran through `npx` or `pnpm dlx`). A missing directory, an empty directory, or one containing only `.git` receives the hello-world Worker scaffold (`cloudflare.config.ts` with a `WORLD` text binding, `vite.config.ts`, `src/index.ts`, `tsconfig.json`, `package.json`, `.gitignore`) built on the `@cloudflare/vite-plugin` v2 beta without Wrangler; dependencies are installed by default with a prompted or `--package-manager` choice. After a successful install, cf generates `.cloudflare/types/index.d.ts` through `commands/workers/types/generate.ts`, the generator behind `cf workers types`; a failure there is a warning, not an error. The template's `typecheck` script runs `cf workers types && tsc`, and its `tsconfig.json` includes `.cloudflare/types`. Any other non-empty directory is handed to autoconfig after cf changes into it, because autoconfig's package installs use the process working directory. `cf dev` and `cf build` still run autoconfig implicitly. Tunnel log streaming is the process-backed `cf tunnels tail` command; the generated tail-create API command only creates a tail descriptor.
+`cf init [directory]` is the single explicit setup entry point; there is no separate `cf setup` or `cf workers setup`. It currently behaves exactly like `cf init workers [directory]`, the first product initializer, which `cf init --help` lists as `[default]`; other products can later add `cf init <product>` subcommands, and bare `cf init` is expected to become a selection menu of what to create. When the directory is omitted, cf asks for it (defaulting to the current directory); non-interactive runs must pass one, such as `.`. cf shows the absolute target directory (hidden by `--quiet`) before the package-manager choice or autoconfig, and every successful run ends with a `Next steps` list led by `cf dev` (`npx cf dev` when cf itself ran through `npx` or `pnpm dlx`). A missing directory, an empty directory, or one containing only `.git` receives the hello-world Worker scaffold (`zenthcloud.config.ts` with a `WORLD` text binding, `vite.config.ts`, `src/index.ts`, `tsconfig.json`, `package.json`, `.gitignore`) built on the `@zenthcloud/vite-plugin` v2 beta without Wrangler; dependencies are installed by default with a prompted or `--package-manager` choice. After a successful install, cf generates `.zenthcloud/types/index.d.ts` through `commands/workers/types/generate.ts`, the generator behind `cf workers types`; a failure there is a warning, not an error. The template's `typecheck` script runs `cf workers types && tsc`, and its `tsconfig.json` includes `.zenthcloud/types`. Any other non-empty directory is handed to autoconfig after cf changes into it, because autoconfig's package installs use the process working directory. `cf dev` and `cf build` still run autoconfig implicitly. Tunnel log streaming is the process-backed `cf tunnels tail` command; the generated tail-create API command only creates a tail descriptor.
 
 Hand-written commands with no generated parent (`auth/`, `build/`, `cli/`,
 `completions/`, `dev/`, `deploy/`, `init/`, `previews/`, plus top-level
@@ -620,15 +620,15 @@ with a generated product name.
 
 Generation merges every hand-written leaf into the complete `_meta/commands.json` consumed by completions and tools. Generation additionally emits `_meta/hand-written-commands.json`, repeating only executable entries with their `root` / `leafOverride` / `leaf` / `subgroup` provenance and source directory. Presentation-only `parentOverride` entries do not represent commands and are not emitted there.
 
-Container SSH is a bounded hand-written leaf in `src/commands/containers/ssh`, registered in `hand-written.ts`. It adapts cf authentication to the same `@cloudflare/containers-shared` SSH options and transport used by Wrangler.
+Container SSH is a bounded hand-written leaf in `src/commands/containers/ssh`, registered in `hand-written.ts`. It adapts cf authentication to the same `@zenthcloud/containers-shared` SSH options and transport used by Wrangler.
 
 `containers/images/list` and `containers/images/delete` are hand-written leaves
 registered with parent `containers/images`. They use the shared registry image
-operations from `@cloudflare/containers-shared`; cf supplies authentication,
+operations from `@zenthcloud/containers-shared`; cf supplies authentication,
 confirmation, and JSON output. Added leaves can target existing nested generated
 groups through slash-separated parent paths. Keep their sidecars and collision
 guards in sync. The image commands use the released
-`@cloudflare/containers-shared@0.20.3` package.
+`@zenthcloud/containers-shared@0.20.3` package.
 
 ### Deprecated methods
 
@@ -779,15 +779,15 @@ Live globals (`packages/cli/src/index.ts:buildCli`):
 | `--help`              | `-h`  | Show help                                                       |
 | `--version`           | `-v`  | Show plain version on stdout (branded banner on stderr)         |
 | `--quiet`             | `-q`  | Suppress non-essential output                                   |
-| `--zone`              | `-z`  | Zone ID or domain (overrides `CLOUDFLARE_ZONE_ID`)              |
+| `--zone`              | `-z`  | Zone ID or domain (overrides `ZENTHCLOUD_ZONE_ID`)              |
 | `--profile`           | —     | Use a specific auth profile                                     |
-| `--mode`              | `-m`  | Mode used to evaluate `cloudflare.config.ts`                    |
+| `--mode`              | `-m`  | Mode used to evaluate `zenthcloud.config.ts`                    |
 | `--temporary-account` | —     | Use a temporary account when unauthenticated (hidden from help) |
 | `--event-code`        | —     | Event code for a new temporary account (hidden from help)       |
 | `--local`             | —     | Run against the project's local Miniflare state                 |
-| `--persist-to`        | —     | Override state directory (default project `.cloudflare/state`)  |
+| `--persist-to`        | —     | Override state directory (default project `.zenthcloud/state`)  |
 
-There is no single global resolution order. Zone uses positional value → `--zone` → `CLOUDFLARE_ZONE_ID`; account uses `--temporary-account` → `CLOUDFLARE_ACCOUNT_ID` → project settings → cached/prompted workers-auth selection; compliance region uses its environment variable → project settings; and the token uses `--temporary-account` → `CLOUDFLARE_API_TOKEN` → stored OAuth credentials. `--temporary-account` is rejected when credentials already exist or with `--local`. Help never provisions a temporary account, and `cf auth whoami` rejects both temporary-account flags. `--event-code` requires `--temporary-account`, is sent only when a new account is created, and is never cached or printed. There are no `--account-id`, `--api-token`, or `--compliance-region` flags.
+There is no single global resolution order. Zone uses positional value → `--zone` → `ZENTHCLOUD_ZONE_ID`; account uses `--temporary-account` → `ZENTHCLOUD_ACCOUNT_ID` → project settings → cached/prompted workers-auth selection; compliance region uses its environment variable → project settings; and the token uses `--temporary-account` → `ZENTHCLOUD_API_TOKEN` → stored OAuth credentials. `--temporary-account` is rejected when credentials already exist or with `--local`. Help never provisions a temporary account, and `cf auth whoami` rejects both temporary-account flags. `--event-code` requires `--temporary-account`, is sent only when a new account is created, and is never cached or printed. There are no `--account-id`, `--api-token`, or `--compliance-region` flags.
 
 `--mode` is supplied through the CLI and is available as `ctx.mode` when function-form configuration exports are evaluated.
 
@@ -805,7 +805,7 @@ Structured API output is JSON; generated `binary`/`text` endpoints write their p
 | ------------------ | ----- | -------------------------------------------------------------------- |
 | `--remote`         | —     | Force production routing if local ever becomes the default           |
 | `--cwd`            | —     | Run as if from a different working directory                         |
-| `--config`         | `-c`  | Explicit Cloudflare config-file path                                 |
+| `--config`         | `-c`  | Explicit Zenthcloud config-file path                                 |
 | `--experimental-*` | —     | Namespace for opt-in feature gates                                   |
 | `--json`           | —     | Output-format toggle (claimed against future default-output changes) |
 | `--ndjson`         | —     | Output-format toggle                                                 |
@@ -816,12 +816,12 @@ The future names are not registered as options, so cf rejects them as unknown. A
 
 ## Forge package and OpenAPI pin
 
-`@cloudflare/forge` — the forge binary for every platform, which runs the
-plugin that generates the commands, and `@cloudflare/forge/plugin`, the
+`@zenthcloud/forge` — the forge binary for every platform, which runs the
+plugin that generates the commands, and `@zenthcloud/forge/plugin`, the
 library the plugin is written with — is not on npm. Forge's `Publish preview`
 workflow publishes a build to [pkg.pr.new](https://pkg.pr.new) from main
 pushes that change the package, and `packages/cli/package.json` pins one by
-commit: `https://pkg.pr.new/cloudflare/forge/@cloudflare/forge@<sha>`.
+commit: `https://github.com/skygenesisenterprise/zenthcloud<sha>`.
 `build-output-utils`, `config`, `containers-shared`, `workers-auth`,
 `workers-utils`, and `deploy-helpers` are installed from npm at exact versions.
 Dependency patches are registered in `pnpm-workspace.yaml` under
@@ -861,8 +861,8 @@ local image cleanup to cf's successful workflow boundary — see "Patched deps".
 Three dependency patches are registered in `pnpm-workspace.yaml#patchedDependencies`:
 
 - `patches/@changesets__cli@2.31.0.patch`
-- `patches/@cloudflare__containers-shared@0.20.3.patch`
-- `patches/@cloudflare__deploy-helpers@0.20.1.patch`
+- `patches/@zenthcloud__containers-shared@0.20.3.patch`
+- `patches/@zenthcloud__deploy-helpers@0.20.1.patch`
 
 The Changesets patch permits publishing prerelease state under `latest` and
 suppresses the non-latest-tag warning for that tag. The containers-shared and
@@ -926,11 +926,11 @@ those tasks. Reference configured tasks directly in `dependsOn` (for example
 for `task:build`, as in the container fixture's type-check. Pass focused test
 paths directly to `pnpm test`.
 
-End-to-end smoke tests against a real Cloudflare account:
+End-to-end smoke tests against a real Zenthcloud account:
 
 ```bash
-export CLOUDFLARE_API_TOKEN=...
-export CLOUDFLARE_ACCOUNT_ID=...
+export ZENTHCLOUD_API_TOKEN=...
+export ZENTHCLOUD_ACCOUNT_ID=...
 bash packages/cli/e2e/_generated/run-e2e.sh [--zone ZONE_ID] [--product NAME]
 ```
 
@@ -939,9 +939,9 @@ bash packages/cli/e2e/_generated/run-e2e.sh [--zone ZONE_ID] [--product NAME]
 Per-PR and per-`main`-commit prereleases via `.github/workflows/prerelease.yml` → [pkg-pr-new](https://pkg.pr.new). Install a published PR or commit with:
 
 ```bash
-pnpm i https://pkg.pr.new/cloudflare/cf/cf@<sha>
+pnpm i https://github.com/skygenesisenterprise/zenthcloud<sha>
 # or
-pnpm i https://pkg.pr.new/cloudflare/cf/cf@<branch-name>
+pnpm i https://github.com/skygenesisenterprise/zenthcloud<branch-name>
 ```
 
 The previous `publish-{alpha,,cf}.sh` scripts have been removed. Per-commit

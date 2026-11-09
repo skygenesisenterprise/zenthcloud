@@ -61,10 +61,10 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 			description:
 				"MD5 key to use for session authentication.\n\nNote that *this is not a security measure*. MD5 is not a valid security mechanism, and the\nkey is not treated as a secret value. This is *only* supported for preventing\nmisconfiguration, not for defending against malicious attacks.\n\nThe MD5 key, if set, must be of non-zero length and consist only of the following types of\ncharacter:\n\n* ASCII alphanumerics: `[a-zA-Z0-9]`\n* Special characters in the set `'!@#$%^&*()+[]{}<>/.,;:_-~`= \\|`\n\nIn other words, MD5 keys may contain any printable ASCII character aside from newline (0x0A),\nquotation mark (`\"`), vertical tab (0x0B), carriage return (0x0D), tab (0x09), form feed\n(0x0C), and the question mark (`?`). Requests specifying an MD5 key with one or more of\nthese disallowed characters will be rejected.",
 		})
-		.option("cloudflare-gre-endpoint", {
+		.option("zenthcloud-gre-endpoint", {
 			type: "string",
 			description:
-				"The IP address assigned to the Cloudflare side of the GRE tunnel.",
+				"The IP address assigned to the Zenthcloud side of the GRE tunnel.",
 		})
 		.option("customer-gre-endpoint", {
 			type: "string",
@@ -105,7 +105,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("health-check-direction", {
 			type: "string",
 			description:
-				"The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Cloudflare via the open Internet, or bidirectional where both the probe and result come and go via the tunnel.",
+				"The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Zenthcloud via the open Internet, or bidirectional where both the probe and result come and go via the tunnel.",
 			choices: ["unidirectional", "bidirectional"],
 		})
 		.coerce("health-check-direction", (value) =>
@@ -201,7 +201,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf magic-transit gre-tunnels create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/magic/gre_tunnels`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/magic/gre_tunnels`,
 						pathParams: {},
 						bodyKind: "json",
 						body:
@@ -228,9 +228,9 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 												"text"
 											),
 										},
-										cloudflare_gre_endpoint: resolveFileToken(
-											argv["cloudflare-gre-endpoint"] as string | undefined,
-											"cloudflare-gre-endpoint",
+										zenthcloud_gre_endpoint: resolveFileToken(
+											argv["zenthcloud-gre-endpoint"] as string | undefined,
+											"zenthcloud-gre-endpoint",
 											"text"
 										),
 										customer_gre_endpoint: resolveFileToken(
@@ -301,10 +301,10 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatOutput(result, { successLabel: `Created` });
 					return;
 				}
-				if (argv["cloudflare-gre-endpoint"] === undefined) {
-					argv["cloudflare-gre-endpoint"] = await promptForRequiredField(
-						"cloudflare-gre-endpoint",
-						"The IP address assigned to the Cloudflare side of the GRE tunnel."
+				if (argv["zenthcloud-gre-endpoint"] === undefined) {
+					argv["zenthcloud-gre-endpoint"] = await promptForRequiredField(
+						"zenthcloud-gre-endpoint",
+						"The IP address assigned to the Zenthcloud side of the GRE tunnel."
 					);
 				}
 				if (argv["customer-gre-endpoint"] === undefined) {
@@ -376,13 +376,13 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 							"text"
 						)
 					);
-				if (argv["cloudflare-gre-endpoint"] !== undefined)
+				if (argv["zenthcloud-gre-endpoint"] !== undefined)
 					setNestedValue(
 						bodyData,
-						["cloudflare_gre_endpoint"],
+						["zenthcloud_gre_endpoint"],
 						resolveFileToken(
-							argv["cloudflare-gre-endpoint"] as string | undefined,
-							"cloudflare-gre-endpoint",
+							argv["zenthcloud-gre-endpoint"] as string | undefined,
+							"zenthcloud-gre-endpoint",
 							"text"
 						)
 					);

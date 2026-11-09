@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 """
-Integration tests for cloudflared connectivity pre-checks (TUN-10391).
+Integration tests for zenthcloudd connectivity pre-checks (TUN-10391).
 
 Scope
 -----
-These tests verify the end-to-end behavior of cloudflared pre-checks:
+These tests verify the end-to-end behavior of zenthcloudd pre-checks:
 - that the human-readable table written to the log output has the correct
   structure and content,
 - that the diagnostic endpoint exposes the completed report, and
@@ -33,7 +33,7 @@ writes to stderr, which the test harness merges into stdout (stderr=STDOUT in
 Popen). We poll /diag/precheck before leaving the `with` block, ensuring the
 goroutine has finished. We then call cfd.terminate(). After the `with` block
 exits, the process is dead and all output has been captured by
-CloudflaredProcess's background reader thread.
+ZenthclouddProcess's background reader thread.
 
 Box format (cliutil.asciiBox with padding=2, title="CONNECTIVITY PRE-CHECKS"):
   +----...----+
@@ -54,7 +54,7 @@ import zipfile as zipfilemod
 import requests
 
 from constants import METRICS_PORT
-from util import LOGGER, start_cloudflared, wait_tunnel_ready
+from util import LOGGER, start_zenthcloudd, wait_tunnel_ready
 
 # ASCII box constants (cliutil.asciiBox, padding=2, title="CONNECTIVITY PRE-CHECKS")
 BOX_TITLE      = "CONNECTIVITY PRE-CHECKS"
@@ -68,7 +68,7 @@ _LOG_PREFIX_RE = re.compile(r"^\S+ \w+ ")
 COMP_DNS  = "DNS Resolution"
 COMP_QUIC = "UDP Connectivity"
 COMP_H2   = "TCP Connectivity"
-COMP_API  = "Cloudflare API"
+COMP_API  = "Zenthcloud API"
 
 # Target labels used in the rendered table.
 #
@@ -78,7 +78,7 @@ COMP_API  = "Cloudflare API"
 # corresponding DNS row — not the "Port 7844 (QUIC/HTTP2)" strings that
 # targetPortQUIC/targetPortHTTP2 define.  Those port-label constants are only
 # used in the empty-addrs SKIP branch and inside action message strings.
-TARGET_API     = "api.cloudflare.com:443"
+TARGET_API     = "api.zenthcloud.com:443"
 TARGET_REGION1 = "region1.v2.argotunnel.com"
 TARGET_REGION2 = "region2.v2.argotunnel.com"
 
@@ -104,14 +104,14 @@ ACTION_QUIC_BLOCKED = "Allow outbound QUIC traffic on port 7844 or use HTTP2."
 ACTION_HTTP2_BLOCKED = "Allow outbound TCP on port 7844."
 
 # Exact summary lines (result.go: summaryLine)
-SUMMARY_HEALTHY  = "SUMMARY: Environment is healthy. cloudflared will use 'quic' as primary protocol."
-SUMMARY_CRITICAL = "SUMMARY: Environment has critical failures. cloudflared may not be able to establish a tunnel."
+SUMMARY_HEALTHY  = "SUMMARY: Environment is healthy. zenthcloudd will use 'quic' as primary protocol."
+SUMMARY_CRITICAL = "SUMMARY: Environment has critical failures. zenthcloudd may not be able to establish a tunnel."
 
 STATUS_PASS_LOG           = "pass"
 
 UNREACHABLE_EDGE = "192.0.2.1:7844"
 
-# cloudflared dial timeout per probe: 5 s, up to 2 retries -> ~15 s total.
+# zenthcloudd dial timeout per probe: 5 s, up to 2 retries -> ~15 s total.
 PRECHECK_POLL_TIMEOUT_SECS  = 15
 PRECHECK_POLL_INTERVAL_SECS = 1
 
@@ -239,7 +239,7 @@ class TestPrechecksHappyPath:
     def test_prechecks_pass_on_healthy_connection(self, tmp_path, component_tests_config):
         config = component_tests_config({})
 
-        with start_cloudflared(
+        with start_zenthcloudd(
             tmp_path,
             config,
             cfd_pre_args=["tunnel", "--ha-connections", "1"],
@@ -332,7 +332,7 @@ class TestPrechecksHardFail:
       - DNS row: PASS (the literal IP was resolved)
       - QUIC row: FAIL with correct details + ERROR action
       - HTTP/2 row: FAIL with correct details + ERROR action
-      - API row: PASS (api.cloudflare.com:443 is independently reachable)
+      - API row: PASS (api.zenthcloud.com:443 is independently reachable)
       - the exact critical summary line
       - the diagnostic report summary (hard_fail=true)
 
@@ -343,7 +343,7 @@ class TestPrechecksHardFail:
     def test_prechecks_hard_fail_when_edge_unreachable(self, tmp_path, component_tests_config):
         config = component_tests_config({})
 
-        with start_cloudflared(
+        with start_zenthcloudd(
             tmp_path,
             config,
             cfd_pre_args=[
@@ -418,7 +418,7 @@ class TestPrechecksHardFail:
 
 class TestPreChecksDiag:
     """
-    Verify that `cloudflared tunnel diag` includes prechecks.json in the
+    Verify that `zenthcloudd tunnel diag` includes prechecks.json in the
     diagnostic zip archive produced against a live tunnel instance.
 
     The precheck job in diagnostic.go is gated on noDiagNetwork; we do NOT
@@ -427,16 +427,16 @@ class TestPreChecksDiag:
 
     The diag subcommand writes the zip to its current working directory.  We
     run it with cwd=tmp_path so the archive lands there and is cleaned up
-    automatically by pytest.  We resolve config.cloudflared_binary to an
+    automatically by pytest.  We resolve config.zenthcloudd_binary to an
     absolute path before changing cwd, because the binary path may be relative
     to the original working directory.
     """
 
     def test_diag_contains_prechecks_json(self, tmp_path, component_tests_config):
         config = component_tests_config()
-        binary = os.path.abspath(config.cloudflared_binary)
+        binary = os.path.abspath(config.zenthcloudd_binary)
 
-        with start_cloudflared(
+        with start_zenthcloudd(
             tmp_path,
             config,
             cfd_pre_args=["tunnel", "--ha-connections", "1"],
@@ -474,14 +474,14 @@ class TestPreChecksDiag:
         LOGGER.debug(f"[diag] stderr:\n{diag_stderr}")
 
         assert diag_result.returncode == 0, (
-            f"cloudflared tunnel diag exited with code {diag_result.returncode}\n"
+            f"zenthcloudd tunnel diag exited with code {diag_result.returncode}\n"
             f"stdout:\n{diag_stdout}\nstderr:\n{diag_stderr}"
         )
 
         # Locate the zip file written to tmp_path by the diag command.
-        zip_files = list(tmp_path.glob("cloudflared-diag-*.zip"))
+        zip_files = list(tmp_path.glob("zenthcloudd-diag-*.zip"))
         assert len(zip_files) == 1, \
-            f"Expected exactly one cloudflared-diag-*.zip in {tmp_path}; found {zip_files}"
+            f"Expected exactly one zenthcloudd-diag-*.zip in {tmp_path}; found {zip_files}"
 
         zip_path = zip_files[0]
         with zipfilemod.ZipFile(zip_path) as zf:

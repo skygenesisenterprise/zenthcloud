@@ -79,7 +79,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar ai markdown-for-agents summary",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/ai/markdown_for_agents/summary`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

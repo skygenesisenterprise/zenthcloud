@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -14,12 +14,12 @@
 // serializes through the legacy adapter; with the flag it serializes through the TypeScript writer
 // sink. The cross-implementation configurations also cover each received-stream implementation.
 
-import { WorkerEntrypoint } from 'cloudflare:workers';
+import { WorkerEntrypoint } from 'zenthcloud:workers';
 import * as assert from 'node:assert';
 
 const enc = new TextEncoder();
 const usingTsImpl =
-  globalThis.Cloudflare.compatibilityFlags['typescript_implemented_streams'] ===
+  globalThis.Zenthcloud.compatibilityFlags['typescript_implemented_streams'] ===
   true;
 
 export class Peer extends WorkerEntrypoint {

@@ -48,7 +48,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("rate-plan-externally-managed", {
 			type: "boolean",
 			description:
-				"Whether this rate plan is managed externally from Cloudflare.",
+				"Whether this rate plan is managed externally from Zenthcloud.",
 		})
 		.option("rate-plan-id", {
 			type: "string",
@@ -109,7 +109,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf user subscriptions update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/user/subscriptions/${argv["identifier"] == null ? "<identifier>" : encodeURIComponent(String(argv["identifier"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["identifier"] == null ? "<identifier>" : encodeURIComponent(String(argv["identifier"]))}`,
 						pathParams: { identifier: String(argv["identifier"] ?? "") },
 						bodyKind: "json",
 						body:

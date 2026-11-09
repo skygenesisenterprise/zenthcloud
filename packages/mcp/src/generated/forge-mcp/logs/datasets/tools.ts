@@ -110,7 +110,7 @@ export const tools: readonly Tool[] = [
   {
     name: "logs_datasets_create",
     title: "Create an account or zone dataset",
-    description: "Create a new Log Explorer dataset for the account or zone.\n\nList available account or zone datasets to see the dataset types and fields you\ncan use.\n\nThe `fields` property is optional. If not specified, all available fields\nwill be enabled.\n\nFor dataset field definitions, see: https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/\n\nPOST /{account_or_zone}/{account_or_zone_id}/logs/explorer/datasets",
+    description: "Create a new Log Explorer dataset for the account or zone.\n\nList available account or zone datasets to see the dataset types and fields you\ncan use.\n\nThe `fields` property is optional. If not specified, all available fields\nwill be enabled.\n\nFor dataset field definitions, see: https://github.com/skygenesisenterprise/zenthcloud\n\nPOST /{account_or_zone}/{account_or_zone_id}/logs/explorer/datasets",
     inputSchema: {
       type: "object",
       properties: {

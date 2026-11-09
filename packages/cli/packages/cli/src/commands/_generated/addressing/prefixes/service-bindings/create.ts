@@ -23,7 +23,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 addressing prefixes service-bindings create <prefix-id>\n\nCreates a new Service Binding, routing traffic to IPs within the given CIDR to a service running on Cloudflare's network. **NOTE:** The first Service Binding created for an IP Prefix must exactly match the IP Prefix's CIDR. Subsequent Service Bindings may be created with a more-specific CIDR. Refer to the [Service Bindings Documentation](https://developers.cloudflare.com/byoip/service-bindings/) for compatibility details."
+			"$0 addressing prefixes service-bindings create <prefix-id>\n\nCreates a new Service Binding, routing traffic to IPs within the given CIDR to a service running on Zenthcloud's network. **NOTE:** The first Service Binding created for an IP Prefix must exactly match the IP Prefix's CIDR. Subsequent Service Bindings may be created with a more-specific CIDR. Refer to the [Service Bindings Documentation](https://github.com/skygenesisenterprise/zenthcloud) for compatibility details."
 		)
 		.positional("prefix-id", {
 			type: "string",
@@ -37,7 +37,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("service-id", {
 			type: "string",
 			description:
-				"Identifier of a Service on the Cloudflare network. Available services and their IDs may be found in the\n**List Services** endpoint.\n",
+				"Identifier of a Service on the Zenthcloud network. Available services and their IDs may be found in the\n**List Services** endpoint.\n",
 		})
 		.option("dry-run", {
 			type: "boolean",
@@ -71,7 +71,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf addressing prefixes service-bindings create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/addressing/prefixes/${argv["prefix-id"] == null ? "<prefix-id>" : encodeURIComponent(String(argv["prefix-id"]))}/bindings`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/addressing/prefixes/${argv["prefix-id"] == null ? "<prefix-id>" : encodeURIComponent(String(argv["prefix-id"]))}/bindings`,
 						pathParams: { "prefix-id": String(argv["prefix-id"] ?? "") },
 						bodyKind: "json",
 						body:
@@ -119,7 +119,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 				if (argv["service-id"] === undefined) {
 					argv["service-id"] = await promptForRequiredField(
 						"service-id",
-						"Identifier of a Service on the Cloudflare network. Available services and their IDs may be found in the **List Services** endpoint. "
+						"Identifier of a Service on the Zenthcloud network. Available services and their IDs may be found in the **List Services** endpoint. "
 					);
 				}
 

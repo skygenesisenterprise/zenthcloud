@@ -17,7 +17,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zones_binaryAst_edit",
     title: "Change Binary AST setting",
-    description: "Binary AST is a new binary encoding for JavaScript that enables faster parsing of scripts.\nWhen enabled, Cloudflare will serve a binary-encoded version of JavaScript to compatible browsers.\n\nPATCH /zones/{zone_id}/settings/binary_ast",
+    description: "Binary AST is a new binary encoding for JavaScript that enables faster parsing of scripts.\nWhen enabled, Zenthcloud will serve a binary-encoded version of JavaScript to compatible browsers.\n\nPATCH /zones/{zone_id}/settings/binary_ast",
     inputSchema: {
       type: "object",
       properties: {
@@ -141,7 +141,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zones_binaryAst_get",
     title: "Get Binary AST setting",
-    description: "Binary AST is a new binary encoding for JavaScript that enables faster parsing of scripts.\nWhen enabled, Cloudflare will serve a binary-encoded version of JavaScript to compatible browsers.\n\nGET /zones/{zone_id}/settings/binary_ast",
+    description: "Binary AST is a new binary encoding for JavaScript that enables faster parsing of scripts.\nWhen enabled, Zenthcloud will serve a binary-encoded version of JavaScript to compatible browsers.\n\nGET /zones/{zone_id}/settings/binary_ast",
     inputSchema: {
       type: "object",
       properties: {

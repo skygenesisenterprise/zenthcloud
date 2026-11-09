@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/cloudflare/pint/internal/log"
+	"github.com/zenthcloud/pint/internal/log"
 )
 
 func initLogger(level string, noColor bool) error {

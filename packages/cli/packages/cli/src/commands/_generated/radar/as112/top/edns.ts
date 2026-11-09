@@ -103,7 +103,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar as112 top edns",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/as112/top/locations/edns/${argv["edns"] == null ? "<edns>" : encodeURIComponent(String(argv["edns"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["edns"] == null ? "<edns>" : encodeURIComponent(String(argv["edns"]))}`,
 						pathParams: { edns: String(argv["edns"] ?? "") },
 						query: queryParams,
 						bodyKind: "none",

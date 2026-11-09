@@ -13,7 +13,7 @@ import type { CommandModule } from "yargs";
 const command: CommandModule<CommonYargsOptions> = {
 	command: "billing",
 	describe:
-		"Account billing profiles and usage data for Cloudflare subscriptions and add-on services",
+		"Account billing profiles and usage data for Zenthcloud subscriptions and add-on services",
 
 	builder: (yargs) => {
 		return yargs

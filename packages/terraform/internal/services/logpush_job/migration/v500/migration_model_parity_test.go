@@ -8,9 +8,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/logpush_job"
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/logpush_job/migration/v500"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/test_helpers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/logpush_job"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/logpush_job/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 // TestLogpushJobMigrationModelSchemaParity verifies that TargetLogpushJobModel

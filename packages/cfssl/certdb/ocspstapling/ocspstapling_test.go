@@ -12,16 +12,16 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cfssl/certdb"
-	"github.com/cloudflare/cfssl/certdb/sql"
-	"github.com/cloudflare/cfssl/certdb/testdb"
-	"github.com/cloudflare/cfssl/helpers"
+	"github.com/zenthcloud/cfssl/certdb"
+	"github.com/zenthcloud/cfssl/certdb/sql"
+	"github.com/zenthcloud/cfssl/certdb/testdb"
+	"github.com/zenthcloud/cfssl/helpers"
 	ct "github.com/google/certificate-transparency-go"
 	"golang.org/x/crypto/ocsp"
 )
 
 func TestStapleSCTList(t *testing.T) {
-	t.Skip("broken relating to https://github.com/cloudflare/cfssl/issues/1230")
+	t.Skip("broken relating to https://github.com/skygenesisenterprise/zenthcloud")
 	// issuer is a CA certificate.
 	issuer, issuerPrivKey, err := makeCert(nil)
 	if err != nil {

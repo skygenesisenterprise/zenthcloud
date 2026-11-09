@@ -5,8 +5,8 @@ package user_group_members
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/iam"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/iam"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -32,14 +32,14 @@ type UserGroupMembersDataSourceMembersModel struct {
 
 func (m *UserGroupMembersDataSourceModel) toReadParams(_ context.Context) (params iam.UserGroupMemberListParams, diags diag.Diagnostics) {
 	params = iam.UserGroupMemberListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Direction.IsNull() {
-		params.Direction = cloudflare.F(iam.UserGroupMemberListParamsDirection(m.Direction.ValueString()))
+		params.Direction = zenthcloud.F(iam.UserGroupMemberListParamsDirection(m.Direction.ValueString()))
 	}
 	if !m.FuzzyEmail.IsNull() {
-		params.FuzzyEmail = cloudflare.F(m.FuzzyEmail.ValueString())
+		params.FuzzyEmail = zenthcloud.F(m.FuzzyEmail.ValueString())
 	}
 
 	return

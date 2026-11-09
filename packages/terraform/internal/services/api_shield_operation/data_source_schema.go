@@ -5,8 +5,8 @@ package api_shield_operation
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
@@ -66,7 +66,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"endpoint": schema.StringAttribute{
-				Description: "The endpoint which can contain path parameter templates in curly braces, each will be replaced from left to right with {varN}, starting with {var1}, during insertion. This will further be Cloudflare-normalized upon insertion. See: https://developers.cloudflare.com/rules/normalization/how-it-works/.",
+				Description: "The endpoint which can contain path parameter templates in curly braces, each will be replaced from left to right with {varN}, starting with {var1}, during insertion. This will further be Zenthcloud-normalized upon insertion. See: https://github.com/skygenesisenterprise/zenthcloud",
 				Computed:    true,
 			},
 			"host": schema.StringAttribute{
@@ -293,7 +293,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"schemas": schema.SingleNestedAttribute{
-				Description: "OpenAPI JSON schemas for an operation, including both user-uploaded and Cloudflare-learned schemas.",
+				Description: "OpenAPI JSON schemas for an operation, including both user-uploaded and Zenthcloud-learned schemas.",
 				Computed:    true,
 				CustomType:  customfield.NewNestedObjectType[APIShieldOperationSchemasDataSourceModel](ctx),
 				Attributes: map[string]schema.Attribute{

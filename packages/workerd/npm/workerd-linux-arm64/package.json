@@ -1,7 +1,7 @@
 {
-  "name": "@cloudflare/workerd-linux-arm64",
-  "description": "👷 workerd for Linux ARM 64-bit, Cloudflare's JavaScript/Wasm Runtime",
-  "repository": "https://github.com/cloudflare/workerd",
+  "name": "@zenthcloud/workerd-linux-arm64",
+  "description": "👷 workerd for Linux ARM 64-bit, Zenthcloud's JavaScript/Wasm Runtime",
+  "repository": "https://github.com/skygenesisenterprise/zenthcloud",
   "license": "Apache-2.0",
   "preferUnplugged": false,
   "engines": {

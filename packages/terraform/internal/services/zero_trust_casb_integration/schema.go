@@ -3,7 +3,7 @@ package zero_trust_casb_integration
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
@@ -148,7 +148,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()},
 			},
 			"account_id": schema.StringAttribute{
-				Description:   "Cloudflare account identifier.",
+				Description:   "Zenthcloud account identifier.",
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
@@ -237,7 +237,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 					"aws_iam_role": authMethodAttribute(
 						"Authenticate by delegating to a cross-account IAM role.",
 						map[string]schema.Attribute{
-							"role_arn":    plainAttribute("ARN of the cross-account IAM role Cloudflare will assume.", true),
+							"role_arn":    plainAttribute("ARN of the cross-account IAM role Zenthcloud will assume.", true),
 							"external_id": plainAttribute("External ID required when assuming the IAM role.", true),
 						},
 					),
@@ -249,7 +249,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"box_server_authentication": authMethodAttribute(
-						"Authenticate with Box server authentication. Before creating the integration, add the Cloudflare CASB application in Box Admin Console > Integrations > Platform Apps Manager > Server Authentication Apps using client ID `puaghckpy0578r8p6f3g0rf860unup4r`.",
+						"Authenticate with Box server authentication. Before creating the integration, add the Zenthcloud CASB application in Box Admin Console > Integrations > Platform Apps Manager > Server Authentication Apps using client ID `puaghckpy0578r8p6f3g0rf860unup4r`.",
 						map[string]schema.Attribute{
 							"enterprise_id": plainAttribute("Box Enterprise ID from Admin Console > Accounts & Billing.", true),
 						},

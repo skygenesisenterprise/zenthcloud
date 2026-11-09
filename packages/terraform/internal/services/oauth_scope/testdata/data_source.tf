@@ -1,2 +1,2 @@
-data "cloudflare_oauth_scopes" "%[1]s" {
+data "zenthcloud_oauth_scopes" "%[1]s" {
 }

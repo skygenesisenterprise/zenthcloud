@@ -49,7 +49,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf client-side-security cookies get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/page_shield/cookies/${argv["cookie-id"] == null ? "<cookie-id>" : encodeURIComponent(String(argv["cookie-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/page_shield/cookies/${argv["cookie-id"] == null ? "<cookie-id>" : encodeURIComponent(String(argv["cookie-id"]))}`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 							"cookie-id": String(argv["cookie-id"] ?? ""),

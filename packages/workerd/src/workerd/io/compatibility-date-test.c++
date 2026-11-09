@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -159,7 +159,7 @@ KJ_TEST("compatibility flag parsing") {
   // compiled as if the flag had not been named at all.
   expectCompileCompatibilityFlags("2021-11-04", {"formdata_parser_supports_files"_kj},
       "(formDataParserSupportsFiles = true)", {},
-      CompatibilityDateValidation::CURRENT_DATE_FOR_CLOUDFLARE, false, false, {},
+      CompatibilityDateValidation::CURRENT_DATE_FOR_ZENTHCLOUD, false, false, {},
       {"The compatibility flag formdata_parser_supports_files became the default as of "
        "2021-11-03 so does not need to be specified anymore."});
   expectCompileCompatibilityFlags("2021-11-04", {"formdata_parser_supports_files"_kj},
@@ -182,7 +182,7 @@ KJ_TEST("compatibility flag parsing") {
 
   expectCompileCompatibilityFlags("2252-04-01", {}, "()",
       {"Can't set compatibility date in the future: 2252-04-01"},
-      CompatibilityDateValidation::CURRENT_DATE_FOR_CLOUDFLARE);
+      CompatibilityDateValidation::CURRENT_DATE_FOR_ZENTHCLOUD);
 
   expectCompileCompatibilityFlags("2252-04-01", {}, "()",
       {kj::str("This Worker requires compatibility date \"2252-04-01\", but the newest date "
@@ -214,16 +214,16 @@ KJ_TEST("compatibility flag parsing") {
        "command line."_kj},
       CompatibilityDateValidation::CODE_VERSION, false, false, {"some_other_flag"_kj});
 
-  // The allowlist also applies under CURRENT_DATE_FOR_CLOUDFLARE validation.
+  // The allowlist also applies under CURRENT_DATE_FOR_ZENTHCLOUD validation.
   expectCompileCompatibilityFlags("2020-01-01", {"durable_object_rename"_kj}, "(obsolete19 = true)",
-      {}, CompatibilityDateValidation::CURRENT_DATE_FOR_CLOUDFLARE, false, false,
+      {}, CompatibilityDateValidation::CURRENT_DATE_FOR_ZENTHCLOUD, false, false,
       {"durable_object_rename"_kj});
 
-  // Without the allowlist, CURRENT_DATE_FOR_CLOUDFLARE emits the Cloudflare-specific message.
+  // Without the allowlist, CURRENT_DATE_FOR_ZENTHCLOUD emits the Zenthcloud-specific message.
   expectCompileCompatibilityFlags("2020-01-01", {"durable_object_rename"_kj}, "(obsolete19 = true)",
       {"The compatibility flag durable_object_rename is experimental and cannot yet be used in "
-       "Workers deployed to Cloudflare."_kj},
-      CompatibilityDateValidation::CURRENT_DATE_FOR_CLOUDFLARE, false, false,
+       "Workers deployed to Zenthcloud."_kj},
+      CompatibilityDateValidation::CURRENT_DATE_FOR_ZENTHCLOUD, false, false,
       {"some_other_flag"_kj});
 
   // Test experimental requirement using the durable_object_alarms flag since we know this flag

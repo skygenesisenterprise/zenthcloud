@@ -8,9 +8,9 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/api_token"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/api_token"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -27,7 +27,7 @@ func newAPITokenResource(t *testing.T, baseURL string) *api_token.APITokenResour
 	if baseURL == "" {
 		return r
 	}
-	client := cloudflare.NewClient(
+	client := zenthcloud.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIToken("test-token"),
 	)
@@ -50,7 +50,7 @@ func makeAPITokenState(t *testing.T, ctx context.Context, id, name, status, valu
 		{
 			Effect:           types.StringValue("allow"),
 			PermissionGroups: &permGroups,
-			Resources:        types.StringValue(`{"com.cloudflare.api.account.abc123":"*"}`),
+			Resources:        types.StringValue(`{"com.zenthcloud.api.account.abc123":"*"}`),
 		},
 	}
 	model := api_token.APITokenModel{
@@ -88,7 +88,7 @@ func tokenGetResponse(id, name, status string) string {
 				{
 					"effect": "allow",
 					"permission_groups": [{"id": "pg-1"}],
-					"resources": {"com.cloudflare.api.account.abc123": "*"}
+					"resources": {"com.zenthcloud.api.account.abc123": "*"}
 				}
 			]
 		}

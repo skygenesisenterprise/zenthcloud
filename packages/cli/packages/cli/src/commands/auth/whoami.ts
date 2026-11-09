@@ -21,12 +21,12 @@ const whoamiCommand: CommandModule = {
 		}
 
 		// Determine the authentication source.
-		const envToken = process.env.CLOUDFLARE_API_TOKEN;
+		const envToken = process.env.ZENTHCLOUD_API_TOKEN;
 		const stored = readAuthCredentials();
 
 		let authSource: string;
 		if (envToken) {
-			authSource = "CLOUDFLARE_API_TOKEN environment variable";
+			authSource = "ZENTHCLOUD_API_TOKEN environment variable";
 		} else if (stored?.oauth_token) {
 			authSource = `OAuth token from ${getConfigPath()}`;
 		} else {
@@ -40,7 +40,7 @@ const whoamiCommand: CommandModule = {
 			if (authSource === "none" && detectAgentContext().isAgentic) {
 				console.error(
 					hint(
-						'Ask the user: "I can put this online for 60 minutes without you signing in. To keep it, complete the temporary-account claim before it expires. Would you like me to deploy it that way?" (https://developers.cloudflare.com/workers/platform/claim-deployments/) If they agree, run `cf deploy --temporary-account`.'
+						'Ask the user: "I can put this online for 60 minutes without you signing in. To keep it, complete the temporary-account claim before it expires. Would you like me to deploy it that way?" (https://github.com/skygenesisenterprise/zenthcloud) If they agree, run `cf deploy --temporary-account`.'
 					)
 				);
 			}

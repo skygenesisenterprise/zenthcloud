@@ -5,10 +5,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceCloudflareZoneSchema returns the legacy cloudflare_zone schema (schema_version=0).
+// SourceZenthcloudZoneSchema returns the legacy zenthcloud_zone schema (schema_version=0).
 // This is used by UpgradeFromLegacy to parse state from the legacy SDKv2 provider.
-// Reference: https://github.com/cloudflare/terraform-provider-cloudflare/blob/v4/internal/sdkv2provider/schema_cloudflare_zone.go
-func SourceCloudflareZoneSchema() schema.Schema {
+// Reference: https://github.com/skygenesisenterprise/zenthcloud
+func SourceZenthcloudZoneSchema() schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{

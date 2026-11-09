@@ -49,7 +49,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf intel asn subnets list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/intel/asn/${argv["asn"] == null ? "<asn>" : encodeURIComponent(String(argv["asn"]))}/subnets`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/intel/asn/${argv["asn"] == null ? "<asn>" : encodeURIComponent(String(argv["asn"]))}/subnets`,
 						pathParams: { asn: String(argv["asn"] ?? "") },
 						bodyKind: "none",
 					});

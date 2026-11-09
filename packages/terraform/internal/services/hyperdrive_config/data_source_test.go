@@ -6,26 +6,26 @@ import (
 	"strconv"
 	"testing"
 
-	cfv1 "github.com/cloudflare/cloudflare-go"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	cfv1 "github.com/zenthcloud/zenthcloud-go"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
-func TestAccCloudflareHyperdriveConfig_DataSource(t *testing.T) {
+func TestAccZenthcloudHyperdriveConfig_DataSource(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	databaseName := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_NAME")
-	databaseHostname := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_HOSTNAME")
-	databasePort := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_PORT")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	databaseName := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_NAME")
+	databaseHostname := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_HOSTNAME")
+	databasePort := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_PORT")
 	port, _ := strconv.Atoi(databasePort)
-	databaseUser := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_USER")
-	databasePassword := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_PASSWORD")
+	databaseUser := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_USER")
+	databasePassword := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_PASSWORD")
 
-	dataSourceName := "data.cloudflare_hyperdrive_config." + rnd
+	dataSourceName := "data.zenthcloud_hyperdrive_config." + rnd
 
 	var origin = cfv1.HyperdriveConfigOrigin{
 		Database: databaseName,
@@ -41,7 +41,7 @@ func TestAccCloudflareHyperdriveConfig_DataSource(t *testing.T) {
 			acctest.TestAccPreCheck_Hyperdrive(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareHyperdriveConfigDestroy,
+		CheckDestroy:             testAccCheckZenthcloudHyperdriveConfigDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testHyperdriveConfigDataSource(rnd, accountID, rnd, databasePassword, origin, false),
@@ -58,17 +58,17 @@ func TestAccCloudflareHyperdriveConfig_DataSource(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareHyperdriveConfigs_ListDataSource(t *testing.T) {
+func TestAccZenthcloudHyperdriveConfigs_ListDataSource(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	databaseName := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_NAME")
-	databaseHostname := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_HOSTNAME")
-	databasePort := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_PORT")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	databaseName := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_NAME")
+	databaseHostname := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_HOSTNAME")
+	databasePort := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_PORT")
 	port, _ := strconv.Atoi(databasePort)
-	databaseUser := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_USER")
-	databasePassword := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_PASSWORD")
+	databaseUser := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_USER")
+	databasePassword := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_PASSWORD")
 
-	dataSourceName := "data.cloudflare_hyperdrive_configs." + rnd
+	dataSourceName := "data.zenthcloud_hyperdrive_configs." + rnd
 
 	var origin = cfv1.HyperdriveConfigOrigin{
 		Database: databaseName,
@@ -84,7 +84,7 @@ func TestAccCloudflareHyperdriveConfigs_ListDataSource(t *testing.T) {
 			acctest.TestAccPreCheck_Hyperdrive(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareHyperdriveConfigDestroy,
+		CheckDestroy:             testAccCheckZenthcloudHyperdriveConfigDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testHyperdriveConfigListDataSource(rnd, accountID, rnd, databasePassword, origin, false),

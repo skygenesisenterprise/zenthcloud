@@ -36,7 +36,7 @@ export const tools: readonly Tool[] = [
   {
     name: "dns_settings_account_nameserverSets_create",
     title: "Create Custom Nameserver Set",
-    description: "Creates a named Custom Nameserver Set. Only the customer-defined name can be changed later. To change nameservers or addresses, create a new set, move any zone assignments, and delete the old set. For details, refer to [Nameserver sets](https://developers.cloudflare.com/dns/nameservers/custom-nameservers/nameserver-sets/).\n\nThis method is beta.\n\nPOST /accounts/{account_id}/dns_settings/nameserver_sets",
+    description: "Creates a named Custom Nameserver Set. Only the customer-defined name can be changed later. To change nameservers or addresses, create a new set, move any zone assignments, and delete the old set. For details, refer to [Nameserver sets](https://github.com/skygenesisenterprise/zenthcloud).\n\nThis method is beta.\n\nPOST /accounts/{account_id}/dns_settings/nameserver_sets",
     inputSchema: {
       type: "object",
       properties: {
@@ -99,7 +99,7 @@ export const tools: readonly Tool[] = [
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.custom-ns-set.create"
+            "com.zenthcloud.api.account.custom-ns-set.create"
           ]
         },
         "x-stability": "beta"
@@ -134,7 +134,7 @@ export const tools: readonly Tool[] = [
   {
     name: "dns_settings_account_nameserverSets_delete",
     title: "Delete Custom Nameserver Set",
-    description: "Deletes an unassigned Custom Nameserver Set. For details, refer to [Nameserver sets](https://developers.cloudflare.com/dns/nameservers/custom-nameservers/nameserver-sets/).\n\nThis method is beta.\n\nDELETE /accounts/{account_id}/dns_settings/nameserver_sets/{nameserver_set_id}",
+    description: "Deletes an unassigned Custom Nameserver Set. For details, refer to [Nameserver sets](https://github.com/skygenesisenterprise/zenthcloud).\n\nThis method is beta.\n\nDELETE /accounts/{account_id}/dns_settings/nameserver_sets/{nameserver_set_id}",
     inputSchema: {
       type: "object",
       properties: {
@@ -184,7 +184,7 @@ export const tools: readonly Tool[] = [
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.custom-ns-set.delete"
+            "com.zenthcloud.api.account.custom-ns-set.delete"
           ]
         },
         "x-stability": "beta"
@@ -280,7 +280,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.custom-ns-set.update"
+            "com.zenthcloud.api.account.custom-ns-set.update"
           ]
         },
         "x-stability": "beta"
@@ -315,7 +315,7 @@ export const tools: readonly Tool[] = [
   {
     name: "dns_settings_account_nameserverSets_get",
     title: "Get Custom Nameserver Set",
-    description: "Gets a Custom Nameserver Set owned by an account. For details, refer to [Nameserver sets](https://developers.cloudflare.com/dns/nameservers/custom-nameservers/nameserver-sets/).\n\nThis method is beta.\n\nGET /accounts/{account_id}/dns_settings/nameserver_sets/{nameserver_set_id}",
+    description: "Gets a Custom Nameserver Set owned by an account. For details, refer to [Nameserver sets](https://github.com/skygenesisenterprise/zenthcloud).\n\nThis method is beta.\n\nGET /accounts/{account_id}/dns_settings/nameserver_sets/{nameserver_set_id}",
     inputSchema: {
       type: "object",
       properties: {
@@ -378,7 +378,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.custom-ns-set.read"
+            "com.zenthcloud.api.account.custom-ns-set.read"
           ]
         },
         "x-stability": "beta"
@@ -413,7 +413,7 @@ export const tools: readonly Tool[] = [
   {
     name: "dns_settings_account_nameserverSets_list",
     title: "List Custom Nameserver Sets",
-    description: "Lists an account's Custom Nameserver Sets. For details, refer to [Nameserver sets](https://developers.cloudflare.com/dns/nameservers/custom-nameservers/nameserver-sets/).\n\nThis method is beta.\n\nGET /accounts/{account_id}/dns_settings/nameserver_sets",
+    description: "Lists an account's Custom Nameserver Sets. For details, refer to [Nameserver sets](https://github.com/skygenesisenterprise/zenthcloud).\n\nThis method is beta.\n\nGET /accounts/{account_id}/dns_settings/nameserver_sets",
     inputSchema: {
       type: "object",
       properties: {
@@ -492,7 +492,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.custom-ns-set.list"
+            "com.zenthcloud.api.account.custom-ns-set.list"
           ]
         },
         "x-stability": "beta"

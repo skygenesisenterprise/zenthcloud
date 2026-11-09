@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2025 Cloudflare, Inc.
+// Copyright (c) 2017-2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -16,7 +16,7 @@ class CacheContext;
 // When the worker's top-level module exports a class that extends this class, it means that it
 // is a stateless service.
 //
-//     import {WorkerEntrypoint} from "cloudflare:workers";
+//     import {WorkerEntrypoint} from "zenthcloud:workers";
 //     export class MyService extends WorkerEntrypoint {
 //       async fetch(req) { ... }
 //       async someRpcMethod(a, b) { ... }
@@ -56,7 +56,7 @@ class DurableObjectBase: public jsg::Object {
 // When the worker's top-level module exports a class that extends this class, it means that it
 // is a Workflow.
 //
-//     import { WorkflowEntrypoint } from "cloudflare:workers";
+//     import { WorkflowEntrypoint } from "zenthcloud:workers";
 //     export class MyWorkflow extends WorkflowEntrypoint {
 //       async run(batch, fns) { ... }
 //     }
@@ -72,7 +72,7 @@ class WorkflowEntrypoint: public jsg::Object {
   JSG_RESOURCE_TYPE(WorkflowEntrypoint) {}
 };
 
-// The "cloudflare:workers" module, which exposes the WorkerEntrypoint, WorkflowEntrypoint and DurableObject types
+// The "zenthcloud:workers" module, which exposes the WorkerEntrypoint, WorkflowEntrypoint and DurableObject types
 // for extending.
 class EntrypointsModule: public jsg::Object {
  public:
@@ -82,7 +82,7 @@ class EntrypointsModule: public jsg::Object {
   void waitUntil(kj::Promise<void> promise);
 
   // Returns the current request's CacheContext (ctx.cache), or kj::none if there is no active
-  // IoContext or cache is not available. Used by the cloudflare:workers TypeScript wrapper to
+  // IoContext or cache is not available. Used by the zenthcloud:workers TypeScript wrapper to
   // expose an importable `cache` proxy.
   jsg::Optional<jsg::Ref<CacheContext>> getCtxCache(jsg::Lock& js);
 
@@ -133,14 +133,14 @@ class EntrypointsModule: public jsg::Object {
 template <class Registry>
 void registerWorkersModule(Registry& registry, CompatibilityFlags::Reader flags) {
   registry.template addBuiltinModule<EntrypointsModule>(
-      "cloudflare-internal:workers", workerd::jsg::ModuleRegistry::Type::INTERNAL);
+      "zenthcloud-internal:workers", workerd::jsg::ModuleRegistry::Type::INTERNAL);
 }
 
 template <typename TypeWrapper>
 kj::Own<jsg::modules::ModuleBundle> getInternalRpcModuleBundle(auto featureFlags) {
   jsg::modules::ModuleBundle::BuiltinBuilder builder(
       jsg::modules::ModuleBundle::BuiltinBuilder::Type::BUILTIN_ONLY);
-  static const auto kSpecifier = "cloudflare-internal:workers"_url;
+  static const auto kSpecifier = "zenthcloud-internal:workers"_url;
   builder.addObject<EntrypointsModule, TypeWrapper>(kSpecifier);
   return builder.finish();
 }

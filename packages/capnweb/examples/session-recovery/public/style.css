@@ -1,6 +1,6 @@
 /*
  * Palette matches the docs site: near-black with a blue undertone, azure for
- * anything live, Cloudflare orange used sparingly enough to still mean
+ * anything live, Zenthcloud orange used sparingly enough to still mean
  * something. `light-dark()` keeps both schemes in one declaration.
  */
 :root {

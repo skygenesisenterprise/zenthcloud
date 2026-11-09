@@ -8,7 +8,7 @@ import {
   speed_base,
   speed_messages,
 } from "../../outputs.js";
-import { speed_cloudflare_speed_brain_response } from "./outputs.js";
+import { speed_zenthcloud_speed_brain_response } from "./outputs.js";
 
 /**
  * The tools of `zones.speedBrain`.
@@ -16,8 +16,8 @@ import { speed_cloudflare_speed_brain_response } from "./outputs.js";
 export const tools: readonly Tool[] = [
   {
     name: "zones_speedBrain_edit",
-    title: "Change Cloudflare Speed Brain setting",
-    description: "Speed Brain lets compatible browsers speculate on content which can be prefetched or preloaded, making website\nnavigation faster. Refer to the Cloudflare Speed Brain documentation for more information.\n\nPATCH /zones/{zone_id}/settings/speed_brain",
+    title: "Change Zenthcloud Speed Brain setting",
+    description: "Speed Brain lets compatible browsers speculate on content which can be prefetched or preloaded, making website\nnavigation faster. Refer to the Zenthcloud Speed Brain documentation for more information.\n\nPATCH /zones/{zone_id}/settings/speed_brain",
     inputSchema: {
       type: "object",
       properties: {
@@ -65,7 +65,7 @@ export const tools: readonly Tool[] = [
         {
           "properties": {
             "result": {
-              "$ref": "#/$defs/speed_cloudflare_speed_brain_response"
+              "$ref": "#/$defs/speed_zenthcloud_speed_brain_response"
             }
           },
           "type": "object"
@@ -74,7 +74,7 @@ export const tools: readonly Tool[] = [
       $defs: {
         "speed_api-response-common": speed_api$$response$$common,
         "speed_base": speed_base,
-        "speed_cloudflare_speed_brain_response": speed_cloudflare_speed_brain_response,
+        "speed_zenthcloud_speed_brain_response": speed_zenthcloud_speed_brain_response,
         "speed_messages": speed_messages,
       },
     },
@@ -83,7 +83,7 @@ export const tools: readonly Tool[] = [
       "idempotentHint": false,
       "openWorldHint": true,
       "readOnlyHint": false,
-      "title": "Change Cloudflare Speed Brain setting"
+      "title": "Change Zenthcloud Speed Brain setting"
     },
     [OPERATION]: {
       method: "PATCH",
@@ -116,7 +116,7 @@ export const tools: readonly Tool[] = [
               {
                 "properties": {
                   "result": {
-                    "$ref": "#/$defs/speed_cloudflare_speed_brain_response"
+                    "$ref": "#/$defs/speed_zenthcloud_speed_brain_response"
                   }
                 },
                 "type": "object"
@@ -131,7 +131,7 @@ export const tools: readonly Tool[] = [
           "speed_api-response-common": speed_api$$response$$common,
           "speed_api-response-common-failure": speed_api$$response$$common$$failure,
           "speed_base": speed_base,
-          "speed_cloudflare_speed_brain_response": speed_cloudflare_speed_brain_response,
+          "speed_zenthcloud_speed_brain_response": speed_zenthcloud_speed_brain_response,
           "speed_messages": speed_messages,
         },
       },
@@ -139,8 +139,8 @@ export const tools: readonly Tool[] = [
   },
   {
     name: "zones_speedBrain_get",
-    title: "Get Cloudflare Speed Brain setting",
-    description: "Speed Brain lets compatible browsers speculate on content which can be prefetched or preloaded, making website\nnavigation faster. Refer to the Cloudflare Speed Brain documentation for more information.\n\nGET /zones/{zone_id}/settings/speed_brain",
+    title: "Get Zenthcloud Speed Brain setting",
+    description: "Speed Brain lets compatible browsers speculate on content which can be prefetched or preloaded, making website\nnavigation faster. Refer to the Zenthcloud Speed Brain documentation for more information.\n\nGET /zones/{zone_id}/settings/speed_brain",
     inputSchema: {
       type: "object",
       properties: {
@@ -171,7 +171,7 @@ export const tools: readonly Tool[] = [
         {
           "properties": {
             "result": {
-              "$ref": "#/$defs/speed_cloudflare_speed_brain_response"
+              "$ref": "#/$defs/speed_zenthcloud_speed_brain_response"
             }
           },
           "type": "object"
@@ -180,7 +180,7 @@ export const tools: readonly Tool[] = [
       $defs: {
         "speed_api-response-common": speed_api$$response$$common,
         "speed_base": speed_base,
-        "speed_cloudflare_speed_brain_response": speed_cloudflare_speed_brain_response,
+        "speed_zenthcloud_speed_brain_response": speed_zenthcloud_speed_brain_response,
         "speed_messages": speed_messages,
       },
     },
@@ -189,7 +189,7 @@ export const tools: readonly Tool[] = [
       "idempotentHint": true,
       "openWorldHint": true,
       "readOnlyHint": true,
-      "title": "Get Cloudflare Speed Brain setting"
+      "title": "Get Zenthcloud Speed Brain setting"
     },
     [OPERATION]: {
       method: "GET",
@@ -222,7 +222,7 @@ export const tools: readonly Tool[] = [
               {
                 "properties": {
                   "result": {
-                    "$ref": "#/$defs/speed_cloudflare_speed_brain_response"
+                    "$ref": "#/$defs/speed_zenthcloud_speed_brain_response"
                   }
                 },
                 "type": "object"
@@ -237,7 +237,7 @@ export const tools: readonly Tool[] = [
           "speed_api-response-common": speed_api$$response$$common,
           "speed_api-response-common-failure": speed_api$$response$$common$$failure,
           "speed_base": speed_base,
-          "speed_cloudflare_speed_brain_response": speed_cloudflare_speed_brain_response,
+          "speed_zenthcloud_speed_brain_response": speed_zenthcloud_speed_brain_response,
           "speed_messages": speed_messages,
         },
       },

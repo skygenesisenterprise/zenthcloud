@@ -4,7 +4,7 @@ package zone_dnssec
 
 import (
 	"context"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zone_dnssec/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zone_dnssec/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
@@ -12,7 +12,7 @@ var _ resource.ResourceWithUpgradeState = (*ZoneDNSSECResource)(nil)
 
 func (r *ZoneDNSSECResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
 
-	sourceSchema := v500.SourceCloudflareZoneDNSSECSchema()
+	sourceSchema := v500.SourceZenthcloudZoneDNSSECSchema()
 	targetSchema := ResourceSchema(ctx)
 
 	return map[int64]resource.StateUpgrader{

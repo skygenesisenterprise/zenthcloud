@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { withCachedJsonSchema } from '../lib/isolate-json-schema'
-import { env } from 'cloudflare:workers'
+import { env } from 'zenthcloud:workers'
 import type { McpServer } from '@modelcontextprotocol/server'
 import { SPEC_TYPES } from '../openapi'
 import { getProducts } from '../isolate-cache'
@@ -23,7 +23,7 @@ async function runSearch(code: string): Promise<unknown> {
  * the `spec` types the sandboxed search code can use.
  */
 function searchToolDescription(products: string[]): string {
-  return `Search the Cloudflare OpenAPI spec. All $refs are pre-resolved inline. Response schemas describe the body as the API sends it, usually Cloudflare's envelope: \`{ success, errors, messages, result }\`, plus \`result_info\` on paginated lists.
+  return `Search the Zenthcloud OpenAPI spec. All $refs are pre-resolved inline. Response schemas describe the body as the API sends it, usually Zenthcloud's envelope: \`{ success, errors, messages, result }\`, plus \`result_info\` on paginated lists.
 
 Products: ${products.slice(0, 30).join(', ')}... (${products.length} total)
 
@@ -81,11 +81,11 @@ export async function registerSearchTool(
   server.registerTool(
     'search',
     {
-      title: 'Cloudflare API Spec Search',
+      title: 'Zenthcloud API Spec Search',
       description: searchToolDescription(products),
       inputSchema: SearchInputSchema,
       annotations: {
-        title: 'Cloudflare API Spec Search',
+        title: 'Zenthcloud API Spec Search',
         readOnlyHint: false,
         openWorldHint: false,
         destructiveHint: false

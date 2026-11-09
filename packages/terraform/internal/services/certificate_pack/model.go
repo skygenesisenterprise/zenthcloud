@@ -3,8 +3,8 @@
 package certificate_pack
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -20,7 +20,7 @@ type CertificatePackModel struct {
 	Type                 types.String                                                           `tfsdk:"type" json:"type,required"`
 	ValidationMethod     types.String                                                           `tfsdk:"validation_method" json:"validation_method,required"`
 	ValidityDays         types.Int64                                                            `tfsdk:"validity_days" json:"validity_days,required"`
-	CloudflareBranding   types.Bool                                                             `tfsdk:"cloudflare_branding" json:"cloudflare_branding,optional"`
+	ZenthcloudBranding   types.Bool                                                             `tfsdk:"zenthcloud_branding" json:"zenthcloud_branding,optional"`
 	Hosts                customfield.Set[types.String]                                          `tfsdk:"hosts" json:"hosts,computed_optional"`
 	PrimaryCertificate   types.String                                                           `tfsdk:"primary_certificate" json:"primary_certificate,computed"`
 	Status               types.String                                                           `tfsdk:"status" json:"status,computed"`

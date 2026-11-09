@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Cloudflare, Inc.
+// Copyright (c) 2024 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import assert from 'node:assert';
@@ -614,11 +614,11 @@ export const processGetBuiltinModule = {
       undefined
     );
     assert.strictEqual(
-      process.getBuiltinModule('cloudflare-internal:env'),
+      process.getBuiltinModule('zenthcloud-internal:env'),
       undefined
     );
     assert.strictEqual(
-      process.getBuiltinModule('cloudflare-internal:filesystem'),
+      process.getBuiltinModule('zenthcloud-internal:filesystem'),
       undefined
     );
   },

@@ -6,12 +6,12 @@ import (
 	"os"
 	"testing"
 
-	cfv1 "github.com/cloudflare/cloudflare-go"
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/queues"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	cfv1 "github.com/zenthcloud/zenthcloud-go"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/queues"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -26,24 +26,24 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_queue_consumer", &resource.Sweeper{
-		Name: "cloudflare_queue_consumer",
-		F:    testSweepCloudflareQueueConsumers,
+	resource.AddTestSweepers("zenthcloud_queue_consumer", &resource.Sweeper{
+		Name: "zenthcloud_queue_consumer",
+		F:    testSweepZenthcloudQueueConsumers,
 	})
 }
 
-func testSweepCloudflareQueueConsumers(r string) error {
+func testSweepZenthcloudQueueConsumers(r string) error {
 	ctx := context.Background()
 	clientV1, clientErr := acctest.SharedV1Client()
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 		return clientErr
 	}
 	clientV6 := acctest.SharedClient()
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping queue consumers sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping queue consumers sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
@@ -67,7 +67,7 @@ func testSweepCloudflareQueueConsumers(r string) error {
 		}
 
 		consumersPage, err := clientV6.Queues.Consumers.List(ctx, queue.ID, queues.ConsumerListParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to fetch consumers for queue %s: %s", queue.Name, err))
@@ -77,7 +77,7 @@ func testSweepCloudflareQueueConsumers(r string) error {
 		for _, consumer := range consumersPage.Result {
 			tflog.Info(ctx, fmt.Sprintf("Deleting queue consumer: %s (queue: %s, account: %s)", consumer.ConsumerID, queue.Name, accountID))
 			_, err := clientV6.Queues.Consumers.Delete(ctx, queue.ID, consumer.ConsumerID, queues.ConsumerDeleteParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			})
 			if err != nil {
 				tflog.Error(ctx, fmt.Sprintf("Failed to delete queue consumer %s: %s", consumer.ConsumerID, err))
@@ -90,14 +90,14 @@ func testSweepCloudflareQueueConsumers(r string) error {
 	return nil
 }
 
-func TestAccCloudflareQueueConsumer_Worker_UpdateDeadLetterQueue(t *testing.T) {
+func TestAccZenthcloudQueueConsumer_Worker_UpdateDeadLetterQueue(t *testing.T) {
 	t.Parallel()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	queueName := "test-queue-" + rnd
 	dlq1 := "dlq-1-" + rnd
 	dlq2 := "dlq-2-" + rnd
-	resourceName := "cloudflare_queue_consumer." + rnd
+	resourceName := "zenthcloud_queue_consumer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -105,17 +105,17 @@ func TestAccCloudflareQueueConsumer_Worker_UpdateDeadLetterQueue(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareQueueConsumerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudQueueConsumerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareQueueConsumerWorkerWithDeadLetter(rnd, accountID, queueName, dlq1),
+				Config: testAccCheckZenthcloudQueueConsumerWorkerWithDeadLetter(rnd, accountID, queueName, dlq1),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("worker")),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("dead_letter_queue"), knownvalue.StringExact(dlq1)),
 				},
 			},
 			{
-				Config: testAccCheckCloudflareQueueConsumerWorkerWithDeadLetterUpdate(rnd, accountID, queueName, dlq1, dlq2),
+				Config: testAccCheckZenthcloudQueueConsumerWorkerWithDeadLetterUpdate(rnd, accountID, queueName, dlq1, dlq2),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("worker")),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("dead_letter_queue"), knownvalue.StringExact(dlq2)),
@@ -125,14 +125,14 @@ func TestAccCloudflareQueueConsumer_Worker_UpdateDeadLetterQueue(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareQueueConsumer_HttpPull_UpdateDeadLetterQueue(t *testing.T) {
+func TestAccZenthcloudQueueConsumer_HttpPull_UpdateDeadLetterQueue(t *testing.T) {
 	t.Parallel()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	queueName := "test-queue-" + rnd
 	dlq1 := "dlq-1-" + rnd
 	dlq2 := "dlq-2-" + rnd
-	resourceName := "cloudflare_queue_consumer." + rnd
+	resourceName := "zenthcloud_queue_consumer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -140,17 +140,17 @@ func TestAccCloudflareQueueConsumer_HttpPull_UpdateDeadLetterQueue(t *testing.T)
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareQueueConsumerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudQueueConsumerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareQueueConsumerHttpPullWithDeadLetter(rnd, accountID, queueName, dlq1),
+				Config: testAccCheckZenthcloudQueueConsumerHttpPullWithDeadLetter(rnd, accountID, queueName, dlq1),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("http_pull")),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("dead_letter_queue"), knownvalue.StringExact(dlq1)),
 				},
 			},
 			{
-				Config: testAccCheckCloudflareQueueConsumerHttpPullWithDeadLetterUpdate(rnd, accountID, queueName, dlq1, dlq2),
+				Config: testAccCheckZenthcloudQueueConsumerHttpPullWithDeadLetterUpdate(rnd, accountID, queueName, dlq1, dlq2),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("http_pull")),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("dead_letter_queue"), knownvalue.StringExact(dlq2)),
@@ -160,12 +160,12 @@ func TestAccCloudflareQueueConsumer_HttpPull_UpdateDeadLetterQueue(t *testing.T)
 	})
 }
 
-func TestAccCloudflareQueueConsumer_HttpPull_UpdateSettings(t *testing.T) {
+func TestAccZenthcloudQueueConsumer_HttpPull_UpdateSettings(t *testing.T) {
 	t.Parallel()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	queueName := "test-queue-" + rnd
-	resourceName := "cloudflare_queue_consumer." + rnd
+	resourceName := "zenthcloud_queue_consumer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -173,10 +173,10 @@ func TestAccCloudflareQueueConsumer_HttpPull_UpdateSettings(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareQueueConsumerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudQueueConsumerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareQueueConsumerHttpPullWithSettings(rnd, accountID, queueName),
+				Config: testAccCheckZenthcloudQueueConsumerHttpPullWithSettings(rnd, accountID, queueName),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("http_pull")),
@@ -185,7 +185,7 @@ func TestAccCloudflareQueueConsumer_HttpPull_UpdateSettings(t *testing.T) {
 				},
 			},
 			{
-				Config: testAccCheckCloudflareQueueConsumerHttpPullWithSettingsUpdate(rnd, accountID, queueName),
+				Config: testAccCheckZenthcloudQueueConsumerHttpPullWithSettingsUpdate(rnd, accountID, queueName),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("http_pull")),
@@ -197,24 +197,24 @@ func TestAccCloudflareQueueConsumer_HttpPull_UpdateSettings(t *testing.T) {
 	})
 }
 
-func testSweepCloudflareQueueConsumer(r string) error {
+func testSweepZenthcloudQueueConsumer(r string) error {
 	ctx := context.Background()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping queue consumers sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping queue consumers sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
 	client := acctest.SharedClient()
 	if client == nil {
-		tflog.Error(ctx, "Failed to create Cloudflare client")
-		return fmt.Errorf("failed to create Cloudflare client")
+		tflog.Error(ctx, "Failed to create Zenthcloud client")
+		return fmt.Errorf("failed to create Zenthcloud client")
 	}
 
 	// List all queues first
 	queueList, err := client.Queues.List(ctx, queues.QueueListParams{
-		AccountID: cloudflare.F(accountID),
+		AccountID: zenthcloud.F(accountID),
 	})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to list queues: %s", err))
@@ -229,7 +229,7 @@ func testSweepCloudflareQueueConsumer(r string) error {
 	// For each queue, list and delete consumers
 	for _, queue := range queueList.Result {
 		consumers, err := client.Queues.Consumers.List(ctx, queue.QueueID, queues.ConsumerListParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to list consumers for queue %s: %s", queue.QueueID, err))
@@ -239,7 +239,7 @@ func testSweepCloudflareQueueConsumer(r string) error {
 		for _, consumer := range consumers.Result {
 			tflog.Info(ctx, fmt.Sprintf("Deleting queue consumer: %s (queue: %s) (account: %s)", consumer.ConsumerID, queue.QueueID, accountID))
 			_, err := client.Queues.Consumers.Delete(ctx, queue.QueueID, consumer.ConsumerID, queues.ConsumerDeleteParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			})
 			if err != nil {
 				tflog.Error(ctx, fmt.Sprintf("Failed to delete queue consumer %s: %s", consumer.ConsumerID, err))
@@ -252,12 +252,12 @@ func testSweepCloudflareQueueConsumer(r string) error {
 	return nil
 }
 
-func TestAccCloudflareQueueConsumer_Worker(t *testing.T) {
+func TestAccZenthcloudQueueConsumer_Worker(t *testing.T) {
 	t.Parallel()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	queueName := "test-queue-" + rnd
-	resourceName := "cloudflare_queue_consumer." + rnd
+	resourceName := "zenthcloud_queue_consumer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -265,10 +265,10 @@ func TestAccCloudflareQueueConsumer_Worker(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareQueueConsumerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudQueueConsumerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareQueueConsumerWorker(rnd, accountID, queueName),
+				Config: testAccCheckZenthcloudQueueConsumerWorker(rnd, accountID, queueName),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("queue_id"), knownvalue.NotNull()),
@@ -282,12 +282,12 @@ func TestAccCloudflareQueueConsumer_Worker(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareQueueConsumer_HttpPull(t *testing.T) {
+func TestAccZenthcloudQueueConsumer_HttpPull(t *testing.T) {
 	t.Parallel()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	queueName := "test-queue-" + rnd
-	resourceName := "cloudflare_queue_consumer." + rnd
+	resourceName := "zenthcloud_queue_consumer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -295,10 +295,10 @@ func TestAccCloudflareQueueConsumer_HttpPull(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareQueueConsumerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudQueueConsumerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareQueueConsumerHttpPull(rnd, accountID, queueName),
+				Config: testAccCheckZenthcloudQueueConsumerHttpPull(rnd, accountID, queueName),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("queue_id"), knownvalue.NotNull()),
@@ -311,12 +311,12 @@ func TestAccCloudflareQueueConsumer_HttpPull(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareQueueConsumerWorker_WithSettings(t *testing.T) {
+func TestAccZenthcloudQueueConsumerWorker_WithSettings(t *testing.T) {
 	t.Parallel()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	queueName := "test-queue-" + rnd
-	resourceName := "cloudflare_queue_consumer." + rnd
+	resourceName := "zenthcloud_queue_consumer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -324,10 +324,10 @@ func TestAccCloudflareQueueConsumerWorker_WithSettings(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareQueueConsumerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudQueueConsumerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareQueueConsumerWorkerWithSettings(rnd, accountID, queueName),
+				Config: testAccCheckZenthcloudQueueConsumerWorkerWithSettings(rnd, accountID, queueName),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("queue_id"), knownvalue.NotNull()),
@@ -344,12 +344,12 @@ func TestAccCloudflareQueueConsumerWorker_WithSettings(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareQueueConsumer_Worker_Update(t *testing.T) {
+func TestAccZenthcloudQueueConsumer_Worker_Update(t *testing.T) {
 	t.Parallel()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	queueName := "test-queue-" + rnd
-	resourceName := "cloudflare_queue_consumer." + rnd
+	resourceName := "zenthcloud_queue_consumer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -357,10 +357,10 @@ func TestAccCloudflareQueueConsumer_Worker_Update(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareQueueConsumerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudQueueConsumerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareQueueConsumerWorkerUpdateStart(rnd, accountID, queueName),
+				Config: testAccCheckZenthcloudQueueConsumerWorkerUpdateStart(rnd, accountID, queueName),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("queue_id"), knownvalue.NotNull()),
@@ -370,7 +370,7 @@ func TestAccCloudflareQueueConsumer_Worker_Update(t *testing.T) {
 				},
 			},
 			{
-				Config: testAccCheckCloudflareQueueConsumerWorkerUpdate(rnd, accountID, queueName),
+				Config: testAccCheckZenthcloudQueueConsumerWorkerUpdate(rnd, accountID, queueName),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("worker")),
@@ -381,13 +381,13 @@ func TestAccCloudflareQueueConsumer_Worker_Update(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareQueueConsumer_Worker_NoReplacementOnReplan(t *testing.T) {
+func TestAccZenthcloudQueueConsumer_Worker_NoReplacementOnReplan(t *testing.T) {
 	t.Parallel()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	queueName := "test-queue-" + rnd
 
-	config := testAccCheckCloudflareQueueConsumerWorker(rnd, accountID, queueName)
+	config := testAccCheckZenthcloudQueueConsumerWorker(rnd, accountID, queueName)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -395,7 +395,7 @@ func TestAccCloudflareQueueConsumer_Worker_NoReplacementOnReplan(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareQueueConsumerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudQueueConsumerDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: config,
@@ -412,12 +412,12 @@ func TestAccCloudflareQueueConsumer_Worker_NoReplacementOnReplan(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareQueueConsumer_Worker_UpdateSettings(t *testing.T) {
+func TestAccZenthcloudQueueConsumer_Worker_UpdateSettings(t *testing.T) {
 	t.Parallel()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	queueName := "test-queue-" + rnd
-	resourceName := "cloudflare_queue_consumer." + rnd
+	resourceName := "zenthcloud_queue_consumer." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -425,10 +425,10 @@ func TestAccCloudflareQueueConsumer_Worker_UpdateSettings(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareQueueConsumerDestroy,
+		CheckDestroy:             testAccCheckZenthcloudQueueConsumerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareQueueConsumerWorkerWithSettingsUpdateStart(rnd, accountID, queueName),
+				Config: testAccCheckZenthcloudQueueConsumerWorkerWithSettingsUpdateStart(rnd, accountID, queueName),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("settings").AtMapKey("batch_size"), knownvalue.Float64Exact(10)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("settings").AtMapKey("max_retries"), knownvalue.Float64Exact(3)),
@@ -436,7 +436,7 @@ func TestAccCloudflareQueueConsumer_Worker_UpdateSettings(t *testing.T) {
 				},
 			},
 			{
-				Config: testAccCheckCloudflareQueueConsumerWorkerWithSettingsUpdate(rnd, accountID, queueName),
+				Config: testAccCheckZenthcloudQueueConsumerWorkerWithSettingsUpdate(rnd, accountID, queueName),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("settings").AtMapKey("batch_size"), knownvalue.Float64Exact(20)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("settings").AtMapKey("max_retries"), knownvalue.Float64Exact(5)),
@@ -447,11 +447,11 @@ func TestAccCloudflareQueueConsumer_Worker_UpdateSettings(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareQueueConsumerDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudQueueConsumerDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_queue_consumer" {
+		if rs.Type != "zenthcloud_queue_consumer" {
 			continue
 		}
 
@@ -464,7 +464,7 @@ func testAccCheckCloudflareQueueConsumerDestroy(s *terraform.State) error {
 			queueID,
 			consumerID,
 			queues.ConsumerGetParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			},
 		)
 		if err == nil {
@@ -475,54 +475,54 @@ func testAccCheckCloudflareQueueConsumerDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckCloudflareQueueConsumerWorker(rnd, accountID, queueName string) string {
+func testAccCheckZenthcloudQueueConsumerWorker(rnd, accountID, queueName string) string {
 	return acctest.LoadTestCase("queueconsumer_worker.tf", accountID, queueName, rnd, accountID, accountID)
 }
 
-func testAccCheckCloudflareQueueConsumerWorkerUpdateStart(rnd, accountID, queueName string) string {
+func testAccCheckZenthcloudQueueConsumerWorkerUpdateStart(rnd, accountID, queueName string) string {
 	return acctest.LoadTestCase("queueconsumer_worker_update_start.tf", accountID, queueName, rnd, accountID, accountID)
 }
 
-func testAccCheckCloudflareQueueConsumerWorkerUpdate(rnd, accountID, queueName string) string {
+func testAccCheckZenthcloudQueueConsumerWorkerUpdate(rnd, accountID, queueName string) string {
 	return acctest.LoadTestCase("queueconsumer_worker_update.tf", accountID, queueName, rnd, accountID, accountID)
 }
 
-func testAccCheckCloudflareQueueConsumerWorkerWithSettings(rnd, accountID, queueName string) string {
+func testAccCheckZenthcloudQueueConsumerWorkerWithSettings(rnd, accountID, queueName string) string {
 	return acctest.LoadTestCase("queueconsumer_worker_with_settings.tf", accountID, queueName, rnd, accountID, accountID)
 }
 
-func testAccCheckCloudflareQueueConsumerWorkerWithSettingsUpdateStart(rnd, accountID, queueName string) string {
+func testAccCheckZenthcloudQueueConsumerWorkerWithSettingsUpdateStart(rnd, accountID, queueName string) string {
 	return acctest.LoadTestCase("queueconsumer_worker_with_settings_update_start.tf", accountID, queueName, rnd, accountID, accountID)
 }
 
-func testAccCheckCloudflareQueueConsumerWorkerWithSettingsUpdate(rnd, accountID, queueName string) string {
+func testAccCheckZenthcloudQueueConsumerWorkerWithSettingsUpdate(rnd, accountID, queueName string) string {
 	return acctest.LoadTestCase("queueconsumer_worker_with_settings_update.tf", accountID, queueName, rnd, accountID, accountID)
 }
 
-func testAccCheckCloudflareQueueConsumerHttpPull(rnd, accountID, queueName string) string {
+func testAccCheckZenthcloudQueueConsumerHttpPull(rnd, accountID, queueName string) string {
 	return acctest.LoadTestCase("queueconsumer_http.tf", accountID, queueName, rnd, accountID)
 }
 
-func testAccCheckCloudflareQueueConsumerHttpPullWithSettings(rnd, accountID, queueName string) string {
+func testAccCheckZenthcloudQueueConsumerHttpPullWithSettings(rnd, accountID, queueName string) string {
 	return acctest.LoadTestCase("queueconsumer_http_with_settings.tf", accountID, queueName, rnd, accountID)
 }
 
-func testAccCheckCloudflareQueueConsumerHttpPullWithSettingsUpdate(rnd, accountID, queueName string) string {
+func testAccCheckZenthcloudQueueConsumerHttpPullWithSettingsUpdate(rnd, accountID, queueName string) string {
 	return acctest.LoadTestCase("queueconsumer_http_with_settings_update.tf", accountID, queueName, rnd, accountID)
 }
 
-func testAccCheckCloudflareQueueConsumerWorkerWithDeadLetter(rnd, accountID, queueName, dlqName string) string {
+func testAccCheckZenthcloudQueueConsumerWorkerWithDeadLetter(rnd, accountID, queueName, dlqName string) string {
 	return acctest.LoadTestCase("queueconsumer_worker_with_dead_letter.tf", accountID, queueName, accountID, dlqName, rnd, accountID, accountID)
 }
 
-func testAccCheckCloudflareQueueConsumerWorkerWithDeadLetterUpdate(rnd, accountID, queueName, dlqName1, dlqName2 string) string {
+func testAccCheckZenthcloudQueueConsumerWorkerWithDeadLetterUpdate(rnd, accountID, queueName, dlqName1, dlqName2 string) string {
 	return acctest.LoadTestCase("queueconsumer_worker_with_dead_letter_update.tf", accountID, queueName, accountID, dlqName1, accountID, dlqName2, rnd, accountID, accountID)
 }
 
-func testAccCheckCloudflareQueueConsumerHttpPullWithDeadLetter(rnd, accountID, queueName, dlqName string) string {
+func testAccCheckZenthcloudQueueConsumerHttpPullWithDeadLetter(rnd, accountID, queueName, dlqName string) string {
 	return acctest.LoadTestCase("queueconsumer_http_with_dead_letter.tf", accountID, queueName, accountID, dlqName, rnd, accountID)
 }
 
-func testAccCheckCloudflareQueueConsumerHttpPullWithDeadLetterUpdate(rnd, accountID, queueName, dlqName1, dlqName2 string) string {
+func testAccCheckZenthcloudQueueConsumerHttpPullWithDeadLetterUpdate(rnd, accountID, queueName, dlqName1, dlqName2 string) string {
 	return acctest.LoadTestCase("queueconsumer_http_with_dead_letter_update.tf", accountID, queueName, accountID, dlqName1, accountID, dlqName2, rnd, accountID)
 }

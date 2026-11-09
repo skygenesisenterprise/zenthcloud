@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_magic_wan_gre_tunnel Data Source - Cloudflare"
+page_title: "zenthcloud_magic_wan_gre_tunnel Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Magic Transit ReadMagic Transit WriteMagic WAN ReadMagic WAN Write
 ---
 
-# cloudflare_magic_wan_gre_tunnel (Data Source)
+# zenthcloud_magic_wan_gre_tunnel (Data Source)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_magic_wan_gre_tunnel" "example_magic_wan_gre_tunnel" {
+data "zenthcloud_magic_wan_gre_tunnel" "example_magic_wan_gre_tunnel" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   gre_tunnel_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
@@ -48,7 +48,7 @@ Read-Only:
 - `automatic_return_routing` (Boolean) True if automatic stateful return routing should be enabled for a tunnel, false otherwise. Requires the `coupler_integration` account flag to be enabled; requests setting this to `true` without that flag will be rejected.
 - `bgp` (Attributes) (see [below for nested schema](#nestedatt--gre_tunnel--bgp))
 - `bgp_status` (Attributes) (see [below for nested schema](#nestedatt--gre_tunnel--bgp_status))
-- `cloudflare_gre_endpoint` (String) The IP address assigned to the Cloudflare side of the GRE tunnel.
+- `zenthcloud_gre_endpoint` (String) The IP address assigned to the Zenthcloud side of the GRE tunnel.
 - `created_on` (String) The date and time the tunnel was created.
 - `customer_gre_endpoint` (String) The IP address assigned to the customer side of the GRE tunnel.
 - `description` (String) An optional description of the GRE tunnel.
@@ -108,12 +108,12 @@ Read-Only:
 
 Read-Only:
 
-- `direction` (String) The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Cloudflare via the open Internet, or bidirectional where both the probe and result come and go via the tunnel.
+- `direction` (String) The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Zenthcloud via the open Internet, or bidirectional where both the probe and result come and go via the tunnel.
 Available values: "unidirectional", "bidirectional".
 - `enabled` (Boolean) Determines whether to run healthchecks for a tunnel.
 - `rate` (String) How frequent the health check is run. The default value is `mid`.
 Available values: "low", "mid", "high".
-- `target` (Attributes) The destination address in a request type health check. After the healthcheck is decapsulated at the customer end of the tunnel, the ICMP echo will be forwarded to this address. This field defaults to `customer_gre_endpoint address`. This field is ignored for bidirectional healthchecks as the interface_address (not assigned to the Cloudflare side of the tunnel) is used as the target. Must be in object form if the x-magic-new-hc-target header is set to true and string form if x-magic-new-hc-target is absent or set to false. (see [below for nested schema](#nestedatt--gre_tunnel--health_check--target))
+- `target` (Attributes) The destination address in a request type health check. After the healthcheck is decapsulated at the customer end of the tunnel, the ICMP echo will be forwarded to this address. This field defaults to `customer_gre_endpoint address`. This field is ignored for bidirectional healthchecks as the interface_address (not assigned to the Zenthcloud side of the tunnel) is used as the target. Must be in object form if the x-magic-new-hc-target header is set to true and string form if x-magic-new-hc-target is absent or set to false. (see [below for nested schema](#nestedatt--gre_tunnel--health_check--target))
 - `type` (String) The type of healthcheck to run, reply or request. The default value is `reply`.
 Available values: "reply", "request".
 

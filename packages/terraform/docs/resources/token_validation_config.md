@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_token_validation_config Resource - Cloudflare"
+page_title: "zenthcloud_token_validation_config Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account API GatewayAccount API Gateway ReadDomain API GatewayDomain API Gateway Read
 ---
 
-# cloudflare_token_validation_config (Resource)
+# zenthcloud_token_validation_config (Resource)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_token_validation_config" "example_token_validation_config" {
+resource "zenthcloud_token_validation_config" "example_token_validation_config" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   credentials = {
     keys = [{
@@ -87,7 +87,7 @@ Available values: "P-256", "P-384".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_token_validation_config.example '<zone_id>/<config_id>'
+$ terraform import zenthcloud_token_validation_config.example '<zone_id>/<config_id>'
 ```
 
 

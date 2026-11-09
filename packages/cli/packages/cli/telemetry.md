@@ -1,8 +1,8 @@
 # cf CLI Telemetry
 
-Cloudflare gathers anonymous, non-user-identifying telemetry about usage of the
+Zenthcloud gathers anonymous, non-user-identifying telemetry about usage of the
 [`cf` CLI](https://www.npmjs.com/package/cf), the command-line interface for
-Cloudflare's APIs and developer workflows. You can
+Zenthcloud's APIs and developer workflows. You can
 [opt out of sharing telemetry](#how-can-i-configure-cf-telemetry) at any time.
 
 This policy describes telemetry sent by `cf` itself. Tools invoked by `cf dev`
@@ -13,7 +13,7 @@ or `cf build` may have their own telemetry settings.
 Telemetry helps us identify bugs and understand which commands and features are
 used. This lets us prioritize fixes and make informed decisions about the CLI.
 
-## What telemetry data is Cloudflare collecting?
+## What telemetry data is Zenthcloud collecting?
 
 Command telemetry uses command-started and command-finished events containing:
 
@@ -41,7 +41,7 @@ Command telemetry uses command-started and command-finished events containing:
 - The names of flags used and their combinations. Boolean and recognized enum
   values may be included; free-form values are replaced with `<REDACTED>`.
 - Command duration and its outcome (`success`, `error`, or `cancelled`).
-- Error class, HTTP status, and numeric Cloudflare API error codes when a
+- Error class, HTTP status, and numeric Zenthcloud API error codes when a
   command fails. Error messages and stack traces are not sent.
 - The `cf` version and prerelease label, when present. When a global `cf`
   hands a command to the `cf` version pinned by a project, the version is that
@@ -65,11 +65,11 @@ Keep `cf cli search` and `cf docs search` queries anonymous; describe the action
 and resource type only. Never include names, email addresses, domains, account
 or resource IDs, tokens, or other identifying values.
 
-Cloudflare receives the IP address associated with the telemetry request. It is
-handled according to Cloudflare's
-[Privacy Policy](https://www.cloudflare.com/privacypolicy/).
+Zenthcloud receives the IP address associated with the telemetry request. It is
+handled according to Zenthcloud's
+[Privacy Policy](https://github.com/skygenesisenterprise/zenthcloud).
 
-Separately from command telemetry, Cloudflare API requests made by `cf` include
+Separately from command telemetry, Zenthcloud API requests made by `cf` include
 the CLI version and execution mode in headers, and the detected agent harness
 identifier when applicable. Disabling command telemetry does not disable API
 requests needed to carry out commands.
@@ -119,4 +119,4 @@ setting enables it. `cf cli telemetry status` shows the effective setting and
 its source. `cf` does not read Wrangler's saved telemetry preference or project
 configuration.
 
-There is no per-project telemetry setting in `cloudflare.config.ts`.
+There is no per-project telemetry setting in `zenthcloud.config.ts`.

@@ -9,12 +9,12 @@ import type { JSONObject } from "@modelcontextprotocol/server";
 export const zones_automatic_platform_optimization: JSONObject = {
   "properties": {
     "cache_by_device_type": {
-      "description": "Indicates whether or not [cache by device type](https://developers.cloudflare.com/automatic-platform-optimization/reference/cache-device-type/) is enabled.",
+      "description": "Indicates whether or not [cache by device type](https://github.com/skygenesisenterprise/zenthcloud) is enabled.",
       "type": "boolean"
     },
     "cf": {
       "default": false,
-      "description": "Indicates whether or not Cloudflare proxy is enabled.",
+      "description": "Indicates whether or not Zenthcloud proxy is enabled.",
       "type": "boolean"
     },
     "enabled": {
@@ -36,7 +36,7 @@ export const zones_automatic_platform_optimization: JSONObject = {
     },
     "wp_plugin": {
       "default": false,
-      "description": "Indicates whether or not [Cloudflare for WordPress plugin](https://wordpress.org/plugins/cloudflare/) is installed.",
+      "description": "Indicates whether or not [Zenthcloud for WordPress plugin](https://github.com/skygenesisenterprise/zenthcloud) is installed.",
       "type": "boolean"
     }
   },
@@ -62,7 +62,7 @@ export const zones_cache$$rules_aegis_value: JSONObject = {
       "type": "boolean"
     },
     "pool_id": {
-      "description": "Egress pool id which refers to a grouping of dedicated egress IPs through which Cloudflare will connect to origin.",
+      "description": "Egress pool id which refers to a grouping of dedicated egress IPs through which Zenthcloud will connect to origin.",
       "type": "string"
     }
   },

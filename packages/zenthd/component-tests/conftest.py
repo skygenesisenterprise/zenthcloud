@@ -36,20 +36,20 @@ def component_tests_config():
 
             if cfd_mode is CfdModes.NAMED:
                 return NamedTunnelConfig(additional_config=additional_config,
-                                         cloudflared_binary=config['cloudflared_binary'],
+                                         zenthcloudd_binary=config['zenthcloudd_binary'],
                                          tunnel=config['tunnel'],
                                          credentials_file=config['credentials_file'],
                                          ingress=ingress,
                                          hostname=hostname)
             elif cfd_mode is CfdModes.QUICK:
-                return QuickTunnelConfig(additional_config=additional_config, cloudflared_binary=config['cloudflared_binary'])
+                return QuickTunnelConfig(additional_config=additional_config, zenthcloudd_binary=config['zenthcloudd_binary'])
             else:
-                raise Exception(f"Unknown cloudflared mode {cfd_mode}")
+                raise Exception(f"Unknown zenthcloudd mode {cfd_mode}")
 
         return _component_tests_config
 
 
-# This fixture is automatically called before each tests to make sure the previous cloudflared has been shutdown
+# This fixture is automatically called before each tests to make sure the previous zenthcloudd has been shutdown
 @pytest.fixture(autouse=True)
-def wait_previous_cloudflared():
+def wait_previous_zenthcloudd():
     sleep(BACKOFF_SECS)

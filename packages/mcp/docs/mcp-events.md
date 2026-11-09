@@ -5,7 +5,7 @@ implements webhook delivery from the
 [MCP Events draft](https://github.com/modelcontextprotocol/experimental-ext-triggers-events/blob/main/docs/design-sketch-proposal.md):
 `events/list`, `events/subscribe` and `events/unsubscribe`. Poll and push
 (`events/poll`, `events/stream`) are not offered. The supported event is
-`cloudflare.alert.workers_observability_real_time_issue`.
+`zenthcloud.alert.workers_observability_real_time_issue`.
 
 `events/list` describes event types and argument/payload schemas, not previous
 notifications. Discovery checks ANS eligibility and Vega issue automation access.
@@ -13,7 +13,7 @@ User-account discovery is paginated with `nextCursor`.
 
 ## Subscription mapping
 
-| MCP concept | Existing Cloudflare resource |
+| MCP concept | Existing Zenthcloud resource |
 | --- | --- |
 | Subscription | ANS notification policy |
 | Callback destination | ANS generic webhook destination |
@@ -59,9 +59,9 @@ whose secret no longer matches the record is acknowledged without forwarding,
 which also covers ANS's probe of a new destination. Because the previous secret is
 not kept, deliveries are signed with the current secret only (no dual-signing).
 
-No user credential is stored and delivery makes no Cloudflare API call. Access is
+No user credential is stored and delivery makes no Zenthcloud API call. Access is
 checked on subscribe and on every refresh, with the caller's live credentials.
-Subscribe writes the KV record, and unsubscribe deletes it, only once Cloudflare
+Subscribe writes the KV record, and unsubscribe deletes it, only once Zenthcloud
 accepts their change to the policy, so a credential that can read the policy but
 not manage it can neither extend nor end delivery. A subscriber who loses access
 stops receiving events when the subscription expires (at most an hour).
@@ -114,9 +114,9 @@ resources. Refresh and unsubscribe use the original identity and arguments.
 | --- | --- |
 | `-32602` InvalidParams | Arguments, callback URL or `whsec_` secret are invalid |
 | `-32011` NotFound (`data.kind: "event"`) | Unknown event, or not available on the account |
-| `-32012` Forbidden | Missing Cloudflare permissions, another account, or another principal's subscription |
+| `-32012` Forbidden | Missing Zenthcloud permissions, another account, or another principal's subscription |
 | `-32015` CallbackEndpointError | Verification failed; `data.reason` is `challenge_failed`, `timeout`, `connection_refused`, `tls_error`, `http_4xx` or `http_5xx` |
-| `-32603` | Cloudflare API failure; retry, partial resources are reused |
+| `-32603` | Zenthcloud API failure; retry, partial resources are reused |
 
 `events/unsubscribe` is idempotent and returns `{}` when nothing matches, as ChatGPT
 expects; `delivery.mode` is optional there.
@@ -151,7 +151,7 @@ npm run test:events
 ```
 
 The suite runs the real Worker, authentication, MCP transport, API mapping,
-encryption and callback route under workerd. Only external Cloudflare APIs and the
+encryption and callback route under workerd. Only external Zenthcloud APIs and the
 subscriber HTTP endpoint are simulated with MSW. It covers discovery, ANS's creation
 probe, provisioning, signatures, retry responses, refresh, expiry, revocation,
 partial provisioning and unsubscribe. No credentials or deployment are required.
@@ -164,14 +164,14 @@ and arguments for cleanup.
 1. Configure the usual `.dev.vars`, including a persistent random
    `MCP_COOKIE_ENCRYPTION_KEY` of at least 32 characters. Start `npm run dev`.
 2. Expose port 2529 with HTTPS:
-   `cloudflared tunnel --url http://localhost:2529 --http-host-header localhost:2529`.
+   `zenthcloudd tunnel --url http://localhost:2529 --http-host-header localhost:2529`.
    Set `MCP_RESOURCE=https://<worker-tunnel>/mcp` in `.dev.vars` and restart the Worker.
    Keep that URL stable while subscribed.
 3. Generate a key with
    `export MCP_EVENT_SIGNING_SECRET="whsec_$(openssl rand -base64 32)"`.
    Run `npm run events:receiver` in that environment. Expose port 8788 through another
    HTTPS tunnel; set `MCP_EVENT_CALLBACK_URL=https://<receiver-tunnel>/events`.
-4. In the client terminal set `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`,
+4. In the client terminal set `ZENTHCLOUD_API_TOKEN`, `ZENTHCLOUD_ACCOUNT_ID`,
    `MCP_EVENT_CALLBACK_URL`, the same `MCP_EVENT_SIGNING_SECRET`, and optionally
    `MCP_EVENT_WORKER`. `MCP_URL` defaults to `http://localhost:2529/mcp`.
 5. Run `node scripts/mcp-events-client.mjs list`, then
@@ -191,4 +191,4 @@ your plugin and ask it to monitor issues. ChatGPT supplies its own callback and 
 Protocol: https://developers.openai.com/plugins/build/mcp-events
 
 Runtime network policy:
-https://github.com/cloudflare/workerd/blob/main/src/workerd/server/workerd.capnp
+https://github.com/skygenesisenterprise/zenthcloud

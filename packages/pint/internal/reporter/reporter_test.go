@@ -3,10 +3,10 @@ package reporter
 import (
 	"testing"
 
-	"github.com/cloudflare/pint/internal/checks"
-	"github.com/cloudflare/pint/internal/diags"
-	"github.com/cloudflare/pint/internal/discovery"
-	"github.com/cloudflare/pint/internal/parser"
+	"github.com/zenthcloud/pint/internal/checks"
+	"github.com/zenthcloud/pint/internal/diags"
+	"github.com/zenthcloud/pint/internal/discovery"
+	"github.com/zenthcloud/pint/internal/parser"
 
 	"github.com/stretchr/testify/require"
 )
@@ -338,13 +338,13 @@ Below is the list of checks that were disabled for each Prometheus server define
 
 - ` + "`prom-a`" + `
   - ` + "`api-1`" + ` is unsupported, disabled checks:
-    - [x](https://cloudflare.github.io/pint/checks/x.html)
+    - [x](https://github.com/skygenesisenterprise/zenthcloud)
 - ` + "`prom-b`" + `
   - ` + "`api-1`" + ` is unsupported, disabled checks:
-    - [m](https://cloudflare.github.io/pint/checks/m.html)
+    - [m](https://github.com/skygenesisenterprise/zenthcloud)
   - ` + "`api-2`" + ` is unsupported, disabled checks:
-    - [a](https://cloudflare.github.io/pint/checks/a.html)
-    - [z](https://cloudflare.github.io/pint/checks/z.html)
+    - [a](https://github.com/skygenesisenterprise/zenthcloud)
+    - [z](https://github.com/skygenesisenterprise/zenthcloud)
 `
 	require.Equal(t, expected, comment)
 }

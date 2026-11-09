@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_api_shield_schema Resource - Cloudflare"
+page_title: "zenthcloud_api_shield_schema Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account API GatewayAccount API Gateway ReadDomain API GatewayDomain API Gateway Read
 ---
 
-# cloudflare_api_shield_schema (Resource)
+# zenthcloud_api_shield_schema (Resource)
 
 Accepted Permissions
 
@@ -15,13 +15,13 @@ Accepted Permissions
 - `Domain API Gateway`
 - `Domain API Gateway Read`
 
-~> `cloudflare_api_shield_schema` is in a deprecation phase and will be removed in the future.
-  Instead, please utilize the [cloudflare_schema_validation_schemas](./schema_validation_schemas) resource instead.
+~> `zenthcloud_api_shield_schema` is in a deprecation phase and will be removed in the future.
+  Instead, please utilize the [zenthcloud_schema_validation_schemas](./schema_validation_schemas) resource instead.
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_api_shield_schema" "example_api_shield_schema" {
+resource "zenthcloud_api_shield_schema" "example_api_shield_schema" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   file = "Example data"
   kind = "openapi_v3"

@@ -1,5 +1,5 @@
 
-resource "cloudflare_turnstile_widget" "%[1]s" {
+resource "zenthcloud_turnstile_widget" "%[1]s" {
   account_id = "%[2]s"
   name       = "my-tf-widget-order-%[1]s"
   mode       = "managed"

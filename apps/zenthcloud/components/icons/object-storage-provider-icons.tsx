@@ -68,8 +68,8 @@ export const AwsIcon = ({ className }: Props) => (
 	</svg>
 );
 
-export const CloudflareR2Icon = ({ className }: Props) => (
-	<BrandIcon data={objectStorageBrandIcons.cloudflare} className={className} />
+export const ZenthcloudR2Icon = ({ className }: Props) => (
+	<BrandIcon data={objectStorageBrandIcons.zenthcloud} className={className} />
 );
 
 export const ScalewayIcon = ({ className }: Props) => (
@@ -178,7 +178,7 @@ export const ZenthcloudInternalIcon = ({ className }: Props) => (
 
 export const objectStorageProviderIcons = {
 	aws: AwsIcon,
-	"cloudflare-r2": CloudflareR2Icon,
+	"zenthcloud-r2": ZenthcloudR2Icon,
 	scaleway: ScalewayIcon,
 	wasabi: WasabiIcon,
 	digitalocean: DigitalOceanIcon,

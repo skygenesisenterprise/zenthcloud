@@ -14,14 +14,14 @@ export const builds_CreateBuildTokenRequest: JSONObject = {
     "build_token_secret": {
       "type": "string"
     },
-    "cloudflare_token_id": {
+    "zenthcloud_token_id": {
       "type": "string"
     }
   },
   "required": [
     "build_token_name",
     "build_token_secret",
-    "cloudflare_token_id"
+    "zenthcloud_token_id"
   ],
   "type": "object"
 };

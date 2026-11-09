@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_cloudforce_one_request Resource - Cloudflare"
+page_title: "zenthcloud_cloudforce_one_request Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Cloudforce One ReadCloudforce One Write
 ---
 
-# cloudflare_cloudforce_one_request (Resource)
+# zenthcloud_cloudforce_one_request (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_cloudforce_one_request" "example_cloudforce_one_request" {
+resource "zenthcloud_cloudforce_one_request" "example_cloudforce_one_request" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   content = "What regions were most effected by the recent DoS?"
   priority = "routine"
@@ -60,7 +60,7 @@ Available values: "open", "accepted", "reported", "approved", "completed", "decl
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_cloudforce_one_request.example '<account_id>/<request_id>'
+$ terraform import zenthcloud_cloudforce_one_request.example '<account_id>/<request_id>'
 ```
 
 

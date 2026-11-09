@@ -79,7 +79,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("transport", {
 			type: "string",
 			description:
-				"The mail transport hostname for MX/Inline delivery — the MX record Cloudflare delivers email to (e.g. `mx.example.com`).",
+				"The mail transport hostname for MX/Inline delivery — the MX record Zenthcloud delivers email to (e.g. `mx.example.com`).",
 		})
 		.option("dry-run", {
 			type: "boolean",
@@ -119,7 +119,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf email-security domains update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/email-security/settings/domains/${argv["domain-id"] == null ? "<domain-id>" : encodeURIComponent(String(argv["domain-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/email-security/settings/domains/${argv["domain-id"] == null ? "<domain-id>" : encodeURIComponent(String(argv["domain-id"]))}`,
 						pathParams: { "domain-id": String(argv["domain-id"] ?? "") },
 						bodyKind: "json",
 						body:

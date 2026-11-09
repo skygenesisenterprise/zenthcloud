@@ -21,8 +21,8 @@ import { tunnel_cfd$$tunnel$$response$$collection } from "./outputs.js";
 export const tools: readonly Tool[] = [
   {
     name: "tunnel_list",
-    title: "List Cloudflare Tunnels",
-    description: "Lists and filters Cloudflare Tunnels in an account.\n\nGET /accounts/{account_id}/cfd_tunnel",
+    title: "List Zenthcloud Tunnels",
+    description: "Lists and filters Zenthcloud Tunnels in an account.\n\nGET /accounts/{account_id}/cfd_tunnel",
     inputSchema: {
       type: "object",
       properties: {
@@ -30,7 +30,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID",
+              "description": "Zenthcloud account ID",
               "type": "string"
             }
           },
@@ -70,7 +70,7 @@ export const tools: readonly Tool[] = [
               "type": "number"
             },
             "status": {
-              "description": "The status of the tunnel. Valid values are `inactive` (tunnel has never been run), `degraded` (tunnel is active and able to serve traffic but in an unhealthy state), `healthy` (tunnel is active and able to serve traffic), or `down` (tunnel can not serve traffic as it has no connections to the Cloudflare Edge).",
+              "description": "The status of the tunnel. Valid values are `inactive` (tunnel has never been run), `degraded` (tunnel is active and able to serve traffic but in an unhealthy state), `healthy` (tunnel is active and able to serve traffic), or `down` (tunnel can not serve traffic as it has no connections to the Zenthcloud Edge).",
               "enum": [
                 "inactive",
                 "degraded",
@@ -120,7 +120,7 @@ export const tools: readonly Tool[] = [
       "idempotentHint": true,
       "openWorldHint": true,
       "readOnlyHint": true,
-      "title": "List Cloudflare Tunnels"
+      "title": "List Zenthcloud Tunnels"
     },
     [OPERATION]: {
       method: "GET",
@@ -141,12 +141,12 @@ export const tools: readonly Tool[] = [
       ],
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Connectors Write",
-          "Cloudflare One Connectors Read",
-          "Cloudflare One Connector: cloudflared Write",
-          "Cloudflare One Connector: cloudflared Read",
-          "Cloudflare Tunnel Write",
-          "Cloudflare Tunnel Read"
+          "Zenthcloud One Connectors Write",
+          "Zenthcloud One Connectors Read",
+          "Zenthcloud One Connector: zenthcloudd Write",
+          "Zenthcloud One Connector: zenthcloudd Read",
+          "Zenthcloud Tunnel Write",
+          "Zenthcloud Tunnel Read"
         ],
         "x-fern-audiences": [
           "sdk"

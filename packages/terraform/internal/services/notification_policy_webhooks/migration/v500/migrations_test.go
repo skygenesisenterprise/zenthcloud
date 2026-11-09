@@ -11,10 +11,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -40,11 +40,11 @@ var v5WithSecretConfig string
 // 1. account_id, name, url, id, type are preserved
 // 2. Resource name stays the same (no rename)
 func TestMigrateNotificationPolicyWebhooksBasic(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the notification
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the notification
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	testCases := []struct {
@@ -72,7 +72,7 @@ func TestMigrateNotificationPolicyWebhooksBasic(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			webhookURL := "https://postman-echo.com/post"
 			tmpDir := t.TempDir()
@@ -88,8 +88,8 @@ func TestMigrateNotificationPolicyWebhooksBasic(t *testing.T) {
 			} else {
 				step1 = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -108,12 +108,12 @@ func TestMigrateNotificationPolicyWebhooksBasic(t *testing.T) {
 					// Step 2: Run migration and verify state
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer,
 						[]statecheck.StateCheck{
-							// Resource name stays the same - cloudflare_notification_policy_webhooks
-							statecheck.ExpectKnownValue("cloudflare_notification_policy_webhooks."+rnd, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
-							statecheck.ExpectKnownValue("cloudflare_notification_policy_webhooks."+rnd, tfjsonpath.New("name"), knownvalue.StringExact("tf-test-webhook-basic")),
-							statecheck.ExpectKnownValue("cloudflare_notification_policy_webhooks."+rnd, tfjsonpath.New("url"), knownvalue.StringExact(webhookURL)),
-							statecheck.ExpectKnownValue("cloudflare_notification_policy_webhooks."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
-							statecheck.ExpectKnownValue("cloudflare_notification_policy_webhooks."+rnd, tfjsonpath.New("type"), knownvalue.NotNull()),
+							// Resource name stays the same - zenthcloud_notification_policy_webhooks
+							statecheck.ExpectKnownValue("zenthcloud_notification_policy_webhooks."+rnd, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
+							statecheck.ExpectKnownValue("zenthcloud_notification_policy_webhooks."+rnd, tfjsonpath.New("name"), knownvalue.StringExact("tf-test-webhook-basic")),
+							statecheck.ExpectKnownValue("zenthcloud_notification_policy_webhooks."+rnd, tfjsonpath.New("url"), knownvalue.StringExact(webhookURL)),
+							statecheck.ExpectKnownValue("zenthcloud_notification_policy_webhooks."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
+							statecheck.ExpectKnownValue("zenthcloud_notification_policy_webhooks."+rnd, tfjsonpath.New("type"), knownvalue.NotNull()),
 						},
 					),
 				},
@@ -125,8 +125,8 @@ func TestMigrateNotificationPolicyWebhooksBasic(t *testing.T) {
 // TestMigrateNotificationPolicyWebhooksWithSecret tests migration of a webhook with optional secret.
 // This test verifies that the secret field is preserved through migration.
 func TestMigrateNotificationPolicyWebhooksWithSecret(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	testCases := []struct {
@@ -154,7 +154,7 @@ func TestMigrateNotificationPolicyWebhooksWithSecret(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			webhookURL := "https://postman-echo.com/post"
 			webhookSecret := "test-secret-12345"
@@ -171,8 +171,8 @@ func TestMigrateNotificationPolicyWebhooksWithSecret(t *testing.T) {
 			} else {
 				step1 = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -191,11 +191,11 @@ func TestMigrateNotificationPolicyWebhooksWithSecret(t *testing.T) {
 					// Step 2: Run migration and verify state
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer,
 						[]statecheck.StateCheck{
-							statecheck.ExpectKnownValue("cloudflare_notification_policy_webhooks."+rnd, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
-							statecheck.ExpectKnownValue("cloudflare_notification_policy_webhooks."+rnd, tfjsonpath.New("name"), knownvalue.StringExact("tf-test-webhook-with-secret")),
-							statecheck.ExpectKnownValue("cloudflare_notification_policy_webhooks."+rnd, tfjsonpath.New("url"), knownvalue.StringExact(webhookURL)),
-							statecheck.ExpectKnownValue("cloudflare_notification_policy_webhooks."+rnd, tfjsonpath.New("secret"), knownvalue.StringExact(webhookSecret)),
-							statecheck.ExpectKnownValue("cloudflare_notification_policy_webhooks."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
+							statecheck.ExpectKnownValue("zenthcloud_notification_policy_webhooks."+rnd, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
+							statecheck.ExpectKnownValue("zenthcloud_notification_policy_webhooks."+rnd, tfjsonpath.New("name"), knownvalue.StringExact("tf-test-webhook-with-secret")),
+							statecheck.ExpectKnownValue("zenthcloud_notification_policy_webhooks."+rnd, tfjsonpath.New("url"), knownvalue.StringExact(webhookURL)),
+							statecheck.ExpectKnownValue("zenthcloud_notification_policy_webhooks."+rnd, tfjsonpath.New("secret"), knownvalue.StringExact(webhookSecret)),
+							statecheck.ExpectKnownValue("zenthcloud_notification_policy_webhooks."+rnd, tfjsonpath.New("id"), knownvalue.NotNull()),
 						},
 					),
 				},

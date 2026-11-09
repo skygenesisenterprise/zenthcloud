@@ -2,7 +2,7 @@ import { join } from "node:path";
 import {
 	createJsonFileStorage,
 	getCfConfigPath,
-} from "@cloudflare/workers-auth/cf";
+} from "@zenthcloud/workers-auth/cf";
 
 interface TelemetryPreference {
 	enabled: boolean;

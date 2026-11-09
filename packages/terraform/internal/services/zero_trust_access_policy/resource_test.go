@@ -7,10 +7,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -26,36 +26,36 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zero_trust_access_policy", &resource.Sweeper{
-		Name: "cloudflare_zero_trust_access_policy",
-		F:    testSweepCloudflareAccessPolicies,
+	resource.AddTestSweepers("zenthcloud_zero_trust_access_policy", &resource.Sweeper{
+		Name: "zenthcloud_zero_trust_access_policy",
+		F:    testSweepZenthcloudAccessPolicies,
 	})
 }
 
-func testSweepCloudflareAccessPolicies(r string) error {
+func testSweepZenthcloudAccessPolicies(r string) error {
 	ctx := context.Background()
 
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Client
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 	}
 
 	// Zone level Access Policies.
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	zonePolicies, _, err := client.ListAccessPolicies(context.Background(), cloudflare.ZoneIdentifier(zoneID), cloudflare.ListAccessPoliciesParams{})
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	zonePolicies, _, err := client.ListAccessPolicies(context.Background(), zenthcloud.ZoneIdentifier(zoneID), zenthcloud.ListAccessPoliciesParams{})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch zone level Access Policies: %s", err))
 	}
 
 	if len(zonePolicies) == 0 {
-		log.Print("[DEBUG] No Cloudflare zone level Access Policies to sweep")
+		log.Print("[DEBUG] No Zenthcloud zone level Access Policies to sweep")
 	} else {
 		for _, policy := range zonePolicies {
 			if !utils.ShouldSweepResource(policy.Name) {
 				continue
 			}
 			tflog.Info(ctx, fmt.Sprintf("Deleting zone-level Access Policy: %s (%s)", policy.Name, policy.ID))
-			if err := client.DeleteAccessPolicy(context.Background(), cloudflare.ZoneIdentifier(zoneID), cloudflare.DeleteAccessPolicyParams{PolicyID: policy.ID}); err != nil {
+			if err := client.DeleteAccessPolicy(context.Background(), zenthcloud.ZoneIdentifier(zoneID), zenthcloud.DeleteAccessPolicyParams{PolicyID: policy.ID}); err != nil {
 				tflog.Error(ctx, fmt.Sprintf("Failed to delete zone-level Access Policy %s (%s): %s", policy.Name, policy.ID, err))
 				continue
 			}
@@ -64,14 +64,14 @@ func testSweepCloudflareAccessPolicies(r string) error {
 	}
 
 	// Account level Access Policies.
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	accountPolicies, _, err := client.ListAccessPolicies(context.Background(), cloudflare.AccountIdentifier(accountID), cloudflare.ListAccessPoliciesParams{})
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	accountPolicies, _, err := client.ListAccessPolicies(context.Background(), zenthcloud.AccountIdentifier(accountID), zenthcloud.ListAccessPoliciesParams{})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch account level Access Policies: %s", err))
 	}
 
 	if len(accountPolicies) == 0 {
-		log.Print("[DEBUG] No Cloudflare account level Access Policies to sweep")
+		log.Print("[DEBUG] No Zenthcloud account level Access Policies to sweep")
 		return nil
 	}
 
@@ -80,7 +80,7 @@ func testSweepCloudflareAccessPolicies(r string) error {
 			continue
 		}
 		tflog.Info(ctx, fmt.Sprintf("Deleting account-level Access Policy: %s (%s)", policy.Name, policy.ID))
-		if err := client.DeleteAccessPolicy(context.Background(), cloudflare.AccountIdentifier(accountID), cloudflare.DeleteAccessPolicyParams{PolicyID: policy.ID}); err != nil {
+		if err := client.DeleteAccessPolicy(context.Background(), zenthcloud.AccountIdentifier(accountID), zenthcloud.DeleteAccessPolicyParams{PolicyID: policy.ID}); err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete account-level Access Policy %s (%s): %s", policy.Name, policy.ID, err))
 			continue
 		}
@@ -90,18 +90,18 @@ func testSweepCloudflareAccessPolicies(r string) error {
 	return nil
 }
 
-func TestAccCloudflareAccessPolicy_ServiceToken(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudAccessPolicy_ServiceToken(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -109,7 +109,7 @@ func TestAccCloudflareAccessPolicy_ServiceToken(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustAccessPolicyDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustAccessPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccessPolicyServiceTokenConfig(rnd, zone, accountID),
@@ -134,11 +134,11 @@ func TestAccCloudflareAccessPolicy_ServiceToken(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareAccessPolicy_AnyServiceToken(t *testing.T) {
+func TestAccZenthcloudAccessPolicy_AnyServiceToken(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -146,7 +146,7 @@ func TestAccCloudflareAccessPolicy_AnyServiceToken(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustAccessPolicyDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustAccessPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccessPolicyAnyServiceTokenConfig(rnd, zone, accountID),
@@ -179,11 +179,11 @@ func testAccessPolicyAnyServiceTokenConfig(resourceID, zone, accountID string) s
 	return acctest.LoadTestCase("accesspolicyanyservicetokenconfig.tf", resourceID, zone, accountID)
 }
 
-func TestAccCloudflareAccessPolicy_Group(t *testing.T) {
+func TestAccZenthcloudAccessPolicy_Group(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -191,7 +191,7 @@ func TestAccCloudflareAccessPolicy_Group(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustAccessPolicyDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustAccessPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccessPolicyGroupConfig(rnd, zone, accountID),
@@ -220,11 +220,11 @@ func testAccessPolicyGroupConfig(resourceID, zone, accountID string) string {
 	return acctest.LoadTestCase("accesspolicygroupconfig.tf", resourceID, zone, accountID)
 }
 
-func TestAccCloudflareAccessPolicy_MTLS(t *testing.T) {
+func TestAccZenthcloudAccessPolicy_MTLS(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -232,7 +232,7 @@ func TestAccCloudflareAccessPolicy_MTLS(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustAccessPolicyDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustAccessPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccessPolicyMTLSConfig(rnd, zone, accountID),
@@ -265,11 +265,11 @@ func testAccessPolicyCommonNameConfig(resourceID, zone, accountID string) string
 	return acctest.LoadTestCase("accesspolicycommonnameconfig.tf", resourceID, zone, accountID)
 }
 
-func TestAccCloudflareAccessPolicy_EmailDomain(t *testing.T) {
+func TestAccZenthcloudAccessPolicy_EmailDomain(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -277,7 +277,7 @@ func TestAccCloudflareAccessPolicy_EmailDomain(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustAccessPolicyDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustAccessPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccessPolicyEmailDomainConfig(rnd, zone, accountID),
@@ -307,11 +307,11 @@ func testAccessPolicyEmailDomainConfig(resourceID, zone, accountID string) strin
 	return acctest.LoadTestCase("accesspolicyemaildomainconfig.tf", resourceID, zone, accountID)
 }
 
-func TestAccCloudflareAccessPolicy_Emails(t *testing.T) {
+func TestAccZenthcloudAccessPolicy_Emails(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -319,7 +319,7 @@ func TestAccCloudflareAccessPolicy_Emails(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustAccessPolicyDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustAccessPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccessPolicyEmailsConfig(rnd, zone, accountID),
@@ -348,11 +348,11 @@ func testAccessPolicyEmailsConfig(resourceID, zone, accountID string) string {
 	return acctest.LoadTestCase("accesspolicyemailsconfig.tf", resourceID, zone, accountID)
 }
 
-func TestAccCloudflareAccessPolicy_Everyone(t *testing.T) {
+func TestAccZenthcloudAccessPolicy_Everyone(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -360,7 +360,7 @@ func TestAccCloudflareAccessPolicy_Everyone(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustAccessPolicyDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustAccessPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccessPolicyEveryoneConfig(rnd, zone, accountID),
@@ -389,11 +389,11 @@ func testAccessPolicyEveryoneConfig(resourceID, zone, accountID string) string {
 	return acctest.LoadTestCase("accesspolicyeveryoneconfig.tf", resourceID, zone, accountID)
 }
 
-func TestAccCloudflareAccessPolicy_IPs(t *testing.T) {
+func TestAccZenthcloudAccessPolicy_IPs(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -401,7 +401,7 @@ func TestAccCloudflareAccessPolicy_IPs(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustAccessPolicyDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustAccessPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccessPolicyIPsConfig(rnd, zone, accountID),
@@ -430,11 +430,11 @@ func testAccessPolicyIPsConfig(resourceID, zone, accountID string) string {
 	return acctest.LoadTestCase("accesspolicyipsconfig.tf", resourceID, zone, accountID)
 }
 
-func TestAccCloudflareAccessPolicy_AuthMethod(t *testing.T) {
+func TestAccZenthcloudAccessPolicy_AuthMethod(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -442,7 +442,7 @@ func TestAccCloudflareAccessPolicy_AuthMethod(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustAccessPolicyDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustAccessPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccessPolicyAuthMethodConfig(rnd, zone, accountID),
@@ -471,11 +471,11 @@ func testAccessPolicyAuthMethodConfig(resourceID, zone, accountID string) string
 	return acctest.LoadTestCase("accesspolicyauthmethodconfig.tf", resourceID, zone, accountID)
 }
 
-func TestAccCloudflareAccessPolicy_Geo(t *testing.T) {
+func TestAccZenthcloudAccessPolicy_Geo(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -483,7 +483,7 @@ func TestAccCloudflareAccessPolicy_Geo(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustAccessPolicyDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustAccessPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccessPolicyGeoConfig(rnd, zone, accountID),
@@ -512,11 +512,11 @@ func testAccessPolicyGeoConfig(resourceID, zone, accountID string) string {
 	return acctest.LoadTestCase("accesspolicygeoconfig.tf", resourceID, zone, accountID)
 }
 
-func TestAccCloudflareAccessPolicy_Okta(t *testing.T) {
+func TestAccZenthcloudAccessPolicy_Okta(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -524,7 +524,7 @@ func TestAccCloudflareAccessPolicy_Okta(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustAccessPolicyDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustAccessPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccessPolicyOktaConfig(rnd, zone, accountID),
@@ -554,11 +554,11 @@ func testAccessPolicyOktaConfig(resourceID, zone, accountID string) string {
 	return acctest.LoadTestCase("accesspolicyoktaconfig.tf", resourceID, zone, accountID)
 }
 
-func TestAccCloudflareAccessPolicy_PurposeJustification(t *testing.T) {
+func TestAccZenthcloudAccessPolicy_PurposeJustification(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -566,7 +566,7 @@ func TestAccCloudflareAccessPolicy_PurposeJustification(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustAccessPolicyDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustAccessPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccessPolicyPurposeJustificationConfig(rnd, zone, accountID),
@@ -591,18 +591,18 @@ func TestAccCloudflareAccessPolicy_PurposeJustification(t *testing.T) {
 	})
 }
 
-// Removed old helper function testAccCheckCloudflareAccessPolicyHasPJ as it used outdated cloudflare-go v1 API
+// Removed old helper function testAccCheckZenthcloudAccessPolicyHasPJ as it used outdated zenthcloud-go v1 API
 // Modern tests use ConfigStateChecks with statecheck.ExpectKnownValue instead
 
 func testAccessPolicyPurposeJustificationConfig(resourceID, zone, accountID string) string {
 	return acctest.LoadTestCase("accesspolicypurposejustificationconfig.tf", resourceID, zone, accountID)
 }
 
-func TestAccCloudflareAccessPolicy_ApprovalGroup(t *testing.T) {
+func TestAccZenthcloudAccessPolicy_ApprovalGroup(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -610,7 +610,7 @@ func TestAccCloudflareAccessPolicy_ApprovalGroup(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustAccessPolicyDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustAccessPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccessPolicyApprovalGroupConfig(rnd, zone, accountID),
@@ -655,18 +655,18 @@ func TestAccCloudflareAccessPolicy_ApprovalGroup(t *testing.T) {
 	})
 }
 
-// Removed old helper function testAccCheckCloudflareAccessPolicyHasApprovalGroups as it used outdated cloudflare-go v1 API
+// Removed old helper function testAccCheckZenthcloudAccessPolicyHasApprovalGroups as it used outdated zenthcloud-go v1 API
 // Modern tests use ConfigStateChecks with statecheck.ExpectKnownValue instead
 
 func testAccessPolicyApprovalGroupConfig(resourceID, zone, accountID string) string {
 	return acctest.LoadTestCase("accesspolicyapprovalgroupconfig.tf", resourceID, zone, accountID)
 }
 
-func TestAccCloudflareAccessPolicy_ExternalEvaluation(t *testing.T) {
+func TestAccZenthcloudAccessPolicy_ExternalEvaluation(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -674,7 +674,7 @@ func TestAccCloudflareAccessPolicy_ExternalEvaluation(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustAccessPolicyDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustAccessPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccessPolicyExternalEvalautionConfig(rnd, zone, accountID),
@@ -704,18 +704,18 @@ func testAccessPolicyExternalEvalautionConfig(resourceID, zone, accountID string
 	return acctest.LoadTestCase("accesspolicyexternalevalautionconfig.tf", resourceID, zone, accountID)
 }
 
-func TestAccCloudflareAccessPolicy_ExcludeRules(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudAccessPolicy_ExcludeRules(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -723,7 +723,7 @@ func TestAccCloudflareAccessPolicy_ExcludeRules(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustAccessPolicyDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustAccessPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccessPolicyExcludeRulesConfig(rnd, zone, accountID),
@@ -754,18 +754,18 @@ func testAccessPolicyExcludeRulesConfig(resourceID, zone, accountID string) stri
 	return acctest.LoadTestCase("accesspolicyexcluderulesconfig.tf", resourceID, zone, accountID)
 }
 
-func TestAccCloudflareAccessPolicy_RequireRules(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudAccessPolicy_RequireRules(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -773,7 +773,7 @@ func TestAccCloudflareAccessPolicy_RequireRules(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustAccessPolicyDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustAccessPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccessPolicyRequireRulesConfig(rnd, zone, accountID),
@@ -804,11 +804,11 @@ func testAccessPolicyRequireRulesConfig(resourceID, zone, accountID string) stri
 	return acctest.LoadTestCase("accesspolicyrequirerulesconfig.tf", resourceID, zone, accountID)
 }
 
-func TestAccCloudflareAccessPolicy_BypassEmptySessionDuration(t *testing.T) {
-	// Reproduces https://github.com/cloudflare/terraform-provider-cloudflare/issues/7165
+func TestAccZenthcloudAccessPolicy_BypassEmptySessionDuration(t *testing.T) {
+	// Reproduces https://github.com/skygenesisenterprise/zenthcloud
 	// Perpetual diff on access policies with session_duration = "" and everyone = {}.
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -816,7 +816,7 @@ func TestAccCloudflareAccessPolicy_BypassEmptySessionDuration(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustAccessPolicyDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustAccessPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccessPolicyBypassEmptySessionDurationConfig(rnd, accountID),
@@ -826,9 +826,9 @@ func TestAccCloudflareAccessPolicy_BypassEmptySessionDuration(t *testing.T) {
 					},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue("cloudflare_zero_trust_access_policy."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
-					statecheck.ExpectKnownValue("cloudflare_zero_trust_access_policy."+rnd, tfjsonpath.New("decision"), knownvalue.StringExact("bypass")),
-					statecheck.ExpectKnownValue("cloudflare_zero_trust_access_policy."+rnd, tfjsonpath.New("session_duration"), knownvalue.StringExact("")),
+					statecheck.ExpectKnownValue("zenthcloud_zero_trust_access_policy."+rnd, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
+					statecheck.ExpectKnownValue("zenthcloud_zero_trust_access_policy."+rnd, tfjsonpath.New("decision"), knownvalue.StringExact("bypass")),
+					statecheck.ExpectKnownValue("zenthcloud_zero_trust_access_policy."+rnd, tfjsonpath.New("session_duration"), knownvalue.StringExact("")),
 				},
 			},
 		},
@@ -839,19 +839,19 @@ func testAccessPolicyBypassEmptySessionDurationConfig(resourceID, accountID stri
 	return acctest.LoadTestCase("accesspolicybypassemptysessionduration.tf", resourceID, accountID)
 }
 
-func TestAccCloudflareAccessPolicy_DecisionTypes(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudAccessPolicy_DecisionTypes(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	denyResourceName := "cloudflare_zero_trust_access_policy." + rnd + "_deny"
-	bypassResourceName := "cloudflare_zero_trust_access_policy." + rnd + "_bypass"
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	denyResourceName := "zenthcloud_zero_trust_access_policy." + rnd + "_deny"
+	bypassResourceName := "zenthcloud_zero_trust_access_policy." + rnd + "_bypass"
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -859,7 +859,7 @@ func TestAccCloudflareAccessPolicy_DecisionTypes(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustAccessPolicyDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustAccessPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccessPolicyDecisionTypesConfig(rnd, zone, accountID),
@@ -901,12 +901,12 @@ func testAccessPolicyDecisionTypesConfig(resourceID, zone, accountID string) str
 	return acctest.LoadTestCase("accesspolicydecisiontypesconfig.tf", resourceID, zone, accountID)
 }
 
-func TestAccCloudflareAccessPolicy_IsolationRequired(t *testing.T) {
+func TestAccZenthcloudAccessPolicy_IsolationRequired(t *testing.T) {
 	t.Skip("this test depends on zero trust gateway settings, which first must be modernized and patched")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_access_policy." + rnd
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_zero_trust_access_policy." + rnd
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -914,7 +914,7 @@ func TestAccCloudflareAccessPolicy_IsolationRequired(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustAccessPolicyDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustAccessPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccessPolicyIsolationRequiredConfig(rnd, zone, accountID),
@@ -947,22 +947,22 @@ func testAccessPolicyReusableConfig(resourceID, accountID string) string {
 	return acctest.LoadTestCase("accesspolicyreusableconfig.tf", resourceID, accountID)
 }
 
-func testAccCheckCloudflareZeroTrustAccessPolicyDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudZeroTrustAccessPolicyDestroy(s *terraform.State) error {
 	client, clientErr := acctest.SharedV1Client()
 	if clientErr != nil {
-		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client for destroy check: %s", clientErr))
+		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client for destroy check: %s", clientErr))
 		return clientErr
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_zero_trust_access_policy" {
+		if rs.Type != "zenthcloud_zero_trust_access_policy" {
 			continue
 		}
 
 		accountID := rs.Primary.Attributes[consts.AccountIDSchemaKey]
 
-		var notFoundError *cloudflare.NotFoundError
-		_, err := client.GetAccessPolicy(context.Background(), cloudflare.AccountIdentifier(accountID), cloudflare.GetAccessPolicyParams{PolicyID: rs.Primary.ID})
+		var notFoundError *zenthcloud.NotFoundError
+		_, err := client.GetAccessPolicy(context.Background(), zenthcloud.AccountIdentifier(accountID), zenthcloud.GetAccessPolicyParams{PolicyID: rs.Primary.ID})
 		if !errors.As(err, &notFoundError) {
 			return fmt.Errorf("zero trust access policy still exists")
 		}
@@ -971,16 +971,16 @@ func testAccCheckCloudflareZeroTrustAccessPolicyDestroy(s *terraform.State) erro
 	return nil
 }
 
-func TestAccCloudflareAccessPolicy_DenyOnly(t *testing.T) {
+func TestAccZenthcloudAccessPolicy_DenyOnly(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_access_policy.%s", rnd)
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_access_policy.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustAccessPolicyDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustAccessPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccessPolicyDenyOnlyConfig(rnd, zone, accountID),
@@ -1004,16 +1004,16 @@ func testAccessPolicyDenyOnlyConfig(resourceID, zone, accountID string) string {
 	return acctest.LoadTestCase("accesspolicydenyconfig.tf", resourceID, zone, accountID)
 }
 
-func TestAccCloudflareAccessPolicy_BypassOnly(t *testing.T) {
+func TestAccZenthcloudAccessPolicy_BypassOnly(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_access_policy.%s", rnd)
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_access_policy.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustAccessPolicyDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustAccessPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccessPolicyBypassOnlyConfig(rnd, zone, accountID),
@@ -1037,16 +1037,16 @@ func testAccessPolicyBypassOnlyConfig(resourceID, zone, accountID string) string
 	return acctest.LoadTestCase("accesspolicybypassconfig.tf", resourceID, zone, accountID)
 }
 
-func TestAccCloudflareAccessPolicy_OptionalBooleans(t *testing.T) {
+func TestAccZenthcloudAccessPolicy_OptionalBooleans(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_access_policy.%s", rnd)
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_access_policy.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustAccessPolicyDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustAccessPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccessPolicyOptionalBooleansConfig(rnd, zone, accountID),
@@ -1078,8 +1078,8 @@ func testAccessPolicyOptionalBooleansConfig(resourceID, zone, accountID string) 
 
 func TestAccUpgradeZeroTrustAccessPolicy_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zone := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	zone := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	config := testAccessPolicyServiceTokenConfig(rnd, zone, accountID)
 
@@ -1091,8 +1091,8 @@ func TestAccUpgradeZeroTrustAccessPolicy_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

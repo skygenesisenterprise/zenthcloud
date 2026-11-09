@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_pipeline_stream Data Source - Cloudflare"
+page_title: "zenthcloud_pipeline_stream Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Pipelines ReadPipelines Write
 ---
 
-# cloudflare_pipeline_stream (Data Source)
+# zenthcloud_pipeline_stream (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_pipeline_stream" "example_pipeline_stream" {
+data "zenthcloud_pipeline_stream" "example_pipeline_stream" {
   account_id = "0123105f4ecef8ad9ca31a8372d0c353"
   stream_id = "033e105f4ecef8ad9ca31a8372d0c353"
 }

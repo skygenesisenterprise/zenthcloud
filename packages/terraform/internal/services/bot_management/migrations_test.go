@@ -10,20 +10,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 // TestMigrateBotManagement_V4ToV5_Basic tests migration with basic bot management fields
 func TestMigrateBotManagement_V4ToV5_Basic(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_bot_management." + rnd
+	resourceName := "zenthcloud_bot_management." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config with basic fields
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_bot_management" "%[1]s" {
+resource "zenthcloud_bot_management" "%[1]s" {
   zone_id           = "%[2]s"
   enable_js         = true
   auto_update_model = true
@@ -39,8 +39,8 @@ resource "cloudflare_bot_management" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -62,14 +62,14 @@ resource "cloudflare_bot_management" "%[1]s" {
 
 // TestMigrateBotManagement_V4ToV5_AIBotsProtection tests migration with AI bots protection
 func TestMigrateBotManagement_V4ToV5_AIBotsProtection(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_bot_management." + rnd
+	resourceName := "zenthcloud_bot_management." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config with AI bots protection
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_bot_management" "%[1]s" {
+resource "zenthcloud_bot_management" "%[1]s" {
   zone_id               = "%[2]s"
   enable_js             = true
   auto_update_model     = true
@@ -87,8 +87,8 @@ resource "cloudflare_bot_management" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -108,14 +108,14 @@ resource "cloudflare_bot_management" "%[1]s" {
 
 // TestMigrateBotManagement_V4ToV5_AIBotsProtectionDisabled tests migration with AI bots protection disabled
 func TestMigrateBotManagement_V4ToV5_AIBotsProtectionDisabled(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_bot_management." + rnd
+	resourceName := "zenthcloud_bot_management." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config with AI bots protection disabled
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_bot_management" "%[1]s" {
+resource "zenthcloud_bot_management" "%[1]s" {
   zone_id            = "%[2]s"
   enable_js          = true
   auto_update_model  = true
@@ -132,8 +132,8 @@ resource "cloudflare_bot_management" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -151,14 +151,14 @@ resource "cloudflare_bot_management" "%[1]s" {
 
 // TestMigrateBotManagement_V4ToV5_SessionScoreSuppress tests migration with session score suppression
 func TestMigrateBotManagement_V4ToV5_SessionScoreSuppress(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_bot_management." + rnd
+	resourceName := "zenthcloud_bot_management." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config with session score suppression
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_bot_management" "%[1]s" {
+resource "zenthcloud_bot_management" "%[1]s" {
   zone_id                = "%[2]s"
   enable_js              = true
   auto_update_model      = true
@@ -175,8 +175,8 @@ resource "cloudflare_bot_management" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -195,14 +195,14 @@ resource "cloudflare_bot_management" "%[1]s" {
 
 // TestMigrateBotManagement_V4ToV5_MultipleFields tests migration with multiple fields
 func TestMigrateBotManagement_V4ToV5_MultipleFields(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_bot_management." + rnd
+	resourceName := "zenthcloud_bot_management." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config with multiple available fields
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_bot_management" "%[1]s" {
+resource "zenthcloud_bot_management" "%[1]s" {
   zone_id                = "%[2]s"
   enable_js              = true
   auto_update_model      = true
@@ -220,8 +220,8 @@ resource "cloudflare_bot_management" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -241,14 +241,14 @@ resource "cloudflare_bot_management" "%[1]s" {
 
 // TestMigrateBotManagement_V4ToV5_EnableJSFalse tests migration with enable_js=false
 func TestMigrateBotManagement_V4ToV5_EnableJSFalse(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_bot_management." + rnd
+	resourceName := "zenthcloud_bot_management." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config with enable_js=false
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_bot_management" "%[1]s" {
+resource "zenthcloud_bot_management" "%[1]s" {
   zone_id           = "%[2]s"
   enable_js         = false
   auto_update_model = true
@@ -264,8 +264,8 @@ resource "cloudflare_bot_management" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -283,14 +283,14 @@ resource "cloudflare_bot_management" "%[1]s" {
 
 // TestMigrateBotManagement_V4ToV5_AutoUpdateModelFalse tests migration with auto_update_model=false
 func TestMigrateBotManagement_V4ToV5_AutoUpdateModelFalse(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_bot_management." + rnd
+	resourceName := "zenthcloud_bot_management." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config with auto_update_model=false
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_bot_management" "%[1]s" {
+resource "zenthcloud_bot_management" "%[1]s" {
   zone_id           = "%[2]s"
   enable_js         = true
   auto_update_model = false
@@ -306,8 +306,8 @@ resource "cloudflare_bot_management" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},

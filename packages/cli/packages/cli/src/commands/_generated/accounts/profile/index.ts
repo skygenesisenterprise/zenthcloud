@@ -9,7 +9,7 @@ import type { CommandModule } from "yargs";
 
 const command: CommandModule<CommonYargsOptions> = {
 	command: "profile",
-	describe: "View and manage the profile for a Cloudflare account",
+	describe: "View and manage the profile for a Zenthcloud account",
 
 	builder: (yargs) => {
 		return yargs

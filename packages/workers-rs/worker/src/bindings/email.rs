@@ -40,7 +40,7 @@ impl EmailSendResult {
         inner
     }
 }
-#[wasm_bindgen(module = "cloudflare:email")]
+#[wasm_bindgen(module = "zenthcloud:email")]
 extern "C" {
     # [wasm_bindgen (extends = Object)]
     #[derive(Debug, Clone, PartialEq, Eq)]

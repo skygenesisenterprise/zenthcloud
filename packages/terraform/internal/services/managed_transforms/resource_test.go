@@ -9,12 +9,12 @@ import (
 	"strconv"
 	"testing"
 
-	cloudflare "github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/managed_transforms"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	zenthcloud "github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/managed_transforms"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -30,31 +30,31 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_managed_headers", &resource.Sweeper{
-		Name: "cloudflare_managed_headers",
-		F:    testSweepCloudflareManagedTransforms,
+	resource.AddTestSweepers("zenthcloud_managed_headers", &resource.Sweeper{
+		Name: "zenthcloud_managed_headers",
+		F:    testSweepZenthcloudManagedTransforms,
 	})
 }
 
-func testSweepCloudflareManagedTransforms(r string) error {
+func testSweepZenthcloudManagedTransforms(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
 	if client == nil {
-		tflog.Error(ctx, "Failed to create Cloudflare client")
+		tflog.Error(ctx, "Failed to create Zenthcloud client")
 		return errors.New("failed to create client")
 	}
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		return errors.New("CLOUDFLARE_ZONE_ID must be set")
+		return errors.New("ZENTHCLOUD_ZONE_ID must be set")
 	}
 
 	tflog.Info(ctx, fmt.Sprintf("Deleting managed transforms (zone: %s)", zoneID))
 	err := client.ManagedTransforms.Delete(
 		ctx,
 		managed_transforms.ManagedTransformDeleteParams{
-			ZoneID: cloudflare.F(zoneID),
+			ZoneID: zenthcloud.F(zoneID),
 		},
 	)
 
@@ -68,7 +68,7 @@ func testSweepCloudflareManagedTransforms(r string) error {
 }
 
 func cleanup(t *testing.T) {
-	err := testSweepCloudflareManagedTransforms("")
+	err := testSweepZenthcloudManagedTransforms("")
 
 	if err != nil {
 		t.Fatal("failed to cleanup resource for testing")
@@ -82,10 +82,10 @@ func makeTransform(id string, enabled bool) map[string]string {
 	}
 }
 
-func TestAccCloudflareManagedHeaders(t *testing.T) {
+func TestAccZenthcloudManagedHeaders(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	resourceName := "cloudflare_managed_transforms." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	resourceName := "zenthcloud_managed_transforms." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -93,10 +93,10 @@ func TestAccCloudflareManagedHeaders(t *testing.T) {
 			cleanup(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareManagedTransformsDestroy,
+		CheckDestroy:             testAccCheckZenthcloudManagedTransformsDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareManagedTransforms(rnd, zoneID),
+				Config: testAccCheckZenthcloudManagedTransforms(rnd, zoneID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(resourceName, "managed_request_headers.#", "2"),
@@ -117,7 +117,7 @@ func TestAccCloudflareManagedHeaders(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckCloudflareManagedTransformsReorder(rnd, zoneID),
+				Config: testAccCheckZenthcloudManagedTransformsReorder(rnd, zoneID),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -143,7 +143,7 @@ func TestAccCloudflareManagedHeaders(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckCloudflareManagedTransformsRemovedHeader(rnd, zoneID),
+				Config: testAccCheckZenthcloudManagedTransformsRemovedHeader(rnd, zoneID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(resourceName, "managed_request_headers.#", "1"),
@@ -160,7 +160,7 @@ func TestAccCloudflareManagedHeaders(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckCloudflareManagedTransforms(rnd, zoneID),
+				Config: testAccCheckZenthcloudManagedTransforms(rnd, zoneID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(resourceName, "managed_request_headers.#", "2"),
@@ -186,7 +186,7 @@ func TestAccCloudflareManagedHeaders(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				Config: testAccCheckCloudflareManagedTransformsDisabledHeader(rnd, zoneID),
+				Config: testAccCheckZenthcloudManagedTransformsDisabledHeader(rnd, zoneID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(resourceName, "managed_request_headers.#", "2"),
@@ -207,7 +207,7 @@ func TestAccCloudflareManagedHeaders(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckCloudflareManagedTransformsEnabledReorderHeader(rnd, zoneID),
+				Config: testAccCheckZenthcloudManagedTransformsEnabledReorderHeader(rnd, zoneID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(resourceName, "managed_request_headers.#", "2"),
@@ -228,7 +228,7 @@ func TestAccCloudflareManagedHeaders(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckCloudflareManagedTransformsDisabledReorderHeader(rnd, zoneID),
+				Config: testAccCheckZenthcloudManagedTransformsDisabledReorderHeader(rnd, zoneID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(resourceName, "managed_request_headers.#", "2"),
@@ -249,7 +249,7 @@ func TestAccCloudflareManagedHeaders(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckCloudflareManagedTransformsRemovedHeader(rnd, zoneID),
+				Config: testAccCheckZenthcloudManagedTransformsRemovedHeader(rnd, zoneID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(resourceName, "managed_request_headers.#", "1"),
@@ -270,10 +270,10 @@ func TestAccCloudflareManagedHeaders(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareManagedHeaders_Basic(t *testing.T) {
+func TestAccZenthcloudManagedHeaders_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	resourceName := "cloudflare_managed_transforms." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	resourceName := "zenthcloud_managed_transforms." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -281,10 +281,10 @@ func TestAccCloudflareManagedHeaders_Basic(t *testing.T) {
 			cleanup(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareManagedTransformsDestroy,
+		CheckDestroy:             testAccCheckZenthcloudManagedTransformsDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareManagedTransformsBasic(rnd, zoneID),
+				Config: testAccCheckZenthcloudManagedTransformsBasic(rnd, zoneID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("managed_request_headers").AtSliceIndex(0).AtMapKey("id"), knownvalue.StringExact("add_true_client_ip_headers")),
@@ -296,7 +296,7 @@ func TestAccCloudflareManagedHeaders_Basic(t *testing.T) {
 				},
 			},
 			{
-				Config: testAccCheckCloudflareManagedTransformsRemovedHeader(rnd, zoneID),
+				Config: testAccCheckZenthcloudManagedTransformsRemovedHeader(rnd, zoneID),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -341,10 +341,10 @@ func TestAccCloudflareManagedHeaders_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareManagedHeaders_Disabled(t *testing.T) {
+func TestAccZenthcloudManagedHeaders_Disabled(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	resourceName := "cloudflare_managed_transforms." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	resourceName := "zenthcloud_managed_transforms." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -352,10 +352,10 @@ func TestAccCloudflareManagedHeaders_Disabled(t *testing.T) {
 			cleanup(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareManagedTransformsDestroy,
+		CheckDestroy:             testAccCheckZenthcloudManagedTransformsDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareManagedTransformsDisabled(rnd, zoneID),
+				Config: testAccCheckZenthcloudManagedTransformsDisabled(rnd, zoneID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("managed_request_headers").AtSliceIndex(0).AtMapKey("id"), knownvalue.StringExact("add_true_client_ip_headers")),
@@ -369,10 +369,10 @@ func TestAccCloudflareManagedHeaders_Disabled(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareManagedHeaders_RequestOnly(t *testing.T) {
+func TestAccZenthcloudManagedHeaders_RequestOnly(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	resourceName := "cloudflare_managed_transforms." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	resourceName := "zenthcloud_managed_transforms." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -380,10 +380,10 @@ func TestAccCloudflareManagedHeaders_RequestOnly(t *testing.T) {
 			cleanup(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareManagedTransformsDestroy,
+		CheckDestroy:             testAccCheckZenthcloudManagedTransformsDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareManagedTransformsRequestOnly(rnd, zoneID),
+				Config: testAccCheckZenthcloudManagedTransformsRequestOnly(rnd, zoneID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("managed_request_headers").AtSliceIndex(0).AtMapKey("id"), knownvalue.StringExact("add_true_client_ip_headers")),
@@ -400,10 +400,10 @@ func TestAccCloudflareManagedHeaders_RequestOnly(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareManagedHeaders_ResponseOnly(t *testing.T) {
+func TestAccZenthcloudManagedHeaders_ResponseOnly(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	resourceName := "cloudflare_managed_transforms." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	resourceName := "zenthcloud_managed_transforms." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -411,10 +411,10 @@ func TestAccCloudflareManagedHeaders_ResponseOnly(t *testing.T) {
 			cleanup(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareManagedTransformsDestroy,
+		CheckDestroy:             testAccCheckZenthcloudManagedTransformsDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareManagedTransformsResponseOnly(rnd, zoneID),
+				Config: testAccCheckZenthcloudManagedTransformsResponseOnly(rnd, zoneID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("managed_request_headers"), knownvalue.ListSizeExact(0)),
@@ -431,10 +431,10 @@ func TestAccCloudflareManagedHeaders_ResponseOnly(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareManagedHeaders_VisitorLocationHeaders(t *testing.T) {
+func TestAccZenthcloudManagedHeaders_VisitorLocationHeaders(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	resourceName := "cloudflare_managed_transforms." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	resourceName := "zenthcloud_managed_transforms." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -442,10 +442,10 @@ func TestAccCloudflareManagedHeaders_VisitorLocationHeaders(t *testing.T) {
 			cleanup(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareManagedTransformsDestroy,
+		CheckDestroy:             testAccCheckZenthcloudManagedTransformsDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareManagedTransformsVisitorLocation(rnd, zoneID),
+				Config: testAccCheckZenthcloudManagedTransformsVisitorLocation(rnd, zoneID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("managed_request_headers").AtSliceIndex(0).AtMapKey("id"), knownvalue.StringExact("add_visitor_location_headers")),
@@ -462,10 +462,10 @@ func TestAccCloudflareManagedHeaders_VisitorLocationHeaders(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareManagedHeaders_LeakedCredentialsCheck(t *testing.T) {
+func TestAccZenthcloudManagedHeaders_LeakedCredentialsCheck(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	resourceName := "cloudflare_managed_transforms." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	resourceName := "zenthcloud_managed_transforms." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -473,10 +473,10 @@ func TestAccCloudflareManagedHeaders_LeakedCredentialsCheck(t *testing.T) {
 			cleanup(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareManagedTransformsDestroy,
+		CheckDestroy:             testAccCheckZenthcloudManagedTransformsDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareManagedTransformsMixedRequestResponse(rnd, zoneID),
+				Config: testAccCheckZenthcloudManagedTransformsMixedRequestResponse(rnd, zoneID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("managed_request_headers").AtSliceIndex(0).AtMapKey("id"), knownvalue.StringExact("add_visitor_location_headers")),
@@ -489,10 +489,10 @@ func TestAccCloudflareManagedHeaders_LeakedCredentialsCheck(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareManagedHeaders_RemoveVisitorIP(t *testing.T) {
+func TestAccZenthcloudManagedHeaders_RemoveVisitorIP(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	resourceName := "cloudflare_managed_transforms." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	resourceName := "zenthcloud_managed_transforms." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -500,10 +500,10 @@ func TestAccCloudflareManagedHeaders_RemoveVisitorIP(t *testing.T) {
 			cleanup(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareManagedTransformsDestroy,
+		CheckDestroy:             testAccCheckZenthcloudManagedTransformsDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareManagedTransformsRemoveVisitorIP(rnd, zoneID),
+				Config: testAccCheckZenthcloudManagedTransformsRemoveVisitorIP(rnd, zoneID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("managed_request_headers").AtSliceIndex(0).AtMapKey("id"), knownvalue.StringExact("remove_visitor_ip_headers")),
@@ -520,10 +520,10 @@ func TestAccCloudflareManagedHeaders_RemoveVisitorIP(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareManagedHeaders_ResponseHeaderDisabled(t *testing.T) {
+func TestAccZenthcloudManagedHeaders_ResponseHeaderDisabled(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	resourceName := "cloudflare_managed_transforms." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	resourceName := "zenthcloud_managed_transforms." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -531,10 +531,10 @@ func TestAccCloudflareManagedHeaders_ResponseHeaderDisabled(t *testing.T) {
 			cleanup(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareManagedTransformsDestroy,
+		CheckDestroy:             testAccCheckZenthcloudManagedTransformsDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareManagedTransformsResponseHeaderDisabled(rnd, zoneID),
+				Config: testAccCheckZenthcloudManagedTransformsResponseHeaderDisabled(rnd, zoneID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("managed_request_headers"), knownvalue.ListSizeExact(0)),
@@ -547,10 +547,10 @@ func TestAccCloudflareManagedHeaders_ResponseHeaderDisabled(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareManagedHeaders_MultipleRequestHeaders(t *testing.T) {
+func TestAccZenthcloudManagedHeaders_MultipleRequestHeaders(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	resourceName := "cloudflare_managed_transforms." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	resourceName := "zenthcloud_managed_transforms." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -558,10 +558,10 @@ func TestAccCloudflareManagedHeaders_MultipleRequestHeaders(t *testing.T) {
 			cleanup(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareManagedTransformsDestroy,
+		CheckDestroy:             testAccCheckZenthcloudManagedTransformsDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareManagedTransformsMultipleRequest(rnd, zoneID),
+				Config: testAccCheckZenthcloudManagedTransformsMultipleRequest(rnd, zoneID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("managed_request_headers").AtSliceIndex(0).AtMapKey("id"), knownvalue.StringExact("add_visitor_location_headers")),
@@ -579,10 +579,10 @@ func TestAccCloudflareManagedHeaders_MultipleRequestHeaders(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareManagedHeaders_MixedEnabledDisabled(t *testing.T) {
+func TestAccZenthcloudManagedHeaders_MixedEnabledDisabled(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	resourceName := "cloudflare_managed_transforms." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	resourceName := "zenthcloud_managed_transforms." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -590,10 +590,10 @@ func TestAccCloudflareManagedHeaders_MixedEnabledDisabled(t *testing.T) {
 			cleanup(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareManagedTransformsDestroy,
+		CheckDestroy:             testAccCheckZenthcloudManagedTransformsDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareManagedTransformsMixedState(rnd, zoneID),
+				Config: testAccCheckZenthcloudManagedTransformsMixedState(rnd, zoneID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("managed_request_headers").AtSliceIndex(0).AtMapKey("id"), knownvalue.StringExact("add_true_client_ip_headers")),
@@ -609,10 +609,10 @@ func TestAccCloudflareManagedHeaders_MixedEnabledDisabled(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareManagedHeaders_UpdateTransforms(t *testing.T) {
+func TestAccZenthcloudManagedHeaders_UpdateTransforms(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	resourceName := "cloudflare_managed_transforms." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	resourceName := "zenthcloud_managed_transforms." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -620,10 +620,10 @@ func TestAccCloudflareManagedHeaders_UpdateTransforms(t *testing.T) {
 			cleanup(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareManagedTransformsDestroy,
+		CheckDestroy:             testAccCheckZenthcloudManagedTransformsDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareManagedTransformsVisitorLocation(rnd, zoneID),
+				Config: testAccCheckZenthcloudManagedTransformsVisitorLocation(rnd, zoneID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("managed_request_headers").AtSliceIndex(0).AtMapKey("id"), knownvalue.StringExact("add_visitor_location_headers")),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("managed_request_headers").AtSliceIndex(0).AtMapKey("enabled"), knownvalue.Bool(true)),
@@ -631,7 +631,7 @@ func TestAccCloudflareManagedHeaders_UpdateTransforms(t *testing.T) {
 				},
 			},
 			{
-				Config: testAccCheckCloudflareManagedTransformsResponseHeaderDisabled(rnd, zoneID),
+				Config: testAccCheckZenthcloudManagedTransformsResponseHeaderDisabled(rnd, zoneID),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -664,9 +664,9 @@ func TestAccCloudflareManagedHeaders_UpdateTransforms(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareManagedHeaders_ConflictDetection(t *testing.T) {
+func TestAccZenthcloudManagedHeaders_ConflictDetection(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -674,19 +674,19 @@ func TestAccCloudflareManagedHeaders_ConflictDetection(t *testing.T) {
 			cleanup(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareManagedTransformsDestroy,
+		CheckDestroy:             testAccCheckZenthcloudManagedTransformsDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCheckCloudflareManagedTransformsConflictTest(rnd, zoneID),
+				Config:      testAccCheckZenthcloudManagedTransformsConflictTest(rnd, zoneID),
 				ExpectError: regexp.MustCompile("404"),
 			},
 		},
 	})
 }
 
-func TestAccCloudflareManagedHeaders_ConflictingTransforms(t *testing.T) {
+func TestAccZenthcloudManagedHeaders_ConflictingTransforms(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -694,20 +694,20 @@ func TestAccCloudflareManagedHeaders_ConflictingTransforms(t *testing.T) {
 			cleanup(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareManagedTransformsDestroy,
+		CheckDestroy:             testAccCheckZenthcloudManagedTransformsDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCheckCloudflareManagedTransformsConflictingHeaders(rnd, zoneID),
+				Config:      testAccCheckZenthcloudManagedTransformsConflictingHeaders(rnd, zoneID),
 				ExpectError: regexp.MustCompile("403|Forbidden|conflict"),
 			},
 		},
 	})
 }
 
-func TestAccCloudflareManagedHeaders_NonConflictingTransforms(t *testing.T) {
+func TestAccZenthcloudManagedHeaders_NonConflictingTransforms(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	resourceName := "cloudflare_managed_transforms." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	resourceName := "zenthcloud_managed_transforms." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -715,10 +715,10 @@ func TestAccCloudflareManagedHeaders_NonConflictingTransforms(t *testing.T) {
 			cleanup(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareManagedTransformsDestroy,
+		CheckDestroy:             testAccCheckZenthcloudManagedTransformsDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareManagedTransformsNonConflictingHeaders(rnd, zoneID),
+				Config: testAccCheckZenthcloudManagedTransformsNonConflictingHeaders(rnd, zoneID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("managed_request_headers").AtSliceIndex(0).AtMapKey("id"), knownvalue.StringExact("add_true_client_ip_headers")),
@@ -737,15 +737,15 @@ func TestAccCloudflareManagedHeaders_NonConflictingTransforms(t *testing.T) {
 }
 
 // This test will only run if the environment has Enterprise plan access
-func TestAccCloudflareManagedHeaders_Enterprise(t *testing.T) {
+func TestAccZenthcloudManagedHeaders_Enterprise(t *testing.T) {
 	// Skip if not Enterprise environment
-	//if os.Getenv("CLOUDFLARE_ENTERPRISE_TEST") == "" {
-	//	t.Skip("Skipping Enterprise test - set CLOUDFLARE_ENTERPRISE_TEST=1 to run")
+	//if os.Getenv("ZENTHCLOUD_ENTERPRISE_TEST") == "" {
+	//	t.Skip("Skipping Enterprise test - set ZENTHCLOUD_ENTERPRISE_TEST=1 to run")
 	//}
 
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	resourceName := "cloudflare_managed_transforms." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	resourceName := "zenthcloud_managed_transforms." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -753,10 +753,10 @@ func TestAccCloudflareManagedHeaders_Enterprise(t *testing.T) {
 			cleanup(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareManagedTransformsDestroy,
+		CheckDestroy:             testAccCheckZenthcloudManagedTransformsDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareManagedTransformsEnterprise(rnd, zoneID),
+				Config: testAccCheckZenthcloudManagedTransformsEnterprise(rnd, zoneID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("managed_request_headers").AtSliceIndex(0).AtMapKey("id"), knownvalue.StringExact("add_true_client_ip_headers")),
@@ -773,105 +773,105 @@ func TestAccCloudflareManagedHeaders_Enterprise(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareManagedTransforms(rnd, zoneID string) string {
+func testAccCheckZenthcloudManagedTransforms(rnd, zoneID string) string {
 	return acctest.LoadTestCase("managedtransforms.tf", rnd, zoneID)
 }
 
-func testAccCheckCloudflareManagedTransformsReorder(rnd, zoneID string) string {
+func testAccCheckZenthcloudManagedTransformsReorder(rnd, zoneID string) string {
 	return acctest.LoadTestCase("managedtransformsreorder.tf", rnd, zoneID)
 }
 
-func testAccCheckCloudflareManagedTransformsRemovedHeader(rnd, zoneID string) string {
+func testAccCheckZenthcloudManagedTransformsRemovedHeader(rnd, zoneID string) string {
 	return acctest.LoadTestCase("managedtransformsremovedheader.tf", rnd, zoneID)
 }
 
-func testAccCheckCloudflareManagedTransformsDisabledHeader(rnd, zoneID string) string {
+func testAccCheckZenthcloudManagedTransformsDisabledHeader(rnd, zoneID string) string {
 	return acctest.LoadTestCase("managedtransformsdisabledheader.tf", rnd, zoneID)
 }
 
-func testAccCheckCloudflareManagedTransformsEnabledReorderHeader(rnd, zoneID string) string {
+func testAccCheckZenthcloudManagedTransformsEnabledReorderHeader(rnd, zoneID string) string {
 	return acctest.LoadTestCase("managedtransformsenabledreorderheader.tf", rnd, zoneID)
 }
 
-func testAccCheckCloudflareManagedTransformsDisabledReorderHeader(rnd, zoneID string) string {
+func testAccCheckZenthcloudManagedTransformsDisabledReorderHeader(rnd, zoneID string) string {
 	return acctest.LoadTestCase("managedtransformsdisabledreorderheader.tf", rnd, zoneID)
 }
 
-func testAccCheckCloudflareManagedTransformsDisabled(rnd, zoneID string) string {
+func testAccCheckZenthcloudManagedTransformsDisabled(rnd, zoneID string) string {
 	return acctest.LoadTestCase("managedtransformsdisabled.tf", rnd, zoneID)
 }
 
-func testAccCheckCloudflareManagedTransformsRequestOnly(rnd, zoneID string) string {
+func testAccCheckZenthcloudManagedTransformsRequestOnly(rnd, zoneID string) string {
 	return acctest.LoadTestCase("managedtransformsrequestonly.tf", rnd, zoneID)
 }
 
-func testAccCheckCloudflareManagedTransformsResponseOnly(rnd, zoneID string) string {
+func testAccCheckZenthcloudManagedTransformsResponseOnly(rnd, zoneID string) string {
 	return acctest.LoadTestCase("managedtransformsresponseonly.tf", rnd, zoneID)
 }
 
-func testAccCheckCloudflareManagedTransformsBasic(rnd, zoneID string) string {
+func testAccCheckZenthcloudManagedTransformsBasic(rnd, zoneID string) string {
 	return acctest.LoadTestCase("managedtransforms.tf", rnd, zoneID)
 }
 
-func testAccCheckCloudflareManagedTransformsVisitorLocation(rnd, zoneID string) string {
+func testAccCheckZenthcloudManagedTransformsVisitorLocation(rnd, zoneID string) string {
 	return acctest.LoadTestCase("managedtransformsvisitorlocation.tf", rnd, zoneID)
 }
 
-func testAccCheckCloudflareManagedTransformsMixedRequestResponse(rnd, zoneID string) string {
+func testAccCheckZenthcloudManagedTransformsMixedRequestResponse(rnd, zoneID string) string {
 	return acctest.LoadTestCase("managedtransformstlsauth.tf", rnd, zoneID)
 }
 
-func testAccCheckCloudflareManagedTransformsRemoveVisitorIP(rnd, zoneID string) string {
+func testAccCheckZenthcloudManagedTransformsRemoveVisitorIP(rnd, zoneID string) string {
 	return acctest.LoadTestCase("managedtransformsremovevisitorip.tf", rnd, zoneID)
 }
 
-func testAccCheckCloudflareManagedTransformsResponseHeaderDisabled(rnd, zoneID string) string {
+func testAccCheckZenthcloudManagedTransformsResponseHeaderDisabled(rnd, zoneID string) string {
 	return acctest.LoadTestCase("managedtransformsremovexpoweredby.tf", rnd, zoneID)
 }
 
-func testAccCheckCloudflareManagedTransformsMultipleRequest(rnd, zoneID string) string {
+func testAccCheckZenthcloudManagedTransformsMultipleRequest(rnd, zoneID string) string {
 	return acctest.LoadTestCase("managedtransformsmultiplerequest.tf", rnd, zoneID)
 }
 
-func testAccCheckCloudflareManagedTransformsMixedState(rnd, zoneID string) string {
+func testAccCheckZenthcloudManagedTransformsMixedState(rnd, zoneID string) string {
 	return acctest.LoadTestCase("managedtransformsmixedstate.tf", rnd, zoneID)
 }
 
 // Test for potential conflicting transforms - this uses transforms that should be safe to use together
-func testAccCheckCloudflareManagedTransformsConflictTest(rnd, zoneID string) string {
+func testAccCheckZenthcloudManagedTransformsConflictTest(rnd, zoneID string) string {
 	return acctest.LoadTestCase("managedtransformsconflicttest.tf", rnd, zoneID)
 }
 
 // Test data for Enterprise-only transforms
-func testAccCheckCloudflareManagedTransformsEnterprise(rnd, zoneID string) string {
+func testAccCheckZenthcloudManagedTransformsEnterprise(rnd, zoneID string) string {
 	return acctest.LoadTestCase("managedtransformsenterprise.tf", rnd, zoneID)
 }
 
 // Test data for conflicting headers
-func testAccCheckCloudflareManagedTransformsConflictingHeaders(rnd, zoneID string) string {
+func testAccCheckZenthcloudManagedTransformsConflictingHeaders(rnd, zoneID string) string {
 	return acctest.LoadTestCase("managedtransformsconflictingheaders.tf", rnd, zoneID)
 }
 
-func testAccCheckCloudflareManagedTransformsNonConflictingHeaders(rnd, zoneID string) string {
+func testAccCheckZenthcloudManagedTransformsNonConflictingHeaders(rnd, zoneID string) string {
 	return acctest.LoadTestCase("managedtransformsnonconflictingheaders.tf", rnd, zoneID)
 }
 
 // Destroy verification function
-func testAccCheckCloudflareManagedTransformsDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudManagedTransformsDestroy(s *terraform.State) error {
 
-	client := cloudflare.NewClient(
-		option.WithAPIKey(os.Getenv("CLOUDFLARE_API_KEY")),
-		option.WithAPIEmail(os.Getenv("CLOUDFLARE_EMAIL")),
+	client := zenthcloud.NewClient(
+		option.WithAPIKey(os.Getenv("ZENTHCLOUD_API_KEY")),
+		option.WithAPIEmail(os.Getenv("ZENTHCLOUD_EMAIL")),
 	)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_managed_transforms" {
+		if rs.Type != "zenthcloud_managed_transforms" {
 			continue
 		}
 
 		zoneID := rs.Primary.Attributes[consts.ZoneIDSchemaKey]
 		managedHeaders, err := client.ManagedTransforms.List(context.Background(), managed_transforms.ManagedTransformListParams{
-			ZoneID: cloudflare.String(zoneID),
+			ZoneID: zenthcloud.String(zoneID),
 		})
 		if err != nil {
 			return fmt.Errorf("error listing managed headers: %w", err)
@@ -901,9 +901,9 @@ func testAccCheckCloudflareManagedTransformsDestroy(s *terraform.State) error {
 
 func TestAccUpgradeManagedTransforms_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
-	config := testAccCheckCloudflareManagedTransforms(rnd, zoneID)
+	config := testAccCheckZenthcloudManagedTransforms(rnd, zoneID)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -913,8 +913,8 @@ func TestAccUpgradeManagedTransforms_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

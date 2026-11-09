@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_dlp_settings Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_dlp_settings Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust ReadZero Trust Write
 ---
 
-# cloudflare_zero_trust_dlp_settings (Resource)
+# zenthcloud_zero_trust_dlp_settings (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_dlp_settings" "example_zero_trust_dlp_settings" {
+resource "zenthcloud_zero_trust_dlp_settings" "example_zero_trust_dlp_settings" {
   account_id = "account_id"
   ai_context_analysis = true
   ocr = true
@@ -69,7 +69,7 @@ Available values: "full", "partial", "clear", "default".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_dlp_settings.example '<account_id>'
+$ terraform import zenthcloud_zero_trust_dlp_settings.example '<account_id>'
 ```
 
 

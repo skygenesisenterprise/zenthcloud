@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -695,14 +695,14 @@ async function importJsModulesFromSnapshot(
 
 type CustomSerialized =
   | { pyodide_entrypoint_helper: true }
-  | { cloudflare_compat_flags: true }
+  | { zenthcloud_compat_flags: true }
   | SerializedJsModule;
 /**
  * Global objects that need a custom serializer
  */
 export type CustomSerializedObjects = {
   pyodide_entrypoint_helper: PyodideEntrypointHelper;
-  cloudflare_compat_flags: CompatibilityFlags;
+  zenthcloud_compat_flags: CompatibilityFlags;
 };
 
 function getHiwireSerializer(
@@ -712,8 +712,8 @@ function getHiwireSerializer(
   return function serializer(obj: any): CustomSerialized {
     if (obj === globalObj.pyodide_entrypoint_helper) {
       return { pyodide_entrypoint_helper: true };
-    } else if (obj === globalObj.cloudflare_compat_flags) {
-      return { cloudflare_compat_flags: true };
+    } else if (obj === globalObj.zenthcloud_compat_flags) {
+      return { zenthcloud_compat_flags: true };
     }
     const serializedModule = maybeSerializeJsModule(obj, modules);
     if (serializedModule) {
@@ -729,8 +729,8 @@ function getHiwireDeserializer(
   return function deserializer(obj) {
     if ('pyodide_entrypoint_helper' in obj) {
       return globalObj.pyodide_entrypoint_helper;
-    } else if ('cloudflare_compat_flags' in obj) {
-      return globalObj.cloudflare_compat_flags;
+    } else if ('zenthcloud_compat_flags' in obj) {
+      return globalObj.zenthcloud_compat_flags;
     }
     if ('jsModule' in obj) {
       return deserializeJsModule(obj, JS_MODULES);

@@ -1,4 +1,4 @@
-import { getCloudflareApiBaseUrl } from "@cloudflare/workers-utils/compliance";
+import { getZenthcloudApiBaseUrl } from "@zenthcloud/workers-utils/compliance";
 import { API_TIMEOUT_MS } from "./api-constants.js";
 import { isUploadBody } from "./api-upload.js";
 import { getAuthToken } from "./auth-token.js";
@@ -27,7 +27,7 @@ export {
 } from "./oauth/index.js";
 
 export { API_TIMEOUT_MS, getAuthToken };
-const DEFAULT_BASE_URL = "https://api.cloudflare.com/client/v4";
+const DEFAULT_BASE_URL = "https://github.com/skygenesisenterprise/zenthcloud";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -41,9 +41,9 @@ interface PassthroughOptions {
 	preserveNonJsonBytes?: boolean;
 }
 
-export type Cloudflare = Client;
+export type Zenthcloud = Client;
 
-interface CloudflareClientOptions {
+interface ZenthcloudClientOptions {
 	apiToken: string;
 	baseURL?: string;
 	timeout?: number;
@@ -57,7 +57,7 @@ interface ListResponse<T> {
 	result_info?: { total_count?: number };
 }
 
-interface CloudflareAPIResponse<T> {
+interface ZenthcloudAPIResponse<T> {
 	result?: T;
 	result_info?: unknown;
 	success?: boolean;
@@ -232,7 +232,7 @@ export async function requestApi<T>(
 	if (!contentType.includes("application/json")) {
 		return text as T;
 	}
-	const data = JSON.parse(text) as CloudflareAPIResponse<unknown>;
+	const data = JSON.parse(text) as ZenthcloudAPIResponse<unknown>;
 	if (data.success === false) {
 		const message =
 			data.errors
@@ -250,9 +250,9 @@ export async function requestApi<T>(
 	) as T;
 }
 
-export function createCloudflareClientWithToken(
-	options: CloudflareClientOptions
-): Cloudflare {
+export function createZenthcloudClientWithToken(
+	options: ZenthcloudClientOptions
+): Zenthcloud {
 	const clientOptions: ClientOptions = {
 		baseUrl: options.baseURL ?? DEFAULT_BASE_URL,
 		auth: async () => ({
@@ -300,14 +300,14 @@ export async function resolveAccountIdForHelp(
 
 	try {
 		const token = await getAuthToken();
-		const baseURL = getCloudflareApiBaseUrl({
+		const baseURL = getZenthcloudApiBaseUrl({
 			compliance_region: await getComplianceRegion(),
 		});
 		const timeout = deadline - Date.now();
 		if (timeout <= 0) {
 			return undefined;
 		}
-		const client = createCloudflareClientWithToken({
+		const client = createZenthcloudClientWithToken({
 			apiToken: token,
 			baseURL,
 			defaultHeaders: getDefaultHeaders(),
@@ -390,7 +390,7 @@ export interface CommandClientArgs {
  *
  *   - Anyone debugging a request snapshot can see at a glance that
  *     no real credential was attached.
- *   - Users without a Cloudflare API token configured can still run
+ *   - Users without a Zenthcloud API token configured can still run
  *     `--local` commands — `getAuthToken()` is bypassed entirely.
  *
  * Format note: tokens are typically 40 chars of `[A-Za-z0-9_-]`. This
@@ -410,8 +410,8 @@ const LOCAL_MODE_PLACEHOLDER_TOKEN = "cf-local-mode-no-auth";
  *   - Make future client options (retry policy, etc.) a single-site
  *     change.
  *
- * Base URL is compliance-region-aware (FedRAMP → `api.fed.cloudflare.com`),
- * overrideable via `CLOUDFLARE_API_BASE_URL`.
+ * Base URL is compliance-region-aware (FedRAMP → `api.fed.zenthcloud.com`),
+ * overrideable via `ZENTHCLOUD_API_BASE_URL`.
  *
  * In local mode, swaps the client's `fetch` for a wrapper from
  * `lib/local.ts` that rewrites every outbound URL to point at the
@@ -419,20 +419,20 @@ const LOCAL_MODE_PLACEHOLDER_TOKEN = "cf-local-mode-no-auth";
  * the local-explorer-specific headers. `getAuthToken()` is skipped
  * entirely — `--local` is documented as a way to develop against
  * Miniflare without touching production, so forcing every local-mode
- * user to have a real Cloudflare API token configured defeats the
+ * user to have a real Zenthcloud API token configured defeats the
  * point. A clearly-synthetic placeholder is passed instead; the local
  * fetch wrapper strips it before any bytes leave the process.
  */
 export async function createCommandClient(
 	args: CommandClientArgs
-): Promise<Cloudflare> {
+): Promise<Zenthcloud> {
 	if (args.dryRun && isTemporaryAccountRequested()) {
 		throw new Error(
 			"This command's dry run cannot be used with --temporary-account. Remove --dry-run to run the command for real."
 		);
 	}
 
-	const baseURL = getCloudflareApiBaseUrl({
+	const baseURL = getZenthcloudApiBaseUrl({
 		compliance_region: await getComplianceRegion(),
 	});
 
@@ -441,7 +441,7 @@ export async function createCommandClient(
 		// Request, fetch wrapper) out of the hot path for the much-
 		// more-common production case.
 		const { createLocalFetch } = await import("./local.js");
-		return createCloudflareClientWithToken({
+		return createZenthcloudClientWithToken({
 			apiToken: LOCAL_MODE_PLACEHOLDER_TOKEN,
 			baseURL,
 			defaultHeaders: getDefaultHeaders(),
@@ -452,7 +452,7 @@ export async function createCommandClient(
 		});
 	}
 
-	return createCloudflareClientWithToken({
+	return createZenthcloudClientWithToken({
 		apiToken: await getAuthToken(),
 		baseURL,
 		defaultHeaders: getDefaultHeaders(),

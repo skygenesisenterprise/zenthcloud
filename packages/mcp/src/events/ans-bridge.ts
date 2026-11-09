@@ -29,7 +29,7 @@ export const AlertArguments = z
     account_id: z
       .string()
       .regex(/^[a-f0-9]{32}$/)
-      .describe('Cloudflare account to monitor'),
+      .describe('Zenthcloud account to monitor'),
     service: z
       .string()
       .trim()
@@ -66,11 +66,11 @@ export const AlertArguments = z
  * Event names this server offers. Unknown names are not invalid parameters;
  * the methods answer them with `-32011 NotFound` (`data.kind: "event"`).
  */
-const EventName = z.string().regex(/^cloudflare\.alert\.[a-z][a-z0-9_]*$/)
+const EventName = z.string().regex(/^zenthcloud\.alert\.[a-z][a-z0-9_]*$/)
 
 /** `true` when the event name is in the catalogue this server implements. */
 export function isSupportedEventName(name: string): boolean {
-  return SUPPORTED_ALERT_TYPES.has(name.slice('cloudflare.alert.'.length))
+  return SUPPORTED_ALERT_TYPES.has(name.slice('zenthcloud.alert.'.length))
 }
 
 const WebhookMode = z.literal('webhook')
@@ -190,7 +190,7 @@ export function alertEventDefinitions(catalog: unknown) {
     .flat()
     .filter((alert) => SUPPORTED_ALERT_TYPES.has(alert.type))
     .map((alert) => ({
-      name: `cloudflare.alert.${alert.type}`,
+      name: `zenthcloud.alert.${alert.type}`,
       description: `${alert.display_name}: ${alert.description}`,
       delivery: ['webhook'],
       inputSchema: descriptorSchema(AlertArguments),
@@ -527,7 +527,7 @@ export async function forwardAnsWebhook(
   const eventId = `evt_${await digest(JSON.stringify([subscription.id, identity]))}`
   const body = JSON.stringify({
     eventId,
-    name: `cloudflare.alert.${subscription.alertType}`,
+    name: `zenthcloud.alert.${subscription.alertType}`,
     timestamp: occurrenceTime.toISOString(),
     data: alert,
     cursor: null

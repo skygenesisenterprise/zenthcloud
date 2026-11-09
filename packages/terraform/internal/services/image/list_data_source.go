@@ -6,12 +6,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/cloudflare/cloudflare-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 )
 
 type ImagesDataSource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 var _ datasource.DataSourceWithConfigure = (*ImagesDataSource)(nil)
@@ -29,12 +29,12 @@ func (d *ImagesDataSource) Configure(ctx context.Context, req datasource.Configu
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return

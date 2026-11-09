@@ -8,15 +8,15 @@ import (
 // Source Models (Legacy Provider - v4.x SDKv2)
 // ============================================================================
 
-// SourceCloudflareOriginCACertificateModel represents the source cloudflare_origin_ca_certificate state structure.
-// This corresponds to schema_version=0 from the legacy (SDKv2) cloudflare provider.
+// SourceZenthcloudOriginCACertificateModel represents the source zenthcloud_origin_ca_certificate state structure.
+// This corresponds to schema_version=0 from the legacy (SDKv2) zenthcloud provider.
 // Used by UpgradeFromV4 to parse legacy v4 state.
 //
 // Key differences from target v5 model:
 // - Hostnames: types.Set (v4) → *[]types.String (v5) - Set to List conversion needed
 // - RequestedValidity: types.Int64 (v4) → types.Float64 (v5) - Type conversion needed
 // - MinDaysForRenewal: Exists in v4, REMOVED in v5 - Will be dropped during migration
-type SourceCloudflareOriginCACertificateModel struct {
+type SourceZenthcloudOriginCACertificateModel struct {
 	// Resource identifier (implicit in SDKv2 but present in state)
 	ID types.String `tfsdk:"id"`
 
@@ -38,8 +38,8 @@ type SourceCloudflareOriginCACertificateModel struct {
 // Target Models (Current Provider - v5.x+ Framework)
 // ============================================================================
 
-// TargetOriginCACertificateModel represents the target cloudflare_origin_ca_certificate state structure (v500).
-// This corresponds to schema_version=500 in the current cloudflare provider.
+// TargetOriginCACertificateModel represents the target zenthcloud_origin_ca_certificate state structure (v500).
+// This corresponds to schema_version=500 in the current zenthcloud provider.
 //
 // Note: This matches the model in the parent package's model.go file (OriginCACertificateModel).
 // We duplicate it here to keep the migration package self-contained.

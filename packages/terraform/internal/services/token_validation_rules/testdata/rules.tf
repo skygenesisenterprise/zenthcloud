@@ -1,4 +1,4 @@
-resource "cloudflare_token_validation_config" "%[1]s" {
+resource "zenthcloud_token_validation_config" "%[1]s" {
   zone_id = "%[2]s"
   token_type = "JWT"
   title = "Test config"
@@ -20,7 +20,7 @@ resource "cloudflare_token_validation_config" "%[1]s" {
   }
 }
 
-resource "cloudflare_api_shield_operation" "%[1]s" {
+resource "zenthcloud_api_shield_operation" "%[1]s" {
 	zone_id  = "%[2]s"
 	method   = "GET"
 	host     = "example.com"
@@ -28,21 +28,21 @@ resource "cloudflare_api_shield_operation" "%[1]s" {
 }
 
 
-resource "cloudflare_token_validation_rules" "%[1]s" {
+resource "zenthcloud_token_validation_rules" "%[1]s" {
  zone_id = "%[2]s"
  title = "%[3]s"
  description = "%[4]s"
  action = "%[5]s"
  enabled = %[6]s
  # reference the ID of the generated token config, this constructs: is_jwt_valid("<uuid>")
- expression = format("(is_jwt_valid(%%q))", cloudflare_token_validation_config.%[1]s.id)
+ expression = format("(is_jwt_valid(%%q))", zenthcloud_token_validation_config.%[1]s.id)
  selector = {
     include = [{
         host = ["example.com"]
     }]
     exclude = [{
         # reference the ID of the generated operation to exclude it
-        operation_ids = ["${cloudflare_api_shield_operation.%[1]s.id}"]
+        operation_ids = ["${zenthcloud_api_shield_operation.%[1]s.id}"]
     }]
  }
 }

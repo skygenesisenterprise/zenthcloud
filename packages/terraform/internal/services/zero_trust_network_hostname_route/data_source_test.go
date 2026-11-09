@@ -7,8 +7,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -24,11 +24,11 @@ func generateRandomTunnelSecret(t *testing.T) string {
 	return base64.StdEncoding.EncodeToString(bytes)
 }
 
-func TestAccCloudflareZeroTrustNetworkHostnameRouteDataSource_Basic(t *testing.T) {
+func TestAccZenthcloudZeroTrustNetworkHostnameRouteDataSource_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_zero_trust_network_hostname_route." + rnd
-	dataSourceName := "data.cloudflare_zero_trust_network_hostname_route." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	resourceName := "zenthcloud_zero_trust_network_hostname_route." + rnd
+	dataSourceName := "data.zenthcloud_zero_trust_network_hostname_route." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	secret := generateRandomTunnelSecret(t)
 
 	resource.Test(t, resource.TestCase{

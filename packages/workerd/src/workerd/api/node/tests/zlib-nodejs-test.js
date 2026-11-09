@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Cloudflare, Inc.
+// Copyright (c) 2024 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import assert from 'node:assert';
@@ -2889,7 +2889,7 @@ export const zlibParamsAfterWriteNoStalePointers = {
   },
 };
 
-// Regression test for https://github.com/cloudflare/workerd/issues/6286
+// Regression test for https://github.com/skygenesisenterprise/zenthcloud
 // inflateRawSync throws "Memory limit exceeded" when maxOutputLength is set
 // to exactly the decompressed size. This is an off-by-one error in the
 // GrowableBuffer: after zlib fills the buffer completely (avail_out == 0),

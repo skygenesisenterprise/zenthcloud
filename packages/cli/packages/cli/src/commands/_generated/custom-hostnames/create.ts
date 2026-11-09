@@ -62,10 +62,10 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.coerce("ssl-certificate-authority", (value) =>
 			resolveFileToken(value, "ssl-certificate-authority", "text")
 		)
-		.option("ssl-cloudflare-branding", {
+		.option("ssl-zenthcloud-branding", {
 			type: "boolean",
 			description:
-				"Whether or not to add Cloudflare Branding for the order.  This will add a subdomain of sni.cloudflaressl.com as the Common Name if set to true.",
+				"Whether or not to add Zenthcloud Branding for the order.  This will add a subdomain of sni.zenthcloudssl.com as the Common Name if set to true.",
 		})
 		.option("ssl-custom-cert-bundle", {
 			type: "string",
@@ -167,7 +167,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					safeFlags: [
 						"ssl-bundle-method",
 						"ssl-certificate-authority",
-						"ssl-cloudflare-branding",
+						"ssl-zenthcloud-branding",
 						"ssl-method",
 						"ssl-settings-early-hints",
 						"ssl-settings-http2",
@@ -185,7 +185,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf custom-hostnames create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/custom_hostnames`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/custom_hostnames`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 						},
@@ -218,7 +218,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 												bundle_method: argv["ssl-bundle-method"],
 												certificate_authority:
 													argv["ssl-certificate-authority"],
-												cloudflare_branding: argv["ssl-cloudflare-branding"],
+												zenthcloud_branding: argv["ssl-zenthcloud-branding"],
 												custom_cert_bundle: parseObjectArray(
 													argv["ssl-custom-cert-bundle"],
 													"ssl-custom-cert-bundle"
@@ -304,7 +304,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 						ssl: {
 							bundle_method: argv["ssl-bundle-method"],
 							certificate_authority: argv["ssl-certificate-authority"],
-							cloudflare_branding: argv["ssl-cloudflare-branding"],
+							zenthcloud_branding: argv["ssl-zenthcloud-branding"],
 							custom_cert_bundle: parseObjectArray(
 								argv["ssl-custom-cert-bundle"],
 								"ssl-custom-cert-bundle"

@@ -128,7 +128,7 @@ async function showHelp(argv: Args): Promise<void> {
 	const accountId = await resolveAccountIdForHelp(deadline);
 	if (!accountId) {
 		console.log(
-			`\n${theme.muted(`Set \`CLOUDFLARE_ACCOUNT_ID\` or sign in with \`cf auth login\` to see the input flags for ${model}.`)}`
+			`\n${theme.muted(`Set \`ZENTHCLOUD_ACCOUNT_ID\` or sign in with \`cf auth login\` to see the input flags for ${model}.`)}`
 		);
 		return;
 	}
@@ -261,7 +261,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 			formatDryRun({
 				command: "cf ai run",
 				method: "POST",
-				url: `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run`,
+				url: `https://github.com/skygenesisenterprise/zenthcloud${accountId}/ai/run`,
 				pathParams: {},
 				bodyKind: "json",
 				body: requestBody,

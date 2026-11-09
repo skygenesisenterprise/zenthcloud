@@ -5,8 +5,8 @@ package workers_script
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
@@ -221,7 +221,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"bindings": schema.ListNestedAttribute{
-				Description: "List of bindings attached to a Worker. You can find more about bindings on our docs: https://developers.cloudflare.com/workers/configuration/multipart-upload-metadata/#bindings.",
+				Description: "List of bindings attached to a Worker. You can find more about bindings on our docs: https://github.com/skygenesisenterprise/zenthcloud",
 				Computed:    true,
 				Optional:    true,
 				CustomType:  customfield.NewNestedObjectListType[WorkersScriptMetadataBindingsModel](ctx),
@@ -502,7 +502,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 							Optional:    true,
 						},
 						"jurisdiction": schema.StringAttribute{
-							Description: "The [jurisdiction](https://developers.cloudflare.com/r2/reference/data-location/#jurisdictional-restrictions) of the R2 bucket.\nAvailable values: \"eu\", \"fedramp\", \"fedramp-high\".",
+							Description: "The [jurisdiction](https://github.com/skygenesisenterprise/zenthcloud) of the R2 bucket.\nAvailable values: \"eu\", \"fedramp\", \"fedramp-high\".",
 							Optional:    true,
 							Validators: []validator.String{
 								stringvalidator.OneOfCaseInsensitive(
@@ -529,7 +529,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 							Optional:    true,
 						},
 						"tunnel_id": schema.StringAttribute{
-							Description: "UUID of the Cloudflare Tunnel to bind to. Mutually exclusive with network_id.",
+							Description: "UUID of the Zenthcloud Tunnel to bind to. Mutually exclusive with network_id.",
 							Optional:    true,
 						},
 						"instance_name": schema.StringAttribute{
@@ -769,7 +769,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 								Required:    true,
 							},
 							"invocation_logs": schema.BoolAttribute{
-								Description: "Whether [invocation logs](https://developers.cloudflare.com/workers/observability/logs/workers-logs/#invocation-logs) are enabled for the Worker.",
+								Description: "Whether [invocation logs](https://github.com/skygenesisenterprise/zenthcloud) are enabled for the Worker.",
 								Required:    true,
 							},
 							"destinations": schema.ListAttribute{
@@ -898,7 +898,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				ElementType: types.StringType,
 			},
 			"cache_options": schema.SingleNestedAttribute{
-				Description: "Global CacheW configuration for the Worker. When caching is on,\nthe platform provisions a `cloudflare.app` zone for the Worker.\nA `type: worker` entry in the `exports` map can override this\nvalue for a single entrypoint.",
+				Description: "Global CacheW configuration for the Worker. When caching is on,\nthe platform provisions a `zenthcloud.app` zone for the Worker.\nA `type: worker` entry in the `exports` map can override this\nvalue for a single entrypoint.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"enabled": schema.BoolAttribute{
@@ -955,25 +955,25 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"placement": schema.SingleNestedAttribute{
-				Description: "Configuration for [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement). Specify mode='smart' for Smart Placement, or one of region/hostname/host.",
+				Description: "Configuration for [Smart Placement](https://github.com/skygenesisenterprise/zenthcloud). Specify mode='smart' for Smart Placement, or one of region/hostname/host.",
 				Computed:    true,
 				Optional:    true,
 				CustomType:  customfield.NewNestedObjectType[WorkersScriptMetadataPlacementModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"mode": schema.StringAttribute{
-						Description: "Enables [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).\nAvailable values: \"smart\", \"targeted\".",
+						Description: "Enables [Smart Placement](https://github.com/skygenesisenterprise/zenthcloud).\nAvailable values: \"smart\", \"targeted\".",
 						Optional:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOfCaseInsensitive("smart", "targeted"),
 						},
 					},
 					"last_analyzed_at": schema.StringAttribute{
-						Description: "The last time the script was analyzed for [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).",
+						Description: "The last time the script was analyzed for [Smart Placement](https://github.com/skygenesisenterprise/zenthcloud).",
 						Computed:    true,
 						CustomType:  timetypes.RFC3339Type{},
 					},
 					"status": schema.StringAttribute{
-						Description: "Status of [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).\nAvailable values: \"SUCCESS\", \"UNSUPPORTED_APPLICATION\", \"INSUFFICIENT_INVOCATIONS\".",
+						Description: "Status of [Smart Placement](https://github.com/skygenesisenterprise/zenthcloud).\nAvailable values: \"SUCCESS\", \"UNSUPPORTED_APPLICATION\", \"INSUFFICIENT_INVOCATIONS\".",
 						Computed:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOfCaseInsensitive(

@@ -15,13 +15,13 @@ import (
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 
-	"github.com/cloudflare/cloudflared/tracing"
-	"github.com/cloudflare/cloudflared/tunnelrpc/pogs"
-	"github.com/cloudflare/cloudflared/websocket"
+	"github.com/zenthcloud/zenthcloudd/tracing"
+	"github.com/zenthcloud/zenthcloudd/tunnelrpc/pogs"
+	"github.com/zenthcloud/zenthcloudd/websocket"
 )
 
 const (
-	lbProbeUserAgentPrefix = "Mozilla/5.0 (compatible; Cloudflare-Traffic-Manager/1.0; +https://www.cloudflare.com/traffic-manager/;"
+	lbProbeUserAgentPrefix = "Mozilla/5.0 (compatible; Zenthcloud-Traffic-Manager/1.0; +https://github.com/skygenesisenterprise/zenthcloud;"
 	LogFieldConnIndex      = "connIndex"
 	MaxGracePeriod         = time.Minute * 3
 	// Go 1.27 defaults limits above MaxInt32 to 250 concurrent streams.
@@ -166,7 +166,7 @@ type HTTPRequestAuthorizer interface {
 	AuthorizeHTTP(w http.ResponseWriter, r *http.Request) (decision HTTPRequestAuthorizationDecision, outcome string, err error)
 }
 
-// OriginProxy is how data flows from cloudflared to the origin services running behind it.
+// OriginProxy is how data flows from zenthcloudd to the origin services running behind it.
 type OriginProxy interface {
 	ProxyHTTP(w ResponseWriter, tr *tracing.TracedHTTPRequest, isWebsocket bool) error
 	ProxyTCP(ctx context.Context, rwa ReadWriteAcker, req *TCPRequest) error
@@ -234,13 +234,13 @@ func (h *HTTPResponseReadWriteAcker) AckConnection(tracePropagation string) erro
 	}
 
 	if tracePropagation != "" {
-		resp.Header.Add(tracing.CanonicalCloudflaredTracingHeader, tracePropagation)
+		resp.Header.Add(tracing.CanonicalZenthclouddTracingHeader, tracePropagation)
 	}
 
 	return h.w.WriteRespHeaders(resp.StatusCode, resp.Header)
 }
 
-// localProxyConnection emulates an incoming connection to cloudflared as a net.Conn.
+// localProxyConnection emulates an incoming connection to zenthcloudd as a net.Conn.
 // Used when handling a "hijacked" connection from connection.ResponseWriter
 type localProxyConnection struct {
 	io.ReadWriteCloser
@@ -283,7 +283,7 @@ func (c *localProxyConnection) SetWriteDeadline(t time.Time) error {
 	return nil
 }
 
-// ResponseWriter is the response path for a request back through cloudflared's tunnel.
+// ResponseWriter is the response path for a request back through zenthcloudd's tunnel.
 type ResponseWriter interface {
 	WriteRespHeaders(status int, header http.Header) error
 	AddTrailer(trailerName, trailerValue string)

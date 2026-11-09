@@ -1,6 +1,6 @@
 import { resolve } from "node:path";
-import { readBuildOutput } from "@cloudflare/build-output-utils";
-import { runInTempDir, seed } from "@cloudflare/workers-utils/test-helpers";
+import { readBuildOutput } from "@zenthcloud/build-output-utils";
+import { runInTempDir, seed } from "@zenthcloud/workers-utils/test-helpers";
 import { describe, expect, it } from "vite-plus/test";
 import {
 	BuildOutputConfigError,
@@ -21,17 +21,17 @@ describe("transforms Build Output Specification into deploy input", () => {
 
 	it("reads modules and maps types", async () => {
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				name: "my-worker",
 				modules: {
 					"index.js": { type: "esm" },
 					"helper.wasm": { type: "wasm" },
 				},
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export default {}",
-			".cloudflare/output/v0/workers/default/bundle/helper.wasm": "wasm-bytes",
+			".zenthcloud/output/v0/workers/default/bundle/helper.wasm": "wasm-bytes",
 		});
 
 		const {
@@ -42,7 +42,7 @@ describe("transforms Build Output Specification into deploy input", () => {
 		const result = assembleBuildResult(worker, builtConfig);
 
 		expect(result.resolvedEntryPointPath).toBe(
-			resolve(".cloudflare/output/v0/workers/default/bundle/index.js")
+			resolve(".zenthcloud/output/v0/workers/default/bundle/index.js")
 		);
 		expect(result.bundleType).toBe("esm");
 		expect(result.content).toBe("export default {}");
@@ -54,8 +54,8 @@ describe("transforms Build Output Specification into deploy input", () => {
 
 	it("resolves and deploys modules from a partial manifest", async () => {
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-			".cloudflare/output/v0/workers/default/worker.config.json":
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+			".zenthcloud/output/v0/workers/default/worker.config.json":
 				JSON.stringify({
 					name: "my-worker",
 					compatibilityDate: "2026-04-25",
@@ -65,12 +65,12 @@ describe("transforms Build Output Specification into deploy input", () => {
 						modules: { "helper.wasm": { type: "wasm" } },
 					},
 				}),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export default {}",
-			".cloudflare/output/v0/workers/default/bundle/chunk.mjs":
+			".zenthcloud/output/v0/workers/default/bundle/chunk.mjs":
 				"export const value = 1",
-			".cloudflare/output/v0/workers/default/bundle/chunk.mjs.map": "{}",
-			".cloudflare/output/v0/workers/default/bundle/helper.wasm": "wasm-bytes",
+			".zenthcloud/output/v0/workers/default/bundle/chunk.mjs.map": "{}",
+			".zenthcloud/output/v0/workers/default/bundle/helper.wasm": "wasm-bytes",
 		});
 
 		const {
@@ -97,17 +97,17 @@ describe("transforms Build Output Specification into deploy input", () => {
 
 	it("includes sourcemaps declared in the manifest", async () => {
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				name: "my-worker",
 				modules: {
 					"index.js": { type: "esm" },
 					"index.js.map": { type: "sourcemap" },
 				},
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export default {}",
-			".cloudflare/output/v0/workers/default/bundle/index.js.map":
+			".zenthcloud/output/v0/workers/default/bundle/index.js.map":
 				'{"version":3}',
 		});
 
@@ -125,15 +125,15 @@ describe("transforms Build Output Specification into deploy input", () => {
 
 	it("throws when a manifest sourcemap is missing", async () => {
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				name: "my-worker",
 				modules: {
 					"index.js": { type: "esm" },
 					"index.js.map": { type: "sourcemap" },
 				},
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export default {}",
 		});
 
@@ -152,13 +152,13 @@ describe("transforms Build Output Specification into deploy input", () => {
 
 	it("returns empty result for assets-only (no mainModule)", async () => {
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				name: "my-worker",
 				mainModule: undefined,
 				modules: undefined,
 			}),
-			".cloudflare/output/v0/workers/default/assets/index.html": "",
+			".zenthcloud/output/v0/workers/default/assets/index.html": "",
 		});
 
 		const {
@@ -174,13 +174,13 @@ describe("transforms Build Output Specification into deploy input", () => {
 
 	it("rejects module path traversal", async () => {
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				name: "my-worker",
 				mainModule: "../../../etc/passwd",
 				modules: { "../../../etc/passwd": { type: "esm" } },
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.js": "",
+			".zenthcloud/output/v0/workers/default/bundle/index.js": "",
 		});
 
 		const {
@@ -202,17 +202,17 @@ describe("transforms Build Output Specification into deploy input", () => {
 		// shares the "bundle" prefix. Without the trailing-separator check
 		// this would pass a naive startsWith guard.
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				name: "my-worker",
 				modules: {
 					"index.js": { type: "esm" },
 					"../bundle-evil/payload.js": { type: "esm" },
 				},
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export default {}",
-			".cloudflare/output/v0/workers/default/bundle-evil/payload.js": "evil()",
+			".zenthcloud/output/v0/workers/default/bundle-evil/payload.js": "evil()",
 		});
 
 		const {
@@ -240,19 +240,19 @@ describe("transforms Build Output Specification into deploy input", () => {
 		};
 
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				name: "my-worker",
 				modules,
 			}),
-			".cloudflare/output/v0/workers/default/bundle/index.js":
+			".zenthcloud/output/v0/workers/default/bundle/index.js":
 				"export default {}",
-			".cloudflare/output/v0/workers/default/bundle/lib.cjs":
+			".zenthcloud/output/v0/workers/default/bundle/lib.cjs":
 				"module.exports = {}",
-			".cloudflare/output/v0/workers/default/bundle/app.py": "pass",
-			".cloudflare/output/v0/workers/default/bundle/dep.txt": "hello",
-			".cloudflare/output/v0/workers/default/bundle/blob.bin": "\x00",
-			".cloudflare/output/v0/workers/default/bundle/config.json": '{"a":1}',
+			".zenthcloud/output/v0/workers/default/bundle/app.py": "pass",
+			".zenthcloud/output/v0/workers/default/bundle/dep.txt": "hello",
+			".zenthcloud/output/v0/workers/default/bundle/blob.bin": "\x00",
+			".zenthcloud/output/v0/workers/default/bundle/config.json": '{"a":1}',
 		});
 
 		const {
@@ -277,8 +277,8 @@ describe("transforms Build Output Specification into deploy input", () => {
 		// Python Workers import vendored packages from `python_modules/` and use
 		// module names as file paths, so a `./` prefix makes `import workers` fail.
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				name: "my-worker",
 				compatibilityFlags: ["python_workers"],
 				mainModule: "entry.py",
@@ -290,14 +290,14 @@ describe("transforms Build Output Specification into deploy input", () => {
 					"python_modules/workers/workflows.js": { type: "esm" },
 				},
 			}),
-			".cloudflare/output/v0/workers/default/bundle/entry.py":
+			".zenthcloud/output/v0/workers/default/bundle/entry.py":
 				"from workers import WorkerEntrypoint",
-			".cloudflare/output/v0/workers/default/bundle/helpers.py": "pass",
-			".cloudflare/output/v0/workers/default/bundle/python_modules/workers/__init__.py":
+			".zenthcloud/output/v0/workers/default/bundle/helpers.py": "pass",
+			".zenthcloud/output/v0/workers/default/bundle/python_modules/workers/__init__.py":
 				"",
-			".cloudflare/output/v0/workers/default/bundle/python_modules/_workers_sdk_patch_loader.pth":
+			".zenthcloud/output/v0/workers/default/bundle/python_modules/_workers_sdk_patch_loader.pth":
 				"",
-			".cloudflare/output/v0/workers/default/bundle/python_modules/workers/workflows.js":
+			".zenthcloud/output/v0/workers/default/bundle/python_modules/workers/workflows.js":
 				"export {}",
 		});
 
@@ -319,14 +319,14 @@ describe("transforms Build Output Specification into deploy input", () => {
 
 	it("throws when run_worker_first is set without a user Worker", async () => {
 		await seed({
-			".cloudflare/output/v0/config.json": buildOutputRootConfig(),
-			".cloudflare/output/v0/workers/default/worker.config.json": workerConfig({
+			".zenthcloud/output/v0/config.json": buildOutputRootConfig(),
+			".zenthcloud/output/v0/workers/default/worker.config.json": workerConfig({
 				name: "my-worker",
 				mainModule: undefined,
 				modules: undefined,
 				assets: { runWorkerFirst: true },
 			}),
-			".cloudflare/output/v0/workers/default/assets/index.html": "",
+			".zenthcloud/output/v0/workers/default/assets/index.html": "",
 		});
 
 		const {

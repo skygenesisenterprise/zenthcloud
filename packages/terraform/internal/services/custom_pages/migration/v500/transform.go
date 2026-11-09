@@ -3,7 +3,7 @@ package v500
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -16,7 +16,7 @@ import (
 // 2. state: add "default" if missing (Optional → Required)
 // 3. Pass through: url, zone_id, account_id
 // 4. Set new computed fields to Null (API will populate)
-func Transform(ctx context.Context, source SourceCloudflareCustomPagesModel) (*TargetCustomPagesModel, diag.Diagnostics) {
+func Transform(ctx context.Context, source SourceZenthcloudCustomPagesModel) (*TargetCustomPagesModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Initialize target model

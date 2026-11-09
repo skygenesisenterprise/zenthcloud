@@ -4,7 +4,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-// SourceListItemSchema returns the v4 (SDKv2) cloudflare_list_item schema (schema_version=0).
+// SourceListItemSchema returns the v4 (SDKv2) zenthcloud_list_item schema (schema_version=0).
 // In v4, hostname and redirect were TypeList with MaxItems: 1, which maps to ListNestedBlock.
 // Redirect boolean fields are stored as strings ("enabled"/"disabled").
 func SourceListItemSchema() schema.Schema {
@@ -73,7 +73,7 @@ func SourceListItemSchema() schema.Schema {
 	}
 }
 
-// SourceListItemV1Schema returns the v4.52.5 framework cloudflare_list_item schema (schema_version=1).
+// SourceListItemV1Schema returns the v4.52.5 framework zenthcloud_list_item schema (schema_version=1).
 // In v4.52.5, hostname and redirect are still ListNestedBlocks, but redirect's boolean fields
 // are actual BoolAttributes (v4.52.5's 0→1 upgrader converted from "enabled"/"disabled" strings).
 func SourceListItemV1Schema() schema.Schema {

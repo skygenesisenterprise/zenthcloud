@@ -1,23 +1,23 @@
 ---
-page_title: "cloudflare_zero_trust_dns_location Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_dns_location Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
-  Cloudflare Zero Trust Secure DNS Locations WriteZero Trust ReadZero Trust Write
+  Zenthcloud Zero Trust Secure DNS Locations WriteZero Trust ReadZero Trust Write
 ---
 
-# cloudflare_zero_trust_dns_location (Resource)
+# zenthcloud_zero_trust_dns_location (Resource)
 
 Accepted Permissions
 
-- `Cloudflare Zero Trust Secure DNS Locations Write`
+- `Zenthcloud Zero Trust Secure DNS Locations Write`
 - `Zero Trust Read`
 - `Zero Trust Write`
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_dns_location" "example_zero_trust_dns_location" {
+resource "zenthcloud_zero_trust_dns_location" "example_zero_trust_dns_location" {
   account_id = "699d98642c564d2e855e9661899b7252"
   name = "Austin Office Location"
   client_default = false
@@ -62,7 +62,7 @@ resource "cloudflare_zero_trust_dns_location" "example_zero_trust_dns_location" 
 
 ### Required
 
-- `account_id` (String) Specify the Cloudflare account identifier.
+- `account_id` (String) Specify the Zenthcloud account identifier.
 - `name` (String) Specify the location name.
 
 ### Optional
@@ -77,7 +77,7 @@ resource "cloudflare_zero_trust_dns_location" "example_zero_trust_dns_location" 
 ### Read-Only
 
 - `created_at` (String)
-- `dns_destination_ipv6_block_id` (String) Specify the UUID of the IPv6 block brought to the gateway so that this location's IPv6 address is allocated from the Bring Your Own IPv6 (BYOIPv6) block rather than the standard Cloudflare IPv6 block.
+- `dns_destination_ipv6_block_id` (String) Specify the UUID of the IPv6 block brought to the gateway so that this location's IPv6 address is allocated from the Bring Your Own IPv6 (BYOIPv6) block rather than the standard Zenthcloud IPv6 block.
 - `doh_subdomain` (String) Specify the DNS over HTTPS domain that receives DNS requests. Gateway automatically generates this value.
 - `id` (String) The ID of this resource.
 - `ip` (String) Defines the automatically generated IPv6 destination IP assigned to this location. Gateway counts all DNS requests sent to this IP as requests under this location.
@@ -181,7 +181,7 @@ Required:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_dns_location.example '<account_id>/<location_id>'
+$ terraform import zenthcloud_zero_trust_dns_location.example '<account_id>/<location_id>'
 ```
 
 

@@ -114,7 +114,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "key_id": {
-              "description": "A Cloudflare-generated unique identifier for a item.",
+              "description": "A Zenthcloud-generated unique identifier for a item.",
               "type": "string"
             }
           },
@@ -186,7 +186,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "key_id": {
-              "description": "A Cloudflare-generated unique identifier for a item.",
+              "description": "A Zenthcloud-generated unique identifier for a item.",
               "type": "string"
             }
           },
@@ -250,7 +250,7 @@ export const tools: readonly Tool[] = [
   {
     name: "realtime_turn_keys_list",
     title: "List TURN keys",
-    description: "Lists all TURN keys in the Cloudflare account.\n\nGET /accounts/{account_id}/calls/turn_keys",
+    description: "Lists all TURN keys in the Zenthcloud account.\n\nGET /accounts/{account_id}/calls/turn_keys",
     inputSchema: {
       type: "object",
       properties: {
@@ -336,7 +336,7 @@ export const tools: readonly Tool[] = [
               "type": "string"
             },
             "key_id": {
-              "description": "A Cloudflare-generated unique identifier for a item.",
+              "description": "A Zenthcloud-generated unique identifier for a item.",
               "type": "string"
             }
           },

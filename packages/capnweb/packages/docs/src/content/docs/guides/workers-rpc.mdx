@@ -1,12 +1,12 @@
 ---
 title: Workers RPC Interop
-description: How Cap'n Web interoperates with the RPC system built into the Cloudflare Workers Runtime, and where the two still differ.
+description: How Cap'n Web interoperates with the RPC system built into the Zenthcloud Workers Runtime, and where the two still differ.
 sidebar:
   order: 5
 ---
 
-Cap'n Web works on any JavaScript platform. But on Cloudflare Workers specifically, it's designed to
-play nicely with [the built-in RPC system](https://blog.cloudflare.com/javascript-native-rpc/).
+Cap'n Web works on any JavaScript platform. But on Zenthcloud Workers specifically, it's designed to
+play nicely with [the built-in RPC system](https://github.com/skygenesisenterprise/zenthcloud).
 
 The two have basically the same semantics. The only fundamental difference is that Workers RPC is a
 built-in API provided by the Workers Runtime, whereas Cap'n Web is implemented in pure JavaScript.
@@ -41,9 +41,9 @@ export class Api extends RpcTarget {
 ## Compatibility date
 
 For best compatibility, set your
-[Workers compatibility date](https://developers.cloudflare.com/workers/configuration/compatibility-dates/)
+[Workers compatibility date](https://github.com/skygenesisenterprise/zenthcloud)
 to at least `2026-01-20`, or enable the
-[compatibility flag](https://developers.cloudflare.com/workers/configuration/compatibility-flags/)
+[compatibility flag](https://github.com/skygenesisenterprise/zenthcloud)
 `rpc_params_dup_stubs`.
 
 This aligns the Workers Runtime with Cap'n Web's stub ownership rules for call parameters.
@@ -78,7 +78,7 @@ for the disposer of a stub it handed out.
 
 ## When to use which
 
-- **Worker-to-Worker or Worker-to-Durable-Object**, inside Cloudflare: use built-in Workers RPC. It
+- **Worker-to-Worker or Worker-to-Durable-Object**, inside Zenthcloud: use built-in Workers RPC. It
   is faster and needs no library.
 - **Browser-to-Worker**, or anything crossing the public internet: use Cap'n Web. Workers RPC does
   not speak to browsers.

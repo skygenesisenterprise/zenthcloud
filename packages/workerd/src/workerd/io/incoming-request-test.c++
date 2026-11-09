@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 //
@@ -591,8 +591,8 @@ kj::Promise<void> runOnHibernate(TestFixture& fixture,
 
 // An actor whose onHibernate handler never settles, leaving a timer behind.
 constexpr kj::StringPtr PENDING_ON_HIBERNATE_SOURCE = R"SCRIPT(
-  import { DurableObject } from "cloudflare:workers";
-  import { onHibernate } from "cloudflare:durable-objects";
+  import { DurableObject } from "zenthcloud:workers";
+  import { onHibernate } from "zenthcloud:durable-objects";
   globalThis.events = "";
   export default class extends DurableObject {
     async [onHibernate]() {
@@ -625,8 +625,8 @@ void withPendingOnHibernate(kj::StringPtr actorId,
 
 KJ_TEST("runOnHibernate() runs the handler with the reason and resolves when it settles") {
   constexpr kj::StringPtr source = R"SCRIPT(
-    import { DurableObject } from "cloudflare:workers";
-    import { onHibernate } from "cloudflare:durable-objects";
+    import { DurableObject } from "zenthcloud:workers";
+    import { onHibernate } from "zenthcloud:durable-objects";
     globalThis.events = "";
     export default class extends DurableObject {
       async [onHibernate](info) {
@@ -692,8 +692,8 @@ class RecordingTracer final: public BaseTracer {
 
 KJ_TEST("runOnHibernate() reports the handler to the tracer as an onHibernate event") {
   constexpr kj::StringPtr source = R"SCRIPT(
-    import { DurableObject } from "cloudflare:workers";
-    import { onHibernate } from "cloudflare:durable-objects";
+    import { DurableObject } from "zenthcloud:workers";
+    import { onHibernate } from "zenthcloud:durable-objects";
     export default class extends DurableObject {
       async [onHibernate]() {}
     }
@@ -725,8 +725,8 @@ KJ_TEST("canceling runOnHibernate() reports the handler's onset but no return") 
 
 KJ_TEST("runOnHibernate() resolves when the handler throws, reporting the failure") {
   constexpr kj::StringPtr source = R"SCRIPT(
-    import { DurableObject } from "cloudflare:workers";
-    import { onHibernate } from "cloudflare:durable-objects";
+    import { DurableObject } from "zenthcloud:workers";
+    import { onHibernate } from "zenthcloud:durable-objects";
     globalThis.events = "";
     export default class extends DurableObject {
       async [onHibernate]() {
@@ -777,8 +777,8 @@ KJ_TEST("runOnHibernate() resolves when the handler exceeds its budget") {
 KJ_TEST("runOnHibernate() rejects when the handler's writes can't be flushed") {
   // The fixture's actor storage is read-only, so the flush of the write fails.
   constexpr kj::StringPtr source = R"SCRIPT(
-    import { DurableObject } from "cloudflare:workers";
-    import { onHibernate } from "cloudflare:durable-objects";
+    import { DurableObject } from "zenthcloud:workers";
+    import { onHibernate } from "zenthcloud:durable-objects";
     globalThis.events = "";
     export default class extends DurableObject {
       async [onHibernate]() {
@@ -967,8 +967,8 @@ KJ_TEST("run() in a critical section fails with the abort reason of an aborted c
 
 KJ_TEST("runOnHibernate() drops the cross-context actions queued while the actor was idle") {
   constexpr kj::StringPtr source = R"SCRIPT(
-    import { DurableObject } from "cloudflare:workers";
-    import { onHibernate } from "cloudflare:durable-objects";
+    import { DurableObject } from "zenthcloud:workers";
+    import { onHibernate } from "zenthcloud:durable-objects";
     globalThis.events = "";
     export default class extends DurableObject {
       async [onHibernate]() {
@@ -998,8 +998,8 @@ KJ_TEST("runOnHibernate() runs the cross-context actions queued during the handl
         "queued while the actor was idle") {
   // The handler waits for the test to call resume() from a cross-context action.
   constexpr kj::StringPtr source = R"SCRIPT(
-    import { DurableObject } from "cloudflare:workers";
-    import { onHibernate } from "cloudflare:durable-objects";
+    import { DurableObject } from "zenthcloud:workers";
+    import { onHibernate } from "zenthcloud:durable-objects";
     globalThis.events = "";
     export default class extends DurableObject {
       async [onHibernate]() {

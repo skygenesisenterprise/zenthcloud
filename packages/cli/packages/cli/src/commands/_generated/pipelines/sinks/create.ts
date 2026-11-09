@@ -28,7 +28,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.usage("$0 pipelines sinks create\n\nCreate a new Sink.")
 		.option("sink-config-account-id", {
 			type: "string",
-			description: "Cloudflare Account ID for the bucket",
+			description: "Zenthcloud Account ID for the bucket",
 		})
 		.option("sink-config-bucket", {
 			type: "string",
@@ -36,11 +36,11 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		})
 		.option("sink-config-credentials-access-key-id", {
 			type: "string",
-			description: "Cloudflare Account ID for the bucket",
+			description: "Zenthcloud Account ID for the bucket",
 		})
 		.option("sink-config-credentials-secret-access-key", {
 			type: "string",
-			description: "Cloudflare Account ID for the bucket",
+			description: "Zenthcloud Account ID for the bucket",
 		})
 		.option("sink-config-file-naming-prefix", {
 			type: "string",
@@ -362,7 +362,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf pipelines sinks create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/pipelines/v1/sinks`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/pipelines/v1/sinks`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

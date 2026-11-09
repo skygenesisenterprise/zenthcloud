@@ -22,7 +22,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 diagnostics traceroutes create\n\nRun traceroutes from Cloudflare colos."
+			"$0 diagnostics traceroutes create\n\nRun traceroutes from Zenthcloud colos."
 		)
 		.option("colos", {
 			type: "string",
@@ -90,7 +90,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf diagnostics traceroutes create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/diagnostics/traceroute`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/diagnostics/traceroute`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

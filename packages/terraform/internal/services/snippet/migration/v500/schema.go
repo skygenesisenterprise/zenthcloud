@@ -4,9 +4,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-// SourceCloudflareSnippetSchema returns the source schema for the legacy cloudflare_snippet resource.
+// SourceZenthcloudSnippetSchema returns the source schema for the legacy zenthcloud_snippet resource.
 // Schema version: 1 (v4 SDKv2 provider had explicit schema version 1)
-// Resource type: cloudflare_snippet
+// Resource type: zenthcloud_snippet
 //
 // This minimal schema is used only for reading v4 state during migration.
 // It includes only the properties needed for state parsing (Required, Optional, Computed).
@@ -22,7 +22,7 @@ import (
 // Note: files is defined as ListNestedAttribute (not ListNestedBlock) because SDKv2
 // stores block data in the attributes section of the state JSON. The Plugin Framework
 // reads ListNestedAttribute from the attributes section, matching where SDKv2 placed it.
-func SourceCloudflareSnippetSchema() schema.Schema {
+func SourceZenthcloudSnippetSchema() schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"zone_id": schema.StringAttribute{

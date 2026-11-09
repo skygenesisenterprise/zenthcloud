@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_api_token Data Source - Cloudflare"
+page_title: "zenthcloud_api_token Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   API Tokens ReadAPI Tokens Write
 ---
 
-# cloudflare_api_token (Data Source)
+# zenthcloud_api_token (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_api_token" "example_api_token" {
+data "zenthcloud_api_token" "example_api_token" {
   token_id = "ed17574386854bf78a67040be0a770b0"
 }
 ```

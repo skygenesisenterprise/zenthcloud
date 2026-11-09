@@ -135,7 +135,7 @@ export const email$$security_CreateDomain: JSONObject = {
       ]
     },
     "transport": {
-      "description": "The mail transport hostname for MX/Inline delivery — the MX record Cloudflare delivers email to (e.g. `mx.example.com`).",
+      "description": "The mail transport hostname for MX/Inline delivery — the MX record Zenthcloud delivers email to (e.g. `mx.example.com`).",
       "oneOf": [
         {
           "type": "string"
@@ -285,7 +285,7 @@ export const email$$security_ReplaceDomain: JSONObject = {
       ]
     },
     "transport": {
-      "description": "The mail transport hostname for MX/Inline delivery — the MX record Cloudflare delivers email to (e.g. `mx.example.com`).",
+      "description": "The mail transport hostname for MX/Inline delivery — the MX record Zenthcloud delivers email to (e.g. `mx.example.com`).",
       "oneOf": [
         {
           "type": "string"
@@ -406,7 +406,7 @@ export const email$$security_UpdateDomain: JSONObject = {
       "type": "boolean"
     },
     "transport": {
-      "description": "The mail transport hostname for MX/Inline delivery — the MX record Cloudflare delivers email to (e.g. `mx.example.com`).",
+      "description": "The mail transport hostname for MX/Inline delivery — the MX record Zenthcloud delivers email to (e.g. `mx.example.com`).",
       "type": "string"
     }
   },

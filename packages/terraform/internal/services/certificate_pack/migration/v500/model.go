@@ -1,7 +1,7 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -10,16 +10,16 @@ import (
 // Source Models (Legacy Provider - v4.x)
 // ============================================================================
 
-// SourceCloudflareCertificatePackModel represents the legacy cloudflare_certificate_pack resource state from v4.x provider.
+// SourceZenthcloudCertificatePackModel represents the legacy zenthcloud_certificate_pack resource state from v4.x provider.
 // Schema version: 0 (SDKv2 provider)
-type SourceCloudflareCertificatePackModel struct {
+type SourceZenthcloudCertificatePackModel struct {
 	ID                   types.String                   `tfsdk:"id"`
 	ZoneID               types.String                   `tfsdk:"zone_id"`
 	CertificateAuthority types.String                   `tfsdk:"certificate_authority"`
 	Type                 types.String                   `tfsdk:"type"`
 	ValidationMethod     types.String                   `tfsdk:"validation_method"`
 	ValidityDays         types.Int64                    `tfsdk:"validity_days"` // Int in v4 schema, but stored as number
-	CloudflareBranding   types.Bool                     `tfsdk:"cloudflare_branding"`
+	ZenthcloudBranding   types.Bool                     `tfsdk:"zenthcloud_branding"`
 	Hosts                types.Set                      `tfsdk:"hosts"` // Regular Set in v4, not customfield.Set
 	ValidationRecords    []SourceValidationRecordsModel `tfsdk:"validation_records"`
 	ValidationErrors     []SourceValidationErrorsModel  `tfsdk:"validation_errors"`
@@ -49,7 +49,7 @@ type SourceValidationErrorsModel struct {
 // Target Models (Current Provider - v5.x+)
 // ============================================================================
 
-// TargetCertificatePackModel represents the current cloudflare_certificate_pack resource state from v5.x+ provider.
+// TargetCertificatePackModel represents the current zenthcloud_certificate_pack resource state from v5.x+ provider.
 // Schema version: 500
 type TargetCertificatePackModel struct {
 	ID                   types.String                                                  `tfsdk:"id"`
@@ -58,7 +58,7 @@ type TargetCertificatePackModel struct {
 	Type                 types.String                                                  `tfsdk:"type"`
 	ValidationMethod     types.String                                                  `tfsdk:"validation_method"`
 	ValidityDays         types.Int64                                                   `tfsdk:"validity_days"`
-	CloudflareBranding   types.Bool                                                    `tfsdk:"cloudflare_branding"`
+	ZenthcloudBranding   types.Bool                                                    `tfsdk:"zenthcloud_branding"`
 	Hosts                customfield.Set[types.String]                                 `tfsdk:"hosts"`
 	PrimaryCertificate   types.String                                                  `tfsdk:"primary_certificate"`
 	Status               types.String                                                  `tfsdk:"status"`

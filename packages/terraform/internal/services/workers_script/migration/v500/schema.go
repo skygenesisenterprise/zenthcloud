@@ -77,9 +77,9 @@ func v4BindingSchema(fields ...string) schema.ListNestedAttribute {
 	}
 }
 
-// SourceWorkerScriptSchema returns the v4 cloudflare_worker_script schema.
+// SourceWorkerScriptSchema returns the v4 zenthcloud_worker_script schema.
 // Schema version: 1 (v4 SDKv2 provider)
-// Resource type: cloudflare_worker_script (singular)
+// Resource type: zenthcloud_worker_script (singular)
 //
 // This minimal schema is used only for reading v4 state during MoveState migration.
 // Validators, PlanModifiers, Defaults, and Descriptions are intentionally omitted.

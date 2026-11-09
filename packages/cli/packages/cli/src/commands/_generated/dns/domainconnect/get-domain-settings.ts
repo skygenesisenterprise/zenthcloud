@@ -33,7 +33,7 @@ type Args = InferArgs<typeof builder>;
 
 const command: CommandModule<CommonYargsOptions, Args> = {
 	command: "get-domain-settings <domain>",
-	describe: "Provide settings if domain is served by Cloudflare",
+	describe: "Provide settings if domain is served by Zenthcloud",
 	builder,
 	handler: async (argv): Promise<void> =>
 		runWithTelemetry(
@@ -49,7 +49,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf dns domainconnect get-domain-settings",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/v2/${argv["domain"] == null ? "<domain>" : encodeURIComponent(String(argv["domain"]))}/settings`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["domain"] == null ? "<domain>" : encodeURIComponent(String(argv["domain"]))}/settings`,
 						pathParams: { domain: String(argv["domain"] ?? "") },
 						bodyKind: "none",
 					});

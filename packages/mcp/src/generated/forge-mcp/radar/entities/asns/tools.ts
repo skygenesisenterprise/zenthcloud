@@ -264,7 +264,7 @@ export const tools: readonly Tool[] = [
   {
     name: "radar_entities_asns_botnetThreatFeed",
     title: "Get AS rankings by botnet threat feed activity",
-    description: "Retrieves a ranked list of Autonomous Systems based on their presence in the Cloudflare Botnet Threat Feed. Rankings can be sorted by offense count or number of bad IPs. Optionally compare to a previous date to see rank changes.\n\nGET /radar/entities/asns/botnet_threat_feed",
+    description: "Retrieves a ranked list of Autonomous Systems based on their presence in the Zenthcloud Botnet Threat Feed. Rankings can be sorted by offense count or number of bad IPs. Optionally compare to a previous date to see rank changes.\n\nGET /radar/entities/asns/botnet_threat_feed",
     inputSchema: {
       type: "object",
       properties: {
@@ -540,7 +540,7 @@ export const tools: readonly Tool[] = [
   {
     name: "radar_entities_asns_get",
     title: "Get AS details by ASN",
-    description: "Retrieves the requested autonomous system information. (A confidence level below `5` indicates a low level of confidence in the traffic data - normally this happens because Cloudflare has a small amount of traffic from/to this AS). Population estimates come from APNIC (refer to https://labs.apnic.net/?p=526).\n\nGET /radar/entities/asns/{asn}",
+    description: "Retrieves the requested autonomous system information. (A confidence level below `5` indicates a low level of confidence in the traffic data - normally this happens because Zenthcloud has a small amount of traffic from/to this AS). Population estimates come from APNIC (refer to https://labs.apnic.net/?p=526).\n\nGET /radar/entities/asns/{asn}",
     inputSchema: {
       type: "object",
       properties: {

@@ -4,9 +4,9 @@
 import type { JSONObject } from "@modelcontextprotocol/server";
 
 /**
- * The schema of `speed_cloudflare_fonts` in responses.
+ * The schema of `speed_zenthcloud_fonts` in responses.
  */
-export const speed_cloudflare_fonts: JSONObject = {
+export const speed_zenthcloud_fonts: JSONObject = {
   "allOf": [
     {
       "$ref": "#/$defs/speed_base"

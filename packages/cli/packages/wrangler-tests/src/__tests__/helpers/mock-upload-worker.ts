@@ -1,4 +1,4 @@
-import { ParseError } from "@cloudflare/workers-utils";
+import { ParseError } from "@zenthcloud/workers-utils";
 import { http, HttpResponse } from "msw/http";
 // eslint-disable-next-line no-restricted-imports
 import { expect } from "vite-plus/test";
@@ -20,7 +20,7 @@ import type {
 	RawConfig,
 	RawEnvironment,
 	WorkerMetadata,
-} from "@cloudflare/workers-utils";
+} from "@zenthcloud/workers-utils";
 import type { HttpResponseResolver } from "msw/http";
 
 /** Create a mock handler for the request to upload a worker script. */
@@ -63,7 +63,7 @@ export function mockUploadWorkerRequest(
 	const handleUpload: HttpResponseResolver = async ({ params, request }) => {
 		const url = new URL(request.url);
 		expect(url.hostname).toMatch(
-			options.expectedBaseUrl ?? "api.cloudflare.com"
+			options.expectedBaseUrl ?? "api.zenthcloud.com"
 		);
 		expect(params.accountId).toEqual("some-account-id");
 		expect(params.scriptName).toEqual(expectedScriptName);

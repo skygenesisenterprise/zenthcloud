@@ -9,8 +9,8 @@ import type { JSONObject } from "@modelcontextprotocol/server";
 export const magic_gre: JSONObject = {
   "description": "The configuration specific to GRE interconnects. Omitted in responses for version 1.5 interconnects.",
   "properties": {
-    "cloudflare_endpoint": {
-      "description": "The IP address assigned to the Cloudflare side of the GRE tunnel created as part of the Interconnect.",
+    "zenthcloud_endpoint": {
+      "description": "The IP address assigned to the Zenthcloud side of the GRE tunnel created as part of the Interconnect.",
       "type": "string"
     }
   },
@@ -27,7 +27,7 @@ export const magic_interconnect_bgp_config: JSONObject = {
       "description": "Deprecated. Use customer_asn.",
       "type": "integer"
     },
-    "cloudflare_endpoint": {
+    "zenthcloud_endpoint": {
       "deprecated": true,
       "description": "Read-only for v1.5; derived from interface_address.",
       "type": "string"
@@ -76,7 +76,7 @@ export const magic_interconnect_health_check: JSONObject = {
       "properties": {
         "direction": {
           "default": "unidirectional",
-          "description": "The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the interconnect and the result comes back to Cloudflare via the open Internet, or bidirectional where both the probe and result come and go via the interconnect.",
+          "description": "The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the interconnect and the result comes back to Zenthcloud via the open Internet, or bidirectional where both the probe and result come and go via the interconnect.",
           "enum": [
             "unidirectional",
             "bidirectional"
@@ -84,7 +84,7 @@ export const magic_interconnect_health_check: JSONObject = {
           "type": "string"
         },
         "source": {
-          "description": "The source IPv4 address used for bidirectional health checks. Supported only for version 1.5 interconnects. It is required when `direction` is `bidirectional` and must be omitted (and is cleared) when `direction` is `unidirectional`. The address must be within RFC1918 space, the approved link-local range 169.254.240.0/20, or the Cloudflare reserved range 198.41.199.224/27.",
+          "description": "The source IPv4 address used for bidirectional health checks. Supported only for version 1.5 interconnects. It is required when `direction` is `bidirectional` and must be omitted (and is cleared) when `direction` is `unidirectional`. The address must be within RFC1918 space, the approved link-local range 169.254.240.0/20, or the Zenthcloud reserved range 198.41.199.224/27.",
           "type": "string"
         }
       },

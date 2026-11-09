@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_workers_kv Data Source - Cloudflare"
+page_title: "zenthcloud_workers_kv Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Workers KV Storage ReadWorkers KV Storage Write
 ---
 
-# cloudflare_workers_kv (Data Source)
+# zenthcloud_workers_kv (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_workers_kv" "example_workers_kv" {
+data "zenthcloud_workers_kv" "example_workers_kv" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   namespace_id = "0f2ac74b498b48028cb68387c421e279"
   key_name = "My-Key"
@@ -28,7 +28,7 @@ data "cloudflare_workers_kv" "example_workers_kv" {
 
 ### Required
 
-- `account_id` (String) ID of the Cloudflare account that owns the Workers KV namespaces.
+- `account_id` (String) ID of the Zenthcloud account that owns the Workers KV namespaces.
 - `key_name` (String) A key's name. The name may be at most 512 bytes. All printable, non-whitespace characters are valid. Use percent-encoding to define key names as part of a URL.
 - `namespace_id` (String) ID of the Workers KV namespace.
 

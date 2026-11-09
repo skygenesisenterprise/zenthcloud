@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/load_balancer_monitor"
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/load_balancer_monitor/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/load_balancer_monitor"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/load_balancer_monitor/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"

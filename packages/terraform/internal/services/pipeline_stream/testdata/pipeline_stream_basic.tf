@@ -1,4 +1,4 @@
-resource "cloudflare_pipeline_stream" "%[1]s" {
+resource "zenthcloud_pipeline_stream" "%[1]s" {
   account_id = "%[2]s"
   name       = "%[1]s"
   format = {

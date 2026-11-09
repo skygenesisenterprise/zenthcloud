@@ -5,17 +5,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceCloudflareD1DatabaseModel represents the source cloudflare_d1_database state structure.
-// This corresponds to schema_version=0 from the legacy (framework) cloudflare provider v4.
+// SourceZenthcloudD1DatabaseModel represents the source zenthcloud_d1_database state structure.
+// This corresponds to schema_version=0 from the legacy (framework) zenthcloud provider v4.
 // Used by UpgradeFromLegacyV0 to parse legacy state.
-type SourceCloudflareD1DatabaseModel struct {
+type SourceZenthcloudD1DatabaseModel struct {
 	ID        types.String `tfsdk:"id"`
 	AccountID types.String `tfsdk:"account_id"`
 	Name      types.String `tfsdk:"name"`
 	Version   types.String `tfsdk:"version"`
 }
 
-// TargetD1DatabaseModel represents the target cloudflare_d1_database state structure (v500).
+// TargetD1DatabaseModel represents the target zenthcloud_d1_database state structure (v500).
 // Must match the v5 D1DatabaseModel structure exactly.
 type TargetD1DatabaseModel struct {
 	ID                  types.String                          `tfsdk:"id"`

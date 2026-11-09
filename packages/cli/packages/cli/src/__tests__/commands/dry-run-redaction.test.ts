@@ -1,5 +1,5 @@
 import { writeFileSync } from "node:fs";
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import {
 	afterEach,
 	beforeEach,
@@ -13,7 +13,7 @@ import { runCf } from "../helpers/run-cf.js";
 describe("generated dry-run redaction", () => {
 	runInTempDir();
 
-	const ENV = { CLOUDFLARE_ACCOUNT_ID: "test-account", NO_COLOR: "1" };
+	const ENV = { ZENTHCLOUD_ACCOUNT_ID: "test-account", NO_COLOR: "1" };
 	let log: ReturnType<typeof vi.spyOn>;
 
 	beforeEach(() => {

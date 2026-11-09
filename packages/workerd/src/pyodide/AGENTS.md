@@ -23,7 +23,7 @@ Python Workers runtime layer. Replaces Pyodide's loader with a minimal substitut
 
 ## Python SDK
 
-Python SDK (`internal/workers-api/`) now lives in [cloudflare/workers-py](https://github.com/cloudflare/workers-py) and is installed from PyPI. Keep existing code for backward compatibility; new features go to workers-py.
+Python SDK (`internal/workers-api/`) now lives in [zenthcloud/workers-py](https://github.com/skygenesisenterprise/zenthcloud) and is installed from PyPI. Keep existing code for backward compatibility; new features go to workers-py.
 
 
 ## TESTING

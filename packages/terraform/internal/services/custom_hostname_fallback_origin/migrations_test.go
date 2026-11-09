@@ -10,22 +10,22 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 // TestMigrateCustomHostnameFallbackOriginBasic tests basic fallback origin migration from v4 to v5
 // This is a simple pass-through migration - no field renames, no type conversions, no structural changes
 func TestMigrateCustomHostnameFallbackOriginBasic(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_hostname_fallback_origin." + rnd
+	resourceName := "zenthcloud_custom_hostname_fallback_origin." + rnd
 	tmpDir := t.TempDir()
 	originHostname := fmt.Sprintf("cftftest-fallback-%s.cf-tf-test.com", rnd)
 
 	// V4 config - basic fallback origin with required fields
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_custom_hostname_fallback_origin" "%[1]s" {
+resource "zenthcloud_custom_hostname_fallback_origin" "%[1]s" {
   zone_id = "%[2]s"
   origin  = "%[3]s"
 }`, rnd, zoneID, originHostname)
@@ -40,8 +40,8 @@ resource "cloudflare_custom_hostname_fallback_origin" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -63,15 +63,15 @@ resource "cloudflare_custom_hostname_fallback_origin" "%[1]s" {
 
 // TestMigrateCustomHostnameFallbackOriginMinimal tests migration with absolutely minimal configuration
 func TestMigrateCustomHostnameFallbackOriginMinimal(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_custom_hostname_fallback_origin." + rnd
+	resourceName := "zenthcloud_custom_hostname_fallback_origin." + rnd
 	tmpDir := t.TempDir()
 	originHostname := fmt.Sprintf("cftftest-minimal-%s.cf-tf-test.com", rnd)
 
 	// V4 config - absolutely minimal configuration (only required fields)
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_custom_hostname_fallback_origin" "%[1]s" {
+resource "zenthcloud_custom_hostname_fallback_origin" "%[1]s" {
   zone_id = "%[2]s"
   origin  = "%[3]s"
 }`, rnd, zoneID, originHostname)
@@ -86,8 +86,8 @@ resource "cloudflare_custom_hostname_fallback_origin" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},

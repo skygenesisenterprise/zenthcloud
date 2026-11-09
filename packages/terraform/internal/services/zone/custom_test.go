@@ -6,10 +6,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zone"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zone"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -60,7 +60,7 @@ func makeZoneState(t *testing.T, ctx context.Context, id types.String) tfsdk.Sta
 	return state
 }
 
-// newZoneResource returns a ZoneResource whose cloudflare client is pointed at
+// newZoneResource returns a ZoneResource whose zenthcloud client is pointed at
 // baseURL. Pass an empty string to leave the client nil (safe when the guard
 // under test fires before any API call is attempted).
 func newZoneResource(t *testing.T, baseURL string) *zone.ZoneResource {
@@ -69,7 +69,7 @@ func newZoneResource(t *testing.T, baseURL string) *zone.ZoneResource {
 	if baseURL == "" {
 		return r
 	}
-	client := cloudflare.NewClient(
+	client := zenthcloud.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIToken("test-token"),
 	)
@@ -129,7 +129,7 @@ func makeZoneDataSourceConfig(t *testing.T, ctx context.Context, zoneID types.St
 	return tfsdk.Config{Schema: dsSchema, Raw: state.Raw}
 }
 
-// newZoneDataSource returns a ZoneDataSource whose cloudflare client is pointed
+// newZoneDataSource returns a ZoneDataSource whose zenthcloud client is pointed
 // at baseURL.
 func newZoneDataSource(t *testing.T, baseURL string) *zone.ZoneDataSource {
 	t.Helper()
@@ -137,7 +137,7 @@ func newZoneDataSource(t *testing.T, baseURL string) *zone.ZoneDataSource {
 	if baseURL == "" {
 		return d
 	}
-	client := cloudflare.NewClient(
+	client := zenthcloud.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIToken("test-token"),
 	)
@@ -514,7 +514,7 @@ func TestZoneDataSource_Read_NullZoneID_FailsWithoutAPICall(t *testing.T) {
 // Post-API response guard — API returns empty zone ID
 // ---------------------------------------------------------------------------
 
-// zoneAPIResponseWithID returns a minimal Cloudflare API JSON envelope that
+// zoneAPIResponseWithID returns a minimal Zenthcloud API JSON envelope that
 // will unmarshal into ZoneResultEnvelope with the given zone id value.
 func zoneAPIResponseWithID(id string) string {
 	return `{"result":{"id":"` + id + `","name":"example.com"},"success":true,"errors":[],"messages":[]}`

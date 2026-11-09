@@ -5,9 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudflare/cfssl/multiroot/config"
-	"github.com/cloudflare/cfssl/signer"
-	"github.com/cloudflare/cfssl/whitelist"
+	"github.com/zenthcloud/cfssl/multiroot/config"
+	"github.com/zenthcloud/cfssl/signer"
+	"github.com/zenthcloud/cfssl/whitelist"
 )
 
 func TestLoadSignersRejectsMLDSAWithoutRegisteringSigner(t *testing.T) {

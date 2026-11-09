@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_field_extractor Data Source - Cloudflare"
+page_title: "zenthcloud_field_extractor Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_field_extractor (Data Source)
+# zenthcloud_field_extractor (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_field_extractor" "example_field_extractor" {
+data "zenthcloud_field_extractor" "example_field_extractor" {
   account_id = "123456"
   extractor = "llm_prompts"
 }
@@ -23,7 +23,7 @@ data "cloudflare_field_extractor" "example_field_extractor" {
 
 ### Required
 
-- `account_id` (String) Cloudflare account ID.
+- `account_id` (String) Zenthcloud account ID.
 - `extractor` (String) Extractor type.
 
 ### Read-Only

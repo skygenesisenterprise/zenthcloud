@@ -1,4 +1,4 @@
-import { Banner, Text, Link } from "@cloudflare/kumo";
+import { Banner, Text, Link } from "@zenthcloud/kumo";
 import { Info, WarningCircle, Warning, X } from "@phosphor-icons/react";
 
 /** Shows all banner variants with structured title and description. */
@@ -203,12 +203,12 @@ export function BannerWithLinksDemo() {
         <>
           <Banner.Action
             variant="secondary"
-            href="https://developers.cloudflare.com/billing/"
+            href="https://github.com/skygenesisenterprise/zenthcloud"
             external
           >
             View docs
           </Banner.Action>
-          <Banner.Action href="https://dash.cloudflare.com/">
+          <Banner.Action href="https://github.com/skygenesisenterprise/zenthcloud">
             Manage payments
           </Banner.Action>
         </>
@@ -279,8 +279,8 @@ export function BannerCompactDemo() {
   return (
     <Banner
       size="sm"
-      description="A DNS record for puppies.cloudflare.dev already exists in this zone."
-      action={<Link href="#">Manage DNS for puppies.cloudflare.dev</Link>}
+      description="A DNS record for puppies.zenthcloud.dev already exists in this zone."
+      action={<Link href="#">Manage DNS for puppies.zenthcloud.dev</Link>}
     />
   );
 }
@@ -290,7 +290,7 @@ export function BannerCompactWithCtaDemo() {
   return (
     <Banner
       size="sm"
-      description="A DNS record for puppies.cloudflare.dev already exists in this zone."
+      description="A DNS record for puppies.zenthcloud.dev already exists in this zone."
       action={
         <>
           <Banner.Action>Manage DNS</Banner.Action>
@@ -308,7 +308,7 @@ export function BannerCompactWithoutActionDemo() {
   return (
     <Banner
       size="sm"
-      description="A DNS record for puppies.cloudflare.dev already exists in this zone."
+      description="A DNS record for puppies.zenthcloud.dev already exists in this zone."
     />
   );
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/cloudflare/cloudflared/connection"
+	"github.com/zenthcloud/zenthcloudd/connection"
 )
 
 func TestNewQuickTunnelAuthHandlerRejectsNilStateManager(t *testing.T) {
@@ -45,7 +45,7 @@ func TestQuickTunnelAuthHandlerRedirectsLoginBeforeOrigin(t *testing.T) {
 	require.NoError(t, err)
 	request := httptest.NewRequest(
 		http.MethodGet,
-		"https://test-tunnel.trycloudflare.com/dashboard",
+		"https://github.com/skygenesisenterprise/zenthcloud",
 		nil,
 	)
 	response := httptest.NewRecorder()
@@ -61,9 +61,9 @@ func TestQuickTunnelAuthHandlerRedirectsLoginBeforeOrigin(t *testing.T) {
 	location, err := url.Parse(response.Header().Get("Location"))
 	require.NoError(t, err)
 	assert.Equal(t, "https", location.Scheme)
-	assert.Equal(t, "login.trycloudflare.com", location.Host)
+	assert.Equal(t, "login.tryzenthcloud.com", location.Host)
 	assert.Equal(t, "/authorize", location.Path)
-	assert.Equal(t, "test-tunnel.trycloudflare.com", location.Query().Get("hostname"))
+	assert.Equal(t, "test-tunnel.tryzenthcloud.com", location.Query().Get("hostname"))
 	assert.NotEmpty(t, location.Query().Get("state"))
 	assert.Len(t, response.Result().Cookies(), 1)
 }
@@ -76,7 +76,7 @@ func TestQuickTunnelAuthHandlerAllowsValidSessionToReachOrigin(t *testing.T) {
 	require.NoError(t, err)
 	request := httptest.NewRequest(
 		http.MethodPost,
-		"https://test-tunnel.trycloudflare.com/dashboard",
+		"https://github.com/skygenesisenterprise/zenthcloud",
 		nil,
 	)
 	request.AddCookie(sessionCookie)
@@ -106,7 +106,7 @@ func TestQuickTunnelAuthHandlerRedirectsInvalidSession(t *testing.T) {
 	harness := newTestQuickTunnelAuthHandlerHarness(t, []string{"visitor@example.com"})
 	request := httptest.NewRequest(
 		http.MethodGet,
-		"https://test-tunnel.trycloudflare.com/dashboard",
+		"https://github.com/skygenesisenterprise/zenthcloud",
 		nil,
 	)
 	request.AddCookie(&http.Cookie{
@@ -134,7 +134,7 @@ func TestQuickTunnelAuthHandlerFailsClosedOnSessionValidationError(t *testing.T)
 	harness.sessionManager.sessionCookieSigningKey = nil
 	request := httptest.NewRequest(
 		http.MethodGet,
-		"https://test-tunnel.trycloudflare.com/dashboard",
+		"https://github.com/skygenesisenterprise/zenthcloud",
 		nil,
 	)
 	request.AddCookie(sessionCookie)
@@ -155,7 +155,7 @@ func TestQuickTunnelAuthHandlerRejectsUnsafeMethodBeforeOrigin(t *testing.T) {
 	require.NoError(t, err)
 	request := httptest.NewRequest(
 		http.MethodPost,
-		"https://test-tunnel.trycloudflare.com/dashboard",
+		"https://github.com/skygenesisenterprise/zenthcloud",
 		nil,
 	)
 	response := httptest.NewRecorder()

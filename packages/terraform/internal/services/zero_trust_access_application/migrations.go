@@ -3,7 +3,7 @@ package zero_trust_access_application
 import (
 	"context"
 
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_access_application/migration/v500"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_access_application/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -18,12 +18,12 @@ func init() {
 var _ resource.ResourceWithMoveState = (*ZeroTrustAccessApplicationResource)(nil)
 var _ resource.ResourceWithUpgradeState = (*ZeroTrustAccessApplicationResource)(nil)
 
-// MoveState handles moves from cloudflare_access_application (v4) to cloudflare_zero_trust_access_application (v5).
+// MoveState handles moves from zenthcloud_access_application (v4) to zenthcloud_zero_trust_access_application (v5).
 // This is triggered when users use the `moved` block (Terraform 1.8+):
 //
 //	moved {
-//	    from = cloudflare_access_application.example
-//	    to   = cloudflare_zero_trust_access_application.example
+//	    from = zenthcloud_access_application.example
+//	    to   = zenthcloud_zero_trust_access_application.example
 //	}
 func (r *ZeroTrustAccessApplicationResource) MoveState(ctx context.Context) []resource.StateMover {
 	v4Schema := v500.SourceAccessApplicationSchema()

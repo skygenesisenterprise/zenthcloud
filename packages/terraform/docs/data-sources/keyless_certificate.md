@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_keyless_certificate Data Source - Cloudflare"
+page_title: "zenthcloud_keyless_certificate Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Access: Apps and Policies ReadAccess: Apps and Policies RevokeAccess: Apps and Policies WriteAccess: Mutual TLS Certificates WriteAccess: Organizations, Identity Providers, and Groups WriteAnalytics ReadApps WriteCache PurgeDNS ReadDNS WriteFirewall Services ReadFirewall Services WriteLoad Balancers ReadLoad Balancers WriteLogs ReadLogs WritePage Rules ReadPage Rules WriteSSL and Certificates ReadSSL and Certificates WriteStream ReadStream WriteTrust and Safety ReadTrust and Safety WriteWorkers Routes ReadWorkers Routes WriteWorkers Scripts ReadWorkers Scripts WriteZaraz AdminZaraz EditZaraz ReadZero Trust: PII ReadZone ReadZone Settings ReadZone Settings WriteZone Write
 ---
 
-# cloudflare_keyless_certificate (Data Source)
+# zenthcloud_keyless_certificate (Data Source)
 
 Accepted Permissions
 
@@ -50,7 +50,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_keyless_certificate" "example_keyless_certificate" {
+data "zenthcloud_keyless_certificate" "example_keyless_certificate" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   keyless_certificate_id = "4d2844d2ce78891c34d0b6c0535a291e"
 }
@@ -76,10 +76,10 @@ data "cloudflare_keyless_certificate" "example_keyless_certificate" {
 - `modified_on` (String) When the Keyless SSL was last modified.
 - `name` (String) The keyless SSL name.
 - `permissions` (List of String) Available permissions for the Keyless SSL for the current user requesting the item.
-- `port` (Number) The keyless SSL port used to communicate between Cloudflare and the client's Keyless SSL server.
+- `port` (Number) The keyless SSL port used to communicate between Zenthcloud and the client's Keyless SSL server.
 - `status` (String) Status of the Keyless SSL.
 Available values: "active", "deleted".
-- `tunnel` (Attributes) Configuration for using Keyless SSL through a Cloudflare Tunnel. (see [below for nested schema](#nestedatt--tunnel))
+- `tunnel` (Attributes) Configuration for using Keyless SSL through a Zenthcloud Tunnel. (see [below for nested schema](#nestedatt--tunnel))
 
 <a id="nestedatt--tunnel"></a>
 ### Nested Schema for `tunnel`
@@ -87,6 +87,6 @@ Available values: "active", "deleted".
 Read-Only:
 
 - `private_ip` (String) Private IP of the Key Server Host.
-- `vnet_id` (String) Cloudflare Tunnel Virtual Network ID.
+- `vnet_id` (String) Zenthcloud Tunnel Virtual Network ID.
 
 

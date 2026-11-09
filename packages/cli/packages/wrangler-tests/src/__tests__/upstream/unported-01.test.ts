@@ -1,4 +1,4 @@
-// Generated from cloudflare/workers-sdk@c2bb4c815. Do not rename cases.
+// Generated from zenthcloud/workers-sdk@c2bb4c815. Do not rename cases.
 import { describe, it } from "vite-plus/test";
 
 const groups = [
@@ -710,7 +710,7 @@ const groups = [
 			"should warn if the wrangler config contains environments but none was specified in the command",
 			"should not warn if the wrangler config contains environments and one was specified in the command",
 			"should not warn if the wrangler config doesn't contain environments and none was specified in the command",
-			"should not warn if the wrangler config contains environments and CLOUDFLARE_ENV is set",
+			"should not warn if the wrangler config contains environments and ZENTHCLOUD_ENV is set",
 			'should not warn if --env="" is passed to explicitly target the top-level environment',
 		],
 	},
@@ -738,7 +738,7 @@ const groups = [
 			"should warn if the wrangler config contains environments but none was specified in the command",
 			"should not warn if the wrangler config contains environments and one was specified in the command",
 			"should not warn if the wrangler config doesn't contain environments and none was specified in the command",
-			"should not warn if the wrangler config contains environments and CLOUDFLARE_ENV is set",
+			"should not warn if the wrangler config contains environments and ZENTHCLOUD_ENV is set",
 			'should not warn if --env="" is passed to explicitly target the top-level environment',
 		],
 	},
@@ -771,7 +771,7 @@ const groups = [
 			"should warn if the wrangler config contains environments but none was specified in the command",
 			"should not warn if the wrangler config contains environments and one was specified in the command",
 			"should not warn if the wrangler config doesn't contain environments and none was specified in the command",
-			"should not warn if the wrangler config contains environments and CLOUDFLARE_ENV is set",
+			"should not warn if the wrangler config contains environments and ZENTHCLOUD_ENV is set",
 			'should not warn if --env="" is passed to explicitly target the top-level environment',
 		],
 	},
@@ -783,10 +783,10 @@ const groups = [
 			"should send the `login user` metric when `--scopes` is provided",
 			"--use-keyring stores credentials in an encrypted file with a key in the OS keyring",
 			"--no-use-keyring scrubs encrypted credentials without writing them to plaintext, then the fresh login uses the file store",
-			"--no-use-keyring still scrubs the encrypted credentials and keyring entry when CLOUDFLARE_AUTH_USE_KEYRING=false is set (the env var must not defeat the opt-out scrub)",
+			"--no-use-keyring still scrubs the encrypted credentials and keyring entry when ZENTHCLOUD_AUTH_USE_KEYRING=false is set (the env var must not defeat the opt-out scrub)",
 			"--use-keyring rolls the keyring_enabled preference back when eager credential-store validation throws",
 			"--use-keyring rolls the keyring_enabled preference back when the resolver soft-falls-back to the file store",
-			"--use-keyring persists the preference and skips the misleading rollback when CLOUDFLARE_AUTH_USE_KEYRING=false overrides for this command",
+			"--use-keyring persists the preference and skips the misleading rollback when ZENTHCLOUD_AUTH_USE_KEYRING=false overrides for this command",
 		],
 	},
 	{
@@ -856,7 +856,7 @@ const groups = [
 		file: "user.test.ts",
 		ancestors: [
 			"User",
-			"CLOUDFLARE_API_TOKEN priority over stored OAuth state",
+			"ZENTHCLOUD_API_TOKEN priority over stored OAuth state",
 		],
 		status: "todo",
 		names: [
@@ -880,12 +880,12 @@ const groups = [
 		status: "todo",
 		names: [
 			"should return config.account_id when set",
-			"should return CLOUDFLARE_ACCOUNT_ID env var when config has no account_id",
+			"should return ZENTHCLOUD_ACCOUNT_ID env var when config has no account_id",
 			"should prefer env var over cache",
 			"should return cached account when config and env var are not set",
 			"should return undefined when no source is available",
 			"should reject a config.account_id that cannot be used in an API URL",
-			"should reject a CLOUDFLARE_ACCOUNT_ID that cannot be used in an API URL",
+			"should reject a ZENTHCLOUD_ACCOUNT_ID that cannot be used in an API URL",
 		],
 	},
 	{

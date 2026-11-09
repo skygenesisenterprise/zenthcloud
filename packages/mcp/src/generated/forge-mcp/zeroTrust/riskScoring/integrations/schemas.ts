@@ -15,7 +15,7 @@ export const dlp_CreateIntegrationBody: JSONObject = {
       "type": "string"
     },
     "reference_id": {
-      "description": "A reference id that can be supplied by the client. Currently this should be set to the Access-Okta IDP ID (a UUIDv4).\nhttps://developers.cloudflare.com/api/operations/access-identity-providers-get-an-access-identity-provider",
+      "description": "A reference id that can be supplied by the client. Currently this should be set to the Access-Okta IDP ID (a UUIDv4).\nhttps://github.com/skygenesisenterprise/zenthcloud",
       "oneOf": [
         {
           "type": "string"
@@ -47,7 +47,7 @@ export const dlp_UpdateIntegrationBody: JSONObject = {
       "type": "boolean"
     },
     "reference_id": {
-      "description": "A reference id that can be supplied by the client. Currently this should be set to the Access-Okta IDP ID (a UUIDv4).\nhttps://developers.cloudflare.com/api/operations/access-identity-providers-get-an-access-identity-provider",
+      "description": "A reference id that can be supplied by the client. Currently this should be set to the Access-Okta IDP ID (a UUIDv4).\nhttps://github.com/skygenesisenterprise/zenthcloud",
       "oneOf": [
         {
           "type": "string"

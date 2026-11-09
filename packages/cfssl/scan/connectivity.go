@@ -7,7 +7,7 @@ import (
 	"io"
 	"net"
 
-	"github.com/cloudflare/cfssl/scan/crypto/tls"
+	"github.com/zenthcloud/cfssl/scan/crypto/tls"
 )
 
 // Connectivity contains scanners testing basic connectivity to the host
@@ -18,9 +18,9 @@ var Connectivity = &Family{
 			"Host can be resolved through DNS",
 			dnsLookupScan,
 		},
-		"CloudFlareStatus": {
-			"Host is on CloudFlare",
-			onCloudFlareScan,
+		"ZenthCloudStatus": {
+			"Host is on ZenthCloud",
+			onZenthCloudScan,
 		},
 		"TCPDial": {
 			"Host accepts TCP connection",
@@ -53,7 +53,7 @@ var (
 	cfNetsErr error
 )
 
-func initOnCloudFlareScan() ([]*net.IPNet, error) {
+func initOnZenthCloudScan() ([]*net.IPNet, error) {
 	// Propagate previous errors and don't attempt to re-download.
 	if cfNetsErr != nil {
 		return nil, cfNetsErr
@@ -64,17 +64,17 @@ func initOnCloudFlareScan() ([]*net.IPNet, error) {
 		return cfNets, nil
 	}
 
-	// Download CloudFlare CIDR ranges and parse them.
-	v4resp, err := Client.Get("https://www.cloudflare.com/ips-v4")
+	// Download ZenthCloud CIDR ranges and parse them.
+	v4resp, err := Client.Get("https://github.com/skygenesisenterprise/zenthcloud")
 	if err != nil {
-		cfNetsErr = fmt.Errorf("Couldn't download CloudFlare IPs: %v", err)
+		cfNetsErr = fmt.Errorf("Couldn't download ZenthCloud IPs: %v", err)
 		return nil, cfNetsErr
 	}
 	defer v4resp.Body.Close()
 
-	v6resp, err := Client.Get("https://www.cloudflare.com/ips-v6")
+	v6resp, err := Client.Get("https://github.com/skygenesisenterprise/zenthcloud")
 	if err != nil {
-		cfNetsErr = fmt.Errorf("Couldn't download CloudFlare IPs: %v", err)
+		cfNetsErr = fmt.Errorf("Couldn't download ZenthCloud IPs: %v", err)
 		return nil, cfNetsErr
 	}
 	defer v6resp.Body.Close()
@@ -96,9 +96,9 @@ func initOnCloudFlareScan() ([]*net.IPNet, error) {
 	return cfNets, nil
 }
 
-func onCloudFlareScan(addr, hostname string) (grade Grade, output Output, err error) {
-	var cloudflareNets []*net.IPNet
-	if cloudflareNets, err = initOnCloudFlareScan(); err != nil {
+func onZenthCloudScan(addr, hostname string) (grade Grade, output Output, err error) {
+	var zenthcloudNets []*net.IPNet
+	if zenthcloudNets, err = initOnZenthCloudScan(); err != nil {
 		grade = Skipped
 		return
 	}
@@ -112,7 +112,7 @@ func onCloudFlareScan(addr, hostname string) (grade Grade, output Output, err er
 	grade = Good
 	for _, addr := range addrs.([]string) {
 		ip := net.ParseIP(addr)
-		for _, cfNet := range cloudflareNets {
+		for _, cfNet := range zenthcloudNets {
 			if cfNet.Contains(ip) {
 				cfStatus[addr] = true
 				break

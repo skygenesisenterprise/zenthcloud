@@ -5,7 +5,7 @@ package api_shield_schema
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -25,7 +25,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				"Domain API Gateway Read",
 			},
 		}.String(),
-		DeprecationMessage: "Please use the `cloudflare_schema_validation_schemas` resource instead",
+		DeprecationMessage: "Please use the `zenthcloud_schema_validation_schemas` resource instead",
 		Attributes: map[string]schema.Attribute{
 			"schema_id": schema.StringAttribute{
 				Required: true,

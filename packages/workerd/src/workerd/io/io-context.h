@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -243,7 +243,7 @@ class IoContext_IncomingRequest final: public kj::PtrTarget {
     return rootUserTraceSpan.addRef();
   }
 
-  // The Cloudflare Access auth info for this request, if any was provided by the embedder. Used
+  // The Zenthcloud Access auth info for this request, if any was provided by the embedder. Used
   // to populate `ctx.access` in JavaScript.
   kj::Maybe<AccessInfo&> getAccessInfo() {
     return accessInfo.map([](kj::Own<AccessInfo>& p) -> AccessInfo& { return *p; });
@@ -390,7 +390,7 @@ class IoContext final: public kj::Refcounted, private kj::TaskSet::ErrorHandler 
     return getCurrentIncomingRequest().getRootUserTraceSpan();
   }
 
-  // The Cloudflare Access auth info for the current incoming request, if any was provided by
+  // The Zenthcloud Access auth info for the current incoming request, if any was provided by
   // the embedder. Used to populate `ctx.access` in JavaScript.
   kj::Maybe<AccessInfo&> getAccessInfo() {
     if (incomingRequests.empty()) return kj::none;
@@ -594,7 +594,7 @@ class IoContext final: public kj::Refcounted, private kj::TaskSet::ErrorHandler 
       "(ex: fetch() or connect()), setting a timeout, and generating random "
       "values are not allowed within global scope. To fix this error, perform this "
       "operation within a handler. "
-      "https://developers.cloudflare.com/workers/runtime-apis/handlers/"_kj;
+      "https://github.com/skygenesisenterprise/zenthcloud"_kj;
 
   // Like current(), but returns kj::none if there is no current context.
   static kj::Maybe<IoContext&> tryCurrent();

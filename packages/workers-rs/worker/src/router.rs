@@ -90,7 +90,7 @@ impl<D> RouteContext<D> {
         self.params.get(key)
     }
 
-    /// Get a [Service Binding](https://developers.cloudflare.com/workers/runtime-apis/service-bindings/)
+    /// Get a [Service Binding](https://github.com/skygenesisenterprise/zenthcloud)
     /// for Worker-to-Worker communication.
     pub fn service(&self, binding: &str) -> Result<Fetcher> {
         self.env.service(binding)

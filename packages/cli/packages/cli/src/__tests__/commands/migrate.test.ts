@@ -1,5 +1,5 @@
 import path from "node:path";
-import { runInTempDir, seed } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir, seed } from "@zenthcloud/workers-utils/test-helpers";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import {
 	findWranglerConfig,
@@ -12,7 +12,7 @@ const { migrateWranglerToCf } = vi.hoisted(() => ({
 	migrateWranglerToCf: vi.fn(),
 }));
 
-vi.mock("@cloudflare/codemods", () => ({
+vi.mock("@zenthcloud/codemods", () => ({
 	migrateWranglerToCf,
 }));
 
@@ -24,7 +24,7 @@ describe("cf migrate", () => {
 	beforeEach(() => {
 		migrateWranglerToCf.mockReset();
 		migrateWranglerToCf.mockResolvedValue({
-			changedFiles: ["cloudflare.config.ts"],
+			changedFiles: ["zenthcloud.config.ts"],
 			followUps: [],
 			status: "complete",
 		});
@@ -51,19 +51,19 @@ describe("cf migrate", () => {
 			}
 		);
 		expect(std.err).toContain(
-			"Using the Wrangler bundler because @cloudflare/vite-plugin is not declared."
+			"Using the Wrangler bundler because @zenthcloud/vite-plugin is not declared."
 		);
 		expect(std.err).toContain("Updated 1 file(s):");
-		expect(std.err).toContain("cloudflare.config.ts");
+		expect(std.err).toContain("zenthcloud.config.ts");
 		expect(std.err).toContain("Migration complete.");
 	});
 
 	it.each(["dependencies", "devDependencies"])(
-		"selects Vite when @cloudflare/vite-plugin is declared in %s",
+		"selects Vite when @zenthcloud/vite-plugin is declared in %s",
 		async (dependencyField) => {
 			await seed({
 				"package.json": JSON.stringify({
-					[dependencyField]: { "@cloudflare/vite-plugin": "^1.60.2" },
+					[dependencyField]: { "@zenthcloud/vite-plugin": "^1.60.2" },
 				}),
 				"wrangler.jsonc": "{}",
 			});
@@ -75,7 +75,7 @@ describe("cf migrate", () => {
 				expect.objectContaining({ bundler: "vite" })
 			);
 			expect(std.err).toContain(
-				"Using the Vite bundler because @cloudflare/vite-plugin is declared."
+				"Using the Vite bundler because @zenthcloud/vite-plugin is declared."
 			);
 		}
 	);
@@ -83,7 +83,7 @@ describe("cf migrate", () => {
 	it("detects the bundler from the Wrangler config directory", async () => {
 		await seed({
 			"config/package.json": JSON.stringify({
-				devDependencies: { "@cloudflare/vite-plugin": "^1.60.2" },
+				devDependencies: { "@zenthcloud/vite-plugin": "^1.60.2" },
 			}),
 			"config/wrangler.toml": "name = 'worker'",
 		});
@@ -95,7 +95,7 @@ describe("cf migrate", () => {
 			expect.objectContaining({ bundler: "vite" })
 		);
 		expect(std.err).toContain(
-			"Using the Vite bundler because @cloudflare/vite-plugin is declared."
+			"Using the Vite bundler because @zenthcloud/vite-plugin is declared."
 		);
 	});
 
@@ -114,7 +114,7 @@ describe("cf migrate", () => {
 	it("accepts an explicit config path and migration options", async () => {
 		await seed({ "config/wrangler.toml": "name = 'worker'" });
 		migrateWranglerToCf.mockResolvedValue({
-			changedFiles: ["cloudflare.config.ts", "package.json"],
+			changedFiles: ["zenthcloud.config.ts", "package.json"],
 			followUps: [],
 			status: "complete",
 		});
@@ -140,7 +140,7 @@ describe("cf migrate", () => {
 		);
 		expect(std.out).toBe("");
 		expect(std.err).toContain(
-			"Would update 2 file(s):\n├─ config/cloudflare.config.ts\n└─ config/package.json"
+			"Would update 2 file(s):\n├─ config/zenthcloud.config.ts\n└─ config/package.json"
 		);
 		expect(std.err).toContain("Migration preview complete.");
 	});
@@ -218,7 +218,7 @@ describe("cf migrate", () => {
 	it("uses Vite for automatic migration when the plugin is declared", async () => {
 		await seed({
 			"config/package.json": JSON.stringify({
-				devDependencies: { "@cloudflare/vite-plugin": "^1.60.2" },
+				devDependencies: { "@zenthcloud/vite-plugin": "^1.60.2" },
 			}),
 			"config/wrangler.jsonc": "{}",
 		});
@@ -281,12 +281,12 @@ describe("cf migrate", () => {
 		await seed({ "wrangler.json": "{}" });
 
 		migrateWranglerToCf.mockResolvedValue({
-			changedFiles: ["cloudflare.config.ts"],
+			changedFiles: ["zenthcloud.config.ts"],
 			followUps: [
 				{
 					blocking: true,
 					code: "manual-migration",
-					docsUrl: "https://developers.cloudflare.com/workers/",
+					docsUrl: "https://github.com/skygenesisenterprise/zenthcloud",
 					message: "Migrate this setting manually.",
 					sourcePath: "durable_objects.migrations",
 				},
@@ -299,7 +299,7 @@ describe("cf migrate", () => {
 		expect(result.exitCode).toBe(1);
 		expect(std.out).toBe("");
 		expect(std.err).toContain(
-			"Follow-up work:\n└─ [required] durable_objects.migrations: Migrate this setting manually.\n   └─ https://developers.cloudflare.com/workers/"
+			"Follow-up work:\n└─ [required] durable_objects.migrations: Migrate this setting manually.\n   └─ https://github.com/skygenesisenterprise/zenthcloud"
 		);
 		expect(std.err).toContain("Migration requires follow-up work.");
 	});

@@ -1,4 +1,4 @@
-resource "cloudflare_zero_trust_access_ai_controls_mcp_server" "tf-test" {
+resource "zenthcloud_zero_trust_access_ai_controls_mcp_server" "tf-test" {
   account_id = %[1]q
   hostname   = %[2]q
   name       = %[3]q

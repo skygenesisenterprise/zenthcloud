@@ -82,7 +82,7 @@
     {
       "name": "clang-format-linux-amd64",
       "type": "github_release",
-      "owner": "cloudflare",
+      "owner": "zenthcloud",
       "repo": "workerd-tools",
       "file_regex": "llvm-.*-linux-amd64-clang-format",
       "file_type": "executable",
@@ -91,7 +91,7 @@
     {
       "name": "clang-format-linux-arm64",
       "type": "github_release",
-      "owner": "cloudflare",
+      "owner": "zenthcloud",
       "repo": "workerd-tools",
       "file_regex": "llvm-.*-linux-arm64-clang-format",
       "file_type": "executable",
@@ -100,7 +100,7 @@
     {
       "name": "clang-format-darwin-arm64",
       "type": "github_release",
-      "owner": "cloudflare",
+      "owner": "zenthcloud",
       "repo": "workerd-tools",
       "file_regex": "llvm-.*-darwin-arm64-clang-format",
       "file_type": "executable",
@@ -109,7 +109,7 @@
     {
       "name": "wpt",
       "type": "github_release",
-      "owner": "cloudflare",
+      "owner": "zenthcloud",
       "repo": "workerd-tools",
       "file_regex": "wpt-.*.tar.gz",
       "build_file": "@workerd//:build/BUILD.wpt",

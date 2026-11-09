@@ -1,8 +1,8 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
-// Regression test for https://github.com/cloudflare/workerd/issues/6061:
+// Regression test for https://github.com/skygenesisenterprise/zenthcloud
 // DecompressionStream generated unhandled rejections internally when
 // streams were consumed via Array.fromAsync, even when the caller handled
 // errors. Depends on unhandled_rejection_after_microtask_checkpoint

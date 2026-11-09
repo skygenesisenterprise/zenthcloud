@@ -6,10 +6,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/dns_firewall"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/dns_firewall"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -19,20 +19,20 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_dns_firewall", &resource.Sweeper{
-		Name: "cloudflare_dns_firewall",
+	resource.AddTestSweepers("zenthcloud_dns_firewall", &resource.Sweeper{
+		Name: "zenthcloud_dns_firewall",
 		F: func(region string) error {
 			ctx := context.Background()
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			client := acctest.SharedClient()
 
 			if accountID == "" {
-				tflog.Info(ctx, "Skipping DNS Firewall clusters sweep: CLOUDFLARE_ACCOUNT_ID not set")
+				tflog.Info(ctx, "Skipping DNS Firewall clusters sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 				return nil
 			}
 
 			clusters, err := client.DNSFirewall.List(ctx, dns_firewall.DNSFirewallListParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			})
 			if err != nil {
 				tflog.Error(ctx, fmt.Sprintf("Failed to fetch DNS Firewall clusters: %s", err))
@@ -50,7 +50,7 @@ func init() {
 				}
 				tflog.Info(ctx, fmt.Sprintf("Deleting DNS Firewall cluster: %s (%s) (account: %s)", cluster.Name, cluster.ID, accountID))
 				_, err := client.DNSFirewall.Delete(ctx, cluster.ID, dns_firewall.DNSFirewallDeleteParams{
-					AccountID: cloudflare.F(accountID),
+					AccountID: zenthcloud.F(accountID),
 				})
 				if err != nil {
 					tflog.Error(ctx, fmt.Sprintf("Failed to delete DNS Firewall cluster %s: %s", cluster.Name, err))
@@ -64,10 +64,10 @@ func init() {
 	})
 }
 
-func TestAccCloudflareDNSFirewall_Basic(t *testing.T) {
+func TestAccZenthcloudDNSFirewall_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_dns_firewall." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_dns_firewall." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -88,10 +88,10 @@ func TestAccCloudflareDNSFirewall_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareDNSFirewall_Update(t *testing.T) {
+func TestAccZenthcloudDNSFirewall_Update(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_dns_firewall." + rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_dns_firewall." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },

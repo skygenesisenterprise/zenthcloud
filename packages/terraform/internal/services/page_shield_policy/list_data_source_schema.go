@@ -5,8 +5,8 @@ package page_shield_policy
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -70,7 +70,7 @@ func ListDataSourceSchema(ctx context.Context) schema.Schema {
 							Computed:    true,
 						},
 						"expression": schema.StringAttribute{
-							Description: "The expression which must match for the policy to be applied, using the Cloudflare Firewall rule expression syntax",
+							Description: "The expression which must match for the policy to be applied, using the Zenthcloud Firewall rule expression syntax",
 							Computed:    true,
 						},
 						"value": schema.StringAttribute{

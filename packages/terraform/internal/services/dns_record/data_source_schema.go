@@ -5,9 +5,9 @@ package dns_record
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customvalidator"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customvalidator"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
@@ -45,7 +45,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"include_shadow_metadata": schema.BoolAttribute{
-				Description: "Whether to include shadow metadata in the `meta` field of each record in the response. See [Shadowed records](https://developers.cloudflare.com/dns/manage-dns-records/reference/shadowed-records).",
+				Description: "Whether to include shadow metadata in the `meta` field of each record in the response. See [Shadowed records](https://github.com/skygenesisenterprise/zenthcloud).",
 				Computed:    true,
 				Optional:    true,
 			},
@@ -88,11 +88,11 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"proxiable": schema.BoolAttribute{
-				Description: "Whether the record can be proxied by Cloudflare or not.",
+				Description: "Whether the record can be proxied by Zenthcloud or not.",
 				Computed:    true,
 			},
 			"proxied": schema.BoolAttribute{
-				Description: "Whether the record is receiving the performance and security benefits of Cloudflare.",
+				Description: "Whether the record is receiving the performance and security benefits of Zenthcloud.",
 				Computed:    true,
 			},
 			"tags_modified_on": schema.StringAttribute{
@@ -370,26 +370,26 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"meta": schema.SingleNestedAttribute{
-				Description: "Extra Cloudflare-specific metadata about the record.",
+				Description: "Extra Zenthcloud-specific metadata about the record.",
 				Computed:    true,
 				CustomType:  customfield.NewNestedObjectType[DNSRecordMetaDataSourceModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"dead_glue": schema.BoolAttribute{
-						Description: "Whether this glue record is not served because a shallower NS delegation takes precedence over the deeper delegation that needs it. Present only when true; reachable glue carries only `is_glue`. See [Unreachable glue records](https://developers.cloudflare.com/dns/manage-dns-records/reference/shadowed-records#unreachable-glue-records).",
+						Description: "Whether this glue record is not served because a shallower NS delegation takes precedence over the deeper delegation that needs it. Present only when true; reachable glue carries only `is_glue`. See [Unreachable glue records](https://github.com/skygenesisenterprise/zenthcloud).",
 						Computed:    true,
 					},
 					"is_glue": schema.BoolAttribute{
-						Description: "Whether this A or AAAA record is glue for a subdomain NS delegation. See [Glue records](https://developers.cloudflare.com/dns/manage-dns-records/reference/shadowed-records#glue-records).",
+						Description: "Whether this A or AAAA record is glue for a subdomain NS delegation. See [Glue records](https://github.com/skygenesisenterprise/zenthcloud).",
 						Computed:    true,
 					},
 					"shadowed_by": schema.ListAttribute{
-						Description: "IDs of the NS records that shadow this record. See [Shadowed records](https://developers.cloudflare.com/dns/manage-dns-records/reference/shadowed-records).",
+						Description: "IDs of the NS records that shadow this record. See [Shadowed records](https://github.com/skygenesisenterprise/zenthcloud).",
 						Computed:    true,
 						CustomType:  customfield.NewListType[types.String](ctx),
 						ElementType: types.StringType,
 					},
 					"shadowed_records_count": schema.Int64Attribute{
-						Description: "Number of records shadowed by this NS delegation. See [Shadowed records](https://developers.cloudflare.com/dns/manage-dns-records/reference/shadowed-records).",
+						Description: "Number of records shadowed by this NS delegation. See [Shadowed records](https://github.com/skygenesisenterprise/zenthcloud).",
 						Computed:    true,
 						Validators: []validator.Int64{
 							int64validator.Between(0, 10000),
@@ -403,11 +403,11 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  customfield.NewNestedObjectType[DNSRecordSettingsDataSourceModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"ipv4_only": schema.BoolAttribute{
-						Description: "When enabled, only A records will be generated, and AAAA records will not be created. This setting is intended for exceptional cases. Note that this option only applies to proxied records and it has no effect on whether Cloudflare communicates with the origin using IPv4 or IPv6.",
+						Description: "When enabled, only A records will be generated, and AAAA records will not be created. This setting is intended for exceptional cases. Note that this option only applies to proxied records and it has no effect on whether Zenthcloud communicates with the origin using IPv4 or IPv6.",
 						Computed:    true,
 					},
 					"ipv6_only": schema.BoolAttribute{
-						Description: "When enabled, only AAAA records will be generated, and A records will not be created. This setting is intended for exceptional cases. Note that this option only applies to proxied records and it has no effect on whether Cloudflare communicates with the origin using IPv4 or IPv6.",
+						Description: "When enabled, only AAAA records will be generated, and A records will not be created. This setting is intended for exceptional cases. Note that this option only applies to proxied records and it has no effect on whether Zenthcloud communicates with the origin using IPv4 or IPv6.",
 						Computed:    true,
 					},
 					"flatten_cname": schema.BoolAttribute{
@@ -521,7 +521,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"proxied": schema.BoolAttribute{
-						Description: "Whether the record is receiving the performance and security benefits of Cloudflare.",
+						Description: "Whether the record is receiving the performance and security benefits of Zenthcloud.",
 						Computed:    true,
 						Optional:    true,
 					},
@@ -530,11 +530,11 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						Optional:    true,
 					},
 					"shadowed_by_name": schema.StringAttribute{
-						Description: "Filters the response to records at or below the specified NS delegation name. NS, DS, and NSEC records at the delegation name are excluded because they are not shadowed by that delegation. Those record types are included only when they exist below the delegation. The value must be a non-apex subdomain of the zone. Requires `include_shadow_metadata=true`. See [Shadowed records](https://developers.cloudflare.com/dns/manage-dns-records/reference/shadowed-records).",
+						Description: "Filters the response to records at or below the specified NS delegation name. NS, DS, and NSEC records at the delegation name are excluded because they are not shadowed by that delegation. Those record types are included only when they exist below the delegation. The value must be a non-apex subdomain of the zone. Requires `include_shadow_metadata=true`. See [Shadowed records](https://github.com/skygenesisenterprise/zenthcloud).",
 						Optional:    true,
 					},
 					"shadowing_name": schema.StringAttribute{
-						Description: "Returns NS records that shadow the given name, searching at the name itself and each of its ancestor names within the zone, excluding the zone apex. The value must be a subdomain of the zone; the zone apex is not accepted. See [Shadowed records](https://developers.cloudflare.com/dns/manage-dns-records/reference/shadowed-records).",
+						Description: "Returns NS records that shadow the given name, searching at the name itself and each of its ancestor names within the zone, excluding the zone apex. The value must be a subdomain of the zone; the zone apex is not accepted. See [Shadowed records](https://github.com/skygenesisenterprise/zenthcloud).",
 						Optional:    true,
 					},
 					"tag": schema.SingleNestedAttribute{

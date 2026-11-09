@@ -2,7 +2,7 @@ package bot_management
 
 import (
 	"context"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/bot_management/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/bot_management/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
@@ -21,7 +21,7 @@ var _ resource.ResourceWithUpgradeState = (*BotManagementResource)(nil)
 func (r *BotManagementResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
 	targetSchema := ResourceSchema(ctx)
 
-	sourceSchema := v500.SourceCloudflareBotManagementSchema()
+	sourceSchema := v500.SourceZenthcloudBotManagementSchema()
 
 	return map[int64]resource.StateUpgrader{
 		// Handle state from v4 SDKv2 provider (schema_version=0)

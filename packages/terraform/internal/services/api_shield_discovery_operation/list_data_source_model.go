@@ -5,9 +5,9 @@ package api_shield_discovery_operation
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/api_gateway"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/api_gateway"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -46,30 +46,30 @@ func (m *APIShieldDiscoveryOperationsDataSourceModel) toListParams(_ context.Con
 	}
 
 	params = api_gateway.DiscoveryOperationListParams{
-		Host:   cloudflare.F(mHost),
-		Method: cloudflare.F(mMethod),
+		Host:   zenthcloud.F(mHost),
+		Method: zenthcloud.F(mMethod),
 	}
 
 	if !m.ZoneID.IsNull() {
-		params.ZoneID = cloudflare.F(m.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(m.ZoneID.ValueString())
 	}
 	if !m.Diff.IsNull() {
-		params.Diff = cloudflare.F(m.Diff.ValueBool())
+		params.Diff = zenthcloud.F(m.Diff.ValueBool())
 	}
 	if !m.Direction.IsNull() {
-		params.Direction = cloudflare.F(api_gateway.DiscoveryOperationListParamsDirection(m.Direction.ValueString()))
+		params.Direction = zenthcloud.F(api_gateway.DiscoveryOperationListParamsDirection(m.Direction.ValueString()))
 	}
 	if !m.Endpoint.IsNull() {
-		params.Endpoint = cloudflare.F(m.Endpoint.ValueString())
+		params.Endpoint = zenthcloud.F(m.Endpoint.ValueString())
 	}
 	if !m.Order.IsNull() {
-		params.Order = cloudflare.F(api_gateway.DiscoveryOperationListParamsOrder(m.Order.ValueString()))
+		params.Order = zenthcloud.F(api_gateway.DiscoveryOperationListParamsOrder(m.Order.ValueString()))
 	}
 	if !m.Origin.IsNull() {
-		params.Origin = cloudflare.F(api_gateway.DiscoveryOperationListParamsOrigin(m.Origin.ValueString()))
+		params.Origin = zenthcloud.F(api_gateway.DiscoveryOperationListParamsOrigin(m.Origin.ValueString()))
 	}
 	if !m.State.IsNull() {
-		params.State = cloudflare.F(api_gateway.DiscoveryOperationListParamsState(m.State.ValueString()))
+		params.State = zenthcloud.F(api_gateway.DiscoveryOperationListParamsState(m.State.ValueString()))
 	}
 
 	return

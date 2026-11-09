@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -16,9 +16,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 const (
@@ -30,13 +30,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zero_trust_dlp_custom_profile", &resource.Sweeper{
-		Name: "cloudflare_zero_trust_dlp_custom_profile",
-		F:    testSweepCloudflareZeroTrustDlpCustomProfile,
+	resource.AddTestSweepers("zenthcloud_zero_trust_dlp_custom_profile", &resource.Sweeper{
+		Name: "zenthcloud_zero_trust_dlp_custom_profile",
+		F:    testSweepZenthcloudZeroTrustDlpCustomProfile,
 	})
 }
 
-// testSweepCloudflareZeroTrustDlpCustomProfile removes test DLP custom profiles created during acceptance tests.
+// testSweepZenthcloudZeroTrustDlpCustomProfile removes test DLP custom profiles created during acceptance tests.
 //
 // This sweeper:
 // - Lists all DLP profiles in the test account
@@ -47,20 +47,20 @@ func init() {
 // Run with: go test ./internal/services/zero_trust_dlp_custom_profile/ -v -sweep=all
 //
 // Requires:
-// - CLOUDFLARE_ACCOUNT_ID (for account-scoped resources)
-// - CLOUDFLARE_EMAIL + CLOUDFLARE_API_KEY or CLOUDFLARE_API_TOKEN
-func testSweepCloudflareZeroTrustDlpCustomProfile(r string) error {
+// - ZENTHCLOUD_ACCOUNT_ID (for account-scoped resources)
+// - ZENTHCLOUD_EMAIL + ZENTHCLOUD_API_KEY or ZENTHCLOUD_API_TOKEN
+func testSweepZenthcloudZeroTrustDlpCustomProfile(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
 		return nil // Skip if no account ID set
 	}
 
 	// List all DLP profiles (both custom and predefined)
 	list, err := client.ZeroTrust.DLP.Profiles.List(ctx, zero_trust.DLPProfileListParams{
-		AccountID: cloudflare.F(accountID),
+		AccountID: zenthcloud.F(accountID),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to list DLP profiles: %w", err)
@@ -79,7 +79,7 @@ func testSweepCloudflareZeroTrustDlpCustomProfile(r string) error {
 		}
 
 		_, err := client.ZeroTrust.DLP.Profiles.Custom.Delete(ctx, profile.ID, zero_trust.DLPProfileCustomDeleteParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		})
 		if err != nil {
 			// Log but don't fail - continue sweeping
@@ -108,19 +108,19 @@ func setupDLPCustomProfileTest(t *testing.T) (string, string) {
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	return rnd, accountID
 }
 
-func TestAccCloudflareZeroTrustDlpCustomProfile_Basic(t *testing.T) {
+func TestAccZenthcloudZeroTrustDlpCustomProfile_Basic(t *testing.T) {
 	rnd, accountID := setupDLPCustomProfileTest(t)
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_dlp_custom_profile.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_dlp_custom_profile.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustDlpCustomProfileDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustDlpCustomProfileDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: acctest.LoadTestCase("basic.tf", rnd, accountID),
@@ -167,14 +167,14 @@ func TestAccCloudflareZeroTrustDlpCustomProfile_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareZeroTrustDlpCustomProfile_MinimalRequired(t *testing.T) {
+func TestAccZenthcloudZeroTrustDlpCustomProfile_MinimalRequired(t *testing.T) {
 	rnd, accountID := setupDLPCustomProfileTest(t)
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_dlp_custom_profile.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_dlp_custom_profile.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustDlpCustomProfileDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustDlpCustomProfileDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: acctest.LoadTestCase("minimal.tf", rnd, accountID),
@@ -229,14 +229,14 @@ func TestAccCloudflareZeroTrustDlpCustomProfile_MinimalRequired(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareZeroTrustDlpCustomProfile_AllSharedEntryTypes(t *testing.T) {
+func TestAccZenthcloudZeroTrustDlpCustomProfile_AllSharedEntryTypes(t *testing.T) {
 	rnd, accountID := setupDLPCustomProfileTest(t)
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_dlp_custom_profile.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_dlp_custom_profile.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustDlpCustomProfileDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustDlpCustomProfileDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: acctest.LoadTestCase("all_entry_types.tf", rnd, accountID),
@@ -261,15 +261,15 @@ func TestAccCloudflareZeroTrustDlpCustomProfile_AllSharedEntryTypes(t *testing.T
 	})
 }
 
-func TestAccCloudflareZeroTrustDlpCustomProfile_DeprecatedAttributes(t *testing.T) {
+func TestAccZenthcloudZeroTrustDlpCustomProfile_DeprecatedAttributes(t *testing.T) {
 	t.Skip("fix: API response 'entries' are not in the same order as request")
 	rnd, accountID := setupDLPCustomProfileTest(t)
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_dlp_custom_profile.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_dlp_custom_profile.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustDlpCustomProfileDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustDlpCustomProfileDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: acctest.LoadTestCase("custom_entries.tf", rnd, accountID),
@@ -318,14 +318,14 @@ func TestAccCloudflareZeroTrustDlpCustomProfile_DeprecatedAttributes(t *testing.
 	})
 }
 
-func TestAccCloudflareZeroTrustDlpCustomProfile_BoundaryValues(t *testing.T) {
+func TestAccZenthcloudZeroTrustDlpCustomProfile_BoundaryValues(t *testing.T) {
 	rnd, accountID := setupDLPCustomProfileTest(t)
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_dlp_custom_profile.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_dlp_custom_profile.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustDlpCustomProfileDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustDlpCustomProfileDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: acctest.LoadTestCase("boundary_values.tf", rnd, accountID),
@@ -366,14 +366,14 @@ func TestAccCloudflareZeroTrustDlpCustomProfile_BoundaryValues(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareZeroTrustDlpCustomProfile_SharedEntries(t *testing.T) {
+func TestAccZenthcloudZeroTrustDlpCustomProfile_SharedEntries(t *testing.T) {
 	rnd, accountID := setupDLPCustomProfileTest(t)
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_dlp_custom_profile.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_dlp_custom_profile.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareZeroTrustDlpCustomProfileDestroy,
+		CheckDestroy:             testAccCheckZenthcloudZeroTrustDlpCustomProfileDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: acctest.LoadTestCase("shared_entries.tf", rnd, accountID, "true"),
@@ -402,11 +402,11 @@ func TestAccCloudflareZeroTrustDlpCustomProfile_SharedEntries(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareZeroTrustDlpCustomProfileDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudZeroTrustDlpCustomProfileDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_zero_trust_dlp_custom_profile" {
+		if rs.Type != "zenthcloud_zero_trust_dlp_custom_profile" {
 			continue
 		}
 
@@ -415,7 +415,7 @@ func testAccCheckCloudflareZeroTrustDlpCustomProfileDestroy(s *terraform.State) 
 			context.Background(),
 			rs.Primary.ID,
 			zero_trust.DLPProfileCustomGetParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			},
 		)
 		if err == nil {
@@ -436,8 +436,8 @@ func TestAccUpgradeZeroTrustDlpCustomProfile_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

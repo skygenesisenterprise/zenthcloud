@@ -1,5 +1,5 @@
 import path from "node:path";
-import { getAuthFromEnv, validateProfileName } from "@cloudflare/workers-auth";
+import { getAuthFromEnv, validateProfileName } from "@zenthcloud/workers-auth";
 import { getProfileStore, login, logout } from "../../lib/oauth/index.js";
 import { formatOutput, printSuccess } from "../../lib/output.js";
 import { theme } from "../../lib/ui/index.js";
@@ -47,7 +47,7 @@ function assertNoEnvCredentials(): void {
 	}
 
 	throw new Error(
-		"Cannot manage auth profiles while CLOUDFLARE_API_TOKEN is set. Unset CLOUDFLARE_API_TOKEN and try again."
+		"Cannot manage auth profiles while ZENTHCLOUD_API_TOKEN is set. Unset ZENTHCLOUD_API_TOKEN and try again."
 	);
 }
 

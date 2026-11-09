@@ -1,24 +1,24 @@
 ---
-page_title: "cloudflare_zero_trust_network_hostname_route Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_network_hostname_route Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
-  Cloudflare One Networks ReadCloudflare One Networks WriteCloudflare Tunnel ReadCloudflare Tunnel Write
+  Zenthcloud One Networks ReadZenthcloud One Networks WriteZenthcloud Tunnel ReadZenthcloud Tunnel Write
 ---
 
-# cloudflare_zero_trust_network_hostname_route (Resource)
+# zenthcloud_zero_trust_network_hostname_route (Resource)
 
 Accepted Permissions
 
-- `Cloudflare One Networks Read`
-- `Cloudflare One Networks Write`
-- `Cloudflare Tunnel Read`
-- `Cloudflare Tunnel Write`
+- `Zenthcloud One Networks Read`
+- `Zenthcloud One Networks Write`
+- `Zenthcloud Tunnel Read`
+- `Zenthcloud Tunnel Write`
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_network_hostname_route" "example_zero_trust_network_hostname_route" {
+resource "zenthcloud_zero_trust_network_hostname_route" "example_zero_trust_network_hostname_route" {
   account_id = "699d98642c564d2e855e9661899b7252"
   comment = "example comment"
   hostname = "office-1.local"
@@ -31,7 +31,7 @@ resource "cloudflare_zero_trust_network_hostname_route" "example_zero_trust_netw
 
 ### Required
 
-- `account_id` (String) Cloudflare account ID
+- `account_id` (String) Zenthcloud account ID
 
 ### Optional
 
@@ -53,7 +53,7 @@ Available values: "cfd_tunnel", "warp_connector", "warp", "magic", "ip_sec", "gr
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_network_hostname_route.example '<account_id>/<hostname_route_id>'
+$ terraform import zenthcloud_zero_trust_network_hostname_route.example '<account_id>/<hostname_route_id>'
 ```
 
 

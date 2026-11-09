@@ -24,7 +24,7 @@ export const access_azureAD: JSONObject = {
             {
               "properties": {
                 "conditional_access_enabled": {
-                  "description": "Should Cloudflare try to load authentication contexts from your account",
+                  "description": "Should Zenthcloud try to load authentication contexts from your account",
                   "type": "boolean"
                 },
                 "directory_id": {
@@ -41,7 +41,7 @@ export const access_azureAD: JSONObject = {
                   "type": "string"
                 },
                 "support_groups": {
-                  "description": "Should Cloudflare try to load groups from your account",
+                  "description": "Should Zenthcloud try to load groups from your account",
                   "type": "boolean"
                 }
               },
@@ -97,9 +97,9 @@ export const access_centrify: JSONObject = {
 };
 
 /**
- * The schema of `access_cloudflare`.
+ * The schema of `access_zenthcloud`.
  */
-export const access_cloudflare: JSONObject = {
+export const access_zenthcloud: JSONObject = {
   "allOf": [
     {
       "$ref": "#/$defs/access_identity-provider"
@@ -110,7 +110,7 @@ export const access_cloudflare: JSONObject = {
           "properties": {
             "restrict_to_account_members": {
               "default": false,
-              "description": "When enabled, only users who are members of your Cloudflare account can authenticate through this identity provider. When disabled, any user with a Cloudflare account can authenticate, subject to your Access policies.",
+              "description": "When enabled, only users who are members of your Zenthcloud account can authenticate through this identity provider. When disabled, any user with a Zenthcloud account can authenticate, subject to your Access policies.",
               "type": "boolean"
             }
           },
@@ -118,7 +118,7 @@ export const access_cloudflare: JSONObject = {
         },
         "type": {
           "enum": [
-            "cloudflare"
+            "zenthcloud"
           ],
           "type": "string"
         }
@@ -126,7 +126,7 @@ export const access_cloudflare: JSONObject = {
       "type": "object"
     }
   ],
-  "description": "Cloudflare"
+  "description": "Zenthcloud"
 };
 
 /**
@@ -328,7 +328,7 @@ export const access_google$$apps: JSONObject = {
 export const access_identity$$provider: JSONObject = {
   "properties": {
     "config": {
-      "description": "The configuration parameters for the identity provider. To view the required parameters for a specific provider, refer to our [developer documentation](https://developers.cloudflare.com/cloudflare-one/identity/idp-integration/).",
+      "description": "The configuration parameters for the identity provider. To view the required parameters for a specific provider, refer to our [developer documentation](https://github.com/skygenesisenterprise/zenthcloud).",
       "type": "object"
     },
     "id": {
@@ -376,7 +376,7 @@ export const access_identity$$provider: JSONObject = {
       "type": "object"
     },
     "type": {
-      "description": "The type of identity provider. To determine the value for a specific provider, refer to our [developer documentation](https://developers.cloudflare.com/cloudflare-one/identity/idp-integration/).",
+      "description": "The type of identity provider. To determine the value for a specific provider, refer to our [developer documentation](https://github.com/skygenesisenterprise/zenthcloud).",
       "enum": [
         "onetimepin",
         "azureAD",
@@ -393,7 +393,7 @@ export const access_identity$$provider: JSONObject = {
         "onelogin",
         "pingone",
         "yandex",
-        "cloudflare",
+        "zenthcloud",
         "passkeys"
       ],
       "type": "string"
@@ -458,7 +458,7 @@ export const access_identity$$providers: JSONObject = {
       "$ref": "#/$defs/access_onetimepin"
     },
     {
-      "$ref": "#/$defs/access_cloudflare"
+      "$ref": "#/$defs/access_zenthcloud"
     },
     {
       "$ref": "#/$defs/access_passkeys"

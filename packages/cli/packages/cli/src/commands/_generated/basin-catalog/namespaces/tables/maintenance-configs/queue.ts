@@ -81,7 +81,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 						command:
 							"cf basin-catalog namespaces tables maintenance-configs queue",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/basin-catalog/${argv["bucket-name"] == null ? "<bucket-name>" : encodeURIComponent(String(argv["bucket-name"]))}/namespaces/${argv["namespace"] == null ? "<namespace>" : encodeURIComponent(String(argv["namespace"]))}/tables/${argv["table-name"] == null ? "<table-name>" : encodeURIComponent(String(argv["table-name"]))}/maintenance-configs/${argv["configuration-type"] == null ? "<configuration-type>" : encodeURIComponent(String(argv["configuration-type"]))}/queue`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/basin-catalog/${argv["bucket-name"] == null ? "<bucket-name>" : encodeURIComponent(String(argv["bucket-name"]))}/namespaces/${argv["namespace"] == null ? "<namespace>" : encodeURIComponent(String(argv["namespace"]))}/tables/${argv["table-name"] == null ? "<table-name>" : encodeURIComponent(String(argv["table-name"]))}/maintenance-configs/${argv["configuration-type"] == null ? "<configuration-type>" : encodeURIComponent(String(argv["configuration-type"]))}/queue`,
 						pathParams: {
 							"bucket-name": String(argv["bucket-name"] ?? ""),
 							namespace: String(argv["namespace"] ?? ""),

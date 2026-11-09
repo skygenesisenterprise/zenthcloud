@@ -6,7 +6,7 @@ import (
 
 // SourceAccessServiceTokenSchema returns the source schema for legacy resource.
 // Schema version: 0 (SDKv2 default)
-// Resource type: cloudflare_access_service_token (deprecated name)
+// Resource type: zenthcloud_access_service_token (deprecated name)
 //
 // This minimal schema is used only for reading v4 state during migration.
 // It includes only the properties needed for state parsing (Required, Optional, Computed).

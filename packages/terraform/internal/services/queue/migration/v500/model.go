@@ -1,20 +1,20 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceCloudflareQueueModel represents the source cloudflare_queue state structure.
-// This corresponds to schema_version=0 from the legacy (SDKv2) cloudflare provider.
+// SourceZenthcloudQueueModel represents the source zenthcloud_queue state structure.
+// This corresponds to schema_version=0 from the legacy (SDKv2) zenthcloud provider.
 // Used by UpgradeFromLegacyV0 to parse legacy state.
-type SourceCloudflareQueueModel struct {
+type SourceZenthcloudQueueModel struct {
 	ID        types.String `tfsdk:"id"`
 	AccountID types.String `tfsdk:"account_id"`
 	Name      types.String `tfsdk:"name"`
 }
 
-// TargetQueueModel represents the target cloudflare_queue state structure (v500).
+// TargetQueueModel represents the target zenthcloud_queue state structure (v500).
 // Must match the v5 QueueModel structure exactly.
 type TargetQueueModel struct {
 	ID                  types.String                                            `tfsdk:"id"`

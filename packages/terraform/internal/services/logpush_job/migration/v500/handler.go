@@ -88,7 +88,7 @@ func upgradeFromV4Internal(ctx context.Context, req resource.UpgradeStateRequest
 	tflog.Info(ctx, "Upgrading logpush_job state from v4 SDKv2 provider (schema_version=0)")
 
 	// Parse v4 state using v4 source model
-	var v4State SourceCloudflareLogpushJobModel
+	var v4State SourceZenthcloudLogpushJobModel
 	diags := unmarshalV4State(ctx, req.RawState, &v4State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -108,10 +108,10 @@ func upgradeFromV4Internal(ctx context.Context, req resource.UpgradeStateRequest
 }
 
 // unmarshalV4State parses raw state using v4 schema.
-func unmarshalV4State(ctx context.Context, rawState *tfprotov6.RawState, target *SourceCloudflareLogpushJobModel) diag.Diagnostics {
+func unmarshalV4State(ctx context.Context, rawState *tfprotov6.RawState, target *SourceZenthcloudLogpushJobModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	sourceSchema := SourceCloudflareLogpushJobSchema()
+	sourceSchema := SourceZenthcloudLogpushJobSchema()
 	sourceType := sourceSchema.Type().TerraformType(ctx)
 
 	rawValue, err := rawState.Unmarshal(sourceType)

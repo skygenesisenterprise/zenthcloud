@@ -1,7 +1,7 @@
-// Copyright (c) 2022-2023 Cloudflare, Inc.
+// Copyright (c) 2022-2023 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
-declare module "cloudflare:pipelines" {
+declare module "zenthcloud:pipelines" {
   export abstract class PipelineTransformationEntrypoint<Env = unknown, I extends PipelineRecord = PipelineRecord, O extends PipelineRecord = PipelineRecord> {
     protected env: Env;
     protected ctx: ExecutionContext;

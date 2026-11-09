@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	cfv1 "github.com/cloudflare/cloudflare-go"
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/r2"
+	cfv1 "github.com/zenthcloud/zenthcloud-go"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/r2"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -17,9 +17,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 func TestMain(m *testing.M) {
@@ -27,20 +27,20 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_r2_bucket", &resource.Sweeper{
-		Name: "cloudflare_r2_bucket",
-		F:    testSweepCloudflareR2Bucket,
+	resource.AddTestSweepers("zenthcloud_r2_bucket", &resource.Sweeper{
+		Name: "zenthcloud_r2_bucket",
+		F:    testSweepZenthcloudR2Bucket,
 	})
 }
 
-func testSweepCloudflareR2Bucket(r string) error {
+func testSweepZenthcloudR2Bucket(r string) error {
 	ctx := context.Background()
 	client, err := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if err != nil {
 		return fmt.Errorf("error establishing client: %w", err)
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
 		return nil // Skip sweep if account ID not set
 	}
@@ -68,19 +68,19 @@ func testSweepCloudflareR2Bucket(r string) error {
 	return nil
 }
 
-func TestAccCloudflareR2Bucket_Basic(t *testing.T) {
+func TestAccZenthcloudR2Bucket_Basic(t *testing.T) {
 	// The PATCH /r2/buckets/{name} endpoint (used to update storage_class) is only
-	// accessible via Cloudflare's internal permission system (x-cfPermissionsRequired:
-	// com.cloudflare.edge.r2.bucket.write). It does not have x-api-token-group, so it
-	// is not reachable with a CLOUDFLARE_API_TOKEN. The public API gateway returns
+	// accessible via Zenthcloud's internal permission system (x-cfPermissionsRequired:
+	// com.zenthcloud.edge.r2.bucket.write). It does not have x-api-token-group, so it
+	// is not reachable with a ZENTHCLOUD_API_TOKEN. The public API gateway returns
 	// 405 Method Not Allowed for API-token traffic. Skip when running with an API token
 	// until the endpoint is added to the Workers R2 Storage Write token group.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Skip("skipping: R2 storage_class update via PATCH requires internal Cloudflare credentials, not an API token")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Skip("skipping: R2 storage_class update via PATCH requires internal Zenthcloud credentials, not an API token")
 	}
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_r2_bucket." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_r2_bucket." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -88,10 +88,10 @@ func TestAccCloudflareR2Bucket_Basic(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareR2BucketDestroy,
+		CheckDestroy:             testAccCheckZenthcloudR2BucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareR2BucketBasic(rnd, accountID),
+				Config: testAccCheckZenthcloudR2BucketBasic(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.StringExact(rnd)),
@@ -102,7 +102,7 @@ func TestAccCloudflareR2Bucket_Basic(t *testing.T) {
 				},
 			},
 			{
-				Config: testAccCheckCloudflareR2BucketUpdate(rnd, accountID),
+				Config: testAccCheckZenthcloudR2BucketUpdate(rnd, accountID),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -130,10 +130,10 @@ func TestAccCloudflareR2Bucket_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareR2Bucket_Minimum(t *testing.T) {
+func TestAccZenthcloudR2Bucket_Minimum(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_r2_bucket." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_r2_bucket." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -141,10 +141,10 @@ func TestAccCloudflareR2Bucket_Minimum(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareR2BucketDestroy,
+		CheckDestroy:             testAccCheckZenthcloudR2BucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareR2BucketMinimum(rnd, accountID),
+				Config: testAccCheckZenthcloudR2BucketMinimum(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.StringExact(rnd)),
@@ -163,10 +163,10 @@ func TestAccCloudflareR2Bucket_Minimum(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareR2Bucket_Jurisdiction(t *testing.T) {
+func TestAccZenthcloudR2Bucket_Jurisdiction(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_r2_bucket." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_r2_bucket." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -174,10 +174,10 @@ func TestAccCloudflareR2Bucket_Jurisdiction(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareR2BucketDestroy,
+		CheckDestroy:             testAccCheckZenthcloudR2BucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareR2BucketJurisdiction(rnd, accountID),
+				Config: testAccCheckZenthcloudR2BucketJurisdiction(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.StringExact(rnd)),
@@ -197,16 +197,16 @@ func TestAccCloudflareR2Bucket_Jurisdiction(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareR2Bucket_AllLocations(t *testing.T) {
+func TestAccZenthcloudR2Bucket_AllLocations(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	locations := []string{"apac", "eeur", "enam", "weur", "wnam", "oc"}
 
 	for _, location := range locations {
 		t.Run(location, func(t *testing.T) {
 			testRnd := rnd + location
-			testResourceName := "cloudflare_r2_bucket." + testRnd
+			testResourceName := "zenthcloud_r2_bucket." + testRnd
 
 			resource.Test(t, resource.TestCase{
 				PreCheck: func() {
@@ -214,10 +214,10 @@ func TestAccCloudflareR2Bucket_AllLocations(t *testing.T) {
 					acctest.TestAccPreCheck_AccountID(t)
 				},
 				ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-				CheckDestroy:             testAccCheckCloudflareR2BucketDestroy,
+				CheckDestroy:             testAccCheckZenthcloudR2BucketDestroy,
 				Steps: []resource.TestStep{
 					{
-						Config: testAccCheckCloudflareR2BucketLocation(testRnd, accountID, location),
+						Config: testAccCheckZenthcloudR2BucketLocation(testRnd, accountID, location),
 						Check: resource.ComposeTestCheckFunc(
 							resource.TestCheckResourceAttr(testResourceName, "name", testRnd),
 							resource.TestCheckResourceAttr(testResourceName, "location", location),
@@ -232,16 +232,16 @@ func TestAccCloudflareR2Bucket_AllLocations(t *testing.T) {
 	}
 }
 
-func TestAccCloudflareR2Bucket_AllJurisdictions(t *testing.T) {
+func TestAccZenthcloudR2Bucket_AllJurisdictions(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	jurisdictions := []string{"default", "fedramp", "us"}
 
 	for _, jurisdiction := range jurisdictions {
 		t.Run(jurisdiction, func(t *testing.T) {
 			testRnd := rnd + jurisdiction
-			testResourceName := "cloudflare_r2_bucket." + testRnd
+			testResourceName := "zenthcloud_r2_bucket." + testRnd
 
 			resource.Test(t, resource.TestCase{
 				PreCheck: func() {
@@ -249,10 +249,10 @@ func TestAccCloudflareR2Bucket_AllJurisdictions(t *testing.T) {
 					acctest.TestAccPreCheck_AccountID(t)
 				},
 				ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-				CheckDestroy:             testAccCheckCloudflareR2BucketDestroy,
+				CheckDestroy:             testAccCheckZenthcloudR2BucketDestroy,
 				Steps: []resource.TestStep{
 					{
-						Config: testAccCheckCloudflareR2BucketJurisdictionSpecific(testRnd, accountID, jurisdiction),
+						Config: testAccCheckZenthcloudR2BucketJurisdictionSpecific(testRnd, accountID, jurisdiction),
 						ConfigStateChecks: []statecheck.StateCheck{
 							statecheck.ExpectKnownValue(testResourceName, tfjsonpath.New("name"), knownvalue.StringExact(testRnd)),
 							statecheck.ExpectKnownValue(testResourceName, tfjsonpath.New("jurisdiction"), knownvalue.StringExact(jurisdiction)),
@@ -266,10 +266,10 @@ func TestAccCloudflareR2Bucket_AllJurisdictions(t *testing.T) {
 	}
 }
 
-func TestAccCloudflareR2Bucket_ComprehensiveConfiguration(t *testing.T) {
+func TestAccZenthcloudR2Bucket_ComprehensiveConfiguration(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_r2_bucket." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_r2_bucket." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -277,10 +277,10 @@ func TestAccCloudflareR2Bucket_ComprehensiveConfiguration(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareR2BucketDestroy,
+		CheckDestroy:             testAccCheckZenthcloudR2BucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareR2BucketComprehensive(rnd, accountID),
+				Config: testAccCheckZenthcloudR2BucketComprehensive(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
@@ -304,10 +304,10 @@ func TestAccCloudflareR2Bucket_ComprehensiveConfiguration(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareR2Bucket_DefaultValues(t *testing.T) {
+func TestAccZenthcloudR2Bucket_DefaultValues(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_r2_bucket." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_r2_bucket." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -315,10 +315,10 @@ func TestAccCloudflareR2Bucket_DefaultValues(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareR2BucketDestroy,
+		CheckDestroy:             testAccCheckZenthcloudR2BucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareR2BucketMinimum(rnd, accountID),
+				Config: testAccCheckZenthcloudR2BucketMinimum(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
@@ -332,15 +332,15 @@ func TestAccCloudflareR2Bucket_DefaultValues(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareR2Bucket_StorageClassUpdate(t *testing.T) {
-	// Same restriction as TestAccCloudflareR2Bucket_Basic: the PATCH endpoint for
+func TestAccZenthcloudR2Bucket_StorageClassUpdate(t *testing.T) {
+	// Same restriction as TestAccZenthcloudR2Bucket_Basic: the PATCH endpoint for
 	// storage_class updates is not accessible via API tokens. See that test for details.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Skip("skipping: R2 storage_class update via PATCH requires internal Cloudflare credentials, not an API token")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Skip("skipping: R2 storage_class update via PATCH requires internal Zenthcloud credentials, not an API token")
 	}
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_r2_bucket." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_r2_bucket." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -348,10 +348,10 @@ func TestAccCloudflareR2Bucket_StorageClassUpdate(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareR2BucketDestroy,
+		CheckDestroy:             testAccCheckZenthcloudR2BucketDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareR2BucketStorageClass(rnd, accountID, "Standard"),
+				Config: testAccCheckZenthcloudR2BucketStorageClass(rnd, accountID, "Standard"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("storage_class"), knownvalue.StringExact("Standard")),
@@ -360,7 +360,7 @@ func TestAccCloudflareR2Bucket_StorageClassUpdate(t *testing.T) {
 				},
 			},
 			{
-				Config: testAccCheckCloudflareR2BucketStorageClass(rnd, accountID, "InfrequentAccess"),
+				Config: testAccCheckZenthcloudR2BucketStorageClass(rnd, accountID, "InfrequentAccess"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -378,10 +378,10 @@ func TestAccCloudflareR2Bucket_StorageClassUpdate(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareR2Bucket_LocationCaseInsensitive(t *testing.T) {
+func TestAccZenthcloudR2Bucket_LocationCaseInsensitive(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_r2_bucket." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_r2_bucket." + rnd
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
@@ -391,7 +391,7 @@ func TestAccCloudflareR2Bucket_LocationCaseInsensitive(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareR2BucketLocationCase(rnd, accountID, "weur"),
+				Config: testAccCheckZenthcloudR2BucketLocationCase(rnd, accountID, "weur"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", rnd),
 					resource.TestCheckResourceAttr(resourceName, "location", "weur"),
@@ -400,7 +400,7 @@ func TestAccCloudflareR2Bucket_LocationCaseInsensitive(t *testing.T) {
 			{
 
 				// Apply with uppercase - should be treated as no change (case-insensitive)
-				Config: testAccCheckCloudflareR2BucketLocationCase(rnd, accountID, "WEUR"),
+				Config: testAccCheckZenthcloudR2BucketLocationCase(rnd, accountID, "WEUR"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", rnd),
 					resource.TestCheckResourceAttr(resourceName, "location", "WEUR"),
@@ -410,7 +410,7 @@ func TestAccCloudflareR2Bucket_LocationCaseInsensitive(t *testing.T) {
 			},
 			{
 				// Apply with mixed case - should be treated as no change (case-insensitive)
-				Config: testAccCheckCloudflareR2BucketLocationCase(rnd, accountID, "WeUr"),
+				Config: testAccCheckZenthcloudR2BucketLocationCase(rnd, accountID, "WeUr"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", rnd),
 					resource.TestCheckResourceAttr(resourceName, "location", "WEUR"),
@@ -420,7 +420,7 @@ func TestAccCloudflareR2Bucket_LocationCaseInsensitive(t *testing.T) {
 			},
 			{
 				// Now actually apply with uppercase to set it in state
-				Config: testAccCheckCloudflareR2BucketLocationCase(rnd, accountID, "WEUR"),
+				Config: testAccCheckZenthcloudR2BucketLocationCase(rnd, accountID, "WEUR"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", rnd),
 					resource.TestCheckResourceAttr(resourceName, "location", "WEUR"),
@@ -428,7 +428,7 @@ func TestAccCloudflareR2Bucket_LocationCaseInsensitive(t *testing.T) {
 			},
 			{
 				// Reapply same uppercase - should not cause a plan change
-				Config: testAccCheckCloudflareR2BucketLocationCase(rnd, accountID, "WEUR"),
+				Config: testAccCheckZenthcloudR2BucketLocationCase(rnd, accountID, "WEUR"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", rnd),
 					resource.TestCheckResourceAttr(resourceName, "location", "WEUR"),
@@ -438,7 +438,7 @@ func TestAccCloudflareR2Bucket_LocationCaseInsensitive(t *testing.T) {
 			},
 			{
 				// Apply with different case - should be treated as no change (case-insensitive)
-				Config: testAccCheckCloudflareR2BucketLocationCase(rnd, accountID, "weur"),
+				Config: testAccCheckZenthcloudR2BucketLocationCase(rnd, accountID, "weur"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", rnd),
 					resource.TestCheckResourceAttr(resourceName, "location", "WEUR"),
@@ -450,10 +450,10 @@ func TestAccCloudflareR2Bucket_LocationCaseInsensitive(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareR2Bucket_LocationIgnoreChange(t *testing.T) {
+func TestAccZenthcloudR2Bucket_LocationIgnoreChange(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_r2_bucket." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_r2_bucket." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -463,7 +463,7 @@ func TestAccCloudflareR2Bucket_LocationIgnoreChange(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareR2BucketLocationCase(rnd, accountID, "weur"),
+				Config: testAccCheckZenthcloudR2BucketLocationCase(rnd, accountID, "weur"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", rnd),
 					resource.TestCheckResourceAttr(resourceName, "location", "weur"),
@@ -471,7 +471,7 @@ func TestAccCloudflareR2Bucket_LocationIgnoreChange(t *testing.T) {
 			},
 			{
 				// Apply with EEUR - should not be changed
-				Config: testAccCheckCloudflareR2BucketLocationCase(rnd, accountID, "EEUR"),
+				Config: testAccCheckZenthcloudR2BucketLocationCase(rnd, accountID, "EEUR"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", rnd),
 					resource.TestCheckResourceAttr(resourceName, "location", "weur"),
@@ -481,7 +481,7 @@ func TestAccCloudflareR2Bucket_LocationIgnoreChange(t *testing.T) {
 			},
 			{
 				// Apply with APAC - should not be changed
-				Config: testAccCheckCloudflareR2BucketLocationCase(rnd, accountID, "apac"),
+				Config: testAccCheckZenthcloudR2BucketLocationCase(rnd, accountID, "apac"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", rnd),
 					resource.TestCheckResourceAttr(resourceName, "location", "weur"),
@@ -493,43 +493,43 @@ func TestAccCloudflareR2Bucket_LocationIgnoreChange(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareR2BucketMinimum(rnd, accountID string) string {
+func testAccCheckZenthcloudR2BucketMinimum(rnd, accountID string) string {
 	return acctest.LoadTestCase("r2bucketminimum.tf", rnd, accountID)
 }
 
-func testAccCheckCloudflareR2BucketBasic(rnd, accountID string) string {
+func testAccCheckZenthcloudR2BucketBasic(rnd, accountID string) string {
 	return acctest.LoadTestCase("r2bucketbasic.tf", rnd, accountID)
 }
 
-func testAccCheckCloudflareR2BucketUpdate(rnd, accountID string) string {
+func testAccCheckZenthcloudR2BucketUpdate(rnd, accountID string) string {
 	return acctest.LoadTestCase("r2bucketupdate.tf", rnd, accountID)
 }
 
-func testAccCheckCloudflareR2BucketJurisdiction(rnd, accountID string) string {
+func testAccCheckZenthcloudR2BucketJurisdiction(rnd, accountID string) string {
 	return acctest.LoadTestCase("jurisdiction.tf", rnd, accountID)
 }
 
-func testAccCheckCloudflareR2BucketLocation(rnd, accountID, location string) string {
+func testAccCheckZenthcloudR2BucketLocation(rnd, accountID, location string) string {
 	return acctest.LoadTestCase("location.tf", rnd, accountID, location)
 }
 
-func testAccCheckCloudflareR2BucketJurisdictionSpecific(rnd, accountID, jurisdiction string) string {
+func testAccCheckZenthcloudR2BucketJurisdictionSpecific(rnd, accountID, jurisdiction string) string {
 	return acctest.LoadTestCase("jurisdiction_specific.tf", rnd, accountID, jurisdiction)
 }
 
-func testAccCheckCloudflareR2BucketComprehensive(rnd, accountID string) string {
+func testAccCheckZenthcloudR2BucketComprehensive(rnd, accountID string) string {
 	return acctest.LoadTestCase("comprehensive.tf", rnd, accountID)
 }
 
-func testAccCheckCloudflareR2BucketStorageClass(rnd, accountID, storageClass string) string {
+func testAccCheckZenthcloudR2BucketStorageClass(rnd, accountID, storageClass string) string {
 	return acctest.LoadTestCase("storage_class.tf", rnd, accountID, storageClass)
 }
 
-func testAccCheckCloudflareR2BucketDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudR2BucketDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_r2_bucket" {
+		if rs.Type != "zenthcloud_r2_bucket" {
 			continue
 		}
 
@@ -539,8 +539,8 @@ func testAccCheckCloudflareR2BucketDestroy(s *terraform.State) error {
 			context.Background(),
 			rs.Primary.ID,
 			r2.BucketGetParams{
-				AccountID:        cloudflare.F(accountID),
-				CfR2Jurisdiction: cloudflare.F(r2.BucketGetParamsCfR2Jurisdiction(jurisdiction)),
+				AccountID:        zenthcloud.F(accountID),
+				CfR2Jurisdiction: zenthcloud.F(r2.BucketGetParamsCfR2Jurisdiction(jurisdiction)),
 			},
 		)
 		if err == nil {
@@ -551,9 +551,9 @@ func testAccCheckCloudflareR2BucketDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckCloudflareR2BucketLocationCase(rnd, accountID, location string) string {
+func testAccCheckZenthcloudR2BucketLocationCase(rnd, accountID, location string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_r2_bucket" "%[1]s" {
+resource "zenthcloud_r2_bucket" "%[1]s" {
   account_id = "%[2]s"
   name       = "%[1]s"
   location   = "%[3]s"

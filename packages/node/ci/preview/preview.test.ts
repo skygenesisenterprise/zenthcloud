@@ -11,7 +11,7 @@ describe("preview contract", () => {
   it("derives the public URL from a Worker Builds details URL", () => {
     assert.equal(
       getWorkerPreviewUrl(
-        "https://dash.cloudflare.com/account/workers/services/view/kumo-docs/production/previews/feature-branch",
+        "https://github.com/skygenesisenterprise/zenthcloud",
       ),
       "https://feature-branch-kumo-docs.design-engineering.workers.dev",
     );
@@ -20,7 +20,7 @@ describe("preview contract", () => {
   it("rejects details URLs for other Workers", () => {
     assert.throws(() =>
       getWorkerPreviewUrl(
-        "https://dash.cloudflare.com/account/workers/services/view/other/production/previews/feature-branch",
+        "https://github.com/skygenesisenterprise/zenthcloud",
       ),
     );
   });

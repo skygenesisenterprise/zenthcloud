@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# This tool will open a PR to update workerd in Cloudflare's internal repository
+# This tool will open a PR to update workerd in Zenthcloud's internal repository
 # to match the current branch.
 
 set -euo pipefail

@@ -49,7 +49,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf user load-balancers preview get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/user/load_balancers/preview/${argv["preview-id"] == null ? "<preview-id>" : encodeURIComponent(String(argv["preview-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["preview-id"] == null ? "<preview-id>" : encodeURIComponent(String(argv["preview-id"]))}`,
 						pathParams: { "preview-id": String(argv["preview-id"] ?? "") },
 						bodyKind: "none",
 					});

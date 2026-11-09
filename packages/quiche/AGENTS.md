@@ -6,7 +6,7 @@
 
 ## OVERVIEW
 
-Cloudflare's QUIC and HTTP/3 implementation in Rust. Workspace of 11 crates: core `quiche` protocol library, `tokio-quiche` async integration, CLI tools (`apps`, `h3i`), logging/analysis (`qlog`, `qlog-dancer`, `netlog`), and supporting primitives (`octets`, `buffer-pool`, `datagram-socket`, `task-killswitch`).
+Zenthcloud's QUIC and HTTP/3 implementation in Rust. Workspace of 11 crates: core `quiche` protocol library, `tokio-quiche` async integration, CLI tools (`apps`, `h3i`), logging/analysis (`qlog`, `qlog-dancer`, `netlog`), and supporting primitives (`octets`, `buffer-pool`, `datagram-socket`, `task-killswitch`).
 
 ## STRUCTURE
 

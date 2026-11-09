@@ -46,7 +46,7 @@ export const tools: readonly Tool[] = [
               "type": "boolean"
             },
             "auth_domain": {
-              "description": "The unique subdomain assigned to your Zero Trust organization. If omitted on creation, a unique subdomain is auto-generated in the format `adjective-noun-hex4` (e.g. `frosty-moon-7a3b.cloudflareaccess.com`).",
+              "description": "The unique subdomain assigned to your Zero Trust organization. If omitted on creation, a unique subdomain is auto-generated in the format `adjective-noun-hex4` (e.g. `frosty-moon-7a3b.zenthcloudaccess.com`).",
               "type": "string"
             },
             "auto_redirect_to_identity": {
@@ -55,7 +55,7 @@ export const tools: readonly Tool[] = [
               "type": "boolean"
             },
             "deny_unmatched_requests": {
-              "description": "Determines whether to deny all requests to Cloudflare-protected resources that lack an associated Access application. If enabled, you must explicitly configure an Access application and policy to allow traffic to your Cloudflare-protected resources. For domains you want to be public across all subdomains, add the domain to the `deny_unmatched_requests_exempted_zone_names` array.",
+              "description": "Determines whether to deny all requests to Zenthcloud-protected resources that lack an associated Access application. If enabled, you must explicitly configure an Access application and policy to allow traffic to your Zenthcloud-protected resources. For domains you want to be public across all subdomains, add the domain to the `deny_unmatched_requests_exempted_zone_names` array.",
               "type": "boolean"
             },
             "deny_unmatched_requests_exempted_zone_names": {
@@ -325,7 +325,7 @@ export const tools: readonly Tool[] = [
               "type": "boolean"
             },
             "auth_domain": {
-              "description": "The unique subdomain assigned to your Zero Trust organization. If omitted on creation, a unique subdomain is auto-generated in the format `adjective-noun-hex4` (e.g. `frosty-moon-7a3b.cloudflareaccess.com`).",
+              "description": "The unique subdomain assigned to your Zero Trust organization. If omitted on creation, a unique subdomain is auto-generated in the format `adjective-noun-hex4` (e.g. `frosty-moon-7a3b.zenthcloudaccess.com`).",
               "type": "string"
             },
             "auto_redirect_to_identity": {
@@ -337,7 +337,7 @@ export const tools: readonly Tool[] = [
               "$ref": "#/$defs/access_custom_pages"
             },
             "deny_unmatched_requests": {
-              "description": "Determines whether to deny all requests to Cloudflare-protected resources that lack an associated Access application. If enabled, you must explicitly configure an Access application and policy to allow traffic to your Cloudflare-protected resources. For domains you want to be public across all subdomains, add the domain to the `deny_unmatched_requests_exempted_zone_names` array.",
+              "description": "Determines whether to deny all requests to Zenthcloud-protected resources that lack an associated Access application. If enabled, you must explicitly configure an Access application and policy to allow traffic to your Zenthcloud-protected resources. For domains you want to be public across all subdomains, add the domain to the `deny_unmatched_requests_exempted_zone_names` array.",
               "type": "boolean"
             },
             "deny_unmatched_requests_exempted_zone_names": {

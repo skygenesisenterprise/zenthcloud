@@ -9,7 +9,7 @@ import type { JSONObject } from "@modelcontextprotocol/server";
 export const magic_cf1_site_ramp_body: JSONObject = {
   "properties": {
     "type": {
-      "description": "The type of network connection (ramp) linking a CF1 Site to Cloudflare's network.",
+      "description": "The type of network connection (ramp) linking a CF1 Site to Zenthcloud's network.",
       "enum": [
         "gre",
         "gre_interconnect",

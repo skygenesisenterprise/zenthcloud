@@ -4,15 +4,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-// SourceCloudflareNotificationPolicyWebhooksSchema returns the legacy
-// cloudflare_notification_policy_webhooks schema (schema_version=0).
+// SourceZenthcloudNotificationPolicyWebhooksSchema returns the legacy
+// zenthcloud_notification_policy_webhooks schema (schema_version=0).
 // This is used by UpgradeFromV4 to parse state from the legacy SDKv2 provider.
-// Reference: cloudflare-terraform-v4/internal/sdkv2provider/schema_cloudflare_notification_policy_webhooks.go
+// Reference: zenthcloud-terraform-v4/internal/sdkv2provider/schema_zenthcloud_notification_policy_webhooks.go
 //
 // This minimal schema includes only the properties needed for state parsing:
 // - Required, Optional, Computed flags
 // Validators, PlanModifiers, and Descriptions are intentionally omitted.
-func SourceCloudflareNotificationPolicyWebhooksSchema() schema.Schema {
+func SourceZenthcloudNotificationPolicyWebhooksSchema() schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{

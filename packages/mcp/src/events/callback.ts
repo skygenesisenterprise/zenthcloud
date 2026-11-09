@@ -28,7 +28,7 @@ function logOutcome(
  * Receive an ANS webhook for one subscription and forward it to the subscriber
  * as a signed MCP event.
  *
- * Delivery uses no stored credential and makes no Cloudflare API call. ANS
+ * Delivery uses no stored credential and makes no Zenthcloud API call. ANS
  * presents the destination secret, which seals the callback URL and the
  * client's signing secret; the KV record says which destination is current
  * and until when. Access was checked when the subscription was last created

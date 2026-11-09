@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -20,7 +20,7 @@ var (
 )
 
 // Embed migration test configuration files
-// Singular name configs (cloudflare_worker_script → cloudflare_workers_script rename)
+// Singular name configs (zenthcloud_worker_script → zenthcloud_workers_script rename)
 
 //go:embed testdata/v4_basic.tf
 var v4BasicConfig string
@@ -40,7 +40,7 @@ var v4MultipleBindingsConfig string
 //go:embed testdata/v5_multiple_bindings.tf
 var v5MultipleBindingsConfig string
 
-// Plural name configs (cloudflare_workers_script — no rename, just attribute changes)
+// Plural name configs (zenthcloud_workers_script — no rename, just attribute changes)
 
 //go:embed testdata/v4_basic_plural.tf
 var v4BasicPluralConfig string
@@ -56,16 +56,16 @@ var v4ComplexBindingsConfig string
 
 // ============================================================================
 // Ported from migrations_test.go (service root) — original v4-only tests
-// using cloudflare_workers_script (plural, no rename)
+// using zenthcloud_workers_script (plural, no rename)
 // ============================================================================
 
 // TestMigrateWorkersScript_FromV4Basic tests basic migration from v4 to v5.
 // Ported from TestMigrateWorkersScriptMigrationFromV4Basic.
-// Uses plural name (cloudflare_workers_script) — no resource rename, just name→script_name.
+// Uses plural name (zenthcloud_workers_script) — no resource rename, just name→script_name.
 func TestMigrateWorkersScript_FromV4Basic(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_workers_script." + rnd
+	resourceName := "zenthcloud_workers_script." + rnd
 	tmpDir := t.TempDir()
 	scriptName := fmt.Sprintf("test-script-%s", rnd)
 	version := acctest.GetLastV4Version()
@@ -81,8 +81,8 @@ func TestMigrateWorkersScript_FromV4Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
@@ -100,9 +100,9 @@ func TestMigrateWorkersScript_FromV4Basic(t *testing.T) {
 // TestMigrateWorkersScript_FromV4WithBindings tests migration with bindings.
 // Ported from TestMigrateWorkersScriptMigrationFromV4WithBindings.
 func TestMigrateWorkersScript_FromV4WithBindings(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_workers_script." + rnd
+	resourceName := "zenthcloud_workers_script." + rnd
 	tmpDir := t.TempDir()
 	scriptName := fmt.Sprintf("test-script-%s", rnd)
 	version := acctest.GetLastV4Version()
@@ -118,8 +118,8 @@ func TestMigrateWorkersScript_FromV4WithBindings(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
@@ -139,11 +139,11 @@ func TestMigrateWorkersScript_FromV4WithBindings(t *testing.T) {
 
 // TestMigrateWorkersScript_FromV4SingleResource tests migration using singular resource name.
 // Ported from TestMigrateWorkersScriptMigrationFromV4SingleResource.
-// Uses cloudflare_worker_script (singular) — tests the resource rename path.
+// Uses zenthcloud_worker_script (singular) — tests the resource rename path.
 func TestMigrateWorkersScript_FromV4SingleResource(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_workers_script." + rnd
+	resourceName := "zenthcloud_workers_script." + rnd
 	tmpDir := t.TempDir()
 	scriptName := fmt.Sprintf("test-script-%s", rnd)
 	version := acctest.GetLastV4Version()
@@ -159,8 +159,8 @@ func TestMigrateWorkersScript_FromV4SingleResource(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
@@ -178,9 +178,9 @@ func TestMigrateWorkersScript_FromV4SingleResource(t *testing.T) {
 // TestMigrateWorkersScript_FromV4MultipleBindingTypes tests migration with multiple binding types.
 // Ported from TestMigrateWorkersScriptMigrationFromV4MultipleBindingTypes.
 func TestMigrateWorkersScript_FromV4MultipleBindingTypes(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_workers_script." + rnd
+	resourceName := "zenthcloud_workers_script." + rnd
 	tmpDir := t.TempDir()
 	scriptName := fmt.Sprintf("test-script-%s", rnd)
 	version := acctest.GetLastV4Version()
@@ -196,8 +196,8 @@ func TestMigrateWorkersScript_FromV4MultipleBindingTypes(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
@@ -221,9 +221,9 @@ func TestMigrateWorkersScript_FromV4MultipleBindingTypes(t *testing.T) {
 // TestMigrateWorkersScript_FromV4ComplexBindings tests migration with complex binding attribute mappings.
 // Ported from TestMigrateWorkersScriptMigrationFromV4ComplexBindings.
 func TestMigrateWorkersScript_FromV4ComplexBindings(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_workers_script." + rnd
+	resourceName := "zenthcloud_workers_script." + rnd
 	tmpDir := t.TempDir()
 	scriptName := fmt.Sprintf("test-script-%s", rnd)
 	version := acctest.GetLastV4Version()
@@ -239,8 +239,8 @@ func TestMigrateWorkersScript_FromV4ComplexBindings(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: version,
 					},
 				},
@@ -259,7 +259,7 @@ func TestMigrateWorkersScript_FromV4ComplexBindings(t *testing.T) {
 
 // ============================================================================
 // New dual test cases (from_v4_latest / from_v5) using singular name
-// Tests the resource rename path (cloudflare_worker_script → cloudflare_workers_script)
+// Tests the resource rename path (zenthcloud_worker_script → zenthcloud_workers_script)
 // ============================================================================
 
 // TestMigrateWorkersScript_Basic tests basic migration with resource rename.
@@ -284,10 +284,10 @@ func TestMigrateWorkersScript_Basic(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			scriptName := fmt.Sprintf("test-script-%s", rnd)
-			resourceName := "cloudflare_workers_script." + rnd
+			resourceName := "zenthcloud_workers_script." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID, scriptName)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -301,8 +301,8 @@ func TestMigrateWorkersScript_Basic(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -351,10 +351,10 @@ func TestMigrateWorkersScript_WithBinding(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			scriptName := fmt.Sprintf("test-script-%s", rnd)
-			resourceName := "cloudflare_workers_script." + rnd
+			resourceName := "zenthcloud_workers_script." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID, scriptName)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -368,8 +368,8 @@ func TestMigrateWorkersScript_WithBinding(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -421,10 +421,10 @@ func TestMigrateWorkersScript_MultipleBindingTypes(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			scriptName := fmt.Sprintf("test-script-%s", rnd)
-			resourceName := "cloudflare_workers_script." + rnd
+			resourceName := "zenthcloud_workers_script." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID, scriptName)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -438,8 +438,8 @@ func TestMigrateWorkersScript_MultipleBindingTypes(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},

@@ -83,7 +83,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf r2 super-slurper connectivity-precheck target",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/slurper/target/connectivity-precheck`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/slurper/target/connectivity-precheck`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Mar Witek <mar@cloudflare.com>
+From: Mar Witek <mar@zenthcloud.com>
 Date: Mon, 31 Aug 2026 16:37:34 +0200
 Subject: Disable preserve_most on Windows x64 before Clang 22
 

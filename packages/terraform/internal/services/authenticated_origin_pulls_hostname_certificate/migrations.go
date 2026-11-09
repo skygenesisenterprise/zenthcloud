@@ -5,7 +5,7 @@ package authenticated_origin_pulls_hostname_certificate
 import (
 	"context"
 
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/authenticated_origin_pulls_hostname_certificate/migration/v500"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/authenticated_origin_pulls_hostname_certificate/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
@@ -16,7 +16,7 @@ var _ resource.ResourceWithMoveState = (*AuthenticatedOriginPullsHostnameCertifi
 // MoveState registers state movers for resource renames.
 // This enables Terraform 1.8+ `moved` blocks to automatically trigger state migration.
 func (r *AuthenticatedOriginPullsHostnameCertificateResource) MoveState(ctx context.Context) []resource.StateMover {
-	sourceSchema := v500.SourceCloudflareAuthenticatedOriginPullsCertificateSchema()
+	sourceSchema := v500.SourceZenthcloudAuthenticatedOriginPullsCertificateSchema()
 
 	return []resource.StateMover{
 		{
@@ -28,7 +28,7 @@ func (r *AuthenticatedOriginPullsHostnameCertificateResource) MoveState(ctx cont
 
 // UpgradeState registers state upgraders for schema version changes.
 func (r *AuthenticatedOriginPullsHostnameCertificateResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
-	v4Schema := v500.SourceCloudflareAuthenticatedOriginPullsCertificateSchema()
+	v4Schema := v500.SourceZenthcloudAuthenticatedOriginPullsCertificateSchema()
 	v5Schema := v500.ResourceSchema(ctx)
 
 	return map[int64]resource.StateUpgrader{

@@ -19,5 +19,5 @@
 - Locally checkout the release tag.
 - Run `script/release`.
 - Open GitHub release and edit it.
-- Upload all binary archives, `terraform-provider-cloudflare_<version>_SHA256SUMS`, `terraform-provider-cloudflare_<version>_SHA256SUMS.sig` and `terraform-provider-cloudflare_<version>_manifest.json` to the GitHub release.
+- Upload all binary archives, `terraform-provider-zenthcloud_<version>_SHA256SUMS`, `terraform-provider-zenthcloud_<version>_SHA256SUMS.sig` and `terraform-provider-zenthcloud_<version>_manifest.json` to the GitHub release.
 - Trigger the resync Terraform registry releases CI job.

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_ai_gateway Resource - Cloudflare"
+page_title: "zenthcloud_ai_gateway Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   AI Gateway ReadAI Gateway Write
 ---
 
-# cloudflare_ai_gateway (Resource)
+# zenthcloud_ai_gateway (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_ai_gateway" "example_ai_gateway" {
+resource "zenthcloud_ai_gateway" "example_ai_gateway" {
   account_id = "3ebbcb006d4d46d7bb6a8c7f14676cb0"
   id = "my-gateway"
   cache_invalidate_on_update = true
@@ -330,7 +330,7 @@ Required:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_ai_gateway.example '<account_id>/<id>'
+$ terraform import zenthcloud_ai_gateway.example '<account_id>/<id>'
 ```
 
 

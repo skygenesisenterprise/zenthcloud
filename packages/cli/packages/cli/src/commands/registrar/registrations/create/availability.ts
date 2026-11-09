@@ -1,5 +1,5 @@
 import { domainToASCII } from "node:url";
-import type { Cloudflare } from "#lib/auth.js";
+import type { Zenthcloud } from "#lib/auth.js";
 import { withProgress } from "#lib/progress.js";
 import { sanitizeTerminalText } from "#lib/ui/sanitize.js";
 import checkDomains from "#operations/registrar/registrations/check.js";
@@ -27,7 +27,7 @@ export interface RegistrationPricing {
  * before presenting the final quote.
  */
 export async function requireRegistrationAvailability(
-	client: Cloudflare,
+	client: Zenthcloud,
 	accountId: string,
 	domain: string
 ): Promise<RegistrationPricing> {

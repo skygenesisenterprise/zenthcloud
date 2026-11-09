@@ -3,13 +3,13 @@ package worker_version_test
 import (
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/worker_version"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/worker_version"
 )
 
 // TestMainScriptBase64Unmarshal verifies that the main_script_base64 field
 // is properly unmarshaled from API responses. This field is returned by the
-// Cloudflare API for workers using the older "service worker syntax"
+// Zenthcloud API for workers using the older "service worker syntax"
 // (e.g., addEventListener('fetch', ...)) instead of ES modules.
 func TestMainScriptBase64Unmarshal(t *testing.T) {
 	t.Parallel()

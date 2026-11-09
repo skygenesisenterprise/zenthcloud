@@ -5,8 +5,8 @@ package ai_search_token
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/ai_search"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/ai_search"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -32,7 +32,7 @@ type AISearchTokenDataSourceModel struct {
 
 func (m *AISearchTokenDataSourceModel) toReadParams(_ context.Context) (params ai_search.TokenReadParams, diags diag.Diagnostics) {
 	params = ai_search.TokenReadParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -40,7 +40,7 @@ func (m *AISearchTokenDataSourceModel) toReadParams(_ context.Context) (params a
 
 func (m *AISearchTokenDataSourceModel) toListParams(_ context.Context) (params ai_search.TokenListParams, diags diag.Diagnostics) {
 	params = ai_search.TokenListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return

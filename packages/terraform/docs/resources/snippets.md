@@ -1,11 +1,11 @@
 ---
-page_title: "cloudflare_snippets Resource - Cloudflare"
+page_title: "zenthcloud_snippets Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_snippets (Resource)
+# zenthcloud_snippets (Resource)
 
 
 

@@ -247,7 +247,7 @@ POST /rest/api/1.0/projects/prometheus/repos/rules/pull-requests/1/comments
   Content-Type: application/json
 --- BODY ---
 text: |-
-    :stop_sign: **Bug** reported by [pint](https://cloudflare.github.io/pint/) **alerts/annotation** check.
+    :stop_sign: **Bug** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **alerts/annotation** check.
 
     <details>
     <summary>required annotation not set</summary>
@@ -279,7 +279,7 @@ text: |-
 
     ------
 
-    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/alerts/annotation.html).
+    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 
     <!-- pint -->
 severity: NORMAL
@@ -297,7 +297,7 @@ POST /rest/api/1.0/projects/prometheus/repos/rules/pull-requests/1/comments
   Content-Type: application/json
 --- BODY ---
 text: |-
-    :stop_sign: **Bug** reported by [pint](https://cloudflare.github.io/pint/) **rule/label** check.
+    :stop_sign: **Bug** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **rule/label** check.
 
     <details>
     <summary>required label not set</summary>
@@ -327,7 +327,7 @@ text: |-
 
     ------
 
-    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/rule/label.html).
+    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 
     <!-- pint -->
 severity: NORMAL
@@ -345,7 +345,7 @@ POST /rest/api/1.0/projects/prometheus/repos/rules/pull-requests/1/comments
   Content-Type: application/json
 --- BODY ---
 text: |-
-    :stop_sign: **Bug** reported by [pint](https://cloudflare.github.io/pint/) **rule/owner** check.
+    :stop_sign: **Bug** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **rule/owner** check.
 
     <details>
     <summary>missing owner</summary>
@@ -379,7 +379,7 @@ text: |-
 
     ------
 
-    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/rule/owner.html).
+    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 
     <!-- pint -->
 severity: NORMAL
@@ -397,7 +397,7 @@ POST /rest/api/1.0/projects/prometheus/repos/rules/pull-requests/1/comments
   Content-Type: application/json
 --- BODY ---
 text: |-
-    :stop_sign: **Fatal** reported by [pint](https://cloudflare.github.io/pint/) **promql/syntax** check.
+    :stop_sign: **Fatal** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **promql/syntax** check.
 
     <details>
     <summary>PromQL syntax error</summary>
@@ -415,7 +415,7 @@ text: |-
 
     ------
 
-    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/promql/syntax.html).
+    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 
     <!-- pint -->
 severity: NORMAL
@@ -433,7 +433,7 @@ POST /rest/api/1.0/projects/prometheus/repos/rules/pull-requests/1/comments
   Content-Type: application/json
 --- BODY ---
 text: |-
-    :warning: **Warning** reported by [pint](https://cloudflare.github.io/pint/) **alerts/comparison** check.
+    :warning: **Warning** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **alerts/comparison** check.
 
     <details>
     <summary>always firing alert</summary>
@@ -468,7 +468,7 @@ text: |-
 
     ------
 
-    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/alerts/comparison.html).
+    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 
     <!-- pint -->
 severity: NORMAL
@@ -486,7 +486,7 @@ POST /rest/api/1.0/projects/prometheus/repos/rules/pull-requests/1/comments
   Content-Type: application/json
 --- BODY ---
 text: |-
-    :information_source: **Information** reported by [pint](https://cloudflare.github.io/pint/) **alerts/for** check.
+    :information_source: **Information** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **alerts/for** check.
 
     <details>
     <summary>redundant field with default value</summary>
@@ -502,7 +502,7 @@ text: |-
 
     ------
 
-    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/alerts/for.html).
+    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 
     <!-- pint -->
 severity: NORMAL
@@ -520,7 +520,7 @@ POST /rest/api/1.0/projects/prometheus/repos/rules/pull-requests/1/comments
   Content-Type: application/json
 --- BODY ---
 text: |-
-    :stop_sign: **Bug** reported by [pint](https://cloudflare.github.io/pint/) **alerts/template** check.
+    :stop_sign: **Bug** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **alerts/template** check.
 
     <details>
     <summary>template uses non-existent label</summary>
@@ -543,7 +543,7 @@ text: |-
 
     ------
 
-    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/alerts/template.html).
+    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 
     <!-- pint -->
 severity: NORMAL
@@ -561,7 +561,7 @@ POST /rest/api/1.0/projects/prometheus/repos/rules/pull-requests/1/comments
   Content-Type: application/json
 --- BODY ---
 text: |-
-    :stop_sign: **Bug** reported by [pint](https://cloudflare.github.io/pint/) **alerts/template** check.
+    :stop_sign: **Bug** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **alerts/template** check.
 
     <details>
     <summary>value used in labels</summary>
@@ -577,7 +577,7 @@ text: |-
 
     ------
 
-    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/alerts/template.html).
+    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 
     <!-- pint -->
 severity: NORMAL
@@ -595,7 +595,7 @@ POST /rest/api/1.0/projects/prometheus/repos/rules/pull-requests/1/comments
   Content-Type: application/json
 --- BODY ---
 text: |-
-    :warning: **Warning** reported by [pint](https://cloudflare.github.io/pint/) **promql/regexp** check.
+    :warning: **Warning** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **promql/regexp** check.
 
     <details>
     <summary>redundant regexp</summary>
@@ -613,7 +613,7 @@ text: |-
 
     ------
 
-    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/promql/regexp.html).
+    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 
     <!-- pint -->
 severity: NORMAL
@@ -631,7 +631,7 @@ POST /rest/api/1.0/projects/prometheus/repos/rules/pull-requests/1/comments
   Content-Type: application/json
 --- BODY ---
 text: |-
-    :stop_sign: **Bug** reported by [pint](https://cloudflare.github.io/pint/) **promql/aggregate** check.
+    :stop_sign: **Bug** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **promql/aggregate** check.
 
     <details>
     <summary>required label is being removed via aggregation</summary>
@@ -649,7 +649,7 @@ text: |-
 
     ------
 
-    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/promql/aggregate.html).
+    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 
     <!-- pint -->
 severity: NORMAL

@@ -27,7 +27,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		)
 		.positional("identifier", {
 			type: "string",
-			description: "A Cloudflare-generated unique identifier for a media item.",
+			description: "A Zenthcloud-generated unique identifier for a media item.",
 			demandOption: true,
 		})
 		.option("access-rules", {
@@ -105,7 +105,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf stream videos token create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/stream/${argv["identifier"] == null ? "<identifier>" : encodeURIComponent(String(argv["identifier"]))}/token`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/stream/${argv["identifier"] == null ? "<identifier>" : encodeURIComponent(String(argv["identifier"]))}/token`,
 						pathParams: { identifier: String(argv["identifier"] ?? "") },
 						bodyKind: "json",
 						body:

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zone_cache_variants Data Source - Cloudflare"
+page_title: "zenthcloud_zone_cache_variants Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zone ReadZone Settings ReadZone Settings WriteZone Write
 ---
 
-# cloudflare_zone_cache_variants (Data Source)
+# zenthcloud_zone_cache_variants (Data Source)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_zone_cache_variants" "example_zone_cache_variants" {
+data "zenthcloud_zone_cache_variants" "example_zone_cache_variants" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```

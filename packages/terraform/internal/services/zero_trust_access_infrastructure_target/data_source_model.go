@@ -5,9 +5,9 @@ package zero_trust_access_infrastructure_target
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -31,7 +31,7 @@ type ZeroTrustAccessInfrastructureTargetDataSourceModel struct {
 
 func (m *ZeroTrustAccessInfrastructureTargetDataSourceModel) toReadParams(_ context.Context) (params zero_trust.AccessInfrastructureTargetGetParams, diags diag.Diagnostics) {
 	params = zero_trust.AccessInfrastructureTargetGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -66,59 +66,59 @@ func (m *ZeroTrustAccessInfrastructureTargetDataSourceModel) toListParams(_ cont
 	diags.Append(errs...)
 
 	params = zero_trust.AccessInfrastructureTargetListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
-		IPs:       cloudflare.F(mFilterIPs),
-		Tag:       cloudflare.F(mFilterTag),
-		TargetIDs: cloudflare.F(mFilterTargetIDs),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
+		IPs:       zenthcloud.F(mFilterIPs),
+		Tag:       zenthcloud.F(mFilterTag),
+		TargetIDs: zenthcloud.F(mFilterTargetIDs),
 	}
 
 	if !m.Filter.CreatedAfter.IsNull() {
-		params.CreatedAfter = cloudflare.F(mFilterCreatedAfter)
+		params.CreatedAfter = zenthcloud.F(mFilterCreatedAfter)
 	}
 	if !m.Filter.CreatedBefore.IsNull() {
-		params.CreatedBefore = cloudflare.F(mFilterCreatedBefore)
+		params.CreatedBefore = zenthcloud.F(mFilterCreatedBefore)
 	}
 	if !m.Filter.Direction.IsNull() {
-		params.Direction = cloudflare.F(zero_trust.AccessInfrastructureTargetListParamsDirection(m.Filter.Direction.ValueString()))
+		params.Direction = zenthcloud.F(zero_trust.AccessInfrastructureTargetListParamsDirection(m.Filter.Direction.ValueString()))
 	}
 	if !m.Filter.Hostname.IsNull() {
-		params.Hostname = cloudflare.F(m.Filter.Hostname.ValueString())
+		params.Hostname = zenthcloud.F(m.Filter.Hostname.ValueString())
 	}
 	if !m.Filter.HostnameContains.IsNull() {
-		params.HostnameContains = cloudflare.F(m.Filter.HostnameContains.ValueString())
+		params.HostnameContains = zenthcloud.F(m.Filter.HostnameContains.ValueString())
 	}
 	if !m.Filter.IPLike.IsNull() {
-		params.IPLike = cloudflare.F(m.Filter.IPLike.ValueString())
+		params.IPLike = zenthcloud.F(m.Filter.IPLike.ValueString())
 	}
 	if !m.Filter.IPV4.IsNull() {
-		params.IPV4 = cloudflare.F(m.Filter.IPV4.ValueString())
+		params.IPV4 = zenthcloud.F(m.Filter.IPV4.ValueString())
 	}
 	if !m.Filter.IPV6.IsNull() {
-		params.IPV6 = cloudflare.F(m.Filter.IPV6.ValueString())
+		params.IPV6 = zenthcloud.F(m.Filter.IPV6.ValueString())
 	}
 	if !m.Filter.IPV4End.IsNull() {
-		params.IPV4End = cloudflare.F(m.Filter.IPV4End.ValueString())
+		params.IPV4End = zenthcloud.F(m.Filter.IPV4End.ValueString())
 	}
 	if !m.Filter.IPV4Start.IsNull() {
-		params.IPV4Start = cloudflare.F(m.Filter.IPV4Start.ValueString())
+		params.IPV4Start = zenthcloud.F(m.Filter.IPV4Start.ValueString())
 	}
 	if !m.Filter.IPV6End.IsNull() {
-		params.IPV6End = cloudflare.F(m.Filter.IPV6End.ValueString())
+		params.IPV6End = zenthcloud.F(m.Filter.IPV6End.ValueString())
 	}
 	if !m.Filter.IPV6Start.IsNull() {
-		params.IPV6Start = cloudflare.F(m.Filter.IPV6Start.ValueString())
+		params.IPV6Start = zenthcloud.F(m.Filter.IPV6Start.ValueString())
 	}
 	if !m.Filter.ModifiedAfter.IsNull() {
-		params.ModifiedAfter = cloudflare.F(mFilterModifiedAfter)
+		params.ModifiedAfter = zenthcloud.F(mFilterModifiedAfter)
 	}
 	if !m.Filter.ModifiedBefore.IsNull() {
-		params.ModifiedBefore = cloudflare.F(mFilterModifiedBefore)
+		params.ModifiedBefore = zenthcloud.F(mFilterModifiedBefore)
 	}
 	if !m.Filter.Order.IsNull() {
-		params.Order = cloudflare.F(zero_trust.AccessInfrastructureTargetListParamsOrder(m.Filter.Order.ValueString()))
+		params.Order = zenthcloud.F(zero_trust.AccessInfrastructureTargetListParamsOrder(m.Filter.Order.ValueString()))
 	}
 	if !m.Filter.VirtualNetworkID.IsNull() {
-		params.VirtualNetworkID = cloudflare.F(m.Filter.VirtualNetworkID.ValueString())
+		params.VirtualNetworkID = zenthcloud.F(m.Filter.VirtualNetworkID.ValueString())
 	}
 
 	return

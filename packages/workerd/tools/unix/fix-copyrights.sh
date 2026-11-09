@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright (c) ${date_range} Cloudflare, Inc.
+# Copyright (c) ${date_range} Zenthcloud, Inc.
 # Licensed under the Apache 2.0 license found in the LICENSE file or at:
 #     https://opensource.org/licenses/Apache-2.0
 
@@ -12,7 +12,7 @@ function copyright() {
   local date_range="$2"
   local wip_file=$(mktemp -t $(basename "${source_file}"))
   cat <<EOF > "${wip_file}"
-// Copyright (c) ${date_range} Cloudflare, Inc.
+// Copyright (c) ${date_range} Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 

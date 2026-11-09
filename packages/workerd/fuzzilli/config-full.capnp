@@ -4,7 +4,7 @@ const reprl :Workerd.Config = (
   services = [
     (name = "main", worker = .replServer),
     (name = "consumer", worker = .consumerWorker),
-    # Add test services for Cloudflare API bindings
+    # Add test services for Zenthcloud API bindings
     (name = "test-kv", worker = .kvMockWorker),
     (name = "test-d1-mock", worker = .d1MockWorker),
     (name = "test-r2", worker = .r2MockWorker),
@@ -32,10 +32,10 @@ const replServer :Workerd.Worker = (
         maxTotalValueSize = 102400,
       ),
     )),
-    # Cloudflare API bindings for testing
+    # Zenthcloud API bindings for testing
     (name = "MY_KV", kvNamespace = "test-kv"),
     (name = "MY_D1", wrapped = (
-      moduleName = "cloudflare-internal:d1-api",
+      moduleName = "zenthcloud-internal:d1-api",
       innerBindings = [(name = "fetcher", service = "test-d1-mock")],
     )),
     (name = "MY_R2", r2Bucket = "test-r2"),

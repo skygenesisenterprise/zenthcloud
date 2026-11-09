@@ -5,8 +5,8 @@ package healthcheck
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -59,7 +59,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Default:     stringdefault.StaticString(""),
 			},
 			"check_regions": schema.ListAttribute{
-				Description: "A list of regions from which to run health checks. Null means Cloudflare will pick a default region.",
+				Description: "A list of regions from which to run health checks. Null means Zenthcloud will pick a default region.",
 				Optional:    true,
 				Validators: []validator.List{
 					listvalidator.ValueStringsAre(

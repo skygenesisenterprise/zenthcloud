@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_organization_profile Resource - Cloudflare"
+page_title: "zenthcloud_organization_profile Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_organization_profile (Resource)
+# zenthcloud_organization_profile (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_organization_profile" "example_organization_profile" {
+resource "zenthcloud_organization_profile" "example_organization_profile" {
   organization_id = "a7b9c3d2e8f4a1b5c6d0e9f2a3b7c4d8"
   business_address = "business_address"
   business_email = "business_email"

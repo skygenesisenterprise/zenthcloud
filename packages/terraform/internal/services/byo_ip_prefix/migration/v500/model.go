@@ -5,10 +5,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceCloudflareByoIPPrefixModel represents the source cloudflare_byo_ip_prefix state structure.
-// This corresponds to schema_version=0 from the legacy (SDKv2) cloudflare provider.
-// Reference: https://github.com/cloudflare/terraform-provider-cloudflare/blob/v4/internal/sdkv2provider/schema_cloudflare_byo_ip_prefix.go
-type SourceCloudflareByoIPPrefixModel struct {
+// SourceZenthcloudByoIPPrefixModel represents the source zenthcloud_byo_ip_prefix state structure.
+// This corresponds to schema_version=0 from the legacy (SDKv2) zenthcloud provider.
+// Reference: https://github.com/skygenesisenterprise/zenthcloud
+type SourceZenthcloudByoIPPrefixModel struct {
 	ID            types.String `tfsdk:"id"`
 	AccountID     types.String `tfsdk:"account_id"`
 	PrefixID      types.String `tfsdk:"prefix_id"`
@@ -16,7 +16,7 @@ type SourceCloudflareByoIPPrefixModel struct {
 	Advertisement types.String `tfsdk:"advertisement"`
 }
 
-// TargetByoIPPrefixModel represents the target cloudflare_byo_ip_prefix state structure (v500).
+// TargetByoIPPrefixModel represents the target zenthcloud_byo_ip_prefix state structure (v500).
 // Must match byo_ip_prefix.ByoIPPrefixModel exactly.
 type TargetByoIPPrefixModel struct {
 	ID                       types.String      `tfsdk:"id"`

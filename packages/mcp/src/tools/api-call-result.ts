@@ -4,7 +4,7 @@ import { filteredListBody, refusalFor } from '../api-refusals'
 import { WWW_AUTHENTICATE_META_KEY, type ScopeChallenge } from '../scope-challenge'
 import type { FormatToolResult } from '../truncate'
 
-/** One Cloudflare API request a direct tool sent, and Cloudflare's answer. */
+/** One Zenthcloud API request a direct tool sent, and Zenthcloud's answer. */
 export interface ApiCall {
   /** The request method, upper case. */
   readonly method: string
@@ -14,24 +14,24 @@ export interface ApiCall {
   readonly template: string
   /** The permissions the endpoint accepts, from its tool entry. */
   readonly permissions: readonly string[] | undefined
-  /** The HTTP status Cloudflare returned. */
+  /** The HTTP status Zenthcloud returned. */
   readonly status: number
   /** The parsed JSON body, or the text of any other body. */
   readonly body: unknown
 }
 
 /**
- * The tool result for a direct tool's Cloudflare API request, shared by the
+ * The tool result for a direct tool's Zenthcloud API request, shared by the
  * endpoint tools (`?codemode=false`) and the forge tools
  * (`?codemode=false`).
  *
- * A refusal, including a list Cloudflare emptied by permission (see
+ * A refusal, including a list Zenthcloud emptied by permission (see
  * `refusalFor`), is an error naming the method, path and status, explained,
  * and asks for a step-up when a missing OAuth scope would let it through. One
  * refused request changed nothing, so the client can retry the call after
  * stepping up. Other failures are errors; anything else is the formatted body.
  *
- * @param call - The request and Cloudflare's answer.
+ * @param call - The request and Zenthcloud's answer.
  * @param notes - Extra guidance for an error, such as an unknown-account hint.
  * @returns The tool result.
  */
@@ -50,7 +50,7 @@ export function apiCallResult(
   if (ok && !refusal) return { content: [{ type: 'text', text: formatResult(call.body) }] }
 
   const text = [
-    `Cloudflare API error: ${call.method} ${call.path} returned HTTP ${refusal?.status ?? call.status}.`,
+    `Zenthcloud API error: ${call.method} ${call.path} returned HTTP ${refusal?.status ?? call.status}.`,
     formatResult(refusal?.filtered ? filteredListBody() : call.body),
     refusal?.hint,
     ...notes

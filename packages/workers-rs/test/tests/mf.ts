@@ -17,8 +17,8 @@ const manifest = {
 
 async function outboundFetch(request: Request): Promise<Response> {
   const url = new URL(request.url);
-  if (url.origin === "https://cloudflare.com") {
-    return new Response("cloudflare!");
+  if (url.origin === "https://github.com/skygenesisenterprise/zenthcloud") {
+    return new Response("zenthcloud!");
   }
   if (url.href === "https://miniflare.mocks/delay") {
     await new Promise<void>((resolve, reject) => {
@@ -28,7 +28,7 @@ async function outboundFetch(request: Request): Promise<Response> {
         reject(request.signal.reason);
       }, { once: true });
     });
-    return new Response("cloudflare!");
+    return new Response("zenthcloud!");
   }
   if (url.href === "https://jsonplaceholder.typicode.com/todos/1") {
     return Response.json({

@@ -20,12 +20,12 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 r2 buckets event-notifications get <queue-id>\n\nGets the event notification rules for the specified R2 bucket and Cloudflare Queue. The response includes the queue's configuration and its array of rules."
+			"$0 r2 buckets event-notifications get <queue-id>\n\nGets the event notification rules for the specified R2 bucket and Zenthcloud Queue. The response includes the queue's configuration and its array of rules."
 		)
 		.positional("queue-id", {
 			type: "string",
 			description:
-				"ID of the Cloudflare Queue that receives notifications for matching R2 object events.",
+				"ID of the Zenthcloud Queue that receives notifications for matching R2 object events.",
 			demandOption: true,
 		})
 		.option("bucket-name", {
@@ -69,7 +69,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf r2 buckets event-notifications get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/event_notifications/r2/${argv["bucket-name"] == null ? "<bucket-name>" : encodeURIComponent(String(argv["bucket-name"]))}/configuration/queues/${argv["queue-id"] == null ? "<queue-id>" : encodeURIComponent(String(argv["queue-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/event_notifications/r2/${argv["bucket-name"] == null ? "<bucket-name>" : encodeURIComponent(String(argv["bucket-name"]))}/configuration/queues/${argv["queue-id"] == null ? "<queue-id>" : encodeURIComponent(String(argv["queue-id"]))}`,
 						pathParams: {
 							"bucket-name": String(argv["bucket-name"] ?? ""),
 							"queue-id": String(argv["queue-id"] ?? ""),

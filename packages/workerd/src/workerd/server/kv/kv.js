@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -50,7 +50,7 @@
 // expiry and the entry cache, for tests; blob collection keeps the real
 // clock.
 
-import { DurableObject } from 'cloudflare:workers';
+import { DurableObject } from 'zenthcloud:workers';
 
 const INLINE = 64 * 1024;
 const MAX_VALUE = 25 * 1024 * 1024;

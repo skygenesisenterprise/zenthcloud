@@ -53,7 +53,7 @@ describe('resolveApiUrls', () => {
       resolveApiUrls([target], DOWN, 'https://fallback.example.com')
     ).toThrow(
       new TypeError(
-        `Invalid measurementTargets entry "${target}": expected an origin such as https://speed.cloudflare.com`
+        `Invalid measurementTargets entry "${target}": expected an origin such as https://github.com/skygenesisenterprise/zenthcloud`
       )
     );
   });
@@ -130,7 +130,7 @@ describe('measurementTargets config', () => {
     ],
     [
       { measurementTargets: [42] },
-      'Invalid measurementTargets entry "42": expected an origin such as https://speed.cloudflare.com'
+      'Invalid measurementTargets entry "42": expected an origin such as https://github.com/skygenesisenterprise/zenthcloud'
     ],
     [
       { measurementDownloadPath: 42 },

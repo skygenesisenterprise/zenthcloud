@@ -5,8 +5,8 @@ package snippet_rules
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/snippets"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/snippets"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -22,7 +22,7 @@ type SnippetRulesDataSourceModel struct {
 
 func (m *SnippetRulesDataSourceModel) toReadParams(_ context.Context) (params snippets.RuleGetParams, diags diag.Diagnostics) {
 	params = snippets.RuleGetParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	return

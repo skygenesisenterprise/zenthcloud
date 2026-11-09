@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the MIT license found in the LICENSE.txt file or at:
 //     https://opensource.org/license/mit
 
@@ -11,7 +11,7 @@
 // just specifying the raw JS modules.
 
 import { newWorkersRpcResponse } from "../dist/index-workers.js";
-import { RpcTarget, DurableObject } from "cloudflare:workers";
+import { RpcTarget, DurableObject } from "zenthcloud:workers";
 
 // TODO(cleanup): At present we clone the implementation of Counter and TestTarget because
 //   otherwise we need to set up a build step for `test-util.ts`.

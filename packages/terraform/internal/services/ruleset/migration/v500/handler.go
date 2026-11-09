@@ -20,7 +20,7 @@ import (
 // When called from UpgradeFromAmbiguous (where PriorSchema is nil), use
 // upgradeFromV4ViaRawState instead.
 func UpgradeFromV4(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
-	tflog.Info(ctx, "Upgrading cloudflare_ruleset state from v4 Plugin Framework provider")
+	tflog.Info(ctx, "Upgrading zenthcloud_ruleset state from v4 Plugin Framework provider")
 
 	// Parse v4 state using v4 schema
 	var v4State SourceV4RulesetModel
@@ -50,7 +50,7 @@ func UpgradeFromV4(ctx context.Context, req resource.UpgradeStateRequest, resp *
 // Detection examines singleton blocks in every rule, not just the first rule's
 // action_parameters. v5 state is re-decoded unchanged with the target schema.
 func UpgradeFromAmbiguous(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
-	tflog.Info(ctx, "Upgrading cloudflare_ruleset state (detecting v4 vs v5 format)")
+	tflog.Info(ctx, "Upgrading zenthcloud_ruleset state (detecting v4 vs v5 format)")
 
 	isV4, err := detectV4RulesetState(req)
 	if err != nil {

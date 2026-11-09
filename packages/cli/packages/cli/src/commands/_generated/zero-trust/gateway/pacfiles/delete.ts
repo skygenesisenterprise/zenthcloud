@@ -63,7 +63,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust gateway pacfiles delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/gateway/pacfiles/${argv["pacfile-id"] == null ? "<pacfile-id>" : encodeURIComponent(String(argv["pacfile-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/gateway/pacfiles/${argv["pacfile-id"] == null ? "<pacfile-id>" : encodeURIComponent(String(argv["pacfile-id"]))}`,
 						pathParams: { "pacfile-id": String(argv["pacfile-id"] ?? "") },
 						bodyKind: "none",
 					});

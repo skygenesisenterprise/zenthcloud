@@ -3,7 +3,7 @@ package zero_trust_access_identity_provider
 import (
 	"context"
 
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_access_identity_provider/migration/v500"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_access_identity_provider/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -18,12 +18,12 @@ func init() {
 var _ resource.ResourceWithMoveState = (*ZeroTrustAccessIdentityProviderResource)(nil)
 var _ resource.ResourceWithUpgradeState = (*ZeroTrustAccessIdentityProviderResource)(nil)
 
-// MoveState handles moves from cloudflare_access_identity_provider to cloudflare_zero_trust_access_identity_provider.
+// MoveState handles moves from zenthcloud_access_identity_provider to zenthcloud_zero_trust_access_identity_provider.
 // This is triggered when users use the `moved` block (Terraform 1.8+):
 //
 //	moved {
-//	    from = cloudflare_access_identity_provider.example
-//	    to   = cloudflare_zero_trust_access_identity_provider.example
+//	    from = zenthcloud_access_identity_provider.example
+//	    to   = zenthcloud_zero_trust_access_identity_provider.example
 //	}
 func (r *ZeroTrustAccessIdentityProviderResource) MoveState(ctx context.Context) []resource.StateMover {
 	sourceSchema := v500.SourceAccessIdentityProviderSchema()

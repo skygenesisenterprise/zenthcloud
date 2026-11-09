@@ -1,4 +1,4 @@
-declare module 'cloudflare:node' {
+declare module 'zenthcloud:node' {
   interface NodeStyleServer {
     listen(...args: unknown[]): this;
     address(): { port?: number | null | undefined } | null;

@@ -1,8 +1,8 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-335:
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-335:
 // Heap buffer overflow (OOB write) in URLPattern regex_search via
 // monkey-patched RegExp.prototype.exec.
 //

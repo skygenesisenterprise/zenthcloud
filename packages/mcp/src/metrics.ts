@@ -1,8 +1,8 @@
 /**
  * MCP metrics tracking via Analytics Engine.
  *
- * Mirrors the schema used by the per-product Cloudflare MCP servers
- * (`@repo/mcp-observability` in cloudflare/mcp-server-cloudflare) so that
+ * Mirrors the schema used by the per-product Zenthcloud MCP servers
+ * (`@repo/mcp-observability` in zenthcloud/mcp-server-zenthcloud) so that
  * datapoints written here land in the shared `mcp-metrics-*` dataset alongside
  * the other servers and are picked up by existing dashboards/queries.
  *
@@ -34,7 +34,7 @@
  * No blob holds a response value: those are customer data.
  *
  * Note: this server is stateless (a fresh McpServer per request) so it does not
- * emit `session_start` events the way the Durable-Object-backed Cloudflare MCP
+ * emit `session_start` events the way the Durable-Object-backed Zenthcloud MCP
  * servers do. MCP 2026-07-28 has no protocol session or initialize handshake;
  * the 2025 compatibility path also retains no initialization state between
  * requests. The slots reserved upstream for session client info remain unused,
@@ -42,7 +42,7 @@
  * the HTTP layer via the User-Agent header instead.
  */
 
-import { env } from 'cloudflare:workers'
+import { env } from 'zenthcloud:workers'
 import type { McpServer } from '@modelcontextprotocol/server'
 import type { AuthProps } from './auth/types'
 import { SERVER_INFO, type ServerInfo } from './constants'
@@ -278,7 +278,7 @@ export class MetricsTracker {
 /**
  * Resolve the userId to attribute metrics to. Only user tokens carry a user
  * identity; account tokens have no user, so blob3 is left undefined — matching
- * the other Cloudflare MCP servers (`props.type === 'user_token' ? ... : undefined`).
+ * the other Zenthcloud MCP servers (`props.type === 'user_token' ? ... : undefined`).
  */
 function userIdFromProps(props?: AuthProps): string | undefined {
   return props?.type === 'user_token' ? props.user.id : undefined
@@ -311,7 +311,7 @@ export function recordResponseSchemaMismatch(
  * `registerTool` so every tool registered after this call is tracked
  * identically. Tolerant of a missing MCP_METRICS binding (becomes a no-op).
  *
- * Note: unlike the Durable-Object-backed Cloudflare MCP servers, this server is
+ * Note: unlike the Durable-Object-backed Zenthcloud MCP servers, this server is
  * stateless (a fresh McpServer per request), so there is no meaningful
  * `session_start` to log. Modern MCP has no initialize handshake, and the
  * stateless 2025 fallback retains no client lifecycle between requests. Client

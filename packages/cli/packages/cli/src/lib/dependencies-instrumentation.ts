@@ -1,8 +1,8 @@
-import { UserError } from "@cloudflare/workers-utils";
-import type { ContainerlessConfig } from "@cloudflare/deploy-helpers";
+import { UserError } from "@zenthcloud/workers-utils";
+import type { ContainerlessConfig } from "@zenthcloud/deploy-helpers";
 
 export const DEPENDENCIES_INSTRUMENTATION_ENV_VAR =
-	"CLOUDFLARE_DEPENDENCIES_INSTRUMENTATION";
+	"ZENTHCLOUD_DEPENDENCIES_INSTRUMENTATION";
 
 export function applyDependenciesInstrumentationEnv(
 	config: ContainerlessConfig

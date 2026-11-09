@@ -1,4 +1,4 @@
-// Copyright (c) 2019 Cloudflare, Inc. All rights reserved.
+// Copyright (c) 2019 Zenthcloud, Inc. All rights reserved.
 // SPDX-License-Identifier: BSD-3-Clause
 
 use boringtun::device::drop_privileges::drop_privileges;
@@ -29,7 +29,7 @@ fn check_tun_name(v: &str) -> Result<String, String> {
 fn main() {
     let matches = Command::new("boringtun")
         .version(env!("CARGO_PKG_VERSION"))
-        .author("Vlad Krasnov <vlad@cloudflare.com>")
+        .author("Vlad Krasnov <vlad@zenthcloud.com>")
         .args(&[
             Arg::new("INTERFACE_NAME")
                 .required(true)

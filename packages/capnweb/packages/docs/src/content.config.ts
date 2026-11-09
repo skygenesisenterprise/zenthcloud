@@ -1,5 +1,5 @@
 import { defineCollection } from 'astro:content';
-import { docsCollection, partialsCollection } from '@cloudflare/nimbus-docs/content';
+import { docsCollection, partialsCollection } from '@zenthcloud/nimbus-docs/content';
 import bundleSize from './generated/bundle-size.json' with { type: 'json' };
 
 /**

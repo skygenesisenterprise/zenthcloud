@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/rulesets"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/rulesets"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -20,9 +20,9 @@ import (
 )
 
 var (
-	accountID = os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	zoneID    = os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain    = os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID = os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	zoneID    = os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain    = os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	configVariables = config.Variables{
 		"account_id": config.StringVariable(accountID),
@@ -36,8 +36,8 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_ruleset", &resource.Sweeper{
-		Name: "cloudflare_ruleset",
+	resource.AddTestSweepers("zenthcloud_ruleset", &resource.Sweeper{
+		Name: "zenthcloud_ruleset",
 		F: func(region string) error {
 			ctx := context.Background()
 
@@ -51,8 +51,8 @@ func init() {
 			var entrypointRulesets, customRulesets []ruleset
 
 			for _, params := range []rulesets.RulesetListParams{
-				{AccountID: cloudflare.F(accountID)},
-				{ZoneID: cloudflare.F(zoneID)},
+				{AccountID: zenthcloud.F(accountID)},
+				{ZoneID: zenthcloud.F(zoneID)},
 			} {
 				iter := client.Rulesets.ListAutoPaging(ctx, params)
 
@@ -89,7 +89,7 @@ func init() {
 	})
 }
 
-func TestAccCloudflareRulesets(t *testing.T) {
+func TestAccZenthcloudRulesets(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -100,33 +100,33 @@ func TestAccCloudflareRulesets(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_first_ruleset",
+							"zenthcloud_ruleset.my_first_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_second_ruleset",
+							"zenthcloud_ruleset.my_second_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_third_ruleset",
+							"zenthcloud_ruleset.my_third_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_fourth_ruleset",
+							"zenthcloud_ruleset.my_fourth_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 					},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_rulesets.my_account_rulesets",
+						"data.zenthcloud_rulesets.my_account_rulesets",
 						tfjsonpath.New("rulesets"),
 						knownvalue.SetPartial([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
 								"id":           knownvalue.StringExact("3b64149bfa6e4220bbbc2bd6db589552"),
 								"version":      knownvalue.NotNull(),
-								"name":         knownvalue.StringExact("Cloudflare L3/4 DDoS Ruleset"),
-								"description":  knownvalue.StringExact("This is the Managed Cloudflare L3/4 DDoS Ruleset. Cloudflare routinely adds signatures to address new attack vectors. Additional configuration allows you to customize the sensitivity of each rule and the performed mitigation action."),
+								"name":         knownvalue.StringExact("Zenthcloud L3/4 DDoS Ruleset"),
+								"description":  knownvalue.StringExact("This is the Managed Zenthcloud L3/4 DDoS Ruleset. Zenthcloud routinely adds signatures to address new attack vectors. Additional configuration allows you to customize the sensitivity of each rule and the performed mitigation action."),
 								"phase":        knownvalue.StringExact("ddos_l4"),
 								"kind":         knownvalue.StringExact("managed"),
 								"last_updated": knownvalue.NotNull(),
@@ -134,8 +134,8 @@ func TestAccCloudflareRulesets(t *testing.T) {
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
 								"id":           knownvalue.StringExact("77454fe2d30c4220b5701f6fdfb893ba"),
 								"version":      knownvalue.NotNull(),
-								"name":         knownvalue.StringExact("Cloudflare Managed Free Ruleset"),
-								"description":  knownvalue.StringExact("Created by the Cloudflare security team, this ruleset is designed to provide protection for free zones"),
+								"name":         knownvalue.StringExact("Zenthcloud Managed Free Ruleset"),
+								"description":  knownvalue.StringExact("Created by the Zenthcloud security team, this ruleset is designed to provide protection for free zones"),
 								"phase":        knownvalue.StringExact("http_request_firewall_managed"),
 								"kind":         knownvalue.StringExact("managed"),
 								"last_updated": knownvalue.NotNull(),
@@ -161,14 +161,14 @@ func TestAccCloudflareRulesets(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_rulesets.my_zone_rulesets",
+						"data.zenthcloud_rulesets.my_zone_rulesets",
 						tfjsonpath.New("rulesets"),
 						knownvalue.SetPartial([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
 								"id":           knownvalue.StringExact("70339d97bdb34195bbf054b1ebe81f76"),
 								"version":      knownvalue.NotNull(),
-								"name":         knownvalue.StringExact("Cloudflare Normalization Ruleset"),
-								"description":  knownvalue.StringExact("Created by the Cloudflare security team, this ruleset provides normalization on the URL path"),
+								"name":         knownvalue.StringExact("Zenthcloud Normalization Ruleset"),
+								"description":  knownvalue.StringExact("Created by the Zenthcloud security team, this ruleset provides normalization on the URL path"),
 								"phase":        knownvalue.StringExact("http_request_sanitize"),
 								"kind":         knownvalue.StringExact("managed"),
 								"last_updated": knownvalue.NotNull(),
@@ -176,8 +176,8 @@ func TestAccCloudflareRulesets(t *testing.T) {
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
 								"id":           knownvalue.StringExact("77454fe2d30c4220b5701f6fdfb893ba"),
 								"version":      knownvalue.NotNull(),
-								"name":         knownvalue.StringExact("Cloudflare Managed Free Ruleset"),
-								"description":  knownvalue.StringExact("Created by the Cloudflare security team, this ruleset is designed to provide protection for free zones"),
+								"name":         knownvalue.StringExact("Zenthcloud Managed Free Ruleset"),
+								"description":  knownvalue.StringExact("Created by the Zenthcloud security team, this ruleset is designed to provide protection for free zones"),
 								"phase":        knownvalue.StringExact("http_request_firewall_managed"),
 								"kind":         knownvalue.StringExact("managed"),
 								"last_updated": knownvalue.NotNull(),
@@ -208,7 +208,7 @@ func TestAccCloudflareRulesets(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_Kind(t *testing.T) {
+func TestAccZenthcloudRuleset_Kind(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -219,11 +219,11 @@ func TestAccCloudflareRuleset_Kind(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("kind"),
 							knownvalue.StringExact("root"),
 						),
@@ -231,12 +231,12 @@ func TestAccCloudflareRuleset_Kind(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("kind"),
 						knownvalue.StringExact("root"),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("kind"),
 						knownvalue.StringExact("root"),
 					),
@@ -248,11 +248,11 @@ func TestAccCloudflareRuleset_Kind(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionReplace,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("kind"),
 							knownvalue.StringExact("custom"),
 						),
@@ -260,12 +260,12 @@ func TestAccCloudflareRuleset_Kind(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("kind"),
 						knownvalue.StringExact("custom"),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("kind"),
 						knownvalue.StringExact("custom"),
 					),
@@ -275,7 +275,7 @@ func TestAccCloudflareRuleset_Kind(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_Name(t *testing.T) {
+func TestAccZenthcloudRuleset_Name(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -286,11 +286,11 @@ func TestAccCloudflareRuleset_Name(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("name"),
 							knownvalue.StringExact("My ruleset"),
 						),
@@ -298,12 +298,12 @@ func TestAccCloudflareRuleset_Name(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("name"),
 						knownvalue.StringExact("My ruleset"),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("name"),
 						knownvalue.StringExact("My ruleset"),
 					),
@@ -315,11 +315,11 @@ func TestAccCloudflareRuleset_Name(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionReplace,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("name"),
 							knownvalue.StringExact("My updated ruleset"),
 						),
@@ -327,12 +327,12 @@ func TestAccCloudflareRuleset_Name(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("name"),
 						knownvalue.StringExact("My updated ruleset"),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("name"),
 						knownvalue.StringExact("My updated ruleset"),
 					),
@@ -350,7 +350,7 @@ var refusedDeleteErrorPattern = regexp.MustCompile(
 	`(?s)DELETE\s.*/rulesets/[0-9a-f]{32}.*400 Bad Request`,
 )
 
-func TestAccCloudflareRuleset_DryRunInvalidOnCreate(t *testing.T) {
+func TestAccZenthcloudRuleset_DryRunInvalidOnCreate(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -370,7 +370,7 @@ func TestAccCloudflareRuleset_DryRunInvalidOnCreate(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_DryRunInvalidOnUpdate(t *testing.T) {
+func TestAccZenthcloudRuleset_DryRunInvalidOnUpdate(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -389,7 +389,7 @@ func TestAccCloudflareRuleset_DryRunInvalidOnUpdate(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_DryRunSkippedWhenDependencyIsUnknown(t *testing.T) {
+func TestAccZenthcloudRuleset_DryRunSkippedWhenDependencyIsUnknown(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -409,7 +409,7 @@ func TestAccCloudflareRuleset_DryRunSkippedWhenDependencyIsUnknown(t *testing.T)
 	})
 }
 
-func TestAccCloudflareRuleset_DryRunSkippedWhenRefIsUnknown(t *testing.T) {
+func TestAccZenthcloudRuleset_DryRunSkippedWhenRefIsUnknown(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -429,7 +429,7 @@ func TestAccCloudflareRuleset_DryRunSkippedWhenRefIsUnknown(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_DryRunDependencyOnCreateThenInvalidUpdate(t *testing.T) {
+func TestAccZenthcloudRuleset_DryRunDependencyOnCreateThenInvalidUpdate(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -448,7 +448,7 @@ func TestAccCloudflareRuleset_DryRunDependencyOnCreateThenInvalidUpdate(t *testi
 	})
 }
 
-func TestAccCloudflareRuleset_DryRunSkippedOnReferencedReplacement(t *testing.T) {
+func TestAccZenthcloudRuleset_DryRunSkippedOnReferencedReplacement(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -472,7 +472,7 @@ func TestAccCloudflareRuleset_DryRunSkippedOnReferencedReplacement(t *testing.T)
 	})
 }
 
-func TestAccCloudflareRuleset_DryRunSkippedOnInvalidEntryPointReplacement(t *testing.T) {
+func TestAccZenthcloudRuleset_DryRunSkippedOnInvalidEntryPointReplacement(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -496,7 +496,7 @@ func TestAccCloudflareRuleset_DryRunSkippedOnInvalidEntryPointReplacement(t *tes
 	})
 }
 
-func TestAccCloudflareRuleset_DryRunInvalidUpdateWithNewDependency(t *testing.T) {
+func TestAccZenthcloudRuleset_DryRunInvalidUpdateWithNewDependency(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -520,7 +520,7 @@ func TestAccCloudflareRuleset_DryRunInvalidUpdateWithNewDependency(t *testing.T)
 	})
 }
 
-func TestAccCloudflareRuleset_Phase(t *testing.T) {
+func TestAccZenthcloudRuleset_Phase(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -531,11 +531,11 @@ func TestAccCloudflareRuleset_Phase(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("phase"),
 							knownvalue.StringExact("http_request_firewall_custom"),
 						),
@@ -543,12 +543,12 @@ func TestAccCloudflareRuleset_Phase(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("phase"),
 						knownvalue.StringExact("http_request_firewall_custom"),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("phase"),
 						knownvalue.StringExact("http_request_firewall_custom"),
 					),
@@ -560,11 +560,11 @@ func TestAccCloudflareRuleset_Phase(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionReplace,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("phase"),
 							knownvalue.StringExact("http_request_firewall_managed"),
 						),
@@ -572,12 +572,12 @@ func TestAccCloudflareRuleset_Phase(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("phase"),
 						knownvalue.StringExact("http_request_firewall_managed"),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("phase"),
 						knownvalue.StringExact("http_request_firewall_managed"),
 					),
@@ -587,7 +587,7 @@ func TestAccCloudflareRuleset_Phase(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_Description(t *testing.T) {
+func TestAccZenthcloudRuleset_Description(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -598,11 +598,11 @@ func TestAccCloudflareRuleset_Description(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("description"),
 							knownvalue.StringExact(""),
 						),
@@ -610,12 +610,12 @@ func TestAccCloudflareRuleset_Description(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("description"),
 						knownvalue.StringExact(""),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("description"),
 						knownvalue.StringExact(""),
 					),
@@ -631,12 +631,12 @@ func TestAccCloudflareRuleset_Description(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("description"),
 						knownvalue.StringExact(""),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("description"),
 						knownvalue.StringExact(""),
 					),
@@ -648,11 +648,11 @@ func TestAccCloudflareRuleset_Description(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("description"),
 							knownvalue.StringExact("My ruleset description"),
 						),
@@ -660,12 +660,12 @@ func TestAccCloudflareRuleset_Description(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("description"),
 						knownvalue.StringExact("My ruleset description"),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("description"),
 						knownvalue.StringExact("My ruleset description"),
 					),
@@ -675,7 +675,7 @@ func TestAccCloudflareRuleset_Description(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_WarningOnUpdate(t *testing.T) {
+func TestAccZenthcloudRuleset_WarningOnUpdate(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -689,7 +689,7 @@ func TestAccCloudflareRuleset_WarningOnUpdate(t *testing.T) {
 				ConfigVariables: configVariables,
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("description"),
 						knownvalue.StringExact(strings.Repeat("0123456789", 410)),
 					),
@@ -699,7 +699,7 @@ func TestAccCloudflareRuleset_WarningOnUpdate(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_Rules(t *testing.T) {
+func TestAccZenthcloudRuleset_Rules(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -710,11 +710,11 @@ func TestAccCloudflareRuleset_Rules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{}),
 						),
@@ -722,12 +722,12 @@ func TestAccCloudflareRuleset_Rules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{}),
 					),
@@ -743,12 +743,12 @@ func TestAccCloudflareRuleset_Rules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{}),
 					),
@@ -758,7 +758,7 @@ func TestAccCloudflareRuleset_Rules(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_RulesActionParameters(t *testing.T) {
+func TestAccZenthcloudRuleset_RulesActionParameters(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -769,11 +769,11 @@ func TestAccCloudflareRuleset_RulesActionParameters(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -785,7 +785,7 @@ func TestAccCloudflareRuleset_RulesActionParameters(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -794,7 +794,7 @@ func TestAccCloudflareRuleset_RulesActionParameters(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -814,7 +814,7 @@ func TestAccCloudflareRuleset_RulesActionParameters(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -823,7 +823,7 @@ func TestAccCloudflareRuleset_RulesActionParameters(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -837,7 +837,7 @@ func TestAccCloudflareRuleset_RulesActionParameters(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_RulesDescription(t *testing.T) {
+func TestAccZenthcloudRuleset_RulesDescription(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -848,11 +848,11 @@ func TestAccCloudflareRuleset_RulesDescription(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -864,7 +864,7 @@ func TestAccCloudflareRuleset_RulesDescription(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -873,7 +873,7 @@ func TestAccCloudflareRuleset_RulesDescription(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -893,7 +893,7 @@ func TestAccCloudflareRuleset_RulesDescription(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -902,7 +902,7 @@ func TestAccCloudflareRuleset_RulesDescription(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -918,11 +918,11 @@ func TestAccCloudflareRuleset_RulesDescription(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -934,7 +934,7 @@ func TestAccCloudflareRuleset_RulesDescription(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -943,7 +943,7 @@ func TestAccCloudflareRuleset_RulesDescription(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -957,7 +957,7 @@ func TestAccCloudflareRuleset_RulesDescription(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_RulesEnabled(t *testing.T) {
+func TestAccZenthcloudRuleset_RulesEnabled(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -968,11 +968,11 @@ func TestAccCloudflareRuleset_RulesEnabled(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -984,7 +984,7 @@ func TestAccCloudflareRuleset_RulesEnabled(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -993,7 +993,7 @@ func TestAccCloudflareRuleset_RulesEnabled(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1013,7 +1013,7 @@ func TestAccCloudflareRuleset_RulesEnabled(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1022,7 +1022,7 @@ func TestAccCloudflareRuleset_RulesEnabled(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1038,11 +1038,11 @@ func TestAccCloudflareRuleset_RulesEnabled(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1054,7 +1054,7 @@ func TestAccCloudflareRuleset_RulesEnabled(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1063,7 +1063,7 @@ func TestAccCloudflareRuleset_RulesEnabled(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1077,7 +1077,7 @@ func TestAccCloudflareRuleset_RulesEnabled(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_RulesExposedCredentialCheck(t *testing.T) {
+func TestAccZenthcloudRuleset_RulesExposedCredentialCheck(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -1088,11 +1088,11 @@ func TestAccCloudflareRuleset_RulesExposedCredentialCheck(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1107,7 +1107,7 @@ func TestAccCloudflareRuleset_RulesExposedCredentialCheck(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1119,7 +1119,7 @@ func TestAccCloudflareRuleset_RulesExposedCredentialCheck(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1138,11 +1138,11 @@ func TestAccCloudflareRuleset_RulesExposedCredentialCheck(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1157,7 +1157,7 @@ func TestAccCloudflareRuleset_RulesExposedCredentialCheck(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1169,7 +1169,7 @@ func TestAccCloudflareRuleset_RulesExposedCredentialCheck(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1186,7 +1186,7 @@ func TestAccCloudflareRuleset_RulesExposedCredentialCheck(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_RulesLogging(t *testing.T) {
+func TestAccZenthcloudRuleset_RulesLogging(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -1197,25 +1197,25 @@ func TestAccCloudflareRuleset_RulesLogging(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.NotNull(),
 							}),
 						),
 						plancheck.ExpectUnknownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("logging"),
 						),
 					},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1226,7 +1226,7 @@ func TestAccCloudflareRuleset_RulesLogging(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1248,7 +1248,7 @@ func TestAccCloudflareRuleset_RulesLogging(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1259,7 +1259,7 @@ func TestAccCloudflareRuleset_RulesLogging(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1277,11 +1277,11 @@ func TestAccCloudflareRuleset_RulesLogging(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1295,7 +1295,7 @@ func TestAccCloudflareRuleset_RulesLogging(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1306,7 +1306,7 @@ func TestAccCloudflareRuleset_RulesLogging(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1333,11 +1333,11 @@ func TestAccCloudflareRuleset_RulesLogging(t *testing.T) {
 						ConfigPlanChecks: resource.ConfigPlanChecks{
 							PreApply: []plancheck.PlanCheck{
 								plancheck.ExpectResourceAction(
-									"cloudflare_ruleset.my_ruleset",
+									"zenthcloud_ruleset.my_ruleset",
 									plancheck.ResourceActionCreate,
 								),
 								plancheck.ExpectKnownValue(
-									"cloudflare_ruleset.my_ruleset",
+									"zenthcloud_ruleset.my_ruleset",
 									tfjsonpath.New("rules"),
 									knownvalue.ListExact([]knownvalue.Check{
 										knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1347,18 +1347,18 @@ func TestAccCloudflareRuleset_RulesLogging(t *testing.T) {
 									}),
 								),
 								plancheck.ExpectUnknownValue(
-									"cloudflare_ruleset.my_ruleset",
+									"zenthcloud_ruleset.my_ruleset",
 									tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("id"),
 								),
 								plancheck.ExpectUnknownValue(
-									"cloudflare_ruleset.my_ruleset",
+									"zenthcloud_ruleset.my_ruleset",
 									tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("logging"),
 								),
 							},
 						},
 						ConfigStateChecks: []statecheck.StateCheck{
 							statecheck.ExpectKnownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1372,7 +1372,7 @@ func TestAccCloudflareRuleset_RulesLogging(t *testing.T) {
 								}),
 							),
 							statecheck.ExpectKnownValue(
-								"data.cloudflare_ruleset.my_ruleset",
+								"data.zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1393,11 +1393,11 @@ func TestAccCloudflareRuleset_RulesLogging(t *testing.T) {
 						ConfigPlanChecks: resource.ConfigPlanChecks{
 							PreApply: []plancheck.PlanCheck{
 								plancheck.ExpectResourceAction(
-									"cloudflare_ruleset.my_ruleset",
+									"zenthcloud_ruleset.my_ruleset",
 									plancheck.ResourceActionUpdate,
 								),
 								plancheck.ExpectKnownValue(
-									"cloudflare_ruleset.my_ruleset",
+									"zenthcloud_ruleset.my_ruleset",
 									tfjsonpath.New("rules"),
 									knownvalue.ListExact([]knownvalue.Check{
 										knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1408,14 +1408,14 @@ func TestAccCloudflareRuleset_RulesLogging(t *testing.T) {
 									}),
 								),
 								plancheck.ExpectUnknownValue(
-									"cloudflare_ruleset.my_ruleset",
+									"zenthcloud_ruleset.my_ruleset",
 									tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("logging"),
 								),
 							},
 						},
 						ConfigStateChecks: []statecheck.StateCheck{
 							statecheck.ExpectKnownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1427,7 +1427,7 @@ func TestAccCloudflareRuleset_RulesLogging(t *testing.T) {
 								}),
 							),
 							statecheck.ExpectKnownValue(
-								"data.cloudflare_ruleset.my_ruleset",
+								"data.zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1455,11 +1455,11 @@ func TestAccCloudflareRuleset_RulesLogging(t *testing.T) {
 						ConfigPlanChecks: resource.ConfigPlanChecks{
 							PreApply: []plancheck.PlanCheck{
 								plancheck.ExpectResourceAction(
-									"cloudflare_ruleset.my_ruleset",
+									"zenthcloud_ruleset.my_ruleset",
 									plancheck.ResourceActionCreate,
 								),
 								plancheck.ExpectKnownValue(
-									"cloudflare_ruleset.my_ruleset",
+									"zenthcloud_ruleset.my_ruleset",
 									tfjsonpath.New("rules"),
 									knownvalue.ListExact([]knownvalue.Check{
 										knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1469,18 +1469,18 @@ func TestAccCloudflareRuleset_RulesLogging(t *testing.T) {
 									}),
 								),
 								plancheck.ExpectUnknownValue(
-									"cloudflare_ruleset.my_ruleset",
+									"zenthcloud_ruleset.my_ruleset",
 									tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("id"),
 								),
 								plancheck.ExpectUnknownValue(
-									"cloudflare_ruleset.my_ruleset",
+									"zenthcloud_ruleset.my_ruleset",
 									tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("logging"),
 								),
 							},
 						},
 						ConfigStateChecks: []statecheck.StateCheck{
 							statecheck.ExpectKnownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1494,7 +1494,7 @@ func TestAccCloudflareRuleset_RulesLogging(t *testing.T) {
 								}),
 							),
 							statecheck.ExpectKnownValue(
-								"data.cloudflare_ruleset.my_ruleset",
+								"data.zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1515,11 +1515,11 @@ func TestAccCloudflareRuleset_RulesLogging(t *testing.T) {
 						ConfigPlanChecks: resource.ConfigPlanChecks{
 							PreApply: []plancheck.PlanCheck{
 								plancheck.ExpectResourceAction(
-									"cloudflare_ruleset.my_ruleset",
+									"zenthcloud_ruleset.my_ruleset",
 									plancheck.ResourceActionUpdate,
 								),
 								plancheck.ExpectKnownValue(
-									"cloudflare_ruleset.my_ruleset",
+									"zenthcloud_ruleset.my_ruleset",
 									tfjsonpath.New("rules"),
 									knownvalue.ListExact([]knownvalue.Check{
 										knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1536,7 +1536,7 @@ func TestAccCloudflareRuleset_RulesLogging(t *testing.T) {
 						},
 						ConfigStateChecks: []statecheck.StateCheck{
 							statecheck.ExpectKnownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1550,7 +1550,7 @@ func TestAccCloudflareRuleset_RulesLogging(t *testing.T) {
 								}),
 							),
 							statecheck.ExpectKnownValue(
-								"data.cloudflare_ruleset.my_ruleset",
+								"data.zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1580,11 +1580,11 @@ func TestAccCloudflareRuleset_RulesLogging(t *testing.T) {
 						ConfigPlanChecks: resource.ConfigPlanChecks{
 							PreApply: []plancheck.PlanCheck{
 								plancheck.ExpectResourceAction(
-									"cloudflare_ruleset.my_ruleset",
+									"zenthcloud_ruleset.my_ruleset",
 									plancheck.ResourceActionCreate,
 								),
 								plancheck.ExpectKnownValue(
-									"cloudflare_ruleset.my_ruleset",
+									"zenthcloud_ruleset.my_ruleset",
 									tfjsonpath.New("rules"),
 									knownvalue.ListExact([]knownvalue.Check{
 										knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1594,18 +1594,18 @@ func TestAccCloudflareRuleset_RulesLogging(t *testing.T) {
 									}),
 								),
 								plancheck.ExpectUnknownValue(
-									"cloudflare_ruleset.my_ruleset",
+									"zenthcloud_ruleset.my_ruleset",
 									tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("id"),
 								),
 								plancheck.ExpectUnknownValue(
-									"cloudflare_ruleset.my_ruleset",
+									"zenthcloud_ruleset.my_ruleset",
 									tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("logging"),
 								),
 							},
 						},
 						ConfigStateChecks: []statecheck.StateCheck{
 							statecheck.ExpectKnownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1619,7 +1619,7 @@ func TestAccCloudflareRuleset_RulesLogging(t *testing.T) {
 								}),
 							),
 							statecheck.ExpectKnownValue(
-								"data.cloudflare_ruleset.my_ruleset",
+								"data.zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1640,11 +1640,11 @@ func TestAccCloudflareRuleset_RulesLogging(t *testing.T) {
 						ConfigPlanChecks: resource.ConfigPlanChecks{
 							PreApply: []plancheck.PlanCheck{
 								plancheck.ExpectResourceAction(
-									"cloudflare_ruleset.my_ruleset",
+									"zenthcloud_ruleset.my_ruleset",
 									plancheck.ResourceActionUpdate,
 								),
 								plancheck.ExpectKnownValue(
-									"cloudflare_ruleset.my_ruleset",
+									"zenthcloud_ruleset.my_ruleset",
 									tfjsonpath.New("rules"),
 									knownvalue.ListExact([]knownvalue.Check{
 										knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1654,18 +1654,18 @@ func TestAccCloudflareRuleset_RulesLogging(t *testing.T) {
 									}),
 								),
 								plancheck.ExpectUnknownValue(
-									"cloudflare_ruleset.my_ruleset",
+									"zenthcloud_ruleset.my_ruleset",
 									tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("id"),
 								),
 								plancheck.ExpectUnknownValue(
-									"cloudflare_ruleset.my_ruleset",
+									"zenthcloud_ruleset.my_ruleset",
 									tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("logging"),
 								),
 							},
 						},
 						ConfigStateChecks: []statecheck.StateCheck{
 							statecheck.ExpectKnownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1679,7 +1679,7 @@ func TestAccCloudflareRuleset_RulesLogging(t *testing.T) {
 								}),
 							),
 							statecheck.ExpectKnownValue(
-								"data.cloudflare_ruleset.my_ruleset",
+								"data.zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1700,7 +1700,7 @@ func TestAccCloudflareRuleset_RulesLogging(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_RulesRatelimit(t *testing.T) {
+func TestAccZenthcloudRuleset_RulesRatelimit(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -1711,11 +1711,11 @@ func TestAccCloudflareRuleset_RulesRatelimit(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1738,7 +1738,7 @@ func TestAccCloudflareRuleset_RulesRatelimit(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1759,7 +1759,7 @@ func TestAccCloudflareRuleset_RulesRatelimit(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1787,11 +1787,11 @@ func TestAccCloudflareRuleset_RulesRatelimit(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1815,7 +1815,7 @@ func TestAccCloudflareRuleset_RulesRatelimit(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1836,7 +1836,7 @@ func TestAccCloudflareRuleset_RulesRatelimit(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1864,11 +1864,11 @@ func TestAccCloudflareRuleset_RulesRatelimit(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1892,7 +1892,7 @@ func TestAccCloudflareRuleset_RulesRatelimit(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1913,7 +1913,7 @@ func TestAccCloudflareRuleset_RulesRatelimit(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1939,7 +1939,7 @@ func TestAccCloudflareRuleset_RulesRatelimit(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
+func TestAccZenthcloudRuleset_RulesRef(t *testing.T) {
 	t.Run("add", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
 			PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -1951,11 +1951,11 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 					ConfigPlanChecks: resource.ConfigPlanChecks{
 						PreApply: []plancheck.PlanCheck{
 							plancheck.ExpectResourceAction(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								plancheck.ResourceActionCreate,
 							),
 							plancheck.ExpectKnownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1969,18 +1969,18 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 								}),
 							),
 							plancheck.ExpectUnknownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("id"),
 							),
 							plancheck.ExpectUnknownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules").AtSliceIndex(1).AtMapKey("id"),
 							),
 						},
 					},
 					ConfigStateChecks: []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -1996,7 +1996,7 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 							}),
 						),
 						statecheck.ExpectKnownValue(
-							"data.cloudflare_ruleset.my_ruleset",
+							"data.zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2019,11 +2019,11 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 					ConfigPlanChecks: resource.ConfigPlanChecks{
 						PreApply: []plancheck.PlanCheck{
 							plancheck.ExpectResourceAction(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								plancheck.ResourceActionUpdate,
 							),
 							plancheck.ExpectKnownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2043,14 +2043,14 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 								}),
 							),
 							plancheck.ExpectUnknownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules").AtSliceIndex(1).AtMapKey("id"),
 							),
 						},
 					},
 					ConfigStateChecks: []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2071,7 +2071,7 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 							}),
 						),
 						statecheck.ExpectKnownValue(
-							"data.cloudflare_ruleset.my_ruleset",
+							"data.zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2108,11 +2108,11 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 					ConfigPlanChecks: resource.ConfigPlanChecks{
 						PreApply: []plancheck.PlanCheck{
 							plancheck.ExpectResourceAction(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								plancheck.ResourceActionCreate,
 							),
 							plancheck.ExpectKnownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2126,18 +2126,18 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 								}),
 							),
 							plancheck.ExpectUnknownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("id"),
 							),
 							plancheck.ExpectUnknownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules").AtSliceIndex(1).AtMapKey("id"),
 							),
 						},
 					},
 					ConfigStateChecks: []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2153,7 +2153,7 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 							}),
 						),
 						statecheck.ExpectKnownValue(
-							"data.cloudflare_ruleset.my_ruleset",
+							"data.zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2176,11 +2176,11 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 					ConfigPlanChecks: resource.ConfigPlanChecks{
 						PreApply: []plancheck.PlanCheck{
 							plancheck.ExpectResourceAction(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								plancheck.ResourceActionUpdate,
 							),
 							plancheck.ExpectKnownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2200,14 +2200,14 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 								}),
 							),
 							plancheck.ExpectUnknownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules").AtSliceIndex(2).AtMapKey("id"),
 							),
 						},
 					},
 					ConfigStateChecks: []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2228,7 +2228,7 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 							}),
 						),
 						statecheck.ExpectKnownValue(
-							"data.cloudflare_ruleset.my_ruleset",
+							"data.zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2265,11 +2265,11 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 					ConfigPlanChecks: resource.ConfigPlanChecks{
 						PreApply: []plancheck.PlanCheck{
 							plancheck.ExpectResourceAction(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								plancheck.ResourceActionCreate,
 							),
 							plancheck.ExpectKnownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2283,18 +2283,18 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 								}),
 							),
 							plancheck.ExpectUnknownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("id"),
 							),
 							plancheck.ExpectUnknownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules").AtSliceIndex(1).AtMapKey("id"),
 							),
 						},
 					},
 					ConfigStateChecks: []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2310,7 +2310,7 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 							}),
 						),
 						statecheck.ExpectKnownValue(
-							"data.cloudflare_ruleset.my_ruleset",
+							"data.zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2333,11 +2333,11 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 					ConfigPlanChecks: resource.ConfigPlanChecks{
 						PreApply: []plancheck.PlanCheck{
 							plancheck.ExpectResourceAction(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								plancheck.ResourceActionUpdate,
 							),
 							plancheck.ExpectKnownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2356,7 +2356,7 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 					},
 					ConfigStateChecks: []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2372,7 +2372,7 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 							}),
 						),
 						statecheck.ExpectKnownValue(
-							"data.cloudflare_ruleset.my_ruleset",
+							"data.zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2404,11 +2404,11 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 					ConfigPlanChecks: resource.ConfigPlanChecks{
 						PreApply: []plancheck.PlanCheck{
 							plancheck.ExpectResourceAction(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								plancheck.ResourceActionCreate,
 							),
 							plancheck.ExpectKnownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2422,18 +2422,18 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 								}),
 							),
 							plancheck.ExpectUnknownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("id"),
 							),
 							plancheck.ExpectUnknownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules").AtSliceIndex(1).AtMapKey("id"),
 							),
 						},
 					},
 					ConfigStateChecks: []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2449,7 +2449,7 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 							}),
 						),
 						statecheck.ExpectKnownValue(
-							"data.cloudflare_ruleset.my_ruleset",
+							"data.zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2472,11 +2472,11 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 					ConfigPlanChecks: resource.ConfigPlanChecks{
 						PreApply: []plancheck.PlanCheck{
 							plancheck.ExpectResourceAction(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								plancheck.ResourceActionUpdate,
 							),
 							plancheck.ExpectKnownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2490,7 +2490,7 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 					},
 					ConfigStateChecks: []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2501,7 +2501,7 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 							}),
 						),
 						statecheck.ExpectKnownValue(
-							"data.cloudflare_ruleset.my_ruleset",
+							"data.zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2528,11 +2528,11 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 					ConfigPlanChecks: resource.ConfigPlanChecks{
 						PreApply: []plancheck.PlanCheck{
 							plancheck.ExpectResourceAction(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								plancheck.ResourceActionCreate,
 							),
 							plancheck.ExpectKnownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2546,18 +2546,18 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 								}),
 							),
 							plancheck.ExpectUnknownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("id"),
 							),
 							plancheck.ExpectUnknownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules").AtSliceIndex(1).AtMapKey("id"),
 							),
 						},
 					},
 					ConfigStateChecks: []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2573,7 +2573,7 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 							}),
 						),
 						statecheck.ExpectKnownValue(
-							"data.cloudflare_ruleset.my_ruleset",
+							"data.zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2596,11 +2596,11 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 					ConfigPlanChecks: resource.ConfigPlanChecks{
 						PreApply: []plancheck.PlanCheck{
 							plancheck.ExpectResourceAction(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								plancheck.ResourceActionUpdate,
 							),
 							plancheck.ExpectKnownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2619,7 +2619,7 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 					},
 					ConfigStateChecks: []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2635,7 +2635,7 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 							}),
 						),
 						statecheck.ExpectKnownValue(
-							"data.cloudflare_ruleset.my_ruleset",
+							"data.zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2667,11 +2667,11 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 					ConfigPlanChecks: resource.ConfigPlanChecks{
 						PreApply: []plancheck.PlanCheck{
 							plancheck.ExpectResourceAction(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								plancheck.ResourceActionCreate,
 							),
 							plancheck.ExpectKnownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2685,18 +2685,18 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 								}),
 							),
 							plancheck.ExpectUnknownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("id"),
 							),
 							plancheck.ExpectUnknownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules").AtSliceIndex(1).AtMapKey("id"),
 							),
 						},
 					},
 					ConfigStateChecks: []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2712,7 +2712,7 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 							}),
 						),
 						statecheck.ExpectKnownValue(
-							"data.cloudflare_ruleset.my_ruleset",
+							"data.zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2735,11 +2735,11 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 					ConfigPlanChecks: resource.ConfigPlanChecks{
 						PreApply: []plancheck.PlanCheck{
 							plancheck.ExpectResourceAction(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								plancheck.ResourceActionUpdate,
 							),
 							plancheck.ExpectKnownValue(
-								"cloudflare_ruleset.my_ruleset",
+								"zenthcloud_ruleset.my_ruleset",
 								tfjsonpath.New("rules"),
 								knownvalue.ListExact([]knownvalue.Check{
 									knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2753,7 +2753,7 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 					},
 					ConfigStateChecks: []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2764,7 +2764,7 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 							}),
 						),
 						statecheck.ExpectKnownValue(
-							"data.cloudflare_ruleset.my_ruleset",
+							"data.zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2781,7 +2781,7 @@ func TestAccCloudflareRuleset_RulesRef(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_LastUpdated(t *testing.T) {
+func TestAccZenthcloudRuleset_LastUpdated(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -2792,23 +2792,23 @@ func TestAccCloudflareRuleset_LastUpdated(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectUnknownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("last_updated"),
 						),
 					},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("last_updated"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("last_updated"),
 						knownvalue.NotNull(),
 					),
@@ -2820,23 +2820,23 @@ func TestAccCloudflareRuleset_LastUpdated(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectUnknownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("last_updated"),
 						),
 					},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("last_updated"),
 						knownvalue.NotNull(),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("last_updated"),
 						knownvalue.NotNull(),
 					),
@@ -2846,7 +2846,7 @@ func TestAccCloudflareRuleset_LastUpdated(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_Version(t *testing.T) {
+func TestAccZenthcloudRuleset_Version(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -2857,23 +2857,23 @@ func TestAccCloudflareRuleset_Version(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectUnknownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("version"),
 						),
 					},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("version"),
 						knownvalue.StringExact("1"),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("version"),
 						knownvalue.StringExact("1"),
 					),
@@ -2885,23 +2885,23 @@ func TestAccCloudflareRuleset_Version(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectUnknownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("version"),
 						),
 					},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("version"),
 						knownvalue.StringExact("2"),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("version"),
 						knownvalue.StringExact("2"),
 					),
@@ -2911,7 +2911,7 @@ func TestAccCloudflareRuleset_Version(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_BlockRules(t *testing.T) {
+func TestAccZenthcloudRuleset_BlockRules(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -2922,11 +2922,11 @@ func TestAccCloudflareRuleset_BlockRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2941,7 +2941,7 @@ func TestAccCloudflareRuleset_BlockRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2953,7 +2953,7 @@ func TestAccCloudflareRuleset_BlockRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2972,11 +2972,11 @@ func TestAccCloudflareRuleset_BlockRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -2995,7 +2995,7 @@ func TestAccCloudflareRuleset_BlockRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3011,7 +3011,7 @@ func TestAccCloudflareRuleset_BlockRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3032,7 +3032,7 @@ func TestAccCloudflareRuleset_BlockRules(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_ChallengeRules(t *testing.T) {
+func TestAccZenthcloudRuleset_ChallengeRules(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -3043,11 +3043,11 @@ func TestAccCloudflareRuleset_ChallengeRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3059,7 +3059,7 @@ func TestAccCloudflareRuleset_ChallengeRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3068,7 +3068,7 @@ func TestAccCloudflareRuleset_ChallengeRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3084,11 +3084,11 @@ func TestAccCloudflareRuleset_ChallengeRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3100,7 +3100,7 @@ func TestAccCloudflareRuleset_ChallengeRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3109,7 +3109,7 @@ func TestAccCloudflareRuleset_ChallengeRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3125,11 +3125,11 @@ func TestAccCloudflareRuleset_ChallengeRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3141,7 +3141,7 @@ func TestAccCloudflareRuleset_ChallengeRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3150,7 +3150,7 @@ func TestAccCloudflareRuleset_ChallengeRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3164,7 +3164,7 @@ func TestAccCloudflareRuleset_ChallengeRules(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_CompressResponseRules(t *testing.T) {
+func TestAccZenthcloudRuleset_CompressResponseRules(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -3175,11 +3175,11 @@ func TestAccCloudflareRuleset_CompressResponseRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3198,7 +3198,7 @@ func TestAccCloudflareRuleset_CompressResponseRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3214,7 +3214,7 @@ func TestAccCloudflareRuleset_CompressResponseRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3237,11 +3237,11 @@ func TestAccCloudflareRuleset_CompressResponseRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3263,7 +3263,7 @@ func TestAccCloudflareRuleset_CompressResponseRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3282,7 +3282,7 @@ func TestAccCloudflareRuleset_CompressResponseRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3306,7 +3306,7 @@ func TestAccCloudflareRuleset_CompressResponseRules(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_ExecuteRules(t *testing.T) {
+func TestAccZenthcloudRuleset_ExecuteRules(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -3317,11 +3317,11 @@ func TestAccCloudflareRuleset_ExecuteRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3338,7 +3338,7 @@ func TestAccCloudflareRuleset_ExecuteRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3352,7 +3352,7 @@ func TestAccCloudflareRuleset_ExecuteRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3373,11 +3373,11 @@ func TestAccCloudflareRuleset_ExecuteRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3402,7 +3402,7 @@ func TestAccCloudflareRuleset_ExecuteRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3424,7 +3424,7 @@ func TestAccCloudflareRuleset_ExecuteRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3453,11 +3453,11 @@ func TestAccCloudflareRuleset_ExecuteRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3482,7 +3482,7 @@ func TestAccCloudflareRuleset_ExecuteRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3504,7 +3504,7 @@ func TestAccCloudflareRuleset_ExecuteRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3533,11 +3533,11 @@ func TestAccCloudflareRuleset_ExecuteRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3601,7 +3601,7 @@ func TestAccCloudflareRuleset_ExecuteRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3662,7 +3662,7 @@ func TestAccCloudflareRuleset_ExecuteRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3730,11 +3730,11 @@ func TestAccCloudflareRuleset_ExecuteRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionReplace,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3772,7 +3772,7 @@ func TestAccCloudflareRuleset_ExecuteRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3807,7 +3807,7 @@ func TestAccCloudflareRuleset_ExecuteRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3847,7 +3847,7 @@ func TestAccCloudflareRuleset_ExecuteRules(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_LogRules(t *testing.T) {
+func TestAccZenthcloudRuleset_LogRules(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -3858,11 +3858,11 @@ func TestAccCloudflareRuleset_LogRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3874,7 +3874,7 @@ func TestAccCloudflareRuleset_LogRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3883,7 +3883,7 @@ func TestAccCloudflareRuleset_LogRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3897,7 +3897,7 @@ func TestAccCloudflareRuleset_LogRules(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_LogCustomFieldRules(t *testing.T) {
+func TestAccZenthcloudRuleset_LogCustomFieldRules(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -3908,11 +3908,11 @@ func TestAccCloudflareRuleset_LogCustomFieldRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3935,7 +3935,7 @@ func TestAccCloudflareRuleset_LogCustomFieldRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3955,7 +3955,7 @@ func TestAccCloudflareRuleset_LogCustomFieldRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -3982,11 +3982,11 @@ func TestAccCloudflareRuleset_LogCustomFieldRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4039,7 +4039,7 @@ func TestAccCloudflareRuleset_LogCustomFieldRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4089,7 +4089,7 @@ func TestAccCloudflareRuleset_LogCustomFieldRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4144,7 +4144,7 @@ func TestAccCloudflareRuleset_LogCustomFieldRules(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_RedirectRules(t *testing.T) {
+func TestAccZenthcloudRuleset_RedirectRules(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -4155,11 +4155,11 @@ func TestAccCloudflareRuleset_RedirectRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4178,7 +4178,7 @@ func TestAccCloudflareRuleset_RedirectRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4194,7 +4194,7 @@ func TestAccCloudflareRuleset_RedirectRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4217,11 +4217,11 @@ func TestAccCloudflareRuleset_RedirectRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionReplace,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4244,7 +4244,7 @@ func TestAccCloudflareRuleset_RedirectRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4264,7 +4264,7 @@ func TestAccCloudflareRuleset_RedirectRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4295,7 +4295,7 @@ func TestAccCloudflareRuleset_RedirectRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4315,7 +4315,7 @@ func TestAccCloudflareRuleset_RedirectRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4342,11 +4342,11 @@ func TestAccCloudflareRuleset_RedirectRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4369,7 +4369,7 @@ func TestAccCloudflareRuleset_RedirectRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4389,7 +4389,7 @@ func TestAccCloudflareRuleset_RedirectRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4414,7 +4414,7 @@ func TestAccCloudflareRuleset_RedirectRules(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_RewriteRules(t *testing.T) {
+func TestAccZenthcloudRuleset_RewriteRules(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -4425,11 +4425,11 @@ func TestAccCloudflareRuleset_RewriteRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4461,7 +4461,7 @@ func TestAccCloudflareRuleset_RewriteRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4490,7 +4490,7 @@ func TestAccCloudflareRuleset_RewriteRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4526,11 +4526,11 @@ func TestAccCloudflareRuleset_RewriteRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionReplace,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4572,7 +4572,7 @@ func TestAccCloudflareRuleset_RewriteRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4611,7 +4611,7 @@ func TestAccCloudflareRuleset_RewriteRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4657,11 +4657,11 @@ func TestAccCloudflareRuleset_RewriteRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionReplace,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4683,7 +4683,7 @@ func TestAccCloudflareRuleset_RewriteRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4702,7 +4702,7 @@ func TestAccCloudflareRuleset_RewriteRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4728,11 +4728,11 @@ func TestAccCloudflareRuleset_RewriteRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionReplace,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4754,7 +4754,7 @@ func TestAccCloudflareRuleset_RewriteRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4773,7 +4773,7 @@ func TestAccCloudflareRuleset_RewriteRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4800,11 +4800,11 @@ func TestAccCloudflareRuleset_RewriteRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4826,7 +4826,7 @@ func TestAccCloudflareRuleset_RewriteRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4845,7 +4845,7 @@ func TestAccCloudflareRuleset_RewriteRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4872,11 +4872,11 @@ func TestAccCloudflareRuleset_RewriteRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4898,7 +4898,7 @@ func TestAccCloudflareRuleset_RewriteRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4917,7 +4917,7 @@ func TestAccCloudflareRuleset_RewriteRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4944,11 +4944,11 @@ func TestAccCloudflareRuleset_RewriteRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4973,7 +4973,7 @@ func TestAccCloudflareRuleset_RewriteRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -4995,7 +4995,7 @@ func TestAccCloudflareRuleset_RewriteRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5023,7 +5023,7 @@ func TestAccCloudflareRuleset_RewriteRules(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_RouteRules(t *testing.T) {
+func TestAccZenthcloudRuleset_RouteRules(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -5034,11 +5034,11 @@ func TestAccCloudflareRuleset_RouteRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5055,7 +5055,7 @@ func TestAccCloudflareRuleset_RouteRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5069,7 +5069,7 @@ func TestAccCloudflareRuleset_RouteRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5090,11 +5090,11 @@ func TestAccCloudflareRuleset_RouteRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5114,7 +5114,7 @@ func TestAccCloudflareRuleset_RouteRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5131,7 +5131,7 @@ func TestAccCloudflareRuleset_RouteRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5155,11 +5155,11 @@ func TestAccCloudflareRuleset_RouteRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5179,7 +5179,7 @@ func TestAccCloudflareRuleset_RouteRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5196,7 +5196,7 @@ func TestAccCloudflareRuleset_RouteRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5220,11 +5220,11 @@ func TestAccCloudflareRuleset_RouteRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5243,7 +5243,7 @@ func TestAccCloudflareRuleset_RouteRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5259,7 +5259,7 @@ func TestAccCloudflareRuleset_RouteRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5280,7 +5280,7 @@ func TestAccCloudflareRuleset_RouteRules(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_ServeErrorRules(t *testing.T) {
+func TestAccZenthcloudRuleset_ServeErrorRules(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -5291,11 +5291,11 @@ func TestAccCloudflareRuleset_ServeErrorRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5313,7 +5313,7 @@ func TestAccCloudflareRuleset_ServeErrorRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5328,7 +5328,7 @@ func TestAccCloudflareRuleset_ServeErrorRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5350,11 +5350,11 @@ func TestAccCloudflareRuleset_ServeErrorRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5372,7 +5372,7 @@ func TestAccCloudflareRuleset_ServeErrorRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5387,7 +5387,7 @@ func TestAccCloudflareRuleset_ServeErrorRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5407,7 +5407,7 @@ func TestAccCloudflareRuleset_ServeErrorRules(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
+func TestAccZenthcloudRuleset_SetCacheSettingsRules(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -5418,11 +5418,11 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5447,7 +5447,7 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5469,7 +5469,7 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5498,11 +5498,11 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5546,7 +5546,7 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5587,7 +5587,7 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5635,11 +5635,11 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5745,7 +5745,7 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5848,7 +5848,7 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -5958,11 +5958,11 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -6019,7 +6019,7 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -6073,7 +6073,7 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -6134,11 +6134,11 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -6205,7 +6205,7 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 							}),
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("action_parameters").AtMapKey("vary"),
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
 								"default": knownvalue.ObjectExact(map[string]knownvalue.Check{
@@ -6222,7 +6222,7 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 							}),
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("action_parameters").AtMapKey("origin_range_requests"),
 							knownvalue.ObjectExact(map[string]knownvalue.Check{
 								"mode": knownvalue.StringExact("default"),
@@ -6232,7 +6232,7 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -6299,7 +6299,7 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -6366,7 +6366,7 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("action_parameters").AtMapKey("vary"),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"default": knownvalue.ObjectExact(map[string]knownvalue.Check{
@@ -6383,14 +6383,14 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("action_parameters").AtMapKey("origin_range_requests"),
 						knownvalue.ObjectExact(map[string]knownvalue.Check{
 							"mode": knownvalue.StringExact("default"),
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("action_parameters").AtMapKey("vary"),
 						knownvalue.ObjectPartial(map[string]knownvalue.Check{
 							"default": knownvalue.ObjectExact(map[string]knownvalue.Check{
@@ -6407,7 +6407,7 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("action_parameters").AtMapKey("origin_range_requests"),
 						knownvalue.ObjectExact(map[string]knownvalue.Check{
 							"mode": knownvalue.StringExact("default"),
@@ -6421,11 +6421,11 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -6478,7 +6478,7 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -6528,7 +6528,7 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -6585,11 +6585,11 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -6633,7 +6633,7 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -6674,7 +6674,7 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -6722,11 +6722,11 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -6768,7 +6768,7 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -6807,7 +6807,7 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -6853,11 +6853,11 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionDestroyBeforeCreate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -6874,7 +6874,7 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -6888,7 +6888,7 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -6909,11 +6909,11 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -6930,7 +6930,7 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -6944,7 +6944,7 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -6963,7 +6963,7 @@ func TestAccCloudflareRuleset_SetCacheSettingsRules(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_SetConfigRules(t *testing.T) {
+func TestAccZenthcloudRuleset_SetConfigRules(t *testing.T) {
 	t.Skip(`FIXME: skip test due to feature deprecations; mirage and disable_apps are deprecated, but have suddenly EOL'd`)
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -6975,11 +6975,11 @@ func TestAccCloudflareRuleset_SetConfigRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7012,7 +7012,7 @@ func TestAccCloudflareRuleset_SetConfigRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7042,7 +7042,7 @@ func TestAccCloudflareRuleset_SetConfigRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7079,11 +7079,11 @@ func TestAccCloudflareRuleset_SetConfigRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7120,7 +7120,7 @@ func TestAccCloudflareRuleset_SetConfigRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7154,7 +7154,7 @@ func TestAccCloudflareRuleset_SetConfigRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7195,11 +7195,11 @@ func TestAccCloudflareRuleset_SetConfigRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7236,7 +7236,7 @@ func TestAccCloudflareRuleset_SetConfigRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7270,7 +7270,7 @@ func TestAccCloudflareRuleset_SetConfigRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7311,11 +7311,11 @@ func TestAccCloudflareRuleset_SetConfigRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7352,7 +7352,7 @@ func TestAccCloudflareRuleset_SetConfigRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7386,7 +7386,7 @@ func TestAccCloudflareRuleset_SetConfigRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7427,11 +7427,11 @@ func TestAccCloudflareRuleset_SetConfigRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7447,7 +7447,7 @@ func TestAccCloudflareRuleset_SetConfigRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7460,7 +7460,7 @@ func TestAccCloudflareRuleset_SetConfigRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7480,11 +7480,11 @@ func TestAccCloudflareRuleset_SetConfigRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7500,7 +7500,7 @@ func TestAccCloudflareRuleset_SetConfigRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7513,7 +7513,7 @@ func TestAccCloudflareRuleset_SetConfigRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7533,11 +7533,11 @@ func TestAccCloudflareRuleset_SetConfigRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7553,7 +7553,7 @@ func TestAccCloudflareRuleset_SetConfigRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7566,7 +7566,7 @@ func TestAccCloudflareRuleset_SetConfigRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7584,7 +7584,7 @@ func TestAccCloudflareRuleset_SetConfigRules(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_SkipRules(t *testing.T) {
+func TestAccZenthcloudRuleset_SkipRules(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -7595,11 +7595,11 @@ func TestAccCloudflareRuleset_SkipRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7621,7 +7621,7 @@ func TestAccCloudflareRuleset_SkipRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7640,7 +7640,7 @@ func TestAccCloudflareRuleset_SkipRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7666,11 +7666,11 @@ func TestAccCloudflareRuleset_SkipRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7692,7 +7692,7 @@ func TestAccCloudflareRuleset_SkipRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7711,7 +7711,7 @@ func TestAccCloudflareRuleset_SkipRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7737,11 +7737,11 @@ func TestAccCloudflareRuleset_SkipRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionReplace,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7767,7 +7767,7 @@ func TestAccCloudflareRuleset_SkipRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7790,7 +7790,7 @@ func TestAccCloudflareRuleset_SkipRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7818,7 +7818,7 @@ func TestAccCloudflareRuleset_SkipRules(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_SetCacheControlRules(t *testing.T) {
+func TestAccZenthcloudRuleset_SetCacheControlRules(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -7829,11 +7829,11 @@ func TestAccCloudflareRuleset_SetCacheControlRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7842,16 +7842,16 @@ func TestAccCloudflareRuleset_SetCacheControlRules(t *testing.T) {
 										"max_age": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 											"operation":       knownvalue.StringExact("set"),
 											"value":           knownvalue.Int64Exact(3600),
-											"cloudflare_only": knownvalue.Bool(true),
+											"zenthcloud_only": knownvalue.Bool(true),
 										}),
 										"s_maxage": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 											"operation":       knownvalue.StringExact("remove"),
-											"cloudflare_only": knownvalue.Bool(true),
+											"zenthcloud_only": knownvalue.Bool(true),
 										}),
 										"stale_if_error": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 											"operation":       knownvalue.StringExact("set"),
 											"value":           knownvalue.Int64Exact(0),
-											"cloudflare_only": knownvalue.Bool(false),
+											"zenthcloud_only": knownvalue.Bool(false),
 										}),
 										"private": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 											"operation": knownvalue.StringExact("remove"),
@@ -7864,7 +7864,7 @@ func TestAccCloudflareRuleset_SetCacheControlRules(t *testing.T) {
 										}),
 										"must_understand": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 											"operation":       knownvalue.StringExact("set"),
-											"cloudflare_only": knownvalue.Bool(true),
+											"zenthcloud_only": knownvalue.Bool(true),
 										}),
 										"no_store": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 											"operation": knownvalue.StringExact("remove"),
@@ -7880,7 +7880,7 @@ func TestAccCloudflareRuleset_SetCacheControlRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7889,47 +7889,47 @@ func TestAccCloudflareRuleset_SetCacheControlRules(t *testing.T) {
 									"max_age": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("set"),
 										"value":           knownvalue.Int64Exact(3600),
-										"cloudflare_only": knownvalue.Bool(true),
+										"zenthcloud_only": knownvalue.Bool(true),
 									}),
 									"s_maxage": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("remove"),
-										"cloudflare_only": knownvalue.Bool(true),
+										"zenthcloud_only": knownvalue.Bool(true),
 									}),
 									"stale_if_error": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("set"),
 										"value":           knownvalue.Int64Exact(0),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"private": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("remove"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"public": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("set"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"must_revalidate": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("remove"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"must_understand": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("set"),
-										"cloudflare_only": knownvalue.Bool(true),
+										"zenthcloud_only": knownvalue.Bool(true),
 									}),
 									"no_store": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("remove"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"no_transform": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("set"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 								}),
 							}),
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -7938,40 +7938,40 @@ func TestAccCloudflareRuleset_SetCacheControlRules(t *testing.T) {
 									"max_age": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("set"),
 										"value":           knownvalue.Int64Exact(3600),
-										"cloudflare_only": knownvalue.Bool(true),
+										"zenthcloud_only": knownvalue.Bool(true),
 									}),
 									"s_maxage": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("remove"),
-										"cloudflare_only": knownvalue.Bool(true),
+										"zenthcloud_only": knownvalue.Bool(true),
 									}),
 									"stale_if_error": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("set"),
 										"value":           knownvalue.Int64Exact(0),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"private": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("remove"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"public": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("set"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"must_revalidate": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("remove"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"must_understand": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("set"),
-										"cloudflare_only": knownvalue.Bool(true),
+										"zenthcloud_only": knownvalue.Bool(true),
 									}),
 									"no_store": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("remove"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"no_transform": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("set"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 								}),
 							}),
@@ -7985,11 +7985,11 @@ func TestAccCloudflareRuleset_SetCacheControlRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -8028,7 +8028,7 @@ func TestAccCloudflareRuleset_SetCacheControlRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -8036,43 +8036,43 @@ func TestAccCloudflareRuleset_SetCacheControlRules(t *testing.T) {
 								"action_parameters": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 									"max_age": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("remove"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"stale_while_revalidate": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("set"),
 										"value":           knownvalue.Int64Exact(12345),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"no_cache": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("set"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"public": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("remove"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"immutable": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("set"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"must_revalidate": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("set"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"proxy_revalidate": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("remove"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"no_transform": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("remove"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 								}),
 							}),
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -8080,36 +8080,36 @@ func TestAccCloudflareRuleset_SetCacheControlRules(t *testing.T) {
 								"action_parameters": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 									"max_age": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("remove"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"stale_while_revalidate": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("set"),
 										"value":           knownvalue.Int64Exact(12345),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"no_cache": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("set"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"public": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("remove"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"immutable": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("set"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"must_revalidate": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("set"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"proxy_revalidate": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("remove"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"no_transform": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("remove"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 								}),
 							}),
@@ -8123,11 +8123,11 @@ func TestAccCloudflareRuleset_SetCacheControlRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -8136,7 +8136,7 @@ func TestAccCloudflareRuleset_SetCacheControlRules(t *testing.T) {
 										"s_maxage": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 											"operation":       knownvalue.StringExact("set"),
 											"value":           knownvalue.Int64Exact(1800),
-											"cloudflare_only": knownvalue.Bool(true),
+											"zenthcloud_only": knownvalue.Bool(true),
 										}),
 										"stale_while_revalidate": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 											"operation": knownvalue.StringExact("remove"),
@@ -8170,7 +8170,7 @@ func TestAccCloudflareRuleset_SetCacheControlRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -8179,46 +8179,46 @@ func TestAccCloudflareRuleset_SetCacheControlRules(t *testing.T) {
 									"s_maxage": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("set"),
 										"value":           knownvalue.Int64Exact(1800),
-										"cloudflare_only": knownvalue.Bool(true),
+										"zenthcloud_only": knownvalue.Bool(true),
 									}),
 									"stale_while_revalidate": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("remove"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"stale_if_error": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("remove"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"no_cache": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("remove"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"private": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("set"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"immutable": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("remove"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"must_understand": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("remove"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"proxy_revalidate": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("set"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"no_store": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("set"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 								}),
 							}),
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -8227,39 +8227,39 @@ func TestAccCloudflareRuleset_SetCacheControlRules(t *testing.T) {
 									"s_maxage": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("set"),
 										"value":           knownvalue.Int64Exact(1800),
-										"cloudflare_only": knownvalue.Bool(true),
+										"zenthcloud_only": knownvalue.Bool(true),
 									}),
 									"stale_while_revalidate": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("remove"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"stale_if_error": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("remove"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"no_cache": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("remove"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"private": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("set"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"immutable": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("remove"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"must_understand": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("remove"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"proxy_revalidate": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("set"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 									"no_store": knownvalue.ObjectPartial(map[string]knownvalue.Check{
 										"operation":       knownvalue.StringExact("set"),
-										"cloudflare_only": knownvalue.Bool(false),
+										"zenthcloud_only": knownvalue.Bool(false),
 									}),
 								}),
 							}),
@@ -8271,7 +8271,7 @@ func TestAccCloudflareRuleset_SetCacheControlRules(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareRuleset_SetCacheTagsRules(t *testing.T) {
+func TestAccZenthcloudRuleset_SetCacheTagsRules(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
@@ -8282,11 +8282,11 @@ func TestAccCloudflareRuleset_SetCacheTagsRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionCreate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -8305,7 +8305,7 @@ func TestAccCloudflareRuleset_SetCacheTagsRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -8321,7 +8321,7 @@ func TestAccCloudflareRuleset_SetCacheTagsRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -8344,11 +8344,11 @@ func TestAccCloudflareRuleset_SetCacheTagsRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -8364,7 +8364,7 @@ func TestAccCloudflareRuleset_SetCacheTagsRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -8377,7 +8377,7 @@ func TestAccCloudflareRuleset_SetCacheTagsRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -8397,11 +8397,11 @@ func TestAccCloudflareRuleset_SetCacheTagsRules(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							plancheck.ResourceActionUpdate,
 						),
 						plancheck.ExpectKnownValue(
-							"cloudflare_ruleset.my_ruleset",
+							"zenthcloud_ruleset.my_ruleset",
 							tfjsonpath.New("rules"),
 							knownvalue.ListExact([]knownvalue.Check{
 								knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -8420,7 +8420,7 @@ func TestAccCloudflareRuleset_SetCacheTagsRules(t *testing.T) {
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"cloudflare_ruleset.my_ruleset",
+						"zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{
@@ -8436,7 +8436,7 @@ func TestAccCloudflareRuleset_SetCacheTagsRules(t *testing.T) {
 						}),
 					),
 					statecheck.ExpectKnownValue(
-						"data.cloudflare_ruleset.my_ruleset",
+						"data.zenthcloud_ruleset.my_ruleset",
 						tfjsonpath.New("rules"),
 						knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectPartial(map[string]knownvalue.Check{

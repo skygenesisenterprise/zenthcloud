@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_certificate_authorities_hostname_associations Data Source - Cloudflare"
+page_title: "zenthcloud_certificate_authorities_hostname_associations Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   SSL and Certificates ReadSSL and Certificates Write
 ---
 
-# cloudflare_certificate_authorities_hostname_associations (Data Source)
+# zenthcloud_certificate_authorities_hostname_associations (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_certificate_authorities_hostname_associations" "example_certificate_authorities_hostname_associations" {
+data "zenthcloud_certificate_authorities_hostname_associations" "example_certificate_authorities_hostname_associations" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   mtls_certificate_id = "b2134436-2555-4acf-be5b-26c48136575e"
 }
@@ -27,7 +27,7 @@ data "cloudflare_certificate_authorities_hostname_associations" "example_certifi
 
 ### Optional
 
-- `mtls_certificate_id` (String) The UUID to match against for a certificate that was uploaded to the mTLS Certificate Management endpoint. If no mtls_certificate_id is given, the results will be the hostnames associated to your active Cloudflare Managed CA.
+- `mtls_certificate_id` (String) The UUID to match against for a certificate that was uploaded to the mTLS Certificate Management endpoint. If no mtls_certificate_id is given, the results will be the hostnames associated to your active Zenthcloud Managed CA.
 - `zone_id` (String) Identifier.
 
 ### Read-Only

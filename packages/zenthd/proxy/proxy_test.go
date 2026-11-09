@@ -24,18 +24,18 @@ import (
 	"go.uber.org/mock/gomock"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/cloudflare/cloudflared/mocks"
+	"github.com/zenthcloud/zenthcloudd/mocks"
 
-	cfdflow "github.com/cloudflare/cloudflared/flow"
+	cfdflow "github.com/zenthcloud/zenthcloudd/flow"
 
-	"github.com/cloudflare/cloudflared/cfio"
-	"github.com/cloudflare/cloudflared/config"
-	"github.com/cloudflare/cloudflared/connection"
-	"github.com/cloudflare/cloudflared/hello"
-	"github.com/cloudflare/cloudflared/ingress"
-	"github.com/cloudflare/cloudflared/quicktunnelauth"
-	"github.com/cloudflare/cloudflared/tracing"
-	"github.com/cloudflare/cloudflared/tunnelrpc/pogs"
+	"github.com/zenthcloud/zenthcloudd/cfio"
+	"github.com/zenthcloud/zenthcloudd/config"
+	"github.com/zenthcloud/zenthcloudd/connection"
+	"github.com/zenthcloud/zenthcloudd/hello"
+	"github.com/zenthcloud/zenthcloudd/ingress"
+	"github.com/zenthcloud/zenthcloudd/quicktunnelauth"
+	"github.com/zenthcloud/zenthcloudd/tracing"
+	"github.com/zenthcloud/zenthcloudd/tunnelrpc/pogs"
 )
 
 var (
@@ -206,7 +206,7 @@ func TestHTTPRequestAuthorizerRunsBeforeIngressSelection(t *testing.T) {
 		&log,
 	)
 	responseWriter := newMockHTTPRespWriter()
-	request, err := http.NewRequest(http.MethodGet, "https://test-tunnel.trycloudflare.com/", nil)
+	request, err := http.NewRequest(http.MethodGet, "https://github.com/skygenesisenterprise/zenthcloud", nil)
 	require.NoError(t, err)
 
 	err = originProxy.ProxyHTTP(
@@ -227,7 +227,7 @@ func TestHTTPRequestAuthorizerRunsBeforeIngressSelection(t *testing.T) {
 func TestQuickTunnelAuthorizationBeforeOriginSelection(t *testing.T) {
 	t.Parallel()
 
-	const stateCookieName = "__Secure-cloudflared-qt-auth-state-test"
+	const stateCookieName = "__Secure-zenthcloudd-qt-auth-state-test"
 	tests := []struct {
 		name           string
 		protected      bool
@@ -295,7 +295,7 @@ func TestQuickTunnelAuthorizationBeforeOriginSelection(t *testing.T) {
 				originRequestHeaders <- r.Header.Clone()
 				w.Header().Set("Cache-Control", "public")
 				w.Header().Set("Referrer-Policy", "unsafe-url")
-				w.Header().Add("Set-Cookie", "__Host-cloudflared-qt-auth-session=origin-value; Path=/; Secure; HttpOnly; SameSite=Lax")
+				w.Header().Add("Set-Cookie", "__Host-zenthcloudd-qt-auth-session=origin-value; Path=/; Secure; HttpOnly; SameSite=Lax")
 				w.Header().Add("Set-Cookie", stateCookieName+"=origin-value; Path=/; Secure; HttpOnly; SameSite=Lax")
 				w.Header().Add("Set-Cookie", "origin-session=origin-value; Path=/; Secure; HttpOnly; SameSite=Lax")
 				w.WriteHeader(http.StatusNoContent)
@@ -324,7 +324,7 @@ func TestQuickTunnelAuthorizationBeforeOriginSelection(t *testing.T) {
 			responseWriter := newMockHTTPRespWriter()
 			request := httptest.NewRequest(
 				test.method,
-				"https://test-tunnel.trycloudflare.com/dashboard",
+				"https://github.com/skygenesisenterprise/zenthcloud",
 				nil,
 			)
 			if sessionCookie != nil {
@@ -411,7 +411,7 @@ func newTestQuickTunnelAuthorization(
 ) (connection.HTTPRequestAuthorizer, *http.Cookie) {
 	t.Helper()
 
-	stateManager, err := quicktunnelauth.NewQuickTunnelAuthStateManager("test-tunnel.trycloudflare.com")
+	stateManager, err := quicktunnelauth.NewQuickTunnelAuthStateManager("test-tunnel.tryzenthcloud.com")
 	require.NoError(t, err)
 	assertionValidator, err := quicktunnelauth.NewQuickTunnelAuthAssertionValidator()
 	require.NoError(t, err)
@@ -823,7 +823,7 @@ func (r *replayer) Bytes() []byte {
 }
 
 // TestConnections tests every possible permutation of connection protocols
-// proxied by cloudflared.
+// proxied by zenthcloudd.
 //
 // WS - WS : When a websocket based ingress is configured on the origin and
 // the eyeball is also a websocket client streaming data.
@@ -832,7 +832,7 @@ func (r *replayer) Bytes() []byte {
 // TCP - WS: When teamnet is enabled and a websocket based service is running
 // on the origin.
 // WS - TCP: When a tcp based ingress is configured on the origin and the
-// eyeball sends tcp packets wrapped in websockets. (E.g: cloudflared access).
+// eyeball sends tcp packets wrapped in websockets. (E.g: zenthcloudd access).
 func TestConnections(t *testing.T) {
 	log := zerolog.Nop()
 	replayer := &replayer{rw: bytes.NewBuffer([]byte{})}
@@ -879,7 +879,7 @@ func TestConnections(t *testing.T) {
 				requestHeaders: map[string][]string{
 					// Example key from https://tools.ietf.org/html/rfc6455#section-1.2
 					"Sec-Websocket-Key":     {"dGhlIHNhbXBsZSBub25jZQ=="},
-					"Test-Cloudflared-Echo": {"Echo"},
+					"Test-Zenthcloudd-Echo": {"Echo"},
 				},
 			},
 			want: want{
@@ -888,7 +888,7 @@ func TestConnections(t *testing.T) {
 					"Connection":            {"Upgrade"},
 					"Sec-Websocket-Accept":  {"s3pPLMBiTxaQ9kYGzzhZRbK+xOo="},
 					"Upgrade":               {"websocket"},
-					"Test-Cloudflared-Echo": {"Echo"},
+					"Test-Zenthcloudd-Echo": {"Echo"},
 				},
 			},
 		},
@@ -901,7 +901,7 @@ func TestConnections(t *testing.T) {
 				eyeballRequestBody:    newTCPRequestBody([]byte("test2")),
 				connectionType:        connection.TypeTCP,
 				requestHeaders: map[string][]string{
-					"Cf-Cloudflared-Proxy-Src": {"non-blank-value"},
+					"Cf-Zenthcloudd-Proxy-Src": {"non-blank-value"},
 				},
 			},
 			want: want{
@@ -917,7 +917,7 @@ func TestConnections(t *testing.T) {
 				// eyeballResponseWriter gets set after roundtrip dial.
 				eyeballRequestBody: newPipedWSRequestBody([]byte("test3")),
 				requestHeaders: map[string][]string{
-					"Cf-Cloudflared-Proxy-Src": {"non-blank-value"},
+					"Cf-Zenthcloudd-Proxy-Src": {"non-blank-value"},
 				},
 				connectionType: connection.TypeTCP,
 			},
@@ -960,7 +960,7 @@ func TestConnections(t *testing.T) {
 				eyeballRequestBody:    http.NoBody,
 				connectionType:        connection.TypeHTTP,
 				requestHeaders: map[string][]string{
-					"Cf-Cloudflared-Proxy-Src": {"non-blank-value"},
+					"Cf-Zenthcloudd-Proxy-Src": {"non-blank-value"},
 				},
 			},
 			want: want{
@@ -1005,7 +1005,7 @@ func TestConnections(t *testing.T) {
 				eyeballRequestBody:    newTCPRequestBody([]byte("test2")),
 				connectionType:        connection.TypeTCP,
 				requestHeaders: map[string][]string{
-					"Cf-Cloudflared-Proxy-Src": {"non-blank-value"},
+					"Cf-Zenthcloudd-Proxy-Src": {"non-blank-value"},
 				},
 			},
 			want: want{
@@ -1022,7 +1022,7 @@ func TestConnections(t *testing.T) {
 				eyeballRequestBody:    newTCPRequestBody([]byte("rate-limited")),
 				connectionType:        connection.TypeTCP,
 				requestHeaders: map[string][]string{
-					"Cf-Cloudflared-Proxy-Src": {"non-blank-value"},
+					"Cf-Zenthcloudd-Proxy-Src": {"non-blank-value"},
 				},
 				flowLimiterResponse: cfdflow.ErrTooManyActiveFlows,
 			},
@@ -1330,7 +1330,7 @@ func runEchoWSService(t *testing.T, l net.Listener) {
 	ws := func(w http.ResponseWriter, r *http.Request) {
 		header := make(http.Header)
 		for k, vs := range r.Header {
-			if k == "Test-Cloudflared-Echo" {
+			if k == "Test-Zenthcloudd-Echo" {
 				header[k] = vs
 			}
 		}

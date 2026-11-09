@@ -5,8 +5,8 @@ package cloudforce_one_request
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/cloudforce_one"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/cloudforce_one"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -37,7 +37,7 @@ type CloudforceOneRequestDataSourceModel struct {
 
 func (m *CloudforceOneRequestDataSourceModel) toReadParams(_ context.Context) (params cloudforce_one.RequestGetParams, diags diag.Diagnostics) {
 	params = cloudforce_one.RequestGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -45,7 +45,7 @@ func (m *CloudforceOneRequestDataSourceModel) toReadParams(_ context.Context) (p
 
 func (m *CloudforceOneRequestDataSourceModel) toListParams(_ context.Context) (params cloudforce_one.RequestListParams, diags diag.Diagnostics) {
 	params = cloudforce_one.RequestListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return

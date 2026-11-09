@@ -6,10 +6,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -21,27 +21,27 @@ func TestMain(m *testing.M) {
 
 
 func init() {
-	resource.AddTestSweepers("cloudflare_web3_hostname", &resource.Sweeper{
-		Name: "cloudflare_web3_hostname",
-		F:    testSweepCloudflareWeb3Hostname,
+	resource.AddTestSweepers("zenthcloud_web3_hostname", &resource.Sweeper{
+		Name: "zenthcloud_web3_hostname",
+		F:    testSweepZenthcloudWeb3Hostname,
 	})
 }
 
-func testSweepCloudflareWeb3Hostname(r string) error {
+func testSweepZenthcloudWeb3Hostname(r string) error {
 	ctx := context.Background()
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 		return clientErr
 	}
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping Web3 hostnames sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping Web3 hostnames sweep: ZENTHCLOUD_ZONE_ID not set")
 		return nil
 	}
 
-	hostnames, err := client.ListWeb3Hostnames(ctx, cloudflare.Web3HostnameListParameters{ZoneID: zoneID})
+	hostnames, err := client.ListWeb3Hostnames(ctx, zenthcloud.Web3HostnameListParameters{ZoneID: zoneID})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Web3 hostnames: %s", err))
 		return err
@@ -57,7 +57,7 @@ func testSweepCloudflareWeb3Hostname(r string) error {
 			continue
 		}
 		tflog.Info(ctx, fmt.Sprintf("Deleting Web3 hostname: %s (%s) (zone: %s)", hostname.Name, hostname.ID, zoneID))
-		_, err := client.DeleteWeb3Hostname(ctx, cloudflare.Web3HostnameDetailsParameters{ZoneID: zoneID, Identifier: hostname.ID})
+		_, err := client.DeleteWeb3Hostname(ctx, zenthcloud.Web3HostnameDetailsParameters{ZoneID: zoneID, Identifier: hostname.ID})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete Web3 hostname %s: %s", hostname.ID, err))
 			continue
@@ -76,11 +76,11 @@ func buildWeb3HostnameConfigIPFS(name, zoneID, domain string) string {
 	return acctest.LoadTestCase("buildweb3hostnameconfigipfs.tf", name, zoneID, domain)
 }
 
-func TestAccCloudflareWeb3HostnameEthereum(t *testing.T) {
+func TestAccZenthcloudWeb3HostnameEthereum(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_web3_hostname.%s", rnd)
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	name := fmt.Sprintf("zenthcloud_web3_hostname.%s", rnd)
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -99,11 +99,11 @@ func TestAccCloudflareWeb3HostnameEthereum(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareWeb3Hostname(t *testing.T) {
+func TestAccZenthcloudWeb3Hostname(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_web3_hostname.%s", rnd)
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	name := fmt.Sprintf("zenthcloud_web3_hostname.%s", rnd)
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -116,7 +116,7 @@ func TestAccCloudflareWeb3Hostname(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "name", rnd+"."+domain),
 					resource.TestCheckResourceAttr(name, "target", "ipfs"),
 					resource.TestCheckResourceAttr(name, "description", "test"),
-					resource.TestCheckResourceAttr(name, "dnslink", "/ipns/onboarding.ipfs.cloudflare.com"),
+					resource.TestCheckResourceAttr(name, "dnslink", "/ipns/onboarding.ipfs.zenthcloud.com"),
 				),
 			},
 		},
@@ -125,8 +125,8 @@ func TestAccCloudflareWeb3Hostname(t *testing.T) {
 
 func TestAccUpgradeWeb3Hostname_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	config := buildWeb3HostnameConfigEthereum(rnd, zoneID, domain)
 
@@ -135,8 +135,8 @@ func TestAccUpgradeWeb3Hostname_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_pages_domain Resource - Cloudflare"
+page_title: "zenthcloud_pages_domain Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Pages ReadPages Write
 ---
 
-# cloudflare_pages_domain (Resource)
+# zenthcloud_pages_domain (Resource)
 
 Accepted Permissions
 
@@ -14,12 +14,12 @@ Accepted Permissions
 - `Pages Write`
 
 -> A DNS record for the domain is not automatically created. You need to create
-   a `cloudflare_record` resource for the domain you want to use.
+   a `zenthcloud_record` resource for the domain you want to use.
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_pages_domain" "example_pages_domain" {
+resource "zenthcloud_pages_domain" "example_pages_domain" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   project_name = "this-is-my-project-01"
   name = "example.com"
@@ -70,5 +70,5 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_pages_domain.example '<account_id>/<project_name>/<domain_name>'
+$ terraform import zenthcloud_pages_domain.example '<account_id>/<project_name>/<domain_name>'
 ```

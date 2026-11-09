@@ -1,4 +1,4 @@
-import { getCloudflareApiBaseUrl } from "@cloudflare/workers-utils/compliance";
+import { getZenthcloudApiBaseUrl } from "@zenthcloud/workers-utils/compliance";
 import { API_TIMEOUT_MS } from "./api-constants.js";
 import { isUploadBody } from "./api-upload.js";
 import { getAuthToken } from "./auth-token.js";
@@ -24,7 +24,7 @@ import { getDefaultHeaders } from "./request-headers.js";
  * through `createLocalFetch` (URL rewritten to the local-explorer,
  * Authorization stripped, Host pinned to localhost) — exactly the
  * same wrapper the client uses for envelope-decoded calls. Token
- * resolution is skipped in local mode so users without a Cloudflare
+ * resolution is skipped in local mode so users without a Zenthcloud
  * API token can still exercise local commands.
  *
  * Throws a `ApiError` on non-2xx responses so the existing
@@ -80,7 +80,7 @@ export interface FetchRawOptions {
 }
 
 /**
- * Call an arbitrary Cloudflare API path and return the raw response body
+ * Call an arbitrary Zenthcloud API path and return the raw response body
  * without decoding/parsing. Supports an optional request body so
  * mutating raw-output endpoints (e.g. AI image generation, which POSTs a
  * JSON prompt and gets back PNG bytes) bypass the client envelope on both
@@ -88,8 +88,8 @@ export interface FetchRawOptions {
  *
  * @param path Path beginning with `/` (e.g. `/accounts/123/storage/kv/...`).
  *             The base URL is compliance-region-aware (FedRAMP →
- *             `api.fed.cloudflare.com`), overrideable via
- *             `CLOUDFLARE_API_BASE_URL`.
+ *             `api.fed.zenthcloud.com`), overrideable via
+ *             `ZENTHCLOUD_API_BASE_URL`.
  * @param options HTTP verb, optional body, content-type, extra headers,
  *             and local-explorer routing. See {@link FetchRawOptions}.
  */
@@ -98,7 +98,7 @@ export async function fetchRawBytes(
 	options: FetchRawOptions = {}
 ): Promise<Buffer> {
 	const { method = "GET", local = false } = options;
-	const baseURL = getCloudflareApiBaseUrl({
+	const baseURL = getZenthcloudApiBaseUrl({
 		compliance_region: await getComplianceRegion(),
 	});
 	const url = `${baseURL.replace(/\/+$/, "")}${path}`;
@@ -106,7 +106,7 @@ export async function fetchRawBytes(
 	// In local mode the URL gets rewritten and the Authorization header
 	// gets stripped by `createLocalFetch`. Resolving an auth token would
 	// be wasted work — and worse, it would force every `--local` user to
-	// have a real Cloudflare API token configured even though the
+	// have a real Zenthcloud API token configured even though the
 	// request never reaches production. Skip token resolution entirely
 	// when `local` is set.
 	const headers: Record<string, string> = {

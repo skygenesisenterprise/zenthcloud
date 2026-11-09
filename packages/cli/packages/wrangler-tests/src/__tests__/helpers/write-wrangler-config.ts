@@ -6,8 +6,8 @@ import {
 	parseTOML,
 	PATH_TO_DEPLOY_CONFIG,
 	readFileSync,
-} from "@cloudflare/workers-utils";
-import type { RawConfig, RedirectedRawConfig } from "@cloudflare/workers-utils";
+} from "@zenthcloud/workers-utils";
+import type { RawConfig, RedirectedRawConfig } from "@zenthcloud/workers-utils";
 
 /** Write a mock wrangler config file to disk. */
 export function writeWranglerConfig(

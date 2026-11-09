@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zero_trust_resource_library_categories Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_resource_library_categories Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zero_trust_resource_library_categories (Data Source)
+# zenthcloud_zero_trust_resource_library_categories (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_resource_library_categories" "example_zero_trust_resource_library_categories" {
+data "zenthcloud_zero_trust_resource_library_categories" "example_zero_trust_resource_library_categories" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```

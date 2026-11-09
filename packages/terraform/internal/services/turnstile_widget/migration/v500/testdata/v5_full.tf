@@ -1,4 +1,4 @@
-resource "cloudflare_turnstile_widget" "%s" {
+resource "zenthcloud_turnstile_widget" "%s" {
   account_id     = "%s"
   name           = "%s"
   domains        = ["example.com", "test.example.org"]

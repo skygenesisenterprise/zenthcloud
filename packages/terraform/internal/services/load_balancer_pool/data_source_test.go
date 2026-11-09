@@ -5,22 +5,22 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccCloudflareLoadBalancerPools(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+func TestAccZenthcloudLoadBalancerPools(t *testing.T) {
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("data.cloudflare_load_balancer_pools.%s", rnd)
+	name := fmt.Sprintf("data.zenthcloud_load_balancer_pools.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareLoadBalancerPoolsConfig(rnd, accountID),
+				Config: testAccZenthcloudLoadBalancerPoolsConfig(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(name, "result.0.name"),
 					resource.TestCheckResourceAttrSet(name, "result.1.name"),
@@ -30,6 +30,6 @@ func TestAccCloudflareLoadBalancerPools(t *testing.T) {
 	})
 }
 
-func testAccCloudflareLoadBalancerPoolsConfig(name, accountID string) string {
+func testAccZenthcloudLoadBalancerPoolsConfig(name, accountID string) string {
 	return acctest.LoadTestCase("loadbalancerpoolsconfig.tf", name, accountID)
 }

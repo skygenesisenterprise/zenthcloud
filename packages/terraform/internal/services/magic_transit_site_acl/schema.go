@@ -5,7 +5,7 @@ package magic_transit_site_acl
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -110,7 +110,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"forward_locally": schema.BoolAttribute{
-				Description: `The desired forwarding action for this ACL policy. If set to "false", the policy will forward traffic to Cloudflare. If set to "true", the policy will forward traffic locally on the Magic Connector. If not included in request, will default to false.`,
+				Description: `The desired forwarding action for this ACL policy. If set to "false", the policy will forward traffic to Zenthcloud. If set to "true", the policy will forward traffic locally on the Magic Connector. If not included in request, will default to false.`,
 				Optional:    true,
 			},
 			"unidirectional": schema.BoolAttribute{

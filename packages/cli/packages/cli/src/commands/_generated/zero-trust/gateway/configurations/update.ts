@@ -101,7 +101,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("settings-block-page-mode", {
 			type: "string",
 			description:
-				"Specify whether to redirect users to a Cloudflare-hosted block page or a customer-provided URI.",
+				"Specify whether to redirect users to a Zenthcloud-hosted block page or a customer-provided URI.",
 			choices: ["customized_block_page", "redirect_uri"],
 		})
 		.coerce("settings-block-page-mode", (value) =>
@@ -142,7 +142,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("settings-certificate-id", {
 			type: "string",
 			description:
-				"Specify the UUID of the certificate used for interception. Ensure the certificate is available at the edge(previously called 'active'). A nil UUID directs Cloudflare to use the Root CA.",
+				"Specify the UUID of the certificate used for interception. Ensure the certificate is available at the edge(previously called 'active'). A nil UUID directs Zenthcloud to use the Root CA.",
 		})
 		.option("settings-custom-certificate-enabled", {
 			type: "boolean",
@@ -278,7 +278,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust gateway configurations update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/gateway/configuration`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/gateway/configuration`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

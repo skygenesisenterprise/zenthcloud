@@ -5,8 +5,8 @@ package custom_ssl
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -97,7 +97,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"uploaded_on": schema.StringAttribute{
-				Description: "When the certificate was uploaded to Cloudflare.",
+				Description: "When the certificate was uploaded to Zenthcloud.",
 				Computed:    true,
 				CustomType:  timetypes.RFC3339Type{},
 			},
@@ -107,7 +107,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				ElementType: types.StringType,
 			},
 			"geo_restrictions": schema.SingleNestedAttribute{
-				Description: "Specify the region where your private key can be held locally for optimal TLS performance. HTTPS connections to any excluded data center will still be fully encrypted, but will incur some latency while Keyless SSL is used to complete the handshake with the nearest allowed data center. Options allow distribution to only to U.S. data centers, only to E.U. data centers, or only to highest security data centers. Default distribution is to all Cloudflare datacenters, for optimal performance.",
+				Description: "Specify the region where your private key can be held locally for optimal TLS performance. HTTPS connections to any excluded data center will still be fully encrypted, but will incur some latency while Keyless SSL is used to complete the handshake with the nearest allowed data center. Options allow distribution to only to U.S. data centers, only to E.U. data centers, or only to highest security data centers. Default distribution is to all Zenthcloud datacenters, for optimal performance.",
 				Computed:    true,
 				CustomType:  customfield.NewNestedObjectType[CustomSSLGeoRestrictionsDataSourceModel](ctx),
 				Attributes: map[string]schema.Attribute{
@@ -161,7 +161,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						ElementType: types.StringType,
 					},
 					"port": schema.Float64Attribute{
-						Description: "The keyless SSL port used to communicate between Cloudflare and the client's Keyless SSL server.",
+						Description: "The keyless SSL port used to communicate between Zenthcloud and the client's Keyless SSL server.",
 						Computed:    true,
 					},
 					"status": schema.StringAttribute{
@@ -172,7 +172,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"tunnel": schema.SingleNestedAttribute{
-						Description: "Configuration for using Keyless SSL through a Cloudflare Tunnel.",
+						Description: "Configuration for using Keyless SSL through a Zenthcloud Tunnel.",
 						Computed:    true,
 						CustomType:  customfield.NewNestedObjectType[CustomSSLKeylessServerTunnelDataSourceModel](ctx),
 						Attributes: map[string]schema.Attribute{
@@ -181,7 +181,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 								Computed:    true,
 							},
 							"vnet_id": schema.StringAttribute{
-								Description: "Cloudflare Tunnel Virtual Network ID.",
+								Description: "Zenthcloud Tunnel Virtual Network ID.",
 								Computed:    true,
 							},
 						},

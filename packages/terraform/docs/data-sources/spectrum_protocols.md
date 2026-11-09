@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_spectrum_protocols Data Source - Cloudflare"
+page_title: "zenthcloud_spectrum_protocols Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zone Settings ReadZone Settings Write
 ---
 
-# cloudflare_spectrum_protocols (Data Source)
+# zenthcloud_spectrum_protocols (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_spectrum_protocols" "example_spectrum_protocols" {
+data "zenthcloud_spectrum_protocols" "example_spectrum_protocols" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```

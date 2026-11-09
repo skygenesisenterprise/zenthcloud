@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_r2_bucket_lock Resource - Cloudflare"
+page_title: "zenthcloud_r2_bucket_lock Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_r2_bucket_lock (Resource)
+# zenthcloud_r2_bucket_lock (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_r2_bucket_lock" "example_r2_bucket_lock" {
+resource "zenthcloud_r2_bucket_lock" "example_r2_bucket_lock" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   bucket_name = "example-bucket"
   rules = [{
@@ -32,7 +32,7 @@ resource "cloudflare_r2_bucket_lock" "example_r2_bucket_lock" {
 
 ### Required
 
-- `account_id` (String) Cloudflare account ID that owns the R2 resource.
+- `account_id` (String) Zenthcloud account ID that owns the R2 resource.
 - `bucket_name` (String) Name of the bucket.
 
 ### Optional

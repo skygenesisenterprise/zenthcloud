@@ -11,10 +11,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/client_certificates"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/client_certificates"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -25,25 +25,25 @@ import (
 )
 
 func init() {
-	resource.AddTestSweepers("cloudflare_client_certificate", &resource.Sweeper{
-		Name: "cloudflare_client_certificate",
-		F:    testSweepCloudflareClientCertificates,
+	resource.AddTestSweepers("zenthcloud_client_certificate", &resource.Sweeper{
+		Name: "zenthcloud_client_certificate",
+		F:    testSweepZenthcloudClientCertificates,
 	})
 }
 
-func testSweepCloudflareClientCertificates(r string) error {
+func testSweepZenthcloudClientCertificates(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	if zoneID == "" {
-		tflog.Info(ctx, "CLOUDFLARE_ZONE_ID not set, skipping client certificate sweep")
+		tflog.Info(ctx, "ZENTHCLOUD_ZONE_ID not set, skipping client certificate sweep")
 		return nil
 	}
 
 	certs, err := client.ClientCertificates.List(ctx, client_certificates.ClientCertificateListParams{
-		ZoneID: cloudflare.F(zoneID),
-		Status: cloudflare.F(client_certificates.ClientCertificateListParamsStatusActive),
+		ZoneID: zenthcloud.F(zoneID),
+		Status: zenthcloud.F(client_certificates.ClientCertificateListParamsStatusActive),
 	})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to list client certificates: %s", err))
@@ -53,7 +53,7 @@ func testSweepCloudflareClientCertificates(r string) error {
 	for _, cert := range certs.Result {
 		tflog.Info(ctx, fmt.Sprintf("Revoking client certificate: %s", cert.ID))
 		_, err := client.ClientCertificates.Delete(ctx, cert.ID, client_certificates.ClientCertificateDeleteParams{
-			ZoneID: cloudflare.F(zoneID),
+			ZoneID: zenthcloud.F(zoneID),
 		})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to revoke client certificate %s: %s", cert.ID, err))
@@ -67,11 +67,11 @@ func TestMain(m *testing.M) {
 	resource.TestMain(m)
 }
 
-func TestAccCloudflareClientCertificate_FullLifecycle(t *testing.T) {
+func TestAccZenthcloudClientCertificate_FullLifecycle(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_client_certificate.%s", rnd)
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	name := fmt.Sprintf("zenthcloud_client_certificate.%s", rnd)
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	csr, err := generateCSR(domain)
 	if err != nil {
@@ -84,11 +84,11 @@ func TestAccCloudflareClientCertificate_FullLifecycle(t *testing.T) {
 			acctest.TestAccPreCheck_Domain(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareClientCertificateDestroy,
+		CheckDestroy:             testAccCheckZenthcloudClientCertificateDestroy,
 		Steps: []resource.TestStep{
 			// Create and Read
 			{
-				Config: testAccCloudflareClientCertificateConfig(rnd, zoneID, csr, 3650),
+				Config: testAccZenthcloudClientCertificateConfig(rnd, zoneID, csr, 3650),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("validity_days"), knownvalue.Int64Exact(3650)),
@@ -104,7 +104,7 @@ func TestAccCloudflareClientCertificate_FullLifecycle(t *testing.T) {
 			},
 			// Re-apply same config to verify no drift
 			{
-				Config: testAccCloudflareClientCertificateConfig(rnd, zoneID, csr, 3650),
+				Config: testAccZenthcloudClientCertificateConfig(rnd, zoneID, csr, 3650),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -115,7 +115,7 @@ func TestAccCloudflareClientCertificate_FullLifecycle(t *testing.T) {
 			{
 				ResourceName:            name,
 				ImportState:             true,
-				ImportStateIdFunc:       testAccCloudflareClientCertificateImportStateIdFunc(name),
+				ImportStateIdFunc:       testAccZenthcloudClientCertificateImportStateIdFunc(name),
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"reactivate"},
 			},
@@ -123,11 +123,11 @@ func TestAccCloudflareClientCertificate_FullLifecycle(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareClientCertificateDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudClientCertificateDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_client_certificate" {
+		if rs.Type != "zenthcloud_client_certificate" {
 			continue
 		}
 
@@ -138,7 +138,7 @@ func testAccCheckCloudflareClientCertificateDestroy(s *terraform.State) error {
 			context.Background(),
 			certID,
 			client_certificates.ClientCertificateGetParams{
-				ZoneID: cloudflare.F(zoneID),
+				ZoneID: zenthcloud.F(zoneID),
 			},
 		)
 
@@ -157,7 +157,7 @@ func testAccCheckCloudflareClientCertificateDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCloudflareClientCertificateImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
+func testAccZenthcloudClientCertificateImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -193,19 +193,19 @@ func generateCSR(domain string) (string, error) {
 	return string(csrPem), nil
 }
 
-func testAccCloudflareClientCertificateConfig(rnd, zoneID, csr string, validityDays int) string {
+func testAccZenthcloudClientCertificateConfig(rnd, zoneID, csr string, validityDays int) string {
 	return acctest.LoadTestCase("clientcertificatelifecycle.tf", rnd, zoneID, csr, validityDays)
 }
 
-// TestAccCloudflareClientCertificate_CRLFNormalization tests that the provider
+// TestAccZenthcloudClientCertificate_CRLFNormalization tests that the provider
 // properly handles CSRs with different line endings (\n vs \r\n) and doesn't
 // detect drift. The API returns CSRs with \r\n line endings, but user configs
 // typically use \n (Unix style). This verifies the normalization logic.
-func TestAccCloudflareClientCertificate_CRLFNormalization(t *testing.T) {
+func TestAccZenthcloudClientCertificate_CRLFNormalization(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_client_certificate.%s", rnd)
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	name := fmt.Sprintf("zenthcloud_client_certificate.%s", rnd)
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	csr, err := generateCSR(domain)
 	if err != nil {
@@ -221,18 +221,18 @@ func TestAccCloudflareClientCertificate_CRLFNormalization(t *testing.T) {
 			acctest.TestAccPreCheck_Domain(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareClientCertificateDestroy,
+		CheckDestroy:             testAccCheckZenthcloudClientCertificateDestroy,
 		Steps: []resource.TestStep{
 			// Create with LF line endings
 			{
-				Config: testAccCloudflareClientCertificateCRLFConfig(rnd, zoneID, csr, 3650),
+				Config: testAccZenthcloudClientCertificateCRLFConfig(rnd, zoneID, csr, 3650),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("status"), knownvalue.StringExact("active")),
 				},
 			},
 			// Re-apply same config - should detect no drift despite API returning \r\n
 			{
-				Config: testAccCloudflareClientCertificateCRLFConfig(rnd, zoneID, csr, 3650),
+				Config: testAccZenthcloudClientCertificateCRLFConfig(rnd, zoneID, csr, 3650),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -243,6 +243,6 @@ func TestAccCloudflareClientCertificate_CRLFNormalization(t *testing.T) {
 	})
 }
 
-func testAccCloudflareClientCertificateCRLFConfig(rnd, zoneID, csr string, validityDays int) string {
+func testAccZenthcloudClientCertificateCRLFConfig(rnd, zoneID, csr string, validityDays int) string {
 	return acctest.LoadTestCase("clientcertificatecrlfnormalization.tf", rnd, zoneID, csr, validityDays)
 }

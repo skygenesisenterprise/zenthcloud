@@ -21,7 +21,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 tunnels delete <tunnel-id>\n\nPermanently deletes a Cloudflare Tunnel from an account. The tunnel must have no active connections."
+			"$0 tunnels delete <tunnel-id>\n\nPermanently deletes a Zenthcloud Tunnel from an account. The tunnel must have no active connections."
 		)
 		.positional("tunnel-id", {
 			type: "string",
@@ -45,7 +45,7 @@ type Args = InferArgs<typeof builder>;
 
 const command: CommandModule<CommonYargsOptions, Args> = {
 	command: "delete <tunnel-id>",
-	describe: "Delete a Cloudflare Tunnel",
+	describe: "Delete a Zenthcloud Tunnel",
 	builder,
 	handler: async (argv): Promise<void> =>
 		runWithTelemetry(
@@ -63,7 +63,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf tunnels delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/cfd_tunnel/${argv["tunnel-id"] == null ? "<tunnel-id>" : encodeURIComponent(String(argv["tunnel-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/cfd_tunnel/${argv["tunnel-id"] == null ? "<tunnel-id>" : encodeURIComponent(String(argv["tunnel-id"]))}`,
 						pathParams: { "tunnel-id": String(argv["tunnel-id"] ?? "") },
 						bodyKind: "none",
 					});
@@ -76,7 +76,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 				if (
 					!(await confirmDelete({
 						force: Boolean(argv.force),
-						message: `This operation permanently deletes a Cloudflare Tunnel.`,
+						message: `This operation permanently deletes a Zenthcloud Tunnel.`,
 					}))
 				) {
 					return;

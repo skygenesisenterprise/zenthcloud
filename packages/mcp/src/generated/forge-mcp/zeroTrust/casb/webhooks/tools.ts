@@ -38,7 +38,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID for the user making the request.",
+              "description": "Zenthcloud account ID for the user making the request.",
               "type": "string"
             }
           },
@@ -148,7 +148,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID for the user making the request.",
+              "description": "Zenthcloud account ID for the user making the request.",
               "type": "string"
             },
             "webhook_id": {
@@ -216,7 +216,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zeroTrust_casb_webhooks_evaluate",
     title: "Test a webhook configuration before creating it",
-    description: "Sends a test webhook event to the specified destination URL to verify the webhook endpoint \nis reachable and properly configured. This allows customers to validate their webhook \nconfiguration before creating the actual webhook resource.\n\nThe test payload includes:\n- event_type: \"webhook.test\"\n- timestamp: Current UTC timestamp\n- message: Test message indicating this is from Cloudflare CASB\n- data: Object with test: true\n\nPOST /accounts/{account_id}/data-security/posture/webhooks/evaluate",
+    description: "Sends a test webhook event to the specified destination URL to verify the webhook endpoint \nis reachable and properly configured. This allows customers to validate their webhook \nconfiguration before creating the actual webhook resource.\n\nThe test payload includes:\n- event_type: \"webhook.test\"\n- timestamp: Current UTC timestamp\n- message: Test message indicating this is from Zenthcloud CASB\n- data: Object with test: true\n\nPOST /accounts/{account_id}/data-security/posture/webhooks/evaluate",
     inputSchema: {
       type: "object",
       properties: {
@@ -227,7 +227,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID for the user making the request.",
+              "description": "Zenthcloud account ID for the user making the request.",
               "type": "string"
             }
           },
@@ -326,7 +326,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zeroTrust_casb_webhooks_evaluateExisting",
     title: "Test an existing webhook configuration",
-    description: "Sends a test webhook event using an existing webhook configuration.\nThis allows customers to verify their webhook endpoint is still reachable and properly \nconfigured after creating the webhook resource.\n\nThe test payload includes:\n- event_type: \"webhook.test\"\n- timestamp: Current UTC timestamp\n- message: Test message indicating this is from Cloudflare CASB\n- data: Object with test: true\n\nPOST /accounts/{account_id}/data-security/posture/webhooks/{webhook_id}/evaluate",
+    description: "Sends a test webhook event using an existing webhook configuration.\nThis allows customers to verify their webhook endpoint is still reachable and properly \nconfigured after creating the webhook resource.\n\nThe test payload includes:\n- event_type: \"webhook.test\"\n- timestamp: Current UTC timestamp\n- message: Test message indicating this is from Zenthcloud CASB\n- data: Object with test: true\n\nPOST /accounts/{account_id}/data-security/posture/webhooks/{webhook_id}/evaluate",
     inputSchema: {
       type: "object",
       properties: {
@@ -334,7 +334,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID for the user making the request.",
+              "description": "Zenthcloud account ID for the user making the request.",
               "type": "string"
             },
             "webhook_id": {
@@ -444,7 +444,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID for the user making the request.",
+              "description": "Zenthcloud account ID for the user making the request.",
               "type": "string"
             },
             "webhook_id": {
@@ -533,7 +533,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID for the user making the request.",
+              "description": "Zenthcloud account ID for the user making the request.",
               "type": "string"
             }
           },
@@ -613,7 +613,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID for the user making the request.",
+              "description": "Zenthcloud account ID for the user making the request.",
               "type": "string"
             },
             "webhook_id": {

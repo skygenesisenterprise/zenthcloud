@@ -1,6 +1,6 @@
 import { http, HttpResponse } from "msw/http";
 import { createFetchResult } from "../index";
-import type { WorkerMetadata } from "@cloudflare/workers-utils";
+import type { WorkerMetadata } from "@zenthcloud/workers-utils";
 
 const bindings: Record<string, WorkerMetadata["bindings"]> = {
 	"durable-object": [

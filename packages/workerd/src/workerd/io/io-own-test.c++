@@ -496,7 +496,7 @@ KJ_TEST("a stateless context's cross-context actions stay queued if its request 
 // to settle with settle(). The promise's reaction uses the actor's storage, which needs a current
 // request, and appends its progress to `globalThis.events`.
 constexpr kj::StringPtr PROMISE_ACTOR_SOURCE = R"SCRIPT(
-  import { DurableObject } from "cloudflare:workers";
+  import { DurableObject } from "zenthcloud:workers";
   globalThis.events = "";
   export default class extends DurableObject {
     constructor(ctx, env) {

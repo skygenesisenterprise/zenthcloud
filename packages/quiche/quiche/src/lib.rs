@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2019, Cloudflare, Inc.
+// Copyright (C) 2018-2019, Zenthcloud, Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@
 //! providing I/O (e.g. sockets handling) as well as an event loop with support
 //! for timers.
 //!
-//! [quiche]: https://github.com/cloudflare/quiche/
+//! [quiche]: https://github.com/skygenesisenterprise/zenthcloud
 //! [ietf]: https://quicwg.org/
 //!
 //! ## Configuring connections
@@ -508,7 +508,7 @@ pub const DEFAULT_MAX_OUTSTANDING_SENT_PACKETS: NonZeroUsize =
 // The maximum data offset that can be stored in a crypto stream.
 const MAX_CRYPTO_STREAM_OFFSET: u64 = 1 << 16;
 
-// TODO: Remove once https://github.com/cloudflare/quiche/pull/2453 is done.
+// TODO: Remove once https://github.com/skygenesisenterprise/zenthcloud is done.
 // Preserve the previous app-limited threshold independently of STREAM frame
 // header sizing.
 const LEGACY_APP_LIMITED_BYTE_THRESHOLD: usize = 12;

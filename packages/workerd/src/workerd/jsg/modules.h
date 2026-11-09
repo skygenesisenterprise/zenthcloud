@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -207,7 +207,7 @@ class ModuleRegistry {
     // Cache for mutable module exports wrapper when require_returns_default_export flag is enabled.
     // Used to ensure require() returns the same mutable object for the same module.
     // This enables frameworks like Next.js to patch built-in module exports.
-    // See: https://github.com/cloudflare/workerd/issues/5844
+    // See: https://github.com/skygenesisenterprise/zenthcloud
     mutable kj::Maybe<V8Ref<v8::Object>> maybeMutableExports;
 
     ModuleInfo(jsg::Lock& js,
@@ -616,7 +616,7 @@ class ModuleRegistryImpl final: public ModuleRegistry {
         KJ_CASE_ONEOF(i, ModuleInfo) {
           auto type = Type::BUNDLE;
           if (option == ResolveOption::BUILTIN_ONLY) {
-            if (str.startsWith("/node:") || str.startsWith("/cloudflare:") ||
+            if (str.startsWith("/node:") || str.startsWith("/zenthcloud:") ||
                 str.startsWith("/workerd:")) {
               type = Type::BUILTIN;
             }
@@ -906,7 +906,7 @@ v8::MaybeLocal<v8::Promise> dynamicImportCallback(v8::Local<v8::Context> context
   auto maybeSpecifierPath = ([&]() -> kj::Maybe<kj::Path> {
     // If the specifier begins with one of our known prefixes, let's not resolve
     // it against the referrer.
-    if (spec.startsWith("node:") || spec.startsWith("cloudflare:") || spec.startsWith("workerd:")) {
+    if (spec.startsWith("node:") || spec.startsWith("zenthcloud:") || spec.startsWith("workerd:")) {
       return kj::Path::parse(spec);
     }
     KJ_IF_SOME(referrerPath, maybeReferrerPath) {

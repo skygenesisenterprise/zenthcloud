@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_pipeline_sinks Data Source - Cloudflare"
+page_title: "zenthcloud_pipeline_sinks Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Pipelines ReadPipelines Write
 ---
 
-# cloudflare_pipeline_sinks (Data Source)
+# zenthcloud_pipeline_sinks (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_pipeline_sinks" "example_pipeline_sinks" {
+data "zenthcloud_pipeline_sinks" "example_pipeline_sinks" {
   account_id = "0123105f4ecef8ad9ca31a8372d0c353"
   name = "x"
   pipeline_id = "pipeline_id"
@@ -57,7 +57,7 @@ Available values: "r2", "r2_data_catalog", "basin_catalog".
 
 Read-Only:
 
-- `account_id` (String) Cloudflare Account ID for the bucket
+- `account_id` (String) Zenthcloud Account ID for the bucket
 - `bucket` (String) R2 Bucket to write to
 - `file_naming` (Attributes) Controls filename prefix/suffix and strategy. (see [below for nested schema](#nestedatt--result--config--file_naming))
 - `jurisdiction` (String) Jurisdiction this bucket is hosted in

@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf iam permission-groups get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/iam/permission_groups/${argv["permission-group-id"] == null ? "<permission-group-id>" : encodeURIComponent(String(argv["permission-group-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/iam/permission_groups/${argv["permission-group-id"] == null ? "<permission-group-id>" : encodeURIComponent(String(argv["permission-group-id"]))}`,
 						pathParams: {
 							"permission-group-id": String(argv["permission-group-id"] ?? ""),
 						},

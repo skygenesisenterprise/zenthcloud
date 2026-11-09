@@ -5,22 +5,22 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-func TestAccCloudflareOAuthScopes_Datasource(t *testing.T) {
+func TestAccZenthcloudOAuthScopes_Datasource(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("data.cloudflare_oauth_scopes.%s", rnd)
+	name := fmt.Sprintf("data.zenthcloud_oauth_scopes.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareOAuthScopesDataSourceConfig(rnd),
+				Config: testAccZenthcloudOAuthScopesDataSourceConfig(rnd),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(name, "result.0.id"),
 					resource.TestCheckResourceAttrSet(name, "result.0.name"),
@@ -53,6 +53,6 @@ func testAccCheckOAuthScopesContains(resourceName, scopeID string) resource.Test
 	}
 }
 
-func testAccCloudflareOAuthScopesDataSourceConfig(resourceID string) string {
+func testAccZenthcloudOAuthScopesDataSourceConfig(resourceID string) string {
 	return acctest.LoadTestCase("data_source.tf", resourceID)
 }

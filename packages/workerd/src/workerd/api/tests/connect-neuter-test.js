@@ -1,8 +1,8 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 //
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-334:
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-334:
 // connect() handler must neuter the NeuterableIoStream when
 // the handler promise resolves, preventing use-after-free.
 

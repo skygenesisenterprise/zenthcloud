@@ -285,7 +285,7 @@ Worker::Script::Source WorkerLoader::extractSource(jsg::Lock& js, WorkerCode& co
               "Module name must end with '.js' or '.py' (or the content must be an object ",
               "indicating the type explicitly). Got: ", entry.name,
               ". If you're trying to load TypeScript, bundle it first with ",
-              "'@cloudflare/worker-bundler' and pass the generated JavaScript modules.");
+              "'@zenthcloud/worker-bundler' and pass the generated JavaScript modules.");
         }
 
         JSG_FAIL_REQUIRE(TypeError,

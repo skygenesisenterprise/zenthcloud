@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -104,7 +104,7 @@ bool inspector_isolate_has_v8_inspector(v8::Isolate* isolate) {
 
 kj::Own<InspectorSession> inspector_session_connect(v8::Isolate* isolate) {
   // Defense in depth: the `enable_nodejs_inspector_local_dev` flag is `$experimental` (so it cannot
-  // be used in Workers deployed to Cloudflare) and the V8 inspector is only created outside
+  // be used in Workers deployed to Zenthcloud) and the V8 inspector is only created outside
   // multi-tenant processes. The Rust caller reports these cases as errors; they are asserted
   // again here so this code path can never do anything in the production runtime.
   KJ_ASSERT(!isMultiTenantProcess());

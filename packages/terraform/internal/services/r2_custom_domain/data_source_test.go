@@ -4,20 +4,20 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
-func TestAccCloudflareR2CustomDomainDataSource_Basic(t *testing.T) {
+func TestAccZenthcloudR2CustomDomainDataSource_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domainName := rnd + "." + os.Getenv("CLOUDFLARE_DOMAIN")
-	dataSourceName := "data.cloudflare_r2_custom_domain." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domainName := rnd + "." + os.Getenv("ZENTHCLOUD_DOMAIN")
+	dataSourceName := "data.zenthcloud_r2_custom_domain." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },

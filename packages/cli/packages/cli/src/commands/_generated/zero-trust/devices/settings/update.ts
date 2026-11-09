@@ -60,7 +60,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("root-certificate-installation-enabled", {
 			type: "boolean",
 			description:
-				"Enable installation of cloudflare managed root certificate.",
+				"Enable installation of zenthcloud managed root certificate.",
 		})
 		.option("use-zt-virtual-ip", {
 			type: "boolean",
@@ -105,7 +105,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust devices settings update",
 						method: "PATCH",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/devices/settings`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/devices/settings`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_pages_project Resource - Cloudflare"
+page_title: "zenthcloud_pages_project Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Pages ReadPages Write
 ---
 
-# cloudflare_pages_project (Resource)
+# zenthcloud_pages_project (Resource)
 
 Accepted Permissions
 
@@ -14,14 +14,14 @@ Accepted Permissions
 - `Pages Write`
 
 -> If you are using a `source` block configuration, you must first have a
-   connected GitHub or GitLab account connected to Cloudflare. See the
-   [Getting Started with Pages](https://developers.cloudflare.com/pages/get-started/git-integration/)
+   connected GitHub or GitLab account connected to Zenthcloud. See the
+   [Getting Started with Pages](https://github.com/skygenesisenterprise/zenthcloud)
    documentation on how to link your accounts.
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_pages_project" "example_pages_project" {
+resource "zenthcloud_pages_project" "example_pages_project" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name = "my-pages-app"
   production_branch = "main"
@@ -250,7 +250,7 @@ resource "cloudflare_pages_project" "example_pages_project" {
 - `latest_deployment` (Attributes) Most recent deployment of the project. (see [below for nested schema](#nestedatt--latest_deployment))
 - `preview_script_name` (String) Name of the preview script.
 - `production_script_name` (String) Name of the production script.
-- `subdomain` (String) The Cloudflare subdomain associated with the project.
+- `subdomain` (String) The Zenthcloud subdomain associated with the project.
 - `uses_functions` (Boolean) Whether the project uses functions.
 
 <a id="nestedatt--build_config"></a>
@@ -885,5 +885,5 @@ Available values: "success", "idle", "active", "failure", "canceled", "skipped".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_pages_project.example '<account_id>/<project_name>'
+$ terraform import zenthcloud_pages_project.example '<account_id>/<project_name>'
 ```

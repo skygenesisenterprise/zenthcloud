@@ -5,7 +5,7 @@ package logpush_job
 import (
 	"context"
 
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/logpush_job/migration/v500"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/logpush_job/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )

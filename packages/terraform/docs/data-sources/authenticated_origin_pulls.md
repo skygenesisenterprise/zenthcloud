@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_authenticated_origin_pulls Data Source - Cloudflare"
+page_title: "zenthcloud_authenticated_origin_pulls Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_authenticated_origin_pulls (Data Source)
+# zenthcloud_authenticated_origin_pulls (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_authenticated_origin_pulls" "example_authenticated_origin_pulls" {
+data "zenthcloud_authenticated_origin_pulls" "example_authenticated_origin_pulls" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   hostname = "app.example.com"
 }

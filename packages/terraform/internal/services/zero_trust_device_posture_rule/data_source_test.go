@@ -6,17 +6,17 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-func TestAccCloudflareDevicePostureRules_DataSource(t *testing.T) {
+func TestAccZenthcloudDevicePostureRules_DataSource(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	name := fmt.Sprintf("data.cloudflare_zero_trust_device_posture_rules.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	name := fmt.Sprintf("data.zenthcloud_zero_trust_device_posture_rules.%s", rnd)
 
 	var lastAddedResourceIDX string
 	resource.Test(t, resource.TestCase{
@@ -24,7 +24,7 @@ func TestAccCloudflareDevicePostureRules_DataSource(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareDevicePostureRulesConfig(rnd, accountID),
+				Config: testAccZenthcloudDevicePostureRulesConfig(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					func(state *terraform.State) error {
 						var err error
@@ -54,7 +54,7 @@ func TestAccCloudflareDevicePostureRules_DataSource(t *testing.T) {
 	})
 }
 
-func testAccCloudflareDevicePostureRulesConfig(name, accountID string) string {
+func testAccZenthcloudDevicePostureRulesConfig(name, accountID string) string {
 	return acctest.LoadTestCase("deviceposturerulesconfig.tf", name, accountID)
 }
 

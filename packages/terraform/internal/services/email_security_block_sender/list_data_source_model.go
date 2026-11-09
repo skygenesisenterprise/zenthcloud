@@ -5,9 +5,9 @@ package email_security_block_sender
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/email_security"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/email_security"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -30,23 +30,23 @@ type EmailSecurityBlockSendersDataSourceModel struct {
 
 func (m *EmailSecurityBlockSendersDataSourceModel) toListParams(_ context.Context) (params email_security.SettingBlockSenderListParams, diags diag.Diagnostics) {
 	params = email_security.SettingBlockSenderListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Direction.IsNull() {
-		params.Direction = cloudflare.F(email_security.SettingBlockSenderListParamsDirection(m.Direction.ValueString()))
+		params.Direction = zenthcloud.F(email_security.SettingBlockSenderListParamsDirection(m.Direction.ValueString()))
 	}
 	if !m.Order.IsNull() {
-		params.Order = cloudflare.F(email_security.SettingBlockSenderListParamsOrder(m.Order.ValueString()))
+		params.Order = zenthcloud.F(email_security.SettingBlockSenderListParamsOrder(m.Order.ValueString()))
 	}
 	if !m.Pattern.IsNull() {
-		params.Pattern = cloudflare.F(m.Pattern.ValueString())
+		params.Pattern = zenthcloud.F(m.Pattern.ValueString())
 	}
 	if !m.PatternType.IsNull() {
-		params.PatternType = cloudflare.F(email_security.SettingBlockSenderListParamsPatternType(m.PatternType.ValueString()))
+		params.PatternType = zenthcloud.F(email_security.SettingBlockSenderListParamsPatternType(m.PatternType.ValueString()))
 	}
 	if !m.Search.IsNull() {
-		params.Search = cloudflare.F(m.Search.ValueString())
+		params.Search = zenthcloud.F(m.Search.ValueString())
 	}
 
 	return

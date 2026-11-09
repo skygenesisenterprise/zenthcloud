@@ -1,15 +1,15 @@
-// Package v500 handles state migration from cloudflare_api_shield v4 (schema_version=0)
-// to cloudflare_api_shield v5 (version=500).
+// Package v500 handles state migration from zenthcloud_api_shield v4 (schema_version=0)
+// to zenthcloud_api_shield v5 (version=500).
 package v500
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-// SourceAPIShieldSchema returns the legacy cloudflare_api_shield schema (schema_version=0).
+// SourceAPIShieldSchema returns the legacy zenthcloud_api_shield schema (schema_version=0).
 // This is used by UpgradeFromV4 to parse state from the legacy SDKv2 provider.
 //
-// Reference: cloudflare-terraform-v4/internal/sdkv2provider/schema_cloudflare_api_shield.go
+// Reference: zenthcloud-terraform-v4/internal/sdkv2provider/schema_zenthcloud_api_shield.go
 //
 // This minimal schema includes only the properties needed for state parsing:
 //   - Required, Optional, Computed field markers

@@ -23,7 +23,7 @@ const (
 	// __Host- makes the browser require Secure, Path=/, and no Domain attribute,
 	// binding the session cookie to one exact Quick Tunnel hostname.
 	// See https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Cookies#cookie_prefixes.
-	quickTunnelAuthSessionCookieName      = "__Host-cloudflared-qt-auth-session"
+	quickTunnelAuthSessionCookieName      = "__Host-zenthcloudd-qt-auth-session"
 	quickTunnelAuthSessionCookiePath      = "/"
 	quickTunnelAuthSessionCookieSeparator = "."
 )
@@ -48,7 +48,7 @@ type quickTunnelAuthSessionCookiePayload struct {
 }
 
 // NewQuickTunnelAuthSessionManager creates a session manager with a fresh
-// process-local signing key, invalidating sessions when cloudflared restarts.
+// process-local signing key, invalidating sessions when zenthcloudd restarts.
 func NewQuickTunnelAuthSessionManager() (*QuickTunnelAuthSessionManager, error) {
 	key := make([]byte, quickTunnelAuthSessionSigningKeySize)
 	if _, err := io.ReadFull(rand.Reader, key); err != nil {

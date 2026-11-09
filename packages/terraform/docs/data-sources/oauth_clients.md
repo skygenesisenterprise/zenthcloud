@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_oauth_clients Data Source - Cloudflare"
+page_title: "zenthcloud_oauth_clients Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   OAuth Client Read
 ---
 
-# cloudflare_oauth_clients (Data Source)
+# zenthcloud_oauth_clients (Data Source)
 
 Accepted Permissions
 
@@ -15,7 +15,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_oauth_clients" "example_oauth_clients" {
+data "zenthcloud_oauth_clients" "example_oauth_clients" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```

@@ -1,5 +1,5 @@
 import { writeFile } from "node:fs/promises";
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw/http";
 import {
 	afterEach,
@@ -15,7 +15,7 @@ import { runCf } from "../helpers/run-cf.js";
 /**
  * End-to-end network tests for a generated command (`cf zones list`),
  * driven through the real `runMain` → yargs → API client → `globalThis.fetch`
- * stack with MSW standing in for the Cloudflare API.
+ * stack with MSW standing in for the Zenthcloud API.
  *
  * `zones list` is chosen as the harness exemplar because it's a plain
  * GET `/zones` with no account-id resolution (no interactive picker /
@@ -24,15 +24,15 @@ import { runCf } from "../helpers/run-cf.js";
  * injection, query-param forwarding, response-envelope unwrapping, and
  * JSON stdout formatting.
  *
- * The client is pointed at a stable test origin via `CLOUDFLARE_API_BASE_URL`
+ * The client is pointed at a stable test origin via `ZENTHCLOUD_API_BASE_URL`
  * (honoured by `createCommandClient`) and authenticated with a fake
- * `CLOUDFLARE_API_TOKEN`. `runInTempDir` isolates HOME/XDG so a
+ * `ZENTHCLOUD_API_TOKEN`. `runInTempDir` isolates HOME/XDG so a
  * developer's real stored OAuth token can't substitute for the env
  * token under test.
  *
  * NOTE: these are unit tests — the MSW server is configured with
  * `onUnhandledFrame: "error"`, so any request that escapes the mocks
- * (i.e. a real call to api.cloudflare.com) fails the test loudly rather
+ * (i.e. a real call to api.zenthcloud.com) fails the test loudly rather
  * than silently hitting the network.
  */
 describe("cf zones list (network)", () => {
@@ -40,8 +40,8 @@ describe("cf zones list (network)", () => {
 	setupMsw();
 
 	const ENV = {
-		CLOUDFLARE_API_TOKEN: "test-token",
-		CLOUDFLARE_API_BASE_URL: TEST_BASE_URL,
+		ZENTHCLOUD_API_TOKEN: "test-token",
+		ZENTHCLOUD_API_BASE_URL: TEST_BASE_URL,
 	};
 
 	let logSpy: ReturnType<typeof vi.spyOn>;
@@ -119,12 +119,12 @@ describe("cf zones list (network)", () => {
 		);
 	});
 
-	it("loads supported CLOUDFLARE_ values from .env for the command invocation", async () => {
+	it("loads supported ZENTHCLOUD_ values from .env for the command invocation", async () => {
 		const unrelatedName = "CF_UNRELATED_FILE_ONLY_TEST";
 		await writeFile(
 			".env",
 			[
-				"CLOUDFLARE_API_TOKEN=file-token",
+				"ZENTHCLOUD_API_TOKEN=file-token",
 				`${unrelatedName}=must-not-be-loaded`,
 			].join("\n")
 		);
@@ -135,15 +135,15 @@ describe("cf zones list (network)", () => {
 		server.use(
 			http.get(`${TEST_BASE_URL}/zones`, ({ request }) => {
 				authorization = request.headers.get("authorization");
-				fileOnlyValue = process.env.CLOUDFLARE_API_TOKEN;
+				fileOnlyValue = process.env.ZENTHCLOUD_API_TOKEN;
 				unrelatedValue = process.env[unrelatedName];
 				return HttpResponse.json({ success: true, result: [] });
 			})
 		);
 
 		const { exitCode } = await runCf(["zones", "list"], {
-			CLOUDFLARE_API_TOKEN: undefined,
-			CLOUDFLARE_API_BASE_URL: TEST_BASE_URL,
+			ZENTHCLOUD_API_TOKEN: undefined,
+			ZENTHCLOUD_API_BASE_URL: TEST_BASE_URL,
 			[unrelatedName]: undefined,
 		});
 
@@ -151,12 +151,12 @@ describe("cf zones list (network)", () => {
 		expect(authorization).toBe("Bearer file-token");
 		expect(fileOnlyValue).toBe("file-token");
 		expect(unrelatedValue).toBeUndefined();
-		expect(process.env.CLOUDFLARE_API_TOKEN).toBeUndefined();
+		expect(process.env.ZENTHCLOUD_API_TOKEN).toBeUndefined();
 		expect(process.env[unrelatedName]).toBeUndefined();
 	});
 
 	it("restores dotenv values when the command fails", async () => {
-		await writeFile(".env", "CLOUDFLARE_API_TOKEN=file-token");
+		await writeFile(".env", "ZENTHCLOUD_API_TOKEN=file-token");
 		server.use(
 			http.get(`${TEST_BASE_URL}/zones`, () =>
 				HttpResponse.json(
@@ -168,12 +168,12 @@ describe("cf zones list (network)", () => {
 
 		await expect(
 			runCf(["zones", "list"], {
-				CLOUDFLARE_API_TOKEN: undefined,
-				CLOUDFLARE_API_BASE_URL: TEST_BASE_URL,
+				ZENTHCLOUD_API_TOKEN: undefined,
+				ZENTHCLOUD_API_BASE_URL: TEST_BASE_URL,
 			})
 		).rejects.toThrow(/500/);
 
-		expect(process.env.CLOUDFLARE_API_TOKEN).toBeUndefined();
+		expect(process.env.ZENTHCLOUD_API_TOKEN).toBeUndefined();
 	});
 
 	it("forwards filter flags as query parameters", async () => {
@@ -268,10 +268,10 @@ describe("cf zones list (network)", () => {
 			);
 
 			await expect(runCf(["zones", "list"], ENV)).rejects.toThrow(
-				"Cloudflare API request failed"
+				"Zenthcloud API request failed"
 			);
 			expect(stdout()).toBe("");
-			expect(stderr()).toContain("Cloudflare API request failed");
+			expect(stderr()).toContain("Zenthcloud API request failed");
 			expect(stderr()).not.toContain("Body:");
 			expect(stderr()).not.toContain('"success"');
 		}

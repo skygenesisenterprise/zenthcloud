@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import type {
   ThemeConfig,
   TokenDefinition,
-} from "@cloudflare/kumo/scripts/theme-generator/types";
+} from "@zenthcloud/kumo/scripts/theme-generator/types";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

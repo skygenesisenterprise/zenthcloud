@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_snippet Data Source - Cloudflare"
+page_title: "zenthcloud_snippet Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Snippets ReadSnippets Write
 ---
 
-# cloudflare_snippet (Data Source)
+# zenthcloud_snippet (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_snippet" "example_snippet" {
+data "zenthcloud_snippet" "example_snippet" {
   zone_id = "9f1839b6152d298aca64c4e906b6d074"
   snippet_name = "my_snippet"
 }

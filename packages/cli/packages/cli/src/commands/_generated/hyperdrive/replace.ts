@@ -76,7 +76,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("name", {
 			type: "string",
 			description:
-				"The name of the Hyperdrive configuration. Used to identify the configuration in the Cloudflare dashboard and API.",
+				"The name of the Hyperdrive configuration. Used to identify the configuration in the Zenthcloud dashboard and API.",
 		})
 		.option("origin-database", {
 			type: "string",
@@ -128,7 +128,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("origin-connection-limit", {
 			type: "number",
 			description:
-				"The (soft) maximum number of connections the Hyperdrive is allowed to make to the origin database.\n\nMaximum allowed: 20 for free tier accounts, 100 for paid tier accounts.\nIf not specified, defaults to 20 for free tier and 60 for paid tier.\nCertain Cloudflare-managed origins may be permitted a higher limit.\nContact Cloudflare if you need a higher limit.\n",
+				"The (soft) maximum number of connections the Hyperdrive is allowed to make to the origin database.\n\nMaximum allowed: 20 for free tier accounts, 100 for paid tier accounts.\nIf not specified, defaults to 20 for free tier and 60 for paid tier.\nCertain Zenthcloud-managed origins may be permitted a higher limit.\nContact Zenthcloud if you need a higher limit.\n",
 		})
 		.option("dry-run", {
 			type: "boolean",
@@ -193,7 +193,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf hyperdrive replace",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/hyperdrive/configs/${argv["hyperdrive-id"] == null ? "<hyperdrive-id>" : encodeURIComponent(String(argv["hyperdrive-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/hyperdrive/configs/${argv["hyperdrive-id"] == null ? "<hyperdrive-id>" : encodeURIComponent(String(argv["hyperdrive-id"]))}`,
 						pathParams: {
 							"hyperdrive-id": String(argv["hyperdrive-id"] ?? ""),
 						},
@@ -297,7 +297,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 				if (argv["name"] === undefined) {
 					argv["name"] = await promptForRequiredField(
 						"name",
-						"The name of the Hyperdrive configuration. Used to identify the configuration in the Cloudflare dashboard and API."
+						"The name of the Hyperdrive configuration. Used to identify the configuration in the Zenthcloud dashboard and API."
 					);
 				}
 				if (argv["origin-database"] === undefined) {

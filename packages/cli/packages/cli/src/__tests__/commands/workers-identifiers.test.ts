@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw/http";
 import {
 	afterEach,
@@ -18,9 +18,9 @@ describe("cf workers identifiers", () => {
 	setupMsw();
 
 	const ENV = {
-		CLOUDFLARE_API_TOKEN: "test-token",
-		CLOUDFLARE_API_BASE_URL: TEST_BASE_URL,
-		CLOUDFLARE_ACCOUNT_ID: "test-account",
+		ZENTHCLOUD_API_TOKEN: "test-token",
+		ZENTHCLOUD_API_BASE_URL: TEST_BASE_URL,
+		ZENTHCLOUD_ACCOUNT_ID: "test-account",
 	};
 	const ACCOUNT = `${TEST_BASE_URL}/accounts/test-account`;
 	const flags = ["--worker", "--worker-id", "--script-name"];
@@ -82,7 +82,7 @@ describe("cf workers identifiers", () => {
 			await runCf(["workers", ...args, flag, "my/worker", "--dry-run"], ENV);
 			const output = JSON.parse(String(logSpy.mock.calls[0]?.[0]));
 			expect(output).toMatchObject({
-				url: `https://api.cloudflare.com/client/v4/accounts/test-account${path.replace("my-worker", "my%2Fworker")}`,
+				url: `https://github.com/skygenesisenterprise/zenthcloud${path.replace("my-worker", "my%2Fworker")}`,
 				pathParams: { worker: "my/worker" },
 			});
 		});

@@ -36,21 +36,21 @@ interface Fixture {
  * entries in sync with the fixture IDs used by the artifact contract.
  */
 const FIXTURE_ENTRIES = {
-  "root-button": `export { Button } from "@cloudflare/kumo";`,
-  "subpath-button": `export { Button } from "@cloudflare/kumo/components/button";`,
-  "root-trio": `export { Button, Dialog, Select } from "@cloudflare/kumo";`,
+  "root-button": `export { Button } from "@zenthcloud/kumo";`,
+  "subpath-button": `export { Button } from "@zenthcloud/kumo/components/button";`,
+  "root-trio": `export { Button, Dialog, Select } from "@zenthcloud/kumo";`,
   "subpath-trio": `
-      export { Button } from "@cloudflare/kumo/components/button";
-      export { Dialog } from "@cloudflare/kumo/components/dialog";
-      export { Select } from "@cloudflare/kumo/components/select";
+      export { Button } from "@zenthcloud/kumo/components/button";
+      export { Dialog } from "@zenthcloud/kumo/components/dialog";
+      export { Select } from "@zenthcloud/kumo/components/select";
     `,
-  "root-chart": `export { Chart } from "@cloudflare/kumo";`,
-  "subpath-chart": `export { Chart } from "@cloudflare/kumo/components/chart";`,
-  "subpath-badge": `export { Badge } from "@cloudflare/kumo/components/badge";`,
-  "subpath-flow": `export { Flow } from "@cloudflare/kumo/components/flow";`,
-  "primitive-button": `export * from "@cloudflare/kumo/primitives/button";`,
-  "primitives-barrel": `export * from "@cloudflare/kumo/primitives";`,
-  code: `export { ShikiProvider, CodeHighlighted } from "@cloudflare/kumo/code";`,
+  "root-chart": `export { Chart } from "@zenthcloud/kumo";`,
+  "subpath-chart": `export { Chart } from "@zenthcloud/kumo/components/chart";`,
+  "subpath-badge": `export { Badge } from "@zenthcloud/kumo/components/badge";`,
+  "subpath-flow": `export { Flow } from "@zenthcloud/kumo/components/flow";`,
+  "primitive-button": `export * from "@zenthcloud/kumo/primitives/button";`,
+  "primitives-barrel": `export * from "@zenthcloud/kumo/primitives";`,
+  code: `export { ShikiProvider, CodeHighlighted } from "@zenthcloud/kumo/code";`,
 } satisfies Record<BundleSizeFixtureId, string>;
 
 /** Peer dependencies stay external — consumers always provide these. */

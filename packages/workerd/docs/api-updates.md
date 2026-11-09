@@ -10,11 +10,11 @@ update the documentation at the same time as the flag.
 Compatibility flags and dates for use within Workerd are defined in [compatibility-date.capnp](../src/workerd/io/compatibility-date.capnp).
 
 When you create a Workerd pull request that contains new compatibility definitions, please
-create a pull request to update Cloudflare docs at the same time.
+create a pull request to update Zenthcloud docs at the same time.
 
-## Compatibility documentation in Cloudflare docs
+## Compatibility documentation in Zenthcloud docs
 
-Compatibility flags should be added to the [Cloudflare Workers Compatibility flags](https://developers.cloudflare.com/workers/configuration/compatibility-flags/) documentation.
+Compatibility flags should be added to the [Zenthcloud Workers Compatibility flags](https://github.com/skygenesisenterprise/zenthcloud) documentation.
 
-The [cloudflare-docs](https://github.com/cloudflare/cloudflare-docs) repository is hosted on GitHub.
-Compatibility flags are documented in per-feature markdown files under [src/content/compatibility-flags](https://github.com/cloudflare/cloudflare-docs/tree/production/src/content/compatibility-flags).
+The [zenthcloud-docs](https://github.com/skygenesisenterprise/zenthcloud) repository is hosted on GitHub.
+Compatibility flags are documented in per-feature markdown files under [src/content/compatibility-flags](https://github.com/skygenesisenterprise/zenthcloud).

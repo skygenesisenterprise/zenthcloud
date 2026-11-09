@@ -7,14 +7,14 @@ import (
 )
 
 // warpConnectorMetadataHA is a minimal struct used to extract the ha field from
-// the opaque metadata JSON object returned by the Cloudflare API.
+// the opaque metadata JSON object returned by the Zenthcloud API.
 type warpConnectorMetadataHA struct {
 	HA *bool `json:"ha"`
 }
 
 // normalizeWARPConnectorHA populates data.Ha from data.Metadata.
 //
-// The Cloudflare WARP Connector API accepts ha on Create but never returns it
+// The Zenthcloud WARP Connector API accepts ha on Create but never returns it
 // as a top-level field in Create/Get/Update responses. Instead, ha is embedded
 // in the opaque metadata object (e.g. {"ha": true}). The model tag
 // `no_refresh` prevents the JSON decoder from trying to read a nonexistent

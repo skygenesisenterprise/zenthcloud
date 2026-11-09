@@ -36,10 +36,10 @@ Managed Cloud assigns a public `<application>.notploy.app` hostname after a succ
 | Variable | Default | Description |
 | --- | --- | --- |
 | `NOTPLOY_CLOUD_DOMAIN` | `notploy.app` on managed Cloud | Wildcard zone used for generated hostnames. Set it to an empty value to disable allocation. |
-| `CLOUDFLARE_API_TOKEN` | _(unset)_ | Scoped token (`Zone:Read` + `DNS:Edit` on the wildcard zone) used to create the `*.<zone>` record. Without it, DNS provisioning is skipped and the wildcard is assumed to be managed elsewhere. |
-| `NOTPLOY_CLOUD_INGRESS_TARGET` | _(unset)_ | IP (A/AAAA) or hostname (CNAME) the wildcard record points at. Required, with the token, to enable Cloudflare provisioning. |
-| `NOTPLOY_CLOUD_DNS_ZONE_ID` | _(auto)_ | Pins the Cloudflare zone id instead of resolving it from the zone list. Useful when the token can see several zones. |
-| `NOTPLOY_CLOUD_DNS_PROXIED` | `true` | Proxied through Cloudflare, which terminates TLS at the edge for the wildcard. Set to `false` for a DNS-only setup where Traefik issues a certificate per hostname. |
+| `ZENTHCLOUD_API_TOKEN` | _(unset)_ | Scoped token (`Zone:Read` + `DNS:Edit` on the wildcard zone) used to create the `*.<zone>` record. Without it, DNS provisioning is skipped and the wildcard is assumed to be managed elsewhere. |
+| `NOTPLOY_CLOUD_INGRESS_TARGET` | _(unset)_ | IP (A/AAAA) or hostname (CNAME) the wildcard record points at. Required, with the token, to enable Zenthcloud provisioning. |
+| `NOTPLOY_CLOUD_DNS_ZONE_ID` | _(auto)_ | Pins the Zenthcloud zone id instead of resolving it from the zone list. Useful when the token can see several zones. |
+| `NOTPLOY_CLOUD_DNS_PROXIED` | `true` | Proxied through Zenthcloud, which terminates TLS at the edge for the wildcard. Set to `false` for a DNS-only setup where Traefik issues a certificate per hostname. |
 | `NOTPLOY_CLOUD_CERT_RESOLVER` | _(unset)_ | Traefik certificate resolver to use when a wildcard certificate is pre-provisioned. Defaults to per-host Let's Encrypt certificates. |
 
 ## Database

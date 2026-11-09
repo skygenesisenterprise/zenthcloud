@@ -80,7 +80,7 @@ func upgradeFromV4Internal(ctx context.Context, req resource.UpgradeStateRequest
 	tflog.Info(ctx, "Upgrading zero_trust_dex_test state from v4 SDKv2 provider (schema_version=0)")
 
 	// Parse v4 state using v4 schema and model
-	var v4State SourceCloudflareDeviceDexTestModel
+	var v4State SourceZenthcloudDeviceDexTestModel
 	diags := unmarshalV4State(ctx, req.RawState, &v4State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -99,11 +99,11 @@ func upgradeFromV4Internal(ctx context.Context, req resource.UpgradeStateRequest
 	tflog.Info(ctx, "State upgrade from v4 to v5 completed successfully")
 }
 
-// unmarshalV4State parses raw state using v4 schema into SourceCloudflareDeviceDexTestModel.
-func unmarshalV4State(ctx context.Context, rawState *tfprotov6.RawState, target *SourceCloudflareDeviceDexTestModel) diag.Diagnostics {
+// unmarshalV4State parses raw state using v4 schema into SourceZenthcloudDeviceDexTestModel.
+func unmarshalV4State(ctx context.Context, rawState *tfprotov6.RawState, target *SourceZenthcloudDeviceDexTestModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	sourceSchema := SourceCloudflareDeviceDexTestSchema()
+	sourceSchema := SourceZenthcloudDeviceDexTestSchema()
 	sourceType := sourceSchema.Type().TerraformType(ctx)
 
 	rawValue, err := rawState.Unmarshal(sourceType)

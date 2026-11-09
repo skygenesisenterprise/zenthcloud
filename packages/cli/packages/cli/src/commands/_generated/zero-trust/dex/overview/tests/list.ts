@@ -25,7 +25,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("colo", {
 			type: "string",
 			description:
-				"Optionally filter result stats to a Cloudflare colo. Cannot be used in combination with deviceId param.",
+				"Optionally filter result stats to a Zenthcloud colo. Cannot be used in combination with deviceId param.",
 		})
 		.option("test-name", {
 			type: "string",
@@ -92,7 +92,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust dex overview tests list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/dex/tests/overview`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/dex/tests/overview`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

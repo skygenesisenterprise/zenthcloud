@@ -7,12 +7,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go"
-	cfv3 "github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/speed"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go"
+	cfv3 "github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/speed"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -26,19 +26,19 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_observatory_scheduled_test", &resource.Sweeper{
-		Name: "cloudflare_observatory_scheduled_test",
-		F:    testSweepCloudflareObservatoryScheduledTests,
+	resource.AddTestSweepers("zenthcloud_observatory_scheduled_test", &resource.Sweeper{
+		Name: "zenthcloud_observatory_scheduled_test",
+		F:    testSweepZenthcloudObservatoryScheduledTests,
 	})
 }
 
-func testSweepCloudflareObservatoryScheduledTests(r string) error {
+func testSweepZenthcloudObservatoryScheduledTests(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping observatory scheduled tests sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping observatory scheduled tests sweep: ZENTHCLOUD_ZONE_ID not set")
 		return nil
 	}
 
@@ -75,13 +75,13 @@ func testSweepCloudflareObservatoryScheduledTests(r string) error {
 	return nil
 }
 
-func TestAccCloudflareObservatoryScheduledTest_Basic(t *testing.T) {
+func TestAccZenthcloudObservatoryScheduledTest_Basic(t *testing.T) {
 	t.Skip("needs to be fixed by service team")
 	t.Parallel()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_observatory_scheduled_test.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_observatory_scheduled_test.%s", rnd)
 	url1 := url.PathEscape(domain + "/" + rnd)
 	url2 := url.PathEscape(domain + "/" + rnd + "-updated")
 
@@ -91,7 +91,7 @@ func TestAccCloudflareObservatoryScheduledTest_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Step 1: Create + Read
 			{
-				Config: testAccCloudflareObservatoryScheduledTestConfig(rnd, zoneID, domain, rnd),
+				Config: testAccZenthcloudObservatoryScheduledTestConfig(rnd, zoneID, domain, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						name,
@@ -122,7 +122,7 @@ func TestAccCloudflareObservatoryScheduledTest_Basic(t *testing.T) {
 			},
 			// Step 2: Update + Read
 			{
-				Config: testAccCloudflareObservatoryScheduledTestConfig(rnd, zoneID, domain, rnd+"-updated"),
+				Config: testAccZenthcloudObservatoryScheduledTestConfig(rnd, zoneID, domain, rnd+"-updated"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						name,
@@ -162,7 +162,7 @@ func TestAccCloudflareObservatoryScheduledTest_Basic(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareObservatoryScheduledTest_FrequencyUpdate changes `frequency` on an
+// TestAccZenthcloudObservatoryScheduledTest_FrequencyUpdate changes `frequency` on an
 // existing resource. No existing test sets frequency or region at all, so this path has
 // never been exercised.
 //
@@ -172,12 +172,12 @@ func TestAccCloudflareObservatoryScheduledTest_Basic(t *testing.T) {
 // carries RequiresReplace(); frequency and region do not. If that is a real defect,
 // Terraform plans an in-place update, Update() never calls the API or sets resp.State, and
 // this test fails with "Provider produced inconsistent result after apply".
-func TestAccCloudflareObservatoryScheduledTest_FrequencyUpdate(t *testing.T) {
+func TestAccZenthcloudObservatoryScheduledTest_FrequencyUpdate(t *testing.T) {
 	t.Parallel()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_observatory_scheduled_test.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_observatory_scheduled_test.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -185,7 +185,7 @@ func TestAccCloudflareObservatoryScheduledTest_FrequencyUpdate(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Step 1: create with an explicit frequency
 			{
-				Config: testAccCloudflareObservatoryScheduledTestConfigFrequency(rnd, zoneID, domain, rnd, "WEEKLY"),
+				Config: testAccZenthcloudObservatoryScheduledTestConfigFrequency(rnd, zoneID, domain, rnd, "WEEKLY"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						name,
@@ -196,7 +196,7 @@ func TestAccCloudflareObservatoryScheduledTest_FrequencyUpdate(t *testing.T) {
 			},
 			// Step 2: change only frequency
 			{
-				Config: testAccCloudflareObservatoryScheduledTestConfigFrequency(rnd, zoneID, domain, rnd, "DAILY"),
+				Config: testAccZenthcloudObservatoryScheduledTestConfigFrequency(rnd, zoneID, domain, rnd, "DAILY"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						name,
@@ -209,18 +209,18 @@ func TestAccCloudflareObservatoryScheduledTest_FrequencyUpdate(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareObservatoryScheduledTestDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudObservatoryScheduledTestDestroy(s *terraform.State) error {
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_observatory_scheduled_test" {
+		if rs.Type != "zenthcloud_observatory_scheduled_test" {
 			continue
 		}
 
-		_, err := client.GetObservatoryScheduledPageTest(context.Background(), cloudflare.ZoneIdentifier(rs.Primary.Attributes[consts.ZoneIDSchemaKey]), cloudflare.GetObservatoryScheduledPageTestParams{
+		_, err := client.GetObservatoryScheduledPageTest(context.Background(), zenthcloud.ZoneIdentifier(rs.Primary.Attributes[consts.ZoneIDSchemaKey]), zenthcloud.GetObservatoryScheduledPageTestParams{
 			URL:    rs.Primary.Attributes["url"],
 			Region: rs.Primary.Attributes["region"],
 		})
@@ -232,18 +232,18 @@ func testAccCheckCloudflareObservatoryScheduledTestDestroy(s *terraform.State) e
 	return nil
 }
 
-func testAccCloudflareObservatoryScheduledTestConfig(resourceName, zoneID, domain, path string) string {
+func testAccZenthcloudObservatoryScheduledTestConfig(resourceName, zoneID, domain, path string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_observatory_scheduled_test" "%[1]s" {
+resource "zenthcloud_observatory_scheduled_test" "%[1]s" {
   zone_id = %[2]q
   url     = urlencode("%[3]s/%[4]s")
 }
 `, resourceName, zoneID, domain, path)
 }
 
-func testAccCloudflareObservatoryScheduledTestConfigFrequency(resourceName, zoneID, domain, path, frequency string) string {
+func testAccZenthcloudObservatoryScheduledTestConfigFrequency(resourceName, zoneID, domain, path, frequency string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_observatory_scheduled_test" "%[1]s" {
+resource "zenthcloud_observatory_scheduled_test" "%[1]s" {
   zone_id   = %[2]q
   url       = urlencode("%[3]s/%[4]s")
   frequency = %[5]q

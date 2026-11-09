@@ -87,7 +87,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust casb findings instances export",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/data-security/posture/findings/${argv["finding-namespace-id"] == null ? "<finding-namespace-id>" : encodeURIComponent(String(argv["finding-namespace-id"]))}/instances/export`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/data-security/posture/findings/${argv["finding-namespace-id"] == null ? "<finding-namespace-id>" : encodeURIComponent(String(argv["finding-namespace-id"]))}/instances/export`,
 						pathParams: {
 							"finding-namespace-id": String(
 								argv["finding-namespace-id"] ?? ""

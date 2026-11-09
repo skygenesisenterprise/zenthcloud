@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_access_mtls_certificate Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_access_mtls_certificate Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Access: Mutual TLS Certificates ReadAccess: Mutual TLS Certificates Write
 ---
 
-# cloudflare_zero_trust_access_mtls_certificate (Data Source)
+# zenthcloud_zero_trust_access_mtls_certificate (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_access_mtls_certificate" "example_zero_trust_access_mtls_certificate" {
+data "zenthcloud_zero_trust_access_mtls_certificate" "example_zero_trust_access_mtls_certificate" {
   certificate_id = "f174e90a-fafe-4643-bbbc-4a0ed4fc8415"
   account_id = "account_id"
   zone_id = "zone_id"

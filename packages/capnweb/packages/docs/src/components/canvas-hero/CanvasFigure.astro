@@ -33,7 +33,7 @@ const { caption } = Astro.props;
   // one script without registering the same selector twice; there is one mount
   // point on the site now, and a lookup table with a single entry is a way to
   // turn a missing scene into a silent no-op instead of a build error.
-  import { mount } from "@cloudflare/nimbus-docs/client";
+  import { mount } from "@zenthcloud/nimbus-docs/client";
   import { mountCanvasHero } from "./canvas-hero.client";
   import { versus } from "./scenes/versus";
 

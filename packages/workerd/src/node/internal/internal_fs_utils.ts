@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 //
@@ -94,7 +94,7 @@ export type RmDirOptions = NodeRmDirOptions & {
 
 export type ValidEncoding = BufferEncoding | 'buffer' | null;
 
-import type { Stat as InternalStat } from 'cloudflare-internal:filesystem';
+import type { Stat as InternalStat } from 'zenthcloud-internal:filesystem';
 
 // A non-public symbol used to ensure that certain constructors cannot
 // be called from user-code

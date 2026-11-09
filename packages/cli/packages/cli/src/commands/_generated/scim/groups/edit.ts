@@ -21,12 +21,12 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 scim groups edit <group-id>\n\nPartially updates a SCIM Group via PATCH operations (RFC 7644 Section 3.5.2). Supports add, remove, and replace operations on `members`, `displayName`, and `externalId`. For system groups (prefixed `cloudflare-v1-`), only member management operations are supported."
+			"$0 scim groups edit <group-id>\n\nPartially updates a SCIM Group via PATCH operations (RFC 7644 Section 3.5.2). Supports add, remove, and replace operations on `members`, `displayName`, and `externalId`. For system groups (prefixed `zenthcloud-v1-`), only member management operations are supported."
 		)
 		.positional("group-id", {
 			type: "string",
 			description:
-				"The group identifier for a SCIM Group resource. For system groups this is prefixed \`cloudflare-v1-<permissionGroupTag>\`; for custom user groups this is a UUID-style tag.",
+				"The group identifier for a SCIM Group resource. For system groups this is prefixed \`zenthcloud-v1-<permissionGroupTag>\`; for custom user groups this is a UUID-style tag.",
 			demandOption: true,
 		})
 		.option("dry-run", {
@@ -65,7 +65,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf scim groups edit",
 						method: "PATCH",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/scim/v2/Groups/${argv["group-id"] == null ? "<group-id>" : encodeURIComponent(String(argv["group-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/scim/v2/Groups/${argv["group-id"] == null ? "<group-id>" : encodeURIComponent(String(argv["group-id"]))}`,
 						pathParams: { "group-id": String(argv["group-id"] ?? "") },
 						bodyKind: "octet-stream",
 						body: argv.file !== undefined ? { file: argv.file } : argv.body,

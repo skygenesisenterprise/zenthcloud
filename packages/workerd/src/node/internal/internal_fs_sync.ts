@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 //
@@ -86,7 +86,7 @@ import {
   COPYFILE_FICLONE_FORCE,
 } from 'node-internal:internal_fs_constants';
 import { Dir, Dirent } from 'node-internal:internal_fs';
-import { default as cffs } from 'cloudflare-internal:filesystem';
+import { default as cffs } from 'zenthcloud-internal:filesystem';
 import { isStdioFd, writeStdio } from 'node-internal:internal_fs_stdio';
 
 import { Buffer } from 'node-internal:internal_buffer';
@@ -898,7 +898,7 @@ export function globSync(
   const results = new Map<string, GlobResult>();
   const dirCache = new Map<
     string,
-    import('cloudflare-internal:filesystem').DirEntryHandle[]
+    import('zenthcloud-internal:filesystem').DirEntryHandle[]
   >();
 
   for (const p of patterns) {

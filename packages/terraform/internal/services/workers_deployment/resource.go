@@ -8,12 +8,12 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/workers"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/workers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -29,7 +29,7 @@ func NewResource() resource.Resource {
 
 // WorkersDeploymentResource defines the resource implementation.
 type WorkersDeploymentResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *WorkersDeploymentResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -41,12 +41,12 @@ func (r *WorkersDeploymentResource) Configure(ctx context.Context, req resource.
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -65,11 +65,11 @@ func (r *WorkersDeploymentResource) Create(ctx context.Context, req resource.Cre
 	}
 
 	params := workers.ScriptDeploymentNewParams{
-		AccountID: cloudflare.F(data.AccountID.ValueString()),
+		AccountID: zenthcloud.F(data.AccountID.ValueString()),
 	}
 
 	if !data.Force.IsNull() && !data.Force.IsUnknown() {
-		params.Force = cloudflare.F(data.Force.ValueBool())
+		params.Force = zenthcloud.F(data.Force.ValueBool())
 	}
 
 	dataBytes, err := data.MarshalJSON()
@@ -122,7 +122,7 @@ func (r *WorkersDeploymentResource) Read(ctx context.Context, req resource.ReadR
 		data.ScriptName.ValueString(),
 		data.ID.ValueString(),
 		workers.ScriptDeploymentGetParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -180,7 +180,7 @@ func (r *WorkersDeploymentResource) ImportState(ctx context.Context, req resourc
 		path_script_name,
 		path_deployment_id,
 		workers.ScriptDeploymentGetParams{
-			AccountID: cloudflare.F(path_account_id),
+			AccountID: zenthcloud.F(path_account_id),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),

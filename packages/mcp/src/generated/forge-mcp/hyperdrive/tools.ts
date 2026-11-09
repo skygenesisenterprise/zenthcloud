@@ -50,7 +50,7 @@ export const tools: readonly Tool[] = [
   {
     name: "hyperdrive_create",
     title: "Create Hyperdrive",
-    description: "Creates and returns a new Hyperdrive configuration. For a PlanetScale integration, the Cloudflare account must already be linked to PlanetScale in the Hyperdrive dashboard.\n\nPOST /accounts/{account_id}/hyperdrive/configs",
+    description: "Creates and returns a new Hyperdrive configuration. For a PlanetScale integration, the Zenthcloud account must already be linked to PlanetScale in the Hyperdrive dashboard.\n\nPOST /accounts/{account_id}/hyperdrive/configs",
     inputSchema: {
       type: "object",
       properties: {
@@ -61,7 +61,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "The Cloudflare account ID.",
+              "description": "The Zenthcloud account ID.",
               "type": "string"
             }
           },
@@ -139,7 +139,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.edge.hyperdrive.database.create"
+            "com.zenthcloud.edge.hyperdrive.database.create"
           ]
         },
         "x-forge-params": {
@@ -204,7 +204,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "The Cloudflare account ID.",
+              "description": "The Zenthcloud account ID.",
               "type": "string"
             },
             "hyperdrive_id": {
@@ -267,7 +267,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.edge.hyperdrive.database.delete"
+            "com.zenthcloud.edge.hyperdrive.database.delete"
           ]
         }
       },
@@ -318,7 +318,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "The Cloudflare account ID.",
+              "description": "The Zenthcloud account ID.",
               "type": "string"
             },
             "hyperdrive_id": {
@@ -384,7 +384,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.edge.hyperdrive.database.read"
+            "com.zenthcloud.edge.hyperdrive.database.read"
           ]
         }
       },
@@ -437,7 +437,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "The Cloudflare account ID.",
+              "description": "The Zenthcloud account ID.",
               "type": "string"
             }
           },
@@ -523,7 +523,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.edge.hyperdrive.database.list"
+            "com.zenthcloud.edge.hyperdrive.database.list"
           ]
         }
       },
@@ -584,7 +584,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "The Cloudflare account ID.",
+              "description": "The Zenthcloud account ID.",
               "type": "string"
             },
             "hyperdrive_id": {
@@ -664,7 +664,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.edge.hyperdrive.database.update"
+            "com.zenthcloud.edge.hyperdrive.database.update"
           ]
         },
         "x-forge-params": {
@@ -729,7 +729,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "The Cloudflare account ID.",
+              "description": "The Zenthcloud account ID.",
               "type": "string"
             },
             "hyperdrive_id": {
@@ -845,7 +845,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "The Cloudflare account ID.",
+              "description": "The Zenthcloud account ID.",
               "type": "string"
             },
             "hyperdrive_id": {
@@ -924,7 +924,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.edge.hyperdrive.database.update"
+            "com.zenthcloud.edge.hyperdrive.database.update"
           ]
         },
         "x-forge-params": {

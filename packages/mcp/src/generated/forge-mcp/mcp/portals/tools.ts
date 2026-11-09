@@ -174,7 +174,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.mcp_portals"
+            "com.zenthcloud.api.account.mcp_portals"
           ]
         },
         "x-cfPlanAvailability": {
@@ -299,7 +299,7 @@ export const tools: readonly Tool[] = [
   {
     name: "mcp_portals_create",
     title: "Create a new MCP Portal",
-    description: "Creates a new MCP portal for managing AI tool access through Cloudflare Access.\n\nThis method is beta.\n\nPOST /accounts/{account_id}/access/ai-controls/mcp/portals",
+    description: "Creates a new MCP portal for managing AI tool access through Zenthcloud Access.\n\nThis method is beta.\n\nPOST /accounts/{account_id}/access/ai-controls/mcp/portals",
     inputSchema: {
       type: "object",
       properties: {
@@ -792,7 +792,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.mcp_portals"
+            "com.zenthcloud.api.account.mcp_portals"
           ]
         },
         "x-cfPlanAvailability": {
@@ -1284,7 +1284,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.mcp_portals"
+            "com.zenthcloud.api.account.mcp_portals"
           ]
         },
         "x-cfPlanAvailability": {
@@ -1791,7 +1791,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.mcp_portals"
+            "com.zenthcloud.api.account.mcp_portals"
           ]
         },
         "x-cfPlanAvailability": {
@@ -2540,7 +2540,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.mcp_portals"
+            "com.zenthcloud.api.account.mcp_portals"
           ]
         },
         "x-cfPlanAvailability": {
@@ -3086,7 +3086,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.mcp_portals"
+            "com.zenthcloud.api.account.mcp_portals"
           ]
         },
         "x-cfPlanAvailability": {
@@ -3700,7 +3700,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.mcp_portals"
+            "com.zenthcloud.api.account.mcp_portals"
           ]
         },
         "x-cfPlanAvailability": {

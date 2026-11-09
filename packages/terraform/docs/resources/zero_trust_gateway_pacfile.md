@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_gateway_pacfile Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_gateway_pacfile Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust ReadZero Trust Write
 ---
 
-# cloudflare_zero_trust_gateway_pacfile (Resource)
+# zenthcloud_zero_trust_gateway_pacfile (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_gateway_pacfile" "example_zero_trust_gateway_pacfile" {
+resource "zenthcloud_zero_trust_gateway_pacfile" "example_zero_trust_gateway_pacfile" {
   account_id = "699d98642c564d2e855e9661899b7252"
   contents = "function FindProxyForURL(url, host) { return \"DIRECT\"; }"
   name = "Devops team"
@@ -30,7 +30,7 @@ resource "cloudflare_zero_trust_gateway_pacfile" "example_zero_trust_gateway_pac
 
 ### Required
 
-- `account_id` (String) Specify the Cloudflare account identifier.
+- `account_id` (String) Specify the Zenthcloud account identifier.
 - `contents` (String) Actual contents of the PAC file
 - `name` (String) Name of the PAC file.
 
@@ -51,7 +51,7 @@ resource "cloudflare_zero_trust_gateway_pacfile" "example_zero_trust_gateway_pac
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_gateway_pacfile.example '<account_id>/<pacfile_id>'
+$ terraform import zenthcloud_zero_trust_gateway_pacfile.example '<account_id>/<pacfile_id>'
 ```
 
 

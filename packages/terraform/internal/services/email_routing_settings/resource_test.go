@@ -6,11 +6,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/email_routing"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/email_routing"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -21,21 +21,21 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_email_routing_settings", &resource.Sweeper{
-		Name: "cloudflare_email_routing_settings",
+	resource.AddTestSweepers("zenthcloud_email_routing_settings", &resource.Sweeper{
+		Name: "zenthcloud_email_routing_settings",
 		F: func(region string) error {
 			ctx := context.Background()
 			client := acctest.SharedClient()
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 			if zoneID == "" {
-				tflog.Info(ctx, "Skipping email routing settings sweep: CLOUDFLARE_ZONE_ID not set")
+				tflog.Info(ctx, "Skipping email routing settings sweep: ZENTHCLOUD_ZONE_ID not set")
 				return nil
 			}
 
 			// Check if email routing is enabled first
 			settings, err := client.EmailRouting.Get(ctx, email_routing.EmailRoutingGetParams{
-				ZoneID: cloudflare.F(zoneID),
+				ZoneID: zenthcloud.F(zoneID),
 			})
 			if err != nil {
 				tflog.Error(ctx, fmt.Sprintf("Failed to get email routing settings: %s", err))
@@ -45,7 +45,7 @@ func init() {
 			// Delete email routing DNS configuration (removes all DNS records and subdomains)
 			tflog.Info(ctx, fmt.Sprintf("Deleting email routing DNS configuration (zone: %s)", zoneID))
 			deletedRecords, err := client.EmailRouting.DNS.Delete(ctx, email_routing.DNSDeleteParams{
-				ZoneID: cloudflare.F(zoneID),
+				ZoneID: zenthcloud.F(zoneID),
 			})
 			if err != nil {
 				tflog.Info(ctx, fmt.Sprintf("Note: DNS delete returned error (might be expected): %v", err))
@@ -57,7 +57,7 @@ func init() {
 			if settings.Enabled == email_routing.SettingsEnabledTrue {
 				tflog.Info(ctx, fmt.Sprintf("Disabling email routing settings (zone: %s)", zoneID))
 				_, err = client.EmailRouting.Disable(ctx, email_routing.EmailRoutingDisableParams{
-					ZoneID: cloudflare.F(zoneID),
+					ZoneID: zenthcloud.F(zoneID),
 				})
 				if err != nil {
 					tflog.Error(ctx, fmt.Sprintf("Failed to disable email routing settings: %s", err))
@@ -79,8 +79,8 @@ func testEmailRoutingSettingsConfig(resourceID, zoneID string, enabled bool) str
 
 func TestAccTestEmailRoutingSettings(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_email_routing_settings." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	name := "zenthcloud_email_routing_settings." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -99,7 +99,7 @@ func TestAccTestEmailRoutingSettings(t *testing.T) {
 
 func TestAccUpgradeEmailRoutingSettings_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	config := testEmailRoutingSettingsConfig(rnd, zoneID, true)
 
@@ -108,8 +108,8 @@ func TestAccUpgradeEmailRoutingSettings_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

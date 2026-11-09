@@ -1,4 +1,4 @@
-resource "cloudflare_zero_trust_dlp_custom_profile" "%[1]s" {
+resource "zenthcloud_zero_trust_dlp_custom_profile" "%[1]s" {
   account_id          = "%[2]s"
   name                = "multi-pattern-%[1]s"
   allowed_match_count = 10

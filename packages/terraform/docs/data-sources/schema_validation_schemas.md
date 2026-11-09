@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_schema_validation_schemas Data Source - Cloudflare"
+page_title: "zenthcloud_schema_validation_schemas Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account API GatewayAccount API Gateway ReadDomain API GatewayDomain API Gateway Read
 ---
 
-# cloudflare_schema_validation_schemas (Data Source)
+# zenthcloud_schema_validation_schemas (Data Source)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_schema_validation_schemas" "example_schema_validation_schemas" {
+data "zenthcloud_schema_validation_schemas" "example_schema_validation_schemas" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   schema_id = "f174e90a-fafe-4643-bbbc-4a0ed4fc8415"
   omit_source = true

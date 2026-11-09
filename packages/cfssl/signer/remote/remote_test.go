@@ -12,14 +12,14 @@ import (
 	"testing"
 	"time"
 
-	apiinfo "github.com/cloudflare/cfssl/api/info"
-	apisign "github.com/cloudflare/cfssl/api/signhandler"
-	"github.com/cloudflare/cfssl/config"
-	"github.com/cloudflare/cfssl/helpers"
-	"github.com/cloudflare/cfssl/helpers/testsuite"
-	"github.com/cloudflare/cfssl/info"
-	"github.com/cloudflare/cfssl/signer"
-	"github.com/cloudflare/cfssl/signer/local"
+	apiinfo "github.com/zenthcloud/cfssl/api/info"
+	apisign "github.com/zenthcloud/cfssl/api/signhandler"
+	"github.com/zenthcloud/cfssl/config"
+	"github.com/zenthcloud/cfssl/helpers"
+	"github.com/zenthcloud/cfssl/helpers/testsuite"
+	"github.com/zenthcloud/cfssl/info"
+	"github.com/zenthcloud/cfssl/signer"
+	"github.com/zenthcloud/cfssl/signer/local"
 )
 
 const (
@@ -183,7 +183,7 @@ func remoteTLSSign(t *testing.T, isMutual bool) {
 func verifyRemoteSign(t *testing.T, remoteConfig *config.Config) {
 	s := newRemoteSigner(t, remoteConfig.Signing)
 
-	hosts := []string{"cloudflare.com"}
+	hosts := []string{"zenthcloud.com"}
 	for _, test := range testsuite.CSRTests {
 		csr, err := os.ReadFile(test.File)
 		if err != nil {
@@ -221,7 +221,7 @@ func TestRemoteSignBadServerAndOverride(t *testing.T) {
 	remoteConfig := testsuite.NewConfig(t, []byte(validMinimalRemoteConfig))
 	s := newRemoteSigner(t, remoteConfig.Signing)
 
-	hosts := []string{"cloudflare.com"}
+	hosts := []string{"zenthcloud.com"}
 	csr, err := os.ReadFile("../local/testdata/rsa2048.csr")
 	if err != nil {
 		t.Fatal("CSR loading error:", err)

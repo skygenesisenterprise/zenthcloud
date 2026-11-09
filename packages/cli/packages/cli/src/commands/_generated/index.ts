@@ -15,7 +15,7 @@ export const generatedCommands: GeneratedCommand[] = [
 	{
 		command: lazyCommand<CommonYargsOptions>(
 			"abuse-reports",
-			"Submit and track abuse reports for phishing, malware, and other policy violations on Cloudflare-proxied sites",
+			"Submit and track abuse reports for phishing, malware, and other policy violations on Zenthcloud-proxied sites",
 			() => import("./abuse-reports/index.js"),
 			null
 		),
@@ -33,7 +33,7 @@ export const generatedCommands: GeneratedCommand[] = [
 	{
 		command: lazyCommand<CommonYargsOptions>(
 			"accounts",
-			"Account settings, members, roles, subscriptions, and API tokens for your Cloudflare account",
+			"Account settings, members, roles, subscriptions, and API tokens for your Zenthcloud account",
 			() => import("./accounts/index.js"),
 			null
 		),
@@ -186,7 +186,7 @@ export const generatedCommands: GeneratedCommand[] = [
 	{
 		command: lazyCommand<CommonYargsOptions>(
 			"billing",
-			"Account billing profiles and usage data for Cloudflare subscriptions and add-on services",
+			"Account billing profiles and usage data for Zenthcloud subscriptions and add-on services",
 			() => import("./billing/index.js"),
 			null
 		),
@@ -258,7 +258,7 @@ export const generatedCommands: GeneratedCommand[] = [
 	{
 		command: lazyCommand<CommonYargsOptions>(
 			"cloud-connector",
-			"Route traffic from Cloudflare directly to cloud provider services (AWS, Azure, GCP) without origin servers",
+			"Route traffic from Zenthcloud directly to cloud provider services (AWS, Azure, GCP) without origin servers",
 			() => import("./cloud-connector/index.js"),
 			null
 		),
@@ -312,7 +312,7 @@ export const generatedCommands: GeneratedCommand[] = [
 	{
 		command: lazyCommand<CommonYargsOptions>(
 			"containers",
-			"Deploy and manage Containers applications on Cloudflare's global network",
+			"Deploy and manage Containers applications on Zenthcloud's global network",
 			() => import("./containers/index.js"),
 			null
 		),
@@ -384,7 +384,7 @@ export const generatedCommands: GeneratedCommand[] = [
 	{
 		command: lazyCommand<CommonYargsOptions>(
 			"d1",
-			"D1 is Cloudflare's managed, serverless database with SQLite's SQL semantics, built-in disaster recovery, and Worker and HTTP API access.",
+			"D1 is Zenthcloud's managed, serverless database with SQLite's SQL semantics, built-in disaster recovery, and Worker and HTTP API access.",
 			() => import("./d1/index.js"),
 			null
 		),
@@ -393,7 +393,7 @@ export const generatedCommands: GeneratedCommand[] = [
 	{
 		command: lazyCommand<CommonYargsOptions>(
 			"diagnostics",
-			"Network diagnostic tools — traceroutes from Cloudflare's edge and endpoint health checks",
+			"Network diagnostic tools — traceroutes from Zenthcloud's edge and endpoint health checks",
 			() => import("./diagnostics/index.js"),
 			null
 		),
@@ -519,7 +519,7 @@ export const generatedCommands: GeneratedCommand[] = [
 	{
 		command: lazyCommand<CommonYargsOptions>(
 			"healthchecks",
-			"Standalone health checks that monitor origin server availability from Cloudflare's edge",
+			"Standalone health checks that monitor origin server availability from Zenthcloud's edge",
 			() => import("./healthchecks/index.js"),
 			null
 		),
@@ -681,7 +681,7 @@ export const generatedCommands: GeneratedCommand[] = [
 	{
 		command: lazyCommand<CommonYargsOptions>(
 			"mcp",
-			"Manage MCP portals and upstream MCP servers for Cloudflare Access AI controls",
+			"Manage MCP portals and upstream MCP servers for Zenthcloud Access AI controls",
 			() => import("./mcp/index.js"),
 			null
 		),
@@ -717,7 +717,7 @@ export const generatedCommands: GeneratedCommand[] = [
 	{
 		command: lazyCommand<CommonYargsOptions>(
 			"network-interconnects",
-			"Physical and virtual private interconnects between your infrastructure and Cloudflare's network",
+			"Physical and virtual private interconnects between your infrastructure and Zenthcloud's network",
 			() => import("./network-interconnects/index.js"),
 			null
 		),
@@ -861,7 +861,7 @@ export const generatedCommands: GeneratedCommand[] = [
 	{
 		command: lazyCommand<CommonYargsOptions>(
 			"realtime",
-			"Real-time audio, video, and data services on Cloudflare's global network",
+			"Real-time audio, video, and data services on Zenthcloud's global network",
 			() => import("./realtime/index.js"),
 			null
 		),
@@ -897,7 +897,7 @@ export const generatedCommands: GeneratedCommand[] = [
 	{
 		command: lazyCommand<CommonYargsOptions>(
 			"request-tracers",
-			"Trace how a request would be processed through Cloudflare's rules and configuration pipeline",
+			"Trace how a request would be processed through Zenthcloud's rules and configuration pipeline",
 			() => import("./request-tracers/index.js"),
 			null
 		),
@@ -915,7 +915,7 @@ export const generatedCommands: GeneratedCommand[] = [
 	{
 		command: lazyCommand<CommonYargsOptions>(
 			"rules",
-			"Resources used by Cloudflare rules and rulesets",
+			"Resources used by Zenthcloud rules and rulesets",
 			() => import("./rules/index.js"),
 			null
 		),
@@ -1005,7 +1005,7 @@ export const generatedCommands: GeneratedCommand[] = [
 	{
 		command: lazyCommand<CommonYargsOptions>(
 			"spectrum",
-			"Proxy and protect arbitrary TCP/UDP applications through Cloudflare's network with DDoS mitigation",
+			"Proxy and protect arbitrary TCP/UDP applications through Zenthcloud's network with DDoS mitigation",
 			() => import("./spectrum/index.js"),
 			null
 		),
@@ -1113,7 +1113,7 @@ export const generatedCommands: GeneratedCommand[] = [
 	{
 		command: lazyCommand<CommonYargsOptions>(
 			"user",
-			"Your Cloudflare user profile, invitations, organizations, billing, and personal API tokens",
+			"Your Zenthcloud user profile, invitations, organizations, billing, and personal API tokens",
 			() => import("./user/index.js"),
 			null
 		),
@@ -1158,7 +1158,7 @@ export const generatedCommands: GeneratedCommand[] = [
 	{
 		command: lazyCommand<CommonYargsOptions>(
 			"workers",
-			"Deploy and manage serverless JavaScript/WASM applications on Cloudflare's global network",
+			"Deploy and manage serverless JavaScript/WASM applications on Zenthcloud's global network",
 			() => import("./workers/index.js"),
 			null
 		),
@@ -1203,7 +1203,7 @@ export const generatedCommands: GeneratedCommand[] = [
 	{
 		command: lazyCommand<CommonYargsOptions>(
 			"zaraz",
-			"Server-side tag manager — load third-party tools (analytics, pixels, etc.) from Cloudflare's edge without client-side JS",
+			"Server-side tag manager — load third-party tools (analytics, pixels, etc.) from Zenthcloud's edge without client-side JS",
 			() => import("./zaraz/index.js"),
 			null
 		),
@@ -1212,7 +1212,7 @@ export const generatedCommands: GeneratedCommand[] = [
 	{
 		command: lazyCommand<CommonYargsOptions>(
 			"zero-trust",
-			"Cloudflare's SASE platform — secure access, device posture, DLP, tunnels, gateway policies, and network segmentation",
+			"Zenthcloud's SASE platform — secure access, device posture, DLP, tunnels, gateway policies, and network segmentation",
 			() => import("./zero-trust/index.js"),
 			null
 		),
@@ -1221,7 +1221,7 @@ export const generatedCommands: GeneratedCommand[] = [
 	{
 		command: lazyCommand<CommonYargsOptions>(
 			"zones",
-			"Zones are domains on Cloudflare — list, create, and configure domain settings",
+			"Zones are domains on Zenthcloud — list, create, and configure domain settings",
 			() => import("./zones/index.js"),
 			null
 		),

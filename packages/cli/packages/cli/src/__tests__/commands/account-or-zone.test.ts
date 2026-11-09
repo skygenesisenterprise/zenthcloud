@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw/http";
 import {
 	afterEach,
@@ -33,9 +33,9 @@ describe("combined account-or-zone scope", () => {
 
 	const ENV = {
 		CI: "true",
-		CLOUDFLARE_API_TOKEN: "test-token",
-		CLOUDFLARE_API_BASE_URL: TEST_BASE_URL,
-		CLOUDFLARE_ACCOUNT_ID: "test-account",
+		ZENTHCLOUD_API_TOKEN: "test-token",
+		ZENTHCLOUD_API_BASE_URL: TEST_BASE_URL,
+		ZENTHCLOUD_ACCOUNT_ID: "test-account",
 	};
 	const ZONE_ID = "0123456789abcdef0123456789abcdef";
 
@@ -82,12 +82,12 @@ describe("combined account-or-zone scope", () => {
 		expect(requests).toEqual([`zones/${ZONE_ID}`]);
 	});
 
-	it("keeps the account route when only CLOUDFLARE_ZONE_ID is set", async () => {
+	it("keeps the account route when only ZENTHCLOUD_ZONE_ID is set", async () => {
 		const requests = loadBalancerRequests();
 
 		const { exitCode } = await runCf(["load-balancers", "account", "list"], {
 			...ENV,
-			CLOUDFLARE_ZONE_ID: ZONE_ID,
+			ZENTHCLOUD_ZONE_ID: ZONE_ID,
 		});
 
 		expect(exitCode).toBe(0);
@@ -155,7 +155,7 @@ describe("combined account-or-zone scope", () => {
 			return output.stdout().replace(/\s+/g, " ");
 		};
 		const scope =
-			"Runs against your account. Pass --zone to run against a zone instead. CLOUDFLARE_ZONE_ID is ignored.";
+			"Runs against your account. Pass --zone to run against a zone instead. ZENTHCLOUD_ZONE_ID is ignored.";
 
 		expect(await help(["load-balancers", "account", "list"])).toContain(scope);
 		expect(await help(["zones", "list"])).not.toContain(scope);
@@ -198,9 +198,9 @@ describe("combined account-or-zone scope", () => {
 			await expect(
 				runCf(["load-balancers", "account", "list", ...flags], {
 					...ENV,
-					CLOUDFLARE_ACCOUNT_ID: undefined,
+					ZENTHCLOUD_ACCOUNT_ID: undefined,
 				})
-			).rejects.toThrow("CLOUDFLARE_ACCOUNT_ID");
+			).rejects.toThrow("ZENTHCLOUD_ACCOUNT_ID");
 			expect(requests).toEqual([]);
 		}
 	);

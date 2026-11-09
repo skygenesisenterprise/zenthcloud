@@ -1,4 +1,4 @@
-import { Grid, GridItem, Surface, Text } from "@cloudflare/kumo";
+import { Grid, GridItem, Surface, Text } from "@zenthcloud/kumo";
 
 export function GridDemo() {
   return (

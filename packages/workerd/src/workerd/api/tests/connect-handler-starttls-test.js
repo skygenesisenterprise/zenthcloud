@@ -1,10 +1,10 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 //
 // startTls() coverage for the connect() handler, on both transports that can deliver a CONNECT to
 // a handler: a TCP listener configured with a keypair, and a service binding.
-import { connect } from 'cloudflare:sockets';
+import { connect } from 'zenthcloud:sockets';
 import { ok, strictEqual } from 'assert';
 
 // Reads from `reader` until a full CRLF-terminated line is available and returns it, line ending

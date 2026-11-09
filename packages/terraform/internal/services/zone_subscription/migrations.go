@@ -4,7 +4,7 @@ package zone_subscription
 
 import (
 	"context"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zone_subscription/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zone_subscription/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
@@ -12,7 +12,7 @@ var _ resource.ResourceWithUpgradeState = (*ZoneSubscriptionResource)(nil)
 
 // UpgradeState registers state upgraders for schema version changes.
 //
-// cloudflare_zone_subscription is a new v5 resource with no v4 counterpart.
+// zenthcloud_zone_subscription is a new v5 resource with no v4 counterpart.
 // All state upgraders are no-ops — the schema structure has not changed.
 //
 // This handles two upgrade paths:

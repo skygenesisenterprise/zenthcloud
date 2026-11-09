@@ -14,7 +14,7 @@ import (
 // - Pass-through: zone_id, value (with defensive default)
 // - ID: Set to zone_id (matches v5 resource behavior)
 // - New computed fields: editable, modified_on (set to null, will refresh from API)
-func Transform(ctx context.Context, source *SourceCloudflareRegionalTieredCacheModel) (*TargetRegionalTieredCacheModel, diag.Diagnostics) {
+func Transform(ctx context.Context, source *SourceZenthcloudRegionalTieredCacheModel) (*TargetRegionalTieredCacheModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Validate required fields

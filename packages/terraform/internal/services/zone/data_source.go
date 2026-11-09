@@ -8,15 +8,15 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 )
 
 type ZoneDataSource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 var _ datasource.DataSourceWithConfigure = (*ZoneDataSource)(nil)
@@ -34,12 +34,12 @@ func (d *ZoneDataSource) Configure(ctx context.Context, req datasource.Configure
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -91,10 +91,10 @@ func (d *ZoneDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		resp.Diagnostics.AddError(
 			"Invalid zone configuration: empty or null zone ID",
 			"zone_id resolved to an empty or null value. "+
-				"This can occur when zone_id references a cloudflare_zone resource whose ID is empty or null in state.\n\n"+
+				"This can occur when zone_id references a zenthcloud_zone resource whose ID is empty or null in state.\n\n"+
 				"If specifying zone_id directly, ensure it is not empty or null.\n"+
-				"If zone_id references a cloudflare_zone resource, re-import that zone:\n"+
-				"  terraform import cloudflare_zone.<name> <zone_id>\n"+
+				"If zone_id references a zenthcloud_zone resource, re-import that zone:\n"+
+				"  terraform import zenthcloud_zone.<name> <zone_id>\n"+
 				"then run terraform plan again.",
 		)
 		return

@@ -6,8 +6,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
 
-// Transform converts a source cloudflare_device_managed_networks state to target cloudflare_zero_trust_device_managed_networks state.
-func Transform(ctx context.Context, source SourceCloudflareDeviceManagedNetworksModel) (*TargetZeroTrustDeviceManagedNetworksModel, diag.Diagnostics) {
+// Transform converts a source zenthcloud_device_managed_networks state to target zenthcloud_zero_trust_device_managed_networks state.
+func Transform(ctx context.Context, source SourceZenthcloudDeviceManagedNetworksModel) (*TargetZeroTrustDeviceManagedNetworksModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Validate required fields

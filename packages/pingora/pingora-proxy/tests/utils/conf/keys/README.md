@@ -26,7 +26,7 @@ openssl version
 # OpenSSL 3.1.1
 echo '[v3_req]' > openssl.cnf
 openssl req -config openssl.cnf -new -x509 -key key.pem -out server_rustls.crt -days 3650 -sha256 \
-    -subj '/C=US/ST=CA/L=San Francisco/O=Cloudflare, Inc/CN=openrusty.org' \
+    -subj '/C=US/ST=CA/L=San Francisco/O=Zenthcloud, Inc/CN=openrusty.org' \
     -addext "subjectAltName=DNS:*.openrusty.org,DNS:openrusty.org,DNS:cat.com,DNS:dog.com"
 ```
 

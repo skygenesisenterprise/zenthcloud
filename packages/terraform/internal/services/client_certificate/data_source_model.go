@@ -5,9 +5,9 @@ package client_certificate
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/client_certificates"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/client_certificates"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -42,7 +42,7 @@ type ClientCertificateDataSourceModel struct {
 
 func (m *ClientCertificateDataSourceModel) toReadParams(_ context.Context) (params client_certificates.ClientCertificateGetParams, diags diag.Diagnostics) {
 	params = client_certificates.ClientCertificateGetParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	return
@@ -50,17 +50,17 @@ func (m *ClientCertificateDataSourceModel) toReadParams(_ context.Context) (para
 
 func (m *ClientCertificateDataSourceModel) toListParams(_ context.Context) (params client_certificates.ClientCertificateListParams, diags diag.Diagnostics) {
 	params = client_certificates.ClientCertificateListParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	if !m.Filter.Limit.IsNull() {
-		params.Limit = cloudflare.F(m.Filter.Limit.ValueInt64())
+		params.Limit = zenthcloud.F(m.Filter.Limit.ValueInt64())
 	}
 	if !m.Filter.Offset.IsNull() {
-		params.Offset = cloudflare.F(m.Filter.Offset.ValueInt64())
+		params.Offset = zenthcloud.F(m.Filter.Offset.ValueInt64())
 	}
 	if !m.Filter.Status.IsNull() {
-		params.Status = cloudflare.F(client_certificates.ClientCertificateListParamsStatus(m.Filter.Status.ValueString()))
+		params.Status = zenthcloud.F(client_certificates.ClientCertificateListParamsStatus(m.Filter.Status.ValueString()))
 	}
 
 	return

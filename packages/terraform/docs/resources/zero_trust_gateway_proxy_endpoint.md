@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zero_trust_gateway_proxy_endpoint Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_gateway_proxy_endpoint Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zero_trust_gateway_proxy_endpoint (Resource)
+# zenthcloud_zero_trust_gateway_proxy_endpoint (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_gateway_proxy_endpoint" "example_zero_trust_gateway_proxy_endpoint" {
+resource "zenthcloud_zero_trust_gateway_proxy_endpoint" "example_zero_trust_gateway_proxy_endpoint" {
   account_id = "699d98642c564d2e855e9661899b7252"
   name = "Devops team"
   kind = "ip"
@@ -24,7 +24,7 @@ resource "cloudflare_zero_trust_gateway_proxy_endpoint" "example_zero_trust_gate
 
 ### Required
 
-- `account_id` (String) Specify the Cloudflare account identifier.
+- `account_id` (String) Specify the Zenthcloud account identifier.
 - `name` (String) Specify the name of the proxy endpoint.
 
 ### Optional
@@ -45,7 +45,7 @@ Available values: "ip", "identity".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_gateway_proxy_endpoint.example '<account_id>/<proxy_endpoint_id>'
+$ terraform import zenthcloud_zero_trust_gateway_proxy_endpoint.example '<account_id>/<proxy_endpoint_id>'
 ```
 
 

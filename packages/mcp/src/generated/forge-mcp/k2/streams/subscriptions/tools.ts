@@ -2,11 +2,11 @@
 /* eslint-disable */
 
 import { OPERATION, type Tool, encodePath } from "../../../_/tool.js";
-import { cloudflare$$k2_workers$$k2$$messages } from "../outputs.js";
+import { zenthcloud$$k2_workers$$k2$$messages } from "../outputs.js";
 import {
-  cloudflare$$k2_K2ConsumerLag,
-  cloudflare$$k2_K2MonitoredSubscription,
-  cloudflare$$k2_K2MonitoredSubscriptionListResponse,
+  zenthcloud$$k2_K2ConsumerLag,
+  zenthcloud$$k2_K2MonitoredSubscription,
+  zenthcloud$$k2_K2MonitoredSubscriptionListResponse,
 } from "./outputs.js";
 
 /**
@@ -45,12 +45,12 @@ export const tools: readonly Tool[] = [
       additionalProperties: false,
     },
     outputSchema: {
-      "$ref": "#/$defs/cloudflare-k2_K2MonitoredSubscriptionListResponse",
+      "$ref": "#/$defs/zenthcloud-k2_K2MonitoredSubscriptionListResponse",
       $defs: {
-        "cloudflare-k2_K2ConsumerLag": cloudflare$$k2_K2ConsumerLag,
-        "cloudflare-k2_K2MonitoredSubscription": cloudflare$$k2_K2MonitoredSubscription,
-        "cloudflare-k2_K2MonitoredSubscriptionListResponse": cloudflare$$k2_K2MonitoredSubscriptionListResponse,
-        "cloudflare-k2_workers-k2-messages": cloudflare$$k2_workers$$k2$$messages,
+        "zenthcloud-k2_K2ConsumerLag": zenthcloud$$k2_K2ConsumerLag,
+        "zenthcloud-k2_K2MonitoredSubscription": zenthcloud$$k2_K2MonitoredSubscription,
+        "zenthcloud-k2_K2MonitoredSubscriptionListResponse": zenthcloud$$k2_K2MonitoredSubscriptionListResponse,
+        "zenthcloud-k2_workers-k2-messages": zenthcloud$$k2_workers$$k2$$messages,
       },
     },
     annotations: {
@@ -75,16 +75,16 @@ export const tools: readonly Tool[] = [
       responses: {
         schemas: {
           "200": {
-            "$ref": "#/$defs/cloudflare-k2_K2MonitoredSubscriptionListResponse"
+            "$ref": "#/$defs/zenthcloud-k2_K2MonitoredSubscriptionListResponse"
           },
           "4XX": null,
           "5XX": null
         },
         $defs: {
-          "cloudflare-k2_K2ConsumerLag": cloudflare$$k2_K2ConsumerLag,
-          "cloudflare-k2_K2MonitoredSubscription": cloudflare$$k2_K2MonitoredSubscription,
-          "cloudflare-k2_K2MonitoredSubscriptionListResponse": cloudflare$$k2_K2MonitoredSubscriptionListResponse,
-          "cloudflare-k2_workers-k2-messages": cloudflare$$k2_workers$$k2$$messages,
+          "zenthcloud-k2_K2ConsumerLag": zenthcloud$$k2_K2ConsumerLag,
+          "zenthcloud-k2_K2MonitoredSubscription": zenthcloud$$k2_K2MonitoredSubscription,
+          "zenthcloud-k2_K2MonitoredSubscriptionListResponse": zenthcloud$$k2_K2MonitoredSubscriptionListResponse,
+          "zenthcloud-k2_workers-k2-messages": zenthcloud$$k2_workers$$k2$$messages,
         },
       },
     },

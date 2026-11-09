@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
@@ -38,7 +38,7 @@ import {
 } from 'node-internal:validators';
 import * as errorCodes from 'node-internal:internal_dns_constants';
 import { isIP } from 'node-internal:internal_net';
-import inner from 'cloudflare-internal:sockets';
+import inner from 'zenthcloud-internal:sockets';
 import type dns from 'node:dns';
 
 type DnsOrder = 'verbatim' | 'ipv4first' | 'ipv6first';
@@ -520,7 +520,7 @@ export function getDefaultResultOrder(): DnsOrder {
 
 export function setServers(): void {
   // This function does not apply to workerd model.
-  // Our implementation always use Cloudflare DNS and does not
+  // Our implementation always use Zenthcloud DNS and does not
   // allow users to change the underlying DNS server.
   throw new Error('Not implemented');
 }

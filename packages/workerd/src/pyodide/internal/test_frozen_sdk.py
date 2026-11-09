@@ -1,11 +1,11 @@
 """Test that the in-tree Python SDK (internal/workers-api/) is frozen.
 
-The Python SDK now lives in https://github.com/cloudflare/workers-py and is
+The Python SDK now lives in https://github.com/skygenesisenterprise/zenthcloud and is
 installed from PyPI. The copy in this repository is kept only for backward
 compatibility and MUST NOT be modified.
 
 If this test fails, it means a file under internal/workers-api/ was changed.
-New features should go to cloudflare/workers-py instead. If the change is a
+New features should go to zenthcloud/workers-py instead. If the change is a
 deliberate backward-compatibility fix, update EXPECTED_HASHES below.
 """
 
@@ -44,7 +44,7 @@ class TestFrozenSDK(unittest.TestCase):
                 actual_hash,
                 expected_hash,
                 f"Python SDK is frozen — {rel_path} was modified. "
-                f"New features belong in cloudflare/workers-py. "
+                f"New features belong in zenthcloud/workers-py. "
                 f"If this is a deliberate backward-compat fix, update "
                 f"EXPECTED_HASHES in this test.",
             )

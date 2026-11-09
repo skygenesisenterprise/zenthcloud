@@ -1,14 +1,14 @@
 import { createCommandClient } from "../../../lib/auth.js";
 import { CliExit } from "../../../lib/cli-exit.js";
 import { getAccountId } from "../../../lib/context.js";
-import { withCloudflareDotEnv } from "../../../lib/dotenv.js";
+import { withZenthcloudDotEnv } from "../../../lib/dotenv.js";
 import { withProgress } from "../../../lib/progress.js";
-import { runCloudflared } from "../../cloudflared.js";
+import { runZenthcloudd } from "../../zenthcloudd.js";
 import type { CommonYargsOptions } from "../../../lib/cli-types.js";
 import type { ArgumentsCamelCase, Argv, CommandModule } from "yargs";
 import createTunnelManagementToken from "#operations/tunnels/management-token/create.js";
 
-const EVENTS = ["cloudflared", "http", "tcp", "udp"] as const;
+const EVENTS = ["zenthcloudd", "http", "tcp", "udp"] as const;
 const LEVELS = ["debug", "info", "warn", "error"] as const;
 const UUID_PATTERN =
 	/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -30,7 +30,7 @@ interface TunnelTailArgs extends CommonYargsOptions {
 
 const command: CommandModule<CommonYargsOptions, TunnelTailArgs> = {
 	command: "tail [tunnel-id]",
-	describe: "Stream logs from a remote cloudflared instance.",
+	describe: "Stream logs from a remote zenthcloudd instance.",
 	builder: (yargs: Argv<CommonYargsOptions>): Argv<TunnelTailArgs> =>
 		yargs
 			.positional("tunnel-id", {
@@ -42,7 +42,7 @@ const command: CommandModule<CommonYargsOptions, TunnelTailArgs> = {
 				type: "string",
 				coerce: (connectorId: string) =>
 					validateUUID(connectorId, "--connector-id"),
-				description: "Target a specific cloudflared connector",
+				description: "Target a specific zenthcloudd connector",
 			})
 			.option("event", {
 				type: "string",
@@ -93,7 +93,7 @@ const command: CommandModule<CommonYargsOptions, TunnelTailArgs> = {
 					"Either a tunnel ID or TUNNEL_MANAGEMENT_TOKEN must be provided."
 				);
 			}
-			managementToken = await withCloudflareDotEnv(
+			managementToken = await withZenthcloudDotEnv(
 				{ mode: argv.mode, local: argv.local },
 				async () => {
 					const client = await createCommandClient(argv);
@@ -130,7 +130,7 @@ const command: CommandModule<CommonYargsOptions, TunnelTailArgs> = {
 			args.push(argv["tunnel-id"]);
 		}
 		throw new CliExit(
-			await runCloudflared(args, {
+			await runZenthcloudd(args, {
 				env: { TUNNEL_MANAGEMENT_TOKEN: managementToken },
 			})
 		);

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_queue Resource - Cloudflare"
+page_title: "zenthcloud_queue Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Queues ReadQueues WriteWorkers Scripts ReadWorkers Scripts Write
 ---
 
-# cloudflare_queue (Resource)
+# zenthcloud_queue (Resource)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_queue" "example_queue" {
+resource "zenthcloud_queue" "example_queue" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   queue_name = "example-queue"
   jurisdiction = "eu"
@@ -100,7 +100,7 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_queue.example '<account_id>/<queue_id>'
+$ terraform import zenthcloud_queue.example '<account_id>/<queue_id>'
 ```
 
 

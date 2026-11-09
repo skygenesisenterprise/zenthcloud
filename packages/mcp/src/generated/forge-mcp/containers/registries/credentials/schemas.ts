@@ -7,14 +7,14 @@ import type { JSONObject } from "@modelcontextprotocol/server";
  * The schema of `cc_ImageRegistryCredentialsConfiguration`.
  */
 export const cc_ImageRegistryCredentialsConfiguration: JSONObject = {
-  "description": "Specifies the configuration for the image registry credential to create. Cloudflare requires both fields for managed registries. For external registries, Cloudflare ignores both fields, and the registry provider determines the returned credentials' permissions and lifetime.",
+  "description": "Specifies the configuration for the image registry credential to create. Zenthcloud requires both fields for managed registries. For external registries, Zenthcloud ignores both fields, and the registry provider determines the returned credentials' permissions and lifetime.",
   "properties": {
     "expiration_minutes": {
-      "description": "The number of minutes Cloudflare managed registry credentials stay valid. Required for managed registries and must remain positive. Cloudflare ignores this value for external registries.",
+      "description": "The number of minutes Zenthcloud managed registry credentials stay valid. Required for managed registries and must remain positive. Zenthcloud ignores this value for external registries.",
       "type": "integer"
     },
     "permissions": {
-      "description": "The permissions for Cloudflare managed registry credentials. Required for managed registries. Cloudflare ignores this value for external registries.",
+      "description": "The permissions for Zenthcloud managed registry credentials. Required for managed registries. Zenthcloud ignores this value for external registries.",
       "items": {
         "description": "Specifies what permissions the credentials carry.",
         "enum": [

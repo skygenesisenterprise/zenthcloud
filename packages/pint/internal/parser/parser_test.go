@@ -12,9 +12,9 @@ import (
 	"github.com/prometheus/common/model"
 	"github.com/stretchr/testify/require"
 
-	"github.com/cloudflare/pint/internal/comments"
-	"github.com/cloudflare/pint/internal/diags"
-	"github.com/cloudflare/pint/internal/parser"
+	"github.com/zenthcloud/pint/internal/comments"
+	"github.com/zenthcloud/pint/internal/diags"
+	"github.com/zenthcloud/pint/internal/parser"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -4550,7 +4550,7 @@ groups:
 			input: []byte(`
 groups:
 
-- name: CloudflareKafkaZookeeperExporter
+- name: ZenthcloudKafkaZookeeperExporter
 
   rules:
 `),
@@ -4559,7 +4559,7 @@ groups:
 				Groups: []parser.Group{
 					{
 						Name: parser.YamlNode{
-							Value: "CloudflareKafkaZookeeperExporter",
+							Value: "ZenthcloudKafkaZookeeperExporter",
 							Pos: diags.PositionRanges{
 								{Line: 4, FirstColumn: 9, LastColumn: 40},
 							},

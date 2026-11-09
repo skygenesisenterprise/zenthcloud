@@ -33,7 +33,7 @@ import type { CommandMeta } from "../../lib/metadata.js";
  * in, so `generateGroup` reads it from the host.
  */
 const require = createRequire(import.meta.url);
-const forgeDir = dirname(require.resolve("@cloudflare/forge/package.json"));
+const forgeDir = dirname(require.resolve("@zenthcloud/forge/package.json"));
 const forgeBin = join(forgeDir, "bin", "forge.cjs");
 
 /**
@@ -51,7 +51,7 @@ function plugin(): string {
 		writeFileSync(
 			entry,
 			[
-				`import { definePlugin } from ${specifier(require.resolve("@cloudflare/forge/plugin"))};`,
+				`import { definePlugin } from ${specifier(require.resolve("@zenthcloud/forge/plugin"))};`,
 				'import { info } from "forge:plugin/forge@0.3.0";',
 				`import { generateCli, generateCliGroup } from ${specifier(fileURLToPath(new URL("../../../generator/plugin/index.ts", import.meta.url)))};`,
 				"",

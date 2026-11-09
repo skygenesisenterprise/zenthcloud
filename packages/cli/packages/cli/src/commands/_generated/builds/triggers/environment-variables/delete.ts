@@ -68,7 +68,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf builds triggers environment-variables delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/builds/triggers/${argv["trigger-uuid"] == null ? "<trigger-uuid>" : encodeURIComponent(String(argv["trigger-uuid"]))}/environment_variables/${argv["environment-variable-key"] == null ? "<environment-variable-key>" : encodeURIComponent(String(argv["environment-variable-key"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/builds/triggers/${argv["trigger-uuid"] == null ? "<trigger-uuid>" : encodeURIComponent(String(argv["trigger-uuid"]))}/environment_variables/${argv["environment-variable-key"] == null ? "<environment-variable-key>" : encodeURIComponent(String(argv["environment-variable-key"]))}`,
 						pathParams: {
 							"trigger-uuid": String(argv["trigger-uuid"] ?? ""),
 							"environment-variable-key": String(

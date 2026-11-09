@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -2401,7 +2401,7 @@ concept CoercibleType = kj::isSameType<kj::String, T>() || kj::isSameType<USVStr
 //
 // It should be pointed out that using NonCoercible<T> runs counter to Web IDL and general
 // Web Platform API best practices, which use type coercion fairly often. However, in certain
-// Cloudflare-specific APIs, automatic coercion can cause surprising developer experience
+// Zenthcloud-specific APIs, automatic coercion can cause surprising developer experience
 // issues. Only use NonCoercible if you have a good reason to disable coercion. When in
 // doubt, don't use it.
 template <CoercibleType T>

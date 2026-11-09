@@ -5,9 +5,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceSpectrumApplicationSchema returns the source schema for legacy cloudflare_spectrum_application resource.
+// SourceSpectrumApplicationSchema returns the source schema for legacy zenthcloud_spectrum_application resource.
 // Schema version: 1 (actual v4 provider schema version)
-// Resource type: cloudflare_spectrum_application
+// Resource type: zenthcloud_spectrum_application
 //
 // This minimal schema is used only for reading v4 state during migration.
 // In v4 (SDKv2), dns, origin_dns, edge_ips, and origin_port_range were TypeList blocks

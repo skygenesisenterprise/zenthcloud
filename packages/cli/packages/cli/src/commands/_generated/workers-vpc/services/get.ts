@@ -55,7 +55,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf workers-vpc services get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/connectivity/directory/services/${argv["service-id"] == null ? "<service-id>" : encodeURIComponent(String(argv["service-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/connectivity/directory/services/${argv["service-id"] == null ? "<service-id>" : encodeURIComponent(String(argv["service-id"]))}`,
 						pathParams: { "service-id": String(argv["service-id"] ?? "") },
 						bodyKind: "none",
 					});

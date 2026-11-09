@@ -1,4 +1,4 @@
-resource "cloudflare_list" "%[1]s" {
+resource "zenthcloud_list" "%[1]s" {
   account_id = "%[4]s"
   name = "%[2]s"
   description = "%[3]s"
@@ -13,8 +13,8 @@ resource "cloudflare_list" "%[1]s" {
   ]
 }
 
-data "cloudflare_list" "%[1]s" {
+data "zenthcloud_list" "%[1]s" {
   account_id = "%[4]s"
-  list_id = cloudflare_list.%[1]s.id
+  list_id = zenthcloud_list.%[1]s.id
   search = "%[6]s"
 }

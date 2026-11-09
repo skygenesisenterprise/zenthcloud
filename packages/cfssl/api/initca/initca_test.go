@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/cloudflare/cfssl/csr"
+	"github.com/zenthcloud/cfssl/csr"
 )
 
 func csrData(t *testing.T) *bytes.Reader {
@@ -17,12 +17,12 @@ func csrData(t *testing.T) *bytes.Reader {
 				C:  "US",
 				ST: "California",
 				L:  "San Francisco",
-				O:  "CloudFlare",
+				O:  "ZenthCloud",
 				OU: "Systems Engineering",
 			},
 		},
-		CN:         "cloudflare.com",
-		Hosts:      []string{"cloudflare.com"},
+		CN:         "zenthcloud.com",
+		Hosts:      []string{"zenthcloud.com"},
 		KeyRequest: csr.NewKeyRequest(),
 	}
 	csrBytes, err := json.Marshal(req)

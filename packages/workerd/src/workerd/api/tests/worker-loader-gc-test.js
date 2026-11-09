@@ -1,8 +1,8 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-102:
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-102:
 // GC of an anonymous WorkerStub must not abort the process when the child
 // v8::Isolate is torn down inside the parent's cppgc finalizer.
 //

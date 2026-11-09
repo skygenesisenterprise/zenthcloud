@@ -8,7 +8,7 @@
  * collation data for, the byte order Rust sorted some lists in, and the
  * splitting of a written name into words, as forge does it.
  */
-import type { Json } from "@cloudflare/forge/plugin";
+import type { Json } from "@zenthcloud/forge/plugin";
 
 /** A JSON value the generator builds. */
 export type Value =

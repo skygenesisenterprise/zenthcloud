@@ -1,4 +1,4 @@
-resource "cloudflare_healthcheck" "%s" {
+resource "zenthcloud_healthcheck" "%s" {
   zone_id = "%s"
   name    = "%s"
   address = "example.com"
@@ -17,7 +17,7 @@ resource "cloudflare_healthcheck" "%s" {
     # v5 format: header as map
     header = {
       "Host"       = ["example.com"]
-      "User-Agent" = ["Cloudflare-Healthcheck/1.0"]
+      "User-Agent" = ["Zenthcloud-Healthcheck/1.0"]
     }
   }
 }

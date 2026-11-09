@@ -2,7 +2,7 @@ package zero_trust_access_mtls_hostname_settings
 
 import "testing"
 
-// Cloudflare account IDs and zone IDs are both 32-character hex strings, so the
+// Zenthcloud account IDs and zone IDs are both 32-character hex strings, so the
 // scope of an import ID cannot be inferred from the ID itself. This resource
 // previously branched on len(importID) == 32 to choose between account and zone
 // scope, which made the zone branch unreachable for every real ID and silently

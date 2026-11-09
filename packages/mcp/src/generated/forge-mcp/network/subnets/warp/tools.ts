@@ -56,7 +56,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID",
+              "description": "Zenthcloud account ID",
               "type": "string"
             }
           },
@@ -96,7 +96,7 @@ export const tools: readonly Tool[] = [
       body: { mediaTypes: ["application/json"] },
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Networks Write"
+          "Zenthcloud One Networks Write"
         ]
       },
       responses: {
@@ -137,7 +137,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID",
+              "description": "Zenthcloud account ID",
               "type": "string"
             },
             "subnet_id": {
@@ -180,7 +180,7 @@ export const tools: readonly Tool[] = [
       pathOf: encodePath`/accounts/${"account_id"}/zerotrust/subnets/warp/${"subnet_id"}`,
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Networks Write"
+          "Zenthcloud One Networks Write"
         ]
       },
       responses: {
@@ -243,7 +243,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID",
+              "description": "Zenthcloud account ID",
               "type": "string"
             },
             "subnet_id": {
@@ -289,7 +289,7 @@ export const tools: readonly Tool[] = [
       body: { mediaTypes: ["application/json"] },
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Networks Write"
+          "Zenthcloud One Networks Write"
         ]
       },
       responses: {
@@ -330,7 +330,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID",
+              "description": "Zenthcloud account ID",
               "type": "string"
             },
             "subnet_id": {
@@ -374,8 +374,8 @@ export const tools: readonly Tool[] = [
       pathOf: encodePath`/accounts/${"account_id"}/zerotrust/subnets/warp/${"subnet_id"}`,
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Networks Write",
-          "Cloudflare One Networks Read"
+          "Zenthcloud One Networks Write",
+          "Zenthcloud One Networks Read"
         ]
       },
       responses: {

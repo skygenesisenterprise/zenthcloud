@@ -25,7 +25,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"account_id": schema.StringAttribute{
-				Description: "Cloudflare account ID that owns the R2 resource.",
+				Description: "Zenthcloud account ID that owns the R2 resource.",
 				Optional:    true,
 			},
 			"creation_date": schema.StringAttribute{

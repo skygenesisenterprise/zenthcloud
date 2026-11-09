@@ -101,7 +101,7 @@ func (s *SafeStreamCloser) CloseWrite() error {
 
 // CloseRead cancels only the receive side of the QUIC stream. In particular,
 // this unblocks a goroutine waiting in Read without closing the send side that
-// cloudflared still needs to write the response.
+// zenthcloudd still needs to write the response.
 func (s *SafeStreamCloser) CloseRead() error {
 	s.stream.CancelRead(0)
 	return nil

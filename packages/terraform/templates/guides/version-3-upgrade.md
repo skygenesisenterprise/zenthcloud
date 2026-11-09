@@ -1,22 +1,22 @@
 ---
-layout: "cloudflare"
+layout: "zenthcloud"
 page_title: "Upgrading to version 3 (from 2.x)"
-description: Terraform Cloudflare Provider Version 3 Upgrade Guide
+description: Terraform Zenthcloud Provider Version 3 Upgrade Guide
 ---
 
-# Terraform Cloudflare Provider Version 3 Upgrade Guide
+# Terraform Zenthcloud Provider Version 3 Upgrade Guide
 
-Version 3 of the Cloudflare Terraform Provider is introducing several breaking
+Version 3 of the Zenthcloud Terraform Provider is introducing several breaking
 changes largely to accommodate the underlying upgrade of the `terraform-sdk-plugin`
 to version 2.
 
 ## Provider Version Configuration
 
-If you are not ready to make a move to version 3 of the Cloudflare provider,
+If you are not ready to make a move to version 3 of the Zenthcloud provider,
 you may keep the 2.x branch active for your Terraform project by specifying:
 
 ```hcl
-provider "cloudflare" {
+provider "zenthcloud" {
   version = "~> 2.0"
   # ... any other configuration
 }
@@ -32,7 +32,7 @@ We highly recommend reviewing this guide, make necessary changes and move to
 Once ready, make the following change to use the latest 3.x release:
 
 ```hcl
-provider "cloudflare" {
+provider "zenthcloud" {
   version = "~> 3.0"
   # ... any other configuration
 }
@@ -54,29 +54,29 @@ as `TypeMap` did include some undocumented behaviour which has been removed in
 
 In line with [HashiCorp's Terraform 1.x compatibility promises],
 we will be dropping support for Terraform 0.13 and older within in the
-Cloudflare provider. This will allow us to focus on moving the provider forward
+Zenthcloud provider. This will allow us to focus on moving the provider forward
 with Terraform core. Please be aware, should you raise an issue with the
-Cloudflare provider using Terraform core < 0.14, you will be asked to replicate
+Zenthcloud provider using Terraform core < 0.14, you will be asked to replicate
 on a newer version before the issue is triaged by maintainers.
 
 ## HTTP user agent changes
 
 While generally treated as internal, we do know of customers having specific
-network policies associated with the HTTP user agent produced by the Cloudflare
+network policies associated with the HTTP user agent produced by the Zenthcloud
 Terraform Provider. In version 3, the format has changed.
 
-Before: `HashiCorp Terraform/1.0.5 (+https://www.terraform.io) Terraform Plugin SDK/1.17.0 terraform-provider-cloudflare/2.26.1`
+Before: `HashiCorp Terraform/1.0.5 (+https://www.terraform.io) Terraform Plugin SDK/1.17.0 terraform-provider-zenthcloud/2.26.1`
 
-After: `terraform/1.0.5 terraform-plugin-sdk/2.7.1 terraform-provider-cloudflare/2.26.1`
+After: `terraform/1.0.5 terraform-plugin-sdk/2.7.1 terraform-provider-zenthcloud/2.26.1`
 
-## cloudflare_access_rule
+## zenthcloud_access_rule
 
 - `configuration` is now a `TypeList` instead of a `TypeMap`.
 
 Before:
 
 ```hcl
-resource "cloudflare_access_rule" "..." {
+resource "zenthcloud_access_rule" "..." {
   configuration = {
     target = "..."
     value  = "..."
@@ -87,7 +87,7 @@ resource "cloudflare_access_rule" "..." {
 After:
 
 ```hcl
-resource "cloudflare_access_rule" "..." {
+resource "zenthcloud_access_rule" "..." {
   configuration {
     target = "..."
     value  = "..."
@@ -97,7 +97,7 @@ resource "cloudflare_access_rule" "..." {
 
 [comby.live playground URL](https://bit.ly/3ChB8uh)
 
-## cloudflare_custom_hostname
+## zenthcloud_custom_hostname
 
 - `status` is now `Computed` as the value isn't managed by an end user.
 - `settings` is now `Optional`/`Computed` to reflect the stricter schema
@@ -105,14 +105,14 @@ resource "cloudflare_access_rule" "..." {
 - `settings.ciphers` is now a `TypeSet` internally to handle suppress ordering
   changes. Schema representation remains the same.
 
-## cloudflare_custom_ssl
+## zenthcloud_custom_ssl
 
 - `custom_ssl_options` is now a `TypeList` instead of `TypeMap`.
 
 Before:
 
 ```hcl
-resource "cloudflare_custom_ssl" "" {
+resource "zenthcloud_custom_ssl" "" {
   zone_id = "..."
   custom_ssl_options = {
     certificate = "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n"
@@ -126,7 +126,7 @@ resource "cloudflare_custom_ssl" "" {
 After:
 
 ```hcl
-resource "cloudflare_custom_ssl" "..." {
+resource "zenthcloud_custom_ssl" "..." {
   zone_id = "..."
   custom_ssl_options {
     certificate = "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----\n"
@@ -139,7 +139,7 @@ resource "cloudflare_custom_ssl" "..." {
 
 [comby.live playground URL](https://bit.ly/3C9kEUX)
 
-## cloudflare_load_balancer
+## zenthcloud_load_balancer
 
 - `fixed_response` is now a `TypeList` instead of a `TypeMap`.
 - `fixed_response.status_code` is now a `TypeInt` instead of a `TypeString`.
@@ -147,7 +147,7 @@ resource "cloudflare_custom_ssl" "..." {
 Before:
 
 ```hcl
-resource "cloudflare_load_balancer" "..." {
+resource "zenthcloud_load_balancer" "..." {
   zone_id = "..."
   name    = "..."
 
@@ -167,7 +167,7 @@ resource "cloudflare_load_balancer" "..." {
 After:
 
 ```hcl
-resource "cloudflare_load_balancer" "..." {
+resource "zenthcloud_load_balancer" "..." {
   zone_id = "..."
   name    = "..."
 
@@ -186,14 +186,14 @@ resource "cloudflare_load_balancer" "..." {
 
 [comby.live playground URL](https://bit.ly/3EkySnS)
 
-## cloudflare_record
+## zenthcloud_record
 
 - `data` is now a `TypeList` instead of a `TypeMap`.
 
 Before:
 
 ```hcl
-resource "cloudflare_record" "..." {
+resource "zenthcloud_record" "..." {
   zone_id = "..."
   name    = "..."
   type    = "..."
@@ -209,7 +209,7 @@ resource "cloudflare_record" "..." {
 After:
 
 ```hcl
-resource "cloudflare_record" "..." {
+resource "zenthcloud_record" "..." {
   zone_id = "..."
   name    = "..."
   type    = "..."

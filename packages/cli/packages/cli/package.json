@@ -1,14 +1,14 @@
 {
 	"name": "cf",
 	"version": "1.0.0-beta.28",
-	"description": "The Cloudflare CLI",
+	"description": "The Zenthcloud CLI",
 	"keywords": [
 		"ai",
 		"api",
 		"cdn",
 		"cf",
 		"cli",
-		"cloudflare",
+		"zenthcloud",
 		"d1",
 		"dns",
 		"images",
@@ -21,20 +21,20 @@
 		"workers",
 		"zero-trust"
 	],
-	"homepage": "https://github.com/cloudflare/cf#readme",
+	"homepage": "https://github.com/skygenesisenterprise/zenthcloud",
 	"bugs": {
-		"url": "https://github.com/cloudflare/cf/issues"
+		"url": "https://github.com/skygenesisenterprise/zenthcloud"
 	},
 	"license": "MIT OR Apache-2.0",
-	"author": "Cloudflare, Inc.",
+	"author": "Zenthcloud, Inc.",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/cloudflare/cf.git",
+		"url": "https://github.com/skygenesisenterprise/zenthcloud",
 		"directory": "packages/cli"
 	},
 	"bin": {
 		"cf": "./bin/cf",
-		"cloudflare": "./bin/cf"
+		"zenthcloud": "./bin/cf"
 	},
 	"files": [
 		"bin",
@@ -69,9 +69,9 @@
 		"test:imports": "vp run task:test:imports"
 	},
 	"dependencies": {
-		"@cloudflare/build-output-utils": "0.9.10",
-		"@cloudflare/config": "0.30.2",
-		"@cloudflare/runtime-types": "0.1.23",
+		"@zenthcloud/build-output-utils": "0.9.10",
+		"@zenthcloud/config": "0.30.2",
+		"@zenthcloud/runtime-types": "0.1.23",
 		"blake3-wasm": "2.1.5",
 		"miniflare": "5.20261104.0-beta"
 	},
@@ -80,14 +80,14 @@
 		"@bytecodealliance/jco": "1.41.0",
 		"@clack/core": "1.5.1",
 		"@clack/prompts": "^1.8.1",
-		"@cloudflare/autoconfig": "0.9.3",
-		"@cloudflare/cli-shared-helpers": "0.3.4",
-		"@cloudflare/codemods": "0.7.4",
-		"@cloudflare/containers-shared": "0.23.9",
-		"@cloudflare/deploy-helpers": "0.26.0",
-		"@cloudflare/forge": "https://pkg.pr.new/cloudflare/forge/@cloudflare/forge@0d1877431691b07cbe3b042a4b64cb0bd8e81c03",
-		"@cloudflare/workers-auth": "0.16.0",
-		"@cloudflare/workers-utils": "0.52.0",
+		"@zenthcloud/autoconfig": "0.9.3",
+		"@zenthcloud/cli-shared-helpers": "0.3.4",
+		"@zenthcloud/codemods": "0.7.4",
+		"@zenthcloud/containers-shared": "0.23.9",
+		"@zenthcloud/deploy-helpers": "0.26.0",
+		"@zenthcloud/forge": "https://github.com/skygenesisenterprise/zenthcloud",
+		"@zenthcloud/workers-auth": "0.16.0",
+		"@zenthcloud/workers-utils": "0.52.0",
 		"@types/node": "26.6.6",
 		"@types/semver": "7.8.0",
 		"@types/shell-quote": "^1.7.5",

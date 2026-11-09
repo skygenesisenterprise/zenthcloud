@@ -12,10 +12,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/origin_ca_certificates"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/origin_ca_certificates"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -30,24 +30,24 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_origin_ca_certificate", &resource.Sweeper{
-		Name: "cloudflare_origin_ca_certificate",
-		F:    testSweepCloudflareOriginCACertificates,
+	resource.AddTestSweepers("zenthcloud_origin_ca_certificate", &resource.Sweeper{
+		Name: "zenthcloud_origin_ca_certificate",
+		F:    testSweepZenthcloudOriginCACertificates,
 	})
 }
 
-func testSweepCloudflareOriginCACertificates(r string) error {
+func testSweepZenthcloudOriginCACertificates(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping Origin CA certificates sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping Origin CA certificates sweep: ZENTHCLOUD_ZONE_ID not set")
 		return nil
 	}
 
 	certs, err := client.OriginCACertificates.List(ctx, origin_ca_certificates.OriginCACertificateListParams{
-		ZoneID: cloudflare.F(zoneID),
+		ZoneID: zenthcloud.F(zoneID),
 	})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Origin CA certificates: %s", err))
@@ -78,11 +78,11 @@ func testSweepCloudflareOriginCACertificates(r string) error {
 	return nil
 }
 
-func testAccCheckCloudflareOriginCACertificateDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudOriginCACertificateDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_origin_ca_certificate" {
+		if rs.Type != "zenthcloud_origin_ca_certificate" {
 			continue
 		}
 
@@ -129,8 +129,8 @@ func generateCSR(domain string) (string, error) {
 // Includes an update scenario that changes requested_validity and hostnames.
 func TestAccOriginCACertificate_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_origin_ca_certificate." + rnd
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	name := "zenthcloud_origin_ca_certificate." + rnd
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	csr, err := generateCSR(domain)
 	if err != nil {
@@ -148,7 +148,7 @@ func TestAccOriginCACertificate_Basic(t *testing.T) {
 			acctest.TestAccPreCheck_Domain(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareOriginCACertificateDestroy,
+		CheckDestroy:             testAccCheckZenthcloudOriginCACertificateDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOriginCACertificateBasicConfig(rnd, csr, domain),
@@ -185,7 +185,7 @@ func TestAccOriginCACertificate_Basic(t *testing.T) {
 
 func testAccOriginCACertificateBasicConfig(rnd, csr, domain string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_origin_ca_certificate" "%[1]s" {
+resource "zenthcloud_origin_ca_certificate" "%[1]s" {
   csr                = <<EOT
 %[2]s
 EOT
@@ -197,7 +197,7 @@ EOT
 
 func testAccOriginCACertificateUpdatedConfig(rnd, csr, domain string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_origin_ca_certificate" "%[1]s" {
+resource "zenthcloud_origin_ca_certificate" "%[1]s" {
   csr                = <<EOT
 %[2]s
 EOT
@@ -209,7 +209,7 @@ EOT
 
 func TestAccUpgradeOriginCaCertificate_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	csr, _ := generateCSR(domain)
 
 	config := testAccOriginCACertificateBasicConfig(rnd, csr, domain)
@@ -222,8 +222,8 @@ func TestAccUpgradeOriginCaCertificate_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

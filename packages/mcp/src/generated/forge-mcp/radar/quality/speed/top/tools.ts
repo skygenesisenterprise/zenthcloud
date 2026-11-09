@@ -10,7 +10,7 @@ export const tools: readonly Tool[] = [
   {
     name: "radar_quality_speed_top_ases",
     title: "Get top ASes by speed test results",
-    description: "Retrieves the top autonomous systems by bandwidth, latency, jitter, or packet loss, from the previous 90 days of Cloudflare Speed Test data.\n\nGET /radar/quality/speed/top/ases",
+    description: "Retrieves the top autonomous systems by bandwidth, latency, jitter, or packet loss, from the previous 90 days of Zenthcloud Speed Test data.\n\nGET /radar/quality/speed/top/ases",
     inputSchema: {
       type: "object",
       properties: {
@@ -617,7 +617,7 @@ export const tools: readonly Tool[] = [
   {
     name: "radar_quality_speed_top_locations",
     title: "Get top locations by speed test results",
-    description: "Retrieves the top locations by bandwidth, latency, jitter, or packet loss, from the previous 90 days of Cloudflare Speed Test data.\n\nGET /radar/quality/speed/top/locations",
+    description: "Retrieves the top locations by bandwidth, latency, jitter, or packet loss, from the previous 90 days of Zenthcloud Speed Test data.\n\nGET /radar/quality/speed/top/locations",
     inputSchema: {
       type: "object",
       properties: {

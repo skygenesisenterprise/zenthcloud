@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_magic_transit_site_lan Resource - Cloudflare"
+page_title: "zenthcloud_magic_transit_site_lan Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Magic Transit ReadMagic Transit WriteMagic WAN ReadMagic WAN Write
 ---
 
-# cloudflare_magic_transit_site_lan (Resource)
+# zenthcloud_magic_transit_site_lan (Resource)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_magic_transit_site_lan" "example_magic_transit_site_lan" {
+resource "zenthcloud_magic_transit_site_lan" "example_magic_transit_site_lan" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   site_id = "023e105f4ecef8ad9ca31a8372d0c353"
   bond_id = 2
@@ -167,7 +167,7 @@ Available values: "text", "hex", "ip", "byte", "short", "integer".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_magic_transit_site_lan.example '<account_id>/<site_id>/<lan_id>'
+$ terraform import zenthcloud_magic_transit_site_lan.example '<account_id>/<site_id>/<lan_id>'
 ```
 
 

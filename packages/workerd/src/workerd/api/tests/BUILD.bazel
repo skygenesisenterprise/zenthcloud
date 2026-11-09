@@ -262,7 +262,7 @@ wd_test(
     sidecar_randomize_ip = False,
 )
 
-# Regression test for AUTOVULN-CLOUDFLARE-WORKERD-334: connect() handler must neuter the
+# Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-334: connect() handler must neuter the
 # NeuterableIoStream when the handler promise resolves, preventing use-after-free.
 wd_test(
     src = "connect-neuter-test.wd-test",

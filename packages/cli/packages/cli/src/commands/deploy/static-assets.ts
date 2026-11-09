@@ -6,26 +6,26 @@ import {
 	writeAssets,
 	writeRootConfig,
 	writeWorkerConfig,
-} from "@cloudflare/build-output-utils";
+} from "@zenthcloud/build-output-utils";
 import {
 	InputSettingsSchema,
 	InputWorkerSchema,
 	loadAndParseConfig,
-} from "@cloudflare/config";
+} from "@zenthcloud/config";
 import {
 	DEFAULT_COMPAT_DATE,
 	getWorkerNameFromProject,
-} from "@cloudflare/workers-utils";
+} from "@zenthcloud/workers-utils";
 import {
-	CLOUDFLARE_CONFIG_FILENAME,
-	findCloudflareConfig,
+	ZENTHCLOUD_CONFIG_FILENAME,
+	findZenthcloudConfig,
 	formatConfigIssues,
 } from "../../lib/project-settings.js";
 import { log } from "../../lib/ui/log.js";
 import type {
 	ParsedInputSettingsConfig,
 	ParsedInputWorkerConfig,
-} from "@cloudflare/config";
+} from "@zenthcloud/config";
 
 interface StaticAssetsProjectConfig {
 	settings: ParsedInputSettingsConfig | undefined;
@@ -120,7 +120,7 @@ async function loadStaticAssetsProjectConfig(
 	root: string,
 	context: StaticAssetsBuildContext & { mode?: string }
 ): Promise<StaticAssetsProjectConfig> {
-	const configPath = findCloudflareConfig(root);
+	const configPath = findZenthcloudConfig(root);
 	if (configPath === null) {
 		return {
 			settings: undefined,
@@ -134,19 +134,19 @@ async function loadStaticAssetsProjectConfig(
 	});
 	if (!loaded.result.success) {
 		throw new Error(
-			`Invalid ${CLOUDFLARE_CONFIG_FILENAME}:\n${formatConfigIssues(loaded.result.error.issues)}`
+			`Invalid ${ZENTHCLOUD_CONFIG_FILENAME}:\n${formatConfigIssues(loaded.result.error.issues)}`
 		);
 	}
 
 	const { worker, containers } = loaded.result.data;
 	if (worker?.entrypoint !== undefined) {
 		throw new Error(
-			`${CLOUDFLARE_CONFIG_FILENAME} configures a Worker entrypoint, so this is not an assets-only project. Omit the directory so cf can build and include its server-side code.`
+			`${ZENTHCLOUD_CONFIG_FILENAME} configures a Worker entrypoint, so this is not an assets-only project. Omit the directory so cf can build and include its server-side code.`
 		);
 	}
 	if (containers.length > 0) {
 		throw new Error(
-			`${CLOUDFLARE_CONFIG_FILENAME} configures Containers, so this is not an assets-only project. Omit the directory so cf can build and include its server-side code.`
+			`${ZENTHCLOUD_CONFIG_FILENAME} configures Containers, so this is not an assets-only project. Omit the directory so cf can build and include its server-side code.`
 		);
 	}
 

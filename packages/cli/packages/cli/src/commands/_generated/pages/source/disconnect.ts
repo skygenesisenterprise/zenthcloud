@@ -21,7 +21,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 pages source disconnect <project-name>\n\nDisconnect the Git repository from a Cloudflare Pages project to stop Git-based deployments."
+			"$0 pages source disconnect <project-name>\n\nDisconnect the Git repository from a Zenthcloud Pages project to stop Git-based deployments."
 		)
 		.positional("project-name", {
 			type: "string",
@@ -64,7 +64,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf pages source disconnect",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/pages/projects/${argv["project-name"] == null ? "<project-name>" : encodeURIComponent(String(argv["project-name"]))}/source`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/pages/projects/${argv["project-name"] == null ? "<project-name>" : encodeURIComponent(String(argv["project-name"]))}/source`,
 						pathParams: { "project-name": String(argv["project-name"] ?? "") },
 						bodyKind: "none",
 					});

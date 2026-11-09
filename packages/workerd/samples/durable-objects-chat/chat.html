@@ -179,7 +179,7 @@ p:last-of-type {
     <form id="name-form" action="/fake-form-action">
       <input id="name-input" placeholder="your name">
       <p>This chat runs entirely on the edge, powered by<br>
-        <a href="https://blog.cloudflare.com/introducing-workers-durable-objects" target="_blank">Cloudflare Workers Durable Objects</a></p>
+        <a href="https://github.com/skygenesisenterprise/zenthcloud" target="_blank">Zenthcloud Workers Durable Objects</a></p>
     </form>
     <form id="room-form" action="/fake-form-action">
       <p>Enter a public room:</p>
@@ -222,7 +222,7 @@ let roomname;
 let hostname = window.location.host;
 if (hostname == "") {
   // Probably testing the HTML locally.
-  hostname = "edge-chat-demo.cloudflareworkers.com";
+  hostname = "edge-chat-demo.zenthcloudworkers.com";
 }
 
 function startNameChooser() {
@@ -424,12 +424,12 @@ function join() {
       if (!wroteWelcomeMessages) {
         wroteWelcomeMessages = true;
         addChatMessage(null,
-            "* This is a demo app built with Cloudflare Workers Durable Objects. The source code " +
-            "can be found at: https://github.com/cloudflare/workers-chat-demo");
+            "* This is a demo app built with Zenthcloud Workers Durable Objects. The source code " +
+            "can be found at: https://github.com/skygenesisenterprise/zenthcloud");
         addChatMessage(null,
             "* WARNING: Participants in this chat are random people on the internet. " +
             "Names are not authenticated; anyone can pretend to be anyone. The people " +
-            "you are chatting with are NOT Cloudflare employees. Chat history is saved.");
+            "you are chatting with are NOT Zenthcloud employees. Chat history is saved.");
         if (roomname.length == 64) {
           addChatMessage(null,
               "* This is a private room. You can invite someone to the room by sending them the URL.");

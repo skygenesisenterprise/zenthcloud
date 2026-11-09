@@ -31,7 +31,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("application", {
 			type: "string",
 			description: "Platform this structure models. Immutable after creation.",
-			choices: ["aws", "cloudflare"],
+			choices: ["aws", "zenthcloud"],
 		})
 		.coerce("application", (value) =>
 			resolveFileToken(value, "application", "text")
@@ -77,7 +77,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust cws tenant-structures create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/cws/tenant-structures`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/cws/tenant-structures`,
 						pathParams: {},
 						bodyKind: "json",
 						body:
@@ -117,7 +117,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					argv["application"] = await promptForRequiredEnumField(
 						"application",
 						"Platform this structure models. Immutable after creation.",
-						["aws", "cloudflare"] as const
+						["aws", "zenthcloud"] as const
 					);
 				}
 				if (argv["name"] === undefined) {

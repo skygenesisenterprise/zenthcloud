@@ -7,7 +7,7 @@ import (
 
 // SourceHealthcheckSchema returns the source schema for legacy healthcheck resource.
 // Schema version: 0 (implicit in v4 - no Version field specified)
-// Resource type: cloudflare_healthcheck
+// Resource type: zenthcloud_healthcheck
 //
 // IMPORTANT: This schema represents the v4 FLAT structure.
 // All HTTP/TCP-specific fields (method, port, path, etc.) are at the ROOT level in v4.

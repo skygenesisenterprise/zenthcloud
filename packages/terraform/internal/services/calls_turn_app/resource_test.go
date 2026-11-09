@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
@@ -44,13 +44,13 @@ func callsTURNImportIDFunc(resourceName string) resource.ImportStateIdFunc {
 //  3. Update name — in-place rename must succeed
 //  4. Import — all attributes must survive a round-trip through the API
 func TestAccCallsTURNApp_Lifecycle(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
-	accID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_calls_turn_app.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_calls_turn_app.%s", rnd)
 	updatedName := rnd + "_updated"
 
 	resource.Test(t, resource.TestCase{

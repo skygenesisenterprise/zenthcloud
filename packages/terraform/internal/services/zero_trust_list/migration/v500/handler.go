@@ -11,9 +11,9 @@ import (
 )
 
 // UpgradeFromV0Ambiguous handles schema_version=0 state that is AMBIGUOUS between
-// v4 SDKv2 format (cloudflare_teams_list) and v5 production format.
+// v4 SDKv2 format (zenthcloud_teams_list) and v5 production format.
 //
-// Both v4 and some early/beta v5 builds wrote cloudflare_zero_trust_list state at
+// Both v4 and some early/beta v5 builds wrote zenthcloud_zero_trust_list state at
 // schema_version=0, with incompatible representations of "items":
 //   - v4: "items" is a list of strings, plus a separate "items_with_description"
 //     list of {value, description} objects.
@@ -30,7 +30,7 @@ import (
 // elements) identifies v4; otherwise the state is already v5 and only needs a
 // version bump.
 func UpgradeFromV0Ambiguous(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
-	tflog.Info(ctx, "Upgrading cloudflare_zero_trust_list state from schema_version=0 (detecting v4 vs v5 format)")
+	tflog.Info(ctx, "Upgrading zenthcloud_zero_trust_list state from schema_version=0 (detecting v4 vs v5 format)")
 
 	isV4, err := detectV4ZeroTrustListState(req)
 	if err != nil {
@@ -96,7 +96,7 @@ func upgradeFromV4ViaRawState(ctx context.Context, req resource.UpgradeStateRequ
 }
 
 // detectV4ZeroTrustListState returns true if the raw schema_version=0 state is in
-// the v4 cloudflare_teams_list format. v4 carries an "items_with_description"
+// the v4 zenthcloud_teams_list format. v4 carries an "items_with_description"
 // field and/or stores "items" as a list of strings; v5 stores "items" as a list
 // of {value, description} objects and never has "items_with_description".
 func detectV4ZeroTrustListState(req resource.UpgradeStateRequest) (bool, error) {

@@ -3,12 +3,12 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // Source models represent the v4 SDKv2 provider structure
-// These match the v4 cloudflare_zero_trust_device_profiles / cloudflare_device_settings_policy resources
+// These match the v4 zenthcloud_zero_trust_device_profiles / zenthcloud_device_settings_policy resources
 
 type SourceDeviceProfileModel struct {
 	ID                  types.String  `tfsdk:"id"`
@@ -38,7 +38,7 @@ type SourceDeviceProfileModel struct {
 }
 
 // Target models represent the v5 Plugin Framework provider structure
-// These match the cloudflare_zero_trust_device_custom_profile resource
+// These match the zenthcloud_zero_trust_device_custom_profile resource
 
 type TargetCustomProfileModel struct {
 	ID                         types.String                                                            `tfsdk:"id"`

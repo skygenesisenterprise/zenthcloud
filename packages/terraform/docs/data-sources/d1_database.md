@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_d1_database Data Source - Cloudflare"
+page_title: "zenthcloud_d1_database Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   D1 ReadD1 Write
 ---
 
-# cloudflare_d1_database (Data Source)
+# zenthcloud_d1_database (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_d1_database" "example_d1_database" {
+data "zenthcloud_d1_database" "example_d1_database" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
   fields = ["uuid"]

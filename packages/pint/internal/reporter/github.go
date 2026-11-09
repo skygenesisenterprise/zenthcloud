@@ -12,11 +12,11 @@ import (
 	"github.com/google/go-github/v92/github"
 	"golang.org/x/oauth2"
 
-	"github.com/cloudflare/pint/internal/checks"
-	"github.com/cloudflare/pint/internal/output"
+	"github.com/zenthcloud/pint/internal/checks"
+	"github.com/zenthcloud/pint/internal/output"
 )
 
-var reviewBody = "### This pull request was validated by [pint](https://github.com/cloudflare/pint).\n"
+var reviewBody = "### This pull request was validated by [pint](https://github.com/skygenesisenterprise/zenthcloud).\n"
 
 type GithubReporter struct {
 	headCommit string

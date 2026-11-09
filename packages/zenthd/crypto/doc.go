@@ -1,6 +1,6 @@
 // Package crypto centralizes the cryptographic primitives and TLS
-// configuration used by cloudflared when establishing connections to the
-// Cloudflare edge.
+// configuration used by zenthcloudd when establishing connections to the
+// Zenthcloud edge.
 //
 // The primary responsibility of the package is to expose a single, canonical
 // source of TLS curve preferences so that every edge-facing transport (QUIC
@@ -9,7 +9,7 @@
 //
 // # Post-Quantum key exchange
 //
-// cloudflared supports the X25519MLKEM768 hybrid post-quantum key exchange.
+// zenthcloudd supports the X25519MLKEM768 hybrid post-quantum key exchange.
 // Two operating modes are exposed via the features.PostQuantumMode flag:
 //
 //   - PostQuantumPrefer: advertise X25519MLKEM768 and the deprecated

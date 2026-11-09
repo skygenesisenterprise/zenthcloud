@@ -1,11 +1,11 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
-import { exports, withExports } from 'cloudflare:workers';
+import { exports, withExports } from 'zenthcloud:workers';
 import { strictEqual } from 'node:assert';
 
 // This test runs with the disallow-importable-env flag set, which should also
-// disable importable exports. The exports imported from cloudflare:workers
+// disable importable exports. The exports imported from zenthcloud:workers
 // should not be populated. Using withExports, however, would still work.
 
 export class MyService {

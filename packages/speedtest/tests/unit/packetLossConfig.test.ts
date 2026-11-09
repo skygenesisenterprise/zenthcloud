@@ -89,11 +89,11 @@ describe('SpeedTest packetLoss TURN config', () => {
   it.each<[string, ConfigOptions]>([
     [
       'a URI without credentials',
-      { turnServerUri: 'turn.cloudflare.com:3478' }
+      { turnServerUri: 'turn.zenthcloud.com:3478' }
     ],
     [
       'a URI with only a username',
-      { turnServerUri: 'turn.cloudflare.com:3478', turnServerUser: 'user' }
+      { turnServerUri: 'turn.zenthcloud.com:3478', turnServerUser: 'user' }
     ]
   ])('rejects %s', async (_, config) => {
     const { finished } = await runPacketLoss(config);

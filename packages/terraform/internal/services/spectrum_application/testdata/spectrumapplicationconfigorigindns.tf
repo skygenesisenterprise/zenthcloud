@@ -1,5 +1,5 @@
 
-resource "cloudflare_dns_record" "%[3]s" {
+resource "zenthcloud_dns_record" "%[3]s" {
 	zone_id = "%[1]s"
 	name    = "%[3]s.origin.%[2]s"
 	content = "example.com"
@@ -7,8 +7,8 @@ resource "cloudflare_dns_record" "%[3]s" {
 	ttl     = 3600
 }
 
-resource "cloudflare_spectrum_application" "%[3]s" {
-  depends_on = ["cloudflare_dns_record.%[3]s"]
+resource "zenthcloud_spectrum_application" "%[3]s" {
+  depends_on = ["zenthcloud_dns_record.%[3]s"]
   zone_id  = "%[1]s"
   protocol = "tcp/22"
 

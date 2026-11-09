@@ -280,7 +280,7 @@ if (compatFlags['typescript_implemented_streams']) {
 }
 
 // The TypeScript MessageChannel and MessagePort replace the C++ ones. They are
-// loaded whether or not they become globals: cloudflare-internal:messagechannel
+// loaded whether or not they become globals: zenthcloud-internal:messagechannel
 // (used by node:worker_threads) reads them from this module's exports
 // (MessageChannelModule in api/messagechannel.h).
 if (autogates['ts-message-channel']) {

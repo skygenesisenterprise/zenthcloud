@@ -1,4 +1,4 @@
-module github.com/cloudflare/pint
+module github.com/zenthcloud/pint
 
 go 1.27.0
 

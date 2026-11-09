@@ -5,7 +5,7 @@ package flagship_app
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
@@ -29,7 +29,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"account_id": schema.StringAttribute{
-				Description: "Cloudflare account ID that owns the Flagship app.",
+				Description: "Zenthcloud account ID that owns the Flagship app.",
 				Required:    true,
 			},
 			"created_at": schema.StringAttribute{

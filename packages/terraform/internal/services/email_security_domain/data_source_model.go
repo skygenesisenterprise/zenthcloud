@@ -5,9 +5,9 @@ package email_security_domain
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/email_security"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/email_security"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -47,7 +47,7 @@ type EmailSecurityDomainDataSourceModel struct {
 
 func (m *EmailSecurityDomainDataSourceModel) toReadParams(_ context.Context) (params email_security.SettingDomainGetParams, diags diag.Diagnostics) {
 	params = email_security.SettingDomainGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -62,30 +62,30 @@ func (m *EmailSecurityDomainDataSourceModel) toListParams(_ context.Context) (pa
 	}
 
 	params = email_security.SettingDomainListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
-		Domain:    cloudflare.F(mFilterDomain),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
+		Domain:    zenthcloud.F(mFilterDomain),
 	}
 
 	if !m.Filter.ActiveDeliveryMode.IsNull() {
-		params.ActiveDeliveryMode = cloudflare.F(email_security.SettingDomainListParamsActiveDeliveryMode(m.Filter.ActiveDeliveryMode.ValueString()))
+		params.ActiveDeliveryMode = zenthcloud.F(email_security.SettingDomainListParamsActiveDeliveryMode(m.Filter.ActiveDeliveryMode.ValueString()))
 	}
 	if !m.Filter.AllowedDeliveryMode.IsNull() {
-		params.AllowedDeliveryMode = cloudflare.F(email_security.SettingDomainListParamsAllowedDeliveryMode(m.Filter.AllowedDeliveryMode.ValueString()))
+		params.AllowedDeliveryMode = zenthcloud.F(email_security.SettingDomainListParamsAllowedDeliveryMode(m.Filter.AllowedDeliveryMode.ValueString()))
 	}
 	if !m.Filter.Direction.IsNull() {
-		params.Direction = cloudflare.F(email_security.SettingDomainListParamsDirection(m.Filter.Direction.ValueString()))
+		params.Direction = zenthcloud.F(email_security.SettingDomainListParamsDirection(m.Filter.Direction.ValueString()))
 	}
 	if !m.Filter.IntegrationID.IsNull() {
-		params.IntegrationID = cloudflare.F(m.Filter.IntegrationID.ValueString())
+		params.IntegrationID = zenthcloud.F(m.Filter.IntegrationID.ValueString())
 	}
 	if !m.Filter.Order.IsNull() {
-		params.Order = cloudflare.F(email_security.SettingDomainListParamsOrder(m.Filter.Order.ValueString()))
+		params.Order = zenthcloud.F(email_security.SettingDomainListParamsOrder(m.Filter.Order.ValueString()))
 	}
 	if !m.Filter.Search.IsNull() {
-		params.Search = cloudflare.F(m.Filter.Search.ValueString())
+		params.Search = zenthcloud.F(m.Filter.Search.ValueString())
 	}
 	if !m.Filter.Status.IsNull() {
-		params.Status = cloudflare.F(email_security.SettingDomainListParamsStatus(m.Filter.Status.ValueString()))
+		params.Status = zenthcloud.F(email_security.SettingDomainListParamsStatus(m.Filter.Status.ValueString()))
 	}
 
 	return

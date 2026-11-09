@@ -120,7 +120,7 @@ export const cloud$$connector_rule: JSONObject = {
     "provider": {
       "enum": [
         "aws_s3",
-        "cloudflare_r2",
+        "zenthcloud_r2",
         "gcp_storage",
         "azure_storage",
         "oci_storage"

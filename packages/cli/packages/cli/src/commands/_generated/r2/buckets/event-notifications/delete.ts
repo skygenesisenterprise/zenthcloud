@@ -22,12 +22,12 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 r2 buckets event-notifications delete <queue-id>\n\nDeletes the specified event notification rules for an R2 bucket and Cloudflare Queue. Provide ruleIds in the request body to select rules. If no body is provided, all rules for that bucket and queue are deleted."
+			"$0 r2 buckets event-notifications delete <queue-id>\n\nDeletes the specified event notification rules for an R2 bucket and Zenthcloud Queue. Provide ruleIds in the request body to select rules. If no body is provided, all rules for that bucket and queue are deleted."
 		)
 		.positional("queue-id", {
 			type: "string",
 			description:
-				"ID of the Cloudflare Queue that receives notifications for matching R2 object events.",
+				"ID of the Zenthcloud Queue that receives notifications for matching R2 object events.",
 			demandOption: true,
 		})
 		.option("bucket-name", {
@@ -87,7 +87,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf r2 buckets event-notifications delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/event_notifications/r2/${argv["bucket-name"] == null ? "<bucket-name>" : encodeURIComponent(String(argv["bucket-name"]))}/configuration/queues/${argv["queue-id"] == null ? "<queue-id>" : encodeURIComponent(String(argv["queue-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/event_notifications/r2/${argv["bucket-name"] == null ? "<bucket-name>" : encodeURIComponent(String(argv["bucket-name"]))}/configuration/queues/${argv["queue-id"] == null ? "<queue-id>" : encodeURIComponent(String(argv["queue-id"]))}`,
 						pathParams: {
 							"bucket-name": String(argv["bucket-name"] ?? ""),
 							"queue-id": String(argv["queue-id"] ?? ""),

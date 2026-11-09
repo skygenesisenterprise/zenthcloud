@@ -16,14 +16,14 @@ import {
 } from "@zenthcloud/server/services/dns-provider";
 
 describe("maskDnsProviderConfig", () => {
-	it("masks the apiToken for a cloudflare config", () => {
+	it("masks the apiToken for a zenthcloud config", () => {
 		const masked = maskDnsProviderConfig({
-			providerType: "cloudflare",
+			providerType: "zenthcloud",
 			apiToken: "real-token",
 		});
 
 		expect(masked).toEqual({
-			providerType: "cloudflare",
+			providerType: "zenthcloud",
 			apiToken: DNS_SECRET_MASK,
 		});
 	});
@@ -44,22 +44,22 @@ describe("maskDnsProviderConfig", () => {
 
 	it("leaves an empty sensitive field untouched instead of masking a blank value", () => {
 		const masked = maskDnsProviderConfig({
-			providerType: "cloudflare",
+			providerType: "zenthcloud",
 			apiToken: "",
 		});
 
-		expect(masked).toEqual({ providerType: "cloudflare", apiToken: "" });
+		expect(masked).toEqual({ providerType: "zenthcloud", apiToken: "" });
 	});
 });
 
 describe("mergeDnsProviderConfig", () => {
 	it("restores the real secret when the incoming config still has the mask placeholder", () => {
 		const existing = {
-			providerType: "cloudflare" as const,
+			providerType: "zenthcloud" as const,
 			apiToken: "real-token",
 		};
 		const incoming = {
-			providerType: "cloudflare" as const,
+			providerType: "zenthcloud" as const,
 			apiToken: DNS_SECRET_MASK,
 		};
 
@@ -68,11 +68,11 @@ describe("mergeDnsProviderConfig", () => {
 
 	it("keeps a freshly entered secret instead of the stored one", () => {
 		const existing = {
-			providerType: "cloudflare" as const,
+			providerType: "zenthcloud" as const,
 			apiToken: "old-token",
 		};
 		const incoming = {
-			providerType: "cloudflare" as const,
+			providerType: "zenthcloud" as const,
 			apiToken: "new-token",
 		};
 
@@ -81,7 +81,7 @@ describe("mergeDnsProviderConfig", () => {
 
 	it("throws when switching provider type while the field is still masked", () => {
 		const existing = {
-			providerType: "cloudflare" as const,
+			providerType: "zenthcloud" as const,
 			apiToken: "real-token",
 		};
 		const incoming = {

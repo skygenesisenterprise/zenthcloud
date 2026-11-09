@@ -1,11 +1,11 @@
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
-import nimbus, { defineConfig as defineNimbusConfig } from '@cloudflare/nimbus-docs';
-import { tableScroll } from '@cloudflare/nimbus-docs/markdown';
+import nimbus, { defineConfig as defineNimbusConfig } from '@zenthcloud/nimbus-docs';
+import { tableScroll } from '@zenthcloud/nimbus-docs/markdown';
 import { mdastBundleSize } from './scripts/mdast-bundle-size.mjs';
 import bundleSize from './src/generated/bundle-size.json' with { type: 'json' };
 
-const REPO = 'https://github.com/cloudflare/capnweb';
+const REPO = 'https://github.com/skygenesisenterprise/zenthcloud';
 
 const nimbusConfig = defineNimbusConfig({
 	// Nimbus requires a canonical origin: it drives canonical URLs, the absolute OG image URLs,
@@ -53,7 +53,7 @@ const nimbusConfig = defineNimbusConfig({
 					// Off-site on purpose. Release notes are generated from changesets on every
 					// publish, so a page here would be a copy that goes stale the next time
 					// anyone ships.
-					{ label: 'Changelog', link: 'https://github.com/cloudflare/capnweb/releases' },
+					{ label: 'Changelog', link: 'https://github.com/skygenesisenterprise/zenthcloud' },
 				],
 			},
 		],

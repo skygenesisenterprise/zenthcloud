@@ -7,8 +7,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/pages"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/pages"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -17,9 +17,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 func TestMain(m *testing.M) {
@@ -27,25 +27,25 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_pages_project", &resource.Sweeper{
-		Name: "cloudflare_pages_project",
-		F:    testSweepCloudflarePagesProjects,
+	resource.AddTestSweepers("zenthcloud_pages_project", &resource.Sweeper{
+		Name: "zenthcloud_pages_project",
+		F:    testSweepZenthcloudPagesProjects,
 	})
 }
 
-func testSweepCloudflarePagesProjects(r string) error {
+func testSweepZenthcloudPagesProjects(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping Pages projects sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping Pages projects sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
 	// List all pages projects in the account (this actually returns deployments)
 	list, err := client.Pages.Projects.List(ctx, pages.ProjectListParams{
-		AccountID: cloudflare.F(accountID),
+		AccountID: zenthcloud.F(accountID),
 	})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to list pages projects: %s", err))
@@ -72,7 +72,7 @@ func testSweepCloudflarePagesProjects(r string) error {
 			projectNames[project.Name] = true
 			tflog.Info(ctx, fmt.Sprintf("Deleting Pages project: %s (account: %s)", project.Name, accountID))
 			_, err := client.Pages.Projects.Delete(ctx, project.Name, pages.ProjectDeleteParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			})
 			if err != nil {
 				tflog.Error(ctx, fmt.Sprintf("Failed to delete Pages project %s: %s", project.Name, err))
@@ -145,17 +145,17 @@ func testPagesProjectPartialBuildConfig(resourceID, accountID, projectName strin
 	return acctest.LoadTestCase("pagesprojectpartialbuildconfig.tf", resourceID, accountID, projectName)
 }
 
-func testAccCheckCloudflarePageProjectDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudPageProjectDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_pages_project" {
+		if rs.Type != "zenthcloud_pages_project" {
 			continue
 		}
 
 		accountID := rs.Primary.Attributes[consts.AccountIDSchemaKey]
 		_, err := client.Pages.Projects.Get(context.Background(), rs.Primary.ID, pages.ProjectGetParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		})
 		if err == nil {
 			return fmt.Errorf("pages project still exists")
@@ -165,13 +165,13 @@ func testAccCheckCloudflarePageProjectDestroy(s *terraform.State) error {
 	return nil
 }
 
-func TestAccCloudflarePagesProject_Basic(t *testing.T) {
+func TestAccZenthcloudPagesProject_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_pages_project." + rnd
+	name := "zenthcloud_pages_project." + rnd
 	projectName := rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	pagesOwner := os.Getenv("CLOUDFLARE_PAGES_OWNER")
-	pagesRepo := os.Getenv("CLOUDFLARE_PAGES_REPO")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	pagesOwner := os.Getenv("ZENTHCLOUD_PAGES_OWNER")
+	pagesRepo := os.Getenv("ZENTHCLOUD_PAGES_REPO")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -179,7 +179,7 @@ func TestAccCloudflarePagesProject_Basic(t *testing.T) {
 			acctest.TestAccPreCheck_Pages(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflarePageProjectDestroy,
+		CheckDestroy:             testAccCheckZenthcloudPageProjectDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testPagesProjectSource(rnd, accountID, projectName, pagesOwner, pagesRepo),
@@ -213,11 +213,11 @@ func TestAccCloudflarePagesProject_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCloudflarePagesProject_BuildConfig(t *testing.T) {
+func TestAccZenthcloudPagesProject_BuildConfig(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_pages_project." + rnd
+	name := "zenthcloud_pages_project." + rnd
 	projectName := rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -225,7 +225,7 @@ func TestAccCloudflarePagesProject_BuildConfig(t *testing.T) {
 			acctest.TestAccPreCheck_Pages(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflarePageProjectDestroy,
+		CheckDestroy:             testAccCheckZenthcloudPageProjectDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testPagesProjectBuildConfig(rnd, accountID, projectName),
@@ -250,18 +250,18 @@ func TestAccCloudflarePagesProject_BuildConfig(t *testing.T) {
 	})
 }
 
-func TestAccCloudflarePagesProject_DeploymentConfig(t *testing.T) {
+func TestAccZenthcloudPagesProject_DeploymentConfig(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_pages_project." + rnd
+	name := "zenthcloud_pages_project." + rnd
 	projectName := rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 			acctest.TestAccPreCheck_Pages(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflarePageProjectDestroy,
+		CheckDestroy:             testAccCheckZenthcloudPageProjectDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testPagesProjectDeploymentConfig(rnd, accountID, projectName),
@@ -338,18 +338,18 @@ func TestAccCloudflarePagesProject_DeploymentConfig(t *testing.T) {
 	})
 }
 
-func TestAccCloudflarePagesProject_DirectUpload(t *testing.T) {
+func TestAccZenthcloudPagesProject_DirectUpload(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_pages_project." + rnd
+	name := "zenthcloud_pages_project." + rnd
 	projectName := rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflarePageProjectDestroy,
+		CheckDestroy:             testAccCheckZenthcloudPageProjectDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testPagesProjectDirectUpload(rnd, accountID, projectName),
@@ -372,18 +372,18 @@ func TestAccCloudflarePagesProject_DirectUpload(t *testing.T) {
 	})
 }
 
-func TestAccCloudflarePagesProject_Update_AddOptionalAttributes(t *testing.T) {
+func TestAccZenthcloudPagesProject_Update_AddOptionalAttributes(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_pages_project." + rnd
+	name := "zenthcloud_pages_project." + rnd
 	projectName := rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflarePageProjectDestroy,
+		CheckDestroy:             testAccCheckZenthcloudPageProjectDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testPagesProjectMinimal(rnd, accountID, projectName),
@@ -424,18 +424,18 @@ func TestAccCloudflarePagesProject_Update_AddOptionalAttributes(t *testing.T) {
 	})
 }
 
-func TestAccCloudflarePagesProject_Update_RemoveOptionalAttributes(t *testing.T) {
+func TestAccZenthcloudPagesProject_Update_RemoveOptionalAttributes(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_pages_project." + rnd
+	name := "zenthcloud_pages_project." + rnd
 	projectName := rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflarePageProjectDestroy,
+		CheckDestroy:             testAccCheckZenthcloudPageProjectDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testPagesProjectUpdated(rnd, accountID, projectName),
@@ -472,13 +472,13 @@ func TestAccCloudflarePagesProject_Update_RemoveOptionalAttributes(t *testing.T)
 		},
 	})
 }
-func TestAccCloudflarePagesProject_FullConfiguration(t *testing.T) {
+func TestAccZenthcloudPagesProject_FullConfiguration(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_pages_project." + rnd
+	name := "zenthcloud_pages_project." + rnd
 	projectName := rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	pagesOwner := os.Getenv("CLOUDFLARE_PAGES_OWNER")
-	pagesRepo := os.Getenv("CLOUDFLARE_PAGES_REPO")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	pagesOwner := os.Getenv("ZENTHCLOUD_PAGES_OWNER")
+	pagesRepo := os.Getenv("ZENTHCLOUD_PAGES_REPO")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -486,7 +486,7 @@ func TestAccCloudflarePagesProject_FullConfiguration(t *testing.T) {
 			acctest.TestAccPreCheck_Pages(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflarePageProjectDestroy,
+		CheckDestroy:             testAccCheckZenthcloudPageProjectDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testPagesProjectFullConfig(rnd, accountID, projectName, pagesOwner, pagesRepo),
@@ -553,18 +553,18 @@ func TestAccCloudflarePagesProject_FullConfiguration(t *testing.T) {
 	})
 }
 
-func TestAccCloudflarePagesProject_EnvVarTypes(t *testing.T) {
+func TestAccZenthcloudPagesProject_EnvVarTypes(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_pages_project." + rnd
+	name := "zenthcloud_pages_project." + rnd
 	projectName := rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflarePageProjectDestroy,
+		CheckDestroy:             testAccCheckZenthcloudPageProjectDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testPagesProjectEnvVars(rnd, accountID, projectName),
@@ -591,13 +591,13 @@ func TestAccCloudflarePagesProject_EnvVarTypes(t *testing.T) {
 	})
 }
 
-func TestAccCloudflarePagesProject_PreviewDeploymentSettings(t *testing.T) {
+func TestAccZenthcloudPagesProject_PreviewDeploymentSettings(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_pages_project." + rnd
+	name := "zenthcloud_pages_project." + rnd
 	projectName := rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	pagesOwner := os.Getenv("CLOUDFLARE_PAGES_OWNER")
-	pagesRepo := os.Getenv("CLOUDFLARE_PAGES_REPO")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	pagesOwner := os.Getenv("ZENTHCLOUD_PAGES_OWNER")
+	pagesRepo := os.Getenv("ZENTHCLOUD_PAGES_REPO")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -605,7 +605,7 @@ func TestAccCloudflarePagesProject_PreviewDeploymentSettings(t *testing.T) {
 			acctest.TestAccPreCheck_Pages(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflarePageProjectDestroy,
+		CheckDestroy:             testAccCheckZenthcloudPageProjectDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testPagesProjectPreviewSettings(rnd, accountID, projectName, pagesOwner, pagesRepo, "all", ""),
@@ -651,18 +651,18 @@ func TestAccCloudflarePagesProject_PreviewDeploymentSettings(t *testing.T) {
 	})
 }
 
-func TestAccCloudflarePagesProject_RemoveEnvVarsAndBindings(t *testing.T) {
+func TestAccZenthcloudPagesProject_RemoveEnvVarsAndBindings(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_pages_project." + rnd
+	name := "zenthcloud_pages_project." + rnd
 	projectName := rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflarePageProjectDestroy,
+		CheckDestroy:             testAccCheckZenthcloudPageProjectDestroy,
 		Steps: []resource.TestStep{
 			{
 				// Step 1: Create with env_vars and bindings
@@ -703,18 +703,18 @@ func TestAccCloudflarePagesProject_RemoveEnvVarsAndBindings(t *testing.T) {
 	})
 }
 
-func TestAccCloudflarePagesProject_RemoveSpecificEnvVar(t *testing.T) {
+func TestAccZenthcloudPagesProject_RemoveSpecificEnvVar(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_pages_project." + rnd
+	name := "zenthcloud_pages_project." + rnd
 	projectName := rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflarePageProjectDestroy,
+		CheckDestroy:             testAccCheckZenthcloudPageProjectDestroy,
 		Steps: []resource.TestStep{
 			{
 				// Step 1: Create with multiple env_vars
@@ -751,21 +751,21 @@ func TestAccCloudflarePagesProject_RemoveSpecificEnvVar(t *testing.T) {
 	})
 }
 
-// TestAccCloudflarePagesProject_NoDriftWithSecretEnvVars tests the fix for issue #6526.
+// TestAccZenthcloudPagesProject_NoDriftWithSecretEnvVars tests the fix for issue #6526.
 // It verifies that applying the same config with secret env vars does not cause
 // "inconsistent result after apply" errors.
-func TestAccCloudflarePagesProject_NoDriftWithSecretEnvVars(t *testing.T) {
+func TestAccZenthcloudPagesProject_NoDriftWithSecretEnvVars(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_pages_project." + rnd
+	name := "zenthcloud_pages_project." + rnd
 	projectName := rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflarePageProjectDestroy,
+		CheckDestroy:             testAccCheckZenthcloudPageProjectDestroy,
 		Steps: []resource.TestStep{
 			{
 				// Initial apply with secret env vars
@@ -788,22 +788,22 @@ func TestAccCloudflarePagesProject_NoDriftWithSecretEnvVars(t *testing.T) {
 	})
 }
 
-// TestAccCloudflarePagesProject_CompleteBuildConfig tests that specifying build_config
+// TestAccZenthcloudPagesProject_CompleteBuildConfig tests that specifying build_config
 // with all required fields (including build_caching) works correctly after import.
 // This addresses the issue where users needed to add build_caching to their config
 // to avoid "Provider produced invalid plan" errors.
-func TestAccCloudflarePagesProject_CompleteBuildConfig(t *testing.T) {
+func TestAccZenthcloudPagesProject_CompleteBuildConfig(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_pages_project." + rnd
+	name := "zenthcloud_pages_project." + rnd
 	projectName := rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflarePageProjectDestroy,
+		CheckDestroy:             testAccCheckZenthcloudPageProjectDestroy,
 		Steps: []resource.TestStep{
 			{
 				// Create with complete build_config (including build_caching)
@@ -845,22 +845,22 @@ func TestAccCloudflarePagesProject_CompleteBuildConfig(t *testing.T) {
 	})
 }
 
-// TestAccCloudflarePagesProject_DeploymentConfigsWithoutBuildConfig tests the fix for
+// TestAccZenthcloudPagesProject_DeploymentConfigsWithoutBuildConfig tests the fix for
 // the issue where specifying deployment_configs without build_config would cause
 // "Provider produced invalid plan" errors because the API returns empty strings for
 // build_config fields, which weren't being properly normalized to null.
-func TestAccCloudflarePagesProject_DeploymentConfigsWithoutBuildConfig(t *testing.T) {
+func TestAccZenthcloudPagesProject_DeploymentConfigsWithoutBuildConfig(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_pages_project." + rnd
+	name := "zenthcloud_pages_project." + rnd
 	projectName := rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflarePageProjectDestroy,
+		CheckDestroy:             testAccCheckZenthcloudPageProjectDestroy,
 		Steps: []resource.TestStep{
 			{
 				// Initial create with deployment_configs but NO build_config
@@ -905,21 +905,21 @@ func TestAccCloudflarePagesProject_DeploymentConfigsWithoutBuildConfig(t *testin
 	})
 }
 
-// TestAccCloudflarePagesProject_NoDriftWithMinimalConfig tests the fix for issue #5928.
+// TestAccZenthcloudPagesProject_NoDriftWithMinimalConfig tests the fix for issue #5928.
 // It verifies that a minimal config (without build_config or deployment_configs) does not
 // show drift on subsequent plans.
-func TestAccCloudflarePagesProject_NoDriftWithMinimalConfig(t *testing.T) {
+func TestAccZenthcloudPagesProject_NoDriftWithMinimalConfig(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_pages_project." + rnd
+	name := "zenthcloud_pages_project." + rnd
 	projectName := rnd
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflarePageProjectDestroy,
+		CheckDestroy:             testAccCheckZenthcloudPageProjectDestroy,
 		Steps: []resource.TestStep{
 			{
 				// Initial apply with minimal config
@@ -946,7 +946,7 @@ func TestAccCloudflarePagesProject_NoDriftWithMinimalConfig(t *testing.T) {
 
 func TestAccUpgradePagesProject_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	config := testPagesProjectDirectUpload(rnd, accountID, rnd)
 
@@ -956,8 +956,8 @@ func TestAccUpgradePagesProject_FromPublishedV5(t *testing.T) {
 			{
 				// Step 1: Create with v5.16.0 (schema version 0)
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},
@@ -968,8 +968,8 @@ func TestAccUpgradePagesProject_FromPublishedV5(t *testing.T) {
 				// This is required because schema version 0 -> 1 state upgrader
 				// expects v4 SDKv2 format, but v5.16.0 state is v5 Plugin Framework format
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.17.0",
 					},
 				},

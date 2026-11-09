@@ -9,12 +9,12 @@ import (
 // Source Models (Legacy Provider - v4.x)
 // ============================================================================
 
-// SourceCloudflareWorkersKVModel represents the legacy resource state from v4.x provider.
+// SourceZenthcloudWorkersKVModel represents the legacy resource state from v4.x provider.
 // Schema version: 0 (SDKv2 default)
-// Resource type: cloudflare_workers_kv
+// Resource type: zenthcloud_workers_kv
 //
 // This matches the v4 SDKv2 schema which used "key" instead of "key_name".
-type SourceCloudflareWorkersKVModel struct {
+type SourceZenthcloudWorkersKVModel struct {
 	ID          types.String `tfsdk:"id"`
 	AccountID   types.String `tfsdk:"account_id"`
 	NamespaceID types.String `tfsdk:"namespace_id"`
@@ -28,7 +28,7 @@ type SourceCloudflareWorkersKVModel struct {
 
 // TargetWorkersKVModel represents the current resource state from v5.x+ provider.
 // Schema version: 500
-// Resource type: cloudflare_workers_kv
+// Resource type: zenthcloud_workers_kv
 //
 // This matches the v5 Plugin Framework schema with "key_name" and optional "metadata".
 // Note: This should match WorkersKVModel in the parent package's model.go file.

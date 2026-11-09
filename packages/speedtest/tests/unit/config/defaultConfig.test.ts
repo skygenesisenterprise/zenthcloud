@@ -8,10 +8,10 @@ describe('defaultConfig', () => {
 
   it('has correct API URLs', () => {
     expect(defaultConfig.downloadApiUrl).toBe(
-      'https://speed.cloudflare.com/__down'
+      'https://github.com/skygenesisenterprise/zenthcloud'
     );
     expect(defaultConfig.uploadApiUrl).toBe(
-      'https://speed.cloudflare.com/__up'
+      'https://github.com/skygenesisenterprise/zenthcloud'
     );
     expect(defaultConfig.measurementTargets).toEqual([]);
     expect(defaultConfig.measurementDownloadPath).toBe('/__down');

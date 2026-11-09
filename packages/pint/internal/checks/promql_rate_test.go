@@ -8,10 +8,10 @@ import (
 
 	v1 "github.com/prometheus/client_golang/api/prometheus/v1"
 
-	"github.com/cloudflare/pint/internal/checks"
-	"github.com/cloudflare/pint/internal/discovery"
-	"github.com/cloudflare/pint/internal/parser"
-	"github.com/cloudflare/pint/internal/promapi"
+	"github.com/zenthcloud/pint/internal/checks"
+	"github.com/zenthcloud/pint/internal/discovery"
+	"github.com/zenthcloud/pint/internal/parser"
+	"github.com/zenthcloud/pint/internal/promapi"
 )
 
 func newRateCheck(prom *promapi.FailoverGroup) checks.RuleChecker {

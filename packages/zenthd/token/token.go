@@ -152,7 +152,7 @@ func acquireLockFile(tokenPath string, log *zerolog.Logger) (*lockFile, error) {
 			// try to display the auth URL so the user can open a browser
 			// manually if the original window is not visible
 			if authURL := readAuthURL(tokenPath); authURL != "" && authURL != lastURL {
-				fmt.Fprintf(os.Stderr, "\nAnother cloudflared process (pid %d) "+
+				fmt.Fprintf(os.Stderr, "\nAnother zenthcloudd process (pid %d) "+
 					"is already waiting for authentication.\n\n"+
 					"If a browser window did not open, please visit "+
 					"the following URL:\n\n%s\n\n", content.PID, authURL)
@@ -291,7 +291,7 @@ func isLockFileStale(path string) (bool, lockContent, error) {
 	}
 	// CreateTime reads /proc/{pid}/stat on Linux (world-readable, always works).
 	// On Windows and macOS it can fail for processes owned by a different user,
-	// but cloudflared instances sharing a lock file are always running as the
+	// but zenthcloudd instances sharing a lock file are always running as the
 	// same user (the lock directory is derived from ~ via go-homedir).
 	ct, err := p.CreateTime()
 	if err != nil {
@@ -317,7 +317,7 @@ func isLockFileStale(path string) (bool, lockContent, error) {
 }
 
 func Init(version string) {
-	userAgent = fmt.Sprintf("cloudflared/%s", version)
+	userAgent = fmt.Sprintf("zenthcloudd/%s", version)
 }
 
 // FetchTokenWithRedirect will either load a stored token or generate a new one
@@ -424,7 +424,7 @@ func getTokensFromEdge(appURL *url.URL, appAUD, appTokenPath, orgTokenPath strin
 }
 
 // GetAppInfo discovers the Access application protecting reqURL by requesting
-// a signed metadata JWT from the Cloudflare edge. The JWT signature is verified
+// a signed metadata JWT from the Zenthcloud edge. The JWT signature is verified
 // against the account's public keys (fetched from the auth domain's JWKS
 // endpoint) to prevent an attacker-controlled server from spoofing app identity.
 func GetAppInfo(reqURL *url.URL) (*AppInfo, error) {

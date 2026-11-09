@@ -4,7 +4,7 @@
 import { OPERATION, type Tool, encodePath } from "../../_/tool.js";
 import {
   abuse$$reports_AuthErrorResponse,
-  abuse$$reports_CloudflareAPIErrorResponse,
+  abuse$$reports_ZenthcloudAPIErrorResponse,
   abuse$$reports_ErrorMessage,
   abuse$$reports_Message,
   abuse$$reports_UnauthorizedErrorResponse,
@@ -26,7 +26,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare Account ID",
+              "description": "Zenthcloud Account ID",
               "type": "string"
             },
             "report_id": {
@@ -125,7 +125,7 @@ export const tools: readonly Tool[] = [
             "$ref": "#/$defs/abuse-reports_UnauthorizedErrorResponse"
           },
           "403": {
-            "$ref": "#/$defs/abuse-reports_CloudflareAPIErrorResponse"
+            "$ref": "#/$defs/abuse-reports_ZenthcloudAPIErrorResponse"
           },
           "404": {
             "properties": {
@@ -165,7 +165,7 @@ export const tools: readonly Tool[] = [
         $defs: {
           "abuse-reports_AppealEligibility": abuse$$reports_AppealEligibility,
           "abuse-reports_AuthErrorResponse": abuse$$reports_AuthErrorResponse,
-          "abuse-reports_CloudflareAPIErrorResponse": abuse$$reports_CloudflareAPIErrorResponse,
+          "abuse-reports_ZenthcloudAPIErrorResponse": abuse$$reports_ZenthcloudAPIErrorResponse,
           "abuse-reports_ErrorMessage": abuse$$reports_ErrorMessage,
           "abuse-reports_Message": abuse$$reports_Message,
           "abuse-reports_UnauthorizedErrorResponse": abuse$$reports_UnauthorizedErrorResponse,

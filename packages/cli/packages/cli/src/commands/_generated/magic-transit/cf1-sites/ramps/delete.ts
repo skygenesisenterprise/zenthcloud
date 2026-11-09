@@ -68,7 +68,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf magic-transit cf1-sites ramps delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/magic/cf1_sites/${argv["cf1-site-id"] == null ? "<cf1-site-id>" : encodeURIComponent(String(argv["cf1-site-id"]))}/ramps/${argv["ramp-id"] == null ? "<ramp-id>" : encodeURIComponent(String(argv["ramp-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/magic/cf1_sites/${argv["cf1-site-id"] == null ? "<cf1-site-id>" : encodeURIComponent(String(argv["cf1-site-id"]))}/ramps/${argv["ramp-id"] == null ? "<ramp-id>" : encodeURIComponent(String(argv["ramp-id"]))}`,
 						pathParams: {
 							"cf1-site-id": String(argv["cf1-site-id"] ?? ""),
 							"ramp-id": String(argv["ramp-id"] ?? ""),

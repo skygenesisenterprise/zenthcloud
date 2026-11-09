@@ -1,4 +1,4 @@
-resource "cloudflare_api_shield_operation" "%[1]s" {
+resource "zenthcloud_api_shield_operation" "%[1]s" {
 	zone_id  = "%[2]s"
 	method   = "%[3]s"
 	host     = "%[4]s"

@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 //go:embed testdata/v4_basic.tf
@@ -24,9 +24,9 @@ var v4WithSettingsConfig string
 func TestMigrateQueue_Basic(t *testing.T) {
 	t.Skip("Migration not enabled yet")
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	tmpDir := t.TempDir()
-	resourceName := "cloudflare_queue." + rnd
+	resourceName := "zenthcloud_queue." + rnd
 
 	// v4 config uses "name" attribute
 	v4Config := fmt.Sprintf(v4BasicConfig, rnd, accountID)
@@ -40,8 +40,8 @@ func TestMigrateQueue_Basic(t *testing.T) {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -60,9 +60,9 @@ func TestMigrateQueue_Basic(t *testing.T) {
 func TestMigrateQueue_WithSettings(t *testing.T) {
 	t.Skip("Migration not enabled yet")
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	tmpDir := t.TempDir()
-	resourceName := "cloudflare_queue." + rnd
+	resourceName := "zenthcloud_queue." + rnd
 
 	// v4 config - settings are not supported in v4, so this tests the base migration path
 	// with a queue name that includes "settings" in it for distinguishability
@@ -77,8 +77,8 @@ func TestMigrateQueue_WithSettings(t *testing.T) {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},

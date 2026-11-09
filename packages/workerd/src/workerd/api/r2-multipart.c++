@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -21,13 +21,13 @@
 namespace workerd::api::public_beta {
 
 static void addR2ResponseSpanTags(TraceContext& traceContext, R2Result& r2Result) {
-  traceContext.setTag("cloudflare.r2.response.success"_kjc, r2Result.success());
+  traceContext.setTag("zenthcloud.r2.response.success"_kjc, r2Result.success());
   KJ_IF_SOME(e, r2Result.getR2ErrorMessage()) {
     traceContext.setTag("error.type"_kjc, e.asPtr());
-    traceContext.setTag("cloudflare.r2.error.message"_kjc, e.asPtr());
+    traceContext.setTag("zenthcloud.r2.error.message"_kjc, e.asPtr());
   }
   KJ_IF_SOME(v4, r2Result.v4ErrorCode()) {
-    traceContext.setTag("cloudflare.r2.error.code"_kjc, static_cast<int64_t>(v4));
+    traceContext.setTag("zenthcloud.r2.error.code"_kjc, static_cast<int64_t>(v4));
   }
 }
 
@@ -42,9 +42,9 @@ jsg::Promise<R2MultipartUpload::UploadedPart> R2MultipartUpload::uploadPart(jsg:
 
     auto& context = IoContext::current();
     TraceContext traceContext = bucket->makeR2TraceContext("r2_uploadPart"_kjc, "UploadPart"_kjc);
-    traceContext.setTag("cloudflare.r2.request.upload_id"_kjc, uploadId.asPtr());
-    traceContext.setTag("cloudflare.r2.request.part_number"_kjc, static_cast<int64_t>(partNumber));
-    traceContext.setTag("cloudflare.r2.request.key"_kjc, key.asPtr());
+    traceContext.setTag("zenthcloud.r2.request.upload_id"_kjc, uploadId.asPtr());
+    traceContext.setTag("zenthcloud.r2.request.part_number"_kjc, static_cast<int64_t>(partNumber));
+    traceContext.setTag("zenthcloud.r2.request.key"_kjc, key.asPtr());
 
     capnp::JsonCodec json;
     json.handleByAnnotation<R2BindingRequest>();
@@ -69,12 +69,12 @@ jsg::Promise<R2MultipartUpload::UploadedPart> R2MultipartUpload::uploadPart(jsg:
                 Error, "SSE-C Key has invalid format");
             JSG_REQUIRE(keyString.size() == 64, Error, "SSE-C Key must be 32 bytes in length");
             ssecBuilder.setKey(kj::str(keyString));
-            traceContext.setTag("cloudflare.r2.request.ssec_key"_kjc, true);
+            traceContext.setTag("zenthcloud.r2.request.ssec_key"_kjc, true);
           }
           KJ_CASE_ONEOF(keyBuff, kj::Array<byte>) {
             JSG_REQUIRE(keyBuff.size() == 32, Error, "SSE-C Key must be 32 bytes in length");
             ssecBuilder.setKey(kj::encodeHex(keyBuff));
-            traceContext.setTag("cloudflare.r2.request.ssec_key"_kjc, true);
+            traceContext.setTag("zenthcloud.r2.request.ssec_key"_kjc, true);
           }
         }
       }
@@ -98,7 +98,7 @@ jsg::Promise<R2MultipartUpload::UploadedPart> R2MultipartUpload::uploadPart(jsg:
       }
     }
     KJ_IF_SOME(size, requestSize) {
-      traceContext.setTag("cloudflare.r2.request.size"_kjc, size);
+      traceContext.setTag("zenthcloud.r2.request.size"_kjc, size);
     }
 
     auto requestJson = json.encode(requestBuilder);
@@ -122,7 +122,7 @@ jsg::Promise<R2MultipartUpload::UploadedPart> R2MultipartUpload::uploadPart(jsg:
 
       json.decode(KJ_ASSERT_NONNULL(r2Result.metadataPayload), responseBuilder);
       kj::StringPtr etag = responseBuilder.getEtag();
-      traceContext.setTag("cloudflare.r2.response.etag"_kjc, etag);
+      traceContext.setTag("zenthcloud.r2.response.etag"_kjc, etag);
       UploadedPart uploadedPart = {partNumber, kj::str(etag)};
       return uploadedPart;
     });
@@ -157,11 +157,11 @@ jsg::Promise<jsg::Ref<R2Bucket::HeadResult>> R2MultipartUpload::complete(jsg::Lo
     auto& context = IoContext::current();
     TraceContext traceContext =
         bucket->makeR2TraceContext("r2_completeMultipartUpload"_kjc, "CompleteMultipartUpload"_kjc);
-    traceContext.setTag("cloudflare.r2.request.upload_id"_kjc, uploadId.asPtr());
-    traceContext.setTag("cloudflare.r2.request.key"_kjc, key.asPtr());
+    traceContext.setTag("zenthcloud.r2.request.upload_id"_kjc, uploadId.asPtr());
+    traceContext.setTag("zenthcloud.r2.request.key"_kjc, key.asPtr());
     kj::String partIds =
         kj::strArray(KJ_MAP(part, uploadedParts) { return kj::str(part.partNumber); }, ", ");
-    traceContext.setTag("cloudflare.r2.request.uploaded_parts"_kjc, kj::mv(partIds));
+    traceContext.setTag("zenthcloud.r2.request.uploaded_parts"_kjc, kj::mv(partIds));
 
     capnp::JsonCodec json;
     json.handleByAnnotation<R2BindingRequest>();
@@ -233,8 +233,8 @@ jsg::Promise<void> R2MultipartUpload::abort(
     auto& context = IoContext::current();
     TraceContext traceContext =
         bucket->makeR2TraceContext("r2_abortMultipartUpload"_kjc, "AbortMultipartUpload"_kjc);
-    traceContext.setTag("cloudflare.r2.request.upload_id"_kjc, uploadId.asPtr());
-    traceContext.setTag("cloudflare.r2.request.key"_kjc, key.asPtr());
+    traceContext.setTag("zenthcloud.r2.request.upload_id"_kjc, uploadId.asPtr());
+    traceContext.setTag("zenthcloud.r2.request.key"_kjc, key.asPtr());
 
     capnp::JsonCodec json;
     json.handleByAnnotation<R2BindingRequest>();

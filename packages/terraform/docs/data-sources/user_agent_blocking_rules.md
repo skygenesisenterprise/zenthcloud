@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_user_agent_blocking_rules Data Source - Cloudflare"
+page_title: "zenthcloud_user_agent_blocking_rules Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Firewall Services ReadFirewall Services Write
 ---
 
-# cloudflare_user_agent_blocking_rules (Data Source)
+# zenthcloud_user_agent_blocking_rules (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_user_agent_blocking_rules" "example_user_agent_blocking_rules" {
+data "zenthcloud_user_agent_blocking_rules" "example_user_agent_blocking_rules" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   description = "abusive"
   paused = false

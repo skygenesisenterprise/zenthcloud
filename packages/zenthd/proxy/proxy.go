@@ -15,28 +15,28 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
-	cfdflow "github.com/cloudflare/cloudflared/flow"
-	"github.com/cloudflare/cloudflared/management"
+	cfdflow "github.com/zenthcloud/zenthcloudd/flow"
+	"github.com/zenthcloud/zenthcloudd/management"
 
-	"github.com/cloudflare/cloudflared/carrier"
-	"github.com/cloudflare/cloudflared/cfio"
-	"github.com/cloudflare/cloudflared/connection"
-	"github.com/cloudflare/cloudflared/ingress"
-	"github.com/cloudflare/cloudflared/quicktunnelauth"
-	"github.com/cloudflare/cloudflared/stream"
-	"github.com/cloudflare/cloudflared/tracing"
-	"github.com/cloudflare/cloudflared/tunnelrpc/pogs"
+	"github.com/zenthcloud/zenthcloudd/carrier"
+	"github.com/zenthcloud/zenthcloudd/cfio"
+	"github.com/zenthcloud/zenthcloudd/connection"
+	"github.com/zenthcloud/zenthcloudd/ingress"
+	"github.com/zenthcloud/zenthcloudd/quicktunnelauth"
+	"github.com/zenthcloud/zenthcloudd/stream"
+	"github.com/zenthcloud/zenthcloudd/tracing"
+	"github.com/zenthcloud/zenthcloudd/tunnelrpc/pogs"
 )
 
 const (
-	// TagHeaderNamePrefix indicates a Cloudflared Warp Tag prefix that gets appended for warp traffic stream headers.
+	// TagHeaderNamePrefix indicates a Zenthcloudd Warp Tag prefix that gets appended for warp traffic stream headers.
 	TagHeaderNamePrefix = "Cf-Warp-Tag-"
 	trailerHeaderName   = "Trailer"
 )
 
 var errHTTPAuthorizationUnsupportedTransport = errors.New("HTTP authorization does not support TCP transport")
 
-// Proxy represents a means to Proxy between cloudflared and the origin services.
+// Proxy represents a means to Proxy between zenthcloudd and the origin services.
 type Proxy struct {
 	ingressRules          ingress.Ingress
 	originDialer          ingress.OriginTCPDialer
@@ -183,7 +183,7 @@ func (p *Proxy) ProxyHTTP(
 	}
 }
 
-// ProxyTCP proxies to a TCP connection between the origin service and cloudflared.
+// ProxyTCP proxies to a TCP connection between the origin service and zenthcloudd.
 func (p *Proxy) ProxyTCP(
 	ctx context.Context,
 	conn connection.ReadWriteAcker,
@@ -278,7 +278,7 @@ func (p *Proxy) proxyHTTPRequest(
 		if err := roundTripReq.Context().Err(); err != nil {
 			return errors.Wrap(err, "Incoming request ended abruptly")
 		}
-		return errors.Wrap(err, "Unable to reach the origin service. The service may be down or it may not be responding to traffic from cloudflared")
+		return errors.Wrap(err, "Unable to reach the origin service. The service may be down or it may not be responding to traffic from zenthcloudd")
 	}
 
 	tracing.EndWithStatusCode(ttfbSpan, resp.StatusCode)

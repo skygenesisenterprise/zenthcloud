@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 //
@@ -14,7 +14,7 @@ function createHandle() {
   return zlib.createDeflate()._handle;
 }
 
-export const regression_AUTOVULN_CLOUDFLARE_WORKERD_295_writeSync_output = {
+export const regression_AUTOVULN_ZENTHCLOUD_WORKERD_295_writeSync_output = {
   test() {
     const handle = createHandle();
 
@@ -43,7 +43,7 @@ export const regression_AUTOVULN_CLOUDFLARE_WORKERD_295_writeSync_output = {
   },
 };
 
-export const regression_AUTOVULN_CLOUDFLARE_WORKERD_295_write_output = {
+export const regression_AUTOVULN_ZENTHCLOUD_WORKERD_295_write_output = {
   async test() {
     const handle = createHandle();
 
@@ -70,7 +70,7 @@ export const regression_AUTOVULN_CLOUDFLARE_WORKERD_295_write_output = {
   },
 };
 
-export const regression_AUTOVULN_CLOUDFLARE_WORKERD_295_detached_input = {
+export const regression_AUTOVULN_ZENTHCLOUD_WORKERD_295_detached_input = {
   test() {
     const handle = createHandle();
 
@@ -97,7 +97,7 @@ export const regression_AUTOVULN_CLOUDFLARE_WORKERD_295_detached_input = {
   },
 };
 
-export const regression_AUTOVULN_CLOUDFLARE_WORKERD_295_writeSync_input = {
+export const regression_AUTOVULN_ZENTHCLOUD_WORKERD_295_writeSync_input = {
   test() {
     const handle = createHandle();
 
@@ -124,7 +124,7 @@ export const regression_AUTOVULN_CLOUDFLARE_WORKERD_295_writeSync_input = {
   },
 };
 
-export const regression_AUTOVULN_CLOUDFLARE_WORKERD_295_non_zero_byte_offset = {
+export const regression_AUTOVULN_ZENTHCLOUD_WORKERD_295_non_zero_byte_offset = {
   test() {
     const handle = createHandle();
 

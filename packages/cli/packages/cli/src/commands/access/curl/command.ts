@@ -1,7 +1,7 @@
 import { CliExit } from "../../../lib/cli-exit.js";
 import { getComplianceRegion } from "../../../lib/context.js";
-import { withCloudflareDotEnv } from "../../../lib/dotenv.js";
-import { runCloudflared } from "../../cloudflared.js";
+import { withZenthcloudDotEnv } from "../../../lib/dotenv.js";
+import { runZenthcloudd } from "../../zenthcloudd.js";
 import type { CommonYargsOptions } from "../../../lib/cli-types.js";
 import type { ArgumentsCamelCase, Argv, CommandModule } from "yargs";
 
@@ -14,7 +14,7 @@ interface AccessCurlArgs extends CommonYargsOptions {
 const command: CommandModule<CommonYargsOptions, AccessCurlArgs> = {
 	command: "curl <url>",
 	describe:
-		"Run curl against an Access-protected application with its JWT injected by cloudflared.",
+		"Run curl against an Access-protected application with its JWT injected by zenthcloudd.",
 	builder: (yargs: Argv<CommonYargsOptions>): Argv<AccessCurlArgs> =>
 		yargs
 			.parserConfiguration({
@@ -37,7 +37,7 @@ const command: CommandModule<CommonYargsOptions, AccessCurlArgs> = {
 			throw new Error("--local is not supported by cf access curl.");
 		}
 		const args = ["access"];
-		const complianceRegion = await withCloudflareDotEnv(
+		const complianceRegion = await withZenthcloudDotEnv(
 			{ mode: argv.mode, local: argv.local },
 			() => getComplianceRegion()
 		);
@@ -49,7 +49,7 @@ const command: CommandModule<CommonYargsOptions, AccessCurlArgs> = {
 			args.push("--allow-request");
 		}
 		args.push(argv.url, ...(argv["--"] ?? []).map(String));
-		throw new CliExit(await runCloudflared(args));
+		throw new CliExit(await runZenthcloudd(args));
 	},
 };
 

@@ -5,7 +5,7 @@ package zero_trust_device_posture_rule
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -168,7 +168,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						Computed:    true,
 					},
 					"certificate_id": schema.StringAttribute{
-						Description: "UUID of Cloudflare managed certificate.",
+						Description: "UUID of Zenthcloud managed certificate.",
 						Computed:    true,
 					},
 					"cn": schema.StringAttribute{

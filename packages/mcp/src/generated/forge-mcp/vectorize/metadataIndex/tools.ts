@@ -98,7 +98,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.edge.vectorize.index.create"
+            "com.zenthcloud.edge.vectorize.index.create"
           ]
         }
       },
@@ -209,7 +209,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.edge.vectorize.index.delete"
+            "com.zenthcloud.edge.vectorize.index.delete"
           ]
         }
       },

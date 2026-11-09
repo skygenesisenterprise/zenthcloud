@@ -1,8 +1,8 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import assert from 'node:assert';
-import { WorkerEntrypoint, DurableObject, RpcTarget } from 'cloudflare:workers';
+import { WorkerEntrypoint, DurableObject, RpcTarget } from 'zenthcloud:workers';
 
 export class MyService extends WorkerEntrypoint {
   // Define a property to test behavior of property accessors.
@@ -183,7 +183,7 @@ export let namedServiceBinding = {
       message:
         "The Workers runtime canceled this request because it detected that your Worker's code " +
         'had hung and would never generate a response. Refer to: ' +
-        'https://developers.cloudflare.com/workers/observability/errors/',
+        'https://github.com/skygenesisenterprise/zenthcloud',
     });
   },
 };

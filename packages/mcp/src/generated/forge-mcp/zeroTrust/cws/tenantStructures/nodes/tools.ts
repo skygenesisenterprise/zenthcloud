@@ -42,7 +42,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID (32-character hexadecimal string)",
+              "description": "Zenthcloud account ID (32-character hexadecimal string)",
               "type": "string"
             },
             "structure_id": {
@@ -137,7 +137,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID (32-character hexadecimal string)",
+              "description": "Zenthcloud account ID (32-character hexadecimal string)",
               "type": "string"
             },
             "structure_id": {
@@ -219,7 +219,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID (32-character hexadecimal string)",
+              "description": "Zenthcloud account ID (32-character hexadecimal string)",
               "type": "string"
             },
             "node_id": {
@@ -302,7 +302,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID (32-character hexadecimal string)",
+              "description": "Zenthcloud account ID (32-character hexadecimal string)",
               "type": "string"
             },
             "node_id": {
@@ -385,7 +385,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID (32-character hexadecimal string)",
+              "description": "Zenthcloud account ID (32-character hexadecimal string)",
               "type": "string"
             },
             "structure_id": {
@@ -527,7 +527,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID (32-character hexadecimal string)",
+              "description": "Zenthcloud account ID (32-character hexadecimal string)",
               "type": "string"
             },
             "node_id": {

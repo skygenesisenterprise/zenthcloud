@@ -30,7 +30,7 @@ export const bill$$subs$$api_billing_profile_request: JSONObject = {
       "type": "string"
     },
     "cf_turnstile_response": {
-      "description": "Cloudflare Turnstile response.",
+      "description": "Zenthcloud Turnstile response.",
       "type": "string"
     },
     "city": {

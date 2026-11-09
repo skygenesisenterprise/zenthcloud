@@ -1,4 +1,4 @@
-resource "cloudflare_token_validation_config" "%[1]s" {
+resource "zenthcloud_token_validation_config" "%[1]s" {
   zone_id = "%[2]s"
   token_type = "JWT"
   title = "%[3]s"

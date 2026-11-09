@@ -108,7 +108,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.edge.vectorize.index.create"
+            "com.zenthcloud.edge.vectorize.index.create"
           ]
         }
       },
@@ -218,7 +218,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.edge.vectorize.index.delete"
+            "com.zenthcloud.edge.vectorize.index.delete"
           ]
         }
       },
@@ -335,7 +335,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.edge.vectorize.index.delete"
+            "com.zenthcloud.edge.vectorize.index.delete"
           ]
         }
       },
@@ -440,7 +440,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.edge.vectorize.index.read"
+            "com.zenthcloud.edge.vectorize.index.read"
           ]
         }
       },
@@ -650,7 +650,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.edge.vectorize.index.read"
+            "com.zenthcloud.edge.vectorize.index.read"
           ]
         }
       },
@@ -895,7 +895,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.edge.vectorize.index.list"
+            "com.zenthcloud.edge.vectorize.index.list"
           ]
         }
       },
@@ -1022,7 +1022,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.edge.vectorize.index.read"
+            "com.zenthcloud.edge.vectorize.index.read"
           ]
         }
       },

@@ -16,7 +16,7 @@ export const tools: readonly Tool[] = [
   {
     name: "requestTracers_traces_create",
     title: "Request Trace",
-    description: "Traces a simulated HTTP request through Cloudflare's edge to analyze how rules, settings, and configurations would process the request. Useful for debugging firewall rules, page rules, and other request transformations without sending actual traffic. Supports custom headers, cookies, body content, and geolocation context.\n\nPOST /accounts/{account_id}/request-tracer/trace",
+    description: "Traces a simulated HTTP request through Zenthcloud's edge to analyze how rules, settings, and configurations would process the request. Useful for debugging firewall rules, page rules, and other request transformations without sending actual traffic. Supports custom headers, cookies, body content, and geolocation context.\n\nPOST /accounts/{account_id}/request-tracer/trace",
     inputSchema: {
       type: "object",
       properties: {

@@ -23,7 +23,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 ssl mtls-certificates create\n\nUpload a certificate that you want to use with mTLS-enabled Cloudflare services, such as Bring Your Own CA (BYO-CA) for mTLS. To create certificates issued by the Cloudflare managed CA, use the [Create Client Certificate endpoint](/api/resources/client_certificates/methods/create/)."
+			"$0 ssl mtls-certificates create\n\nUpload a certificate that you want to use with mTLS-enabled Zenthcloud services, such as Bring Your Own CA (BYO-CA) for mTLS. To create certificates issued by the Zenthcloud managed CA, use the [Create Client Certificate endpoint](/api/resources/client_certificates/methods/create/)."
 		)
 		.option("ca", {
 			type: "boolean",
@@ -76,7 +76,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf ssl mtls-certificates create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/mtls_certificates`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/mtls_certificates`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

@@ -66,7 +66,7 @@ describe("delete", () => {
 			"{
 			  "command": "cf workers delete",
 			  "method": "DELETE",
-			  "url": "https://api.cloudflare.com/client/v4/accounts/some-account-id/workers/workers/xyz",
+			  "url": "https://github.com/skygenesisenterprise/zenthcloud",
 			  "pathParams": {
 			    "worker": "xyz"
 			  },

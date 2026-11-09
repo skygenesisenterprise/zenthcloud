@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -19,13 +19,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zone_hold", &resource.Sweeper{
-		Name: "cloudflare_zone_hold",
-		F:    testSweepCloudflareZoneHold,
+	resource.AddTestSweepers("zenthcloud_zone_hold", &resource.Sweeper{
+		Name: "zenthcloud_zone_hold",
+		F:    testSweepZenthcloudZoneHold,
 	})
 }
 
-func testSweepCloudflareZoneHold(r string) error {
+func testSweepZenthcloudZoneHold(r string) error {
 	ctx := context.Background()
 	// Zone Hold is a zone-level hold status setting.
 	// It's a singleton setting per zone, not something that accumulates.
@@ -34,10 +34,10 @@ func testSweepCloudflareZoneHold(r string) error {
 	return nil
 }
 
-func TestAccCloudflareZoneHold_Full(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudZoneHold_Full(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zone_hold.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_zone_hold.%s", rnd)
 	currentTime := time.Now()
 
 	resource.Test(t, resource.TestCase{
@@ -45,17 +45,17 @@ func TestAccCloudflareZoneHold_Full(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareZoneHoldOnResourceConfig(zoneID, rnd),
+				Config: testAccZenthcloudZoneHoldOnResourceConfig(zoneID, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					// testAccCheckCloudflareZoneDNSSECDataSourceID(name),
+					// testAccCheckZenthcloudZoneDNSSECDataSourceID(name),
 					resource.TestCheckResourceAttrSet(name, consts.ZoneIDSchemaKey),
 					resource.TestCheckResourceAttr(name, "hold", "true"),
 				),
 			},
 			{
-				Config: testAccCloudflareZoneHoldOffWithTimeAfterResourceConfig(zoneID, rnd, currentTime),
+				Config: testAccZenthcloudZoneHoldOffWithTimeAfterResourceConfig(zoneID, rnd, currentTime),
 				Check: resource.ComposeTestCheckFunc(
-					// testAccCheckCloudflareZoneDNSSECDataSourceID(name),
+					// testAccCheckZenthcloudZoneDNSSECDataSourceID(name),
 					resource.TestCheckResourceAttrSet(name, consts.ZoneIDSchemaKey),
 					resource.TestCheckResourceAttr(name, "hold", "false"),
 					resource.TestCheckResourceAttr(name, "hold_after", currentTime.Add(time.Duration(1*time.Hour)).UTC().Format(time.RFC3339)),
@@ -71,11 +71,11 @@ func TestAccCloudflareZoneHold_Full(t *testing.T) {
 	})
 }
 
-func testAccCloudflareZoneHoldOnResourceConfig(zoneID string, name string) string {
+func testAccZenthcloudZoneHoldOnResourceConfig(zoneID string, name string) string {
 	return acctest.LoadTestCase("zoneholdonresourceconfig.tf", name, zoneID)
 }
 
-func testAccCloudflareZoneHoldOffWithTimeAfterResourceConfig(zoneID string, name string, t time.Time) string {
+func testAccZenthcloudZoneHoldOffWithTimeAfterResourceConfig(zoneID string, name string, t time.Time) string {
 	hold := t.Add(time.Duration(1 * time.Hour)).UTC().Format(time.RFC3339)
 	return acctest.LoadTestCase("zoneholdoffwithtimeafterresourceconfig.tf", name, zoneID, hold)
 }

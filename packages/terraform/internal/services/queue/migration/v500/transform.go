@@ -3,13 +3,13 @@ package v500
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Transform converts a source cloudflare_queue state (v4) to target cloudflare_queue state (v500).
-func Transform(ctx context.Context, source SourceCloudflareQueueModel) (*TargetQueueModel, diag.Diagnostics) {
+// Transform converts a source zenthcloud_queue state (v4) to target zenthcloud_queue state (v500).
+func Transform(ctx context.Context, source SourceZenthcloudQueueModel) (*TargetQueueModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Validate required fields

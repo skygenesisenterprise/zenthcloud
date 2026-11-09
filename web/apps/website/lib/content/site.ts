@@ -170,7 +170,7 @@ export const mainNav: NavGroup[] = [
 					{
 						href: '/products/security',
 						label: 'SASE',
-						description: 'Cloudflare SASE platform',
+						description: 'Zenthcloud SASE platform',
 					},
 					{
 						href: '/products/security',
@@ -355,8 +355,8 @@ export const mainNav: NavGroup[] = [
 						description: 'Connect with other developers and experts',
 					},
 					{
-						href: 'https://radar.cloudflare.com',
-						label: 'Cloudflare Radar',
+						href: 'https://github.com/skygenesisenterprise/zenthcloud',
+						label: 'Zenthcloud Radar',
 						description: 'Internet traffic and security trends',
 						external: true,
 					},

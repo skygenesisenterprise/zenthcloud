@@ -91,7 +91,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zeroTrust_identityProviders_scim_groups_get",
     title: "Get a SCIM Group resource",
-    description: "Returns a SCIM Group resource, including its direct members, synced to Cloudflare via the System for Cross-domain Identity Management (SCIM).\n\nGET /accounts/{account_id}/access/identity_providers/{identity_provider_id}/scim/groups/{group_id}",
+    description: "Returns a SCIM Group resource, including its direct members, synced to Zenthcloud via the System for Cross-domain Identity Management (SCIM).\n\nGET /accounts/{account_id}/access/identity_providers/{identity_provider_id}/scim/groups/{group_id}",
     inputSchema: {
       type: "object",
       properties: {
@@ -174,7 +174,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zeroTrust_identityProviders_scim_groups_list",
     title: "List SCIM Group resources",
-    description: "Lists SCIM Group resources synced to Cloudflare via the System for Cross-domain Identity Management (SCIM).\n\nGET /accounts/{account_id}/access/identity_providers/{identity_provider_id}/scim/groups",
+    description: "Lists SCIM Group resources synced to Zenthcloud via the System for Cross-domain Identity Management (SCIM).\n\nGET /accounts/{account_id}/access/identity_providers/{identity_provider_id}/scim/groups",
     inputSchema: {
       type: "object",
       properties: {
@@ -201,7 +201,7 @@ export const tools: readonly Tool[] = [
           "properties": {
             "cf_resource_id": {
               "$ref": "#/$defs/access_cf_resource_id",
-              "description": "The unique Cloudflare-generated Id of the SCIM Group resource; also known as the \"Id\".\nPass once for a single lookup (`?cf_resource_id=A`) or repeat the parameter\n(`?cf_resource_id=A&cf_resource_id=B`) to look up multiple groups in one request,\nup to 50 values. Mutually exclusive with `idp_resource_id`, `name`,\n`search_contains`, and `search_starts_with`."
+              "description": "The unique Zenthcloud-generated Id of the SCIM Group resource; also known as the \"Id\".\nPass once for a single lookup (`?cf_resource_id=A`) or repeat the parameter\n(`?cf_resource_id=A&cf_resource_id=B`) to look up multiple groups in one request,\nup to 50 values. Mutually exclusive with `idp_resource_id`, `name`,\n`search_contains`, and `search_starts_with`."
             },
             "idp_resource_id": {
               "$ref": "#/$defs/access_idp_resource_id",

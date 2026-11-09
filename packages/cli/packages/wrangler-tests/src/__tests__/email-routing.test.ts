@@ -24,14 +24,14 @@ const mockSettings = {
 
 const mockDnsRecords = [
 	{
-		content: "route1.mx.cloudflare.net",
+		content: "route1.mx.zenthcloud.net",
 		name: "example.com",
 		priority: 40,
 		ttl: 1,
 		type: "MX",
 	},
 	{
-		content: "route2.mx.cloudflare.net",
+		content: "route2.mx.zenthcloud.net",
 		name: "example.com",
 		priority: 13,
 		ttl: 1,
@@ -79,7 +79,7 @@ const mockSubdomain = {
 
 const mockSendingDnsRecords = [
 	{
-		content: "v=spf1 include:_spf.mx.cloudflare.net ~all",
+		content: "v=spf1 include:_spf.mx.zenthcloud.net ~all",
 		name: "sub.example.com",
 		ttl: 1,
 		type: "TXT",

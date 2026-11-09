@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zero_trust_device_posture_integration Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_device_posture_integration Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zero_trust_device_posture_integration (Data Source)
+# zenthcloud_zero_trust_device_posture_integration (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_device_posture_integration" "example_zero_trust_device_posture_integration" {
+data "zenthcloud_zero_trust_device_posture_integration" "example_zero_trust_device_posture_integration" {
   account_id = "699d98642c564d2e855e9661899b7252"
   integration_id = "f174e90a-fafe-4643-bbbc-4a0ed4fc8415"
 }

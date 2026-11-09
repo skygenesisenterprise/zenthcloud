@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_dns_zone_transfers_tsig Resource - Cloudflare"
+page_title: "zenthcloud_dns_zone_transfers_tsig Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Settings ReadAccount Settings Write
 ---
 
-# cloudflare_dns_zone_transfers_tsig (Resource)
+# zenthcloud_dns_zone_transfers_tsig (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_dns_zone_transfers_tsig" "example_dns_zone_transfers_tsig" {
+resource "zenthcloud_dns_zone_transfers_tsig" "example_dns_zone_transfers_tsig" {
   account_id = "01a7362d577a6c3019a474fd6f485823"
   algo = "hmac-sha512."
   name = "tsig.customer.cf."
@@ -43,7 +43,7 @@ resource "cloudflare_dns_zone_transfers_tsig" "example_dns_zone_transfers_tsig" 
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_dns_zone_transfers_tsig.example '<account_id>/<tsig_id>'
+$ terraform import zenthcloud_dns_zone_transfers_tsig.example '<account_id>/<tsig_id>'
 ```
 
 

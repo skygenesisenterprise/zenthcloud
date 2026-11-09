@@ -66,7 +66,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf field-extractors update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/field_extractors/${argv["extractor"] == null ? "<extractor>" : encodeURIComponent(String(argv["extractor"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/field_extractors/${argv["extractor"] == null ? "<extractor>" : encodeURIComponent(String(argv["extractor"]))}`,
 						pathParams: { extractor: String(argv["extractor"] ?? "") },
 						bodyKind: "json",
 						body:

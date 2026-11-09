@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_google_tag_gateway Data Source - Cloudflare"
+page_title: "zenthcloud_google_tag_gateway Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zaraz AdminZaraz EditZaraz Read
 ---
 
-# cloudflare_google_tag_gateway (Data Source)
+# zenthcloud_google_tag_gateway (Data Source)
 
 Accepted Permissions
 
@@ -17,7 +17,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_google_tag_gateway" "example_google_tag_gateway" {
+data "zenthcloud_google_tag_gateway" "example_google_tag_gateway" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```

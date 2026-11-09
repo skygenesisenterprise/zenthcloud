@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_email_routing_rule Resource - Cloudflare"
+page_title: "zenthcloud_email_routing_rule Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Email Routing Rules ReadEmail Routing Rules Write
 ---
 
-# cloudflare_email_routing_rule (Resource)
+# zenthcloud_email_routing_rule (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_email_routing_rule" "example_email_routing_rule" {
+resource "zenthcloud_email_routing_rule" "example_email_routing_rule" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   actions = [{
     type = "forward"
@@ -93,7 +93,7 @@ Available values: "to".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_email_routing_rule.example '<zone_id>/<rule_identifier>'
+$ terraform import zenthcloud_email_routing_rule.example '<zone_id>/<rule_identifier>'
 ```
 
 

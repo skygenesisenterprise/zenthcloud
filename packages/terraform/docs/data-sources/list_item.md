@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_list_item Data Source - Cloudflare"
+page_title: "zenthcloud_list_item Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Filter Lists EditAccount Filter Lists Read
 ---
 
-# cloudflare_list_item (Data Source)
+# zenthcloud_list_item (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_list_item" "example_list_item" {
+data "zenthcloud_list_item" "example_list_item" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   list_id = "2c0fc9fa937b11eaa1b71c4d701ab86e"
   item_id = "34b12448945f11eaa1b71c4d701ab86e"

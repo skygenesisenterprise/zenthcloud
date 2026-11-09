@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2023 Cloudflare, Inc.
+// Copyright (c) 2022-2023 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -13,7 +13,7 @@
 // - curl localhost:8080/ # Retrieve the main segment in gopher.floodgap.com.
 // - curl localhost:8080/gstats # Retrieve the "gstats" segment.
 // - curl localhost:8080/gstats?use_proxy=1 # Retrieve the "gstats" segment using the configured proxy.
-import { connect } from 'cloudflare:sockets';
+import { connect } from 'zenthcloud:sockets';
 
 export default {
   async fetch(req, env) {

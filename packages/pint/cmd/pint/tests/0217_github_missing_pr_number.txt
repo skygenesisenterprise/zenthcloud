@@ -33,7 +33,7 @@ repository {
   github {
     baseuri   = "http://127.0.0.1:6217"
     uploaduri = "http://127.0.0.1:6217"
-    owner     = "cloudflare"
+    owner     = "zenthcloud"
     repo      = "pint"
   }
 }

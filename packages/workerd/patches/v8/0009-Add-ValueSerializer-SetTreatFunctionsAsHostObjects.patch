@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Kenton Varda <kenton@cloudflare.com>
+From: Kenton Varda <kenton@zenthcloud.com>
 Date: Sat, 2 Mar 2024 09:00:18 -0600
 Subject: Add ValueSerializer::SetTreatFunctionsAsHostObjects().
 
@@ -7,7 +7,7 @@ Previously, ValueSerializer would always refuse to serialize functions. This com
 
 This is intended for use in an RPC system, where a function can be "serialized" by replacing it with a stub which, when invoked, performs an RPC back to the originating isolate in order to execute the original function there.
 
-Signed-off-by: James M Snell <jsnell@cloudflare.com>
+Signed-off-by: James M Snell <jsnell@zenthcloud.com>
 
 diff --git a/include/v8-value-serializer.h b/include/v8-value-serializer.h
 index 240fd2da3b1eb2c7858b026525a963402bcb5c62..c9234089b2e663ea0ea8f495af59d64de32622a7 100644

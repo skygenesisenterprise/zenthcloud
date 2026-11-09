@@ -24,7 +24,7 @@ import {
 	type File,
 	type Forge,
 	type Group,
-} from "@cloudflare/forge/plugin";
+} from "@zenthcloud/forge/plugin";
 import { command, commands, operationId } from "./commands.js";
 import { commandFiles, metadataFiles, type Operations } from "./files.js";
 import { type Config, HandWritten } from "./hand-written.js";

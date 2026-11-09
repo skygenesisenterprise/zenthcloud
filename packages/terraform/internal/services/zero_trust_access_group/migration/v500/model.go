@@ -158,10 +158,10 @@ type TargetV5ZeroTrustAccessGroupIncludeModel struct {
 	ServiceToken            *TargetV5ServiceTokenModel            `tfsdk:"service_token"`
 	LinkedAppToken          *TargetV5LinkedAppTokenModel          `tfsdk:"linked_app_token"`
 	UserRiskScore           *TargetV5UserRiskScoreModel           `tfsdk:"user_risk_score"`
-	CloudflareAccountMember *TargetV5CloudflareAccountMemberModel `tfsdk:"cloudflare_account_member"`
+	ZenthcloudAccountMember *TargetV5ZenthcloudAccountMemberModel `tfsdk:"zenthcloud_account_member"`
 }
 
-type TargetV5CloudflareAccountMemberModel struct {
+type TargetV5ZenthcloudAccountMemberModel struct {
 	AccountID types.String `tfsdk:"account_id"`
 }
 

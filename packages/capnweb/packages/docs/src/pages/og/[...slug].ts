@@ -1,7 +1,7 @@
 import {
   getIndexedEntries,
   isDiscoverable,
-} from "@cloudflare/nimbus-docs/runtime";
+} from "@zenthcloud/nimbus-docs/runtime";
 import { OGImageRoute } from "astro-og-canvas";
 import { ogCardConfig } from "./_og-card-config";
 

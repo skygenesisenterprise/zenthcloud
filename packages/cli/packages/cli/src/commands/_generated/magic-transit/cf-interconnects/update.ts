@@ -43,7 +43,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 			type: "number",
 			description: "Deprecated. Use customer_asn.",
 		})
-		.option("bgp-cloudflare-endpoint", {
+		.option("bgp-zenthcloud-endpoint", {
 			type: "string",
 			description: "Read-only for v1.5; derived from interface_address.",
 		})
@@ -80,10 +80,10 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 			type: "string",
 			description: "An optional description of the interconnect.",
 		})
-		.option("gre-cloudflare-endpoint", {
+		.option("gre-zenthcloud-endpoint", {
 			type: "string",
 			description:
-				"The IP address assigned to the Cloudflare side of the GRE tunnel created as part of the Interconnect.",
+				"The IP address assigned to the Zenthcloud side of the GRE tunnel created as part of the Interconnect.",
 		})
 		.option("health-check-enabled", {
 			type: "boolean",
@@ -115,7 +115,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("health-check-direction", {
 			type: "string",
 			description:
-				"The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the interconnect and the result comes back to Cloudflare via the open Internet, or bidirectional where both the probe and result come and go via the interconnect.",
+				"The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the interconnect and the result comes back to Zenthcloud via the open Internet, or bidirectional where both the probe and result come and go via the interconnect.",
 			choices: ["unidirectional", "bidirectional"],
 		})
 		.coerce("health-check-direction", (value) =>
@@ -124,7 +124,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("health-check-source", {
 			type: "string",
 			description:
-				"The source IPv4 address used for bidirectional health checks. Supported only for version 1.5 interconnects. It is required when `direction` is `bidirectional` and must be omitted (and is cleared) when `direction` is `unidirectional`. The address must be within RFC1918 space, the approved link-local range 169.254.240.0/20, or the Cloudflare reserved range 198.41.199.224/27.",
+				"The source IPv4 address used for bidirectional health checks. Supported only for version 1.5 interconnects. It is required when `direction` is `bidirectional` and must be omitted (and is cleared) when `direction` is `unidirectional`. The address must be within RFC1918 space, the approved link-local range 169.254.240.0/20, or the Zenthcloud reserved range 198.41.199.224/27.",
 		})
 		.option("interface-address", {
 			type: "string",
@@ -190,7 +190,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf magic-transit cf-interconnects update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/magic/cf_interconnects/${argv["cf-interconnect-id"] == null ? "<cf-interconnect-id>" : encodeURIComponent(String(argv["cf-interconnect-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/magic/cf_interconnects/${argv["cf-interconnect-id"] == null ? "<cf-interconnect-id>" : encodeURIComponent(String(argv["cf-interconnect-id"]))}`,
 						pathParams: {
 							"cf-interconnect-id": String(argv["cf-interconnect-id"] ?? ""),
 						},
@@ -202,9 +202,9 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 										automatic_return_routing: argv["automatic-return-routing"],
 										bgp: {
 											as_no: argv["bgp-as-no"],
-											cloudflare_endpoint: resolveFileToken(
-												argv["bgp-cloudflare-endpoint"] as string | undefined,
-												"bgp-cloudflare-endpoint",
+											zenthcloud_endpoint: resolveFileToken(
+												argv["bgp-zenthcloud-endpoint"] as string | undefined,
+												"bgp-zenthcloud-endpoint",
 												"text"
 											),
 											customer_asn: argv["bgp-customer-asn"],
@@ -236,9 +236,9 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 											"text"
 										),
 										gre: {
-											cloudflare_endpoint: resolveFileToken(
-												argv["gre-cloudflare-endpoint"] as string | undefined,
-												"gre-cloudflare-endpoint",
+											zenthcloud_endpoint: resolveFileToken(
+												argv["gre-zenthcloud-endpoint"] as string | undefined,
+												"gre-zenthcloud-endpoint",
 												"text"
 											),
 										},
@@ -315,13 +315,13 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					);
 				if (argv["bgp-as-no"] !== undefined)
 					setNestedValue(bodyData, ["bgp", "as_no"], argv["bgp-as-no"]);
-				if (argv["bgp-cloudflare-endpoint"] !== undefined)
+				if (argv["bgp-zenthcloud-endpoint"] !== undefined)
 					setNestedValue(
 						bodyData,
-						["bgp", "cloudflare_endpoint"],
+						["bgp", "zenthcloud_endpoint"],
 						resolveFileToken(
-							argv["bgp-cloudflare-endpoint"] as string | undefined,
-							"bgp-cloudflare-endpoint",
+							argv["bgp-zenthcloud-endpoint"] as string | undefined,
+							"bgp-zenthcloud-endpoint",
 							"text"
 						)
 					);
@@ -387,13 +387,13 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 							"text"
 						)
 					);
-				if (argv["gre-cloudflare-endpoint"] !== undefined)
+				if (argv["gre-zenthcloud-endpoint"] !== undefined)
 					setNestedValue(
 						bodyData,
-						["gre", "cloudflare_endpoint"],
+						["gre", "zenthcloud_endpoint"],
 						resolveFileToken(
-							argv["gre-cloudflare-endpoint"] as string | undefined,
-							"gre-cloudflare-endpoint",
+							argv["gre-zenthcloud-endpoint"] as string | undefined,
+							"gre-zenthcloud-endpoint",
 							"text"
 						)
 					);

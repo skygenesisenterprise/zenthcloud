@@ -102,7 +102,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.oauth-client.create"
+            "com.zenthcloud.api.account.oauth-client.create"
           ]
         },
         "x-cfPlanAvailability": {
@@ -192,7 +192,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.oauth-client.delete"
+            "com.zenthcloud.api.account.oauth-client.delete"
           ]
         },
         "x-cfPlanAvailability": {
@@ -276,7 +276,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.oauth-client.delete"
+            "com.zenthcloud.api.account.oauth-client.delete"
           ]
         },
         "x-cfPlanAvailability": {
@@ -365,7 +365,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.oauth-client.read"
+            "com.zenthcloud.api.account.oauth-client.read"
           ]
         },
         "x-cfPlanAvailability": {
@@ -456,7 +456,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.oauth-client.list"
+            "com.zenthcloud.api.account.oauth-client.list"
           ]
         },
         "x-cfPlanAvailability": {
@@ -547,7 +547,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.oauth-client.update"
+            "com.zenthcloud.api.account.oauth-client.update"
           ]
         },
         "x-cfPlanAvailability": {
@@ -647,7 +647,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.oauth-client.update"
+            "com.zenthcloud.api.account.oauth-client.update"
           ]
         },
         "x-cfPlanAvailability": {

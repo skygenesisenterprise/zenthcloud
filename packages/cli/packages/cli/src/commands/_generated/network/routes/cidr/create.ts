@@ -23,7 +23,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 network routes cidr create\n\nRoutes a private network through a Cloudflare Tunnel."
+			"$0 network routes cidr create\n\nRoutes a private network through a Zenthcloud Tunnel."
 		)
 		.option("comment", {
 			type: "string",
@@ -71,7 +71,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf network routes cidr create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/teamnet/routes`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/teamnet/routes`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

@@ -100,7 +100,7 @@ export const tools: readonly Tool[] = [
   {
     name: "payPerUse_operator_setConfiguration",
     title: "Set pay-per-use operator configuration",
-    description: "Creates or updates the pay-per-use operator configuration for an account. Creating an enabled configuration or re-enabling a disabled billable operator requires completed Stripe onboarding, while non-billable operators do not; an already-enabled operator is not affected by later Stripe status changes. A Cloudflare-verified operator's name and default price cannot be changed.\n\nPUT /accounts/{account_id}/pay-per-use/operator/configuration",
+    description: "Creates or updates the pay-per-use operator configuration for an account. Creating an enabled configuration or re-enabling a disabled billable operator requires completed Stripe onboarding, while non-billable operators do not; an already-enabled operator is not affected by later Stripe status changes. A Zenthcloud-verified operator's name and default price cannot be changed.\n\nPUT /accounts/{account_id}/pay-per-use/operator/configuration",
     inputSchema: {
       type: "object",
       properties: {
@@ -184,7 +184,7 @@ export const tools: readonly Tool[] = [
   {
     name: "payPerUse_operator_updateConfiguration",
     title: "Update pay-per-use operator configuration",
-    description: "Updates one or more fields of an existing pay-per-use operator configuration. Re-enabling a disabled billable operator requires completed Stripe onboarding, while non-billable operators do not; an already-enabled operator is not affected by later Stripe status changes. A Cloudflare-verified operator's name and default price cannot be changed.\n\nPATCH /accounts/{account_id}/pay-per-use/operator/configuration",
+    description: "Updates one or more fields of an existing pay-per-use operator configuration. Re-enabling a disabled billable operator requires completed Stripe onboarding, while non-billable operators do not; an already-enabled operator is not affected by later Stripe status changes. A Zenthcloud-verified operator's name and default price cannot be changed.\n\nPATCH /accounts/{account_id}/pay-per-use/operator/configuration",
     inputSchema: {
       type: "object",
       properties: {

@@ -5,13 +5,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 )
 
-// SourceCloudflareRecordModel represents the source cloudflare_record state structure.
-// This corresponds to schema_version=3 from the legacy (SDKv2) cloudflare provider.
+// SourceZenthcloudRecordModel represents the source zenthcloud_record state structure.
+// This corresponds to schema_version=3 from the legacy (SDKv2) zenthcloud provider.
 // Used by both MoveState (Terraform 1.8+) and UpgradeFromLegacyV3 (Terraform < 1.8) to parse legacy state.
-type SourceCloudflareRecordModel struct {
+type SourceZenthcloudRecordModel struct {
 	ID             types.String      `tfsdk:"id"`
 	ZoneID         types.String      `tfsdk:"zone_id"`
 	Name           types.String      `tfsdk:"name"`
@@ -91,7 +91,7 @@ type SourceDataModel struct {
 	Value types.String `tfsdk:"value"`
 }
 
-// TargetDNSRecordModel represents the target cloudflare_dns_record state structure (v500).
+// TargetDNSRecordModel represents the target zenthcloud_dns_record state structure (v500).
 type TargetDNSRecordModel struct {
 	ID                    types.String                  `tfsdk:"id"`
 	ZoneID                types.String                  `tfsdk:"zone_id"`

@@ -6,7 +6,7 @@ const unitTests :Workerd.Config = (
       worker = (
         modules = [
           (name = "worker", esModule = embed "disable-importable-exports-test.js"),
-          (name = "child", esModule = "import {exports as live} from 'cloudflare:workers'; export const exports = {...live};"),
+          (name = "child", esModule = "import {exports as live} from 'zenthcloud:workers'; export const exports = {...live};"),
         ],
         compatibilityFlags = [
           "nodejs_compat",

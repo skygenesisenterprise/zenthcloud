@@ -7,8 +7,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -22,13 +22,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_argo_tiered_caching", &resource.Sweeper{
-		Name: "cloudflare_argo_tiered_caching",
-		F:    testSweepCloudflareArgoTieredCaching,
+	resource.AddTestSweepers("zenthcloud_argo_tiered_caching", &resource.Sweeper{
+		Name: "zenthcloud_argo_tiered_caching",
+		F:    testSweepZenthcloudArgoTieredCaching,
 	})
 }
 
-func testSweepCloudflareArgoTieredCaching(r string) error {
+func testSweepZenthcloudArgoTieredCaching(r string) error {
 	ctx := context.Background()
 	// Argo Tiered Caching is a zone-level feature toggle (on/off).
 	// It's a singleton setting per zone, not something that accumulates.
@@ -37,10 +37,10 @@ func testSweepCloudflareArgoTieredCaching(r string) error {
 	return nil
 }
 
-func TestAccCloudflareArgoTieredCaching_Basic(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudArgoTieredCaching_Basic(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_argo_tiered_caching.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_argo_tiered_caching.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -50,7 +50,7 @@ func TestAccCloudflareArgoTieredCaching_Basic(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareArgoTieredCachingBasic(zoneID, rnd),
+				Config: testAccCheckZenthcloudArgoTieredCachingBasic(zoneID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("value"), knownvalue.StringExact("on")),
@@ -60,7 +60,7 @@ func TestAccCloudflareArgoTieredCaching_Basic(t *testing.T) {
 			},
 			{
 				// Idempotency check: reapply same config, expect no changes
-				Config: testAccCheckCloudflareArgoTieredCachingBasic(zoneID, rnd),
+				Config: testAccCheckZenthcloudArgoTieredCachingBasic(zoneID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("value"), knownvalue.StringExact("on")),
 				},
@@ -68,7 +68,7 @@ func TestAccCloudflareArgoTieredCaching_Basic(t *testing.T) {
 				ExpectNonEmptyPlan: false,
 			},
 			{
-				Config: testAccCheckCloudflareArgoTieredCachingUpdate(zoneID, rnd),
+				Config: testAccCheckZenthcloudArgoTieredCachingUpdate(zoneID, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("value"), knownvalue.StringExact("off")),
@@ -95,16 +95,16 @@ func TestAccCloudflareArgoTieredCaching_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareArgoTieredCachingBasic(zoneID, name string) string {
+func testAccCheckZenthcloudArgoTieredCachingBasic(zoneID, name string) string {
 	return acctest.LoadTestCase("basic.tf", zoneID, name)
 }
 
-func testAccCheckCloudflareArgoTieredCachingUpdate(zoneID, name string) string {
+func testAccCheckZenthcloudArgoTieredCachingUpdate(zoneID, name string) string {
 	return acctest.LoadTestCase("update.tf", zoneID, name)
 }
 
-func TestAccCloudflareArgoTieredCaching_InvalidValue(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudArgoTieredCaching_InvalidValue(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 
 	resource.Test(t, resource.TestCase{
@@ -115,22 +115,22 @@ func TestAccCloudflareArgoTieredCaching_InvalidValue(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCheckCloudflareArgoTieredCachingInvalidValue(zoneID, rnd),
+				Config:      testAccCheckZenthcloudArgoTieredCachingInvalidValue(zoneID, rnd),
 				ExpectError: regexp.MustCompile(regexp.QuoteMeta("Invalid Attribute Value Match")),
 			},
 		},
 	})
 }
 
-func testAccCheckCloudflareArgoTieredCachingInvalidValue(zoneID, name string) string {
+func testAccCheckZenthcloudArgoTieredCachingInvalidValue(zoneID, name string) string {
 	return acctest.LoadTestCase("invalid_value.tf", zoneID, name)
 }
 
 func TestAccUpgradeArgoTieredCaching_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
-	config := testAccCheckCloudflareArgoTieredCachingBasic(zoneID, rnd)
+	config := testAccCheckZenthcloudArgoTieredCachingBasic(zoneID, rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -141,8 +141,8 @@ func TestAccUpgradeArgoTieredCaching_FromPublishedV5(t *testing.T) {
 			{
 				// Step 1: Create with v5.16.0 (schema version 0)
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},
@@ -151,8 +151,8 @@ func TestAccUpgradeArgoTieredCaching_FromPublishedV5(t *testing.T) {
 			{
 				// Step 2: Upgrade to v5.17.0 (stepping stone - schema version 1)
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.17.0",
 					},
 				},

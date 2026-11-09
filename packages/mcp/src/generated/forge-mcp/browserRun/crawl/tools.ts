@@ -313,7 +313,7 @@ export const tools: readonly Tool[] = [
                     "response_format": {
                       "properties": {
                         "json_schema": {
-                          "description": "Schema for the response format. More information here: https://developers.cloudflare.com/workers-ai/json-mode/",
+                          "description": "Schema for the response format. More information here: https://github.com/skygenesisenterprise/zenthcloud",
                           "oneOf": [
                             {
                               "type": "object"
@@ -598,7 +598,7 @@ export const tools: readonly Tool[] = [
                     "response_format": {
                       "properties": {
                         "json_schema": {
-                          "description": "Schema for the response format. More information here: https://developers.cloudflare.com/workers-ai/json-mode/",
+                          "description": "Schema for the response format. More information here: https://github.com/skygenesisenterprise/zenthcloud",
                           "oneOf": [
                             {
                               "type": "object"
@@ -785,7 +785,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.brapi.read"
+            "com.zenthcloud.api.account.brapi.read"
           ],
           "type": "string"
         },
@@ -1012,7 +1012,7 @@ export const tools: readonly Tool[] = [
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.brapi.read"
+            "com.zenthcloud.api.account.brapi.read"
           ],
           "type": "string"
         },
@@ -1440,7 +1440,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.brapi.read"
+            "com.zenthcloud.api.account.brapi.read"
           ],
           "type": "string"
         },

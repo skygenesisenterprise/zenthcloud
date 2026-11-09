@@ -57,7 +57,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar ct logs get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/ct/logs/${argv["log-slug"] == null ? "<log-slug>" : encodeURIComponent(String(argv["log-slug"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["log-slug"] == null ? "<log-slug>" : encodeURIComponent(String(argv["log-slug"]))}`,
 						pathParams: { "log-slug": String(argv["log-slug"] ?? "") },
 						query: queryParams,
 						bodyKind: "none",

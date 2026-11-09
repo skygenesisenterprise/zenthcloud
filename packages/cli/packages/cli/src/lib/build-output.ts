@@ -1,18 +1,18 @@
 import path from "node:path";
-import { convertToWranglerConfig } from "@cloudflare/config";
-import { normalizeAndValidateConfig } from "@cloudflare/workers-utils";
+import { convertToWranglerConfig } from "@zenthcloud/config";
+import { normalizeAndValidateConfig } from "@zenthcloud/workers-utils";
 import { BuildOutputConfigError } from "./build-output-error.js";
 import type {
 	BuildOutputWorker,
 	BuildOutputWorkers,
-} from "@cloudflare/build-output-utils";
-import type { ParsedOutputRootConfig } from "@cloudflare/config";
-import type { ContainerlessConfig } from "@cloudflare/deploy-helpers";
-import type { Config, RawConfig } from "@cloudflare/workers-utils";
+} from "@zenthcloud/build-output-utils";
+import type { ParsedOutputRootConfig } from "@zenthcloud/config";
+import type { ContainerlessConfig } from "@zenthcloud/deploy-helpers";
+import type { Config, RawConfig } from "@zenthcloud/workers-utils";
 
 // Re-export so consumers/tests have a single import site for read/validate
 // errors thrown by the Build Output Specification reader.
-export { BuildOutputError } from "@cloudflare/build-output-utils";
+export { BuildOutputError } from "@zenthcloud/build-output-utils";
 export { BuildOutputConfigError } from "./build-output-error.js";
 
 export interface ParsedWorkerConfig {
@@ -133,7 +133,7 @@ export function parseWorkerConfig(
 		);
 	}
 
-	const userConfigPath = path.resolve("cloudflare.config.ts");
+	const userConfigPath = path.resolve("zenthcloud.config.ts");
 	const { validationConfig, containerReferences } =
 		prepareContainerlessValidationConfig(wranglerRawConfig);
 

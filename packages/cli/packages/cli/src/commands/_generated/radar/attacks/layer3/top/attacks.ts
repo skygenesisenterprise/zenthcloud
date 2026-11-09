@@ -86,7 +86,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("normalization", {
 			type: "string",
 			description:
-				"Normalization method applied to the results. Refer to [Normalization methods](https://developers.cloudflare.com/radar/concepts/normalization/).",
+				"Normalization method applied to the results. Refer to [Normalization methods](https://github.com/skygenesisenterprise/zenthcloud).",
 			choices: ["PERCENTAGE", "MIN_MAX"],
 		})
 		.option("format", {
@@ -143,7 +143,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar attacks layer3 top attacks",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/attacks/layer3/top/attacks`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

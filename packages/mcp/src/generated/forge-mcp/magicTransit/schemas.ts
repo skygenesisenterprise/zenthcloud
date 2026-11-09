@@ -59,7 +59,7 @@ export const magic_health_check_base: JSONObject = {
       "type": "string"
     },
     "target": {
-      "description": "The destination address in a request type health check. After the healthcheck is decapsulated at the customer end of the tunnel, the ICMP echo will be forwarded to this address. This field defaults to `customer_gre_endpoint address`. This field is ignored for bidirectional healthchecks as the interface_address (not assigned to the Cloudflare side of the tunnel) is used as the target. Must be in object form if the x-magic-new-hc-target header is set to true and string form if x-magic-new-hc-target is absent or set to false.",
+      "description": "The destination address in a request type health check. After the healthcheck is decapsulated at the customer end of the tunnel, the ICMP echo will be forwarded to this address. This field defaults to `customer_gre_endpoint address`. This field is ignored for bidirectional healthchecks as the interface_address (not assigned to the Zenthcloud side of the tunnel) is used as the target. Must be in object form if the x-magic-new-hc-target header is set to true and string form if x-magic-new-hc-target is absent or set to false.",
       "oneOf": [
         {
           "$ref": "#/$defs/magic_health_check_target"
@@ -86,7 +86,7 @@ export const magic_health_check_base: JSONObject = {
  * The schema of `magic_health_check_target`.
  */
 export const magic_health_check_target: JSONObject = {
-  "description": "The destination address in a request type health check. After the healthcheck is decapsulated at the customer end of the tunnel, the ICMP echo will be forwarded to this address. This field defaults to `customer_gre_endpoint address`. This field is ignored for bidirectional healthchecks as the interface_address (not assigned to the Cloudflare side of the tunnel) is used as the target.",
+  "description": "The destination address in a request type health check. After the healthcheck is decapsulated at the customer end of the tunnel, the ICMP echo will be forwarded to this address. This field defaults to `customer_gre_endpoint address`. This field is ignored for bidirectional healthchecks as the interface_address (not assigned to the Zenthcloud side of the tunnel) is used as the target.",
   "properties": {
     "saved": {
       "description": "The saved health check target. Setting the value to the empty string indicates that the calculated default value will be used.",
@@ -108,7 +108,7 @@ export const magic_tunnel_health_check: JSONObject = {
       "properties": {
         "direction": {
           "default": "unidirectional",
-          "description": "The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Cloudflare via the open Internet, or bidirectional where both the probe and result come and go via the tunnel.",
+          "description": "The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Zenthcloud via the open Internet, or bidirectional where both the probe and result come and go via the tunnel.",
           "enum": [
             "unidirectional",
             "bidirectional"

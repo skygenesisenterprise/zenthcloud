@@ -5,9 +5,9 @@ package ai_search_instance
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/ai_search"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/ai_search"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -63,7 +63,7 @@ type AISearchInstanceDataSourceModel struct {
 
 func (m *AISearchInstanceDataSourceModel) toReadParams(_ context.Context) (params ai_search.InstanceReadParams, diags diag.Diagnostics) {
 	params = ai_search.InstanceReadParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -71,23 +71,23 @@ func (m *AISearchInstanceDataSourceModel) toReadParams(_ context.Context) (param
 
 func (m *AISearchInstanceDataSourceModel) toListParams(_ context.Context) (params ai_search.InstanceListParams, diags diag.Diagnostics) {
 	params = ai_search.InstanceListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Filter.Hostname.IsNull() {
-		params.Hostname = cloudflare.F(m.Filter.Hostname.ValueString())
+		params.Hostname = zenthcloud.F(m.Filter.Hostname.ValueString())
 	}
 	if !m.Filter.Namespace.IsNull() {
-		params.Namespace = cloudflare.F(m.Filter.Namespace.ValueString())
+		params.Namespace = zenthcloud.F(m.Filter.Namespace.ValueString())
 	}
 	if !m.Filter.OrderBy.IsNull() {
-		params.OrderBy = cloudflare.F(ai_search.InstanceListParamsOrderBy(m.Filter.OrderBy.ValueString()))
+		params.OrderBy = zenthcloud.F(ai_search.InstanceListParamsOrderBy(m.Filter.OrderBy.ValueString()))
 	}
 	if !m.Filter.OrderByDirection.IsNull() {
-		params.OrderByDirection = cloudflare.F(ai_search.InstanceListParamsOrderByDirection(m.Filter.OrderByDirection.ValueString()))
+		params.OrderByDirection = zenthcloud.F(ai_search.InstanceListParamsOrderByDirection(m.Filter.OrderByDirection.ValueString()))
 	}
 	if !m.Filter.Search.IsNull() {
-		params.Search = cloudflare.F(m.Filter.Search.ValueString())
+		params.Search = zenthcloud.F(m.Filter.Search.ValueString())
 	}
 
 	return

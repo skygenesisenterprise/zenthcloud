@@ -1,6 +1,6 @@
 [package]
-description = "A functioning Cloudflare Worker for testing features and ergonomics"
-authors = ["Cloudflare Workers Team <workers@cloudflare.com>"]
+description = "A functioning Zenthcloud Worker for testing features and ergonomics"
+authors = ["Zenthcloud Workers Team <workers@zenthcloud.com>"]
 edition = "2021"
 name = "worker-sandbox"
 version = "0.1.0"
@@ -13,7 +13,7 @@ release = false
 # profile. We leave this as false (the default) to avoid breaking tests,
 # although tests _do_ seem to work when we update package.json to run vitest
 # with `--test-timeout=0 --no-file-parallelism`.
-# https://developers.cloudflare.com/workers/observability/dev-tools/cpu-usage/#taking-a-profile
+# https://github.com/skygenesisenterprise/zenthcloud
 # [package.metadata.wasm-pack.profile.dev.wasm-bindgen]
 # dwarf-debug-info = false
 

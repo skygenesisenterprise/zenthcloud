@@ -93,9 +93,9 @@ func UnionVersion1Schema(ctx context.Context) *schema.Schema {
 	}
 }
 
-// SourceV4AccessRuleSchema returns the source schema for legacy cloudflare_access_rule resource.
+// SourceV4AccessRuleSchema returns the source schema for legacy zenthcloud_access_rule resource.
 // Schema version: 1 (v4 schema version after v0→v1 migration)
-// Resource type: cloudflare_access_rule
+// Resource type: zenthcloud_access_rule
 //
 // This minimal schema is used only for reading v4 state during migration.
 // It includes only the properties needed for state parsing (Required, Optional, Computed, ElementType).

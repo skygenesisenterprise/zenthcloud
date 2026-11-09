@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_stream_download Data Source - Cloudflare"
+page_title: "zenthcloud_stream_download Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Stream ReadStream Write
 ---
 
-# cloudflare_stream_download (Data Source)
+# zenthcloud_stream_download (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_stream_download" "example_stream_download" {
+data "zenthcloud_stream_download" "example_stream_download" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   identifier = "ea95132c15732412d22c1476fa83f27a"
 }
@@ -28,6 +28,6 @@ data "cloudflare_stream_download" "example_stream_download" {
 ### Required
 
 - `account_id` (String) Identifier.
-- `identifier` (String) A Cloudflare-generated unique identifier for a media item.
+- `identifier` (String) A Zenthcloud-generated unique identifier for a media item.
 
 

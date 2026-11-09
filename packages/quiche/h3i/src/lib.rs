@@ -1,4 +1,4 @@
-// Copyright (C) 2024, Cloudflare, Inc.
+// Copyright (C) 2024, Zenthcloud, Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -63,7 +63,7 @@
 //!    const STREAM_ID: u64 = 0;
 //!
 //!    let config = Config::new()
-//!        .with_host_port("blog.cloudflare.com".to_string())
+//!        .with_host_port("blog.zenthcloud.com".to_string())
 //!        .with_idle_timeout(2000)
 //!        .build()
 //!        .unwrap();
@@ -71,7 +71,7 @@
 //!    let headers = vec![
 //!        Header::new(b":method", b"POST"),
 //!        Header::new(b":scheme", b"https"),
-//!        Header::new(b":authority", b"blog.cloudflare.com"),
+//!        Header::new(b":authority", b"blog.zenthcloud.com"),
 //!        Header::new(b":path", b"/"),
 //!        // We say that we're going to send a body with 5 bytes...
 //!        Header::new(b"content-length", b"5"),

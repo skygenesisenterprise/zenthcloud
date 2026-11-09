@@ -1,8 +1,8 @@
-import { writeAuthConfigFile } from "@cloudflare/workers-auth/cf";
+import { writeAuthConfigFile } from "@zenthcloud/workers-auth/cf";
 import {
 	mockConsoleMethods,
 	runInTempDir,
-} from "@cloudflare/workers-utils/test-helpers";
+} from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw/http";
 import { describe, expect, it } from "vite-plus/test";
 import { server, setupMsw, TEST_BASE_URL } from "../../helpers/msw.js";
@@ -21,7 +21,7 @@ describe("cf auth whoami", () => {
 		accountResponse: { status: number; body: object },
 		membershipResponse: { status: number; body: object },
 		env: Record<string, string | undefined> = {},
-		baseURL = env.CLOUDFLARE_API_BASE_URL ?? TEST_BASE_URL
+		baseURL = env.ZENTHCLOUD_API_BASE_URL ?? TEST_BASE_URL
 	): Promise<Record<string, unknown>> {
 		server.use(
 			http.get(`${baseURL}/accounts`, () =>
@@ -36,8 +36,8 @@ describe("cf auth whoami", () => {
 			)
 		);
 		await runCf(["auth", "whoami"], {
-			CLOUDFLARE_API_TOKEN: "test-token",
-			CLOUDFLARE_API_BASE_URL: TEST_BASE_URL,
+			ZENTHCLOUD_API_TOKEN: "test-token",
+			ZENTHCLOUD_API_BASE_URL: TEST_BASE_URL,
 			...env,
 		});
 		return JSON.parse(std.getAndClearOut()) as Record<string, unknown>;
@@ -78,8 +78,8 @@ describe("cf auth whoami", () => {
 		);
 
 		await runCf(["auth", "whoami"], {
-			CLOUDFLARE_API_TOKEN: "test-token",
-			CLOUDFLARE_API_BASE_URL: TEST_BASE_URL,
+			ZENTHCLOUD_API_TOKEN: "test-token",
+			ZENTHCLOUD_API_BASE_URL: TEST_BASE_URL,
 		});
 
 		expect(JSON.parse(std.out)).toMatchObject({
@@ -217,14 +217,14 @@ describe("cf auth whoami", () => {
 		{
 			name: "API-base override",
 			baseURL: "https://api.override.test/client/v4",
-			env: { CLOUDFLARE_API_BASE_URL: "https://api.override.test/client/v4" },
+			env: { ZENTHCLOUD_API_BASE_URL: "https://api.override.test/client/v4" },
 		},
 		{
 			name: "compliance region",
-			baseURL: "https://api.fed.cloudflare.com/client/v4",
+			baseURL: "https://github.com/skygenesisenterprise/zenthcloud",
 			env: {
-				CLOUDFLARE_API_BASE_URL: undefined,
-				CLOUDFLARE_COMPLIANCE_REGION: "fedramp_high",
+				ZENTHCLOUD_API_BASE_URL: undefined,
+				ZENTHCLOUD_COMPLIANCE_REGION: "fedramp_high",
 			},
 		},
 	])("verifies scoped tokens using the $name", async ({ baseURL, env }) => {
@@ -286,7 +286,7 @@ describe("cf auth whoami", () => {
 		};
 
 		const output = await runWithAccountResponses(empty, empty, {
-			CLOUDFLARE_API_TOKEN: undefined,
+			ZENTHCLOUD_API_TOKEN: undefined,
 		});
 
 		expect(output.tokenValid).toBe(true);

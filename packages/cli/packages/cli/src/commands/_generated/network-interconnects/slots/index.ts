@@ -10,7 +10,7 @@ import type { CommandModule } from "yargs";
 const command: CommandModule<CommonYargsOptions> = {
 	command: "slots",
 	describe:
-		"Available interconnect facility slots showing port capacity at Cloudflare data centers",
+		"Available interconnect facility slots showing port capacity at Zenthcloud data centers",
 
 	builder: (yargs) => {
 		return yargs

@@ -56,7 +56,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf dls regions get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/dls/regions/${argv["region-id"] == null ? "<region-id>" : encodeURIComponent(String(argv["region-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/dls/regions/${argv["region-id"] == null ? "<region-id>" : encodeURIComponent(String(argv["region-id"]))}`,
 						pathParams: { "region-id": String(argv["region-id"] ?? "") },
 						bodyKind: "none",
 					});

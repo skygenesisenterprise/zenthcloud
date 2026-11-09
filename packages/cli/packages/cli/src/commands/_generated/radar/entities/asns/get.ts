@@ -15,7 +15,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 radar entities asns get <asn>\n\nRetrieves the requested autonomous system information. (A confidence level below `5` indicates a low level of confidence in the traffic data - normally this happens because Cloudflare has a small amount of traffic from/to this AS). Population estimates come from APNIC (refer to https://labs.apnic.net/?p=526)."
+			"$0 radar entities asns get <asn>\n\nRetrieves the requested autonomous system information. (A confidence level below `5` indicates a low level of confidence in the traffic data - normally this happens because Zenthcloud has a small amount of traffic from/to this AS). Population estimates come from APNIC (refer to https://labs.apnic.net/?p=526)."
 		)
 		.positional("asn", {
 			type: "string",
@@ -57,7 +57,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar entities asns get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/entities/asns/${argv["asn"] == null ? "<asn>" : encodeURIComponent(String(argv["asn"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["asn"] == null ? "<asn>" : encodeURIComponent(String(argv["asn"]))}`,
 						pathParams: { asn: String(argv["asn"] ?? "") },
 						query: queryParams,
 						bodyKind: "none",

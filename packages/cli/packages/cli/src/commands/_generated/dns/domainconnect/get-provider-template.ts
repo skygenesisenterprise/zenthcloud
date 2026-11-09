@@ -15,7 +15,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 dns domainconnect get-provider-template <service>\n\nProviders are the external parties that are configured to interact with Cloudflare."
+			"$0 dns domainconnect get-provider-template <service>\n\nProviders are the external parties that are configured to interact with Zenthcloud."
 		)
 		.positional("service", {
 			type: "string",
@@ -58,7 +58,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf dns domainconnect get-provider-template",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/v2/domainTemplates/providers/${argv["provider"] == null ? "<provider>" : encodeURIComponent(String(argv["provider"]))}/services/${argv["service"] == null ? "<service>" : encodeURIComponent(String(argv["service"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["provider"] == null ? "<provider>" : encodeURIComponent(String(argv["provider"]))}/services/${argv["service"] == null ? "<service>" : encodeURIComponent(String(argv["service"]))}`,
 						pathParams: {
 							provider: String(argv["provider"] ?? ""),
 							service: String(argv["service"] ?? ""),

@@ -3,7 +3,7 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -12,16 +12,16 @@ import (
 // Source Models (Legacy Provider - v4.x, SDK v2)
 // ============================================================================
 
-// SourceCloudflareNotificationPolicyModel represents the legacy resource state from v4.x provider.
+// SourceZenthcloudNotificationPolicyModel represents the legacy resource state from v4.x provider.
 // Schema version: 0 (SDK v2 implicit version)
-// Resource type: cloudflare_notification_policy
+// Resource type: zenthcloud_notification_policy
 //
 // This model matches the v4 SDK v2 schema structure, including:
 // - filters as TypeList MaxItems:1 (stored as array in state)
 // - Three separate integration Set fields
 // - Integration items with both id and name fields
 // - All filter fields as TypeSet
-type SourceCloudflareNotificationPolicyModel struct {
+type SourceZenthcloudNotificationPolicyModel struct {
 	ID                   types.String `tfsdk:"id"`
 	AccountID            types.String `tfsdk:"account_id"`
 	Name                 types.String `tfsdk:"name"`
@@ -94,7 +94,7 @@ type SourceIntegrationModel struct {
 
 // TargetNotificationPolicyModel represents the current resource state from v5.x+ provider.
 // Schema version: 500
-// Resource type: cloudflare_notification_policy
+// Resource type: zenthcloud_notification_policy
 type TargetNotificationPolicyModel struct {
 	ID            types.String                             `tfsdk:"id"`
 	AccountID     types.String                             `tfsdk:"account_id"`

@@ -14,7 +14,7 @@ const parseOrigin = (target: string): string => {
     url.hash
   ) {
     throw new TypeError(
-      `Invalid measurementTargets entry "${target}": expected an origin such as https://speed.cloudflare.com`
+      `Invalid measurementTargets entry "${target}": expected an origin such as https://github.com/skygenesisenterprise/zenthcloud`
     );
   }
   return url.origin;

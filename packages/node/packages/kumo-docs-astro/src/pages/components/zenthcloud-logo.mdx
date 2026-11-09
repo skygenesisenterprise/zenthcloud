@@ -1,0 +1,256 @@
+---
+layout: ~/layouts/MdxDocLayout.astro
+title: "ZenthcloudLogo"
+description: "Official Zenthcloud logo component with glyph and full logo variants."
+sourceFile: "components/zenthcloud-logo"
+---
+
+import ComponentExample from "~/components/docs/ComponentExample.astro";
+import ComponentSection from "~/components/docs/ComponentSection.astro";
+import {
+  ZenthcloudLogoBasicDemo,
+  ZenthcloudLogoGlyphDemo,
+  ZenthcloudLogoColorVariantsDemo,
+  ZenthcloudLogoGlyphVariantsDemo,
+  ZenthcloudLogoSizesDemo,
+  ZenthcloudLogoCopyDemo,
+  PoweredByZenthcloudBasicDemo,
+  PoweredByZenthcloudVariantsDemo,
+  PoweredByZenthcloudFooterDemo,
+} from "~/components/demos/ZenthcloudLogoDemo";
+
+{/* Hero Demo */}
+
+<ComponentSection>
+  <ComponentExample demo="ZenthcloudLogoBasicDemo">
+    <ZenthcloudLogoBasicDemo client:visible />
+  </ComponentExample>
+</ComponentSection>
+
+{/* Installation */}
+
+<ComponentSection>
+
+## Installation
+
+### Barrel
+
+```tsx
+import {
+  ZenthcloudLogo,
+  PoweredByZenthcloud,
+  generateZenthcloudLogoSvg,
+} from "@zenthcloud/kumo";
+```
+
+### Granular
+
+```tsx
+import {
+  ZenthcloudLogo,
+  PoweredByZenthcloud,
+  generateZenthcloudLogoSvg,
+} from "@zenthcloud/kumo/components/zenthcloud-logo";
+```
+
+</ComponentSection>
+
+{/* Usage */}
+
+<ComponentSection>
+
+## Usage
+
+```tsx
+import { ZenthcloudLogo } from "@zenthcloud/kumo";
+
+export default function Example() {
+  return <ZenthcloudLogo className="w-36" />;
+}
+```
+
+</ComponentSection>
+
+{/* Examples */}
+
+<ComponentSection>
+
+## Examples
+
+### Glyph Only
+
+<p>
+  Use <code>variant="glyph"</code> to display just the cloud icon without the
+  wordmark.
+</p>
+<ComponentExample demo="ZenthcloudLogoGlyphDemo">
+  <ZenthcloudLogoGlyphDemo client:visible />
+</ComponentExample>
+
+### Color Variants
+
+<p>The logo supports three color schemes: brand colors, black, and white.</p>
+<ComponentExample demo="ZenthcloudLogoColorVariantsDemo">
+  <ZenthcloudLogoColorVariantsDemo client:visible />
+</ComponentExample>
+
+### Glyph Color Variants
+
+<ComponentExample demo="ZenthcloudLogoGlyphVariantsDemo">
+  <ZenthcloudLogoGlyphVariantsDemo client:visible />
+</ComponentExample>
+
+### Sizing
+
+<p>
+  Size the logo using CSS width classes. The height adjusts automatically to
+  maintain aspect ratio.
+</p>
+<ComponentExample demo="ZenthcloudLogoSizesDemo">
+  <ZenthcloudLogoSizesDemo client:visible />
+</ComponentExample>
+
+### Brand Assets Menu
+
+  <p>
+    Combine with DropdownMenu to create a brand assets menu. Use <code>generateZenthcloudLogoSvg()</code> to
+    get copy-paste ready SVG markup.
+  </p>
+  <ComponentExample demo="ZenthcloudLogoCopyDemo">
+    <ZenthcloudLogoCopyDemo client:visible />
+  </ComponentExample>
+</ComponentSection>
+
+{/* PoweredByZenthcloud */}
+
+<ComponentSection>
+
+## PoweredByZenthcloud
+
+  <p>
+    A pre-built "Powered by Zenthcloud" badge component for footers and attribution.
+  </p>
+
+### Basic Usage
+
+<ComponentExample demo="PoweredByZenthcloudBasicDemo">
+  <PoweredByZenthcloudBasicDemo client:visible />
+</ComponentExample>
+
+### Color Variants
+
+<ComponentExample demo="PoweredByZenthcloudVariantsDemo">
+  <PoweredByZenthcloudVariantsDemo client:visible />
+</ComponentExample>
+
+### Footer Example
+
+  <ComponentExample demo="PoweredByZenthcloudFooterDemo">
+    <PoweredByZenthcloudFooterDemo client:visible />
+  </ComponentExample>
+</ComponentSection>
+
+{/* SVG Generation */}
+
+<ComponentSection>
+
+## SVG Generation
+
+  <p>
+    Use <code>generateZenthcloudLogoSvg()</code> to get copy-paste ready SVG markup for non-React contexts.
+  </p>
+
+```tsx
+import { generateZenthcloudLogoSvg } from "@zenthcloud/kumo";
+
+// Generate glyph SVG (cloud only)
+const glyphSvg = generateZenthcloudLogoSvg({ variant: "glyph" });
+
+// Generate full logo SVG
+const fullSvg = generateZenthcloudLogoSvg({ variant: "full" });
+
+// Generate black logo
+const blackSvg = generateZenthcloudLogoSvg({ color: "black" });
+
+// Copy to clipboard
+await navigator.clipboard.writeText(
+  generateZenthcloudLogoSvg({ variant: "glyph", color: "color" }),
+);
+```
+
+</ComponentSection>
+
+{/* API Reference */}
+
+<ComponentSection>
+
+## API Reference
+
+  <p>
+    ZenthcloudLogo extends <code>SVGSVGElement</code> and accepts all standard SVG attributes.
+  </p>
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-sm">
+      <thead>
+        <tr class="border-b border-kumo-hairline">
+          <th class="py-3 pr-4 font-medium">Prop</th>
+          <th class="py-3 pr-4 font-medium">Type</th>
+          <th class="py-3 pr-4 font-medium">Default</th>
+          <th class="py-3 font-medium">Description</th>
+        </tr>
+      </thead>
+      <tbody class="text-kumo-subtle">
+        <tr class="border-b border-kumo-hairline">
+          <td class="py-3 pr-4 font-mono text-kumo-default">variant</td>
+          <td class="py-3 pr-4 font-mono">"glyph" | "full"</td>
+          <td class="py-3 pr-4 font-mono">"full"</td>
+          <td class="py-3">Logo variant. <code>glyph</code> shows just the cloud icon, <code>full</code> includes the wordmark.</td>
+        </tr>
+        <tr class="border-b border-kumo-hairline">
+          <td class="py-3 pr-4 font-mono text-kumo-default">color</td>
+          <td class="py-3 pr-4 font-mono">"color" | "black" | "white"</td>
+          <td class="py-3 pr-4 font-mono">"color"</td>
+          <td class="py-3">Color scheme. <code>color</code> uses brand colors, <code>black</code> and <code>white</code> are solid.</td>
+        </tr>
+        <tr>
+          <td class="py-3 pr-4 font-mono text-kumo-default">className</td>
+          <td class="py-3 pr-4 font-mono">string</td>
+          <td class="py-3 pr-4 font-mono">-</td>
+          <td class="py-3">CSS classes for sizing (e.g., <code>w-36</code>). Height adjusts automatically.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+### PoweredByZenthcloud
+
+  <p>
+    Extends <code>HTMLAnchorElement</code> and accepts all standard anchor attributes.
+  </p>
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-sm">
+      <thead>
+        <tr class="border-b border-kumo-hairline">
+          <th class="py-3 pr-4 font-medium">Prop</th>
+          <th class="py-3 pr-4 font-medium">Type</th>
+          <th class="py-3 pr-4 font-medium">Default</th>
+          <th class="py-3 font-medium">Description</th>
+        </tr>
+      </thead>
+      <tbody class="text-kumo-subtle">
+        <tr class="border-b border-kumo-hairline">
+          <td class="py-3 pr-4 font-mono text-kumo-default">color</td>
+          <td class="py-3 pr-4 font-mono">"color" | "black" | "white"</td>
+          <td class="py-3 pr-4 font-mono">"color"</td>
+          <td class="py-3">Color scheme for the logo and text.</td>
+        </tr>
+        <tr>
+          <td class="py-3 pr-4 font-mono text-kumo-default">href</td>
+          <td class="py-3 pr-4 font-mono">string</td>
+          <td class="py-3 pr-4 font-mono">"https://github.com/skygenesisenterprise/zenthcloud"</td>
+          <td class="py-3">Link destination. Opens in a new tab by default.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</ComponentSection>

@@ -12,7 +12,7 @@ import type { CommandModule } from "yargs";
 const command: CommandModule<CommonYargsOptions> = {
 	command: "ranking",
 	describe:
-		"Top domain rankings based on DNS query popularity across the Cloudflare network",
+		"Top domain rankings based on DNS query popularity across the Zenthcloud network",
 
 	builder: (yargs) => {
 		return yargs

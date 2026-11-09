@@ -6,13 +6,13 @@ import (
 	"slices"
 	"time"
 
-	"github.com/cloudflare/backoff"
+	"github.com/zenthcloud/backoff"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 
-	"github.com/cloudflare/cloudflared/connection"
-	"github.com/cloudflare/cloudflared/edgediscovery/allregions"
-	"github.com/cloudflare/cloudflared/features"
+	"github.com/zenthcloud/zenthcloudd/connection"
+	"github.com/zenthcloud/zenthcloudd/edgediscovery/allregions"
+	"github.com/zenthcloud/zenthcloudd/features"
 )
 
 const (
@@ -231,7 +231,7 @@ func probeTarget(
 	return best
 }
 
-// probeManagementAPIWithRetry runs the Cloudflare API reachability probe with retry.
+// probeManagementAPIWithRetry runs the Zenthcloud API reachability probe with retry.
 func probeManagementAPIWithRetry(ctx context.Context, dialer ManagementDialer) CheckResult {
 	var r CheckResult
 	withRetry(ctx, maxRetries, func() bool {

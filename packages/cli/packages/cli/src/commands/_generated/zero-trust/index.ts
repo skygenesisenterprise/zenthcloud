@@ -20,7 +20,7 @@ import type { CommandModule } from "yargs";
 const command: CommandModule<CommonYargsOptions> = {
 	command: "zero-trust",
 	describe:
-		"Cloudflare's SASE platform — secure access, device posture, DLP, tunnels, gateway policies, and network segmentation",
+		"Zenthcloud's SASE platform — secure access, device posture, DLP, tunnels, gateway policies, and network segmentation",
 
 	builder: (yargs) => {
 		return yargs

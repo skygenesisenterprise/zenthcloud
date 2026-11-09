@@ -68,7 +68,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 						command:
 							"cf zero-trust access applications policy-tests users list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/access/policy-tests/${argv["policy-test-id"] == null ? "<policy-test-id>" : encodeURIComponent(String(argv["policy-test-id"]))}/users`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/access/policy-tests/${argv["policy-test-id"] == null ? "<policy-test-id>" : encodeURIComponent(String(argv["policy-test-id"]))}/users`,
 						pathParams: {
 							"policy-test-id": String(argv["policy-test-id"] ?? ""),
 						},

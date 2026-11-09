@@ -1,8 +1,8 @@
-resource "cloudflare_zero_trust_access_ai_controls_mcp_server" "tf-test-manual" {
+resource "zenthcloud_zero_trust_access_ai_controls_mcp_server" "tf-test-manual" {
   account_id = %[1]q
   id         = "tf-test-manual"
   auth_type  = "oauth"
-  hostname   = "https://docs.mcp.cloudflare.com/mcp"
+  hostname   = "https://github.com/skygenesisenterprise/zenthcloud"
   name       = %[2]q
 
   auth_credentials = jsonencode({

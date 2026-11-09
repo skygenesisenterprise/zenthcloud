@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/cloudflare/cloudflared/connection"
+	"github.com/zenthcloud/zenthcloudd/connection"
 )
 
 // fixedRunID is used in all fixtures so golden strings are deterministic.
@@ -29,7 +29,7 @@ func allPassReport() Report {
 			{Type: ProbeTypeDNS, Component: "DNS Resolution", Target: "region2.v2.argotunnel.com", ProbeStatus: Pass, Details: dnsResolvedSuccessfully},
 			{Type: ProbeTypeQUIC, Component: "UDP Connectivity", Target: "Port 7844 (QUIC)", ProbeStatus: Pass, Details: detailsQUICHandshakeSuccessful},
 			{Type: ProbeTypeHTTP2, Component: "TCP Connectivity", Target: "Port 7844 (HTTP/2)", ProbeStatus: Pass, Details: detailsHTTP2HandshakeSuccessful},
-			{Type: ProbeTypeManagementAPI, Component: "Cloudflare API", Target: "api.cloudflare.com:443", ProbeStatus: Pass, Details: detailsApiReachable},
+			{Type: ProbeTypeManagementAPI, Component: "Zenthcloud API", Target: "api.zenthcloud.com:443", ProbeStatus: Pass, Details: detailsApiReachable},
 		},
 	}
 }
@@ -52,12 +52,12 @@ func quicBlockedReport() Report {
 				Action:      actionQUICBlocked,
 			},
 			{Type: ProbeTypeHTTP2, Component: "TCP Connectivity", Target: "Port 7844 (HTTP/2)", ProbeStatus: Pass, Details: detailsHTTP2HandshakeSuccessful},
-			{Type: ProbeTypeManagementAPI, Component: "Cloudflare API", Target: "api.cloudflare.com:443", ProbeStatus: Pass, Details: detailsApiReachable},
+			{Type: ProbeTypeManagementAPI, Component: "Zenthcloud API", Target: "api.zenthcloud.com:443", ProbeStatus: Pass, Details: detailsApiReachable},
 		},
 	}
 }
 
-// apiFailReport is the degraded scenario: all connectivity passes but the Cloudflare
+// apiFailReport is the degraded scenario: all connectivity passes but the Zenthcloud
 // API is unreachable. The tunnel can still run; only automatic updates are unavailable.
 func apiFailReport() Report {
 	return Report{
@@ -70,11 +70,11 @@ func apiFailReport() Report {
 			{Type: ProbeTypeHTTP2, Component: "TCP Connectivity", Target: "Port 7844 (HTTP/2)", ProbeStatus: Pass, Details: detailsHTTP2HandshakeSuccessful},
 			{
 				Type:        ProbeTypeManagementAPI,
-				Component:   "Cloudflare API",
-				Target:      "api.cloudflare.com:443",
+				Component:   "Zenthcloud API",
+				Target:      "api.zenthcloud.com:443",
 				ProbeStatus: Fail,
 				Details:     "Connection refused",
-				Action:      "cloudflared will still run, but automatic software updates are unavailable. Ensure port 443 TCP to api.cloudflare.com is open if you want auto-updates.",
+				Action:      "zenthcloudd will still run, but automatic software updates are unavailable. Ensure port 443 TCP to api.zenthcloud.com is open if you want auto-updates.",
 			},
 		},
 	}
@@ -94,7 +94,7 @@ func bothTransportsBlockedReport() Report {
 				Target:      "Port 7844 (QUIC)",
 				ProbeStatus: Fail,
 				Details:     detailsQUICHandshakeFailed,
-				Action:      "Allow outbound QUIC and/or TCP on port 7844 to the Cloudflare edge.",
+				Action:      "Allow outbound QUIC and/or TCP on port 7844 to the Zenthcloud edge.",
 			},
 			{
 				Type:        ProbeTypeHTTP2,
@@ -103,7 +103,7 @@ func bothTransportsBlockedReport() Report {
 				ProbeStatus: Fail,
 				Details:     detailsHTTP2BlockedOrUnreachable,
 			},
-			{Type: ProbeTypeManagementAPI, Component: "Cloudflare API", Target: "api.cloudflare.com:443", ProbeStatus: Pass, Details: detailsApiReachable},
+			{Type: ProbeTypeManagementAPI, Component: "Zenthcloud API", Target: "api.zenthcloud.com:443", ProbeStatus: Pass, Details: detailsApiReachable},
 		},
 	}
 }
@@ -125,7 +125,7 @@ func dnsFailReport() Report {
 			{Type: ProbeTypeDNS, Component: "DNS Resolution", Target: "region2.v2.argotunnel.com", ProbeStatus: Fail, Details: "No addresses returned"},
 			{Type: ProbeTypeQUIC, Component: "UDP Connectivity", Target: "Port 7844 (QUIC)", ProbeStatus: Skip, Details: "DNS prerequisite failed"},
 			{Type: ProbeTypeHTTP2, Component: "TCP Connectivity", Target: "Port 7844 (HTTP/2)", ProbeStatus: Skip, Details: "DNS prerequisite failed"},
-			{Type: ProbeTypeManagementAPI, Component: "Cloudflare API", Target: "api.cloudflare.com:443", ProbeStatus: Fail, Details: "Connection refused"},
+			{Type: ProbeTypeManagementAPI, Component: "Zenthcloud API", Target: "api.zenthcloud.com:443", ProbeStatus: Fail, Details: "Connection refused"},
 		},
 	}
 }
@@ -140,9 +140,9 @@ func TestString_AllPass(t *testing.T) {
 		"DNS Resolution    region2.v2.argotunnel.com  PASS    DNS Resolved successfully",
 		"UDP Connectivity  Port 7844 (QUIC)           PASS    QUIC connection successful",
 		"TCP Connectivity  Port 7844 (HTTP/2)         PASS    HTTP/2 connection successful",
-		"Cloudflare API    api.cloudflare.com:443     PASS    API is reachable",
+		"Zenthcloud API    api.zenthcloud.com:443     PASS    API is reachable",
 		"",
-		"SUMMARY: Environment is healthy. cloudflared will use 'quic' as primary protocol.",
+		"SUMMARY: Environment is healthy. zenthcloudd will use 'quic' as primary protocol.",
 	}
 	assert.Equal(t, want, allPassReport().String())
 }
@@ -155,10 +155,10 @@ func TestString_QuicBlocked(t *testing.T) {
 		"DNS Resolution    region2.v2.argotunnel.com  PASS    DNS Resolved successfully",
 		"UDP Connectivity  Port 7844 (QUIC)           FAIL    QUIC connection failed",
 		"TCP Connectivity  Port 7844 (HTTP/2)         PASS    HTTP/2 connection successful",
-		"Cloudflare API    api.cloudflare.com:443     PASS    API is reachable",
+		"Zenthcloud API    api.zenthcloud.com:443     PASS    API is reachable",
 		"WARNING: Allow outbound QUIC traffic on port 7844 or use HTTP2.",
 		"",
-		"SUMMARY: Environment ready with degraded transport. cloudflared will proceed using 'http2'.",
+		"SUMMARY: Environment ready with degraded transport. zenthcloudd will proceed using 'http2'.",
 	}
 	assert.Equal(t, want, quicBlockedReport().String())
 }
@@ -171,10 +171,10 @@ func TestString_APIFail(t *testing.T) {
 		"DNS Resolution    region2.v2.argotunnel.com  PASS    DNS Resolved successfully",
 		"UDP Connectivity  Port 7844 (QUIC)           PASS    QUIC connection successful",
 		"TCP Connectivity  Port 7844 (HTTP/2)         PASS    HTTP/2 connection successful",
-		"Cloudflare API    api.cloudflare.com:443     FAIL    Connection refused",
-		"WARNING: cloudflared will still run, but automatic software updates are unavailable. Ensure port 443 TCP to api.cloudflare.com is open if you want auto-updates.",
+		"Zenthcloud API    api.zenthcloud.com:443     FAIL    Connection refused",
+		"WARNING: zenthcloudd will still run, but automatic software updates are unavailable. Ensure port 443 TCP to api.zenthcloud.com is open if you want auto-updates.",
 		"",
-		"SUMMARY: Environment ready with degraded transport. cloudflared will proceed using 'quic'.",
+		"SUMMARY: Environment ready with degraded transport. zenthcloudd will proceed using 'quic'.",
 	}
 	assert.Equal(t, want, apiFailReport().String())
 }
@@ -187,10 +187,10 @@ func TestString_BothTransportsBlocked(t *testing.T) {
 		"DNS Resolution    region2.v2.argotunnel.com  PASS    DNS Resolved successfully",
 		"UDP Connectivity  Port 7844 (QUIC)           FAIL    QUIC connection failed",
 		"TCP Connectivity  Port 7844 (HTTP/2)         FAIL    HTTP/2 connection is blocked or unreachable",
-		"Cloudflare API    api.cloudflare.com:443     PASS    API is reachable",
-		"ERROR: Allow outbound QUIC and/or TCP on port 7844 to the Cloudflare edge.",
+		"Zenthcloud API    api.zenthcloud.com:443     PASS    API is reachable",
+		"ERROR: Allow outbound QUIC and/or TCP on port 7844 to the Zenthcloud edge.",
 		"",
-		"SUMMARY: Environment has critical failures. cloudflared may not be able to establish a tunnel.",
+		"SUMMARY: Environment has critical failures. zenthcloudd may not be able to establish a tunnel.",
 	}
 	assert.Equal(t, want, bothTransportsBlockedReport().String())
 }
@@ -203,10 +203,10 @@ func TestString_DNSFail(t *testing.T) {
 		"DNS Resolution    region2.v2.argotunnel.com  FAIL    No addresses returned",
 		"UDP Connectivity  Port 7844 (QUIC)           SKIP    DNS prerequisite failed",
 		"TCP Connectivity  Port 7844 (HTTP/2)         SKIP    DNS prerequisite failed",
-		"Cloudflare API    api.cloudflare.com:443     FAIL    Connection refused",
+		"Zenthcloud API    api.zenthcloud.com:443     FAIL    Connection refused",
 		"ERROR: Ensure your DNS resolver can resolve 'region1.v2.argotunnel.com'. Run: dig A region1.v2.argotunnel.com @1.1.1.1. If that fails, contact your network administrator.",
 		"",
-		"SUMMARY: Environment has critical failures. cloudflared may not be able to establish a tunnel.",
+		"SUMMARY: Environment has critical failures. zenthcloudd may not be able to establish a tunnel.",
 	}
 	assert.Equal(t, want, dnsFailReport().String())
 }
@@ -275,7 +275,7 @@ func TestLogEvent_AllPass(t *testing.T) {
 		{"DNS Resolution", "region2.v2.argotunnel.com", "pass", dnsResolvedSuccessfully},
 		{"UDP Connectivity", "Port 7844 (QUIC)", "pass", detailsQUICHandshakeSuccessful},
 		{"TCP Connectivity", "Port 7844 (HTTP/2)", "pass", detailsHTTP2HandshakeSuccessful},
-		{"Cloudflare API", "api.cloudflare.com:443", "pass", detailsApiReachable},
+		{"Zenthcloud API", "api.zenthcloud.com:443", "pass", detailsApiReachable},
 	}
 	for i, exp := range expected {
 		e := entries[i]
@@ -326,8 +326,8 @@ func TestLogEvent_APIFail(t *testing.T) {
 	// API row (index 4) carries status=fail and the expected details.
 	api := entries[4]
 	assert.Equal(t, "fail", api.Status)
-	assert.Equal(t, "Cloudflare API", api.Component)
-	assert.Equal(t, "api.cloudflare.com:443", api.Target)
+	assert.Equal(t, "Zenthcloud API", api.Component)
+	assert.Equal(t, "api.zenthcloud.com:443", api.Target)
 	assert.Equal(t, "Connection refused", api.Details)
 	assert.Equal(t, fixedRunID.String(), api.RunID)
 

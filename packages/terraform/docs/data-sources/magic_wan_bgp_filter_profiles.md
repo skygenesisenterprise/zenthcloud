@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_magic_wan_bgp_filter_profiles Data Source - Cloudflare"
+page_title: "zenthcloud_magic_wan_bgp_filter_profiles Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_magic_wan_bgp_filter_profiles (Data Source)
+# zenthcloud_magic_wan_bgp_filter_profiles (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_magic_wan_bgp_filter_profiles" "example_magic_wan_bgp_filter_profiles" {
+data "zenthcloud_magic_wan_bgp_filter_profiles" "example_magic_wan_bgp_filter_profiles" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```

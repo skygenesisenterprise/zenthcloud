@@ -18,7 +18,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 ssl keyless-certificates create\n\nCreates a Keyless SSL configuration that allows SSL/TLS termination without exposing private keys to Cloudflare. Keys remain on your infrastructure."
+			"$0 ssl keyless-certificates create\n\nCreates a Keyless SSL configuration that allows SSL/TLS termination without exposing private keys to Zenthcloud. Keys remain on your infrastructure."
 		)
 		.option("bundle-method", {
 			type: "string",
@@ -40,7 +40,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("port", {
 			type: "number",
 			description:
-				"The keyless SSL port used to communicate between Cloudflare and the client's Keyless SSL server.",
+				"The keyless SSL port used to communicate between Zenthcloud and the client's Keyless SSL server.",
 			default: 24008,
 		})
 		.option("tunnel-private-ip", {
@@ -49,7 +49,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		})
 		.option("tunnel-vnet-id", {
 			type: "string",
-			description: "Cloudflare Tunnel Virtual Network ID.",
+			description: "Zenthcloud Tunnel Virtual Network ID.",
 		})
 		.option("dry-run", {
 			type: "boolean",
@@ -98,7 +98,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf ssl keyless-certificates create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/keyless_certificates`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/keyless_certificates`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 						},

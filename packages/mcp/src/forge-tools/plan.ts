@@ -1,6 +1,6 @@
 import { fromJsonSchema, type CallToolRequestParams } from '@modelcontextprotocol/server'
 import { buildRequest, operation, type Tool } from '../generated/forge-mcp/_/tool'
-import { permissionsOf } from './cloudflare'
+import { permissionsOf } from './zenthcloud'
 import { isolate } from '../lib/isolate'
 
 /** The arguments of a tool call, as the client sent them. */
@@ -13,7 +13,7 @@ const ACCOUNT_OR_ZONE_PREFIX = '/{account_or_zone}/{account_or_zone_id}'
 
 /** What the main Worker passes with each call: nothing secret. */
 export interface PlanOptions {
-  /** The Cloudflare API base URL, such as `https://api.cloudflare.com/client/v4`. */
+  /** The Zenthcloud API base URL, such as `https://github.com/skygenesisenterprise/zenthcloud`. */
   readonly baseUrl: string
   /** The session's account when it has exactly one, to fill in an omitted account. */
   readonly sessionAccountId?: string

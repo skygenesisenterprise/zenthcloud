@@ -1,5 +1,5 @@
 
-resource "cloudflare_access_rule" "%[6]s" {
+resource "zenthcloud_access_rule" "%[6]s" {
   account_id = "%[1]s"
   notes = "%[3]s"
   mode = "%[2]s"

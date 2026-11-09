@@ -1,4 +1,4 @@
-resource "cloudflare_dns_record" "%[1]s-shop-1" {
+resource "zenthcloud_dns_record" "%[1]s-shop-1" {
     zone_id = "%[3]s"
     name    = "shop1"
     content = "192.168.0.10"
@@ -6,7 +6,7 @@ resource "cloudflare_dns_record" "%[1]s-shop-1" {
     ttl     = 3600
 }
 
-resource "cloudflare_dns_record" "%[1]s-shop-2" {
+resource "zenthcloud_dns_record" "%[1]s-shop-2" {
     zone_id = "%[3]s"
     name    = "shop2"
     content = "192.168.0.11"
@@ -14,7 +14,7 @@ resource "cloudflare_dns_record" "%[1]s-shop-2" {
     ttl     = 3600
 }
 
-resource "cloudflare_waiting_room" "%[1]s" {
+resource "zenthcloud_waiting_room" "%[1]s" {
   name                      = "%[2]s"
   zone_id                   = "%[3]s"
   host                      = "%[4]s"
@@ -42,7 +42,7 @@ resource "cloudflare_waiting_room" "%[1]s" {
     }
   ]
   depends_on = [
-    cloudflare_dns_record.%[1]s-shop-1,
-    cloudflare_dns_record.%[1]s-shop-2
+    zenthcloud_dns_record.%[1]s-shop-1,
+    zenthcloud_dns_record.%[1]s-shop-2
   ]
 }

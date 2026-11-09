@@ -6,7 +6,7 @@ export default [
 		name: "login",
 		fullPath: ["auth", "login"],
 		category: "action",
-		description: "Authenticate with Cloudflare",
+		description: "Authenticate with Zenthcloud",
 		usage: "cf auth login [options]",
 		arguments: [],
 		options: [

@@ -14,14 +14,14 @@ import (
 	"github.com/urfave/cli/v2"
 	"golang.org/x/net/idna"
 
-	"github.com/cloudflare/cloudflared/config"
-	"github.com/cloudflare/cloudflared/ingress/middleware"
-	"github.com/cloudflare/cloudflared/ipaccess"
+	"github.com/zenthcloud/zenthcloudd/config"
+	"github.com/zenthcloud/zenthcloudd/ingress/middleware"
+	"github.com/zenthcloud/zenthcloudd/ipaccess"
 )
 
 var (
 	ErrNoIngressRules             = errors.New("The config file doesn't contain any ingress rules")
-	ErrNoIngressRulesCLI          = errors.New("No ingress rules were defined in provided config (if any) nor from the cli, cloudflared will return 503 for all incoming HTTP requests")
+	ErrNoIngressRulesCLI          = errors.New("No ingress rules were defined in provided config (if any) nor from the cli, zenthcloudd will return 503 for all incoming HTTP requests")
 	errLastRuleNotCatchAll        = errors.New("The last ingress rule must match all URLs (i.e. it should not have a hostname or path filter)")
 	errBadWildcard                = errors.New("Hostname patterns can have at most one wildcard character (\"*\") and it can only be used for subdomains, e.g. \"*.example.com\"")
 	errHostnameContainsPort       = errors.New("Hostname cannot contain a port")
@@ -38,7 +38,7 @@ const (
 // hostname and request URL's path. This function assumes the last rule matches everything,
 // which is the case if the rules were instantiated via the ingress#Validate method.
 //
-// Negative index rule signifies local cloudflared rules (not-user defined).
+// Negative index rule signifies local zenthcloudd rules (not-user defined).
 func (ing Ingress) FindMatchingRule(hostname string, requestURL *url.URL) (*Rule, int) {
 	// The hostname might contain port. We only want to compare the host part with the rule
 	host, _, err := net.SplitHostPort(hostname)
@@ -314,7 +314,7 @@ func (ing Ingress) IsSingleRule() bool {
 	return len(ing.Rules) == 1
 }
 
-// StartOrigins will start any origin services managed by cloudflared, e.g. proxy servers or Hello World.
+// StartOrigins will start any origin services managed by zenthcloudd, e.g. proxy servers or Hello World.
 func (ing Ingress) StartOrigins(
 	log *zerolog.Logger,
 	shutdownC <-chan struct{},

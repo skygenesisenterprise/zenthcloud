@@ -4,13 +4,13 @@
 import type { JSONObject } from "@modelcontextprotocol/server";
 
 /**
- * The schema of `cloudflare-pipelines_ConnectionSchema` in responses.
+ * The schema of `zenthcloud-pipelines_ConnectionSchema` in responses.
  */
-export const cloudflare$$pipelines_ConnectionSchema: JSONObject = {
+export const zenthcloud$$pipelines_ConnectionSchema: JSONObject = {
   "properties": {
     "fields": {
       "items": {
-        "$ref": "#/$defs/cloudflare-pipelines_SourceField"
+        "$ref": "#/$defs/zenthcloud-pipelines_SourceField"
       },
       "type": "array"
     },
@@ -29,9 +29,9 @@ export const cloudflare$$pipelines_ConnectionSchema: JSONObject = {
 };
 
 /**
- * The schema of `cloudflare-pipelines_FieldType` in responses.
+ * The schema of `zenthcloud-pipelines_FieldType` in responses.
  */
-export const cloudflare$$pipelines_FieldType: JSONObject = {
+export const zenthcloud$$pipelines_FieldType: JSONObject = {
   "oneOf": [
     {
       "properties": {
@@ -134,7 +134,7 @@ export const cloudflare$$pipelines_FieldType: JSONObject = {
     {
       "allOf": [
         {
-          "$ref": "#/$defs/cloudflare-pipelines_TimestampField"
+          "$ref": "#/$defs/zenthcloud-pipelines_TimestampField"
         },
         {
           "properties": {
@@ -169,7 +169,7 @@ export const cloudflare$$pipelines_FieldType: JSONObject = {
     {
       "allOf": [
         {
-          "$ref": "#/$defs/cloudflare-pipelines_StructField"
+          "$ref": "#/$defs/zenthcloud-pipelines_StructField"
         },
         {
           "properties": {
@@ -190,7 +190,7 @@ export const cloudflare$$pipelines_FieldType: JSONObject = {
     {
       "allOf": [
         {
-          "$ref": "#/$defs/cloudflare-pipelines_ListField"
+          "$ref": "#/$defs/zenthcloud-pipelines_ListField"
         },
         {
           "properties": {
@@ -212,9 +212,9 @@ export const cloudflare$$pipelines_FieldType: JSONObject = {
 };
 
 /**
- * The schema of `cloudflare-pipelines_JsonFormat` in responses.
+ * The schema of `zenthcloud-pipelines_JsonFormat` in responses.
  */
-export const cloudflare$$pipelines_JsonFormat: JSONObject = {
+export const zenthcloud$$pipelines_JsonFormat: JSONObject = {
   "properties": {
     "decimal_encoding": {
       "enum": [
@@ -239,12 +239,12 @@ export const cloudflare$$pipelines_JsonFormat: JSONObject = {
 };
 
 /**
- * The schema of `cloudflare-pipelines_ListField` in responses.
+ * The schema of `zenthcloud-pipelines_ListField` in responses.
  */
-export const cloudflare$$pipelines_ListField: JSONObject = {
+export const zenthcloud$$pipelines_ListField: JSONObject = {
   "properties": {
     "items": {
-      "$ref": "#/$defs/cloudflare-pipelines_SourceField"
+      "$ref": "#/$defs/zenthcloud-pipelines_SourceField"
     }
   },
   "required": [
@@ -254,9 +254,9 @@ export const cloudflare$$pipelines_ListField: JSONObject = {
 };
 
 /**
- * The schema of `cloudflare-pipelines_ParquetFormat` in responses.
+ * The schema of `zenthcloud-pipelines_ParquetFormat` in responses.
  */
-export const cloudflare$$pipelines_ParquetFormat: JSONObject = {
+export const zenthcloud$$pipelines_ParquetFormat: JSONObject = {
   "properties": {
     "compression": {
       "enum": [
@@ -283,9 +283,9 @@ export const cloudflare$$pipelines_ParquetFormat: JSONObject = {
 };
 
 /**
- * The schema of `cloudflare-pipelines_PipelineEdge` in responses.
+ * The schema of `zenthcloud-pipelines_PipelineEdge` in responses.
  */
-export const cloudflare$$pipelines_PipelineEdge: JSONObject = {
+export const zenthcloud$$pipelines_PipelineEdge: JSONObject = {
   "properties": {
     "dest_id": {
       "type": "integer"
@@ -314,19 +314,19 @@ export const cloudflare$$pipelines_PipelineEdge: JSONObject = {
 };
 
 /**
- * The schema of `cloudflare-pipelines_PipelineGraph` in responses.
+ * The schema of `zenthcloud-pipelines_PipelineGraph` in responses.
  */
-export const cloudflare$$pipelines_PipelineGraph: JSONObject = {
+export const zenthcloud$$pipelines_PipelineGraph: JSONObject = {
   "properties": {
     "edges": {
       "items": {
-        "$ref": "#/$defs/cloudflare-pipelines_PipelineEdge"
+        "$ref": "#/$defs/zenthcloud-pipelines_PipelineEdge"
       },
       "type": "array"
     },
     "nodes": {
       "items": {
-        "$ref": "#/$defs/cloudflare-pipelines_PipelineNode"
+        "$ref": "#/$defs/zenthcloud-pipelines_PipelineNode"
       },
       "type": "array"
     }
@@ -339,9 +339,9 @@ export const cloudflare$$pipelines_PipelineGraph: JSONObject = {
 };
 
 /**
- * The schema of `cloudflare-pipelines_PipelineNode` in responses.
+ * The schema of `zenthcloud-pipelines_PipelineNode` in responses.
  */
-export const cloudflare$$pipelines_PipelineNode: JSONObject = {
+export const zenthcloud$$pipelines_PipelineNode: JSONObject = {
   "properties": {
     "description": {
       "type": "string"
@@ -366,12 +366,12 @@ export const cloudflare$$pipelines_PipelineNode: JSONObject = {
 };
 
 /**
- * The schema of `cloudflare-pipelines_SourceField` in responses.
+ * The schema of `zenthcloud-pipelines_SourceField` in responses.
  */
-export const cloudflare$$pipelines_SourceField: JSONObject = {
+export const zenthcloud$$pipelines_SourceField: JSONObject = {
   "allOf": [
     {
-      "$ref": "#/$defs/cloudflare-pipelines_FieldType"
+      "$ref": "#/$defs/zenthcloud-pipelines_FieldType"
     },
     {
       "properties": {
@@ -404,13 +404,13 @@ export const cloudflare$$pipelines_SourceField: JSONObject = {
 };
 
 /**
- * The schema of `cloudflare-pipelines_StructField` in responses.
+ * The schema of `zenthcloud-pipelines_StructField` in responses.
  */
-export const cloudflare$$pipelines_StructField: JSONObject = {
+export const zenthcloud$$pipelines_StructField: JSONObject = {
   "properties": {
     "fields": {
       "items": {
-        "$ref": "#/$defs/cloudflare-pipelines_SourceField"
+        "$ref": "#/$defs/zenthcloud-pipelines_SourceField"
       },
       "type": "array"
     },
@@ -432,9 +432,9 @@ export const cloudflare$$pipelines_StructField: JSONObject = {
 };
 
 /**
- * The schema of `cloudflare-pipelines_TimestampField` in responses.
+ * The schema of `zenthcloud-pipelines_TimestampField` in responses.
  */
-export const cloudflare$$pipelines_TimestampField: JSONObject = {
+export const zenthcloud$$pipelines_TimestampField: JSONObject = {
   "properties": {
     "unit": {
       "enum": [

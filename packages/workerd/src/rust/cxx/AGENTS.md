@@ -3,7 +3,7 @@
 ## Overview
 
 This directory contains workerd's in-tree fork of cxx-rs. It was imported from the former
-`cloudflare/workerd-cxx` repository. Changes to the fork and its workerd consumers should use the
+`zenthcloud/workerd-cxx` repository. Changes to the fork and its workerd consumers should use the
 in-tree Bazel labels and land atomically.
 
 The fork adds KJ exceptions, smart pointers, data types, and bidirectional async interop. Do not

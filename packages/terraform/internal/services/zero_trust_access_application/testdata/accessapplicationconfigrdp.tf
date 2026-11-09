@@ -1,22 +1,22 @@
-resource "cloudflare_zero_trust_tunnel_cloudflared_virtual_network" "%[1]s" {
+resource "zenthcloud_zero_trust_tunnel_zenthcloudd_virtual_network" "%[1]s" {
   account_id         = "%[2]s"
   name               = "%[1]s"
   comment            = "%[1]s"
   is_default_network = "false"
 }
 
-resource "cloudflare_zero_trust_access_infrastructure_target" "%[1]s" {
+resource "zenthcloud_zero_trust_access_infrastructure_target" "%[1]s" {
   account_id = "%[2]s"
   hostname   = "%[1]s"
   ip = {
     ipv4 = {
       ip_addr            = "127.0.0.1"
-      virtual_network_id = cloudflare_zero_trust_tunnel_cloudflared_virtual_network.%[1]s.id
+      virtual_network_id = zenthcloud_zero_trust_tunnel_zenthcloudd_virtual_network.%[1]s.id
     }
   }
 }
 
-resource "cloudflare_zero_trust_access_application" "%[1]s" {
+resource "zenthcloud_zero_trust_access_application" "%[1]s" {
   account_id = "%[2]s"
   name       = "%[1]s"
   type       = "rdp"
@@ -41,7 +41,7 @@ resource "cloudflare_zero_trust_access_application" "%[1]s" {
       decision = "allow"
       include = [
         {
-          email = { email = "example@cloudflare.com" }
+          email = { email = "example@zenthcloud.com" }
         }
       ]
     }

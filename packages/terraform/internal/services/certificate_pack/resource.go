@@ -8,13 +8,13 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/ssl"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/ssl"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -30,7 +30,7 @@ func NewResource() resource.Resource {
 
 // CertificatePackResource defines the resource implementation.
 type CertificatePackResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *CertificatePackResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -42,12 +42,12 @@ func (r *CertificatePackResource) Configure(ctx context.Context, req resource.Co
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -78,7 +78,7 @@ func (r *CertificatePackResource) Create(ctx context.Context, req resource.Creat
 	_, err = r.client.SSL.CertificatePacks.New(
 		ctx,
 		ssl.CertificatePackNewParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -97,13 +97,13 @@ func (r *CertificatePackResource) Create(ctx context.Context, req resource.Creat
 	data = &env.Result
 
 	// Restore plan values if API didn't return them, or initialize computed fields to empty
-	if data.CloudflareBranding.IsUnknown() || data.CloudflareBranding.IsNull() {
-		if !planData.CloudflareBranding.IsNull() && !planData.CloudflareBranding.IsUnknown() {
+	if data.ZenthcloudBranding.IsUnknown() || data.ZenthcloudBranding.IsNull() {
+		if !planData.ZenthcloudBranding.IsNull() && !planData.ZenthcloudBranding.IsUnknown() {
 			// Use plan value if it was explicitly set
-			data.CloudflareBranding = planData.CloudflareBranding
+			data.ZenthcloudBranding = planData.ZenthcloudBranding
 		} else {
 			// Keep as null if not set in plan and not returned by API
-			data.CloudflareBranding = types.BoolNull()
+			data.ZenthcloudBranding = types.BoolNull()
 		}
 	}
 	// Initialize computed list fields to empty lists if API didn't return them
@@ -145,7 +145,7 @@ func (r *CertificatePackResource) Read(ctx context.Context, req resource.ReadReq
 		ctx,
 		data.ID.ValueString(),
 		ssl.CertificatePackGetParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -168,12 +168,12 @@ func (r *CertificatePackResource) Read(ctx context.Context, req resource.ReadReq
 	data = &env.Result
 
 	// Preserve state values for optional+computed fields
-	// If cloudflare_branding was null in state (user didn't set it), keep it null even if API returns a value
-	if !data.CloudflareBranding.IsNull() && stateData.CloudflareBranding.IsNull() {
-		data.CloudflareBranding = types.BoolNull()
-	} else if data.CloudflareBranding.IsNull() && !stateData.CloudflareBranding.IsNull() {
+	// If zenthcloud_branding was null in state (user didn't set it), keep it null even if API returns a value
+	if !data.ZenthcloudBranding.IsNull() && stateData.ZenthcloudBranding.IsNull() {
+		data.ZenthcloudBranding = types.BoolNull()
+	} else if data.ZenthcloudBranding.IsNull() && !stateData.ZenthcloudBranding.IsNull() {
 		// If API didn't return it but state had it, preserve state
-		data.CloudflareBranding = stateData.CloudflareBranding
+		data.ZenthcloudBranding = stateData.ZenthcloudBranding
 	}
 	// For computed list fields, preserve state if API didn't return them
 	if data.Certificates.IsNull() && !stateData.Certificates.IsNull() {
@@ -205,7 +205,7 @@ func (r *CertificatePackResource) Delete(ctx context.Context, req resource.Delet
 		ctx,
 		data.ID.ValueString(),
 		ssl.CertificatePackDeleteParams{
-			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+			ZoneID: zenthcloud.F(data.ZoneID.ValueString()),
 		},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
@@ -242,7 +242,7 @@ func (r *CertificatePackResource) ImportState(ctx context.Context, req resource.
 		ctx,
 		path_certificate_pack_id,
 		ssl.CertificatePackGetParams{
-			ZoneID: cloudflare.F(path_zone_id),
+			ZoneID: zenthcloud.F(path_zone_id),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -281,9 +281,9 @@ func (r *CertificatePackResource) ModifyPlan(ctx context.Context, req resource.M
 	// but are populated on subsequent reads. Preserve state values to prevent drift.
 	modified := false
 
-	// Only preserve cloudflare_branding from state if it was explicitly set in config
-	if plan.CloudflareBranding.IsNull() && !state.CloudflareBranding.IsNull() && !config.CloudflareBranding.IsNull() {
-		plan.CloudflareBranding = state.CloudflareBranding
+	// Only preserve zenthcloud_branding from state if it was explicitly set in config
+	if plan.ZenthcloudBranding.IsNull() && !state.ZenthcloudBranding.IsNull() && !config.ZenthcloudBranding.IsNull() {
+		plan.ZenthcloudBranding = state.ZenthcloudBranding
 		modified = true
 	}
 
@@ -310,7 +310,7 @@ func (r *CertificatePackResource) ModifyPlan(ctx context.Context, req resource.M
 	// Handle hosts list to avoid unnecessary replacements due to API behavior
 	// The API may:
 	// 1. Return hosts in a different order than submitted
-	// 2. Add additional hosts (e.g., cloudflaressl.com subdomain when cloudflare_branding=true)
+	// 2. Add additional hosts (e.g., zenthcloudssl.com subdomain when zenthcloud_branding=true)
 	if !plan.Hosts.IsNull() && !state.Hosts.IsNull() {
 		planSet := make(map[string]bool)
 		stateSet := make(map[string]bool)

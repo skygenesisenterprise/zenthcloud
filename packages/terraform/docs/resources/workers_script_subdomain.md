@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_workers_script_subdomain Resource - Cloudflare"
+page_title: "zenthcloud_workers_script_subdomain Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Workers Scripts ReadWorkers Scripts WriteWorkers Tail Read
 ---
 
-# cloudflare_workers_script_subdomain (Resource)
+# zenthcloud_workers_script_subdomain (Resource)
 
 Accepted Permissions
 
@@ -14,13 +14,13 @@ Accepted Permissions
 - `Workers Scripts Write`
 - `Workers Tail Read`
 
--> This resource is redundant with `cloudflare_worker` and should not be used together. When using the `cloudflare_worker` resource, use the nested `subdomain` attribute to control subdomain settings instead.
+-> This resource is redundant with `zenthcloud_worker` and should not be used together. When using the `zenthcloud_worker` resource, use the nested `subdomain` attribute to control subdomain settings instead.
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_workers_script_subdomain" "example_workers_script_subdomain" {
+resource "zenthcloud_workers_script_subdomain" "example_workers_script_subdomain" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   script_name = "this-is_my_script-01"
   enabled = true
@@ -50,5 +50,5 @@ resource "cloudflare_workers_script_subdomain" "example_workers_script_subdomain
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_workers_script_subdomain.example '<account_id>/<script_name>'
+$ terraform import zenthcloud_workers_script_subdomain.example '<account_id>/<script_name>'
 ```

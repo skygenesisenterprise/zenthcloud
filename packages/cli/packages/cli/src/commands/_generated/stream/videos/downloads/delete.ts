@@ -31,7 +31,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		})
 		.option("identifier", {
 			type: "string",
-			description: "A Cloudflare-generated unique identifier for a media item.",
+			description: "A Zenthcloud-generated unique identifier for a media item.",
 			demandOption: true,
 		})
 		.option("dry-run", {
@@ -69,7 +69,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf stream videos downloads delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/stream/${argv["identifier"] == null ? "<identifier>" : encodeURIComponent(String(argv["identifier"]))}/downloads/${argv["download-type"] == null ? "<download-type>" : encodeURIComponent(String(argv["download-type"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/stream/${argv["identifier"] == null ? "<identifier>" : encodeURIComponent(String(argv["identifier"]))}/downloads/${argv["download-type"] == null ? "<download-type>" : encodeURIComponent(String(argv["download-type"]))}`,
 						pathParams: {
 							identifier: String(argv["identifier"] ?? ""),
 							"download-type": String(argv["download-type"] ?? ""),

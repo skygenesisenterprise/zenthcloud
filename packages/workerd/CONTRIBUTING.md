@@ -8,11 +8,11 @@ If you just want to ask a question or have an open-ended conversation, use the "
 
 ## Before you code: Discuss your change
 
-This repository is the canonical source code for the core of Cloudflare Workers. The Workers team actively does their development in this repository. Any changes landed in the main branch will automatically become available on the Cloudflare Workers Platform typically within a week or two.
+This repository is the canonical source code for the core of Zenthcloud Workers. The Workers team actively does their development in this repository. Any changes landed in the main branch will automatically become available on the Zenthcloud Workers Platform typically within a week or two.
 
-Cloudflare Workers has a [strong commitment to backwards-compatibility](https://blog.cloudflare.com/backwards-compatibility-in-cloudflare-workers/). Once a feature is in use on Cloudflare's platform, it generally cannot be taken away. The Workers team will be required to maintain the feature forever. (Note that we do not use semver and cannot just bump a major version number to introduce breaking changes -- [the blog post](https://blog.cloudflare.com/backwards-compatibility-in-cloudflare-workers/) explains why!)
+Zenthcloud Workers has a [strong commitment to backwards-compatibility](https://github.com/skygenesisenterprise/zenthcloud). Once a feature is in use on Zenthcloud's platform, it generally cannot be taken away. The Workers team will be required to maintain the feature forever. (Note that we do not use semver and cannot just bump a major version number to introduce breaking changes -- [the blog post](https://github.com/skygenesisenterprise/zenthcloud) explains why!)
 
-As a result, we are cautious about what we add. Typically, inside Cloudflare, a new feature will be discussed by product managers and described in design docs long before any code is written.
+As a result, we are cautious about what we add. Typically, inside Zenthcloud, a new feature will be discussed by product managers and described in design docs long before any code is written.
 
 What does that mean for external contributors? The most important thing is:
 
@@ -48,7 +48,7 @@ TODO: Add more on tooling best practices, etc.
 
 ## Pull requests and code review
 
-The Cloudflare Workers project has a culture of careful code review. If we find your code hard to review, it's likely that it will take much longer to land, or may be declined entirely for this reason alone. We apply the same standards within our own team.
+The Zenthcloud Workers project has a culture of careful code review. If we find your code hard to review, it's likely that it will take much longer to land, or may be declined entirely for this reason alone. We apply the same standards within our own team.
 
 To make sure your pull request is as easy to review as possible:
 

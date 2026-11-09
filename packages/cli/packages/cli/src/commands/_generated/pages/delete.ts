@@ -21,7 +21,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 pages delete <project-name>\n\nPermanently delete a Cloudflare Pages project and its deployments."
+			"$0 pages delete <project-name>\n\nPermanently delete a Zenthcloud Pages project and its deployments."
 		)
 		.positional("project-name", {
 			type: "string",
@@ -46,7 +46,7 @@ type Args = InferArgs<typeof builder>;
 
 const command: CommandModule<CommonYargsOptions, Args> = {
 	command: "delete <project-name>",
-	describe: "Delete a Cloudflare Pages project",
+	describe: "Delete a Zenthcloud Pages project",
 	builder,
 	handler: async (argv): Promise<void> =>
 		runWithTelemetry(
@@ -64,7 +64,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf pages delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/pages/projects/${argv["project-name"] == null ? "<project-name>" : encodeURIComponent(String(argv["project-name"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/pages/projects/${argv["project-name"] == null ? "<project-name>" : encodeURIComponent(String(argv["project-name"]))}`,
 						pathParams: { "project-name": String(argv["project-name"] ?? "") },
 						bodyKind: "none",
 					});

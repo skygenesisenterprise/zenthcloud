@@ -8,12 +8,12 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/zones"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/zones"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -29,7 +29,7 @@ func NewResource() resource.Resource {
 
 // ZoneResource defines the resource implementation.
 type ZoneResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *ZoneResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -41,12 +41,12 @@ func (r *ZoneResource) Configure(ctx context.Context, req resource.ConfigureRequ
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -93,12 +93,12 @@ func (r *ZoneResource) Create(ctx context.Context, req resource.CreateRequest, r
 	if data.ID.IsNull() || data.ID.ValueString() == "" {
 		resp.Diagnostics.AddError(
 			"Zone API returned empty or null zone ID",
-			"The Cloudflare API returned a zone response with an empty or null zone ID. "+
+			"The Zenthcloud API returned a zone response with an empty or null zone ID. "+
 				"This is unexpected and may indicate a transient API error.\n\n"+
 				"The provider is halting to prevent writing invalid state that could cause "+
 				"dependent zone-scoped resources to be incorrectly replaced or destroyed.\n\n"+
 				"Please try running the operation again. If the problem persists, "+
-				"contact Cloudflare support.",
+				"contact Zenthcloud support.",
 		)
 		return
 	}
@@ -126,11 +126,11 @@ func (r *ZoneResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if state.ID.IsNull() || state.ID.ValueString() == "" {
 		resp.Diagnostics.AddError(
 			"Invalid zone state: empty or null zone ID",
-			"The cloudflare_zone resource has an empty or null ID in its Terraform state. "+
+			"The zenthcloud_zone resource has an empty or null ID in its Terraform state. "+
 				"This can occur when state becomes corrupted or a zone is removed from state manually.\n\n"+
 				"The provider is halting intentionally to avoid unsafe changes to dependent resources.\n\n"+
 				"To recover, re-import the zone:\n"+
-				"  terraform import cloudflare_zone.<name> <zone_id>\n"+
+				"  terraform import zenthcloud_zone.<name> <zone_id>\n"+
 				"then run terraform plan again.",
 		)
 		return
@@ -146,7 +146,7 @@ func (r *ZoneResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	_, err = r.client.Zones.Edit(
 		ctx,
 		zones.ZoneEditParams{
-			ZoneID: cloudflare.F(data.ID.ValueString()),
+			ZoneID: zenthcloud.F(data.ID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -167,12 +167,12 @@ func (r *ZoneResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if data.ID.IsNull() || data.ID.ValueString() == "" {
 		resp.Diagnostics.AddError(
 			"Zone API returned empty or null zone ID",
-			"The Cloudflare API returned a zone response with an empty or null zone ID. "+
+			"The Zenthcloud API returned a zone response with an empty or null zone ID. "+
 				"This is unexpected and may indicate a transient API error.\n\n"+
 				"The provider is halting to prevent writing invalid state that could cause "+
 				"dependent zone-scoped resources to be incorrectly replaced or destroyed.\n\n"+
 				"Please try running the operation again. If the problem persists, "+
-				"contact Cloudflare support.",
+				"contact Zenthcloud support.",
 		)
 		return
 	}
@@ -192,11 +192,11 @@ func (r *ZoneResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	if data.ID.IsNull() || data.ID.ValueString() == "" {
 		resp.Diagnostics.AddError(
 			"Invalid zone state: empty or null zone ID",
-			"The cloudflare_zone resource has an empty or null ID in its Terraform state. "+
+			"The zenthcloud_zone resource has an empty or null ID in its Terraform state. "+
 				"This can occur when state becomes corrupted or a zone is removed from state manually.\n\n"+
 				"The provider is halting intentionally to avoid unsafe changes to dependent resources.\n\n"+
 				"To recover, re-import the zone:\n"+
-				"  terraform import cloudflare_zone.<name> <zone_id>\n"+
+				"  terraform import zenthcloud_zone.<name> <zone_id>\n"+
 				"then run terraform plan again.",
 		)
 		return
@@ -207,7 +207,7 @@ func (r *ZoneResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	_, err := r.client.Zones.Get(
 		ctx,
 		zones.ZoneGetParams{
-			ZoneID: cloudflare.F(data.ID.ValueString()),
+			ZoneID: zenthcloud.F(data.ID.ValueString()),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -232,12 +232,12 @@ func (r *ZoneResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	if data.ID.IsNull() || data.ID.ValueString() == "" {
 		resp.Diagnostics.AddError(
 			"Zone API returned empty or null zone ID",
-			"The Cloudflare API returned a zone response with an empty or null zone ID. "+
+			"The Zenthcloud API returned a zone response with an empty or null zone ID. "+
 				"This is unexpected and may indicate a transient API error.\n\n"+
 				"The provider is halting to prevent writing invalid state that could cause "+
 				"dependent zone-scoped resources to be incorrectly replaced or destroyed.\n\n"+
 				"Please try running the operation again. If the problem persists, "+
-				"contact Cloudflare support.",
+				"contact Zenthcloud support.",
 		)
 		return
 	}
@@ -257,11 +257,11 @@ func (r *ZoneResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	if data.ID.IsNull() || data.ID.ValueString() == "" {
 		resp.Diagnostics.AddError(
 			"Invalid zone state: empty or null zone ID",
-			"The cloudflare_zone resource has an empty or null ID in its Terraform state. "+
+			"The zenthcloud_zone resource has an empty or null ID in its Terraform state. "+
 				"This can occur when state becomes corrupted or a zone is removed from state manually.\n\n"+
 				"The provider is halting intentionally to avoid unsafe changes to dependent resources.\n\n"+
 				"To recover, re-import the zone:\n"+
-				"  terraform import cloudflare_zone.<name> <zone_id>\n"+
+				"  terraform import zenthcloud_zone.<name> <zone_id>\n"+
 				"then run terraform plan again.",
 		)
 		return
@@ -270,7 +270,7 @@ func (r *ZoneResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	_, err := r.client.Zones.Delete(
 		ctx,
 		zones.ZoneDeleteParams{
-			ZoneID: cloudflare.F(data.ID.ValueString()),
+			ZoneID: zenthcloud.F(data.ID.ValueString()),
 		},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
@@ -303,7 +303,7 @@ func (r *ZoneResource) ImportState(ctx context.Context, req resource.ImportState
 	_, err := r.client.Zones.Get(
 		ctx,
 		zones.ZoneGetParams{
-			ZoneID: cloudflare.F(path),
+			ZoneID: zenthcloud.F(path),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -323,12 +323,12 @@ func (r *ZoneResource) ImportState(ctx context.Context, req resource.ImportState
 	if data.ID.IsNull() || data.ID.ValueString() == "" {
 		resp.Diagnostics.AddError(
 			"Zone API returned empty or null zone ID",
-			"The Cloudflare API returned a zone response with an empty or null zone ID. "+
+			"The Zenthcloud API returned a zone response with an empty or null zone ID. "+
 				"This is unexpected and may indicate a transient API error.\n\n"+
 				"The provider is halting to prevent writing invalid state that could cause "+
 				"dependent zone-scoped resources to be incorrectly replaced or destroyed.\n\n"+
 				"Please try running the operation again. If the problem persists, "+
-				"contact Cloudflare support.",
+				"contact Zenthcloud support.",
 		)
 		return
 	}
@@ -351,13 +351,13 @@ func (r *ZoneResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRe
 	if state.ID.IsNull() || state.ID.ValueString() == "" {
 		resp.Diagnostics.AddError(
 			"Invalid zone state: empty or null zone ID",
-			"The cloudflare_zone resource has an empty or null ID in its Terraform state. "+
+			"The zenthcloud_zone resource has an empty or null ID in its Terraform state. "+
 				"This can occur when state becomes corrupted or a zone is removed from state manually.\n\n"+
 				"Proceeding with an empty or null zone ID could allow dependent zone-scoped resources "+
 				"to be incorrectly replaced or destroyed.\n\n"+
 				"The provider is halting intentionally to avoid unsafe changes to dependent resources.\n\n"+
 				"To recover, re-import the zone:\n"+
-				"  terraform import cloudflare_zone.<name> <zone_id>\n"+
+				"  terraform import zenthcloud_zone.<name> <zone_id>\n"+
 				"then run terraform plan again.",
 		)
 	}

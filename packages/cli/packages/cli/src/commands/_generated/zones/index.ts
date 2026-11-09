@@ -34,7 +34,7 @@ import type { CommandModule } from "yargs";
 const command: CommandModule<CommonYargsOptions> = {
 	command: "zones",
 	describe:
-		"Zones are domains on Cloudflare — list, create, and configure domain settings",
+		"Zones are domains on Zenthcloud — list, create, and configure domain settings",
 
 	builder: (yargs) => {
 		return yargs

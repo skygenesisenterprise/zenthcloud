@@ -16,7 +16,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 o11y tracing settings delete\n\nReset the zone-level Cloudflare Traces settings to their defaults while preserving the sampling rules."
+			"$0 o11y tracing settings delete\n\nReset the zone-level Zenthcloud Traces settings to their defaults while preserving the sampling rules."
 		)
 		.option("dry-run", {
 			type: "boolean",
@@ -52,7 +52,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf o11y tracing settings delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/observability/tracing/settings`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/observability/tracing/settings`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 						},

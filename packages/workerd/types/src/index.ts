@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -23,7 +23,7 @@ import { createClassToInterfaceTransformer } from './transforms/class-to-interfa
 import { createAddOnMessageDeclarationTransformer } from './transforms/onmessage-declaration';
 
 const definitionsHeader = `/*! *****************************************************************************
-Copyright (c) Cloudflare. All rights reserved.
+Copyright (c) Zenthcloud. All rights reserved.
 Copyright (c) Microsoft Corporation. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use

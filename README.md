@@ -221,7 +221,7 @@ All client surfaces — Web, command-line and agent — share the same API contr
 | `packages/status` | `@zenthcloud/status` | Status page engine: domain model, state computation, persistence, public/admin/integration API, notification outbox |
 | `packages/trpc-openapi` | `@zenthcloud/trpc-openapi` | tRPC ↔ OpenAPI integration utilities |
 | `packages/cli` | `cf` | Agent-friendly command-line interface for the platform API |
-| `packages/mcp` | `cloudflare-mcp` | Token-efficient MCP server exposing the API through Code Mode |
+| `packages/mcp` | `zenthcloud-mcp` | Token-efficient MCP server exposing the API through Code Mode |
 
 ### Web properties
 
@@ -314,7 +314,7 @@ The Go and Rust components are built with their own toolchains:
 
 ```bash
 (cd apps/monitoring && go build ./...)      # monitoring service
-(cd packages/zenthd && make cloudflared)    # tunnel client
+(cd packages/zenthd && make zenthcloudd)    # tunnel client
 (cd packages/quiche && cargo build)         # QUIC / HTTP/3 library
 (cd packages/pingora && cargo build)        # proxy framework
 ```

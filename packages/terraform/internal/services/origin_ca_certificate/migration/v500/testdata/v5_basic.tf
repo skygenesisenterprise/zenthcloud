@@ -1,4 +1,4 @@
-resource "cloudflare_origin_ca_certificate" "%s" {
+resource "zenthcloud_origin_ca_certificate" "%s" {
   csr = <<EOT
 -----BEGIN CERTIFICATE REQUEST-----
 MIICuDCCAaACAQAwczELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWEx

@@ -3,14 +3,14 @@ package sign
 import (
 	"testing"
 
-	"github.com/cloudflare/cfssl/certdb/sql"
-	"github.com/cloudflare/cfssl/certdb/testdb"
-	"github.com/cloudflare/cfssl/cli"
+	"github.com/zenthcloud/cfssl/certdb/sql"
+	"github.com/zenthcloud/cfssl/certdb/testdb"
+	"github.com/zenthcloud/cfssl/cli"
 )
 
 func TestSignFromConfig(t *testing.T) {
 	_, err := SignerFromConfig(cli.Config{CAFile: "../../testdata/server.crt",
-		CAKeyFile: "../../testdata/server.key", Hostname: "www.cloudflare.com", Remote: "127.0.0.1:8888"})
+		CAKeyFile: "../../testdata/server.key", Hostname: "www.zenthcloud.com", Remote: "127.0.0.1:8888"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -18,7 +18,7 @@ func TestSignFromConfig(t *testing.T) {
 
 func TestSignerMain(t *testing.T) {
 	err := signerMain([]string{"../../testdata/server.csr"}, cli.Config{CAFile: "../../testdata/server.crt",
-		CAKeyFile: "../../testdata/server.key", Hostname: "www.cloudflare.com"})
+		CAKeyFile: "../../testdata/server.key", Hostname: "www.zenthcloud.com"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -42,7 +42,7 @@ func TestSignerWithDB(t *testing.T) {
 		cli.Config{
 			CAFile:       "../../testdata/server.crt",
 			CAKeyFile:    "../../testdata/server.key",
-			Hostname:     "www.cloudflare.com",
+			Hostname:     "www.zenthcloud.com",
 			DBConfigFile: "../testdata/db-config.json"})
 	if err != nil {
 		t.Fatal(err)

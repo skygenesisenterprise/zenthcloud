@@ -63,7 +63,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf dns settings account views delete",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/dns_settings/views/${argv["view-id"] == null ? "<view-id>" : encodeURIComponent(String(argv["view-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/dns_settings/views/${argv["view-id"] == null ? "<view-id>" : encodeURIComponent(String(argv["view-id"]))}`,
 						pathParams: { "view-id": String(argv["view-id"] ?? "") },
 						bodyKind: "none",
 					});

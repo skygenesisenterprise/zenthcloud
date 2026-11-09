@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_access_ai_controls_mcp_server Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_access_ai_controls_mcp_server Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   MCP Portals ReadMCP Portals Write
 ---
 
-# cloudflare_zero_trust_access_ai_controls_mcp_server (Resource)
+# zenthcloud_zero_trust_access_ai_controls_mcp_server (Resource)
 
 Accepted Permissions
 
@@ -16,8 +16,8 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_access_ai_controls_mcp_server" "example_zero_trust_access_ai_controls_mcp_server" {
-  account_id = var.cloudflare_account_id
+resource "zenthcloud_zero_trust_access_ai_controls_mcp_server" "example_zero_trust_access_ai_controls_mcp_server" {
+  account_id = var.zenthcloud_account_id
   id         = "github"
   auth_type  = "oauth"
   hostname   = "https://github-mcp.example.com/mcp"
@@ -37,11 +37,11 @@ resource "cloudflare_zero_trust_access_ai_controls_mcp_server" "example_zero_tru
   })
   client_secret = var.mcp_oauth_client_secret
 
-  # This lets the API fill in Cloudflare's shared callback URL.
+  # This lets the API fill in Zenthcloud's shared callback URL.
   is_shared_oauth_callback_enabled = true
 }
 
-variable "cloudflare_account_id" {
+variable "zenthcloud_account_id" {
   type = string
 }
 
@@ -71,10 +71,10 @@ Available values: "oauth", "bearer", "unauthenticated".
 
 ### Optional
 
-- `auth_credentials` (String, Sensitive) Credential configuration for the upstream MCP server. For auth_type "bearer", either a raw token string (e.g. "sk-abc123"), which is wrapped server-side as `Authorization: Bearer <token>`, or a JSON-encoded object of the form `{"headers":{"Header-Name":"value",...}}` for custom or multiple static headers (e.g. Cloudflare Access service tokens: `{"headers":{"cf-access-client-id":"...","cf-access-client-secret":"..."}}`). For auth_type "oauth" with a pre-registered client, send a JSON-encoded object containing `auth_mode:"manual"`, `config.authorization_endpoint`, `config.token_endpoint`, and `registration_info.client_id`. Also provide `registration_info.redirect_uris` unless `is_shared_oauth_callback_enabled` is true. Optional fields include `config.issuer`, `config.revocation_endpoint`, `registration_info.scope`, and `registration_info.token_endpoint_auth_method`. Send the client secret in the separate `client_secret` field. Omit `auth_credentials` on update to preserve the existing configuration.
+- `auth_credentials` (String, Sensitive) Credential configuration for the upstream MCP server. For auth_type "bearer", either a raw token string (e.g. "sk-abc123"), which is wrapped server-side as `Authorization: Bearer <token>`, or a JSON-encoded object of the form `{"headers":{"Header-Name":"value",...}}` for custom or multiple static headers (e.g. Zenthcloud Access service tokens: `{"headers":{"cf-access-client-id":"...","cf-access-client-secret":"..."}}`). For auth_type "oauth" with a pre-registered client, send a JSON-encoded object containing `auth_mode:"manual"`, `config.authorization_endpoint`, `config.token_endpoint`, and `registration_info.client_id`. Also provide `registration_info.redirect_uris` unless `is_shared_oauth_callback_enabled` is true. Optional fields include `config.issuer`, `config.revocation_endpoint`, `registration_info.scope`, and `registration_info.token_endpoint_auth_method`. Send the client secret in the separate `client_secret` field. Omit `auth_credentials` on update to preserve the existing configuration.
 - `client_secret` (String, Sensitive) Pre-registered OAuth client_secret. Write-only - accepted on create/update when auth_credentials.auth_mode is 'manual'. Required when creating a manual OAuth server or converting an existing server to manual mode. Omit it on update to preserve the existing secret; provide it to rotate the secret. Stored AES-GCM-encrypted in server_oauth_secrets; never returned by read endpoints.
 - `description` (String) Optional description of the MCP server.
-- `is_shared_oauth_callback_enabled` (Boolean) When true, the gateway worker uses the shared Cloudflare-owned OAuth callback endpoint as the redirect_uri for upstream on-behalf OAuth, instead of the customer portal hostname. Defaults to false (off); opt in per server by setting true.
+- `is_shared_oauth_callback_enabled` (Boolean) When true, the gateway worker uses the shared Zenthcloud-owned OAuth callback endpoint as the redirect_uri for upstream on-behalf OAuth, instead of the customer portal hostname. Defaults to false (off); opt in per server by setting true.
 - `secure_web_gateway` (Boolean) Route outbound traffic to this MCP server through Zero Trust Secure Web Gateway.
 - `updated_prompts` (Attributes List) Server-wide prompt capability overrides. (see [below for nested schema](#nestedatt--updated_prompts))
 - `updated_tools` (Attributes List) Server-wide tool capability overrides. (see [below for nested schema](#nestedatt--updated_tools))
@@ -175,7 +175,7 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_access_ai_controls_mcp_server.example '<account_id>/<id>'
+$ terraform import zenthcloud_zero_trust_access_ai_controls_mcp_server.example '<account_id>/<id>'
 ```
 
 

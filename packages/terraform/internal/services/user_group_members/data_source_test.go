@@ -4,33 +4,33 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
-// TestAccCloudflareUserGroupMembers_DataSource verifies the data source returns a proper list of members.
-func TestAccCloudflareUserGroupMembers_DataSource(t *testing.T) {
+// TestAccZenthcloudUserGroupMembers_DataSource verifies the data source returns a proper list of members.
+func TestAccZenthcloudUserGroupMembers_DataSource(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		t.Skip("CLOUDFLARE_ACCOUNT_ID must be set for acceptance tests")
+		t.Skip("ZENTHCLOUD_ACCOUNT_ID must be set for acceptance tests")
 	}
 	memberID := findDSREnabledMember(t, accountID)
 
-	dataName := "data.cloudflare_user_group_members." + rnd
-	resourceName := "cloudflare_user_group_members." + rnd
+	dataName := "data.zenthcloud_user_group_members." + rnd
+	resourceName := "zenthcloud_user_group_members." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck_AccountID(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareUserGroupMembersDataSourceConfig(rnd, accountID, memberID),
+				Config: testAccZenthcloudUserGroupMembersDataSourceConfig(rnd, accountID, memberID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					// Basic attributes
 					statecheck.ExpectKnownValue(dataName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
@@ -55,23 +55,23 @@ func TestAccCloudflareUserGroupMembers_DataSource(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareUserGroupMembers_DataSourceWithFilter tests data source with direction filter.
-func TestAccCloudflareUserGroupMembers_DataSourceWithFilter(t *testing.T) {
+// TestAccZenthcloudUserGroupMembers_DataSourceWithFilter tests data source with direction filter.
+func TestAccZenthcloudUserGroupMembers_DataSourceWithFilter(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		t.Skip("CLOUDFLARE_ACCOUNT_ID must be set for acceptance tests")
+		t.Skip("ZENTHCLOUD_ACCOUNT_ID must be set for acceptance tests")
 	}
 	memberID := findDSREnabledMember(t, accountID)
 
-	dataName := "data.cloudflare_user_group_members." + rnd
+	dataName := "data.zenthcloud_user_group_members." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck_AccountID(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareUserGroupMembersDataSourceWithFilterConfig(rnd, accountID, memberID),
+				Config: testAccZenthcloudUserGroupMembersDataSourceWithFilterConfig(rnd, accountID, memberID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(dataName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(dataName, tfjsonpath.New("direction"), knownvalue.StringExact("desc")),
@@ -82,10 +82,10 @@ func TestAccCloudflareUserGroupMembers_DataSourceWithFilter(t *testing.T) {
 	})
 }
 
-func testAccCloudflareUserGroupMembersDataSourceConfig(rnd, accountID, memberID string) string {
+func testAccZenthcloudUserGroupMembersDataSourceConfig(rnd, accountID, memberID string) string {
 	return acctest.LoadTestCase("usergroupmembersdatasource.tf", rnd, accountID, memberID)
 }
 
-func testAccCloudflareUserGroupMembersDataSourceWithFilterConfig(rnd, accountID, memberID string) string {
+func testAccZenthcloudUserGroupMembersDataSourceWithFilterConfig(rnd, accountID, memberID string) string {
 	return acctest.LoadTestCase("usergroupmembersdatasourcewithfilter.tf", rnd, accountID, memberID)
 }

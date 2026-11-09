@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_custom_hostname_fallback_origin Data Source - Cloudflare"
+page_title: "zenthcloud_custom_hostname_fallback_origin Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   SSL and Certificates ReadSSL and Certificates Write
 ---
 
-# cloudflare_custom_hostname_fallback_origin (Data Source)
+# zenthcloud_custom_hostname_fallback_origin (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_custom_hostname_fallback_origin" "example_custom_hostname_fallback_origin" {
+data "zenthcloud_custom_hostname_fallback_origin" "example_custom_hostname_fallback_origin" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```

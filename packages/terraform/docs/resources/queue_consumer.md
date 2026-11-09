@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_queue_consumer Resource - Cloudflare"
+page_title: "zenthcloud_queue_consumer Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Queues ReadQueues WriteWorkers Scripts ReadWorkers Scripts Write
 ---
 
-# cloudflare_queue_consumer (Resource)
+# zenthcloud_queue_consumer (Resource)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_queue_consumer" "example_queue_consumer" {
+resource "zenthcloud_queue_consumer" "example_queue_consumer" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   queue_id = "023e105f4ecef8ad9ca31a8372d0c353"
   script_name = "my-consumer-worker"

@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Transform converts v4 cloudflare_worker_route state to v5 cloudflare_workers_route state.
+// Transform converts v4 zenthcloud_worker_route state to v5 zenthcloud_workers_route state.
 // The only transformation is: script_name → script.
 func Transform(ctx context.Context, source SourceWorkerRouteModel) (*TargetWorkersRouteModel, diag.Diagnostics) {
 	var diags diag.Diagnostics

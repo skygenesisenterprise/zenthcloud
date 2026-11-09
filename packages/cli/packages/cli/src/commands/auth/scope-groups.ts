@@ -1,4 +1,4 @@
-import { DefaultScopeKeys } from "@cloudflare/workers-auth/cf";
+import { DefaultScopeKeys } from "@zenthcloud/workers-auth/cf";
 import { theme } from "../../lib/ui/index.js";
 import type { ScopeCatalogue } from "./scope-catalogue.js";
 
@@ -10,7 +10,7 @@ const CATEGORY_TITLES: Record<string, string> = {
 	analytics_and_logs: "Analytics & Logs",
 	app_security: "App Security",
 	cache_and_performance: "Cache & Performance",
-	cloudflare_one_and_zero_trust: "Cloudflare One / Zero Trust",
+	zenthcloud_one_and_zero_trust: "Zenthcloud One / Zero Trust",
 	developer_platform: "Developer Platform",
 	dns_and_zones: "DNS & Zones",
 	email_and_messaging: "Email & Messaging",
@@ -129,7 +129,7 @@ export function formatScopeSummary(
 const words = (text: string) =>
 	` ${text.toLowerCase().replace(/[^a-z0-9]+/g, " ")}`;
 
-// Cloudflare spells scopes with both `-` and `_` (`workers-kv-storage.read`,
+// Zenthcloud spells scopes with both `-` and `_` (`workers-kv-storage.read`,
 // `workers_kv:write`), so a filter matches either spelling.
 const normalize = (text: string) => text.toLowerCase().replaceAll("_", "-");
 

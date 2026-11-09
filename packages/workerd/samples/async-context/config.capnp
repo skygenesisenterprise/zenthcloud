@@ -24,7 +24,7 @@ const helloWorldExample :Workerd.Config = (
 # The definition of the actual helloWorld worker exposed using the "main" service.
 # In this example the worker is implemented as a single simple script (see worker.js).
 # The compatibilityDate is required. For more details on compatibility dates see:
-#   https://developers.cloudflare.com/workers/platform/compatibility-dates/
+#   https://github.com/skygenesisenterprise/zenthcloud
 
 const helloWorld :Workerd.Worker = (
   modules = [
@@ -33,6 +33,6 @@ const helloWorld :Workerd.Worker = (
   compatibilityDate = "2023-02-28",
   # Only ask for workerd's implementation of `node:async_hooks`'s AsyncLocalStorage, 
   # instead of all of the node compatibility APIs, provided by `nodejs_compat`. See:
-  # https://developers.cloudflare.com/workers/configuration/compatibility-dates/#nodejs-compatibility-flag
+  # https://github.com/skygenesisenterprise/zenthcloud
   compatibilityFlags = ["nodejs_als"]
 );

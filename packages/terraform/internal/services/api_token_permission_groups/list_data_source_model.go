@@ -5,9 +5,9 @@ package api_token_permission_groups
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/user"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/user"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -27,10 +27,10 @@ func (m *APITokenPermissionGroupsListDataSourceModel) toListParams(_ context.Con
 	params = user.TokenPermissionGroupListParams{}
 
 	if !m.Name.IsNull() {
-		params.Name = cloudflare.F(m.Name.ValueString())
+		params.Name = zenthcloud.F(m.Name.ValueString())
 	}
 	if !m.Scope.IsNull() {
-		params.Scope = cloudflare.F(m.Scope.ValueString())
+		params.Scope = zenthcloud.F(m.Scope.ValueString())
 	}
 
 	return

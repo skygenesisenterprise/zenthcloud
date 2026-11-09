@@ -270,12 +270,12 @@ export const access_certificate_rule: JSONObject = {
 };
 
 /**
- * The schema of `access_cloudflare_account_member_rule`.
+ * The schema of `access_zenthcloud_account_member_rule`.
  */
-export const access_cloudflare_account_member_rule: JSONObject = {
-  "description": "Matches users who are members of a specific Cloudflare account.\nRequires a Cloudflare identity provider.",
+export const access_zenthcloud_account_member_rule: JSONObject = {
+  "description": "Matches users who are members of a specific Zenthcloud account.\nRequires a Zenthcloud identity provider.",
   "properties": {
-    "cloudflare_account_member": {
+    "zenthcloud_account_member": {
       "properties": {
         "account_id": {
           "description": "Identifier.",
@@ -286,7 +286,7 @@ export const access_cloudflare_account_member_rule: JSONObject = {
     }
   },
   "required": [
-    "cloudflare_account_member"
+    "zenthcloud_account_member"
   ],
   "type": "object"
 };
@@ -955,7 +955,7 @@ export const access_rule: JSONObject = {
       "$ref": "#/$defs/access_user_risk_score_rule"
     },
     {
-      "$ref": "#/$defs/access_cloudflare_account_member_rule"
+      "$ref": "#/$defs/access_zenthcloud_account_member_rule"
     }
   ]
 };

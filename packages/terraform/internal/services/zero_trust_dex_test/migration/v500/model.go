@@ -1,7 +1,7 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -9,14 +9,14 @@ import (
 // Source Models (Legacy Provider - v4.x)
 // ============================================================================
 
-// SourceCloudflareDeviceDexTestModel represents the legacy resource state from v4.x provider.
+// SourceZenthcloudDeviceDexTestModel represents the legacy resource state from v4.x provider.
 // Schema version: 0 (SDKv2 default)
-// Resource type: cloudflare_device_dex_test
+// Resource type: zenthcloud_device_dex_test
 //
 // This model represents the v4 state structure where the resource was named
-// cloudflare_device_dex_test (deprecated name). The v4 provider also had
-// cloudflare_zero_trust_dex_test as an alias with the same schema.
-type SourceCloudflareDeviceDexTestModel struct {
+// zenthcloud_device_dex_test (deprecated name). The v4 provider also had
+// zenthcloud_zero_trust_dex_test as an alias with the same schema.
+type SourceZenthcloudDeviceDexTestModel struct {
 	ID          types.String             `tfsdk:"id"`
 	AccountID   types.String             `tfsdk:"account_id"`
 	Name        types.String             `tfsdk:"name"`
@@ -42,7 +42,7 @@ type SourceDEXTestDataModel struct {
 
 // ZeroTrustDEXTestModel represents the current resource state from v5.x+ provider.
 // Schema version: 500 (with migrations enabled) or 1 (base v5)
-// Resource type: cloudflare_zero_trust_dex_test
+// Resource type: zenthcloud_zero_trust_dex_test
 //
 // Note: This matches the model in the parent package's model.go file.
 // We duplicate it here to keep the migration package self-contained.

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_dns_zone_transfers_outgoing Resource - Cloudflare"
+page_title: "zenthcloud_dns_zone_transfers_outgoing Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   DNS ReadDNS WriteZone Settings ReadZone Settings WriteZone Write
 ---
 
-# cloudflare_dns_zone_transfers_outgoing (Resource)
+# zenthcloud_dns_zone_transfers_outgoing (Resource)
 
 Accepted Permissions
 
@@ -19,7 +19,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_dns_zone_transfers_outgoing" "example_dns_zone_transfers_outgoing" {
+resource "zenthcloud_dns_zone_transfers_outgoing" "example_dns_zone_transfers_outgoing" {
   zone_id = "269d8f4853475ca241c4e730be286b20"
   name = "www.example.com."
   peers = ["23ff594956f20c2a721606e94745a8aa", "00920f38ce07c2e2f4df50b1f61d4194"]
@@ -48,7 +48,7 @@ resource "cloudflare_dns_zone_transfers_outgoing" "example_dns_zone_transfers_ou
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_dns_zone_transfers_outgoing.example '<zone_id>'
+$ terraform import zenthcloud_dns_zone_transfers_outgoing.example '<zone_id>'
 ```
 
 

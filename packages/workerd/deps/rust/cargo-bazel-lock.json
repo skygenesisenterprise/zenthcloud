@@ -6982,13 +6982,13 @@
         "BSD-3-Clause"
       ],
       "name": "lol_html",
-      "package_url": "https://github.com/cloudflare/lol-html",
+      "package_url": "https://github.com/skygenesisenterprise/zenthcloud",
       "repository": {
         "Git": {
           "commitish": {
             "Rev": "1d5ee9e88f235cdab283ba0f0efd0561497d4d56"
           },
-          "remote": "https://github.com/cloudflare/lol-html"
+          "remote": "https://github.com/skygenesisenterprise/zenthcloud"
         }
       },
       "targets": [
@@ -7043,7 +7043,7 @@
           "commitish": {
             "Rev": "1d5ee9e88f235cdab283ba0f0efd0561497d4d56"
           },
-          "remote": "https://github.com/cloudflare/lol-html",
+          "remote": "https://github.com/skygenesisenterprise/zenthcloud",
           "strip_prefix": "c-api"
         }
       },

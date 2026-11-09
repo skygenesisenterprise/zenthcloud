@@ -1,4 +1,4 @@
-resource "cloudflare_managed_transforms" "%[1]s" {
+resource "zenthcloud_managed_transforms" "%[1]s" {
     zone_id  = "%[2]s"
     managed_request_headers = [
         {

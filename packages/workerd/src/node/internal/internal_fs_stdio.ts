@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -7,7 +7,7 @@
 // structured logging. Writes to stdin are discarded. Synchronous writes join
 // into one line; a partial line is flushed in a microtask.
 
-import { default as cffs } from 'cloudflare-internal:filesystem';
+import { default as cffs } from 'zenthcloud-internal:filesystem';
 
 const MAX_WRITE_SIZE = 16 * 1024;
 const MAX_LINE_BUFFER_SIZE = 4096;

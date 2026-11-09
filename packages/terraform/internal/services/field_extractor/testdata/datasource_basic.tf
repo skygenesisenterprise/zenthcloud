@@ -1,4 +1,4 @@
-resource "cloudflare_field_extractor" "source" {
+resource "zenthcloud_field_extractor" "source" {
   account_id = "%[1]s"
   extractor  = "llm_prompts"
   rules = [{
@@ -11,9 +11,9 @@ resource "cloudflare_field_extractor" "source" {
   }]
 }
 
-data "cloudflare_field_extractor" "test" {
+data "zenthcloud_field_extractor" "test" {
   account_id = "%[1]s"
   extractor  = "llm_prompts"
 
-  depends_on = [cloudflare_field_extractor.source]
+  depends_on = [zenthcloud_field_extractor.source]
 }

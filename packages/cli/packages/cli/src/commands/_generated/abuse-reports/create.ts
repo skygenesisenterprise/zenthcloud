@@ -26,7 +26,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 abuse-reports create <report-type>\n\nSubmit an abuse report of a particular type. Requires the abuse-reports entitlement on the account (Enterprise accounts have it by default; other accounts must request access) and an API token with the `Trust and Safety Write` permission. If the account is not entitled, the request is rejected with an HTTP `401` response (see below). Delegated reports: In limited circumstances, Cloudflare delegates processing of abuse reports to select customers who have established abuse-handling programs. For these customers, Cloudflare may forward abuse reports directly and in full—including reporter contact information, comments, and supporting evidence—without redaction or preprocessing by Cloudflare. This allows the customer to investigate and respond using their own policies and processes. For delegated reports, the report—including contact information and comments—will be forwarded to the customer in full regardless of the `host_notification` and `owner_notification` values."
+			"$0 abuse-reports create <report-type>\n\nSubmit an abuse report of a particular type. Requires the abuse-reports entitlement on the account (Enterprise accounts have it by default; other accounts must request access) and an API token with the `Trust and Safety Write` permission. If the account is not entitled, the request is rejected with an HTTP `401` response (see below). Delegated reports: In limited circumstances, Zenthcloud delegates processing of abuse reports to select customers who have established abuse-handling programs. For these customers, Zenthcloud may forward abuse reports directly and in full—including reporter contact information, comments, and supporting evidence—without redaction or preprocessing by Zenthcloud. This allows the customer to investigate and respond using their own policies and processes. For delegated reports, the report—including contact information and comments—will be forwarded to the customer in full regardless of the `host_notification` and `owner_notification` values."
 		)
 		.positional("report-type", {
 			type: "string",
@@ -51,17 +51,17 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("comments", {
 			type: "string",
 			description:
-				"Any additional comments about the infringement not exceeding 2000 characters. With the exception of delegated reports, comments are kept internal to Cloudflare and not shared with the host or customer as part of regular processing. For the limited circumstances where we delegate reports to customers with established abuse-handling programs, comments may be shared in full.",
+				"Any additional comments about the infringement not exceeding 2000 characters. With the exception of delegated reports, comments are kept internal to Zenthcloud and not shared with the host or customer as part of regular processing. For the limited circumstances where we delegate reports to customers with established abuse-handling programs, comments may be shared in full.",
 		})
 		.option("company", {
 			type: "string",
 			description:
-				"Text not exceeding 100 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/).",
+				"Text not exceeding 100 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/).",
 		})
 		.option("email", {
 			type: "string",
 			description:
-				"A valid email of the abuse reporter. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/).",
+				"A valid email of the abuse reporter. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/).",
 		})
 		.option("email2", {
 			type: "string",
@@ -70,7 +70,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("name", {
 			type: "string",
 			description:
-				"Text not exceeding 255 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/).",
+				"Text not exceeding 255 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/).",
 		})
 		.option("reported-country", {
 			type: "string",
@@ -83,7 +83,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("tele", {
 			type: "string",
 			description:
-				"Text not exceeding 20 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/).",
+				"Text not exceeding 20 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/).",
 		})
 		.option("title", {
 			type: "string",
@@ -92,17 +92,17 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("urls", {
 			type: "string",
 			description:
-				"A list of valid URLs separated by ‘\\n’ (new line character). The list of the URLs should not exceed 250 URLs. All URLs should have the same hostname. Each URL should be unique. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/).",
+				"A list of valid URLs separated by ‘\\n’ (new line character). The list of the URLs should not exceed 250 URLs. All URLs should have the same hostname. Each URL should be unique. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/).",
 		})
 		.option("address1", {
 			type: "string",
 			description:
-				"Text not exceeding 100 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/).",
+				"Text not exceeding 100 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/).",
 		})
 		.option("agent-name", {
 			type: "string",
 			description:
-				"The name of the copyright holder. Text not exceeding 60 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/).",
+				"The name of the copyright holder. Text not exceeding 60 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/).",
 		})
 		.option("agree", {
 			type: "number",
@@ -112,12 +112,12 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("city", {
 			type: "string",
 			description:
-				"Text not exceeding 255 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/).",
+				"Text not exceeding 255 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/).",
 		})
 		.option("country", {
 			type: "string",
 			description:
-				"Text not exceeding 255 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/).\n",
+				"Text not exceeding 255 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/).\n",
 		})
 		.option("host-notification", {
 			type: "string",
@@ -131,7 +131,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("original-work", {
 			type: "string",
 			description:
-				"Text not exceeding 255 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/).\n",
+				"Text not exceeding 255 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/).\n",
 		})
 		.option("owner-notification", {
 			type: "string",
@@ -145,12 +145,12 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("signature", {
 			type: "string",
 			description:
-				"Required for DMCA reports, should be same as Name. An affirmation that all information in the report is true and accurate while agreeing to the policies of Cloudflare's abuse reports",
+				"Required for DMCA reports, should be same as Name. An affirmation that all information in the report is true and accurate while agreeing to the policies of Zenthcloud's abuse reports",
 		})
 		.option("state", {
 			type: "string",
 			description:
-				"Text not exceeding 255 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/).",
+				"Text not exceeding 255 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/).",
 		})
 		.option("justification", {
 			type: "string",
@@ -897,7 +897,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf abuse-reports create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/abuse-reports/${argv["report-type"] == null ? "<report-type>" : encodeURIComponent(String(argv["report-type"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/abuse-reports/${argv["report-type"] == null ? "<report-type>" : encodeURIComponent(String(argv["report-type"]))}`,
 						pathParams: { "report-type": String(argv["report-type"] ?? "") },
 						bodyKind: "json",
 						body:
@@ -1101,7 +1101,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 				if (argv["email"] === undefined) {
 					argv["email"] = await promptForRequiredField(
 						"email",
-						"A valid email of the abuse reporter. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/)."
+						"A valid email of the abuse reporter. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/)."
 					);
 				}
 				if (argv["email2"] === undefined) {
@@ -1113,13 +1113,13 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 				if (argv["name"] === undefined) {
 					argv["name"] = await promptForRequiredField(
 						"name",
-						"Text not exceeding 255 characters. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/)."
+						"Text not exceeding 255 characters. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/)."
 					);
 				}
 				if (argv["urls"] === undefined) {
 					argv["urls"] = await promptForRequiredField(
 						"urls",
-						"A list of valid URLs separated by ‘\\n’ (new line character). The list of the URLs should not exceed 250 URLs. All URLs should have the same hostname. Each URL should be unique. This field may be released by Cloudflare to third parties such as the Lumen Database (https://lumendatabase.org/)."
+						"A list of valid URLs separated by ‘\\n’ (new line character). The list of the URLs should not exceed 250 URLs. All URLs should have the same hostname. Each URL should be unique. This field may be released by Zenthcloud to third parties such as the Lumen Database (https://lumendatabase.org/)."
 					);
 				}
 				if (argv["owner-notification"] === undefined) {

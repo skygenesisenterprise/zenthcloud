@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -12,7 +12,7 @@ export const platform: string;
 export function shouldThrowOnNotImplementedTlsOption(): boolean;
 
 declare global {
-  const Cloudflare: {
+  const Zenthcloud: {
     readonly compatibilityFlags: Record<string, boolean> & {
       enable_streams_nodejs_v24_compat: boolean;
     };

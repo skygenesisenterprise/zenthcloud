@@ -71,7 +71,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust dlp sensitivity-levels update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/dlp/sensitivity_groups/${argv["sensitivity-group-id"] == null ? "<sensitivity-group-id>" : encodeURIComponent(String(argv["sensitivity-group-id"]))}/levels/${argv["sensitivity-level-id"] == null ? "<sensitivity-level-id>" : encodeURIComponent(String(argv["sensitivity-level-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/dlp/sensitivity_groups/${argv["sensitivity-group-id"] == null ? "<sensitivity-group-id>" : encodeURIComponent(String(argv["sensitivity-group-id"]))}/levels/${argv["sensitivity-level-id"] == null ? "<sensitivity-level-id>" : encodeURIComponent(String(argv["sensitivity-level-id"]))}`,
 						pathParams: {
 							"sensitivity-group-id": String(
 								argv["sensitivity-group-id"] ?? ""

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_workers_for_platforms_dispatch_namespaces Data Source - Cloudflare"
+page_title: "zenthcloud_workers_for_platforms_dispatch_namespaces Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Workers Scripts ReadWorkers Scripts WriteWorkers Tail Read
 ---
 
-# cloudflare_workers_for_platforms_dispatch_namespaces (Data Source)
+# zenthcloud_workers_for_platforms_dispatch_namespaces (Data Source)
 
 Accepted Permissions
 
@@ -17,7 +17,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_workers_for_platforms_dispatch_namespaces" "example_workers_for_platforms_dispatch_namespaces" {
+data "zenthcloud_workers_for_platforms_dispatch_namespaces" "example_workers_for_platforms_dispatch_namespaces" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```

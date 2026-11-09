@@ -2,7 +2,7 @@ import {
   getMarkdownPayload,
   getMarkdownStaticPaths,
   type MarkdownEndpointReference,
-} from "@cloudflare/nimbus-docs/agent-endpoints";
+} from "@zenthcloud/nimbus-docs/agent-endpoints";
 import { agentEndpointResponse } from "../../utils/agent-endpoint-response";
 
 export const prerender = true;

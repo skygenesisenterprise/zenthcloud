@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_dns_zone_transfers_tsig Data Source - Cloudflare"
+page_title: "zenthcloud_dns_zone_transfers_tsig Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Settings ReadAccount Settings Write
 ---
 
-# cloudflare_dns_zone_transfers_tsig (Data Source)
+# zenthcloud_dns_zone_transfers_tsig (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_dns_zone_transfers_tsig" "example_dns_zone_transfers_tsig" {
+data "zenthcloud_dns_zone_transfers_tsig" "example_dns_zone_transfers_tsig" {
   account_id = "01a7362d577a6c3019a474fd6f485823"
   tsig_id = "69cd1e104af3e6ed3cb344f263fd0d5a"
 }

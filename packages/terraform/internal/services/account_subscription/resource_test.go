@@ -6,18 +6,18 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-func TestAccCloudflareAccountSubscription_Basic(t *testing.T) {
+func TestAccZenthcloudAccountSubscription_Basic(t *testing.T) {
 	t.Skip("Account requires an active payment method")
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_account_subscription." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_account_subscription." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -28,7 +28,7 @@ func TestAccCloudflareAccountSubscription_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// First create a basic configuration
 			{
-				Config: testAccCloudflareAccountSubscriptionWithPlan(rnd, accountID, "teams_free"),
+				Config: testAccZenthcloudAccountSubscriptionWithPlan(rnd, accountID, "teams_free"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "account_id", accountID),
 					resource.TestCheckResourceAttr(resourceName, "rate_plan.id", "teams_free"),
@@ -44,7 +44,7 @@ func TestAccCloudflareAccountSubscription_Basic(t *testing.T) {
 			},
 			// Verify no plan change
 			{
-				Config: testAccCloudflareAccountSubscriptionWithPlan(rnd, accountID, "teams_free"),
+				Config: testAccZenthcloudAccountSubscriptionWithPlan(rnd, accountID, "teams_free"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -55,12 +55,12 @@ func TestAccCloudflareAccountSubscription_Basic(t *testing.T) {
 	})
 }
 
-// https://github.com/cloudflare/terraform-provider-cloudflare/issues/5803
-func TestAccCloudflareAccountSubscription_ImportNoChanges(t *testing.T) {
+// https://github.com/skygenesisenterprise/zenthcloud
+func TestAccZenthcloudAccountSubscription_ImportNoChanges(t *testing.T) {
 	t.Skip("Account requires an active payment method")
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_account_subscription." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_account_subscription." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -71,7 +71,7 @@ func TestAccCloudflareAccountSubscription_ImportNoChanges(t *testing.T) {
 		Steps: []resource.TestStep{
 			// First create a basic configuration
 			{
-				Config: testAccCloudflareAccountSubscriptionImportConfig(rnd, accountID),
+				Config: testAccZenthcloudAccountSubscriptionImportConfig(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "account_id", accountID),
 					resource.TestCheckResourceAttr(resourceName, "rate_plan.id", "teams_free"),
@@ -97,11 +97,11 @@ func TestAccCloudflareAccountSubscription_ImportNoChanges(t *testing.T) {
 }
 
 // Test that import fails with invalid format
-func TestAccCloudflareAccountSubscription_ImportInvalidFormat(t *testing.T) {
+func TestAccZenthcloudAccountSubscription_ImportInvalidFormat(t *testing.T) {
 	t.Skip("Account requires an active payment method")
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_account_subscription." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_account_subscription." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -111,7 +111,7 @@ func TestAccCloudflareAccountSubscription_ImportInvalidFormat(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccountSubscriptionWithPlan(rnd, accountID, "teams_free"),
+				Config: testAccZenthcloudAccountSubscriptionWithPlan(rnd, accountID, "teams_free"),
 			},
 			{
 				ResourceName:  resourceName,
@@ -124,11 +124,11 @@ func TestAccCloudflareAccountSubscription_ImportInvalidFormat(t *testing.T) {
 }
 
 // Test that import fails with non-existent subscription
-func TestAccCloudflareAccountSubscription_ImportNonExistent(t *testing.T) {
+func TestAccZenthcloudAccountSubscription_ImportNonExistent(t *testing.T) {
 	t.Skip("Account requires an active payment method")
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_account_subscription." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_account_subscription." + rnd
 	fakeSubscriptionID := "00000000000000000000000000000000"
 
 	resource.Test(t, resource.TestCase{
@@ -139,7 +139,7 @@ func TestAccCloudflareAccountSubscription_ImportNonExistent(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:        testAccCloudflareAccountSubscriptionWithPlan(rnd, accountID, "teams_free"),
+				Config:        testAccZenthcloudAccountSubscriptionWithPlan(rnd, accountID, "teams_free"),
 				ResourceName:  resourceName,
 				ImportState:   true,
 				ImportStateId: fmt.Sprintf("%s/%s", accountID, fakeSubscriptionID),
@@ -150,11 +150,11 @@ func TestAccCloudflareAccountSubscription_ImportNonExistent(t *testing.T) {
 }
 
 // Test computed fields are populated correctly after import
-func TestAccCloudflareAccountSubscription_ComputedFieldsAfterImport(t *testing.T) {
+func TestAccZenthcloudAccountSubscription_ComputedFieldsAfterImport(t *testing.T) {
 	t.Skip("Account requires an active payment method")
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_account_subscription." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_account_subscription." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -164,7 +164,7 @@ func TestAccCloudflareAccountSubscription_ComputedFieldsAfterImport(t *testing.T
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccountSubscriptionWithPlan(rnd, accountID, "teams_free"),
+				Config: testAccZenthcloudAccountSubscriptionWithPlan(rnd, accountID, "teams_free"),
 			},
 			{
 				ResourceName: resourceName,
@@ -188,15 +188,15 @@ func TestAccCloudflareAccountSubscription_ComputedFieldsAfterImport(t *testing.T
 	})
 }
 
-func testAccCloudflareAccountSubscriptionImportConfig(rnd, zoneID string) string {
+func testAccZenthcloudAccountSubscriptionImportConfig(rnd, zoneID string) string {
 	return acctest.LoadTestCase("import_config.tf", rnd, zoneID)
 }
 
-func testAccCloudflareAccountSubscriptionWithPlan(rnd, zoneID string, planID string) string {
+func testAccZenthcloudAccountSubscriptionWithPlan(rnd, zoneID string, planID string) string {
 	return acctest.LoadTestCase("with_plan.tf", rnd, zoneID, planID)
 }
 
-// func testAccCloudflareAccountSubscriptionBasicWithOptionalFields(rnd, zoneID string) string {
+// func testAccZenthcloudAccountSubscriptionBasicWithOptionalFields(rnd, zoneID string) string {
 // 	return acctest.LoadTestCase("basic_with_optional_fields.tf", rnd, zoneID)
 // }
 

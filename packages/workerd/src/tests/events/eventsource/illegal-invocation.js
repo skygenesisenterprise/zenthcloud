@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -12,7 +12,7 @@ const kIllegalInvocation = {
   name: 'TypeError',
   message:
     'Illegal invocation: function called with incorrect `this` reference. ' +
-    'See https://developers.cloudflare.com/workers/observability/errors/' +
+    'See https://github.com/skygenesisenterprise/zenthcloud' +
     '#illegal-invocation-errors for details.',
 };
 

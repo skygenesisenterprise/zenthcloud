@@ -6,10 +6,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -20,27 +20,27 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zone_lockdown", &resource.Sweeper{
-		Name: "cloudflare_zone_lockdown",
-		F:    testSweepCloudflareZoneLockdowns,
+	resource.AddTestSweepers("zenthcloud_zone_lockdown", &resource.Sweeper{
+		Name: "zenthcloud_zone_lockdown",
+		F:    testSweepZenthcloudZoneLockdowns,
 	})
 }
 
-func testSweepCloudflareZoneLockdowns(r string) error {
+func testSweepZenthcloudZoneLockdowns(r string) error {
 	ctx := context.Background()
 	client, clientErr := acctest.SharedV1Client()
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 		return clientErr
 	}
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping zone lockdowns sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping zone lockdowns sweep: ZENTHCLOUD_ZONE_ID not set")
 		return nil
 	}
 
-	lockdowns, _, err := client.ListZoneLockdowns(ctx, cloudflare.ZoneIdentifier(zoneID), cloudflare.LockdownListParams{})
+	lockdowns, _, err := client.ListZoneLockdowns(ctx, zenthcloud.ZoneIdentifier(zoneID), zenthcloud.LockdownListParams{})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to fetch zone lockdowns: %s", err))
 		return fmt.Errorf("failed to fetch zone lockdowns: %w", err)
@@ -58,7 +58,7 @@ func testSweepCloudflareZoneLockdowns(r string) error {
 		}
 
 		tflog.Info(ctx, fmt.Sprintf("Deleting zone lockdown: %s (zone: %s)", lockdown.ID, zoneID))
-		_, err := client.DeleteZoneLockdown(ctx, cloudflare.ZoneIdentifier(zoneID), lockdown.ID)
+		_, err := client.DeleteZoneLockdown(ctx, zenthcloud.ZoneIdentifier(zoneID), lockdown.ID)
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete zone lockdown %s: %s", lockdown.ID, err))
 			continue
@@ -69,18 +69,18 @@ func testSweepCloudflareZoneLockdowns(r string) error {
 	return nil
 }
 
-func TestAccCloudflareZoneLockdown(t *testing.T) {
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudZoneLockdown(t *testing.T) {
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_zone_lockdown." + rnd
+	name := "zenthcloud_zone_lockdown." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareZoneLockdownConfig(rnd, zoneID, "false", "1", "this is notes", rnd+"."+zoneName+"/*", "ip", "198.51.100.4"),
+				Config: testZenthcloudZoneLockdownConfig(rnd, zoneID, "false", "1", "this is notes", rnd+"."+zoneName+"/*", "ip", "198.51.100.4"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(name, "urls.#", "1"),
@@ -92,7 +92,7 @@ func TestAccCloudflareZoneLockdown(t *testing.T) {
 			// destroy/create. This is the path that surfaces the `created_on`
 			// plan-vs-apply inconsistency.
 			{
-				Config: testCloudflareZoneLockdownConfig(rnd, zoneID, "false", "1", "this is notes", rnd+"."+zoneName+"/updated/*", "ip", "198.51.100.4"),
+				Config: testZenthcloudZoneLockdownConfig(rnd, zoneID, "false", "1", "this is notes", rnd+"."+zoneName+"/updated/*", "ip", "198.51.100.4"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(name, plancheck.ResourceActionUpdate),
@@ -122,11 +122,11 @@ func TestAccCloudflareZoneLockdown(t *testing.T) {
 //
 // `urls` is now a set, so membership alone determines equality. Both steps
 // below fail if it is ever changed back to a list.
-func TestAccCloudflareZoneLockdown_URLsOrderInsensitive(t *testing.T) {
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudZoneLockdown_URLsOrderInsensitive(t *testing.T) {
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_zone_lockdown." + rnd
+	name := "zenthcloud_zone_lockdown." + rnd
 
 	alpha := rnd + "." + zoneName + "/alpha/*"
 	bravo := rnd + "." + zoneName + "/bravo/*"
@@ -137,7 +137,7 @@ func TestAccCloudflareZoneLockdown_URLsOrderInsensitive(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareZoneLockdownMultiURLConfig(rnd, zoneID, alpha, bravo, charlie),
+				Config: testZenthcloudZoneLockdownMultiURLConfig(rnd, zoneID, alpha, bravo, charlie),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(name, "urls.#", "3"),
@@ -161,7 +161,7 @@ func TestAccCloudflareZoneLockdown_URLsOrderInsensitive(t *testing.T) {
 			// change at all, so the plan must be empty. As a list it planned an
 			// in-place update.
 			{
-				Config:   testCloudflareZoneLockdownMultiURLConfig(rnd, zoneID, charlie, alpha, bravo),
+				Config:   testZenthcloudZoneLockdownMultiURLConfig(rnd, zoneID, charlie, alpha, bravo),
 				PlanOnly: true,
 			},
 		},
@@ -169,18 +169,18 @@ func TestAccCloudflareZoneLockdown_URLsOrderInsensitive(t *testing.T) {
 }
 
 // test creating a config with only the required fields.
-func TestAccCloudflareZoneLockdown_OnlyRequired(t *testing.T) {
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudZoneLockdown_OnlyRequired(t *testing.T) {
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_zone_lockdown." + rnd
+	name := "zenthcloud_zone_lockdown." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareZoneLockdownConfig(rnd, zoneID, "false", "1", "this is notes", rnd+"."+zoneName+"/*", "ip", "198.51.100.4"),
+				Config: testZenthcloudZoneLockdownConfig(rnd, zoneID, "false", "1", "this is notes", rnd+"."+zoneName+"/*", "ip", "198.51.100.4"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(name, "urls.#", "1"),
@@ -191,18 +191,18 @@ func TestAccCloudflareZoneLockdown_OnlyRequired(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareZoneLockdown_Import(t *testing.T) {
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudZoneLockdown_Import(t *testing.T) {
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	// name := "cloudflare_zone_lockdown." + rnd
+	// name := "zenthcloud_zone_lockdown." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testCloudflareZoneLockdownConfig(rnd, zoneID, "false", "1", "this is notes", rnd+"."+zoneName+"/*", "ip", "198.51.100.4"),
+				Config: testZenthcloudZoneLockdownConfig(rnd, zoneID, "false", "1", "this is notes", rnd+"."+zoneName+"/*", "ip", "198.51.100.4"),
 			},
 			// {
 			// 	ResourceName:        name,
@@ -214,28 +214,28 @@ func TestAccCloudflareZoneLockdown_Import(t *testing.T) {
 	})
 }
 
-func testCloudflareZoneLockdownConfig(resourceID, zoneID, paused, priority, description, url, target, value string) string {
-	return acctest.LoadTestCase("cloudflarezonelockdownconfig.tf", resourceID, zoneID, paused, priority, description, url, target, value)
+func testZenthcloudZoneLockdownConfig(resourceID, zoneID, paused, priority, description, url, target, value string) string {
+	return acctest.LoadTestCase("zenthcloudzonelockdownconfig.tf", resourceID, zoneID, paused, priority, description, url, target, value)
 }
 
-func testCloudflareZoneLockdownMultiURLConfig(resourceID, zoneID, url1, url2, url3 string) string {
-	return acctest.LoadTestCase("cloudflarezonelockdownmultiurl.tf", resourceID, zoneID, url1, url2, url3)
+func testZenthcloudZoneLockdownMultiURLConfig(resourceID, zoneID, url1, url2, url3 string) string {
+	return acctest.LoadTestCase("zenthcloudzonelockdownmultiurl.tf", resourceID, zoneID, url1, url2, url3)
 }
 
 func TestAccUpgradeZoneLockdown_FromPublishedV5(t *testing.T) {
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
 
-	config := testCloudflareZoneLockdownConfig(rnd, zoneID, "false", "1", "this is notes", rnd+"."+zoneName+"/*", "ip", "198.51.100.4")
+	config := testZenthcloudZoneLockdownConfig(rnd, zoneID, "false", "1", "this is notes", rnd+"."+zoneName+"/*", "ip", "198.51.100.4")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 import { throws, ok, strictEqual, deepStrictEqual } from 'node:assert';
@@ -434,7 +434,7 @@ export const httpRedirectsAreNotFollowed = {
         port: 80,
         method: 'GET',
         protocol: 'http:',
-        hostname: 'cloudflare.com',
+        hostname: 'zenthcloud.com',
         path: '/',
       },
       (res) => {

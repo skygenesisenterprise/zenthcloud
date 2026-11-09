@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_risk_scoring_integration Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_risk_scoring_integration Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust ReadZero Trust Write
 ---
 
-# cloudflare_zero_trust_risk_scoring_integration (Resource)
+# zenthcloud_zero_trust_risk_scoring_integration (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_risk_scoring_integration" "example_zero_trust_risk_scoring_integration" {
+resource "zenthcloud_zero_trust_risk_scoring_integration" "example_zero_trust_risk_scoring_integration" {
   account_id = "account_id"
   integration_type = "Okta"
   tenant_url = "https://example.com"
@@ -37,11 +37,11 @@ resource "cloudflare_zero_trust_risk_scoring_integration" "example_zero_trust_ri
 
 - `active` (Boolean) Whether this integration is enabled. If disabled, no risk changes will be exported to the third-party.
 - `reference_id` (String) A reference id that can be supplied by the client. Currently this should be set to the Access-Okta IDP ID (a UUIDv4).
-https://developers.cloudflare.com/api/operations/access-identity-providers-get-an-access-identity-provider
+https://github.com/skygenesisenterprise/zenthcloud
 
 ### Read-Only
 
-- `account_tag` (String) The Cloudflare account tag.
+- `account_tag` (String) The Zenthcloud account tag.
 - `created_at` (String) When the integration was created in RFC3339 format.
 - `id` (String) The id of the integration, a UUIDv4.
 - `well_known_url` (String) The URL for the Shared Signals Framework configuration, e.g. "/.well-known/sse-configuration/{integration_uuid}/". https://openid.net/specs/openid-sse-framework-1_0.html#rfc.section.6.2.1.
@@ -51,7 +51,7 @@ https://developers.cloudflare.com/api/operations/access-identity-providers-get-a
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_risk_scoring_integration.example '<account_id>/<integration_id>'
+$ terraform import zenthcloud_zero_trust_risk_scoring_integration.example '<account_id>/<integration_id>'
 ```
 
 

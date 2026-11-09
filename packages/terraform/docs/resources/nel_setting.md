@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_nel_setting Resource - Cloudflare"
+page_title: "zenthcloud_nel_setting Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zone Settings ReadZone Settings Write
 ---
 
-# cloudflare_nel_setting (Resource)
+# zenthcloud_nel_setting (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_nel_setting" "example_nel_setting" {
+resource "zenthcloud_nel_setting" "example_nel_setting" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   value = {
     enabled = false
@@ -44,14 +44,14 @@ Available values: "nel".
 
 Required:
 
-- `enabled` (Boolean) Whether Network Error Logging is enabled for the zone. When enabled, browsers report network errors to Cloudflare's NEL endpoint.
+- `enabled` (Boolean) Whether Network Error Logging is enabled for the zone. When enabled, browsers report network errors to Zenthcloud's NEL endpoint.
 
 ## Import
 
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_nel_setting.example '<zone_id>'
+$ terraform import zenthcloud_nel_setting.example '<zone_id>'
 ```
 
 

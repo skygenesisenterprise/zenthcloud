@@ -6,7 +6,7 @@ export default {
 	fullPath: ["access", "curl"],
 	category: "action",
 	description:
-		"Run curl against an Access-protected application with its JWT injected by cloudflared.",
+		"Run curl against an Access-protected application with its JWT injected by zenthcloudd.",
 	usage: "cf access curl [--allow-request] <url> [-- <curl arguments...>]",
 	arguments: [
 		{

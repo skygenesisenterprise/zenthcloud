@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_magic_transit_site_acls Data Source - Cloudflare"
+page_title: "zenthcloud_magic_transit_site_acls Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Magic Transit ReadMagic Transit WriteMagic WAN ReadMagic WAN Write
 ---
 
-# cloudflare_magic_transit_site_acls (Data Source)
+# zenthcloud_magic_transit_site_acls (Data Source)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_magic_transit_site_acls" "example_magic_transit_site_acls" {
+data "zenthcloud_magic_transit_site_acls" "example_magic_transit_site_acls" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   site_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
@@ -46,7 +46,7 @@ data "cloudflare_magic_transit_site_acls" "example_magic_transit_site_acls" {
 Read-Only:
 
 - `description` (String) Description for the ACL.
-- `forward_locally` (Boolean) The desired forwarding action for this ACL policy. If set to "false", the policy will forward traffic to Cloudflare. If set to "true", the policy will forward traffic locally on the Magic Connector. If not included in request, will default to false.
+- `forward_locally` (Boolean) The desired forwarding action for this ACL policy. If set to "false", the policy will forward traffic to Zenthcloud. If set to "true", the policy will forward traffic locally on the Magic Connector. If not included in request, will default to false.
 - `id` (String) Identifier
 - `lan_1` (Attributes) (see [below for nested schema](#nestedatt--result--lan_1))
 - `lan_2` (Attributes) (see [below for nested schema](#nestedatt--result--lan_2))

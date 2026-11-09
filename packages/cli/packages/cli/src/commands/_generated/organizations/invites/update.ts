@@ -68,7 +68,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf organizations invites update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/organizations/${argv["organization-id"] == null ? "<organization-id>" : encodeURIComponent(String(argv["organization-id"]))}/invites/${argv["member-code"] == null ? "<member-code>" : encodeURIComponent(String(argv["member-code"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["organization-id"] == null ? "<organization-id>" : encodeURIComponent(String(argv["organization-id"]))}/invites/${argv["member-code"] == null ? "<member-code>" : encodeURIComponent(String(argv["member-code"]))}`,
 						pathParams: {
 							"organization-id": String(argv["organization-id"] ?? ""),
 							"member-code": String(argv["member-code"] ?? ""),

@@ -13,7 +13,7 @@ export const magic_acl_update_request: JSONObject = {
       "type": "string"
     },
     "forward_locally": {
-      "description": "The desired forwarding action for this ACL policy. If set to \"false\", the policy will forward traffic to Cloudflare. If set to \"true\", the policy will forward traffic locally on the Magic Connector. If not included in request, will default to false.",
+      "description": "The desired forwarding action for this ACL policy. If set to \"false\", the policy will forward traffic to Zenthcloud. If set to \"true\", the policy will forward traffic locally on the Magic Connector. If not included in request, will default to false.",
       "type": "boolean"
     },
     "lan_1": {
@@ -56,7 +56,7 @@ export const magic_acls_add_single_request: JSONObject = {
       "type": "string"
     },
     "forward_locally": {
-      "description": "The desired forwarding action for this ACL policy. If set to \"false\", the policy will forward traffic to Cloudflare. If set to \"true\", the policy will forward traffic locally on the Magic Connector. If not included in request, will default to false.",
+      "description": "The desired forwarding action for this ACL policy. If set to \"false\", the policy will forward traffic to Zenthcloud. If set to \"true\", the policy will forward traffic locally on the Magic Connector. If not included in request, will default to false.",
       "type": "boolean"
     },
     "lan_1": {

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_account_role Data Source - Cloudflare"
+page_title: "zenthcloud_account_role Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Settings ReadAccount Settings WriteSCIM Provisioning
 ---
 
-# cloudflare_account_role (Data Source)
+# zenthcloud_account_role (Data Source)
 
 Accepted Permissions
 
@@ -17,7 +17,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_account_role" "example_account_role" {
+data "zenthcloud_account_role" "example_account_role" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   role_id = "3536bcfad5faccb999b47003c79917fb"
 }

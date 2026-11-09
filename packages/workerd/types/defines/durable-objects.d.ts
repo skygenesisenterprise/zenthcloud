@@ -1,4 +1,4 @@
-declare module 'cloudflare:durable-objects' {
+declare module 'zenthcloud:durable-objects' {
   /**
    * Marks Durable Object methods as safe to run more than once. The runtime may then retry calls
    * to them after a disconnect that might have happened after the method started. It does not

@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -20,26 +20,26 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_origin_tls_compliance_modes", &resource.Sweeper{
-		Name: "cloudflare_origin_tls_compliance_modes",
-		F:    testSweepCloudflareOriginTLSComplianceModes,
+	resource.AddTestSweepers("zenthcloud_origin_tls_compliance_modes", &resource.Sweeper{
+		Name: "zenthcloud_origin_tls_compliance_modes",
+		F:    testSweepZenthcloudOriginTLSComplianceModes,
 	})
 }
 
-func testSweepCloudflareOriginTLSComplianceModes(r string) error {
+func testSweepZenthcloudOriginTLSComplianceModes(r string) error {
 	ctx := context.Background()
 	// Origin TLS Compliance Modes is a zone-level setting that constrains
-	// the key-exchange algorithms Cloudflare may use when establishing TLS
+	// the key-exchange algorithms Zenthcloud may use when establishing TLS
 	// connections to the zone's origin. It's a singleton setting per zone,
 	// not something that accumulates. No sweeping required.
 	tflog.Info(ctx, "Origin TLS Compliance Modes doesn't require sweeping (zone setting)")
 	return nil
 }
 
-func TestAccCloudflareOriginTLSComplianceModes_Basic(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+func TestAccZenthcloudOriginTLSComplianceModes_Basic(t *testing.T) {
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_origin_tls_compliance_modes.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_origin_tls_compliance_modes.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -50,7 +50,7 @@ func TestAccCloudflareOriginTLSComplianceModes_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Step 1: Create with single mode
 			{
-				Config: testAccCheckCloudflareOriginTLSComplianceModesFipsOnly(zoneID, rnd),
+				Config: testAccCheckZenthcloudOriginTLSComplianceModesFipsOnly(zoneID, rnd),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "id", zoneID),
 					resource.TestCheckResourceAttr(name, "zone_id", zoneID),
@@ -61,13 +61,13 @@ func TestAccCloudflareOriginTLSComplianceModes_Basic(t *testing.T) {
 			},
 			// Step 2: Idempotency
 			{
-				Config:             testAccCheckCloudflareOriginTLSComplianceModesFipsOnly(zoneID, rnd),
+				Config:             testAccCheckZenthcloudOriginTLSComplianceModesFipsOnly(zoneID, rnd),
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: false,
 			},
 			// Step 3: Update to multiple modes
 			{
-				Config: testAccCheckCloudflareOriginTLSComplianceModesFipsAndPqh(zoneID, rnd),
+				Config: testAccCheckZenthcloudOriginTLSComplianceModesFipsAndPqh(zoneID, rnd),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, "id", zoneID),
 					resource.TestCheckResourceAttr(name, "zone_id", zoneID),
@@ -99,10 +99,10 @@ func TestAccCloudflareOriginTLSComplianceModes_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareOriginTLSComplianceModesFipsOnly(zoneID, name string) string {
+func testAccCheckZenthcloudOriginTLSComplianceModesFipsOnly(zoneID, name string) string {
 	return acctest.LoadTestCase("fips_only.tf", zoneID, name)
 }
 
-func testAccCheckCloudflareOriginTLSComplianceModesFipsAndPqh(zoneID, name string) string {
+func testAccCheckZenthcloudOriginTLSComplianceModesFipsAndPqh(zoneID, name string) string {
 	return acctest.LoadTestCase("fips_and_pqh.tf", zoneID, name)
 }

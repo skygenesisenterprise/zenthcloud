@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_d1_database Resource - Cloudflare"
+page_title: "zenthcloud_d1_database Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   D1 ReadD1 Write
 ---
 
-# cloudflare_d1_database (Resource)
+# zenthcloud_d1_database (Resource)
 
 Accepted Permissions
 
@@ -20,7 +20,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_d1_database" "example_d1_database" {
+resource "zenthcloud_d1_database" "example_d1_database" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name = "my-database"
   jurisdiction = "eu"
@@ -71,5 +71,5 @@ Available values: "auto", "disabled".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_d1_database.example '<account_id>/<database_id>'
+$ terraform import zenthcloud_d1_database.example '<account_id>/<database_id>'
 ```

@@ -12,7 +12,7 @@ export const cws_CreateTenantStructureInputBody: JSONObject = {
       "description": "Platform this structure models. Immutable after creation.",
       "enum": [
         "aws",
-        "cloudflare"
+        "zenthcloud"
       ],
       "type": "string"
     },
@@ -41,7 +41,7 @@ export const cws_UpdateTenantStructureInputBody: JSONObject = {
       "description": "Platform this structure models. Must match the existing value.",
       "enum": [
         "aws",
-        "cloudflare"
+        "zenthcloud"
       ],
       "type": "string"
     },

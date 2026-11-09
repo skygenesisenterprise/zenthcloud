@@ -5,7 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceAccessPolicySchema returns the v4 cloudflare_access_policy schema.
+// SourceAccessPolicySchema returns the v4 zenthcloud_access_policy schema.
 // This is used by MoveState to parse the source state from v4 provider.
 func SourceAccessPolicySchema() schema.Schema {
 	return schema.Schema{

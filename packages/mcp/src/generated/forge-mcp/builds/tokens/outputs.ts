@@ -15,7 +15,7 @@ export const builds_CreateBuildTokenResponse: JSONObject = {
       "format": "uuid",
       "type": "string"
     },
-    "cloudflare_token_id": {
+    "zenthcloud_token_id": {
       "type": "string"
     },
     "owner_type": {
@@ -37,7 +37,7 @@ export const builds_ListTokensResponse: JSONObject = {
       "format": "uuid",
       "type": "string"
     },
-    "cloudflare_token_id": {
+    "zenthcloud_token_id": {
       "type": "string"
     },
     "owner_type": {

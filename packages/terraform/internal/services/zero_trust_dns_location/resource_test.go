@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -20,20 +20,20 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zero_trust_dns_location", &resource.Sweeper{
-		Name: "cloudflare_zero_trust_dns_location",
-		F:    testSweepCloudflareZeroTrustDNSLocation,
+	resource.AddTestSweepers("zenthcloud_zero_trust_dns_location", &resource.Sweeper{
+		Name: "zenthcloud_zero_trust_dns_location",
+		F:    testSweepZenthcloudZeroTrustDNSLocation,
 	})
 }
 
-func testSweepCloudflareZeroTrustDNSLocation(r string) error {
+func testSweepZenthcloudZeroTrustDNSLocation(r string) error {
 	ctx := context.Background()
 	client, clientErr := acctest.SharedV1Client()
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 		return clientErr
 	}
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	locations, _, err := client.TeamsLocations(ctx, accountID)
 	if err != nil {
@@ -56,27 +56,27 @@ func testSweepCloudflareZeroTrustDNSLocation(r string) error {
 	return nil
 }
 
-func TestAccCloudflareTeamsLocationBasic(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudTeamsLocationBasic(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_dns_location.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_dns_location.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.TestAccPreCheck(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareTeamsLocationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudTeamsLocationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareTeamsLocationConfigBasic(rnd, accountID),
+				Config: testAccZenthcloudTeamsLocationConfigBasic(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(name, "name", rnd),
@@ -86,18 +86,18 @@ func TestAccCloudflareTeamsLocationBasic(t *testing.T) {
 	})
 }
 
-func testAccCloudflareTeamsLocationConfigBasic(rnd, accountID string) string {
+func testAccZenthcloudTeamsLocationConfigBasic(rnd, accountID string) string {
 	return acctest.LoadTestCase("teamslocationconfigbasic.tf", rnd, accountID)
 }
 
-func testAccCheckCloudflareTeamsLocationDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudTeamsLocationDestroy(s *terraform.State) error {
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_zero_trust_dns_location" {
+		if rs.Type != "zenthcloud_zero_trust_dns_location" {
 			continue
 		}
 
@@ -112,9 +112,9 @@ func testAccCheckCloudflareTeamsLocationDestroy(s *terraform.State) error {
 
 func TestAccUpgradeZeroTrustDnsLocation_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
-	config := testAccCloudflareTeamsLocationConfigBasic(rnd, accountID)
+	config := testAccZenthcloudTeamsLocationConfigBasic(rnd, accountID)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -123,8 +123,8 @@ func TestAccUpgradeZeroTrustDnsLocation_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

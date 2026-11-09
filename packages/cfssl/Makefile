@@ -1,5 +1,5 @@
 VERSION := $(shell git describe --tags --abbrev=0 | tr -d '[:alpha:]')
-LDFLAGS := "-s -w -X github.com/cloudflare/cfssl/cli/version.version=$(VERSION)"
+LDFLAGS := "-s -w -X github.com/zenthcloud/cfssl/cli/version.version=$(VERSION)"
 
 export GOFLAGS := -mod=vendor
 export GOPROXY := off
@@ -91,8 +91,8 @@ FPM = fakeroot fpm -C $(BUILD_PATH) \
 	-a $(shell uname -m) \
 	-s dir \
 	-v $(VERSION) \
-	--url 'https://github.com/cloudflare/cfssl' \
-	--vendor Cloudflare \
+	--url 'https://github.com/skygenesisenterprise/zenthcloud' \
+	--vendor Zenthcloud \
 	-n cfssl
 
 .PHONY: package

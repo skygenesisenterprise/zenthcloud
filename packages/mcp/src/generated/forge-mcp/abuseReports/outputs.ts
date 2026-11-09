@@ -99,9 +99,9 @@ export const abuse$$reports_AuthErrorResponse: JSONObject = {
 };
 
 /**
- * The schema of `abuse-reports_CloudflareAPIErrorResponse` in responses.
+ * The schema of `abuse-reports_ZenthcloudAPIErrorResponse` in responses.
  */
-export const abuse$$reports_CloudflareAPIErrorResponse: JSONObject = {
+export const abuse$$reports_ZenthcloudAPIErrorResponse: JSONObject = {
   "properties": {
     "errors": {
       "items": {
@@ -740,7 +740,7 @@ export const abuse$$reports_SubmittedAbuseReportListItem: JSONObject = {
           "enum": [
             "unable_to_confirm",
             "incomplete_report",
-            "not_on_cloudflare",
+            "not_on_zenthcloud",
             "duplicate_report",
             "content_removed",
             "report_details_mismatch",
@@ -874,7 +874,7 @@ export const abuse$$reports_SubmitterDetails: JSONObject = {
 export const abuse$$reports_UnauthorizedErrorResponse: JSONObject = {
   "oneOf": [
     {
-      "$ref": "#/$defs/abuse-reports_CloudflareAPIErrorResponse"
+      "$ref": "#/$defs/abuse-reports_ZenthcloudAPIErrorResponse"
     },
     {
       "$ref": "#/$defs/abuse-reports_AuthErrorResponse"

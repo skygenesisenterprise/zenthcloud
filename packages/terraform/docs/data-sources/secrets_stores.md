@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_secrets_stores Data Source - Cloudflare"
+page_title: "zenthcloud_secrets_stores Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Secrets Store ReadSecrets Store Write
 ---
 
-# cloudflare_secrets_stores (Data Source)
+# zenthcloud_secrets_stores (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_secrets_stores" "example_secrets_stores" {
+data "zenthcloud_secrets_stores" "example_secrets_stores" {
   account_id = "985e105f4ecef8ad9ca31a8372d0c353"
 }
 ```

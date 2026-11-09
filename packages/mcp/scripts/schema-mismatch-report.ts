@@ -1,17 +1,17 @@
 /**
- * Report where Cloudflare API responses don't match their OpenAPI response
+ * Report where Zenthcloud API responses don't match their OpenAPI response
  * schemas, grouped by product → operation → violation, from the
  * `response_schema_mismatch` events the direct tools write to Analytics Engine
  * (layout in `src/metrics.ts`). This is the list to send each product team.
  *
  *   npx tsx scripts/schema-mismatch-report.ts [--env production|staging|dev]
- *     [--dataset name] [--days 7] [--product dns_records] [--server cloudflare-api]
+ *     [--dataset name] [--days 7] [--product dns_records] [--server zenthcloud-api]
  *     [--format markdown|json|sql] [--from-json result.json]
  *
  * Runs one read-only SELECT with the `cf` CLI (`cf analytics_engine sql
  * query`), which needs Account Analytics Read on the account that owns the
- * `mcp-metrics-*` datasets (`scripts/cloudflare-account.ts`). To run the query
- * with another client, such as the Cloudflare MCP server, print it with
+ * `mcp-metrics-*` datasets (`scripts/zenthcloud-account.ts`). To run the query
+ * with another client, such as the Zenthcloud MCP server, print it with
  * `--format sql` and render its `FORMAT JSON` result with `--from-json`.
  */
 import { execFile } from 'node:child_process'
@@ -19,11 +19,11 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { parseArgs, promisify } from 'node:util'
-import { cfEnv } from './cloudflare-account'
+import { cfEnv } from './zenthcloud-account'
 import { z } from 'zod'
 
 /** The repository whose releases publish the OpenAPI document (`SPEC_RELEASE` in `src/spec-release.ts`). */
-const SPEC_REPOSITORY = 'cloudflare/forge'
+const SPEC_REPOSITORY = 'zenthcloud/forge'
 
 const DATASETS = {
   production: 'mcp-metrics-production',
@@ -38,7 +38,7 @@ const { values: args } = parseArgs({
     'from-json': { type: 'string' },
     days: { type: 'string', default: '7' },
     product: { type: 'string' },
-    server: { type: 'string', default: 'cloudflare-api' },
+    server: { type: 'string', default: 'zenthcloud-api' },
     format: { type: 'string', default: 'markdown' }
   }
 })

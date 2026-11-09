@@ -5,9 +5,9 @@ package spectrum_application
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/spectrum"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/spectrum"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -42,7 +42,7 @@ func (m *SpectrumApplicationDataSourceModel) toReadParams(_ context.Context) (pa
 	params = spectrum.AppGetParams{}
 
 	if !m.ZoneID.IsNull() {
-		params.ZoneID = cloudflare.F(m.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(m.ZoneID.ValueString())
 	}
 
 	return
@@ -52,13 +52,13 @@ func (m *SpectrumApplicationDataSourceModel) toListParams(_ context.Context) (pa
 	params = spectrum.AppListParams{}
 
 	if !m.ZoneID.IsNull() {
-		params.ZoneID = cloudflare.F(m.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(m.ZoneID.ValueString())
 	}
 	if !m.Filter.Direction.IsNull() {
-		params.Direction = cloudflare.F(spectrum.AppListParamsDirection(m.Filter.Direction.ValueString()))
+		params.Direction = zenthcloud.F(spectrum.AppListParamsDirection(m.Filter.Direction.ValueString()))
 	}
 	if !m.Filter.Order.IsNull() {
-		params.Order = cloudflare.F(spectrum.AppListParamsOrder(m.Filter.Order.ValueString()))
+		params.Order = zenthcloud.F(spectrum.AppListParamsOrder(m.Filter.Order.ValueString()))
 	}
 
 	return

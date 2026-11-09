@@ -5,8 +5,8 @@ package zero_trust_access_group
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customvalidator"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customvalidator"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -331,7 +331,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 								},
 							},
 						},
-						"cloudflare_account_member": schema.SingleNestedAttribute{
+						"zenthcloud_account_member": schema.SingleNestedAttribute{
 							Optional: true,
 							Attributes: map[string]schema.Attribute{
 								"account_id": schema.StringAttribute{
@@ -630,7 +630,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 								},
 							},
 						},
-						"cloudflare_account_member": schema.SingleNestedAttribute{
+						"zenthcloud_account_member": schema.SingleNestedAttribute{
 							Optional: true,
 							Attributes: map[string]schema.Attribute{
 								"account_id": schema.StringAttribute{
@@ -925,7 +925,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 								},
 							},
 						},
-						"cloudflare_account_member": schema.SingleNestedAttribute{
+						"zenthcloud_account_member": schema.SingleNestedAttribute{
 							Optional: true,
 							Attributes: map[string]schema.Attribute{
 								"account_id": schema.StringAttribute{

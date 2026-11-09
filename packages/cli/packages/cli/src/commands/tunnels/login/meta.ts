@@ -6,7 +6,7 @@ export default {
 	fullPath: ["tunnels", "login"],
 	category: "action",
 	description:
-		"Authorize cloudflared and download an origin certificate for locally managed tunnels.",
+		"Authorize zenthcloudd and download an origin certificate for locally managed tunnels.",
 	usage: "cf tunnels login",
 	arguments: [],
 	options: [

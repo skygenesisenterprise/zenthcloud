@@ -22,7 +22,7 @@ export const tools: readonly Tool[] = [
   {
     name: "cache_settings_regionalTieredCache_edit",
     title: "Change Regional Tiered Cache setting",
-    description: "Instructs Cloudflare to check a regional hub data center on the way to your upper tier. This can help improve performance for smart and custom tiered cache topologies.\n\nPATCH /zones/{zone_id}/cache/regional_tiered_cache",
+    description: "Instructs Zenthcloud to check a regional hub data center on the way to your upper tier. This can help improve performance for smart and custom tiered cache topologies.\n\nPATCH /zones/{zone_id}/cache/regional_tiered_cache",
     inputSchema: {
       type: "object",
       properties: {
@@ -143,7 +143,7 @@ export const tools: readonly Tool[] = [
   {
     name: "cache_settings_regionalTieredCache_get",
     title: "Get Regional Tiered Cache setting",
-    description: "Instructs Cloudflare to check a regional hub data center on the way to your upper tier. This can help improve performance for smart and custom tiered cache topologies.\n\nGET /zones/{zone_id}/cache/regional_tiered_cache",
+    description: "Instructs Zenthcloud to check a regional hub data center on the way to your upper tier. This can help improve performance for smart and custom tiered cache topologies.\n\nGET /zones/{zone_id}/cache/regional_tiered_cache",
     inputSchema: {
       type: "object",
       properties: {

@@ -48,12 +48,12 @@ export const dns$$firewall_dns$$firewall$$cluster: JSONObject = {
     },
     "maximum_cache_ttl": {
       "default": 900,
-      "description": "By default, Cloudflare attempts to cache responses for as long as\nindicated by the TTL received from upstream nameservers. This setting\nsets an upper bound on this duration. For caching purposes, higher TTLs\nwill be decreased to the maximum value defined by this setting.\n\nThis setting does not affect the TTL value in the DNS response\nCloudflare returns to clients. Cloudflare will always forward the TTL\nvalue received from upstream nameservers.",
+      "description": "By default, Zenthcloud attempts to cache responses for as long as\nindicated by the TTL received from upstream nameservers. This setting\nsets an upper bound on this duration. For caching purposes, higher TTLs\nwill be decreased to the maximum value defined by this setting.\n\nThis setting does not affect the TTL value in the DNS response\nZenthcloud returns to clients. Zenthcloud will always forward the TTL\nvalue received from upstream nameservers.",
       "type": "number"
     },
     "minimum_cache_ttl": {
       "default": 60,
-      "description": "By default, Cloudflare attempts to cache responses for as long as\nindicated by the TTL received from upstream nameservers. This setting\nsets a lower bound on this duration. For caching purposes, lower TTLs\nwill be increased to the minimum value defined by this setting.\n\nThis setting does not affect the TTL value in the DNS response\nCloudflare returns to clients. Cloudflare will always forward the TTL\nvalue received from upstream nameservers.\n\nNote that, even with this setting, there is no guarantee that a\nresponse will be cached for at least the specified duration. Cached\nresponses may be removed earlier for capacity or other operational\nreasons.",
+      "description": "By default, Zenthcloud attempts to cache responses for as long as\nindicated by the TTL received from upstream nameservers. This setting\nsets a lower bound on this duration. For caching purposes, lower TTLs\nwill be increased to the minimum value defined by this setting.\n\nThis setting does not affect the TTL value in the DNS response\nZenthcloud returns to clients. Zenthcloud will always forward the TTL\nvalue received from upstream nameservers.\n\nNote that, even with this setting, there is no guarantee that a\nresponse will be cached for at least the specified duration. Cached\nresponses may be removed earlier for capacity or other operational\nreasons.",
       "type": "number"
     },
     "name": {
@@ -61,7 +61,7 @@ export const dns$$firewall_dns$$firewall$$cluster: JSONObject = {
       "type": "string"
     },
     "negative_cache_ttl": {
-      "description": "This setting controls how long DNS Firewall should cache negative\nresponses (e.g., NXDOMAIN) from the upstream servers.\n\nThis setting does not affect the TTL value in the DNS response\nCloudflare returns to clients. Cloudflare will always forward the TTL\nvalue received from upstream nameservers.",
+      "description": "This setting controls how long DNS Firewall should cache negative\nresponses (e.g., NXDOMAIN) from the upstream servers.\n\nThis setting does not affect the TTL value in the DNS response\nZenthcloud returns to clients. Zenthcloud will always forward the TTL\nvalue received from upstream nameservers.",
       "oneOf": [
         {
           "type": "number"
@@ -113,12 +113,12 @@ export const dns$$firewall_dns$$firewall$$cluster$$patch: JSONObject = {
     },
     "maximum_cache_ttl": {
       "default": 900,
-      "description": "By default, Cloudflare attempts to cache responses for as long as\nindicated by the TTL received from upstream nameservers. This setting\nsets an upper bound on this duration. For caching purposes, higher TTLs\nwill be decreased to the maximum value defined by this setting.\n\nThis setting does not affect the TTL value in the DNS response\nCloudflare returns to clients. Cloudflare will always forward the TTL\nvalue received from upstream nameservers.",
+      "description": "By default, Zenthcloud attempts to cache responses for as long as\nindicated by the TTL received from upstream nameservers. This setting\nsets an upper bound on this duration. For caching purposes, higher TTLs\nwill be decreased to the maximum value defined by this setting.\n\nThis setting does not affect the TTL value in the DNS response\nZenthcloud returns to clients. Zenthcloud will always forward the TTL\nvalue received from upstream nameservers.",
       "type": "number"
     },
     "minimum_cache_ttl": {
       "default": 60,
-      "description": "By default, Cloudflare attempts to cache responses for as long as\nindicated by the TTL received from upstream nameservers. This setting\nsets a lower bound on this duration. For caching purposes, lower TTLs\nwill be increased to the minimum value defined by this setting.\n\nThis setting does not affect the TTL value in the DNS response\nCloudflare returns to clients. Cloudflare will always forward the TTL\nvalue received from upstream nameservers.\n\nNote that, even with this setting, there is no guarantee that a\nresponse will be cached for at least the specified duration. Cached\nresponses may be removed earlier for capacity or other operational\nreasons.",
+      "description": "By default, Zenthcloud attempts to cache responses for as long as\nindicated by the TTL received from upstream nameservers. This setting\nsets a lower bound on this duration. For caching purposes, lower TTLs\nwill be increased to the minimum value defined by this setting.\n\nThis setting does not affect the TTL value in the DNS response\nZenthcloud returns to clients. Zenthcloud will always forward the TTL\nvalue received from upstream nameservers.\n\nNote that, even with this setting, there is no guarantee that a\nresponse will be cached for at least the specified duration. Cached\nresponses may be removed earlier for capacity or other operational\nreasons.",
       "type": "number"
     },
     "name": {
@@ -126,7 +126,7 @@ export const dns$$firewall_dns$$firewall$$cluster$$patch: JSONObject = {
       "type": "string"
     },
     "negative_cache_ttl": {
-      "description": "This setting controls how long DNS Firewall should cache negative\nresponses (e.g., NXDOMAIN) from the upstream servers.\n\nThis setting does not affect the TTL value in the DNS response\nCloudflare returns to clients. Cloudflare will always forward the TTL\nvalue received from upstream nameservers.",
+      "description": "This setting controls how long DNS Firewall should cache negative\nresponses (e.g., NXDOMAIN) from the upstream servers.\n\nThis setting does not affect the TTL value in the DNS response\nZenthcloud returns to clients. Zenthcloud will always forward the TTL\nvalue received from upstream nameservers.",
       "oneOf": [
         {
           "type": "number"

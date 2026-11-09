@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_email_routing_dns Resource - Cloudflare"
+page_title: "zenthcloud_email_routing_dns Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zone Settings ReadZone Settings Write
 ---
 
-# cloudflare_email_routing_dns (Resource)
+# zenthcloud_email_routing_dns (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_email_routing_dns" "example_email_routing_dns" {
+resource "zenthcloud_email_routing_dns" "example_email_routing_dns" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name = "example.net"
 }
@@ -51,7 +51,7 @@ Available values: "ready", "unconfigured", "misconfigured", "misconfigured/locke
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_email_routing_dns.example '<zone_id>'
+$ terraform import zenthcloud_email_routing_dns.example '<zone_id>'
 ```
 
 

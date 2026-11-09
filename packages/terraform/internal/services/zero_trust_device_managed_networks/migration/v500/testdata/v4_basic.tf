@@ -1,4 +1,4 @@
-resource "cloudflare_device_managed_networks" "%s" {
+resource "zenthcloud_device_managed_networks" "%s" {
   account_id = "%s"
   name       = "tf-test-managed-network-%s"
   type       = "tls"

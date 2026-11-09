@@ -5,15 +5,15 @@ package workers_custom_domain
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/workers_custom_domain/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_custom_domain/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
 var _ resource.ResourceWithUpgradeState = (*WorkersCustomDomainResource)(nil)
 var _ resource.ResourceWithMoveState = (*WorkersCustomDomainResource)(nil)
 
-// MoveState handles state moves from cloudflare_worker_domain (v4)
-// to cloudflare_workers_custom_domain (v5).
+// MoveState handles state moves from zenthcloud_worker_domain (v4)
+// to zenthcloud_workers_custom_domain (v5).
 func (r *WorkersCustomDomainResource) MoveState(ctx context.Context) []resource.StateMover {
 	sourceSchema := v500.SourceSchemaV0()
 

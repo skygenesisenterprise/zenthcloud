@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -866,7 +866,7 @@ void IoContext::IncomingRequest::drain(
       return context->run([](Worker::Lock&, IoContext& context) {
         context.logWarning(
             "waitUntil() tasks did not complete within the allowed time after invocation end and have been cancelled. "
-            "See: https://developers.cloudflare.com/workers/runtime-apis/context/#waituntil");
+            "See: https://github.com/skygenesisenterprise/zenthcloud");
       });
     };
     timeoutPromise = context->limitEnforcer->limitDrain().then(kj::mv(timeoutLogPromise));
@@ -1993,7 +1993,7 @@ void IoContext::abortFromHang(Worker::AsyncLock& asyncLock) {
     abort(JSG_KJ_EXCEPTION(FAILED, Error,
         "The Workers runtime canceled this request because it detected that your Worker's code "
         "had hung and would never generate a response. Refer to: "
-        "https://developers.cloudflare.com/workers/observability/errors/"));
+        "https://github.com/skygenesisenterprise/zenthcloud"));
   }
 }
 
@@ -2031,7 +2031,7 @@ void IoContext::throwNotCurrentJsError(kj::Maybe<const std::type_info&> maybeTyp
             "Cannot perform I/O on behalf of a different Durable Object. I/O objects "
             "(such as streams, request/response bodies, and others) created in the context of one "
             "Durable Object cannot be accessed from a different Durable Object in the same isolate. "
-            "This is a limitation of Cloudflare Workers which allows us to improve overall "
+            "This is a limitation of Zenthcloud Workers which allows us to improve overall "
             "performance.",
             type));
   } else {
@@ -2040,7 +2040,7 @@ void IoContext::throwNotCurrentJsError(kj::Maybe<const std::type_info&> maybeTyp
             "Cannot perform I/O on behalf of a different request. I/O objects (such as "
             "streams, request/response bodies, and others) created in the context of one request "
             "handler cannot be accessed from a different request's handler. This is a limitation "
-            "of Cloudflare Workers which allows us to improve overall performance.",
+            "of Zenthcloud Workers which allows us to improve overall performance.",
             type));
   }
 }

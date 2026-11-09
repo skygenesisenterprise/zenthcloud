@@ -3,13 +3,13 @@ package queue
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/queue/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/queue/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
 var _ resource.ResourceWithUpgradeState = (*QueueResource)(nil)
 
-// UpgradeState handles schema version upgrades for cloudflare_queue.
+// UpgradeState handles schema version upgrades for zenthcloud_queue.
 //
 // Schema version history:
 // - v4 (SDKv2): schema_version=0
@@ -25,10 +25,10 @@ var _ resource.ResourceWithUpgradeState = (*QueueResource)(nil)
 //    - State is already in v5 format; just bumps the version number.
 func (r *QueueResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
 	targetSchema := ResourceSchema(ctx)
-	sourceSchema := v500.SourceCloudflareQueueSchema()
+	sourceSchema := v500.SourceZenthcloudQueueSchema()
 
 	return map[int64]resource.StateUpgrader{
-		// Handle state from the legacy SDKv2 cloudflare_queue (schema_version=0).
+		// Handle state from the legacy SDKv2 zenthcloud_queue (schema_version=0).
 		// Transforms: name → queue_name, id → queue_id (copy).
 		0: {
 			PriorSchema:   &sourceSchema,

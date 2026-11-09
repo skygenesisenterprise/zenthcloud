@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 //
@@ -29,7 +29,7 @@
 /* TODO: the following is adopted code, enabling linting one day */
 /* eslint-disable */
 
-import internalWorkers from 'cloudflare-internal:workers';
+import internalWorkers from 'zenthcloud-internal:workers';
 import internal from 'node-internal:util';
 
 import { Buffer } from 'node-internal:internal_buffer';

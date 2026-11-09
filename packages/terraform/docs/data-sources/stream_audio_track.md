@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_stream_audio_track Data Source - Cloudflare"
+page_title: "zenthcloud_stream_audio_track Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Stream ReadStream Write
 ---
 
-# cloudflare_stream_audio_track (Data Source)
+# zenthcloud_stream_audio_track (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_stream_audio_track" "example_stream_audio_track" {
+data "zenthcloud_stream_audio_track" "example_stream_audio_track" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   identifier = "ea95132c15732412d22c1476fa83f27a"
 }
@@ -28,7 +28,7 @@ data "cloudflare_stream_audio_track" "example_stream_audio_track" {
 ### Required
 
 - `account_id` (String) The account identifier tag.
-- `identifier` (String) A Cloudflare-generated unique identifier for a media item.
+- `identifier` (String) A Zenthcloud-generated unique identifier for a media item.
 
 ### Read-Only
 
@@ -43,6 +43,6 @@ Read-Only:
 - `label` (String) A string to uniquely identify the track amongst other audio track labels for the specified video.
 - `status` (String) Specifies the processing status of the video.
 Available values: "queued", "ready", "error".
-- `uid` (String) A Cloudflare-generated unique identifier for a media item.
+- `uid` (String) A Zenthcloud-generated unique identifier for a media item.
 
 

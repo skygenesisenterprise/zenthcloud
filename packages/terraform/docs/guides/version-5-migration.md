@@ -1,13 +1,13 @@
 ---
-layout: "cloudflare"
-page_title: "Migrating to Cloudflare Provider v5"
-description: Terraform Cloudflare Provider v5 Migration Guide
+layout: "zenthcloud"
+page_title: "Migrating to Zenthcloud Provider v5"
+description: Terraform Zenthcloud Provider v5 Migration Guide
 ---
 
-# Terraform Cloudflare Provider v5 Migration Guide
+# Terraform Zenthcloud Provider v5 Migration Guide
 
 This guide covers the recommended migration path to the latest version of the
-Cloudflare Terraform Provider v5. It applies whether you are coming from v4 or
+Zenthcloud Terraform Provider v5. It applies whether you are coming from v4 or
 upgrading from an earlier v5 release.
 
 Starting with v5.19, the provider includes **automatic state upgraders** that
@@ -47,9 +47,9 @@ per-resource attribute change details if you prefer manual HCL changes.
   - [Using `terraform state mv` (Terraform < 1.8)](#using-terraform-state-mv-terraform--18)
 - [Resources Requiring Manual Migration](#resources-requiring-manual-migration)
   - [Application-Scoped Access Policies](#application-scoped-access-policies)
-  - [`cloudflare_zone_settings_override`](#cloudflare_zone_settings_override)
-  - [`cloudflare_dlp_profile`](#cloudflare_dlp_profile)
-  - [`cloudflare_workers_secret`](#cloudflare_workers_secret)
+  - [`zenthcloud_zone_settings_override`](#zenthcloud_zone_settings_override)
+  - [`zenthcloud_dlp_profile`](#zenthcloud_dlp_profile)
+  - [`zenthcloud_workers_secret`](#zenthcloud_workers_secret)
 - [Resources Requiring Stepping-Stone Upgrades](#resources-requiring-stepping-stone-upgrades)
   - [What Happens If You Skip the Stepping Stone](#what-happens-if-you-skip-the-stepping-stone)
 - [Resources with State Upgraders](#resources-with-state-upgraders)
@@ -86,17 +86,17 @@ Before starting the migration:
   [Using `terraform state mv` (Terraform < 1.8)](#using-terraform-state-mv-terraform--18).
 - **tf-migrate** -- Install the [tf-migrate] CLI tool for automatic HCL
   configuration changes. Download the latest release for your platform from
-  the [tf-migrate releases page](https://github.com/cloudflare/tf-migrate/releases):
+  the [tf-migrate releases page](https://github.com/skygenesisenterprise/zenthcloud):
 
   ```bash
   # Example for macOS (ARM64)
-  curl -LO https://github.com/cloudflare/tf-migrate/releases/download/v1.0.0/tf-migrate_1.0.0_darwin_arm64.tar.gz
+  curl -LO https://github.com/skygenesisenterprise/zenthcloud
   tar -xzf tf-migrate_1.0.0_darwin_arm64.tar.gz
   chmod +x tf-migrate
   sudo mv tf-migrate /usr/local/bin/
   
   # Or build from source:
-  git clone https://github.com/cloudflare/tf-migrate.git
+  git clone https://github.com/skygenesisenterprise/zenthcloud
   cd tf-migrate
   make
   # Binary available at ./bin/tf-migrate
@@ -123,7 +123,7 @@ There are three categories of changes between v4 and v5:
    state file editing is required for these resources.
 
 3. **Resource renames** -- 40+ resources have new type names (e.g.,
-   `cloudflare_record` to `cloudflare_dns_record`). These require `moved`
+   `zenthcloud_record` to `zenthcloud_dns_record`). These require `moved`
    blocks in HCL (Terraform 1.8+). 23 of these renamed resources include
    `MoveState` handlers that automatically transform state during the move.
    The remaining renamed resources require `terraform state rm` +
@@ -142,17 +142,17 @@ There are three categories of changes between v4 and v5:
 `tf-migrate` automatically handles:
 
 - **Resource type renames** -- Updates resource types in your HCL (e.g.,
-  `cloudflare_record` to `cloudflare_dns_record`)
+  `zenthcloud_record` to `zenthcloud_dns_record`)
 - **Attribute transformations** -- Renames, restructures, and removes deprecated
   attributes
 - **`moved` block generation** -- Creates `moved` blocks for renamed resources
   so Terraform knows to preserve state
 - **Cross-file reference updates** -- Updates references to renamed resources
-  across all `.tf` files (e.g., `cloudflare_record.example.id` becomes
-  `cloudflare_dns_record.example.id`)
+  across all `.tf` files (e.g., `zenthcloud_record.example.id` becomes
+  `zenthcloud_dns_record.example.id`)
 - **Data source migrations** -- Transforms data source configurations and
-  updates output attribute references (e.g., `data.cloudflare_zones.example.zones`
-  becomes `data.cloudflare_zones.example.result`)
+  updates output attribute references (e.g., `data.zenthcloud_zones.example.zones`
+  becomes `data.zenthcloud_zones.example.result`)
 
 For a complete list of supported resources, see the [tf-migrate README][tf-migrate].
 
@@ -171,8 +171,8 @@ the v5 migration.
 ```hcl
 terraform {
   required_providers {
-    cloudflare = {
-      source  = "cloudflare/cloudflare"
+    zenthcloud = {
+      source  = "zenthcloud/zenthcloud"
       version = "4.52.5"
     }
   }
@@ -225,8 +225,8 @@ attribute change documentation.
 ```hcl
 terraform {
   required_providers {
-    cloudflare = {
-      source  = "cloudflare/cloudflare"
+    zenthcloud = {
+      source  = "zenthcloud/zenthcloud"
       version = "~> 5"
     }
   }
@@ -252,13 +252,13 @@ If you are migrating HCL manually (without `tf-migrate`), you need to add
 
 ```hcl
 moved {
-  from = cloudflare_record.example
-  to   = cloudflare_dns_record.example
+  from = zenthcloud_record.example
+  to   = zenthcloud_dns_record.example
 }
 
 moved {
-  from = cloudflare_tunnel.example
-  to   = cloudflare_zero_trust_tunnel_cloudflared.example
+  from = zenthcloud_tunnel.example
+  to   = zenthcloud_zero_trust_tunnel_zenthcloudd.example
 }
 ```
 
@@ -332,16 +332,16 @@ the migrated state until the provider refreshes them:
 
 | Resource | Attributes | Details |
 |---|---|---|
-| `cloudflare_account` | `settings.abuse_contact_email`, `unit`, `managed_by`, `created_on` | New v5 computed fields not present in v4 state. |
-| `cloudflare_account_member` | `policies`, `user` | New v5 computed fields not present in v4 state. |
-| `cloudflare_custom_ssl` | `keyless_server` | New v5 computed field not present in v4 state. |
-| `cloudflare_observatory_scheduled_test` | `schedule`, `test` | New v5 computed fields not present in v4 state. |
-| `cloudflare_page_rule` | `created_on`, `modified_on` | New v5 computed timestamp fields. |
-| `cloudflare_r2_bucket` | `jurisdiction` | v5 adds `jurisdiction = "default"` to all R2 buckets. Not present in v4 state. |
-| `cloudflare_zone` | `plan`, `meta`, `owner`, `tenant`, `tenant_unit` | v5 restructured these as computed-only nested objects. Will refresh from API. |
-| `cloudflare_zero_trust_access_identity_provider` | `support_groups`, `conditional_access_enabled` | Azure/OIDC fields not carried forward by the state upgrader. |
-| `cloudflare_zero_trust_access_identity_provider` | `idp_public_certs` | SAML providers: v4 `idp_public_cert` (string) becomes `idp_public_certs` (list) in v5. The state upgrader does not transform this. |
-| `cloudflare_zero_trust_gateway_settings` | `settings.host_selector`, `settings.inspection`, `settings.sandbox` | New v5 settings fields not present in v4 state. |
+| `zenthcloud_account` | `settings.abuse_contact_email`, `unit`, `managed_by`, `created_on` | New v5 computed fields not present in v4 state. |
+| `zenthcloud_account_member` | `policies`, `user` | New v5 computed fields not present in v4 state. |
+| `zenthcloud_custom_ssl` | `keyless_server` | New v5 computed field not present in v4 state. |
+| `zenthcloud_observatory_scheduled_test` | `schedule`, `test` | New v5 computed fields not present in v4 state. |
+| `zenthcloud_page_rule` | `created_on`, `modified_on` | New v5 computed timestamp fields. |
+| `zenthcloud_r2_bucket` | `jurisdiction` | v5 adds `jurisdiction = "default"` to all R2 buckets. Not present in v4 state. |
+| `zenthcloud_zone` | `plan`, `meta`, `owner`, `tenant`, `tenant_unit` | v5 restructured these as computed-only nested objects. Will refresh from API. |
+| `zenthcloud_zero_trust_access_identity_provider` | `support_groups`, `conditional_access_enabled` | Azure/OIDC fields not carried forward by the state upgrader. |
+| `zenthcloud_zero_trust_access_identity_provider` | `idp_public_certs` | SAML providers: v4 `idp_public_cert` (string) becomes `idp_public_certs` (list) in v5. The state upgrader does not transform this. |
+| `zenthcloud_zero_trust_gateway_settings` | `settings.host_selector`, `settings.inspection`, `settings.sandbox` | New v5 settings fields not present in v4 state. |
 
 #### Resource creation from splits
 
@@ -350,12 +350,12 @@ created on the first apply:
 
 | v4 Resource | New v5 Resource Created | Why |
 |---|---|---|
-| `cloudflare_argo` | `cloudflare_argo_tiered_caching` | v4 `cloudflare_argo` managed both smart routing and tiered caching. v5 splits them. The `cloudflare_argo_smart_routing` resource inherits the state via `moved`, but `cloudflare_argo_tiered_caching` must be created fresh. |
-| `cloudflare_tiered_cache` (with `cache_type = "generic"`) | `cloudflare_argo_tiered_caching` | Similar split. The `cloudflare_tiered_cache` resource retains its state, but the companion `cloudflare_argo_tiered_caching` resource must be created. |
+| `zenthcloud_argo` | `zenthcloud_argo_tiered_caching` | v4 `zenthcloud_argo` managed both smart routing and tiered caching. v5 splits them. The `zenthcloud_argo_smart_routing` resource inherits the state via `moved`, but `zenthcloud_argo_tiered_caching` must be created fresh. |
+| `zenthcloud_tiered_cache` (with `cache_type = "generic"`) | `zenthcloud_argo_tiered_caching` | Similar split. The `zenthcloud_tiered_cache` resource retains its state, but the companion `zenthcloud_argo_tiered_caching` resource must be created. |
 
 #### Precedence normalization
 
-`cloudflare_zero_trust_gateway_policy` resources will show precedence values
+`zenthcloud_zero_trust_gateway_policy` resources will show precedence values
 changing from large internal values to the user-facing values:
 
 ```
@@ -366,20 +366,20 @@ This is a one-time normalization applied by the state upgrader.
 
 #### IP CIDR normalization
 
-`cloudflare_list` resources with IP items may show CIDR notation being
+`zenthcloud_list` resources with IP items may show CIDR notation being
 stripped (e.g., `10.0.0.0/8` to `10.0.0.0` with the comment updated) to
 match the v5 schema format.
 
 #### Account settings restructure
 
-`cloudflare_account` resources will show:
+`zenthcloud_account` resources will show:
 
 - `enforce_twofactor` moves from top-level to `settings.enforce_twofactor`
 - New computed fields (`settings.abuse_contact_email`, `unit`, `managed_by`, `created_on`) appear as `(known after apply)`
 
 #### Account member field renames
 
-`cloudflare_account_member` resources will show field renames:
+`zenthcloud_account_member` resources will show field renames:
 
 ```
 ~ email_address = "user@example.com" -> null
@@ -392,7 +392,7 @@ New computed fields (`policies`, `user`) appear as `(known after apply)`.
 
 #### Custom SSL restructure
 
-`cloudflare_custom_ssl` resources will show:
+`zenthcloud_custom_ssl` resources will show:
 
 - Nested `custom_ssl_options[0].{certificate,private_key,bundle_method,type}` hoisted to top-level attributes
 - `geo_restrictions` changes from string to nested object with `label` attribute
@@ -401,7 +401,7 @@ New computed fields (`policies`, `user`) appear as `(known after apply)`.
 
 #### Page rule status default change
 
-`cloudflare_page_rule` resources with no explicit `status` may show:
+`zenthcloud_page_rule` resources with no explicit `status` may show:
 
 ```
 ~ status = "" -> "active"
@@ -415,7 +415,7 @@ Deprecated fields `disable_railgun` and `minify` are dropped during migration.
 
 #### Zone field restructure
 
-`cloudflare_zone` resources will show:
+`zenthcloud_zone` resources will show:
 
 - `zone` renamed to `name`
 - `account_id` moves to `account.id` (nested object)
@@ -424,7 +424,7 @@ Deprecated fields `disable_railgun` and `minify` are dropped during migration.
 
 #### Zero Trust Gateway Settings restructure
 
-`cloudflare_zero_trust_gateway_settings` resources will show significant
+`zenthcloud_zero_trust_gateway_settings` resources will show significant
 restructuring:
 
 - Flat booleans (`activity_log_enabled`, `tls_decrypt_enabled`, `protocol_detection_enabled`) move to `settings.*` nested objects
@@ -433,7 +433,7 @@ restructuring:
 
 #### Zero Trust Access Policy normalization
 
-`cloudflare_zero_trust_access_policy` resources normalize `false` boolean
+`zenthcloud_zero_trust_access_policy` resources normalize `false` boolean
 values to `null` for optional fields (`isolation_required`,
 `purpose_justification_required`, `approval_required`). This prevents drift
 since the API treats `false` and `null` as equivalent.
@@ -442,17 +442,17 @@ since the API treats `false` and `null` as equivalent.
 
 In v4, the API applied an implicit default of `24h` for `session_duration`, so
 most configurations omitted it. In v5, the provider schema defaults to `24h`,
-but some Cloudflare accounts enforce a maximum session duration shorter than
+but some Zenthcloud accounts enforce a maximum session duration shorter than
 `24h` (for example, `18h`) via account-level security policies. If your
 policies relied on the implicit default and your account enforces a shorter
 maximum, the first `terraform apply` after migration will fail at the API level
 even though `terraform plan` succeeds.
 
 To avoid this, add an explicit `session_duration` to every
-`cloudflare_zero_trust_access_policy` resource:
+`zenthcloud_zero_trust_access_policy` resource:
 
 ```hcl
-resource "cloudflare_zero_trust_access_policy" "example" {
+resource "zenthcloud_zero_trust_access_policy" "example" {
   # ...existing attributes...
   session_duration = "18h"  # or your organization's required maximum
 }
@@ -460,16 +460,16 @@ resource "cloudflare_zero_trust_access_policy" "example" {
 
 #### Zero Trust Access Policy `zone_id` removal
 
-In v4, `cloudflare_access_policy` could be scoped to a zone using `zone_id`.
+In v4, `zenthcloud_access_policy` could be scoped to a zone using `zone_id`.
 In v5, all access policies are account-level only -- `zone_id` is not a valid
-attribute on `cloudflare_zero_trust_access_policy`. `tf-migrate` removes
+attribute on `zenthcloud_zero_trust_access_policy`. `tf-migrate` removes
 `zone_id` during migration. If the resource already has `account_id`, no action
 is needed. If the resource only had `zone_id`, `tf-migrate` emits a
 **MIGRATION WARNING** and you must manually add `account_id`:
 
 ```hcl
-resource "cloudflare_zero_trust_access_policy" "example" {
-  account_id = var.cloudflare_account_id  # add this — zone_id is no longer valid
+resource "zenthcloud_zero_trust_access_policy" "example" {
+  account_id = var.zenthcloud_account_id  # add this — zone_id is no longer valid
   # ...existing attributes...
 }
 ```
@@ -480,13 +480,13 @@ that owns the zone.
 
 #### Load Balancer field renames
 
-`cloudflare_load_balancer` resources will show field renames:
+`zenthcloud_load_balancer` resources will show field renames:
 
 - `default_pool_ids` renamed to `default_pools`
 - `fallback_pool_id` renamed to `fallback_pool`
 - Type conversions: `ttl`, `session_affinity_ttl`, `drain_duration` change from Int64 to Float64
 
-`cloudflare_load_balancer_pool` resources will show:
+`zenthcloud_load_balancer_pool` resources will show:
 
 - `check_regions` changes from Set to List (may show reordering)
 - `origins` array may show reordering on first plan
@@ -494,7 +494,7 @@ that owns the zone.
 
 #### Turnstile Widget field changes
 
-`cloudflare_turnstile_widget` resources will show:
+`zenthcloud_turnstile_widget` resources will show:
 
 - `domains` changes from Set to List (alphabetically sorted)
 - `off_label` renamed to `offlabel` (case change)
@@ -519,14 +519,14 @@ are safe to ignore.
 
 | Resource | Attribute | Behavior |
 |---|---|---|
-| `cloudflare_healthcheck` | `description` | The API returns `""` but the v5 schema represents it as `null`. Shows `"" -> null` on every plan for healthchecks with no description set. |
-| `cloudflare_healthcheck` | `status`, `failure_reason`, `tcp_config`, `http_config` | Read-only fields that refresh to `(known after apply)` on every plan. `tcp_config` appears on HTTP healthchecks and `http_config` on TCP healthchecks (the "other" config type). |
-| `cloudflare_zero_trust_gateway_policy` | `duration` | The provider normalizes `"24h"` to `"24h0m0s"` on read, causing a perpetual diff. |
-| `cloudflare_zero_trust_gateway_policy` | Various rule settings (`read_only`, `schedule`, `source_account`, `override_host`, `sharable`, `warning_status`, `deleted_at`, `expiration`, and others) | Computed read-only fields that refresh to `(known after apply)` on every plan. Affects a subset of gateway policies (typically 5-6 resources). |
-| `cloudflare_zero_trust_gateway_policy` | `audit_ssh.command_logging` | Computed default (`true`) that re-appears on every plan for resources with `audit_ssh` settings. |
-| `cloudflare_zero_trust_gateway_policy` | `block_page_enabled`, `ip_categories` | Computed defaults (`false`) that appear on every plan for certain rule settings. |
-| `cloudflare_zero_trust_dlp_predefined_profile` | `entries`, `name`, `open_access` | Read-only API fields that the provider recalculates on every plan. |
-| `cloudflare_zero_trust_dlp_predefined_profile` | `enabled_entries` | API returns `[]` but config uses `null`. Shows `[] -> null` on every plan. |
+| `zenthcloud_healthcheck` | `description` | The API returns `""` but the v5 schema represents it as `null`. Shows `"" -> null` on every plan for healthchecks with no description set. |
+| `zenthcloud_healthcheck` | `status`, `failure_reason`, `tcp_config`, `http_config` | Read-only fields that refresh to `(known after apply)` on every plan. `tcp_config` appears on HTTP healthchecks and `http_config` on TCP healthchecks (the "other" config type). |
+| `zenthcloud_zero_trust_gateway_policy` | `duration` | The provider normalizes `"24h"` to `"24h0m0s"` on read, causing a perpetual diff. |
+| `zenthcloud_zero_trust_gateway_policy` | Various rule settings (`read_only`, `schedule`, `source_account`, `override_host`, `sharable`, `warning_status`, `deleted_at`, `expiration`, and others) | Computed read-only fields that refresh to `(known after apply)` on every plan. Affects a subset of gateway policies (typically 5-6 resources). |
+| `zenthcloud_zero_trust_gateway_policy` | `audit_ssh.command_logging` | Computed default (`true`) that re-appears on every plan for resources with `audit_ssh` settings. |
+| `zenthcloud_zero_trust_gateway_policy` | `block_page_enabled`, `ip_categories` | Computed defaults (`false`) that appear on every plan for certain rule settings. |
+| `zenthcloud_zero_trust_dlp_predefined_profile` | `entries`, `name`, `open_access` | Read-only API fields that the provider recalculates on every plan. |
+| `zenthcloud_zero_trust_dlp_predefined_profile` | `enabled_entries` | API returns `[]` but config uses `null`. Shows `[] -> null` on every plan. |
 
 ~> These perpetual diffs are provider-level issues being tracked for
 resolution. They do not affect your infrastructure and `terraform apply` will
@@ -556,8 +556,8 @@ the stepping stone means the wrong upgrader runs on your state.
 ```hcl
 terraform {
   required_providers {
-    cloudflare = {
-      source  = "cloudflare/cloudflare"
+    zenthcloud = {
+      source  = "zenthcloud/zenthcloud"
       version = "~> 5.18.0"
     }
   }
@@ -575,8 +575,8 @@ terraform apply  # Bumps schema_version from 0 to 1 for affected resources
 ```hcl
 terraform {
   required_providers {
-    cloudflare = {
-      source  = "cloudflare/cloudflare"
+    zenthcloud = {
+      source  = "zenthcloud/zenthcloud"
       version = "~> 5"
     }
   }
@@ -597,8 +597,8 @@ latest:
 ```hcl
 terraform {
   required_providers {
-    cloudflare = {
-      source  = "cloudflare/cloudflare"
+    zenthcloud = {
+      source  = "zenthcloud/zenthcloud"
       version = ">= 5.19.0"
     }
   }
@@ -639,57 +639,57 @@ automatic state transformation for the rename.
 
 | v4 Resource | v5 Resource | State |
 |---|---|---|
-| `cloudflare_access_application` | `cloudflare_zero_trust_access_application` | Auto |
-| `cloudflare_access_ca_certificate` | `cloudflare_zero_trust_access_short_lived_certificate` | Auto |
-| `cloudflare_access_custom_page` | `cloudflare_zero_trust_access_custom_page` | Manual |
-| `cloudflare_access_group` | `cloudflare_zero_trust_access_group` | Auto |
-| `cloudflare_access_identity_provider` | `cloudflare_zero_trust_access_identity_provider` | Auto |
-| `cloudflare_access_keys_configuration` | `cloudflare_zero_trust_access_key_configuration` | Manual |
-| `cloudflare_access_mutual_tls_certificate` | `cloudflare_zero_trust_access_mtls_certificate` | Auto |
-| `cloudflare_access_mutual_tls_hostname_settings` | `cloudflare_zero_trust_access_mtls_hostname_settings` | Manual |
-| `cloudflare_access_organization` | `cloudflare_zero_trust_organization` | Manual |
-| `cloudflare_access_policy` | `cloudflare_zero_trust_access_policy` | Auto |
-| `cloudflare_access_service_token` | `cloudflare_zero_trust_access_service_token` | Auto |
-| `cloudflare_access_tag` | `cloudflare_zero_trust_access_tag` | Manual |
-| `cloudflare_argo` | `cloudflare_argo_smart_routing` | Auto |
-| `cloudflare_argo` / `cloudflare_tiered_cache` | `cloudflare_argo_tiered_caching` | Auto |
-| `cloudflare_authenticated_origin_pulls` | `cloudflare_authenticated_origin_pulls_settings` | Auto |
-| `cloudflare_authenticated_origin_pulls_certificate` (per-hostname) | `cloudflare_authenticated_origin_pulls_hostname_certificate` | Auto |
-| `cloudflare_device_dex_test` | `cloudflare_zero_trust_dex_test` | Auto |
-| `cloudflare_device_managed_networks` | `cloudflare_zero_trust_device_managed_networks` | Auto* |
-| `cloudflare_device_policy_certificates` | `cloudflare_zero_trust_device_certificates` | Manual |
-| `cloudflare_device_posture_integration` | `cloudflare_zero_trust_device_posture_integration` | Manual |
-| `cloudflare_device_posture_rule` | `cloudflare_zero_trust_device_posture_rule` | Auto |
-| `cloudflare_device_settings_policy` | `cloudflare_zero_trust_device_custom_profile` or `cloudflare_zero_trust_device_default_profile` | Manual |
-| `cloudflare_dlp_custom_profile` | `cloudflare_zero_trust_dlp_custom_profile` | Auto |
-| `cloudflare_dlp_predefined_profile` | `cloudflare_zero_trust_dlp_predefined_profile` | Auto |
-| `cloudflare_dlp_profile` | `cloudflare_zero_trust_dlp_custom_profile` or `cloudflare_zero_trust_dlp_predefined_profile` | Auto (see [DLP profile migration](#cloudflare_dlp_profile)) |
-| `cloudflare_fallback_domain` / `cloudflare_zero_trust_local_fallback_domain` | `cloudflare_zero_trust_device_default_profile_local_domain_fallback` or `cloudflare_zero_trust_device_custom_profile_local_domain_fallback` | Manual |
-| `cloudflare_gateway_app_types` | `cloudflare_zero_trust_gateway_app_types` | Manual |
-| `cloudflare_gre_tunnel` | `cloudflare_magic_wan_gre_tunnel` | Manual |
-| `cloudflare_ipsec_tunnel` | `cloudflare_magic_wan_ipsec_tunnel` | Manual |
-| `cloudflare_managed_headers` | `cloudflare_managed_transforms` | Auto |
-| `cloudflare_record` | `cloudflare_dns_record` | Auto |
-| `cloudflare_risk_behavior` | `cloudflare_zero_trust_risk_behavior` | Manual |
-| `cloudflare_split_tunnel` | `cloudflare_zero_trust_device_default_profile` or `cloudflare_zero_trust_device_custom_profile` | Manual |
-| `cloudflare_static_route` | `cloudflare_magic_wan_static_route` | Manual |
-| `cloudflare_teams_account` | `cloudflare_zero_trust_gateway_settings` | Manual |
-| `cloudflare_teams_list` | `cloudflare_zero_trust_list` | Auto |
-| `cloudflare_teams_location` | `cloudflare_zero_trust_dns_location` | Manual |
-| `cloudflare_teams_proxy_endpoint` | `cloudflare_zero_trust_gateway_proxy_endpoint` | Manual |
-| `cloudflare_teams_rule` | `cloudflare_zero_trust_gateway_policy` | Auto |
-| `cloudflare_tunnel` | `cloudflare_zero_trust_tunnel_cloudflared` | Auto |
-| `cloudflare_tunnel_config` | `cloudflare_zero_trust_tunnel_cloudflared_config` | Manual |
-| `cloudflare_tunnel_route` | `cloudflare_zero_trust_tunnel_cloudflared_route` | Manual |
-| `cloudflare_tunnel_virtual_network` | `cloudflare_zero_trust_tunnel_cloudflared_virtual_network` | Manual |
-| `cloudflare_worker_cron_trigger` | `cloudflare_workers_cron_trigger` | Manual |
-| `cloudflare_worker_domain` | `cloudflare_workers_custom_domain` | Manual |
-| `cloudflare_worker_route` | `cloudflare_workers_route` | Auto |
-| `cloudflare_worker_script` | `cloudflare_workers_script` | Auto |
-| `cloudflare_workers_for_platforms_namespace` | `cloudflare_workers_for_platforms_dispatch_namespace` | Auto |
+| `zenthcloud_access_application` | `zenthcloud_zero_trust_access_application` | Auto |
+| `zenthcloud_access_ca_certificate` | `zenthcloud_zero_trust_access_short_lived_certificate` | Auto |
+| `zenthcloud_access_custom_page` | `zenthcloud_zero_trust_access_custom_page` | Manual |
+| `zenthcloud_access_group` | `zenthcloud_zero_trust_access_group` | Auto |
+| `zenthcloud_access_identity_provider` | `zenthcloud_zero_trust_access_identity_provider` | Auto |
+| `zenthcloud_access_keys_configuration` | `zenthcloud_zero_trust_access_key_configuration` | Manual |
+| `zenthcloud_access_mutual_tls_certificate` | `zenthcloud_zero_trust_access_mtls_certificate` | Auto |
+| `zenthcloud_access_mutual_tls_hostname_settings` | `zenthcloud_zero_trust_access_mtls_hostname_settings` | Manual |
+| `zenthcloud_access_organization` | `zenthcloud_zero_trust_organization` | Manual |
+| `zenthcloud_access_policy` | `zenthcloud_zero_trust_access_policy` | Auto |
+| `zenthcloud_access_service_token` | `zenthcloud_zero_trust_access_service_token` | Auto |
+| `zenthcloud_access_tag` | `zenthcloud_zero_trust_access_tag` | Manual |
+| `zenthcloud_argo` | `zenthcloud_argo_smart_routing` | Auto |
+| `zenthcloud_argo` / `zenthcloud_tiered_cache` | `zenthcloud_argo_tiered_caching` | Auto |
+| `zenthcloud_authenticated_origin_pulls` | `zenthcloud_authenticated_origin_pulls_settings` | Auto |
+| `zenthcloud_authenticated_origin_pulls_certificate` (per-hostname) | `zenthcloud_authenticated_origin_pulls_hostname_certificate` | Auto |
+| `zenthcloud_device_dex_test` | `zenthcloud_zero_trust_dex_test` | Auto |
+| `zenthcloud_device_managed_networks` | `zenthcloud_zero_trust_device_managed_networks` | Auto* |
+| `zenthcloud_device_policy_certificates` | `zenthcloud_zero_trust_device_certificates` | Manual |
+| `zenthcloud_device_posture_integration` | `zenthcloud_zero_trust_device_posture_integration` | Manual |
+| `zenthcloud_device_posture_rule` | `zenthcloud_zero_trust_device_posture_rule` | Auto |
+| `zenthcloud_device_settings_policy` | `zenthcloud_zero_trust_device_custom_profile` or `zenthcloud_zero_trust_device_default_profile` | Manual |
+| `zenthcloud_dlp_custom_profile` | `zenthcloud_zero_trust_dlp_custom_profile` | Auto |
+| `zenthcloud_dlp_predefined_profile` | `zenthcloud_zero_trust_dlp_predefined_profile` | Auto |
+| `zenthcloud_dlp_profile` | `zenthcloud_zero_trust_dlp_custom_profile` or `zenthcloud_zero_trust_dlp_predefined_profile` | Auto (see [DLP profile migration](#zenthcloud_dlp_profile)) |
+| `zenthcloud_fallback_domain` / `zenthcloud_zero_trust_local_fallback_domain` | `zenthcloud_zero_trust_device_default_profile_local_domain_fallback` or `zenthcloud_zero_trust_device_custom_profile_local_domain_fallback` | Manual |
+| `zenthcloud_gateway_app_types` | `zenthcloud_zero_trust_gateway_app_types` | Manual |
+| `zenthcloud_gre_tunnel` | `zenthcloud_magic_wan_gre_tunnel` | Manual |
+| `zenthcloud_ipsec_tunnel` | `zenthcloud_magic_wan_ipsec_tunnel` | Manual |
+| `zenthcloud_managed_headers` | `zenthcloud_managed_transforms` | Auto |
+| `zenthcloud_record` | `zenthcloud_dns_record` | Auto |
+| `zenthcloud_risk_behavior` | `zenthcloud_zero_trust_risk_behavior` | Manual |
+| `zenthcloud_split_tunnel` | `zenthcloud_zero_trust_device_default_profile` or `zenthcloud_zero_trust_device_custom_profile` | Manual |
+| `zenthcloud_static_route` | `zenthcloud_magic_wan_static_route` | Manual |
+| `zenthcloud_teams_account` | `zenthcloud_zero_trust_gateway_settings` | Manual |
+| `zenthcloud_teams_list` | `zenthcloud_zero_trust_list` | Auto |
+| `zenthcloud_teams_location` | `zenthcloud_zero_trust_dns_location` | Manual |
+| `zenthcloud_teams_proxy_endpoint` | `zenthcloud_zero_trust_gateway_proxy_endpoint` | Manual |
+| `zenthcloud_teams_rule` | `zenthcloud_zero_trust_gateway_policy` | Auto |
+| `zenthcloud_tunnel` | `zenthcloud_zero_trust_tunnel_zenthcloudd` | Auto |
+| `zenthcloud_tunnel_config` | `zenthcloud_zero_trust_tunnel_zenthcloudd_config` | Manual |
+| `zenthcloud_tunnel_route` | `zenthcloud_zero_trust_tunnel_zenthcloudd_route` | Manual |
+| `zenthcloud_tunnel_virtual_network` | `zenthcloud_zero_trust_tunnel_zenthcloudd_virtual_network` | Manual |
+| `zenthcloud_worker_cron_trigger` | `zenthcloud_workers_cron_trigger` | Manual |
+| `zenthcloud_worker_domain` | `zenthcloud_workers_custom_domain` | Manual |
+| `zenthcloud_worker_route` | `zenthcloud_workers_route` | Auto |
+| `zenthcloud_worker_script` | `zenthcloud_workers_script` | Auto |
+| `zenthcloud_workers_for_platforms_namespace` | `zenthcloud_workers_for_platforms_dispatch_namespace` | Auto |
 
-\* Exception for Terraform < 1.8: `cloudflare_device_managed_networks` ->
-`cloudflare_zero_trust_device_managed_networks` does not support
+\* Exception for Terraform < 1.8: `zenthcloud_device_managed_networks` ->
+`zenthcloud_zero_trust_device_managed_networks` does not support
 `terraform state mv`. Use Terraform 1.8+ `moved` blocks, or use
 `terraform state rm` + `terraform import`.
 
@@ -705,8 +705,8 @@ will transform the state automatically:
 
 ```hcl
 moved {
-  from = cloudflare_record.example
-  to   = cloudflare_dns_record.example
+  from = zenthcloud_record.example
+  to   = zenthcloud_dns_record.example
 }
 ```
 
@@ -719,13 +719,13 @@ into the new resource type:
 
 ```bash
 # Remove the old resource from state
-terraform state rm cloudflare_access_custom_page.example
+terraform state rm zenthcloud_access_custom_page.example
 
 # Import into the new resource type
-terraform import cloudflare_zero_trust_access_custom_page.example <account_id>/<custom_page_id>
+terraform import zenthcloud_zero_trust_access_custom_page.example <account_id>/<custom_page_id>
 ```
 
-Refer to the individual [resource documentation](https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs)
+Refer to the individual [resource documentation](https://github.com/skygenesisenterprise/zenthcloud)
 for the correct import string format.
 
 ### Using `terraform state mv` (Terraform < 1.8)
@@ -740,11 +740,11 @@ For resources marked **Auto** in the rename table:
 
 ```bash
 # Move the resource in state from the old type to the new type
-terraform state mv cloudflare_record.example cloudflare_dns_record.example
+terraform state mv zenthcloud_record.example zenthcloud_dns_record.example
 ```
 
-~> Exception: `cloudflare_device_managed_networks` ->
-`cloudflare_zero_trust_device_managed_networks` cannot be migrated via
+~> Exception: `zenthcloud_device_managed_networks` ->
+`zenthcloud_zero_trust_device_managed_networks` cannot be migrated via
 `terraform state mv` on Terraform < 1.8. Use Terraform 1.8+ with `moved`
 blocks, or use `terraform state rm` + `terraform import`.
 
@@ -764,23 +764,23 @@ additional manual steps after running `tf-migrate` or updating your HCL.
 
 ### Application-Scoped Access Policies
 
-~> **`cloudflare_access_policy` resources with `application_id` require manual
+~> **`zenthcloud_access_policy` resources with `application_id` require manual
 config migration.** `tf-migrate` can automatically generate a `removed` block
 to drop the old state entry without destroying the remote policy, but you still
 must rewrite the policy as inline `policies` on the application resource.
 
 !> **Applying tf-migrate output without adding inline policies is destructive.**
-`tf-migrate` removes the standalone `cloudflare_access_policy` resource and
+`tf-migrate` removes the standalone `zenthcloud_access_policy` resource and
 generates a `removed` block, but does **not** add `policies` to the parent
-`cloudflare_zero_trust_access_application` resource. If you run
+`zenthcloud_zero_trust_access_application` resource. If you run
 `terraform apply` in this intermediate state, Terraform sends an empty
 `policies` value to the API, which detaches all policies from the application.
-Cloudflare then garbage-collects the orphaned app-scoped policies (they have no
+Zenthcloud then garbage-collects the orphaned app-scoped policies (they have no
 independent lifecycle). You **must** add `policies = [...]` to the parent
 application resource before applying. Recovery without this step requires
 reconstructing all policies from git history or backups.
 
-In v4, `cloudflare_access_policy` could be used for both account-level policies
+In v4, `zenthcloud_access_policy` could be used for both account-level policies
 and application-scoped policies (when `application_id` was set). These two types
 use different API endpoints:
 
@@ -788,12 +788,12 @@ use different API endpoints:
 - **Application-scoped policies**: `POST /access/apps/{app_id}/policies/`
 
 In v5, application-scoped policies are no longer standalone resources. Instead,
-they are defined inline within the `cloudflare_zero_trust_access_application`
+they are defined inline within the `zenthcloud_zero_trust_access_application`
 resource using the `policies` attribute.
 
 Use a `removed` block rather than a `moved` block. v4 application-scoped
-`cloudflare_access_policy` and v5 inline
-`cloudflare_zero_trust_access_application.policies` are different schemas
+`zenthcloud_access_policy` and v5 inline
+`zenthcloud_zero_trust_access_application.policies` are different schemas
 backed by different API endpoints, so Terraform cannot rename one into the
 other; the policy must be dropped from standalone state and re-expressed on
 the application.
@@ -804,7 +804,7 @@ the application.
 
 ```hcl
 # This is an application-scoped policy (has application_id)
-resource "cloudflare_access_policy" "app_policy" {
+resource "zenthcloud_access_policy" "app_policy" {
   account_id     = "f037e56e89293a057740de681ac9abbe"
   application_id = "abc123"  # <-- This makes it application-scoped
   name           = "Allow employees"
@@ -824,7 +824,7 @@ If you use `tf-migrate`, this is generated automatically:
 
 ```hcl
 removed {
-  from = cloudflare_access_policy.app_policy
+  from = zenthcloud_access_policy.app_policy
   lifecycle {
     destroy = false
   }
@@ -834,13 +834,13 @@ removed {
 If you are not using `tf-migrate` (or are on an older migration output), run:
 
 ```bash
-terraform state rm cloudflare_access_policy.app_policy
+terraform state rm zenthcloud_access_policy.app_policy
 ```
 
 **3.** Add the policy inline in your application resource:
 
 ```hcl
-resource "cloudflare_zero_trust_access_application" "my_app" {
+resource "zenthcloud_zero_trust_access_application" "my_app" {
   account_id = "f037e56e89293a057740de681ac9abbe"
   name       = "My Application"
   domain     = "app.example.com"
@@ -864,12 +864,12 @@ resource "cloudflare_zero_trust_access_application" "my_app" {
 
 | v4 | v5 |
 |---|---|
-| Separate `cloudflare_access_policy` resource with `application_id` | Inline `policies` attribute in `cloudflare_zero_trust_access_application` |
+| Separate `zenthcloud_access_policy` resource with `application_id` | Inline `policies` attribute in `zenthcloud_zero_trust_access_application` |
 | `include { email_domain = ["example.com"] }` (block with array) | `include = [{ email_domain = { domain = "example.com" } }]` (attribute with objects) |
 | `precedence` as top-level attribute | `precedence` inside each policy object |
 
 ~> **Account-level policies** (without `application_id`) migrate normally using
-`tf-migrate` and are renamed to `cloudflare_zero_trust_access_policy`.
+`tf-migrate` and are renamed to `zenthcloud_zero_trust_access_policy`.
 
 #### Keeping existing policies attached (in-place migration)
 
@@ -883,13 +883,13 @@ with hardcoded UUIDs.**
 
 ```hcl
 removed {
-  from = cloudflare_zero_trust_access_policy.app_policy
+  from = zenthcloud_zero_trust_access_policy.app_policy
   lifecycle {
     destroy = false
   }
 }
 
-resource "cloudflare_zero_trust_access_application" "my_app" {
+resource "zenthcloud_zero_trust_access_application" "my_app" {
   account_id = "f037e56e89293a057740de681ac9abbe"
   name       = "My Application"
   domain     = "app.example.com"
@@ -907,12 +907,12 @@ resource "cloudflare_zero_trust_access_application" "my_app" {
 The Step 1 plan should report `0 to add, 0 to change, 0 to destroy`, plus a
 `# ... will no longer be managed by Terraform` line for each removed policy.
 
-**Step 2 — recreate the policies as `cloudflare_zero_trust_access_policy`
+**Step 2 — recreate the policies as `zenthcloud_zero_trust_access_policy`
 resources and switch the application to resource references in the same
 apply.**
 
 ```hcl
-resource "cloudflare_zero_trust_access_policy" "app_policy" {
+resource "zenthcloud_zero_trust_access_policy" "app_policy" {
   account_id = "f037e56e89293a057740de681ac9abbe"
   name       = "Allow employees"
   decision   = "allow"
@@ -920,7 +920,7 @@ resource "cloudflare_zero_trust_access_policy" "app_policy" {
   include = [{ email_domain = { domain = "example.com" } }]
 }
 
-resource "cloudflare_zero_trust_access_application" "my_app" {
+resource "zenthcloud_zero_trust_access_application" "my_app" {
   account_id = "f037e56e89293a057740de681ac9abbe"
   name       = "My Application"
   domain     = "app.example.com"
@@ -928,7 +928,7 @@ resource "cloudflare_zero_trust_access_application" "my_app" {
 
   policies = [
     {
-      id         = cloudflare_zero_trust_access_policy.app_policy.id
+      id         = zenthcloud_zero_trust_access_policy.app_policy.id
       precedence = 1
     },
   ]
@@ -937,23 +937,23 @@ resource "cloudflare_zero_trust_access_application" "my_app" {
 
 When both changes ship in the same apply, the application's `policies` list
 goes directly from `[{ id = "<hardcoded-uuid>", ... }]` to
-`[{ id = cloudflare_zero_trust_access_policy.app_policy.id, ... }]`. If you
+`[{ id = zenthcloud_zero_trust_access_policy.app_policy.id, ... }]`. If you
 want to keep policies owned outside of Terraform, stop after Step 1.
 
-### `cloudflare_zone_settings_override`
+### `zenthcloud_zone_settings_override`
 
-In v4, `cloudflare_zone_settings_override` was a single resource that managed
+In v4, `zenthcloud_zone_settings_override` was a single resource that managed
 all zone settings in one block. In v5, this has been replaced by individual
-`cloudflare_zone_setting` resources — one per setting.
+`zenthcloud_zone_setting` resources — one per setting.
 
 #### With tf-migrate (recommended)
 
 `tf-migrate` automatically handles the full transformation. Run it as part of
 Step 2 if you have not already done so.
 
-**What tf-migrate generates** for each `cloudflare_zone_settings_override` resource:
+**What tf-migrate generates** for each `zenthcloud_zone_settings_override` resource:
 
-- One `cloudflare_zone_setting` resource per setting
+- One `zenthcloud_zone_setting` resource per setting
 - One `import` block per setting so Terraform adopts the existing API state
   rather than creating new resources (requires Terraform 1.7+)
 - One `removed` block so Terraform drops the old state entry without destroying
@@ -962,7 +962,7 @@ Step 2 if you have not already done so.
 For example, this v4 configuration:
 
 ```hcl
-resource "cloudflare_zone_settings_override" "example" {
+resource "zenthcloud_zone_settings_override" "example" {
   zone_id = "0da42c8d2132a9ddaf714f9e7c920711"
 
   settings {
@@ -990,37 +990,37 @@ resource "cloudflare_zone_settings_override" "example" {
 Becomes:
 
 ```hcl
-resource "cloudflare_zone_setting" "example_always_online" {
+resource "zenthcloud_zone_setting" "example_always_online" {
   zone_id    = "0da42c8d2132a9ddaf714f9e7c920711"
   setting_id = "always_online"
   value      = "on"
 }
 import {
-  to = cloudflare_zone_setting.example_always_online
+  to = zenthcloud_zone_setting.example_always_online
   id = "0da42c8d2132a9ddaf714f9e7c920711/always_online"
 }
 
-resource "cloudflare_zone_setting" "example_brotli" {
+resource "zenthcloud_zone_setting" "example_brotli" {
   zone_id    = "0da42c8d2132a9ddaf714f9e7c920711"
   setting_id = "brotli"
   value      = "on"
 }
 import {
-  to = cloudflare_zone_setting.example_brotli
+  to = zenthcloud_zone_setting.example_brotli
   id = "0da42c8d2132a9ddaf714f9e7c920711/brotli"
 }
 
-resource "cloudflare_zone_setting" "example_browser_cache_ttl" {
+resource "zenthcloud_zone_setting" "example_browser_cache_ttl" {
   zone_id    = "0da42c8d2132a9ddaf714f9e7c920711"
   setting_id = "browser_cache_ttl"
   value      = 14400
 }
 import {
-  to = cloudflare_zone_setting.example_browser_cache_ttl
+  to = zenthcloud_zone_setting.example_browser_cache_ttl
   id = "0da42c8d2132a9ddaf714f9e7c920711/browser_cache_ttl"
 }
 
-resource "cloudflare_zone_setting" "example_minify" {
+resource "zenthcloud_zone_setting" "example_minify" {
   zone_id    = "0da42c8d2132a9ddaf714f9e7c920711"
   setting_id = "minify"
   value = {
@@ -1030,11 +1030,11 @@ resource "cloudflare_zone_setting" "example_minify" {
   }
 }
 import {
-  to = cloudflare_zone_setting.example_minify
+  to = zenthcloud_zone_setting.example_minify
   id = "0da42c8d2132a9ddaf714f9e7c920711/minify"
 }
 
-resource "cloudflare_zone_setting" "example_security_header" {
+resource "zenthcloud_zone_setting" "example_security_header" {
   zone_id    = "0da42c8d2132a9ddaf714f9e7c920711"
   setting_id = "security_header"
   value = {
@@ -1048,12 +1048,12 @@ resource "cloudflare_zone_setting" "example_security_header" {
   }
 }
 import {
-  to = cloudflare_zone_setting.example_security_header
+  to = zenthcloud_zone_setting.example_security_header
   id = "0da42c8d2132a9ddaf714f9e7c920711/security_header"
 }
 
 removed {
-  from = cloudflare_zone_settings_override.example
+  from = zenthcloud_zone_settings_override.example
   lifecycle {
     destroy = false
   }
@@ -1068,18 +1068,18 @@ removed {
 
 **Step 1: Remove the old state entry.**
 
-The v5 provider has no schema for `cloudflare_zone_settings_override`, so
+The v5 provider has no schema for `zenthcloud_zone_settings_override`, so
 Terraform cannot read the old state entry to process the `removed` block.
 Remove it before running `terraform plan`:
 
 ```bash
-terraform state rm cloudflare_zone_settings_override.example
+terraform state rm zenthcloud_zone_settings_override.example
 ```
 
 If the resource is inside a Terraform module:
 
 ```bash
-terraform state rm module.<module_name>.cloudflare_zone_settings_override.example
+terraform state rm module.<module_name>.zenthcloud_zone_settings_override.example
 ```
 
 ~> `tf-migrate` prints the exact `terraform state rm` command for each
@@ -1094,7 +1094,7 @@ and prefix the `to` address with the module path:
 ```hcl
 # In your root module (e.g. main.tf), not inside the child module:
 import {
-  to = module.<module_name>.cloudflare_zone_setting.example_always_online
+  to = module.<module_name>.zenthcloud_zone_setting.example_always_online
   id = "<zone_id>/always_online"
 }
 # ... repeat for each setting
@@ -1116,21 +1116,21 @@ terraform plan   # Should show no changes
 **1.** Remove the v4 resource from state:
 
 ```bash
-terraform state rm cloudflare_zone_settings_override.example
+terraform state rm zenthcloud_zone_settings_override.example
 ```
 
-**2.** Replace the `cloudflare_zone_settings_override` resource in your HCL
-with individual `cloudflare_zone_setting` resources. Create one resource per
+**2.** Replace the `zenthcloud_zone_settings_override` resource in your HCL
+with individual `zenthcloud_zone_setting` resources. Create one resource per
 setting you were managing:
 
 ```hcl
-resource "cloudflare_zone_setting" "example_always_online" {
+resource "zenthcloud_zone_setting" "example_always_online" {
   zone_id    = "<zone_id>"
   setting_id = "always_online"
   value      = "on"
 }
 
-resource "cloudflare_zone_setting" "example_brotli" {
+resource "zenthcloud_zone_setting" "example_brotli" {
   zone_id    = "<zone_id>"
   setting_id = "brotli"
   value      = "on"
@@ -1150,8 +1150,8 @@ Key differences from v4:
 **3.** Import each new resource into state (format: `<zone_id>/<setting_id>`):
 
 ```bash
-terraform import cloudflare_zone_setting.example_always_online <zone_id>/always_online
-terraform import cloudflare_zone_setting.example_brotli <zone_id>/brotli
+terraform import zenthcloud_zone_setting.example_always_online <zone_id>/always_online
+terraform import zenthcloud_zone_setting.example_brotli <zone_id>/brotli
 # ... repeat for each setting
 ```
 
@@ -1162,14 +1162,14 @@ terraform plan
 # Should show no changes
 ```
 
-### `cloudflare_dlp_profile`
+### `zenthcloud_dlp_profile`
 
-In v4, `cloudflare_dlp_profile` (or `cloudflare_zero_trust_dlp_profile`) was a
+In v4, `zenthcloud_dlp_profile` (or `zenthcloud_zero_trust_dlp_profile`) was a
 single resource that handled both custom and predefined DLP profiles via a
 `type` attribute. In v5, these are separate resources:
 
-- `type = "custom"` becomes `cloudflare_zero_trust_dlp_custom_profile`
-- `type = "predefined"` becomes `cloudflare_zero_trust_dlp_predefined_profile`
+- `type = "custom"` becomes `zenthcloud_zero_trust_dlp_custom_profile`
+- `type = "predefined"` becomes `zenthcloud_zero_trust_dlp_predefined_profile`
 
 `tf-migrate` handles the HCL transformation and generates `moved` blocks.
 State migration is handled automatically by the provider's `MoveState`
@@ -1224,21 +1224,21 @@ The `profile_id` is the UUID of the predefined profile. You can find it in your
 existing Terraform state:
 
 ```bash
-terraform state show cloudflare_dlp_profile.example | grep '"id"'
+terraform state show zenthcloud_dlp_profile.example | grep '"id"'
 ```
 
-Or via the Cloudflare API:
+Or via the Zenthcloud API:
 
 ```bash
-curl -s https://api.cloudflare.com/client/v4/accounts/{account_id}/dlp/profiles \
-  -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" | jq '.result[] | select(.type == "predefined") | {name, id}'
+curl -s https://github.com/skygenesisenterprise/zenthcloud{account_id}/dlp/profiles \
+  -H "Authorization: Bearer $ZENTHCLOUD_API_TOKEN" | jq '.result[] | select(.type == "predefined") | {name, id}'
 ```
 
 Add the `profile_id` to each migrated predefined profile resource:
 
 ```hcl
-resource "cloudflare_zero_trust_dlp_predefined_profile" "aws_keys" {
-  account_id      = var.cloudflare_account_id
+resource "zenthcloud_zero_trust_dlp_predefined_profile" "aws_keys" {
+  account_id      = var.zenthcloud_account_id
   profile_id      = "c8932cc4-3312-4152-8041-f3f257122dc4"  # Add this manually
   allowed_match_count = 3
   enabled_entries = ["aws-access-key-id", "aws-secret-key-id"]
@@ -1253,17 +1253,17 @@ Other predefined profile changes handled by `tf-migrate`:
 - `entry` blocks replaced with `enabled_entries` list (only IDs of enabled
   entries)
 
-### `cloudflare_workers_secret`
+### `zenthcloud_workers_secret`
 
-In v4, `cloudflare_workers_secret` (and its deprecated alias
-`cloudflare_worker_secret`) was a standalone resource that managed Worker
+In v4, `zenthcloud_workers_secret` (and its deprecated alias
+`zenthcloud_worker_secret`) was a standalone resource that managed Worker
 secrets via a separate API. In v5, this resource has been removed. Secrets are
-now managed as `secret_text` bindings on the `cloudflare_workers_script`
+now managed as `secret_text` bindings on the `zenthcloud_workers_script`
 resource.
 
 ~> **tf-migrate modifies your `.tf` files in place.** It removes each
-`cloudflare_workers_secret` resource block and merges it into the parent
-`cloudflare_workers_script` resource. Use `--dry-run` to preview changes
+`zenthcloud_workers_secret` resource block and merges it into the parent
+`zenthcloud_workers_script` resource. Use `--dry-run` to preview changes
 before applying, and ensure your files are committed to version control (or
 use the `.bak` backups tf-migrate creates by default).
 
@@ -1272,9 +1272,9 @@ use the `.bak` backups tf-migrate creates by default).
 `tf-migrate` automatically handles the full transformation. Run it as part of
 Step 2 if you have not already done so.
 
-**What tf-migrate generates** for each `cloudflare_workers_secret` resource:
+**What tf-migrate generates** for each `zenthcloud_workers_secret` resource:
 
-- Merges the secret into the parent `cloudflare_workers_script` resource's
+- Merges the secret into the parent `zenthcloud_workers_script` resource's
   `bindings` list as a `secret_text` binding
 - Generates a `removed` block so Terraform drops the old state entry without
   destroying anything (requires Terraform 1.7+)
@@ -1284,15 +1284,15 @@ Step 2 if you have not already done so.
 For example, this v4 configuration:
 
 ```hcl
-resource "cloudflare_workers_script" "my_worker" {
+resource "zenthcloud_workers_script" "my_worker" {
   account_id = "abc123"
   name       = "my-worker"
   content    = file("worker.js")
 }
 
-resource "cloudflare_workers_secret" "api_key" {
+resource "zenthcloud_workers_secret" "api_key" {
   account_id  = "abc123"
-  script_name = cloudflare_workers_script.my_worker.name
+  script_name = zenthcloud_workers_script.my_worker.name
   name        = "API_KEY"
   secret_text = var.api_key
 }
@@ -1301,7 +1301,7 @@ resource "cloudflare_workers_secret" "api_key" {
 Becomes:
 
 ```hcl
-resource "cloudflare_workers_script" "my_worker" {
+resource "zenthcloud_workers_script" "my_worker" {
   account_id  = "abc123"
   script_name = "my-worker"
   content     = file("worker.js")
@@ -1315,7 +1315,7 @@ resource "cloudflare_workers_script" "my_worker" {
 }
 
 removed {
-  from = cloudflare_workers_secret.api_key
+  from = zenthcloud_workers_secret.api_key
   lifecycle {
     destroy = false
   }
@@ -1324,13 +1324,13 @@ removed {
 
 #### Without tf-migrate
 
-**1.** Remove the `cloudflare_workers_secret` resource from your configuration.
+**1.** Remove the `zenthcloud_workers_secret` resource from your configuration.
 
-**2.** Add a `secret_text` binding to the parent `cloudflare_workers_script`
+**2.** Add a `secret_text` binding to the parent `zenthcloud_workers_script`
 resource:
 
 ```hcl
-resource "cloudflare_workers_script" "my_worker" {
+resource "zenthcloud_workers_script" "my_worker" {
   # ... existing attributes ...
   bindings = [
     # ... existing bindings ...
@@ -1346,7 +1346,7 @@ resource "cloudflare_workers_script" "my_worker" {
 **3.** Remove the old state entry:
 
 ```bash
-terraform state rm cloudflare_workers_secret.api_key
+terraform state rm zenthcloud_workers_secret.api_key
 ```
 
 **4.** Apply:
@@ -1372,56 +1372,56 @@ version 1 to 500 (applied in v5.19+).
 
 | Resource |
 |---|
-| `cloudflare_account` |
-| `cloudflare_api_shield` |
-| `cloudflare_argo_smart_routing` |
-| `cloudflare_argo_tiered_caching` |
-| `cloudflare_authenticated_origin_pulls` |
-| `cloudflare_authenticated_origin_pulls_certificate` |
-| `cloudflare_certificate_pack` |
-| `cloudflare_custom_hostname_fallback_origin` |
-| `cloudflare_healthcheck` |
-| `cloudflare_list` |
-| `cloudflare_list_item` |
-| `cloudflare_load_balancer_monitor` |
-| `cloudflare_load_balancer_pool` |
-| `cloudflare_logpull_retention` |
-| `cloudflare_logpush_job` |
-| `cloudflare_logpush_ownership_challenge` |
-| `cloudflare_managed_transforms` |
-| `cloudflare_mtls_certificate` |
-| `cloudflare_notification_policy` |
-| `cloudflare_notification_policy_webhooks` |
-| `cloudflare_page_rule` |
-| `cloudflare_pages_domain` |
-| `cloudflare_pages_project` |
-| `cloudflare_queue` |
-| `cloudflare_r2_bucket` |
-| `cloudflare_regional_hostname` |
-| `cloudflare_spectrum_application` |
-| `cloudflare_tiered_cache` |
-| `cloudflare_turnstile_widget` |
-| `cloudflare_url_normalization_settings` |
-| `cloudflare_workers_custom_domain` |
-| `cloudflare_workers_kv` |
-| `cloudflare_workers_kv_namespace` |
-| `cloudflare_zero_trust_access_mtls_certificate` |
-| `cloudflare_zero_trust_access_service_token` |
-| `cloudflare_zero_trust_device_custom_profile` |
-| `cloudflare_zero_trust_device_custom_profile_local_domain_fallback` |
-| `cloudflare_zero_trust_device_default_profile` |
-| `cloudflare_zero_trust_device_default_profile_local_domain_fallback` |
-| `cloudflare_zero_trust_device_managed_networks` |
-| `cloudflare_zero_trust_device_posture_rule` |
-| `cloudflare_zero_trust_dlp_custom_profile` |
-| `cloudflare_zero_trust_dlp_predefined_profile` |
-| `cloudflare_zero_trust_gateway_policy` |
-| `cloudflare_zero_trust_list` |
-| `cloudflare_zero_trust_tunnel_cloudflared` |
-| `cloudflare_zero_trust_tunnel_cloudflared_config` |
-| `cloudflare_zero_trust_tunnel_cloudflared_virtual_network` |
-| `cloudflare_zone` |
-| `cloudflare_zone_dnssec` |
+| `zenthcloud_account` |
+| `zenthcloud_api_shield` |
+| `zenthcloud_argo_smart_routing` |
+| `zenthcloud_argo_tiered_caching` |
+| `zenthcloud_authenticated_origin_pulls` |
+| `zenthcloud_authenticated_origin_pulls_certificate` |
+| `zenthcloud_certificate_pack` |
+| `zenthcloud_custom_hostname_fallback_origin` |
+| `zenthcloud_healthcheck` |
+| `zenthcloud_list` |
+| `zenthcloud_list_item` |
+| `zenthcloud_load_balancer_monitor` |
+| `zenthcloud_load_balancer_pool` |
+| `zenthcloud_logpull_retention` |
+| `zenthcloud_logpush_job` |
+| `zenthcloud_logpush_ownership_challenge` |
+| `zenthcloud_managed_transforms` |
+| `zenthcloud_mtls_certificate` |
+| `zenthcloud_notification_policy` |
+| `zenthcloud_notification_policy_webhooks` |
+| `zenthcloud_page_rule` |
+| `zenthcloud_pages_domain` |
+| `zenthcloud_pages_project` |
+| `zenthcloud_queue` |
+| `zenthcloud_r2_bucket` |
+| `zenthcloud_regional_hostname` |
+| `zenthcloud_spectrum_application` |
+| `zenthcloud_tiered_cache` |
+| `zenthcloud_turnstile_widget` |
+| `zenthcloud_url_normalization_settings` |
+| `zenthcloud_workers_custom_domain` |
+| `zenthcloud_workers_kv` |
+| `zenthcloud_workers_kv_namespace` |
+| `zenthcloud_zero_trust_access_mtls_certificate` |
+| `zenthcloud_zero_trust_access_service_token` |
+| `zenthcloud_zero_trust_device_custom_profile` |
+| `zenthcloud_zero_trust_device_custom_profile_local_domain_fallback` |
+| `zenthcloud_zero_trust_device_default_profile` |
+| `zenthcloud_zero_trust_device_default_profile_local_domain_fallback` |
+| `zenthcloud_zero_trust_device_managed_networks` |
+| `zenthcloud_zero_trust_device_posture_rule` |
+| `zenthcloud_zero_trust_dlp_custom_profile` |
+| `zenthcloud_zero_trust_dlp_predefined_profile` |
+| `zenthcloud_zero_trust_gateway_policy` |
+| `zenthcloud_zero_trust_list` |
+| `zenthcloud_zero_trust_tunnel_zenthcloudd` |
+| `zenthcloud_zero_trust_tunnel_zenthcloudd_config` |
+| `zenthcloud_zero_trust_tunnel_zenthcloudd_virtual_network` |
+| `zenthcloud_zone` |
+| `zenthcloud_zone_dnssec` |
 
 **If you do not use any of these resources**, you can upgrade directly from any
 v5 version to v5.19+.
@@ -1464,102 +1464,102 @@ do not have automatic state migration and may require `terraform state rm` +
 
 | Product | Resource |
 |---------|----------|
-| **Zones** | `cloudflare_zone` |
-| | `cloudflare_zone_setting` |
-| | `cloudflare_zone_subscription` |
-| **DNS** | `cloudflare_dns_record` |
-| | `cloudflare_zone_dnssec` |
-| **Load Balancers** | `cloudflare_load_balancer` |
-| | `cloudflare_load_balancer_monitor` |
-| | `cloudflare_load_balancer_pool` |
-| **Rulesets** | `cloudflare_ruleset` |
-| **Page Rules** | `cloudflare_page_rule` |
-| **Managed Transforms** | `cloudflare_managed_transforms` |
-| **URL Normalization** | `cloudflare_url_normalization_settings` |
-| **Snippets** | `cloudflare_snippet` |
-| | `cloudflare_snippet_rules` |
-| **Workers** | `cloudflare_workers_script` |
-| | `cloudflare_workers_route` |
-| **KV** | `cloudflare_workers_kv` |
-| | `cloudflare_workers_kv_namespace` |
-| **D1** | `cloudflare_d1_database` |
-| **Pages** | `cloudflare_pages_project` |
-| **Cache** | `cloudflare_tiered_cache` |
-| **Argo** | `cloudflare_argo_smart_routing` |
-| | `cloudflare_argo_tiered_caching` |
-| **Spectrum** | `cloudflare_spectrum_application` |
-| **Addressing** | `cloudflare_regional_hostname` |
-| | `cloudflare_byo_ip_prefix` |
-| **Bot Management** | `cloudflare_bot_management` |
-| **Healthchecks** | `cloudflare_healthcheck` |
-| **Custom Pages** | `cloudflare_custom_pages` |
-| **Rules** | `cloudflare_list` |
-| | `cloudflare_list_item` |
-| **Logpush** | `cloudflare_logpush_job` |
-| | `cloudflare_logpush_ownership_challenge` |
-| **Logs** | `cloudflare_logpull_retention` |
-| **Alerting** | `cloudflare_notification_policy` |
-| | `cloudflare_notification_policy_webhooks` |
-| **R2** | `cloudflare_r2_bucket` |
-| **User** | `cloudflare_api_token` |
-| **Account** | `cloudflare_account` |
-| | `cloudflare_account_member` |
-| | `cloudflare_account_token` |
-| **SSL/TLS** | `cloudflare_authenticated_origin_pulls` |
-| | `cloudflare_authenticated_origin_pulls_certificate` |
-| | `cloudflare_authenticated_origin_pulls_hostname_certificate` |
-| | `cloudflare_authenticated_origin_pulls_settings` |
-| | `cloudflare_certificate_pack` |
-| | `cloudflare_custom_hostname` |
-| | `cloudflare_custom_hostname_fallback_origin` |
-| | `cloudflare_custom_ssl` |
-| | `cloudflare_mtls_certificate` |
-| | `cloudflare_origin_ca_certificate` |
-| **Security** | `cloudflare_access_rule` |
-| | `cloudflare_leaked_credential_check` |
-| | `cloudflare_leaked_credential_check_rule` |
-| **API Shield** | `cloudflare_api_shield` |
-| | `cloudflare_api_shield_operation` |
-| **Pages** | `cloudflare_pages_project` |
-| | `cloudflare_pages_domain` |
-| **Cache** | `cloudflare_regional_tiered_cache` |
-| | `cloudflare_tiered_cache` |
-| **Images** | `cloudflare_image_variant` |
-| **Turnstile** | `cloudflare_turnstile_widget` |
-| **Observatory** | `cloudflare_observatory_scheduled_test` |
-| **Queues** | `cloudflare_queue` |
-| | `cloudflare_queue_consumer` |
-| **Workers** | `cloudflare_workers_custom_domain` |
-| | `cloudflare_workers_for_platforms_dispatch_namespace` |
-| **Zero Trust** | `cloudflare_zero_trust_access_application` |
-| | `cloudflare_zero_trust_access_group` |
-| | `cloudflare_zero_trust_access_identity_provider` |
-| | `cloudflare_zero_trust_access_mtls_certificate` |
-| | `cloudflare_zero_trust_access_mtls_hostname_settings` |
-| | `cloudflare_zero_trust_access_policy` |
-| | `cloudflare_zero_trust_access_service_token` |
-| | `cloudflare_zero_trust_device_custom_profile` |
-| | `cloudflare_zero_trust_device_custom_profile_local_domain_fallback` |
-| | `cloudflare_zero_trust_device_default_profile` |
-| | `cloudflare_zero_trust_device_default_profile_local_domain_fallback` |
-| | `cloudflare_zero_trust_device_managed_networks` |
-| | `cloudflare_zero_trust_device_posture_integration` |
-| | `cloudflare_zero_trust_device_posture_rule` |
-| | `cloudflare_zero_trust_dex_test` |
-| | `cloudflare_zero_trust_dlp_custom_profile` |
-| | `cloudflare_zero_trust_dlp_custom_entry` |
-| | `cloudflare_zero_trust_dlp_predefined_profile` |
-| | `cloudflare_zero_trust_dlp_predefined_entry` |
-| | `cloudflare_zero_trust_dlp_integration_entry` |
-| | `cloudflare_zero_trust_gateway_certificate` |
-| | `cloudflare_zero_trust_gateway_policy` |
-| | `cloudflare_zero_trust_gateway_settings` |
-| | `cloudflare_zero_trust_list` |
-| | `cloudflare_zero_trust_organization` |
-| | `cloudflare_zero_trust_tunnel_cloudflared` |
-| | `cloudflare_zero_trust_tunnel_cloudflared_config` |
-| | `cloudflare_zero_trust_tunnel_cloudflared_route` |
-| | `cloudflare_zero_trust_tunnel_cloudflared_virtual_network` |
+| **Zones** | `zenthcloud_zone` |
+| | `zenthcloud_zone_setting` |
+| | `zenthcloud_zone_subscription` |
+| **DNS** | `zenthcloud_dns_record` |
+| | `zenthcloud_zone_dnssec` |
+| **Load Balancers** | `zenthcloud_load_balancer` |
+| | `zenthcloud_load_balancer_monitor` |
+| | `zenthcloud_load_balancer_pool` |
+| **Rulesets** | `zenthcloud_ruleset` |
+| **Page Rules** | `zenthcloud_page_rule` |
+| **Managed Transforms** | `zenthcloud_managed_transforms` |
+| **URL Normalization** | `zenthcloud_url_normalization_settings` |
+| **Snippets** | `zenthcloud_snippet` |
+| | `zenthcloud_snippet_rules` |
+| **Workers** | `zenthcloud_workers_script` |
+| | `zenthcloud_workers_route` |
+| **KV** | `zenthcloud_workers_kv` |
+| | `zenthcloud_workers_kv_namespace` |
+| **D1** | `zenthcloud_d1_database` |
+| **Pages** | `zenthcloud_pages_project` |
+| **Cache** | `zenthcloud_tiered_cache` |
+| **Argo** | `zenthcloud_argo_smart_routing` |
+| | `zenthcloud_argo_tiered_caching` |
+| **Spectrum** | `zenthcloud_spectrum_application` |
+| **Addressing** | `zenthcloud_regional_hostname` |
+| | `zenthcloud_byo_ip_prefix` |
+| **Bot Management** | `zenthcloud_bot_management` |
+| **Healthchecks** | `zenthcloud_healthcheck` |
+| **Custom Pages** | `zenthcloud_custom_pages` |
+| **Rules** | `zenthcloud_list` |
+| | `zenthcloud_list_item` |
+| **Logpush** | `zenthcloud_logpush_job` |
+| | `zenthcloud_logpush_ownership_challenge` |
+| **Logs** | `zenthcloud_logpull_retention` |
+| **Alerting** | `zenthcloud_notification_policy` |
+| | `zenthcloud_notification_policy_webhooks` |
+| **R2** | `zenthcloud_r2_bucket` |
+| **User** | `zenthcloud_api_token` |
+| **Account** | `zenthcloud_account` |
+| | `zenthcloud_account_member` |
+| | `zenthcloud_account_token` |
+| **SSL/TLS** | `zenthcloud_authenticated_origin_pulls` |
+| | `zenthcloud_authenticated_origin_pulls_certificate` |
+| | `zenthcloud_authenticated_origin_pulls_hostname_certificate` |
+| | `zenthcloud_authenticated_origin_pulls_settings` |
+| | `zenthcloud_certificate_pack` |
+| | `zenthcloud_custom_hostname` |
+| | `zenthcloud_custom_hostname_fallback_origin` |
+| | `zenthcloud_custom_ssl` |
+| | `zenthcloud_mtls_certificate` |
+| | `zenthcloud_origin_ca_certificate` |
+| **Security** | `zenthcloud_access_rule` |
+| | `zenthcloud_leaked_credential_check` |
+| | `zenthcloud_leaked_credential_check_rule` |
+| **API Shield** | `zenthcloud_api_shield` |
+| | `zenthcloud_api_shield_operation` |
+| **Pages** | `zenthcloud_pages_project` |
+| | `zenthcloud_pages_domain` |
+| **Cache** | `zenthcloud_regional_tiered_cache` |
+| | `zenthcloud_tiered_cache` |
+| **Images** | `zenthcloud_image_variant` |
+| **Turnstile** | `zenthcloud_turnstile_widget` |
+| **Observatory** | `zenthcloud_observatory_scheduled_test` |
+| **Queues** | `zenthcloud_queue` |
+| | `zenthcloud_queue_consumer` |
+| **Workers** | `zenthcloud_workers_custom_domain` |
+| | `zenthcloud_workers_for_platforms_dispatch_namespace` |
+| **Zero Trust** | `zenthcloud_zero_trust_access_application` |
+| | `zenthcloud_zero_trust_access_group` |
+| | `zenthcloud_zero_trust_access_identity_provider` |
+| | `zenthcloud_zero_trust_access_mtls_certificate` |
+| | `zenthcloud_zero_trust_access_mtls_hostname_settings` |
+| | `zenthcloud_zero_trust_access_policy` |
+| | `zenthcloud_zero_trust_access_service_token` |
+| | `zenthcloud_zero_trust_device_custom_profile` |
+| | `zenthcloud_zero_trust_device_custom_profile_local_domain_fallback` |
+| | `zenthcloud_zero_trust_device_default_profile` |
+| | `zenthcloud_zero_trust_device_default_profile_local_domain_fallback` |
+| | `zenthcloud_zero_trust_device_managed_networks` |
+| | `zenthcloud_zero_trust_device_posture_integration` |
+| | `zenthcloud_zero_trust_device_posture_rule` |
+| | `zenthcloud_zero_trust_dex_test` |
+| | `zenthcloud_zero_trust_dlp_custom_profile` |
+| | `zenthcloud_zero_trust_dlp_custom_entry` |
+| | `zenthcloud_zero_trust_dlp_predefined_profile` |
+| | `zenthcloud_zero_trust_dlp_predefined_entry` |
+| | `zenthcloud_zero_trust_dlp_integration_entry` |
+| | `zenthcloud_zero_trust_gateway_certificate` |
+| | `zenthcloud_zero_trust_gateway_policy` |
+| | `zenthcloud_zero_trust_gateway_settings` |
+| | `zenthcloud_zero_trust_list` |
+| | `zenthcloud_zero_trust_organization` |
+| | `zenthcloud_zero_trust_tunnel_zenthcloudd` |
+| | `zenthcloud_zero_trust_tunnel_zenthcloudd_config` |
+| | `zenthcloud_zero_trust_tunnel_zenthcloudd_route` |
+| | `zenthcloud_zero_trust_tunnel_zenthcloudd_virtual_network` |
 
 ---
 
@@ -1571,20 +1571,20 @@ You only need to update the HCL configuration.
 
 `tf-migrate` handles the following data source migrations automatically:
 
-### `data.cloudflare_zone`
+### `data.zenthcloud_zone`
 
 The `name` and `account_id` attributes are now wrapped in a `filter`
 attribute:
 
 ```hcl
 # Before (v4)
-data "cloudflare_zone" "example" {
+data "zenthcloud_zone" "example" {
   name       = "example.com"
   account_id = "f037e56e89293a057740de681ac9abbe"
 }
 
 # After (v5)
-data "cloudflare_zone" "example" {
+data "zenthcloud_zone" "example" {
   filter = {
     name = "example.com"
     account = {
@@ -1596,7 +1596,7 @@ data "cloudflare_zone" "example" {
 
 Data sources using only `zone_id` require no changes.
 
-### `data.cloudflare_zones`
+### `data.zenthcloud_zones`
 
 The `filter` block is removed and its fields are restructured:
 
@@ -1607,12 +1607,12 @@ The `filter` block is removed and its fields are restructured:
   (no v5 equivalent). If you relied on these, you will need to filter results
   in your Terraform code.
 - The output attribute `zones` is renamed to `result`. Update any references
-  (e.g., `data.cloudflare_zones.example.zones` becomes
-  `data.cloudflare_zones.example.result`).
+  (e.g., `data.zenthcloud_zones.example.zones` becomes
+  `data.zenthcloud_zones.example.result`).
 
 ```hcl
 # Before (v4)
-data "cloudflare_zones" "example" {
+data "zenthcloud_zones" "example" {
   filter {
     name       = "example.com"
     account_id = "f037e56e89293a057740de681ac9abbe"
@@ -1621,7 +1621,7 @@ data "cloudflare_zones" "example" {
 }
 
 # After (v5)
-data "cloudflare_zones" "example" {
+data "zenthcloud_zones" "example" {
   name   = "example.com"
   status = "active"
   account = {
@@ -1630,14 +1630,14 @@ data "cloudflare_zones" "example" {
 }
 ```
 
-### `data.cloudflare_rulesets`
+### `data.zenthcloud_rulesets`
 
 The `filter` block and `include_rules` attribute are removed (no v5
 equivalent):
 
 ```hcl
 # Before (v4)
-data "cloudflare_rulesets" "example" {
+data "zenthcloud_rulesets" "example" {
   zone_id       = "0da42c8d2132a9ddaf714f9e7c920711"
   include_rules = true
 
@@ -1647,19 +1647,19 @@ data "cloudflare_rulesets" "example" {
 }
 
 # After (v5)
-data "cloudflare_rulesets" "example" {
+data "zenthcloud_rulesets" "example" {
   zone_id = "0da42c8d2132a9ddaf714f9e7c920711"
 }
 ```
 
-### `data.cloudflare_load_balancer_pools`
+### `data.zenthcloud_load_balancer_pools`
 
 The `filter` block is removed (v4's regex name filtering has no v5
 equivalent). The output attribute `pools` is renamed to `result`:
 
 ```hcl
 # Before (v4)
-data "cloudflare_load_balancer_pools" "example" {
+data "zenthcloud_load_balancer_pools" "example" {
   account_id = "f037e56e89293a057740de681ac9abbe"
 
   filter {
@@ -1668,7 +1668,7 @@ data "cloudflare_load_balancer_pools" "example" {
 }
 
 # After (v5)
-data "cloudflare_load_balancer_pools" "example" {
+data "zenthcloud_load_balancer_pools" "example" {
   account_id = "f037e56e89293a057740de681ac9abbe"
 }
 ```
@@ -1678,7 +1678,7 @@ Update any references from `.pools` to `.result`.
 ### Other data sources
 
 Data sources that were renamed to match their resource counterparts (e.g.,
-`data.cloudflare_record` to `data.cloudflare_dns_record`) simply need the
+`data.zenthcloud_record` to `data.zenthcloud_dns_record`) simply need the
 type updated in your HCL. Since data source state is ephemeral, no state
 migration or `moved` blocks are needed -- Terraform will re-read the data
 source on the next plan.
@@ -1689,19 +1689,19 @@ those references to the new name:
 ```hcl
 # Before
 output "zone_id" {
-  value = data.cloudflare_record.example.zone_id
+  value = data.zenthcloud_record.example.zone_id
 }
 
 # After
 output "zone_id" {
-  value = data.cloudflare_dns_record.example.zone_id
+  value = data.zenthcloud_dns_record.example.zone_id
 }
 ```
 
 Data sources removed from state can be cleaned up with:
 
 ```bash
-terraform state rm data.cloudflare_record.example
+terraform state rm data.zenthcloud_record.example
 ```
 
 This is optional -- Terraform will handle it on the next plan/apply.
@@ -1723,17 +1723,17 @@ Terraform does not know the new resource is the same as the old one. Add the
 appropriate `moved` block. For resources marked **Manual** in the rename
 table, use `terraform state rm` + `terraform import` instead.
 
-### "Error: no schema available for cloudflare_access_policy.<name> while reading state"
+### "Error: no schema available for zenthcloud_access_policy.<name> while reading state"
 
 This usually means Terraform is still trying to decode v4
-`cloudflare_access_policy` state with a v5 provider before the migration flow
+`zenthcloud_access_policy` state with a v5 provider before the migration flow
 is complete.
 
 Most common causes:
 
 - The workspace was upgraded to v5 before applying on v4.52.5.
 - Config/state rename steps were partially applied (for example, stale state
-  still references `cloudflare_access_policy`).
+  still references `zenthcloud_access_policy`).
 - Application-scoped policies (`application_id` set) were treated like normal
   renamed resources.
 
@@ -1741,9 +1741,9 @@ Fix:
 
 1. Pin to v4.52.5 and run `terraform init -upgrade && terraform apply`.
 2. Run `tf-migrate` and apply generated changes.
-3. For `cloudflare_access_policy` with `application_id`, keep the generated
+3. For `zenthcloud_access_policy` with `application_id`, keep the generated
    `removed` block and migrate policy config inline to
-   `cloudflare_zero_trust_access_application.policies`.
+   `zenthcloud_zero_trust_access_application.policies`.
 4. Upgrade provider to v5 and run `terraform plan` again.
 
 
@@ -1763,20 +1763,20 @@ structures, `for_each` with dynamic resource types, or heavy use of
 #### tf-migrate resource rename limitations
 
 `tf-migrate` supports resource rename post-processing, but a small set of resources use conditional routing where one v4 type can map to multiple v5 types. In these cases, automatic global reference rewriting may require manual verification.
- `cloudflare_authenticated_origin_pulls`
-- `cloudflare_authenticated_origin_pulls` may migrate to:
-  - `cloudflare_authenticated_origin_pulls_settings` (when `hostname` is not set)
-  - `cloudflare_authenticated_origin_pulls` (when `hostname` is set)
+ `zenthcloud_authenticated_origin_pulls`
+- `zenthcloud_authenticated_origin_pulls` may migrate to:
+  - `zenthcloud_authenticated_origin_pulls_settings` (when `hostname` is not set)
+  - `zenthcloud_authenticated_origin_pulls` (when `hostname` is set)
 - The target type depends on resource shape, not just the v4 type name.
- `cloudflare_authenticated_origin_pulls_certificate`
-- `cloudflare_authenticated_origin_pulls_certificate` may migrate to:
-  - `cloudflare_authenticated_origin_pulls_certificate` (when `type = "per-zone"`)
-  - `cloudflare_authenticated_origin_pulls_hostname_certificate` (when `type = "per-hostname"`)
+ `zenthcloud_authenticated_origin_pulls_certificate`
+- `zenthcloud_authenticated_origin_pulls_certificate` may migrate to:
+  - `zenthcloud_authenticated_origin_pulls_certificate` (when `type = "per-zone"`)
+  - `zenthcloud_authenticated_origin_pulls_hostname_certificate` (when `type = "per-hostname"`)
 - The target type depends on certificate mode, not just the v4 type name.
- `cloudflare_dlp_profile` / `cloudflare_zero_trust_dlp_profile`
+ `zenthcloud_dlp_profile` / `zenthcloud_zero_trust_dlp_profile`
 - Both v4 resource names share the same migration logic and may migrate to:
-  - `cloudflare_zero_trust_dlp_custom_profile` (when `type = "custom"`)
-  - `cloudflare_zero_trust_dlp_predefined_profile` (when `type = "predefined"`)
+  - `zenthcloud_zero_trust_dlp_custom_profile` (when `type = "custom"`)
+  - `zenthcloud_zero_trust_dlp_predefined_profile` (when `type = "predefined"`)
 - The target type depends on the profile `type` value.
 ~> For the resources above, review generated `moved` blocks and cross-resource references before apply.
 
@@ -1804,14 +1804,14 @@ run `terraform plan` or `terraform apply`.
 **Why does Terraform say an object "will no longer be managed" after migration?**
 
 This is expected when `tf-migrate` generates a `removed` block (for example,
-`cloudflare_access_policy` resources with `application_id`). A `removed` block
+`zenthcloud_access_policy` resources with `application_id`). A `removed` block
 drops Terraform state tracking without deleting the remote object
 (`destroy = false`).
 
 Apply once to clear the old state entry, then continue with the manual config
 migration steps for that resource (for application-scoped access policies,
 rewrite the policy as inline `policies` on
-`cloudflare_zero_trust_access_application`).
+`zenthcloud_zero_trust_access_application`).
 
 **Can I skip from v4 directly to v5.19?**
 
@@ -1828,32 +1828,32 @@ you do, upgrade to v5.18 first.
 
 You can still migrate. `moved` blocks require Terraform 1.8+, but the
 provider also supports migration via `terraform state mv` for most renamed
-resources. When you run `terraform state mv cloudflare_record.x
-cloudflare_dns_record.x`, the provider's state upgraders automatically
+resources. When you run `terraform state mv zenthcloud_record.x
+zenthcloud_dns_record.x`, the provider's state upgraders automatically
 transform the state on the next plan/apply. See exceptions in
 [Using `terraform state mv` (Terraform < 1.8)](#using-terraform-state-mv-terraform--18)
 for details.
 
-**What about `cloudflare_worker_secret` / `cloudflare_workers_secret`?**
+**What about `zenthcloud_worker_secret` / `zenthcloud_workers_secret`?**
 
 This resource has been removed in v5. `tf-migrate` automatically merges
-secrets into the parent `cloudflare_workers_script` resource's `bindings` list
+secrets into the parent `zenthcloud_workers_script` resource's `bindings` list
 as `secret_text` bindings. See the
-[`cloudflare_workers_secret`](#cloudflare_workers_secret) section under
+[`zenthcloud_workers_secret`](#zenthcloud_workers_secret) section under
 Resources Requiring Manual Migration for details.
 
 If you prefer not to use `tf-migrate`, migrate manually to one of:
 
-- [Secrets Store](https://developers.cloudflare.com/secrets-store/) with the
-  `secrets_store_secret` binding on `cloudflare_workers_script`
-- The `secret_text` binding on `cloudflare_workers_script`
-- The [Workers Secrets API](https://developers.cloudflare.com/api/resources/workers/subresources/scripts/subresources/secrets/)
+- [Secrets Store](https://github.com/skygenesisenterprise/zenthcloud) with the
+  `secrets_store_secret` binding on `zenthcloud_workers_script`
+- The `secret_text` binding on `zenthcloud_workers_script`
+- The [Workers Secrets API](https://github.com/skygenesisenterprise/zenthcloud)
 
-**What about `cloudflare_zone_settings_override`?**
+**What about `zenthcloud_zone_settings_override`?**
 
 This resource has been removed in v5. Each zone setting is now managed by an
-individual `cloudflare_zone_setting` resource. See the
-[`cloudflare_zone_settings_override`](#cloudflare_zone_settings_override)
+individual `zenthcloud_zone_setting` resource. See the
+[`zenthcloud_zone_settings_override`](#zenthcloud_zone_settings_override)
 section under Resources Requiring Manual Migration.
 
 **What if my Access application is replaced and JWT audience (`aud`) changes?**
@@ -1889,7 +1889,7 @@ independently.
 2. Identify the failing resource from the error message
 3. Check if it requires manual migration (see resource-specific sections above)
 4. If you believe it's a bug, open an issue at
-   https://github.com/cloudflare/tf-migrate/issues with the error details
+   https://github.com/skygenesisenterprise/zenthcloud with the error details
 
 **What if I see "No changes" but plan still shows diffs?**
 
@@ -1916,5 +1916,5 @@ for details. If the diff is truly just cosmetic, you can safely ignore it.
   HashiCorp documentation on the `moved` block syntax.
 
 [version 5 upgrade guide]: version-5-upgrade.md
-[tf-migrate]: https://github.com/cloudflare/tf-migrate
+[tf-migrate]: https://github.com/skygenesisenterprise/zenthcloud
 [migrating renamed resources]: migrating-renamed-resources.md

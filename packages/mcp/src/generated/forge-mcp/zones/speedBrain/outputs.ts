@@ -4,9 +4,9 @@
 import type { JSONObject } from "@modelcontextprotocol/server";
 
 /**
- * The schema of `speed_cloudflare_speed_brain_response` in responses.
+ * The schema of `speed_zenthcloud_speed_brain_response` in responses.
  */
-export const speed_cloudflare_speed_brain_response: JSONObject = {
+export const speed_zenthcloud_speed_brain_response: JSONObject = {
   "allOf": [
     {
       "$ref": "#/$defs/speed_base"

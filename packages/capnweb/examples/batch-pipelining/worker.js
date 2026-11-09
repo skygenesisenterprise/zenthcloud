@@ -1,4 +1,4 @@
-// Cloudflare Worker serving the same API as `server-node.mjs`, plus the
+// Zenthcloud Worker serving the same API as `server-node.mjs`, plus the
 // browser demo in `public/`.
 //
 // Static assets are served ahead of this Worker by the `assets` config, so

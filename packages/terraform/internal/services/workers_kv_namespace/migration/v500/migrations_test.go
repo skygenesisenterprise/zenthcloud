@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -73,11 +73,11 @@ func TestMigrateWorkersKVNamespaceBasic(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			title := fmt.Sprintf("test-kv-namespace-%s", rnd)
 			tmpDir := t.TempDir()
-			resourceName := "cloudflare_workers_kv_namespace." + rnd
+			resourceName := "zenthcloud_workers_kv_namespace." + rnd
 			testConfig := tc.configFn(rnd, accountID, title)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
 
@@ -91,8 +91,8 @@ func TestMigrateWorkersKVNamespaceBasic(t *testing.T) {
 					{
 						// Step 1: Create with specific version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -139,12 +139,12 @@ func TestMigrateWorkersKVNamespaceWithSpecialChars(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			// Title with spaces, dashes, and underscores
 			title := fmt.Sprintf("Test KV Namespace_%s-2024", rnd)
 			tmpDir := t.TempDir()
-			resourceName := "cloudflare_workers_kv_namespace." + rnd
+			resourceName := "zenthcloud_workers_kv_namespace." + rnd
 			testConfig := tc.configFn(rnd, accountID, title)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
 
@@ -158,8 +158,8 @@ func TestMigrateWorkersKVNamespaceWithSpecialChars(t *testing.T) {
 					{
 						// Step 1: Create with specific version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -204,15 +204,15 @@ func TestMigrateWorkersKVNamespaceMultiple(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			rnd1 := rnd + "1"
 			rnd2 := rnd + "2"
 			title1 := fmt.Sprintf("test-kv-namespace-1-%s", rnd)
 			title2 := fmt.Sprintf("test-kv-namespace-2-%s", rnd)
 			tmpDir := t.TempDir()
-			resourceName1 := "cloudflare_workers_kv_namespace." + rnd1
-			resourceName2 := "cloudflare_workers_kv_namespace." + rnd2
+			resourceName1 := "zenthcloud_workers_kv_namespace." + rnd1
+			resourceName2 := "zenthcloud_workers_kv_namespace." + rnd2
 			testConfig := tc.configFn(rnd1, rnd2, accountID, title1, title2)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
 
@@ -226,8 +226,8 @@ func TestMigrateWorkersKVNamespaceMultiple(t *testing.T) {
 					{
 						// Step 1: Create with specific version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},

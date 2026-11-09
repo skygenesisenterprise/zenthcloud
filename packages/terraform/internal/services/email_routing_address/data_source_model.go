@@ -5,8 +5,8 @@ package email_routing_address
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/email_routing"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/email_routing"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -30,7 +30,7 @@ type EmailRoutingAddressDataSourceModel struct {
 
 func (m *EmailRoutingAddressDataSourceModel) toReadParams(_ context.Context) (params email_routing.AddressGetParams, diags diag.Diagnostics) {
 	params = email_routing.AddressGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -38,14 +38,14 @@ func (m *EmailRoutingAddressDataSourceModel) toReadParams(_ context.Context) (pa
 
 func (m *EmailRoutingAddressDataSourceModel) toListParams(_ context.Context) (params email_routing.AddressListParams, diags diag.Diagnostics) {
 	params = email_routing.AddressListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Filter.Direction.IsNull() {
-		params.Direction = cloudflare.F(email_routing.AddressListParamsDirection(m.Filter.Direction.ValueString()))
+		params.Direction = zenthcloud.F(email_routing.AddressListParamsDirection(m.Filter.Direction.ValueString()))
 	}
 	if !m.Filter.Verified.IsNull() {
-		params.Verified = cloudflare.F(email_routing.AddressListParamsVerified(m.Filter.Verified.ValueBool()))
+		params.Verified = zenthcloud.F(email_routing.AddressListParamsVerified(m.Filter.Verified.ValueBool()))
 	}
 
 	return

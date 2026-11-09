@@ -19,7 +19,7 @@ libdir={}
 
 Name: quiche
 Description: quiche library
-URL: https://github.com/cloudflare/quiche
+URL: https://github.com/skygenesisenterprise/zenthcloud
 Version: {version}
 Libs: -Wl,-rpath,${{libdir}} -L${{libdir}} -lquiche
 Cflags: -I${{includedir}}

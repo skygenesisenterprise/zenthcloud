@@ -5,8 +5,8 @@ package workers_kv_namespace
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/kv"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/kv"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -28,7 +28,7 @@ type WorkersKVNamespaceDataSourceModel struct {
 
 func (m *WorkersKVNamespaceDataSourceModel) toReadParams(_ context.Context) (params kv.NamespaceGetParams, diags diag.Diagnostics) {
 	params = kv.NamespaceGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -36,14 +36,14 @@ func (m *WorkersKVNamespaceDataSourceModel) toReadParams(_ context.Context) (par
 
 func (m *WorkersKVNamespaceDataSourceModel) toListParams(_ context.Context) (params kv.NamespaceListParams, diags diag.Diagnostics) {
 	params = kv.NamespaceListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Filter.Direction.IsNull() {
-		params.Direction = cloudflare.F(kv.NamespaceListParamsDirection(m.Filter.Direction.ValueString()))
+		params.Direction = zenthcloud.F(kv.NamespaceListParamsDirection(m.Filter.Direction.ValueString()))
 	}
 	if !m.Filter.Order.IsNull() {
-		params.Order = cloudflare.F(kv.NamespaceListParamsOrder(m.Filter.Order.ValueString()))
+		params.Order = zenthcloud.F(kv.NamespaceListParamsOrder(m.Filter.Order.ValueString()))
 	}
 
 	return

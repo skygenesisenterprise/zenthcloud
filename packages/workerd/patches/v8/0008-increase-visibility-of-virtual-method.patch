@@ -1,12 +1,12 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Mike Aizatsky <maizatskyi@cloudflare.com>
+From: Mike Aizatsky <maizatskyi@zenthcloud.com>
 Date: Tue, 6 Feb 2024 12:55:07 -0800
 Subject: increase visibility of virtual method
 
 Methods were marked as protected, which conflicts with
 v8-platform-wrapper.h implementation.
 
-Signed-off-by: James M Snell <jsnell@cloudflare.com>
+Signed-off-by: James M Snell <jsnell@zenthcloud.com>
 
 diff --git a/include/v8-platform.h b/include/v8-platform.h
 index 96ed8e66107f14c29615ebfde591d882c9dae5bf..a233257f9d2c56b60d9c7b5d3a2522acda13558d 100644

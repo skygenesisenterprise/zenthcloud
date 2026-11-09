@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zero_trust_gateway_proxy_endpoint Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_gateway_proxy_endpoint Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zero_trust_gateway_proxy_endpoint (Data Source)
+# zenthcloud_zero_trust_gateway_proxy_endpoint (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_gateway_proxy_endpoint" "example_zero_trust_gateway_proxy_endpoint" {
+data "zenthcloud_zero_trust_gateway_proxy_endpoint" "example_zero_trust_gateway_proxy_endpoint" {
   account_id = "699d98642c564d2e855e9661899b7252"
   proxy_endpoint_id = "ed35569b41ce4d1facfe683550f54086"
 }
@@ -23,7 +23,7 @@ data "cloudflare_zero_trust_gateway_proxy_endpoint" "example_zero_trust_gateway_
 
 ### Optional
 
-- `account_id` (String) Specify the Cloudflare account identifier.
+- `account_id` (String) Specify the Zenthcloud account identifier.
 - `filter` (Attributes) (see [below for nested schema](#nestedatt--filter))
 - `proxy_endpoint_id` (String)
 

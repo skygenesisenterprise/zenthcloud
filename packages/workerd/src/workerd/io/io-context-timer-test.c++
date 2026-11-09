@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -11,7 +11,7 @@ using test::TimerTest;
 
 KJ_TEST("a queue change retries a deadline whose timer wait failed to arm") {
   TimerTest test(R"JS(
-    import { DurableObject } from 'cloudflare:workers';
+    import { DurableObject } from 'zenthcloud:workers';
     globalThis.events = '';
     export default class extends DurableObject {
       async fetch() {
@@ -43,7 +43,7 @@ KJ_TEST("a queue change retries a deadline whose timer wait failed to arm") {
 
 KJ_TEST("critical section timers advance a clamped clock past a blocked outside timer") {
   TimerTest test(R"JS(
-    import { DurableObject } from 'cloudflare:workers';
+    import { DurableObject } from 'zenthcloud:workers';
     globalThis.events = '';
     export default class extends DurableObject {
       async fetch() {
@@ -73,7 +73,7 @@ KJ_TEST("critical section timers advance a clamped clock past a blocked outside 
 
 KJ_TEST("independent I/O advances the clock after an overtaking timer completes") {
   TimerTest test(R"JS(
-    import { DurableObject } from 'cloudflare:workers';
+    import { DurableObject } from 'zenthcloud:workers';
     globalThis.events = '';
     export default class extends DurableObject {
       async fetch() {
@@ -109,7 +109,7 @@ KJ_TEST("independent I/O advances the clock after an overtaking timer completes"
 
 KJ_TEST("equal-deadline timers on different gates clamp their own callbacks") {
   TimerTest test(R"JS(
-    import { DurableObject } from 'cloudflare:workers';
+    import { DurableObject } from 'zenthcloud:workers';
     globalThis.events = '';
     export default class extends DurableObject {
       async fetch() {
@@ -145,7 +145,7 @@ KJ_TEST("equal-deadline timers on different gates clamp their own callbacks") {
 
 KJ_TEST("critical section timers overtake outside timers while independent I/O is pending") {
   TimerTest test(R"JS(
-    import { DurableObject } from 'cloudflare:workers';
+    import { DurableObject } from 'zenthcloud:workers';
     globalThis.events = '';
     export default class extends DurableObject {
       async fetch() {
@@ -175,7 +175,7 @@ KJ_TEST("critical section timers overtake outside timers while independent I/O i
 
 KJ_TEST("overdue timers on the same gate retain their order and clamped callback times") {
   TimerTest test(R"JS(
-    import { DurableObject } from 'cloudflare:workers';
+    import { DurableObject } from 'zenthcloud:workers';
     globalThis.events = '';
     export default class extends DurableObject {
       async fetch() {
@@ -197,7 +197,7 @@ KJ_TEST("overdue timers on the same gate retain their order and clamped callback
 
 KJ_TEST("canceling a fired blocked timer preserves the next critical section timer") {
   TimerTest test(R"JS(
-    import { DurableObject } from 'cloudflare:workers';
+    import { DurableObject } from 'zenthcloud:workers';
     globalThis.events = '';
     export default class extends DurableObject {
       async fetch() {
@@ -224,7 +224,7 @@ KJ_TEST("canceling a fired blocked timer preserves the next critical section tim
 
 KJ_TEST("canceling an armed timer and inserting an earlier timer rearms the queue") {
   TimerTest test(R"JS(
-    import { DurableObject } from 'cloudflare:workers';
+    import { DurableObject } from 'zenthcloud:workers';
     globalThis.events = '';
     export default class extends DurableObject {
       async fetch() {
@@ -250,7 +250,7 @@ KJ_TEST("canceling an armed timer and inserting an earlier timer rearms the queu
 
 KJ_TEST("canceling a blocked timer after independent I/O preserves the next wait") {
   TimerTest test(R"JS(
-    import { DurableObject } from 'cloudflare:workers';
+    import { DurableObject } from 'zenthcloud:workers';
     globalThis.events = '';
     export default class extends DurableObject {
       async fetch() {
@@ -281,7 +281,7 @@ KJ_TEST("canceling a blocked timer after independent I/O preserves the next wait
 
 KJ_TEST("nested critical sections advance past their parents' blocked timers") {
   TimerTest test(R"JS(
-    import { DurableObject } from 'cloudflare:workers';
+    import { DurableObject } from 'zenthcloud:workers';
     globalThis.events = '';
     export default class extends DurableObject {
       async fetch() {
@@ -311,7 +311,7 @@ KJ_TEST("nested critical sections advance past their parents' blocked timers") {
 
 KJ_TEST("intervals inside a critical section keep advancing past an outside timer") {
   TimerTest test(R"JS(
-    import { DurableObject } from 'cloudflare:workers';
+    import { DurableObject } from 'zenthcloud:workers';
     globalThis.events = '';
     export default class extends DurableObject {
       async fetch() {
@@ -345,7 +345,7 @@ KJ_TEST("intervals inside a critical section keep advancing past an outside time
 
 KJ_TEST("intervals keep their cadence when the timer channel ignores the clock clamp") {
   TimerTest test(R"JS(
-    import { DurableObject } from 'cloudflare:workers';
+    import { DurableObject } from 'zenthcloud:workers';
     globalThis.events = '';
     export default class extends DurableObject {
       async fetch() {
@@ -376,7 +376,7 @@ KJ_TEST("intervals keep their cadence when the timer channel ignores the clock c
 
 KJ_TEST("timers from a completed critical section retain their order on the parent gate") {
   TimerTest test(R"JS(
-    import { DurableObject } from 'cloudflare:workers';
+    import { DurableObject } from 'zenthcloud:workers';
     globalThis.events = '';
     export default class extends DurableObject {
       async fetch() {
@@ -406,7 +406,7 @@ KJ_TEST("timers from a completed critical section retain their order on the pare
 
 KJ_TEST("independent I/O before the first inside timer advances time") {
   TimerTest test(R"JS(
-    import { DurableObject } from 'cloudflare:workers';
+    import { DurableObject } from 'zenthcloud:workers';
     globalThis.events = '';
     export default class extends DurableObject {
       async fetch() {
@@ -434,7 +434,7 @@ KJ_TEST("independent I/O before the first inside timer advances time") {
 
 KJ_TEST("another outside deadline does not reclamp I/O after an inside timer") {
   TimerTest test(R"JS(
-    import { DurableObject } from 'cloudflare:workers';
+    import { DurableObject } from 'zenthcloud:workers';
     globalThis.events = '';
     export default class extends DurableObject {
       async fetch() {
@@ -468,7 +468,7 @@ KJ_TEST("another outside deadline does not reclamp I/O after an inside timer") {
 
 KJ_TEST("setTimeout inserted by an overdue callback retains deadline order") {
   TimerTest test(R"JS(
-    import { DurableObject } from 'cloudflare:workers';
+    import { DurableObject } from 'zenthcloud:workers';
     globalThis.events = '';
     export default class extends DurableObject {
       async fetch() {
@@ -499,7 +499,7 @@ KJ_TEST("setTimeout inserted by an overdue callback retains deadline order") {
 
 KJ_TEST("nested timers progress after their parent critical section completes") {
   TimerTest test(R"JS(
-    import { DurableObject } from 'cloudflare:workers';
+    import { DurableObject } from 'zenthcloud:workers';
     globalThis.events = '';
     export default class extends DurableObject {
       async fetch() {
@@ -529,7 +529,7 @@ KJ_TEST("nested timers progress after their parent critical section completes") 
 
 KJ_TEST("completed critical section intervals merge and reschedule on the parent gate") {
   TimerTest test(R"JS(
-    import { DurableObject } from 'cloudflare:workers';
+    import { DurableObject } from 'zenthcloud:workers';
     globalThis.events = '';
     export default class extends DurableObject {
       async fetch() {
@@ -574,7 +574,7 @@ KJ_TEST("merging fired timers preserves callbacks and supports cancellation afte
   for (auto& testCase: cases) {
     KJ_CONTEXT(testCase.canceled);
     auto source = kj::str("const canceled = '", testCase.canceled, "';\n", R"JS(
-      import { DurableObject } from 'cloudflare:workers';
+      import { DurableObject } from 'zenthcloud:workers';
       globalThis.events = '';
       export default class extends DurableObject {
         async fetch() {
@@ -621,7 +621,7 @@ KJ_TEST("merging fired timers preserves callbacks and supports cancellation afte
 
 KJ_TEST("adopted fired callbacks retain gate order ahead of earlier unarmed parent timers") {
   TimerTest test(R"JS(
-    import { DurableObject } from 'cloudflare:workers';
+    import { DurableObject } from 'zenthcloud:workers';
     globalThis.events = '';
     export default class extends DurableObject {
       async fetch() {
@@ -679,7 +679,7 @@ KJ_TEST("adopted callbacks and their microtasks retain the delivered clock") {
   for (auto dispatch: {"(callback) => callback()"_kj, "queueMicrotask"_kj,
          "async (callback) => { await Promise.resolve(); callback(); }"_kj}) {
     TimerTest test(kj::str("const dispatch = ", dispatch, ";\n", R"JS(
-    import { DurableObject } from 'cloudflare:workers';
+    import { DurableObject } from 'zenthcloud:workers';
     globalThis.events = '';
     export default class extends DurableObject {
       async fetch() {
@@ -738,7 +738,7 @@ KJ_TEST("adopted callbacks and their microtasks retain the delivered clock") {
 
 KJ_TEST("parent callbacks cannot rewind time after independent critical section I/O") {
   TimerTest test(R"JS(
-    import { DurableObject } from 'cloudflare:workers';
+    import { DurableObject } from 'zenthcloud:workers';
     globalThis.events = '';
     export default class extends DurableObject {
       async fetch() {
@@ -771,7 +771,7 @@ KJ_TEST("parent callbacks cannot rewind time after independent critical section 
 
 KJ_TEST("overdue timers in a single critical section retain their clock clamp") {
   TimerTest test(R"JS(
-    import { DurableObject } from 'cloudflare:workers';
+    import { DurableObject } from 'zenthcloud:workers';
     globalThis.events = '';
     export default class extends DurableObject {
       async fetch() {
@@ -796,7 +796,7 @@ KJ_TEST("overdue timers in a single critical section retain their clock clamp") 
 
 KJ_TEST("clock reads outside the current context do not advance its observable clock floor") {
   TimerTest test(R"JS(
-    import { DurableObject } from 'cloudflare:workers';
+    import { DurableObject } from 'zenthcloud:workers';
     globalThis.events = '';
     export default class extends DurableObject {
       async fetch() {
@@ -823,7 +823,7 @@ KJ_TEST("clock reads outside the current context do not advance its observable c
 
 KJ_TEST("a failed critical section cancels fired and armed timers across input-gate scopes") {
   TimerTest test(R"JS(
-    import { DurableObject } from 'cloudflare:workers';
+    import { DurableObject } from 'zenthcloud:workers';
     globalThis.events = '';
     export default class extends DurableObject {
       async fetch() {
@@ -859,7 +859,7 @@ KJ_TEST("a failed critical section cancels fired and armed timers across input-g
 
 KJ_TEST("overdue nested timers retain their clock clamp after parent completion") {
   TimerTest test(R"JS(
-    import { DurableObject } from 'cloudflare:workers';
+    import { DurableObject } from 'zenthcloud:workers';
     globalThis.events = '';
     export default class extends DurableObject {
       async fetch() {

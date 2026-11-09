@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_ai_gateways Data Source - Cloudflare"
+page_title: "zenthcloud_ai_gateways Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   AI Gateway ReadAI Gateway Write
 ---
 
-# cloudflare_ai_gateways (Data Source)
+# zenthcloud_ai_gateways (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_ai_gateways" "example_ai_gateways" {
+data "zenthcloud_ai_gateways" "example_ai_gateways" {
   account_id = "3ebbcb006d4d46d7bb6a8c7f14676cb0"
   search = "search"
 }

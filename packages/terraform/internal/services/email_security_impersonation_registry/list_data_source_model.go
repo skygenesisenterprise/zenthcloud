@@ -5,9 +5,9 @@ package email_security_impersonation_registry
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/email_security"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/email_security"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -29,20 +29,20 @@ type EmailSecurityImpersonationRegistriesDataSourceModel struct {
 
 func (m *EmailSecurityImpersonationRegistriesDataSourceModel) toListParams(_ context.Context) (params email_security.SettingImpersonationRegistryListParams, diags diag.Diagnostics) {
 	params = email_security.SettingImpersonationRegistryListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Direction.IsNull() {
-		params.Direction = cloudflare.F(email_security.SettingImpersonationRegistryListParamsDirection(m.Direction.ValueString()))
+		params.Direction = zenthcloud.F(email_security.SettingImpersonationRegistryListParamsDirection(m.Direction.ValueString()))
 	}
 	if !m.Order.IsNull() {
-		params.Order = cloudflare.F(email_security.SettingImpersonationRegistryListParamsOrder(m.Order.ValueString()))
+		params.Order = zenthcloud.F(email_security.SettingImpersonationRegistryListParamsOrder(m.Order.ValueString()))
 	}
 	if !m.Provenance.IsNull() {
-		params.Provenance = cloudflare.F(email_security.SettingImpersonationRegistryListParamsProvenance(m.Provenance.ValueString()))
+		params.Provenance = zenthcloud.F(email_security.SettingImpersonationRegistryListParamsProvenance(m.Provenance.ValueString()))
 	}
 	if !m.Search.IsNull() {
-		params.Search = cloudflare.F(m.Search.ValueString())
+		params.Search = zenthcloud.F(m.Search.ValueString())
 	}
 
 	return

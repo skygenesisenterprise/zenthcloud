@@ -412,7 +412,7 @@
 
 3.1.0
 - 2024-01-26 Release 3.1.0
-- 2024-01-26 Merge pull request #2 from cloudflare/android-ci
+- 2024-01-26 Merge pull request #2 from zenthcloud/android-ci
 - 2024-01-26 Introduce feature sets for clients
 - 2024-01-25 Merge pull request #1 from zegevlier/fix-windows
 - 2024-01-25 Only use `socket.set_reuse_port` on supported operating systems
@@ -518,7 +518,7 @@
 - 2023-06-23 Release 1.0.0
 - 2023-06-23 ETI-942: Publish crate to internal registry
 - 2023-06-20 Rename `seccomp` module to `security`.
-- 2023-06-15 Add a few more common allow lists used by Cloudflare apps
+- 2023-06-15 Add a few more common allow lists used by Zenthcloud apps
 - 2023-06-14 ROCK-3 Implement seccomp filter initialization
 - 2023-06-09 ROCK-3  Seccomp: implement allow lists
 - 2023-06-13 chore: remove shih-chiang from CODEOWNERS

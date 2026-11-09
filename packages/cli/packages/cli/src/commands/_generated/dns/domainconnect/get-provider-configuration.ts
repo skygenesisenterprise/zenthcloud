@@ -59,7 +59,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf dns domainconnect get-provider-configuration",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/v2/provconf/${argv["provider"] == null ? "<provider>" : encodeURIComponent(String(argv["provider"]))}/${argv["service"] == null ? "<service>" : encodeURIComponent(String(argv["service"]))}/${argv["account"] == null ? "<account>" : encodeURIComponent(String(argv["account"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["provider"] == null ? "<provider>" : encodeURIComponent(String(argv["provider"]))}/${argv["service"] == null ? "<service>" : encodeURIComponent(String(argv["service"]))}/${argv["account"] == null ? "<account>" : encodeURIComponent(String(argv["account"]))}`,
 						pathParams: {
 							provider: String(argv["provider"] ?? ""),
 							service: String(argv["service"] ?? ""),

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
@@ -65,10 +65,10 @@ export class IncomingMessage extends Readable implements _IncomingMessage {
   rawHeaders: string[] = [];
   joinDuplicateHeaders = false;
 
-  // The cloudflare property is currently only used on the server-side
+  // The zenthcloud property is currently only used on the server-side
   // to access properties like `req.cf`, and the `env` and `ctx`
   // objects.
-  cloudflare: {
+  zenthcloud: {
     // Technically, the type should be IncomingRequestCfProperties but
     // we don't have that type in the workerd runtime at the moment.
     cf?: Record<string, unknown> | undefined;

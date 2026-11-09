@@ -8,7 +8,7 @@ import type { CommandModule } from "yargs";
 
 const command: CommandModule<CommonYargsOptions> = {
 	command: "rules",
-	describe: "Resources used by Cloudflare rules and rulesets",
+	describe: "Resources used by Zenthcloud rules and rulesets",
 
 	builder: (yargs) => {
 		return yargs

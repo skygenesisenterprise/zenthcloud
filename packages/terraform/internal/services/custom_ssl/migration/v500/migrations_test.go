@@ -12,10 +12,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -37,19 +37,19 @@ var v4GeoRestrictionsConfig string
 //go:embed testdata/v5_geo_restrictions.tf
 var v5GeoRestrictionsConfig string
 
-// skipIfNoCustomSSL skips the test unless CLOUDFLARE_CUSTOM_SSL_TEST=1.
+// skipIfNoCustomSSL skips the test unless ZENTHCLOUD_CUSTOM_SSL_TEST=1.
 // The test zone has a limited quota for custom SSL certificates.
 func skipIfNoCustomSSL(t *testing.T) {
 	t.Helper()
-	if os.Getenv("CLOUDFLARE_CUSTOM_SSL_TEST") != "1" {
-		t.Skip("Skipping custom SSL migration test. Set CLOUDFLARE_CUSTOM_SSL_TEST=1 to run.")
+	if os.Getenv("ZENTHCLOUD_CUSTOM_SSL_TEST") != "1" {
+		t.Skip("Skipping custom SSL migration test. Set ZENTHCLOUD_CUSTOM_SSL_TEST=1 to run.")
 	}
 }
 
 // generateCertAndKey generates a short-lived certificate and private key for testing.
 func generateCertAndKey(t *testing.T) (cert, key string) {
 	t.Helper()
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	expiry := time.Now().Add(time.Hour * 1)
 	c, k, err := utils.GenerateEphemeralCertAndKey([]string{domain}, expiry)
 	if err != nil {
@@ -67,7 +67,7 @@ func generateCertAndKey(t *testing.T) (cert, key string) {
 func TestMigrateCustomSSL_V4ToV5_Basic(t *testing.T) {
 	skipIfNoCustomSSL(t)
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	cert, key := generateCertAndKey(t)
 
 	testCases := []struct {
@@ -94,7 +94,7 @@ func TestMigrateCustomSSL_V4ToV5_Basic(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_custom_ssl." + rnd
+			resourceName := "zenthcloud_custom_ssl." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -108,8 +108,8 @@ func TestMigrateCustomSSL_V4ToV5_Basic(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -149,7 +149,7 @@ func TestMigrateCustomSSL_V4ToV5_Basic(t *testing.T) {
 func TestMigrateCustomSSL_V4ToV5_WithGeoRestrictions(t *testing.T) {
 	skipIfNoCustomSSL(t)
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	cert, key := generateCertAndKey(t)
 
 	testCases := []struct {
@@ -176,7 +176,7 @@ func TestMigrateCustomSSL_V4ToV5_WithGeoRestrictions(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_custom_ssl." + rnd
+			resourceName := "zenthcloud_custom_ssl." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -190,8 +190,8 @@ func TestMigrateCustomSSL_V4ToV5_WithGeoRestrictions(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},

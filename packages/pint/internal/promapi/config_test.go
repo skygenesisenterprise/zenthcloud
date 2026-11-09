@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.nhat.io/httpmock"
 
-	"github.com/cloudflare/pint/internal/promapi"
+	"github.com/zenthcloud/pint/internal/promapi"
 )
 
 func TestConfig(t *testing.T) {

@@ -3,7 +3,7 @@ package zero_trust_dlp_predefined_profile
 import (
 	"context"
 
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_dlp_predefined_profile/migration/v500"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_dlp_predefined_profile/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -20,9 +20,9 @@ var _ resource.ResourceWithMoveState = (*ZeroTrustDLPPredefinedProfileResource)(
 
 // MoveState registers state movers for resource renames.
 // This enables Terraform 1.8+ `moved` blocks to automatically trigger state migration
-// from cloudflare_dlp_profile or cloudflare_zero_trust_dlp_profile to cloudflare_zero_trust_dlp_predefined_profile.
+// from zenthcloud_dlp_profile or zenthcloud_zero_trust_dlp_profile to zenthcloud_zero_trust_dlp_predefined_profile.
 func (r *ZeroTrustDLPPredefinedProfileResource) MoveState(ctx context.Context) []resource.StateMover {
-	sourceSchema := v500.SourceCloudflareDLPProfileSchema()
+	sourceSchema := v500.SourceZenthcloudDLPProfileSchema()
 
 	return []resource.StateMover{
 		{

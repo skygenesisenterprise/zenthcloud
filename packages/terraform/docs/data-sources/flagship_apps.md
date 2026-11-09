@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_flagship_apps Data Source - Cloudflare"
+page_title: "zenthcloud_flagship_apps Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Flagship Read
 ---
 
-# cloudflare_flagship_apps (Data Source)
+# zenthcloud_flagship_apps (Data Source)
 
 Accepted Permissions
 
@@ -15,7 +15,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_flagship_apps" "example_flagship_apps" {
+data "zenthcloud_flagship_apps" "example_flagship_apps" {
   account_id = "account_id"
 }
 ```
@@ -25,7 +25,7 @@ data "cloudflare_flagship_apps" "example_flagship_apps" {
 
 ### Required
 
-- `account_id` (String) Cloudflare account ID that owns the Flagship app.
+- `account_id` (String) Zenthcloud account ID that owns the Flagship app.
 
 ### Optional
 

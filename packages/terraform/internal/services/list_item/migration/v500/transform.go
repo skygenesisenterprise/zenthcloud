@@ -5,12 +5,12 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Transform converts a v4 cloudflare_list_item state to v5 state.
+// Transform converts a v4 zenthcloud_list_item state to v5 state.
 func Transform(ctx context.Context, source SourceListItemModel) (*TargetListItemModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 

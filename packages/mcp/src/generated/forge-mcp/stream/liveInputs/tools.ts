@@ -39,7 +39,7 @@ export const tools: readonly Tool[] = [
   {
     name: "stream_liveInputs_create",
     title: "Create a live input",
-    description: "Creates a live input, and returns credentials that you or your users can use to stream live video to Cloudflare Stream.\n\nPOST /accounts/{account_id}/stream/live_inputs",
+    description: "Creates a live input, and returns credentials that you or your users can use to stream live video to Zenthcloud Stream.\n\nPOST /accounts/{account_id}/stream/live_inputs",
     inputSchema: {
       type: "object",
       properties: {

@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_web_analytics_rule Resource - Cloudflare"
+page_title: "zenthcloud_web_analytics_rule Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_web_analytics_rule (Resource)
+# zenthcloud_web_analytics_rule (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_web_analytics_rule" "example_web_analytics_rule" {
+resource "zenthcloud_web_analytics_rule" "example_web_analytics_rule" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   ruleset_id = "f174e90a-fafe-4643-bbbc-4a0ed4fc8415"
   host = "example.com"

@@ -1,6 +1,6 @@
 import { stripTypeScriptTypes } from "node:module";
 import { Script } from "node:vm";
-import { runInTempDir, seed } from "@cloudflare/workers-utils/test-helpers";
+import { runInTempDir, seed } from "@zenthcloud/workers-utils/test-helpers";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { handler, imports } from "../../../../generator/plugin/emit/handler.js";
 import { parseBody } from "../../../lib/body-parser.js";

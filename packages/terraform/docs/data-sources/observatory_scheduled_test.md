@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_observatory_scheduled_test Data Source - Cloudflare"
+page_title: "zenthcloud_observatory_scheduled_test Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zone Settings ReadZone Settings Write
 ---
 
-# cloudflare_observatory_scheduled_test (Data Source)
+# zenthcloud_observatory_scheduled_test (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_observatory_scheduled_test" "example_observatory_scheduled_test" {
+data "zenthcloud_observatory_scheduled_test" "example_observatory_scheduled_test" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   url = "example.com"
   region = "us-central1"

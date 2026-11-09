@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -65,7 +65,7 @@ func TestMigrateWorkersKV_Basic(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			namespaceName := fmt.Sprintf("tf-test-ns-%s", rnd)
 			kvName := fmt.Sprintf("tf-test-kv-%s", rnd)
@@ -88,8 +88,8 @@ func TestMigrateWorkersKV_Basic(t *testing.T) {
 					{
 						// Step 1: Create with specific provider version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -99,13 +99,13 @@ func TestMigrateWorkersKV_Basic(t *testing.T) {
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer,
 						[]statecheck.StateCheck{
 							// Verify the key field was renamed to key_name
-							statecheck.ExpectKnownValue("cloudflare_workers_kv."+kvName, tfjsonpath.New("key_name"), knownvalue.StringExact(keyName)),
-							statecheck.ExpectKnownValue("cloudflare_workers_kv."+kvName, tfjsonpath.New("value"), knownvalue.StringExact(value)),
-							statecheck.ExpectKnownValue("cloudflare_workers_kv."+kvName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+							statecheck.ExpectKnownValue("zenthcloud_workers_kv."+kvName, tfjsonpath.New("key_name"), knownvalue.StringExact(keyName)),
+							statecheck.ExpectKnownValue("zenthcloud_workers_kv."+kvName, tfjsonpath.New("value"), knownvalue.StringExact(value)),
+							statecheck.ExpectKnownValue("zenthcloud_workers_kv."+kvName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 							// Verify namespace_id is preserved
-							statecheck.ExpectKnownValue("cloudflare_workers_kv."+kvName, tfjsonpath.New("namespace_id"), knownvalue.NotNull()),
+							statecheck.ExpectKnownValue("zenthcloud_workers_kv."+kvName, tfjsonpath.New("namespace_id"), knownvalue.NotNull()),
 							// Verify id field is preserved
-							statecheck.ExpectKnownValue("cloudflare_workers_kv."+kvName, tfjsonpath.New("id"), knownvalue.NotNull()),
+							statecheck.ExpectKnownValue("zenthcloud_workers_kv."+kvName, tfjsonpath.New("id"), knownvalue.NotNull()),
 						},
 					),
 				},
@@ -139,7 +139,7 @@ func TestMigrateWorkersKV_SpecialCharacters(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			namespaceName := fmt.Sprintf("tf-test-ns-%s", rnd)
 			kvName := fmt.Sprintf("tf-test-kv-%s", rnd)
@@ -163,8 +163,8 @@ func TestMigrateWorkersKV_SpecialCharacters(t *testing.T) {
 					{
 						// Step 1: Create with specific provider version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -174,9 +174,9 @@ func TestMigrateWorkersKV_SpecialCharacters(t *testing.T) {
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer,
 						[]statecheck.StateCheck{
 							// Verify the key field was renamed to key_name and special characters preserved
-							statecheck.ExpectKnownValue("cloudflare_workers_kv."+kvName, tfjsonpath.New("key_name"), knownvalue.StringExact(keyName)),
-							statecheck.ExpectKnownValue("cloudflare_workers_kv."+kvName, tfjsonpath.New("value"), knownvalue.StringExact(value)),
-							statecheck.ExpectKnownValue("cloudflare_workers_kv."+kvName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+							statecheck.ExpectKnownValue("zenthcloud_workers_kv."+kvName, tfjsonpath.New("key_name"), knownvalue.StringExact(keyName)),
+							statecheck.ExpectKnownValue("zenthcloud_workers_kv."+kvName, tfjsonpath.New("value"), knownvalue.StringExact(value)),
+							statecheck.ExpectKnownValue("zenthcloud_workers_kv."+kvName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 						},
 					),
 				},
@@ -210,7 +210,7 @@ func TestMigrateWorkersKV_EmptyValue(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			namespaceName := fmt.Sprintf("tf-test-ns-%s", rnd)
 			kvName := fmt.Sprintf("tf-test-kv-%s", rnd)
@@ -233,8 +233,8 @@ func TestMigrateWorkersKV_EmptyValue(t *testing.T) {
 					{
 						// Step 1: Create with specific provider version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -244,9 +244,9 @@ func TestMigrateWorkersKV_EmptyValue(t *testing.T) {
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer,
 						[]statecheck.StateCheck{
 							// Verify empty value is preserved
-							statecheck.ExpectKnownValue("cloudflare_workers_kv."+kvName, tfjsonpath.New("key_name"), knownvalue.StringExact(keyName)),
-							statecheck.ExpectKnownValue("cloudflare_workers_kv."+kvName, tfjsonpath.New("value"), knownvalue.StringExact("")),
-							statecheck.ExpectKnownValue("cloudflare_workers_kv."+kvName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+							statecheck.ExpectKnownValue("zenthcloud_workers_kv."+kvName, tfjsonpath.New("key_name"), knownvalue.StringExact(keyName)),
+							statecheck.ExpectKnownValue("zenthcloud_workers_kv."+kvName, tfjsonpath.New("value"), knownvalue.StringExact("")),
+							statecheck.ExpectKnownValue("zenthcloud_workers_kv."+kvName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
 						},
 					),
 				},

@@ -3,13 +3,13 @@ package v500
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Transform converts v4 cloudflare_worker_script state to v5 cloudflare_workers_script state.
+// Transform converts v4 zenthcloud_worker_script state to v5 zenthcloud_workers_script state.
 //
 // Key transformations:
 // - name → script_name

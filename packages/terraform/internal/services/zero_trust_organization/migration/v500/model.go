@@ -1,20 +1,20 @@
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceCloudflareAccessOrganizationModel represents the source state structure from v4.
-// This corresponds to schema_version=0 from the legacy (SDKv2) cloudflare provider.
+// SourceZenthcloudAccessOrganizationModel represents the source state structure from v4.
+// This corresponds to schema_version=0 from the legacy (SDKv2) zenthcloud provider.
 //
 // Handles BOTH v4 resource names (they share identical schemas):
-// - cloudflare_access_organization
-// - cloudflare_zero_trust_access_organization
+// - zenthcloud_access_organization
+// - zenthcloud_zero_trust_access_organization
 //
 // Used by both MoveState (Terraform 1.8+) and UpgradeFromLegacyV0 (Terraform < 1.8)
 // to parse legacy state.
-type SourceCloudflareAccessOrganizationModel struct {
+type SourceZenthcloudAccessOrganizationModel struct {
 	ID                             types.String `tfsdk:"id"`
 	AccountID                      types.String `tfsdk:"account_id"`
 	ZoneID                         types.String `tfsdk:"zone_id"`
@@ -27,7 +27,7 @@ type SourceCloudflareAccessOrganizationModel struct {
 	SessionDuration                types.String `tfsdk:"session_duration"`
 	AllowAuthenticateViaWARP       types.Bool   `tfsdk:"allow_authenticate_via_warp"`
 	WARPAuthSessionDuration        types.String `tfsdk:"warp_auth_session_duration"`
-	// Added to match SourceCloudflareAccessOrganizationSchema (v5.24.0+).
+	// Added to match SourceZenthcloudAccessOrganizationSchema (v5.24.0+).
 	// This field did not exist in v4; its value will always be null when
 	// decoded from v4 state. Transform ignores it — the v5 Read populates
 	// the real value from the API after migration.

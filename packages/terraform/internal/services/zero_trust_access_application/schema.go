@@ -3,8 +3,8 @@ package zero_trust_access_application
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customvalidator"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
@@ -134,7 +134,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"skip_interstitial": schema.BoolAttribute{
-				Description: "Enables automatic authentication through cloudflared.",
+				Description: "Enables automatic authentication through zenthcloudd.",
 				Optional:    true,
 				Validators: []validator.Bool{
 					customvalidator.RequiresOtherStringAttributeToBeOneOf(path.MatchRoot("type"), selfHostedAppTypes...),
@@ -566,7 +566,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 							},
 						},
 						"uri": schema.StringAttribute{
-							Description: "The URI of the destination. Public destinations' URIs can include a domain and path with [wildcards](https://developers.cloudflare.com/cloudflare-one/policies/access/app-paths/).",
+							Description: "The URI of the destination. Public destinations' URIs can include a domain and path with [wildcards](https://github.com/skygenesisenterprise/zenthcloud).",
 							Optional:    true,
 							Validators: []validator.String{
 								customvalidator.RequiresOtherStringAttributeToNullOrBeOneOf(path.MatchRelative().AtParent().AtName("type"), "public"),
@@ -618,7 +618,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 							},
 						},
 						"worker_id": schema.StringAttribute{
-							Description: "The ID of the Cloudflare Worker to protect with Access. Required when type is `worker` or `preview_worker`.",
+							Description: "The ID of the Zenthcloud Worker to protect with Access. Required when type is `worker` or `preview_worker`.",
 							Optional:    true,
 							Validators: []validator.String{
 								customvalidator.RequiresOtherStringAttributeToBeOneOf(path.MatchRelative().AtParent().AtName("type"), "worker", "preview_worker"),
@@ -1859,7 +1859,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						ElementType: types.StringType,
 					},
 					"group_filter_regex": schema.StringAttribute{
-						Description: "A regex to filter Cloudflare groups returned in ID token and userinfo endpoint",
+						Description: "A regex to filter Zenthcloud groups returned in ID token and userinfo endpoint",
 						Optional:    true,
 						Validators: []validator.String{
 							customvalidator.RequiresOtherStringAttributeToBeOneOf(path.MatchRoot("saas_app").AtName("auth_type"), "oidc"),
@@ -1882,7 +1882,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"redirect_uris": schema.ListAttribute{
-						Description: "The permitted URL's for Cloudflare to return Authorization codes and Access/ID tokens",
+						Description: "The permitted URL's for Zenthcloud to return Authorization codes and Access/ID tokens",
 						Optional:    true,
 						ElementType: types.StringType,
 						Validators: []validator.List{

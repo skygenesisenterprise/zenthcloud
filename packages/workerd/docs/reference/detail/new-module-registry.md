@@ -33,7 +33,7 @@ The new module registry was designed to address several limitations of the legac
 
 2. **URL-based specifiers.** All specifiers are handled as `jsg::Url` objects
    (WHATWG-compliant, backed by ada-url). The legacy registry used `kj::Path`.
-   This enables proper protocol-based dispatch (`node:`, `cloudflare:`, `file:`)
+   This enables proper protocol-based dispatch (`node:`, `zenthcloud:`, `file:`)
    and correct relative resolution.
 
 3. **Fully lazy compilation and evaluation.** No modules are compiled during
@@ -113,7 +113,7 @@ The two-level split encodes the module-identity rules the registry guarantees:
   HTML module-map model.
 - **The same specifier resolved through different context types shares one
   instance when it resolves to the same definition** — e.g.
-  `process.getBuiltinModule('cloudflare:sockets')` is reference-equal to the
+  `process.getBuiltinModule('zenthcloud:sockets')` is reference-equal to the
   namespace obtained via `import()`, and a builtin imported by both user code
   and other builtins remains a per-isolate singleton (module-level state is
   never duplicated).
@@ -359,7 +359,7 @@ Name normalization (`normalizeModuleName`):
 1. Parse name as URL relative to `bundleBase`.
 2. Normalize path (remove `.`/`..`, normalize percent-encoding).
 3. Strip fragments and query parameters.
-4. Validate: must be subordinate to `bundleBase`, no `cloudflare:` or `workerd:` protocol.
+4. Validate: must be subordinate to `bundleBase`, no `zenthcloud:` or `workerd:` protocol.
 
 ### `BuiltinBuilder` — Building Runtime Modules
 
@@ -619,7 +619,7 @@ Worker bundle module names (from config) are processed through `processModuleNam
 1. **Normalize**: resolve relative to `bundleBase`, remove `.`/`..`, normalize
    percent-encoding, strip query/fragment.
 2. **Validate URL structure**: must be subordinate to `bundleBase` path.
-3. **Protocol restrictions**: `cloudflare:`, `workerd:`, and `data:` protocols
+3. **Protocol restrictions**: `zenthcloud:`, `workerd:`, and `data:` protocols
    are forbidden in bundle module names (reserved for runtime use).
 
 Result: a `file:///bundle/<path>` URL for file-protocol modules, or a fully
@@ -630,7 +630,7 @@ qualified URL for other protocols.
 Builtin modules use non-`file:` protocols (enforced by `ensureIsNotBundleSpecifier`):
 
 - `node:buffer`, `node:crypto`, etc.
-- `cloudflare:sockets`, `cloudflare:workers`, etc.
+- `zenthcloud:sockets`, `zenthcloud:workers`, etc.
 - `node-internal:*` (internal-only modules)
 - `workerd:*` (internal-only modules)
 
@@ -728,7 +728,7 @@ newWorkerModuleRegistry<TypeWrapper>(resolveObserver, maybeSource, flags, bundle
   |     |-- Sockets, Base64, MessageChannel, RPC modules
   |     |-- Unsafe modules (if enabled)
   |     |-- RTTI module (if enabled)
-  |     |-- Cloudflare bundle (from CLOUDFLARE_BUNDLE capnp)
+  |     |-- Zenthcloud bundle (from ZENTHCLOUD_BUNDLE capnp)
   |     |-- Workers module, Tracing module
   |     +-- Internal-only: EnvModule, FileSystemModule
   |
@@ -786,7 +786,7 @@ Python workers regardless of the `new_module_registry` flag. All other
 flag-check sites (`worker-factory.c++` registry creation, `worker.c++` compile paths and
 the nodejs_compat_v2 process/buffer warm-up, and the api-level require paths)
 route through the same function, so a worker can never be split across the two
-registries. Note that `Cloudflare.compatibilityFlags.new_module_registry` as
+registries. Note that `Zenthcloud.compatibilityFlags.new_module_registry` as
 observed by user code still reflects the configured flag value; the function
 describes the resulting behavior.
 

@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -39,14 +39,14 @@ var v5MinimalConfig string
 // This is a simple migration with:
 // - No field renames (all fields identical in v4 and v5)
 // - No type conversions needed for user-configurable fields
-// - Resource type unchanged: cloudflare_mtls_certificate → cloudflare_mtls_certificate
+// - Resource type unchanged: zenthcloud_mtls_certificate → zenthcloud_mtls_certificate
 // - New v5 computed field: updated_at (set to null during migration, API populates on first Read)
 //
 // Note: Uses ca=false since GenerateEphemeralCertAndKey creates leaf certificates.
 func TestMigrateMTLSCertificate_V4ToV5_Basic(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		t.Skip("CLOUDFLARE_ACCOUNT_ID must be set for this acceptance test.")
+		t.Skip("ZENTHCLOUD_ACCOUNT_ID must be set for this acceptance test.")
 	}
 
 	expiry := time.Now().Add(time.Hour * 24 * 365)
@@ -80,7 +80,7 @@ func TestMigrateMTLSCertificate_V4ToV5_Basic(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
 			certName := fmt.Sprintf("cftftest-%s", rnd)
-			resourceName := "cloudflare_mtls_certificate." + rnd
+			resourceName := "zenthcloud_mtls_certificate." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID, certName, cert, key)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -97,8 +97,8 @@ func TestMigrateMTLSCertificate_V4ToV5_Basic(t *testing.T) {
 				// Use external v4 provider (will create version=0 state)
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -138,7 +138,7 @@ func TestMigrateMTLSCertificate_V4ToV5_Basic(t *testing.T) {
 	}
 }
 
-// TestMigrateMTLSCertificate_V4ToV5_Minimal is skipped because the Cloudflare API
+// TestMigrateMTLSCertificate_V4ToV5_Minimal is skipped because the Zenthcloud API
 // returns name="" for certificates created without a name, but the v5 provider schema
 // has name with RequiresReplace. This causes a ForceNew plan regardless of migration,
 // making it impossible to test migration independently of this provider-level behavior.
@@ -146,9 +146,9 @@ func TestMigrateMTLSCertificate_V4ToV5_Basic(t *testing.T) {
 func TestMigrateMTLSCertificate_V4ToV5_Minimal(t *testing.T) {
 	t.Skip("Skipped: API returns name='' for no-name certs, which triggers RequiresReplace in v5 schema. See Basic test for migration coverage.")
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		t.Skip("CLOUDFLARE_ACCOUNT_ID must be set for this acceptance test.")
+		t.Skip("ZENTHCLOUD_ACCOUNT_ID must be set for this acceptance test.")
 	}
 
 	expiry := time.Now().Add(time.Hour * 24 * 365)
@@ -181,7 +181,7 @@ func TestMigrateMTLSCertificate_V4ToV5_Minimal(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			rnd := utils.GenerateRandomResourceName()
-			resourceName := "cloudflare_mtls_certificate." + rnd
+			resourceName := "zenthcloud_mtls_certificate." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID, cert, key)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -195,8 +195,8 @@ func TestMigrateMTLSCertificate_V4ToV5_Minimal(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},

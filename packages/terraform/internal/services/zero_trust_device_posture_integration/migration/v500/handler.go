@@ -73,7 +73,7 @@ func upgradeFromV4Internal(ctx context.Context, req resource.UpgradeStateRequest
 	tflog.Info(ctx, "Upgrading zero_trust_device_posture_integration state from v4 SDKv2 provider (schema_version=0)")
 
 	// Parse v4 state using v4 schema and model
-	var v4State SourceCloudflareDevicePostureIntegrationModel
+	var v4State SourceZenthcloudDevicePostureIntegrationModel
 	diags := unmarshalV4State(ctx, req.RawState, &v4State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -93,10 +93,10 @@ func upgradeFromV4Internal(ctx context.Context, req resource.UpgradeStateRequest
 }
 
 // unmarshalV4State parses raw state using v4 schema.
-func unmarshalV4State(ctx context.Context, rawState *tfprotov6.RawState, target *SourceCloudflareDevicePostureIntegrationModel) diag.Diagnostics {
+func unmarshalV4State(ctx context.Context, rawState *tfprotov6.RawState, target *SourceZenthcloudDevicePostureIntegrationModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	sourceSchema := SourceCloudflareDevicePostureIntegrationSchema()
+	sourceSchema := SourceZenthcloudDevicePostureIntegrationSchema()
 	sourceType := sourceSchema.Type().TerraformType(ctx)
 
 	rawValue, err := rawState.Unmarshal(sourceType)

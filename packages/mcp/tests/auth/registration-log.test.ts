@@ -1,9 +1,9 @@
-import { env, exports } from 'cloudflare:workers'
+import { env, exports } from 'zenthcloud:workers'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { describeRedirectUri } from '../../src/auth/registration-log'
 import { clearKv } from '../helpers/kv'
 
-const MCP_ORIGIN = 'https://mcp.cloudflare.com'
+const MCP_ORIGIN = 'https://github.com/skygenesisenterprise/zenthcloud'
 
 function register(metadata: Record<string, unknown>): Promise<Response> {
   return exports.default.fetch(

@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_argo_tiered_caching Data Source - Cloudflare"
+page_title: "zenthcloud_argo_tiered_caching Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_argo_tiered_caching (Data Source)
+# zenthcloud_argo_tiered_caching (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_argo_tiered_caching" "example_argo_tiered_caching" {
+data "zenthcloud_argo_tiered_caching" "example_argo_tiered_caching" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```

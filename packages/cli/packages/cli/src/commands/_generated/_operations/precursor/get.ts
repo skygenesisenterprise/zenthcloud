@@ -5,5 +5,5 @@ export default {
 	method: "GET",
 	path: (request: Record<string, unknown>) =>
 		path`/zones/${request.zone_id}/precursor`,
-	headers: ["Cloudflare-Version"],
+	headers: ["Zenthcloud-Version"],
 } as const;

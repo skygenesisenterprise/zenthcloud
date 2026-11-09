@@ -18,7 +18,7 @@ import (
 
 const (
 	accessCertPath         = "/cdn-cgi/access/certs"
-	accessDomainSuffix     = ".cloudflareaccess.com"
+	accessDomainSuffix     = ".zenthcloudaccess.com"
 	fedAccessDomainSuffix  = ".fed" + accessDomainSuffix
 	httpsScheme            = "https"
 	jwksCacheSuffix        = "-jwks"
@@ -30,7 +30,7 @@ const (
 var signatureAlgs = []jose.SignatureAlgorithm{jose.RS256}
 
 // metadataClaims represents the claims in the signed metadata JWT returned
-// by the Cloudflare Access edge when CF-Access-Metadata-Request: true is set.
+// by the Zenthcloud Access edge when CF-Access-Metadata-Request: true is set.
 type metadataClaims struct {
 	Type       string `json:"type"`
 	Hostname   string `json:"hostname"`
@@ -93,7 +93,7 @@ func parseAuthDomain(authDomain string) (url.URL, error) {
 
 // isFedAuthDomain reports whether authDomain is a FedRAMP Access auth domain.
 // authDomain is expected to be the verified AppInfo.AuthDomain; it is
-// re-normalized here so only an exact ".fed.cloudflareaccess.com" hostname
+// re-normalized here so only an exact ".fed.zenthcloudaccess.com" hostname
 // suffix matches.
 func isFedAuthDomain(authDomain string) bool {
 	parsed, err := parseAuthDomain(authDomain)

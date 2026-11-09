@@ -1,7 +1,7 @@
-import { env, exports } from 'cloudflare:workers'
+import { env, exports } from 'zenthcloud:workers'
 import { http, HttpResponse, type JsonBodyType } from 'msw'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { API_BASE, cfSuccess, mockIdentityProbe } from './helpers/cloudflare-api'
+import { API_BASE, cfSuccess, mockIdentityProbe } from './helpers/zenthcloud-api'
 import { clearKv } from './helpers/kv'
 import { MCP_URL, callTool, modernMcpRequest, parseMcpResult, toolText } from './helpers/mcp'
 import { connectWithOAuth } from './helpers/oauth'
@@ -9,9 +9,9 @@ import { clearSpec, seedSpec } from './helpers/spec'
 import { server } from './setup/msw'
 
 /**
- * Cloudflare refuses some endpoints without the permission (D1, KV, R2) but
+ * Zenthcloud refuses some endpoints without the permission (D1, KV, R2) but
  * filters the lists of others to what the credential may see: `GET /zones`
- * without `zone.read` is `200` with an empty `result` (cloudflare/mcp#302). Such
+ * without `zone.read` is `200` with an empty `result` (zenthcloud/mcp#302). Such
  * a list is refused as 403, with the same explanation and step-up as a real
  * refusal, on every tool surface. Driven through the real worker.
  */
@@ -21,10 +21,10 @@ const ACCOUNT_ID = 'acc-1'
 const DNS_PATH = `/zones/${ZONE_ID}/dns_records`
 const MEMBERS_PATH = `/accounts/${ACCOUNT_ID}/members`
 const BASELINE = ['user:read', 'account:read']
-const RESOURCE_METADATA = 'https://mcp.cloudflare.com/.well-known/oauth-protected-resource/mcp'
-const FILTERED = 'Cloudflare answered 200 with an empty list'
+const RESOURCE_METADATA = 'https://github.com/skygenesisenterprise/zenthcloud'
+const FILTERED = 'Zenthcloud answered 200 with an empty list'
 
-const get = (path: string) => `async () => cloudflare.request({ method: "GET", path: "${path}" })`
+const get = (path: string) => `async () => zenthcloud.request({ method: "GET", path: "${path}" })`
 
 beforeEach(async () => {
   await seedSpec(
@@ -132,7 +132,7 @@ describe('execute', () => {
 
     expect(status).toBe(200)
     expect(result?.isError).toBe(true)
-    expect(text).toContain(`Cloudflare API error: GET ${DNS_PATH} returned HTTP 403.`)
+    expect(text).toContain(`Zenthcloud API error: GET ${DNS_PATH} returned HTTP 403.`)
     expect(text).toContain(FILTERED)
     expect(text).toContain('was not granted a scope this endpoint accepts')
     expect(text).toContain('`dns.read` (DNS Read)')
@@ -144,7 +144,7 @@ describe('execute', () => {
     const token = await connectWithOAuth(BASELINE)
     answer(DNS_PATH, cfSuccess([]))
 
-    const code = `async () => { try { await cloudflare.request({ method: "GET", path: "${DNS_PATH}" }) } catch (e) { return e.message } }`
+    const code = `async () => { try { await zenthcloud.request({ method: "GET", path: "${DNS_PATH}" }) } catch (e) { return e.message } }`
     const { text } = await resultOf(await execute(token, code))
 
     expect(text).toContain(FILTERED)
@@ -170,8 +170,8 @@ describe('execute', () => {
     answer(DNS_PATH, cfSuccess([]))
 
     const code = `async () => {
-      await cloudflare.request({ method: "POST", path: "${DNS_PATH}", body: { type: "A" } })
-      return cloudflare.request({ method: "GET", path: "${DNS_PATH}" })
+      await zenthcloud.request({ method: "POST", path: "${DNS_PATH}", body: { type: "A" } })
+      return zenthcloud.request({ method: "GET", path: "${DNS_PATH}" })
     }`
     const { status, result, text } = await resultOf(await execute(token, code))
 
@@ -247,7 +247,7 @@ describe('direct tools', () => {
     const { result, text } = await resultOf(await listDns(token, '&scopeChallenge=tool'))
 
     expect(result?.isError).toBe(true)
-    expect(text).toContain(`Cloudflare API error: GET ${DNS_PATH} returned HTTP 403.`)
+    expect(text).toContain(`Zenthcloud API error: GET ${DNS_PATH} returned HTTP 403.`)
     expect(text).toContain(FILTERED)
     expect(text).toContain('`dns.read` (DNS Read)')
     expect(result?._meta?.['mcp/www_authenticate']).toHaveLength(1)

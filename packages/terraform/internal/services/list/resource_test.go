@@ -9,10 +9,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/rules"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/rules"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -26,31 +26,31 @@ func TestMain(m *testing.M) {
 const listTestPrefix = "tf_test_list_"
 
 func init() {
-	resource.AddTestSweepers("cloudflare_list", &resource.Sweeper{
-		Name: "cloudflare_list",
-		F:    testSweepCloudflareList,
+	resource.AddTestSweepers("zenthcloud_list", &resource.Sweeper{
+		Name: "zenthcloud_list",
+		F:    testSweepZenthcloudList,
 	})
 }
 
-func testSweepCloudflareList(r string) error {
+func testSweepZenthcloudList(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping lists sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping lists sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
 	lists, err := client.Rules.Lists.List(ctx, rules.ListListParams{
-		AccountID: cloudflare.F(accountID),
+		AccountID: zenthcloud.F(accountID),
 	})
 	if err != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Cloudflare Lists: %s", err))
+		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Zenthcloud Lists: %s", err))
 		return err
 	}
 	if len(lists.Result) == 0 {
-		tflog.Info(ctx, "No Cloudflare Lists to sweep")
+		tflog.Info(ctx, "No Zenthcloud Lists to sweep")
 		return nil
 	}
 
@@ -59,36 +59,36 @@ func testSweepCloudflareList(r string) error {
 		if !utils.ShouldSweepResource(list.Name) && !strings.HasPrefix(list.Name, listTestPrefix) {
 			continue
 		}
-		tflog.Info(ctx, fmt.Sprintf("Deleting Cloudflare List: %s (%s)", list.Name, list.ID))
+		tflog.Info(ctx, fmt.Sprintf("Deleting Zenthcloud List: %s (%s)", list.Name, list.ID))
 		_, err := client.Rules.Lists.Delete(ctx, list.ID, rules.ListDeleteParams{
-			AccountID: cloudflare.F(accountID),
+			AccountID: zenthcloud.F(accountID),
 		})
 		if err != nil {
-			tflog.Error(ctx, fmt.Sprintf("Failed to delete Cloudflare List %s (%s): %s", list.Name, list.ID, err))
+			tflog.Error(ctx, fmt.Sprintf("Failed to delete Zenthcloud List %s (%s): %s", list.Name, list.ID, err))
 			continue
 		}
-		tflog.Info(ctx, fmt.Sprintf("Deleted Cloudflare List: %s (%s)", list.Name, list.ID))
+		tflog.Info(ctx, fmt.Sprintf("Deleted Zenthcloud List: %s (%s)", list.Name, list.ID))
 	}
 
 	return nil
 }
 
-func TestAccCloudflareList(t *testing.T) {
+func TestAccZenthcloudList(t *testing.T) {
 
 	rndIP := utils.GenerateRandomResourceName()
 	rndRedirect := utils.GenerateRandomResourceName()
 	rndASN := utils.GenerateRandomResourceName()
 	rndHostname := utils.GenerateRandomResourceName()
 
-	resourceNameIP := fmt.Sprintf("cloudflare_list.%s", rndIP)
-	resourceNameRedirect := fmt.Sprintf("cloudflare_list.%s", rndRedirect)
-	resourceNameASN := fmt.Sprintf("cloudflare_list.%s", rndASN)
-	resourceNameHostname := fmt.Sprintf("cloudflare_list.%s", rndHostname)
+	resourceNameIP := fmt.Sprintf("zenthcloud_list.%s", rndIP)
+	resourceNameRedirect := fmt.Sprintf("zenthcloud_list.%s", rndRedirect)
+	resourceNameASN := fmt.Sprintf("zenthcloud_list.%s", rndASN)
+	resourceNameHostname := fmt.Sprintf("zenthcloud_list.%s", rndHostname)
 
-	dataResourceNameIP := fmt.Sprintf("data.cloudflare_list.%s", rndIP)
-	dataResourceNameRedirect := fmt.Sprintf("data.cloudflare_list.%s", rndRedirect)
-	dataResourceNameASN := fmt.Sprintf("data.cloudflare_list.%s", rndASN)
-	dataResourceNameHostname := fmt.Sprintf("data.cloudflare_list.%s", rndHostname)
+	dataResourceNameIP := fmt.Sprintf("data.zenthcloud_list.%s", rndIP)
+	dataResourceNameRedirect := fmt.Sprintf("data.zenthcloud_list.%s", rndRedirect)
+	dataResourceNameASN := fmt.Sprintf("data.zenthcloud_list.%s", rndASN)
+	dataResourceNameHostname := fmt.Sprintf("data.zenthcloud_list.%s", rndHostname)
 
 	descriptionIP := fmt.Sprintf("description.%s", rndIP)
 	descriptionRedirect := fmt.Sprintf("description.%s", rndRedirect)
@@ -105,7 +105,7 @@ func TestAccCloudflareList(t *testing.T) {
 	listNameASN := fmt.Sprintf("%s%s", listTestPrefix, rndASN)
 	listNameHostname := fmt.Sprintf("%s%s", listTestPrefix, rndHostname)
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	var list rules.ListsList
 	var initialID string
@@ -118,7 +118,7 @@ func TestAccCloudflareList(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareList(rndIP, listNameIP, descriptionIP, accountID, "ip"),
+				Config: testAccCheckZenthcloudList(rndIP, listNameIP, descriptionIP, accountID, "ip"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceNameIP, "name", listNameIP),
 					resource.TestCheckResourceAttr(resourceNameIP, "account_id", accountID),
@@ -131,7 +131,7 @@ func TestAccCloudflareList(t *testing.T) {
 				PreConfig: func() {
 					initialID = list.ID
 				},
-				Config: testAccCheckCloudflareList(rndIP, listNameIP, descriptionIPNew, accountID, "ip"),
+				Config: testAccCheckZenthcloudList(rndIP, listNameIP, descriptionIPNew, accountID, "ip"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceNameIP, "description", descriptionIPNew),
 					checkListAndPopulate(resourceNameIP, &list),
@@ -144,7 +144,7 @@ func TestAccCloudflareList(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckCloudflareListDataSource(rndIP, accountID, listNameIP, descriptionIP, "ip"),
+				Config: testAccCheckZenthcloudListDataSource(rndIP, accountID, listNameIP, descriptionIP, "ip"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(dataResourceNameIP, "name", listNameIP),
 					resource.TestCheckResourceAttr(dataResourceNameIP, "account_id", accountID),
@@ -169,7 +169,7 @@ func TestAccCloudflareList(t *testing.T) {
 				ImportStateKind: resource.ImportBlockWithID,
 			},
 			{
-				Config: testAccCheckCloudflareList(rndRedirect, listNameRedirect, descriptionRedirect, accountID, "redirect"),
+				Config: testAccCheckZenthcloudList(rndRedirect, listNameRedirect, descriptionRedirect, accountID, "redirect"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceNameRedirect, "name", listNameRedirect),
 					resource.TestCheckResourceAttr(resourceNameRedirect, "account_id", accountID),
@@ -188,7 +188,7 @@ func TestAccCloudflareList(t *testing.T) {
 				PreConfig: func() {
 					initialID = list.ID
 				},
-				Config: testAccCheckCloudflareList(rndRedirect, listNameRedirect, descriptionRedirectNew, accountID, "redirect"),
+				Config: testAccCheckZenthcloudList(rndRedirect, listNameRedirect, descriptionRedirectNew, accountID, "redirect"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceNameRedirect, "description", descriptionRedirectNew),
 					checkListAndPopulate(resourceNameRedirect, &list),
@@ -201,7 +201,7 @@ func TestAccCloudflareList(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckCloudflareListDataSource(rndRedirect, accountID, listNameRedirect, descriptionRedirect, "redirect"),
+				Config: testAccCheckZenthcloudListDataSource(rndRedirect, accountID, listNameRedirect, descriptionRedirect, "redirect"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(dataResourceNameRedirect, "name", listNameRedirect),
 					resource.TestCheckResourceAttr(dataResourceNameRedirect, "account_id", accountID),
@@ -226,7 +226,7 @@ func TestAccCloudflareList(t *testing.T) {
 				ImportStateKind: resource.ImportBlockWithID,
 			},
 			{
-				Config: testAccCheckCloudflareList(rndASN, listNameASN, descriptionASN, accountID, "asn"),
+				Config: testAccCheckZenthcloudList(rndASN, listNameASN, descriptionASN, accountID, "asn"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceNameASN, "name", listNameASN),
 					resource.TestCheckResourceAttr(resourceNameASN, "account_id", accountID),
@@ -245,7 +245,7 @@ func TestAccCloudflareList(t *testing.T) {
 				PreConfig: func() {
 					initialID = list.ID
 				},
-				Config: testAccCheckCloudflareList(rndASN, listNameASN, descriptionASNNew, accountID, "asn"),
+				Config: testAccCheckZenthcloudList(rndASN, listNameASN, descriptionASNNew, accountID, "asn"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceNameASN, "description", descriptionASNNew),
 					checkListAndPopulate(resourceNameASN, &list),
@@ -258,7 +258,7 @@ func TestAccCloudflareList(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckCloudflareListDataSource(rndASN, accountID, listNameASN, descriptionASN, "asn"),
+				Config: testAccCheckZenthcloudListDataSource(rndASN, accountID, listNameASN, descriptionASN, "asn"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(dataResourceNameASN, "name", listNameASN),
 					resource.TestCheckResourceAttr(dataResourceNameASN, "account_id", accountID),
@@ -283,7 +283,7 @@ func TestAccCloudflareList(t *testing.T) {
 				ImportStateKind: resource.ImportBlockWithID,
 			},
 			{
-				Config: testAccCheckCloudflareList(rndHostname, listNameHostname, descriptionHostname, accountID, "hostname"),
+				Config: testAccCheckZenthcloudList(rndHostname, listNameHostname, descriptionHostname, accountID, "hostname"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceNameHostname, "name", listNameHostname),
 					resource.TestCheckResourceAttr(resourceNameHostname, "account_id", accountID),
@@ -299,7 +299,7 @@ func TestAccCloudflareList(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckCloudflareListDataSource(rndHostname, accountID, listNameHostname, descriptionHostname, "hostname"),
+				Config: testAccCheckZenthcloudListDataSource(rndHostname, accountID, listNameHostname, descriptionHostname, "hostname"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(dataResourceNameHostname, "name", listNameHostname),
 					resource.TestCheckResourceAttr(dataResourceNameHostname, "account_id", accountID),
@@ -311,7 +311,7 @@ func TestAccCloudflareList(t *testing.T) {
 				PreConfig: func() {
 					initialID = list.ID
 				},
-				Config: testAccCheckCloudflareList(rndHostname, listNameHostname, descriptionHostnameNew, accountID, "hostname"),
+				Config: testAccCheckZenthcloudList(rndHostname, listNameHostname, descriptionHostnameNew, accountID, "hostname"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceNameHostname, "description", descriptionHostnameNew),
 					checkListAndPopulate(resourceNameHostname, &list),
@@ -343,11 +343,11 @@ func TestAccCloudflareList(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareListWithItems_IP(t *testing.T) {
+func TestAccZenthcloudListWithItems_IP(t *testing.T) {
 
 	rndIP := utils.GenerateRandomResourceName()
 
-	resourceNameIP := fmt.Sprintf("cloudflare_list.%s", rndIP)
+	resourceNameIP := fmt.Sprintf("zenthcloud_list.%s", rndIP)
 
 	descriptionIP := fmt.Sprintf("description.%s", rndIP)
 
@@ -355,7 +355,7 @@ func TestAccCloudflareListWithItems_IP(t *testing.T) {
 
 	listNameIP := fmt.Sprintf("%s%s", listTestPrefix, rndIP)
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	var list rules.ListsList
 	var initialID string
@@ -368,27 +368,27 @@ func TestAccCloudflareListWithItems_IP(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCheckCloudflareListWithCustomItem(rndIP, listNameIP, descriptionIP, accountID, `ip = "0f::"`),
+				Config:      testAccCheckZenthcloudListWithCustomItem(rndIP, listNameIP, descriptionIP, accountID, `ip = "0f::"`),
 				ExpectError: regexp.MustCompile(`IP address "0f::" must be normalized: "f::"`),
 			},
 			{
-				Config:      testAccCheckCloudflareListWithCustomItem(rndIP, listNameIP, descriptionIP, accountID, `ip = "1.1.1.1/32"`),
+				Config:      testAccCheckZenthcloudListWithCustomItem(rndIP, listNameIP, descriptionIP, accountID, `ip = "1.1.1.1/32"`),
 				ExpectError: regexp.MustCompile(`CIDR "1\.1\.1\.1/32" must be represented as "1\.1\.1\.1"`),
 			},
 			{
-				Config:      testAccCheckCloudflareListWithCustomItem(rndIP, listNameIP, descriptionIP, accountID, `ip = "f::/128"`),
+				Config:      testAccCheckZenthcloudListWithCustomItem(rndIP, listNameIP, descriptionIP, accountID, `ip = "f::/128"`),
 				ExpectError: regexp.MustCompile(`CIDR "f::/128" must be represented as "f::"`),
 			},
 			{
-				Config:      testAccCheckCloudflareListWithCustomItem(rndIP, listNameIP, descriptionIP, accountID, `ip = "1.1.1.1/24"`),
+				Config:      testAccCheckZenthcloudListWithCustomItem(rndIP, listNameIP, descriptionIP, accountID, `ip = "1.1.1.1/24"`),
 				ExpectError: regexp.MustCompile(`CIDR "1\.1\.1\.1/24" must be normalized: "1\.1\.1\.0/24"`),
 			},
 			{
-				Config:      testAccCheckCloudflareListWithCustomItem(rndIP, listNameIP, descriptionIP, accountID, `ip = "f::1/64"`),
+				Config:      testAccCheckZenthcloudListWithCustomItem(rndIP, listNameIP, descriptionIP, accountID, `ip = "f::1/64"`),
 				ExpectError: regexp.MustCompile(`CIDR "f::1/64" must be normalized: "f::/64"`),
 			},
 			{
-				Config: testAccCheckCloudflareListWithIPItems(rndIP, listNameIP, descriptionIP, accountID),
+				Config: testAccCheckZenthcloudListWithIPItems(rndIP, listNameIP, descriptionIP, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceNameIP, "name", listNameIP),
 					resource.TestCheckResourceAttr(resourceNameIP, "account_id", accountID),
@@ -407,7 +407,7 @@ func TestAccCloudflareListWithItems_IP(t *testing.T) {
 				PreConfig: func() {
 					initialID = list.ID
 				},
-				Config: testAccCheckCloudflareListWithIPItems(rndIP, listNameIP, descriptionIPNew, accountID),
+				Config: testAccCheckZenthcloudListWithIPItems(rndIP, listNameIP, descriptionIPNew, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceNameIP, "description", descriptionIPNew),
 					checkListAndPopulate(resourceNameIP, &list),
@@ -437,7 +437,7 @@ func TestAccCloudflareListWithItems_IP(t *testing.T) {
 			},
 			// unset items to clear list
 			{
-				Config: testAccCheckCloudflareListWithNullIPItems(rndIP, listNameIP, descriptionIP, accountID),
+				Config: testAccCheckZenthcloudListWithNullIPItems(rndIP, listNameIP, descriptionIP, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckNoResourceAttr(resourceNameIP, "items"),
 				),
@@ -457,11 +457,11 @@ func TestAccCloudflareListWithItems_IP(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareListWithItems_Hostname(t *testing.T) {
+func TestAccZenthcloudListWithItems_Hostname(t *testing.T) {
 
 	rndIP := utils.GenerateRandomResourceName()
 
-	resourceNameIP := fmt.Sprintf("cloudflare_list.%s", rndIP)
+	resourceNameIP := fmt.Sprintf("zenthcloud_list.%s", rndIP)
 
 	descriptionIP := fmt.Sprintf("description.%s", rndIP)
 
@@ -469,7 +469,7 @@ func TestAccCloudflareListWithItems_Hostname(t *testing.T) {
 
 	listNameIP := fmt.Sprintf("%s%s", listTestPrefix, rndIP)
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	var list rules.ListsList
 	var initialID string
@@ -482,7 +482,7 @@ func TestAccCloudflareListWithItems_Hostname(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareListWithHostnameItems(rndIP, listNameIP, descriptionIP, accountID),
+				Config: testAccCheckZenthcloudListWithHostnameItems(rndIP, listNameIP, descriptionIP, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceNameIP, "name", listNameIP),
 					resource.TestCheckResourceAttr(resourceNameIP, "account_id", accountID),
@@ -501,7 +501,7 @@ func TestAccCloudflareListWithItems_Hostname(t *testing.T) {
 				PreConfig: func() {
 					initialID = list.ID
 				},
-				Config: testAccCheckCloudflareListWithHostnameItems(rndIP, listNameIP, descriptionIPNew, accountID),
+				Config: testAccCheckZenthcloudListWithHostnameItems(rndIP, listNameIP, descriptionIPNew, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceNameIP, "description", descriptionIPNew),
 					checkListAndPopulate(resourceNameIP, &list),
@@ -533,11 +533,11 @@ func TestAccCloudflareListWithItems_Hostname(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareListWithItems_Redirect(t *testing.T) {
+func TestAccZenthcloudListWithItems_Redirect(t *testing.T) {
 
 	rndIP := utils.GenerateRandomResourceName()
 
-	resourceNameIP := fmt.Sprintf("cloudflare_list.%s", rndIP)
+	resourceNameIP := fmt.Sprintf("zenthcloud_list.%s", rndIP)
 
 	descriptionIP := fmt.Sprintf("description.%s", rndIP)
 
@@ -545,7 +545,7 @@ func TestAccCloudflareListWithItems_Redirect(t *testing.T) {
 
 	listNameIP := fmt.Sprintf("%s%s", listTestPrefix, rndIP)
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	var list rules.ListsList
 	var initialID string
@@ -558,7 +558,7 @@ func TestAccCloudflareListWithItems_Redirect(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareListWithRedirectItems(rndIP, listNameIP, descriptionIP, accountID),
+				Config: testAccCheckZenthcloudListWithRedirectItems(rndIP, listNameIP, descriptionIP, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceNameIP, "name", listNameIP),
 					resource.TestCheckResourceAttr(resourceNameIP, "account_id", accountID),
@@ -577,7 +577,7 @@ func TestAccCloudflareListWithItems_Redirect(t *testing.T) {
 				PreConfig: func() {
 					initialID = list.ID
 				},
-				Config: testAccCheckCloudflareListWithRedirectItems(rndIP, listNameIP, descriptionIPNew, accountID),
+				Config: testAccCheckZenthcloudListWithRedirectItems(rndIP, listNameIP, descriptionIPNew, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceNameIP, "description", descriptionIPNew),
 					checkListAndPopulate(resourceNameIP, &list),
@@ -609,31 +609,31 @@ func TestAccCloudflareListWithItems_Redirect(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareList(resourceName, listName, description, accountID, kind string) string {
+func testAccCheckZenthcloudList(resourceName, listName, description, accountID, kind string) string {
 	return acctest.LoadTestCase("list.tf", resourceName, listName, description, accountID, kind)
 }
 
-func testAccCheckCloudflareListWithIPItems(resourceName, listName, description, accountID string) string {
+func testAccCheckZenthcloudListWithIPItems(resourceName, listName, description, accountID string) string {
 	return acctest.LoadTestCase("listwithipitems.tf", resourceName, listName, description, accountID)
 }
 
-func testAccCheckCloudflareListWithCustomItem(resourceName, listName, description, accountID, itemTf string) string {
+func testAccCheckZenthcloudListWithCustomItem(resourceName, listName, description, accountID, itemTf string) string {
 	return acctest.LoadTestCase("listwithcustomitem.tf", resourceName, listName, description, accountID, itemTf)
 }
 
-func testAccCheckCloudflareListWithNullIPItems(resourceName, listName, description, accountID string) string {
+func testAccCheckZenthcloudListWithNullIPItems(resourceName, listName, description, accountID string) string {
 	return acctest.LoadTestCase("listwithnullipitems.tf", resourceName, listName, description, accountID)
 }
 
-func testAccCheckCloudflareListWithHostnameItems(resourceName, listName, description, accountID string) string {
+func testAccCheckZenthcloudListWithHostnameItems(resourceName, listName, description, accountID string) string {
 	return acctest.LoadTestCase("listwithhostnameitems.tf", resourceName, listName, description, accountID)
 }
 
-func testAccCheckCloudflareListWithRedirectItems(resourceName, listName, description, accountID string) string {
+func testAccCheckZenthcloudListWithRedirectItems(resourceName, listName, description, accountID string) string {
 	return acctest.LoadTestCase("listwithredirectitems.tf", resourceName, listName, description, accountID)
 }
 
-func testAccCheckCloudflareListDataSource(resourceName, accountID, listName, description, kind string) string {
+func testAccCheckZenthcloudListDataSource(resourceName, accountID, listName, description, kind string) string {
 	return acctest.LoadTestCase("listdatasource.tf", resourceName, accountID, listName, description, kind)
 }
 
@@ -689,9 +689,9 @@ func TestAccUpgradeList_FromPublishedV5(t *testing.T) {
 	rndIP := utils.GenerateRandomResourceName()
 	descriptionIP := fmt.Sprintf("description.%s", rndIP)
 	listNameIP := fmt.Sprintf("%s%s", listTestPrefix, rndIP)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
-	config := testAccCheckCloudflareList(rndIP, listNameIP, descriptionIP, accountID, "ip")
+	config := testAccCheckZenthcloudList(rndIP, listNameIP, descriptionIP, accountID, "ip")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -701,8 +701,8 @@ func TestAccUpgradeList_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

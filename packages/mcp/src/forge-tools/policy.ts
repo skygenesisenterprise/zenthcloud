@@ -1,4 +1,4 @@
-/** The Cloudflare policy for the tools forge generates (`src/generated/forge-mcp`). */
+/** The Zenthcloud policy for the tools forge generates (`src/generated/forge-mcp`). */
 
 /** The generated tool that lists the caller's accounts. */
 const ACCOUNTS_TOOL = 'accounts_list'
@@ -11,7 +11,7 @@ export const FORGE_ACCOUNT_DISCOVERY_GUIDANCE = `Call the ${ACCOUNTS_TOOL} tool 
  * description for every session, because clients cache tool lists and may
  * share them. The server fills it in when the session has one account.
  */
-export const FORGE_ACCOUNT_ID_DESCRIPTION = `Cloudflare account ID. Optional when the session is authorized for exactly one account; otherwise required. ${FORGE_ACCOUNT_DISCOVERY_GUIDANCE}`
+export const FORGE_ACCOUNT_ID_DESCRIPTION = `Zenthcloud account ID. Optional when the session is authorized for exactly one account; otherwise required. ${FORGE_ACCOUNT_DISCOVERY_GUIDANCE}`
 
 export const ACCOUNT_OR_ZONE_ID_DESCRIPTION = `The account or zone ID that account_or_zone names. Optional for \`accounts\` when the session is authorized for exactly one account. ${FORGE_ACCOUNT_DISCOVERY_GUIDANCE}`
 

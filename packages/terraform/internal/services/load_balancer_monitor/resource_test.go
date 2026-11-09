@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/cloudflare-go"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -23,32 +23,32 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_load_balancer_monitor", &resource.Sweeper{
-		Name: "cloudflare_load_balancer_monitor",
-		F:    testSweepCloudflareLoadBalancerMonitors,
+	resource.AddTestSweepers("zenthcloud_load_balancer_monitor", &resource.Sweeper{
+		Name: "zenthcloud_load_balancer_monitor",
+		F:    testSweepZenthcloudLoadBalancerMonitors,
 	})
 }
 
-func testSweepCloudflareLoadBalancerMonitors(r string) error {
+func testSweepZenthcloudLoadBalancerMonitors(r string) error {
 	ctx := context.Background()
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping load balancer monitors sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping load balancer monitors sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
-	monitors, err := client.ListLoadBalancerMonitors(ctx, cloudflare.AccountIdentifier(accountID), cloudflare.ListLoadBalancerMonitorParams{})
+	monitors, err := client.ListLoadBalancerMonitors(ctx, zenthcloud.AccountIdentifier(accountID), zenthcloud.ListLoadBalancerMonitorParams{})
 	if err != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Cloudflare Load Balancer Monitors: %s", err))
+		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Zenthcloud Load Balancer Monitors: %s", err))
 	}
 
 	if len(monitors) == 0 {
-		tflog.Debug(ctx, "[DEBUG] No Cloudflare Load Balancer Monitors to sweep")
+		tflog.Debug(ctx, "[DEBUG] No Zenthcloud Load Balancer Monitors to sweep")
 		return nil
 	}
 
@@ -58,8 +58,8 @@ func testSweepCloudflareLoadBalancerMonitors(r string) error {
 			continue
 		}
 
-		tflog.Info(ctx, fmt.Sprintf("Deleting Cloudflare Load Balancer Monitor: %s (%s)", monitor.Description, monitor.ID))
-		err := client.DeleteLoadBalancerMonitor(ctx, cloudflare.AccountIdentifier(accountID), monitor.ID)
+		tflog.Info(ctx, fmt.Sprintf("Deleting Zenthcloud Load Balancer Monitor: %s (%s)", monitor.Description, monitor.ID))
+		err := client.DeleteLoadBalancerMonitor(ctx, zenthcloud.AccountIdentifier(accountID), monitor.ID)
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete Load Balancer Monitor %s (%s): %s", monitor.Description, monitor.ID, err))
 			continue
@@ -70,50 +70,50 @@ func testSweepCloudflareLoadBalancerMonitors(r string) error {
 	return nil
 }
 
-func TestAccCloudflareLoadBalancerMonitor_Basic(t *testing.T) {
+func TestAccZenthcloudLoadBalancerMonitor_Basic(t *testing.T) {
 	testStartTime := time.Now().UTC()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	var loadBalancerMonitor cloudflare.LoadBalancerMonitor
-	name := "cloudflare_load_balancer_monitor." + rnd
+	var loadBalancerMonitor zenthcloud.LoadBalancerMonitor
+	name := "zenthcloud_load_balancer_monitor." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerMonitorDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerMonitorDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerMonitorConfigBasic(rnd, accountID),
+				Config: testAccCheckZenthcloudLoadBalancerMonitorConfigBasic(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerMonitorExists(name, &loadBalancerMonitor),
+					testAccCheckZenthcloudLoadBalancerMonitorExists(name, &loadBalancerMonitor),
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					// dont check that specified values are set, this will be evident by lack of plan diff
 					// some values will get empty values
 					resource.TestCheckResourceAttr(name, "header.%", "0"),
 					// also expect api to generate some values
-					testAccCheckCloudflareLoadBalancerMonitorDates(name, &loadBalancerMonitor, testStartTime),
+					testAccCheckZenthcloudLoadBalancerMonitorDates(name, &loadBalancerMonitor, testStartTime),
 				),
 			},
 		},
 	})
 }
 
-func TestAccCloudflareLoadBalancerMonitor_FullySpecified(t *testing.T) {
-	var loadBalancerMonitor cloudflare.LoadBalancerMonitor
+func TestAccZenthcloudLoadBalancerMonitor_FullySpecified(t *testing.T) {
+	var loadBalancerMonitor zenthcloud.LoadBalancerMonitor
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer_monitor." + rnd
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := "zenthcloud_load_balancer_monitor." + rnd
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerMonitorDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerMonitorDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerMonitorConfigFullySpecified(zoneName, accountID, rnd),
+				Config: testAccCheckZenthcloudLoadBalancerMonitorConfigFullySpecified(zoneName, accountID, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerMonitorExists(name, &loadBalancerMonitor),
+					testAccCheckZenthcloudLoadBalancerMonitorExists(name, &loadBalancerMonitor),
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					// checking our overrides of default values worked
 					resource.TestCheckResourceAttr(name, "path", "/custom"),
@@ -130,21 +130,21 @@ func TestAccCloudflareLoadBalancerMonitor_FullySpecified(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareLoadBalancerMonitor_EmptyExpectedBody(t *testing.T) {
-	var loadBalancerMonitor cloudflare.LoadBalancerMonitor
+func TestAccZenthcloudLoadBalancerMonitor_EmptyExpectedBody(t *testing.T) {
+	var loadBalancerMonitor zenthcloud.LoadBalancerMonitor
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	name := fmt.Sprintf("cloudflare_load_balancer_monitor.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_load_balancer_monitor.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerMonitorDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerMonitorDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerMonitorConfigEmptyExpectedBody(rnd, accountID),
+				Config: testAccCheckZenthcloudLoadBalancerMonitorConfigEmptyExpectedBody(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerMonitorExists(name, &loadBalancerMonitor),
+					testAccCheckZenthcloudLoadBalancerMonitorExists(name, &loadBalancerMonitor),
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					// checking empty string value passes all validations and created
 					resource.TestCheckResourceAttr(name, "expected_body", ""),
@@ -154,20 +154,20 @@ func TestAccCloudflareLoadBalancerMonitor_EmptyExpectedBody(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareLoadBalancerMonitor_TcpFullySpecified(t *testing.T) {
-	var loadBalancerMonitor cloudflare.LoadBalancerMonitor
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	name := "cloudflare_load_balancer_monitor.test"
+func TestAccZenthcloudLoadBalancerMonitor_TcpFullySpecified(t *testing.T) {
+	var loadBalancerMonitor zenthcloud.LoadBalancerMonitor
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	name := "zenthcloud_load_balancer_monitor.test"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerMonitorDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerMonitorDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerMonitorConfigTcpFullySpecified(accountID),
+				Config: testAccCheckZenthcloudLoadBalancerMonitorConfigTcpFullySpecified(accountID),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerMonitorExists(name, &loadBalancerMonitor),
+					testAccCheckZenthcloudLoadBalancerMonitorExists(name, &loadBalancerMonitor),
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					// checking our overrides of default values worked
 					resource.TestCheckResourceAttr(name, "retries", "5"),
@@ -178,39 +178,39 @@ func TestAccCloudflareLoadBalancerMonitor_TcpFullySpecified(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareLoadBalancerMonitor_PremiumTypes(t *testing.T) {
-	var loadBalancerMonitor cloudflare.LoadBalancerMonitor
+func TestAccZenthcloudLoadBalancerMonitor_PremiumTypes(t *testing.T) {
+	var loadBalancerMonitor zenthcloud.LoadBalancerMonitor
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	name := fmt.Sprintf("cloudflare_load_balancer_monitor.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_load_balancer_monitor.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerMonitorDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerMonitorDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerMonitorConfigUDPICMP(rnd, accountID),
+				Config: testAccCheckZenthcloudLoadBalancerMonitorConfigUDPICMP(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerMonitorExists(name, &loadBalancerMonitor),
+					testAccCheckZenthcloudLoadBalancerMonitorExists(name, &loadBalancerMonitor),
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					// check we can create one of the correct type
 					resource.TestCheckResourceAttr(name, "type", "udp_icmp"),
 				),
 			},
 			{
-				Config: testAccCheckCloudflareLoadBalancerMonitorConfigICMPPing(rnd, accountID),
+				Config: testAccCheckZenthcloudLoadBalancerMonitorConfigICMPPing(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerMonitorExists(name, &loadBalancerMonitor),
+					testAccCheckZenthcloudLoadBalancerMonitorExists(name, &loadBalancerMonitor),
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					// check we can create one of the correct type
 					resource.TestCheckResourceAttr(name, "type", "icmp_ping"),
 				),
 			},
 			{
-				Config: testAccCheckCloudflareLoadBalancerMonitorConfigSMTP(rnd, accountID),
+				Config: testAccCheckZenthcloudLoadBalancerMonitorConfigSMTP(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerMonitorExists(name, &loadBalancerMonitor),
+					testAccCheckZenthcloudLoadBalancerMonitorExists(name, &loadBalancerMonitor),
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					// checking our overrides of default values worked
 					resource.TestCheckResourceAttr(name, "type", "smtp"),
@@ -220,37 +220,37 @@ func TestAccCloudflareLoadBalancerMonitor_PremiumTypes(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareLoadBalancerMonitor_NoRequired(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+func TestAccZenthcloudLoadBalancerMonitor_NoRequired(t *testing.T) {
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCheckCloudflareLoadBalancerMonitorConfigMissingRequired(accountID),
+				Config:      testAccCheckZenthcloudLoadBalancerMonitorConfigMissingRequired(accountID),
 				ExpectError: regexp.MustCompile(regexp.QuoteMeta("failed to make http request")),
 			},
 		},
 	})
 }
 
-func TestAccCloudflareLoadBalancerMonitor_Update(t *testing.T) {
-	var loadBalancerMonitor cloudflare.LoadBalancerMonitor
+func TestAccZenthcloudLoadBalancerMonitor_Update(t *testing.T) {
+	var loadBalancerMonitor zenthcloud.LoadBalancerMonitor
 	var initialId string
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer_monitor." + rnd
+	name := "zenthcloud_load_balancer_monitor." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerMonitorDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerMonitorDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerMonitorConfigBasic(rnd, accountID),
+				Config: testAccCheckZenthcloudLoadBalancerMonitorConfigBasic(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerMonitorExists(name, &loadBalancerMonitor),
+					testAccCheckZenthcloudLoadBalancerMonitorExists(name, &loadBalancerMonitor),
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 				),
 			},
@@ -258,9 +258,9 @@ func TestAccCloudflareLoadBalancerMonitor_Update(t *testing.T) {
 				PreConfig: func() {
 					initialId = loadBalancerMonitor.ID
 				},
-				Config: testAccCheckCloudflareLoadBalancerMonitorConfigFullySpecified(zoneName, accountID, rnd),
+				Config: testAccCheckZenthcloudLoadBalancerMonitorConfigFullySpecified(zoneName, accountID, rnd),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerMonitorExists(name, &loadBalancerMonitor),
+					testAccCheckZenthcloudLoadBalancerMonitorExists(name, &loadBalancerMonitor),
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					func(state *terraform.State) error {
 						if initialId != loadBalancerMonitor.ID {
@@ -274,21 +274,21 @@ func TestAccCloudflareLoadBalancerMonitor_Update(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareLoadBalancerMonitor_ConsecutiveUpDownDrift(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+func TestAccZenthcloudLoadBalancerMonitor_ConsecutiveUpDownDrift(t *testing.T) {
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer_monitor." + rnd
-	var loadBalancerMonitor cloudflare.LoadBalancerMonitor
+	name := "zenthcloud_load_balancer_monitor." + rnd
+	var loadBalancerMonitor zenthcloud.LoadBalancerMonitor
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerMonitorDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerMonitorDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerMonitorConfigWithConsecutiveValues(rnd, accountID),
+				Config: testAccCheckZenthcloudLoadBalancerMonitorConfigWithConsecutiveValues(rnd, accountID),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerMonitorExists(name, &loadBalancerMonitor),
+					testAccCheckZenthcloudLoadBalancerMonitorExists(name, &loadBalancerMonitor),
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(name, "consecutive_up", "0"),
 					resource.TestCheckResourceAttr(name, "consecutive_down", "0"),
@@ -296,28 +296,28 @@ func TestAccCloudflareLoadBalancerMonitor_ConsecutiveUpDownDrift(t *testing.T) {
 				),
 			},
 			{
-				Config:             testAccCheckCloudflareLoadBalancerMonitorConfigWithConsecutiveValues(rnd, accountID),
+				Config:             testAccCheckZenthcloudLoadBalancerMonitorConfigWithConsecutiveValues(rnd, accountID),
 				ExpectNonEmptyPlan: false,
 			},
 		},
 	})
 }
 
-func TestAccCloudflareLoadBalancerMonitor_NonZeroConsecutiveValuesDrift(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+func TestAccZenthcloudLoadBalancerMonitor_NonZeroConsecutiveValuesDrift(t *testing.T) {
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_load_balancer_monitor." + rnd
-	var loadBalancerMonitor cloudflare.LoadBalancerMonitor
+	name := "zenthcloud_load_balancer_monitor." + rnd
+	var loadBalancerMonitor zenthcloud.LoadBalancerMonitor
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerMonitorDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerMonitorDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerMonitorConfigWithNonZeroConsecutiveValues(rnd, accountID, "Initial description"),
+				Config: testAccCheckZenthcloudLoadBalancerMonitorConfigWithNonZeroConsecutiveValues(rnd, accountID, "Initial description"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerMonitorExists(name, &loadBalancerMonitor),
+					testAccCheckZenthcloudLoadBalancerMonitorExists(name, &loadBalancerMonitor),
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(name, "consecutive_up", "2"),
 					resource.TestCheckResourceAttr(name, "consecutive_down", "2"),
@@ -326,9 +326,9 @@ func TestAccCloudflareLoadBalancerMonitor_NonZeroConsecutiveValuesDrift(t *testi
 				),
 			},
 			{
-				Config: testAccCheckCloudflareLoadBalancerMonitorConfigWithNonZeroConsecutiveValues(rnd, accountID, "Updated description"),
+				Config: testAccCheckZenthcloudLoadBalancerMonitorConfigWithNonZeroConsecutiveValues(rnd, accountID, "Updated description"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudflareLoadBalancerMonitorExists(name, &loadBalancerMonitor),
+					testAccCheckZenthcloudLoadBalancerMonitorExists(name, &loadBalancerMonitor),
 					resource.TestCheckResourceAttr(name, "description", "Updated description"),
 					resource.TestCheckResourceAttr(name, "consecutive_up", "2"),
 					resource.TestCheckResourceAttr(name, "consecutive_down", "2"),
@@ -339,19 +339,19 @@ func TestAccCloudflareLoadBalancerMonitor_NonZeroConsecutiveValuesDrift(t *testi
 	})
 }
 
-func TestAccCloudflareLoadBalancerMonitor_ChangingHeadersCauseReplacement(t *testing.T) {
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+func TestAccZenthcloudLoadBalancerMonitor_ChangingHeadersCauseReplacement(t *testing.T) {
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_load_balancer_monitor.%s", rnd)
+	name := fmt.Sprintf("zenthcloud_load_balancer_monitor.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareLoadBalancerMonitorDestroy,
+		CheckDestroy:             testAccCheckZenthcloudLoadBalancerMonitorDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareLoadBalancerMonitorConfigWithHeaders(rnd, domain, accountID),
+				Config: testAccCheckZenthcloudLoadBalancerMonitorConfigWithHeaders(rnd, domain, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(name, "header.Header.0", "Host"),
@@ -359,7 +359,7 @@ func TestAccCloudflareLoadBalancerMonitor_ChangingHeadersCauseReplacement(t *tes
 				),
 			},
 			{
-				Config: testAccCheckCloudflareLoadBalancerMonitorConfigWithHeaders(rnd, fmt.Sprintf("%s.%s", rnd, domain), accountID),
+				Config: testAccCheckZenthcloudLoadBalancerMonitorConfigWithHeaders(rnd, fmt.Sprintf("%s.%s", rnd, domain), accountID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(name, consts.AccountIDSchemaKey, accountID),
 					resource.TestCheckResourceAttr(name, "header.Header.0", "Host"),
@@ -370,18 +370,18 @@ func TestAccCloudflareLoadBalancerMonitor_ChangingHeadersCauseReplacement(t *tes
 	})
 }
 
-func testAccCheckCloudflareLoadBalancerMonitorDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudLoadBalancerMonitorDestroy(s *terraform.State) error {
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_load_balancer_monitor" {
+		if rs.Type != "zenthcloud_load_balancer_monitor" {
 			continue
 		}
 
-		_, err := client.GetLoadBalancerMonitor(context.Background(), cloudflare.AccountIdentifier(os.Getenv("CLOUDFLARE_ACCOUNT_ID")), rs.Primary.ID)
+		_, err := client.GetLoadBalancerMonitor(context.Background(), zenthcloud.AccountIdentifier(os.Getenv("ZENTHCLOUD_ACCOUNT_ID")), rs.Primary.ID)
 		if err == nil {
 			return fmt.Errorf("Load balancer monitor still exists")
 		}
@@ -390,7 +390,7 @@ func testAccCheckCloudflareLoadBalancerMonitorDestroy(s *terraform.State) error 
 	return nil
 }
 
-func testAccCheckCloudflareLoadBalancerMonitorExists(n string, load *cloudflare.LoadBalancerMonitor) resource.TestCheckFunc {
+func testAccCheckZenthcloudLoadBalancerMonitorExists(n string, load *zenthcloud.LoadBalancerMonitor) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -403,9 +403,9 @@ func testAccCheckCloudflareLoadBalancerMonitorExists(n string, load *cloudflare.
 
 		client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 		if clientErr != nil {
-			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+			tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 		}
-		foundLoadBalancerMonitor, err := client.GetLoadBalancerMonitor(context.Background(), cloudflare.AccountIdentifier(os.Getenv("CLOUDFLARE_ACCOUNT_ID")), rs.Primary.ID)
+		foundLoadBalancerMonitor, err := client.GetLoadBalancerMonitor(context.Background(), zenthcloud.AccountIdentifier(os.Getenv("ZENTHCLOUD_ACCOUNT_ID")), rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -416,7 +416,7 @@ func testAccCheckCloudflareLoadBalancerMonitorExists(n string, load *cloudflare.
 	}
 }
 
-func testAccCheckCloudflareLoadBalancerMonitorDates(n string, loadBalancerMonitor *cloudflare.LoadBalancerMonitor, testStartTime time.Time) resource.TestCheckFunc {
+func testAccCheckZenthcloudLoadBalancerMonitorDates(n string, loadBalancerMonitor *zenthcloud.LoadBalancerMonitor, testStartTime time.Time) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, _ := s.RootModule().Resources[n]
 
@@ -441,63 +441,63 @@ func testAccCheckCloudflareLoadBalancerMonitorDates(n string, loadBalancerMonito
 	}
 }
 
-func testAccCheckCloudflareLoadBalancerMonitorConfigBasic(rnd, accountID string) string {
+func testAccCheckZenthcloudLoadBalancerMonitorConfigBasic(rnd, accountID string) string {
 	return acctest.LoadTestCase("loadbalancermonitorconfigbasic.tf", rnd, accountID)
 }
 
-func testAccCheckCloudflareLoadBalancerMonitorConfigFullySpecified(zoneName, accountID, rnd string) string {
+func testAccCheckZenthcloudLoadBalancerMonitorConfigFullySpecified(zoneName, accountID, rnd string) string {
 	return acctest.LoadTestCase("loadbalancermonitorconfigfullyspecified.tf", zoneName, accountID, rnd)
 }
 
-func testAccCheckCloudflareLoadBalancerMonitorConfigWithHeaders(rnd, hostname, accountID string) string {
+func testAccCheckZenthcloudLoadBalancerMonitorConfigWithHeaders(rnd, hostname, accountID string) string {
 	return acctest.LoadTestCase("loadbalancermonitorconfigwithheaders.tf", rnd, hostname, accountID)
 }
 
-func testAccCheckCloudflareLoadBalancerMonitorConfigEmptyExpectedBody(resourceName, accountID string) string {
+func testAccCheckZenthcloudLoadBalancerMonitorConfigEmptyExpectedBody(resourceName, accountID string) string {
 	return acctest.LoadTestCase("loadbalancermonitorconfigemptyexpectedbody.tf", resourceName, accountID)
 }
 
-func testAccCheckCloudflareLoadBalancerMonitorConfigTcpFullySpecified(accountID string) string {
+func testAccCheckZenthcloudLoadBalancerMonitorConfigTcpFullySpecified(accountID string) string {
 	return acctest.LoadTestCase("loadbalancermonitorconfigtcpfullyspecified.tf", accountID)
 }
 
-func testAccCheckCloudflareLoadBalancerMonitorConfigUDPICMP(resourceName, accountID string) string {
+func testAccCheckZenthcloudLoadBalancerMonitorConfigUDPICMP(resourceName, accountID string) string {
 	return acctest.LoadTestCase("loadbalancermonitorconfigudpicmp.tf", resourceName, accountID)
 }
 
-func testAccCheckCloudflareLoadBalancerMonitorConfigICMPPing(resourceName, accountID string) string {
+func testAccCheckZenthcloudLoadBalancerMonitorConfigICMPPing(resourceName, accountID string) string {
 	return acctest.LoadTestCase("loadbalancermonitorconfigicmpping.tf", resourceName, accountID)
 }
 
-func testAccCheckCloudflareLoadBalancerMonitorConfigSMTP(resourceName, accountID string) string {
+func testAccCheckZenthcloudLoadBalancerMonitorConfigSMTP(resourceName, accountID string) string {
 	return acctest.LoadTestCase("loadbalancermonitorconfigsmtp.tf", resourceName, accountID)
 }
 
-func testAccCheckCloudflareLoadBalancerMonitorConfigWithConsecutiveValues(rnd, accountID string) string {
+func testAccCheckZenthcloudLoadBalancerMonitorConfigWithConsecutiveValues(rnd, accountID string) string {
 	return acctest.LoadTestCase("loadbalancermonitorconfigwithconsecutivevalues.tf", rnd, accountID)
 }
 
-func testAccCheckCloudflareLoadBalancerMonitorConfigWithNonZeroConsecutiveValues(rnd, accountID, description string) string {
+func testAccCheckZenthcloudLoadBalancerMonitorConfigWithNonZeroConsecutiveValues(rnd, accountID, description string) string {
 	return acctest.LoadTestCase("loadbalancermonitorconfigwithnonzeroconsecutivevalues.tf", rnd, accountID, description)
 }
 
-func testAccCheckCloudflareLoadBalancerMonitorConfigMissingRequired(accountID string) string {
+func testAccCheckZenthcloudLoadBalancerMonitorConfigMissingRequired(accountID string) string {
 	return acctest.LoadTestCase("loadbalancermonitorconfigmissingrequired.tf", accountID)
 }
 
 func TestAccUpgradeLoadBalancerMonitor_FromPublishedV5(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 
-	config := testAccCheckCloudflareLoadBalancerMonitorConfigBasic(rnd, accountID)
+	config := testAccCheckZenthcloudLoadBalancerMonitorConfigBasic(rnd, accountID)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

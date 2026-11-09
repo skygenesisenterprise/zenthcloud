@@ -1,5 +1,5 @@
 import type { StartDevWorkerInput } from "../../api/startDevWorker/types";
-import type { CfWorkerInit } from "@cloudflare/workers-utils";
+import type { CfWorkerInit } from "@zenthcloud/workers-utils";
 
 /**
  * Helper to parse the metadata JSON from a FormData upload form.

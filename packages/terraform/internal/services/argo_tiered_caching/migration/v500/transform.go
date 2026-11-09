@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// TransformArgoToTieredCaching converts source (legacy v4 cloudflare_argo) state to target (current v5 cloudflare_argo_tiered_caching) state.
+// TransformArgoToTieredCaching converts source (legacy v4 zenthcloud_argo) state to target (current v5 zenthcloud_argo_tiered_caching) state.
 // This function is shared by both UpgradeArgoToTieredCaching and MoveArgoToTieredCaching handlers.
 //
 // Transformation logic:
@@ -18,7 +18,7 @@ import (
 // - id: Change from checksum to zone_id
 // - editable: Add as true
 // - modified_on: Add as null (will be populated on refresh)
-func TransformArgoToTieredCaching(ctx context.Context, source SourceCloudflareArgoModel) (*TargetArgoTieredCachingModel, diag.Diagnostics) {
+func TransformArgoToTieredCaching(ctx context.Context, source SourceZenthcloudArgoModel) (*TargetArgoTieredCachingModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Validate required fields
@@ -52,7 +52,7 @@ func TransformArgoToTieredCaching(ctx context.Context, source SourceCloudflareAr
 	}
 
 	// Note: source.SmartRouting is intentionally not copied
-	// It goes to a separate cloudflare_argo_smart_routing resource
+	// It goes to a separate zenthcloud_argo_smart_routing resource
 
 	return target, diags
 }

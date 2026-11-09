@@ -8,305 +8,305 @@ import (
 	"os"
 	"regexp"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customvalidator"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/access_rule"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/account"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/account_api_token_permission_groups"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/account_dns_settings"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/account_dns_settings_internal_view"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/account_member"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/account_permission_group"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/account_role"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/account_subscription"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/account_token"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/address_map"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/ai_gateway"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/ai_gateway_dynamic_routing"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/ai_search_instance"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/ai_search_namespace"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/ai_search_token"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/api_shield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/api_shield_discovery_operation"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/api_shield_operation"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/api_shield_operation_schema_validation_settings"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/api_shield_schema"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/api_shield_schema_validation_settings"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/api_token"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/api_token_permission_groups"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/argo_smart_routing"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/argo_tiered_caching"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/authenticated_origin_pulls"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/authenticated_origin_pulls_certificate"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/authenticated_origin_pulls_hostname_certificate"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/authenticated_origin_pulls_settings"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/bot_management"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/botnet_feed_config_asn"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/byo_ip_prefix"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/calls_sfu_app"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/calls_turn_app"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/certificate_authorities_hostname_associations"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/certificate_pack"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/client_certificate"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/cloud_connector_rules"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/cloudforce_one_request"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/cloudforce_one_request_asset"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/cloudforce_one_request_message"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/cloudforce_one_request_priority"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/connectivity_directory_service"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/content_scanning"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/content_scanning_expression"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/ct_alerting"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/custom_csr"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/custom_hostname"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/custom_hostname_fallback_origin"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/custom_origin_trust_store"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/custom_page_asset"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/custom_pages"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/custom_ssl"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/d1_database"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/dcv_delegation"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/dls_prefix_binding"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/dns_firewall"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/dns_record"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/dns_zone_transfers_acl"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/dns_zone_transfers_incoming"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/dns_zone_transfers_outgoing"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/dns_zone_transfers_peer"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/dns_zone_transfers_tsig"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/email_routing_address"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/email_routing_catch_all"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/email_routing_dns"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/email_routing_rule"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/email_routing_settings"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/email_security_allow_policy"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/email_security_block_sender"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/email_security_domain"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/email_security_impersonation_registry"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/email_security_trusted_domains"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/email_sending_subdomain"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/field_extractor"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/filter"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/firewall_rule"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/flagship_app"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/flagship_flag"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/google_tag_gateway"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/healthcheck"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/hostname_tls_setting"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/hyperdrive_config"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/image"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/image_variant"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/ip_ranges"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/keyless_certificate"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/leaked_credential_check"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/leaked_credential_check_rule"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/list"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/list_item"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/load_balancer"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/load_balancer_monitor"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/load_balancer_monitor_group"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/load_balancer_pool"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/logpull_retention"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/logpush_dataset_field"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/logpush_dataset_job"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/logpush_job"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/logpush_ownership_challenge"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/magic_network_monitoring_configuration"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/magic_network_monitoring_rule"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/magic_transit_cf1_site"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/magic_transit_connector"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/magic_transit_site"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/magic_transit_site_acl"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/magic_transit_site_lan"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/magic_transit_site_wan"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/magic_wan_bgp_filter_profile"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/magic_wan_gre_tunnel"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/magic_wan_ipsec_tunnel"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/magic_wan_static_route"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/managed_transforms"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/monetization_rules"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/moq_relay"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/mtls_certificate"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/mtls_certificate_associations"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/nel_setting"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/notification_policy"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/notification_policy_webhooks"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/oauth_client"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/oauth_scope"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/observatory_scheduled_test"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/organization"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/organization_profile"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/origin_ca_certificate"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/origin_cloud_region"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/origin_tls_compliance_modes"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/page_rule"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/page_shield_connections"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/page_shield_cookies"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/page_shield_policy"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/page_shield_scripts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/pages_domain"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/pages_project"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/pipeline"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/pipeline_sink"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/pipeline_stream"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/precursor"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/queue"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/queue_consumer"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/r2_bucket"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/r2_bucket_cors"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/r2_bucket_event_notification"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/r2_bucket_lifecycle"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/r2_bucket_lock"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/r2_bucket_sippy"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/r2_custom_domain"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/r2_data_catalog"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/r2_managed_domain"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/rate_limit"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/regional_hostname"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/regional_tiered_cache"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/resource_group"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/ruleset"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/schema_validation_operation_settings"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/schema_validation_schemas"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/schema_validation_settings"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/secrets_store"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/secrets_store_secret"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/share"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/share_recipient"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/share_resource"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/snippet"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/snippet_rules"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/snippets"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/spectrum_application"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/spectrum_protocol"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/sso_connector"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/stream"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/stream_audio_track"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/stream_caption_language"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/stream_download"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/stream_key"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/stream_live_input"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/stream_watermark"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/stream_webhook"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/tiered_cache"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/token_validation_config"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/token_validation_rules"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/total_tls"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/turnstile_widget"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/universal_ssl_setting"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/url_normalization_settings"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/user"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/user_agent_blocking_rule"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/user_group"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/user_group_members"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/vulnerability_scanner_credential"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/vulnerability_scanner_credential_set"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/vulnerability_scanner_target_environment"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/waiting_room"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/waiting_room_event"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/waiting_room_rules"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/waiting_room_settings"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/web3_hostname"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/web_analytics_rule"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/web_analytics_site"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/worker"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/worker_version"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/workers_cron_trigger"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/workers_custom_domain"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/workers_deployment"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/workers_for_platforms_dispatch_namespace"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/workers_kv"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/workers_kv_namespace"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/workers_route"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/workers_script"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/workers_script_subdomain"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/workflow"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_access_ai_controls_mcp_portal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_access_ai_controls_mcp_server"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_access_application"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_access_custom_page"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_access_group"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_access_identity_provider"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_access_infrastructure_target"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_access_key_configuration"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_access_mtls_certificate"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_access_mtls_hostname_settings"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_access_policy"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_access_service_token"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_access_short_lived_certificate"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_access_tag"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_casb_integration"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_casb_policy"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_casb_webhook"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_connectivity_settings"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_device_custom_profile"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_device_custom_profile_local_domain_fallback"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_device_default_profile"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_device_default_profile_certificates"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_device_default_profile_local_domain_fallback"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_device_deployment_groups"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_device_ip_profile"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_device_managed_networks"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_device_posture_integration"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_device_posture_rule"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_device_settings"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_device_subnet"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_dex_rule"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_dex_test"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_dlp_custom_entry"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_dlp_custom_profile"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_dlp_custom_prompt_topic"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_dlp_data_class"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_dlp_data_tag"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_dlp_data_tag_category"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_dlp_dataset"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_dlp_entry"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_dlp_integration_entry"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_dlp_predefined_entry"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_dlp_predefined_profile"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_dlp_sensitivity_group"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_dlp_sensitivity_level"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_dlp_sensitivity_level_order"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_dlp_settings"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_dns_location"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_gateway_app_types"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_gateway_categories"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_gateway_certificate"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_gateway_logging"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_gateway_pacfile"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_gateway_policy"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_gateway_proxy_endpoint"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_gateway_settings"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_list"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_network_hostname_route"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_organization"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_resource_library_application"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_resource_library_category"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_risk_behavior"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_risk_scoring_integration"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_tunnel_cloudflared"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_tunnel_cloudflared_config"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_tunnel_cloudflared_route"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_tunnel_cloudflared_token"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_tunnel_cloudflared_virtual_network"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_tunnel_warp_connector"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_tunnel_warp_connector_config"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_tunnel_warp_connector_token"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zone"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zone_auto_origin_tls_kex"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zone_cache_reserve"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zone_cache_variants"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zone_dns_settings"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zone_dnssec"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zone_hold"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zone_lockdown"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zone_setting"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zone_subscription"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zone_tracing"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zone_tracing_rules"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customvalidator"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/access_rule"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/account"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/account_api_token_permission_groups"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/account_dns_settings"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/account_dns_settings_internal_view"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/account_member"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/account_permission_group"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/account_role"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/account_subscription"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/account_token"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/address_map"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/ai_gateway"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/ai_gateway_dynamic_routing"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/ai_search_instance"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/ai_search_namespace"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/ai_search_token"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/api_shield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/api_shield_discovery_operation"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/api_shield_operation"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/api_shield_operation_schema_validation_settings"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/api_shield_schema"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/api_shield_schema_validation_settings"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/api_token"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/api_token_permission_groups"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/argo_smart_routing"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/argo_tiered_caching"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/authenticated_origin_pulls"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/authenticated_origin_pulls_certificate"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/authenticated_origin_pulls_hostname_certificate"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/authenticated_origin_pulls_settings"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/bot_management"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/botnet_feed_config_asn"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/byo_ip_prefix"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/calls_sfu_app"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/calls_turn_app"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/certificate_authorities_hostname_associations"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/certificate_pack"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/client_certificate"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/cloud_connector_rules"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/cloudforce_one_request"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/cloudforce_one_request_asset"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/cloudforce_one_request_message"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/cloudforce_one_request_priority"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/connectivity_directory_service"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/content_scanning"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/content_scanning_expression"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/ct_alerting"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/custom_csr"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/custom_hostname"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/custom_hostname_fallback_origin"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/custom_origin_trust_store"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/custom_page_asset"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/custom_pages"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/custom_ssl"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/d1_database"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/dcv_delegation"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/dls_prefix_binding"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/dns_firewall"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/dns_record"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/dns_zone_transfers_acl"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/dns_zone_transfers_incoming"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/dns_zone_transfers_outgoing"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/dns_zone_transfers_peer"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/dns_zone_transfers_tsig"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/email_routing_address"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/email_routing_catch_all"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/email_routing_dns"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/email_routing_rule"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/email_routing_settings"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/email_security_allow_policy"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/email_security_block_sender"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/email_security_domain"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/email_security_impersonation_registry"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/email_security_trusted_domains"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/email_sending_subdomain"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/field_extractor"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/filter"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/firewall_rule"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/flagship_app"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/flagship_flag"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/google_tag_gateway"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/healthcheck"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/hostname_tls_setting"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/hyperdrive_config"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/image"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/image_variant"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/ip_ranges"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/keyless_certificate"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/leaked_credential_check"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/leaked_credential_check_rule"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/list"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/list_item"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/load_balancer"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/load_balancer_monitor"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/load_balancer_monitor_group"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/load_balancer_pool"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/logpull_retention"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/logpush_dataset_field"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/logpush_dataset_job"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/logpush_job"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/logpush_ownership_challenge"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/magic_network_monitoring_configuration"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/magic_network_monitoring_rule"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/magic_transit_cf1_site"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/magic_transit_connector"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/magic_transit_site"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/magic_transit_site_acl"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/magic_transit_site_lan"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/magic_transit_site_wan"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/magic_wan_bgp_filter_profile"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/magic_wan_gre_tunnel"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/magic_wan_ipsec_tunnel"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/magic_wan_static_route"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/managed_transforms"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/monetization_rules"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/moq_relay"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/mtls_certificate"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/mtls_certificate_associations"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/nel_setting"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/notification_policy"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/notification_policy_webhooks"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/oauth_client"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/oauth_scope"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/observatory_scheduled_test"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/organization"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/organization_profile"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/origin_ca_certificate"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/origin_cloud_region"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/origin_tls_compliance_modes"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/page_rule"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/page_shield_connections"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/page_shield_cookies"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/page_shield_policy"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/page_shield_scripts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/pages_domain"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/pages_project"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/pipeline"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/pipeline_sink"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/pipeline_stream"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/precursor"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/queue"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/queue_consumer"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/r2_bucket"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/r2_bucket_cors"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/r2_bucket_event_notification"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/r2_bucket_lifecycle"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/r2_bucket_lock"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/r2_bucket_sippy"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/r2_custom_domain"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/r2_data_catalog"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/r2_managed_domain"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/rate_limit"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/regional_hostname"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/regional_tiered_cache"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/resource_group"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/ruleset"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/schema_validation_operation_settings"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/schema_validation_schemas"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/schema_validation_settings"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/secrets_store"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/secrets_store_secret"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/share"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/share_recipient"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/share_resource"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/snippet"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/snippet_rules"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/snippets"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/spectrum_application"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/spectrum_protocol"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/sso_connector"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/stream"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/stream_audio_track"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/stream_caption_language"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/stream_download"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/stream_key"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/stream_live_input"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/stream_watermark"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/stream_webhook"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/tiered_cache"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/token_validation_config"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/token_validation_rules"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/total_tls"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/turnstile_widget"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/universal_ssl_setting"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/url_normalization_settings"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/user"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/user_agent_blocking_rule"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/user_group"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/user_group_members"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/vulnerability_scanner_credential"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/vulnerability_scanner_credential_set"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/vulnerability_scanner_target_environment"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/waiting_room"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/waiting_room_event"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/waiting_room_rules"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/waiting_room_settings"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/web3_hostname"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/web_analytics_rule"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/web_analytics_site"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/worker"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/worker_version"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_cron_trigger"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_custom_domain"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_deployment"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_for_platforms_dispatch_namespace"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_kv"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_kv_namespace"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_route"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_script"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_script_subdomain"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/workflow"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_access_ai_controls_mcp_portal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_access_ai_controls_mcp_server"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_access_application"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_access_custom_page"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_access_group"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_access_identity_provider"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_access_infrastructure_target"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_access_key_configuration"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_access_mtls_certificate"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_access_mtls_hostname_settings"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_access_policy"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_access_service_token"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_access_short_lived_certificate"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_access_tag"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_casb_integration"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_casb_policy"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_casb_webhook"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_connectivity_settings"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_device_custom_profile"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_device_custom_profile_local_domain_fallback"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_device_default_profile"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_device_default_profile_certificates"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_device_default_profile_local_domain_fallback"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_device_deployment_groups"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_device_ip_profile"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_device_managed_networks"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_device_posture_integration"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_device_posture_rule"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_device_settings"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_device_subnet"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_dex_rule"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_dex_test"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_dlp_custom_entry"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_dlp_custom_profile"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_dlp_custom_prompt_topic"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_dlp_data_class"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_dlp_data_tag"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_dlp_data_tag_category"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_dlp_dataset"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_dlp_entry"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_dlp_integration_entry"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_dlp_predefined_entry"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_dlp_predefined_profile"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_dlp_sensitivity_group"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_dlp_sensitivity_level"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_dlp_sensitivity_level_order"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_dlp_settings"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_dns_location"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_gateway_app_types"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_gateway_categories"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_gateway_certificate"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_gateway_logging"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_gateway_pacfile"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_gateway_policy"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_gateway_proxy_endpoint"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_gateway_settings"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_list"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_network_hostname_route"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_organization"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_resource_library_application"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_resource_library_category"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_risk_behavior"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_risk_scoring_integration"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_tunnel_zenthcloudd"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_tunnel_zenthcloudd_config"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_tunnel_zenthcloudd_route"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_tunnel_zenthcloudd_token"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_tunnel_zenthcloudd_virtual_network"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_tunnel_warp_connector"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_tunnel_warp_connector_config"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_tunnel_warp_connector_token"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zone"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zone_auto_origin_tls_kex"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zone_cache_reserve"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zone_cache_variants"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zone_dns_settings"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zone_dnssec"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zone_hold"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zone_lockdown"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zone_setting"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zone_subscription"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zone_tracing"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zone_tracing_rules"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -317,18 +317,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-var _ provider.ProviderWithConfigValidators = (*CloudflareProvider)(nil)
+var _ provider.ProviderWithConfigValidators = (*ZenthcloudProvider)(nil)
 
-// CloudflareProvider defines the provider implementation.
-type CloudflareProvider struct {
+// ZenthcloudProvider defines the provider implementation.
+type ZenthcloudProvider struct {
 	// version is set to the provider version on release, "dev" when the
 	// provider is built and ran locally, and "test" when running acceptance
 	// testing.
 	version string
 }
 
-// CloudflareProviderModel describes the provider data model.
-type CloudflareProviderModel struct {
+// ZenthcloudProviderModel describes the provider data model.
+type ZenthcloudProviderModel struct {
 	APIKey                  types.String `tfsdk:"api_key" json:"api_key"`
 	APIUserServiceKey       types.String `tfsdk:"api_user_service_key" json:"api_user_service_key"`
 	Email                   types.String `tfsdk:"email" json:"email"`
@@ -337,8 +337,8 @@ type CloudflareProviderModel struct {
 	BaseURL                 types.String `tfsdk:"base_url" json:"base_url"`
 }
 
-func (p *CloudflareProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
-	resp.TypeName = "cloudflare"
+func (p *ZenthcloudProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
+	resp.TypeName = "zenthcloud"
 	resp.Version = p.version
 }
 
@@ -347,14 +347,14 @@ func ProviderSchema(ctx context.Context) schema.Schema {
 		Attributes: map[string]schema.Attribute{
 			consts.EmailSchemaKey: schema.StringAttribute{
 				Optional:            true,
-				MarkdownDescription: fmt.Sprintf("A registered Cloudflare email address. Alternatively, can be configured using the `%s` environment variable. Required when using `api_key`. Conflicts with `api_token`.", consts.EmailEnvVarKey),
+				MarkdownDescription: fmt.Sprintf("A registered Zenthcloud email address. Alternatively, can be configured using the `%s` environment variable. Required when using `api_key`. Conflicts with `api_token`.", consts.EmailEnvVarKey),
 				Validators:          []validator.String{},
 			},
 
 			consts.APIKeySchemaKey: schema.StringAttribute{
 				Optional:            true,
 				Sensitive:           true,
-				MarkdownDescription: fmt.Sprintf("The API key for operations. Alternatively, can be configured using the `%s` environment variable. API keys are [now considered legacy by Cloudflare](https://developers.cloudflare.com/fundamentals/api/get-started/keys/#limitations), API tokens should be used instead. Must provide only one of `api_key`, `api_token`, `api_user_service_key`.", consts.APIKeyEnvVarKey),
+				MarkdownDescription: fmt.Sprintf("The API key for operations. Alternatively, can be configured using the `%s` environment variable. API keys are [now considered legacy by Zenthcloud](https://github.com/skygenesisenterprise/zenthcloud), API tokens should be used instead. Must provide only one of `api_key`, `api_token`, `api_user_service_key`.", consts.APIKeyEnvVarKey),
 				Validators: []validator.String{
 					customvalidator.NewSensitiveRegexMatchesValidator(
 						regexp.MustCompile(`^[0-9A-Za-z\-_]{37,60}$`),
@@ -381,7 +381,7 @@ func ProviderSchema(ctx context.Context) schema.Schema {
 			consts.APIUserServiceKeySchemaKey: schema.StringAttribute{
 				Optional:            true,
 				Sensitive:           true,
-				MarkdownDescription: fmt.Sprintf("A special Cloudflare API key good for a restricted set of endpoints. Alternatively, can be configured using the `%s` environment variable. Must provide only one of `api_key`, `api_token`, `api_user_service_key`.", consts.APIUserServiceKeyEnvVarKey),
+				MarkdownDescription: fmt.Sprintf("A special Zenthcloud API key good for a restricted set of endpoints. Alternatively, can be configured using the `%s` environment variable. Must provide only one of `api_key`, `api_token`, `api_user_service_key`.", consts.APIUserServiceKeyEnvVarKey),
 			},
 
 			consts.UserAgentOperatorSuffixSchemaKey: schema.StringAttribute{
@@ -397,13 +397,13 @@ func ProviderSchema(ctx context.Context) schema.Schema {
 	}
 }
 
-func (p *CloudflareProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
+func (p *ZenthcloudProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = ProviderSchema(ctx)
 }
 
-func (p *CloudflareProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+func (p *ZenthcloudProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
 
-	var data CloudflareProviderModel
+	var data ZenthcloudProviderModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -411,31 +411,31 @@ func (p *CloudflareProvider) Configure(ctx context.Context, req provider.Configu
 
 	if !data.BaseURL.IsNull() && !data.BaseURL.IsUnknown() {
 		opts = append(opts, option.WithBaseURL(data.BaseURL.ValueString()))
-	} else if o, ok := os.LookupEnv("CLOUDFLARE_BASE_URL"); ok {
+	} else if o, ok := os.LookupEnv("ZENTHCLOUD_BASE_URL"); ok {
 		opts = append(opts, option.WithBaseURL(o))
 	}
 
 	if !data.APIToken.IsNull() && !data.APIToken.IsUnknown() {
 		opts = append(opts, option.WithAPIToken(data.APIToken.ValueString()))
-	} else if o, ok := os.LookupEnv("CLOUDFLARE_API_TOKEN"); ok {
+	} else if o, ok := os.LookupEnv("ZENTHCLOUD_API_TOKEN"); ok {
 		opts = append(opts, option.WithAPIToken(o))
 	}
 
 	if !data.APIKey.IsNull() && !data.APIKey.IsUnknown() {
 		opts = append(opts, option.WithAPIKey(data.APIKey.ValueString()))
-	} else if o, ok := os.LookupEnv("CLOUDFLARE_API_KEY"); ok {
+	} else if o, ok := os.LookupEnv("ZENTHCLOUD_API_KEY"); ok {
 		opts = append(opts, option.WithAPIKey(o))
 	}
 
 	if !data.Email.IsNull() && !data.Email.IsUnknown() {
 		opts = append(opts, option.WithAPIEmail(data.Email.ValueString()))
-	} else if o, ok := os.LookupEnv("CLOUDFLARE_EMAIL"); ok {
+	} else if o, ok := os.LookupEnv("ZENTHCLOUD_EMAIL"); ok {
 		opts = append(opts, option.WithAPIEmail(o))
 	}
 
 	if !data.APIUserServiceKey.IsNull() && !data.APIUserServiceKey.IsUnknown() {
 		opts = append(opts, option.WithUserServiceKey(data.APIUserServiceKey.ValueString()))
-	} else if o, ok := os.LookupEnv("CLOUDFLARE_API_USER_SERVICE_KEY"); ok {
+	} else if o, ok := os.LookupEnv("ZENTHCLOUD_API_USER_SERVICE_KEY"); ok {
 		opts = append(opts, option.WithUserServiceKey(o))
 	}
 
@@ -464,7 +464,7 @@ func (p *CloudflareProvider) Configure(ctx context.Context, req provider.Configu
 		opts = append(opts, option.WithHeader("x-stainless-runtime-version", *pluginVersion))
 	}
 
-	client := cloudflare.NewClient(
+	client := zenthcloud.NewClient(
 		opts...,
 	)
 
@@ -472,11 +472,11 @@ func (p *CloudflareProvider) Configure(ctx context.Context, req provider.Configu
 	resp.ResourceData = client
 }
 
-func (p *CloudflareProvider) ConfigValidators(_ context.Context) []provider.ConfigValidator {
+func (p *ZenthcloudProvider) ConfigValidators(_ context.Context) []provider.ConfigValidator {
 	return []provider.ConfigValidator{}
 }
 
-func (p *CloudflareProvider) Resources(ctx context.Context) []func() resource.Resource {
+func (p *ZenthcloudProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		account.NewResource,
 		account_member.NewResource,
@@ -659,8 +659,8 @@ func (p *CloudflareProvider) Resources(ctx context.Context) []func() resource.Re
 		zero_trust_casb_policy.NewResource,
 		zero_trust_casb_webhook.NewResource,
 		zero_trust_dex_rule.NewResource,
-		zero_trust_tunnel_cloudflared.NewResource,
-		zero_trust_tunnel_cloudflared_config.NewResource,
+		zero_trust_tunnel_zenthcloudd.NewResource,
+		zero_trust_tunnel_zenthcloudd_config.NewResource,
 		zero_trust_tunnel_warp_connector.NewResource,
 		zero_trust_tunnel_warp_connector_config.NewResource,
 		zero_trust_connectivity_settings.NewResource,
@@ -686,8 +686,8 @@ func (p *CloudflareProvider) Resources(ctx context.Context) []func() resource.Re
 		zero_trust_gateway_policy.NewResource,
 		zero_trust_gateway_certificate.NewResource,
 		zero_trust_gateway_pacfile.NewResource,
-		zero_trust_tunnel_cloudflared_route.NewResource,
-		zero_trust_tunnel_cloudflared_virtual_network.NewResource,
+		zero_trust_tunnel_zenthcloudd_route.NewResource,
+		zero_trust_tunnel_zenthcloudd_virtual_network.NewResource,
 		zero_trust_device_subnet.NewResource,
 		zero_trust_network_hostname_route.NewResource,
 		zero_trust_risk_behavior.NewResource,
@@ -753,7 +753,7 @@ func (p *CloudflareProvider) Resources(ctx context.Context) []func() resource.Re
 	}
 }
 
-func (p *CloudflareProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
+func (p *ZenthcloudProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		account.NewAccountDataSource,
 		account.NewAccountsDataSource,
@@ -1056,10 +1056,10 @@ func (p *CloudflareProvider) DataSources(ctx context.Context) []func() datasourc
 		zero_trust_casb_webhook.NewZeroTrustCasbWebhooksDataSource,
 		zero_trust_dex_rule.NewZeroTrustDEXRuleDataSource,
 		zero_trust_dex_rule.NewZeroTrustDEXRulesDataSource,
-		zero_trust_tunnel_cloudflared.NewZeroTrustTunnelCloudflaredDataSource,
-		zero_trust_tunnel_cloudflared.NewZeroTrustTunnelCloudflaredsDataSource,
-		zero_trust_tunnel_cloudflared_config.NewZeroTrustTunnelCloudflaredConfigDataSource,
-		zero_trust_tunnel_cloudflared_token.NewZeroTrustTunnelCloudflaredTokenDataSource,
+		zero_trust_tunnel_zenthcloudd.NewZeroTrustTunnelZenthclouddDataSource,
+		zero_trust_tunnel_zenthcloudd.NewZeroTrustTunnelZenthclouddsDataSource,
+		zero_trust_tunnel_zenthcloudd_config.NewZeroTrustTunnelZenthclouddConfigDataSource,
+		zero_trust_tunnel_zenthcloudd_token.NewZeroTrustTunnelZenthclouddTokenDataSource,
 		zero_trust_tunnel_warp_connector.NewZeroTrustTunnelWARPConnectorDataSource,
 		zero_trust_tunnel_warp_connector.NewZeroTrustTunnelWARPConnectorsDataSource,
 		zero_trust_tunnel_warp_connector_token.NewZeroTrustTunnelWARPConnectorTokenDataSource,
@@ -1107,10 +1107,10 @@ func (p *CloudflareProvider) DataSources(ctx context.Context) []func() datasourc
 		zero_trust_gateway_certificate.NewZeroTrustGatewayCertificatesDataSource,
 		zero_trust_gateway_pacfile.NewZeroTrustGatewayPacfileDataSource,
 		zero_trust_gateway_pacfile.NewZeroTrustGatewayPacfilesDataSource,
-		zero_trust_tunnel_cloudflared_route.NewZeroTrustTunnelCloudflaredRouteDataSource,
-		zero_trust_tunnel_cloudflared_route.NewZeroTrustTunnelCloudflaredRoutesDataSource,
-		zero_trust_tunnel_cloudflared_virtual_network.NewZeroTrustTunnelCloudflaredVirtualNetworkDataSource,
-		zero_trust_tunnel_cloudflared_virtual_network.NewZeroTrustTunnelCloudflaredVirtualNetworksDataSource,
+		zero_trust_tunnel_zenthcloudd_route.NewZeroTrustTunnelZenthclouddRouteDataSource,
+		zero_trust_tunnel_zenthcloudd_route.NewZeroTrustTunnelZenthclouddRoutesDataSource,
+		zero_trust_tunnel_zenthcloudd_virtual_network.NewZeroTrustTunnelZenthclouddVirtualNetworkDataSource,
+		zero_trust_tunnel_zenthcloudd_virtual_network.NewZeroTrustTunnelZenthclouddVirtualNetworksDataSource,
 		zero_trust_device_subnet.NewZeroTrustDeviceSubnetDataSource,
 		zero_trust_network_hostname_route.NewZeroTrustNetworkHostnameRouteDataSource,
 		zero_trust_network_hostname_route.NewZeroTrustNetworkHostnameRoutesDataSource,
@@ -1228,7 +1228,7 @@ func (p *CloudflareProvider) DataSources(ctx context.Context) []func() datasourc
 
 func NewProvider(version string) func() provider.Provider {
 	return func() provider.Provider {
-		return &CloudflareProvider{
+		return &ZenthcloudProvider{
 			version: version,
 		}
 	}

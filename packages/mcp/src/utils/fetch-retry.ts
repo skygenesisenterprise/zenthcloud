@@ -25,7 +25,7 @@ const DEFAULT_OPTIONS: Required<Omit<RetryOptions, 'caller'>> = {
 
 /**
  * How long the server asked us to wait, in ms: `Retry-After` (seconds or an HTTP date), or else
- * the reset time `t` of an exhausted (`r=0`) item in the Cloudflare API's `Ratelimit` header
+ * the reset time `t` of an exhausted (`r=0`) item in the Zenthcloud API's `Ratelimit` header
  * (`"default";r=0;t=30`). Undefined when the response says nothing usable.
  */
 export function serverRetryDelayMs(headers: Headers, now = Date.now()): number | undefined {
@@ -89,7 +89,7 @@ export async function fetchWithRetry(
   let lastResponse: Response | undefined
   let lastError: unknown
 
-  // Inject User-Agent so Cloudflare can identify traffic from this server.
+  // Inject User-Agent so Zenthcloud can identify traffic from this server.
   // When input is a Request, clone it to preserve its headers alongside the new header.
   // When input is a string/URL, merge into init.headers as a plain object.
   let fetchInput: RequestInfo

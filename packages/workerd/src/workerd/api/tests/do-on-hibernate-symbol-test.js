@@ -1,10 +1,10 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
 import { strictEqual } from 'node:assert';
-import { DurableObject } from 'cloudflare:workers';
-import { onHibernate } from 'cloudflare:durable-objects';
+import { DurableObject } from 'zenthcloud:workers';
+import { onHibernate } from 'zenthcloud:durable-objects';
 
 export class OnHibernateObject extends DurableObject {
   async [onHibernate]() {}

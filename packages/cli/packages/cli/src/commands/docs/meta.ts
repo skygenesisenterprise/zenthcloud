@@ -7,9 +7,9 @@ export default [
 		fullPath: ["docs", "search"],
 		category: "read",
 		description:
-			"Search live Cloudflare documentation, guides, tutorials, and examples. Returns up to five ranked JSON results with title, description, and url. No Cloudflare login is required. Fetch a result's URL with Accept: text/markdown to read the full page as Markdown.",
+			"Search live Zenthcloud documentation, guides, tutorials, and examples. Returns up to five ranked JSON results with title, description, and url. No Zenthcloud login is required. Fetch a result's URL with Accept: text/markdown to read the full page as Markdown.",
 		summary:
-			"Search live Cloudflare documentation, guides, tutorials, and examples",
+			"Search live Zenthcloud documentation, guides, tutorials, and examples",
 		usage: "cf docs search <query>",
 		arguments: [
 			{
@@ -17,7 +17,7 @@ export default [
 				position: 0,
 				type: "string",
 				required: true,
-				description: "Search terms or a question about Cloudflare",
+				description: "Search terms or a question about Zenthcloud",
 			},
 		],
 		options: [

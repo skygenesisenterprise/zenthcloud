@@ -8,10 +8,10 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/dns_record"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/dns_record"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -28,7 +28,7 @@ func shadowMetadataModel(ctx context.Context, shadow types.Bool) dns_record.DNSR
 		IncludeShadowMetadata: shadow,
 		Name:                  types.StringValue("example.com"),
 		Type:                  types.StringValue("MX"),
-		Content:               types.StringValue("route1.mx.cloudflare.net"),
+		Content:               types.StringValue("route1.mx.zenthcloud.net"),
 		Priority:              types.Float64Value(40),
 		Proxied:               types.BoolValue(false),
 		TTL:                   types.Float64Value(300),
@@ -91,7 +91,7 @@ func TestDNSRecordRead_ShadowMetadataRefreshPlansNoUpdate(t *testing.T) {
 					"success": true,
 					"result": map[string]any{
 						"id": "record-id", "name": "example.com", "type": "MX",
-						"content": "route1.mx.cloudflare.net", "priority": 40,
+						"content": "route1.mx.zenthcloud.net", "priority": 40,
 						"ttl": 300, "proxied": false, "proxiable": false,
 						"created_on": shadowMetadataTimestamp, "modified_on": shadowMetadataTimestamp,
 						"tags": []string{}, "meta": map[string]any{},
@@ -102,7 +102,7 @@ func TestDNSRecordRead_ShadowMetadataRefreshPlansNoUpdate(t *testing.T) {
 
 			r := dns_record.NewResource().(*dns_record.DNSRecordResource)
 			configure := &resource.ConfigureResponse{}
-			r.Configure(ctx, resource.ConfigureRequest{ProviderData: cloudflare.NewClient(
+			r.Configure(ctx, resource.ConfigureRequest{ProviderData: zenthcloud.NewClient(
 				option.WithBaseURL(server.URL), option.WithAPIToken("test-token"),
 			)}, configure)
 			if configure.Diagnostics.HasError() {
@@ -168,7 +168,7 @@ func TestDNSRecordModifyPlan_ShadowMetadataChangesInvalidateModifiedOn(t *testin
 			model.IncludeShadowMetadata = types.BoolValue(tt.planned)
 			model.ModifiedOn = timetypes.NewRFC3339Unknown()
 			if tt.contentChange {
-				model.Content = types.StringValue("route2.mx.cloudflare.net")
+				model.Content = types.StringValue("route2.mx.zenthcloud.net")
 			}
 			plan := shadowMetadataPlan(t, ctx, model)
 			response := &resource.ModifyPlanResponse{Plan: plan}

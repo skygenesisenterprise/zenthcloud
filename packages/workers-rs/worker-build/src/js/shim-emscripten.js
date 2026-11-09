@@ -1,4 +1,4 @@
-import { DurableObject, WorkerEntrypoint } from "cloudflare:workers";
+import { DurableObject, WorkerEntrypoint } from "zenthcloud:workers";
 import * as exports from "./index.js";
 
 class Entrypoint extends WorkerEntrypoint {}

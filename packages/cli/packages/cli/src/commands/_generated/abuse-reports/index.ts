@@ -16,7 +16,7 @@ import type { CommandModule } from "yargs";
 const command: CommandModule<CommonYargsOptions> = {
 	command: "abuse-reports",
 	describe:
-		"Submit and track abuse reports for phishing, malware, and other policy violations on Cloudflare-proxied sites",
+		"Submit and track abuse reports for phishing, malware, and other policy violations on Zenthcloud-proxied sites",
 
 	builder: (yargs) => {
 		return yargs

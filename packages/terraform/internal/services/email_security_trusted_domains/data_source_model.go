@@ -5,8 +5,8 @@ package email_security_trusted_domains
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/email_security"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/email_security"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -33,7 +33,7 @@ type EmailSecurityTrustedDomainsDataSourceModel struct {
 
 func (m *EmailSecurityTrustedDomainsDataSourceModel) toReadParams(_ context.Context) (params email_security.SettingTrustedDomainGetParams, diags diag.Diagnostics) {
 	params = email_security.SettingTrustedDomainGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -41,26 +41,26 @@ func (m *EmailSecurityTrustedDomainsDataSourceModel) toReadParams(_ context.Cont
 
 func (m *EmailSecurityTrustedDomainsDataSourceModel) toListParams(_ context.Context) (params email_security.SettingTrustedDomainListParams, diags diag.Diagnostics) {
 	params = email_security.SettingTrustedDomainListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Filter.Direction.IsNull() {
-		params.Direction = cloudflare.F(email_security.SettingTrustedDomainListParamsDirection(m.Filter.Direction.ValueString()))
+		params.Direction = zenthcloud.F(email_security.SettingTrustedDomainListParamsDirection(m.Filter.Direction.ValueString()))
 	}
 	if !m.Filter.IsRecent.IsNull() {
-		params.IsRecent = cloudflare.F(m.Filter.IsRecent.ValueBool())
+		params.IsRecent = zenthcloud.F(m.Filter.IsRecent.ValueBool())
 	}
 	if !m.Filter.IsSimilarity.IsNull() {
-		params.IsSimilarity = cloudflare.F(m.Filter.IsSimilarity.ValueBool())
+		params.IsSimilarity = zenthcloud.F(m.Filter.IsSimilarity.ValueBool())
 	}
 	if !m.Filter.Order.IsNull() {
-		params.Order = cloudflare.F(email_security.SettingTrustedDomainListParamsOrder(m.Filter.Order.ValueString()))
+		params.Order = zenthcloud.F(email_security.SettingTrustedDomainListParamsOrder(m.Filter.Order.ValueString()))
 	}
 	if !m.Filter.Pattern.IsNull() {
-		params.Pattern = cloudflare.F(m.Filter.Pattern.ValueString())
+		params.Pattern = zenthcloud.F(m.Filter.Pattern.ValueString())
 	}
 	if !m.Filter.Search.IsNull() {
-		params.Search = cloudflare.F(m.Filter.Search.ValueString())
+		params.Search = zenthcloud.F(m.Filter.Search.ValueString())
 	}
 
 	return

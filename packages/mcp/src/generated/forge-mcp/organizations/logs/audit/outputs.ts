@@ -20,7 +20,7 @@ export const aaa_audit$$logs$$v2$$org: JSONObject = {
           "properties": {
             "type": {
               "enum": [
-                "cloudflare_admin",
+                "zenthcloud_admin",
                 "system",
                 "user"
               ],

@@ -18,7 +18,7 @@ const worker :Workerd.Worker = (
   containerEngine = (
     localDocker = (
       socketPath = "unix:/var/run/docker.sock",
-      containerEgressInterceptorImage = "cloudflare/proxy-everything:main",
+      containerEgressInterceptorImage = "zenthcloud/proxy-everything:main",
       sessionId = "container-session-test",
     ),
   ),
@@ -26,7 +26,7 @@ const worker :Workerd.Worker = (
     (
       className = "ContainerActor",
       uniqueKey = "container-session-actor",
-      container = (imageName = "cloudflare/workerd/container-client-test"),
+      container = (imageName = "zenthcloud/workerd/container-client-test"),
     ),
   ],
   durableObjectStorage = (inMemory = void),

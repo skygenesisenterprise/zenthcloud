@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_access_rule Resource - Cloudflare"
+page_title: "zenthcloud_access_rule Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Firewall Access Rules ReadAccount Firewall Access Rules Write
 ---
 
-# cloudflare_access_rule (Resource)
+# zenthcloud_access_rule (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_access_rule" "example_access_rule" {
+resource "zenthcloud_access_rule" "example_access_rule" {
   configuration = {
     target = "ip"
     value = "198.51.100.4"
@@ -75,7 +75,7 @@ Available values: "user", "organization".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_access_rule.example '<{accounts|zones}/{account_id|zone_id}>/<rule_id>'
+$ terraform import zenthcloud_access_rule.example '<{accounts|zones}/{account_id|zone_id}>/<rule_id>'
 ```
 
 

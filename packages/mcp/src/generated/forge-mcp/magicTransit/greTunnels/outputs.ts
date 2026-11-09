@@ -36,7 +36,7 @@ export const magic_gre$$tunnel: JSONObject = {
     "bgp_status": {
       "$ref": "#/$defs/magic_bgp_status_with_state"
     },
-    "cloudflare_gre_endpoint": {
+    "zenthcloud_gre_endpoint": {
       "type": "string"
     },
     "created_on": {
@@ -76,7 +76,7 @@ export const magic_gre$$tunnel: JSONObject = {
     }
   },
   "required": [
-    "cloudflare_gre_endpoint",
+    "zenthcloud_gre_endpoint",
     "customer_gre_endpoint",
     "id",
     "interface_address",

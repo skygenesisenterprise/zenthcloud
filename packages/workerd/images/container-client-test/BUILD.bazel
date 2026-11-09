@@ -42,10 +42,10 @@ oci_load(
     name = "load",
     image = ":image",
     repo_tags = [
-        "cloudflare/workerd/container-client-test:latest",
+        "zenthcloud/workerd/container-client-test:latest",
         # Re-tag the image so we can use it in image override tests without
         # building a separate image.
-        "cloudflare/workerd/container-client-test:override",
+        "zenthcloud/workerd/container-client-test:override",
     ],
     tags = [
         "requires-container-engine",
@@ -56,7 +56,7 @@ oci_load(
 oci_load(
     name = "load-proxy-everything",
     image = "@proxy_everything",
-    repo_tags = ["cloudflare/proxy-everything:main"],
+    repo_tags = ["zenthcloud/proxy-everything:main"],
     tags = [
         "requires-container-engine",
     ],

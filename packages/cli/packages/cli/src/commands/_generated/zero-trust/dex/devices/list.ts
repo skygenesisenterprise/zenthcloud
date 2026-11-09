@@ -59,7 +59,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		})
 		.option("colo", {
 			type: "string",
-			description: "Cloudflare colo airport code.",
+			description: "Zenthcloud colo airport code.",
 		})
 		.option("device-id", {
 			type: "string",
@@ -123,7 +123,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust dex devices list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/dex/fleet-status/devices`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/dex/fleet-status/devices`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

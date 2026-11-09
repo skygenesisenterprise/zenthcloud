@@ -1,12 +1,12 @@
 import { listTunnels } from "../../../lib/api-operations.js";
 import { isUUID } from "../../../lib/resolve.js";
-import type { Cloudflare } from "../../../lib/auth.js";
+import type { Zenthcloud } from "../../../lib/auth.js";
 import getTunnelTokenOperation from "#operations/tunnels/token/get.js";
 
 const TUNNEL_LIST_PAGE_SIZE = 1000;
 
 export async function resolveTunnelId(
-	client: Cloudflare,
+	client: Zenthcloud,
 	accountId: string,
 	nameOrId: string
 ): Promise<string> {
@@ -62,7 +62,7 @@ export async function resolveTunnelId(
 }
 
 export async function getTunnelToken(
-	client: Cloudflare,
+	client: Zenthcloud,
 	accountId: string,
 	tunnelId: string
 ): Promise<string> {

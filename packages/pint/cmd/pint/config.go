@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/cloudflare/pint/internal/config"
+	"github.com/zenthcloud/pint/internal/config"
 
 	"github.com/urfave/cli/v3"
 )

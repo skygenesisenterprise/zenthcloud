@@ -5,9 +5,9 @@ package zone_lockdown
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/firewall"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/firewall"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -39,35 +39,35 @@ func (m *ZoneLockdownsDataSourceModel) toListParams(_ context.Context) (params f
 	diags.Append(errs...)
 
 	params = firewall.LockdownListParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	if !m.CreatedOn.IsNull() {
-		params.CreatedOn = cloudflare.F(mCreatedOn)
+		params.CreatedOn = zenthcloud.F(mCreatedOn)
 	}
 	if !m.Description.IsNull() {
-		params.Description = cloudflare.F(m.Description.ValueString())
+		params.Description = zenthcloud.F(m.Description.ValueString())
 	}
 	if !m.DescriptionSearch.IsNull() {
-		params.DescriptionSearch = cloudflare.F(m.DescriptionSearch.ValueString())
+		params.DescriptionSearch = zenthcloud.F(m.DescriptionSearch.ValueString())
 	}
 	if !m.IP.IsNull() {
-		params.IP = cloudflare.F(m.IP.ValueString())
+		params.IP = zenthcloud.F(m.IP.ValueString())
 	}
 	if !m.IPRangeSearch.IsNull() {
-		params.IPRangeSearch = cloudflare.F(m.IPRangeSearch.ValueString())
+		params.IPRangeSearch = zenthcloud.F(m.IPRangeSearch.ValueString())
 	}
 	if !m.IPSearch.IsNull() {
-		params.IPSearch = cloudflare.F(m.IPSearch.ValueString())
+		params.IPSearch = zenthcloud.F(m.IPSearch.ValueString())
 	}
 	if !m.ModifiedOn.IsNull() {
-		params.ModifiedOn = cloudflare.F(mModifiedOn)
+		params.ModifiedOn = zenthcloud.F(mModifiedOn)
 	}
 	if !m.Priority.IsNull() {
-		params.Priority = cloudflare.F(m.Priority.ValueFloat64())
+		params.Priority = zenthcloud.F(m.Priority.ValueFloat64())
 	}
 	if !m.URISearch.IsNull() {
-		params.URISearch = cloudflare.F(m.URISearch.ValueString())
+		params.URISearch = zenthcloud.F(m.URISearch.ValueString())
 	}
 
 	return

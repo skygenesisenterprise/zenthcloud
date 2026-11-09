@@ -111,7 +111,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.member.create"
+            "com.zenthcloud.api.account.member.create"
           ]
         },
         "x-cfPlanAvailability": {
@@ -214,7 +214,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.member.delete"
+            "com.zenthcloud.api.account.member.delete"
           ]
         },
         "x-cfPlanAvailability": {
@@ -318,7 +318,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.member.read"
+            "com.zenthcloud.api.account.member.read"
           ]
         },
         "x-cfPlanAvailability": {
@@ -483,7 +483,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.member.list"
+            "com.zenthcloud.api.account.member.list"
           ]
         },
         "x-cfPlanAvailability": {
@@ -618,7 +618,7 @@ export const tools: readonly Tool[] = [
         ],
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.member.update"
+            "com.zenthcloud.api.account.member.update"
           ]
         },
         "x-cfPlanAvailability": {

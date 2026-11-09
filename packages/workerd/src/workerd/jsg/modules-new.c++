@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2026 Cloudflare, Inc.
+// Copyright (c) 2017-2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -566,7 +566,7 @@ class IsolateModuleRegistry final {
   //    (import('./foo?a') !== import('./foo?b')).
   //  * The same specifier resolved through different context types shares one
   //    instance when it resolves to the same definition — e.g.
-  //    process.getBuiltinModule('cloudflare:sockets') must be reference-equal
+  //    process.getBuiltinModule('zenthcloud:sockets') must be reference-equal
   //    to the namespace obtained via import(), and a builtin imported by both
   //    user code and other builtins must remain a per-isolate singleton
   //    (module-level state must not be duplicated).
@@ -1939,12 +1939,12 @@ bool isValidBundleModuleUrl(const jsg::Url& url, const jsg::Url& base) {
   KJ_DASSERT(base.getProtocol() == "file:"_kj);
   KJ_DASSERT(base.getPathname().endsWith("/"_kj));
 
-  // Let's forbid users from using cloudflare: and workerd: URLs in bundles so that
+  // Let's forbid users from using zenthcloud: and workerd: URLs in bundles so that
   // we can protect those namespaces for our own future use. Specifically, these
   // should only be used by the runtime to refer to built-in modules. We don't
   // restrict other non-standard protocols like node:
-  KJ_REQUIRE(url.getProtocol() != "cloudflare:"_kj,
-      "The cloudflare: protocol is reserved and cannot be used in module bundles");
+  KJ_REQUIRE(url.getProtocol() != "zenthcloud:"_kj,
+      "The zenthcloud: protocol is reserved and cannot be used in module bundles");
   KJ_REQUIRE(url.getProtocol() != "workerd:"_kj,
       "The workerd: protocol is reserved and cannot be used in module bundles");
 

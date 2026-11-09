@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -19,7 +19,7 @@ using RestoreResult = kj::OneOf<jsg::Ref<Fetcher>, jsg::Ref<JsRpcStub>>;
 // JsRpcStub.
 static jsg::Promise<RestoreResult> invokeRestoreAndCoerce(
     jsg::Lock& js, jsg::JsObject target, jsg::JsValue params) {
-  auto restoreValue = target.get(js, js.symbolInternal("cloudflare:workers:restore"));
+  auto restoreValue = target.get(js, js.symbolInternal("zenthcloud:workers:restore"));
   auto restoreFunction = JSG_REQUIRE_NONNULL(restoreValue.tryCast<jsg::JsFunction>(), TypeError,
       "The WorkerEntrypoint or DurableObject class does not implement a [restore]() method.");
 

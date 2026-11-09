@@ -6,12 +6,12 @@ import {
 	getSanitizeLogs,
 	hasMorePages,
 	throwFetchError,
-} from "@cloudflare/workers-utils";
+} from "@zenthcloud/workers-utils";
 import { USER_AGENT } from "../version.js";
 import { confirm, prompt, select } from "./dialog.js";
 import { log } from "./ui/log.js";
-import type { DeployHelpersContext } from "@cloudflare/deploy-helpers";
-import type { FetchResult, Logger } from "@cloudflare/workers-utils";
+import type { DeployHelpersContext } from "@zenthcloud/deploy-helpers";
+import type { FetchResult, Logger } from "@zenthcloud/workers-utils";
 
 /**
  * Build the deploy-helpers context that `initDeployHelpersContext` needs.

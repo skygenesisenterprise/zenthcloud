@@ -4,16 +4,16 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/migrations"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/migrations"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-// MoveState implements the state mover for moving from cloudflare_authenticated_origin_pulls_certificate
-// (with type="per-hostname") to cloudflare_authenticated_origin_pulls_hostname_certificate.
+// MoveState implements the state mover for moving from zenthcloud_authenticated_origin_pulls_certificate
+// (with type="per-hostname") to zenthcloud_authenticated_origin_pulls_hostname_certificate.
 // This is called when a `moved` block is detected in the Terraform configuration.
 func MoveState(ctx context.Context, req resource.MoveStateRequest, resp *resource.MoveStateResponse) {
-	tflog.Info(ctx, "Starting state move from cloudflare_authenticated_origin_pulls_certificate to cloudflare_authenticated_origin_pulls_hostname_certificate")
+	tflog.Info(ctx, "Starting state move from zenthcloud_authenticated_origin_pulls_certificate to zenthcloud_authenticated_origin_pulls_hostname_certificate")
 
 	// Read v4 state into v4 model
 	var v4Model V4Model
@@ -36,7 +36,7 @@ func MoveState(ctx context.Context, req resource.MoveStateRequest, resp *resourc
 	if !v4Model.Type.IsNull() && v4Model.Type.ValueString() != "per-hostname" {
 		resp.Diagnostics.AddError(
 			"Invalid State Move",
-			fmt.Sprintf("Cannot move cloudflare_authenticated_origin_pulls_certificate with type='%s' to cloudflare_authenticated_origin_pulls_hostname_certificate. Only type='per-hostname' should be moved to this resource type.", v4Model.Type.ValueString()),
+			fmt.Sprintf("Cannot move zenthcloud_authenticated_origin_pulls_certificate with type='%s' to zenthcloud_authenticated_origin_pulls_hostname_certificate. Only type='per-hostname' should be moved to this resource type.", v4Model.Type.ValueString()),
 		)
 		return
 	}
@@ -68,5 +68,5 @@ func MoveState(ctx context.Context, req resource.MoveStateRequest, resp *resourc
 		return
 	}
 
-	tflog.Info(ctx, "State move from cloudflare_authenticated_origin_pulls_certificate to cloudflare_authenticated_origin_pulls_hostname_certificate completed successfully")
+	tflog.Info(ctx, "State move from zenthcloud_authenticated_origin_pulls_certificate to zenthcloud_authenticated_origin_pulls_hostname_certificate completed successfully")
 }

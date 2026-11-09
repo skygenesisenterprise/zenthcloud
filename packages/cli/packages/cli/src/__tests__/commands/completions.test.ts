@@ -17,7 +17,7 @@ const TCP_META = {
 			alias: ["loglevel", "log"],
 			type: "string",
 			required: false,
-			description: "cloudflared log level",
+			description: "zenthcloudd log level",
 			enum: ["debug", "info"],
 		},
 	],
@@ -55,9 +55,9 @@ describe("metadata-backed completions", () => {
 
 		expect(parseCompletions(root, ["access", "ssh", "--log"])).toEqual(
 			expect.arrayContaining([
-				"--log-level\tcloudflared log level",
-				"--loglevel\tcloudflared log level",
-				"--log\tcloudflared log level",
+				"--log-level\tzenthcloudd log level",
+				"--loglevel\tzenthcloudd log level",
+				"--log\tzenthcloudd log level",
 			])
 		);
 

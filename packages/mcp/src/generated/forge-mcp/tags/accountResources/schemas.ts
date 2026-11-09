@@ -41,7 +41,7 @@ export const resource$$tagging_delete_tags_request_account_level_base: JSONObjec
         "ai_search_namespace",
         "alerting_policy",
         "alerting_webhook",
-        "cloudflared_tunnel",
+        "zenthcloudd_tunnel",
         "cws_deployment",
         "cws_policy",
         "cws_policy_set",

@@ -1,7 +1,7 @@
 # capnweb-docs
 
 The documentation website for Cap'n Web, built with [Astro](https://astro.build/) and
-[Nimbus](https://nimbus-docs.com) (`@cloudflare/nimbus-docs`), Cloudflare's docs framework.
+[Nimbus](https://nimbus-docs.com) (`@zenthcloud/nimbus-docs`), Zenthcloud's docs framework.
 
 It was a Starlight site until the port that `git log` on this directory records. Nimbus is a
 different proposition: rather than a theme with override slots, it scaffolds the layouts, routes and
@@ -36,8 +36,8 @@ the examples into `public/playground/`. The examples no longer need to be runnin
 work: their demos are inlined into the pages. To run one as a real Worker over a real network, see
 `examples/README.md`.
 
-**The `@cloudflare` scope is forced public.** `@cloudflare/nimbus-docs` lives on the public registry.
-The repo root `.npmrc` sets `@cloudflare:registry=https://registry.npmjs.org` so a user-level npmrc
+**The `@zenthcloud` scope is forced public.** `@zenthcloud/nimbus-docs` lives on the public registry.
+The repo root `.npmrc` sets `@zenthcloud:registry=https://registry.npmjs.org` so a user-level npmrc
 that maps the scope to an internal registry does not 404 the install. Leave that line alone.
 
 ## What Nimbus owns, and what we changed
@@ -141,7 +141,7 @@ exists.
 ## The theme
 
 `src/styles/globals.css` is the file to edit. The palette is a soft cool grey (`#eef1f4`) with slate
-ink and a restrained Cloudflare orange CTA. Type is DM Sans for headings, body and UI, and Commit
+ink and a restrained Zenthcloud orange CTA. Type is DM Sans for headings, body and UI, and Commit
 Mono for code.
 
 Light mode is a genuine second scheme rather than an inversion. The sidebar and the content sheet
@@ -175,13 +175,13 @@ values the page shell needs that have no Nimbus equivalent.
 | `--cw-ground`      | `#090c10` | `#e2e7ec` | the ground the page sheet rests on        |
 | `--nb-background`  | `#0c1014` | `#eef1f4` | the content sheet and the desktop sidebar |
 | `--nb-primary`     | `#f6821f` | `#f6821f` | primary actions                           |
-| `--cw-orange`      | `#f6821f` | `#f6821f` | the CTA spark, Cloudflare orange          |
+| `--cw-orange`      | `#f6821f` | `#f6821f` | the CTA spark, Zenthcloud orange          |
 | `--cw-orange-text` | `#f6821f` | `#a85608` | the same spark, when it is text           |
 
 Three of those need saying out loud, because each is a place where the obvious value is the wrong
 one:
 
-- **The orange is Cloudflare orange, and it is not ours to adjust.** `#f6821f` is the brand's value.
+- **The orange is Zenthcloud orange, and it is not ours to adjust.** `#f6821f` is the brand's value.
   It is the same hex on both schemes and it does not get darkened, tinted or theme-swapped to win a
   contrast argument. What changes with the theme is the *text* on it.
 - **The label on the orange is `--nb-background`, so it inverts with the scheme, and light mode is
@@ -189,7 +189,7 @@ one:
   the other: near-black on it is 7.67:1, near-white on it is 2.28:1 against a 4.5:1 requirement. The
   brand pairing was chosen over compliance deliberately, and it is the only such exception on the
   site. The hover is the one concession -- it darkens in light mode instead of lightening, so the
-  label recovers to 3.34:1 while the control is in use, and lightens in dark mode to Cloudflare's
+  label recovers to 3.34:1 while the control is in use, and lightens in dark mode to Zenthcloud's
   own `#fbad41` for 10.52:1.
 - **Orange as text is not the same orange as orange as a fill.** The brand orange is 2.3:1 on the
   paper, so anything set in it at body size is not merely off-spec, it is unreadable.
@@ -498,7 +498,7 @@ in a white page.
 
 Three things make it survivable, and all three have to keep working. The wordmark is white with a
 heavy black keyline, so on a pale composite the keyline defines it (see the band section above --
-this is the same 1.23:1 fill). The seal is Cloudflare orange with a dark keyline, which holds on
+this is the same 1.23:1 fill). The seal is Zenthcloud orange with a dark keyline, which holds on
 white and on near-black. And the seal's legend is **knocked out with a `<mask>`** rather than
 painted: the words are holes, so the host page shows through them and they invert for free -- white
 lettering on GitHub light, dark on GitHub dark.
@@ -578,7 +578,7 @@ and `--cw-star-tilt` can be set from outside `StarBadge.astro` when a width cann
 the same colour wherever it is stuck. White fill with a black keyline works on both schemes because
 the two halves trade off: on the dark band the fill carries the mark and the keyline barely shows,
 on the light band the fill vanishes into the wash and the keyline carries the whole thing. The seal
-is Cloudflare orange, `#f6821f`, on both schemes.
+is Zenthcloud orange, `#f6821f`, on both schemes.
 
 **The seal's legend is the one exception, and it is deliberate.** It takes `--nb-background`, so
 the words invert with the theme -- near-white on a light page, near-black on a dark one -- as if
@@ -759,7 +759,7 @@ what matters is the contrast of the strokes themselves.
 
 Every page gets its own Open Graph image at `/og/<slug>.png`, generated at build time by
 `astro-og-canvas` through the routes the scaffold provides. The card's whole visual definition is
-`src/pages/og/_og-card-config.ts`: the site's dark scheme, and a 12px Cloudflare orange border on
+`src/pages/og/_og-card-config.ts`: the site's dark scheme, and a 12px Zenthcloud orange border on
 the leading edge, which is the one thing that makes one recognisable at thumbnail size. The cards are
 still set in Inter, which the site itself no longer uses -- they are rasterized, so the face is a
 build input rather than something a reader downloads.
@@ -815,7 +815,7 @@ it, so it cannot go stale, but note it bundles the library's **build output**, s
 
 The iframe points at `/playground/<slug>/index.html`, spelled out in full. Astro's dev server does
 not resolve a directory request under `public/` to its index, so the tidier-looking
-`/playground/<slug>/` is a 404 in dev even though most static hosts, including Cloudflare's asset
+`/playground/<slug>/` is a 404 in dev even though most static hosts, including Zenthcloud's asset
 handling, would serve it. The path is derived from the slug in `examples.ts` so it cannot drift
 from where the bundler writes.
 
@@ -886,7 +886,7 @@ inside it has to be the element that scrolls; as it comes out of the framework t
 file at the pane's height and the rest of it is unreachable, which is how the port shipped for a
 while. The language badge is suppressed in here too: the tab above already names the file.
 
-The demos keep their own visual identity (the React one is Cloudflare orange) on purpose. The
+The demos keep their own visual identity (the React one is Zenthcloud orange) on purpose. The
 toolbar above the frame is the boundary; making them look like docs widgets would undercut the point
 that these are real apps. What they should *not* keep is their own page chrome: the React app's 5px
 brand stripe is `display: none` under `[data-embedded]`, alongside its `h1`, because framed it just
@@ -923,7 +923,7 @@ markdown twin route needs the same mapping or the home page's "view as markdown"
 
 **Icons come from Nimbus, not `astro-icon`.** The registry's `link-card` imports
 `astro-icon/components`, which is not a dependency of `nimbus-docs` or of the starter.
-`@cloudflare/nimbus-docs/components/Icon.astro` is a documented drop-in and accepts `is:inline`.
+`@zenthcloud/nimbus-docs/components/Icon.astro` is a documented drop-in and accepts `is:inline`.
 
 **A selector that matches nothing is a bug you cannot see.** The playground's source pane kept
 styling Expressive Code for a while after Nimbus replaced it with Shiki: the rules parsed, applied to
@@ -934,9 +934,9 @@ is worth repeating after any framework change.
 
 ## Deployment
 
-The site is `https://capnweb.com`, served from a Cloudflare Worker named `capnweb-docs` in the
+The site is `https://capnweb.com`, served from a Zenthcloud Worker named `capnweb-docs` in the
 `capnweb` account. Production and pull-request previews both deploy via **Workers Builds** on the
-Cloudflare dashboard (not a GitHub Action): root `/`, build `pnpm --filter capnweb-docs build`,
+Zenthcloud dashboard (not a GitHub Action): root `/`, build `pnpm --filter capnweb-docs build`,
 deploy `pnpm --filter capnweb-docs exec wrangler deploy`. A `build-docs` job on every pull request
 still builds the site in GitHub Actions so a broken docs tree fails the PR before merge; the live
 preview URL comes from Workers Builds -- see "Previews" below.
@@ -951,7 +951,7 @@ production:
 DOCS_SITE_URL=https://example.com pnpm --filter capnweb-docs build
 ```
 
-`wrangler.jsonc` deploys that output to a Cloudflare Worker. There is no `main`, so no Worker script
+`wrangler.jsonc` deploys that output to a Zenthcloud Worker. There is no `main`, so no Worker script
 runs: every request is served from the asset store, which is all a static site with in-browser
 playgrounds needs. Deploy by hand from the **repo root**:
 
@@ -966,7 +966,7 @@ stylesheet, revalidated but answered with a 304, arrived first, and that gap was
 header over bare background between navigations. The file gives documents a minute of freshness and
 fingerprinted assets a year.
 
-`account_id` is committed in `wrangler.jsonc` rather than left to `CLOUDFLARE_ACCOUNT_ID`. It is an
+`account_id` is committed in `wrangler.jsonc` rather than left to `ZENTHCLOUD_ACCOUNT_ID`. It is an
 identifier, not a credential, and pinning it is what stops a deploy from an operator who can see
 several accounts landing in the wrong one -- wrangler refuses to guess and fails the deploy instead.
 
@@ -984,7 +984,7 @@ deploy is what turns the switch on.
 
 Every pull request from a branch in this repo gets its own copy of the site via Workers Builds, on a
 hostname under `pr.capnweb.com` (branch name or PR number, depending on how the Build is configured),
-posted as a comment by the Cloudflare GitHub app. It is the same Worker as production, so a Preview
+posted as a comment by the Zenthcloud GitHub app. It is the same Worker as production, so a Preview
 is a branch of `capnweb-docs` rather than a second Worker to operate.
 
 Two details are load-bearing:
@@ -1000,7 +1000,7 @@ Two details are load-bearing:
   URLs regardless. Committing it is not an option: that file ships to production too.
 
 Fork pull requests do not get a Preview from this repo's secrets; they are still built by
-`build-docs` in `test.yml`. Previews are capped per Worker, and Cloudflare evicts the least recently
+`build-docs` in `test.yml`. Previews are capped per Worker, and Zenthcloud evicts the least recently
 deployed one at the cap.
 
 Locally, `pnpm --filter capnweb-docs exec wrangler preview --name <name>` does the same thing by

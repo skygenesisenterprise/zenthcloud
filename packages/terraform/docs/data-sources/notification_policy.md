@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_notification_policy Data Source - Cloudflare"
+page_title: "zenthcloud_notification_policy Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Settings ReadAccount Settings WriteNotifications ReadNotifications WriteZero Trust: PII Read
 ---
 
-# cloudflare_notification_policy (Data Source)
+# zenthcloud_notification_policy (Data Source)
 
 Accepted Permissions
 
@@ -19,7 +19,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_notification_policy" "example_notification_policy" {
+data "zenthcloud_notification_policy" "example_notification_policy" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   policy_id = "0da2b59ef118439d8097bdfb215203c9"
 }

@@ -50,7 +50,7 @@ describe("execute", () => {
 	it.skip("should execute locally without database_id", async () => {});
 
 	// Ported: cf requires authentication for the remote (only) path.
-	// With no `CLOUDFLARE_API_TOKEN` and no stored OAuth token (the
+	// With no `ZENTHCLOUD_API_TOKEN` and no stored OAuth token (the
 	// `runInTempDir()` HOME stub isolates the on-disk token store),
 	// `createCommandClient` → `getAuthToken()` throws before any
 	// request leaves the process.
@@ -58,7 +58,7 @@ describe("execute", () => {
 		setIsTTY(false);
 		await expect(
 			runWrangler("d1 query xxxx --sql 'select 1;'", {
-				CLOUDFLARE_API_TOKEN: undefined,
+				ZENTHCLOUD_API_TOKEN: undefined,
 			})
 		).rejects.toThrow(/No authentication token found/i);
 	});

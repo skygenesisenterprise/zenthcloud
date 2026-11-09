@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_share_recipient Resource - Cloudflare"
+page_title: "zenthcloud_share_recipient Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_share_recipient (Resource)
+# zenthcloud_share_recipient (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_share_recipient" "example_share_recipient" {
+resource "zenthcloud_share_recipient" "example_share_recipient" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   share_id = "3fd85f74b32742f1bff64a85009dda07"
   organization_id = "023e105f4ecef8ad9ca31a8372d0c353"
@@ -71,7 +71,7 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_share_recipient.example '<account_id>/<share_id>/<recipient_id>'
+$ terraform import zenthcloud_share_recipient.example '<account_id>/<share_id>/<recipient_id>'
 ```
 
 

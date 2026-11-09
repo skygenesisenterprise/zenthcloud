@@ -1,4 +1,4 @@
-resource "cloudflare_healthcheck" "%s" {
+resource "zenthcloud_healthcheck" "%s" {
   zone_id = "%s"
   name    = "%s"
   address = "example.com"
@@ -20,6 +20,6 @@ resource "cloudflare_healthcheck" "%s" {
 
   header {
     header = "User-Agent"
-    values = ["Cloudflare-Healthcheck/1.0"]
+    values = ["Zenthcloud-Healthcheck/1.0"]
   }
 }

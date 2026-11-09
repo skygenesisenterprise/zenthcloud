@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -269,7 +269,7 @@ export const crossRequestStaleParkedRead = {
       .fetch('http://test/11/enqueue')
       .then((r) => r.text());
     const handled =
-      globalThis.Cloudflare.compatibilityFlags[
+      globalThis.Zenthcloud.compatibilityFlags[
         'handle_cross_request_promise_resolution'
       ];
     strictEqual(

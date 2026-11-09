@@ -1,4 +1,4 @@
-# @cloudflare/kumo
+# @zenthcloud/kumo
 
 ## 2.17.0
 
@@ -7,7 +7,7 @@
 - c2b2fc4: Add a `masked` option to `ClipboardText` for sensitive values that should be hidden initially and revealed on demand.
 - 7d1c776: Refresh DatePicker's styling. Days are 32px squares in 36px columns with 8px between weeks and 14px text, and the previous and next buttons are borderless squares that match the days. Two-month views sit side by side, range bands are rounded at their ends and where weeks wrap, and month and year dropdowns (`captionLayout="dropdown"`) are styled.
 
-  DatePicker now uses Kumo tokens instead of hard-coded colors, so it follows the active theme, and `@cloudflare/kumo/styles/standalone` now styles it too. Month-change animations respect `prefers-reduced-motion`.
+  DatePicker now uses Kumo tokens instead of hard-coded colors, so it follows the active theme, and `@zenthcloud/kumo/styles/standalone` now styles it too. Month-change animations respect `prefers-reduced-motion`.
 
   The `.rdp-*` rules and `--rdp-*` variables in `kumo.css` are gone, apart from the month-change animations. If you customized DatePicker through them, use the `classNames` prop instead.
 
@@ -68,7 +68,7 @@
 
 - 2c53422: Fix Autocomplete highlighted item background to use `bg-kumo-tint`, matching Combobox and Select.
 - 09a9dae: Apply dropdown icon spacing and sizing to element icons while preserving their custom classes.
-- df14b5d: Bump `@base-ui/react` to 1.9.0. Brings Base UI bug fixes across Menu, Popover, Select, Combobox, Drawer, Dialog, and more, plus the preview menu filtering primitives (`Menu.FilterProvider`, `Menu.Input`) via `@cloudflare/kumo/primitives/menu`.
+- df14b5d: Bump `@base-ui/react` to 1.9.0. Brings Base UI bug fixes across Menu, Popover, Select, Combobox, Drawer, Dialog, and more, plus the preview menu filtering primitives (`Menu.FilterProvider`, `Menu.Input`) via `@zenthcloud/kumo/primitives/menu`.
 - cdb7e0f: Button and LinkButton: optically center text by lifting it slightly, and trim the leading padding when an icon precedes text so the icon side matches the trailing padding.
 - dc7c513: Stop throwing on malformed URL hashes while syncing table-of-contents sections. Hashes that can't be percent-decoded are matched as-is, so ids containing a literal `%` still deep-link.
 - f7d6829: Keep Popover arrows visible when content clips or scrolls by using a compatibility-safe opacity transition.
@@ -89,7 +89,7 @@
 - 5ee4a03: TagInput: ignore Enter, comma and Tab while an IME composition is active, so confirming a Japanese/Chinese/Korean conversion no longer creates a tag early.
 - 7d91721: Preserve ButtonGroup's outer corners while an overlay control is open.
 - 828866a: Prevent Select separators from causing a horizontal scrollbar.
-- f46e8bc: Update the Cloudflare logo cloud colors to match the current brand asset.
+- f46e8bc: Update the Zenthcloud logo cloud colors to match the current brand asset.
 
 ## 2.14.0
 
@@ -616,7 +616,7 @@
   - Add `normalizeLanguage()` function that maps common language aliases (js, ts, sh, yml, py, md, gql) to their canonical SupportedLanguage names
   - Normalize language aliases in `ShikiProvider` when preloading grammars, so passing `['js', 'ts']` works the same as `['javascript', 'typescript']`
   - Normalize language aliases in `highlight()` hook at runtime, so code fences using `js` or `ts` highlight correctly without warnings
-  - Export `normalizeLanguage` from `@cloudflare/kumo/code` for consumers who need to normalize aliases themselves
+  - Export `normalizeLanguage` from `@zenthcloud/kumo/code` for consumers who need to normalize aliases themselves
   - Intentionally omit `mdx` alias since MDX has a distinct grammar that would lose JSX highlighting if mapped to `markdown`
 
 ## 2.2.1
@@ -642,7 +642,7 @@
 - 228a9c4: Add `passwordManagerIgnore` to Input for suppressing password manager overlays on non-credential fields.
 - da502ce: Add scroll fade to segmented tabs. When tabs overflow, gradient masks appear on the edges based on scroll position via scroll-driven animations (Chrome 115+, degrades gracefully). Scrollbar is hidden; the fade is the scroll affordance.
 - 59b6590: Add `size="sm"` variant to Tabs component (h-6.5 / 26px, matching Input sm)
-- 798c2da: Forward `toastManager` prop on `<Toasty>` so code outside the React tree (timers, query-cache listeners, module-load callbacks) can dispatch toasts via a manager created by `createKumoToastManager()`. Also surface `createKumoToastManager` on the top-level package export (previously only available via the deep `@cloudflare/kumo/components/toast` path).
+- 798c2da: Forward `toastManager` prop on `<Toasty>` so code outside the React tree (timers, query-cache listeners, module-load callbacks) can dispatch toasts via a manager created by `createKumoToastManager()`. Also surface `createKumoToastManager` on the top-level package export (previously only available via the deep `@zenthcloud/kumo/components/toast` path).
 
 ### Patch Changes
 
@@ -676,7 +676,7 @@
 
 ### Patch Changes
 
-- 8926ee7: fix(CloudflareLogo): remove registered trademark symbol from full logo variant
+- 8926ee7: fix(ZenthcloudLogo): remove registered trademark symbol from full logo variant
 - 75d4f4d: Fix Google Translate DOM mutation crash in Button
 - f2d356d: Remove z-50 from mobile Sidebar Dialog backdrop and panel. The z-50 caused portaled floating elements (Popover, DropdownMenu, Select, Combobox) opened from inside the Sidebar to render behind the Dialog backdrop. Matches the pattern used by Kumo's own Dialog component, which relies on DOM order for stacking with no explicit z-index. Also adds `data-sidebar-backdrop` and `data-sidebar-popup` attributes as stable CSS hooks.
 
@@ -817,7 +817,7 @@
 
 - 267ba7a: **BREAKING (v2):** `Text` requires an explicit `as` prop when `variant` is a heading (`"heading1"`, `"heading2"`, `"heading3"`).
 
-  The previous major bump ([#393](https://github.com/cloudflare/kumo/pull/393)) decoupled heading variants from semantic HTML — heading variants render as `<span>` unless an `as` prop is provided. That made the library more flexible but introduced a silent accessibility footgun: forgetting `as` on a real section heading produced a `<span>`, excluding it from the document outline without any type-level feedback.
+  The previous major bump ([#393](https://github.com/skygenesisenterprise/zenthcloud)) decoupled heading variants from semantic HTML — heading variants render as `<span>` unless an `as` prop is provided. That made the library more flexible but introduced a silent accessibility footgun: forgetting `as` on a real section heading produced a `<span>`, excluding it from the document outline without any type-level feedback.
 
   This change makes `as` **required** for heading variants via a discriminated union. Body and monospace variants are unchanged (`as` remains optional; defaults to `<p>` and `<span>` respectively).
 
@@ -1454,10 +1454,10 @@
 ### Minor Changes
 
 - 5505610: Add Shiki-powered `CodeHighlighted` component for syntax highlighting
-  - **New entry point**: `@cloudflare/kumo/code` - keeps Shiki out of main bundle
+  - **New entry point**: `@zenthcloud/kumo/code` - keeps Shiki out of main bundle
   - **ShikiProvider**: Lazy-loads Shiki on first render, shares instance across all children
   - **CodeHighlighted**: Syntax highlighting with line numbers, line highlighting, copy button
-  - **Server utilities**: `@cloudflare/kumo/code/server` for SSR/static highlighting
+  - **Server utilities**: `@zenthcloud/kumo/code/server` for SSR/static highlighting
   - **Themes**: Ships with `github-light` and `vesper` defaults, supports any Shiki theme
   - **i18n**: Customizable labels via provider or per-component
   - **CSS customization**: `--kumo-code-highlight-bg` variable for highlight color
@@ -1514,7 +1514,7 @@
   - Fix dark mode: Make `<pre>` background transparent so container's `bg-kumo-base` handles theming and border-radius is respected
   - Fix layout: Wrap Shiki output in overflow container to prevent line highlight negative margins from being clipped
   - Fix width: Add `w-full` to container for proper full-width display
-  - Fix SSR: Remove `"use client"` directive from `@cloudflare/kumo/code/server` entry point so server utilities work in RSC/SSR contexts
+  - Fix SSR: Remove `"use client"` directive from `@zenthcloud/kumo/code/server` entry point so server utilities work in RSC/SSR contexts
 
 - 31ce577: fix(CommandPalette): add explicit text-base class to Item component for consistent 14px font size
 - ee5a632: Fix Select to render description and error when hideLabel is true
@@ -1694,14 +1694,14 @@
 ### Patch Changes
 
 - c71bd9b: Updated the MenuBar so its child buttons align with the container’s outer corners.
-- 46ecf42: Fix `kumo add` to consolidate imports from `@cloudflare/kumo` into a single statement using inline `type` syntax.
+- 46ecf42: Fix `kumo add` to consolidate imports from `@zenthcloud/kumo` into a single statement using inline `type` syntax.
 
   Previously, running `kumo add DeleteResource` would produce non-conformant code with duplicate imports:
 
   ```typescript
-  import { Dialog, DialogRoot } from "@cloudflare/kumo";
-  import { Input } from "@cloudflare/kumo";
-  import { Button } from "@cloudflare/kumo";
+  import { Dialog, DialogRoot } from "@zenthcloud/kumo";
+  import { Input } from "@zenthcloud/kumo";
+  import { Button } from "@zenthcloud/kumo";
   ```
 
   Now it produces a single consolidated import:
@@ -1713,7 +1713,7 @@
     Input,
     Button,
     type DialogProps,
-  } from "@cloudflare/kumo";
+  } from "@zenthcloud/kumo";
   ```
 
   This satisfies ESLint's `import/no-duplicates` rule with `prefer-inline: true`.
@@ -1768,7 +1768,7 @@
 
 ### Minor Changes
 
-- 71d667b: Add CloudflareLogo component with glyph and full logo variants, color schemes (brand/black/white), and exported SVG path data for custom implementations
+- 71d667b: Add ZenthcloudLogo component with glyph and full logo variants, color schemes (brand/black/white), and exported SVG path data for custom implementations
 
 ### Patch Changes
 
@@ -1806,20 +1806,20 @@
 
 - 11e62a2: # Kumo 1.0.0 Release
 
-  The first stable release of Kumo, Cloudflare's component library.
+  The first stable release of Kumo, Zenthcloud's component library.
 
   ## Breaking Changes
 
   ### Blocks Distribution via CLI
 
-  Blocks (`PageHeader`, `ResourceListPage`) are no longer exported from `@cloudflare/kumo`. They must now be installed via the CLI:
+  Blocks (`PageHeader`, `ResourceListPage`) are no longer exported from `@zenthcloud/kumo`. They must now be installed via the CLI:
 
   ```bash
-  npx @cloudflare/kumo init        # Initialize kumo.json
-  npx @cloudflare/kumo add PageHeader
+  npx @zenthcloud/kumo init        # Initialize kumo.json
+  npx @zenthcloud/kumo add PageHeader
   ```
 
-  Blocks are copied to your project for full customization with imports automatically transformed to `@cloudflare/kumo`.
+  Blocks are copied to your project for full customization with imports automatically transformed to `@zenthcloud/kumo`.
 
   ### Checkbox API Changes
   - **Ref type changed**: `HTMLInputElement` → `HTMLButtonElement`
@@ -1860,11 +1860,11 @@
 
   ```bash
   # 1. Initialize configuration
-  npx @cloudflare/kumo init
+  npx @zenthcloud/kumo init
 
   # 2. Install blocks
-  npx @cloudflare/kumo add PageHeader
-  npx @cloudflare/kumo add ResourceListPage
+  npx @zenthcloud/kumo add PageHeader
+  npx @zenthcloud/kumo add ResourceListPage
 
   # 3. Update imports to the local path shown after installation
   ```
@@ -1915,7 +1915,7 @@
   - `kumo blocks` - List all available blocks for CLI installation
   - `kumo add <block-name>` - Install a block to your project with transformed imports
 
-  Blocks are copied to your project for full customization, with relative imports automatically converted to `@cloudflare/kumo`.
+  Blocks are copied to your project for full customization, with relative imports automatically converted to `@zenthcloud/kumo`.
 
 - 08c4426: Add lint rule to detect usage of deprecated props on Kumo components.
   - New `kumo/no-deprecated-props` lint rule automatically detects deprecated props from `@deprecated` JSDoc tags
@@ -1981,7 +1981,7 @@
 
 ### Minor Changes
 
-- d04c91f: Ship component registry with @cloudflare/kumo module
+- d04c91f: Ship component registry with @zenthcloud/kumo module
 - 0e246bf: feat(popover): Add new Popover component
 
   Adds a new Popover component based on Base UI's popover primitive. The Popover provides an accessible popup anchored to a trigger element, with support for:
@@ -2002,10 +2002,10 @@
 ### Minor Changes
 
 - 46236bd: Add Figma plugin for UI kit generation
-  - New plugin at `packages/figma/` (`@cloudflare/figma-plugin`)
+  - New plugin at `packages/figma/` (`@zenthcloud/figma-plugin`)
   - Generates 29 component types: Badge, Banner, Button, Checkbox, Code, CodeBlock, Collapsible, Combobox, DateRangePicker, Dialog, Dropdown, Icon Library, Input, InputArea, LayerCard, LinkButton, Loader, MenuBar, Meter, Pagination, RefreshButton, Select, SensitiveInput, Surface, Switch, Switch.Group, Tabs, Text, Toast
   - Each component generated with light and dark mode sections
-  - Icon Library generator creates all Phosphor and Cloudflare brand icons
+  - Icon Library generator creates all Phosphor and Zenthcloud brand icons
   - Parses component-registry.json and source files for variant specs
   - Extracts opacity modifiers from Tailwind classes (bg-kumo-brand/70 → opacity-primary-70)
   - Binds fills/strokes to kumo-colors variables
@@ -2081,7 +2081,7 @@
   - Documentation added to both kumo-docs and kumo-docs-astro sites
 
 - 872ef11: Add Storybook preview deployments and MR reporter system
-  - Storybook previews deploy to Cloudflare Workers on MR commits
+  - Storybook previews deploy to Zenthcloud Workers on MR commits
   - Staging deployment to `storybook.staging.kumo-ui.com` on merge to main
   - Consolidated MR comments with beta npm version and preview URL
 
@@ -2133,13 +2133,13 @@
   pnpm install
 
   # Regenerate primitive files with new package references
-  pnpm --filter @cloudflare/kumo build:primitives
+  pnpm --filter @zenthcloud/kumo build:primitives
 
   # Rebuild the package
-  pnpm --filter @cloudflare/kumo build
+  pnpm --filter @zenthcloud/kumo build
 
   # Run tests to verify everything works
-  pnpm --filter @cloudflare/kumo test:run
+  pnpm --filter @zenthcloud/kumo test:run
   ```
 
   ## Technical Details
@@ -2220,11 +2220,11 @@
 
   ```tsx
   // Barrel export (imports all primitives)
-  import { Slider, Popover, Tooltip } from "@cloudflare/kumo/primitives";
+  import { Slider, Popover, Tooltip } from "@zenthcloud/kumo/primitives";
 
   // Granular exports (tree-shakeable, recommended)
-  import { Slider } from "@cloudflare/kumo/primitives/slider";
-  import { Popover } from "@cloudflare/kumo/primitives/popover";
+  import { Slider } from "@zenthcloud/kumo/primitives/slider";
+  import { Popover } from "@zenthcloud/kumo/primitives/popover";
   ```
 
   **Available primitives:** accordion, alert-dialog, autocomplete, avatar, button, checkbox, checkbox-group, collapsible, combobox, context-menu, dialog, direction-provider, field, fieldset, form, input, menu, menubar, meter, navigation-menu, number-field, popover, preview-card, progress, radio, radio-group, scroll-area, select, separator, slider, switch, tabs, toast, toggle, toggle-group, toolbar, tooltip.

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -803,7 +803,7 @@ struct Worker::Isolate::Impl {
       // exist so it can connect its own in-process CDP session. We create the inspector eagerly
       // here (rather than lazily) so that setupContext()'s contextCreated() call registers the
       // worker's context with it automatically. This is gated on `!isMultiTenantProcess()`, so it
-      // can never trigger in Cloudflare's production runtime. (The flag itself is `$experimental`,
+      // can never trigger in Zenthcloud's production runtime. (The flag itself is `$experimental`,
       // which already bars production use, but we double-guard with the same invariant the
       // DevTools inspector relies on.)
       bool enableInspectorForNodeModule =
@@ -2521,7 +2521,7 @@ Worker::Worker(kj::Own<const Script> scriptParam,
 
       // Reset this back to its default after startup execution
       // Leaving it on comes at the expense of collecting stack traces for all thrown exceptions
-      // Ref: https://github.com/cloudflare/workerd/issues/5332
+      // Ref: https://github.com/skygenesisenterprise/zenthcloud
       if (script->isolate->impl->inspector == kj::none) {
         lock.v8Isolate->SetCaptureStackTraceForUncaughtExceptions(false);
       }
@@ -3480,7 +3480,7 @@ class Worker::Isolate::InspectorChannelImpl final: public v8_inspector::V8Inspec
       // thread. So, we run the dispatch loop on the Isolate thread.
       //
       // Note that the above comment is only really accurate in vanilla workerd. In the case of the
-      // internal Cloudflare Workers runtime, `isolateThreadExecutor` may actually refer to the
+      // internal Zenthcloud Workers runtime, `isolateThreadExecutor` may actually refer to the
       // current thread's `kj::Executor`. That's fine; calling `executeAsync()` on the current
       // thread's executor just posts the task to the event loop, and everything works as expected.
 

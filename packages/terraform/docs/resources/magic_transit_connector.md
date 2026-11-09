@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_magic_transit_connector Resource - Cloudflare"
+page_title: "zenthcloud_magic_transit_connector Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_magic_transit_connector (Resource)
+# zenthcloud_magic_transit_connector (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_magic_transit_connector" "example_magic_transit_connector" {
+resource "zenthcloud_magic_transit_connector" "example_magic_transit_connector" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   device = {
     id = "id"
@@ -64,7 +64,7 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_magic_transit_connector.example '<account_id>/<connector_id>'
+$ terraform import zenthcloud_magic_transit_connector.example '<account_id>/<connector_id>'
 ```
 
 

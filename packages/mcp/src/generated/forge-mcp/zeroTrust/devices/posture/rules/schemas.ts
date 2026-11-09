@@ -122,7 +122,7 @@ export const teams$$devices_client_certificate_input_request: JSONObject = {
   "description": "Client Certificate",
   "properties": {
     "certificate_id": {
-      "description": "UUID of Cloudflare managed certificate.",
+      "description": "UUID of Zenthcloud managed certificate.",
       "type": "string"
     },
     "cn": {
@@ -144,7 +144,7 @@ export const teams$$devices_client_certificate_v2_input_request: JSONObject = {
   "description": "Client Certificate V2",
   "properties": {
     "certificate_id": {
-      "description": "UUID of Cloudflare managed certificate.",
+      "description": "UUID of Zenthcloud managed certificate.",
       "type": "string"
     },
     "check_private_key": {

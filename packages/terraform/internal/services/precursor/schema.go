@@ -5,7 +5,7 @@ package precursor
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -67,7 +67,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 							},
 						},
 						"id": schema.StringAttribute{
-							Description: "The read-only identifier that Cloudflare assigns to the rule.",
+							Description: "The read-only identifier that Zenthcloud assigns to the rule.",
 							Computed:    true,
 						},
 						"description": schema.StringAttribute{

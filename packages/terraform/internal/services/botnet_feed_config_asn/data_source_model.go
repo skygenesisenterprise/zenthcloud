@@ -5,8 +5,8 @@ package botnet_feed_config_asn
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/botnet_feed"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/botnet_feed"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -22,7 +22,7 @@ type BotnetFeedConfigASNDataSourceModel struct {
 
 func (m *BotnetFeedConfigASNDataSourceModel) toReadParams(_ context.Context) (params botnet_feed.ConfigASNGetParams, diags diag.Diagnostics) {
 	params = botnet_feed.ConfigASNGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return

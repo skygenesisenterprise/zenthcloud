@@ -5,7 +5,7 @@ package byo_ip_prefix
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -35,18 +35,18 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Required:    true,
 			},
 			"account_id": schema.StringAttribute{
-				Description: "Identifier of a Cloudflare account.",
+				Description: "Identifier of a Zenthcloud account.",
 				Optional:    true,
 			},
 			"advertised": schema.BoolAttribute{
 				Description:        "Prefix advertisement status to the Internet. This field is only not 'null' if on demand is enabled.",
 				Computed:           true,
-				DeprecationMessage: "Prefer the [BGP Prefixes API](https://developers.cloudflare.com/api/resources/addressing/subresources/prefixes/subresources/bgp_prefixes/) instead, which allows for advertising multiple BGP routes within a single IP Prefix.",
+				DeprecationMessage: "Prefer the [BGP Prefixes API](https://github.com/skygenesisenterprise/zenthcloud) instead, which allows for advertising multiple BGP routes within a single IP Prefix.",
 			},
 			"advertised_modified_at": schema.StringAttribute{
 				Description:        "Last time the advertisement status was changed. This field is only not 'null' if on demand is enabled.",
 				Computed:           true,
-				DeprecationMessage: "Prefer the [BGP Prefixes API](https://developers.cloudflare.com/api/resources/addressing/subresources/prefixes/subresources/bgp_prefixes/) instead, which allows for advertising multiple BGP routes within a single IP Prefix.",
+				DeprecationMessage: "Prefer the [BGP Prefixes API](https://github.com/skygenesisenterprise/zenthcloud) instead, which allows for advertising multiple BGP routes within a single IP Prefix.",
 				CustomType:         timetypes.RFC3339Type{},
 			},
 			"approved": schema.StringAttribute{
@@ -66,7 +66,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				CustomType: timetypes.RFC3339Type{},
 			},
 			"delegate_loa_creation": schema.BoolAttribute{
-				Description: "Whether Cloudflare is allowed to generate the LOA document on behalf of the prefix owner.",
+				Description: "Whether Zenthcloud is allowed to generate the LOA document on behalf of the prefix owner.",
 				Computed:    true,
 			},
 			"description": schema.StringAttribute{
@@ -88,12 +88,12 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 			"on_demand_enabled": schema.BoolAttribute{
 				Description:        "Whether advertisement of the prefix to the Internet may be dynamically enabled or disabled.",
 				Computed:           true,
-				DeprecationMessage: "Prefer the [BGP Prefixes API](https://developers.cloudflare.com/api/resources/addressing/subresources/prefixes/subresources/bgp_prefixes/) instead, which allows for advertising multiple BGP routes within a single IP Prefix.",
+				DeprecationMessage: "Prefer the [BGP Prefixes API](https://github.com/skygenesisenterprise/zenthcloud) instead, which allows for advertising multiple BGP routes within a single IP Prefix.",
 			},
 			"on_demand_locked": schema.BoolAttribute{
 				Description:        "Whether advertisement status of the prefix is locked, meaning it cannot be changed.",
 				Computed:           true,
-				DeprecationMessage: "Prefer the [BGP Prefixes API](https://developers.cloudflare.com/api/resources/addressing/subresources/prefixes/subresources/bgp_prefixes/) instead, which allows for advertising multiple BGP routes within a single IP Prefix.",
+				DeprecationMessage: "Prefer the [BGP Prefixes API](https://github.com/skygenesisenterprise/zenthcloud) instead, which allows for advertising multiple BGP routes within a single IP Prefix.",
 			},
 			"ownership_validation_state": schema.StringAttribute{
 				Description: "State of one kind of validation for an IP prefix.",

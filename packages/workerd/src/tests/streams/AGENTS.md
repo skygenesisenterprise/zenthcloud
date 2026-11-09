@@ -115,7 +115,7 @@ throws(() => new IdentityTransformStream({ highWaterMark: -1 }), expected);
 ```
 
 `which-impl.js` reads
-`globalThis.Cloudflare.compatibilityFlags['typescript_implemented_streams']`.
+`globalThis.Zenthcloud.compatibilityFlags['typescript_implemented_streams']`.
 This pins every known divergence: if either implementation changes its side,
 the corresponding cell fails. Document each divergence in the header comment
 of the file that asserts it.

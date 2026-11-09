@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -14,11 +14,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
-func TestAccCloudflareCertificateAuthoritiesHostnameAssociations_FullLifecycle(t *testing.T) {
+func TestAccZenthcloudCertificateAuthoritiesHostnameAssociations_FullLifecycle(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_certificate_authorities_hostname_associations.%s", rnd)
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	name := fmt.Sprintf("zenthcloud_certificate_authorities_hostname_associations.%s", rnd)
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	hostname := fmt.Sprintf("%s.%s", rnd, domain)
 	hostnameUpdated := fmt.Sprintf("%s-updated.%s", rnd, domain)
@@ -31,7 +31,7 @@ func TestAccCloudflareCertificateAuthoritiesHostnameAssociations_FullLifecycle(t
 		Steps: []resource.TestStep{
 			// Create and Read
 			{
-				Config: testAccCloudflareCertificateAuthoritiesHostnameAssociationsConfig(rnd, zoneID, hostname),
+				Config: testAccZenthcloudCertificateAuthoritiesHostnameAssociationsConfig(rnd, zoneID, hostname),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("id"), knownvalue.StringExact(zoneID)),
@@ -40,7 +40,7 @@ func TestAccCloudflareCertificateAuthoritiesHostnameAssociations_FullLifecycle(t
 			},
 			// Re-apply same config to verify no drift
 			{
-				Config: testAccCloudflareCertificateAuthoritiesHostnameAssociationsConfig(rnd, zoneID, hostname),
+				Config: testAccZenthcloudCertificateAuthoritiesHostnameAssociationsConfig(rnd, zoneID, hostname),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -49,7 +49,7 @@ func TestAccCloudflareCertificateAuthoritiesHostnameAssociations_FullLifecycle(t
 			},
 			// Update hostnames
 			{
-				Config: testAccCloudflareCertificateAuthoritiesHostnameAssociationsConfig(rnd, zoneID, hostnameUpdated),
+				Config: testAccZenthcloudCertificateAuthoritiesHostnameAssociationsConfig(rnd, zoneID, hostnameUpdated),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("hostnames"), knownvalue.ListExact(
@@ -68,20 +68,20 @@ func TestAccCloudflareCertificateAuthoritiesHostnameAssociations_FullLifecycle(t
 	})
 }
 
-func testAccCloudflareCertificateAuthoritiesHostnameAssociationsConfig(rnd, zoneID, hostname string) string {
+func testAccZenthcloudCertificateAuthoritiesHostnameAssociationsConfig(rnd, zoneID, hostname string) string {
 	return acctest.LoadTestCase("certificateauthoritieshostnameassociationslifecycle.tf", rnd, zoneID, hostname)
 }
 
-func TestAccCloudflareCertificateAuthoritiesHostnameAssociations_WithMTLSCertificate(t *testing.T) {
-	mtlsCertID := os.Getenv("CLOUDFLARE_MTLS_CERTIFICATE_ID")
+func TestAccZenthcloudCertificateAuthoritiesHostnameAssociations_WithMTLSCertificate(t *testing.T) {
+	mtlsCertID := os.Getenv("ZENTHCLOUD_MTLS_CERTIFICATE_ID")
 	if mtlsCertID == "" {
-		t.Skip("CLOUDFLARE_MTLS_CERTIFICATE_ID not set, skipping mTLS certificate test")
+		t.Skip("ZENTHCLOUD_MTLS_CERTIFICATE_ID not set, skipping mTLS certificate test")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_certificate_authorities_hostname_associations.%s", rnd)
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	name := fmt.Sprintf("zenthcloud_certificate_authorities_hostname_associations.%s", rnd)
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 	hostname := fmt.Sprintf("%s.%s", rnd, domain)
 	hostnameUpdated := fmt.Sprintf("%s-updated.%s", rnd, domain)
 
@@ -93,7 +93,7 @@ func TestAccCloudflareCertificateAuthoritiesHostnameAssociations_WithMTLSCertifi
 		Steps: []resource.TestStep{
 			// Create and Read
 			{
-				Config: testAccCloudflareCertificateAuthoritiesHostnameAssociationsWithMTLSConfig(rnd, zoneID, hostname, mtlsCertID),
+				Config: testAccZenthcloudCertificateAuthoritiesHostnameAssociationsWithMTLSConfig(rnd, zoneID, hostname, mtlsCertID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("id"), knownvalue.StringExact(zoneID)),
@@ -102,7 +102,7 @@ func TestAccCloudflareCertificateAuthoritiesHostnameAssociations_WithMTLSCertifi
 			},
 			// Re-apply same config to verify no drift
 			{
-				Config: testAccCloudflareCertificateAuthoritiesHostnameAssociationsWithMTLSConfig(rnd, zoneID, hostname, mtlsCertID),
+				Config: testAccZenthcloudCertificateAuthoritiesHostnameAssociationsWithMTLSConfig(rnd, zoneID, hostname, mtlsCertID),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -111,7 +111,7 @@ func TestAccCloudflareCertificateAuthoritiesHostnameAssociations_WithMTLSCertifi
 			},
 			// Update hostnames
 			{
-				Config: testAccCloudflareCertificateAuthoritiesHostnameAssociationsWithMTLSConfig(rnd, zoneID, hostnameUpdated, mtlsCertID),
+				Config: testAccZenthcloudCertificateAuthoritiesHostnameAssociationsWithMTLSConfig(rnd, zoneID, hostnameUpdated, mtlsCertID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("hostnames"), knownvalue.ListExact(
@@ -131,6 +131,6 @@ func TestAccCloudflareCertificateAuthoritiesHostnameAssociations_WithMTLSCertifi
 	})
 }
 
-func testAccCloudflareCertificateAuthoritiesHostnameAssociationsWithMTLSConfig(rnd, zoneID, hostname, mtlsCertID string) string {
+func testAccZenthcloudCertificateAuthoritiesHostnameAssociationsWithMTLSConfig(rnd, zoneID, hostname, mtlsCertID string) string {
 	return acctest.LoadTestCase("certificateauthoritieshostnameassociationswithmtls.tf", rnd, zoneID, hostname, mtlsCertID)
 }

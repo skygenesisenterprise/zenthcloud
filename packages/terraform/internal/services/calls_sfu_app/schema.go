@@ -5,7 +5,7 @@ package calls_sfu_app
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -32,7 +32,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"app_id": schema.StringAttribute{
-				Description:   "A Cloudflare-generated unique identifier for a item.",
+				Description:   "A Zenthcloud-generated unique identifier for a item.",
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
@@ -59,7 +59,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Sensitive:   true,
 			},
 			"uid": schema.StringAttribute{
-				Description: "A Cloudflare-generated unique identifier for a item.",
+				Description: "A Zenthcloud-generated unique identifier for a item.",
 				Computed:    true,
 			},
 		},

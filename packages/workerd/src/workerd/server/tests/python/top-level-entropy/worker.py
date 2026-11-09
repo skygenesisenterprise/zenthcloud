@@ -1,7 +1,7 @@
 import os
 from random import choice, randbytes, random
 
-from _cloudflare.allow_entropy import (
+from _zenthcloud.allow_entropy import (
     allow_bad_entropy_calls,
 )
 from workers import WorkerEntrypoint

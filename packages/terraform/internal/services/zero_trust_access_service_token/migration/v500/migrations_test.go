@@ -11,10 +11,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -29,7 +29,7 @@ var (
 //
 // Based on breaking changes analysis:
 // - Key changes for zero_trust_access_service_token:
-//   - Resource rename: cloudflare_access_service_token → cloudflare_zero_trust_access_service_token
+//   - Resource rename: zenthcloud_access_service_token → zenthcloud_zero_trust_access_service_token
 //   - Field removal: min_days_for_renewal removed in v5
 //   - Type conversion: client_secret_version (int → float64)
 
@@ -101,14 +101,14 @@ func TestMigrateZeroTrustAccessServiceToken_Basic(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Zero Trust Access resources don't support API tokens yet
-			if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-				t.Setenv("CLOUDFLARE_API_TOKEN", "")
+			if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+				t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 			}
 
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
-			resourceName := "cloudflare_zero_trust_access_service_token." + rnd
+			resourceName := "zenthcloud_zero_trust_access_service_token." + rnd
 			testConfig := tc.configFn(rnd, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
 
@@ -122,8 +122,8 @@ func TestMigrateZeroTrustAccessServiceToken_Basic(t *testing.T) {
 					{
 						// Step 1: Create with specific version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -178,14 +178,14 @@ func TestMigrateZeroTrustAccessServiceToken_WithDeprecatedField(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-				t.Setenv("CLOUDFLARE_API_TOKEN", "")
+			if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+				t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 			}
 
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
-			resourceName := "cloudflare_zero_trust_access_service_token." + rnd
+			resourceName := "zenthcloud_zero_trust_access_service_token." + rnd
 			testConfig := tc.configFn(rnd, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
 
@@ -199,8 +199,8 @@ func TestMigrateZeroTrustAccessServiceToken_WithDeprecatedField(t *testing.T) {
 					{
 						// Step 1: Create resource with specific version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -248,14 +248,14 @@ func TestMigrateZeroTrustAccessServiceToken_ZoneScoped(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-				t.Setenv("CLOUDFLARE_API_TOKEN", "")
+			if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+				t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 			}
 
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
-			resourceName := "cloudflare_zero_trust_access_service_token." + rnd
+			resourceName := "zenthcloud_zero_trust_access_service_token." + rnd
 			testConfig := tc.configFn(rnd, zoneID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
 
@@ -269,8 +269,8 @@ func TestMigrateZeroTrustAccessServiceToken_ZoneScoped(t *testing.T) {
 					{
 						// Step 1: Create zone-scoped resource with specific version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -295,8 +295,8 @@ func TestMigrateZeroTrustAccessServiceToken_ZoneScoped(t *testing.T) {
 // This tests both v4→v5 migration and v5→v5 version bump
 //
 // This test verifies that:
-// 1. The deprecated v4 resource name "cloudflare_access_service_token" is handled
-// 2. The resource is migrated to "cloudflare_zero_trust_access_service_token"
+// 1. The deprecated v4 resource name "zenthcloud_access_service_token" is handled
+// 2. The resource is migrated to "zenthcloud_zero_trust_access_service_token"
 // 3. All data is preserved during the rename
 func TestMigrateZeroTrustAccessServiceToken_LegacyName(t *testing.T) {
 	testCases := []struct {
@@ -318,14 +318,14 @@ func TestMigrateZeroTrustAccessServiceToken_LegacyName(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-				t.Setenv("CLOUDFLARE_API_TOKEN", "")
+			if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+				t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 			}
 
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			// Note: The resource name in state will be the v5 name after migration
-			resourceName := "cloudflare_zero_trust_access_service_token." + rnd
+			resourceName := "zenthcloud_zero_trust_access_service_token." + rnd
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
@@ -340,8 +340,8 @@ func TestMigrateZeroTrustAccessServiceToken_LegacyName(t *testing.T) {
 					{
 						// Step 1: Create resource with specific version (may use legacy name in v4)
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -388,14 +388,14 @@ func TestMigrateZeroTrustAccessServiceToken_TypeConversion(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-				t.Setenv("CLOUDFLARE_API_TOKEN", "")
+			if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+				t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 			}
 
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
-			resourceName := "cloudflare_zero_trust_access_service_token." + rnd
+			resourceName := "zenthcloud_zero_trust_access_service_token." + rnd
 			testConfig := tc.configFn(rnd, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
 
@@ -409,8 +409,8 @@ func TestMigrateZeroTrustAccessServiceToken_TypeConversion(t *testing.T) {
 					{
 						// Step 1: Create resource with specific version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -460,14 +460,14 @@ func TestMigrateZeroTrustAccessServiceToken_CompleteResource(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-				t.Setenv("CLOUDFLARE_API_TOKEN", "")
+			if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+				t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 			}
 
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
-			resourceName := "cloudflare_zero_trust_access_service_token." + rnd
+			resourceName := "zenthcloud_zero_trust_access_service_token." + rnd
 			testConfig := tc.configFn(rnd, accountID)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
 
@@ -481,8 +481,8 @@ func TestMigrateZeroTrustAccessServiceToken_CompleteResource(t *testing.T) {
 					{
 						// Step 1: Create complete resource with specific version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},

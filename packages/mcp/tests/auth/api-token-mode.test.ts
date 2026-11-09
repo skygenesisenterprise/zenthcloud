@@ -1,14 +1,14 @@
-import { env, exports } from 'cloudflare:workers'
-import { ExternalTokenError } from '@cloudflare/workers-oauth-provider'
+import { env, exports } from 'zenthcloud:workers'
+import { ExternalTokenError } from '@zenthcloud/workers-oauth-provider'
 import { http, HttpResponse } from 'msw'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   buildAuthProps,
-  cloudflareTokenOwner,
+  zenthcloudTokenOwner,
   resolveExternalToken
 } from '../../src/auth/api-token-mode'
 import { AUTH_PROPS_VERSION } from '../../src/auth/types'
-import { API_BASE, cfAccountsSuccess, cfError, cfSuccess } from '../helpers/cloudflare-api'
+import { API_BASE, cfAccountsSuccess, cfError, cfSuccess } from '../helpers/zenthcloud-api'
 import { clearKv } from '../helpers/kv'
 import { MCP_URL, modernMcpRequest } from '../helpers/mcp'
 import { server } from '../setup/msw'
@@ -80,14 +80,14 @@ async function expectExternalTokenError(
 
 afterEach(() => clearKv(env.OAUTH_KV))
 
-describe('Cloudflare token ownership', () => {
+describe('Zenthcloud token ownership', () => {
   it.each([
     ['cfat_account-token', 'account'],
     ['cfut_user-token', 'user'],
     ['cfoat_wrangler-token', 'user'],
     ['legacy-unprefixed-token', 'unknown']
   ] as const)('classifies %s as %s', (token, owner) => {
-    expect(cloudflareTokenOwner(token)).toBe(owner)
+    expect(zenthcloudTokenOwner(token)).toBe(owner)
   })
 })
 
@@ -246,7 +246,7 @@ describe('resolveExternalToken', () => {
     expect(error.description).toContain('appears malformed')
   })
 
-  it('refuses an expired MCP access token without asking Cloudflare', async () => {
+  it('refuses an expired MCP access token without asking Zenthcloud', async () => {
     const calls = mockIdentity({
       user: () => HttpResponse.json(cfError([], null), { status: 400 }),
       accounts: () => HttpResponse.json(cfError([], null), { status: 400 })
@@ -317,7 +317,7 @@ describe('external token resource responses', () => {
     })
   })
 
-  it('answers an expired MCP access token with 401 invalid_token and no Cloudflare call', async () => {
+  it('answers an expired MCP access token with 401 invalid_token and no Zenthcloud call', async () => {
     const calls = mockIdentity({
       user: () => HttpResponse.json(cfError([], null), { status: 400 }),
       accounts: () => HttpResponse.json(cfError([], null), { status: 400 })
@@ -337,7 +337,7 @@ describe('external token resource responses', () => {
     expect(calls.accountCalls()).toBe(0)
   })
 
-  it('answers an expired or unknown Cloudflare token with 401 invalid_token', async () => {
+  it('answers an expired or unknown Zenthcloud token with 401 invalid_token', async () => {
     const invalidToken = () =>
       HttpResponse.json(cfError([{ code: 9109, message: 'Invalid access token' }]), {
         status: 403

@@ -60,7 +60,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf realtime kit recordings get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/realtime/kit/${argv["app-id"] == null ? "<app-id>" : encodeURIComponent(String(argv["app-id"]))}/recordings/${argv["recording-id"] == null ? "<recording-id>" : encodeURIComponent(String(argv["recording-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/realtime/kit/${argv["app-id"] == null ? "<app-id>" : encodeURIComponent(String(argv["app-id"]))}/recordings/${argv["recording-id"] == null ? "<recording-id>" : encodeURIComponent(String(argv["recording-id"]))}`,
 						pathParams: {
 							"app-id": String(argv["app-id"] ?? ""),
 							"recording-id": String(argv["recording-id"] ?? ""),

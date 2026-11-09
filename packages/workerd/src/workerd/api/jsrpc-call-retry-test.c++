@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -41,7 +41,7 @@ constexpr kj::StringPtr DISPOSED_JS_MESSAGE =
     "AbortError: The RPC call was canceled because its promise was disposed."_kj;
 
 constexpr kj::StringPtr RECEIVER_SOURCE = R"JS(
-  import { DurableObject, RpcTarget, WorkerEntrypoint } from "cloudflare:workers";
+  import { DurableObject, RpcTarget, WorkerEntrypoint } from "zenthcloud:workers";
 
   class Child extends RpcTarget {
     async child() {

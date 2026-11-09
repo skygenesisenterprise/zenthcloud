@@ -97,7 +97,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("proxied", {
 			type: "boolean",
 			description:
-				"Whether the record is receiving the performance and security benefits of Cloudflare.",
+				"Whether the record is receiving the performance and security benefits of Zenthcloud.",
 		})
 		.option("match", {
 			type: "string",
@@ -207,17 +207,17 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("include-shadow-metadata", {
 			type: "boolean",
 			description:
-				"Whether to include shadow metadata in the `meta` field of each record in the response. See [Shadowed records](https://developers.cloudflare.com/dns/manage-dns-records/reference/shadowed-records).",
+				"Whether to include shadow metadata in the `meta` field of each record in the response. See [Shadowed records](https://github.com/skygenesisenterprise/zenthcloud).",
 		})
 		.option("shadowed-by-name", {
 			type: "string",
 			description:
-				"Filters the response to records at or below the specified NS delegation name. NS, DS, and NSEC records at the delegation name are excluded because they are not shadowed by that delegation. Those record types are included only when they exist below the delegation. The value must be a non-apex subdomain of the zone. Requires `include_shadow_metadata=true`. See [Shadowed records](https://developers.cloudflare.com/dns/manage-dns-records/reference/shadowed-records).",
+				"Filters the response to records at or below the specified NS delegation name. NS, DS, and NSEC records at the delegation name are excluded because they are not shadowed by that delegation. Those record types are included only when they exist below the delegation. The value must be a non-apex subdomain of the zone. Requires `include_shadow_metadata=true`. See [Shadowed records](https://github.com/skygenesisenterprise/zenthcloud).",
 		})
 		.option("shadowing-name", {
 			type: "string",
 			description:
-				"Returns NS records that shadow the given name, searching at the name itself and each of its ancestor names within the zone, excluding the zone apex. The value must be a subdomain of the zone; the zone apex is not accepted. See [Shadowed records](https://developers.cloudflare.com/dns/manage-dns-records/reference/shadowed-records).",
+				"Returns NS records that shadow the given name, searching at the name itself and each of its ancestor names within the zone, excluding the zone apex. The value must be a subdomain of the zone; the zone apex is not accepted. See [Shadowed records](https://github.com/skygenesisenterprise/zenthcloud).",
 		})
 		.option("dry-run", {
 			type: "boolean",
@@ -293,7 +293,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf dns records list",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/dns_records`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/dns_records`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 						},

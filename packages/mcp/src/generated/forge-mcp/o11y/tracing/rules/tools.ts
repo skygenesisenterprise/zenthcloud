@@ -10,7 +10,7 @@ export const tools: readonly Tool[] = [
   {
     name: "o11y_tracing_rules_delete",
     title: "Delete zone trace rules",
-    description: "Delete every sampling override from a zone's managed Cloudflare Traces ruleset.\n\nDELETE /zones/{zone_id}/observability/tracing/rules",
+    description: "Delete every sampling override from a zone's managed Zenthcloud Traces ruleset.\n\nDELETE /zones/{zone_id}/observability/tracing/rules",
     inputSchema: {
       type: "object",
       properties: {
@@ -449,7 +449,7 @@ export const tools: readonly Tool[] = [
   {
     name: "o11y_tracing_rules_get",
     title: "View zone trace rules",
-    description: "Retrieve the ordered sampling overrides for a zone's managed Cloudflare Traces ruleset.\n\nGET /zones/{zone_id}/observability/tracing/rules",
+    description: "Retrieve the ordered sampling overrides for a zone's managed Zenthcloud Traces ruleset.\n\nGET /zones/{zone_id}/observability/tracing/rules",
     inputSchema: {
       type: "object",
       properties: {
@@ -888,7 +888,7 @@ export const tools: readonly Tool[] = [
   {
     name: "o11y_tracing_rules_update",
     title: "Replace zone trace rules",
-    description: "Replace all sampling overrides in a zone's managed Cloudflare Traces ruleset. Rules are evaluated in the supplied order.\n\nPUT /zones/{zone_id}/observability/tracing/rules",
+    description: "Replace all sampling overrides in a zone's managed Zenthcloud Traces ruleset. Rules are evaluated in the supplied order.\n\nPUT /zones/{zone_id}/observability/tracing/rules",
     inputSchema: {
       type: "object",
       properties: {

@@ -3,20 +3,20 @@
 
 import { OPERATION, type Tool, encodePath } from "../../_/tool.js";
 import {
-  cloudflare$$k2_K2Stream,
-  cloudflare$$k2_K2StreamCorsOptions,
-  cloudflare$$k2_K2StreamHttpInput,
-  cloudflare$$k2_K2StreamListResponse,
-  cloudflare$$k2_K2StreamResponse,
-  cloudflare$$k2_K2StreamWorkerBindingInput,
-  cloudflare$$k2_workers$$k2$$messages,
+  zenthcloud$$k2_K2Stream,
+  zenthcloud$$k2_K2StreamCorsOptions,
+  zenthcloud$$k2_K2StreamHttpInput,
+  zenthcloud$$k2_K2StreamListResponse,
+  zenthcloud$$k2_K2StreamResponse,
+  zenthcloud$$k2_K2StreamWorkerBindingInput,
+  zenthcloud$$k2_workers$$k2$$messages,
 } from "./outputs.js";
 import {
-  cloudflare$$k2_CreateK2StreamRequest,
-  cloudflare$$k2_K2StreamCorsOptions as cloudflare$$k2_K2StreamCorsOptions$,
-  cloudflare$$k2_K2StreamHttpInput as cloudflare$$k2_K2StreamHttpInput$,
-  cloudflare$$k2_K2StreamWorkerBindingInput as cloudflare$$k2_K2StreamWorkerBindingInput$,
-  cloudflare$$k2_UpdateK2StreamRequest,
+  zenthcloud$$k2_CreateK2StreamRequest,
+  zenthcloud$$k2_K2StreamCorsOptions as zenthcloud$$k2_K2StreamCorsOptions$,
+  zenthcloud$$k2_K2StreamHttpInput as zenthcloud$$k2_K2StreamHttpInput$,
+  zenthcloud$$k2_K2StreamWorkerBindingInput as zenthcloud$$k2_K2StreamWorkerBindingInput$,
+  zenthcloud$$k2_UpdateK2StreamRequest,
 } from "./schemas.js";
 
 /**
@@ -31,7 +31,7 @@ export const tools: readonly Tool[] = [
       type: "object",
       properties: {
         "body": {
-          "$ref": "#/$defs/cloudflare-k2_CreateK2StreamRequest"
+          "$ref": "#/$defs/zenthcloud-k2_CreateK2StreamRequest"
         },
         "path": {
           "additionalProperties": false,
@@ -53,21 +53,21 @@ export const tools: readonly Tool[] = [
       ],
       additionalProperties: false,
       $defs: {
-        "cloudflare-k2_CreateK2StreamRequest": cloudflare$$k2_CreateK2StreamRequest,
-        "cloudflare-k2_K2StreamCorsOptions": cloudflare$$k2_K2StreamCorsOptions$,
-        "cloudflare-k2_K2StreamHttpInput": cloudflare$$k2_K2StreamHttpInput$,
-        "cloudflare-k2_K2StreamWorkerBindingInput": cloudflare$$k2_K2StreamWorkerBindingInput$,
+        "zenthcloud-k2_CreateK2StreamRequest": zenthcloud$$k2_CreateK2StreamRequest,
+        "zenthcloud-k2_K2StreamCorsOptions": zenthcloud$$k2_K2StreamCorsOptions$,
+        "zenthcloud-k2_K2StreamHttpInput": zenthcloud$$k2_K2StreamHttpInput$,
+        "zenthcloud-k2_K2StreamWorkerBindingInput": zenthcloud$$k2_K2StreamWorkerBindingInput$,
       },
     },
     outputSchema: {
-      "$ref": "#/$defs/cloudflare-k2_K2StreamResponse",
+      "$ref": "#/$defs/zenthcloud-k2_K2StreamResponse",
       $defs: {
-        "cloudflare-k2_K2Stream": cloudflare$$k2_K2Stream,
-        "cloudflare-k2_K2StreamCorsOptions": cloudflare$$k2_K2StreamCorsOptions,
-        "cloudflare-k2_K2StreamHttpInput": cloudflare$$k2_K2StreamHttpInput,
-        "cloudflare-k2_K2StreamResponse": cloudflare$$k2_K2StreamResponse,
-        "cloudflare-k2_K2StreamWorkerBindingInput": cloudflare$$k2_K2StreamWorkerBindingInput,
-        "cloudflare-k2_workers-k2-messages": cloudflare$$k2_workers$$k2$$messages,
+        "zenthcloud-k2_K2Stream": zenthcloud$$k2_K2Stream,
+        "zenthcloud-k2_K2StreamCorsOptions": zenthcloud$$k2_K2StreamCorsOptions,
+        "zenthcloud-k2_K2StreamHttpInput": zenthcloud$$k2_K2StreamHttpInput,
+        "zenthcloud-k2_K2StreamResponse": zenthcloud$$k2_K2StreamResponse,
+        "zenthcloud-k2_K2StreamWorkerBindingInput": zenthcloud$$k2_K2StreamWorkerBindingInput,
+        "zenthcloud-k2_workers-k2-messages": zenthcloud$$k2_workers$$k2$$messages,
       },
     },
     annotations: {
@@ -93,18 +93,18 @@ export const tools: readonly Tool[] = [
       responses: {
         schemas: {
           "200": {
-            "$ref": "#/$defs/cloudflare-k2_K2StreamResponse"
+            "$ref": "#/$defs/zenthcloud-k2_K2StreamResponse"
           },
           "4XX": null,
           "5XX": null
         },
         $defs: {
-          "cloudflare-k2_K2Stream": cloudflare$$k2_K2Stream,
-          "cloudflare-k2_K2StreamCorsOptions": cloudflare$$k2_K2StreamCorsOptions,
-          "cloudflare-k2_K2StreamHttpInput": cloudflare$$k2_K2StreamHttpInput,
-          "cloudflare-k2_K2StreamResponse": cloudflare$$k2_K2StreamResponse,
-          "cloudflare-k2_K2StreamWorkerBindingInput": cloudflare$$k2_K2StreamWorkerBindingInput,
-          "cloudflare-k2_workers-k2-messages": cloudflare$$k2_workers$$k2$$messages,
+          "zenthcloud-k2_K2Stream": zenthcloud$$k2_K2Stream,
+          "zenthcloud-k2_K2StreamCorsOptions": zenthcloud$$k2_K2StreamCorsOptions,
+          "zenthcloud-k2_K2StreamHttpInput": zenthcloud$$k2_K2StreamHttpInput,
+          "zenthcloud-k2_K2StreamResponse": zenthcloud$$k2_K2StreamResponse,
+          "zenthcloud-k2_K2StreamWorkerBindingInput": zenthcloud$$k2_K2StreamWorkerBindingInput,
+          "zenthcloud-k2_workers-k2-messages": zenthcloud$$k2_workers$$k2$$messages,
         },
       },
     },
@@ -143,10 +143,10 @@ export const tools: readonly Tool[] = [
     outputSchema: {
       "properties": {
         "errors": {
-          "$ref": "#/$defs/cloudflare-k2_workers-k2-messages"
+          "$ref": "#/$defs/zenthcloud-k2_workers-k2-messages"
         },
         "messages": {
-          "$ref": "#/$defs/cloudflare-k2_workers-k2-messages"
+          "$ref": "#/$defs/zenthcloud-k2_workers-k2-messages"
         },
         "result": {
           "type": "object"
@@ -163,7 +163,7 @@ export const tools: readonly Tool[] = [
       ],
       "type": "object",
       $defs: {
-        "cloudflare-k2_workers-k2-messages": cloudflare$$k2_workers$$k2$$messages,
+        "zenthcloud-k2_workers-k2-messages": zenthcloud$$k2_workers$$k2$$messages,
       },
     },
     annotations: {
@@ -190,10 +190,10 @@ export const tools: readonly Tool[] = [
           "200": {
             "properties": {
               "errors": {
-                "$ref": "#/$defs/cloudflare-k2_workers-k2-messages"
+                "$ref": "#/$defs/zenthcloud-k2_workers-k2-messages"
               },
               "messages": {
-                "$ref": "#/$defs/cloudflare-k2_workers-k2-messages"
+                "$ref": "#/$defs/zenthcloud-k2_workers-k2-messages"
               },
               "result": {
                 "type": "object"
@@ -214,7 +214,7 @@ export const tools: readonly Tool[] = [
           "5XX": null
         },
         $defs: {
-          "cloudflare-k2_workers-k2-messages": cloudflare$$k2_workers$$k2$$messages,
+          "zenthcloud-k2_workers-k2-messages": zenthcloud$$k2_workers$$k2$$messages,
         },
       },
     },
@@ -251,14 +251,14 @@ export const tools: readonly Tool[] = [
       additionalProperties: false,
     },
     outputSchema: {
-      "$ref": "#/$defs/cloudflare-k2_K2StreamResponse",
+      "$ref": "#/$defs/zenthcloud-k2_K2StreamResponse",
       $defs: {
-        "cloudflare-k2_K2Stream": cloudflare$$k2_K2Stream,
-        "cloudflare-k2_K2StreamCorsOptions": cloudflare$$k2_K2StreamCorsOptions,
-        "cloudflare-k2_K2StreamHttpInput": cloudflare$$k2_K2StreamHttpInput,
-        "cloudflare-k2_K2StreamResponse": cloudflare$$k2_K2StreamResponse,
-        "cloudflare-k2_K2StreamWorkerBindingInput": cloudflare$$k2_K2StreamWorkerBindingInput,
-        "cloudflare-k2_workers-k2-messages": cloudflare$$k2_workers$$k2$$messages,
+        "zenthcloud-k2_K2Stream": zenthcloud$$k2_K2Stream,
+        "zenthcloud-k2_K2StreamCorsOptions": zenthcloud$$k2_K2StreamCorsOptions,
+        "zenthcloud-k2_K2StreamHttpInput": zenthcloud$$k2_K2StreamHttpInput,
+        "zenthcloud-k2_K2StreamResponse": zenthcloud$$k2_K2StreamResponse,
+        "zenthcloud-k2_K2StreamWorkerBindingInput": zenthcloud$$k2_K2StreamWorkerBindingInput,
+        "zenthcloud-k2_workers-k2-messages": zenthcloud$$k2_workers$$k2$$messages,
       },
     },
     annotations: {
@@ -283,18 +283,18 @@ export const tools: readonly Tool[] = [
       responses: {
         schemas: {
           "200": {
-            "$ref": "#/$defs/cloudflare-k2_K2StreamResponse"
+            "$ref": "#/$defs/zenthcloud-k2_K2StreamResponse"
           },
           "4XX": null,
           "5XX": null
         },
         $defs: {
-          "cloudflare-k2_K2Stream": cloudflare$$k2_K2Stream,
-          "cloudflare-k2_K2StreamCorsOptions": cloudflare$$k2_K2StreamCorsOptions,
-          "cloudflare-k2_K2StreamHttpInput": cloudflare$$k2_K2StreamHttpInput,
-          "cloudflare-k2_K2StreamResponse": cloudflare$$k2_K2StreamResponse,
-          "cloudflare-k2_K2StreamWorkerBindingInput": cloudflare$$k2_K2StreamWorkerBindingInput,
-          "cloudflare-k2_workers-k2-messages": cloudflare$$k2_workers$$k2$$messages,
+          "zenthcloud-k2_K2Stream": zenthcloud$$k2_K2Stream,
+          "zenthcloud-k2_K2StreamCorsOptions": zenthcloud$$k2_K2StreamCorsOptions,
+          "zenthcloud-k2_K2StreamHttpInput": zenthcloud$$k2_K2StreamHttpInput,
+          "zenthcloud-k2_K2StreamResponse": zenthcloud$$k2_K2StreamResponse,
+          "zenthcloud-k2_K2StreamWorkerBindingInput": zenthcloud$$k2_K2StreamWorkerBindingInput,
+          "zenthcloud-k2_workers-k2-messages": zenthcloud$$k2_workers$$k2$$messages,
         },
       },
     },
@@ -344,14 +344,14 @@ export const tools: readonly Tool[] = [
       additionalProperties: false,
     },
     outputSchema: {
-      "$ref": "#/$defs/cloudflare-k2_K2StreamListResponse",
+      "$ref": "#/$defs/zenthcloud-k2_K2StreamListResponse",
       $defs: {
-        "cloudflare-k2_K2Stream": cloudflare$$k2_K2Stream,
-        "cloudflare-k2_K2StreamCorsOptions": cloudflare$$k2_K2StreamCorsOptions,
-        "cloudflare-k2_K2StreamHttpInput": cloudflare$$k2_K2StreamHttpInput,
-        "cloudflare-k2_K2StreamListResponse": cloudflare$$k2_K2StreamListResponse,
-        "cloudflare-k2_K2StreamWorkerBindingInput": cloudflare$$k2_K2StreamWorkerBindingInput,
-        "cloudflare-k2_workers-k2-messages": cloudflare$$k2_workers$$k2$$messages,
+        "zenthcloud-k2_K2Stream": zenthcloud$$k2_K2Stream,
+        "zenthcloud-k2_K2StreamCorsOptions": zenthcloud$$k2_K2StreamCorsOptions,
+        "zenthcloud-k2_K2StreamHttpInput": zenthcloud$$k2_K2StreamHttpInput,
+        "zenthcloud-k2_K2StreamListResponse": zenthcloud$$k2_K2StreamListResponse,
+        "zenthcloud-k2_K2StreamWorkerBindingInput": zenthcloud$$k2_K2StreamWorkerBindingInput,
+        "zenthcloud-k2_workers-k2-messages": zenthcloud$$k2_workers$$k2$$messages,
       },
     },
     annotations: {
@@ -381,18 +381,18 @@ export const tools: readonly Tool[] = [
       responses: {
         schemas: {
           "200": {
-            "$ref": "#/$defs/cloudflare-k2_K2StreamListResponse"
+            "$ref": "#/$defs/zenthcloud-k2_K2StreamListResponse"
           },
           "4XX": null,
           "5XX": null
         },
         $defs: {
-          "cloudflare-k2_K2Stream": cloudflare$$k2_K2Stream,
-          "cloudflare-k2_K2StreamCorsOptions": cloudflare$$k2_K2StreamCorsOptions,
-          "cloudflare-k2_K2StreamHttpInput": cloudflare$$k2_K2StreamHttpInput,
-          "cloudflare-k2_K2StreamListResponse": cloudflare$$k2_K2StreamListResponse,
-          "cloudflare-k2_K2StreamWorkerBindingInput": cloudflare$$k2_K2StreamWorkerBindingInput,
-          "cloudflare-k2_workers-k2-messages": cloudflare$$k2_workers$$k2$$messages,
+          "zenthcloud-k2_K2Stream": zenthcloud$$k2_K2Stream,
+          "zenthcloud-k2_K2StreamCorsOptions": zenthcloud$$k2_K2StreamCorsOptions,
+          "zenthcloud-k2_K2StreamHttpInput": zenthcloud$$k2_K2StreamHttpInput,
+          "zenthcloud-k2_K2StreamListResponse": zenthcloud$$k2_K2StreamListResponse,
+          "zenthcloud-k2_K2StreamWorkerBindingInput": zenthcloud$$k2_K2StreamWorkerBindingInput,
+          "zenthcloud-k2_workers-k2-messages": zenthcloud$$k2_workers$$k2$$messages,
         },
       },
     },
@@ -405,7 +405,7 @@ export const tools: readonly Tool[] = [
       type: "object",
       properties: {
         "body": {
-          "$ref": "#/$defs/cloudflare-k2_UpdateK2StreamRequest"
+          "$ref": "#/$defs/zenthcloud-k2_UpdateK2StreamRequest"
         },
         "path": {
           "additionalProperties": false,
@@ -432,21 +432,21 @@ export const tools: readonly Tool[] = [
       ],
       additionalProperties: false,
       $defs: {
-        "cloudflare-k2_K2StreamCorsOptions": cloudflare$$k2_K2StreamCorsOptions$,
-        "cloudflare-k2_K2StreamHttpInput": cloudflare$$k2_K2StreamHttpInput$,
-        "cloudflare-k2_K2StreamWorkerBindingInput": cloudflare$$k2_K2StreamWorkerBindingInput$,
-        "cloudflare-k2_UpdateK2StreamRequest": cloudflare$$k2_UpdateK2StreamRequest,
+        "zenthcloud-k2_K2StreamCorsOptions": zenthcloud$$k2_K2StreamCorsOptions$,
+        "zenthcloud-k2_K2StreamHttpInput": zenthcloud$$k2_K2StreamHttpInput$,
+        "zenthcloud-k2_K2StreamWorkerBindingInput": zenthcloud$$k2_K2StreamWorkerBindingInput$,
+        "zenthcloud-k2_UpdateK2StreamRequest": zenthcloud$$k2_UpdateK2StreamRequest,
       },
     },
     outputSchema: {
-      "$ref": "#/$defs/cloudflare-k2_K2StreamResponse",
+      "$ref": "#/$defs/zenthcloud-k2_K2StreamResponse",
       $defs: {
-        "cloudflare-k2_K2Stream": cloudflare$$k2_K2Stream,
-        "cloudflare-k2_K2StreamCorsOptions": cloudflare$$k2_K2StreamCorsOptions,
-        "cloudflare-k2_K2StreamHttpInput": cloudflare$$k2_K2StreamHttpInput,
-        "cloudflare-k2_K2StreamResponse": cloudflare$$k2_K2StreamResponse,
-        "cloudflare-k2_K2StreamWorkerBindingInput": cloudflare$$k2_K2StreamWorkerBindingInput,
-        "cloudflare-k2_workers-k2-messages": cloudflare$$k2_workers$$k2$$messages,
+        "zenthcloud-k2_K2Stream": zenthcloud$$k2_K2Stream,
+        "zenthcloud-k2_K2StreamCorsOptions": zenthcloud$$k2_K2StreamCorsOptions,
+        "zenthcloud-k2_K2StreamHttpInput": zenthcloud$$k2_K2StreamHttpInput,
+        "zenthcloud-k2_K2StreamResponse": zenthcloud$$k2_K2StreamResponse,
+        "zenthcloud-k2_K2StreamWorkerBindingInput": zenthcloud$$k2_K2StreamWorkerBindingInput,
+        "zenthcloud-k2_workers-k2-messages": zenthcloud$$k2_workers$$k2$$messages,
       },
     },
     annotations: {
@@ -472,18 +472,18 @@ export const tools: readonly Tool[] = [
       responses: {
         schemas: {
           "200": {
-            "$ref": "#/$defs/cloudflare-k2_K2StreamResponse"
+            "$ref": "#/$defs/zenthcloud-k2_K2StreamResponse"
           },
           "4XX": null,
           "5XX": null
         },
         $defs: {
-          "cloudflare-k2_K2Stream": cloudflare$$k2_K2Stream,
-          "cloudflare-k2_K2StreamCorsOptions": cloudflare$$k2_K2StreamCorsOptions,
-          "cloudflare-k2_K2StreamHttpInput": cloudflare$$k2_K2StreamHttpInput,
-          "cloudflare-k2_K2StreamResponse": cloudflare$$k2_K2StreamResponse,
-          "cloudflare-k2_K2StreamWorkerBindingInput": cloudflare$$k2_K2StreamWorkerBindingInput,
-          "cloudflare-k2_workers-k2-messages": cloudflare$$k2_workers$$k2$$messages,
+          "zenthcloud-k2_K2Stream": zenthcloud$$k2_K2Stream,
+          "zenthcloud-k2_K2StreamCorsOptions": zenthcloud$$k2_K2StreamCorsOptions,
+          "zenthcloud-k2_K2StreamHttpInput": zenthcloud$$k2_K2StreamHttpInput,
+          "zenthcloud-k2_K2StreamResponse": zenthcloud$$k2_K2StreamResponse,
+          "zenthcloud-k2_K2StreamWorkerBindingInput": zenthcloud$$k2_K2StreamWorkerBindingInput,
+          "zenthcloud-k2_workers-k2-messages": zenthcloud$$k2_workers$$k2$$messages,
         },
       },
     },

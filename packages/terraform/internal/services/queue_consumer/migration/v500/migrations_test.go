@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -28,7 +28,7 @@ var v5WorkerConfig string
 
 // TestMigrateQueueConsumer_HTTP tests migration of an HTTP pull queue consumer.
 //
-// cloudflare_queue_consumer is a v5-native resource; this test verifies that
+// zenthcloud_queue_consumer is a v5-native resource; this test verifies that
 // existing states at schema_version=0 (before explicit versioning) upgrade
 // cleanly to schema_version=500 with no data loss.
 func TestMigrateQueueConsumer_HTTP(t *testing.T) {
@@ -48,7 +48,7 @@ func TestMigrateQueueConsumer_HTTP(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(accountID, rnd)
@@ -68,8 +68,8 @@ func TestMigrateQueueConsumer_HTTP(t *testing.T) {
 				Steps: []resource.TestStep{
 					firstStep,
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
-						statecheck.ExpectKnownValue("cloudflare_queue_consumer."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-						statecheck.ExpectKnownValue("cloudflare_queue_consumer."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("http_pull")),
+						statecheck.ExpectKnownValue("zenthcloud_queue_consumer."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+						statecheck.ExpectKnownValue("zenthcloud_queue_consumer."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("http_pull")),
 					}),
 				},
 			})
@@ -79,7 +79,7 @@ func TestMigrateQueueConsumer_HTTP(t *testing.T) {
 
 // TestMigrateQueueConsumer_Worker tests migration of a worker-type queue consumer.
 //
-// cloudflare_queue_consumer is a v5-native resource; this test verifies that
+// zenthcloud_queue_consumer is a v5-native resource; this test verifies that
 // existing states at schema_version=0 (before explicit versioning) upgrade
 // cleanly to schema_version=500 with no data loss.
 func TestMigrateQueueConsumer_Worker(t *testing.T) {
@@ -99,7 +99,7 @@ func TestMigrateQueueConsumer_Worker(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(accountID, rnd)
@@ -119,8 +119,8 @@ func TestMigrateQueueConsumer_Worker(t *testing.T) {
 				Steps: []resource.TestStep{
 					firstStep,
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
-						statecheck.ExpectKnownValue("cloudflare_queue_consumer."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
-						statecheck.ExpectKnownValue("cloudflare_queue_consumer."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("worker")),
+						statecheck.ExpectKnownValue("zenthcloud_queue_consumer."+rnd, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
+						statecheck.ExpectKnownValue("zenthcloud_queue_consumer."+rnd, tfjsonpath.New("type"), knownvalue.StringExact("worker")),
 					}),
 				},
 			})

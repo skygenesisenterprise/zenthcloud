@@ -58,7 +58,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account identifier.",
+              "description": "Zenthcloud account identifier.",
               "type": "string"
             }
           },
@@ -125,7 +125,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account identifier.",
+              "description": "Zenthcloud account identifier.",
               "type": "string"
             },
             "id": {
@@ -178,7 +178,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account identifier.",
+              "description": "Zenthcloud account identifier.",
               "type": "string"
             },
             "id": {
@@ -244,7 +244,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account identifier.",
+              "description": "Zenthcloud account identifier.",
               "type": "string"
             }
           },
@@ -374,7 +374,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account identifier.",
+              "description": "Zenthcloud account identifier.",
               "type": "string"
             },
             "id": {
@@ -440,7 +440,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account identifier.",
+              "description": "Zenthcloud account identifier.",
               "type": "string"
             },
             "id": {
@@ -532,7 +532,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account identifier.",
+              "description": "Zenthcloud account identifier.",
               "type": "string"
             },
             "id": {

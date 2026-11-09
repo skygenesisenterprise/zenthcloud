@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_device_posture_rule/migration/v500"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_device_posture_rule/migration/v500"
 )
 
 func init() {
@@ -21,7 +21,7 @@ var _ resource.ResourceWithMoveState = (*ZeroTrustDevicePostureRuleResource)(nil
 
 // MoveState registers state movers for resource renames.
 // This enables Terraform 1.8+ `moved` blocks to automatically trigger state migration
-// from cloudflare_device_posture_rule to cloudflare_zero_trust_device_posture_rule.
+// from zenthcloud_device_posture_rule to zenthcloud_zero_trust_device_posture_rule.
 func (r *ZeroTrustDevicePostureRuleResource) MoveState(ctx context.Context) []resource.StateMover {
 	sourceSchema := v500.SourceDevicePostureRuleSchema()
 

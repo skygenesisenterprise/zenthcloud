@@ -9,12 +9,12 @@ const unitTests :Workerd.Config = (
           (name = "worker", esModule = embed "test.js")
         ],
         compatibilityFlags = ["enable_ctx_exports", "nodejs_compat", "experimental", "containers_pid_namespace", "streams_enable_constructors", "enable_abortsignal_rpc"],
-        containerEngine = (localDocker = (socketPath = "unix:/var/run/docker.sock", containerEgressInterceptorImage = "cloudflare/proxy-everything:main")),
+        containerEngine = (localDocker = (socketPath = "unix:/var/run/docker.sock", containerEgressInterceptorImage = "zenthcloud/proxy-everything:main")),
         durableObjectNamespaces = [
           ( className = "DurableObjectExample",
             uniqueKey = "container-client-test-DurableObjectExample",
             container = (
-              imageName = "cloudflare/workerd/container-client-test",
+              imageName = "zenthcloud/workerd/container-client-test",
               images = [
                 (
                   name = "api",
@@ -29,7 +29,7 @@ const unitTests :Workerd.Config = (
           ( className = "DurableObjectExample2",
             uniqueKey = "container-client-test-DurableObjectExample2",
             container = (
-              imageName = "cloudflare/workerd/container-client-test",
+              imageName = "zenthcloud/workerd/container-client-test",
               images = [
                 (
                   name = "tools",
@@ -43,7 +43,7 @@ const unitTests :Workerd.Config = (
               images = [
                 (
                   name = "app",
-                  image = "cloudflare/workerd/container-client-test",
+                  image = "zenthcloud/workerd/container-client-test",
                 ),
               ],
             ) ),
@@ -53,7 +53,7 @@ const unitTests :Workerd.Config = (
           ( className = "SnapshotRestoreWithDifferentDefaultDurableObject",
             uniqueKey = "container-client-test-SnapshotRestoreWithDifferentDefaultDurableObject",
             container = (
-              imageName = "cloudflare/proxy-everything:main",
+              imageName = "zenthcloud/proxy-everything:main",
             ) ),
         ],
         durableObjectStorage = (localDisk = "TEST_TMPDIR"),

@@ -5,27 +5,27 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
-func TestAccCloudflareAccountPermissionGroups_Datasource(t *testing.T) {
+func TestAccZenthcloudAccountPermissionGroups_Datasource(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
-	listDataName := "data.cloudflare_account_permission_groups." + rnd
-	singleDataName := "data.cloudflare_account_permission_group." + rnd
+	listDataName := "data.zenthcloud_account_permission_groups." + rnd
+	singleDataName := "data.zenthcloud_account_permission_group." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck_AccountID(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAccountPermissionGroupsConfig(rnd, accountID),
+				Config: testAccZenthcloudAccountPermissionGroupsConfig(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					// verify LIST api call
 					statecheck.ExpectKnownValue(listDataName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
@@ -46,15 +46,15 @@ func TestAccCloudflareAccountPermissionGroups_Datasource(t *testing.T) {
 	})
 }
 
-func testAccCloudflareAccountPermissionGroupsConfig(rnd, accountID string) string {
+func testAccZenthcloudAccountPermissionGroupsConfig(rnd, accountID string) string {
 	return fmt.Sprintf(`
-		data "cloudflare_account_permission_groups" "%[1]s" {
+		data "zenthcloud_account_permission_groups" "%[1]s" {
 		  account_id = "%[2]s"
 		}
 		
-		data "cloudflare_account_permission_group" "%[1]s" {
+		data "zenthcloud_account_permission_group" "%[1]s" {
 		  account_id          = "%[2]s"
-		  permission_group_id = data.cloudflare_account_permission_groups.%[1]s.result[0].id
+		  permission_group_id = data.zenthcloud_account_permission_groups.%[1]s.result[0].id
 		}`, rnd, accountID,
 	)
 }

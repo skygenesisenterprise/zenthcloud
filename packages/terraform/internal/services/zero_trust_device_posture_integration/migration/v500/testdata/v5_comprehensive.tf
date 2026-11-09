@@ -1,5 +1,5 @@
 # Resource 1: Renamed from deprecated name, identifier removed, unusual interval preserved
-resource "cloudflare_zero_trust_device_posture_integration" "%[1]s" {
+resource "zenthcloud_zero_trust_device_posture_integration" "%[1]s" {
   account_id = "%[4]s"
   name       = "%[5]s"
   type       = "crowdstrike_s2s"
@@ -14,7 +14,7 @@ resource "cloudflare_zero_trust_device_posture_integration" "%[1]s" {
 }
 
 # Resource 2: Current name preserved, non-standard interval preserved
-resource "cloudflare_zero_trust_device_posture_integration" "%[2]s" {
+resource "zenthcloud_zero_trust_device_posture_integration" "%[2]s" {
   account_id = "%[4]s"
   name       = "%[6]s"
   type       = "crowdstrike_s2s"
@@ -29,7 +29,7 @@ resource "cloudflare_zero_trust_device_posture_integration" "%[2]s" {
 }
 
 # Resource 3: Renamed from deprecated name, standard interval preserved
-resource "cloudflare_zero_trust_device_posture_integration" "%[3]s" {
+resource "zenthcloud_zero_trust_device_posture_integration" "%[3]s" {
   account_id = "%[4]s"
   name       = "%[7]s"
   type       = "crowdstrike_s2s"

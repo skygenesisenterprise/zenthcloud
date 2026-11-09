@@ -6,7 +6,7 @@ set -eu
 # upgrade would delete what the new package just created.
 case "${1:-0}" in
 0 | remove | purge)
-	rm -f /usr/local/bin/cloudflared
-	rm -f /usr/local/etc/cloudflared/.installedFromPackageManager
+	rm -f /usr/local/bin/zenthcloudd
+	rm -f /usr/local/etc/zenthcloudd/.installedFromPackageManager
 	;;
 esac

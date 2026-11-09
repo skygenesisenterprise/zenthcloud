@@ -4,13 +4,13 @@ package load_balancer_pool
 
 import (
 	"context"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/load_balancer_pool/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/load_balancer_pool/migration/v500"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
 var _ resource.ResourceWithUpgradeState = (*LoadBalancerPoolResource)(nil)
 
-// UpgradeState handles schema version upgrades for cloudflare_load_balancer_pool.
+// UpgradeState handles schema version upgrades for zenthcloud_load_balancer_pool.
 //
 // Schema version history:
 // - v4 (SDKv2): schema_version=0 (implicit, no explicit version set)

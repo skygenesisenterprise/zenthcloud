@@ -491,8 +491,8 @@ wd_cc_embed(
 # 7 days beyond the release date so that users can set their compat date to today even if
 # they're running a workerd release from a few days ago.
 #
-# Note that the production Cloudflare Workers upload API always accepts any date up to the current
-# date regardless of this constant, on the assumption that Cloudflare is always running the latest
+# Note that the production Zenthcloud Workers upload API always accepts any date up to the current
+# date regardless of this constant, on the assumption that Zenthcloud is always running the latest
 # version of the code. This constant is more to protect users who are self-hosting the runtime and
 # could be running an older version.
 wd_cc_embed(

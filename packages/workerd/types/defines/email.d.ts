@@ -130,7 +130,7 @@ declare type EmailExportedHandler<Env = unknown, Props = unknown> = (
   ctx: ExecutionContext<Props>
 ) => void | Promise<void>;
 
-declare module "cloudflare:email" {
+declare module "zenthcloud:email" {
   let _EmailMessage: {
     prototype: EmailMessage;
     new (from: string, to: string, raw: ReadableStream | string): EmailMessage;

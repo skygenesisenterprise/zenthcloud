@@ -100,31 +100,31 @@ export const moq_api$$response$$error: JSONObject = {
 };
 
 /**
- * The schema of `moq_cloudflare_jwt_issuer` in responses.
+ * The schema of `moq_zenthcloud_jwt_issuer` in responses.
  */
-export const moq_cloudflare_jwt_issuer: JSONObject = {
+export const moq_zenthcloud_jwt_issuer: JSONObject = {
   "properties": {
-    "cloudflare_tokens": {
+    "zenthcloud_tokens": {
       "items": {
-        "$ref": "#/$defs/moq_cloudflare_jwt_token"
+        "$ref": "#/$defs/moq_zenthcloud_jwt_token"
       },
       "type": "array"
     },
     "issuer": {
       "enum": [
-        "cloudflare"
+        "zenthcloud"
       ],
       "type": "string"
     },
     "type": {
       "enum": [
-        "cloudflare_jwt"
+        "zenthcloud_jwt"
       ],
       "type": "string"
     }
   },
   "required": [
-    "cloudflare_tokens",
+    "zenthcloud_tokens",
     "issuer",
     "type"
   ],
@@ -132,9 +132,9 @@ export const moq_cloudflare_jwt_issuer: JSONObject = {
 };
 
 /**
- * The schema of `moq_cloudflare_jwt_token` in responses.
+ * The schema of `moq_zenthcloud_jwt_token` in responses.
  */
-export const moq_cloudflare_jwt_token: JSONObject = {
+export const moq_zenthcloud_jwt_token: JSONObject = {
   "properties": {
     "created": {
       "format": "date-time",
@@ -178,7 +178,7 @@ export const moq_cloudflare_jwt_token: JSONObject = {
  * The schema of `moq_issuer` in responses.
  */
 export const moq_issuer: JSONObject = {
-  "$ref": "#/$defs/moq_cloudflare_jwt_issuer"
+  "$ref": "#/$defs/moq_zenthcloud_jwt_issuer"
 };
 
 /**

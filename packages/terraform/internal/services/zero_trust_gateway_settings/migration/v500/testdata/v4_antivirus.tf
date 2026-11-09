@@ -1,4 +1,4 @@
-resource "cloudflare_teams_account" "%[1]s" {
+resource "zenthcloud_teams_account" "%[1]s" {
   account_id                 = "%[2]s"
   activity_log_enabled       = false
   tls_decrypt_enabled        = false

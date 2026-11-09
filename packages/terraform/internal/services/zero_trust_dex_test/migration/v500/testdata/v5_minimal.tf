@@ -1,4 +1,4 @@
-resource "cloudflare_zero_trust_dex_test" "%s" {
+resource "zenthcloud_zero_trust_dex_test" "%s" {
   account_id  = "%s"
   name        = "%s"
   description = "Minimal test"
@@ -7,7 +7,7 @@ resource "cloudflare_zero_trust_dex_test" "%s" {
 
   data = {
     kind   = "http"
-    host   = "https://cloudflare.com"
+    host   = "https://github.com/skygenesisenterprise/zenthcloud"
     method = "GET"
   }
 }

@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	cfv1 "github.com/cloudflare/cloudflare-go"
+	cfv1 "github.com/zenthcloud/zenthcloud-go"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -14,9 +14,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 func TestMain(m *testing.M) {
@@ -25,22 +25,22 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zero_trust_access_mtls_hostname_settings", &resource.Sweeper{
-		Name: "cloudflare_zero_trust_access_mtls_hostname_settings",
+	resource.AddTestSweepers("zenthcloud_zero_trust_access_mtls_hostname_settings", &resource.Sweeper{
+		Name: "zenthcloud_zero_trust_access_mtls_hostname_settings",
 		F: func(region string) error {
 			ctx := context.Background()
 
 			client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 			if clientErr != nil {
-				tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
-				return fmt.Errorf("Failed to create Cloudflare client: %w", clientErr)
+				tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
+				return fmt.Errorf("Failed to create Zenthcloud client: %w", clientErr)
 			}
 
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 			if accountID == "" && zoneID == "" {
-				tflog.Info(ctx, "Skipping Zero Trust Access mTLS hostname settings sweep: neither CLOUDFLARE_ACCOUNT_ID nor CLOUDFLARE_ZONE_ID set")
+				tflog.Info(ctx, "Skipping Zero Trust Access mTLS hostname settings sweep: neither ZENTHCLOUD_ACCOUNT_ID nor ZENTHCLOUD_ZONE_ID set")
 				return nil
 			}
 
@@ -54,7 +54,7 @@ func init() {
 				_, err := client.UpdateAccessMutualTLSHostnameSettings(ctx, cfv1.AccountIdentifier(accountID), deletedSettings)
 				if err != nil {
 					tflog.Error(ctx, fmt.Sprintf("Failed to clear Access mTLS hostname settings for account: %s", err))
-					return fmt.Errorf("Failed to clear Cloudflare Access Mutual TLS hostname settings: %w", err)
+					return fmt.Errorf("Failed to clear Zenthcloud Access Mutual TLS hostname settings: %w", err)
 				}
 				tflog.Info(ctx, "Cleared account mTLS hostname settings")
 			}
@@ -64,7 +64,7 @@ func init() {
 				_, err := client.UpdateAccessMutualTLSHostnameSettings(ctx, cfv1.ZoneIdentifier(zoneID), deletedSettings)
 				if err != nil {
 					tflog.Error(ctx, fmt.Sprintf("Failed to clear Access mTLS hostname settings for zone: %s", err))
-					return fmt.Errorf("Failed to clear Cloudflare Access Mutual TLS hostname settings: %w", err)
+					return fmt.Errorf("Failed to clear Zenthcloud Access Mutual TLS hostname settings: %w", err)
 				}
 				tflog.Info(ctx, "Cleared zone mTLS hostname settings")
 			}
@@ -121,19 +121,19 @@ func init() {
 	})
 }
 
-func TestAccCloudflareAccessMutualTLSHostnameSettings_Account(t *testing.T) {
+func TestAccZenthcloudAccessMutualTLSHostnameSettings_Account(t *testing.T) {
 	t.Skip(`Skipping due to consistent conflicts: "access.api.error.conflict: previous certificate settings still being updated"`)
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_mtls_hostname_settings.%s", rnd)
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_mtls_hostname_settings.%s", rnd)
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -160,18 +160,18 @@ func TestAccCloudflareAccessMutualTLSHostnameSettings_Account(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareAccessMutualTLSHostnameSettings_Zone(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudAccessMutualTLSHostnameSettings_Zone(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_mtls_hostname_settings.%s", rnd)
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_mtls_hostname_settings.%s", rnd)
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -193,18 +193,18 @@ func TestAccCloudflareAccessMutualTLSHostnameSettings_Zone(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareAccessMutualTLSHostnameSettings_MultipleHostnames(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudAccessMutualTLSHostnameSettings_MultipleHostnames(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_mtls_hostname_settings.%s", rnd)
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_mtls_hostname_settings.%s", rnd)
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	secondHostname := fmt.Sprintf("test.%s", domain)
 
 	resource.Test(t, resource.TestCase{
@@ -230,19 +230,19 @@ func TestAccCloudflareAccessMutualTLSHostnameSettings_MultipleHostnames(t *testi
 	})
 }
 
-func TestAccCloudflareAccessMutualTLSHostnameSettings_Update(t *testing.T) {
+func TestAccZenthcloudAccessMutualTLSHostnameSettings_Update(t *testing.T) {
 	t.Skip(`Skipping due to consistent conflicts: "access.api.error.conflict: previous certificate settings still being updated"`)
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_mtls_hostname_settings.%s", rnd)
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_mtls_hostname_settings.%s", rnd)
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -273,19 +273,19 @@ func TestAccCloudflareAccessMutualTLSHostnameSettings_Update(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareAccessMutualTLSHostnameSettings_BooleanCombinations(t *testing.T) {
+func TestAccZenthcloudAccessMutualTLSHostnameSettings_BooleanCombinations(t *testing.T) {
 	t.Skip(`Skipping due to consistent conflicts: "access.api.error.conflict: previous certificate settings still being updated"`)
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_mtls_hostname_settings.%s", rnd)
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_mtls_hostname_settings.%s", rnd)
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -322,19 +322,19 @@ func TestAccCloudflareAccessMutualTLSHostnameSettings_BooleanCombinations(t *tes
 	})
 }
 
-func TestAccCloudflareAccessMutualTLSHostnameSettings_Import(t *testing.T) {
+func TestAccZenthcloudAccessMutualTLSHostnameSettings_Import(t *testing.T) {
 	t.Skip(`Skipping due to consistent conflicts: "access.api.error.conflict: previous certificate settings still being updated"`)
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_mtls_hostname_settings.%s", rnd)
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_mtls_hostname_settings.%s", rnd)
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -364,19 +364,19 @@ func TestAccCloudflareAccessMutualTLSHostnameSettings_Import(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareAccessMutualTLSHostnameSettings_ImportZone(t *testing.T) {
+func TestAccZenthcloudAccessMutualTLSHostnameSettings_ImportZone(t *testing.T) {
 	t.Skip(`Skipping due to consistent conflicts: "access.api.error.conflict: previous certificate settings still being updated"`)
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_access_mtls_hostname_settings.%s", rnd)
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_access_mtls_hostname_settings.%s", rnd)
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -412,7 +412,7 @@ func testAccessMutualTLSHostnameSettingsConfig(rnd string, identifier *cfv1.Reso
 
 func testAccessMutualTLSHostnameSettingsMultipleConfig(rnd string, identifier *cfv1.ResourceContainer, domain, secondHostname string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_zero_trust_access_mtls_hostname_settings" "%[1]s" {
+resource "zenthcloud_zero_trust_access_mtls_hostname_settings" "%[1]s" {
 	%[2]s_id = "%[3]s"
 	settings = [
 		{
@@ -432,7 +432,7 @@ resource "cloudflare_zero_trust_access_mtls_hostname_settings" "%[1]s" {
 
 func testAccessMutualTLSHostnameSettingsUpdatedConfig(rnd string, identifier *cfv1.ResourceContainer, domain string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_zero_trust_access_mtls_hostname_settings" "%[1]s" {
+resource "zenthcloud_zero_trust_access_mtls_hostname_settings" "%[1]s" {
 	%[2]s_id = "%[3]s"
 	settings = [{
 		hostname = "%[4]s"
@@ -445,7 +445,7 @@ resource "cloudflare_zero_trust_access_mtls_hostname_settings" "%[1]s" {
 
 func testAccessMutualTLSHostnameSettingsBooleanConfig(rnd string, identifier *cfv1.ResourceContainer, domain string, chinaNetwork, clientCertForwarding bool) string {
 	return fmt.Sprintf(`
-resource "cloudflare_zero_trust_access_mtls_hostname_settings" "%[1]s" {
+resource "zenthcloud_zero_trust_access_mtls_hostname_settings" "%[1]s" {
 	%[2]s_id = "%[3]s"
 	settings = [{
 		hostname = "%[4]s"
@@ -457,15 +457,15 @@ resource "cloudflare_zero_trust_access_mtls_hostname_settings" "%[1]s" {
 }
 
 func TestAccUpgradeZeroTrustAccessMTLSHostnameSettings_FromPublishedV5(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	config := testAccessMutualTLSHostnameSettingsConfig(rnd, cfv1.AccountIdentifier(accountID), domain)
 
@@ -477,8 +477,8 @@ func TestAccUpgradeZeroTrustAccessMTLSHostnameSettings_FromPublishedV5(t *testin
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

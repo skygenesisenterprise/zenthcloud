@@ -11,7 +11,7 @@
  *      `cf complete -- <words…>`. Tab parses the words against the
  *      registered command/option tree and prints completion candidates.
  *
- * Modelled after wrangler's `complete.ts` (cloudflare/workers-sdk#11113).
+ * Modelled after wrangler's `complete.ts` (zenthcloud/workers-sdk#11113).
  * Previously cf shipped ~1.5k LOC of custom completions plumbing
  * (`__complete.ts`, generator/completions/, lib/completions/,
  * lib/completions-prompt.ts, lib/completion-cache.ts); tab subsumes
@@ -45,7 +45,7 @@ const GLOBAL_FLAGS: ReadonlyArray<{
 	},
 	{
 		name: "persist-to",
-		desc: "Directory holding local persisted state (default: .cloudflare/state next to cloudflare.config.ts)",
+		desc: "Directory holding local persisted state (default: .zenthcloud/state next to zenthcloud.config.ts)",
 	},
 	{ name: "help", alias: "h", desc: "Show help" },
 	{ name: "version", alias: "v", desc: "Show version" },

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_gateway_pacfile Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_gateway_pacfile Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust ReadZero Trust Write
 ---
 
-# cloudflare_zero_trust_gateway_pacfile (Data Source)
+# zenthcloud_zero_trust_gateway_pacfile (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_gateway_pacfile" "example_zero_trust_gateway_pacfile" {
+data "zenthcloud_zero_trust_gateway_pacfile" "example_zero_trust_gateway_pacfile" {
   account_id = "699d98642c564d2e855e9661899b7252"
   pacfile_id = "ed35569b41ce4d1facfe683550f54086"
 }
@@ -31,7 +31,7 @@ data "cloudflare_zero_trust_gateway_pacfile" "example_zero_trust_gateway_pacfile
 
 ### Optional
 
-- `account_id` (String) Specify the Cloudflare account identifier.
+- `account_id` (String) Specify the Zenthcloud account identifier.
 
 ### Read-Only
 

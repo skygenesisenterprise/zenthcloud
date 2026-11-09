@@ -10,20 +10,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 // TestMigrateLoadBalancerMonitorBasic tests basic HTTP monitor migration from v4 to v5
 func TestMigrateLoadBalancerMonitorBasic(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_load_balancer_monitor." + rnd
+	resourceName := "zenthcloud_load_balancer_monitor." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config - basic HTTP monitor
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_load_balancer_monitor" "%[1]s" {
+resource "zenthcloud_load_balancer_monitor" "%[1]s" {
   account_id     = "%[2]s"
   type           = "http"
   method         = "GET"
@@ -41,8 +41,8 @@ resource "cloudflare_load_balancer_monitor" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -67,14 +67,14 @@ resource "cloudflare_load_balancer_monitor" "%[1]s" {
 
 // TestMigrateLoadBalancerMonitorWithHeaders tests header transformation (TypeSet → MapAttribute)
 func TestMigrateLoadBalancerMonitorWithHeaders(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_load_balancer_monitor." + rnd
+	resourceName := "zenthcloud_load_balancer_monitor." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config - monitor with headers (blocks)
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_load_balancer_monitor" "%[1]s" {
+resource "zenthcloud_load_balancer_monitor" "%[1]s" {
   account_id     = "%[2]s"
   type           = "https"
   method         = "GET"
@@ -102,8 +102,8 @@ resource "cloudflare_load_balancer_monitor" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -129,14 +129,14 @@ resource "cloudflare_load_balancer_monitor" "%[1]s" {
 
 // TestMigrateLoadBalancerMonitorNumericConversions tests int → float64 conversions
 func TestMigrateLoadBalancerMonitorNumericConversions(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_load_balancer_monitor." + rnd
+	resourceName := "zenthcloud_load_balancer_monitor." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config - test all numeric fields
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_load_balancer_monitor" "%[1]s" {
+resource "zenthcloud_load_balancer_monitor" "%[1]s" {
   account_id       = "%[2]s"
   type             = "http"
   expected_codes   = "2xx"
@@ -158,8 +158,8 @@ resource "cloudflare_load_balancer_monitor" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -182,14 +182,14 @@ resource "cloudflare_load_balancer_monitor" "%[1]s" {
 
 // TestMigrateLoadBalancerMonitorMaximal tests migration with all optional fields
 func TestMigrateLoadBalancerMonitorMaximal(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_load_balancer_monitor." + rnd
+	resourceName := "zenthcloud_load_balancer_monitor." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config - all optional fields
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_load_balancer_monitor" "%[1]s" {
+resource "zenthcloud_load_balancer_monitor" "%[1]s" {
   account_id         = "%[2]s"
   description        = "Test monitor for migration"
   type               = "https"
@@ -222,8 +222,8 @@ resource "cloudflare_load_balancer_monitor" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -258,14 +258,14 @@ resource "cloudflare_load_balancer_monitor" "%[1]s" {
 
 // TestMigrateLoadBalancerMonitorTCP tests TCP monitor type (no headers)
 func TestMigrateLoadBalancerMonitorTCP(t *testing.T) {
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_load_balancer_monitor." + rnd
+	resourceName := "zenthcloud_load_balancer_monitor." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config - TCP monitor
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_load_balancer_monitor" "%[1]s" {
+resource "zenthcloud_load_balancer_monitor" "%[1]s" {
   account_id = "%[2]s"
   type       = "tcp"
   method     = "connection_established"
@@ -285,8 +285,8 @@ resource "cloudflare_load_balancer_monitor" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},

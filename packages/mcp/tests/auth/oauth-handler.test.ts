@@ -1,5 +1,5 @@
-import { GrantType, OAuthError as ProviderOAuthError } from '@cloudflare/workers-oauth-provider'
-import { env } from 'cloudflare:workers'
+import { GrantType, OAuthError as ProviderOAuthError } from '@zenthcloud/workers-oauth-provider'
+import { env } from 'zenthcloud:workers'
 import { http, HttpResponse } from 'msw'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -21,7 +21,7 @@ function refreshCallback(refreshToken = 'old-refresh-token') {
       grantId,
       scope: ['read', 'write'],
       requestedScope: ['read', 'write'],
-      resource: 'https://mcp.cloudflare.com/mcp',
+      resource: 'https://github.com/skygenesisenterprise/zenthcloud',
       env,
       props: {
         type: 'user_token',
@@ -49,7 +49,7 @@ const expectedRefreshResult = {
   accessTokenScope: ['read']
 }
 
-const OAUTH_TOKEN_URL = 'https://dash.cloudflare.com/oauth2/token'
+const OAUTH_TOKEN_URL = 'https://github.com/skygenesisenterprise/zenthcloud'
 
 beforeEach(() => {
   grantId = `grant-${++grantSequence}`

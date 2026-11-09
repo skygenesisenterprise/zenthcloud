@@ -10,20 +10,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
-// TestMigrateArgoSmartRoutingOnly tests migration from cloudflare_argo with only smart_routing attribute
+// TestMigrateArgoSmartRoutingOnly tests migration from zenthcloud_argo with only smart_routing attribute
 func TestMigrateArgoSmartRoutingOn(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_argo_smart_routing." + rnd
+	resourceName := "zenthcloud_argo_smart_routing." + rnd
 	tmpDir := t.TempDir()
 
-	// V4 config - cloudflare_argo with smart_routing only
+	// V4 config - zenthcloud_argo with smart_routing only
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_argo" "%[1]s" {
+resource "zenthcloud_argo" "%[1]s" {
   zone_id       = "%[2]s"
   smart_routing = "on"
 }`, rnd, zoneID)
@@ -38,8 +38,8 @@ resource "cloudflare_argo" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -47,7 +47,7 @@ resource "cloudflare_argo" "%[1]s" {
 			},
 			// Step 2: Run migration and verify state
 			acctest.MigrationV2TestStep(t, v4Config, tmpDir, "4.52.1", "v4", "v5", []statecheck.StateCheck{
-				// Verify resource migrated to cloudflare_argo_smart_routing
+				// Verify resource migrated to zenthcloud_argo_smart_routing
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.StringExact(zoneID)),
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
 				statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("value"), knownvalue.StringExact("on")),
@@ -60,14 +60,14 @@ resource "cloudflare_argo" "%[1]s" {
 
 // TestMigrateArgoSmartRoutingOff tests migration with smart_routing set to off
 func TestMigrateArgoSmartRoutingOff(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_argo_smart_routing." + rnd
+	resourceName := "zenthcloud_argo_smart_routing." + rnd
 	tmpDir := t.TempDir()
 
-	// V4 config - cloudflare_argo with smart_routing off
+	// V4 config - zenthcloud_argo with smart_routing off
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_argo" "%[1]s" {
+resource "zenthcloud_argo" "%[1]s" {
   zone_id       = "%[2]s"
   smart_routing = "off"
 }`, rnd, zoneID)
@@ -82,8 +82,8 @@ resource "cloudflare_argo" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -102,14 +102,14 @@ resource "cloudflare_argo" "%[1]s" {
 
 // TestMigrateArgoNeitherAttribute tests migration when neither attribute exists (defaults to smart_routing off)
 func TestMigrateArgoNeitherAttribute(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_argo_smart_routing." + rnd
+	resourceName := "zenthcloud_argo_smart_routing." + rnd
 	tmpDir := t.TempDir()
 
-	// V4 config - cloudflare_argo with neither smart_routing nor tiered_caching
+	// V4 config - zenthcloud_argo with neither smart_routing nor tiered_caching
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_argo" "%[1]s" {
+resource "zenthcloud_argo" "%[1]s" {
   zone_id = "%[2]s"
 }`, rnd, zoneID)
 
@@ -123,8 +123,8 @@ resource "cloudflare_argo" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -144,15 +144,15 @@ resource "cloudflare_argo" "%[1]s" {
 
 // TestMigrateArgoBothAttributes tests migration when both smart_routing and tiered_caching exist
 func TestMigrateArgoBothAttributes(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	smartRoutingResourceName := "cloudflare_argo_smart_routing." + rnd
-	tieredCachingResourceName := "cloudflare_argo_tiered_caching." + rnd + "_tiered"
+	smartRoutingResourceName := "zenthcloud_argo_smart_routing." + rnd
+	tieredCachingResourceName := "zenthcloud_argo_tiered_caching." + rnd + "_tiered"
 	tmpDir := t.TempDir()
 
-	// V4 config - cloudflare_argo with both attributes
+	// V4 config - zenthcloud_argo with both attributes
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_argo" "%[1]s" {
+resource "zenthcloud_argo" "%[1]s" {
   zone_id        = "%[2]s"
   smart_routing  = "on"
   tiered_caching = "on"
@@ -175,8 +175,8 @@ resource "cloudflare_argo" "%[1]s" {
 		{
 			// Step 1: Create with v4 provider
 			ExternalProviders: map[string]resource.ExternalProvider{
-				"cloudflare": {
-					Source:            "cloudflare/cloudflare",
+				"zenthcloud": {
+					Source:            "zenthcloud/zenthcloud",
 					VersionConstraint: "4.52.1",
 				},
 			},
@@ -199,9 +199,9 @@ resource "cloudflare_argo" "%[1]s" {
 
 // TestMigrateArgoWithVariables tests migration with variable references
 func TestMigrateArgoWithVariables(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_argo_smart_routing." + rnd
+	resourceName := "zenthcloud_argo_smart_routing." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config with variable reference
@@ -211,7 +211,7 @@ variable "zone_id" {
   default = "%[2]s"
 }
 
-resource "cloudflare_argo" "%[1]s" {
+resource "zenthcloud_argo" "%[1]s" {
   zone_id       = var.zone_id
   smart_routing = "on"
 }`, rnd, zoneID)
@@ -226,8 +226,8 @@ resource "cloudflare_argo" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -246,9 +246,9 @@ resource "cloudflare_argo" "%[1]s" {
 
 // TestMigrateArgoWithDependsOn tests migration with depends_on meta-argument
 func TestMigrateArgoWithDependsOn(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_argo_smart_routing." + rnd
+	resourceName := "zenthcloud_argo_smart_routing." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config with depends_on to test meta-argument preservation
@@ -258,7 +258,7 @@ variable "zone_id" {
   default = "%[2]s"
 }
 
-resource "cloudflare_argo" "%[1]s" {
+resource "zenthcloud_argo" "%[1]s" {
   zone_id       = var.zone_id
   smart_routing = "on"
 
@@ -275,8 +275,8 @@ resource "cloudflare_argo" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -295,14 +295,14 @@ resource "cloudflare_argo" "%[1]s" {
 
 // TestMigrateArgoWithLifecycle tests migration with lifecycle meta-argument
 func TestMigrateArgoWithLifecycle(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_argo_smart_routing." + rnd
+	resourceName := "zenthcloud_argo_smart_routing." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config with lifecycle block to test preservation
 	v4Config := fmt.Sprintf(`
-resource "cloudflare_argo" "%[1]s" {
+resource "zenthcloud_argo" "%[1]s" {
   zone_id       = "%[2]s"
   smart_routing = "on"
 
@@ -321,8 +321,8 @@ resource "cloudflare_argo" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},
@@ -341,9 +341,9 @@ resource "cloudflare_argo" "%[1]s" {
 
 // TestMigrateArgoWithConditional tests migration with conditional expression
 func TestMigrateArgoWithConditional(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_argo_smart_routing." + rnd
+	resourceName := "zenthcloud_argo_smart_routing." + rnd
 	tmpDir := t.TempDir()
 
 	// V4 config with conditional expression
@@ -353,7 +353,7 @@ variable "enable_smart_routing" {
   default = true
 }
 
-resource "cloudflare_argo" "%[1]s" {
+resource "zenthcloud_argo" "%[1]s" {
   zone_id       = "%[2]s"
   smart_routing = var.enable_smart_routing ? "on" : "off"
 }`, rnd, zoneID)
@@ -368,8 +368,8 @@ resource "cloudflare_argo" "%[1]s" {
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "4.52.1",
 					},
 				},

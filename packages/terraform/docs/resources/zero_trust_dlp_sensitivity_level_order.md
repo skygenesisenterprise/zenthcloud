@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_dlp_sensitivity_level_order Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_dlp_sensitivity_level_order Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust ReadZero Trust Write
 ---
 
-# cloudflare_zero_trust_dlp_sensitivity_level_order (Resource)
+# zenthcloud_zero_trust_dlp_sensitivity_level_order (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_dlp_sensitivity_level_order" "example_zero_trust_dlp_sensitivity_level_order" {
+resource "zenthcloud_zero_trust_dlp_sensitivity_level_order" "example_zero_trust_dlp_sensitivity_level_order" {
   account_id = "account_id"
   sensitivity_group_id = "182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e"
   level_ids = ["182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e"]
@@ -41,7 +41,7 @@ resource "cloudflare_zero_trust_dlp_sensitivity_level_order" "example_zero_trust
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_dlp_sensitivity_level_order.example '<account_id>/<sensitivity_group_id>'
+$ terraform import zenthcloud_zero_trust_dlp_sensitivity_level_order.example '<account_id>/<sensitivity_group_id>'
 ```
 
 

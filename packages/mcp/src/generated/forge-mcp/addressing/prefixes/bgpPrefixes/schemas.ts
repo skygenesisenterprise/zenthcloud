@@ -26,12 +26,12 @@ export const addressing_bgp_prefix_update_advertisement: JSONObject = {
   "properties": {
     "asn_prepend_count": {
       "default": 0,
-      "description": "Number of times to prepend the Cloudflare ASN to the BGP AS-Path attribute",
+      "description": "Number of times to prepend the Zenthcloud ASN to the BGP AS-Path attribute",
       "type": "integer"
     },
     "auto_advertise_withdraw": {
       "default": false,
-      "description": "Determines if Cloudflare advertises a BYOIP BGP prefix even when there is no matching BGP prefix in the Magic routing table. When true, Cloudflare will automatically withdraw the BGP prefix when there are no matching BGP routes, and will resume advertising when there is at least one matching BGP route.",
+      "description": "Determines if Zenthcloud advertises a BYOIP BGP prefix even when there is no matching BGP prefix in the Magic routing table. When true, Zenthcloud will automatically withdraw the BGP prefix when there are no matching BGP routes, and will resume advertising when there is at least one matching BGP route.",
       "type": "boolean"
     },
     "on_demand": {

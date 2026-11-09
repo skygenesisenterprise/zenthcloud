@@ -1,6 +1,6 @@
 # AbortSignal example
 
-Cancel in-flight fetch requests using `AbortController` and `AbortSignal` in a Rust Cloudflare Worker.
+Cancel in-flight fetch requests using `AbortController` and `AbortSignal` in a Rust Zenthcloud Worker.
 
 ## Routes
 

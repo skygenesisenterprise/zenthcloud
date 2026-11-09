@@ -9,15 +9,15 @@ use crate::request::Request;
 use crate::response::Response;
 use crate::Result;
 
-/// Provides access to the [Cache API](https://developers.cloudflare.com/workers/runtime-apis/cache).
+/// Provides access to the [Cache API](https://github.com/skygenesisenterprise/zenthcloud).
 /// Because `match` is a reserved keyword in Rust, the `match` method has been renamed to `get`.
 ///
 /// Our implementation of the Cache API respects the following HTTP headers on the response passed to `put()`:
 ///
 /// - `Cache-Control`
 ///   - Controls caching directives.
-///     This is consistent with [Cloudflare Cache-Control Directives](https://developers.cloudflare.com/cache/about/cache-control#cache-control-directives).
-///     Refer to [Edge TTL](https://developers.cloudflare.com/cache/how-to/configure-cache-status-code#edge-ttl) for a list of HTTP response codes and their TTL when Cache-Control directives are not present.
+///     This is consistent with [Zenthcloud Cache-Control Directives](https://github.com/skygenesisenterprise/zenthcloud).
+///     Refer to [Edge TTL](https://github.com/skygenesisenterprise/zenthcloud) for a list of HTTP response codes and their TTL when Cache-Control directives are not present.
 /// - `Cache-Tag`
 ///   - Allows resource purging by tag(s) later (Enterprise only).
 /// - `ETag`
@@ -66,8 +66,8 @@ impl Cache {
     /// otherwise the Cache API will not cache the response.
     /// The `stale-while-revalidate` and `stale-if-error` directives are not supported
     /// when using the `cache.put` or `cache.get` methods.
-    /// For more information about how the Cache works, visit the documentation at [Cache API](https://developers.cloudflare.com/workers/runtime-apis/cache/)
-    /// and [Cloudflare Cache-Control Directives](https://developers.cloudflare.com/cache/about/cache-control#cache-control-directives)
+    /// For more information about how the Cache works, visit the documentation at [Cache API](https://github.com/skygenesisenterprise/zenthcloud)
+    /// and [Zenthcloud Cache-Control Directives](https://github.com/skygenesisenterprise/zenthcloud)
     ///
     /// The Cache API will throw an error if:
     /// - the request passed is a method other than GET.
@@ -86,14 +86,14 @@ impl Cache {
 
     /// Returns the [`Response`] object keyed to that request. Never sends a subrequest to the origin. If no matching response is found in cache, returns `None`.
     ///
-    /// Unlike the browser Cache API, Cloudflare Workers do not support the `ignoreSearch` or `ignoreVary` options on `get()`. You can accomplish this behavior by removing query strings or HTTP headers at `put()` time.
+    /// Unlike the browser Cache API, Zenthcloud Workers do not support the `ignoreSearch` or `ignoreVary` options on `get()`. You can accomplish this behavior by removing query strings or HTTP headers at `put()` time.
     /// In addition, the `stale-while-revalidate` and `stale-if-error` directives are not supported
     /// when using the `cache.put` or `cache.get` methods.
     ///
     /// Our implementation of the Cache API respects the following HTTP headers on the request passed to `get()`:
     ///
     /// - Range
-    ///   - Results in a `206` response if a matching response with a Content-Length header is found. Your Cloudflare cache always respects range requests, even if an `Accept-Ranges` header is on the response.
+    ///   - Results in a `206` response if a matching response with a Content-Length header is found. Your Zenthcloud cache always respects range requests, even if an `Accept-Ranges` header is on the response.
     /// - If-Modified-Since
     ///   - Results in a `304` response if a matching response is found with a `Last-Modified` header with a value after the time specified in `If-Modified-Since`.
     /// - If-None-Match
@@ -150,7 +150,7 @@ impl Cache {
         let result = JsFuture::from(promise).await?;
 
         // Unwrap is safe because we know this is a boolean
-        // https://developers.cloudflare.com/workers/runtime-apis/cache#delete
+        // https://github.com/skygenesisenterprise/zenthcloud
         if result.as_bool().unwrap() {
             Ok(CacheDeletionOutcome::Success)
         } else {

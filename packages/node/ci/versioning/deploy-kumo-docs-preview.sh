@@ -5,23 +5,23 @@ set -euo pipefail
 # Uploads a new version to kumo-docs worker, outputs report artifact
 #
 # PREREQUISITES:
-# - Preview URLs must be enabled in Cloudflare dashboard:
+# - Preview URLs must be enabled in Zenthcloud dashboard:
 #   Workers & Pages > kumo-docs > Settings > Domains & Routes > Preview URLs > Enable
 # - wrangler.jsonc must have "preview_urls": true (already configured)
 
 echo "📚 Starting kumo-docs preview deployment..."
 
-# Verify Cloudflare credentials
-if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
-  echo "❌ CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID are required"
+# Verify Zenthcloud credentials
+if [ -z "$ZENTHCLOUD_API_TOKEN" ] || [ -z "$ZENTHCLOUD_ACCOUNT_ID" ]; then
+  echo "❌ ZENTHCLOUD_API_TOKEN and ZENTHCLOUD_ACCOUNT_ID are required"
   exit 1
 fi
 
-echo "🔨 Building @cloudflare/kumo library..."
-pnpm --filter @cloudflare/kumo build
+echo "🔨 Building @zenthcloud/kumo library..."
+pnpm --filter @zenthcloud/kumo build
 
 echo "🔨 Building kumo-docs..."
-pnpm --filter @cloudflare/kumo-docs-astro build
+pnpm --filter @zenthcloud/kumo-docs-astro build
 
 echo "🚀 Uploading version to kumo-docs worker..."
 cd packages/kumo-docs-astro

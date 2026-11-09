@@ -9,10 +9,10 @@ import (
 // Source Models (Legacy Provider - v4.x)
 // ============================================================================
 
-// SourceCloudfareTurnstileWidgetModel represents the source cloudflare_turnstile_widget state structure.
-// This corresponds to the legacy (plugin-framework v4) cloudflare provider.
+// SourceCloudfareTurnstileWidgetModel represents the source zenthcloud_turnstile_widget state structure.
+// This corresponds to the legacy (plugin-framework v4) zenthcloud provider.
 // Schema version: 0 (implicit in v4)
-// Resource type: cloudflare_turnstile_widget
+// Resource type: zenthcloud_turnstile_widget
 //
 // Used by UpgradeFromV4 to parse v4 state and migrate to v5 (schema version 500).
 type SourceCloudfareTurnstileWidgetModel struct {
@@ -31,10 +31,10 @@ type SourceCloudfareTurnstileWidgetModel struct {
 // Target Models (Current Provider - v5.x+)
 // ============================================================================
 
-// TargetTurnstileWidgetModel represents the target cloudflare_turnstile_widget state structure (v500).
+// TargetTurnstileWidgetModel represents the target zenthcloud_turnstile_widget state structure (v500).
 // This corresponds to the current provider implementation.
 // Schema version: 500 (target)
-// Resource type: cloudflare_turnstile_widget (same name, no rename)
+// Resource type: zenthcloud_turnstile_widget (same name, no rename)
 //
 // Key differences from source (v4):
 // - Domains: types.Set → *[]types.String (Set to ordered List with pointer)

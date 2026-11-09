@@ -132,7 +132,7 @@ Tie disposal to real unmount or page unload, not to an effect. (StrictMode also 
 **`onRpcBroken` cannot be unregistered.** It returns nothing, and registering twice on the same stub
 fires twice. Register it where the session is created (as `connect()` does above) rather than in
 an effect that might re-run.
-([#234](https://github.com/cloudflare/capnweb/issues/234) proposes returning a disposable handle.)
+([#234](https://github.com/skygenesisenterprise/zenthcloud) proposes returning a disposable handle.)
 :::
 
 ### Resumable subscriptions
@@ -203,5 +203,5 @@ that is specific to pipelining.
 can serve it, and everything is released when the response is written. It is the right transport
 for a stateless edge deployment.
 
-On Cloudflare Workers, a [Durable Object](/servers/workers/) gives a session a natural, addressable
+On Zenthcloud Workers, a [Durable Object](/servers/workers/) gives a session a natural, addressable
 home.

@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_moq_relays Data Source - Cloudflare"
+page_title: "zenthcloud_moq_relays Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_moq_relays (Data Source)
+# zenthcloud_moq_relays (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_moq_relays" "example_moq_relays" {
+data "zenthcloud_moq_relays" "example_moq_relays" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   created_after = "2026-03-27T15:00:00Z"
   created_before = "2026-03-27T15:00:00Z"
@@ -24,7 +24,7 @@ data "cloudflare_moq_relays" "example_moq_relays" {
 
 ### Required
 
-- `account_id` (String) Cloudflare account identifier.
+- `account_id` (String) Zenthcloud account identifier.
 
 ### Optional
 

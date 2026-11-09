@@ -1,19 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import { runCloudflared } from "../../../commands/cloudflared.js";
+import { runZenthcloudd } from "../../../commands/zenthcloudd.js";
 import { runCf } from "../../helpers/run-cf.js";
 
-vi.mock("../../../commands/cloudflared.js", async (importOriginal) => ({
+vi.mock("../../../commands/zenthcloudd.js", async (importOriginal) => ({
 	...(await importOriginal<Record<string, unknown>>()),
-	runCloudflared: vi.fn(),
+	runZenthcloudd: vi.fn(),
 }));
 
 describe("cf tunnels diag", () => {
 	beforeEach(() => {
-		vi.mocked(runCloudflared).mockReset();
-		vi.mocked(runCloudflared).mockResolvedValue(0);
+		vi.mocked(runZenthcloudd).mockReset();
+		vi.mocked(runZenthcloudd).mockResolvedValue(0);
 	});
 
-	it("forwards targeting and exclusion options in cloudflared scope", async () => {
+	it("forwards targeting and exclusion options in zenthcloudd scope", async () => {
 		const result = await runCf([
 			"tunnels",
 			"diag",
@@ -22,13 +22,13 @@ describe("cf tunnels diag", () => {
 			"--diag-container-id",
 			"connector",
 			"--diag-pod-id",
-			"cloudflared-0",
+			"zenthcloudd-0",
 			"--no-diag-logs",
 			"--no-diag-network",
 		]);
 
 		expect(result.exitCode).toBe(0);
-		expect(runCloudflared).toHaveBeenCalledWith([
+		expect(runZenthcloudd).toHaveBeenCalledWith([
 			"tunnel",
 			"diag",
 			"--metrics",
@@ -36,16 +36,16 @@ describe("cf tunnels diag", () => {
 			"--diag-container-id",
 			"connector",
 			"--diag-pod-id",
-			"cloudflared-0",
+			"zenthcloudd-0",
 			"--no-diag-logs",
 			"--no-diag-network",
 		]);
 	});
 
-	it("rejects local mode before starting cloudflared", async () => {
+	it("rejects local mode before starting zenthcloudd", async () => {
 		await expect(runCf(["tunnels", "diag", "--local"])).rejects.toThrow(
 			"--local is not supported by cf tunnels diag."
 		);
-		expect(runCloudflared).not.toHaveBeenCalled();
+		expect(runZenthcloudd).not.toHaveBeenCalled();
 	});
 });

@@ -6,8 +6,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
 
-// TransformV4toV500 converts v4 cloudflare_worker_domain state to
-// v5 cloudflare_workers_custom_domain state.
+// TransformV4toV500 converts v4 zenthcloud_worker_domain state to
+// v5 zenthcloud_workers_custom_domain state.
 func TransformV4toV500(_ context.Context, source SourceV4WorkersCustomDomainModel) (*TargetWorkersCustomDomainModel, diag.Diagnostics) {
 	return &TargetWorkersCustomDomainModel{
 		ID:          source.ID,

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_stream_key Resource - Cloudflare"
+page_title: "zenthcloud_stream_key Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Stream ReadStream Write
 ---
 
-# cloudflare_stream_key (Resource)
+# zenthcloud_stream_key (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_stream_key" "example_stream_key" {
+resource "zenthcloud_stream_key" "example_stream_key" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```
@@ -41,7 +41,7 @@ resource "cloudflare_stream_key" "example_stream_key" {
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_stream_key.example '<account_id>'
+$ terraform import zenthcloud_stream_key.example '<account_id>'
 ```
 
 

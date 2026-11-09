@@ -17,7 +17,7 @@ import {
 	normalizeSqlLineEndings,
 	resolveMigrationsConfig,
 } from "./bookkeeping.js";
-import type { Cloudflare } from "#lib/auth.js";
+import type { Zenthcloud } from "#lib/auth.js";
 import type { MigrationsConfig } from "./bookkeeping.js";
 import type { Argv } from "yargs";
 import { createCommandClient, getAccountId } from "#lib/auth.js";
@@ -57,7 +57,7 @@ export function migrationsTableOption<T>(yargs: Argv<T>) {
 
 /** Run one SQL batch against a database, returning the per-statement results. */
 export async function executeSql(
-	client: Cloudflare,
+	client: Zenthcloud,
 	accountId: string,
 	databaseId: string,
 	sql: string,
@@ -108,7 +108,7 @@ export interface SqlResult {
 }
 
 export interface MigrationsContext {
-	client: Cloudflare;
+	client: Zenthcloud;
 	accountId: string;
 	databaseId: string;
 	config: MigrationsConfig;

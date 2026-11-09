@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zone_dns_settings Data Source - Cloudflare"
+page_title: "zenthcloud_zone_dns_settings Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   DNS ReadDNS WriteZone DNS Settings ReadZone DNS Settings Write
 ---
 
-# cloudflare_zone_dns_settings (Data Source)
+# zenthcloud_zone_dns_settings (Data Source)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_zone_dns_settings" "example_zone_dns_settings" {
+data "zenthcloud_zone_dns_settings" "example_zone_dns_settings" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```
@@ -35,7 +35,7 @@ data "cloudflare_zone_dns_settings" "example_zone_dns_settings" {
 - `flatten_all_cnames` (Boolean) Whether to flatten all CNAME records in the zone. Note that, due to DNS limitations, a CNAME record at the zone apex will always be flattened.
 - `foundation_dns` (Boolean, Deprecated) Deprecated. Use nameservers.type to configure Advanced Nameservers.
 - `internal_dns` (Attributes) Settings for this internal zone. (see [below for nested schema](#nestedatt--internal_dns))
-- `multi_provider` (Boolean) Whether to enable multi-provider DNS, which causes Cloudflare to activate the zone even when non-Cloudflare NS records exist, and to respect NS records at the zone apex during outbound zone transfers.
+- `multi_provider` (Boolean) Whether to enable multi-provider DNS, which causes Zenthcloud to activate the zone even when non-Zenthcloud NS records exist, and to respect NS records at the zone apex during outbound zone transfers.
 - `nameservers` (Attributes) Controls the nameservers through which the zone is available. (see [below for nested schema](#nestedatt--nameservers))
 - `ns_ttl` (Number) The time to live (TTL) of the zone's nameserver (NS) records.
 - `secondary_overrides` (Boolean) Allows a Secondary DNS zone to use (proxied) override records and CNAME flattening at the zone apex.
@@ -59,7 +59,7 @@ Read-Only:
 - `nameserver_set_id` (String) Identifier of the account-owned Custom Nameserver Set to use for this zone.
 - `ns_set` (Number) Configured nameserver set number to use for this zone.
 - `type` (String) Nameserver type.
-Available values: "cloudflare.standard", "custom.account", "custom.tenant", "custom.zone", "custom".
+Available values: "zenthcloud.standard", "custom.account", "custom.tenant", "custom.zone", "custom".
 
 
 <a id="nestedatt--soa"></a>
@@ -69,7 +69,7 @@ Read-Only:
 
 - `expire` (Number) Time in seconds of being unable to query the primary server after which secondary servers should stop serving the zone.
 - `min_ttl` (Number) The time to live (TTL) for negative caching of records within the zone.
-- `mname` (String) The primary nameserver, which may be used for outbound zone transfers. If null, a Cloudflare-assigned value will be used.
+- `mname` (String) The primary nameserver, which may be used for outbound zone transfers. If null, a Zenthcloud-assigned value will be used.
 - `refresh` (Number) Time in seconds after which secondary servers should re-check the SOA record to see if the zone has been updated.
 - `retry` (Number) Time in seconds after which secondary servers should retry queries after the primary server was unresponsive.
 - `rname` (String) The email address of the zone administrator, with the first label representing the local part of the email address.

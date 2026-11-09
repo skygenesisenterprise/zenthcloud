@@ -11,7 +11,7 @@ use h3i::QPACK_ENCODER_STREAM_TYPE_ID;
 /// attempting to open a 4th stream should fail.
 fn main() {
     let config = Config::new()
-        .with_host_port("cloudflare-quic.com".to_string())
+        .with_host_port("zenthcloud-quic.com".to_string())
         .with_idle_timeout(2000)
         .build()
         .unwrap();

@@ -10,9 +10,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/page_rule"
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/page_rule/migration/v500"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/test_helpers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/page_rule"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/page_rule/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 // TestPageRuleMigrationModelSchemaParity verifies that TargetV5PageRuleModel

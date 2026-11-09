@@ -15,7 +15,7 @@ func UpgradeStateFrom0To500(ctx context.Context, req resource.UpgradeStateReques
 	tflog.Info(ctx, "Starting state upgrade from version 0 (v4) to version 500 (v5) for zone_dnssec")
 
 	// Parse the old state using the source model and attribute types
-	var source SourceCloudflareZoneDNSSECModel
+	var source SourceZenthcloudZoneDNSSECModel
 	diags := req.State.Get(ctx, &source)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

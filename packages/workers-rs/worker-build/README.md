@@ -1,6 +1,6 @@
 # worker-build
 
-This is a tool to be used as a custom build command for a Cloudflare Workers project.
+This is a tool to be used as a custom build command for a Zenthcloud Workers project.
 
 ```toml
 # wrangler.toml

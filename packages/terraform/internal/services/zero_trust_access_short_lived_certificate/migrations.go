@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_access_short_lived_certificate/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_access_short_lived_certificate/migration/v500"
 )
 
 func init() {
@@ -21,7 +21,7 @@ var _ resource.ResourceWithMoveState = (*ZeroTrustAccessShortLivedCertificateRes
 
 // MoveState registers state movers for resource renames.
 // This enables Terraform 1.8+ `moved` blocks to automatically trigger state migration
-// from cloudflare_access_ca_certificate to cloudflare_zero_trust_access_short_lived_certificate.
+// from zenthcloud_access_ca_certificate to zenthcloud_zero_trust_access_short_lived_certificate.
 func (r *ZeroTrustAccessShortLivedCertificateResource) MoveState(ctx context.Context) []resource.StateMover {
 	sourceSchema := v500.SourceAccessCACertificateSchema()
 

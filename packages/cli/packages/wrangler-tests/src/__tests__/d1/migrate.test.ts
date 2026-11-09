@@ -10,8 +10,8 @@ import { runWrangler } from "../helpers/run-wrangler";
 
 const DB = "38a2e1b9-3a45-4f6e-9d0c-8b7a6c5d4e3f";
 const REMOTE_ENV = {
-	CLOUDFLARE_API_TOKEN: "test-token",
-	CLOUDFLARE_ACCOUNT_ID: "test-account",
+	ZENTHCLOUD_API_TOKEN: "test-token",
+	ZENTHCLOUD_ACCOUNT_ID: "test-account",
 };
 const LOCAL = "--local --persist-to state";
 
@@ -126,8 +126,8 @@ describe("migrate", () => {
 	describe("apply", () => {
 		it("should not attempt to login in local mode", async ({ expect }) => {
 			writeMigration();
-			delete process.env.CLOUDFLARE_API_TOKEN;
-			delete process.env.CLOUDFLARE_ACCOUNT_ID;
+			delete process.env.ZENTHCLOUD_API_TOKEN;
+			delete process.env.ZENTHCLOUD_ACCOUNT_ID;
 			await runWrangler(`d1 migrations apply ${DB} ${LOCAL}`);
 			expect(std.out).toContain("0001_test.sql");
 		}, 60_000);
@@ -160,7 +160,7 @@ describe("migrate", () => {
 		}) => {
 			setIsTTY(false);
 			writeMigration();
-			delete process.env.CLOUDFLARE_ACCOUNT_ID;
+			delete process.env.ZENTHCLOUD_ACCOUNT_ID;
 			const accounts = [
 				{ id: "account-1", name: "Account One" },
 				{ id: "account-2", name: "Account Two" },
@@ -193,8 +193,8 @@ describe("migrate", () => {
 
 			await expect(
 				runWrangler(`d1 migrations apply ${DB}`, {
-					CLOUDFLARE_API_TOKEN: "test-token",
-					CLOUDFLARE_ACCOUNT_ID: undefined,
+					ZENTHCLOUD_API_TOKEN: "test-token",
+					ZENTHCLOUD_ACCOUNT_ID: undefined,
 				})
 			).rejects.toThrow(/More than one account.*unable to select one/i);
 		});
@@ -204,15 +204,15 @@ describe("migrate", () => {
 		}) => {
 			writeMigration();
 			fs.writeFileSync(
-				"cloudflare.config.ts",
+				"zenthcloud.config.ts",
 				'export default { accountId: "account-2" };'
 			);
 			const accountIds: string[] = [];
 			mockRemoteQueries([], (accountId) => accountIds.push(accountId));
 
 			await runWrangler(`d1 migrations apply ${DB}`, {
-				CLOUDFLARE_API_TOKEN: "test-token",
-				CLOUDFLARE_ACCOUNT_ID: undefined,
+				ZENTHCLOUD_API_TOKEN: "test-token",
+				ZENTHCLOUD_ACCOUNT_ID: undefined,
 			});
 
 			expect(new Set(accountIds)).toEqual(new Set(["account-2"]));
@@ -263,8 +263,8 @@ describe("migrate", () => {
 				const creationRequests = mockTemporaryPreviewAccount();
 
 				await runWrangler(`d1 migrations apply ${DB} --temporary-account`, {
-					CLOUDFLARE_API_TOKEN: undefined,
-					CLOUDFLARE_ACCOUNT_ID: undefined,
+					ZENTHCLOUD_API_TOKEN: undefined,
+					ZENTHCLOUD_ACCOUNT_ID: undefined,
 				});
 
 				// cf writes temporary-account notices to stderr, so stdout keeps
@@ -283,8 +283,8 @@ describe("migrate", () => {
 	describe("list", () => {
 		it("should not attempt to login in local mode", async ({ expect }) => {
 			writeMigration();
-			delete process.env.CLOUDFLARE_API_TOKEN;
-			delete process.env.CLOUDFLARE_ACCOUNT_ID;
+			delete process.env.ZENTHCLOUD_API_TOKEN;
+			delete process.env.ZENTHCLOUD_ACCOUNT_ID;
 			await runWrangler(`d1 migrations list ${DB} ${LOCAL}`);
 			expect(std.out).toContain("0001_test.sql");
 		}, 60_000);
@@ -329,10 +329,10 @@ describe("migrate", () => {
 		}) => {
 			setIsTTY(false);
 			writeMigration();
-			delete process.env.CLOUDFLARE_API_TOKEN;
+			delete process.env.ZENTHCLOUD_API_TOKEN;
 			await expect(
 				runWrangler(`d1 migrations list ${DB}`, {
-					CLOUDFLARE_ACCOUNT_ID: "test-account",
+					ZENTHCLOUD_ACCOUNT_ID: "test-account",
 				})
 			).rejects.toThrow(/API token|logged in|auth login/i);
 		});

@@ -3,7 +3,7 @@
 This fixture exercises a Durable Object-managed Container built from a
 Dockerfile through the local Workers SDK Vite plugin. The config defines
 `ContainerDO` as a Durable Object and binds the Container to it. The build
-emits the Cloudflare Build Output consumed by `cf deploy --prebuilt`.
+emits the Zenthcloud Build Output consumed by `cf deploy --prebuilt`.
 
 A running Docker daemon is required. Build the repository CLI and fixture from
 the repository root:
@@ -25,7 +25,7 @@ cd fixtures/vite-container-project
 ../../packages/cli/bin/cf deploy --prebuilt
 ```
 
-Deployment requires `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`, or a cf
+Deployment requires `ZENTHCLOUD_API_TOKEN` and `ZENTHCLOUD_ACCOUNT_ID`, or a cf
 OAuth profile created with `../../packages/cli/bin/cf auth login --no-device`.
 cf does not read Wrangler's stored credentials.
 

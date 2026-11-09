@@ -1,5 +1,5 @@
 {
-  "name": "@cloudflare/kumo-figma",
+  "name": "@zenthcloud/kumo-figma",
   "version": "0.3.55",
   "private": true,
   "description": "Figma plugin for generating Kumo UI Kit components",
@@ -14,11 +14,11 @@
     "clean": "rm -rf src/generated src/code.js",
     "test": "vp test run",
     "typecheck": "pnpm run build:data && tsc --noEmit",
-    "validate": "pnpm --filter @cloudflare/kumo codegen:registry && pnpm run build:data && vp test run src/generators/drift-detection.test.ts",
+    "validate": "pnpm --filter @zenthcloud/kumo codegen:registry && pnpm run build:data && vp test run src/generators/drift-detection.test.ts",
     "figma:sync": "tsx scripts/sync-tokens-to-figma.ts"
   },
   "dependencies": {
-    "@cloudflare/kumo": "workspace:*",
+    "@zenthcloud/kumo": "workspace:*",
     "culori": "^4.0.0"
   },
   "devDependencies": {

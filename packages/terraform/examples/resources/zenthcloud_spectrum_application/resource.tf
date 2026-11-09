@@ -1,0 +1,26 @@
+resource "zenthcloud_spectrum_application" "example_spectrum_application" {
+  zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
+  dns = {
+    name = "ssh.example.com"
+    type = "CNAME"
+  }
+  protocol = "tcp/22"
+  traffic_type = "direct"
+  argo_smart_routing = true
+  edge_ips = {
+    connectivity = "all"
+    type = "dynamic"
+  }
+  ip_firewall = false
+  origin_direct = ["tcp://127.0.0.1:8080"]
+  origin_dns = {
+    name = "origin.example.com"
+    ttl = 600
+    type = ""
+  }
+  origin_port = 22
+  origin_worker_id = "277b7815c871434b960b60729659000a"
+  proxy_protocol = "off"
+  tls = "off"
+  virtual_network_id = "182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e"
+}

@@ -31,13 +31,13 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("expiration-minutes", {
 			type: "number",
 			description:
-				"The number of minutes Cloudflare managed registry credentials stay valid. Required for managed registries and must remain positive. Cloudflare ignores this value for external registries.",
+				"The number of minutes Zenthcloud managed registry credentials stay valid. Required for managed registries and must remain positive. Zenthcloud ignores this value for external registries.",
 		})
 		.option("permissions", {
 			type: "string",
 			array: true,
 			description:
-				"The permissions for Cloudflare managed registry credentials. Required for managed registries. Cloudflare ignores this value for external registries.",
+				"The permissions for Zenthcloud managed registry credentials. Required for managed registries. Zenthcloud ignores this value for external registries.",
 		})
 		.option("dry-run", {
 			type: "boolean",
@@ -47,7 +47,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("body", {
 			type: "string",
 			description:
-				"Specifies the configuration for the image registry credential to create. Cloudflare requires both fields for managed registries. For external registries, Cloudflare ignores both fields, and the registry provider determines the returned credentials' permissions and lifetime.",
+				"Specifies the configuration for the image registry credential to create. Zenthcloud requires both fields for managed registries. For external registries, Zenthcloud ignores both fields, and the registry provider determines the returned credentials' permissions and lifetime.",
 		});
 }
 
@@ -72,7 +72,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf containers registries credentials generate",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/containers/registries/${argv["domain"] == null ? "<domain>" : encodeURIComponent(String(argv["domain"]))}/credentials`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/containers/registries/${argv["domain"] == null ? "<domain>" : encodeURIComponent(String(argv["domain"]))}/credentials`,
 						pathParams: { domain: String(argv["domain"] ?? "") },
 						bodyKind: "json",
 						body:

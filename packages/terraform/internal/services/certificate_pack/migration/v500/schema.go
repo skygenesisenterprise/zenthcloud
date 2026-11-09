@@ -5,7 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceCloudflareCertificatePackSchema returns the legacy cloudflare_certificate_pack schema (schema_version=0).
+// SourceZenthcloudCertificatePackSchema returns the legacy zenthcloud_certificate_pack schema (schema_version=0).
 //
 // This minimal schema includes only the properties needed for state parsing:
 // - Required, Optional, Computed flags
@@ -13,7 +13,7 @@ import (
 // - Nested structure definitions
 //
 // Validators, PlanModifiers, and Descriptions are intentionally omitted as they're not needed for reading existing state.
-func SourceCloudflareCertificatePackSchema() schema.Schema {
+func SourceZenthcloudCertificatePackSchema() schema.Schema {
 	return schema.Schema{
 		// Note: No Version field needed - the version is specified in the UpgradeState handler registration
 		Attributes: map[string]schema.Attribute{
@@ -39,7 +39,7 @@ func SourceCloudflareCertificatePackSchema() schema.Schema {
 			"certificate_authority": schema.StringAttribute{
 				Required: true,
 			},
-			"cloudflare_branding": schema.BoolAttribute{
+			"zenthcloud_branding": schema.BoolAttribute{
 				Optional: true,
 			},
 			// wait_for_active_status: removed in v5, but present in v4 state

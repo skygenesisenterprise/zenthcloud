@@ -5,8 +5,8 @@ package magic_wan_gre_tunnel
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -76,8 +76,8 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 			},
 			PlanModifiers: []planmodifier.Object{objectplanmodifier.RequiresReplace()},
 			},
-			"cloudflare_gre_endpoint": schema.StringAttribute{
-				Description: "The IP address assigned to the Cloudflare side of the GRE tunnel.",
+			"zenthcloud_gre_endpoint": schema.StringAttribute{
+				Description: "The IP address assigned to the Zenthcloud side of the GRE tunnel.",
 				Required:    true,
 			},
 			"customer_gre_endpoint": schema.StringAttribute{
@@ -124,7 +124,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				CustomType: customfield.NewNestedObjectType[MagicWANGRETunnelHealthCheckModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"direction": schema.StringAttribute{
-						Description: "The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Cloudflare via the open Internet, or bidirectional where both the probe and result come and go via the tunnel.\nAvailable values: \"unidirectional\", \"bidirectional\".",
+						Description: "The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Zenthcloud via the open Internet, or bidirectional where both the probe and result come and go via the tunnel.\nAvailable values: \"unidirectional\", \"bidirectional\".",
 						Computed:    true,
 						Optional:    true,
 						Validators: []validator.String{
@@ -152,7 +152,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						Default: stringdefault.StaticString("mid"),
 					},
 					"target": schema.SingleNestedAttribute{
-						Description: "The destination address in a request type health check. After the healthcheck is decapsulated at the customer end of the tunnel, the ICMP echo will be forwarded to this address. This field defaults to `customer_gre_endpoint address`. This field is ignored for bidirectional healthchecks as the interface_address (not assigned to the Cloudflare side of the tunnel) is used as the target. Must be in object form if the x-magic-new-hc-target header is set to true and string form if x-magic-new-hc-target is absent or set to false.",
+						Description: "The destination address in a request type health check. After the healthcheck is decapsulated at the customer end of the tunnel, the ICMP echo will be forwarded to this address. This field defaults to `customer_gre_endpoint address`. This field is ignored for bidirectional healthchecks as the interface_address (not assigned to the Zenthcloud side of the tunnel) is used as the target. Must be in object form if the x-magic-new-hc-target header is set to true and string form if x-magic-new-hc-target is absent or set to false.",
 						Computed:    true,
 						Optional:    true,
 						CustomType:  customfield.NewNestedObjectType[MagicWANGRETunnelHealthCheckTargetModel](ctx),
@@ -247,8 +247,8 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						Description: "Identifier",
 						Computed:    true,
 					},
-					"cloudflare_gre_endpoint": schema.StringAttribute{
-						Description: "The IP address assigned to the Cloudflare side of the GRE tunnel.",
+					"zenthcloud_gre_endpoint": schema.StringAttribute{
+						Description: "The IP address assigned to the Zenthcloud side of the GRE tunnel.",
 						Computed:    true,
 					},
 					"customer_gre_endpoint": schema.StringAttribute{
@@ -359,7 +359,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						CustomType: customfield.NewNestedObjectType[MagicWANGRETunnelGRETunnelHealthCheckModel](ctx),
 						Attributes: map[string]schema.Attribute{
 							"direction": schema.StringAttribute{
-								Description: "The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Cloudflare via the open Internet, or bidirectional where both the probe and result come and go via the tunnel.\nAvailable values: \"unidirectional\", \"bidirectional\".",
+								Description: "The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Zenthcloud via the open Internet, or bidirectional where both the probe and result come and go via the tunnel.\nAvailable values: \"unidirectional\", \"bidirectional\".",
 								Computed:    true,
 								Validators: []validator.String{
 									stringvalidator.OneOfCaseInsensitive("unidirectional", "bidirectional"),
@@ -384,7 +384,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 								Default: stringdefault.StaticString("mid"),
 							},
 							"target": schema.SingleNestedAttribute{
-								Description: "The destination address in a request type health check. After the healthcheck is decapsulated at the customer end of the tunnel, the ICMP echo will be forwarded to this address. This field defaults to `customer_gre_endpoint address`. This field is ignored for bidirectional healthchecks as the interface_address (not assigned to the Cloudflare side of the tunnel) is used as the target. Must be in object form if the x-magic-new-hc-target header is set to true and string form if x-magic-new-hc-target is absent or set to false.",
+								Description: "The destination address in a request type health check. After the healthcheck is decapsulated at the customer end of the tunnel, the ICMP echo will be forwarded to this address. This field defaults to `customer_gre_endpoint address`. This field is ignored for bidirectional healthchecks as the interface_address (not assigned to the Zenthcloud side of the tunnel) is used as the target. Must be in object form if the x-magic-new-hc-target header is set to true and string form if x-magic-new-hc-target is absent or set to false.",
 								Computed:    true,
 								CustomType:  customfield.NewNestedObjectType[MagicWANGRETunnelGRETunnelHealthCheckTargetModel](ctx),
 								Attributes: map[string]schema.Attribute{
@@ -437,8 +437,8 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						Description: "Identifier",
 						Computed:    true,
 					},
-					"cloudflare_gre_endpoint": schema.StringAttribute{
-						Description: "The IP address assigned to the Cloudflare side of the GRE tunnel.",
+					"zenthcloud_gre_endpoint": schema.StringAttribute{
+						Description: "The IP address assigned to the Zenthcloud side of the GRE tunnel.",
 						Computed:    true,
 					},
 					"customer_gre_endpoint": schema.StringAttribute{
@@ -549,7 +549,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 						CustomType: customfield.NewNestedObjectType[MagicWANGRETunnelModifiedGRETunnelHealthCheckModel](ctx),
 						Attributes: map[string]schema.Attribute{
 							"direction": schema.StringAttribute{
-								Description: "The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Cloudflare via the open Internet, or bidirectional where both the probe and result come and go via the tunnel.\nAvailable values: \"unidirectional\", \"bidirectional\".",
+								Description: "The direction of the flow of the healthcheck. Either unidirectional, where the probe comes to you via the tunnel and the result comes back to Zenthcloud via the open Internet, or bidirectional where both the probe and result come and go via the tunnel.\nAvailable values: \"unidirectional\", \"bidirectional\".",
 								Computed:    true,
 								Validators: []validator.String{
 									stringvalidator.OneOfCaseInsensitive("unidirectional", "bidirectional"),
@@ -574,7 +574,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 								Default: stringdefault.StaticString("mid"),
 							},
 							"target": schema.SingleNestedAttribute{
-								Description: "The destination address in a request type health check. After the healthcheck is decapsulated at the customer end of the tunnel, the ICMP echo will be forwarded to this address. This field defaults to `customer_gre_endpoint address`. This field is ignored for bidirectional healthchecks as the interface_address (not assigned to the Cloudflare side of the tunnel) is used as the target. Must be in object form if the x-magic-new-hc-target header is set to true and string form if x-magic-new-hc-target is absent or set to false.",
+								Description: "The destination address in a request type health check. After the healthcheck is decapsulated at the customer end of the tunnel, the ICMP echo will be forwarded to this address. This field defaults to `customer_gre_endpoint address`. This field is ignored for bidirectional healthchecks as the interface_address (not assigned to the Zenthcloud side of the tunnel) is used as the target. Must be in object form if the x-magic-new-hc-target header is set to true and string form if x-magic-new-hc-target is absent or set to false.",
 								Computed:    true,
 								CustomType:  customfield.NewNestedObjectType[MagicWANGRETunnelModifiedGRETunnelHealthCheckTargetModel](ctx),
 								Attributes: map[string]schema.Attribute{

@@ -5,9 +5,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -21,13 +21,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_authenticated_origin_pulls_settings", &resource.Sweeper{
-		Name: "cloudflare_authenticated_origin_pulls_settings",
-		F:    testSweepCloudflareAuthenticatedOriginPullsSettings,
+	resource.AddTestSweepers("zenthcloud_authenticated_origin_pulls_settings", &resource.Sweeper{
+		Name: "zenthcloud_authenticated_origin_pulls_settings",
+		F:    testSweepZenthcloudAuthenticatedOriginPullsSettings,
 	})
 }
 
-func testSweepCloudflareAuthenticatedOriginPullsSettings(r string) error {
+func testSweepZenthcloudAuthenticatedOriginPullsSettings(r string) error {
 	ctx := context.Background()
 	// Authenticated Origin Pulls Settings is a zone-level configuration setting.
 	// It's a singleton setting per zone, not something that accumulates.
@@ -46,8 +46,8 @@ func testAccAuthenticatedOriginPullsSettingsDisabled(zoneID, rnd string) string 
 
 func TestAccAuthenticatedOriginPullsSettings_FullLifecycle(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_authenticated_origin_pulls_settings." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_authenticated_origin_pulls_settings." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -121,7 +121,7 @@ func TestAccAuthenticatedOriginPullsSettings_FullLifecycle(t *testing.T) {
 
 func TestAccUpgradeAuthenticatedOriginPullsSettings_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	config := testAccAuthenticatedOriginPullsSettingsEnabled(zoneID, rnd)
 
@@ -133,8 +133,8 @@ func TestAccUpgradeAuthenticatedOriginPullsSettings_FromPublishedV5(t *testing.T
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

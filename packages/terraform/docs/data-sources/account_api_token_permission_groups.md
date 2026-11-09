@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_account_api_token_permission_groups Data Source - Cloudflare"
+page_title: "zenthcloud_account_api_token_permission_groups Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account API Tokens ReadAccount API Tokens Write
 ---
 
-# cloudflare_account_api_token_permission_groups (Data Source)
+# zenthcloud_account_api_token_permission_groups (Data Source)
 
 Accepted Permissions
 
@@ -16,10 +16,10 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_account_api_token_permission_groups" "example_account_api_token_permission_groups" {
+data "zenthcloud_account_api_token_permission_groups" "example_account_api_token_permission_groups" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name = "Account%20Settings%20Write"
-  scope = "com.cloudflare.api.account.zone"
+  scope = "com.zenthcloud.api.account.zone"
 }
 ```
 
@@ -44,7 +44,7 @@ The value must be URL-encoded.
 Read-Only:
 
 - `category` (String) Product category that this permission group belongs to.
-Available values: "developer_platform", "ai_and_machine_learning", "dns_and_zones", "app_security", "rules_and_configuration", "cloudflare_one_and_zero_trust", "analytics_and_logs", "network_services", "media", "email_and_messaging", "cache_and_performance", "account_and_billing", "other".
+Available values: "developer_platform", "ai_and_machine_learning", "dns_and_zones", "app_security", "rules_and_configuration", "zenthcloud_one_and_zero_trust", "analytics_and_logs", "network_services", "media", "email_and_messaging", "cache_and_performance", "account_and_billing", "other".
 - `id` (String) Public ID.
 - `is_selectable` (Boolean) Whether the caller can select this permission group when creating a token.
 - `name` (String) Permission Group Name

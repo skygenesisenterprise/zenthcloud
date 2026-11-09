@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -23,23 +23,23 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zero_trust_device_posture_rule", &resource.Sweeper{
-		Name: "cloudflare_zero_trust_device_posture_rule",
-		F:    testSweepCloudflareDevicePostureRule,
+	resource.AddTestSweepers("zenthcloud_zero_trust_device_posture_rule", &resource.Sweeper{
+		Name: "zenthcloud_zero_trust_device_posture_rule",
+		F:    testSweepZenthcloudDevicePostureRule,
 	})
 }
 
-func testSweepCloudflareDevicePostureRule(r string) error {
+func testSweepZenthcloudDevicePostureRule(r string) error {
 	ctx := context.Background()
 	client, clientErr := acctest.SharedV1Client()
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
-		return fmt.Errorf("failed to create Cloudflare client: %w", clientErr)
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
+		return fmt.Errorf("failed to create Zenthcloud client: %w", clientErr)
 	}
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		return fmt.Errorf("CLOUDFLARE_ACCOUNT_ID must be set")
+		return fmt.Errorf("ZENTHCLOUD_ACCOUNT_ID must be set")
 	}
 
 	tflog.Info(ctx, "Starting to list Device Posture Rules for sweeping")
@@ -81,27 +81,27 @@ func testSweepCloudflareDevicePostureRule(r string) error {
 }
 
 var (
-	accountID = os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID = os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 )
 
-func TestAccCloudflareDevicePostureRule_OsVersion(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudDevicePostureRule_OsVersion(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_device_posture_rule.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_device_posture_rule.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareDevicePostureRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudDevicePostureRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareDevicePostureRuleConfigOsVersion(rnd, accountID),
+				Config: testAccZenthcloudDevicePostureRuleConfigOsVersion(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -123,24 +123,24 @@ func TestAccCloudflareDevicePostureRule_OsVersion(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareDevicePostureRule_OsVersionExtra(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudDevicePostureRule_OsVersionExtra(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_device_posture_rule.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_device_posture_rule.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareDevicePostureRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudDevicePostureRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareDevicePostureRuleConfigOsVersionExtra(rnd, accountID),
+				Config: testAccZenthcloudDevicePostureRuleConfigOsVersionExtra(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -163,24 +163,24 @@ func TestAccCloudflareDevicePostureRule_OsVersionExtra(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareDevicePostureRule_LinuxOsDistro(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudDevicePostureRule_LinuxOsDistro(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_device_posture_rule.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_device_posture_rule.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareDevicePostureRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudDevicePostureRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareDevicePostureRuleConfigLinuxDistro(rnd, accountID),
+				Config: testAccZenthcloudDevicePostureRuleConfigLinuxDistro(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -203,24 +203,24 @@ func TestAccCloudflareDevicePostureRule_LinuxOsDistro(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareDevicePostureRule_DomainJoined(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudDevicePostureRule_DomainJoined(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_device_posture_rule.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_device_posture_rule.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareDevicePostureRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudDevicePostureRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareDevicePostureRuleConfigDomainJoined(rnd, accountID),
+				Config: testAccZenthcloudDevicePostureRuleConfigDomainJoined(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -241,24 +241,24 @@ func TestAccCloudflareDevicePostureRule_DomainJoined(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareDevicePostureRule_Firewall(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudDevicePostureRule_Firewall(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_device_posture_rule.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_device_posture_rule.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareDevicePostureRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudDevicePostureRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareDevicePostureRuleConfigFirewall(rnd, accountID),
+				Config: testAccZenthcloudDevicePostureRuleConfigFirewall(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -281,24 +281,24 @@ func TestAccCloudflareDevicePostureRule_Firewall(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareDevicePostureRule_DiskEncryption_RequireAll(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudDevicePostureRule_DiskEncryption_RequireAll(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_device_posture_rule.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_device_posture_rule.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareDevicePostureRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudDevicePostureRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareDevicePostureRuleConfigDiskEncryptionRequireAll(rnd, accountID),
+				Config: testAccZenthcloudDevicePostureRuleConfigDiskEncryptionRequireAll(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -321,24 +321,24 @@ func TestAccCloudflareDevicePostureRule_DiskEncryption_RequireAll(t *testing.T) 
 	})
 }
 
-func TestAccCloudflareDevicePostureRule_DiskEncryption_CheckDisks(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudDevicePostureRule_DiskEncryption_CheckDisks(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_device_posture_rule.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_device_posture_rule.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareDevicePostureRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudDevicePostureRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareDevicePostureRuleConfigDiskEncryptionCheckDisks(rnd, accountID),
+				Config: testAccZenthcloudDevicePostureRuleConfigDiskEncryptionCheckDisks(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -363,50 +363,50 @@ func TestAccCloudflareDevicePostureRule_DiskEncryption_CheckDisks(t *testing.T) 
 	})
 }
 
-func testAccCloudflareDevicePostureRuleConfigOsVersion(rnd, accountID string) string {
+func testAccZenthcloudDevicePostureRuleConfigOsVersion(rnd, accountID string) string {
 	return acctest.LoadTestCase("devicepostureruleconfigosversion.tf", rnd, accountID)
 }
 
-func testAccCloudflareDevicePostureRuleConfigOsVersionExtra(rnd, accountID string) string {
+func testAccZenthcloudDevicePostureRuleConfigOsVersionExtra(rnd, accountID string) string {
 	return acctest.LoadTestCase("devicepostureruleconfigosversionextra.tf", rnd, accountID)
 }
 
-func testAccCloudflareDevicePostureRuleConfigLinuxDistro(rnd, accountID string) string {
+func testAccZenthcloudDevicePostureRuleConfigLinuxDistro(rnd, accountID string) string {
 	return acctest.LoadTestCase("devicepostureruleconfiglinuxdistro.tf", rnd, accountID)
 }
 
-func testAccCloudflareDevicePostureRuleConfigDomainJoined(rnd, accountID string) string {
+func testAccZenthcloudDevicePostureRuleConfigDomainJoined(rnd, accountID string) string {
 	return acctest.LoadTestCase("devicepostureruleconfigdomainjoined.tf", rnd, accountID)
 }
 
-func testAccCloudflareDevicePostureRuleConfigDiskEncryptionRequireAll(rnd, accountID string) string {
+func testAccZenthcloudDevicePostureRuleConfigDiskEncryptionRequireAll(rnd, accountID string) string {
 	return acctest.LoadTestCase("devicepostureruleconfigdiskencryptionrequireall.tf", rnd, accountID)
 }
 
-func testAccCloudflareDevicePostureRuleConfigDiskEncryptionCheckDisks(rnd, accountID string) string {
+func testAccZenthcloudDevicePostureRuleConfigDiskEncryptionCheckDisks(rnd, accountID string) string {
 	return acctest.LoadTestCase("devicepostureruleconfigdiskencryptioncheckdisks.tf", rnd, accountID)
 }
 
-func testAccCloudflareDevicePostureRuleConfigFirewall(rnd, accountID string) string {
+func testAccZenthcloudDevicePostureRuleConfigFirewall(rnd, accountID string) string {
 	return acctest.LoadTestCase("devicepostureruleconfigfirewall.tf", rnd, accountID)
 }
 
 // Test for File posture rule type
-func TestAccCloudflareDevicePostureRule_File(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+func TestAccZenthcloudDevicePostureRule_File(t *testing.T) {
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_device_posture_rule.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_device_posture_rule.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareDevicePostureRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudDevicePostureRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareDevicePostureRuleConfigFile(rnd, accountID),
+				Config: testAccZenthcloudDevicePostureRuleConfigFile(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -432,21 +432,21 @@ func TestAccCloudflareDevicePostureRule_File(t *testing.T) {
 }
 
 // Test for Application posture rule type
-func TestAccCloudflareDevicePostureRule_Application(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+func TestAccZenthcloudDevicePostureRule_Application(t *testing.T) {
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_device_posture_rule.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_device_posture_rule.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareDevicePostureRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudDevicePostureRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareDevicePostureRuleConfigApplication(rnd, accountID),
+				Config: testAccZenthcloudDevicePostureRuleConfigApplication(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -469,26 +469,26 @@ func TestAccCloudflareDevicePostureRule_Application(t *testing.T) {
 }
 
 // Test for Client Certificate posture rule type
-func TestAccCloudflareDevicePostureRule_ClientCertificate(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+func TestAccZenthcloudDevicePostureRule_ClientCertificate(t *testing.T) {
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	// Skip this test as it requires a valid certificate ID which is not available in CI
-	if os.Getenv("CLOUDFLARE_CERTIFICATE_ID") == "" {
-		t.Skip("CLOUDFLARE_CERTIFICATE_ID not set, skipping client certificate test")
+	if os.Getenv("ZENTHCLOUD_CERTIFICATE_ID") == "" {
+		t.Skip("ZENTHCLOUD_CERTIFICATE_ID not set, skipping client certificate test")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_device_posture_rule.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_device_posture_rule.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareDevicePostureRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudDevicePostureRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareDevicePostureRuleConfigClientCertificate(rnd, accountID),
+				Config: testAccZenthcloudDevicePostureRuleConfigClientCertificate(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -518,26 +518,26 @@ func TestAccCloudflareDevicePostureRule_ClientCertificate(t *testing.T) {
 }
 
 // Test for SentinelOne posture rule type
-func TestAccCloudflareDevicePostureRule_SentinelOne(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+func TestAccZenthcloudDevicePostureRule_SentinelOne(t *testing.T) {
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	// Skip this test as it requires a valid SentinelOne S2S integration connection ID
-	if os.Getenv("CLOUDFLARE_SENTINELONE_CONNECTION_ID") == "" {
-		t.Skip("CLOUDFLARE_SENTINELONE_CONNECTION_ID not set, skipping SentinelOne test")
+	if os.Getenv("ZENTHCLOUD_SENTINELONE_CONNECTION_ID") == "" {
+		t.Skip("ZENTHCLOUD_SENTINELONE_CONNECTION_ID not set, skipping SentinelOne test")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_device_posture_rule.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_device_posture_rule.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareDevicePostureRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudDevicePostureRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareDevicePostureRuleConfigSentinelOne(rnd, accountID),
+				Config: testAccZenthcloudDevicePostureRuleConfigSentinelOne(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -567,26 +567,26 @@ func TestAccCloudflareDevicePostureRule_SentinelOne(t *testing.T) {
 }
 
 // Test for Tanium posture rule type
-func TestAccCloudflareDevicePostureRule_Tanium(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+func TestAccZenthcloudDevicePostureRule_Tanium(t *testing.T) {
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	// Skip this test as it requires a valid Tanium integration connection ID
-	if os.Getenv("CLOUDFLARE_TANIUM_CONNECTION_ID") == "" {
-		t.Skip("CLOUDFLARE_TANIUM_CONNECTION_ID not set, skipping Tanium test")
+	if os.Getenv("ZENTHCLOUD_TANIUM_CONNECTION_ID") == "" {
+		t.Skip("ZENTHCLOUD_TANIUM_CONNECTION_ID not set, skipping Tanium test")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_device_posture_rule.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_device_posture_rule.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareDevicePostureRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudDevicePostureRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareDevicePostureRuleConfigTanium(rnd, accountID),
+				Config: testAccZenthcloudDevicePostureRuleConfigTanium(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -612,21 +612,21 @@ func TestAccCloudflareDevicePostureRule_Tanium(t *testing.T) {
 }
 
 // Test for Serial Number posture rule type
-func TestAccCloudflareDevicePostureRule_SerialNumber(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+func TestAccZenthcloudDevicePostureRule_SerialNumber(t *testing.T) {
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_device_posture_rule.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_device_posture_rule.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareDevicePostureRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudDevicePostureRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareDevicePostureRuleConfigSerialNumber(rnd, accountID),
+				Config: testAccZenthcloudDevicePostureRuleConfigSerialNumber(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -648,21 +648,21 @@ func TestAccCloudflareDevicePostureRule_SerialNumber(t *testing.T) {
 }
 
 // Test for Update scenarios with ConfigPlanChecks
-func TestAccCloudflareDevicePostureRule_Update(t *testing.T) {
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+func TestAccZenthcloudDevicePostureRule_Update(t *testing.T) {
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := fmt.Sprintf("cloudflare_zero_trust_device_posture_rule.%s", rnd)
+	resourceName := fmt.Sprintf("zenthcloud_zero_trust_device_posture_rule.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareDevicePostureRuleDestroy,
+		CheckDestroy:             testAccCheckZenthcloudDevicePostureRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareDevicePostureRuleConfigOsVersion(rnd, accountID),
+				Config: testAccZenthcloudDevicePostureRuleConfigOsVersion(rnd, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("description"), knownvalue.StringExact("My description")),
@@ -671,7 +671,7 @@ func TestAccCloudflareDevicePostureRule_Update(t *testing.T) {
 			},
 			// Update step with plan validation
 			{
-				Config: testAccCloudflareDevicePostureRuleConfigOsVersionUpdated(rnd, accountID),
+				Config: testAccZenthcloudDevicePostureRuleConfigOsVersionUpdated(rnd, accountID),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
@@ -707,42 +707,42 @@ func TestAccCloudflareDevicePostureRule_Update(t *testing.T) {
 }
 
 // Helper functions for new test configurations
-func testAccCloudflareDevicePostureRuleConfigFile(rnd, accountID string) string {
+func testAccZenthcloudDevicePostureRuleConfigFile(rnd, accountID string) string {
 	return acctest.LoadTestCase("devicepostureruleconfigfile.tf", rnd, accountID)
 }
 
-func testAccCloudflareDevicePostureRuleConfigApplication(rnd, accountID string) string {
+func testAccZenthcloudDevicePostureRuleConfigApplication(rnd, accountID string) string {
 	return acctest.LoadTestCase("devicepostureruleconfigapplication.tf", rnd, accountID)
 }
 
-func testAccCloudflareDevicePostureRuleConfigClientCertificate(rnd, accountID string) string {
+func testAccZenthcloudDevicePostureRuleConfigClientCertificate(rnd, accountID string) string {
 	return acctest.LoadTestCase("devicepostureruleconfigclientcertificate.tf", rnd, accountID)
 }
 
-func testAccCloudflareDevicePostureRuleConfigSentinelOne(rnd, accountID string) string {
+func testAccZenthcloudDevicePostureRuleConfigSentinelOne(rnd, accountID string) string {
 	return acctest.LoadTestCase("devicepostureruleconfigsentinelone.tf", rnd, accountID)
 }
 
-func testAccCloudflareDevicePostureRuleConfigTanium(rnd, accountID string) string {
+func testAccZenthcloudDevicePostureRuleConfigTanium(rnd, accountID string) string {
 	return acctest.LoadTestCase("devicepostureruleconfigtanium.tf", rnd, accountID)
 }
 
-func testAccCloudflareDevicePostureRuleConfigSerialNumber(rnd, accountID string) string {
+func testAccZenthcloudDevicePostureRuleConfigSerialNumber(rnd, accountID string) string {
 	return acctest.LoadTestCase("devicepostureruleconfigserialnumber.tf", rnd, accountID)
 }
 
-func testAccCloudflareDevicePostureRuleConfigOsVersionUpdated(rnd, accountID string) string {
+func testAccZenthcloudDevicePostureRuleConfigOsVersionUpdated(rnd, accountID string) string {
 	return acctest.LoadTestCase("devicepostureruleconfigosversion_updated.tf", rnd, accountID)
 }
 
-func testAccCheckCloudflareDevicePostureRuleDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudDevicePostureRuleDestroy(s *terraform.State) error {
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_zero_trust_device_posture_rule" {
+		if rs.Type != "zenthcloud_zero_trust_device_posture_rule" {
 			continue
 		}
 
@@ -763,15 +763,15 @@ func TestAccUpgradeZeroTrustDevicePostureRule_FromPublishedV5(t *testing.T) {
 	}
 	rnd := utils.GenerateRandomResourceName()
 
-	config := testAccCloudflareDevicePostureRuleConfigOsVersion(rnd, accountID)
+	config := testAccZenthcloudDevicePostureRuleConfigOsVersion(rnd, accountID)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.TestAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

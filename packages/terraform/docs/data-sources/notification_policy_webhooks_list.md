@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_notification_policy_webhooks_list Data Source - Cloudflare"
+page_title: "zenthcloud_notification_policy_webhooks_list Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Settings ReadAccount Settings WriteNotifications ReadNotifications WriteZero Trust: PII Read
 ---
 
-# cloudflare_notification_policy_webhooks_list (Data Source)
+# zenthcloud_notification_policy_webhooks_list (Data Source)
 
 Accepted Permissions
 
@@ -19,7 +19,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_notification_policy_webhooks_list" "example_notification_policy_webhooks_list" {
+data "zenthcloud_notification_policy_webhooks_list" "example_notification_policy_webhooks_list" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```
@@ -44,7 +44,7 @@ Read-Only:
 - `created_at` (String) Timestamp of when the webhook destination was created.
 - `id` (String) The unique identifier of a webhook
 - `last_failure` (String) Timestamp of the last time an attempt to dispatch a notification to this webhook failed.
-- `last_success` (String) Timestamp of the last time Cloudflare was able to successfully dispatch a notification using this webhook.
+- `last_success` (String) Timestamp of the last time Zenthcloud was able to successfully dispatch a notification using this webhook.
 - `name` (String) The name of the webhook destination. This will be included in the request body when you receive a webhook notification.
 - `secret` (String, Sensitive) Optional secret that will be passed in the `cf-webhook-auth` header when dispatching generic webhook notifications or formatted for supported destinations. Secrets are not returned in any API response body.
 - `type` (String) Type of webhook endpoint.

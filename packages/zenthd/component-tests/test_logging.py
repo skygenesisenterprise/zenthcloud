@@ -4,20 +4,20 @@ import os
 import time
 
 from constants import MAX_LOG_LINES, LOG_POLL_INTERVAL, LOG_POLL_TIMEOUT
-from util import start_cloudflared, wait_tunnel_ready, send_requests
+from util import start_zenthcloudd, wait_tunnel_ready, send_requests
 
 # Rolling logger rotate log files after 1 MB
 rotate_after_size = 1000 * 1000
-default_log_file = "cloudflared.log"
+default_log_file = "zenthcloudd.log"
 expect_message = "Starting Hello"
 
 
-def assert_log_to_terminal(cloudflared):
-    # All logs are drained by a background thread into cloudflared.stdout_lines.
+def assert_log_to_terminal(zenthcloudd):
+    # All logs are drained by a background thread into zenthcloudd.stdout_lines.
     # Poll the accumulated lines until the expected message appears.
     deadline = time.monotonic() + LOG_POLL_TIMEOUT
     while time.monotonic() < deadline:
-        for line in list(cloudflared.stdout_lines):
+        for line in list(zenthcloudd.stdout_lines):
             if expect_message.encode() in line:
                 return
         time.sleep(LOG_POLL_INTERVAL)
@@ -77,9 +77,9 @@ def assert_log_to_dir(config, log_dir):
 class TestLogging:
     def test_logging_to_terminal(self, tmp_path, component_tests_config):
         config = component_tests_config()
-        with start_cloudflared(tmp_path, config, cfd_pre_args=["tunnel", "--ha-connections", "1"], new_process=True) as cloudflared:
+        with start_zenthcloudd(tmp_path, config, cfd_pre_args=["tunnel", "--ha-connections", "1"], new_process=True) as zenthcloudd:
             wait_tunnel_ready(tunnel_url=config.get_url())
-            assert_log_to_terminal(cloudflared)
+            assert_log_to_terminal(zenthcloudd)
 
     def test_logging_to_file(self, tmp_path, component_tests_config):
         log_file = tmp_path / default_log_file
@@ -88,7 +88,7 @@ class TestLogging:
             "logfile": str(log_file),
         }
         config = component_tests_config(extra_config)
-        with start_cloudflared(tmp_path, config, cfd_pre_args=["tunnel", "--ha-connections", "1"], new_process=True, capture_output=False):
+        with start_zenthcloudd(tmp_path, config, cfd_pre_args=["tunnel", "--ha-connections", "1"], new_process=True, capture_output=False):
             wait_tunnel_ready(tunnel_url=config.get_url(), cfd_logs=str(log_file))
             assert_log_in_file(log_file)
             assert_json_log(log_file)
@@ -101,6 +101,6 @@ class TestLogging:
             "log-directory": str(log_dir),
         }
         config = component_tests_config(extra_config)
-        with start_cloudflared(tmp_path, config, cfd_pre_args=["tunnel", "--ha-connections", "1"], new_process=True, capture_output=False):
+        with start_zenthcloudd(tmp_path, config, cfd_pre_args=["tunnel", "--ha-connections", "1"], new_process=True, capture_output=False):
             wait_tunnel_ready(tunnel_url=config.get_url(), cfd_logs=str(log_dir))
             assert_log_to_dir(config, log_dir)

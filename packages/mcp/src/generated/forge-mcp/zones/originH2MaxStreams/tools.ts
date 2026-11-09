@@ -20,7 +20,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zones_originH2MaxStreams_edit",
     title: "Change Origin H2 Max Streams Setting",
-    description: "Origin H2 Max Streams configures the max number of concurrent requests that Cloudflare will send within the same connection when communicating with the origin server, if the origin supports it. Note that if your origin does not support H2 multiplexing, 5xx errors may be observed, particularly 520s. Also note that the default value is `100` for all plan types except Enterprise where it is `1`. `1` means that H2 multiplexing is disabled.\n\nPATCH /zones/{zone_id}/settings/origin_h2_max_streams",
+    description: "Origin H2 Max Streams configures the max number of concurrent requests that Zenthcloud will send within the same connection when communicating with the origin server, if the origin supports it. Note that if your origin does not support H2 multiplexing, 5xx errors may be observed, particularly 520s. Also note that the default value is `100` for all plan types except Enterprise where it is `1`. `1` means that H2 multiplexing is disabled.\n\nPATCH /zones/{zone_id}/settings/origin_h2_max_streams",
     inputSchema: {
       type: "object",
       properties: {
@@ -118,7 +118,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zones_originH2MaxStreams_get",
     title: "Get Origin H2 Max Streams Setting",
-    description: "Origin H2 Max Streams configures the max number of concurrent requests that Cloudflare will send within the same connection when communicating with the origin server, if the origin supports it. Note that if your origin does not support H2 multiplexing, 5xx errors may be observed, particularly 520s. Also note that the default value is `100` for all plan types except Enterprise where it is `1`. `1` means that H2 multiplexing is disabled.\n\nGET /zones/{zone_id}/settings/origin_h2_max_streams",
+    description: "Origin H2 Max Streams configures the max number of concurrent requests that Zenthcloud will send within the same connection when communicating with the origin server, if the origin supports it. Note that if your origin does not support H2 multiplexing, 5xx errors may be observed, particularly 520s. Also note that the default value is `100` for all plan types except Enterprise where it is `1`. `1` means that H2 multiplexing is disabled.\n\nGET /zones/{zone_id}/settings/origin_h2_max_streams",
     inputSchema: {
       type: "object",
       properties: {

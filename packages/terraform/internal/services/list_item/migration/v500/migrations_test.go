@@ -11,28 +11,28 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
 	currentProviderVersion = internal.PackageVersion // Current v5 release
 )
 
-// setV4ProviderRetryEnv configures the v4 Cloudflare provider's retry and backoff
+// setV4ProviderRetryEnv configures the v4 Zenthcloud provider's retry and backoff
 // settings via environment variables for the duration of the test. The v4 provider
-// defaults to 4 retries (CLOUDFLARE_RETRIES=4) with a max backoff of 30s, which is
+// defaults to 4 retries (ZENTHCLOUD_RETRIES=4) with a max backoff of 30s, which is
 // insufficient when multiple migration test packages run concurrently and hammer the
 // Lists API simultaneously. Bumping retries and max backoff makes the v4 provider
 // wait longer and retry more before giving up with "exceeded available rate limit retries".
 func setV4ProviderRetryEnv(t *testing.T) {
 	t.Helper()
-	if os.Getenv("CLOUDFLARE_RETRIES") == "" {
-		t.Setenv("CLOUDFLARE_RETRIES", "8")
+	if os.Getenv("ZENTHCLOUD_RETRIES") == "" {
+		t.Setenv("ZENTHCLOUD_RETRIES", "8")
 	}
-	if os.Getenv("CLOUDFLARE_MAX_BACKOFF") == "" {
-		t.Setenv("CLOUDFLARE_MAX_BACKOFF", "60")
+	if os.Getenv("ZENTHCLOUD_MAX_BACKOFF") == "" {
+		t.Setenv("ZENTHCLOUD_MAX_BACKOFF", "60")
 	}
 }
 
@@ -58,9 +58,9 @@ var v5RedirectItemConfig string
 
 const listTestPrefix = "tf_test_list_"
 
-// TestMigrateCloudflareListItemWithIP tests migration of a standalone list_item with IP.
+// TestMigrateZenthcloudListItemWithIP tests migration of a standalone list_item with IP.
 // Tests both v4→v5 and v5→v5 (stepping stone) upgrade paths.
-func TestMigrateCloudflareListItemWithIP(t *testing.T) {
+func TestMigrateZenthcloudListItemWithIP(t *testing.T) {
 	testCases := []struct {
 		name     string
 		version  string
@@ -85,11 +85,11 @@ func TestMigrateCloudflareListItemWithIP(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			setV4ProviderRetryEnv(t)
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			listName := fmt.Sprintf("%s%s", listTestPrefix, rnd)
-			listResourceName := "cloudflare_list." + rnd
-			itemResourceName := "cloudflare_list_item." + rnd + "_item"
+			listResourceName := "zenthcloud_list." + rnd
+			itemResourceName := "zenthcloud_list_item." + rnd + "_item"
 			tmpDir := t.TempDir()
 			description := fmt.Sprintf("Test list with IP item %s", rnd)
 			testConfig := tc.configFn(rnd, accountID, listName, description)
@@ -104,8 +104,8 @@ func TestMigrateCloudflareListItemWithIP(t *testing.T) {
 				Steps: append([]resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -123,10 +123,10 @@ func TestMigrateCloudflareListItemWithIP(t *testing.T) {
 	}
 }
 
-// TestMigrateCloudflareListItemWithHostname tests migration of a standalone list_item with hostname.
+// TestMigrateZenthcloudListItemWithHostname tests migration of a standalone list_item with hostname.
 // Tests both v4→v5 (block → SingleNestedAttribute) and v5→v5 (stepping stone) upgrade paths.
 // The from_v5 case specifically reproduces the regression described in GitHub issue #7073.
-func TestMigrateCloudflareListItemWithHostname(t *testing.T) {
+func TestMigrateZenthcloudListItemWithHostname(t *testing.T) {
 	testCases := []struct {
 		name     string
 		version  string
@@ -151,11 +151,11 @@ func TestMigrateCloudflareListItemWithHostname(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			setV4ProviderRetryEnv(t)
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			listName := fmt.Sprintf("%s%s", listTestPrefix, rnd)
-			listResourceName := "cloudflare_list." + rnd
-			itemResourceName := "cloudflare_list_item." + rnd + "_item"
+			listResourceName := "zenthcloud_list." + rnd
+			itemResourceName := "zenthcloud_list_item." + rnd + "_item"
 			tmpDir := t.TempDir()
 			description := fmt.Sprintf("Test list with hostname item %s", rnd)
 			testConfig := tc.configFn(rnd, accountID, listName, description)
@@ -170,8 +170,8 @@ func TestMigrateCloudflareListItemWithHostname(t *testing.T) {
 				Steps: append([]resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -193,9 +193,9 @@ func TestMigrateCloudflareListItemWithHostname(t *testing.T) {
 	}
 }
 
-// TestMigrateCloudflareListItemWithRedirect tests migration of a standalone list_item with redirect.
+// TestMigrateZenthcloudListItemWithRedirect tests migration of a standalone list_item with redirect.
 // Tests both v4→v5 (block → SingleNestedAttribute + string→bool) and v5→v5 (stepping stone) paths.
-func TestMigrateCloudflareListItemWithRedirect(t *testing.T) {
+func TestMigrateZenthcloudListItemWithRedirect(t *testing.T) {
 	testCases := []struct {
 		name     string
 		version  string
@@ -225,11 +225,11 @@ func TestMigrateCloudflareListItemWithRedirect(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			setV4ProviderRetryEnv(t)
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			listName := fmt.Sprintf("%s%s", listTestPrefix, rnd)
-			listResourceName := "cloudflare_list." + rnd
-			itemResourceName := "cloudflare_list_item." + rnd + "_item"
+			listResourceName := "zenthcloud_list." + rnd
+			itemResourceName := "zenthcloud_list_item." + rnd + "_item"
 			tmpDir := t.TempDir()
 			description := fmt.Sprintf("Test list with redirect item %s", rnd)
 			testConfig := tc.configFn(rnd, accountID, listName, description)
@@ -244,8 +244,8 @@ func TestMigrateCloudflareListItemWithRedirect(t *testing.T) {
 				Steps: append([]resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},

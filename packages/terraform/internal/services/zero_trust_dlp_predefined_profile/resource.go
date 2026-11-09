@@ -8,13 +8,13 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -31,7 +31,7 @@ func NewResource() resource.Resource {
 
 // ZeroTrustDLPPredefinedProfileResource defines the resource implementation.
 type ZeroTrustDLPPredefinedProfileResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *ZeroTrustDLPPredefinedProfileResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -43,12 +43,12 @@ func (r *ZeroTrustDLPPredefinedProfileResource) Configure(ctx context.Context, r
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -84,7 +84,7 @@ func (r *ZeroTrustDLPPredefinedProfileResource) Create(ctx context.Context, req 
 		ctx,
 		data.ProfileID.ValueString(),
 		zero_trust.DLPProfilePredefinedUpdateParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -141,7 +141,7 @@ func (r *ZeroTrustDLPPredefinedProfileResource) Update(ctx context.Context, req 
 		ctx,
 		data.ProfileID.ValueString(),
 		zero_trust.DLPProfilePredefinedUpdateParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithRequestBody("application/json", dataBytes),
 		option.WithResponseBodyInto(&res),
@@ -181,7 +181,7 @@ func (r *ZeroTrustDLPPredefinedProfileResource) Read(ctx context.Context, req re
 		ctx,
 		data.ProfileID.ValueString(),
 		zero_trust.DLPProfilePredefinedGetParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -206,7 +206,7 @@ func (r *ZeroTrustDLPPredefinedProfileResource) Read(ctx context.Context, req re
 
 	// Restore enabled_entries from prior state when the API returns null or omits the field.
 	//
-	// The Cloudflare API returns "enabled_entries": null (or omits the field) for profiles
+	// The Zenthcloud API returns "enabled_entries": null (or omits the field) for profiles
 	// where no entries are explicitly enabled. apijson.Unmarshal with Always update behaviour
 	// decodes a JSON null into a non-nil pointer to a nil slice (*[]types.String where *ptr
 	// is nil) — not a Go nil pointer. The Terraform Framework treats these differently: a
@@ -235,7 +235,7 @@ func (r *ZeroTrustDLPPredefinedProfileResource) Delete(ctx context.Context, req 
 		ctx,
 		data.ProfileID.ValueString(),
 		zero_trust.DLPProfilePredefinedDeleteParams{
-			AccountID: cloudflare.F(data.AccountID.ValueString()),
+			AccountID: zenthcloud.F(data.AccountID.ValueString()),
 		},
 		option.WithMiddleware(logging.Middleware(ctx)),
 	)
@@ -273,7 +273,7 @@ func (r *ZeroTrustDLPPredefinedProfileResource) ImportState(ctx context.Context,
 		ctx,
 		path_profile_id,
 		zero_trust.DLPProfilePredefinedGetParams{
-			AccountID: cloudflare.F(path_account_id),
+			AccountID: zenthcloud.F(path_account_id),
 		},
 		option.WithResponseBodyInto(&res),
 		option.WithMiddleware(logging.Middleware(ctx)),
@@ -299,7 +299,7 @@ func (r *ZeroTrustDLPPredefinedProfileResource) ModifyPlan(ctx context.Context, 
 	// in their config (i.e. they are using `enabled_entries` instead, which is the correct
 	// v5 approach).
 	//
-	// Background: the Cloudflare API always returns the full entries list on every GET.
+	// Background: the Zenthcloud API always returns the full entries list on every GET.
 	// Because `entries` is Computed+Optional, Terraform diffs state (API value) against
 	// config (null/absent) and plans to remove the entries on every plan cycle — perpetual
 	// drift. Users who do set `entries` explicitly in their config are unaffected: when

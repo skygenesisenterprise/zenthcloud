@@ -15,13 +15,13 @@ import (
 	"github.com/neilotoole/slogt/v2"
 	"github.com/stretchr/testify/require"
 
-	"github.com/cloudflare/pint/internal/checks"
-	"github.com/cloudflare/pint/internal/diags"
-	"github.com/cloudflare/pint/internal/discovery"
-	"github.com/cloudflare/pint/internal/git"
-	"github.com/cloudflare/pint/internal/parser"
-	"github.com/cloudflare/pint/internal/promapi"
-	"github.com/cloudflare/pint/internal/reporter"
+	"github.com/zenthcloud/pint/internal/checks"
+	"github.com/zenthcloud/pint/internal/diags"
+	"github.com/zenthcloud/pint/internal/discovery"
+	"github.com/zenthcloud/pint/internal/git"
+	"github.com/zenthcloud/pint/internal/parser"
+	"github.com/zenthcloud/pint/internal/promapi"
+	"github.com/zenthcloud/pint/internal/reporter"
 )
 
 func TestGitHubReporter(t *testing.T) {
@@ -240,7 +240,7 @@ func TestGitHubReporter(t *testing.T) {
 			timeout:     time.Second,
 			httpHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.Method == http.MethodGet && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/reviews" {
-					_, _ = w.Write([]byte(`[{"id":1,"body":"### This pull request was validated by [pint](https://github.com/cloudflare/pint).\nxxxx"}]`))
+					_, _ = w.Write([]byte(`[{"id":1,"body":"### This pull request was validated by [pint](https://github.com/skygenesisenterprise/zenthcloud).\nxxxx"}]`))
 					return
 				}
 				if r.Method == http.MethodGet && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/comments" {
@@ -300,7 +300,7 @@ func TestGitHubReporter(t *testing.T) {
 			timeout:     time.Second,
 			httpHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.Method == http.MethodGet && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/reviews" {
-					_, _ = w.Write([]byte(`[{"id":1,"body":"### This pull request was validated by [pint](https://github.com/cloudflare/pint).\nxxxx"}]`))
+					_, _ = w.Write([]byte(`[{"id":1,"body":"### This pull request was validated by [pint](https://github.com/skygenesisenterprise/zenthcloud).\nxxxx"}]`))
 					return
 				}
 				if r.Method == http.MethodGet && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/comments" {
@@ -381,7 +381,7 @@ func TestGitHubReporter(t *testing.T) {
 					return
 				}
 				if r.Method == http.MethodGet && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/reviews" {
-					_, _ = w.Write([]byte(`[{"id":1,"body":"### This pull request was validated by [pint](https://github.com/cloudflare/pint).\nxxxx"}]`))
+					_, _ = w.Write([]byte(`[{"id":1,"body":"### This pull request was validated by [pint](https://github.com/skygenesisenterprise/zenthcloud).\nxxxx"}]`))
 					return
 				}
 				if r.Method == http.MethodGet && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/comments" {
@@ -420,7 +420,7 @@ func TestGitHubReporter(t *testing.T) {
 					return
 				}
 				if r.Method == http.MethodGet && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/reviews" {
-					_, _ = w.Write([]byte(`[{"id":1,"body":"### This pull request was validated by [pint](https://github.com/cloudflare/pint).\nxxxx"}]`))
+					_, _ = w.Write([]byte(`[{"id":1,"body":"### This pull request was validated by [pint](https://github.com/skygenesisenterprise/zenthcloud).\nxxxx"}]`))
 					return
 				}
 				if r.Method == http.MethodGet && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/comments" {
@@ -500,7 +500,7 @@ func TestGitHubReporter(t *testing.T) {
 			timeout:     time.Second,
 			httpHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.Method == http.MethodGet && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/reviews" {
-					_, _ = w.Write([]byte(`[{"id":1,"body":"### This pull request was validated by [pint](https://github.com/cloudflare/pint).\nxxxx"}]`))
+					_, _ = w.Write([]byte(`[{"id":1,"body":"### This pull request was validated by [pint](https://github.com/skygenesisenterprise/zenthcloud).\nxxxx"}]`))
 					return
 				}
 				if r.Method == http.MethodPut && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/reviews/1" {
@@ -548,11 +548,11 @@ func TestGitHubReporter(t *testing.T) {
 			timeout:     time.Second,
 			httpHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.Method == http.MethodGet && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/reviews" {
-					_, _ = w.Write([]byte(`[{"id":1,"body":"### This pull request was validated by [pint](https://github.com/cloudflare/pint).\nxxxx"}]`))
+					_, _ = w.Write([]byte(`[{"id":1,"body":"### This pull request was validated by [pint](https://github.com/skygenesisenterprise/zenthcloud).\nxxxx"}]`))
 					return
 				}
 				if r.Method == http.MethodGet && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/comments" {
-					_, _ = w.Write([]byte(`[{"id":1,"commit_id":"fake-commit-id","path":"foo.txt","line":2,"body":":stop_sign: [mock](https://cloudflare.github.io/pint/checks/mock.html): syntax error\n\nsyntax details"}]`))
+					_, _ = w.Write([]byte(`[{"id":1,"commit_id":"fake-commit-id","path":"foo.txt","line":2,"body":":stop_sign: [mock](https://github.com/skygenesisenterprise/zenthcloud): syntax error\n\nsyntax details"}]`))
 					return
 				}
 				_, _ = w.Write([]byte(""))
@@ -592,19 +592,19 @@ func TestGitHubReporter(t *testing.T) {
 			timeout:     time.Second,
 			httpHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.Method == http.MethodGet && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/reviews" {
-					_, _ = w.Write([]byte(`[{"id":1,"body":"### This pull request was validated by [pint](https://github.com/cloudflare/pint).\nxxxx"}]`))
+					_, _ = w.Write([]byte(`[{"id":1,"body":"### This pull request was validated by [pint](https://github.com/skygenesisenterprise/zenthcloud).\nxxxx"}]`))
 					return
 				}
 				if r.Method == http.MethodGet && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/comments" {
-					_, _ = w.Write([]byte(`[{"id":1,"commit_id":"fake-commit-id","path":"foo.txt","line":2,"body":":stop_sign: [mock](https://cloudflare.github.io/pint/checks/mock.html): syntax error\n\nsyntax details"}]`))
+					_, _ = w.Write([]byte(`[{"id":1,"commit_id":"fake-commit-id","path":"foo.txt","line":2,"body":":stop_sign: [mock](https://github.com/skygenesisenterprise/zenthcloud): syntax error\n\nsyntax details"}]`))
 					return
 				}
 				if r.Method == http.MethodPost && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/comments" {
 					body, _ := io.ReadAll(r.Body)
 					b := strings.TrimSpace(strings.TrimRight(string(body), "\n\t\r"))
 					switch b {
-					case `{"body":":stop_sign: **Bug** reported by [pint](https://cloudflare.github.io/pint/) **mock1** check.\n\n------\n\nsyntax error1\n\n<details>\n<summary>More information</summary>\nsyntax details1\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/mock1.html).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":2,"side":"RIGHT"}`:
-					case `{"body":":stop_sign: **Bug** reported by [pint](https://cloudflare.github.io/pint/) **mock2** check.\n\n------\n\nsyntax error2\n\n<details>\n<summary>More information</summary>\nsyntax details2\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/mock2.html).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":2,"side":"RIGHT"}`:
+					case `{"body":":stop_sign: **Bug** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **mock1** check.\n\n------\n\nsyntax error1\n\n<details>\n<summary>More information</summary>\nsyntax details1\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":2,"side":"RIGHT"}`:
+					case `{"body":":stop_sign: **Bug** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **mock2** check.\n\n------\n\nsyntax error2\n\n<details>\n<summary>More information</summary>\nsyntax details2\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":2,"side":"RIGHT"}`:
 					case `{"body":"This pint run would create 4 comment(s), which is more than 2 limit configured for pint.\n2 comments were skipped and won't be visible on this PR."}`:
 					default:
 						t.Errorf("Unexpected comment: %s", b)
@@ -713,11 +713,11 @@ func TestGitHubReporter(t *testing.T) {
 			timeout:     time.Second,
 			httpHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.Method == http.MethodGet && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/reviews" {
-					_, _ = w.Write([]byte(`[{"id":1,"body":"### This pull request was validated by [pint](https://github.com/cloudflare/pint).\nxxxx"}]`))
+					_, _ = w.Write([]byte(`[{"id":1,"body":"### This pull request was validated by [pint](https://github.com/skygenesisenterprise/zenthcloud).\nxxxx"}]`))
 					return
 				}
 				if r.Method == http.MethodGet && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/comments" {
-					_, _ = w.Write([]byte(`[{"id":1,"commit_id":"fake-commit-id","path":"foo.txt","line":2,"body":":stop_sign: [mock](https://cloudflare.github.io/pint/checks/mock.html): syntax error\n\nsyntax details"}]`))
+					_, _ = w.Write([]byte(`[{"id":1,"commit_id":"fake-commit-id","path":"foo.txt","line":2,"body":":stop_sign: [mock](https://github.com/skygenesisenterprise/zenthcloud): syntax error\n\nsyntax details"}]`))
 					return
 				}
 				if r.Method == http.MethodPost && r.URL.Path == "/api/v3/repos/foo/bar/issues/123/comments" {
@@ -832,11 +832,11 @@ func TestGitHubReporter(t *testing.T) {
 			timeout:     time.Second,
 			httpHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.Method == http.MethodGet && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/reviews" {
-					_, _ = w.Write([]byte(`[{"id":1,"body":"### This pull request was validated by [pint](https://github.com/cloudflare/pint).\nxxxx"}]`))
+					_, _ = w.Write([]byte(`[{"id":1,"body":"### This pull request was validated by [pint](https://github.com/skygenesisenterprise/zenthcloud).\nxxxx"}]`))
 					return
 				}
 				if r.Method == http.MethodGet && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/comments" {
-					_, _ = w.Write([]byte(`[{"id":1,"commit_id":"fake-commit-id","path":"foo.txt","line":2,"body":":stop_sign: [mock](https://cloudflare.github.io/pint/checks/mock.html): syntax error\n\nsyntax details"}]`))
+					_, _ = w.Write([]byte(`[{"id":1,"commit_id":"fake-commit-id","path":"foo.txt","line":2,"body":":stop_sign: [mock](https://github.com/skygenesisenterprise/zenthcloud): syntax error\n\nsyntax details"}]`))
 					return
 				}
 				if r.Method == http.MethodPost && r.URL.Path == "/api/v3/repos/foo/bar/issues/123/comments" {
@@ -960,7 +960,7 @@ func TestGitHubReporter(t *testing.T) {
 				if r.Method == http.MethodPost && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/comments" {
 					body, _ := io.ReadAll(r.Body)
 					b := strings.TrimSpace(strings.TrimRight(string(body), "\n\t\r"))
-					if b != `{"body":":stop_sign: **Fatal** reported by [pint](https://cloudflare.github.io/pint/) **mock** check.\n\n------\n\nsyntax error\n\n<details>\n<summary>More information</summary>\nsyntax details\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/mock.html).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":1,"side":"RIGHT"}` {
+					if b != `{"body":":stop_sign: **Fatal** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **mock** check.\n\n------\n\nsyntax error\n\n<details>\n<summary>More information</summary>\nsyntax details\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":1,"side":"RIGHT"}` {
 						t.Errorf("Unexpected comment: %s", b)
 						t.FailNow()
 					}
@@ -1016,7 +1016,7 @@ func TestGitHubReporter(t *testing.T) {
 				if r.Method == http.MethodPost && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/comments" {
 					body, _ := io.ReadAll(r.Body)
 					b := strings.TrimSpace(strings.TrimRight(string(body), "\n\t\r"))
-					if b != `{"body":":stop_sign: **Fatal** reported by [pint](https://cloudflare.github.io/pint/) **mock** check.\n\n------\n\nsyntax error\n\n<details>\n<summary>More information</summary>\nsyntax details\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/mock.html).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":1,"side":"RIGHT"}` {
+					if b != `{"body":":stop_sign: **Fatal** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **mock** check.\n\n------\n\nsyntax error\n\n<details>\n<summary>More information</summary>\nsyntax details\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":1,"side":"RIGHT"}` {
 						t.Errorf("Unexpected comment: %s", b)
 						t.FailNow()
 					}
@@ -1068,7 +1068,7 @@ func TestGitHubReporter(t *testing.T) {
 				if r.Method == http.MethodPost && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/comments" {
 					body, _ := io.ReadAll(r.Body)
 					b := strings.TrimSpace(strings.TrimRight(string(body), "\n\t\r"))
-					if b != `{"body":":stop_sign: **Fatal** reported by [pint](https://cloudflare.github.io/pint/) **mock** check.\n\n------\n\nsyntax error\n\n<details>\n<summary>More information</summary>\nsyntax details\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/mock.html).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":2,"side":"RIGHT"}` {
+					if b != `{"body":":stop_sign: **Fatal** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **mock** check.\n\n------\n\nsyntax error\n\n<details>\n<summary>More information</summary>\nsyntax details\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":2,"side":"RIGHT"}` {
 						t.Errorf("Unexpected comment: %s", b)
 						t.FailNow()
 					}
@@ -1120,7 +1120,7 @@ func TestGitHubReporter(t *testing.T) {
 				if r.Method == http.MethodPost && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/comments" {
 					body, _ := io.ReadAll(r.Body)
 					b := strings.TrimSpace(strings.TrimRight(string(body), "\n\t\r"))
-					if b != `{"body":":stop_sign: **Fatal** reported by [pint](https://cloudflare.github.io/pint/) **mock** check.\n\n------\n\nsyntax error\n\n<details>\n<summary>More information</summary>\nsyntax details\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/mock.html).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":3,"side":"LEFT"}` {
+					if b != `{"body":":stop_sign: **Fatal** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **mock** check.\n\n------\n\nsyntax error\n\n<details>\n<summary>More information</summary>\nsyntax details\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":3,"side":"LEFT"}` {
 						t.Errorf("Unexpected comment: %s", b)
 						t.FailNow()
 					}
@@ -1175,7 +1175,7 @@ func TestGitHubReporter(t *testing.T) {
 					b := strings.TrimSpace(strings.TrimRight(string(body), "\n\t\r"))
 					// Problem on old line 3, but only old line 5 is in the diff.
 					// Moved to nearest deleted line: 5.
-					if b != `{"body":":stop_sign: **Fatal** reported by [pint](https://cloudflare.github.io/pint/) **mock** check.\n\n------\n\nsyntax error\n\n<details>\n<summary>More information</summary>\nsyntax details\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/mock.html).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":5,"side":"LEFT"}` {
+					if b != `{"body":":stop_sign: **Fatal** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **mock** check.\n\n------\n\nsyntax error\n\n<details>\n<summary>More information</summary>\nsyntax details\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":5,"side":"LEFT"}` {
 						t.Errorf("Unexpected comment: %s", b)
 						t.FailNow()
 					}
@@ -1230,7 +1230,7 @@ func TestGitHubReporter(t *testing.T) {
 					b := strings.TrimSpace(strings.TrimRight(string(body), "\n\t\r"))
 					// Diff only has added lines, no deleted lines to attach to.
 					// Falls through to RIGHT side, moved to nearest added line: 5.
-					if b != `{"body":":stop_sign: **Fatal** reported by [pint](https://cloudflare.github.io/pint/) **mock** check.\n\n------\n\nsyntax error\n\n<details>\n<summary>More information</summary>\nsyntax details\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/mock.html).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":5,"side":"RIGHT"}` {
+					if b != `{"body":":stop_sign: **Fatal** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **mock** check.\n\n------\n\nsyntax error\n\n<details>\n<summary>More information</summary>\nsyntax details\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":5,"side":"RIGHT"}` {
 						t.Errorf("Unexpected comment: %s", b)
 						t.FailNow()
 					}
@@ -1273,7 +1273,7 @@ func TestGitHubReporter(t *testing.T) {
 			timeout:     time.Second,
 			httpHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.Method == http.MethodPost && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/reviews" {
-					expected := `### This pull request was validated by [pint](https://github.com/cloudflare/pint).
+					expected := `### This pull request was validated by [pint](https://github.com/skygenesisenterprise/zenthcloud).
 :heavy_exclamation_mark:	Problems found.
 | Severity | Number of problems |
 | --- | --- |
@@ -1356,7 +1356,7 @@ Fatal: syntax error (mock)
 			timeout:     time.Second,
 			httpHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.Method == http.MethodPost && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/reviews" {
-					expected := `### This pull request was validated by [pint](https://github.com/cloudflare/pint).
+					expected := `### This pull request was validated by [pint](https://github.com/skygenesisenterprise/zenthcloud).
 :heavy_check_mark: No problems found
 <details><summary>Stats</summary>
 <p>
@@ -1388,12 +1388,12 @@ Below is the list of checks that were disabled for each Prometheus server define
 
 - ` + "`prom1`" + `
   - ` + "`/api/v1/status/config` " + `is unsupported, disabled checks:
-    - [check1](https://cloudflare.github.io/pint/checks/check1.html)
-    - [check2](https://cloudflare.github.io/pint/checks/check2.html)
-    - [check3](https://cloudflare.github.io/pint/checks/check3.html)
+    - [check1](https://github.com/skygenesisenterprise/zenthcloud)
+    - [check2](https://github.com/skygenesisenterprise/zenthcloud)
+    - [check3](https://github.com/skygenesisenterprise/zenthcloud)
 - ` + "`prom2`" + `
   - ` + "`/api/v1/metadata` " + `is unsupported, disabled checks:
-    - [check1](https://cloudflare.github.io/pint/checks/check1.html)
+    - [check1](https://github.com/skygenesisenterprise/zenthcloud)
 `
 					body, _ := io.ReadAll(r.Body)
 					type jr struct {
@@ -1422,7 +1422,7 @@ Below is the list of checks that were disabled for each Prometheus server define
 			timeout:        time.Second,
 			httpHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.Method == http.MethodGet && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/reviews" {
-					_, _ = w.Write([]byte(`[{"id":1,"body":"### This pull request was validated by [pint](https://github.com/cloudflare/pint).\nxxxx"}]`))
+					_, _ = w.Write([]byte(`[{"id":1,"body":"### This pull request was validated by [pint](https://github.com/skygenesisenterprise/zenthcloud).\nxxxx"}]`))
 					return
 				}
 				if r.Method == http.MethodGet && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/comments" {
@@ -1433,10 +1433,10 @@ Below is the list of checks that were disabled for each Prometheus server define
 					body, _ := io.ReadAll(r.Body)
 					b := strings.TrimSpace(strings.TrimRight(string(body), "\n\t\r"))
 					switch b {
-					case `{"body":":stop_sign: **Bug** reported by [pint](https://cloudflare.github.io/pint/) **mock** check.\n\n------\n\nsyntax error\n\n<details>\n<summary>More information</summary>\nsyntax details\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/mock.html).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":2,"side":"RIGHT"}`:
-					case `{"body":":warning: **Warning** reported by [pint](https://cloudflare.github.io/pint/) **different** check.\n\n------\n\nsyntax error\n\n<details>\n<summary>More information</summary>\nsyntax details\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/different.html).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":2,"side":"RIGHT"}`:
-					case `{"body":":stop_sign: **Bug** reported by [pint](https://cloudflare.github.io/pint/) **mock** check.\n\n------\n\nsyntax error\n\n<details>\n<summary>More information</summary>\nsyntax details\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/mock.html).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":4,"side":"RIGHT"}`:
-					case `{"body":":stop_sign: **Bug** reported by [pint](https://cloudflare.github.io/pint/) **mock** check.\n\n------\n\nsyntax error\n\n<details>\n<summary>More information</summary>\nsyntax details\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/mock.html).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":5,"side":"RIGHT"}`:
+					case `{"body":":stop_sign: **Bug** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **mock** check.\n\n------\n\nsyntax error\n\n<details>\n<summary>More information</summary>\nsyntax details\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":2,"side":"RIGHT"}`:
+					case `{"body":":warning: **Warning** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **different** check.\n\n------\n\nsyntax error\n\n<details>\n<summary>More information</summary>\nsyntax details\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":2,"side":"RIGHT"}`:
+					case `{"body":":stop_sign: **Bug** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **mock** check.\n\n------\n\nsyntax error\n\n<details>\n<summary>More information</summary>\nsyntax details\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":4,"side":"RIGHT"}`:
+					case `{"body":":stop_sign: **Bug** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **mock** check.\n\n------\n\nsyntax error\n\n<details>\n<summary>More information</summary>\nsyntax details\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":5,"side":"RIGHT"}`:
 					default:
 						t.Errorf("Unexpected comment: %s", b)
 					}
@@ -1544,7 +1544,7 @@ Below is the list of checks that were disabled for each Prometheus server define
 			timeout:     time.Second,
 			httpHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.Method == http.MethodGet && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/reviews" {
-					_, _ = w.Write([]byte(`[{"id":1,"body":"### This pull request was validated by [pint](https://github.com/cloudflare/pint).\nxxxx"}]`))
+					_, _ = w.Write([]byte(`[{"id":1,"body":"### This pull request was validated by [pint](https://github.com/skygenesisenterprise/zenthcloud).\nxxxx"}]`))
 					return
 				}
 				if r.Method == http.MethodGet && r.URL.Path == "/api/v3/repos/foo/bar/pulls/123/comments" {
@@ -1555,8 +1555,8 @@ Below is the list of checks that were disabled for each Prometheus server define
 					body, _ := io.ReadAll(r.Body)
 					b := strings.TrimSpace(strings.TrimRight(string(body), "\n\t\r"))
 					switch b {
-					case `{"body":":stop_sign: **Bug** reported by [pint](https://cloudflare.github.io/pint/) **mock** check.\n\n------\n\nsyntax error\n\n<details>\n<summary>More information</summary>\nsyntax details\n</details>\n\n------\n\nThe same issue was reported 2 more time(s), duplicates were suppressed.\n\n<details>\n<summary>Show affected rules</summary>\n\n- ` + "`sum errors` at `foo.txt:4`" + `\n` + "- `sum errors` at `foo.txt:5`" + `\n\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/mock.html).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":2,"side":"RIGHT"}`:
-					case `{"body":":warning: **Warning** reported by [pint](https://cloudflare.github.io/pint/) **different** check.\n\n------\n\nsyntax error\n\n<details>\n<summary>More information</summary>\nsyntax details\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/different.html).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":2,"side":"RIGHT"}`:
+					case `{"body":":stop_sign: **Bug** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **mock** check.\n\n------\n\nsyntax error\n\n<details>\n<summary>More information</summary>\nsyntax details\n</details>\n\n------\n\nThe same issue was reported 2 more time(s), duplicates were suppressed.\n\n<details>\n<summary>Show affected rules</summary>\n\n- ` + "`sum errors` at `foo.txt:4`" + `\n` + "- `sum errors` at `foo.txt:5`" + `\n\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":2,"side":"RIGHT"}`:
+					case `{"body":":warning: **Warning** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **different** check.\n\n------\n\nsyntax error\n\n<details>\n<summary>More information</summary>\nsyntax details\n</details>\n\n------\n\n:information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).\n\n<!-- pint -->","commit_id":"HEAD","path":"foo.txt","line":2,"side":"RIGHT"}`:
 					default:
 						t.Errorf("Unexpected comment: %s", b)
 					}

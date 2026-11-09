@@ -15,7 +15,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 radar quality speed summary\n\nRetrieves a summary of bandwidth, latency, jitter, and packet loss, from the previous 90 days of Cloudflare Speed Test data."
+			"$0 radar quality speed summary\n\nRetrieves a summary of bandwidth, latency, jitter, and packet loss, from the previous 90 days of Zenthcloud Speed Test data."
 		)
 		.option("name", {
 			type: "string",
@@ -86,7 +86,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar quality speed summary",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/quality/speed/summary`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

@@ -23,7 +23,7 @@ export const tools: readonly Tool[] = [
   {
     name: "ssl_originTlsClientAuth_zoneCertificates_create",
     title: "Upload Certificate",
-    description: "Upload your own certificate you want Cloudflare to use for edge-to-origin communication to override the shared certificate. Please note that it is important to keep only one certificate active. Also, make sure to enable zone-level authenticated origin pulls by making a PUT call to settings endpoint to see the uploaded certificate in use.\n\nPOST /zones/{zone_id}/origin_tls_client_auth",
+    description: "Upload your own certificate you want Zenthcloud to use for edge-to-origin communication to override the shared certificate. Please note that it is important to keep only one certificate active. Also, make sure to enable zone-level authenticated origin pulls by making a PUT call to settings endpoint to see the uploaded certificate in use.\n\nPOST /zones/{zone_id}/origin_tls_client_auth",
     inputSchema: {
       type: "object",
       properties: {

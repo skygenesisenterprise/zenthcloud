@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zero_trust_device_settings Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_device_settings Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zero_trust_device_settings (Data Source)
+# zenthcloud_zero_trust_device_settings (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_device_settings" "example_zero_trust_device_settings" {
+data "zenthcloud_zero_trust_device_settings" "example_zero_trust_device_settings" {
   account_id = "699d98642c564d2e855e9661899b7252"
 }
 ```
@@ -33,7 +33,7 @@ data "cloudflare_zero_trust_device_settings" "example_zero_trust_device_settings
 - `external_emergency_signal_url` (String) The HTTPS URL from which to fetch the emergency disconnect signal. Must use HTTPS and have an IPv4 or IPv6 address as the host.
 - `gateway_proxy_enabled` (Boolean) Enable gateway proxy filtering on TCP.
 - `gateway_udp_proxy_enabled` (Boolean) Enable gateway proxy filtering on UDP.
-- `root_certificate_installation_enabled` (Boolean) Enable installation of cloudflare managed root certificate.
+- `root_certificate_installation_enabled` (Boolean) Enable installation of zenthcloud managed root certificate.
 - `use_zt_virtual_ip` (Boolean) Enable using CGNAT virtual IPv4.
 
 

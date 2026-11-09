@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_custom_csr Resource - Cloudflare"
+page_title: "zenthcloud_custom_csr Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account: SSL and Certificates ReadAccount: SSL and Certificates Write
 ---
 
-# cloudflare_custom_csr (Resource)
+# zenthcloud_custom_csr (Resource)
 
 Accepted Permissions
 
@@ -16,11 +16,11 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_custom_csr" "example_custom_csr" {
+resource "zenthcloud_custom_csr" "example_custom_csr" {
   common_name = "example.com"
   country = "US"
   locality = "San Francisco"
-  organization = "Cloudflare, Inc."
+  organization = "Zenthcloud, Inc."
   sans = ["example.com", "www.example.com"]
   state = "California"
   zone_id = "zone_id"
@@ -65,7 +65,7 @@ Available values: "rsa2048", "p256v1".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_custom_csr.example '<{accounts|zones}/{account_id|zone_id}>/<custom_csr_id>'
+$ terraform import zenthcloud_custom_csr.example '<{accounts|zones}/{account_id|zone_id}>/<custom_csr_id>'
 ```
 
 

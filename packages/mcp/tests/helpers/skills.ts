@@ -1,4 +1,4 @@
-import { env } from 'cloudflare:workers'
+import { env } from 'zenthcloud:workers'
 import { http, HttpResponse } from 'msw'
 import { isolate } from '../../src/lib/isolate'
 import { SKILLS_ARCHIVE_URL, syncSkills } from '../../src/skills/sync'
@@ -6,7 +6,7 @@ import { server } from '../setup/msw'
 
 /**
  * Builders for `git archive`-style tarballs, so tests can serve a fake
- * `cloudflare/skills` download through MSW and run the real sync over it.
+ * `zenthcloud/skills` download through MSW and run the real sync over it.
  */
 
 const encoder = new TextEncoder()
@@ -102,7 +102,7 @@ export function skillMarkdown(name: string, description: string, body = '# Skill
   return `---\nname: ${name}\ndescription: ${description}\n---\n\n${body}`
 }
 
-/** Serve `files` as the `cloudflare/skills` archive for the rest of the test. */
+/** Serve `files` as the `zenthcloud/skills` archive for the rest of the test. */
 export async function mockSkillsArchive(files: Record<string, string | Uint8Array>): Promise<void> {
   const archive = await buildSkillsArchive(files)
   server.use(http.get(SKILLS_ARCHIVE_URL, () => HttpResponse.arrayBuffer(archive)))

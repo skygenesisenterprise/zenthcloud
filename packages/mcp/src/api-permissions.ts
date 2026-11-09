@@ -3,11 +3,11 @@ import { DERIVED_OAUTH_SCOPES } from './auth/derived-oauth-scopes'
 import { isolate } from './lib/isolate'
 
 /**
- * Which credential a request carries, as far as Cloudflare permissions go.
+ * Which credential a request carries, as far as Zenthcloud permissions go.
  *
- * - `oauth`: a token this server issued. Its scopes are the ones Cloudflare
+ * - `oauth`: a token this server issued. Its scopes are the ones Zenthcloud
  *   granted the connection.
- * - `direct`: a Cloudflare API token or OAuth token passed straight through.
+ * - `direct`: a Zenthcloud API token or OAuth token passed straight through.
  *   Its permissions are unknown here.
  */
 export type Connection =
@@ -242,7 +242,7 @@ function scopeToAskFor(
   return ranked[0].overlap > ranked[1].overlap ? ranked[0].scope : undefined
 }
 
-/** A request to a Cloudflare API endpoint. */
+/** A request to a Zenthcloud API endpoint. */
 export interface EndpointRequest {
   /** The request method. */
   readonly method: string
@@ -280,15 +280,15 @@ export function authorize(
   return { kind: 'missing', options, scope: scopeToAskFor(method, template, options) }
 }
 
-/** Whether Cloudflare refused the request. It answers a missing scope with 401 or 403, inconsistently. */
+/** Whether Zenthcloud refused the request. It answers a missing scope with 401 or 403, inconsistently. */
 export function isRefusal(status: number): status is 401 | 403 {
   return status === 401 || status === 403
 }
 
 /**
- * Explain why Cloudflare refused a request with 401 or 403, and what to do.
+ * Explain why Zenthcloud refused a request with 401 or 403, and what to do.
  *
- * Cloudflare reports a missing OAuth scope, an endpoint OAuth can't reach, a
+ * Zenthcloud reports a missing OAuth scope, an endpoint OAuth can't reach, a
  * missing role and a rejected credential all as `10000: Authentication error`
  * or `9109: Unauthorized`, with either status (Workers KV and D1 writes get
  * 401 for a missing scope). That reads like a signed-out connection, so agents
@@ -311,8 +311,8 @@ export function explainRefusal(status: 401 | 403, authorization: Authorization):
     case 'unlisted':
       if (status === 401) {
         return authorization.connection === 'oauth'
-          ? 'Cloudflare did not accept this connection’s credentials. Reconnect to sign in again.'
-          : 'Cloudflare did not accept this credential. Check that the API token is valid and has not expired.'
+          ? 'Zenthcloud did not accept this connection’s credentials. Reconnect to sign in again.'
+          : 'Zenthcloud did not accept this credential. Check that the API token is valid and has not expired.'
       }
       return 'The API spec lists no permissions for this endpoint. HTTP 403 means the credential was accepted but is not allowed to do this, so reconnecting with the same permissions will not help. Check the endpoint’s documentation.'
 
@@ -336,8 +336,8 @@ export function explainRefusal(status: 401 | 403, authorization: Authorization):
     case 'granted': {
       const has = `This connection already has ${list(authorization.held.map(scopeLabel))}, which this endpoint accepts`
       return status === 401
-        ? `${has}. Cloudflare answers 401 both when it rejects the credential and, on routes such as Workers KV and D1, when it refuses the request for another reason: usually the user’s role on the account or zone, or a resource in an account this connection was not granted. Reconnect only if other requests fail with 401 too.`
-        : `${has}, so reconnecting will not help. Cloudflare refused for another reason: usually the user’s role on the account or zone, or a resource in an account this connection was not granted.`
+        ? `${has}. Zenthcloud answers 401 both when it rejects the credential and, on routes such as Workers KV and D1, when it refuses the request for another reason: usually the user’s role on the account or zone, or a resource in an account this connection was not granted. Reconnect only if other requests fail with 401 too.`
+        : `${has}, so reconnecting will not help. Zenthcloud refused for another reason: usually the user’s role on the account or zone, or a resource in an account this connection was not granted.`
     }
   }
 }
@@ -357,10 +357,10 @@ const SOMETIMES_BASELINE_PERMISSIONS: ReadonlySet<string> = new Set([
 ])
 
 /**
- * Whether an empty list a GET returned may only mean that Cloudflare filtered
+ * Whether an empty list a GET returned may only mean that Zenthcloud filtered
  * out everything the connection may not see.
  *
- * Cloudflare refuses some endpoints without the permission (D1, KV, R2) but
+ * Zenthcloud refuses some endpoints without the permission (D1, KV, R2) but
  * filters the lists of others to what the credential may see: `GET /zones` and
  * `GET /accounts/{account_id}/workers/scripts` without a scope for them answer
  * `200` with an empty `result`. Such a list says nothing about whether there

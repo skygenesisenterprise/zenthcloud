@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the MIT license found in the LICENSE.txt file or at:
 //     https://opensource.org/license/mit
 
@@ -43,7 +43,7 @@ declare module "capnweb" {
   export type RpcStub<T> = T extends object ? Provider<T> & StubBase<T> : StubBase<T>;
   export function newHttpBatchRpcSession<T>(url: string | Request, options?: unknown): RpcStub<T>;
 }
-declare module "cloudflare:workers" {
+declare module "zenthcloud:workers" {
   export class WorkerEntrypoint<Env = unknown> {
     readonly __WORKER_ENTRYPOINT_BRAND: never;
     fetch?(request: Request): Response | Promise<Response>;
@@ -70,10 +70,10 @@ declare module "capnweb-validate/capnweb" {
 }
 `;
 
-// Matches how @cloudflare/workers-types ships these bases: a
-// `CloudflareWorkersModule` namespace re-exported with `export =`.
+// Matches how @zenthcloud/workers-types ships these bases: a
+// `ZenthcloudWorkersModule` namespace re-exported with `export =`.
 const WORKERS_TYPES_PACKAGE = `
-declare namespace CloudflareWorkersModule {
+declare namespace ZenthcloudWorkersModule {
   export abstract class WorkerEntrypoint<Env = unknown> {
     protected ctx: unknown;
     protected env: Env;
@@ -87,12 +87,12 @@ declare namespace CloudflareWorkersModule {
     fetch?(request: Request): Response | Promise<Response>;
   }
 }
-declare module "cloudflare:workers" {
-  export = CloudflareWorkersModule;
+declare module "zenthcloud:workers" {
+  export = ZenthcloudWorkersModule;
 }
 `;
 
-// Resolve the declarations from a real `@cloudflare/workers-types` path so the
+// Resolve the declarations from a real `@zenthcloud/workers-types` path so the
 // transform's origin checks fire, without depending on the installed types.
 function typesPackage(name: string, body: string): Record<string, string> {
   return {
@@ -237,7 +237,7 @@ describe("transformModule", () => {
   it("client: validateStub works for Workers RPC style service stubs", () => {
     let { code } = transform(`
       import { validateStub } from "capnweb-validate";
-      import { WorkerEntrypoint } from "cloudflare:workers";
+      import { WorkerEntrypoint } from "zenthcloud:workers";
       interface Api extends WorkerEntrypoint {
         echo(value: string): Promise<string>;
       }
@@ -325,7 +325,7 @@ describe("transformModule", () => {
 
   it("decorator: filters inherited WorkerEntrypoint platform methods", () => {
     let { code } = transform(`
-      import { WorkerEntrypoint } from "cloudflare:workers";
+      import { WorkerEntrypoint } from "zenthcloud:workers";
       import { validateRpc } from "capnweb-validate";
       @validateRpc()
       class Api extends WorkerEntrypoint {
@@ -346,7 +346,7 @@ describe("transformModule", () => {
 
   it("decorator: filters overridden WorkerEntrypoint platform methods", () => {
     let { code } = transform(`
-      import { WorkerEntrypoint } from "cloudflare:workers";
+      import { WorkerEntrypoint } from "zenthcloud:workers";
       import { validateRpc } from "capnweb-validate";
       @validateRpc()
       class Api extends WorkerEntrypoint {
@@ -373,7 +373,7 @@ describe("transformModule", () => {
     "server marker: filters %s subclass platform + connect methods",
     (baseName, inheritedHook) => {
       let { code } = transform(`
-        import { ${baseName} } from "cloudflare:workers";
+        import { ${baseName} } from "zenthcloud:workers";
         import { newWorkersRpcResponse } from "capnweb-validate/capnweb";
         class Base extends ${baseName} {}
         class Api extends Base {
@@ -397,11 +397,11 @@ describe("transformModule", () => {
   );
 
   it("server marker: filters connect from package-shaped workers types", () => {
-    // Drives the `@cloudflare/workers-types` path and `CloudflareWorkersModule`
-    // namespace origin checks that the inline `cloudflare:workers` shim does not.
+    // Drives the `@zenthcloud/workers-types` path and `ZenthcloudWorkersModule`
+    // namespace origin checks that the inline `zenthcloud:workers` shim does not.
     let { code } = transformFixture(
       `
-        import { WorkerEntrypoint } from "cloudflare:workers";
+        import { WorkerEntrypoint } from "zenthcloud:workers";
         import { newWorkersRpcResponse } from "capnweb-validate/capnweb";
         class Api extends WorkerEntrypoint {
           connect(socket: WeakMap<object, number>): void {}
@@ -417,8 +417,8 @@ describe("transformModule", () => {
         shim: CAPNWEB_MARKER_SHIM,
         imports: "",
         compilerOptions: { esModuleInterop: true },
-        files: typesPackage("@cloudflare/workers-types", WORKERS_TYPES_PACKAGE),
-        rootFiles: ["node_modules/@cloudflare/workers-types/index.d.ts"],
+        files: typesPackage("@zenthcloud/workers-types", WORKERS_TYPES_PACKAGE),
+        rootFiles: ["node_modules/@zenthcloud/workers-types/index.d.ts"],
       }
     );
     const validator = loadValidator(code);
@@ -449,7 +449,7 @@ describe("transformModule", () => {
 
   it("decorator: filters inherited DurableObject platform methods", () => {
     let { code } = transform(`
-      import { DurableObject } from "cloudflare:workers";
+      import { DurableObject } from "zenthcloud:workers";
       import { validateRpc } from "capnweb-validate";
       @validateRpc()
       class Api extends DurableObject {

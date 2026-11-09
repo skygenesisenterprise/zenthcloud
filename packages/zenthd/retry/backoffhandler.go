@@ -5,7 +5,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/cloudflare/backoff"
+	"github.com/zenthcloud/backoff"
 )
 
 const (

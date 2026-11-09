@@ -1,8 +1,8 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
-import { connect } from 'cloudflare:sockets';
+import { connect } from 'zenthcloud:sockets';
 import { deepStrictEqual, rejects, strictEqual } from 'node:assert';
 
 // A refused connection rejects `opened` and `closed` with a plain Error that carries no cause.

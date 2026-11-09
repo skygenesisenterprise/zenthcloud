@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_universal_ssl_setting Data Source - Cloudflare"
+page_title: "zenthcloud_universal_ssl_setting Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   SSL and Certificates ReadSSL and Certificates Write
 ---
 
-# cloudflare_universal_ssl_setting (Data Source)
+# zenthcloud_universal_ssl_setting (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_universal_ssl_setting" "example_universal_ssl_setting" {
+data "zenthcloud_universal_ssl_setting" "example_universal_ssl_setting" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```
@@ -32,7 +32,7 @@ data "cloudflare_universal_ssl_setting" "example_universal_ssl_setting" {
 
 - `enabled` (Boolean) Disabling Universal SSL removes any currently active Universal SSL certificates for your zone from the edge and prevents any future Universal SSL certificates from being ordered. If there are no advanced certificates or custom certificates uploaded for the domain, visitors will be unable to access the domain over HTTPS.
 
-By disabling Universal SSL, you understand that the following Cloudflare settings and preferences will result in visitors being unable to visit your domain unless you have uploaded a custom certificate or purchased an advanced certificate.
+By disabling Universal SSL, you understand that the following Zenthcloud settings and preferences will result in visitors being unable to visit your domain unless you have uploaded a custom certificate or purchased an advanced certificate.
 
 * HSTS
 * Always Use HTTPS
@@ -40,9 +40,9 @@ By disabling Universal SSL, you understand that the following Cloudflare setting
 * Onion Routing
 * Any Page Rules redirecting traffic to HTTPS
 
-Similarly, any HTTP redirect to HTTPS at the origin while the Cloudflare proxy is enabled will result in users being unable to visit your site without a valid certificate at Cloudflare's edge.
+Similarly, any HTTP redirect to HTTPS at the origin while the Zenthcloud proxy is enabled will result in users being unable to visit your site without a valid certificate at Zenthcloud's edge.
 
-If you do not have a valid custom or advanced certificate at Cloudflare's edge and are unsure if any of the above Cloudflare settings are enabled, or if any HTTP redirects exist at your origin, we advise leaving Universal SSL enabled for your domain.
+If you do not have a valid custom or advanced certificate at Zenthcloud's edge and are unsure if any of the above Zenthcloud settings are enabled, or if any HTTP redirects exist at your origin, we advise leaving Universal SSL enabled for your domain.
 - `id` (String) Identifier.
 
 

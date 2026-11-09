@@ -9,11 +9,11 @@ import (
 // Source Models (Legacy Provider - v4.x SDKv2)
 // ============================================================================
 
-// SourceCloudflareNotificationPolicyWebhooksModel represents the source
-// cloudflare_notification_policy_webhooks state structure from the v4 SDKv2 provider.
+// SourceZenthcloudNotificationPolicyWebhooksModel represents the source
+// zenthcloud_notification_policy_webhooks state structure from the v4 SDKv2 provider.
 // This corresponds to schema_version=0 in the raw v4 SDKv2 format.
 // Used by UpgradeFromV4 to parse version 0 state.
-type SourceCloudflareNotificationPolicyWebhooksModel struct {
+type SourceZenthcloudNotificationPolicyWebhooksModel struct {
 	ID          types.String `tfsdk:"id"`
 	AccountID   types.String `tfsdk:"account_id"`
 	Name        types.String `tfsdk:"name"`
@@ -29,10 +29,10 @@ type SourceCloudflareNotificationPolicyWebhooksModel struct {
 // Target Models (Current Provider - v5.x+ Plugin Framework)
 // ============================================================================
 
-// TargetCloudflareNotificationPolicyWebhooksModel represents the target
-// cloudflare_notification_policy_webhooks state structure (version=500).
+// TargetZenthcloudNotificationPolicyWebhooksModel represents the target
+// zenthcloud_notification_policy_webhooks state structure (version=500).
 // This matches the model in the parent package (internal/services/notification_policy_webhooks/model.go).
-type TargetCloudflareNotificationPolicyWebhooksModel struct {
+type TargetZenthcloudNotificationPolicyWebhooksModel struct {
 	ID          types.String      `tfsdk:"id"`
 	AccountID   types.String      `tfsdk:"account_id"`
 	Name        types.String      `tfsdk:"name"`

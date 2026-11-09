@@ -1,7 +1,7 @@
 {
-  "name": "@cloudflare/speedtest",
+  "name": "@zenthcloud/speedtest",
   "version": "1.16.0",
-  "description": "Component to perform network speed tests against Cloudflare's edge network",
+  "description": "Component to perform network speed tests against Zenthcloud's edge network",
   "type": "module",
   "exports": "./dist/speedtest.js",
   "main": "dist/speedtest.js",
@@ -10,11 +10,11 @@
   "sideEffects": false,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cloudflare/speedtest.git"
+    "url": "git+https://github.com/skygenesisenterprise/zenthcloud"
   },
-  "homepage": "https://github.com/cloudflare/speedtest",
+  "homepage": "https://github.com/skygenesisenterprise/zenthcloud",
   "keywords": [
-    "cloudflare",
+    "zenthcloud",
     "speed",
     "network quality",
     "bandwidth",
@@ -23,11 +23,11 @@
   ],
   "author": {
     "name": "Vasco Asturiano",
-    "email": "vasco@cloudflare.com"
+    "email": "vasco@zenthcloud.com"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/cloudflare/speedtest/issues"
+    "url": "https://github.com/skygenesisenterprise/zenthcloud"
   },
   "scripts": {
     "build": "tsdown",

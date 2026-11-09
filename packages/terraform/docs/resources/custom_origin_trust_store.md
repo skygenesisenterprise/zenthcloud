@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_custom_origin_trust_store Resource - Cloudflare"
+page_title: "zenthcloud_custom_origin_trust_store Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   SSL and Certificates ReadSSL and Certificates Write
 ---
 
-# cloudflare_custom_origin_trust_store (Resource)
+# zenthcloud_custom_origin_trust_store (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_custom_origin_trust_store" "example_custom_origin_trust_store" {
+resource "zenthcloud_custom_origin_trust_store" "example_custom_origin_trust_store" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   certificate = <<EOT
   -----BEGIN CERTIFICATE-----
@@ -44,14 +44,14 @@ resource "cloudflare_custom_origin_trust_store" "example_custom_origin_trust_sto
 - `status` (String) Status of the zone's custom SSL.
 Available values: "initializing", "pending_deployment", "active", "pending_deletion", "deleted", "expired".
 - `updated_at` (String) When the certificate was last modified.
-- `uploaded_on` (String) When the certificate was uploaded to Cloudflare.
+- `uploaded_on` (String) When the certificate was uploaded to Zenthcloud.
 
 ## Import
 
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_custom_origin_trust_store.example '<zone_id>/<custom_origin_trust_store_id>'
+$ terraform import zenthcloud_custom_origin_trust_store.example '<zone_id>/<custom_origin_trust_store_id>'
 ```
 
 

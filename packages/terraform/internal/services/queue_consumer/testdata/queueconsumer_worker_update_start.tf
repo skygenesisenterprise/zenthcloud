@@ -1,16 +1,16 @@
-resource "cloudflare_queue" "test_queue" {
+resource "zenthcloud_queue" "test_queue" {
   account_id = "%[1]s"
   queue_name = "%[2]s"
 }
 
-resource "cloudflare_workers_script" "worker_script_updated" {
+resource "zenthcloud_workers_script" "worker_script_updated" {
   account_id  = "%[5]s"
   script_name = "test-worker-consumer-worker-update-script"
   bindings = [
     {
       type       = "queue"
       name       = "incoming"
-      queue_name = cloudflare_queue.test_queue.queue_name
+      queue_name = zenthcloud_queue.test_queue.queue_name
     }
   ]
   content     = <<-EOT
@@ -24,14 +24,14 @@ export default {
 EOT
   main_module = "index.js"
 
-  depends_on = [cloudflare_queue.test_queue]
+  depends_on = [zenthcloud_queue.test_queue]
 }
 
-resource "cloudflare_queue_consumer" "%[3]s" {
+resource "zenthcloud_queue_consumer" "%[3]s" {
   account_id  = "%[4]s"
-  queue_id    = cloudflare_queue.test_queue.id
+  queue_id    = zenthcloud_queue.test_queue.id
   type        = "worker"
-  script_name = cloudflare_workers_script.worker_script_updated.script_name
+  script_name = zenthcloud_workers_script.worker_script_updated.script_name
 
-  depends_on = [cloudflare_workers_script.worker_script_updated, cloudflare_queue.test_queue]
+  depends_on = [zenthcloud_workers_script.worker_script_updated, zenthcloud_queue.test_queue]
 }

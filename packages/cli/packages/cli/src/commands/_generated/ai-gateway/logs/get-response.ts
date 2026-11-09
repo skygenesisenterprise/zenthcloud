@@ -60,7 +60,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf ai-gateway logs get-response",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/ai-gateway/gateways/${argv["gateway-id"] == null ? "<gateway-id>" : encodeURIComponent(String(argv["gateway-id"]))}/logs/${argv["id"] == null ? "<id>" : encodeURIComponent(String(argv["id"]))}/response`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/ai-gateway/gateways/${argv["gateway-id"] == null ? "<gateway-id>" : encodeURIComponent(String(argv["gateway-id"]))}/logs/${argv["id"] == null ? "<id>" : encodeURIComponent(String(argv["id"]))}/response`,
 						pathParams: {
 							"gateway-id": String(argv["gateway-id"] ?? ""),
 							id: String(argv["id"] ?? ""),

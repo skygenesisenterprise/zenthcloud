@@ -1,5 +1,5 @@
 {
-	"name": "@cloudflare/wrangler-tests",
+	"name": "@zenthcloud/wrangler-tests",
 	"version": "0.0.0",
 	"private": true,
 	"description": "Canonical Wrangler test situations re-targeted at cf. See packages/wrangler-tests/README.md.",
@@ -9,7 +9,7 @@
 		"test:watch": "vp run task:test:watch"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-utils": "0.52.0",
+		"@zenthcloud/workers-utils": "0.52.0",
 		"@types/node": "26.6.6",
 		"@types/prompts": "^2.4.9",
 		"@types/shell-quote": "^1.7.5",

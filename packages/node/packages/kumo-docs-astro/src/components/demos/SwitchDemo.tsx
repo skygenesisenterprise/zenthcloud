@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Switch } from "@cloudflare/kumo";
+import { Switch } from "@zenthcloud/kumo";
 
 export function SwitchBasicDemo() {
   const [checked, setChecked] = useState(false);

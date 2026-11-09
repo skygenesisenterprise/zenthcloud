@@ -5,8 +5,8 @@ package certificate_pack
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
@@ -42,7 +42,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"certificate_authority": schema.StringAttribute{
-				Description: "Certificate Authority selected for the order.  For information on any certificate authority specific details or restrictions [see this page for more details](https://developers.cloudflare.com/ssl/reference/certificate-authorities).\nAvailable values: \"google\", \"lets_encrypt\", \"ssl_com\".",
+				Description: "Certificate Authority selected for the order.  For information on any certificate authority specific details or restrictions [see this page for more details](https://github.com/skygenesisenterprise/zenthcloud).\nAvailable values: \"google\", \"lets_encrypt\", \"ssl_com\".",
 				Computed:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive(
@@ -52,8 +52,8 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 					),
 				},
 			},
-			"cloudflare_branding": schema.BoolAttribute{
-				Description: "Whether or not to add Cloudflare Branding for the order.  This will add a subdomain of sni.cloudflaressl.com as the Common Name if set to true.",
+			"zenthcloud_branding": schema.BoolAttribute{
+				Description: "Whether or not to add Zenthcloud Branding for the order.  This will add a subdomain of sni.zenthcloudssl.com as the Common Name if set to true.",
 				Computed:    true,
 			},
 			"primary_certificate": schema.StringAttribute{
@@ -199,7 +199,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 							Computed:    true,
 						},
 						"uploaded_on": schema.StringAttribute{
-							Description: "When the certificate was uploaded to Cloudflare.",
+							Description: "When the certificate was uploaded to Zenthcloud.",
 							Computed:    true,
 							CustomType:  timetypes.RFC3339Type{},
 						},

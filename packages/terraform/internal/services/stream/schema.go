@@ -5,8 +5,8 @@ package stream
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
@@ -41,12 +41,12 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"identifier": schema.StringAttribute{
-				Description:   "A Cloudflare-generated unique identifier for a media item.",
+				Description:   "A Zenthcloud-generated unique identifier for a media item.",
 				Optional:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"direct_user": schema.BoolAttribute{
-				Description: "Provisions a URL to let your end users upload videos directly to Cloudflare Stream without exposing your API token to clients.",
+				Description: "Provisions a URL to let your end users upload videos directly to Zenthcloud Stream without exposing your API token to clients.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),

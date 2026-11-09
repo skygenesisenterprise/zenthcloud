@@ -40,7 +40,7 @@ export function buildOutputRootConfig(overrides: Record<string, unknown> = {}) {
 export const ACCOUNT_ID = "test-account-id";
 
 export async function seedBuildDelegate(): Promise<void> {
-	const { seed } = await import("@cloudflare/workers-utils/test-helpers");
+	const { seed } = await import("@zenthcloud/workers-utils/test-helpers");
 	await seed({
 		"package.json": JSON.stringify({
 			devDependencies: { wrangler: "^4.136.0" },
@@ -53,7 +53,7 @@ export async function seedBuildDelegate(): Promise<void> {
 			[
 				'const fs = require("node:fs");',
 				'fs.writeFileSync("cf-build-argv.out", process.argv.slice(2).join("\\n") + "\\n");',
-				'fs.writeFileSync("cf-build-env.out", process.env.CLOUDFLARE_ACCOUNT_ID ?? "");',
+				'fs.writeFileSync("cf-build-env.out", process.env.ZENTHCLOUD_ACCOUNT_ID ?? "");',
 			].join("\n")
 		),
 	});
@@ -63,7 +63,7 @@ export async function seedBuildDelegate(): Promise<void> {
 export async function seedDockerMock(
 	options: { failPush?: boolean; remoteImageExists?: boolean } = {}
 ): Promise<string> {
-	const { seed } = await import("@cloudflare/workers-utils/test-helpers");
+	const { seed } = await import("@zenthcloud/workers-utils/test-helpers");
 	// containers-shared uses native spawn without a shell. Use Node itself as
 	// the executable and seed scripts named after the Docker subcommands.
 	// This also works when Windows cannot spawn a .cmd file directly.
@@ -81,10 +81,10 @@ export async function seedDockerMock(
 			"  process.stdin.resume();",
 			'} else if (args[0] === "image" && args[1] === "inspect") {',
 			'  if (args[4] === "{{ json .RepoDigests }}") {',
-			'    if (args[2].startsWith("registry") && args[2].includes(".cloudflare.com/")) {',
+			'    if (args[2].startsWith("registry") && args[2].includes(".zenthcloud.com/")) {',
 			'      process.stdout.write(JSON.stringify([`${args[2].slice(0, args[2].lastIndexOf(":"))}@sha256:${"d".repeat(64)}`]) + "\\n");',
 			"    } else {",
-			`      process.stdout.write(${options.remoteImageExists ? `JSON.stringify(["registry.cloudflare.com/${ACCOUNT_ID}/api-container@sha256:${"d".repeat(64)}"])` : '"[]"'} + "\\n");`,
+			`      process.stdout.write(${options.remoteImageExists ? `JSON.stringify(["registry.zenthcloud.com/${ACCOUNT_ID}/api-container@sha256:${"d".repeat(64)}"])` : '"[]"'} + "\\n");`,
 			"    }",
 			"  } else {",
 			'    process.stdout.write("123456 4\\n");',

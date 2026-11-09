@@ -209,7 +209,7 @@ export const validateDomain = async (
 	reason?: string;
 	resolvedIp?: string;
 	error?: string;
-	isCloudflare?: boolean;
+	isZenthcloud?: boolean;
 	cdnProvider?: string;
 }> => {
 	const cleanDomain = domain.replace(/^https?:\/\//, "").split("/")[0] || "";

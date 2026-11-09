@@ -33,7 +33,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("port", {
 			type: "number",
 			description:
-				"The keyless SSL port used to communicate between Cloudflare and the client's Keyless SSL server.",
+				"The keyless SSL port used to communicate between Zenthcloud and the client's Keyless SSL server.",
 		})
 		.option("tunnel-private-ip", {
 			type: "string",
@@ -41,7 +41,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		})
 		.option("tunnel-vnet-id", {
 			type: "string",
-			description: "Cloudflare Tunnel Virtual Network ID.",
+			description: "Zenthcloud Tunnel Virtual Network ID.",
 		})
 		.option("dry-run", {
 			type: "boolean",
@@ -90,7 +90,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf ssl keyless-certificates edit",
 						method: "PATCH",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/keyless_certificates/${argv["keyless-certificate-id"] == null ? "<keyless-certificate-id>" : encodeURIComponent(String(argv["keyless-certificate-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/keyless_certificates/${argv["keyless-certificate-id"] == null ? "<keyless-certificate-id>" : encodeURIComponent(String(argv["keyless-certificate-id"]))}`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 							"keyless-certificate-id": String(

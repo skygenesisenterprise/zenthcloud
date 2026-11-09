@@ -1,22 +1,22 @@
 ---
-layout: "cloudflare"
+layout: "zenthcloud"
 page_title: "Upgrading to version 4 (from 3.x)"
-description: Terraform Cloudflare Provider Version 4 Upgrade Guide
+description: Terraform Zenthcloud Provider Version 4 Upgrade Guide
 ---
 
-# Terraform Cloudflare Provider Version 4 Upgrade Guide
+# Terraform Zenthcloud Provider Version 4 Upgrade Guide
 
-Version 4 of the Cloudflare Terraform Provider is introducing several breaking
+Version 4 of the Zenthcloud Terraform Provider is introducing several breaking
 changes to accommodate better user experience and broader resource support for
 more customer types.
 
 ## Provider Version Configuration
 
-If you are not ready to make a move to version 4 of the Cloudflare provider,
+If you are not ready to make a move to version 4 of the Zenthcloud provider,
 you may keep the 3.x branch active for your Terraform project by specifying:
 
 ```hcl
-provider "cloudflare" {
+provider "zenthcloud" {
   version = "~> 3.0"
   # ... any other configuration
 }
@@ -33,7 +33,7 @@ security fixes.
 Once ready, make the following change to use the latest 4.x release:
 
 ```hcl
-provider "cloudflare" {
+provider "zenthcloud" {
   version = "~> 4.0"
   # ... any other configuration
 }
@@ -58,11 +58,11 @@ explicitly.
 Before:
 
 ```hcl
-provider "cloudflare" {
+provider "zenthcloud" {
   account_id = "..."
 }
 
-resource "cloudflare_resource" "example" {
+resource "zenthcloud_resource" "example" {
   name = "..."
 }
 ```
@@ -70,9 +70,9 @@ resource "cloudflare_resource" "example" {
 After:
 
 ```hcl
-provider "cloudflare" {}
+provider "zenthcloud" {}
 
-resource "cloudflare_resource" "example" {
+resource "zenthcloud_resource" "example" {
   account_id = "..."
   name = "..."
 }
@@ -86,14 +86,14 @@ attribute.
 To accommodate the removal of `account_id` at the provider level, the following
 resources now require the `account_id` value to be defined.
 
-- `cloudflare_zone`
-- `cloudflare_load_balancer_pool`
-- `cloudflare_load_balancer_monitor`
-- `cloudflare_account_member`
-- `cloudflare_workers_kv_namespace`
-- `cloudflare_workers_kv`
-- `cloudflare_workers_script`
-- `cloudflare_worker_cron_trigger`
+- `zenthcloud_zone`
+- `zenthcloud_load_balancer_pool`
+- `zenthcloud_load_balancer_monitor`
+- `zenthcloud_account_member`
+- `zenthcloud_workers_kv_namespace`
+- `zenthcloud_workers_kv`
+- `zenthcloud_workers_script`
+- `zenthcloud_worker_cron_trigger`
 
 
 ## Removed ability to create user level resources
@@ -102,10 +102,10 @@ User level resources are an older concept that are superseded by account level
 resources. In previous versions, the following resources allowed a fallback in
 the event `zone_id` or `account_id` were provided.
 
-- `cloudflare_access_rule`
-- `cloudflare_load_balancer`
-- `cloudflare_load_balancer_monitor`
-- `cloudflare_load_balancer_pool`
+- `zenthcloud_access_rule`
+- `zenthcloud_load_balancer`
+- `zenthcloud_load_balancer_monitor`
+- `zenthcloud_load_balancer_pool`
 
 In 4.x, these resources do not have automatic fallback to user level resources
 but instead, require an explicit `account_id` to use the account level. Zone
@@ -113,16 +113,16 @@ level resources remain unchanged.
 
 ## `userBaseUrl` is no longer used internally
 
-`userBaseUrl` is a helper method provided by `cloudflare-go` to automatically
+`userBaseUrl` is a helper method provided by `zenthcloud-go` to automatically
 detect and build parts of the HTTP request URL if the global `AccountID` value
 is provided. While internal, this has been removed in favour of explicit
 `account_id` configurations mentioned above.
 
-## `cloudflare_ruleset`
+## `zenthcloud_ruleset`
 
-`cloudflare_ruleset` resource has been migrated internally to use the
+`zenthcloud_ruleset` resource has been migrated internally to use the
 `terraform-plugin-framework` to better handle zero/nil values (see
-[cloudflare/terraform-provider-cloudflare#2170](https://github.com/cloudflare/terraform-provider-cloudflare/pull/2170)
+[zenthcloud/terraform-provider-zenthcloud#2170](https://github.com/skygenesisenterprise/zenthcloud)
 for full details).
 
 As part of the migration to the `terraform-plugin-framework`, the workaround
@@ -131,16 +131,16 @@ you will need to replace it with `enabled = true` and similar for `status = "dis
 to be replaced with `enabled = false`. This change realigns the Terraform
 resource with the API response.
 
-[v4.2.0](https://github.com/cloudflare/terraform-provider-cloudflare/releases/tag/v4.2.0)
+[v4.2.0](https://github.com/skygenesisenterprise/zenthcloud)
 introduced the change and to get all the benefits with a smooth upgrade path,
 we recommend you:
 
 - Ensure you are on the latest 3.x release
 - Remove the resource from your state file (`terraform state rm ...`)
 - Upgrade to 4.x
-- Import the `cloudflare_ruleset` resource back into your state file (`terraform import ...`)
+- Import the `zenthcloud_ruleset` resource back into your state file (`terraform import ...`)
 
-## `cloudflare_spectrum_application`
+## `zenthcloud_spectrum_application`
 
 - `edge_ips` is now a nested block that holds all edge IP configuration such as
   `type`, `connectivity` and `ips`.
@@ -150,7 +150,7 @@ we recommend you:
 Before:
 
 ```hcl
-resource "cloudflare_spectrum_application" "..." {
+resource "zenthcloud_spectrum_application" "..." {
   zone_id = "..."
   edge_ip_connectivity = "all"
   edge_ips = ["203.0.113.1", "203.0.113.2"]
@@ -160,7 +160,7 @@ resource "cloudflare_spectrum_application" "..." {
 After:
 
 ```hcl
-resource "cloudflare_spectrum_application" "..." {
+resource "zenthcloud_spectrum_application" "..." {
   zone_id = "..."
   edge_ips {
     type = "static"
@@ -169,14 +169,14 @@ resource "cloudflare_spectrum_application" "..." {
 }
 ```
 
-## `cloudflare_load_balancer`
+## `zenthcloud_load_balancer`
 
 - `session_affinity_attributes` has been migrated from `TypeMap` to `TypeSet`.
 
 Before:
 
 ```hcl
-resource "cloudflare_load_balancer" "..." {
+resource "zenthcloud_load_balancer" "..." {
   zone_id = "..."
   session_affinity_attributes = {
     ...
@@ -187,7 +187,7 @@ resource "cloudflare_load_balancer" "..." {
 After:
 
 ```hcl
-resource "cloudflare_load_balancer" "..." {
+resource "zenthcloud_load_balancer" "..." {
   zone_id = "..."
   session_affinity_attributes {
     ...
@@ -203,7 +203,7 @@ constraints and the current values may have been invalid in previous states.
 Before:
 
 ```hcl
-resource "cloudflare_load_balancer" "..." {
+resource "zenthcloud_load_balancer" "..." {
   zone_id = "..."
   session_affinity_attributes = {
     secure = "Always"
@@ -215,7 +215,7 @@ resource "cloudflare_load_balancer" "..." {
 After:
 
 ```hcl
-resource "cloudflare_load_balancer" "..." {
+resource "zenthcloud_load_balancer" "..." {
   zone_id = "..."
   session_affinity_attributes { # note the type change from above
     secure = "Always"
@@ -228,22 +228,22 @@ resource "cloudflare_load_balancer" "..." {
 
 ### Resources
 
-- `cloudflare_argo_tunnel` is now `cloudflare_tunnel`
+- `zenthcloud_argo_tunnel` is now `zenthcloud_tunnel`
 
 ## Removals
 
 ### Resources
 
-- `cloudflare_access_bookmark`: Use `cloudflare_access_application` configuration
+- `zenthcloud_access_bookmark`: Use `zenthcloud_access_application` configuration
   attributes instead.
-- `cloudflare_waf_group`: Use `cloudflare_ruleset` instead.
-- `cloudflare_waf_override`: Use `cloudflare_ruleset` instead.
-- `cloudflare_waf_package`: Use `cloudflare_ruleset` instead.
-- `cloudflare_waf_rule`: Use `cloudflare_ruleset` instead.
-- `cloudflare_ip_list`: Use `cloudflare_list` instead.
+- `zenthcloud_waf_group`: Use `zenthcloud_ruleset` instead.
+- `zenthcloud_waf_override`: Use `zenthcloud_ruleset` instead.
+- `zenthcloud_waf_package`: Use `zenthcloud_ruleset` instead.
+- `zenthcloud_waf_rule`: Use `zenthcloud_ruleset` instead.
+- `zenthcloud_ip_list`: Use `zenthcloud_list` instead.
 
 ### Data source
 
-- `cloudflare_waf_groups`: Use `cloudflare_ruleset` instead.
-- `cloudflare_waf_packages`: Use `cloudflare_ruleset` instead.
-- `cloudflare_waf_rules`: Use `cloudflare_ruleset` instead.
+- `zenthcloud_waf_groups`: Use `zenthcloud_ruleset` instead.
+- `zenthcloud_waf_packages`: Use `zenthcloud_ruleset` instead.
+- `zenthcloud_waf_rules`: Use `zenthcloud_ruleset` instead.

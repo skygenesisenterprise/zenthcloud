@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zero_trust_access_infrastructure_targets Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_access_infrastructure_targets Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zero_trust_access_infrastructure_targets (Data Source)
+# zenthcloud_zero_trust_access_infrastructure_targets (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_access_infrastructure_targets" "example_zero_trust_access_infrastructure_targets" {
+data "zenthcloud_zero_trust_access_infrastructure_targets" "example_zero_trust_access_infrastructure_targets" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   created_after = "2019-12-27T18:11:19.117Z"
   created_before = "2019-12-27T18:11:19.117Z"

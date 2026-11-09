@@ -1,4 +1,4 @@
-resource "cloudflare_ruleset" "%[2]s" {
+resource "zenthcloud_ruleset" "%[2]s" {
   zone_id = "%[1]s"
   name    = "Redirect ruleset %[2]s"
   phase   = "http_request_dynamic_redirect"

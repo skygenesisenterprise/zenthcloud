@@ -30,7 +30,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare public account ID (32-character hexadecimal string)",
+              "description": "Zenthcloud public account ID (32-character hexadecimal string)",
               "type": "string"
             },
             "report_id": {
@@ -110,7 +110,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare public account ID (32-character hexadecimal string)",
+              "description": "Zenthcloud public account ID (32-character hexadecimal string)",
               "type": "string"
             }
           },

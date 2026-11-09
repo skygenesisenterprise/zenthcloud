@@ -1,16 +1,16 @@
-resource "cloudflare_load_balancer" "%[3]s" {
+resource "zenthcloud_load_balancer" "%[3]s" {
   zone_id = "%[1]s"
   name    = "tf-testacc-lb-standard-%[3]s.%[2]s"
 
-  default_pools = ["${cloudflare_load_balancer_pool.%[3]s.id}"]
-  fallback_pool = "${cloudflare_load_balancer_pool.%[3]s.id}"
+  default_pools = ["${zenthcloud_load_balancer_pool.%[3]s.id}"]
+  fallback_pool = "${zenthcloud_load_balancer_pool.%[3]s.id}"
 
   region_pools = {
-    WNAM = ["${cloudflare_load_balancer_pool.%[3]s.id}"]
-    SSAM = ["${cloudflare_load_balancer_pool.%[3]s.id}"]
+    WNAM = ["${zenthcloud_load_balancer_pool.%[3]s.id}"]
+    SSAM = ["${zenthcloud_load_balancer_pool.%[3]s.id}"]
   }
   pop_pools = {
-    LHR = ["${cloudflare_load_balancer_pool.%[3]s.id}"]
+    LHR = ["${zenthcloud_load_balancer_pool.%[3]s.id}"]
   }
   session_affinity = "cookie"
   steering_policy  = "geo"

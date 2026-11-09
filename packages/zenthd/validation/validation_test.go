@@ -99,7 +99,7 @@ func TestValidateUrl(t *testing.T) {
 	assert.Empty(t, validUrl)
 
 	validUrl, err = ValidateUrl("ftp://alex:12345@hello.example.com:8080/robot.txt")
-	assert.Equal(t, "Currently Cloudflare Tunnel does not support ftp protocol.", err.Error())
+	assert.Equal(t, "Currently Zenthcloud Tunnel does not support ftp protocol.", err.Error())
 	assert.Empty(t, validUrl)
 
 	for _, input := range []string{
@@ -116,7 +116,7 @@ func TestValidateUrl(t *testing.T) {
 
 func TestNewAccessValidatorOk(t *testing.T) {
 	ctx := context.Background()
-	url := "test.cloudflareaccess.com"
+	url := "test.zenthcloudaccess.com"
 	access, err := NewAccessValidator(ctx, url, url, "")
 
 	require.NoError(t, err)
@@ -125,7 +125,7 @@ func TestNewAccessValidatorOk(t *testing.T) {
 	require.Error(t, access.Validate(ctx, ""))
 	require.Error(t, access.Validate(ctx, "invalid"))
 
-	req := httptest.NewRequest("GET", "https://test.cloudflareaccess.com", nil)
+	req := httptest.NewRequest("GET", "https://github.com/skygenesisenterprise/zenthcloud", nil)
 	req.Header.Set(accessJwtHeader, "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c")
 	assert.Error(t, access.ValidateRequest(ctx, req))
 }
@@ -135,8 +135,8 @@ func TestNewAccessValidatorErr(t *testing.T) {
 
 	urls := []string{
 		"",
-		"ftp://test.cloudflareaccess.com",
-		"wss://cloudflarenone.com",
+		"ftp://test.zenthcloudaccess.com",
+		"wss://zenthcloudnone.com",
 	}
 
 	for _, url := range urls {

@@ -5,8 +5,8 @@ package stream_download
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/stream"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/stream"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -22,7 +22,7 @@ type StreamDownloadDataSourceModel struct {
 
 func (m *StreamDownloadDataSourceModel) toReadParams(_ context.Context) (params stream.DownloadGetParams, diags diag.Diagnostics) {
 	params = stream.DownloadGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return

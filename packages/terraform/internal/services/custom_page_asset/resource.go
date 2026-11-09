@@ -8,12 +8,12 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/custom_pages"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/custom_pages"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/apijson"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/importpath"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/logging"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -29,7 +29,7 @@ func NewResource() resource.Resource {
 
 // CustomPageAssetResource defines the resource implementation.
 type CustomPageAssetResource struct {
-	client *cloudflare.Client
+	client *zenthcloud.Client
 }
 
 func (r *CustomPageAssetResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -41,12 +41,12 @@ func (r *CustomPageAssetResource) Configure(ctx context.Context, req resource.Co
 		return
 	}
 
-	client, ok := req.ProviderData.(*cloudflare.Client)
+	client, ok := req.ProviderData.(*zenthcloud.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"unexpected resource configure type",
-			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *zenthcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -74,9 +74,9 @@ func (r *CustomPageAssetResource) Create(ctx context.Context, req resource.Creat
 	params := custom_pages.AssetNewParams{}
 
 	if !data.AccountID.IsNull() {
-		params.AccountID = cloudflare.F(data.AccountID.ValueString())
+		params.AccountID = zenthcloud.F(data.AccountID.ValueString())
 	} else {
-		params.ZoneID = cloudflare.F(data.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(data.ZoneID.ValueString())
 	}
 
 	_, err = r.client.CustomPages.Assets.New(
@@ -129,9 +129,9 @@ func (r *CustomPageAssetResource) Update(ctx context.Context, req resource.Updat
 	params := custom_pages.AssetUpdateParams{}
 
 	if !data.AccountID.IsNull() {
-		params.AccountID = cloudflare.F(data.AccountID.ValueString())
+		params.AccountID = zenthcloud.F(data.AccountID.ValueString())
 	} else {
-		params.ZoneID = cloudflare.F(data.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(data.ZoneID.ValueString())
 	}
 
 	_, err = r.client.CustomPages.Assets.Update(
@@ -172,9 +172,9 @@ func (r *CustomPageAssetResource) Read(ctx context.Context, req resource.ReadReq
 	params := custom_pages.AssetGetParams{}
 
 	if !data.AccountID.IsNull() {
-		params.AccountID = cloudflare.F(data.AccountID.ValueString())
+		params.AccountID = zenthcloud.F(data.AccountID.ValueString())
 	} else {
-		params.ZoneID = cloudflare.F(data.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(data.ZoneID.ValueString())
 	}
 
 	_, err := r.client.CustomPages.Assets.Get(
@@ -217,9 +217,9 @@ func (r *CustomPageAssetResource) Delete(ctx context.Context, req resource.Delet
 	params := custom_pages.AssetDeleteParams{}
 
 	if !data.AccountID.IsNull() {
-		params.AccountID = cloudflare.F(data.AccountID.ValueString())
+		params.AccountID = zenthcloud.F(data.AccountID.ValueString())
 	} else {
-		params.ZoneID = cloudflare.F(data.ZoneID.ValueString())
+		params.ZoneID = zenthcloud.F(data.ZoneID.ValueString())
 	}
 
 	err := r.client.CustomPages.Assets.Delete(
@@ -253,10 +253,10 @@ func (r *CustomPageAssetResource) ImportState(ctx context.Context, req resource.
 	resp.Diagnostics.Append(diags...)
 	switch path_accounts_or_zones {
 	case "accounts":
-		params.AccountID = cloudflare.F(path_account_id_or_zone_id)
+		params.AccountID = zenthcloud.F(path_account_id_or_zone_id)
 		data.AccountID = types.StringValue(path_account_id_or_zone_id)
 	case "zones":
-		params.ZoneID = cloudflare.F(path_account_id_or_zone_id)
+		params.ZoneID = zenthcloud.F(path_account_id_or_zone_id)
 		data.ZoneID = types.StringValue(path_account_id_or_zone_id)
 	default:
 		resp.Diagnostics.AddError("invalid discriminator segment - <{accounts|zones}/{account_id|zone_id}>", "expected discriminator to be one of {accounts|zones}")

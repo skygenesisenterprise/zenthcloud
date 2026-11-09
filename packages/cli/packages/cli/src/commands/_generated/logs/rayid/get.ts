@@ -64,7 +64,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf logs rayid get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/logs/rayids/${argv["ray-id"] == null ? "<ray-id>" : encodeURIComponent(String(argv["ray-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/logs/rayids/${argv["ray-id"] == null ? "<ray-id>" : encodeURIComponent(String(argv["ray-id"]))}`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 							"ray-id": String(argv["ray-id"] ?? ""),

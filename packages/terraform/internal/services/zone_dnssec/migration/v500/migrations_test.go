@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -55,7 +55,7 @@ func TestMigrateZoneDNSSEC_V4ToV5_Basic(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
@@ -71,8 +71,8 @@ func TestMigrateZoneDNSSEC_V4ToV5_Basic(t *testing.T) {
 					{
 						// Step 1: Create with specific provider version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -82,11 +82,11 @@ func TestMigrateZoneDNSSEC_V4ToV5_Basic(t *testing.T) {
 					// Uses MigrationV2TestStepForZoneDNSSEC which expects non-empty plan due to status field limitation
 					acctest.MigrationV2TestStepForZoneDNSSEC(t, testConfig, tmpDir, tc.version, sourceVer, targetVer,
 						[]statecheck.StateCheck{
-							statecheck.ExpectKnownValue("cloudflare_zone_dnssec."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
+							statecheck.ExpectKnownValue("zenthcloud_zone_dnssec."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
 							// Note: Not checking status field - v4->v5 migration doesn't populate it in state
-							statecheck.ExpectKnownValue("cloudflare_zone_dnssec."+rnd, tfjsonpath.New("algorithm"), knownvalue.NotNull()),
-							statecheck.ExpectKnownValue("cloudflare_zone_dnssec."+rnd, tfjsonpath.New("flags"), knownvalue.NotNull()),
-							statecheck.ExpectKnownValue("cloudflare_zone_dnssec."+rnd, tfjsonpath.New("key_tag"), knownvalue.NotNull()),
+							statecheck.ExpectKnownValue("zenthcloud_zone_dnssec."+rnd, tfjsonpath.New("algorithm"), knownvalue.NotNull()),
+							statecheck.ExpectKnownValue("zenthcloud_zone_dnssec."+rnd, tfjsonpath.New("flags"), knownvalue.NotNull()),
+							statecheck.ExpectKnownValue("zenthcloud_zone_dnssec."+rnd, tfjsonpath.New("key_tag"), knownvalue.NotNull()),
 						},
 					),
 				},
@@ -115,7 +115,7 @@ func TestMigrateZoneDNSSEC_V4ToV5_WithModifiedOn(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
@@ -130,8 +130,8 @@ func TestMigrateZoneDNSSEC_V4ToV5_WithModifiedOn(t *testing.T) {
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -140,9 +140,9 @@ func TestMigrateZoneDNSSEC_V4ToV5_WithModifiedOn(t *testing.T) {
 					// Uses MigrationV2TestStepForZoneDNSSEC which expects non-empty plan due to status field limitation
 					acctest.MigrationV2TestStepForZoneDNSSEC(t, testConfig, tmpDir, tc.version, sourceVer, targetVer,
 						[]statecheck.StateCheck{
-							statecheck.ExpectKnownValue("cloudflare_zone_dnssec."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
+							statecheck.ExpectKnownValue("zenthcloud_zone_dnssec."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
 							// Note: Not checking status field - v4->v5 migration doesn't populate it in state
-							statecheck.ExpectKnownValue("cloudflare_zone_dnssec."+rnd, tfjsonpath.New("modified_on"), knownvalue.NotNull()),
+							statecheck.ExpectKnownValue("zenthcloud_zone_dnssec."+rnd, tfjsonpath.New("modified_on"), knownvalue.NotNull()),
 						},
 					),
 				},
@@ -178,7 +178,7 @@ func TestMigrateZoneDNSSEC_V4ToV5_StatusActive(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, zoneID)
@@ -186,22 +186,22 @@ func TestMigrateZoneDNSSEC_V4ToV5_StatusActive(t *testing.T) {
 
 			// Build state checks conditionally based on test variant
 			stateChecks := []statecheck.StateCheck{
-				statecheck.ExpectKnownValue("cloudflare_zone_dnssec."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
+				statecheck.ExpectKnownValue("zenthcloud_zone_dnssec."+rnd, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
 				// Verify numeric fields are present (flags, key_tag converted from int to float64)
-				statecheck.ExpectKnownValue("cloudflare_zone_dnssec."+rnd, tfjsonpath.New("flags"), knownvalue.NotNull()),
-				statecheck.ExpectKnownValue("cloudflare_zone_dnssec."+rnd, tfjsonpath.New("key_tag"), knownvalue.NotNull()),
+				statecheck.ExpectKnownValue("zenthcloud_zone_dnssec."+rnd, tfjsonpath.New("flags"), knownvalue.NotNull()),
+				statecheck.ExpectKnownValue("zenthcloud_zone_dnssec."+rnd, tfjsonpath.New("key_tag"), knownvalue.NotNull()),
 				// Verify other computed fields
-				statecheck.ExpectKnownValue("cloudflare_zone_dnssec."+rnd, tfjsonpath.New("algorithm"), knownvalue.NotNull()),
-				statecheck.ExpectKnownValue("cloudflare_zone_dnssec."+rnd, tfjsonpath.New("digest"), knownvalue.NotNull()),
-				statecheck.ExpectKnownValue("cloudflare_zone_dnssec."+rnd, tfjsonpath.New("digest_algorithm"), knownvalue.NotNull()),
-				statecheck.ExpectKnownValue("cloudflare_zone_dnssec."+rnd, tfjsonpath.New("digest_type"), knownvalue.NotNull()),
-				statecheck.ExpectKnownValue("cloudflare_zone_dnssec."+rnd, tfjsonpath.New("ds"), knownvalue.NotNull()),
-				statecheck.ExpectKnownValue("cloudflare_zone_dnssec."+rnd, tfjsonpath.New("key_type"), knownvalue.NotNull()),
-				statecheck.ExpectKnownValue("cloudflare_zone_dnssec."+rnd, tfjsonpath.New("public_key"), knownvalue.NotNull()),
+				statecheck.ExpectKnownValue("zenthcloud_zone_dnssec."+rnd, tfjsonpath.New("algorithm"), knownvalue.NotNull()),
+				statecheck.ExpectKnownValue("zenthcloud_zone_dnssec."+rnd, tfjsonpath.New("digest"), knownvalue.NotNull()),
+				statecheck.ExpectKnownValue("zenthcloud_zone_dnssec."+rnd, tfjsonpath.New("digest_algorithm"), knownvalue.NotNull()),
+				statecheck.ExpectKnownValue("zenthcloud_zone_dnssec."+rnd, tfjsonpath.New("digest_type"), knownvalue.NotNull()),
+				statecheck.ExpectKnownValue("zenthcloud_zone_dnssec."+rnd, tfjsonpath.New("ds"), knownvalue.NotNull()),
+				statecheck.ExpectKnownValue("zenthcloud_zone_dnssec."+rnd, tfjsonpath.New("key_type"), knownvalue.NotNull()),
+				statecheck.ExpectKnownValue("zenthcloud_zone_dnssec."+rnd, tfjsonpath.New("public_key"), knownvalue.NotNull()),
 			}
 			if tc.name == "from_v5" {
 				// Only check status for v5->v5 migrations where it's explicitly set in config
-				stateChecks = append(stateChecks, statecheck.ExpectKnownValue("cloudflare_zone_dnssec."+rnd, tfjsonpath.New("status"), knownvalue.NotNull()))
+				stateChecks = append(stateChecks, statecheck.ExpectKnownValue("zenthcloud_zone_dnssec."+rnd, tfjsonpath.New("status"), knownvalue.NotNull()))
 			}
 			// Note: Not checking status for from_v4_latest - v4->v5 migration doesn't populate it in state
 
@@ -216,8 +216,8 @@ func TestMigrateZoneDNSSEC_V4ToV5_StatusActive(t *testing.T) {
 			} else {
 				// Use external provider from registry for v4 tests
 				firstStep.ExternalProviders = map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: tc.version,
 					},
 				}

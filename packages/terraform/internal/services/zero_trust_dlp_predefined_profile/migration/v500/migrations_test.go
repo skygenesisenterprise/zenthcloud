@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 var (
@@ -36,22 +36,22 @@ var v516BasicConfig string
 
 func skipIfMissingPredefinedIDs(t *testing.T) (profileID, entryID string) {
 	t.Helper()
-	profileID = os.Getenv("CLOUDFLARE_DLP_PREDEFINED_PROFILE_ID")
-	entryID = os.Getenv("CLOUDFLARE_DLP_PREDEFINED_ENTRY_ID")
+	profileID = os.Getenv("ZENTHCLOUD_DLP_PREDEFINED_PROFILE_ID")
+	entryID = os.Getenv("ZENTHCLOUD_DLP_PREDEFINED_ENTRY_ID")
 	if profileID == "" || entryID == "" {
-		t.Skip("CLOUDFLARE_DLP_PREDEFINED_PROFILE_ID and CLOUDFLARE_DLP_PREDEFINED_ENTRY_ID must be set")
+		t.Skip("ZENTHCLOUD_DLP_PREDEFINED_PROFILE_ID and ZENTHCLOUD_DLP_PREDEFINED_ENTRY_ID must be set")
 	}
 	return profileID, entryID
 }
 
 func skipIfMissingMultipleEntryIDs(t *testing.T) (profileID, entryID1, entryID2, entryID3 string) {
 	t.Helper()
-	profileID = os.Getenv("CLOUDFLARE_DLP_PREDEFINED_PROFILE_ID")
-	entryID1 = os.Getenv("CLOUDFLARE_DLP_PREDEFINED_ENTRY_ID")
-	entryID2 = os.Getenv("CLOUDFLARE_DLP_PREDEFINED_ENTRY_ID_2")
-	entryID3 = os.Getenv("CLOUDFLARE_DLP_PREDEFINED_ENTRY_ID_3")
+	profileID = os.Getenv("ZENTHCLOUD_DLP_PREDEFINED_PROFILE_ID")
+	entryID1 = os.Getenv("ZENTHCLOUD_DLP_PREDEFINED_ENTRY_ID")
+	entryID2 = os.Getenv("ZENTHCLOUD_DLP_PREDEFINED_ENTRY_ID_2")
+	entryID3 = os.Getenv("ZENTHCLOUD_DLP_PREDEFINED_ENTRY_ID_3")
 	if profileID == "" || entryID1 == "" || entryID2 == "" || entryID3 == "" {
-		t.Skip("CLOUDFLARE_DLP_PREDEFINED_PROFILE_ID, CLOUDFLARE_DLP_PREDEFINED_ENTRY_ID, _ENTRY_ID_2, _ENTRY_ID_3 must be set")
+		t.Skip("ZENTHCLOUD_DLP_PREDEFINED_PROFILE_ID, ZENTHCLOUD_DLP_PREDEFINED_ENTRY_ID, _ENTRY_ID_2, _ENTRY_ID_3 must be set")
 	}
 	return profileID, entryID1, entryID2, entryID3
 }
@@ -94,7 +94,7 @@ func TestMigrateZeroTrustDLPPredefinedProfile_V5_Basic(t *testing.T) {
 				t.Cleanup(func() { os.Setenv("TF_MIG_TEST", "1") })
 			}
 
-			accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+			accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 			rnd := utils.GenerateRandomResourceName()
 			tmpDir := t.TempDir()
 			testConfig := tc.configFn(rnd, accountID)
@@ -109,8 +109,8 @@ func TestMigrateZeroTrustDLPPredefinedProfile_V5_Basic(t *testing.T) {
 			} else {
 				firstStep = resource.TestStep{
 					ExternalProviders: map[string]resource.ExternalProvider{
-						"cloudflare": {
-							Source:            "cloudflare/cloudflare",
+						"zenthcloud": {
+							Source:            "zenthcloud/zenthcloud",
 							VersionConstraint: tc.version,
 						},
 					},
@@ -128,17 +128,17 @@ func TestMigrateZeroTrustDLPPredefinedProfile_V5_Basic(t *testing.T) {
 					firstStep,
 					acctest.MigrationV2TestStep(t, testConfig, tmpDir, tc.version, sourceVer, targetVer, []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(
-							"cloudflare_zero_trust_dlp_predefined_profile."+rnd,
+							"zenthcloud_zero_trust_dlp_predefined_profile."+rnd,
 							tfjsonpath.New("account_id"),
 							knownvalue.StringExact(accountID),
 						),
 						statecheck.ExpectKnownValue(
-							"cloudflare_zero_trust_dlp_predefined_profile."+rnd,
+							"zenthcloud_zero_trust_dlp_predefined_profile."+rnd,
 							tfjsonpath.New("profile_id"),
 							knownvalue.StringExact(profileID),
 						),
 						statecheck.ExpectKnownValue(
-							"cloudflare_zero_trust_dlp_predefined_profile."+rnd,
+							"zenthcloud_zero_trust_dlp_predefined_profile."+rnd,
 							tfjsonpath.New("allowed_match_count"),
 							knownvalue.Int64Exact(3),
 						),
@@ -154,7 +154,7 @@ func TestMigrateZeroTrustDLPPredefinedProfile_V5_Basic(t *testing.T) {
 func TestMigrateZeroTrustDLPPredefinedProfile_V4ToV5_MultipleEntries(t *testing.T) {
 	profileID, entryID1, entryID2, _ := skipIfMissingMultipleEntryIDs(t)
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
 	testConfig := fmt.Sprintf(v5MultipleEntriesConfig, rnd, accountID, profileID, entryID1, entryID2)
@@ -173,12 +173,12 @@ func TestMigrateZeroTrustDLPPredefinedProfile_V4ToV5_MultipleEntries(t *testing.
 			},
 			acctest.MigrationV2TestStep(t, testConfig, tmpDir, currentProviderVersion, sourceVer, targetVer, []statecheck.StateCheck{
 				statecheck.ExpectKnownValue(
-					"cloudflare_zero_trust_dlp_predefined_profile."+rnd,
+					"zenthcloud_zero_trust_dlp_predefined_profile."+rnd,
 					tfjsonpath.New("account_id"),
 					knownvalue.StringExact(accountID),
 				),
 				statecheck.ExpectKnownValue(
-					"cloudflare_zero_trust_dlp_predefined_profile."+rnd,
+					"zenthcloud_zero_trust_dlp_predefined_profile."+rnd,
 					tfjsonpath.New("enabled_entries"),
 					knownvalue.ListSizeExact(2),
 				),
@@ -191,7 +191,7 @@ func TestMigrateZeroTrustDLPPredefinedProfile_V4ToV5_MultipleEntries(t *testing.
 func TestMigrateZeroTrustDLPPredefinedProfile_V4ToV5_WithOCR(t *testing.T) {
 	profileID, entryID := skipIfMissingPredefinedIDs(t)
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
 	testConfig := fmt.Sprintf(v5WithOCRConfig, rnd, accountID, profileID, entryID)
@@ -210,12 +210,12 @@ func TestMigrateZeroTrustDLPPredefinedProfile_V4ToV5_WithOCR(t *testing.T) {
 			},
 			acctest.MigrationV2TestStep(t, testConfig, tmpDir, currentProviderVersion, sourceVer, targetVer, []statecheck.StateCheck{
 				statecheck.ExpectKnownValue(
-					"cloudflare_zero_trust_dlp_predefined_profile."+rnd,
+					"zenthcloud_zero_trust_dlp_predefined_profile."+rnd,
 					tfjsonpath.New("account_id"),
 					knownvalue.StringExact(accountID),
 				),
 				statecheck.ExpectKnownValue(
-					"cloudflare_zero_trust_dlp_predefined_profile."+rnd,
+					"zenthcloud_zero_trust_dlp_predefined_profile."+rnd,
 					tfjsonpath.New("ocr_enabled"),
 					knownvalue.Bool(true),
 				),
@@ -231,7 +231,7 @@ func TestMigrateZeroTrustDLPPredefinedProfile_V4ToV5_FromV516(t *testing.T) {
 	os.Setenv("TF_MIG_TEST", "")
 	t.Cleanup(func() { os.Setenv("TF_MIG_TEST", "1") })
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	rnd := utils.GenerateRandomResourceName()
 	tmpDir := t.TempDir()
 	testConfig := fmt.Sprintf(v516BasicConfig, rnd, accountID, profileID, entryID)
@@ -240,8 +240,8 @@ func TestMigrateZeroTrustDLPPredefinedProfile_V4ToV5_FromV516(t *testing.T) {
 	steps := []resource.TestStep{
 		{
 			ExternalProviders: map[string]resource.ExternalProvider{
-				"cloudflare": {
-					Source:            "cloudflare/cloudflare",
+				"zenthcloud": {
+					Source:            "zenthcloud/zenthcloud",
 					VersionConstraint: "5.16.0",
 				},
 			},
@@ -260,12 +260,12 @@ func TestMigrateZeroTrustDLPPredefinedProfile_V4ToV5_FromV516(t *testing.T) {
 			ConfigDirectory:          config.StaticDirectory(tmpDir),
 			ConfigStateChecks: []statecheck.StateCheck{
 				statecheck.ExpectKnownValue(
-					"cloudflare_zero_trust_dlp_predefined_profile."+rnd,
+					"zenthcloud_zero_trust_dlp_predefined_profile."+rnd,
 					tfjsonpath.New("account_id"),
 					knownvalue.StringExact(accountID),
 				),
 				statecheck.ExpectKnownValue(
-					"cloudflare_zero_trust_dlp_predefined_profile."+rnd,
+					"zenthcloud_zero_trust_dlp_predefined_profile."+rnd,
 					tfjsonpath.New("profile_id"),
 					knownvalue.StringRegexp(regexp.MustCompile(".+")),
 				),

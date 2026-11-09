@@ -10,7 +10,7 @@ import (
 
 // SourceURLNormalizationSettingsModel represents the legacy resource state from v4.x provider.
 // Schema version: 1 (v4 provider schema version)
-// Resource type: cloudflare_url_normalization_settings
+// Resource type: zenthcloud_url_normalization_settings
 //
 // Fields are identical between v4 and v5 - no transformations needed.
 type SourceURLNormalizationSettingsModel struct {
@@ -26,7 +26,7 @@ type SourceURLNormalizationSettingsModel struct {
 
 // TargetURLNormalizationSettingsModel represents the current resource state from v5.x+ provider.
 // Schema version: 500
-// Resource type: cloudflare_url_normalization_settings
+// Resource type: zenthcloud_url_normalization_settings
 //
 // Note: This matches the model in the parent package's model.go file.
 type TargetURLNormalizationSettingsModel struct {

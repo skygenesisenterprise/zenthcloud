@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/cloudflare/cloudflared/connection"
+	"github.com/zenthcloud/zenthcloudd/connection"
 )
 
 type responseWriterWithHeaderFilter struct {

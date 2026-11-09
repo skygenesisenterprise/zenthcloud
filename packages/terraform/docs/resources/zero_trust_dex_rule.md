@@ -1,24 +1,24 @@
 ---
-page_title: "cloudflare_zero_trust_dex_rule Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_dex_rule Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
-  Cloudflare DEX ReadCloudflare DEX WriteZero Trust ReadZero Trust Report
+  Zenthcloud DEX ReadZenthcloud DEX WriteZero Trust ReadZero Trust Report
 ---
 
-# cloudflare_zero_trust_dex_rule (Resource)
+# zenthcloud_zero_trust_dex_rule (Resource)
 
 Accepted Permissions
 
-- `Cloudflare DEX Read`
-- `Cloudflare DEX Write`
+- `Zenthcloud DEX Read`
+- `Zenthcloud DEX Write`
 - `Zero Trust Read`
 - `Zero Trust Report`
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_dex_rule" "example_zero_trust_dex_rule" {
+resource "zenthcloud_zero_trust_dex_rule" "example_zero_trust_dex_rule" {
   account_id = "01a7362d577a6c3019a474fd6f485823"
   match = "match"
   name = "name"
@@ -72,7 +72,7 @@ Available values: "GET".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_dex_rule.example '<account_id>/<rule_id>'
+$ terraform import zenthcloud_zero_trust_dex_rule.example '<account_id>/<rule_id>'
 ```
 
 

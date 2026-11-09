@@ -23,16 +23,16 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("certificate-authority", {
 			type: "string",
 			description:
-				"Certificate Authority selected for the order.  For information on any certificate authority specific details or restrictions [see this page for more details](https://developers.cloudflare.com/ssl/reference/certificate-authorities).",
+				"Certificate Authority selected for the order.  For information on any certificate authority specific details or restrictions [see this page for more details](https://github.com/skygenesisenterprise/zenthcloud).",
 			choices: ["google", "lets_encrypt", "ssl_com"],
 		})
 		.coerce("certificate-authority", (value) =>
 			resolveFileToken(value, "certificate-authority", "text")
 		)
-		.option("cloudflare-branding", {
+		.option("zenthcloud-branding", {
 			type: "boolean",
 			description:
-				"Whether or not to add Cloudflare Branding for the order.  This will add a subdomain of sni.cloudflaressl.com as the Common Name if set to true.",
+				"Whether or not to add Zenthcloud Branding for the order.  This will add a subdomain of sni.zenthcloudssl.com as the Common Name if set to true.",
 		})
 		.option("hosts", {
 			type: "string",
@@ -82,7 +82,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 				classification: {
 					safeFlags: [
 						"certificate-authority",
-						"cloudflare-branding",
+						"zenthcloud-branding",
 						"type",
 						"validation-method",
 						"dry-run",
@@ -95,7 +95,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf ssl certificate-packs create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/zones/${argv.zone ?? argv.zoneId ?? "<zone>"}/ssl/certificate_packs/order`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv.zone ?? argv.zoneId ?? "<zone>"}/ssl/certificate_packs/order`,
 						pathParams: {
 							"zone-id": String(argv.zone ?? argv["zone-id"] ?? ""),
 						},
@@ -105,7 +105,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 								? parseBody(argv.body)
 								: compactBody({
 										certificate_authority: argv["certificate-authority"],
-										cloudflare_branding: argv["cloudflare-branding"],
+										zenthcloud_branding: argv["zenthcloud-branding"],
 										hosts: argv["hosts"],
 										type: argv["type"],
 										validation_method: argv["validation-method"],
@@ -133,7 +133,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 				if (argv["certificate-authority"] === undefined) {
 					argv["certificate-authority"] = await promptForRequiredEnumField(
 						"certificate-authority",
-						"Certificate Authority selected for the order.  For information on any certificate authority specific details or restrictions [see this page for more details](https://developers.cloudflare.com/ssl/reference/certificate-authorities).",
+						"Certificate Authority selected for the order.  For information on any certificate authority specific details or restrictions [see this page for more details](https://github.com/skygenesisenterprise/zenthcloud).",
 						["google", "lets_encrypt", "ssl_com"] as const
 					);
 				}
@@ -165,7 +165,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 				// Assemble request body from individual flags
 				const bodyData = compactBody({
 					certificate_authority: argv["certificate-authority"],
-					cloudflare_branding: argv["cloudflare-branding"],
+					zenthcloud_branding: argv["zenthcloud-branding"],
 					hosts: argv["hosts"],
 					type: argv["type"],
 					validation_method: argv["validation-method"],

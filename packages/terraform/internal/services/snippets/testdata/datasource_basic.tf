@@ -1,1 +1,1 @@
-data "cloudflare_snippets" "%[1]s" {}
+data "zenthcloud_snippets" "%[1]s" {}

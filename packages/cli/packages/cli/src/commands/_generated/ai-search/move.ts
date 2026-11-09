@@ -71,7 +71,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf ai-search move",
 						method: "PATCH",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/ai-search/namespaces/${argv["source-namespace"] == null ? "<source-namespace>" : encodeURIComponent(String(argv["source-namespace"]))}/instances/${argv["instance-id"] == null ? "<instance-id>" : encodeURIComponent(String(argv["instance-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/ai-search/namespaces/${argv["source-namespace"] == null ? "<source-namespace>" : encodeURIComponent(String(argv["source-namespace"]))}/instances/${argv["instance-id"] == null ? "<instance-id>" : encodeURIComponent(String(argv["instance-id"]))}`,
 						pathParams: {
 							"source-namespace": String(argv["source-namespace"] ?? ""),
 							"instance-id": String(argv["instance-id"] ?? ""),

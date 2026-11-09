@@ -15,7 +15,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		})
 		.option("bundler", {
 			choices: ["vite", "wrangler"] as const,
-			description: `Bundler to use in the migrated project (defaults to vite when @cloudflare/vite-plugin is declared, otherwise wrangler)`,
+			description: `Bundler to use in the migrated project (defaults to vite when @zenthcloud/vite-plugin is declared, otherwise wrangler)`,
 		})
 		.option("dry-run", {
 			type: "boolean",
@@ -41,8 +41,8 @@ function printDetectedBundler(bundler: MigrationBundler): void {
 	console.error(
 		theme.muted(
 			bundler === "vite"
-				? "Using the Vite bundler because @cloudflare/vite-plugin is declared. Pass --bundler wrangler to override."
-				: "Using the Wrangler bundler because @cloudflare/vite-plugin is not declared. Pass --bundler vite to override."
+				? "Using the Vite bundler because @zenthcloud/vite-plugin is declared. Pass --bundler wrangler to override."
+				: "Using the Wrangler bundler because @zenthcloud/vite-plugin is not declared. Pass --bundler vite to override."
 		)
 	);
 }

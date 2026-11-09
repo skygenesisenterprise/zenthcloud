@@ -10,7 +10,7 @@ import (
 
 // Transform converts source (legacy v4 SDKv2) state to target (current v5 Plugin Framework) state.
 // This handles all field transformations and type conversions for zero_trust_gateway_certificate.
-func Transform(_ context.Context, source SourceCloudflareZeroTrustGatewayCertificateModel) (*TargetZeroTrustGatewayCertificateModel, diag.Diagnostics) {
+func Transform(_ context.Context, source SourceZenthcloudZeroTrustGatewayCertificateModel) (*TargetZeroTrustGatewayCertificateModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Step 1: Validate required fields

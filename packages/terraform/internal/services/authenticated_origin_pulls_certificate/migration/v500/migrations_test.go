@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -82,9 +82,9 @@ func TestMigrateAuthenticatedOriginPullsCertificate_V4ToV5_PerZone(t *testing.T)
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Test setup
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			if zoneID == "" {
-				t.Skip("CLOUDFLARE_ZONE_ID must be set for this test")
+				t.Skip("ZENTHCLOUD_ZONE_ID must be set for this test")
 			}
 
 			rnd := utils.GenerateRandomResourceName()
@@ -99,7 +99,7 @@ func TestMigrateAuthenticatedOriginPullsCertificate_V4ToV5_PerZone(t *testing.T)
 
 			testConfig := tc.configFn(rnd, zoneID, cert, key)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
-			resourceName := "cloudflare_authenticated_origin_pulls_certificate." + rnd
+			resourceName := "zenthcloud_authenticated_origin_pulls_certificate." + rnd
 
 			resource.Test(t, resource.TestCase{
 				WorkingDir: tmpDir,
@@ -107,8 +107,8 @@ func TestMigrateAuthenticatedOriginPullsCertificate_V4ToV5_PerZone(t *testing.T)
 					{
 						// Step 1: Create with specific provider version
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -187,9 +187,9 @@ func TestMigrateAuthenticatedOriginPullsCertificate_V4ToV5_PerZone_Minimal(t *te
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			if zoneID == "" {
-				t.Skip("CLOUDFLARE_ZONE_ID must be set for this test")
+				t.Skip("ZENTHCLOUD_ZONE_ID must be set for this test")
 			}
 
 			rnd := utils.GenerateRandomResourceName()
@@ -203,15 +203,15 @@ func TestMigrateAuthenticatedOriginPullsCertificate_V4ToV5_PerZone_Minimal(t *te
 
 			testConfig := tc.configFn(rnd, zoneID, cert, key)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
-			resourceName := "cloudflare_authenticated_origin_pulls_certificate." + rnd
+			resourceName := "zenthcloud_authenticated_origin_pulls_certificate." + rnd
 
 			resource.Test(t, resource.TestCase{
 				WorkingDir: tmpDir,
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -271,9 +271,9 @@ func TestMigrateAuthenticatedOriginPullsCertificate_V4ToV5_PerZone_AllFields(t *
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+			zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 			if zoneID == "" {
-				t.Skip("CLOUDFLARE_ZONE_ID must be set for this test")
+				t.Skip("ZENTHCLOUD_ZONE_ID must be set for this test")
 			}
 
 			rnd := utils.GenerateRandomResourceName()
@@ -287,15 +287,15 @@ func TestMigrateAuthenticatedOriginPullsCertificate_V4ToV5_PerZone_AllFields(t *
 
 			testConfig := tc.configFn(rnd, zoneID, cert, key)
 			sourceVer, targetVer := acctest.InferMigrationVersions(tc.version)
-			resourceName := "cloudflare_authenticated_origin_pulls_certificate." + rnd
+			resourceName := "zenthcloud_authenticated_origin_pulls_certificate." + rnd
 
 			resource.Test(t, resource.TestCase{
 				WorkingDir: tmpDir,
 				Steps: []resource.TestStep{
 					{
 						ExternalProviders: map[string]resource.ExternalProvider{
-							"cloudflare": {
-								Source:            "cloudflare/cloudflare",
+							"zenthcloud": {
+								Source:            "zenthcloud/zenthcloud",
 								VersionConstraint: tc.version,
 							},
 						},
@@ -371,13 +371,13 @@ func TestMigrateAuthenticatedOriginPullsCertificate_V4ToV5_PerZone_AllFields(t *
 
 // TestMigrateAuthenticatedOriginPullsHostnameCertificate_V4ToV5 tests hostname certificate migration.
 // This tests the MoveState implementation in the hostname certificate resource which handles:
-// - Resource rename: cloudflare_authenticated_origin_pulls_certificate (type="per-hostname") → cloudflare_authenticated_origin_pulls_hostname_certificate
+// - Resource rename: zenthcloud_authenticated_origin_pulls_certificate (type="per-hostname") → zenthcloud_authenticated_origin_pulls_hostname_certificate
 // - Removal of type field
 // - Preservation of all other fields
 func TestMigrateAuthenticatedOriginPullsHostnameCertificate_V4ToV5(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		t.Skip("CLOUDFLARE_ZONE_ID must be set for this test")
+		t.Skip("ZENTHCLOUD_ZONE_ID must be set for this test")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
@@ -397,7 +397,7 @@ func TestMigrateAuthenticatedOriginPullsHostnameCertificate_V4ToV5(t *testing.T)
 	// Template expects: rnd, zoneID, cert, key, rnd (from), rnd (to)
 	v5Config := fmt.Sprintf(v5PerHostnameConfig, rnd, zoneID, cert, key, rnd, rnd)
 
-	resourceName := "cloudflare_authenticated_origin_pulls_hostname_certificate." + rnd
+	resourceName := "zenthcloud_authenticated_origin_pulls_hostname_certificate." + rnd
 	v4Version := acctest.GetLastV4Version()
 
 	resource.Test(t, resource.TestCase{
@@ -406,8 +406,8 @@ func TestMigrateAuthenticatedOriginPullsHostnameCertificate_V4ToV5(t *testing.T)
 			{
 				// Step 1: Create resource with v4 provider (as authenticated_origin_pulls_certificate with type="per-hostname")
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: v4Version,
 					},
 				},
@@ -480,9 +480,9 @@ func TestMigrateAuthenticatedOriginPullsHostnameCertificate_V4ToV5(t *testing.T)
 // TestMigrateAuthenticatedOriginPullsHostnameCertificate_V4ToV5_Minimal tests minimal config migration.
 // This validates that hostname certificates with only required fields migrate correctly.
 func TestMigrateAuthenticatedOriginPullsHostnameCertificate_V4ToV5_Minimal(t *testing.T) {
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		t.Skip("CLOUDFLARE_ZONE_ID must be set for this test")
+		t.Skip("ZENTHCLOUD_ZONE_ID must be set for this test")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
@@ -502,7 +502,7 @@ func TestMigrateAuthenticatedOriginPullsHostnameCertificate_V4ToV5_Minimal(t *te
 	// Template expects: rnd, zoneID, cert, key, rnd (from), rnd (to)
 	v5Config := fmt.Sprintf(v5PerHostnameMinimalConfig, rnd, zoneID, cert, key, rnd, rnd)
 
-	resourceName := "cloudflare_authenticated_origin_pulls_hostname_certificate." + rnd
+	resourceName := "zenthcloud_authenticated_origin_pulls_hostname_certificate." + rnd
 	v4Version := acctest.GetLastV4Version()
 
 	resource.Test(t, resource.TestCase{
@@ -511,8 +511,8 @@ func TestMigrateAuthenticatedOriginPullsHostnameCertificate_V4ToV5_Minimal(t *te
 			{
 				// Step 1: Create with v4 provider
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: v4Version,
 					},
 				},

@@ -5,7 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceTeamsListSchema returns the v4 cloudflare_teams_list schema (schema_version=0).
+// SourceTeamsListSchema returns the v4 zenthcloud_teams_list schema (schema_version=0).
 // Used by both MoveState and UpgradeState[0] for reading v4 state.
 func SourceTeamsListSchema() schema.Schema {
 	return schema.Schema{

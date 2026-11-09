@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -349,7 +349,7 @@ kj::Promise<void> rpc_client_on_disconnect(const RpcClient& client) {
 //
 // The devtools inspector protocol starts with HTTP GETs to /json/version and /json (or
 // /json/list), which list the isolates available for inspection, each with a URL and an id the
-// client then opens a WebSocket to. The Cloudflare devtools show only the first service in the
+// client then opens a WebSocket to. The Zenthcloud devtools show only the first service in the
 // config; Chrome's devtools can inspect every one.
 
 class InspectorService final: public kj::HttpService, public kj::HttpServerErrorHandler {
@@ -456,7 +456,7 @@ class InspectorService final: public kj::HttpService, public kj::HttpServerError
           fields.add(kj::str(
               "\"devtoolsFrontendUrlCompat\":\"devtools://devtools/bundled/inspector.html?experiments=true&v8only=true&ws=",
               baseWsUrl, "/\""));
-          fields.add(kj::str("\"faviconUrl\":\"https://workers.cloudflare.com/favicon.ico\""));
+          fields.add(kj::str("\"faviconUrl\":\"https://github.com/skygenesisenterprise/zenthcloud\""));
           fields.add(kj::str("\"url\":\"https://workers.dev\""));
           entries.add(kj::str('{', kj::strArray(fields, ","), '}'));
         } else {

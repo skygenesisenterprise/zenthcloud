@@ -5,7 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// V4Model represents the v4 schema structure for cloudflare_authenticated_origin_pulls_certificate
+// V4Model represents the v4 schema structure for zenthcloud_authenticated_origin_pulls_certificate
 // with type="per-hostname". This is the source schema for MoveState operations.
 type V4Model struct {
 	ID           types.String      `tfsdk:"id"`

@@ -407,7 +407,7 @@ wd_cc_library(
         ":memory-cache",
         ":r2",
         ":workers-module",
-        "//src/cloudflare",
+        "//src/zenthcloud",
         "//src/node",
         "//src/pyodide",
         "//src/workerd/api/node",
@@ -420,7 +420,7 @@ wd_cc_library(
     srcs = ["html-rewriter.c++"],
     hdrs = ["html-rewriter.h"],
     implementation_deps = [
-        "@com_cloudflare_lol_html//:lolhtml",
+        "@com_zenthcloud_lol_html//:lolhtml",
     ],
     visibility = ["//visibility:public"],
     deps = [

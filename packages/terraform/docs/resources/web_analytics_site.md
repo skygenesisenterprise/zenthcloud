@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_web_analytics_site Resource - Cloudflare"
+page_title: "zenthcloud_web_analytics_site Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Settings ReadAccount Settings Write
 ---
 
-# cloudflare_web_analytics_site (Resource)
+# zenthcloud_web_analytics_site (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_web_analytics_site" "example_web_analytics_site" {
+resource "zenthcloud_web_analytics_site" "example_web_analytics_site" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   auto_install = true
   host = "example.com"
@@ -78,7 +78,7 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_web_analytics_site.example '<account_id>/<site_id>'
+$ terraform import zenthcloud_web_analytics_site.example '<account_id>/<site_id>'
 ```
 
 

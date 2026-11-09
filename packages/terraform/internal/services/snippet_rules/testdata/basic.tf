@@ -1,4 +1,4 @@
-resource "cloudflare_snippet" "%[1]s" {
+resource "zenthcloud_snippet" "%[1]s" {
   zone_id      = "%[2]s"
   snippet_name = "rules_set_snippet"
   files = [
@@ -18,7 +18,7 @@ resource "cloudflare_snippet" "%[1]s" {
   }
 }
 
-resource "cloudflare_snippet_rules" "%[1]s" {
+resource "zenthcloud_snippet_rules" "%[1]s" {
   zone_id = "%[2]s"
   rules = [
     {
@@ -28,5 +28,5 @@ resource "cloudflare_snippet_rules" "%[1]s" {
       description  = "Test snippet rule"
     }
   ]
-  depends_on = [cloudflare_snippet.%[1]s]
+  depends_on = [zenthcloud_snippet.%[1]s]
 }

@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	MetricsNamespace = "cloudflared"
+	MetricsNamespace = "zenthcloudd"
 	MetricsSubsystem = "orchestration"
 )
 

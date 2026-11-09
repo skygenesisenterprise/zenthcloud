@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -9,7 +9,7 @@ import {
   RpcTarget,
   WorkerEntrypoint,
   restore,
-} from 'cloudflare:workers';
+} from 'zenthcloud:workers';
 
 let restoreEvents = [];
 
@@ -18,7 +18,7 @@ function countRestoreEvent(event) {
 }
 
 let DYNAMIC_WORKER_CODE = `
-import { WorkerEntrypoint } from 'cloudflare:workers';
+import { WorkerEntrypoint } from 'zenthcloud:workers';
 export class Target extends WorkerEntrypoint {
   ping(value) {
     return \`target:\${value}\`;
@@ -27,7 +27,7 @@ export class Target extends WorkerEntrypoint {
 `;
 
 let NESTED_DYNAMIC_WORKER_CODE = `
-import { WorkerEntrypoint, restore } from 'cloudflare:workers';
+import { WorkerEntrypoint, restore } from 'zenthcloud:workers';
 
 export class Outer extends WorkerEntrypoint {
   async makeInner() {
@@ -255,7 +255,7 @@ export class Source extends WorkerEntrypoint {
         mainModule: 'foo.js',
         modules: {
           'foo.js': `
-            import { WorkerEntrypoint } from 'cloudflare:workers';
+            import { WorkerEntrypoint } from 'zenthcloud:workers';
             export class Runner extends WorkerEntrypoint {
               run(amount) {
                 return this.env.counter.add(amount);
@@ -279,7 +279,7 @@ export class Source extends WorkerEntrypoint {
         mainModule: 'foo.js',
         modules: {
           'foo.js': `
-            import { WorkerEntrypoint } from 'cloudflare:workers';
+            import { WorkerEntrypoint } from 'zenthcloud:workers';
             export class Runner extends WorkerEntrypoint {
               run(amount) {
                 return this.ctx.props.counter.add(amount);

@@ -1,4 +1,4 @@
-//! Bindings to Cloudflare Worker's [KV](https://developers.cloudflare.com/workers/runtime-apis/kv)
+//! Bindings to Zenthcloud Worker's [KV](https://github.com/skygenesisenterprise/zenthcloud)
 //! to be used ***inside*** of a worker's context.
 //!
 //! # Example
@@ -27,7 +27,7 @@ use serde_json::Value;
 use wasm_bindgen::JsValue;
 use web_sys::ReadableStream;
 
-/// A binding to a Cloudflare KvStore.
+/// A binding to a Zenthcloud KvStore.
 #[derive(Clone, Debug)]
 pub struct KvStore {
     pub(crate) this: Object,

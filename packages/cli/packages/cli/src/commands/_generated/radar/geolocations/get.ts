@@ -58,7 +58,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar geolocations get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/geolocations/${argv["geo-id"] == null ? "<geo-id>" : encodeURIComponent(String(argv["geo-id"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["geo-id"] == null ? "<geo-id>" : encodeURIComponent(String(argv["geo-id"]))}`,
 						pathParams: { "geo-id": String(argv["geo-id"] ?? "") },
 						query: queryParams,
 						bodyKind: "none",

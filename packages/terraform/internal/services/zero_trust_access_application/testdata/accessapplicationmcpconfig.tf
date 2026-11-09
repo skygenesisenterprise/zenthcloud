@@ -1,4 +1,4 @@
-resource "cloudflare_zero_trust_access_application" "%[1]s_mcp_server" {
+resource "zenthcloud_zero_trust_access_application" "%[1]s_mcp_server" {
   account_id       = "%[3]s"
   name             = "%[1]s_mcp_server"
   type             = "mcp"
@@ -10,7 +10,7 @@ resource "cloudflare_zero_trust_access_application" "%[1]s_mcp_server" {
   ]
 }
 
-resource "cloudflare_zero_trust_access_application" "%[1]s_mcp_portal" {
+resource "zenthcloud_zero_trust_access_application" "%[1]s_mcp_portal" {
   account_id       = "%[3]s"
   name             = "%[1]s_mcp_portal"
   type             = "mcp_portal"

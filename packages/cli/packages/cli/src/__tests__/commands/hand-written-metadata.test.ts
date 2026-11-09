@@ -181,7 +181,7 @@ describe("hand-written command metadata", () => {
 				name: "allowed-mail",
 				type: "string",
 				required: false,
-				description: expect.stringContaining("cloudflared 2026.9.2 or later"),
+				description: expect.stringContaining("zenthcloudd 2026.9.2 or later"),
 			})
 		);
 	});
@@ -399,7 +399,7 @@ describe("hand-written-only command metadata", () => {
 			type: "string",
 			required: false,
 			default: "info",
-			description: "cloudflared log level",
+			description: "zenthcloudd log level",
 			enum: [
 				"trace",
 				"debug",

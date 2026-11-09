@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 //
@@ -83,7 +83,7 @@ import {
 import { StringDecoder } from 'node-internal:internal_stringdecoder';
 
 const streamsNodejsV24Compat =
-  Cloudflare.compatibilityFlags.enable_streams_nodejs_v24_compat;
+  Zenthcloud.compatibilityFlags.enable_streams_nodejs_v24_compat;
 
 const kErroredValue = Symbol('kErroredValue');
 const kDefaultEncodingValue = Symbol('kDefaultEncodingValue');

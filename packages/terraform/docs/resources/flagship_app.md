@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_flagship_app Resource - Cloudflare"
+page_title: "zenthcloud_flagship_app Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Flagship ReadFlagship Write
 ---
 
-# cloudflare_flagship_app (Resource)
+# zenthcloud_flagship_app (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_flagship_app" "example_flagship_app" {
+resource "zenthcloud_flagship_app" "example_flagship_app" {
   account_id = "account_id"
   name = "x"
 }
@@ -27,7 +27,7 @@ resource "cloudflare_flagship_app" "example_flagship_app" {
 
 ### Required
 
-- `account_id` (String) Cloudflare account ID that owns the Flagship app.
+- `account_id` (String) Zenthcloud account ID that owns the Flagship app.
 - `name` (String) Name of the Flagship app (1–64 letters, numbers, hyphens, or underscores).
 
 ### Read-Only
@@ -42,7 +42,7 @@ resource "cloudflare_flagship_app" "example_flagship_app" {
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_flagship_app.example '<account_id>/<app_id>'
+$ terraform import zenthcloud_flagship_app.example '<account_id>/<app_id>'
 ```
 
 

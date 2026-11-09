@@ -74,7 +74,7 @@ export const nsc_Cni: JSONObject = {
       "$ref": "#/$defs/nsc_MagicSettings"
     },
     "p2p_ip": {
-      "description": "Cloudflare end of the point-to-point link",
+      "description": "Zenthcloud end of the point-to-point link",
       "type": "string"
     }
   },

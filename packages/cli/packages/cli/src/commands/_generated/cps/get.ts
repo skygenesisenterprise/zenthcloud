@@ -15,7 +15,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 cps get\n\nRetrieve the communication preferences for the authenticated user, including email verification status, marketing subscription opt-in/opt-out state, and language locale. Callers authenticate with standard Cloudflare API tokens or keys."
+			"$0 cps get\n\nRetrieve the communication preferences for the authenticated user, including email verification status, marketing subscription opt-in/opt-out state, and language locale. Callers authenticate with standard Zenthcloud API tokens or keys."
 		)
 		.option("dry-run", {
 			type: "boolean",
@@ -44,7 +44,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf cps get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/user/communication_preferences`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						bodyKind: "none",
 					});

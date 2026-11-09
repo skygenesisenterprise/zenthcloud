@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_workers_scripts Data Source - Cloudflare"
+page_title: "zenthcloud_workers_scripts Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Workers Scripts ReadWorkers Scripts WriteWorkers Tail Read
 ---
 
-# cloudflare_workers_scripts (Data Source)
+# zenthcloud_workers_scripts (Data Source)
 
 Accepted Permissions
 
@@ -17,7 +17,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_workers_scripts" "example_workers_scripts" {
+data "zenthcloud_workers_scripts" "example_workers_scripts" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   tags = "production:yes,staging:no"
 }
@@ -42,7 +42,7 @@ data "cloudflare_workers_scripts" "example_workers_scripts" {
 Read-Only:
 
 - `cache_options` (Attributes) Global CacheW configuration for the Worker. When caching is on,
-the platform provisions a `cloudflare.app` zone for the Worker.
+the platform provisions a `zenthcloud.app` zone for the Worker.
 A `type: worker` entry in the `exports` map can override this
 value for a single entrypoint. (see [below for nested schema](#nestedatt--result--cache_options))
 - `compatibility_date` (String) Date indicating targeted support in the Workers runtime. Backwards incompatible fixes to the runtime following this date will not affect this Worker.
@@ -64,7 +64,7 @@ entries are omitted, so only live exports (`created` and
 - `modified_on` (String) When the script was last modified.
 - `named_handlers` (Attributes List) Named exports, such as Durable Object class implementations and named entrypoints. (see [below for nested schema](#nestedatt--result--named_handlers))
 - `observability` (Attributes) Observability settings for the Worker. (see [below for nested schema](#nestedatt--result--observability))
-- `placement` (Attributes) Configuration for [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement). Specify mode='smart' for Smart Placement, or one of region/hostname/host. (see [below for nested schema](#nestedatt--result--placement))
+- `placement` (Attributes) Configuration for [Smart Placement](https://github.com/skygenesisenterprise/zenthcloud). Specify mode='smart' for Smart Placement, or one of region/hostname/host. (see [below for nested schema](#nestedatt--result--placement))
 - `placement_mode` (String, Deprecated) Available values: "smart", "targeted".
 - `placement_status` (String, Deprecated) Available values: "SUCCESS", "UNSUPPORTED_APPLICATION", "INSUFFICIENT_INVOCATIONS".
 - `routes` (Attributes List) Routes associated with the Worker. (see [below for nested schema](#nestedatt--result--routes))
@@ -172,7 +172,7 @@ Read-Only:
 - `destinations` (List of String) A list of destinations where logs will be exported to.
 - `enabled` (Boolean) Whether logs are enabled for the Worker.
 - `head_sampling_rate` (Number) The sampling rate for logs. From 0 to 1 (1 = 100%, 0.1 = 10%). Default is 1.
-- `invocation_logs` (Boolean) Whether [invocation logs](https://developers.cloudflare.com/workers/observability/logs/workers-logs/#invocation-logs) are enabled for the Worker.
+- `invocation_logs` (Boolean) Whether [invocation logs](https://github.com/skygenesisenterprise/zenthcloud) are enabled for the Worker.
 - `persist` (Boolean) Whether log persistence is enabled for the Worker.
 
 
@@ -197,11 +197,11 @@ Read-Only:
 
 - `host` (String) TCP host and port for targeted placement.
 - `hostname` (String) HTTP hostname for targeted placement.
-- `last_analyzed_at` (String) The last time the script was analyzed for [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
-- `mode` (String) Enables [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+- `last_analyzed_at` (String) The last time the script was analyzed for [Smart Placement](https://github.com/skygenesisenterprise/zenthcloud).
+- `mode` (String) Enables [Smart Placement](https://github.com/skygenesisenterprise/zenthcloud).
 Available values: "smart", "targeted".
 - `region` (String) Cloud region for targeted placement in format 'provider:region'.
-- `status` (String) Status of [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).
+- `status` (String) Status of [Smart Placement](https://github.com/skygenesisenterprise/zenthcloud).
 Available values: "SUCCESS", "UNSUPPORTED_APPLICATION", "INSUFFICIENT_INVOCATIONS".
 - `target` (Attributes List) Array of placement targets (currently limited to single target). (see [below for nested schema](#nestedatt--result--placement--target))
 
@@ -222,7 +222,7 @@ Read-Only:
 Read-Only:
 
 - `id` (String) Identifier.
-- `pattern` (String) Pattern to match incoming requests against. [Learn more](https://developers.cloudflare.com/workers/configuration/routing/routes/#matching-behavior).
+- `pattern` (String) Pattern to match incoming requests against. [Learn more](https://github.com/skygenesisenterprise/zenthcloud).
 - `script` (String) Name of the script to run if the route matches.
 
 

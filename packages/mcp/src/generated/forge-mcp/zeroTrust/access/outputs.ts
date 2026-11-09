@@ -246,11 +246,11 @@ export const access_certificate_rule: JSONObject = {
 };
 
 /**
- * The schema of `access_cloudflare_account_member_rule` in responses.
+ * The schema of `access_zenthcloud_account_member_rule` in responses.
  */
-export const access_cloudflare_account_member_rule: JSONObject = {
+export const access_zenthcloud_account_member_rule: JSONObject = {
   "properties": {
-    "cloudflare_account_member": {
+    "zenthcloud_account_member": {
       "properties": {
         "account_id": {
           "type": "string"
@@ -260,7 +260,7 @@ export const access_cloudflare_account_member_rule: JSONObject = {
     }
   },
   "required": [
-    "cloudflare_account_member"
+    "zenthcloud_account_member"
   ],
   "type": "object"
 };
@@ -893,7 +893,7 @@ export const access_rule: JSONObject = {
       "$ref": "#/$defs/access_user_risk_score_rule"
     },
     {
-      "$ref": "#/$defs/access_cloudflare_account_member_rule"
+      "$ref": "#/$defs/access_zenthcloud_account_member_rule"
     }
   ]
 };

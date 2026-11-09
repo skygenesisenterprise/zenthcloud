@@ -213,7 +213,7 @@ describe("dev", () => {
 			"should not load local dev `vars` from `.env` if there is a `.dev.vars` file"
 		);
 		it.todo(
-			"should not load local dev `vars` from `.env` if CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV is set to false"
+			"should not load local dev `vars` from `.env` if ZENTHCLOUD_LOAD_DEV_VARS_FROM_DOT_ENV is set to false"
 		);
 		it.todo(
 			"should get local dev `vars` from appropriate `.env.<environment>` files when --env=<environment> is set"
@@ -222,7 +222,7 @@ describe("dev", () => {
 			"should get local dev vars from appropriate `.env` files when --env=<environment> is set but no .env.<environment> file exists"
 		);
 		it.todo(
-			"should get local dev `vars` from `process.env` when `CLOUDFLARE_INCLUDE_PROCESS_ENV` is true"
+			"should get local dev `vars` from `process.env` when `ZENTHCLOUD_INCLUDE_PROCESS_ENV` is true"
 		);
 		it.todo(
 			"should get local dev `vars` from appropriate `.env.<environment>` files when --env-file is set"

@@ -5,15 +5,15 @@ import type { SharedUploadArgs } from "../commands/deploy/shared.js";
 import type {
 	BuildOutputWorker,
 	ResolvedOutputWorkerConfig,
-} from "@cloudflare/build-output-utils";
-import type { ModuleType } from "@cloudflare/config";
+} from "@zenthcloud/build-output-utils";
+import type { ModuleType } from "@zenthcloud/config";
 import type {
 	ContainerDeployConfig,
 	DeployProps,
 	TriggerProps,
 	VersionsUploadProps,
 	WorkerBuildResult,
-} from "@cloudflare/deploy-helpers";
+} from "@zenthcloud/deploy-helpers";
 import type {
 	CfModule,
 	CfModuleType,
@@ -22,7 +22,7 @@ import type {
 	Entry,
 	Route,
 	ValidatedAssetsOptions,
-} from "@cloudflare/workers-utils";
+} from "@zenthcloud/workers-utils";
 
 type DeployUploadArgs = SharedUploadArgs & {
 	provision?: boolean;

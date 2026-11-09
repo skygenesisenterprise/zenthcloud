@@ -5,7 +5,7 @@ export default {
 	name: "tail",
 	fullPath: ["tunnels", "tail"],
 	category: "action",
-	description: "Stream logs from a remote cloudflared instance.",
+	description: "Stream logs from a remote zenthcloudd instance.",
 	usage: "cf tunnels tail [tunnel-id] [options]",
 	arguments: [
 		{
@@ -21,14 +21,14 @@ export default {
 			name: "connector-id",
 			type: "string",
 			required: false,
-			description: "Target a specific cloudflared connector",
+			description: "Target a specific zenthcloudd connector",
 		},
 		{
 			name: "event",
 			type: "string",
 			required: false,
 			description: "Filter by event type; may be repeated",
-			enum: ["cloudflared", "http", "tcp", "udp"],
+			enum: ["zenthcloudd", "http", "tcp", "udp"],
 		},
 		{
 			name: "level",

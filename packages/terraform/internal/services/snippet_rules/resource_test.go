@@ -6,11 +6,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/snippets"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/snippets"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -25,26 +25,26 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_snippet_rules", &resource.Sweeper{
-		Name: "cloudflare_snippet_rules",
-		F:    testSweepCloudflareSnippetRules,
+	resource.AddTestSweepers("zenthcloud_snippet_rules", &resource.Sweeper{
+		Name: "zenthcloud_snippet_rules",
+		F:    testSweepZenthcloudSnippetRules,
 	})
 }
 
-func testSweepCloudflareSnippetRules(r string) error {
+func testSweepZenthcloudSnippetRules(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping snippet rules sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping snippet rules sweep: ZENTHCLOUD_ZONE_ID not set")
 		return nil
 	}
 
 	tflog.Info(ctx, fmt.Sprintf("Deleting all snippet rules (zone: %s)", zoneID))
 	_, err := client.Snippets.Rules.Update(ctx, snippets.RuleUpdateParams{
-		ZoneID: cloudflare.F(zoneID),
-		Rules:  cloudflare.F([]snippets.RuleUpdateParamsRule{}),
+		ZoneID: zenthcloud.F(zoneID),
+		Rules:  zenthcloud.F([]snippets.RuleUpdateParamsRule{}),
 	})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to delete snippet rules: %s", err))
@@ -55,18 +55,18 @@ func testSweepCloudflareSnippetRules(r string) error {
 	return nil
 }
 
-func TestAccCloudflareSnippetRules_Basic(t *testing.T) {
+func TestAccZenthcloudSnippetRules_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	resourceName := "cloudflare_snippet_rules." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	resourceName := "zenthcloud_snippet_rules." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareSnippetRulesDestroy,
+		CheckDestroy:             testAccCheckZenthcloudSnippetRulesDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareSnippetRulesConfig(rnd, zoneID),
+				Config: testAccZenthcloudSnippetRulesConfig(rnd, zoneID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("snippet_name"), knownvalue.StringExact("rules_set_snippet")),
@@ -76,7 +76,7 @@ func TestAccCloudflareSnippetRules_Basic(t *testing.T) {
 				},
 			},
 			{
-				Config: testAccCloudflareSnippetRulesConfigUpdate(rnd, zoneID),
+				Config: testAccZenthcloudSnippetRulesConfigUpdate(rnd, zoneID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("rules").AtSliceIndex(0).AtMapKey("snippet_name"), knownvalue.StringExact("rules_set_snippet")),
@@ -90,18 +90,18 @@ func TestAccCloudflareSnippetRules_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareSnippetRulesDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudSnippetRulesDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_snippet_rules" {
+		if rs.Type != "zenthcloud_snippet_rules" {
 			continue
 		}
 
 		zoneID := rs.Primary.Attributes[consts.ZoneIDSchemaKey]
 
 		rules, err := client.Snippets.Rules.List(context.Background(), snippets.RuleListParams{
-			ZoneID: cloudflare.F(zoneID),
+			ZoneID: zenthcloud.F(zoneID),
 		})
 		if err != nil {
 			return fmt.Errorf("error getting snippet rules: %w", err)
@@ -118,19 +118,19 @@ func testAccCheckCloudflareSnippetRulesDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCloudflareSnippetRulesConfig(rnd, zoneID string) string {
+func testAccZenthcloudSnippetRulesConfig(rnd, zoneID string) string {
 	return acctest.LoadTestCase("basic.tf", rnd, zoneID)
 }
 
-func testAccCloudflareSnippetRulesConfigUpdate(rnd, zoneID string) string {
+func testAccZenthcloudSnippetRulesConfigUpdate(rnd, zoneID string) string {
 	return acctest.LoadTestCase("basic_update.tf", rnd, zoneID)
 }
 
 func TestAccUpgradeSnippetRules_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
-	config := testAccCloudflareSnippetRulesConfig(rnd, zoneID)
+	config := testAccZenthcloudSnippetRulesConfig(rnd, zoneID)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -140,8 +140,8 @@ func TestAccUpgradeSnippetRules_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

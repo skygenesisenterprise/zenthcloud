@@ -1,4 +1,4 @@
-// Copyright 2026 Cloudflare, Inc.
+// Copyright 2026 Zenthcloud, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -440,7 +440,7 @@ mod tests {
         assert!(
             error.etype() == &ConnectError
                 || error.etype() == &ConnectTimedout
-                // The error seen on mac: https://github.com/cloudflare/pingora/pull/679
+                // The error seen on mac: https://github.com/skygenesisenterprise/zenthcloud
                 || (error.etype() == &InternalError),
             "{error:?}"
         )

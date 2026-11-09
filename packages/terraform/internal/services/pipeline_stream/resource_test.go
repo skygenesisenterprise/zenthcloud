@@ -6,11 +6,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/pipelines"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/pipelines"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -19,10 +19,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
-func TestAccCloudflarePipelineStream_Basic(t *testing.T) {
+func TestAccZenthcloudPipelineStream_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	resourceName := "cloudflare_pipeline_stream." + rnd
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	resourceName := "zenthcloud_pipeline_stream." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -30,7 +30,7 @@ func TestAccCloudflarePipelineStream_Basic(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflarePipelineStreamDestroy,
+		CheckDestroy:             testAccCheckZenthcloudPipelineStreamDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccPipelineStreamConfig(rnd, accountID),
@@ -62,11 +62,11 @@ func TestAccCloudflarePipelineStream_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflarePipelineStreamDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudPipelineStreamDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_pipeline_stream" {
+		if rs.Type != "zenthcloud_pipeline_stream" {
 			continue
 		}
 
@@ -77,7 +77,7 @@ func testAccCheckCloudflarePipelineStreamDestroy(s *terraform.State) error {
 			context.Background(),
 			streamID,
 			pipelines.StreamGetParams{
-				AccountID: cloudflare.F(accountID),
+				AccountID: zenthcloud.F(accountID),
 			},
 		)
 		if err == nil {

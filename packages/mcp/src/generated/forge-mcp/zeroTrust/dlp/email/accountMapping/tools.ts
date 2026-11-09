@@ -20,7 +20,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zeroTrust_dlp_email_accountMapping_create",
     title: "Create mapping",
-    description: "Creates a mapping between a Cloudflare account and an email provider for DLP email scanning integration.\n\nPOST /accounts/{account_id}/dlp/email/account_mapping",
+    description: "Creates a mapping between a Zenthcloud account and an email provider for DLP email scanning integration.\n\nPOST /accounts/{account_id}/dlp/email/account_mapping",
     inputSchema: {
       type: "object",
       properties: {

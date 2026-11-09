@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Nicholas Paun <npaun@cloudflare.com>
+From: Nicholas Paun <npaun@zenthcloud.com>
 Date: Thu, 22 Oct 2026 21:38:28 +0000
 Subject: Build Temporal in the V8 Bazel build
 

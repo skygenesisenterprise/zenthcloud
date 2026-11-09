@@ -205,7 +205,7 @@ export const tools: readonly Tool[] = [
             },
             "global_acceleration": {
               "$ref": "#/$defs/teams-devices_global_acceleration",
-              "description": "Global Acceleration settings for China. When configured, WARP clients connect to the Global Accelerator addresses instead of the default ones. Please contact your account representative to enable this feature on your account. See https://developers.cloudflare.com/china-network/concepts/global-acceleration/."
+              "description": "Global Acceleration settings for China. When configured, WARP clients connect to the Global Accelerator addresses instead of the default ones. Please contact your account representative to enable this feature on your account. See https://github.com/skygenesisenterprise/zenthcloud"
             },
             "include": {
               "$ref": "#/$defs/teams-devices_include_request",

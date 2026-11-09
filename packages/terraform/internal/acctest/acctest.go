@@ -12,11 +12,11 @@ import (
 	"strings"
 	"testing"
 
-	cfv1 "github.com/cloudflare/cloudflare-go"
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/managed_transforms"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/cloudflare-go/v7/rulesets"
+	cfv1 "github.com/zenthcloud/zenthcloud-go"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/managed_transforms"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7/rulesets"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/config"
@@ -25,27 +25,27 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
 )
 
 var (
 	// Integration test account ID.
-	TestAccCloudflareAccountID string = "f037e56e89293a057740de681ac9abbe"
+	TestAccZenthcloudAccountID string = "f037e56e89293a057740de681ac9abbe"
 
 	// Integration test account zone ID.
-	TestAccCloudflareZoneID string = "0da42c8d2132a9ddaf714f9e7c920711"
+	TestAccZenthcloudZoneID string = "0da42c8d2132a9ddaf714f9e7c920711"
 	// Integration test account zone name.
-	TestAccCloudflareZoneName string = "terraform.cfapi.net"
+	TestAccZenthcloudZoneName string = "terraform.cfapi.net"
 
 	// Integration test account alternate zone ID.
-	TestAccCloudflareAltZoneID string = "b72110c08e3382597095c29ba7e661ea"
+	TestAccZenthcloudAltZoneID string = "b72110c08e3382597095c29ba7e661ea"
 	// Integration test account alternate zone name.
-	TestAccCloudflareAltZoneName string = "terraform2.cfapi.net"
+	TestAccZenthcloudAltZoneName string = "terraform2.cfapi.net"
 )
 
 var TestAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-	"cloudflare": func() (tfprotov6.ProviderServer, error) {
+	"zenthcloud": func() (tfprotov6.ProviderServer, error) {
 		return providerserver.NewProtocol6(internal.NewProvider("dev")())(), nil
 	},
 }
@@ -69,10 +69,10 @@ func TestAccPreCheck_Credentials(t *testing.T) {
 	}
 }
 
-// Test helper method checking `CLOUDFLARE_ZONE_ID` is present.
+// Test helper method checking `ZENTHCLOUD_ZONE_ID` is present.
 func TestAccPreCheck_ZoneID(t *testing.T) {
-	if v := os.Getenv("CLOUDFLARE_ZONE_ID"); v == "" {
-		t.Fatal("CLOUDFLARE_ZONE_ID must be set for this acceptance test.")
+	if v := os.Getenv("ZENTHCLOUD_ZONE_ID"); v == "" {
+		t.Fatal("ZENTHCLOUD_ZONE_ID must be set for this acceptance test.")
 	}
 }
 
@@ -83,7 +83,7 @@ func TestAccPreCheck_ZoneID(t *testing.T) {
 func TestAccPreCheck_CleanZoneRulesets(t *testing.T) {
 	t.Helper()
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
 		return
 	}
@@ -92,7 +92,7 @@ func TestAccPreCheck_CleanZoneRulesets(t *testing.T) {
 	client := SharedClient()
 
 	iter := client.Rulesets.ListAutoPaging(ctx, rulesets.RulesetListParams{
-		ZoneID: cloudflare.F(zoneID),
+		ZoneID: zenthcloud.F(zoneID),
 	})
 	for iter.Next() {
 		rs := iter.Current()
@@ -101,7 +101,7 @@ func TestAccPreCheck_CleanZoneRulesets(t *testing.T) {
 			continue
 		}
 		if err := client.Rulesets.Delete(ctx, rs.ID, rulesets.RulesetDeleteParams{
-			ZoneID: cloudflare.F(zoneID),
+			ZoneID: zenthcloud.F(zoneID),
 		}); err != nil {
 			// Log but don't fail — a 404 means it's already gone.
 			t.Logf("TestAccPreCheck_CleanZoneRulesets: failed to delete ruleset %s: %v", rs.ID, err)
@@ -113,13 +113,13 @@ func TestAccPreCheck_CleanZoneRulesets(t *testing.T) {
 }
 
 // TestAccPreCheck_CleanZoneManagedTransforms disables all managed header transforms on the test
-// zone. Because cloudflare_managed_transforms is a singleton per zone, tests that run in sequence
+// zone. Because zenthcloud_managed_transforms is a singleton per zone, tests that run in sequence
 // can see stale enabled/disabled state from previous tests. Call this from PreCheck in migration
 // tests for managed_transforms to ensure a clean starting state.
 func TestAccPreCheck_CleanZoneManagedTransforms(t *testing.T) {
 	t.Helper()
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
 		return
 	}
@@ -128,7 +128,7 @@ func TestAccPreCheck_CleanZoneManagedTransforms(t *testing.T) {
 	client := SharedClient()
 
 	res, err := client.ManagedTransforms.List(ctx, managed_transforms.ManagedTransformListParams{
-		ZoneID: cloudflare.F(zoneID),
+		ZoneID: zenthcloud.F(zoneID),
 	})
 	if err != nil {
 		t.Logf("TestAccPreCheck_CleanZoneManagedTransforms: failed to list managed transforms: %v", err)
@@ -139,120 +139,120 @@ func TestAccPreCheck_CleanZoneManagedTransforms(t *testing.T) {
 	reqHeaders := make([]managed_transforms.ManagedTransformEditParamsManagedRequestHeader, 0, len(res.ManagedRequestHeaders))
 	for _, h := range res.ManagedRequestHeaders {
 		reqHeaders = append(reqHeaders, managed_transforms.ManagedTransformEditParamsManagedRequestHeader{
-			ID:      cloudflare.F(h.ID),
-			Enabled: cloudflare.F(false),
+			ID:      zenthcloud.F(h.ID),
+			Enabled: zenthcloud.F(false),
 		})
 	}
 	respHeaders := make([]managed_transforms.ManagedTransformEditParamsManagedResponseHeader, 0, len(res.ManagedResponseHeaders))
 	for _, h := range res.ManagedResponseHeaders {
 		respHeaders = append(respHeaders, managed_transforms.ManagedTransformEditParamsManagedResponseHeader{
-			ID:      cloudflare.F(h.ID),
-			Enabled: cloudflare.F(false),
+			ID:      zenthcloud.F(h.ID),
+			Enabled: zenthcloud.F(false),
 		})
 	}
 
 	_, err = client.ManagedTransforms.Edit(ctx, managed_transforms.ManagedTransformEditParams{
-		ZoneID:                 cloudflare.F(zoneID),
-		ManagedRequestHeaders:  cloudflare.F(reqHeaders),
-		ManagedResponseHeaders: cloudflare.F(respHeaders),
+		ZoneID:                 zenthcloud.F(zoneID),
+		ManagedRequestHeaders:  zenthcloud.F(reqHeaders),
+		ManagedResponseHeaders: zenthcloud.F(respHeaders),
 	})
 	if err != nil {
 		t.Logf("TestAccPreCheck_CleanZoneManagedTransforms: failed to disable managed transforms: %v", err)
 	}
 }
 
-// Test helper method checking `CLOUDFLARE_ACCOUNT_ID` is present.
+// Test helper method checking `ZENTHCLOUD_ACCOUNT_ID` is present.
 func TestAccPreCheck_AccountID(t *testing.T) {
-	if v := os.Getenv("CLOUDFLARE_ACCOUNT_ID"); v == "" {
-		t.Fatal("CLOUDFLARE_ACCOUNT_ID must be set for this acceptance test.")
+	if v := os.Getenv("ZENTHCLOUD_ACCOUNT_ID"); v == "" {
+		t.Fatal("ZENTHCLOUD_ACCOUNT_ID must be set for this acceptance test.")
 	}
 }
 
-// Test helper method checking `CLOUDFLARE_DOMAIN` is present.
+// Test helper method checking `ZENTHCLOUD_DOMAIN` is present.
 func TestAccPreCheck_Domain(t *testing.T) {
-	if v := os.Getenv("CLOUDFLARE_DOMAIN"); v == "" {
-		t.Fatal("CLOUDFLARE_DOMAIN must be set for acceptance tests. The domain is used to create and destroy record against.")
+	if v := os.Getenv("ZENTHCLOUD_DOMAIN"); v == "" {
+		t.Fatal("ZENTHCLOUD_DOMAIN must be set for acceptance tests. The domain is used to create and destroy record against.")
 	}
 }
 
-// Test helper method checking `CLOUDFLARE_ALT_DOMAIN` is present.
+// Test helper method checking `ZENTHCLOUD_ALT_DOMAIN` is present.
 func TestAccPreCheck_AlternateDomain(t *testing.T) {
-	if v := os.Getenv("CLOUDFLARE_ALT_DOMAIN"); v == "" {
-		t.Fatal("CLOUDFLARE_ALT_DOMAIN must be set for this acceptance test.")
+	if v := os.Getenv("ZENTHCLOUD_ALT_DOMAIN"); v == "" {
+		t.Fatal("ZENTHCLOUD_ALT_DOMAIN must be set for this acceptance test.")
 	}
 }
 
-// Test helper method checking `CLOUDFLARE_ALT_ZONE_ID` is present.
+// Test helper method checking `ZENTHCLOUD_ALT_ZONE_ID` is present.
 func TestAccPreCheck_AlternateZoneID(t *testing.T) {
-	if v := os.Getenv("CLOUDFLARE_ALT_ZONE_ID"); v == "" {
-		t.Fatal("CLOUDFLARE_ALT_ZONE_ID must be set for this acceptance test.")
+	if v := os.Getenv("ZENTHCLOUD_ALT_ZONE_ID"); v == "" {
+		t.Fatal("ZENTHCLOUD_ALT_ZONE_ID must be set for this acceptance test.")
 	}
 }
 
-// Test helper method checking `CLOUDFLARE_EMAIL` is present.
+// Test helper method checking `ZENTHCLOUD_EMAIL` is present.
 func TestAccPreCheck_Email(t *testing.T) {
-	if v := os.Getenv("CLOUDFLARE_EMAIL"); v == "" {
-		t.Fatal("CLOUDFLARE_EMAIL must be set for acceptance tests")
+	if v := os.Getenv("ZENTHCLOUD_EMAIL"); v == "" {
+		t.Fatal("ZENTHCLOUD_EMAIL must be set for acceptance tests")
 	}
 }
 
-// Test helper method checking `CLOUDFLARE_EMAIL_ROUTING_DESTINATION_ADDRESS` is present.
-// This address must already be verified in the Cloudflare account under test.
+// Test helper method checking `ZENTHCLOUD_EMAIL_ROUTING_DESTINATION_ADDRESS` is present.
+// This address must already be verified in the Zenthcloud account under test.
 func TestAccPreCheck_EmailRoutingDestinationAddress(t *testing.T) {
 	if v := os.Getenv(consts.EmailRoutingDestinationAddressEnvVarKey); v == "" {
 		t.Skipf("%s must be set for this acceptance test. The address must be pre-verified as an email routing destination in the account.", consts.EmailRoutingDestinationAddressEnvVarKey)
 	}
 }
 
-// Test helper method checking `CLOUDFLARE_API_KEY` is present.
+// Test helper method checking `ZENTHCLOUD_API_KEY` is present.
 func TestAccPreCheck_APIKey(t *testing.T) {
-	if v := os.Getenv("CLOUDFLARE_API_KEY"); v == "" {
-		t.Fatal("CLOUDFLARE_API_KEY must be set for acceptance tests")
+	if v := os.Getenv("ZENTHCLOUD_API_KEY"); v == "" {
+		t.Fatal("ZENTHCLOUD_API_KEY must be set for acceptance tests")
 	}
 }
 
-// Test helper method checking `CLOUDFLARE_API_TOKEN` is present.
+// Test helper method checking `ZENTHCLOUD_API_TOKEN` is present.
 func TestAccPreCheck_APIToken(t *testing.T) {
-	if v := os.Getenv("CLOUDFLARE_API_TOKEN"); v == "" {
-		t.Fatal("CLOUDFLARE_API_TOKEN must be set for acceptance tests")
+	if v := os.Getenv("ZENTHCLOUD_API_TOKEN"); v == "" {
+		t.Fatal("ZENTHCLOUD_API_TOKEN must be set for acceptance tests")
 	}
 }
 
-// Test helper method checking `CLOUDFLARE_LOGPUSH_OWNERSHIP_TOKEN` is present.
+// Test helper method checking `ZENTHCLOUD_LOGPUSH_OWNERSHIP_TOKEN` is present.
 func TestAccPreCheck_LogpushToken(t *testing.T) {
-	if v := os.Getenv("CLOUDFLARE_LOGPUSH_OWNERSHIP_TOKEN"); v == "" {
-		t.Fatal("CLOUDFLARE_LOGPUSH_OWNERSHIP_TOKEN must be set for this acceptance test.")
+	if v := os.Getenv("ZENTHCLOUD_LOGPUSH_OWNERSHIP_TOKEN"); v == "" {
+		t.Fatal("ZENTHCLOUD_LOGPUSH_OWNERSHIP_TOKEN must be set for this acceptance test.")
 	}
 }
 
 // Test helper method checking the CrowdStrike environment variables are present.
 func TestAccPreCheck_CrowdStrike(t *testing.T) {
-	if v := os.Getenv("CLOUDFLARE_CROWDSTRIKE_CLIENT_ID"); v == "" {
-		t.Skip("Skipping acceptance test as CLOUDFLARE_CROWDSTRIKE_CLIENT_ID is not set")
+	if v := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_CLIENT_ID"); v == "" {
+		t.Skip("Skipping acceptance test as ZENTHCLOUD_CROWDSTRIKE_CLIENT_ID is not set")
 	}
 
-	if v := os.Getenv("CLOUDFLARE_CROWDSTRIKE_CLIENT_SECRET"); v == "" {
-		t.Skip("Skipping acceptance test as CLOUDFLARE_CROWDSTRIKE_CLIENT_SECRET is not set")
+	if v := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_CLIENT_SECRET"); v == "" {
+		t.Skip("Skipping acceptance test as ZENTHCLOUD_CROWDSTRIKE_CLIENT_SECRET is not set")
 	}
 
-	if v := os.Getenv("CLOUDFLARE_CROWDSTRIKE_API_URL"); v == "" {
-		t.Skip("Skipping acceptance test as CLOUDFLARE_CROWDSTRIKE_API_URL is not set")
+	if v := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_API_URL"); v == "" {
+		t.Skip("Skipping acceptance test as ZENTHCLOUD_CROWDSTRIKE_API_URL is not set")
 	}
 
-	if v := os.Getenv("CLOUDFLARE_CROWDSTRIKE_CUSTOMER_ID"); v == "" {
-		t.Skip("Skipping acceptance test as CLOUDFLARE_CROWDSTRIKE_CUSTOMER_ID is not set")
+	if v := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_CUSTOMER_ID"); v == "" {
+		t.Skip("Skipping acceptance test as ZENTHCLOUD_CROWDSTRIKE_CUSTOMER_ID is not set")
 	}
 }
 
-// Test helper method checking the required environment variables for Cloudflare Pages
+// Test helper method checking the required environment variables for Zenthcloud Pages
 // are present.
 func TestAccPreCheck_Pages(t *testing.T) {
-	if v := os.Getenv("CLOUDFLARE_PAGES_OWNER"); v == "" {
-		t.Skip("Skipping acceptance test as CLOUDFLARE_PAGES_OWNER is not set.")
+	if v := os.Getenv("ZENTHCLOUD_PAGES_OWNER"); v == "" {
+		t.Skip("Skipping acceptance test as ZENTHCLOUD_PAGES_OWNER is not set.")
 	}
 
-	if v := os.Getenv("CLOUDFLARE_PAGES_REPO"); v == "" {
-		t.Skip("Skipping acceptance test as CLOUDFLARE_PAGES_REPO is not set.")
+	if v := os.Getenv("ZENTHCLOUD_PAGES_REPO"); v == "" {
+		t.Skip("Skipping acceptance test as ZENTHCLOUD_PAGES_REPO is not set.")
 	}
 }
 
@@ -260,10 +260,10 @@ func TestAccPreCheck_Pages(t *testing.T) {
 // acceptance tests are present.
 func TestAccPreCheck_BYOIPPrefix(t *testing.T) {
 	requiredKeys := []string{
-		"CLOUDFLARE_BYO_IP_CIDR",
-		"CLOUDFLARE_BYO_IP_ASN",
-		"CLOUDFLARE_BYO_IP_LOA_DOCUMENT_ID",
-		"CLOUDFLARE_BYO_IP_PREFIX_ID",
+		"ZENTHCLOUD_BYO_IP_CIDR",
+		"ZENTHCLOUD_BYO_IP_ASN",
+		"ZENTHCLOUD_BYO_IP_LOA_DOCUMENT_ID",
+		"ZENTHCLOUD_BYO_IP_PREFIX_ID",
 	}
 
 	for _, k := range requiredKeys {
@@ -275,53 +275,53 @@ func TestAccPreCheck_BYOIPPrefix(t *testing.T) {
 
 // TestAccPreCheck_Organization skips the test unless the organization test
 // credentials are configured. Only the `organization` acceptance-test matrix
-// entry injects CLOUDFLARE_ORGANIZATION_ID, so gating on it lets these tests
+// entry injects ZENTHCLOUD_ORGANIZATION_ID, so gating on it lets these tests
 // self-skip on every other runner instead of failing.
 func TestAccPreCheck_Organization(t *testing.T) {
-	if v := os.Getenv("CLOUDFLARE_ORGANIZATION_ID"); v == "" {
-		t.Skip("Skipping acceptance test as CLOUDFLARE_ORGANIZATION_ID is not set")
+	if v := os.Getenv("ZENTHCLOUD_ORGANIZATION_ID"); v == "" {
+		t.Skip("Skipping acceptance test as ZENTHCLOUD_ORGANIZATION_ID is not set")
 	}
 }
 
 // Test helper method checking all required Hyperdrive configurations are present.
 func TestAccPreCheck_Hyperdrive(t *testing.T) {
-	if v := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_NAME"); v == "" {
-		t.Fatal("CLOUDFLARE_HYPERDRIVE_DATABASE_NAME must be set for this acceptance test")
+	if v := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_NAME"); v == "" {
+		t.Fatal("ZENTHCLOUD_HYPERDRIVE_DATABASE_NAME must be set for this acceptance test")
 	}
 
-	if v := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_HOSTNAME"); v == "" {
-		t.Fatal("CLOUDFLARE_HYPERDRIVE_DATABASE_HOSTNAME must be set for this acceptance test")
+	if v := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_HOSTNAME"); v == "" {
+		t.Fatal("ZENTHCLOUD_HYPERDRIVE_DATABASE_HOSTNAME must be set for this acceptance test")
 	}
 
-	if v := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_PORT"); v == "" {
-		t.Fatal("CLOUDFLARE_HYPERDRIVE_DATABASE_PORT must be set for this acceptance test")
+	if v := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_PORT"); v == "" {
+		t.Fatal("ZENTHCLOUD_HYPERDRIVE_DATABASE_PORT must be set for this acceptance test")
 	}
 
-	if v := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_USER"); v == "" {
-		t.Fatal("CLOUDFLARE_HYPERDRIVE_DATABASE_USER must be set for this acceptance test")
+	if v := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_USER"); v == "" {
+		t.Fatal("ZENTHCLOUD_HYPERDRIVE_DATABASE_USER must be set for this acceptance test")
 	}
 
-	if v := os.Getenv("CLOUDFLARE_HYPERDRIVE_DATABASE_PASSWORD"); v == "" {
-		t.Fatal("CLOUDFLARE_HYPERDRIVE_DATABASE_PASSWORD must be set for this acceptance test")
+	if v := os.Getenv("ZENTHCLOUD_HYPERDRIVE_DATABASE_PASSWORD"); v == "" {
+		t.Fatal("ZENTHCLOUD_HYPERDRIVE_DATABASE_PASSWORD must be set for this acceptance test")
 	}
 }
 
 func TestAccPreCheck_HyperdriveWithAccess(t *testing.T) {
 	TestAccPreCheck_Hyperdrive(t)
 
-	if v := os.Getenv("CLOUDFLARE_HYPERDRIVE_ACCESS_CLIENT_ID"); v == "" {
-		t.Fatal("CLOUDFLARE_HYPERDRIVE_ACCESS_CLIENT_ID must be set for this acceptance test")
+	if v := os.Getenv("ZENTHCLOUD_HYPERDRIVE_ACCESS_CLIENT_ID"); v == "" {
+		t.Fatal("ZENTHCLOUD_HYPERDRIVE_ACCESS_CLIENT_ID must be set for this acceptance test")
 	}
 
-	if v := os.Getenv("CLOUDFLARE_HYPERDRIVE_ACCESS_CLIENT_SECRET"); v == "" {
-		t.Fatal("CLOUDFLARE_HYPERDRIVE_ACCESS_CLIENT_SECRET must be set for this acceptance test")
+	if v := os.Getenv("ZENTHCLOUD_HYPERDRIVE_ACCESS_CLIENT_SECRET"); v == "" {
+		t.Fatal("ZENTHCLOUD_HYPERDRIVE_ACCESS_CLIENT_SECRET must be set for this acceptance test")
 	}
 }
 
-// Test helper method checking `CLOUDFLARE_INTERNAL_ZONE_ID` is present.
+// Test helper method checking `ZENTHCLOUD_INTERNAL_ZONE_ID` is present.
 func TestAccPreCheck_InternalZoneID(t *testing.T) {
-	if v := os.Getenv("CLOUDFLARE_INTERNAL_ZONE_ID"); v == "" {
-		t.Skip("Skipping acceptance test as CLOUDFLARE_INTERNAL_ZONE_ID is not set")
+	if v := os.Getenv("ZENTHCLOUD_INTERNAL_ZONE_ID"); v == "" {
+		t.Skip("Skipping acceptance test as ZENTHCLOUD_INTERNAL_ZONE_ID is not set")
 	}
 }
 
@@ -336,23 +336,23 @@ func GetLastV4Version() string {
 // TestAccSkipForDefaultZone is used for skipping over tests that are not run by
 // default on usual acceptance test suite account.
 func TestAccSkipForDefaultZone(t *testing.T, reason string) {
-	if os.Getenv("CLOUDFLARE_ZONE_ID") == TestAccCloudflareZoneID {
-		t.Skipf("Skipping acceptance test for default zone (%s). %s", TestAccCloudflareZoneID, reason)
+	if os.Getenv("ZENTHCLOUD_ZONE_ID") == TestAccZenthcloudZoneID {
+		t.Skipf("Skipping acceptance test for default zone (%s). %s", TestAccZenthcloudZoneID, reason)
 	}
 }
 
 // TestAccSkipForDefaultAccount is used for skipping over tests that are not run by
 // default on usual acceptance test suite account.
 func TestAccSkipForDefaultAccount(t *testing.T, reason string) {
-	if os.Getenv("CLOUDFLARE_ACCOUNT_ID") == TestAccCloudflareAccountID {
-		t.Skipf("Skipping acceptance test for default account (%s). %s", TestAccCloudflareAccountID, reason)
+	if os.Getenv("ZENTHCLOUD_ACCOUNT_ID") == TestAccZenthcloudAccountID {
+		t.Skipf("Skipping acceptance test for default account (%s). %s", TestAccZenthcloudAccountID, reason)
 	}
 }
 
-// SharedV1Client returns a common Cloudflare V1 client setup needed for the
+// SharedV1Client returns a common Zenthcloud V1 client setup needed for the
 // sweeper functions.
 func SharedV1Client() (*cfv1.API, error) {
-	client, err := cfv1.New(os.Getenv("CLOUDFLARE_API_KEY"), os.Getenv("CLOUDFLARE_EMAIL"))
+	client, err := cfv1.New(os.Getenv("ZENTHCLOUD_API_KEY"), os.Getenv("ZENTHCLOUD_EMAIL"))
 
 	if err != nil {
 		return client, err
@@ -361,12 +361,12 @@ func SharedV1Client() (*cfv1.API, error) {
 	return client, nil
 }
 
-// SharedClient returns a common Cloudflare V2 client setup needed for the
+// SharedClient returns a common Zenthcloud V2 client setup needed for the
 // sweeper functions.
-func SharedClient() *cloudflare.Client {
-	return cloudflare.NewClient(
-		option.WithAPIKey(os.Getenv("CLOUDFLARE_API_KEY")),
-		option.WithAPIEmail(os.Getenv("CLOUDFLARE_EMAIL")),
+func SharedClient() *zenthcloud.Client {
+	return zenthcloud.NewClient(
+		option.WithAPIKey(os.Getenv("ZENTHCLOUD_API_KEY")),
+		option.WithAPIEmail(os.Getenv("ZENTHCLOUD_EMAIL")),
 	)
 }
 
@@ -418,10 +418,10 @@ func LoadTestCase(filename string, parameters ...interface{}) string {
 //
 // Returns the resource, identifier and attributes all keyed to the value.
 //
-//	cloudflare_foo.bar.id = 4dd549e6d9b22cdac402b33af89d57ab
-//	cloudflare_foo.bar.other_thing = true
-//	cloudflare_foo.bar.zone_id = 0da42c8d2132a9ddaf714f9e7c920711
-//	cloudflare_foo.bar.% = 12
+//	zenthcloud_foo.bar.id = 4dd549e6d9b22cdac402b33af89d57ab
+//	zenthcloud_foo.bar.other_thing = true
+//	zenthcloud_foo.bar.zone_id = 0da42c8d2132a9ddaf714f9e7c920711
+//	zenthcloud_foo.bar.% = 12
 func DumpState(s *terraform.State) error {
 	fmt.Println()
 	for name, rs := range s.RootModule().Resources {
@@ -547,18 +547,18 @@ func (e expectEmptyPlanExceptFalseyToNull) CheckPlan(ctx context.Context, req pl
 // isSetNestedAttributeField checks if a field name corresponds to a SetNestedAttribute
 // for a specific resource type. These fields should be compared as sets (order-independent) rather than arrays
 func isSetNestedAttributeField(resourceAddress, fieldName string) bool {
-	// Extract resource type from address (e.g., "cloudflare_zero_trust_access_policy.example" -> "cloudflare_zero_trust_access_policy")
+	// Extract resource type from address (e.g., "zenthcloud_zero_trust_access_policy.example" -> "zenthcloud_zero_trust_access_policy")
 	resourceType := extractResourceTypeFromAddress(resourceAddress)
 
 	// Map of resource types to their SetNestedAttribute field names
 	// SetNestedAttribute fields are compared as sets (order-independent) rather than arrays
 	// This prevents ambiguity when multiple resources have fields with the same name
 	setFieldsByResource := map[string][]string{
-		"cloudflare_zero_trust_access_policy": {"include", "exclude", "require", "approval_groups"},
-		"cloudflare_access_policy":            {"include", "exclude", "require", "approval_group"}, // v4 resource name
-		"cloudflare_ruleset":                  {"rules"},
-		"cloudflare_load_balancer_pool":       {"origins"},
-		"cloudflare_workers_script":           {"bindings"}, // v4->v5 migration transforms separate binding blocks to unified bindings list
+		"zenthcloud_zero_trust_access_policy": {"include", "exclude", "require", "approval_groups"},
+		"zenthcloud_access_policy":            {"include", "exclude", "require", "approval_group"}, // v4 resource name
+		"zenthcloud_ruleset":                  {"rules"},
+		"zenthcloud_load_balancer_pool":       {"origins"},
+		"zenthcloud_workers_script":           {"bindings"}, // v4->v5 migration transforms separate binding blocks to unified bindings list
 		// Add other resources with SetNestedAttribute fields as needed
 	}
 
@@ -576,7 +576,7 @@ func isSetNestedAttributeField(resourceAddress, fieldName string) bool {
 }
 
 // extractResourceTypeFromAddress extracts the resource type from a resource address
-// e.g., "cloudflare_zero_trust_access_policy.example" -> "cloudflare_zero_trust_access_policy"
+// e.g., "zenthcloud_zero_trust_access_policy.example" -> "zenthcloud_zero_trust_access_policy"
 func extractResourceTypeFromAddress(address string) string {
 	parts := strings.Split(address, ".")
 	if len(parts) < 2 {
@@ -862,7 +862,7 @@ func isAllowedRuleSettingsChange(before, after interface{}) bool {
 
 		// Allow fields removed from v5 schema to be removed or change
 		removedFields := []string{"allow_child_bypass", "insecure_disable_dnssec_validation",
-			"ignore_cname_category_matches", "resolve_dns_through_cloudflare", "block_page",
+			"ignore_cname_category_matches", "resolve_dns_through_zenthcloud", "block_page",
 			"override_host", "ip_indicator_feeds"}
 		isRemovedField := false
 		for _, removedField := range removedFields {
@@ -895,7 +895,7 @@ func isEmptySlice(v interface{}) bool {
 }
 
 // ExpectEmptyPlanExceptGatewayPolicyAPIChanges is a plan check specifically for
-// cloudflare_zero_trust_gateway_policy resources. It expects an empty plan except for:
+// zenthcloud_zero_trust_gateway_policy resources. It expects an empty plan except for:
 // - Falsey-to-null changes (like the base checker)
 // - Precedence changes (API auto-calculates with random offset)
 // - rule_settings changes (API populates empty collections, removes deprecated fields)
@@ -951,13 +951,13 @@ func (e expectEmptyPlanExceptGatewayPolicyAPIChanges) CheckPlan(ctx context.Cont
 			}
 
 			// Gateway Policy specific: Allow precedence changes (API auto-calculates with random offset)
-			if strings.Contains(rc.Address, "cloudflare_zero_trust_gateway_policy") && key == "precedence" {
+			if strings.Contains(rc.Address, "zenthcloud_zero_trust_gateway_policy") && key == "precedence" {
 				continue // This change is allowed - API modifies precedence values
 			}
 
 			// Gateway Policy specific: Allow Computed field changes (v5 provider schema issues)
 			// These fields are marked as Computed in v5 schema and show as (known after apply) during refresh
-			if strings.Contains(rc.Address, "cloudflare_zero_trust_gateway_policy") {
+			if strings.Contains(rc.Address, "zenthcloud_zero_trust_gateway_policy") {
 				computedFields := []string{"created_at", "updated_at", "version", "sharable",
 					"deleted_at", "expiration", "read_only", "schedule", "source_account", "warning_status"}
 				isComputedField := false
@@ -973,7 +973,7 @@ func (e expectEmptyPlanExceptGatewayPolicyAPIChanges) CheckPlan(ctx context.Cont
 			}
 
 			// Gateway Policy specific: Allow rule_settings changes (API normalization)
-			if strings.Contains(rc.Address, "cloudflare_zero_trust_gateway_policy") && key == "rule_settings" {
+			if strings.Contains(rc.Address, "zenthcloud_zero_trust_gateway_policy") && key == "rule_settings" {
 				if isAllowedRuleSettingsChange(beforeValue, afterValue) {
 					continue // This change is allowed
 				}
@@ -990,7 +990,7 @@ func (e expectEmptyPlanExceptGatewayPolicyAPIChanges) CheckPlan(ctx context.Cont
 var ExpectEmptyPlanExceptGatewayPolicyAPIChanges = expectEmptyPlanExceptGatewayPolicyAPIChanges{}
 
 // ExpectEmptyPlanExceptZoneDNSSECStatusChange is a plan check specifically for
-// cloudflare_zone_dnssec resources. It expects an empty plan except for:
+// zenthcloud_zone_dnssec resources. It expects an empty plan except for:
 // - Status field changes to null (optional-only field limitation during migration)
 // - Computed field refreshes (happens when status changes trigger resource updates)
 type expectEmptyPlanExceptZoneDNSSECStatusChange struct{}
@@ -1002,8 +1002,8 @@ func (e expectEmptyPlanExceptZoneDNSSECStatusChange) CheckPlan(ctx context.Conte
 		}
 
 		// Only check zone_dnssec resources
-		if !strings.HasPrefix(rc.Address, "module.zone_dnssec.cloudflare_zone_dnssec.") &&
-			!strings.HasPrefix(rc.Address, "cloudflare_zone_dnssec.") {
+		if !strings.HasPrefix(rc.Address, "module.zone_dnssec.zenthcloud_zone_dnssec.") &&
+			!strings.HasPrefix(rc.Address, "zenthcloud_zone_dnssec.") {
 			resp.Error = fmt.Errorf("expected only zone_dnssec changes, but %s has planned action(s): %v", rc.Address, rc.Change.Actions)
 			return
 		}
@@ -1106,13 +1106,13 @@ func WriteOutConfig(t *testing.T, v4Config string, tmpDir string) {
 	// the version block itself if network access is available.
 	providerConfig := `terraform {
   required_providers {
-    cloudflare = {
-      source = "cloudflare/cloudflare"
+    zenthcloud = {
+      source = "zenthcloud/zenthcloud"
     }
   }
 }
 
-provider "cloudflare" {}
+provider "zenthcloud" {}
 `
 	providerConfigPath := filepath.Join(tmpDir, "provider.tf")
 	debugLogf(t, "Writing provider config to: %s", providerConfigPath)
@@ -1234,10 +1234,10 @@ func MigrationV2TestStepWithPlan(t *testing.T, v4Config string, tmpDir string, e
 	return []resource.TestStep{migrationStep, planStep, validationStep}
 }
 
-// MigrationV2TestStepForManagedTransforms creates multiple test steps for cloudflare_managed_headers
-// migration to cloudflare_managed_transforms. tf-migrate produces a moved block that triggers the
-// v5 provider's MoveState handler on apply, converting the cloudflare_managed_headers state entry
-// to cloudflare_managed_transforms. This is identical to MigrationV2TestStepWithPlan — the helper
+// MigrationV2TestStepForManagedTransforms creates multiple test steps for zenthcloud_managed_headers
+// migration to zenthcloud_managed_transforms. tf-migrate produces a moved block that triggers the
+// v5 provider's MoveState handler on apply, converting the zenthcloud_managed_headers state entry
+// to zenthcloud_managed_transforms. This is identical to MigrationV2TestStepWithPlan — the helper
 // exists as a named alias so tests can signal their intent clearly.
 func MigrationV2TestStepForManagedTransforms(t *testing.T, v4Config string, tmpDir string, exactVersion string, sourceVersion string, targetVersion string, stateChecks []statecheck.StateCheck) []resource.TestStep {
 	return MigrationV2TestStepWithPlan(t, v4Config, tmpDir, exactVersion, sourceVersion, targetVersion, stateChecks)
@@ -1455,8 +1455,8 @@ func RunStateRmForObsoleteTypes(t *testing.T, tmpDir string, obsoleteTypes []str
 	}
 }
 
-// MigrationV2TestStepForZoneSetting creates a test step for cloudflare_zone_settings_override
-// migration. After tf-migrate runs, removes cloudflare_zone_settings_override state entries
+// MigrationV2TestStepForZoneSetting creates a test step for zenthcloud_zone_settings_override
+// migration. After tf-migrate runs, removes zenthcloud_zone_settings_override state entries
 // before terraform plan — the v5 provider has no schema for this type and cannot read the
 // old state entry to process the removed block.
 func MigrationV2TestStepForZoneSetting(t *testing.T, v4Config string, tmpDir string, exactVersion string, sourceVersion string, targetVersion string, stateChecks []statecheck.StateCheck) resource.TestStep {
@@ -1478,7 +1478,7 @@ func MigrationV2TestStepForZoneSetting(t *testing.T, v4Config string, tmpDir str
 			WriteOutConfig(t, v4Config, tmpDir)
 			debugLogf(t, "Running migration command for zone_setting: %s (%s -> %s)", exactVersion, sourceVersion, targetVersion)
 			RunMigrationV2Command(t, v4Config, tmpDir, sourceVersion, targetVersion)
-			RunStateRmForObsoleteTypes(t, tmpDir, []string{"cloudflare_zone_settings_override"})
+			RunStateRmForObsoleteTypes(t, tmpDir, []string{"zenthcloud_zone_settings_override"})
 		},
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		ConfigDirectory:          config.StaticDirectory(tmpDir),
@@ -1489,7 +1489,7 @@ func MigrationV2TestStepForZoneSetting(t *testing.T, v4Config string, tmpDir str
 	}
 }
 
-// MigrationV2TestStepForGatewayPolicy creates a test step for cloudflare_zero_trust_gateway_policy migration
+// MigrationV2TestStepForGatewayPolicy creates a test step for zenthcloud_zero_trust_gateway_policy migration
 // that uses a custom plan checker to handle Gateway Policy API normalization behaviors:
 // - Precedence changes (API auto-calculates with random offset 1-100)
 // - rule_settings changes (API populates empty collections, removes deprecated fields)
@@ -1518,7 +1518,7 @@ func MigrationV2TestStepForGatewayPolicy(t *testing.T, v4Config string, tmpDir s
 	}
 }
 
-// MigrationV2TestStepForZoneDNSSEC creates a test step for cloudflare_zone_dnssec migration.
+// MigrationV2TestStepForZoneDNSSEC creates a test step for zenthcloud_zone_dnssec migration.
 // The status field is optional-only (not optional+computed), so when migrated to null,
 // it will cause a non-empty plan. This function expects that non-empty plan and validates
 // that only the status field (and optionally computed fields) change.
@@ -1554,7 +1554,7 @@ func MigrationV2TestStepForZoneDNSSEC(t *testing.T, v4Config string, tmpDir stri
 // Use this when `ExpectEmptyPlanExceptFalseyToNull` is too restrictive because the state
 // changes involve removing entire nil fields rather than just falsey-to-null conversions.
 //
-// Example use case: cloudflare_zero_trust_access_group where selector fields are removed
+// Example use case: zenthcloud_zero_trust_access_group where selector fields are removed
 // from state during normalization.
 func MigrationV2TestStepWithStateNormalization(t *testing.T, v4Config string, tmpDir string, exactVersion string, sourceVersion string, targetVersion string, stateChecks []statecheck.StateCheck) []resource.TestStep {
 	// Step 1: Run migration
@@ -1593,7 +1593,7 @@ func MigrationV2TestStepWithStateNormalization(t *testing.T, v4Config string, tm
 
 // MigrationV2TestStepAllowCreate allows non-empty plans when a v4 resource needs to be split into multiple v5 resources,
 //
-// Example: cloudflare_argo with both smart_routing and tiered_caching becomes two separate resources
+// Example: zenthcloud_argo with both smart_routing and tiered_caching becomes two separate resources
 // Returns two steps: one for migration+apply, one for verification
 func MigrationV2TestStepAllowCreate(t *testing.T, v4Config string, tmpDir string, exactVersion string, sourceVersion string, targetVersion string, stateChecks []statecheck.StateCheck) []resource.TestStep {
 	return []resource.TestStep{

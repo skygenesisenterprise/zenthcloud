@@ -104,7 +104,7 @@ Visual Studio Code.
 
 In the past we used [Hedron's Bazel Compile Commands Extractor](https://github.com/hedronvision/bazel-compile-commands-extractor)
 to generate a `compile_commands.json` file for clangd, but this was slow and unreliable for the `workerd` use case
-(see <https://github.com/cloudflare/workerd/issues/506>).
+(see <https://github.com/skygenesisenterprise/zenthcloud>).
 
 ## Miscellaneous tips
 

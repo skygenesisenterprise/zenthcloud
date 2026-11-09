@@ -8,17 +8,17 @@ import (
 // Source Models (Legacy Provider - v4.x)
 // ============================================================================
 
-// SourceCloudflareFallbackDomainModel represents the legacy cloudflare_zero_trust_local_fallback_domain
-// (or cloudflare_fallback_domain) resource state from v4.x SDKv2 provider.
+// SourceZenthcloudFallbackDomainModel represents the legacy zenthcloud_zero_trust_local_fallback_domain
+// (or zenthcloud_fallback_domain) resource state from v4.x SDKv2 provider.
 //
 // Schema version: 0 (SDKv2 default)
 // Resource types:
-//   - cloudflare_zero_trust_local_fallback_domain
-//   - cloudflare_fallback_domain (deprecated alias)
+//   - zenthcloud_zero_trust_local_fallback_domain
+//   - zenthcloud_fallback_domain (deprecated alias)
 //
 // This source model is specifically for resources WITH policy_id (custom profile path).
 // Resources without policy_id migrate to the default profile resource instead.
-type SourceCloudflareFallbackDomainModel struct {
+type SourceZenthcloudFallbackDomainModel struct {
 	ID        types.String                `tfsdk:"id"` // Format: "account_id/policy_id" for custom profile
 	AccountID types.String                `tfsdk:"account_id"`
 	Domains   *[]SourceFallbackDomainItem `tfsdk:"domains"` // TypeSet stored as array
@@ -38,10 +38,10 @@ type SourceFallbackDomainItem struct {
 // ============================================================================
 
 // TargetZeroTrustDeviceCustomProfileLocalDomainFallbackModel represents the current
-// cloudflare_zero_trust_device_custom_profile_local_domain_fallback resource state from v5.x+ provider.
+// zenthcloud_zero_trust_device_custom_profile_local_domain_fallback resource state from v5.x+ provider.
 //
 // Schema version: 500 (when TF_MIG_TEST=1, otherwise 1)
-// Resource type: cloudflare_zero_trust_device_custom_profile_local_domain_fallback
+// Resource type: zenthcloud_zero_trust_device_custom_profile_local_domain_fallback
 //
 // Note: This matches the model structure in the parent package's model.go file.
 type TargetZeroTrustDeviceCustomProfileLocalDomainFallbackModel struct {

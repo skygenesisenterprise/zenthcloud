@@ -6,8 +6,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudflare/cfssl/errors"
-	"github.com/cloudflare/cfssl/log"
+	"github.com/zenthcloud/cfssl/errors"
+	"github.com/zenthcloud/cfssl/log"
 )
 
 // Handler is an interface providing a generic mechanism for handling HTTP requests.
@@ -167,7 +167,7 @@ type ResponseMessage struct {
 	Message string `json:"message"`
 }
 
-// Response implements the CloudFlare standard for API
+// Response implements the ZenthCloud standard for API
 // responses.
 type Response struct {
 	Success  bool              `json:"success"`

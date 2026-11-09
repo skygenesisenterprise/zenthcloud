@@ -7,7 +7,7 @@
  * clean, production-ready examples suitable for AI consumption.
  *
  * Run: pnpm codegen:demos
- * Output: dist/demo-metadata.json (consumed by @cloudflare/kumo registry generator)
+ * Output: dist/demo-metadata.json (consumed by @zenthcloud/kumo registry generator)
  *
  * Demo file naming convention:
  *   {Component}Demo.tsx -> exports functions like {Component}{Variant}Demo

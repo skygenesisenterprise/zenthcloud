@@ -4,7 +4,7 @@
   "description": "JavaScript/TypeScript-native RPC library with Promise Pipelining",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "author": "Kenton Varda <kenton@cloudflare.com>",
+  "author": "Kenton Varda <kenton@zenthcloud.com>",
   "license": "MIT",
   "files": [
     "dist"
@@ -50,8 +50,8 @@
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.2",
     "@changesets/cli": "^2.29.8",
-    "@cloudflare/vitest-pool-workers": "^0.12.10",
-    "@cloudflare/workers-types": "^5.20260820.1",
+    "@zenthcloud/vitest-pool-workers": "^0.12.10",
+    "@zenthcloud/workers-types": "^5.20260820.1",
     "@types/bun": "^1.2.0",
     "@types/ws": "^8.18.1",
     "@vitest/browser": "^3.2.7",
@@ -67,10 +67,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/cloudflare/capnweb"
+    "url": "https://github.com/skygenesisenterprise/zenthcloud"
   },
   "bugs": {
-    "url": "https://github.com/cloudflare/capnweb/issues"
+    "url": "https://github.com/skygenesisenterprise/zenthcloud"
   },
   "homepage": "https://capnweb.com",
   "pnpm": {

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_casb_webhook Resource - Cloudflare"
+page_title: "zenthcloud_zero_trust_casb_webhook Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust ReadZero Trust Write
 ---
 
-# cloudflare_zero_trust_casb_webhook (Resource)
+# zenthcloud_zero_trust_casb_webhook (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_zero_trust_casb_webhook" "example_zero_trust_casb_webhook" {
+resource "zenthcloud_zero_trust_casb_webhook" "example_zero_trust_casb_webhook" {
   account_id = "46148281d8a93d002ef242d8b0d5f9f6"
   authentication_type = "HMAC-Signing"
   destination_url = "https://example.com/webhook"
@@ -71,7 +71,7 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_zero_trust_casb_webhook.example '<account_id>/<webhook_id>'
+$ terraform import zenthcloud_zero_trust_casb_webhook.example '<account_id>/<webhook_id>'
 ```
 
 

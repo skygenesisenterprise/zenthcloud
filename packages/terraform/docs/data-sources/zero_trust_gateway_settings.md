@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_zero_trust_gateway_settings Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_gateway_settings Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_zero_trust_gateway_settings (Data Source)
+# zenthcloud_zero_trust_gateway_settings (Data Source)
 
 
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_gateway_settings" "example_zero_trust_gateway_settings" {
+data "zenthcloud_zero_trust_gateway_settings" "example_zero_trust_gateway_settings" {
   account_id = "699d98642c564d2e855e9661899b7252"
 }
 ```
@@ -22,12 +22,12 @@ data "cloudflare_zero_trust_gateway_settings" "example_zero_trust_gateway_settin
 
 ### Optional
 
-- `account_id` (String) Specify the Cloudflare account identifier.
+- `account_id` (String) Specify the Zenthcloud account identifier.
 
 ### Read-Only
 
 - `created_at` (String)
-- `id` (String) Specify the Cloudflare account identifier.
+- `id` (String) Specify the Zenthcloud account identifier.
 - `settings` (Attributes) Specify account settings. (see [below for nested schema](#nestedatt--settings))
 - `updated_at` (String)
 
@@ -41,7 +41,7 @@ Read-Only:
 - `block_page` (Attributes) Specify block page layout settings. (see [below for nested schema](#nestedatt--settings--block_page))
 - `body_scanning` (Attributes) Specify the DLP inspection mode. (see [below for nested schema](#nestedatt--settings--body_scanning))
 - `browser_isolation` (Attributes) Specify Clientless Browser Isolation settings. (see [below for nested schema](#nestedatt--settings--browser_isolation))
-- `certificate` (Attributes) Specify certificate settings for Gateway TLS interception. If unset, the Cloudflare Root CA handles interception. (see [below for nested schema](#nestedatt--settings--certificate))
+- `certificate` (Attributes) Specify certificate settings for Gateway TLS interception. If unset, the Zenthcloud Root CA handles interception. (see [below for nested schema](#nestedatt--settings--certificate))
 - `custom_certificate` (Attributes, Deprecated) Specify custom certificate settings for BYO-PKI. This field is deprecated; use `certificate` instead. (see [below for nested schema](#nestedatt--settings--custom_certificate))
 - `extended_email_matching` (Attributes) Configures user email settings for firewall policies. When you enable this, the system standardizes email addresses in the identity portion of the rule to match extended email variants in firewall policies. When you disable this setting, the system matches email addresses exactly as you provide them. Enable this setting if your email uses `.` or `+` modifiers. (see [below for nested schema](#nestedatt--settings--extended_email_matching))
 - `fips` (Attributes) Specify FIPS settings. (see [below for nested schema](#nestedatt--settings--fips))
@@ -95,7 +95,7 @@ Read-Only:
 - `logo_path` (String) Specify the full URL to the logo file when the mode is customized_block_page.
 - `mailto_address` (String) Specify the admin email for users to contact when the mode is customized_block_page.
 - `mailto_subject` (String) Specify the subject line for emails created from the block page when the mode is customized_block_page.
-- `mode` (String) Specify whether to redirect users to a Cloudflare-hosted block page or a customer-provided URI.
+- `mode` (String) Specify whether to redirect users to a Zenthcloud-hosted block page or a customer-provided URI.
 Available values: "", "customized_block_page", "redirect_uri".
 - `name` (String) Specify the block page title when the mode is customized_block_page.
 - `read_only` (Boolean) Indicate that this setting was shared via the Orgs API and read only for the current account.
@@ -128,7 +128,7 @@ Read-Only:
 
 Read-Only:
 
-- `id` (String) Specify the UUID of the certificate used for interception. Ensure the certificate is available at the edge(previously called 'active'). A nil UUID directs Cloudflare to use the Root CA.
+- `id` (String) Specify the UUID of the certificate used for interception. Ensure the certificate is available at the edge(previously called 'active'). A nil UUID directs Zenthcloud to use the Root CA.
 
 
 <a id="nestedatt--settings--custom_certificate"></a>

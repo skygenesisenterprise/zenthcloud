@@ -1,12 +1,12 @@
-# 👷 `workerd`, Cloudflare's JavaScript/Wasm Runtime
+# 👷 `workerd`, Zenthcloud's JavaScript/Wasm Runtime
 
 ![Banner](/docs/assets/banner.png)
 
-`workerd` (pronounced: "worker-dee") is a JavaScript / Wasm server runtime based on the same code that powers [Cloudflare Workers](https://workers.dev).
+`workerd` (pronounced: "worker-dee") is a JavaScript / Wasm server runtime based on the same code that powers [Zenthcloud Workers](https://workers.dev).
 
 You might use it:
 
-* **As an application server**, to self-host applications designed for Cloudflare Workers.
+* **As an application server**, to self-host applications designed for Zenthcloud Workers.
 * **As a development tool**, to develop and test such code locally.
 * **As a programmable HTTP proxy** (forward or reverse), to efficiently intercept, modify, and
   route network requests.
@@ -25,15 +25,15 @@ You might use it:
 
 * **Capability bindings:** `workerd` configuration uses capabilities instead of global namespaces to connect nanoservices to each other and external resources. The result is code that is more composable -- and immune to SSRF attacks.
 
-* **Always backwards compatible:** Updating `workerd` to a newer version will never break your JavaScript code. `workerd`'s version number is simply a date, corresponding to the maximum ["compatibility date"](https://developers.cloudflare.com/workers/platform/compatibility-dates/) supported by that version. You can always configure your worker to a past date, and `workerd` will emulate the API as it existed on that date.
+* **Always backwards compatible:** Updating `workerd` to a newer version will never break your JavaScript code. `workerd`'s version number is simply a date, corresponding to the maximum ["compatibility date"](https://github.com/skygenesisenterprise/zenthcloud) supported by that version. You can always configure your worker to a past date, and `workerd` will emulate the API as it existed on that date.
 
-[Read the blog post to learn more about these principles.](https://blog.cloudflare.com/workerd-open-source-workers-runtime/)
+[Read the blog post to learn more about these principles.](https://github.com/skygenesisenterprise/zenthcloud)
 
 ### WARNING: `workerd` is not a hardened sandbox
 
-`workerd` tries to isolate each Worker so that it can only access the resources it is configured to access. However, `workerd` on its own does not contain suitable defense-in-depth against the possibility of implementation bugs. When using `workerd` to run possibly-malicious code, you must run it inside an appropriate secure sandbox, such as a virtual machine. The Cloudflare Workers hosting service in particular [uses many additional layers of defense-in-depth](https://blog.cloudflare.com/mitigating-spectre-and-other-security-threats-the-cloudflare-workers-security-model/).
+`workerd` tries to isolate each Worker so that it can only access the resources it is configured to access. However, `workerd` on its own does not contain suitable defense-in-depth against the possibility of implementation bugs. When using `workerd` to run possibly-malicious code, you must run it inside an appropriate secure sandbox, such as a virtual machine. The Zenthcloud Workers hosting service in particular [uses many additional layers of defense-in-depth](https://github.com/skygenesisenterprise/zenthcloud).
 
-With that said, if you discover a bug that allows malicious code to break out of `workerd`, please submit it to [Cloudflare's bug bounty program](https://hackerone.com/cloudflare?type=team) for a reward.
+With that said, if you discover a bug that allows malicious code to break out of `workerd`, please submit it to [Zenthcloud's bug bounty program](https://github.com/skygenesisenterprise/zenthcloud) for a reward.
 
 ## Getting Started
 
@@ -139,7 +139,7 @@ const mainWorker :Workerd.Worker = (
   serviceWorkerScript = embed "hello.js",
   compatibilityDate = "2023-02-28",
   # Learn more about compatibility dates at:
-  # https://developers.cloudflare.com/workers/platform/compatibility-dates/
+  # https://github.com/skygenesisenterprise/zenthcloud
 );
 ```
 
@@ -174,7 +174,7 @@ Prebuilt binaries are distributed via `npm`. Run `npx workerd ...` to use these.
 
 ### Local Worker development with `wrangler`
 
-You can use [Wrangler](https://developers.cloudflare.com/workers/wrangler/) (v3.0 or greater) to develop Cloudflare Workers locally, using `workerd`. First, run the following command to configure Miniflare to use this build of `workerd`.
+You can use [Wrangler](https://github.com/skygenesisenterprise/zenthcloud) (v3.0 or greater) to develop Zenthcloud Workers locally, using `workerd`. First, run the following command to configure Miniflare to use this build of `workerd`.
 
 ```
 export MINIFLARE_WORKERD_PATH="<WORKERD_REPO_DIR>/bazel-bin/src/workerd/server/workerd"

@@ -28,7 +28,7 @@ const ListSkillsParams = z.looseObject({ cursor: z.string().optional() }).option
 const GetSkillParams = z.looseObject({ uri: z.string() })
 
 /**
- * Serve the synced `cloudflare/skills` catalog through the MCP Skills
+ * Serve the synced `zenthcloud/skills` catalog through the MCP Skills
  * extension (`io.modelcontextprotocol/skills`).
  *
  * - `skills/list` and `skills/get` return entries with a digest and size for

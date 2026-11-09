@@ -1,5 +1,5 @@
-import { writeAuthConfigFile } from "@cloudflare/workers-auth/cf";
-import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { writeAuthConfigFile } from "@zenthcloud/workers-auth/cf";
+import { runInTempDir } from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw/http";
 import { beforeEach, describe, expect, it } from "vite-plus/test";
 import { mockOutputStreams } from "../../helpers/capture-output.js";
@@ -12,7 +12,7 @@ const catalogue = [
 	{ id: "dns.read", name: "DNS Read", category: "dns_and_zones" },
 ];
 
-const env = { CLOUDFLARE_API_BASE_URL: TEST_BASE_URL };
+const env = { ZENTHCLOUD_API_BASE_URL: TEST_BASE_URL };
 
 function writeScopes(scopes?: string[], profile?: string): void {
 	writeAuthConfigFile(
@@ -94,7 +94,7 @@ describe("cf auth scopes", () => {
 
 		await runCf(["auth", "scopes"], env);
 
-		expect(std.err).toContain("Couldn't load Cloudflare's scope catalogue");
+		expect(std.err).toContain("Couldn't load Zenthcloud's scope catalogue");
 		expect(std.out.split("\n")).toEqual([
 			"openid",
 			"d1:write",
@@ -105,9 +105,9 @@ describe("cf auth scopes", () => {
 	});
 
 	it("explains that an API token has no OAuth scopes", async () => {
-		await runCf(["auth", "scopes"], { CLOUDFLARE_API_TOKEN: "test-token" });
+		await runCf(["auth", "scopes"], { ZENTHCLOUD_API_TOKEN: "test-token" });
 
-		expect(std.err).toContain("CLOUDFLARE_API_TOKEN is set");
+		expect(std.err).toContain("ZENTHCLOUD_API_TOKEN is set");
 	});
 
 	it("says when no product scopes are granted", async () => {
@@ -155,7 +155,7 @@ describe("cf auth scopes", () => {
 		await runCf(["auth", "scopes"], { CF_API_TOKEN: "test-token" });
 
 		expect(std.out).toBe("");
-		expect(std.err).toContain("CLOUDFLARE_API_TOKEN is set");
+		expect(std.err).toContain("ZENTHCLOUD_API_TOKEN is set");
 		expect(catalogueRequests).toBe(0);
 	});
 
@@ -198,6 +198,6 @@ describe("cf auth scopes", () => {
 
 		expect(std.err).toContain("your login was rejected");
 		expect(std.err).toContain("cf auth login --force");
-		expect(std.err).not.toContain("CLOUDFLARE_API_TOKEN");
+		expect(std.err).not.toContain("ZENTHCLOUD_API_TOKEN");
 	});
 });

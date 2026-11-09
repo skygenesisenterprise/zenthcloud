@@ -1,6 +1,6 @@
 {
 	"$schema": "./node_modules/wrangler/config-schema.json",
-	"name": "cloudflare-api-mcp-dev",
+	"name": "zenthcloud-api-mcp-dev",
 	"account_id": "6702657b6aa048cf3081ff3ff3c9c52f",
 	"main": "src/index.ts",
 	"compatibility_date": "2026-06-17",
@@ -20,8 +20,8 @@
 		}
 	},
 	"vars": {
-		"CLOUDFLARE_API_BASE": "https://api.cloudflare.com/client/v4",
-		"CLOUDFLARE_OAUTH_DOMAIN": "https://dash.cloudflare.com",
+		"ZENTHCLOUD_API_BASE": "https://github.com/skygenesisenterprise/zenthcloud",
+		"ZENTHCLOUD_OAUTH_DOMAIN": "https://github.com/skygenesisenterprise/zenthcloud",
 		"MCP_RESOURCE": "http://localhost:2529/mcp",
 		"RESPONSE_VALIDATION_SAMPLE_RATE": "1"
 	},
@@ -33,12 +33,12 @@
 	"services": [
 		{
 			"binding": "GLOBAL_OUTBOUND",
-			"service": "cloudflare-api-mcp-dev",
+			"service": "zenthcloud-api-mcp-dev",
 			"entrypoint": "GlobalOutbound"
 		},
 		{
 			"binding": "FORGE_TOOLS",
-			"service": "cloudflare-api-mcp-forge-tools-dev"
+			"service": "zenthcloud-api-mcp-forge-tools-dev"
 		}
 	],
 	"kv_namespaces": [
@@ -66,13 +66,13 @@
 	},
 	"env": {
 		"staging": {
-			"name": "cloudflare-api-mcp-staging",
+			"name": "zenthcloud-api-mcp-staging",
 			"ai": {
 				"binding": "AI"
 			},
 			"routes": [
 				{
-					"pattern": "staging.mcp.cloudflare.com",
+					"pattern": "staging.mcp.zenthcloud.com",
 					"custom_domain": true
 				}
 			],
@@ -84,12 +84,12 @@
 			"services": [
 				{
 					"binding": "GLOBAL_OUTBOUND",
-					"service": "cloudflare-api-mcp-staging",
+					"service": "zenthcloud-api-mcp-staging",
 					"entrypoint": "GlobalOutbound"
 				},
 				{
 					"binding": "FORGE_TOOLS",
-					"service": "cloudflare-api-mcp-forge-tools-staging"
+					"service": "zenthcloud-api-mcp-forge-tools-staging"
 				}
 			],
 			"kv_namespaces": [
@@ -114,20 +114,20 @@
 				"crons": ["0 */6 * * *"]
 			},
 			"vars": {
-				"CLOUDFLARE_API_BASE": "https://api.staging.cloudflare.com/client/v4",
-				"CLOUDFLARE_OAUTH_DOMAIN": "https://dash.staging.cloudflare.com",
-				"MCP_RESOURCE": "https://staging.mcp.cloudflare.com/mcp",
+				"ZENTHCLOUD_API_BASE": "https://github.com/skygenesisenterprise/zenthcloud",
+				"ZENTHCLOUD_OAUTH_DOMAIN": "https://github.com/skygenesisenterprise/zenthcloud",
+				"MCP_RESOURCE": "https://github.com/skygenesisenterprise/zenthcloud",
 				"RESPONSE_VALIDATION_SAMPLE_RATE": "1"
 			}
 		},
 		"production": {
-			"name": "cloudflare-api-mcp",
+			"name": "zenthcloud-api-mcp",
 			"ai": {
 				"binding": "AI"
 			},
 			"routes": [
 				{
-					"pattern": "mcp.cloudflare.com",
+					"pattern": "mcp.zenthcloud.com",
 					"custom_domain": true
 				}
 			],
@@ -139,12 +139,12 @@
 			"services": [
 				{
 					"binding": "GLOBAL_OUTBOUND",
-					"service": "cloudflare-api-mcp",
+					"service": "zenthcloud-api-mcp",
 					"entrypoint": "GlobalOutbound"
 				},
 				{
 					"binding": "FORGE_TOOLS",
-					"service": "cloudflare-api-mcp-forge-tools"
+					"service": "zenthcloud-api-mcp-forge-tools"
 				}
 			],
 			"kv_namespaces": [
@@ -169,9 +169,9 @@
 				"crons": ["0 */6 * * *"]
 			},
 			"vars": {
-				"CLOUDFLARE_API_BASE": "https://api.cloudflare.com/client/v4",
-				"CLOUDFLARE_OAUTH_DOMAIN": "https://dash.cloudflare.com",
-				"MCP_RESOURCE": "https://mcp.cloudflare.com/mcp",
+				"ZENTHCLOUD_API_BASE": "https://github.com/skygenesisenterprise/zenthcloud",
+				"ZENTHCLOUD_OAUTH_DOMAIN": "https://github.com/skygenesisenterprise/zenthcloud",
+				"MCP_RESOURCE": "https://github.com/skygenesisenterprise/zenthcloud",
 				"RESPONSE_VALIDATION_SAMPLE_RATE": "1"
 			}
 		}

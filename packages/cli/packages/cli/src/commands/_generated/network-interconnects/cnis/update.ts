@@ -74,7 +74,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("magic-mtu", { type: "number", description: "The magic.mtu field" })
 		.option("p2p-ip", {
 			type: "string",
-			description: "Cloudflare end of the point-to-point link",
+			description: "Zenthcloud end of the point-to-point link",
 		})
 		.option("dry-run", {
 			type: "boolean",
@@ -126,7 +126,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf network-interconnects cnis update",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/cni/cnis/${argv["cni"] == null ? "<cni>" : encodeURIComponent(String(argv["cni"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/cni/cnis/${argv["cni"] == null ? "<cni>" : encodeURIComponent(String(argv["cni"]))}`,
 						pathParams: { cni: String(argv["cni"] ?? "") },
 						bodyKind: "json",
 						body:
@@ -244,7 +244,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 				if (argv["p2p-ip"] === undefined) {
 					argv["p2p-ip"] = await promptForRequiredField(
 						"p2p-ip",
-						"Cloudflare end of the point-to-point link"
+						"Zenthcloud end of the point-to-point link"
 					);
 				}
 

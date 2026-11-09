@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_magic_transit_site_acl Resource - Cloudflare"
+page_title: "zenthcloud_magic_transit_site_acl Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Magic Transit ReadMagic Transit WriteMagic WAN ReadMagic WAN Write
 ---
 
-# cloudflare_magic_transit_site_acl (Resource)
+# zenthcloud_magic_transit_site_acl (Resource)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_magic_transit_site_acl" "example_magic_transit_site_acl" {
+resource "zenthcloud_magic_transit_site_acl" "example_magic_transit_site_acl" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   site_id = "023e105f4ecef8ad9ca31a8372d0c353"
   lan_1 = {
@@ -57,7 +57,7 @@ resource "cloudflare_magic_transit_site_acl" "example_magic_transit_site_acl" {
 ### Optional
 
 - `description` (String) Description for the ACL.
-- `forward_locally` (Boolean) The desired forwarding action for this ACL policy. If set to "false", the policy will forward traffic to Cloudflare. If set to "true", the policy will forward traffic locally on the Magic Connector. If not included in request, will default to false.
+- `forward_locally` (Boolean) The desired forwarding action for this ACL policy. If set to "false", the policy will forward traffic to Zenthcloud. If set to "true", the policy will forward traffic locally on the Magic Connector. If not included in request, will default to false.
 - `protocols` (List of String)
 - `unidirectional` (Boolean) The desired traffic direction for this ACL policy. If set to "false", the policy will allow bidirectional traffic. If set to "true", the policy will only allow traffic in one direction. If not included in request, will default to false.
 
@@ -99,7 +99,7 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_magic_transit_site_acl.example '<account_id>/<site_id>/<acl_id>'
+$ terraform import zenthcloud_magic_transit_site_acl.example '<account_id>/<site_id>/<acl_id>'
 ```
 
 

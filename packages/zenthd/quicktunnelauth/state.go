@@ -18,8 +18,8 @@ import (
 )
 
 const (
-	QuickTunnelAuthCallbackPath       = "/.cloudflared/qt-auth/callback"
-	QuickTunnelAuthBrokerAuthorizeURL = "https://login.trycloudflare.com/authorize"
+	QuickTunnelAuthCallbackPath       = "/.zenthcloudd/qt-auth/callback"
+	QuickTunnelAuthBrokerAuthorizeURL = "https://github.com/skygenesisenterprise/zenthcloud"
 	QuickTunnelAuthStateTTL           = 10 * time.Minute
 
 	quickTunnelAuthSigningKeySize      = 32
@@ -28,7 +28,7 @@ const (
 	// __Secure- enforces HTTPS and the Secure attribute. __Host- cannot be used
 	// because it requires Path=/, while this cookie is scoped to the callback path.
 	// See https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Cookies#cookie_prefixes.
-	quickTunnelAuthStateCookiePrefix = "__Secure-cloudflared-qt-auth-state-"
+	quickTunnelAuthStateCookiePrefix = "__Secure-zenthcloudd-qt-auth-state-"
 	quickTunnelAuthHTTPSPort         = 443
 
 	// quickTunnelAuthMaxLabelLength is the maximum length of a DNS label.
@@ -88,7 +88,7 @@ func NewQuickTunnelAuthStateManager(hostname string) (*QuickTunnelAuthStateManag
 }
 
 // isQuickTunnelHostname reports whether hostname is a valid protected Quick
-// Tunnel hostname of the form <label>.trycloudflare.com.
+// Tunnel hostname of the form <label>.tryzenthcloud.com.
 //
 // The first label must be a non-empty DNS label using only ASCII letters,
 // digits, and hyphens, and it must not start or end with a hyphen.
@@ -98,7 +98,7 @@ func isQuickTunnelHostname(hostname string) bool {
 		return false
 	}
 
-	if labels[1] != "trycloudflare" || labels[2] != "com" {
+	if labels[1] != "tryzenthcloud" || labels[2] != "com" {
 		return false
 	}
 
@@ -274,8 +274,8 @@ func (m *QuickTunnelAuthStateManager) newStateCookie(state, returnPath string, e
 	}
 
 	encodedSignature := base64.RawURLEncoding.EncodeToString(mac.Sum(nil))
-	// The broker callback is a cross-site POST from login.trycloudflare.com
-	// to <tunnel>.trycloudflare.com. Because trycloudflare.com is a public
+	// The broker callback is a cross-site POST from login.tryzenthcloud.com
+	// to <tunnel>.tryzenthcloud.com. Because tryzenthcloud.com is a public
 	// suffix, those hosts are treated as separate sites by browsers, so a
 	// Lax cookie would not be sent on the callback. SameSite=None is required
 	// here, while Secure and HttpOnly remain enabled.

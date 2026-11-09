@@ -6,26 +6,26 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
-func TestAccCloudflareLogpushDatasetFieldDataSource_AccountID(t *testing.T) {
+func TestAccZenthcloudLogpushDatasetFieldDataSource_AccountID(t *testing.T) {
 	t.Parallel()
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	dataSourceName := fmt.Sprintf("data.cloudflare_logpush_dataset_field.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	dataSourceName := fmt.Sprintf("data.zenthcloud_logpush_dataset_field.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareLogpushDatasetFieldDataSourceConfig_AccountID(rnd, accountID, "http_requests"),
+				Config: testAccZenthcloudLogpushDatasetFieldDataSourceConfig_AccountID(rnd, accountID, "http_requests"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					// Verify the input parameters are set correctly
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("account_id"), knownvalue.StringExact(accountID)),
@@ -39,18 +39,18 @@ func TestAccCloudflareLogpushDatasetFieldDataSource_AccountID(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareLogpushDatasetFieldDataSource_ZoneID(t *testing.T) {
+func TestAccZenthcloudLogpushDatasetFieldDataSource_ZoneID(t *testing.T) {
 	t.Parallel()
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	dataSourceName := fmt.Sprintf("data.cloudflare_logpush_dataset_field.%s", rnd)
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	dataSourceName := fmt.Sprintf("data.zenthcloud_logpush_dataset_field.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareLogpushDatasetFieldDataSourceConfig_ZoneID(rnd, zoneID, "firewall_events"),
+				Config: testAccZenthcloudLogpushDatasetFieldDataSourceConfig_ZoneID(rnd, zoneID, "firewall_events"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					// Verify the input parameters are set correctly
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
@@ -65,18 +65,18 @@ func TestAccCloudflareLogpushDatasetFieldDataSource_ZoneID(t *testing.T) {
 }
 
 // Helper functions to generate test configurations
-func testAccCloudflareLogpushDatasetFieldDataSourceConfig_AccountID(rnd, accountID, datasetID string) string {
+func testAccZenthcloudLogpushDatasetFieldDataSourceConfig_AccountID(rnd, accountID, datasetID string) string {
 	return fmt.Sprintf(`
-data "cloudflare_logpush_dataset_field" "%[1]s" {
+data "zenthcloud_logpush_dataset_field" "%[1]s" {
   account_id = "%[2]s"
   dataset_id = "%[3]s"
 }
 `, rnd, accountID, datasetID)
 }
 
-func testAccCloudflareLogpushDatasetFieldDataSourceConfig_ZoneID(rnd, zoneID, datasetID string) string {
+func testAccZenthcloudLogpushDatasetFieldDataSourceConfig_ZoneID(rnd, zoneID, datasetID string) string {
 	return fmt.Sprintf(`
-data "cloudflare_logpush_dataset_field" "%[1]s" {
+data "zenthcloud_logpush_dataset_field" "%[1]s" {
   zone_id    = "%[2]s"
   dataset_id = "%[3]s"
 }

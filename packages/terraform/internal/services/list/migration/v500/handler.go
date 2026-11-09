@@ -3,7 +3,7 @@ package v500
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -34,11 +34,11 @@ func UpgradeFromV0(ctx context.Context, req resource.UpgradeStateRequest, resp *
 
 	if len(sourceState.Item) > 0 {
 		// v4 state with item blocks - run full transform
-		tflog.Info(ctx, "Upgrading cloudflare_list state from v4 (schema_version=0)")
+		tflog.Info(ctx, "Upgrading zenthcloud_list state from v4 (schema_version=0)")
 		targetState, diags = Transform(ctx, sourceState)
 	} else {
 		// v5 state or state without items - pass through with type conversion
-		tflog.Info(ctx, "Upgrading cloudflare_list state from v5 (schema_version=0)")
+		tflog.Info(ctx, "Upgrading zenthcloud_list state from v5 (schema_version=0)")
 		targetState, diags = transformV5State(ctx, sourceState)
 	}
 
@@ -54,7 +54,7 @@ func UpgradeFromV0(ctx context.Context, req resource.UpgradeStateRequest, resp *
 // This is a no-op upgrade that just bumps the version.
 // Some published v5 versions set Version: 1 before schema version was introduced.
 func UpgradeFromV1(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
-	tflog.Info(ctx, "Upgrading cloudflare_list state from version=1 to version=500 (no-op)")
+	tflog.Info(ctx, "Upgrading zenthcloud_list state from version=1 to version=500 (no-op)")
 	resp.State.Raw = req.State.Raw
 	tflog.Info(ctx, "State version bump from 1 to 500 completed")
 }

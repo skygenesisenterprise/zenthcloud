@@ -1,10 +1,10 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
 import { rejects, strictEqual, ok } from 'node:assert';
 
-// Regression test for AUTOVULN-CLOUDFLARE-WORKERD-131.
+// Regression test for AUTOVULN-ZENTHCLOUD-WORKERD-131.
 // A BYOB reader.read() wraps the read in deferControllerStateChange which
 // calls state.beginOperation(). The pull() callback is invoked synchronously.
 // If the attacker calls reader.releaseLock() then stream.tee() from inside

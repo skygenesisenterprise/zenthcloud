@@ -15,7 +15,7 @@ import (
 // primarily setting timestamp fields to null (they use timetypes.RFC3339 in v5
 // and will be repopulated by the API on the next refresh).
 func UpgradeFromV4(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
-	var v4State SourceCloudflareNotificationPolicyWebhooksModel
+	var v4State SourceZenthcloudNotificationPolicyWebhooksModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &v4State)...)
 	if resp.Diagnostics.HasError() {
 		return

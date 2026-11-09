@@ -4,18 +4,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-// SourceCloudflareCustomPagesSchema returns the legacy cloudflare_custom_pages
+// SourceZenthcloudCustomPagesSchema returns the legacy zenthcloud_custom_pages
 // schema from v4.x SDKv2 provider.
 //
 // Schema version: 0 (v4 SDKv2 resources without explicit SchemaVersion field default to 0)
-// Resource type: cloudflare_custom_pages
+// Resource type: zenthcloud_custom_pages
 //
 // This minimal schema is used only for reading v4 state during migration.
 // It includes only the properties needed for state parsing (Required, Optional, Computed).
 // Validators, PlanModifiers, and Descriptions are intentionally omitted.
 //
-// Reference: cloudflare-terraform-v4/internal/sdkv2provider/schema_cloudflare_custom_pages.go
-func SourceCloudflareCustomPagesSchema() schema.Schema {
+// Reference: zenthcloud-terraform-v4/internal/sdkv2provider/schema_zenthcloud_custom_pages.go
+func SourceZenthcloudCustomPagesSchema() schema.Schema {
 	return schema.Schema{
 		// Note: No explicit Version field here.
 		// v4 SDKv2 resources without SchemaVersion default to 0.

@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/ssl"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/ssl"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -16,9 +16,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 )
 
 func TestMain(m *testing.M) {
@@ -26,25 +26,25 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_certificate_pack", &resource.Sweeper{
-		Name: "cloudflare_certificate_pack",
-		F:    testSweepCloudflareCertificatePack,
+	resource.AddTestSweepers("zenthcloud_certificate_pack", &resource.Sweeper{
+		Name: "zenthcloud_certificate_pack",
+		F:    testSweepZenthcloudCertificatePack,
 	})
 }
 
-func testSweepCloudflareCertificatePack(r string) error {
+func testSweepZenthcloudCertificatePack(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping certificate packs sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping certificate packs sweep: ZENTHCLOUD_ZONE_ID not set")
 		return nil
 	}
 
 	iter := client.SSL.CertificatePacks.ListAutoPaging(ctx, ssl.CertificatePackListParams{
-		ZoneID: cloudflare.F(zoneID),
-		Status: cloudflare.F(ssl.CertificatePackListParamsStatusAll),
+		ZoneID: zenthcloud.F(zoneID),
+		Status: zenthcloud.F(ssl.CertificatePackListParamsStatusAll),
 	})
 
 	for iter.Next() {
@@ -62,7 +62,7 @@ func testSweepCloudflareCertificatePack(r string) error {
 
 		tflog.Info(ctx, fmt.Sprintf("Deleting certificate pack: %s", certificate.ID))
 		_, err := client.SSL.CertificatePacks.Delete(ctx, certificate.ID, ssl.CertificatePackDeleteParams{
-			ZoneID: cloudflare.F(zoneID),
+			ZoneID: zenthcloud.F(zoneID),
 		})
 		if err != nil {
 			tflog.Error(ctx, fmt.Sprintf("Failed to delete certificate pack %s: %s", certificate.ID, err))
@@ -76,17 +76,17 @@ func testSweepCloudflareCertificatePack(r string) error {
 	return nil
 }
 
-func testAccCheckCloudflareCertificatePackDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudCertificatePackDestroy(s *terraform.State) error {
 	client := acctest.SharedClient()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_certificate_pack" {
+		if rs.Type != "zenthcloud_certificate_pack" {
 			continue
 		}
 
 		zoneID := rs.Primary.Attributes[consts.ZoneIDSchemaKey]
 		_, err := client.SSL.CertificatePacks.Get(context.Background(), rs.Primary.ID, ssl.CertificatePackGetParams{
-			ZoneID: cloudflare.F(zoneID),
+			ZoneID: zenthcloud.F(zoneID),
 		})
 		if err != nil {
 			// If certificate pack is not found, it was successfully deleted
@@ -105,9 +105,9 @@ func testAccCheckCloudflareCertificatePackDestroy(s *terraform.State) error {
 // This validates that the resource can be created, read, imported, and deleted.
 func TestAccCertificatePack_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_certificate_pack." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	name := "zenthcloud_certificate_pack." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -116,7 +116,7 @@ func TestAccCertificatePack_Basic(t *testing.T) {
 			acctest.TestAccPreCheck_Domain(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareCertificatePackDestroy,
+		CheckDestroy:             testAccCheckZenthcloudCertificatePackDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCertificatePackBasicConfig(zoneID, domain, rnd),
@@ -136,20 +136,20 @@ func TestAccCertificatePack_Basic(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateIdPrefix:     fmt.Sprintf("%s/", zoneID),
-				ImportStateVerifyIgnore: []string{"certificate_authority", "cloudflare_branding", "hosts", "status", "type", "validation_method", "validity_days", "primary_certificate", "validation_records", "dcv_delegation_records", "validation_errors"},
+				ImportStateVerifyIgnore: []string{"certificate_authority", "zenthcloud_branding", "hosts", "status", "type", "validation_method", "validity_days", "primary_certificate", "validation_records", "dcv_delegation_records", "validation_errors"},
 			},
 		},
 	})
 }
 
-// TestAccCertificatePack_CloudflareBranding tests the optional cloudflare_branding attribute.
+// TestAccCertificatePack_ZenthcloudBranding tests the optional zenthcloud_branding attribute.
 // This validates that optional boolean attributes are handled correctly (null vs false vs true).
-func TestAccCertificatePack_CloudflareBranding(t *testing.T) {
+func TestAccCertificatePack_ZenthcloudBranding(t *testing.T) {
 	t.Skip("dcv_delegation_records is not consistently returned from API, causing drift")
 	rnd := utils.GenerateRandomResourceName()
-	name := "cloudflare_certificate_pack." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	name := "zenthcloud_certificate_pack." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -158,14 +158,14 @@ func TestAccCertificatePack_CloudflareBranding(t *testing.T) {
 			acctest.TestAccPreCheck_Domain(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareCertificatePackDestroy,
+		CheckDestroy:             testAccCheckZenthcloudCertificatePackDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCertificatePackCloudflareBrandingConfig(zoneID, domain, rnd),
+				Config: testAccCertificatePackZenthcloudBrandingConfig(zoneID, domain, rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.ZoneIDSchemaKey), knownvalue.StringExact(zoneID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("type"), knownvalue.StringExact("advanced")),
-					statecheck.ExpectKnownValue(name, tfjsonpath.New("cloudflare_branding"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(name, tfjsonpath.New("zenthcloud_branding"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("id"), knownvalue.NotNull()),
 				},
 			},
@@ -174,7 +174,7 @@ func TestAccCertificatePack_CloudflareBranding(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateIdPrefix:     fmt.Sprintf("%s/", zoneID),
-				ImportStateVerifyIgnore: []string{"certificate_authority", "cloudflare_branding", "hosts", "status", "type", "validation_method", "validity_days", "primary_certificate", "validation_records", "dcv_delegation_records", "validation_errors"},
+				ImportStateVerifyIgnore: []string{"certificate_authority", "zenthcloud_branding", "hosts", "status", "type", "validation_method", "validity_days", "primary_certificate", "validation_records", "dcv_delegation_records", "validation_errors"},
 			},
 		},
 	})
@@ -182,7 +182,7 @@ func TestAccCertificatePack_CloudflareBranding(t *testing.T) {
 
 func testAccCertificatePackBasicConfig(zoneID, domain, rnd string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_certificate_pack" "%[3]s" {
+resource "zenthcloud_certificate_pack" "%[3]s" {
   zone_id               = "%[1]s"
   type                  = "advanced"
   certificate_authority = "lets_encrypt"
@@ -192,23 +192,23 @@ resource "cloudflare_certificate_pack" "%[3]s" {
 }`, zoneID, domain, rnd)
 }
 
-func testAccCertificatePackCloudflareBrandingConfig(zoneID, domain, rnd string) string {
+func testAccCertificatePackZenthcloudBrandingConfig(zoneID, domain, rnd string) string {
 	return fmt.Sprintf(`
-resource "cloudflare_certificate_pack" "%[3]s" {
+resource "zenthcloud_certificate_pack" "%[3]s" {
   zone_id               = "%[1]s"
   type                  = "advanced"
   certificate_authority = "lets_encrypt"
   validation_method     = "txt"
   validity_days         = 90
   hosts                 = ["%[2]s", "*.%[2]s"]
-  cloudflare_branding   = true
+  zenthcloud_branding   = true
 }`, zoneID, domain, rnd)
 }
 
 func TestAccUpgradeCertificatePack_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	domain := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	domain := os.Getenv("ZENTHCLOUD_DOMAIN")
 
 	config := testAccCertificatePackBasicConfig(zoneID, domain, rnd)
 
@@ -221,8 +221,8 @@ func TestAccUpgradeCertificatePack_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

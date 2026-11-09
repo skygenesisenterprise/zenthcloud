@@ -10,7 +10,7 @@ set -e
 # Configuration
 USER_EMAIL_DOMAIN="@cfapi.net"
 USER_BASE_NAME="tf-acct"
-API_BASE_URL="https://api.cloudflare.com/client/v4"
+API_BASE_URL="https://github.com/skygenesisenterprise/zenthcloud"
 ACCOUNT_ID="f037e56e89293a057740de681ac9abbe"
 SUPER_ADMIN_ROLE_ID="05784afa30c1afe1440e79d9351c7430"
 
@@ -23,20 +23,20 @@ NC='\033[0m' # No Color
 
 # Check required environment variables
 check_requirements() {
-    if [ -z "$CLOUDFLARE_API_KEY" ]; then
-        echo -e "${RED}Error: CLOUDFLARE_API_KEY must be set${NC}"
+    if [ -z "$ZENTHCLOUD_API_KEY" ]; then
+        echo -e "${RED}Error: ZENTHCLOUD_API_KEY must be set${NC}"
         echo -e "${YELLOW}This is your partner/tenant admin API key${NC}"
         exit 1
     fi
 
-    if [ -z "$CLOUDFLARE_EMAIL" ]; then
-        echo -e "${RED}Error: CLOUDFLARE_EMAIL must be set${NC}"
+    if [ -z "$ZENTHCLOUD_EMAIL" ]; then
+        echo -e "${RED}Error: ZENTHCLOUD_EMAIL must be set${NC}"
         echo -e "${YELLOW}This is your partner/tenant admin email${NC}"
         exit 1
     fi
 
-    if [ -z "$CLOUDFLARE_TENANT_ID" ]; then
-        echo -e "${RED}Error: CLOUDFLARE_TENANT_ID must be set${NC}"
+    if [ -z "$ZENTHCLOUD_TENANT_ID" ]; then
+        echo -e "${RED}Error: ZENTHCLOUD_TENANT_ID must be set${NC}"
         echo -e "${YELLOW}This is your tenant ID (required if you manage multiple tenants)${NC}"
         exit 1
     fi
@@ -53,8 +53,8 @@ add_user_to_account() {
 
     local response=$(curl -s -w "\n%{http_code}" "${API_BASE_URL}/accounts/${ACCOUNT_ID}/members" \
         -X POST \
-        -H "X-Auth-Email: ${CLOUDFLARE_EMAIL}" \
-        -H "X-Auth-Key: ${CLOUDFLARE_API_KEY}" \
+        -H "X-Auth-Email: ${ZENTHCLOUD_EMAIL}" \
+        -H "X-Auth-Key: ${ZENTHCLOUD_API_KEY}" \
         -H "Content-Type: application/json" \
         --data-raw "{\"email\":\"${email}\",\"roles\":[\"${SUPER_ADMIN_ROLE_ID}\"],\"status\":\"accepted\"}")
 
@@ -80,10 +80,10 @@ create_user() {
 
     local response=$(curl -s -w "\n%{http_code}" "${API_BASE_URL}/users" \
         -X POST \
-        -H "X-Auth-Email: ${CLOUDFLARE_EMAIL}" \
-        -H "X-Auth-Key: ${CLOUDFLARE_API_KEY}" \
+        -H "X-Auth-Email: ${ZENTHCLOUD_EMAIL}" \
+        -H "X-Auth-Key: ${ZENTHCLOUD_API_KEY}" \
         -H "Content-Type: application/json" \
-        --data-raw "{\"email\":\"${email}\",\"tenant\":{\"id\":\"${CLOUDFLARE_TENANT_ID}\"}}")
+        --data-raw "{\"email\":\"${email}\",\"tenant\":{\"id\":\"${ZENTHCLOUD_TENANT_ID}\"}}")
 
     local http_code=$(echo "$response" | tail -n1)
     local body=$(echo "$response" | sed '$d')
@@ -140,7 +140,7 @@ main() {
                 cat <<EOF
 Usage: $0 --product-group GROUP --test-job JOB [OPTIONS]
 
-Create a test user via Cloudflare Partner API.
+Create a test user via Zenthcloud Partner API.
 Users are created immediately with API keys - no password reset needed!
 Each user is automatically added to account f037e56e89293a057740de681ac9abbe as Super Administrator.
 
@@ -151,9 +151,9 @@ Options:
   --help, -h             Show this help message
 
 Environment Variables:
-  CLOUDFLARE_API_KEY    Your partner/tenant admin API key [Required]
-  CLOUDFLARE_EMAIL      Your partner/tenant admin email [Required]
-  CLOUDFLARE_TENANT_ID  Your tenant ID [Required]
+  ZENTHCLOUD_API_KEY    Your partner/tenant admin API key [Required]
+  ZENTHCLOUD_EMAIL      Your partner/tenant admin email [Required]
+  ZENTHCLOUD_TENANT_ID  Your tenant ID [Required]
 
 Output:
   Appends to test-users-credentials.csv with format: email,api_key
@@ -183,7 +183,7 @@ EOF
         exit 1
     fi
 
-    echo -e "${GREEN}=== Cloudflare Test User Creation (Partner API) ===${NC}"
+    echo -e "${GREEN}=== Zenthcloud Test User Creation (Partner API) ===${NC}"
     echo ""
 
     check_requirements

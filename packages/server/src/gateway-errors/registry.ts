@@ -95,7 +95,7 @@ export const GATEWAY_ERRORS: Record<
 		operatorGuidance:
 			"Check that the connector or tunnel client is connected, that its credentials are valid and that the target server is reachable. Reconnect the tunnel after fixing the underlying issue.",
 		retryable: true,
-		docsPath: "/docs/core/cloudflare-tunnels",
+		docsPath: "/docs/core/zenthcloud-tunnels",
 	},
 	"NP-1052": {
 		code: "NP-1052",

@@ -5,8 +5,8 @@ package zone
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -90,13 +90,13 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.Object{objectplanmodifier.RequiresReplace()},
 			},
 			"paused": schema.BoolAttribute{
-				Description: "Indicates whether the zone is only using Cloudflare DNS services. A\ntrue value means the zone will not receive security or performance\nbenefits.",
+				Description: "Indicates whether the zone is only using Zenthcloud DNS services. A\ntrue value means the zone will not receive security or performance\nbenefits.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
 			},
 			"type": schema.StringAttribute{
-				Description: "A full zone implies that DNS is hosted with Cloudflare. A partial zone is\ntypically a partner-hosted zone or a CNAME setup.\nAvailable values: \"full\", \"partial\", \"secondary\", \"internal\".",
+				Description: "A full zone implies that DNS is hosted with Zenthcloud. A partial zone is\ntypically a partner-hosted zone or a CNAME setup.\nAvailable values: \"full\", \"partial\", \"secondary\", \"internal\".",
 				Computed:    true,
 				Optional:    true,
 				Validators: []validator.String{
@@ -142,15 +142,15 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				CustomType:  timetypes.RFC3339Type{},
 			},
 			"original_dnshost": schema.StringAttribute{
-				Description: "DNS host at the time of switching to Cloudflare.",
+				Description: "DNS host at the time of switching to Zenthcloud.",
 				Computed:    true,
 			},
 			"original_registrar": schema.StringAttribute{
-				Description: "Registrar for the domain at the time of switching to Cloudflare.",
+				Description: "Registrar for the domain at the time of switching to Zenthcloud.",
 				Computed:    true,
 			},
 			"status": schema.StringAttribute{
-				Description: "The zone status on Cloudflare.\nAvailable values: \"initializing\", \"pending\", \"active\", \"moved\".",
+				Description: "The zone status on Zenthcloud.\nAvailable values: \"initializing\", \"pending\", \"active\", \"moved\".",
 				Computed:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOfCaseInsensitive(
@@ -166,13 +166,13 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 				Computed:    true,
 			},
 			"name_servers": schema.ListAttribute{
-				Description: "The name servers Cloudflare assigns to a zone.",
+				Description: "The name servers Zenthcloud assigns to a zone.",
 				Computed:    true,
 				CustomType:  customfield.NewListType[types.String](ctx),
 				ElementType: types.StringType,
 			},
 			"original_name_servers": schema.ListAttribute{
-				Description: "Original name servers before moving to Cloudflare.",
+				Description: "Original name servers before moving to Zenthcloud.",
 				Computed:    true,
 				CustomType:  customfield.NewListType[types.String](ctx),
 				ElementType: types.StringType,
@@ -240,7 +240,7 @@ func ResourceSchema(ctx context.Context) schema.Schema {
 			"plan": schema.SingleNestedAttribute{
 				Description:        "A Zones subscription information.",
 				Computed:           true,
-				DeprecationMessage: "Please use the `/zones/{zone_id}/subscription` API\nto update a zone's plan. Changing this value will create/cancel\nassociated subscriptions. To view available plans for this zone,\nsee [Zone Plans](https://developers.cloudflare.com/api/resources/zones/subresources/plans/).",
+				DeprecationMessage: "Please use the `/zones/{zone_id}/subscription` API\nto update a zone's plan. Changing this value will create/cancel\nassociated subscriptions. To view available plans for this zone,\nsee [Zone Plans](https://github.com/skygenesisenterprise/zenthcloud).",
 				CustomType:         customfield.NewNestedObjectType[ZonePlanModel](ctx),
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{

@@ -9,11 +9,11 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 
-	"github.com/cloudflare/cloudflared/ingress"
-	"github.com/cloudflare/cloudflared/management"
-	cfdquic "github.com/cloudflare/cloudflared/quic"
-	v3 "github.com/cloudflare/cloudflared/quic/v3"
-	"github.com/cloudflare/cloudflared/tunnelrpc/pogs"
+	"github.com/zenthcloud/zenthcloudd/ingress"
+	"github.com/zenthcloud/zenthcloudd/management"
+	cfdquic "github.com/zenthcloud/zenthcloudd/quic"
+	v3 "github.com/zenthcloud/zenthcloudd/quic/v3"
+	"github.com/zenthcloud/zenthcloudd/tunnelrpc/pogs"
 )
 
 var (

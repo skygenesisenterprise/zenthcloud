@@ -38,7 +38,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID (32-character hexadecimal string)",
+              "description": "Zenthcloud account ID (32-character hexadecimal string)",
               "type": "string"
             }
           },
@@ -114,7 +114,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID (32-character hexadecimal string)",
+              "description": "Zenthcloud account ID (32-character hexadecimal string)",
               "type": "string"
             },
             "workload_id": {
@@ -191,7 +191,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID (32-character hexadecimal string)",
+              "description": "Zenthcloud account ID (32-character hexadecimal string)",
               "type": "string"
             },
             "workload_id": {
@@ -268,7 +268,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID (32-character hexadecimal string)",
+              "description": "Zenthcloud account ID (32-character hexadecimal string)",
               "type": "string"
             }
           },
@@ -395,7 +395,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID (32-character hexadecimal string)",
+              "description": "Zenthcloud account ID (32-character hexadecimal string)",
               "type": "string"
             },
             "workload_id": {

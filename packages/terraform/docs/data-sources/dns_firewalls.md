@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_dns_firewalls Data Source - Cloudflare"
+page_title: "zenthcloud_dns_firewalls Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   DNS Firewall ReadDNS Firewall Write
 ---
 
-# cloudflare_dns_firewalls (Data Source)
+# zenthcloud_dns_firewalls (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_dns_firewalls" "example_dns_firewalls" {
+data "zenthcloud_dns_firewalls" "example_dns_firewalls" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```
@@ -43,21 +43,21 @@ Read-Only:
 - `dns_firewall_ips` (Set of String)
 - `ecs_fallback` (Boolean) Whether to forward client IP (resolver) subnet if no EDNS Client Subnet is sent
 - `id` (String) Identifier.
-- `maximum_cache_ttl` (Number) By default, Cloudflare attempts to cache responses for as long as
+- `maximum_cache_ttl` (Number) By default, Zenthcloud attempts to cache responses for as long as
 indicated by the TTL received from upstream nameservers. This setting
 sets an upper bound on this duration. For caching purposes, higher TTLs
 will be decreased to the maximum value defined by this setting.
 
 This setting does not affect the TTL value in the DNS response
-Cloudflare returns to clients. Cloudflare will always forward the TTL
+Zenthcloud returns to clients. Zenthcloud will always forward the TTL
 value received from upstream nameservers.
-- `minimum_cache_ttl` (Number) By default, Cloudflare attempts to cache responses for as long as
+- `minimum_cache_ttl` (Number) By default, Zenthcloud attempts to cache responses for as long as
 indicated by the TTL received from upstream nameservers. This setting
 sets a lower bound on this duration. For caching purposes, lower TTLs
 will be increased to the minimum value defined by this setting.
 
 This setting does not affect the TTL value in the DNS response
-Cloudflare returns to clients. Cloudflare will always forward the TTL
+Zenthcloud returns to clients. Zenthcloud will always forward the TTL
 value received from upstream nameservers.
 
 Note that, even with this setting, there is no guarantee that a
@@ -70,7 +70,7 @@ reasons.
 responses (e.g., NXDOMAIN) from the upstream servers.
 
 This setting does not affect the TTL value in the DNS response
-Cloudflare returns to clients. Cloudflare will always forward the TTL
+Zenthcloud returns to clients. Zenthcloud will always forward the TTL
 value received from upstream nameservers.
 - `ratelimit` (Number) Maximum number of DNS queries per second that will be forwarded to your upstream nameservers. The limit is enforced per server, where each server receives a fraction of the configured value. The actual aggregate rate for a data center may vary depending on how many servers are present. Responses served from cache do not count toward this limit. Set to null to disable rate limiting.
 - `retries` (Number) Number of retries for fetching DNS responses from upstream nameservers (not counting the initial attempt)

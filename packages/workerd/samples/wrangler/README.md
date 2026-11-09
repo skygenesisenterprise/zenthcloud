@@ -17,7 +17,7 @@ $ ./workerd serve wrangler.jsonc
 To run using bazel
 
 ```sh
-$ bazel run //src/workerd/server:workerd -- serve ~/cloudflare/workerd/samples/wrangler/wrangler.jsonc
+$ bazel run //src/workerd/server:workerd -- serve ~/zenthcloud/workerd/samples/wrangler/wrangler.jsonc
 ```
 
 To test:

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_token_validation_configs Data Source - Cloudflare"
+page_title: "zenthcloud_token_validation_configs Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account API GatewayAccount API Gateway ReadDomain API GatewayDomain API Gateway Read
 ---
 
-# cloudflare_token_validation_configs (Data Source)
+# zenthcloud_token_validation_configs (Data Source)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_token_validation_configs" "example_token_validation_configs" {
+data "zenthcloud_token_validation_configs" "example_token_validation_configs" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```

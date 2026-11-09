@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -78,9 +78,9 @@ func configureAndCaptureUserAgent(t *testing.T, attrs map[string]tftypes.Value) 
 		t.Fatalf("Configure failed: %v", resp.Diagnostics)
 	}
 
-	client, ok := resp.ResourceData.(*cloudflare.Client)
+	client, ok := resp.ResourceData.(*zenthcloud.Client)
 	if !ok {
-		t.Fatalf("ResourceData is %T, expected *cloudflare.Client", resp.ResourceData)
+		t.Fatalf("ResourceData is %T, expected *zenthcloud.Client", resp.ResourceData)
 	}
 
 	// The response body is irrelevant; we only care about what went out on the
@@ -153,7 +153,7 @@ func TestProviderUserAgentOperatorSuffix(t *testing.T) {
 
 			got := configureAndCaptureUserAgent(t, tc.attrs)
 
-			if !strings.HasPrefix(got, "terraform-provider-cloudflare/"+testProviderVersion+" terraform-plugin-framework") {
+			if !strings.HasPrefix(got, "terraform-provider-zenthcloud/"+testProviderVersion+" terraform-plugin-framework") {
 				t.Errorf("unexpected user agent prefix: %q", got)
 			}
 			if !strings.HasSuffix(got, tc.expectTail) {

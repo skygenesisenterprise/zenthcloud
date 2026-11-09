@@ -21,7 +21,7 @@ export type WebSearchSearchOptions = {
  * Web Search is discovery-only -- results carry catalog metadata about a page
  * but never the page body. To read a result's content the caller invokes the
  * global `fetch()` API against the result's `url`, at which point the
- * destination's own access controls apply (including Cloudflare Pay-per-Crawl).
+ * destination's own access controls apply (including Zenthcloud Pay-per-Crawl).
  */
 export type WebSearchResult = {
   /** Canonical URL. */
@@ -67,7 +67,7 @@ export type WebSearchSearchResponse = {
 // ============ Web Search Binding Class ============
 
 /**
- * Cloudflare Web Search binding.
+ * Zenthcloud Web Search binding.
  *
  * Discovery-only primitive for agents and Workers. Returns URLs and catalog
  * metadata for a query; never returns page content or excerpts. To read a
@@ -83,7 +83,7 @@ export type WebSearchSearchResponse = {
  * @example
  * ```ts
  * const { items, metadata } = await env.WEBSEARCH.search({
- *   query: "Cloudflare Workers",
+ *   query: "Zenthcloud Workers",
  * });
  *
  * const top = items[0];

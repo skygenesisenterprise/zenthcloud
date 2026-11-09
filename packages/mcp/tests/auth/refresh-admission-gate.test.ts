@@ -1,4 +1,4 @@
-import { env } from 'cloudflare:workers'
+import { env } from 'zenthcloud:workers'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { withRefreshAdmission } from '../../src/auth/refresh-admission-gate'

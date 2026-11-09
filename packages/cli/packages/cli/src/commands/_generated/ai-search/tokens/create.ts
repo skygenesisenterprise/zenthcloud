@@ -23,7 +23,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 ai-search tokens create <name>\n\nCreate a stored Cloudflare credential for an AI Search instance to access its data source."
+			"$0 ai-search tokens create <name>\n\nCreate a stored Zenthcloud credential for an AI Search instance to access its data source."
 		)
 		.positional("name", {
 			type: "string",
@@ -32,11 +32,11 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		})
 		.option("api-token-id", {
 			type: "string",
-			description: "Cloudflare API token ID.",
+			description: "Zenthcloud API token ID.",
 		})
 		.option("api-token", {
 			type: "string",
-			description: "Cloudflare API token value.",
+			description: "Zenthcloud API token value.",
 		})
 		.option("legacy", {
 			type: "boolean",
@@ -75,7 +75,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf ai-search tokens create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/ai-search/tokens`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/ai-search/tokens`,
 						pathParams: {},
 						bodyKind: "json",
 						body:
@@ -116,13 +116,13 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 				if (argv["api-token-id"] === undefined) {
 					argv["api-token-id"] = await promptForRequiredField(
 						"api-token-id",
-						"Cloudflare API token ID."
+						"Zenthcloud API token ID."
 					);
 				}
 				if (argv["api-token"] === undefined) {
 					argv["api-token"] = await promptForRequiredField(
 						"api-token",
-						"Cloudflare API token value.",
+						"Zenthcloud API token value.",
 						{ kind: "secret" }
 					);
 				}

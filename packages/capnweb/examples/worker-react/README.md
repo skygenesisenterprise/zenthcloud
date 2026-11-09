@@ -1,4 +1,4 @@
-# Cloudflare Workers + React example
+# Zenthcloud Workers + React example
 
 A Cap'n Web API served from a Worker and called from a React app, comparing batched promise
 pipelining against the same calls made sequentially. Both ends are validated at runtime:

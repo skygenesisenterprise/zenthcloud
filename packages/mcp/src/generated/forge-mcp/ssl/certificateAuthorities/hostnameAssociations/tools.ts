@@ -44,7 +44,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "mtls_certificate_id": {
-              "description": "The UUID to match against for a certificate that was uploaded to the mTLS Certificate Management endpoint. If no mtls_certificate_id is given, the results will be the hostnames associated to your active Cloudflare Managed CA.",
+              "description": "The UUID to match against for a certificate that was uploaded to the mTLS Certificate Management endpoint. If no mtls_certificate_id is given, the results will be the hostnames associated to your active Zenthcloud Managed CA.",
               "type": "string"
             }
           },

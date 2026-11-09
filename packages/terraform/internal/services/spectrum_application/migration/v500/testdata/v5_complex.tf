@@ -1,4 +1,4 @@
-resource "cloudflare_spectrum_application" "%s" {
+resource "zenthcloud_spectrum_application" "%s" {
   zone_id  = "%s"
   protocol = "tcp/443"
   dns = {

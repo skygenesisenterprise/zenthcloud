@@ -5,28 +5,28 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
-func TestAccCloudflareZoneDataSource_ByZoneID(t *testing.T) {
+func TestAccZenthcloudZoneDataSource_ByZoneID(t *testing.T) {
 	t.Parallel()
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	dataSourceName := fmt.Sprintf("data.cloudflare_zone.%s", rnd)
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	dataSourceName := fmt.Sprintf("data.zenthcloud_zone.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareZoneDataSourceConfig_ByZoneID(rnd, zoneID),
+				Config: testAccZenthcloudZoneDataSourceConfig_ByZoneID(rnd, zoneID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					// Core attributes
 					// Note: zone_id is a path parameter and not saved in state
@@ -64,20 +64,20 @@ func TestAccCloudflareZoneDataSource_ByZoneID(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareZoneDataSource_ByName(t *testing.T) {
+func TestAccZenthcloudZoneDataSource_ByName(t *testing.T) {
 	t.Parallel()
 	rnd := utils.GenerateRandomResourceName()
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	dataSourceName := fmt.Sprintf("data.cloudflare_zone.%s", rnd)
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	dataSourceName := fmt.Sprintf("data.zenthcloud_zone.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareZoneDataSourceConfig_ByName(rnd, zoneName),
+				Config: testAccZenthcloudZoneDataSourceConfig_ByName(rnd, zoneName),
 				ConfigStateChecks: []statecheck.StateCheck{
 					// Core attributes
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("id"), knownvalue.StringExact(zoneID)),
@@ -96,19 +96,19 @@ func TestAccCloudflareZoneDataSource_ByName(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareZoneDataSource_ByNameWithFilter(t *testing.T) {
+func TestAccZenthcloudZoneDataSource_ByNameWithFilter(t *testing.T) {
 	t.Parallel()
 	rnd := utils.GenerateRandomResourceName()
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	dataSourceName := fmt.Sprintf("data.cloudflare_zone.%s", rnd)
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	dataSourceName := fmt.Sprintf("data.zenthcloud_zone.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareZoneDataSourceConfig_WithFilter(rnd, zoneName, accountID),
+				Config: testAccZenthcloudZoneDataSourceConfig_WithFilter(rnd, zoneName, accountID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					// Core attributes
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("name"), knownvalue.StringExact(zoneName)),
@@ -122,18 +122,18 @@ func TestAccCloudflareZoneDataSource_ByNameWithFilter(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareZoneDataSource_FilterByStatus(t *testing.T) {
+func TestAccZenthcloudZoneDataSource_FilterByStatus(t *testing.T) {
 	t.Parallel()
 	rnd := utils.GenerateRandomResourceName()
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
-	dataSourceName := fmt.Sprintf("data.cloudflare_zone.%s", rnd)
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
+	dataSourceName := fmt.Sprintf("data.zenthcloud_zone.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareZoneDataSourceConfig_FilterByStatus(rnd, zoneName, "active"),
+				Config: testAccZenthcloudZoneDataSourceConfig_FilterByStatus(rnd, zoneName, "active"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					// Verify the zone returned has the requested status
 					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("name"), knownvalue.StringExact(zoneName)),
@@ -144,18 +144,18 @@ func TestAccCloudflareZoneDataSource_FilterByStatus(t *testing.T) {
 	})
 }
 
-func TestAccCloudflareZoneDataSource_FullZoneAttributes(t *testing.T) {
+func TestAccZenthcloudZoneDataSource_FullZoneAttributes(t *testing.T) {
 	t.Parallel()
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	dataSourceName := fmt.Sprintf("data.cloudflare_zone.%s", rnd)
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	dataSourceName := fmt.Sprintf("data.zenthcloud_zone.%s", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareZoneDataSourceConfig_ByZoneID(rnd, zoneID),
+				Config: testAccZenthcloudZoneDataSourceConfig_ByZoneID(rnd, zoneID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					// All possible attributes
 					// Note: zone_id is a path parameter and not saved in state
@@ -184,18 +184,18 @@ func TestAccCloudflareZoneDataSource_FullZoneAttributes(t *testing.T) {
 }
 
 // Helper functions to generate test configurations
-func testAccCloudflareZoneDataSourceConfig_ByZoneID(rnd, zoneID string) string {
+func testAccZenthcloudZoneDataSourceConfig_ByZoneID(rnd, zoneID string) string {
 	return acctest.LoadTestCase("datasource_zone_by_id.tf", rnd, zoneID)
 }
 
-func testAccCloudflareZoneDataSourceConfig_ByName(rnd, zoneName string) string {
+func testAccZenthcloudZoneDataSourceConfig_ByName(rnd, zoneName string) string {
 	return acctest.LoadTestCase("datasource_zone_by_name.tf", rnd, zoneName)
 }
 
-func testAccCloudflareZoneDataSourceConfig_WithFilter(rnd, zoneName, accountID string) string {
+func testAccZenthcloudZoneDataSourceConfig_WithFilter(rnd, zoneName, accountID string) string {
 	return acctest.LoadTestCase("datasource_zone_with_filter.tf", rnd, zoneName, accountID)
 }
 
-func testAccCloudflareZoneDataSourceConfig_FilterByStatus(rnd, zoneName, status string) string {
+func testAccZenthcloudZoneDataSourceConfig_FilterByStatus(rnd, zoneName, status string) string {
 	return acctest.LoadTestCase("datasource_zone_filter_status.tf", rnd, zoneName, status)
 }

@@ -5,7 +5,7 @@ package workers_kv_namespace
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/schemata"
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -34,7 +34,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 				Optional:    true,
 			},
 			"account_id": schema.StringAttribute{
-				Description: "ID of the Cloudflare account that owns the Workers KV namespaces.",
+				Description: "ID of the Zenthcloud account that owns the Workers KV namespaces.",
 				Optional:    true,
 			},
 			"jurisdiction": schema.StringAttribute{

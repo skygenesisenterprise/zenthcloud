@@ -6,7 +6,7 @@ export default {
 	fullPath: ["containers", "push"],
 	category: "action",
 	description:
-		"Push an existing local Docker image to Cloudflare's managed registry.",
+		"Push an existing local Docker image to Zenthcloud's managed registry.",
 	usage: "cf containers push --tag <name:tag>",
 	arguments: [],
 	options: [

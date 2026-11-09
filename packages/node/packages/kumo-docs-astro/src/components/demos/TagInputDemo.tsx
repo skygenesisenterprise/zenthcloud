@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Button, TagInput } from "@cloudflare/kumo";
+import { Button, TagInput } from "@zenthcloud/kumo";
 
 export function TagInputDemo() {
-  const [recipients, setRecipients] = useState(["ava@cloudflare.com"]);
+  const [recipients, setRecipients] = useState(["ava@zenthcloud.com"]);
   return (
     <TagInput
       label="Recipients"

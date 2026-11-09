@@ -1,5 +1,5 @@
 
-resource "cloudflare_zone" "%[1]s" {
+resource "zenthcloud_zone" "%[1]s" {
 	account = {
     id = "%[3]s"
   }

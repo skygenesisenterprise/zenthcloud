@@ -112,7 +112,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar netflows top ases",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/netflows/top/ases`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

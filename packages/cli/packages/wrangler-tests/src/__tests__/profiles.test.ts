@@ -15,8 +15,8 @@ function profiles() {
 
 function profileConfigPath(name: string): string {
 	const configRoot = process.env.XDG_CONFIG_HOME
-		? path.join(process.env.XDG_CONFIG_HOME, "cloudflare")
-		: path.join(os.homedir(), ".config", "cloudflare");
+		? path.join(process.env.XDG_CONFIG_HOME, "zenthcloud")
+		: path.join(os.homedir(), ".config", "zenthcloud");
 	return path.join(configRoot, "config", `${name}.json`);
 }
 
@@ -49,10 +49,10 @@ describe("Profiles", () => {
 		// Profile management is unavailable when environment credentials are
 		// present. Keep the suite independent of the invoking shell; individual
 		// tests opt back into the variable when exercising that behaviour.
-		vi.stubEnv("CLOUDFLARE_API_TOKEN", undefined);
+		vi.stubEnv("ZENTHCLOUD_API_TOKEN", undefined);
 		msw.use(
 			http.post(
-				"https://dash.cloudflare.com/oauth2/revoke",
+				"https://github.com/skygenesisenterprise/zenthcloud",
 				() => new HttpResponse(null, { status: 200 })
 			)
 		);
@@ -158,7 +158,7 @@ describe("Profiles", () => {
 		}) => {
 			await expect(
 				runWrangler("auth create client-a", {
-					CLOUDFLARE_API_TOKEN: "env-token",
+					ZENTHCLOUD_API_TOKEN: "env-token",
 				})
 			).rejects.toThrow(/Cannot manage auth profiles/);
 			expect(profiles().configs.exists("client-a")).toBe(false);
@@ -190,7 +190,7 @@ describe("Profiles", () => {
 
 			await expect(
 				runWrangler("auth delete client-a", {
-					CLOUDFLARE_API_TOKEN: "env-token",
+					ZENTHCLOUD_API_TOKEN: "env-token",
 				})
 			).rejects.toThrow(/Cannot manage auth profiles/);
 			expect(profiles().configs.exists("client-a")).toBe(true);
@@ -260,7 +260,7 @@ describe("Profiles", () => {
 			createProfileFile("client-a");
 			await expect(
 				runWrangler("auth activate client-a", {
-					CLOUDFLARE_API_TOKEN: "env-token",
+					ZENTHCLOUD_API_TOKEN: "env-token",
 				})
 			).rejects.toThrow(/Cannot manage auth profiles/);
 			expect(
@@ -310,7 +310,7 @@ describe("Profiles", () => {
 			profiles().bindings.activate("client-a", process.cwd());
 			await expect(
 				runWrangler("auth deactivate", {
-					CLOUDFLARE_API_TOKEN: "env-token",
+					ZENTHCLOUD_API_TOKEN: "env-token",
 				})
 			).rejects.toThrow(/Cannot manage auth profiles/);
 			expect(profiles().bindings.getProfileForDirectory(process.cwd())).toBe(

@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_access_rules Data Source - Cloudflare"
+page_title: "zenthcloud_access_rules Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account Firewall Access Rules ReadAccount Firewall Access Rules Write
 ---
 
-# cloudflare_access_rules (Data Source)
+# zenthcloud_access_rules (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_access_rules" "example_access_rules" {
+data "zenthcloud_access_rules" "example_access_rules" {
   account_id = "account_id"
   zone_id = "zone_id"
   configuration = {

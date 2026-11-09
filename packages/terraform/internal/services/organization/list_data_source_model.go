@@ -5,9 +5,9 @@ package organization
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/organizations"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/organizations"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -37,47 +37,47 @@ func (m *OrganizationsDataSourceModel) toListParams(_ context.Context) (params o
 	}
 
 	params = organizations.OrganizationListParams{
-		ID: cloudflare.F(mID),
+		ID: zenthcloud.F(mID),
 	}
 
 	if m.Containing != nil {
 		paramsContaining := organizations.OrganizationListParamsContaining{}
 		if !m.Containing.Account.IsNull() {
-			paramsContaining.Account = cloudflare.F(m.Containing.Account.ValueString())
+			paramsContaining.Account = zenthcloud.F(m.Containing.Account.ValueString())
 		}
 		if !m.Containing.Organization.IsNull() {
-			paramsContaining.Organization = cloudflare.F(m.Containing.Organization.ValueString())
+			paramsContaining.Organization = zenthcloud.F(m.Containing.Organization.ValueString())
 		}
 		if !m.Containing.User.IsNull() {
-			paramsContaining.User = cloudflare.F(m.Containing.User.ValueString())
+			paramsContaining.User = zenthcloud.F(m.Containing.User.ValueString())
 		}
-		params.Containing = cloudflare.F(paramsContaining)
+		params.Containing = zenthcloud.F(paramsContaining)
 	}
 	if m.Name != nil {
 		paramsName := organizations.OrganizationListParamsName{}
 		if !m.Name.Contains.IsNull() {
-			paramsName.Contains = cloudflare.F(m.Name.Contains.ValueString())
+			paramsName.Contains = zenthcloud.F(m.Name.Contains.ValueString())
 		}
 		if !m.Name.EndsWith.IsNull() {
-			paramsName.EndsWith = cloudflare.F(m.Name.EndsWith.ValueString())
+			paramsName.EndsWith = zenthcloud.F(m.Name.EndsWith.ValueString())
 		}
 		if !m.Name.StartsWith.IsNull() {
-			paramsName.StartsWith = cloudflare.F(m.Name.StartsWith.ValueString())
+			paramsName.StartsWith = zenthcloud.F(m.Name.StartsWith.ValueString())
 		}
-		params.Name = cloudflare.F(paramsName)
+		params.Name = zenthcloud.F(paramsName)
 	}
 	if !m.PageSize.IsNull() {
-		params.PageSize = cloudflare.F(m.PageSize.ValueInt64())
+		params.PageSize = zenthcloud.F(m.PageSize.ValueInt64())
 	}
 	if !m.PageToken.IsNull() {
-		params.PageToken = cloudflare.F(m.PageToken.ValueString())
+		params.PageToken = zenthcloud.F(m.PageToken.ValueString())
 	}
 	if m.Parent != nil {
 		paramsParent := organizations.OrganizationListParamsParent{}
 		if !m.Parent.ID.IsNull() {
-			paramsParent.ID = cloudflare.F(organizations.OrganizationListParamsParentID(m.Parent.ID.ValueString()))
+			paramsParent.ID = zenthcloud.F(organizations.OrganizationListParamsParentID(m.Parent.ID.ValueString()))
 		}
-		params.Parent = cloudflare.F(paramsParent)
+		params.Parent = zenthcloud.F(paramsParent)
 	}
 
 	return

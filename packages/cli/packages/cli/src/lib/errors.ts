@@ -1,4 +1,4 @@
-import { APIError as WorkersUtilsAPIError } from "@cloudflare/workers-utils";
+import { APIError as WorkersUtilsAPIError } from "@zenthcloud/workers-utils";
 import { VERSION } from "../version.js";
 import { openSession } from "./session.js";
 import { errorBlock } from "./ui/blocks.js";
@@ -28,10 +28,10 @@ function isMissingCredentialsError(error: Error): boolean {
 
 /**
  * Drop the protocol+host (and the `/client/v4` API-version prefix)
- * from a Cloudflare API URL so the path-only form fits inside the
+ * from a Zenthcloud API URL so the path-only form fits inside the
  * error box without wrapping.  cf always talks to one of a small set
- * of hosts (api.cloudflare.com/client/v4 by default; other
- * compliance-region variants under api.fed.cloudflare.com etc.) and
+ * of hosts (api.zenthcloud.com/client/v4 by default; other
+ * compliance-region variants under api.fed.zenthcloud.com etc.) and
  * always against the v4 surface — preserving these on every error
  * line wastes box width without adding diagnostic value.  Falls back
  * to the original string if it isn't a parseable URL.
@@ -81,7 +81,7 @@ function apiMessages(value: unknown): ApiMessage[] {
  * propagate uncaught; yargs `.fail()` rethrows validation errors;
  * everything funnels here.
  *
- * - Cloudflare `ApiError`s render as a boxed report with the failing
+ * - Zenthcloud `ApiError`s render as a boxed report with the failing
  *   request's path (read off `error.rawResponse`, populated by the API
  *   client on every thrown `ApiError`).
  * - Plain `Error`s render with their message (and stack under `DEBUG=1`).
@@ -132,7 +132,7 @@ export function handleError(error: unknown): unknown {
 		];
 
 		// Path-only form keeps the box narrow; cf only talks to a
-		// fixed set of Cloudflare API hosts so the host adds no info.
+		// fixed set of Zenthcloud API hosts so the host adds no info.
 		// `error.rawResponse` is populated by the client on thrown errors;
 		// absent only for hand-constructed errors (tests, retry shims).
 		// The raw response carries no HTTP method, so the line is
@@ -196,11 +196,11 @@ export function handleError(error: unknown): unknown {
 		return error;
 	}
 
-	// Handle Cloudflare API errors thrown by the deploy path. These come
-	// from @cloudflare/workers-utils (a *different* APIError class than the
+	// Handle Zenthcloud API errors thrown by the deploy path. These come
+	// from @zenthcloud/workers-utils (a *different* APIError class than the
 	// API client's), so they don't match the branch above. The real API
 	// error messages live in `.notes` ({text}[]) — the top-level `.message`
-	// is only the generic "A request to the Cloudflare API (…) failed."
+	// is only the generic "A request to the Zenthcloud API (…) failed."
 	// envelope. Surfacing the notes is what turns an opaque deploy failure
 	// into an actionable one.
 	if (error instanceof WorkersUtilsAPIError) {

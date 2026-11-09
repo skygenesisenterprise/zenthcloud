@@ -1,4 +1,4 @@
-resource "cloudflare_zero_trust_access_policy" "%[1]s_p1" {
+resource "zenthcloud_zero_trust_access_policy" "%[1]s_p1" {
   account_id = "%[3]s"
   name       = "%[1]s"
   decision   = "allow"
@@ -9,7 +9,7 @@ resource "cloudflare_zero_trust_access_policy" "%[1]s_p1" {
   ]
 }
 
-resource "cloudflare_zero_trust_access_policy" "%[1]s_p2" {
+resource "zenthcloud_zero_trust_access_policy" "%[1]s_p2" {
   account_id = "%[3]s"
   name       = "%[1]s"
   decision   = "non_identity"
@@ -20,18 +20,18 @@ resource "cloudflare_zero_trust_access_policy" "%[1]s_p2" {
   ]
 }
 
-resource "cloudflare_zero_trust_access_application" "%[1]s" {
+resource "zenthcloud_zero_trust_access_application" "%[1]s" {
   account_id = "%[3]s"
   name       = "%[1]s"
   domain     = "%[1]s.%[2]s"
   type       = "self_hosted"
   policies = [
     {
-      id         = cloudflare_zero_trust_access_policy.%[1]s_p1.id
+      id         = zenthcloud_zero_trust_access_policy.%[1]s_p1.id
       precedence = 0
     },
     {
-      id = cloudflare_zero_trust_access_policy.%[1]s_p2.id
+      id = zenthcloud_zero_trust_access_policy.%[1]s_p2.id
     }
   ]
 }

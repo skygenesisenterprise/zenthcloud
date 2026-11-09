@@ -233,7 +233,7 @@ export const tools: readonly Tool[] = [
                           ],
                           "type": "object"
                         },
-                        "is_cloudflare_team": {
+                        "is_zenthcloud_team": {
                           "properties": {
                             "description": {
                               "type": "string"
@@ -350,7 +350,7 @@ export const tools: readonly Tool[] = [
                         "fileName",
                         "fileSize",
                         "id",
-                        "is_cloudflare_team",
+                        "is_zenthcloud_team",
                         "metadata",
                         "origin",
                         "state",
@@ -522,7 +522,7 @@ export const tools: readonly Tool[] = [
                                 ],
                                 "type": "object"
                               },
-                              "is_cloudflare_team": {
+                              "is_zenthcloud_team": {
                                 "properties": {
                                   "description": {
                                     "type": "string"
@@ -639,7 +639,7 @@ export const tools: readonly Tool[] = [
                               "fileName",
                               "fileSize",
                               "id",
-                              "is_cloudflare_team",
+                              "is_zenthcloud_team",
                               "metadata",
                               "origin",
                               "state",
@@ -895,7 +895,7 @@ export const tools: readonly Tool[] = [
               ],
               "type": "object"
             },
-            "is_cloudflare_team": {
+            "is_zenthcloud_team": {
               "properties": {
                 "description": {
                   "type": "string"
@@ -996,7 +996,7 @@ export const tools: readonly Tool[] = [
             "fileName",
             "fileSize",
             "id",
-            "is_cloudflare_team",
+            "is_zenthcloud_team",
             "metadata",
             "origin",
             "state",
@@ -1112,7 +1112,7 @@ export const tools: readonly Tool[] = [
                     ],
                     "type": "object"
                   },
-                  "is_cloudflare_team": {
+                  "is_zenthcloud_team": {
                     "properties": {
                       "description": {
                         "type": "string"
@@ -1213,7 +1213,7 @@ export const tools: readonly Tool[] = [
                   "fileName",
                   "fileSize",
                   "id",
-                  "is_cloudflare_team",
+                  "is_zenthcloud_team",
                   "metadata",
                   "origin",
                   "state",

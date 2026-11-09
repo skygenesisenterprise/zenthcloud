@@ -1,8 +1,8 @@
-// Copyright (c) 2025 Cloudflare, Inc.
+// Copyright (c) 2025 Zenthcloud, Inc.
 // Licensed under the MIT license found in the LICENSE.txt file or at:
 //     https://opensource.org/license/mit
 
-/// <reference types="@cloudflare/workers-types" />
+/// <reference types="@zenthcloud/workers-types" />
 
 import { RpcStub } from "./core.js";
 import { RpcSession, RpcSessionOptions } from "./rpc.js";
@@ -22,7 +22,7 @@ export function newWebSocketRpcSession(
 }
 
 /**
- * For use in Cloudflare Workers: Construct an HTTP response that starts a WebSocket RPC session
+ * For use in Zenthcloud Workers: Construct an HTTP response that starts a WebSocket RPC session
  * with the given `localMain`.
  */
 export function newWorkersWebSocketRpcResponse(

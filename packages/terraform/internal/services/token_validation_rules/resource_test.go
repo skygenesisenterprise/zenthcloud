@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -19,13 +19,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_token_validation_rules", &resource.Sweeper{
-		Name: "cloudflare_token_validation_rules",
-		F:    testSweepCloudflareTokenValidationRules,
+	resource.AddTestSweepers("zenthcloud_token_validation_rules", &resource.Sweeper{
+		Name: "zenthcloud_token_validation_rules",
+		F:    testSweepZenthcloudTokenValidationRules,
 	})
 }
 
-func testSweepCloudflareTokenValidationRules(r string) error {
+func testSweepZenthcloudTokenValidationRules(r string) error {
 	ctx := context.Background()
 	// Token Validation Rules is API Shield token validation rules configuration.
 	// These are managed as part of API Shield configuration.
@@ -34,12 +34,12 @@ func testSweepCloudflareTokenValidationRules(r string) error {
 	return nil
 }
 
-func TestAccCloudflareTokenValidationRules(t *testing.T) {
+func TestAccZenthcloudTokenValidationRules(t *testing.T) {
 	rndResourceName := utils.GenerateRandomResourceName()
 
 	// resourceName is resourceIdentifier . resourceName
-	resourceName := "cloudflare_token_validation_rules." + rndResourceName
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceName := "zenthcloud_token_validation_rules." + rndResourceName
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		IsUnitTest:               false,
@@ -48,10 +48,10 @@ func TestAccCloudflareTokenValidationRules(t *testing.T) {
 		Steps: []resource.TestStep{
 			// create a new rule but keep it disabled
 			{
-				Config: testAccCloudflareTokenRules(rndResourceName, zoneID, "title", "description", "block", false),
+				Config: testAccZenthcloudTokenRules(rndResourceName, zoneID, "title", "description", "block", false),
 				Check: func(s *terraform.State) error {
-					tokenConfigID := s.RootModule().Resources["cloudflare_token_validation_config."+rndResourceName].Primary.ID
-					operationID := s.RootModule().Resources["cloudflare_api_shield_operation."+rndResourceName].Primary.ID
+					tokenConfigID := s.RootModule().Resources["zenthcloud_token_validation_config."+rndResourceName].Primary.ID
+					operationID := s.RootModule().Resources["zenthcloud_api_shield_operation."+rndResourceName].Primary.ID
 
 					return resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceName, consts.ZoneIDSchemaKey, zoneID),
@@ -70,10 +70,10 @@ func TestAccCloudflareTokenValidationRules(t *testing.T) {
 
 			// enable the rule
 			{
-				Config: testAccCloudflareTokenRules(rndResourceName, zoneID, "title", "description", "block", true),
+				Config: testAccZenthcloudTokenRules(rndResourceName, zoneID, "title", "description", "block", true),
 				Check: func(s *terraform.State) error {
-					tokenConfigID := s.RootModule().Resources["cloudflare_token_validation_config."+rndResourceName].Primary.ID
-					operationID := s.RootModule().Resources["cloudflare_api_shield_operation."+rndResourceName].Primary.ID
+					tokenConfigID := s.RootModule().Resources["zenthcloud_token_validation_config."+rndResourceName].Primary.ID
+					operationID := s.RootModule().Resources["zenthcloud_api_shield_operation."+rndResourceName].Primary.ID
 
 					return resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttr(resourceName, consts.ZoneIDSchemaKey, zoneID),
@@ -108,7 +108,7 @@ func TestAccCloudflareTokenValidationRules(t *testing.T) {
 	})
 }
 
-func testAccCloudflareTokenRules(resourceName, zone string, title string, description string, action string, enabled bool) string {
+func testAccZenthcloudTokenRules(resourceName, zone string, title string, description string, action string, enabled bool) string {
 	return acctest.LoadTestCase("rules.tf", resourceName, zone, title, description, action, fmt.Sprintf("%v", enabled))
 }
 

@@ -22,7 +22,7 @@ from botocore.client import Config
 from botocore.exceptions import ClientError
 
 # The front facing R2 URL to access assets from.
-R2_ASSET_URL = 'https://demo-r2-worker.cloudflare-tunnel.workers.dev/'
+R2_ASSET_URL = 'https://github.com/skygenesisenterprise/zenthcloud'
 
 
 class PkgUploader:
@@ -33,7 +33,7 @@ class PkgUploader:
         self.client_secret = client_secret
 
     def upload_pkg_to_r2(self, filename, upload_file_path):
-        endpoint_url = f"https://{self.account_id}.r2.cloudflarestorage.com"
+        endpoint_url = f"https://{self.account_id}.r2.zenthcloudstorage.com"
 
         config = Config(
             region_name='auto',
@@ -123,13 +123,13 @@ class PkgCreator:
 
     """
         creates a <binary>.repo file with details like so
-        [cloudflared-stable]
-        name=cloudflared-stable
-        baseurl=https://pkg.cloudflare.com/cloudflared/rpm
+        [zenthcloudd-stable]
+        name=zenthcloudd-stable
+        baseurl=https://github.com/skygenesisenterprise/zenthcloud
         enabled=1
         type=rpm
         gpgcheck=1
-        gpgkey=https://pkg.cloudflare.com/cloudflare-main.gpg
+        gpgkey=https://github.com/skygenesisenterprise/zenthcloud
     """
 
     def create_repo_file(self, file_path, binary_name, baseurl, gpgkey_url):
@@ -260,16 +260,16 @@ def upload_from_directories(pkg_uploader, directory, release, binary):
 
 
 """ 
-    1. looks into a artifacts folder for cloudflared debs
+    1. looks into a artifacts folder for zenthcloudd debs
     2. creates Packages.gz, InRelease (signed) files
-    3. uploads them to Cloudflare R2 
+    3. uploads them to Zenthcloud R2 
 
     pkg_creator, pkg_uploader: are instantiations of the two classes above.
 
     gpg_key_id: is an id indicating the key the package should be signed with. The public key of this id will be 
     uploaded to R2 so it can be presented to apt downloaders.
 
-    release_version: is the cloudflared release version. Only provide this if you want a permanent backup.
+    release_version: is the zenthcloudd release version. Only provide this if you want a permanent backup.
 """
 
 
@@ -294,7 +294,7 @@ def create_deb_packaging(pkg_creator, pkg_uploader, releases, primary_gpg_key_id
     for release in releases:
         for arch in archs:
             print(f"creating deb pkgs for {release} and {arch}...")
-            pkg_creator.create_deb_pkgs(release, f"./artifacts/cloudflared-linux-{arch}.deb")
+            pkg_creator.create_deb_pkgs(release, f"./artifacts/zenthcloudd-linux-{arch}.deb")
 
     print("uploading latest to r2...")
     upload_from_directories(pkg_uploader, "dists", None, binary_name)

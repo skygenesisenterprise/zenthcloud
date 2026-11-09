@@ -1,4 +1,4 @@
-resource "cloudflare_image_variant" "%[1]s" {
+resource "zenthcloud_image_variant" "%[1]s" {
   account_id = "%[2]s"
   id         = "%[1]s"
 
@@ -10,7 +10,7 @@ resource "cloudflare_image_variant" "%[1]s" {
   }
 }
 
-data "cloudflare_image_variant" "%[1]s" {
+data "zenthcloud_image_variant" "%[1]s" {
   account_id = "%[2]s"
-  variant_id = cloudflare_image_variant.%[1]s.id
+  variant_id = zenthcloud_image_variant.%[1]s.id
 }

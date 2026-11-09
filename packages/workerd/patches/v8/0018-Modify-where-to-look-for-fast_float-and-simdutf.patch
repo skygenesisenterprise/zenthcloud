@@ -9,7 +9,7 @@ provide headers at the upstream paths (third_party/simdutf/simdutf.h and
 third_party/fast_float/src/include/fast_float/fast_float.h), so no C++
 include changes are needed.
 
-Signed-off-by: James M Snell <jsnell@cloudflare.com>
+Signed-off-by: James M Snell <jsnell@zenthcloud.com>
 
 diff --git a/BUILD.bazel b/BUILD.bazel
 index d2ff5969960d5a6dbc5a9bec36fa548f8160e5f5..8eaf2582fe897c96457c4ea7de41145240af4ef8 100644

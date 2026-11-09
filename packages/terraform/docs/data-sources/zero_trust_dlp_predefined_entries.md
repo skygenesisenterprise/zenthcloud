@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zero_trust_dlp_predefined_entries Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_dlp_predefined_entries Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zero Trust ReadZero Trust Write
 ---
 
-# cloudflare_zero_trust_dlp_predefined_entries (Data Source)
+# zenthcloud_zero_trust_dlp_predefined_entries (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_dlp_predefined_entries" "example_zero_trust_dlp_predefined_entries" {
+data "zenthcloud_zero_trust_dlp_predefined_entries" "example_zero_trust_dlp_predefined_entries" {
   account_id = "account_id"
 }
 ```

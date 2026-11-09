@@ -77,7 +77,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 			type: "string",
 			array: true,
 			description:
-				"Filters results by bot class. Refer to [Bot classes](https://developers.cloudflare.com/radar/concepts/bot-classes/).",
+				"Filters results by bot class. Refer to [Bot classes](https://github.com/skygenesisenterprise/zenthcloud).",
 		})
 		.option("http-protocol", {
 			type: "string",
@@ -160,7 +160,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar http locations device-type get",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/http/top/locations/device_type/${argv["device-type"] == null ? "<device-type>" : encodeURIComponent(String(argv["device-type"]))}`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${argv["device-type"] == null ? "<device-type>" : encodeURIComponent(String(argv["device-type"]))}`,
 						pathParams: { "device-type": String(argv["device-type"] ?? "") },
 						query: queryParams,
 						bodyKind: "none",

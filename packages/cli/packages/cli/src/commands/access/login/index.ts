@@ -2,7 +2,7 @@ import { lazyCommand } from "#lib/lazy-command.js";
 
 export default lazyCommand(
 	"login <url>",
-	"Authenticate with an Access application and store its JWT through cloudflared.",
+	"Authenticate with an Access application and store its JWT through zenthcloudd.",
 	() => import("./command.js"),
 	{ command: "access login", recordArgs: false }
 );

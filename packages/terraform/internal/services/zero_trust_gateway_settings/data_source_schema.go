@@ -5,7 +5,7 @@ package zero_trust_gateway_settings
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -20,11 +20,11 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "Specify the Cloudflare account identifier.",
+				Description: "Specify the Zenthcloud account identifier.",
 				Computed:    true,
 			},
 			"account_id": schema.StringAttribute{
-				Description: "Specify the Cloudflare account identifier.",
+				Description: "Specify the Zenthcloud account identifier.",
 				Optional:    true,
 			},
 			"created_at": schema.StringAttribute{
@@ -131,7 +131,7 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 								Computed:    true,
 							},
 							"mode": schema.StringAttribute{
-								Description: "Specify whether to redirect users to a Cloudflare-hosted block page or a customer-provided URI.\nAvailable values: \"\", \"customized_block_page\", \"redirect_uri\".",
+								Description: "Specify whether to redirect users to a Zenthcloud-hosted block page or a customer-provided URI.\nAvailable values: \"\", \"customized_block_page\", \"redirect_uri\".",
 								Computed:    true,
 								Validators: []validator.String{
 									stringvalidator.OneOfCaseInsensitive(
@@ -197,12 +197,12 @@ func DataSourceSchema(ctx context.Context) schema.Schema {
 						},
 					},
 					"certificate": schema.SingleNestedAttribute{
-						Description: "Specify certificate settings for Gateway TLS interception. If unset, the Cloudflare Root CA handles interception.",
+						Description: "Specify certificate settings for Gateway TLS interception. If unset, the Zenthcloud Root CA handles interception.",
 						Computed:    true,
 						CustomType:  customfield.NewNestedObjectType[ZeroTrustGatewaySettingsSettingsCertificateDataSourceModel](ctx),
 						Attributes: map[string]schema.Attribute{
 							"id": schema.StringAttribute{
-								Description: "Specify the UUID of the certificate used for interception. Ensure the certificate is available at the edge(previously called 'active'). A nil UUID directs Cloudflare to use the Root CA.",
+								Description: "Specify the UUID of the certificate used for interception. Ensure the certificate is available at the edge(previously called 'active'). A nil UUID directs Zenthcloud to use the Root CA.",
 								Computed:    true,
 							},
 						},

@@ -8,7 +8,7 @@ import type { CommandModule } from "yargs";
 
 const command: CommandModule<CommonYargsOptions> = {
 	command: "organizations",
-	describe: "View organizations associated with a Cloudflare account",
+	describe: "View organizations associated with a Zenthcloud account",
 
 	builder: (yargs) => {
 		return yargs.command($list).demandCommand(1, "Please specify a subcommand");

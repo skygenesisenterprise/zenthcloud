@@ -1,24 +1,24 @@
 ---
-page_title: "cloudflare_zero_trust_tunnel_warp_connector Data Source - Cloudflare"
+page_title: "zenthcloud_zero_trust_tunnel_warp_connector Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
-  Cloudflare One Connector: WARP ReadCloudflare One Connector: WARP WriteCloudflare One Connectors ReadCloudflare One Connectors Write
+  Zenthcloud One Connector: WARP ReadZenthcloud One Connector: WARP WriteZenthcloud One Connectors ReadZenthcloud One Connectors Write
 ---
 
-# cloudflare_zero_trust_tunnel_warp_connector (Data Source)
+# zenthcloud_zero_trust_tunnel_warp_connector (Data Source)
 
 Accepted Permissions
 
-- `Cloudflare One Connector: WARP Read`
-- `Cloudflare One Connector: WARP Write`
-- `Cloudflare One Connectors Read`
-- `Cloudflare One Connectors Write`
+- `Zenthcloud One Connector: WARP Read`
+- `Zenthcloud One Connector: WARP Write`
+- `Zenthcloud One Connectors Read`
+- `Zenthcloud One Connectors Write`
 
 ## Example Usage
 
 ```terraform
-data "cloudflare_zero_trust_tunnel_warp_connector" "example_zero_trust_tunnel_warp_connector" {
+data "zenthcloud_zero_trust_tunnel_warp_connector" "example_zero_trust_tunnel_warp_connector" {
   account_id = "699d98642c564d2e855e9661899b7252"
   tunnel_id = "f70ff985-a4ef-4643-bbbc-4a0ed4fc8415"
 }
@@ -29,22 +29,22 @@ data "cloudflare_zero_trust_tunnel_warp_connector" "example_zero_trust_tunnel_wa
 
 ### Optional
 
-- `account_id` (String) Cloudflare account ID
+- `account_id` (String) Zenthcloud account ID
 - `filter` (Attributes) (see [below for nested schema](#nestedatt--filter))
 - `tunnel_id` (String) UUID of the tunnel.
 
 ### Read-Only
 
-- `account_tag` (String) Cloudflare account ID
-- `connections` (Attributes List, Deprecated) The Cloudflare Tunnel connections between your origin and Cloudflare's edge. (see [below for nested schema](#nestedatt--connections))
-- `conns_active_at` (String) Timestamp of when the tunnel established at least one connection to Cloudflare's edge. If `null`, the tunnel is inactive.
-- `conns_inactive_at` (String) Timestamp of when the tunnel became inactive (no connections to Cloudflare's edge). If `null`, the tunnel is active.
+- `account_tag` (String) Zenthcloud account ID
+- `connections` (Attributes List, Deprecated) The Zenthcloud Tunnel connections between your origin and Zenthcloud's edge. (see [below for nested schema](#nestedatt--connections))
+- `conns_active_at` (String) Timestamp of when the tunnel established at least one connection to Zenthcloud's edge. If `null`, the tunnel is inactive.
+- `conns_inactive_at` (String) Timestamp of when the tunnel became inactive (no connections to Zenthcloud's edge). If `null`, the tunnel is active.
 - `created_at` (String) Timestamp of when the resource was created.
 - `deleted_at` (String) Timestamp of when the resource was deleted. If `null`, the resource has not been deleted.
 - `id` (String) UUID of the tunnel.
 - `metadata` (String) Metadata associated with the tunnel.
 - `name` (String) A user-friendly name for a tunnel.
-- `status` (String) The status of the tunnel. Valid values are `inactive` (tunnel has never been run), `degraded` (tunnel is active and able to serve traffic but in an unhealthy state), `healthy` (tunnel is active and able to serve traffic), or `down` (tunnel can not serve traffic as it has no connections to the Cloudflare Edge).
+- `status` (String) The status of the tunnel. Valid values are `inactive` (tunnel has never been run), `degraded` (tunnel is active and able to serve traffic but in an unhealthy state), `healthy` (tunnel is active and able to serve traffic), or `down` (tunnel can not serve traffic as it has no connections to the Zenthcloud Edge).
 Available values: "inactive", "degraded", "healthy", "down".
 - `tun_type` (String) The type of tunnel.
 Available values: "cfd_tunnel", "warp_connector", "warp", "magic", "ip_sec", "gre", "cni".
@@ -59,7 +59,7 @@ Optional:
 - `include_prefix` (String)
 - `is_deleted` (Boolean) If `true`, only include deleted tunnels. If `false`, exclude deleted tunnels. If empty, all tunnels will be included.
 - `name` (String) A user-friendly name for the tunnel.
-- `status` (String) The status of the tunnel. Valid values are `inactive` (tunnel has never been run), `degraded` (tunnel is active and able to serve traffic but in an unhealthy state), `healthy` (tunnel is active and able to serve traffic), or `down` (tunnel can not serve traffic as it has no connections to the Cloudflare Edge).
+- `status` (String) The status of the tunnel. Valid values are `inactive` (tunnel has never been run), `degraded` (tunnel is active and able to serve traffic but in an unhealthy state), `healthy` (tunnel is active and able to serve traffic), or `down` (tunnel can not serve traffic as it has no connections to the Zenthcloud Edge).
 Available values: "inactive", "degraded", "healthy", "down".
 - `uuid` (String) UUID of the tunnel.
 - `was_active_at` (String)
@@ -71,13 +71,13 @@ Available values: "inactive", "degraded", "healthy", "down".
 
 Read-Only:
 
-- `client_id` (String) UUID of the Cloudflare Tunnel connector.
-- `client_version` (String) The cloudflared version used to establish this connection.
-- `colo_name` (String) The Cloudflare data center used for this connection.
-- `id` (String) UUID of the Cloudflare Tunnel connection.
-- `is_pending_reconnect` (Boolean, Deprecated) Cloudflare continues to track connections for several minutes after they disconnect. This is an optimization to improve latency and reliability of reconnecting.  If `true`, the connection has disconnected but is still being tracked. If `false`, the connection is actively serving traffic.
+- `client_id` (String) UUID of the Zenthcloud Tunnel connector.
+- `client_version` (String) The zenthcloudd version used to establish this connection.
+- `colo_name` (String) The Zenthcloud data center used for this connection.
+- `id` (String) UUID of the Zenthcloud Tunnel connection.
+- `is_pending_reconnect` (Boolean, Deprecated) Zenthcloud continues to track connections for several minutes after they disconnect. This is an optimization to improve latency and reliability of reconnecting.  If `true`, the connection has disconnected but is still being tracked. If `false`, the connection is actively serving traffic.
 - `opened_at` (String) Timestamp of when the connection was established.
-- `origin_ip` (String) The public IP address of the host running cloudflared.
-- `uuid` (String) UUID of the Cloudflare Tunnel connection.
+- `origin_ip` (String) The public IP address of the host running zenthcloudd.
+- `uuid` (String) UUID of the Zenthcloud Tunnel connection.
 
 

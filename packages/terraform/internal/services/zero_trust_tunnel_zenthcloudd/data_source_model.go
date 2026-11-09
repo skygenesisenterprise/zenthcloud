@@ -1,0 +1,113 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package zero_trust_tunnel_zenthcloudd
+
+import (
+	"context"
+
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+type ZeroTrustTunnelZenthclouddResultDataSourceEnvelope struct {
+	Result ZeroTrustTunnelZenthclouddDataSourceModel `json:"result,computed"`
+}
+
+type ZeroTrustTunnelZenthclouddDataSourceModel struct {
+	ID              types.String                                                                       `tfsdk:"id" path:"tunnel_id,computed"`
+	TunnelID        types.String                                                                       `tfsdk:"tunnel_id" path:"tunnel_id,optional"`
+	AccountID       types.String                                                                       `tfsdk:"account_id" path:"account_id,optional"`
+	AccountTag      types.String                                                                       `tfsdk:"account_tag" json:"account_tag,computed"`
+	ConfigSrc       types.String                                                                       `tfsdk:"config_src" json:"config_src,computed"`
+	ConnsActiveAt   timetypes.RFC3339                                                                  `tfsdk:"conns_active_at" json:"conns_active_at,computed" format:"date-time"`
+	ConnsInactiveAt timetypes.RFC3339                                                                  `tfsdk:"conns_inactive_at" json:"conns_inactive_at,computed" format:"date-time"`
+	CreatedAt       timetypes.RFC3339                                                                  `tfsdk:"created_at" json:"created_at,computed" format:"date-time"`
+	DeletedAt       timetypes.RFC3339                                                                  `tfsdk:"deleted_at" json:"deleted_at,computed" format:"date-time"`
+	Name            types.String                                                                       `tfsdk:"name" json:"name,computed"`
+	RemoteConfig    types.Bool                                                                         `tfsdk:"remote_config" json:"remote_config,computed"`
+	Status          types.String                                                                       `tfsdk:"status" json:"status,computed"`
+	TunType         types.String                                                                       `tfsdk:"tun_type" json:"tun_type,computed"`
+	Connections     customfield.NestedObjectList[ZeroTrustTunnelZenthclouddConnectionsDataSourceModel] `tfsdk:"connections" json:"connections,computed"`
+	Metadata        jsontypes.Normalized                                                               `tfsdk:"metadata" json:"metadata,computed"`
+	Filter          *ZeroTrustTunnelZenthclouddFindOneByDataSourceModel                                `tfsdk:"filter"`
+}
+
+func (m *ZeroTrustTunnelZenthclouddDataSourceModel) toReadParams(_ context.Context) (params zero_trust.TunnelZenthclouddGetParams, diags diag.Diagnostics) {
+	params = zero_trust.TunnelZenthclouddGetParams{
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
+	}
+
+	return
+}
+
+func (m *ZeroTrustTunnelZenthclouddDataSourceModel) toListParams(_ context.Context) (params zero_trust.TunnelZenthclouddListParams, diags diag.Diagnostics) {
+	params = zero_trust.TunnelZenthclouddListParams{
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
+	}
+
+	if !m.Filter.ExcludePrefix.IsNull() {
+		params.ExcludePrefix = zenthcloud.F(m.Filter.ExcludePrefix.ValueString())
+	}
+	if !m.Filter.ExistedAt.IsNull() {
+		params.ExistedAt = zenthcloud.F(m.Filter.ExistedAt.ValueString())
+	}
+	if !m.Filter.IncludePrefix.IsNull() {
+		params.IncludePrefix = zenthcloud.F(m.Filter.IncludePrefix.ValueString())
+	}
+	if !m.Filter.IsDeleted.IsNull() {
+		params.IsDeleted = zenthcloud.F(m.Filter.IsDeleted.ValueBool())
+	}
+	if !m.Filter.Name.IsNull() {
+		params.Name = zenthcloud.F(m.Filter.Name.ValueString())
+	}
+	if !m.Filter.Status.IsNull() {
+		params.Status = zenthcloud.F(zero_trust.TunnelZenthclouddListParamsStatus(m.Filter.Status.ValueString()))
+	}
+	if !m.Filter.UUID.IsNull() {
+		params.UUID = zenthcloud.F(m.Filter.UUID.ValueString())
+	}
+	if !m.Filter.WasActiveAt.IsNull() {
+		mFilterWasActiveAt, errs := m.Filter.WasActiveAt.ValueRFC3339Time()
+		diags.Append(errs...)
+		if errs == nil {
+			params.WasActiveAt = zenthcloud.F(mFilterWasActiveAt)
+		}
+	}
+	if !m.Filter.WasInactiveAt.IsNull() {
+		mFilterWasInactiveAt, errs := m.Filter.WasInactiveAt.ValueRFC3339Time()
+		diags.Append(errs...)
+		if errs == nil {
+			params.WasInactiveAt = zenthcloud.F(mFilterWasInactiveAt)
+		}
+	}
+
+	return
+}
+
+type ZeroTrustTunnelZenthclouddConnectionsDataSourceModel struct {
+	ID                 types.String      `tfsdk:"id" json:"id,computed"`
+	ClientID           types.String      `tfsdk:"client_id" json:"client_id,computed"`
+	ClientVersion      types.String      `tfsdk:"client_version" json:"client_version,computed"`
+	ColoName           types.String      `tfsdk:"colo_name" json:"colo_name,computed"`
+	IsPendingReconnect types.Bool        `tfsdk:"is_pending_reconnect" json:"is_pending_reconnect,computed"`
+	OpenedAt           timetypes.RFC3339 `tfsdk:"opened_at" json:"opened_at,computed" format:"date-time"`
+	OriginIP           types.String      `tfsdk:"origin_ip" json:"origin_ip,computed"`
+	UUID               types.String      `tfsdk:"uuid" json:"uuid,computed"`
+}
+
+type ZeroTrustTunnelZenthclouddFindOneByDataSourceModel struct {
+	ExcludePrefix types.String      `tfsdk:"exclude_prefix" query:"exclude_prefix,optional"`
+	ExistedAt     types.String      `tfsdk:"existed_at" query:"existed_at,optional"`
+	IncludePrefix types.String      `tfsdk:"include_prefix" query:"include_prefix,optional"`
+	IsDeleted     types.Bool        `tfsdk:"is_deleted" query:"is_deleted,optional"`
+	Name          types.String      `tfsdk:"name" query:"name,optional"`
+	Status        types.String      `tfsdk:"status" query:"status,optional"`
+	UUID          types.String      `tfsdk:"uuid" query:"uuid,optional"`
+	WasActiveAt   timetypes.RFC3339 `tfsdk:"was_active_at" query:"was_active_at,optional" format:"date-time"`
+	WasInactiveAt timetypes.RFC3339 `tfsdk:"was_inactive_at" query:"was_inactive_at,optional" format:"date-time"`
+}

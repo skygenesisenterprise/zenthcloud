@@ -5,8 +5,8 @@ package zero_trust_tunnel_warp_connector_token
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/zero_trust"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -23,7 +23,7 @@ type ZeroTrustTunnelWARPConnectorTokenDataSourceModel struct {
 
 func (m *ZeroTrustTunnelWARPConnectorTokenDataSourceModel) toReadParams(_ context.Context) (params zero_trust.TunnelWARPConnectorTokenGetParams, diags diag.Diagnostics) {
 	params = zero_trust.TunnelWARPConnectorTokenGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return

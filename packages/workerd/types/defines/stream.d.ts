@@ -1,5 +1,5 @@
 /**
- * Binding entrypoint for Cloudflare Stream.
+ * Binding entrypoint for Zenthcloud Stream.
  *
  * Usage:
  * - Binding-level operations:
@@ -81,7 +81,7 @@ interface StreamVideoHandle {
    */
   update(params: StreamUpdateVideoParams): Promise<StreamVideo>;
   /**
-   * Deletes a video and its copies from Cloudflare Stream.
+   * Deletes a video and its copies from Zenthcloud Stream.
    * @returns A promise that resolves when deletion completes.
    * @throws {NotFoundError} if the video is not found
    * @throws {InternalError} if an unexpected error occurs
@@ -265,7 +265,7 @@ type StreamDirectUpload = {
    */
   uploadURL: string;
   /**
-   * A Cloudflare-generated unique identifier for a media item.
+   * A Zenthcloud-generated unique identifier for a media item.
    */
   id: string;
   /**

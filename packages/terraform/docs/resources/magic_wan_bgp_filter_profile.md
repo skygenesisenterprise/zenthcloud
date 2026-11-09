@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_magic_wan_bgp_filter_profile Resource - Cloudflare"
+page_title: "zenthcloud_magic_wan_bgp_filter_profile Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_magic_wan_bgp_filter_profile (Resource)
+# zenthcloud_magic_wan_bgp_filter_profile (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_magic_wan_bgp_filter_profile" "example_magic_wan_bgp_filter_profile" {
+resource "zenthcloud_magic_wan_bgp_filter_profile" "example_magic_wan_bgp_filter_profile" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   match_action = "allow"
   name = "Allowed On-Prem Imports"
@@ -47,7 +47,7 @@ Available values: "allow", "deny".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_magic_wan_bgp_filter_profile.example '<account_id>/<profile_id>'
+$ terraform import zenthcloud_magic_wan_bgp_filter_profile.example '<account_id>/<profile_id>'
 ```
 
 

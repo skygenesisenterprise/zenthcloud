@@ -13,7 +13,7 @@ import type { CommandModule } from "yargs";
 const command: CommandModule<CommonYargsOptions> = {
 	command: "cnis",
 	describe:
-		"Cloud Network Interconnect (CNI) connections — private links from cloud providers to Cloudflare",
+		"Cloud Network Interconnect (CNI) connections — private links from cloud providers to Zenthcloud",
 
 	builder: (yargs) => {
 		return yargs

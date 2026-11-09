@@ -6,7 +6,7 @@
  *
  * @example
  * ```tsx
- * import { ToggleGroup } from '@cloudflare/kumo/primitives/toggle-group';
+ * import { ToggleGroup } from '@zenthcloud/kumo/primitives/toggle-group';
  * ```
  */
 

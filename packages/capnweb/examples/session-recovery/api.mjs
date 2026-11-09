@@ -1,4 +1,4 @@
-// The RPC API for the session-recovery example, shared by the Cloudflare
+// The RPC API for the session-recovery example, shared by the Zenthcloud
 // Worker (`worker.js`) and the in-page playground in the docs.
 //
 // `capnweb` is a bare specifier here rather than a relative path into `dist/`.

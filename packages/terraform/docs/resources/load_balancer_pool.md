@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_load_balancer_pool Resource - Cloudflare"
+page_title: "zenthcloud_load_balancer_pool Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Load Balancing: Monitors and Pools ReadLoad Balancing: Monitors and Pools Write
 ---
 
-# cloudflare_load_balancer_pool (Resource)
+# zenthcloud_load_balancer_pool (Resource)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_load_balancer_pool" "example_load_balancer_pool" {
+resource "zenthcloud_load_balancer_pool" "example_load_balancer_pool" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   name = "primary-dc-1"
   origins = [{
@@ -72,7 +72,7 @@ resource "cloudflare_load_balancer_pool" "example_load_balancer_pool" {
 
 ### Optional
 
-- `check_regions` (List of String) A list of regions from which to run health checks. Null means every Cloudflare data center.
+- `check_regions` (List of String) A list of regions from which to run health checks. Null means every Zenthcloud data center.
 - `description` (String) A human-readable description of the pool.
 - `enabled` (Boolean) Whether to enable (the default) or disable this pool. Disabled pools will not receive traffic and are excluded from health checks. Disabling a pool will cause any load balancers using it to failover to the next pool (if any).
 - `health_sources` (List of String) A list of health sources, ordered from highest to lowest priority, used to evaluate individual origin health and overall pool health. The load balancer uses the first source that has data and falls back to the next. Currently accepted values are null or the exact array ["regional", "global"]; any other combination is rejected. Null (the default) behaves like ["local", "global"]. ["regional", "global"] makes each region steer on its own health, falling back to the global decision when a region has no fresh data. Setting regional requires at least one region in check_regions.
@@ -82,7 +82,7 @@ resource "cloudflare_load_balancer_pool" "example_load_balancer_pool" {
 - `minimum_origins` (Number) The minimum number of origins that must be healthy for this pool to serve traffic. If the number of healthy origins falls below this number, the pool will be marked unhealthy and will failover to the next available pool.
 - `monitor` (String) The ID of the Monitor to use for checking the health of origins within this pool.
 - `monitor_group` (String) The ID of the Monitor Group to use for checking the health of origins within this pool.
-- `notification_email` (String) This field is now deprecated. It has been moved to Cloudflare's Centralized Notification service https://developers.cloudflare.com/fundamentals/notifications/. The email address to send health status notifications to. This can be an individual mailbox or a mailing list. Multiple emails can be supplied as a comma delimited list.
+- `notification_email` (String) This field is now deprecated. It has been moved to Zenthcloud's Centralized Notification service https://github.com/skygenesisenterprise/zenthcloud The email address to send health status notifications to. This can be an individual mailbox or a mailing list. Multiple emails can be supplied as a comma delimited list.
 - `notification_filter` (Attributes) Filter pool and origin health notifications by resource type or health status. Use null to reset. (see [below for nested schema](#nestedatt--notification_filter))
 - `origin_steering` (Attributes) Configures origin steering for the pool. Controls how origins are selected for new sessions and traffic without session affinity. (see [below for nested schema](#nestedatt--origin_steering))
 
@@ -99,7 +99,7 @@ resource "cloudflare_load_balancer_pool" "example_load_balancer_pool" {
 
 Optional:
 
-- `address` (String) The IP address (IPv4 or IPv6) of the origin, or its publicly addressable hostname. Hostnames entered here should resolve directly to the origin, and not be a hostname proxied by Cloudflare. To set an internal/reserved address, virtual_network_id must also be set.
+- `address` (String) The IP address (IPv4 or IPv6) of the origin, or its publicly addressable hostname. Hostnames entered here should resolve directly to the origin, and not be a hostname proxied by Zenthcloud. To set an internal/reserved address, virtual_network_id must also be set.
 - `enabled` (Boolean) Whether to enable (the default) this origin within the pool. Disabled origins will not receive traffic and are excluded from health checks. The origin will only be disabled for the current pool.
 - `flatten_cname` (Boolean) Whether to flatten CNAME records for this origin, resolving them to A/AAAA records before returning to the client. When true (the default), the director resolves CNAME addresses to their underlying A/AAAA records. When false, the origin address is returned as a raw CNAME record without resolution. This setting mirrors the DNS API record flatten_cname setting.
 - `header` (Attributes) The request header is used to pass additional information with an HTTP request. Currently supported header is 'Host'. (see [below for nested schema](#nestedatt--origins--header))
@@ -180,7 +180,7 @@ Available values: "random", "hash", "least_outstanding_requests", "least_connect
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_load_balancer_pool.example '<account_id>/<pool_id>'
+$ terraform import zenthcloud_load_balancer_pool.example '<account_id>/<pool_id>'
 ```
 
 

@@ -21,7 +21,7 @@ import { runWithTelemetry } from "#lib/telemetry/index.js";
 function builder(yargs: Argv<CommonYargsOptions>) {
 	return yargs
 		.usage(
-			"$0 tunnels connections cleanup <tunnel-id>\n\nRemoves a connection (aka Cloudflare Tunnel Connector) from a Cloudflare Tunnel independently of its current state. If no connector id (client_id) is provided all connectors will be removed. We recommend running this command after rotating tokens."
+			"$0 tunnels connections cleanup <tunnel-id>\n\nRemoves a connection (aka Zenthcloud Tunnel Connector) from a Zenthcloud Tunnel independently of its current state. If no connector id (client_id) is provided all connectors will be removed. We recommend running this command after rotating tokens."
 		)
 		.positional("tunnel-id", {
 			type: "string",
@@ -30,7 +30,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		})
 		.option("client-id", {
 			type: "string",
-			description: "UUID of the Cloudflare Tunnel connector.",
+			description: "UUID of the Zenthcloud Tunnel connector.",
 		})
 		.option("dry-run", {
 			type: "boolean",
@@ -49,7 +49,7 @@ type Args = InferArgs<typeof builder>;
 
 const command: CommandModule<CommonYargsOptions, Args> = {
 	command: "cleanup <tunnel-id>",
-	describe: "Clean up Cloudflare Tunnel connections",
+	describe: "Clean up Zenthcloud Tunnel connections",
 	builder,
 	handler: async (argv): Promise<void> =>
 		runWithTelemetry(
@@ -70,7 +70,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf tunnels connections cleanup",
 						method: "DELETE",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/cfd_tunnel/${argv["tunnel-id"] == null ? "<tunnel-id>" : encodeURIComponent(String(argv["tunnel-id"]))}/connections`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/cfd_tunnel/${argv["tunnel-id"] == null ? "<tunnel-id>" : encodeURIComponent(String(argv["tunnel-id"]))}/connections`,
 						pathParams: { "tunnel-id": String(argv["tunnel-id"] ?? "") },
 						query: queryParams,
 						bodyKind: "none",
@@ -84,7 +84,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 				if (
 					!(await confirmDelete({
 						force: Boolean(argv.force),
-						message: `This operation removes Cloudflare Tunnel connections.`,
+						message: `This operation removes Zenthcloud Tunnel connections.`,
 					}))
 				) {
 					return;

@@ -7,10 +7,10 @@ import (
 	"strconv"
 	"testing"
 
-	cfv3 "github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/addressing"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	cfv3 "github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/addressing"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -24,19 +24,19 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_byo_ip_prefix", &resource.Sweeper{
-		Name: "cloudflare_byo_ip_prefix",
-		F:    testSweepCloudflareBYOIPPrefixes,
+	resource.AddTestSweepers("zenthcloud_byo_ip_prefix", &resource.Sweeper{
+		Name: "zenthcloud_byo_ip_prefix",
+		F:    testSweepZenthcloudBYOIPPrefixes,
 	})
 }
 
-func testSweepCloudflareBYOIPPrefixes(r string) error {
+func testSweepZenthcloudBYOIPPrefixes(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
 
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	if accountID == "" {
-		tflog.Info(ctx, "Skipping BYO IP prefixes sweep: CLOUDFLARE_ACCOUNT_ID not set")
+		tflog.Info(ctx, "Skipping BYO IP prefixes sweep: ZENTHCLOUD_ACCOUNT_ID not set")
 		return nil
 	}
 
@@ -73,19 +73,19 @@ func testSweepCloudflareBYOIPPrefixes(r string) error {
 	return nil
 }
 
-func TestAccCloudflareBYOIPPrefix(t *testing.T) {
+func TestAccZenthcloudBYOIPPrefix(t *testing.T) {
 	t.Skip("Skipping BYO IP Prefix resource acceptance test - new test that has not been validated by the team yet")
 
 	t.Parallel()
 
 	var (
 		rnd  = utils.GenerateRandomResourceName()
-		name = fmt.Sprintf("cloudflare_byo_ip_prefix.%s", rnd)
+		name = fmt.Sprintf("zenthcloud_byo_ip_prefix.%s", rnd)
 
-		accountID     = os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-		loaDocumentID = os.Getenv("CLOUDFLARE_BYO_IP_LOA_DOCUMENT_ID")
-		cidr          = os.Getenv("CLOUDFLARE_BYO_IP_CIDR")
-		asn, _        = strconv.ParseInt(os.Getenv("CLOUDFLARE_BYO_IP_ASN"), 10, 64)
+		accountID     = os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+		loaDocumentID = os.Getenv("ZENTHCLOUD_BYO_IP_LOA_DOCUMENT_ID")
+		cidr          = os.Getenv("ZENTHCLOUD_BYO_IP_CIDR")
+		asn, _        = strconv.ParseInt(os.Getenv("ZENTHCLOUD_BYO_IP_ASN"), 10, 64)
 	)
 
 	resource.Test(t, resource.TestCase{
@@ -97,7 +97,7 @@ func TestAccCloudflareBYOIPPrefix(t *testing.T) {
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCloudflareBYOIPPrefixConfig(accountID, asn, cidr, loaDocumentID, "This is my BYOIP prefix old", rnd),
+				Config: testAccCheckZenthcloudBYOIPPrefixConfig(accountID, asn, cidr, loaDocumentID, "This is my BYOIP prefix old", rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						name,
@@ -123,7 +123,7 @@ func TestAccCloudflareBYOIPPrefix(t *testing.T) {
 				PreventDiskCleanup: true,
 			},
 			{
-				Config: testAccCheckCloudflareBYOIPPrefixConfig(accountID, asn, cidr, loaDocumentID, "This is my BYOIP prefix new", rnd),
+				Config: testAccCheckZenthcloudBYOIPPrefixConfig(accountID, asn, cidr, loaDocumentID, "This is my BYOIP prefix new", rnd),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						name,
@@ -159,7 +159,7 @@ func TestAccCloudflareBYOIPPrefix(t *testing.T) {
 	})
 }
 
-func testAccCheckCloudflareBYOIPPrefixConfig(accountID string, asn int64, cidr string, loaDocumentID string, description, name string) string {
+func testAccCheckZenthcloudBYOIPPrefixConfig(accountID string, asn int64, cidr string, loaDocumentID string, description, name string) string {
 	return acctest.LoadTestCase("byoipprefixconfig.tf", accountID, asn, cidr, loaDocumentID, description, name)
 }
 
@@ -169,13 +169,13 @@ func TestAccUpgradeByoIpPrefix_FromPublishedV5(t *testing.T) {
 	var (
 		rnd = utils.GenerateRandomResourceName()
 
-		accountID     = os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-		loaDocumentID = os.Getenv("CLOUDFLARE_BYO_IP_LOA_DOCUMENT_ID")
-		cidr          = os.Getenv("CLOUDFLARE_BYO_IP_CIDR")
-		asn, _        = strconv.ParseInt(os.Getenv("CLOUDFLARE_BYO_IP_ASN"), 10, 64)
+		accountID     = os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+		loaDocumentID = os.Getenv("ZENTHCLOUD_BYO_IP_LOA_DOCUMENT_ID")
+		cidr          = os.Getenv("ZENTHCLOUD_BYO_IP_CIDR")
+		asn, _        = strconv.ParseInt(os.Getenv("ZENTHCLOUD_BYO_IP_ASN"), 10, 64)
 	)
 
-	config := testAccCheckCloudflareBYOIPPrefixConfig(accountID, asn, cidr, loaDocumentID, "This is my BYOIP prefix old", rnd)
+	config := testAccCheckZenthcloudBYOIPPrefixConfig(accountID, asn, cidr, loaDocumentID, "This is my BYOIP prefix old", rnd)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -186,8 +186,8 @@ func TestAccUpgradeByoIpPrefix_FromPublishedV5(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022 Cloudflare, Inc.
+// Copyright (c) 2017-2022 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -95,7 +95,7 @@ jsg::Ref<TransformStream> TransformStream::constructor(jsg::Lock& js,
       ioContext.logWarningOnce(
           "To use the new TransformStream() constructor with a "
           "custom transformer, enable the transformstream_enable_standard_constructor compatibility flag. "
-          "Refer to the docs for more information: https://developers.cloudflare.com/workers/platform/compatibility-dates/#compatibility-flags");
+          "Refer to the docs for more information: https://github.com/skygenesisenterprise/zenthcloud");
     }
   }
 

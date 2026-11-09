@@ -9,8 +9,8 @@ import { join } from "node:path";
 import {
 	getCfConfigPath,
 	writeAuthConfigFile,
-} from "@cloudflare/workers-auth/cf";
-import { runInTempDir, seed } from "@cloudflare/workers-utils/test-helpers";
+} from "@zenthcloud/workers-auth/cf";
+import { runInTempDir, seed } from "@zenthcloud/workers-utils/test-helpers";
 import { http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import * as agentContext from "../lib/agent-context.js";
@@ -30,15 +30,15 @@ describe("--temporary-account", () => {
 	const accountId = "temporary-account-id";
 	const apiToken = "temporary-account-token";
 	const env = {
-		CLOUDFLARE_ACCOUNT_ID: undefined,
-		CLOUDFLARE_API_TOKEN: undefined,
-		CLOUDFLARE_API_BASE_URL: TEST_BASE_URL,
+		ZENTHCLOUD_ACCOUNT_ID: undefined,
+		ZENTHCLOUD_API_TOKEN: undefined,
+		ZENTHCLOUD_API_BASE_URL: TEST_BASE_URL,
 	};
 
 	beforeEach(() => {
 		mkdirSync(getCfConfigPath(), { recursive: true });
 		writeFileSync(
-			join(getCfConfigPath(), "cloudflare-temporary-account.json"),
+			join(getCfConfigPath(), "zenthcloud-temporary-account.json"),
 			JSON.stringify({
 				account: {
 					id: accountId,
@@ -47,7 +47,7 @@ describe("--temporary-account", () => {
 					expiresAt: "2999-01-01T00:00:00.000Z",
 				},
 				claim: {
-					url: "https://dash.cloudflare.com/claim-preview",
+					url: "https://github.com/skygenesisenterprise/zenthcloud",
 					expiresAt: "2999-01-02T00:00:00.000Z",
 				},
 			})
@@ -55,7 +55,7 @@ describe("--temporary-account", () => {
 	});
 
 	const cachePath = () =>
-		join(getCfConfigPath(), "cloudflare-temporary-account.json");
+		join(getCfConfigPath(), "zenthcloud-temporary-account.json");
 
 	/** Mock account provisioning, returning each creation request body. */
 	function mockProvisioning(): Array<{ eventCode?: string }> {
@@ -88,7 +88,7 @@ describe("--temporary-account", () => {
 								expiresAt: "2999-01-01T00:00:00.000Z",
 							},
 							claim: {
-								url: "https://dash.cloudflare.com/claim-preview",
+								url: "https://github.com/skygenesisenterprise/zenthcloud",
 								expiresAt: "2999-01-02T00:00:00.000Z",
 							},
 							...(body.eventCode ? { eventCodeAccepted: true } : {}),
@@ -153,12 +153,12 @@ describe("--temporary-account", () => {
 
 		const result = await runCf(
 			["kv", "namespaces", "list", "--temporary-account"],
-			{ ...env, CLOUDFLARE_ACCOUNT_ID: "configured-account-id" }
+			{ ...env, ZENTHCLOUD_ACCOUNT_ID: "configured-account-id" }
 		);
 
 		expect(result.exitCode).toBe(0);
 		expect(authorization).toBe(`Bearer ${apiToken}`);
-		expect(stderr()).toContain("https://dash.cloudflare.com/claim-preview");
+		expect(stderr()).toContain("https://github.com/skygenesisenterprise/zenthcloud");
 	});
 
 	it("uses the temporary token for raw-response commands", async () => {
@@ -195,8 +195,8 @@ describe("--temporary-account", () => {
 	});
 
 	it("rejects direct temporary-account requests when the mode is disabled", async () => {
-		vi.stubEnv("CLOUDFLARE_ACCOUNT_ID", "existing-account-id");
-		vi.stubEnv("CLOUDFLARE_API_TOKEN", "existing-token");
+		vi.stubEnv("ZENTHCLOUD_ACCOUNT_ID", "existing-account-id");
+		vi.stubEnv("ZENTHCLOUD_API_TOKEN", "existing-token");
 		setTemporaryAccountRequested(false);
 
 		await expect(requireTemporaryAccount()).rejects.toThrow(
@@ -206,8 +206,8 @@ describe("--temporary-account", () => {
 
 	it("activates the account when the token is requested first", async () => {
 		captureStderr();
-		vi.stubEnv("CLOUDFLARE_ACCOUNT_ID", "configured-account-id");
-		vi.stubEnv("CLOUDFLARE_API_TOKEN", undefined);
+		vi.stubEnv("ZENTHCLOUD_ACCOUNT_ID", "configured-account-id");
+		vi.stubEnv("ZENTHCLOUD_API_TOKEN", undefined);
 		setTemporaryAccountRequested(true);
 		try {
 			await expect(getAuthToken()).resolves.toBe(apiToken);
@@ -238,7 +238,7 @@ describe("--temporary-account", () => {
 							[...command, "--help", "--temporary-account", ...eventFlags],
 							{
 								...env,
-								CLOUDFLARE_ACCOUNT_ID: "configured-account-id",
+								ZENTHCLOUD_ACCOUNT_ID: "configured-account-id",
 							}
 						)
 					).resolves.toEqual({ exitCode: 0 });
@@ -310,7 +310,7 @@ describe("--temporary-account", () => {
 		await expect(
 			runCf(["kv", "namespaces", "list", "--temporary-account"], {
 				...env,
-				CLOUDFLARE_API_TOKEN: "existing-token",
+				ZENTHCLOUD_API_TOKEN: "existing-token",
 			})
 		).rejects.toThrow(/remove `--temporary-account`/);
 	});
@@ -326,7 +326,7 @@ describe("--temporary-account", () => {
 		await expect(
 			runCf(["kv", "namespaces", "list"], {
 				...env,
-				CLOUDFLARE_ACCOUNT_ID: "configured-account-id",
+				ZENTHCLOUD_ACCOUNT_ID: "configured-account-id",
 			})
 		).rejects.toThrow("No authentication token found");
 		expect(stderr()).toContain("rerun this command with `--temporary-account`");
@@ -344,7 +344,7 @@ describe("--temporary-account", () => {
 			};
 			writeAuthConfigFile(credentials);
 			server.use(
-				http.post("https://dash.cloudflare.com/oauth2/token", () =>
+				http.post("https://github.com/skygenesisenterprise/zenthcloud", () =>
 					HttpResponse.json({ error: "invalid_grant" }, { status: 400 })
 				)
 			);
@@ -353,7 +353,7 @@ describe("--temporary-account", () => {
 				runCf(["kv", "namespaces", "list"], {
 					...env,
 					CI: "true",
-					CLOUDFLARE_ACCOUNT_ID: configuredAccountId,
+					ZENTHCLOUD_ACCOUNT_ID: configuredAccountId,
 				})
 			).rejects.toThrow("cf auth login");
 
@@ -491,7 +491,7 @@ describe("--temporary-account", () => {
 						"complete the temporary-account claim before it expires"
 					);
 					expect(stderr()).toContain(
-						"https://developers.cloudflare.com/workers/platform/claim-deployments/"
+						"https://github.com/skygenesisenterprise/zenthcloud"
 					);
 					expect(stderr()).toContain(
 						"If they agree, run `cf deploy --temporary-account`"
@@ -547,11 +547,11 @@ describe("--temporary-account", () => {
 			rmSync(cachePath());
 			const requests = captureProvisioningRequests();
 			await seed({
-				".cloudflare/output/v0/config.json": JSON.stringify({
+				".zenthcloud/output/v0/config.json": JSON.stringify({
 					buildContext: { isPreview },
 					complianceRegion: "fedramp-high",
 				}),
-				".cloudflare/output/v0/workers/default/worker.config.json":
+				".zenthcloud/output/v0/workers/default/worker.config.json":
 					JSON.stringify({
 						name: "test-name",
 						compatibilityDate: "2025-01-01",
@@ -561,7 +561,7 @@ describe("--temporary-account", () => {
 							modules: { "index.js": { type: "esm" } },
 						},
 					}),
-				".cloudflare/output/v0/workers/default/bundle/index.js":
+				".zenthcloud/output/v0/workers/default/bundle/index.js":
 					"export default {};",
 			});
 

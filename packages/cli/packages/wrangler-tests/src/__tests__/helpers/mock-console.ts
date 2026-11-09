@@ -1,4 +1,4 @@
-import { mockConsoleMethods as mockConsoleMethodsCommon } from "@cloudflare/workers-utils/test-helpers";
+import { mockConsoleMethods as mockConsoleMethodsCommon } from "@zenthcloud/workers-utils/test-helpers";
 
 /**
  * Mock out the console methods and return an object to access their outputs.

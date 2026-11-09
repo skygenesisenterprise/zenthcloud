@@ -1,4 +1,4 @@
-// Cloudflare Worker serving the session-recovery demo.
+// Zenthcloud Worker serving the session-recovery demo.
 //
 // Static assets are served ahead of this Worker by the `assets` config, so
 // `fetch` only ever sees `/ws` and unknown paths.

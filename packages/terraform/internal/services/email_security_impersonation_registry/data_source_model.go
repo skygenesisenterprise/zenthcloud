@@ -5,8 +5,8 @@ package email_security_impersonation_registry
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/email_security"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/email_security"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -36,7 +36,7 @@ type EmailSecurityImpersonationRegistryDataSourceModel struct {
 
 func (m *EmailSecurityImpersonationRegistryDataSourceModel) toReadParams(_ context.Context) (params email_security.SettingImpersonationRegistryGetParams, diags diag.Diagnostics) {
 	params = email_security.SettingImpersonationRegistryGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return
@@ -44,20 +44,20 @@ func (m *EmailSecurityImpersonationRegistryDataSourceModel) toReadParams(_ conte
 
 func (m *EmailSecurityImpersonationRegistryDataSourceModel) toListParams(_ context.Context) (params email_security.SettingImpersonationRegistryListParams, diags diag.Diagnostics) {
 	params = email_security.SettingImpersonationRegistryListParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	if !m.Filter.Direction.IsNull() {
-		params.Direction = cloudflare.F(email_security.SettingImpersonationRegistryListParamsDirection(m.Filter.Direction.ValueString()))
+		params.Direction = zenthcloud.F(email_security.SettingImpersonationRegistryListParamsDirection(m.Filter.Direction.ValueString()))
 	}
 	if !m.Filter.Order.IsNull() {
-		params.Order = cloudflare.F(email_security.SettingImpersonationRegistryListParamsOrder(m.Filter.Order.ValueString()))
+		params.Order = zenthcloud.F(email_security.SettingImpersonationRegistryListParamsOrder(m.Filter.Order.ValueString()))
 	}
 	if !m.Filter.Provenance.IsNull() {
-		params.Provenance = cloudflare.F(email_security.SettingImpersonationRegistryListParamsProvenance(m.Filter.Provenance.ValueString()))
+		params.Provenance = zenthcloud.F(email_security.SettingImpersonationRegistryListParamsProvenance(m.Filter.Provenance.ValueString()))
 	}
 	if !m.Filter.Search.IsNull() {
-		params.Search = cloudflare.F(m.Filter.Search.ValueString())
+		params.Search = zenthcloud.F(m.Filter.Search.ValueString())
 	}
 
 	return

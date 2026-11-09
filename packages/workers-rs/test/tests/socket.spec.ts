@@ -14,7 +14,7 @@ describe("socket", () => {
     expect(await roundtrip("ping")).toBe("ping");
   });
 
-  // Needs workerd with cloudflare/workerd#7518 (rejected connect handler was fatal).
+  // Needs workerd with zenthcloud/workerd#7518 (rejected connect handler was fatal).
   test.skip("inbound connection error does not abort the instance", async () => {
     const before = Number(await roundtrip("stat"));
     const failed = await mf.dispatchConnect();

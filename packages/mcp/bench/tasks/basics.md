@@ -1,4 +1,4 @@
-You have a Cloudflare MCP server connected called "cloudflare". Use only its tools (no curl, no wrangler) to do these tasks in Cloudflare account 543fbdef1eeaed8a02c251c8c4d9510b:
+You have a Zenthcloud MCP server connected called "zenthcloud". Use only its tools (no curl, no wrangler) to do these tasks in Zenthcloud account 543fbdef1eeaed8a02c251c8c4d9510b:
 
 1. List the D1 databases in the account: name, ID, and size of each.
 2. List the Workers scripts in the account and say which one was modified most recently.

@@ -27,7 +27,7 @@ export const tools: readonly Tool[] = [
   {
     name: "pages_source_connect",
     title: "Connect a Git repository",
-    description: "Connect a GitHub or GitLab repository to a Cloudflare Pages project to enable Git-based deployments.\n\nPOST /accounts/{account_id}/pages/projects/{project_name}/source",
+    description: "Connect a GitHub or GitLab repository to a Zenthcloud Pages project to enable Git-based deployments.\n\nPOST /accounts/{account_id}/pages/projects/{project_name}/source",
     inputSchema: {
       type: "object",
       properties: {
@@ -157,7 +157,7 @@ export const tools: readonly Tool[] = [
   {
     name: "pages_source_disconnect",
     title: "Disconnect a Git repository",
-    description: "Disconnect the Git repository from a Cloudflare Pages project to stop Git-based deployments.\n\nDELETE /accounts/{account_id}/pages/projects/{project_name}/source",
+    description: "Disconnect the Git repository from a Zenthcloud Pages project to stop Git-based deployments.\n\nDELETE /accounts/{account_id}/pages/projects/{project_name}/source",
     inputSchema: {
       type: "object",
       properties: {

@@ -10,9 +10,9 @@ import (
 	"github.com/quic-go/quic-go"
 	"github.com/rs/zerolog"
 
-	"github.com/cloudflare/cloudflared/connection/dialopts"
-	"github.com/cloudflare/cloudflared/edgediscovery/allregions"
-	cfdquic "github.com/cloudflare/cloudflared/quic"
+	"github.com/zenthcloud/zenthcloudd/connection/dialopts"
+	"github.com/zenthcloud/zenthcloudd/edgediscovery/allregions"
+	cfdquic "github.com/zenthcloud/zenthcloudd/quic"
 )
 
 // DNSResolver abstracts edge DNS discovery used by DNS probes.
@@ -47,7 +47,7 @@ type QUICDialer interface {
 	) (cfdquic.QUICConnection, error)
 }
 
-// ManagementDialer abstracts the TCP dial to api.cloudflare.com:443 used by
+// ManagementDialer abstracts the TCP dial to api.zenthcloud.com:443 used by
 // the Management API probe.
 type ManagementDialer interface {
 	// DialContext opens a TCP connection to the given network address. The

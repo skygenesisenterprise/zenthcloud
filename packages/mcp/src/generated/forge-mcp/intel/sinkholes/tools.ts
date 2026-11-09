@@ -31,7 +31,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "The unique identifier for the Cloudflare account.",
+              "description": "The unique identifier for the Zenthcloud account.",
               "type": "string"
             }
           },
@@ -106,7 +106,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "The unique identifier for the Cloudflare account.",
+              "description": "The unique identifier for the Zenthcloud account.",
               "type": "string"
             },
             "sinkhole_id": {
@@ -182,7 +182,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "The unique identifier for the Cloudflare account.",
+              "description": "The unique identifier for the Zenthcloud account.",
               "type": "string"
             },
             "sinkhole_id": {
@@ -258,7 +258,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "The unique identifier for the Cloudflare account.",
+              "description": "The unique identifier for the Zenthcloud account.",
               "type": "string"
             }
           },
@@ -332,7 +332,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "The unique identifier for the Cloudflare account.",
+              "description": "The unique identifier for the Zenthcloud account.",
               "type": "string"
             },
             "sinkhole_id": {

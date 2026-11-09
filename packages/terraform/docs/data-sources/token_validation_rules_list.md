@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_token_validation_rules_list Data Source - Cloudflare"
+page_title: "zenthcloud_token_validation_rules_list Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account API GatewayAccount API Gateway ReadDomain API GatewayDomain API Gateway Read
 ---
 
-# cloudflare_token_validation_rules_list (Data Source)
+# zenthcloud_token_validation_rules_list (Data Source)
 
 Accepted Permissions
 
@@ -18,7 +18,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_token_validation_rules_list" "example_token_validation_rules_list" {
+data "zenthcloud_token_validation_rules_list" "example_token_validation_rules_list" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   id = "f174e90a-fafe-4643-bbbc-4a0ed4fc8415"
   action = "log"
@@ -62,12 +62,12 @@ Available values: "log", "block".
 - `enabled` (Boolean) Toggle rule on or off.
 - `expression` (String) Rule expression. Requests that fail to match this expression will be subject to `action`.
 
-For details on expressions, see the [Cloudflare Docs](https://developers.cloudflare.com/api-shield/security/jwt-validation/).
+For details on expressions, see the [Zenthcloud Docs](https://github.com/skygenesisenterprise/zenthcloud).
 - `id` (String) UUID.
 - `last_updated` (String)
 - `selector` (Attributes) Select operations covered by this rule.
 
-For details on selectors, see the [Cloudflare Docs](https://developers.cloudflare.com/api-shield/security/jwt-validation/). (see [below for nested schema](#nestedatt--result--selector))
+For details on selectors, see the [Zenthcloud Docs](https://github.com/skygenesisenterprise/zenthcloud). (see [below for nested schema](#nestedatt--result--selector))
 - `title` (String) A human-readable name for the rule.
 
 <a id="nestedatt--result--selector"></a>

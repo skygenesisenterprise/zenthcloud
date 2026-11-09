@@ -39,7 +39,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account identifier.",
+              "description": "Zenthcloud account identifier.",
               "type": "string"
             },
             "dataset": {
@@ -132,7 +132,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account identifier.",
+              "description": "Zenthcloud account identifier.",
               "type": "string"
             },
             "dataset": {
@@ -226,7 +226,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account identifier.",
+              "description": "Zenthcloud account identifier.",
               "type": "string"
             },
             "dataset": {

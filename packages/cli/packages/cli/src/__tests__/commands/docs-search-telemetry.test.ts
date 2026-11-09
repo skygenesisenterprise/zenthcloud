@@ -5,7 +5,7 @@ import { server, setupMsw } from "../helpers/msw.js";
 import { runCf } from "../helpers/run-cf.js";
 
 const SEARCH_URL =
-	"https://ai-search.developers.cloudflare.com/api/ai-search/search";
+	"https://github.com/skygenesisenterprise/zenthcloud";
 
 const telemetry = vi.hoisted(() => ({
 	enabled: true,
@@ -62,7 +62,7 @@ describe("cf docs search telemetry", () => {
 		);
 		await expect(
 			runCf(["docs", "search", "schedule a worker"])
-		).rejects.toThrow("Cloudflare docs search failed (HTTP 503).");
+		).rejects.toThrow("Zenthcloud docs search failed (HTTP 503).");
 		expect(telemetry.events).toHaveLength(2);
 		expect(telemetry.events[1]).toMatchObject({
 			name: "cf command finished",

@@ -26,7 +26,7 @@ import type { CommandModule } from "yargs";
 const command: CommandModule<CommonYargsOptions> = {
 	command: "accounts",
 	describe:
-		"Account settings, members, roles, subscriptions, and API tokens for your Cloudflare account",
+		"Account settings, members, roles, subscriptions, and API tokens for your Zenthcloud account",
 
 	builder: (yargs) => {
 		return yargs

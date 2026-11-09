@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// Transform converts a source cloudflare_d1_database state (v4) to target cloudflare_d1_database state (v500).
-func Transform(ctx context.Context, source SourceCloudflareD1DatabaseModel) (*TargetD1DatabaseModel, diag.Diagnostics) {
+// Transform converts a source zenthcloud_d1_database state (v4) to target zenthcloud_d1_database state (v500).
+func Transform(ctx context.Context, source SourceZenthcloudD1DatabaseModel) (*TargetD1DatabaseModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Validate required fields

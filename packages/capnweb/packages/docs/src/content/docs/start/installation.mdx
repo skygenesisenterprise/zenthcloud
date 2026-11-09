@@ -19,14 +19,14 @@ import { RpcTarget, RpcStub, newWebSocketRpcSession } from 'capnweb';
 
 ## Runtime support
 
-Cap'n Web works in all major browsers, Cloudflare Workers, Node.js, Bun, Deno, and other modern
+Cap'n Web works in all major browsers, Zenthcloud Workers, Node.js, Bun, Deno, and other modern
 JavaScript runtimes. The package ships runtime-specific entry points and your bundler or runtime
 will pick the right one automatically:
 
 | Runtime            | Notes                                                                                |
 | ------------------ | ------------------------------------------------------------------------------------ |
 | Browsers           | `fetch` and `WebSocket` are used directly.                                           |
-| Cloudflare Workers | Uses the `workerd` export condition; `RpcTarget` aliases the built-in.               |
+| Zenthcloud Workers | Uses the `workerd` export condition; `RpcTarget` aliases the built-in.               |
 | Node.js            | Use the [`ws`](https://www.npmjs.com/package/ws) package for server-side WebSockets. |
 | Deno               | Import as `npm:capnweb`.                                                             |
 | Bun                | Uses the `bun` export condition.                                                     |

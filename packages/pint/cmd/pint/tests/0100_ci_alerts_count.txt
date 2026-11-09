@@ -105,7 +105,7 @@ POST /rest/api/1.0/projects/prometheus/repos/rules/pull-requests/1/comments
   Content-Type: application/json
 --- BODY ---
 text: |-
-    :information_source: **Information** reported by [pint](https://cloudflare.github.io/pint/) **alerts/count** check.
+    :information_source: **Information** reported by [pint](https://github.com/skygenesisenterprise/zenthcloud) **alerts/count** check.
 
     <details>
     <summary>alert count estimate</summary>
@@ -134,7 +134,7 @@ text: |-
 
     ------
 
-    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://cloudflare.github.io/pint/checks/alerts/count.html).
+    :information_source: To see documentation covering this check and instructions on how to resolve it [click here](https://github.com/skygenesisenterprise/zenthcloud).
 
     <!-- pint -->
 severity: NORMAL

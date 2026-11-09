@@ -5,7 +5,7 @@ package v500
 import (
 	"context"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/migrations"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/migrations"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -14,24 +14,24 @@ import (
 // to the custom profile resource.
 //
 // This function is called by Terraform when it encounters a `moved` block that references
-// the old resource type (cloudflare_zero_trust_device_profiles or cloudflare_device_settings_policy)
-// and determines the resource should migrate to cloudflare_zero_trust_device_custom_profile
+// the old resource type (zenthcloud_zero_trust_device_profiles or zenthcloud_device_settings_policy)
+// and determines the resource should migrate to zenthcloud_zero_trust_device_custom_profile
 // (i.e., resources WITH match AND precedence).
 //
 // Source resources:
-// - cloudflare_zero_trust_device_profiles (current v4 name)
-// - cloudflare_device_settings_policy (deprecated v4 name)
+// - zenthcloud_zero_trust_device_profiles (current v4 name)
+// - zenthcloud_device_settings_policy (deprecated v4 name)
 //
 // Target resource:
-// - cloudflare_zero_trust_device_custom_profile (v5)
+// - zenthcloud_zero_trust_device_custom_profile (v5)
 func MoveDeviceProfilesToCustomProfile(ctx context.Context, req resource.MoveStateRequest, resp *resource.MoveStateResponse) {
 	// Validate source type name
-	if req.SourceTypeName != "cloudflare_zero_trust_device_profiles" && req.SourceTypeName != "cloudflare_device_settings_policy" {
+	if req.SourceTypeName != "zenthcloud_zero_trust_device_profiles" && req.SourceTypeName != "zenthcloud_device_settings_policy" {
 		tflog.Warn(ctx, "MoveDeviceProfilesToCustomProfile called with unexpected source type",
 			map[string]any{
 				"source_type":          req.SourceTypeName,
-				"expected_types":       []string{"cloudflare_zero_trust_device_profiles", "cloudflare_device_settings_policy"},
-				"target_resource_type": "cloudflare_zero_trust_device_custom_profile",
+				"expected_types":       []string{"zenthcloud_zero_trust_device_profiles", "zenthcloud_device_settings_policy"},
+				"target_resource_type": "zenthcloud_zero_trust_device_custom_profile",
 			})
 		// Don't handle this move - let Terraform try other handlers or fail
 		return

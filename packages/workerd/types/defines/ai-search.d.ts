@@ -821,7 +821,7 @@ export declare abstract class AiSearchNamespace {
    * const instance = await env.AI_SEARCH.create({
    *   id: "docs-search",
    *   type: "web-crawler",
-   *   source: "https://developers.cloudflare.com",
+   *   source: "https://github.com/skygenesisenterprise/zenthcloud",
    * });
    * ```
    */

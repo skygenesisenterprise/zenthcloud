@@ -20,7 +20,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("agg-interval", {
 			type: "string",
 			description:
-				"Aggregation interval of the results (e.g., in 15 minutes or 1 hour intervals). Refer to [Aggregation intervals](https://developers.cloudflare.com/radar/concepts/aggregation-intervals/). When omitted, the interval is auto-selected from the requested date range; finer intervals are only available for shorter ranges. If the requested interval is too granular for the date range, the request is rejected.",
+				"Aggregation interval of the results (e.g., in 15 minutes or 1 hour intervals). Refer to [Aggregation intervals](https://github.com/skygenesisenterprise/zenthcloud). When omitted, the interval is auto-selected from the requested date range; finer intervals are only available for shorter ranges. If the requested interval is too granular for the date range, the request is rejected.",
 			choices: ["15m", "1h", "1d", "1w"],
 		})
 		.option("name", {
@@ -126,7 +126,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf radar quality iqi timeseries-groups",
 						method: "GET",
-						url: `https://api.cloudflare.com/client/v4/radar/quality/iqi/timeseries_groups`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud`,
 						pathParams: {},
 						query: queryParams,
 						bodyKind: "none",

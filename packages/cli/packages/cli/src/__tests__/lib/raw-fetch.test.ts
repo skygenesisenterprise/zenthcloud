@@ -15,21 +15,21 @@ describe("fetchRawBytes", () => {
 
 	beforeEach(() => {
 		originalFetch = globalThis.fetch;
-		originalApiToken = process.env.CLOUDFLARE_API_TOKEN;
+		originalApiToken = process.env.ZENTHCLOUD_API_TOKEN;
 	});
 
 	afterEach(() => {
 		globalThis.fetch = originalFetch;
 		if (originalApiToken === undefined) {
-			delete process.env.CLOUDFLARE_API_TOKEN;
+			delete process.env.ZENTHCLOUD_API_TOKEN;
 		} else {
-			process.env.CLOUDFLARE_API_TOKEN = originalApiToken;
+			process.env.ZENTHCLOUD_API_TOKEN = originalApiToken;
 		}
 	});
 
 	describe("production mode (local unset)", () => {
 		it("includes the Authorization header on outbound requests", async () => {
-			process.env.CLOUDFLARE_API_TOKEN = "prod-token";
+			process.env.ZENTHCLOUD_API_TOKEN = "prod-token";
 			const seen: Request[] = [];
 			globalThis.fetch = (async (input, init) => {
 				const req =
@@ -51,15 +51,15 @@ describe("fetchRawBytes", () => {
 			const req = seen[0];
 			assert(req);
 			expect(req.url).toBe(
-				"https://api.cloudflare.com/client/v4/accounts/abc/storage/kv/namespaces/NS/values/HELLO"
+				"https://github.com/skygenesisenterprise/zenthcloud"
 			);
 			expect(req.headers.get("Authorization")).toBe("Bearer prod-token");
 		});
 
-		it("normalizes a trailing slash in CLOUDFLARE_API_BASE_URL", async () => {
-			process.env.CLOUDFLARE_API_TOKEN = "prod-token";
-			const previousBase = process.env.CLOUDFLARE_API_BASE_URL;
-			process.env.CLOUDFLARE_API_BASE_URL = "https://api.example.test/v4/";
+		it("normalizes a trailing slash in ZENTHCLOUD_API_BASE_URL", async () => {
+			process.env.ZENTHCLOUD_API_TOKEN = "prod-token";
+			const previousBase = process.env.ZENTHCLOUD_API_BASE_URL;
+			process.env.ZENTHCLOUD_API_BASE_URL = "https://api.example.test/v4/";
 
 			const seen: Request[] = [];
 			globalThis.fetch = (async (input, init) => {
@@ -81,15 +81,15 @@ describe("fetchRawBytes", () => {
 				);
 			} finally {
 				if (previousBase === undefined) {
-					delete process.env.CLOUDFLARE_API_BASE_URL;
+					delete process.env.ZENTHCLOUD_API_BASE_URL;
 				} else {
-					process.env.CLOUDFLARE_API_BASE_URL = previousBase;
+					process.env.ZENTHCLOUD_API_BASE_URL = previousBase;
 				}
 			}
 		});
 
 		it("applies the standard API timeout", async () => {
-			process.env.CLOUDFLARE_API_TOKEN = "prod-token";
+			process.env.ZENTHCLOUD_API_TOKEN = "prod-token";
 			const timeout = vi.spyOn(AbortSignal, "timeout");
 			let signal: AbortSignal | undefined;
 			globalThis.fetch = (async (_input, init) => {
@@ -111,7 +111,7 @@ describe("fetchRawBytes", () => {
 		it.each([{ duration_ms: 50_000 }, JSON.stringify({ duration_ms: 50_000 })])(
 			"gives JSON profile captures a 60-second deadline (%j)",
 			async (body) => {
-				process.env.CLOUDFLARE_API_TOKEN = "prod-token";
+				process.env.ZENTHCLOUD_API_TOKEN = "prod-token";
 				const timeout = vi.spyOn(AbortSignal, "timeout");
 				const bytes = Buffer.from([0, 255, 128, 65]);
 				globalThis.fetch = async () => new Response(bytes);
@@ -132,7 +132,7 @@ describe("fetchRawBytes", () => {
 		);
 
 		it("omits the request deadline for binary uploads", async () => {
-			process.env.CLOUDFLARE_API_TOKEN = "prod-token";
+			process.env.ZENTHCLOUD_API_TOKEN = "prod-token";
 			let signal: AbortSignal | null | undefined;
 			globalThis.fetch = (async (_input, init) => {
 				signal = init?.signal;
@@ -149,7 +149,7 @@ describe("fetchRawBytes", () => {
 
 	describe("error handling", () => {
 		it("throws APIError on non-2xx responses", async () => {
-			process.env.CLOUDFLARE_API_TOKEN = "prod-token";
+			process.env.ZENTHCLOUD_API_TOKEN = "prod-token";
 			globalThis.fetch = (async () =>
 				new Response(JSON.stringify({ errors: [{ message: "nope" }] }), {
 					status: 404,
@@ -171,7 +171,7 @@ describe("fetchRawBytes", () => {
 	 */
 	describe("request body", () => {
 		beforeEach(() => {
-			process.env.CLOUDFLARE_API_TOKEN = "prod-token";
+			process.env.ZENTHCLOUD_API_TOKEN = "prod-token";
 		});
 
 		it("JSON-stringifies plain objects and sets application/json", async () => {

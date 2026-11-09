@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_mtls_certificate_associations Data Source - Cloudflare"
+page_title: "zenthcloud_mtls_certificate_associations Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Account: SSL and Certificates ReadAccount: SSL and Certificates Write
 ---
 
-# cloudflare_mtls_certificate_associations (Data Source)
+# zenthcloud_mtls_certificate_associations (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_mtls_certificate_associations" "example_mtls_certificate_associations" {
+data "zenthcloud_mtls_certificate_associations" "example_mtls_certificate_associations" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   mtls_certificate_id = "2458ce5a-0c35-4c7f-82c7-8e9487d3ff60"
 }

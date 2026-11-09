@@ -8,8 +8,8 @@ import (
 )
 
 // UpgradeFromV0 handles the state upgrade from v4 (schema version 0) to v5 (schema version 500)
-// This is called when migrating from v4 cloudflare_authenticated_origin_pulls_certificate
-// with type="per-hostname" to v5 cloudflare_authenticated_origin_pulls_hostname_certificate.
+// This is called when migrating from v4 zenthcloud_authenticated_origin_pulls_certificate
+// with type="per-hostname" to v5 zenthcloud_authenticated_origin_pulls_hostname_certificate.
 // In practice, this should rarely be called because MoveState handles the resource rename.
 // However, if a user manually imports or has edge case state, this provides a fallback path.
 func UpgradeFromV0(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {

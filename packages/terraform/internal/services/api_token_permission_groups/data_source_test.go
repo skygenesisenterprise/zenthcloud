@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
-func TestAccCloudflareApiTokenPermissionGroupsDataSource_Basic(t *testing.T) {
-	resourceName := "data.cloudflare_api_token_permission_groups_list.dns_read"
+func TestAccZenthcloudApiTokenPermissionGroupsDataSource_Basic(t *testing.T) {
+	resourceName := "data.zenthcloud_api_token_permission_groups_list.dns_read"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -25,7 +25,7 @@ func TestAccCloudflareApiTokenPermissionGroupsDataSource_Basic(t *testing.T) {
 				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", "DNS Read"),
-					resource.TestCheckResourceAttr(resourceName, "scope", "com.cloudflare.api.account.zone"),
+					resource.TestCheckResourceAttr(resourceName, "scope", "com.zenthcloud.api.account.zone"),
 				),
 			},
 		},
@@ -34,9 +34,9 @@ func TestAccCloudflareApiTokenPermissionGroupsDataSource_Basic(t *testing.T) {
 
 func testAccApiTokenPermissionGroupsDataSourceConfig() string {
 	return fmt.Sprintf(`
-		data "cloudflare_api_token_permission_groups_list" "dns_read" {
+		data "zenthcloud_api_token_permission_groups_list" "dns_read" {
 			name  = "DNS Read"
-			scope = "com.cloudflare.api.account.zone"
+			scope = "com.zenthcloud.api.account.zone"
 		}`,
 	)
 }

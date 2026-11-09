@@ -18,7 +18,7 @@ import (
 //
 // The only difference is that v5 adds new computed-only fields (schedule, test)
 // which don't exist in v4 state. These will be populated by the API on first refresh.
-func Transform(ctx context.Context, source SourceCloudflareObservatoryScheduledTestModel) (*TargetObservatoryScheduledTestModel, diag.Diagnostics) {
+func Transform(ctx context.Context, source SourceZenthcloudObservatoryScheduledTestModel) (*TargetObservatoryScheduledTestModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Validate required fields

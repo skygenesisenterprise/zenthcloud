@@ -1,4 +1,4 @@
-// Generated from cloudflare/workers-sdk@c2bb4c815. Do not rename cases.
+// Generated from zenthcloud/workers-sdk@c2bb4c815. Do not rename cases.
 import { describe, it } from "vite-plus/test";
 
 const groups = [
@@ -667,7 +667,7 @@ const groups = [
 		file: "pages/secret.test.ts",
 		ancestors: ["wrangler pages secret", "account id resolution"],
 		status: "skip",
-		names: ["should prefer CLOUDFLARE_ACCOUNT_ID over cached account id"],
+		names: ["should prefer ZENTHCLOUD_ACCOUNT_ID over cached account id"],
 	},
 	{
 		file: "queues/queues-subscription.test.ts",

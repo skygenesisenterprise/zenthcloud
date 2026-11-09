@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_argo_smart_routing Data Source - Cloudflare"
+page_title: "zenthcloud_argo_smart_routing Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zone Settings ReadZone Settings Write
 ---
 
-# cloudflare_argo_smart_routing (Data Source)
+# zenthcloud_argo_smart_routing (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_argo_smart_routing" "example_argo_smart_routing" {
+data "zenthcloud_argo_smart_routing" "example_argo_smart_routing" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
 }
 ```

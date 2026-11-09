@@ -32,7 +32,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		})
 		.option("connector-id", {
 			type: "string",
-			description: "UUID of the Cloudflare Tunnel connector.",
+			description: "UUID of the Zenthcloud Tunnel connector.",
 		})
 		.option("dry-run", {
 			type: "boolean",
@@ -73,7 +73,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf mesh nodes failover",
 						method: "PUT",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/warp_connector/${argv["node-id"] == null ? "<node-id>" : encodeURIComponent(String(argv["node-id"]))}/failover`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/warp_connector/${argv["node-id"] == null ? "<node-id>" : encodeURIComponent(String(argv["node-id"]))}/failover`,
 						pathParams: { "node-id": String(argv["node-id"] ?? "") },
 						bodyKind: "json",
 						body:
@@ -120,7 +120,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 				if (argv["connector-id"] === undefined) {
 					argv["connector-id"] = await promptForRequiredField(
 						"connector-id",
-						"UUID of the Cloudflare Tunnel connector."
+						"UUID of the Zenthcloud Tunnel connector."
 					);
 				}
 

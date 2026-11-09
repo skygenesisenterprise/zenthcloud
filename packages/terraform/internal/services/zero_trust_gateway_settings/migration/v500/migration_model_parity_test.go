@@ -10,13 +10,13 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_gateway_settings"
-	v500 "github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_gateway_settings/migration/v500"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/test_helpers"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_gateway_settings"
+	v500 "github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_gateway_settings/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/test_helpers"
 )
 
 // TestZeroTrustGatewaySettingsMigrationModelSchemaParity verifies that TargetV5ZeroTrustGatewaySettingsModel
-// (used in UpgradeFromVersion0, UpgradeFromV4 → resp.State.Set, MoveFromCloudflareTeamsAccount → resp.TargetState.Set) stays in sync with the live ResourceSchema.
+// (used in UpgradeFromVersion0, UpgradeFromV4 → resp.State.Set, MoveFromZenthcloudTeamsAccount → resp.TargetState.Set) stays in sync with the live ResourceSchema.
 func TestZeroTrustGatewaySettingsMigrationModelSchemaParity(t *testing.T) {
 	t.Parallel()
 	model := (*v500.TargetV5ZeroTrustGatewaySettingsModel)(nil)

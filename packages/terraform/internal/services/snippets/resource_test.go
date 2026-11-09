@@ -7,10 +7,10 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/snippets"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/snippets"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -20,24 +20,24 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_snippets", &resource.Sweeper{
-		Name: "cloudflare_snippets",
-		F:    testSweepCloudflareSnippets,
+	resource.AddTestSweepers("zenthcloud_snippets", &resource.Sweeper{
+		Name: "zenthcloud_snippets",
+		F:    testSweepZenthcloudSnippets,
 	})
 }
 
-func testSweepCloudflareSnippets(r string) error {
+func testSweepZenthcloudSnippets(r string) error {
 	ctx := context.Background()
 	client := acctest.SharedClient()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	if zoneID == "" {
-		tflog.Info(ctx, "Skipping snippets sweep: CLOUDFLARE_ZONE_ID not set")
+		tflog.Info(ctx, "Skipping snippets sweep: ZENTHCLOUD_ZONE_ID not set")
 		return nil
 	}
 
 	list, err := client.Snippets.List(ctx, snippets.SnippetListParams{
-		ZoneID: cloudflare.F(zoneID),
+		ZoneID: zenthcloud.F(zoneID),
 	})
 	if err != nil {
 		tflog.Error(ctx, fmt.Sprintf("Failed to list snippets: %s", err))
@@ -53,7 +53,7 @@ func testSweepCloudflareSnippets(r string) error {
 			snippetCount++
 			tflog.Info(ctx, fmt.Sprintf("Deleting snippet: %s (zone: %s)", snippet.SnippetName, zoneID))
 			_, err := client.Snippets.Delete(ctx, snippet.SnippetName, snippets.SnippetDeleteParams{
-				ZoneID: cloudflare.F(zoneID),
+				ZoneID: zenthcloud.F(zoneID),
 			})
 			if err != nil {
 				tflog.Error(ctx, fmt.Sprintf("Failed to delete snippet %s: %s", snippet.SnippetName, err))
@@ -76,22 +76,22 @@ func testSweepCloudflareSnippets(r string) error {
 	return nil
 }
 
-func TestAccCloudflareSnippets_Basic(t *testing.T) {
+func TestAccZenthcloudSnippets_Basic(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCloudflareSnippetsConfig(rnd, zoneID),
-				ExpectError: regexp.MustCompile("use 'cloudflare_snippet' instead of 'cloudflare_snippets'"),
+				Config:      testAccZenthcloudSnippetsConfig(rnd, zoneID),
+				ExpectError: regexp.MustCompile("use 'zenthcloud_snippet' instead of 'zenthcloud_snippets'"),
 			},
 		},
 	})
 }
 
-func testAccCloudflareSnippetsConfig(rnd, zoneID string) string {
+func testAccZenthcloudSnippetsConfig(rnd, zoneID string) string {
 	return acctest.LoadTestCase("basic.tf", rnd, zoneID)
 }

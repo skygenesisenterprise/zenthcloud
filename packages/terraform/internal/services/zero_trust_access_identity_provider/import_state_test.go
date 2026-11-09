@@ -7,8 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -39,7 +39,7 @@ func TestImportStateLoginPageAutoPrompt(t *testing.T) {
 			}))
 			defer server.Close()
 
-			r := &ZeroTrustAccessIdentityProviderResource{client: cloudflare.NewClient(
+			r := &ZeroTrustAccessIdentityProviderResource{client: zenthcloud.NewClient(
 				option.WithBaseURL(server.URL),
 				option.WithAPIToken("test-token"),
 				option.WithMaxRetries(0),

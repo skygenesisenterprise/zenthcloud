@@ -1,8 +1,8 @@
 import { statSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import type { ParsedInputSettingsConfig } from "@cloudflare/config";
+import type { ParsedInputSettingsConfig } from "@zenthcloud/config";
 
-export const CLOUDFLARE_CONFIG_FILENAME = "cloudflare.config.ts";
+export const ZENTHCLOUD_CONFIG_FILENAME = "zenthcloud.config.ts";
 
 // TODO: Replace this with Zod's built in formatting.
 export function formatConfigIssues(
@@ -38,11 +38,11 @@ export function setProjectConfigMode(mode: string | undefined): void {
 	loadedSettings = undefined;
 }
 
-export function findCloudflareConfig(startDir = process.cwd()): string | null {
+export function findZenthcloudConfig(startDir = process.cwd()): string | null {
 	let dir = resolve(startDir);
 
 	while (true) {
-		const configPath = join(dir, CLOUDFLARE_CONFIG_FILENAME);
+		const configPath = join(dir, ZENTHCLOUD_CONFIG_FILENAME);
 		try {
 			if (statSync(configPath).isFile()) {
 				return configPath;
@@ -67,20 +67,20 @@ export async function loadProjectSettings(
 	const isPreview = options.isPreview ?? false;
 	loadedSettings = undefined;
 
-	const configPath = findCloudflareConfig(resolvedStartDir);
+	const configPath = findZenthcloudConfig(resolvedStartDir);
 	if (!configPath) {
 		loadedSettings = { startDir: resolvedStartDir, isPreview, result: null };
 		return null;
 	}
 
-	const { loadAndParseConfigSettings } = await import("@cloudflare/config");
+	const { loadAndParseConfigSettings } = await import("@zenthcloud/config");
 	const loaded = await loadAndParseConfigSettings(configPath, {
 		isPreview,
 		mode: projectConfigMode,
 	});
 	if (!loaded.result.success) {
 		throw new Error(
-			`Invalid ${CLOUDFLARE_CONFIG_FILENAME}:\n${formatConfigIssues(loaded.result.error.issues)}`
+			`Invalid ${ZENTHCLOUD_CONFIG_FILENAME}:\n${formatConfigIssues(loaded.result.error.issues)}`
 		);
 	}
 

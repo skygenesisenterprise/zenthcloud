@@ -36,7 +36,7 @@ export default defineConfig({
     // https://github.com/voidzero-dev/vite-plus/issues/2238 is fixed.
     tasks: {
       "gen:demos": {
-        command: "pnpm --filter @cloudflare/kumo-docs-astro codegen:demos",
+        command: "pnpm --filter @zenthcloud/kumo-docs-astro codegen:demos",
         input: demoInputs,
         output: ["packages/kumo-docs-astro/dist/demo-metadata.json"],
       },
@@ -51,7 +51,7 @@ export default defineConfig({
         ],
       },
       "build:kumo": {
-        command: "pnpm --filter @cloudflare/kumo build",
+        command: "pnpm --filter @zenthcloud/kumo build",
         // Pre-warms the registry memo so the in-build codegen pass is incremental.
         dependsOn: ["gen:registry"],
         input: [
@@ -66,10 +66,10 @@ export default defineConfig({
         ],
       },
       "gen:figma-data": {
-        command: "pnpm --filter @cloudflare/kumo-figma build:data",
+        command: "pnpm --filter @zenthcloud/kumo-figma build:data",
       },
       "build:docs": {
-        command: "pnpm --filter @cloudflare/kumo-docs-astro build",
+        command: "pnpm --filter @zenthcloud/kumo-docs-astro build",
         // The docs site consumes the built kumo package.
         dependsOn: ["build:kumo"],
         // The build regenerates these itself; outputs, not inputs.

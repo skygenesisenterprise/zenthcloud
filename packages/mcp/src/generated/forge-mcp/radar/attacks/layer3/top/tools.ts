@@ -109,7 +109,7 @@ export const tools: readonly Tool[] = [
             },
             "normalization": {
               "default": "PERCENTAGE",
-              "description": "Normalization method applied to the results. Refer to [Normalization methods](https://developers.cloudflare.com/radar/concepts/normalization/).",
+              "description": "Normalization method applied to the results. Refer to [Normalization methods](https://github.com/skygenesisenterprise/zenthcloud).",
               "enum": [
                 "PERCENTAGE",
                 "MIN_MAX"

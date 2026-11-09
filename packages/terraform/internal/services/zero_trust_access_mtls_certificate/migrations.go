@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/zero_trust_access_mtls_certificate/migration/v500"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/zero_trust_access_mtls_certificate/migration/v500"
 )
 
 var _ resource.ResourceWithUpgradeState = (*ZeroTrustAccessMTLSCertificateResource)(nil)
@@ -12,7 +12,7 @@ var _ resource.ResourceWithMoveState = (*ZeroTrustAccessMTLSCertificateResource)
 
 // MoveState registers state movers for resource renames.
 // This enables Terraform 1.8+ `moved` blocks to automatically trigger state migration
-// from cloudflare_access_mutual_tls_certificate to cloudflare_zero_trust_access_mtls_certificate.
+// from zenthcloud_access_mutual_tls_certificate to zenthcloud_zero_trust_access_mtls_certificate.
 func (r *ZeroTrustAccessMTLSCertificateResource) MoveState(ctx context.Context) []resource.StateMover {
 	sourceSchema := v500.SourceAccessMutualTLSCertificateSchema()
 

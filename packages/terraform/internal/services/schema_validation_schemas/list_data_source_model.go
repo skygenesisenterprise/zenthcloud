@@ -5,9 +5,9 @@ package schema_validation_schemas
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/schema_validation"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/schema_validation"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -27,14 +27,14 @@ type SchemaValidationSchemasListDataSourceModel struct {
 
 func (m *SchemaValidationSchemasListDataSourceModel) toListParams(_ context.Context) (params schema_validation.SchemaListParams, diags diag.Diagnostics) {
 	params = schema_validation.SchemaListParams{
-		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+		ZoneID: zenthcloud.F(m.ZoneID.ValueString()),
 	}
 
 	if !m.OmitSource.IsNull() {
-		params.OmitSource = cloudflare.F(m.OmitSource.ValueBool())
+		params.OmitSource = zenthcloud.F(m.OmitSource.ValueBool())
 	}
 	if !m.ValidationEnabled.IsNull() {
-		params.ValidationEnabled = cloudflare.F(m.ValidationEnabled.ValueBool())
+		params.ValidationEnabled = zenthcloud.F(m.ValidationEnabled.ValueBool())
 	}
 
 	return

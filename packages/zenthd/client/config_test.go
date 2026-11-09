@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/cloudflare/cloudflared/features"
+	"github.com/zenthcloud/zenthcloudd/features"
 )
 
 func TestGenerateConnectionOptions(t *testing.T) {

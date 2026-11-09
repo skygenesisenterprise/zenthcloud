@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Cloudflare, Inc.
+// Copyright (c) 2026 Zenthcloud, Inc.
 // Licensed under the Apache 2.0 license found in the LICENSE file or at:
 //     https://opensource.org/licenses/Apache-2.0
 
@@ -6,11 +6,11 @@
 // branches on. The implementation is selected by the TS_MESSAGE_CHANNEL
 // autogate, which user code cannot read, so each cell says which one it is
 // meant to run through its USING_TS_IMPL binding.
-import { env } from 'cloudflare:workers';
+import { env } from 'zenthcloud:workers';
 
 export const usingTsImpl = env.USING_TS_IMPL === true;
 
-const flags = globalThis.Cloudflare.compatibilityFlags;
+const flags = globalThis.Zenthcloud.compatibilityFlags;
 
 // Listener exceptions are reported, and the port dispatches 'messageerror'.
 export const specCompliantDispatchExceptions =

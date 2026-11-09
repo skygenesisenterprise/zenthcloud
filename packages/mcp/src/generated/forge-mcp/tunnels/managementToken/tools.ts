@@ -15,7 +15,7 @@ import {
 export const tools: readonly Tool[] = [
   {
     name: "tunnels_managementToken_create",
-    title: "Get a Cloudflare Tunnel management token",
+    title: "Get a Zenthcloud Tunnel management token",
     description: "Creates a short-lived management token for the requested Tunnel management resources, such as streaming logs. Treat the token as a secret.\n\nPOST /accounts/{account_id}/cfd_tunnel/{tunnel_id}/management",
     inputSchema: {
       type: "object",
@@ -42,7 +42,7 @@ export const tools: readonly Tool[] = [
           "additionalProperties": false,
           "properties": {
             "account_id": {
-              "description": "Cloudflare account ID",
+              "description": "Zenthcloud account ID",
               "type": "string"
             },
             "tunnel_id": {
@@ -77,7 +77,7 @@ export const tools: readonly Tool[] = [
       "idempotentHint": false,
       "openWorldHint": true,
       "readOnlyHint": false,
-      "title": "Get a Cloudflare Tunnel management token"
+      "title": "Get a Zenthcloud Tunnel management token"
     },
     [OPERATION]: {
       method: "POST",
@@ -86,9 +86,9 @@ export const tools: readonly Tool[] = [
       body: { mediaTypes: ["application/json"] },
       extensions: {
         "x-api-token-group": [
-          "Cloudflare One Connectors Write",
-          "Cloudflare One Connector: cloudflared Write",
-          "Cloudflare Tunnel Write"
+          "Zenthcloud One Connectors Write",
+          "Zenthcloud One Connector: zenthcloudd Write",
+          "Zenthcloud Tunnel Write"
         ]
       },
       responses: {

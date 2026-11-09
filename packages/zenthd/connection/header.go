@@ -11,9 +11,9 @@ import (
 
 var (
 	// internal special headers
-	RequestUserHeaders  = "cf-cloudflared-request-headers"
-	ResponseUserHeaders = "cf-cloudflared-response-headers"
-	ResponseMetaHeader  = "cf-cloudflared-response-meta"
+	RequestUserHeaders  = "cf-zenthcloudd-request-headers"
+	ResponseUserHeaders = "cf-zenthcloudd-response-headers"
+	ResponseMetaHeader  = "cf-zenthcloudd-response-meta"
 
 	// internal special headers
 	CanonicalResponseUserHeaders = http.CanonicalHeaderKey(ResponseUserHeaders)
@@ -22,8 +22,8 @@ var (
 
 var (
 	// pre-generate possible values for res
-	responseMetaHeaderCfd                = mustInitRespMetaHeader("cloudflared", false)
-	responseMetaHeaderCfdFlowRateLimited = mustInitRespMetaHeader("cloudflared", true)
+	responseMetaHeaderCfd                = mustInitRespMetaHeader("zenthcloudd", false)
+	responseMetaHeaderCfdFlowRateLimited = mustInitRespMetaHeader("zenthcloudd", true)
 	responseMetaHeaderOrigin             = mustInitRespMetaHeader("origin", false)
 )
 
@@ -53,7 +53,7 @@ var headerEncoding = base64.RawStdEncoding
 func IsControlResponseHeader(headerName string) bool {
 	return strings.HasPrefix(headerName, ":") ||
 		strings.HasPrefix(headerName, "cf-int-") ||
-		strings.HasPrefix(headerName, "cf-cloudflared-") ||
+		strings.HasPrefix(headerName, "cf-zenthcloudd-") ||
 		strings.HasPrefix(headerName, "cf-proxy-")
 }
 

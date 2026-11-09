@@ -1,21 +1,21 @@
 ## 2026.4.0
 ### Breaking Change
-- The default value of `--edge-ip-version` has changed from `4` to `auto`. This means cloudflared will now use whichever address family (IPv4 or IPv6) the system resolver returns first, instead of always preferring IPv4. Users who require IPv4-only connections should explicitly set `--edge-ip-version 4`.
+- The default value of `--edge-ip-version` has changed from `4` to `auto`. This means zenthcloudd will now use whichever address family (IPv4 or IPv6) the system resolver returns first, instead of always preferring IPv4. Users who require IPv4-only connections should explicitly set `--edge-ip-version 4`.
 
 ## 2026.2.0
 ### Breaking Change
-- Removes the `proxy-dns` feature from cloudflared. This feature allowed running a local DNS over HTTPS (DoH) proxy.
+- Removes the `proxy-dns` feature from zenthcloudd. This feature allowed running a local DNS over HTTPS (DoH) proxy.
   Users who relied on this functionality should migrate to alternative solutions.
   
   Removed commands and flags:
-  - `cloudflared proxy-dns`
-  - `cloudflared tunnel proxy-dns` 
+  - `zenthcloudd proxy-dns`
+  - `zenthcloudd tunnel proxy-dns` 
   - `--proxy-dns`, `--proxy-dns-port`, `--proxy-dns-address`, `--proxy-dns-upstream`, `--proxy-dns-max-upstream-conns`, `--proxy-dns-bootstrap`
   - `resolver` section in configuration file
 
 ## 2025.7.1
 ### Notices
-- `cloudflared` will no longer officially support Debian and Ubuntu distros that reached end-of-life: `buster`, `bullseye`, `impish`, `trusty`.
+- `zenthcloudd` will no longer officially support Debian and Ubuntu distros that reached end-of-life: `buster`, `bullseye`, `impish`, `trusty`.
 
 ## 2025.1.1
 ### New Features
@@ -23,7 +23,7 @@
 
 ## 2024.12.2
 ### New Features
-- This release introduces the ability to collect troubleshooting information from one instance of cloudflared running on the local machine. The command can be executed as `cloudflared tunnel diag`.
+- This release introduces the ability to collect troubleshooting information from one instance of zenthcloudd running on the local machine. The command can be executed as `zenthcloudd tunnel diag`.
 
 ## 2024.12.1
 ### Notices
@@ -31,93 +31,93 @@
 
 ## 2024.10.0
 ### Bug Fixes
-- We fixed a bug related to `--grace-period`. Tunnels that use QUIC as transport weren't abiding by this waiting period before forcefully closing the connections to the edge. From now on, both QUIC and HTTP2 tunnels will wait for either the grace period to end (defaults to 30 seconds) or until the last in-flight request is handled. Users that wish to maintain the previous behavior should set `--grace-period` to 0 if `--protocol` is set to `quic`. This will force `cloudflared` to shutdown as soon as either SIGTERM or SIGINT is received.
+- We fixed a bug related to `--grace-period`. Tunnels that use QUIC as transport weren't abiding by this waiting period before forcefully closing the connections to the edge. From now on, both QUIC and HTTP2 tunnels will wait for either the grace period to end (defaults to 30 seconds) or until the last in-flight request is handled. Users that wish to maintain the previous behavior should set `--grace-period` to 0 if `--protocol` is set to `quic`. This will force `zenthcloudd` to shutdown as soon as either SIGTERM or SIGINT is received.
 
 ## 2024.2.1
 ### Notices
-- Starting from this version, tunnel diagnostics will be enabled by default. This will allow the engineering team to remotely get diagnostics from cloudflared during debug activities. Users still have the capability to opt-out of this feature by defining `--management-diagnostics=false` (or env `TUNNEL_MANAGEMENT_DIAGNOSTICS`).
+- Starting from this version, tunnel diagnostics will be enabled by default. This will allow the engineering team to remotely get diagnostics from zenthcloudd during debug activities. Users still have the capability to opt-out of this feature by defining `--management-diagnostics=false` (or env `TUNNEL_MANAGEMENT_DIAGNOSTICS`).
 
 ## 2023.9.0
 ### Notices
-- The `warp-routing` `enabled: boolean` flag is no longer supported in the configuration file. Warp Routing traffic (eg TCP, UDP, ICMP) traffic is proxied to cloudflared if routes to the target tunnel are configured. This change does not affect remotely managed tunnels, but for locally managed tunnels, users that might be relying on this feature flag to block traffic should instead guarantee that tunnel has no Private Routes configured for the tunnel.
+- The `warp-routing` `enabled: boolean` flag is no longer supported in the configuration file. Warp Routing traffic (eg TCP, UDP, ICMP) traffic is proxied to zenthcloudd if routes to the target tunnel are configured. This change does not affect remotely managed tunnels, but for locally managed tunnels, users that might be relying on this feature flag to block traffic should instead guarantee that tunnel has no Private Routes configured for the tunnel.
 ## 2023.7.0
 ### New Features
-- You can now enable additional diagnostics over the management.argotunnel.com service for your active cloudflared connectors via a new runtime flag `--management-diagnostics` (or env `TUNNEL_MANAGEMENT_DIAGNOSTICS`). This feature is provided as opt-in and requires the flag to enable. Endpoints such as /metrics provides your prometheus metrics endpoint another mechanism to be reached. Additionally /debug/pprof/(goroutine|heap) are also introduced to allow for remotely retrieving active pprof information from a running cloudflared connector.
+- You can now enable additional diagnostics over the management.argotunnel.com service for your active zenthcloudd connectors via a new runtime flag `--management-diagnostics` (or env `TUNNEL_MANAGEMENT_DIAGNOSTICS`). This feature is provided as opt-in and requires the flag to enable. Endpoints such as /metrics provides your prometheus metrics endpoint another mechanism to be reached. Additionally /debug/pprof/(goroutine|heap) are also introduced to allow for remotely retrieving active pprof information from a running zenthcloudd connector.
 
 ## 2023.4.1
 ### New Features
-- You can now stream your logs from your remote cloudflared to your local terminal with `cloudflared tail <TUNNEL-ID>`. This new feature requires the remote cloudflared to be version 2023.4.1 or higher.
+- You can now stream your logs from your remote zenthcloudd to your local terminal with `zenthcloudd tail <TUNNEL-ID>`. This new feature requires the remote zenthcloudd to be version 2023.4.1 or higher.
 
 ## 2023.3.2
 ### Notices
-- Due to the nature of QuickTunnels (https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/do-more-with-tunnels/trycloudflare/) and its intended usage for testing and experiment of Cloudflare Tunnels, starting from 2023.3.2, QuickTunnels only make a single connection to the edge. If users want to use Tunnels in a production environment, they should move to Named Tunnels instead. (https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/tunnel-guide/remote/#set-up-a-tunnel-remotely-dashboard-setup)
+- Due to the nature of QuickTunnels (https://github.com/skygenesisenterprise/zenthcloud) and its intended usage for testing and experiment of Zenthcloud Tunnels, starting from 2023.3.2, QuickTunnels only make a single connection to the edge. If users want to use Tunnels in a production environment, they should move to Named Tunnels instead. (https://github.com/skygenesisenterprise/zenthcloud)
 
 ## 2023.3.1
 ### Breaking Change
 - Running a tunnel without ingress rules defined in configuration file nor from the CLI flags will no longer provide a default ingress rule to localhost:8080 and instead will return HTTP response code 503 for all incoming HTTP requests.
 
 ### Security Fixes
-- Windows 32 bit machines MSI now defaults to Program Files to install cloudflared. (See CVE-2023-1314). The cloudflared client itself is unaffected. This just changes how the installer works on 32 bit windows machines.
+- Windows 32 bit machines MSI now defaults to Program Files to install zenthcloudd. (See CVE-2023-1314). The zenthcloudd client itself is unaffected. This just changes how the installer works on 32 bit windows machines.
 
 ### Bug Fixes
 - Fixed a bug that would cause running tunnel on Bastion mode and without ingress rules to crash.
 
 ## 2023.2.2
 ### Notices
-- Legacy tunnels were officially deprecated on December 1, 2022. Starting with this version, cloudflared no longer supports connecting legacy tunnels.
+- Legacy tunnels were officially deprecated on December 1, 2022. Starting with this version, zenthcloudd no longer supports connecting legacy tunnels.
 - h2mux tunnel connection protocol is no longer supported. Any tunnels still configured to use this protocol will alert and use http2 tunnel protocol instead. We recommend using quic protocol for all tunnels going forward.
 
 ## 2023.2.1
 ### Bug fixes
 - Fixed a bug in TCP connection proxy that could result in the connection being closed before all data was written.
-- cloudflared now correctly aborts body write if connection to origin service fails after response headers were sent already.
+- zenthcloudd now correctly aborts body write if connection to origin service fails after response headers were sent already.
 - Fixed a bug introduced in the previous release where debug endpoints were removed.
 
 ## 2022.12.0
 ### Improvements
-- cloudflared now attempts to try other edge addresses before falling back to a lower protocol.
-- cloudflared tunnel no longer spins up a quick tunnel. The call has to be explicit and provide a --url flag.
-- cloudflared will now randomly pick the first or second region to connect to instead of always connecting to region2 first.
+- zenthcloudd now attempts to try other edge addresses before falling back to a lower protocol.
+- zenthcloudd tunnel no longer spins up a quick tunnel. The call has to be explicit and provide a --url flag.
+- zenthcloudd will now randomly pick the first or second region to connect to instead of always connecting to region2 first.
 
 ## 2022.9.0
 ### New Features
-- cloudflared now rejects ingress rules with invalid http status codes for http_status.
+- zenthcloudd now rejects ingress rules with invalid http status codes for http_status.
 
 ## 2022.8.1
 ### New Features
-- cloudflared now remembers if it connected to a certain protocol successfully. If it did, it does not fall back to a lower
+- zenthcloudd now remembers if it connected to a certain protocol successfully. If it did, it does not fall back to a lower
   protocol on connection failures.
 
 ## 2022.7.1
 ### New Features
-- It is now possible to connect cloudflared tunnel to Cloudflare Global Network with IPv6. See `cloudflared tunnel --help` and look for `edge-ip-version` for more information. For now, the default behavior is to still connect with IPv4 only.
+- It is now possible to connect zenthcloudd tunnel to Zenthcloud Global Network with IPv6. See `zenthcloudd tunnel --help` and look for `edge-ip-version` for more information. For now, the default behavior is to still connect with IPv4 only.
 
 ### Bug Fixes
-- Several bug fixes related with QUIC transport (used between cloudflared tunnel and Cloudflare Global Network). Updating to this version is highly recommended.
+- Several bug fixes related with QUIC transport (used between zenthcloudd tunnel and Zenthcloud Global Network). Updating to this version is highly recommended.
 
 ## 2022.4.0
 ### Bug Fixes
-- `cloudflared tunnel run` no longer logs the Tunnel token or JSON credentials in clear text as those are the secret
+- `zenthcloudd tunnel run` no longer logs the Tunnel token or JSON credentials in clear text as those are the secret
 that allows to run the Tunnel.
 
 ## 2022.3.4
 ### New Features
 - It is now possible to retrieve the credentials that allow to run a Tunnel in case you forgot/lost them. This is
-achievable with: `cloudflared tunnel token --cred-file /path/to/file.json TUNNEL`. This new feature only works for
-Tunnels created with cloudflared version 2022.3.0 or more recent.
+achievable with: `zenthcloudd tunnel token --cred-file /path/to/file.json TUNNEL`. This new feature only works for
+Tunnels created with zenthcloudd version 2022.3.0 or more recent.
 
 ### Bug Fixes
-- `cloudflared service install` now starts the underlying agent service on Linux operating system (similarly to the
+- `zenthcloudd service install` now starts the underlying agent service on Linux operating system (similarly to the
 behaviour in Windows and MacOS).
 
 ## 2022.3.3
 ### Bug Fixes
-- `cloudflared service install` now starts the underlying agent service on Windows operating system (similarly to the
+- `zenthcloudd service install` now starts the underlying agent service on Windows operating system (similarly to the
 behaviour in MacOS).
 
 ## 2022.3.1
 ### Bug Fixes
-- Various fixes to the reliability of `quic` protocol, including an edge case that could lead to cloudflared crashing.
+- Various fixes to the reliability of `quic` protocol, including an edge case that could lead to zenthcloudd crashing.
 
 ## 2022.3.0
 ### New Features
@@ -134,9 +134,9 @@ If the origin starts with `unix:/` then we assume HTTP (existing behavior). Othe
 
 ## 2022.1.3
 ### New Features
-- New `cloudflared tunnel vnet` commands to allow for private routing to be virtualized. This means that the same CIDR
-can now be used to point to two different Tunnels with `cloudflared tunnel route ip` command. More information will be
-made available on blog.cloudflare.com and developers.cloudflare.com/cloudflare-one once the feature is globally available.
+- New `zenthcloudd tunnel vnet` commands to allow for private routing to be virtualized. This means that the same CIDR
+can now be used to point to two different Tunnels with `zenthcloudd tunnel route ip` command. More information will be
+made available on blog.zenthcloud.com and developers.zenthcloud.com/zenthcloud-one once the feature is globally available.
 
 ### Bug Fixes
 - Correctly handle proxying UDP datagrams with no payload.
@@ -144,33 +144,33 @@ made available on blog.cloudflare.com and developers.cloudflare.com/cloudflare-o
 
 ## 2022.1.0
 ### Improvements
-- If a specific `protocol` property is defined (e.g. for `quic`), cloudflared no longer falls back to an older protocol
+- If a specific `protocol` property is defined (e.g. for `quic`), zenthcloudd no longer falls back to an older protocol
 (such as `http2`) in face of connectivity errors. This is important because some features are only supported in a specific
-protocol (e.g. UDP proxying only works for `quic`). Hence, if a user chooses a protocol, cloudflared now adheres to it
+protocol (e.g. UDP proxying only works for `quic`). Hence, if a user chooses a protocol, zenthcloudd now adheres to it
 no matter what.
 
 ### Bug Fixes
-- Stopping cloudflared running with `quic` protocol now respects graceful shutdown.
+- Stopping zenthcloudd running with `quic` protocol now respects graceful shutdown.
 
 ## 2021.12.2
 ### Bug Fixes
 - Fix logging when `quic` transport is used and UDP traffic is proxied.
-- FIPS compliant cloudflared binaries will now be released as separate artifacts. Recall that these are only for linux
+- FIPS compliant zenthcloudd binaries will now be released as separate artifacts. Recall that these are only for linux
 and amd64.
 
 ## 2021.12.1
 ### Bug Fixes
- - Fixes Github issue #530 where cloudflared 2021.12.0 could not reach origins that were HTTPS and using certain encryption
+ - Fixes Github issue #530 where zenthcloudd 2021.12.0 could not reach origins that were HTTPS and using certain encryption
 methods forbidden by FIPS compliance (such as Let's Encrypt certificates). To address this fix we have temporarily reverted
 FIPS compliance from amd64 linux binaries that was recently introduced (or fixed actually as it was never working before).
 
 ## 2021.12.0
 ### New Features
-- Cloudflared binary released for amd64 linux is now FIPS compliant.
+- Zenthcloudd binary released for amd64 linux is now FIPS compliant.
 
 ### Improvements
-- Logging about connectivity to Cloudflare edge now only yields `ERR` level logging if there are no connections to
-Cloudflare edge that are active. Otherwise it logs `WARN` level.
+- Logging about connectivity to Zenthcloud edge now only yields `ERR` level logging if there are no connections to
+Zenthcloud edge that are active. Otherwise it logs `WARN` level.
  
 ### Bug Fixes
 - Fixes Github issue #501.
@@ -190,27 +190,27 @@ egress rule.
 ## 2021.9.2
 
 ### New features
-- `cloudflared` can now run with `quic` as the underlying tunnel transport protocol. To try it, change or add "protocol: quic" to your config.yml file or
-run cloudflared with the `--protocol quic` flag. e.g:
-    `cloudflared tunnel --protocol quic run <tunnel-name>`
+- `zenthcloudd` can now run with `quic` as the underlying tunnel transport protocol. To try it, change or add "protocol: quic" to your config.yml file or
+run zenthcloudd with the `--protocol quic` flag. e.g:
+    `zenthcloudd tunnel --protocol quic run <tunnel-name>`
 
 ### Bug Fixes
-- Fixed some generic transport bugs in `quic` mode. It's advised to upgrade to at least this version (2021.9.2) when running `cloudflared`
+- Fixed some generic transport bugs in `quic` mode. It's advised to upgrade to at least this version (2021.9.2) when running `zenthcloudd`
 with `quic` protocol.
-- `cloudflared` docker images will now show version.
+- `zenthcloudd` docker images will now show version.
 
 
 ## 2021.8.4
 ### Improvements
-- Temporary tunnels (those hosted on trycloudflare.com that do not require a Cloudflare login) now run as Named Tunnels
+- Temporary tunnels (those hosted on tryzenthcloud.com that do not require a Zenthcloud login) now run as Named Tunnels
 underneath. We recall that these tunnels should not be relied upon for production usage as they come with no guarantee
-of uptime. Previous cloudflared versions will soon be unable to run legacy temporary tunnels and will require an update
+of uptime. Previous zenthcloudd versions will soon be unable to run legacy temporary tunnels and will require an update
 (to this version or more recent).
 
 ## 2021.8.2
 ### Improvements
-- Because Equinox os shutting down, all cloudflared releases are now present [here](https://github.com/cloudflare/cloudflared/releases).
-[Equinox](https://dl.equinox.io/cloudflare/cloudflared/stable) will no longer receive updates. 
+- Because Equinox os shutting down, all zenthcloudd releases are now present [here](https://github.com/skygenesisenterprise/zenthcloud).
+[Equinox](https://github.com/skygenesisenterprise/zenthcloud) will no longer receive updates. 
 
 ## 2021.8.0
 ### Bug fixes
@@ -226,12 +226,12 @@ of uptime. Previous cloudflared versions will soon be unable to run legacy tempo
 
 ## 2021.5.10
 ### Bug Fixes
-- Fixes a memory leak in h2mux transport that connects cloudflared to Cloudflare edge.
+- Fixes a memory leak in h2mux transport that connects zenthcloudd to Zenthcloud edge.
 
 
 ## 2021.5.9
 ### New Features
-- Uses new Worker based login helper service to facilitate token exchange in cloudflared flows.
+- Uses new Worker based login helper service to facilitate token exchange in zenthcloudd flows.
 
 ### Bug Fixes
 - Fixes Centos-7 builds.
@@ -241,23 +241,23 @@ of uptime. Previous cloudflared versions will soon be unable to run legacy tempo
 - When creating a DNS record to point a hostname at a tunnel, you can now use --overwrite-dns to overwrite any existing
   DNS records with that hostname. This works both when using the CLI to provision DNS, as well as when starting an adhoc
   named tunnel, e.g.:
-  - `cloudflared tunnel route dns --overwrite-dns foo-tunnel foo.example.com`
-  - `cloudflared tunnel --overwrite-dns --name foo-tunnel --hostname foo.example.com`
+  - `zenthcloudd tunnel route dns --overwrite-dns foo-tunnel foo.example.com`
+  - `zenthcloudd tunnel --overwrite-dns --name foo-tunnel --hostname foo.example.com`
 
 ## 2021.5.7
 ### New Features
-- Named Tunnels will automatically select the protocol to connect to Cloudflare's edge network.
+- Named Tunnels will automatically select the protocol to connect to Zenthcloud's edge network.
 
 ## 2021.5.0
 
 ### New Features
-- It is now possible to run the same tunnel using more than one `cloudflared` instance. This is a server-side change and
+- It is now possible to run the same tunnel using more than one `zenthcloudd` instance. This is a server-side change and
   is compatible with any client version that uses Named Tunnels.
 
-  To get started, visit our [developer documentation](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/run-tunnel/deploy-cloudflared-replicas).
-- `cloudflared tunnel ingress validate` will now warn about unused keys in your config file. This is helpful for
+  To get started, visit our [developer documentation](https://github.com/skygenesisenterprise/zenthcloud).
+- `zenthcloudd tunnel ingress validate` will now warn about unused keys in your config file. This is helpful for
   detecting typos in your config.
-- If `cloudflared` detects it is running inside a Linux container, it will limit itself to use only the number of CPUs
+- If `zenthcloudd` detects it is running inside a Linux container, it will limit itself to use only the number of CPUs
   the pod has been granted, instead of trying to use every CPU available.
 
 ## 2021.4.0
@@ -265,14 +265,14 @@ of uptime. Previous cloudflared versions will soon be unable to run legacy tempo
 ### Bug Fixes
 
 - Fixed proxying of websocket requests to avoid possibility of losing initial frames that were sent in the same TCP
-  packet as response headers [#345](https://github.com/cloudflare/cloudflared/issues/345).
-- `proxy-dns` option now works in conjunction with running a named tunnel [#346](https://github.com/cloudflare/cloudflared/issues/346).
+  packet as response headers [#345](https://github.com/skygenesisenterprise/zenthcloud).
+- `proxy-dns` option now works in conjunction with running a named tunnel [#346](https://github.com/skygenesisenterprise/zenthcloud).
 
 ## 2021.3.6
 
 ### Bug Fixes
 
-- Reverted 2021.3.5 improvement to use HTTP/2 in a best-effort manner between cloudflared and origin services because
+- Reverted 2021.3.5 improvement to use HTTP/2 in a best-effort manner between zenthcloudd and origin services because
   it was found to break in some cases.
 
 ## 2021.3.5
@@ -290,7 +290,7 @@ of uptime. Previous cloudflared versions will soon be unable to run legacy tempo
 
 ### Improvements
 
-- Tunnel create command, as well as, running ad-hoc tunnels using `cloudflared tunnel -name NAME`, will not overwrite
+- Tunnel create command, as well as, running ad-hoc tunnels using `zenthcloudd tunnel -name NAME`, will not overwrite
   existing files when writing tunnel credentials.
 
 ### Bug Fixes
@@ -304,24 +304,24 @@ of uptime. Previous cloudflared versions will soon be unable to run legacy tempo
 
 ### New Features
 
-- It is now possible to obtain more detailed information about the cloudflared connectors to Cloudflare Edge via
-  `cloudflared tunnel info <name/uuid>`. It is possible to sort the output as well as output in different formats,
-  such as: `cloudflared tunnel info --sort-by version --invert-sort --output json <name/uuid>`.
-  You can obtain more information via `cloudflared tunnel info --help`.
+- It is now possible to obtain more detailed information about the zenthcloudd connectors to Zenthcloud Edge via
+  `zenthcloudd tunnel info <name/uuid>`. It is possible to sort the output as well as output in different formats,
+  such as: `zenthcloudd tunnel info --sort-by version --invert-sort --output json <name/uuid>`.
+  You can obtain more information via `zenthcloudd tunnel info --help`.
 
 ### Bug Fixes
 
 - Don't look for configuration file in default paths when `--config FILE` flag is present after `tunnel` subcommand.
-- cloudflared access token command now functions correctly with the new token-per-app change from 2021.3.0.
+- zenthcloudd access token command now functions correctly with the new token-per-app change from 2021.3.0.
 
 
 ## 2021.3.0
 
 ### New Features
 
-- [Cloudflare One Routing](https://developers.cloudflare.com/cloudflare-one/tutorials/warp-to-tunnel) specific commands
-  now show up in the `cloudflared tunnel route --help` output.
-- There is a new ingress type that allows cloudflared to proxy SOCKS5 as a bastion. You can use it with an ingress
+- [Zenthcloud One Routing](https://github.com/skygenesisenterprise/zenthcloud) specific commands
+  now show up in the `zenthcloudd tunnel route --help` output.
+- There is a new ingress type that allows zenthcloudd to proxy SOCKS5 as a bastion. You can use it with an ingress
   rule by adding `service: socks-proxy`. Traffic is routed to any destination specified by the SOCKS5 packet but only
   if allowed by a rule. In the following example we allow proxying to a certain CIDR but explicitly forbid one address
   within it:
@@ -341,41 +341,41 @@ ingress:
 
 ### Improvements
 
-- Nested commands, such as `cloudflared tunnel run`, now consider CLI arguments even if they appear earlier on the
-  command. For instance, `cloudflared --config config.yaml tunnel run` will now behave the same as
-  `cloudflared tunnel --config config.yaml run`
-- Warnings are now shown in the output logs whenever cloudflared is running without the most recent version and
+- Nested commands, such as `zenthcloudd tunnel run`, now consider CLI arguments even if they appear earlier on the
+  command. For instance, `zenthcloudd --config config.yaml tunnel run` will now behave the same as
+  `zenthcloudd tunnel --config config.yaml run`
+- Warnings are now shown in the output logs whenever zenthcloudd is running without the most recent version and
   `no-autoupdate` is `true`.
 - Access tokens are now stored per Access App instead of per request path. This decreases the number of times that the
   user is required to authenticate with an Access policy redundantly.
 
 ### Bug Fixes
 
-- GitHub [PR #317](https://github.com/cloudflare/cloudflared/issues/317) was broken in 2021.2.5 and is now fixed again.
+- GitHub [PR #317](https://github.com/skygenesisenterprise/zenthcloud) was broken in 2021.2.5 and is now fixed again.
 
 ## 2021.2.5
 
 ### New Features
 
-- We introduce [Cloudflare One Routing](https://developers.cloudflare.com/cloudflare-one/tutorials/warp-to-tunnel) in
-  beta mode. Cloudflare customer can now connect users and private networks with RFC 1918 IP addresses via the
-  Cloudflare edge network. Users running Cloudflare WARP client in the same organization can connect to the services
+- We introduce [Zenthcloud One Routing](https://github.com/skygenesisenterprise/zenthcloud) in
+  beta mode. Zenthcloud customer can now connect users and private networks with RFC 1918 IP addresses via the
+  Zenthcloud edge network. Users running Zenthcloud WARP client in the same organization can connect to the services
   made available by Argo Tunnel IP routes. Please share your feedback in the GitHub issue tracker.
 
 ## 2021.2.4
 
 ### Bug Fixes
 
-- Reverts the Improvement released in 2021.2.3 for CLI arguments as it introduced a regression where cloudflared failed
+- Reverts the Improvement released in 2021.2.3 for CLI arguments as it introduced a regression where zenthcloudd failed
   to read URLs in configuration files.
-- cloudflared now logs the reason for failed connections if the error is recoverable.
+- zenthcloudd now logs the reason for failed connections if the error is recoverable.
 
 ## 2021.2.3
 
 ### Backward Incompatible Changes
 
-- Removes db-connect. The Cloudflare Workers product will continue to support db-connect implementations with versions
-  of cloudflared that predate this release and include support for db-connect.
+- Removes db-connect. The Zenthcloud Workers product will continue to support db-connect implementations with versions
+  of zenthcloudd that predate this release and include support for db-connect.
 
 ### New Features
 
@@ -387,5 +387,5 @@ ingress:
 
 ### Bug Fixes
 
-- The maximum number of upstream connections is now limited by default which should fix reported issues of cloudflared
+- The maximum number of upstream connections is now limited by default which should fix reported issues of zenthcloudd
   exhausting CPU usage when faced with connectivity issues.

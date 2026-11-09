@@ -1,18 +1,18 @@
 ---
-page_title: "cloudflare_origin_tls_compliance_modes Resource - Cloudflare"
+page_title: "zenthcloud_origin_tls_compliance_modes Resource - Zenthcloud"
 subcategory: ""
 description: |-
   
 ---
 
-# cloudflare_origin_tls_compliance_modes (Resource)
+# zenthcloud_origin_tls_compliance_modes (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "cloudflare_origin_tls_compliance_modes" "example_origin_tls_compliance_modes" {
+resource "zenthcloud_origin_tls_compliance_modes" "example_origin_tls_compliance_modes" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   value = ["fips", "pqh"]
 }
@@ -23,7 +23,7 @@ resource "cloudflare_origin_tls_compliance_modes" "example_origin_tls_compliance
 
 ### Required
 
-- `value` (List of String) List of TLS compliance modes that constrain the key-exchange algorithms Cloudflare may use when establishing the TLS connection to the zone's origin. Currently supported values are `fips` (FIPS-approved curves) and `pqh` (post-quantum hybrid). Future modes (e.g. `cnsa2`) may be added; clients should treat unknown values as opaque strings. Multiple modes are combined as the intersection of their permitted algorithm lists; selections whose intersection is empty are rejected. An empty list clears the constraint.
+- `value` (List of String) List of TLS compliance modes that constrain the key-exchange algorithms Zenthcloud may use when establishing the TLS connection to the zone's origin. Currently supported values are `fips` (FIPS-approved curves) and `pqh` (post-quantum hybrid). Future modes (e.g. `cnsa2`) may be added; clients should treat unknown values as opaque strings. Multiple modes are combined as the intersection of their permitted algorithm lists; selections whose intersection is empty are rejected. An empty list clears the constraint.
 - `zone_id` (String) Identifier.
 
 ### Read-Only
@@ -37,7 +37,7 @@ resource "cloudflare_origin_tls_compliance_modes" "example_origin_tls_compliance
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_origin_tls_compliance_modes.example '<zone_id>'
+$ terraform import zenthcloud_origin_tls_compliance_modes.example '<zone_id>'
 ```
 
 

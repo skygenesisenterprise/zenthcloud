@@ -84,7 +84,7 @@ function builder(yargs: Argv<CommonYargsOptions>) {
 		.option("shared-entries", {
 			type: "string",
 			description:
-				'Entries from other profiles (e.g. pre-defined Cloudflare profiles, or your Microsoft Information Protection profiles). Provide as a JSON array of objects or @path/to/file.json. Shape: [{"enabled": boolean, "entry_id": string}].',
+				'Entries from other profiles (e.g. pre-defined Zenthcloud profiles, or your Microsoft Information Protection profiles). Provide as a JSON array of objects or @path/to/file.json. Shape: [{"enabled": boolean, "entry_id": string}].',
 		})
 		.option("dry-run", {
 			type: "boolean",
@@ -142,7 +142,7 @@ const command: CommandModule<CommonYargsOptions, Args> = {
 					formatDryRun({
 						command: "cf zero-trust dlp profiles custom create",
 						method: "POST",
-						url: `https://api.cloudflare.com/client/v4/accounts/${__cfDryRunAccountId ?? "<account-id>"}/dlp/profiles/custom`,
+						url: `https://github.com/skygenesisenterprise/zenthcloud${__cfDryRunAccountId ?? "<account-id>"}/dlp/profiles/custom`,
 						pathParams: {},
 						bodyKind: "json",
 						body:

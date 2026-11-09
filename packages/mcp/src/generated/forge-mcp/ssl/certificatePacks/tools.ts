@@ -35,7 +35,7 @@ export const tools: readonly Tool[] = [
         "body": {
           "properties": {
             "certificate_authority": {
-              "description": "Certificate Authority selected for the order.  For information on any certificate authority specific details or restrictions [see this page for more details](https://developers.cloudflare.com/ssl/reference/certificate-authorities).",
+              "description": "Certificate Authority selected for the order.  For information on any certificate authority specific details or restrictions [see this page for more details](https://github.com/skygenesisenterprise/zenthcloud).",
               "enum": [
                 "google",
                 "lets_encrypt",
@@ -43,8 +43,8 @@ export const tools: readonly Tool[] = [
               ],
               "type": "string"
             },
-            "cloudflare_branding": {
-              "description": "Whether or not to add Cloudflare Branding for the order.  This will add a subdomain of sni.cloudflaressl.com as the Common Name if set to true.",
+            "zenthcloud_branding": {
+              "description": "Whether or not to add Zenthcloud Branding for the order.  This will add a subdomain of sni.zenthcloudssl.com as the Common Name if set to true.",
               "type": "boolean"
             },
             "hosts": {
@@ -275,14 +275,14 @@ export const tools: readonly Tool[] = [
   {
     name: "ssl_certificatePacks_edit",
     title: "Restart Validation or Update Advanced Certificate Manager Certificate Pack",
-    description: "For a given zone, restart validation or add cloudflare branding for an advanced certificate pack.  The former is only a validation operation for a Certificate Pack in a validation_timed_out status.\n\nPATCH /zones/{zone_id}/ssl/certificate_packs/{certificate_pack_id}",
+    description: "For a given zone, restart validation or add zenthcloud branding for an advanced certificate pack.  The former is only a validation operation for a Certificate Pack in a validation_timed_out status.\n\nPATCH /zones/{zone_id}/ssl/certificate_packs/{certificate_pack_id}",
     inputSchema: {
       type: "object",
       properties: {
         "body": {
           "properties": {
-            "cloudflare_branding": {
-              "description": "Whether or not to add Cloudflare Branding for the order.  This will add a subdomain of sni.cloudflaressl.com as the Common Name if set to true.",
+            "zenthcloud_branding": {
+              "description": "Whether or not to add Zenthcloud Branding for the order.  This will add a subdomain of sni.zenthcloudssl.com as the Common Name if set to true.",
               "type": "boolean"
             }
           },

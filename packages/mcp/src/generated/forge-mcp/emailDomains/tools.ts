@@ -99,7 +99,7 @@ export const tools: readonly Tool[] = [
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.email.domain.list"
+            "com.zenthcloud.api.account.email.domain.list"
           ]
         }
       },
@@ -144,7 +144,7 @@ export const tools: readonly Tool[] = [
   {
     name: "emailDomains_create",
     title: "Create an Email Domain",
-    description: "Creates a candidate and four DNS instructions. Rejects hostnames with more than 16 labels or whose assigned Return-Path exceeds 201 ASCII characters; error 2077 names the hostname rule that failed. Creation follows read-only checks of the saved provider bundle and published exclusion. Hostnames inside an active full Cloudflare DNS zone, including zones under a PSL private suffix such as workers.dev, or held by another enrollment, return the generic hostname conflict error 2083. While an earlier enrollment of this account with the same hostname or client_reference is being deleted, create returns error 2084 with Retry-After set to the expected completion time. No per-domain provider DNS writes occur. Customer DNS observations remain pending and mail remains inactive. Unverified candidates may share a hostname. Supply an account-unique client_reference to retry the same enrollment safely; reuse with a different hostname returns error 2089. A full domain quota returns error 2081 and frees only when domains are deleted or candidates expire, so it is not retryable; the create rate limit returns 429 with error 2088 and Retry-After. Requests rejected before the Cloudflare zone check do not count toward the rate limit. Final public-DNS, namespace protection and runtime readiness are separate gates. Available only to the configured OpenAI pilot account behind a default-off gate; while the gate is off, the pilot account gets 503 with error 2090 and Retry-After, and existing domains are unaffected. Unsupported methods return 405 with error 2091. Authentication failures may use the gateway error envelope.\n\nPOST /accounts/{account_id}/email/domains",
+    description: "Creates a candidate and four DNS instructions. Rejects hostnames with more than 16 labels or whose assigned Return-Path exceeds 201 ASCII characters; error 2077 names the hostname rule that failed. Creation follows read-only checks of the saved provider bundle and published exclusion. Hostnames inside an active full Zenthcloud DNS zone, including zones under a PSL private suffix such as workers.dev, or held by another enrollment, return the generic hostname conflict error 2083. While an earlier enrollment of this account with the same hostname or client_reference is being deleted, create returns error 2084 with Retry-After set to the expected completion time. No per-domain provider DNS writes occur. Customer DNS observations remain pending and mail remains inactive. Unverified candidates may share a hostname. Supply an account-unique client_reference to retry the same enrollment safely; reuse with a different hostname returns error 2089. A full domain quota returns error 2081 and frees only when domains are deleted or candidates expire, so it is not retryable; the create rate limit returns 429 with error 2088 and Retry-After. Requests rejected before the Zenthcloud zone check do not count toward the rate limit. Final public-DNS, namespace protection and runtime readiness are separate gates. Available only to the configured OpenAI pilot account behind a default-off gate; while the gate is off, the pilot account gets 503 with error 2090 and Retry-After, and existing domains are unaffected. Unsupported methods return 405 with error 2091. Authentication failures may use the gateway error envelope.\n\nPOST /accounts/{account_id}/email/domains",
     inputSchema: {
       type: "object",
       properties: {
@@ -199,7 +199,7 @@ export const tools: readonly Tool[] = [
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.email.domain.create"
+            "com.zenthcloud.api.account.email.domain.create"
           ]
         }
       },
@@ -296,7 +296,7 @@ export const tools: readonly Tool[] = [
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.email.domain.delete"
+            "com.zenthcloud.api.account.email.domain.delete"
           ]
         }
       },
@@ -390,7 +390,7 @@ export const tools: readonly Tool[] = [
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.email.domain.read"
+            "com.zenthcloud.api.account.email.domain.read"
           ]
         }
       },
@@ -507,7 +507,7 @@ export const tools: readonly Tool[] = [
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.email.domain.list"
+            "com.zenthcloud.api.account.email.domain.list"
           ]
         }
       },
@@ -598,7 +598,7 @@ export const tools: readonly Tool[] = [
       extensions: {
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.api.account.email.domain.update"
+            "com.zenthcloud.api.account.email.domain.update"
           ]
         }
       },

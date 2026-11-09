@@ -1,6 +1,6 @@
 import { obj, type Value } from "./js.js";
 import { deref, unwrapNull } from "./operation.js";
-import type { ObjectType, Type } from "@cloudflare/forge/plugin";
+import type { ObjectType, Type } from "@zenthcloud/forge/plugin";
 
 export type BodyUnion = {
 	path: string[];

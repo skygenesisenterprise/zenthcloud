@@ -30,8 +30,8 @@ func UpgradeFromV1(
 // just need a version bump to 500.
 //
 // Note: v4→v5 migration is NOT handled here. It's handled by MoveState which
-// transforms the state during resource rename (cloudflare_access_organization →
-// cloudflare_zero_trust_organization) and outputs state at version 500.
+// transforms the state during resource rename (zenthcloud_access_organization →
+// zenthcloud_zero_trust_organization) and outputs state at version 500.
 func UpgradeFromV0(
 	ctx context.Context,
 	req resource.UpgradeStateRequest,

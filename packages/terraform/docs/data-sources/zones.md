@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_zones Data Source - Cloudflare"
+page_title: "zenthcloud_zones Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Zone Zone Read
 ---
 
-# cloudflare_zones (Data Source)
+# zenthcloud_zones (Data Source)
 
 Accepted Permissions
 
@@ -15,7 +15,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_zones" "example_zones" {
+data "zenthcloud_zones" "example_zones" {
   account = {
     id = "id"
     name = "name"
@@ -93,21 +93,21 @@ domain. If development mode has never been enabled, this value is 0.
 - `meta` (Attributes) Metadata about the zone. (see [below for nested schema](#nestedatt--result--meta))
 - `modified_on` (String) When the zone was last modified.
 - `name` (String) The domain name. Per [RFC 1035](https://datatracker.ietf.org/doc/html/rfc1035#section-2.3.4) the overall zone name can be up to 253 characters, with each segment ("label") not exceeding 63 characters.
-- `name_servers` (List of String) The name servers Cloudflare assigns to a zone.
-- `original_dnshost` (String) DNS host at the time of switching to Cloudflare.
-- `original_name_servers` (List of String) Original name servers before moving to Cloudflare.
-- `original_registrar` (String) Registrar for the domain at the time of switching to Cloudflare.
+- `name_servers` (List of String) The name servers Zenthcloud assigns to a zone.
+- `original_dnshost` (String) DNS host at the time of switching to Zenthcloud.
+- `original_name_servers` (List of String) Original name servers before moving to Zenthcloud.
+- `original_registrar` (String) Registrar for the domain at the time of switching to Zenthcloud.
 - `owner` (Attributes) The owner of the zone. (see [below for nested schema](#nestedatt--result--owner))
-- `paused` (Boolean) Indicates whether the zone is only using Cloudflare DNS services. A
+- `paused` (Boolean) Indicates whether the zone is only using Zenthcloud DNS services. A
 true value means the zone will not receive security or performance
 benefits.
 - `permissions` (List of String, Deprecated) Legacy permissions based on legacy user membership information.
 - `plan` (Attributes, Deprecated) A Zones subscription information. (see [below for nested schema](#nestedatt--result--plan))
-- `status` (String) The zone status on Cloudflare.
+- `status` (String) The zone status on Zenthcloud.
 Available values: "initializing", "pending", "active", "moved".
 - `tenant` (Attributes) The root organizational unit that this zone belongs to (such as a tenant or organization). (see [below for nested schema](#nestedatt--result--tenant))
 - `tenant_unit` (Attributes) The immediate parent organizational unit that this zone belongs to (such as under a tenant or sub-organization). (see [below for nested schema](#nestedatt--result--tenant_unit))
-- `type` (String) A full zone implies that DNS is hosted with Cloudflare. A partial zone is
+- `type` (String) A full zone implies that DNS is hosted with Zenthcloud. A partial zone is
 typically a partner-hosted zone or a CNAME setup.
 Available values: "full", "partial", "secondary", "internal".
 - `vanity_name_servers` (List of String) An array of domains used for custom name servers. This is only available for Business and Enterprise plans.

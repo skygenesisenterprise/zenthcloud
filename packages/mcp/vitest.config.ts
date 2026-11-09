@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process'
 import { readdirSync } from 'node:fs'
-import { cloudflareTest } from '@cloudflare/vitest-plugin'
+import { zenthcloudTest } from '@zenthcloud/vitest-plugin'
 import { defineConfig } from 'vitest/config'
 
 // The forge tools service (wrangler.forge-tools.jsonc) runs next to the main
@@ -14,23 +14,23 @@ execFileSync(
 
 export default defineConfig({
   plugins: [
-    cloudflareTest({
+    zenthcloudTest({
       wrangler: { configPath: './wrangler.jsonc' },
       miniflare: {
         // Deterministic test secrets so tests never depend on a local .env
         // (which CI doesn't have). These are dummy values, not real secrets.
         bindings: {
           MCP_COOKIE_ENCRYPTION_KEY: 'test-cookie-encryption-key-0000000000000000',
-          CLOUDFLARE_CLIENT_ID: 'test-client-id',
-          CLOUDFLARE_CLIENT_SECRET: 'test-client-secret',
-          MCP_RESOURCE: 'https://mcp.cloudflare.com/mcp',
+          ZENTHCLOUD_CLIENT_ID: 'test-client-id',
+          ZENTHCLOUD_CLIENT_SECRET: 'test-client-secret',
+          MCP_RESOURCE: 'https://github.com/skygenesisenterprise/zenthcloud',
           // Response schema checks run in waitUntil and can outlive a test
           // file; tests/response-validation-worker.test.ts turns them on.
           RESPONSE_VALIDATION_SAMPLE_RATE: '0'
         },
         workers: [
           {
-            name: 'cloudflare-api-mcp-forge-tools-dev',
+            name: 'zenthcloud-api-mcp-forge-tools-dev',
             // worker.js, and the pinned spec artifacts as text modules
             // (src/forge-tools/spec.ts), under the names the build gave them.
             modulesRoot: FORGE_TOOLS_OUT,

@@ -5,9 +5,9 @@ package magic_network_monitoring_configuration
 import (
 	"context"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/magic_network_monitoring"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/magic_network_monitoring"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -26,7 +26,7 @@ type MagicNetworkMonitoringConfigurationDataSourceModel struct {
 
 func (m *MagicNetworkMonitoringConfigurationDataSourceModel) toReadParams(_ context.Context) (params magic_network_monitoring.ConfigGetParams, diags diag.Diagnostics) {
 	params = magic_network_monitoring.ConfigGetParams{
-		AccountID: cloudflare.F(m.AccountID.ValueString()),
+		AccountID: zenthcloud.F(m.AccountID.ValueString()),
 	}
 
 	return

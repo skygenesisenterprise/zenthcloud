@@ -5,16 +5,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// SourceCloudflareTeamsRuleSchema returns the source schema for legacy cloudflare_teams_rule resource.
+// SourceZenthcloudTeamsRuleSchema returns the source schema for legacy zenthcloud_teams_rule resource.
 // Schema version: 0 (implicit in v4 SDKv2 - no explicit Version field specified)
-// Resource type: cloudflare_teams_rule
+// Resource type: zenthcloud_teams_rule
 //
 // This minimal schema is used only for reading v4 state during migration.
 // It includes only the properties needed for state parsing (Required, Optional, Computed, ElementType).
 // Validators, PlanModifiers, and Descriptions are intentionally omitted.
 //
-// Reference: cloudflare-terraform-v4/internal/sdkv2provider/schema_cloudflare_teams_rules.go
-func SourceCloudflareTeamsRuleSchema() schema.Schema {
+// Reference: zenthcloud-terraform-v4/internal/sdkv2provider/schema_zenthcloud_teams_rules.go
+func SourceZenthcloudTeamsRuleSchema() schema.Schema {
 	return schema.Schema{
 		Version: 0, // v4 SDKv2 schema has no explicit Version field (defaults to 0)
 		Attributes: map[string]schema.Attribute{
@@ -100,7 +100,7 @@ func SourceCloudflareTeamsRuleSchema() schema.Schema {
 						"insecure_disable_dnssec_validation": schema.BoolAttribute{
 							Optional: true,
 						},
-						"resolve_dns_through_cloudflare": schema.BoolAttribute{
+						"resolve_dns_through_zenthcloud": schema.BoolAttribute{
 							Optional: true,
 						},
 						"add_headers": schema.MapAttribute{

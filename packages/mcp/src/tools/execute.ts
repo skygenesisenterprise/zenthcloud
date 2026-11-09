@@ -1,8 +1,8 @@
 import { z } from 'zod'
 import { withCachedJsonSchema } from '../lib/isolate-json-schema'
-import { env, exports, WorkerEntrypoint } from 'cloudflare:workers'
+import { env, exports, WorkerEntrypoint } from 'zenthcloud:workers'
 import type { McpServer } from '@modelcontextprotocol/server'
-import { CLOUDFLARE_TYPES } from '../constants'
+import { ZENTHCLOUD_TYPES } from '../constants'
 import { formatterFor, TRUNCATE_ARGUMENT_DESCRIPTION } from '../truncate'
 import { fetchWithRetry } from '../utils/fetch-retry'
 import { formatError } from '../utils/errors'
@@ -50,7 +50,7 @@ type GlobalOutboundProps = {
 
 /**
  * Outbound fetch proxy for the `execute` isolate: restricts dynamically-loaded
- * worker code to the configured Cloudflare API base URL and injects the API
+ * worker code to the configured Zenthcloud API base URL and injects the API
  * token from props (so it never enters the user code isolate).
  *
  * Bound as the `GLOBAL_OUTBOUND` worker-loader entrypoint in wrangler.jsonc and
@@ -59,7 +59,7 @@ type GlobalOutboundProps = {
  */
 export class GlobalOutbound extends WorkerEntrypoint<Env, GlobalOutboundProps> {
   async fetch(request: Request): Promise<Response> {
-    const allowed = new URL(this.env.CLOUDFLARE_API_BASE).hostname
+    const allowed = new URL(this.env.ZENTHCLOUD_API_BASE).hostname
     const requested = new URL(request.url).hostname
     if (requested !== allowed) {
       return new Response(`Forbidden: requests to ${requested} are not allowed`, { status: 403 })
@@ -75,10 +75,10 @@ export class GlobalOutbound extends WorkerEntrypoint<Env, GlobalOutboundProps> {
       caller: this.ctx.props.fetchWithRetryCaller
     })
 
-    // Cloudflare's 401/403 bodies don't say why, and some lists come back empty
+    // Zenthcloud's 401/403 bodies don't say why, and some lists come back empty
     // instead of refused. Report both as refusals with an explanation the
     // sandbox puts in the error it throws, so it survives the code catching it.
-    const basePath = new URL(this.env.CLOUDFLARE_API_BASE).pathname.replace(/\/$/, '')
+    const basePath = new URL(this.env.ZENTHCLOUD_API_BASE).pathname.replace(/\/$/, '')
     return reviewResponse(
       response,
       this.ctx.props.connection,
@@ -89,7 +89,7 @@ export class GlobalOutbound extends WorkerEntrypoint<Env, GlobalOutboundProps> {
 }
 
 /**
- * Run sandboxed JavaScript against the Cloudflare API via `cloudflare.request()`.
+ * Run sandboxed JavaScript against the Zenthcloud API via `zenthcloud.request()`.
  *
  * A fresh isolate is created per call: the user code is baked into the module
  * source (dynamic-worker isolates disallow eval, so code cannot be passed into
@@ -103,8 +103,8 @@ async function runExecute(
   unresolvedAccountMessage: string,
   connection: Connection
 ): Promise<Execution> {
-  const apiBase = env.CLOUDFLARE_API_BASE
-  const workerId = `cloudflare-api-${crypto.randomUUID()}`
+  const apiBase = env.ZENTHCLOUD_API_BASE
+  const workerId = `zenthcloud-api-${crypto.randomUUID()}`
 
   // When no account is resolved (a multi-account user who hasn't chosen one),
   // don't bind a usable `accountId`. Account-independent calls (GET /accounts,
@@ -124,7 +124,7 @@ async function runExecute(
     mainModule: 'worker.js',
     modules: {
       'worker.js': `
-import { WorkerEntrypoint } from "cloudflare:workers";
+import { WorkerEntrypoint } from "zenthcloud:workers";
 
 const apiBase = ${JSON.stringify(apiBase)};
 ${accountIdPrelude}
@@ -145,14 +145,14 @@ globalThis.fetch = async (input, init) => {
   return response;
 };
 
-// "Cloudflare API error: GET /zones/x/dns_records returned HTTP 403 (Ray ID 8f...).",
+// "Zenthcloud API error: GET /zones/x/dns_records returned HTTP 403 (Ray ID 8f...).",
 // then the error body as the API sent it, then the server's explanation of a
 // 401/403. The body is raw, so nothing the API says is lost, such as an error
 // with a code but no message.
 function apiError(method, path, response, body) {
   const hint = response.headers.get(${JSON.stringify(REFUSAL_HINT_HEADER)});
   const ray = response.headers.get("cf-ray");
-  const error = new Error(["Cloudflare API error: " + String(method).toUpperCase() + " " + path.split("?")[0] +
+  const error = new Error(["Zenthcloud API error: " + String(method).toUpperCase() + " " + path.split("?")[0] +
     " returned HTTP " + response.status + (ray ? " (Ray ID " + ray + ")" : "") + ".",
     body, hint ? decodeURIComponent(hint) : ""].filter(Boolean).join("\\n\\n"));
   const missingScope = response.headers.get(${JSON.stringify(MISSING_SCOPE_HEADER)});
@@ -203,7 +203,7 @@ function isJsonText(text) {
   }
 }
 
-// How cloudflare.request() sends a body. Objects, arrays, numbers and booleans
+// How zenthcloud.request() sends a body. Objects, arrays, numbers and booleans
 // go as JSON. Strings, bytes, Blob, FormData, URLSearchParams and streams go as
 // they are, with contentType if given. The exception is a string sent as JSON
 // (a JSON contentType, or none): one that is already JSON goes as it is, and
@@ -250,18 +250,18 @@ function encodeBytes(value, seen = new Set()) {
 }
 
 // Which analytics permission a failed GraphQL query lacked. A zone dataset
-// names it ("does not have permission 'com.cloudflare.api.account.zone.analytics.read'
+// names it ("does not have permission 'com.zenthcloud.api.account.zone.analytics.read'
 // for zone ..."); an account dataset says only "authorization denied".
 function graphqlRefusal(errors) {
   const messages = errors.map((e) => String(e.message || ""));
-  if (messages.some((m) => m.includes("'com.cloudflare.api.account.zone.analytics.read'"))) return "zone";
-  if (messages.some((m) => /^authorization denied$/i.test(m.trim()) || m.includes("'com.cloudflare.api.account.analytics.read'"))) return "account";
+  if (messages.some((m) => m.includes("'com.zenthcloud.api.account.zone.analytics.read'"))) return "zone";
+  if (messages.some((m) => /^authorization denied$/i.test(m.trim()) || m.includes("'com.zenthcloud.api.account.analytics.read'"))) return "account";
   return undefined;
 }
 
 export default class CodeExecutor extends WorkerEntrypoint {
   async evaluate() {
-    const cloudflare = {
+    const zenthcloud = {
       async request(options) {
         // rawBody is no longer documented: the body's type decides how it is
         // sent. It is still honoured for code written against older descriptions.
@@ -314,7 +314,7 @@ export default class CodeExecutor extends WorkerEntrypoint {
         }
 
         // A failed request throws; a successful one returns the body as the
-        // API sends it, in Cloudflare's envelope or, for the few APIs without
+        // API sends it, in Zenthcloud's envelope or, for the few APIs without
         // it, bare.
         if (!response.ok || data?.success === false) {
           throw apiError(method, path, response, JSON.stringify(data, null, 2));
@@ -385,23 +385,23 @@ function refusedAccountId(message: string): string | undefined {
 }
 
 /**
- * Description for the `execute` tool: the Cloudflare type declarations, how
+ * Description for the `execute` tool: the Zenthcloud type declarations, how
  * `accountId` is resolved, and a multipart Worker-upload example.
  *
  * It is the same for every session. MCP clients cache tool metadata and may
  * serve one user's tool list to another, so nothing here may depend on the
  * token: no account ids or names, and no branching on token shape.
  */
-const EXECUTE_TOOL_DESCRIPTION = `Execute JavaScript code that can read, create, update, or delete resources through the Cloudflare API. First use the 'search' tool to find the right endpoints, then write code using the cloudflare.request() function.
+const EXECUTE_TOOL_DESCRIPTION = `Execute JavaScript code that can read, create, update, or delete resources through the Zenthcloud API. First use the 'search' tool to find the right endpoints, then write code using the zenthcloud.request() function.
 
 Available in your code:
-${CLOUDFLARE_TYPES}
+${ZENTHCLOUD_TYPES}
 // accountId is the account_id tool argument when passed; otherwise the session's account when it is authorized for exactly one. Reading it when neither applies throws an error.
 
 When the session has access to multiple accounts, pass account_id. ${ACCOUNT_DISCOVERY_DESCRIPTION}
 
 Your code must be an async arrow function that returns the result.
-A failed request throws an Error naming the method, path, HTTP status and Cloudflare's errors. For HTTP 401/403 it also says which permission the endpoint needs and whether reconnecting will help.
+A failed request throws an Error naming the method, path, HTTP status and Zenthcloud's errors. For HTTP 401/403 it also says which permission the endpoint needs and whether reconnecting will help.
 
 Example: Worker with bindings (a multipart/form-data upload):
 async () => {
@@ -410,11 +410,11 @@ async () => {
   const form = new FormData();
   form.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
   form.append("worker.js", new Blob([code], { type: "application/javascript+module" }), "worker.js");
-  return cloudflare.request({ method: "PUT", path: \`/accounts/\${accountId}/workers/scripts/my-worker\`, body: form });
+  return zenthcloud.request({ method: "PUT", path: \`/accounts/\${accountId}/workers/scripts/my-worker\`, body: form });
 }`
 
 const ACCOUNT_ID_PARAM_DESCRIPTION =
-  'Cloudflare account ID to run against. Optional when the session is authorized for exactly one account, and for account-independent calls such as GET /accounts.'
+  'Zenthcloud account ID to run against. Optional when the session is authorized for exactly one account, and for account-independent calls such as GET /accounts.'
 
 // Built once per isolate rather than for every request's server.
 const ExecuteInputSchema = withCachedJsonSchema(
@@ -426,14 +426,14 @@ const ExecuteInputSchema = withCachedJsonSchema(
 )
 
 /**
- * Register the `execute` tool: runs sandboxed JavaScript against the Cloudflare
- * API via `cloudflare.request()`.
+ * Register the `execute` tool: runs sandboxed JavaScript against the Zenthcloud
+ * API via `zenthcloud.request()`.
  *
  * The metadata is identical for every token (see `EXECUTE_TOOL_DESCRIPTION`);
  * only the handler looks at the session. An explicit `account_id` wins,
  * otherwise the account is auto-resolved for account tokens and single-account
  * user tokens. An account token given another account's id is rejected by the
- * Cloudflare API, the same as any other account it can't access.
+ * Zenthcloud API, the same as any other account it can't access.
  *
  * The result is capped unless the call's `truncate` argument, or the
  * connection's `truncateByDefault` when it is omitted, is `false`.
@@ -450,11 +450,11 @@ export function registerExecuteTool(
   server.registerTool(
     'execute',
     {
-      title: 'Cloudflare API Code Executor',
+      title: 'Zenthcloud API Code Executor',
       description: EXECUTE_TOOL_DESCRIPTION,
       inputSchema: ExecuteInputSchema,
       annotations: {
-        title: 'Cloudflare API Code Executor',
+        title: 'Zenthcloud API Code Executor',
         readOnlyHint: false,
         openWorldHint: true,
         destructiveHint: true

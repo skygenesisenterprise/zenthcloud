@@ -3,7 +3,7 @@ variable "zone_id" {
   default = "%[2]s"
 }
 
-resource "cloudflare_tiered_cache" "%[1]s" {
+resource "zenthcloud_tiered_cache" "%[1]s" {
   zone_id = var.zone_id
   value   = "on"
 }

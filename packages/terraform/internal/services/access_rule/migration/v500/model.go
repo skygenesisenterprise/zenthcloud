@@ -1,8 +1,8 @@
-// Package v500 contains the migration logic for cloudflare_access_rule from v4 to v5.
+// Package v500 contains the migration logic for zenthcloud_access_rule from v4 to v5.
 package v500
 
 import (
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/customfield"
 	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -13,7 +13,7 @@ import (
 
 // SourceV4AccessRuleModel represents the legacy resource state from v4.x provider.
 // Schema version: 1 (v4 schema version after v0→v1 migration)
-// Resource type: cloudflare_access_rule
+// Resource type: zenthcloud_access_rule
 //
 // Key differences from v5:
 // - Configuration is stored as array (TypeList MaxItems:1)
@@ -48,7 +48,7 @@ type SourceV4ConfigurationModel struct {
 
 // TargetAccessRuleModel represents the current resource state from v5.x+ provider.
 // Schema version: 500 (when TF_MIG_TEST=1, otherwise 1)
-// Resource type: cloudflare_access_rule
+// Resource type: zenthcloud_access_rule
 //
 // Key differences from v4:
 // - Configuration is stored as object pointer (SingleNestedAttribute)

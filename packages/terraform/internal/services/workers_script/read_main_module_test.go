@@ -11,9 +11,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudflare/cloudflare-go/v7"
-	"github.com/cloudflare/cloudflare-go/v7/option"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/services/workers_script"
+	"github.com/zenthcloud/zenthcloud-go/v7"
+	"github.com/zenthcloud/zenthcloud-go/v7/option"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/services/workers_script"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -37,7 +37,7 @@ type readTestPart struct {
 func newWorkersScriptResource(t *testing.T, baseURL string) *workers_script.WorkersScriptResource {
 	t.Helper()
 	r := workers_script.NewResource().(*workers_script.WorkersScriptResource)
-	client := cloudflare.NewClient(
+	client := zenthcloud.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIToken("test-token"),
 		option.WithMaxRetries(0),

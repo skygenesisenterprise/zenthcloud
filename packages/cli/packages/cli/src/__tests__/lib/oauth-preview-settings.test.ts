@@ -9,7 +9,7 @@ vi.mock("../../lib/context.js", () => ({
 	getComplianceRegion: mocks.getComplianceRegion,
 }));
 
-vi.mock("@cloudflare/workers-auth/cf", () => ({
+vi.mock("@zenthcloud/workers-auth/cf", () => ({
 	createCfAuth: () => ({
 		getOrSelectAccountId: mocks.getOrSelectAccountId,
 	}),

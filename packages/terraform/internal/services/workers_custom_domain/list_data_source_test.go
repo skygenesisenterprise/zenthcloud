@@ -4,23 +4,23 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 )
 
-func TestAccCloudflareWorkersCustomDomainsDataSource_List(t *testing.T) {
+func TestAccZenthcloudWorkersCustomDomainsDataSource_List(t *testing.T) {
 	t.Parallel()
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
-	zoneName := os.Getenv("CLOUDFLARE_DOMAIN")
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
+	zoneName := os.Getenv("ZENTHCLOUD_DOMAIN")
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 	hostname := rnd + "." + zoneName
-	resourceName := "cloudflare_workers_custom_domain." + rnd
-	dataSourceName := "data.cloudflare_workers_custom_domains." + rnd
+	resourceName := "zenthcloud_workers_custom_domain." + rnd
+	dataSourceName := "data.zenthcloud_workers_custom_domains." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -28,10 +28,10 @@ func TestAccCloudflareWorkersCustomDomainsDataSource_List(t *testing.T) {
 			acctest.TestAccPreCheck_AccountID(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareWorkersCustomDomainDestroy,
+		CheckDestroy:             testAccCheckZenthcloudWorkersCustomDomainDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareWorkersCustomDomainsListDataSourceConfig(rnd, accountID, hostname, zoneID),
+				Config: testAccZenthcloudWorkersCustomDomainsListDataSourceConfig(rnd, accountID, hostname, zoneID),
 				ConfigStateChecks: []statecheck.StateCheck{
 					// Check the resource was created properly
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("hostname"), knownvalue.StringExact(hostname)),
@@ -52,6 +52,6 @@ func TestAccCloudflareWorkersCustomDomainsDataSource_List(t *testing.T) {
 	})
 }
 
-func testAccCloudflareWorkersCustomDomainsListDataSourceConfig(rnd, accountID, hostname, zoneID string) string {
+func testAccZenthcloudWorkersCustomDomainsListDataSourceConfig(rnd, accountID, hostname, zoneID string) string {
 	return acctest.LoadTestCase("list_datasource.tf", rnd, accountID, hostname, zoneID)
 }

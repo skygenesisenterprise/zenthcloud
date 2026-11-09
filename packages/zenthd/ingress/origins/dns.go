@@ -12,16 +12,16 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"github.com/cloudflare/cloudflared/ingress"
+	"github.com/zenthcloud/zenthcloudd/ingress"
 )
 
 const (
 	// We need a DNS record:
-	// 1. That will be around for as long as cloudflared is
-	// 2. That Cloudflare controls: to allow us to make changes if needed
+	// 1. That will be around for as long as zenthcloudd is
+	// 2. That Zenthcloud controls: to allow us to make changes if needed
 	// 3. That is an external record to a typical customer's network: enforcing that the DNS request go to the
 	//    local DNS resolver over any local /etc/host configurations setup.
-	// 4. That cloudflared would normally query: ensuring that users with a positive security model for DNS queries
+	// 4. That zenthcloudd would normally query: ensuring that users with a positive security model for DNS queries
 	//    don't need to adjust anything.
 	//
 	// This hostname is one that used during the edge discovery process and as such satisfies the above constraints.
@@ -86,7 +86,7 @@ func (s *DNSResolverService) DialUDP(_ netip.AddrPort) (net.Conn, error) {
 }
 
 // StartRefreshLoop is a routine that is expected to run in the background to update the DNS local resolver if
-// adjusted while the cloudflared process is running.
+// adjusted while the zenthcloudd process is running.
 // Does not run when the resolver was provided with external resolver addresses via CLI.
 func (s *DNSResolverService) StartRefreshLoop(ctx context.Context) {
 	if s.static {

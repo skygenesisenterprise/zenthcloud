@@ -20,7 +20,7 @@ export const tools: readonly Tool[] = [
   {
     name: "workers_deployments_create",
     title: "Create Worker Deployment",
-    description: "Deployments configure how [Worker Versions](https://developers.cloudflare.com/api/operations/worker-versions-list-versions) are deployed to traffic. A deployment can consist of multiple versions of a Worker.\n\nPOST /accounts/{account_id}/workers/scripts/{script_name}/deployments",
+    description: "Deployments configure how [Worker Versions](https://github.com/skygenesisenterprise/zenthcloud) are deployed to traffic. A deployment can consist of multiple versions of a Worker.\n\nPOST /accounts/{account_id}/workers/scripts/{script_name}/deployments",
     inputSchema: {
       type: "object",
       properties: {

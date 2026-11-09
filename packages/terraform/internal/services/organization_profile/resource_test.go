@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
@@ -21,13 +21,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_organization_profile", &resource.Sweeper{
-		Name: "cloudflare_organization_profile",
-		F:    testSweepCloudflareOrganizationProfile,
+	resource.AddTestSweepers("zenthcloud_organization_profile", &resource.Sweeper{
+		Name: "zenthcloud_organization_profile",
+		F:    testSweepZenthcloudOrganizationProfile,
 	})
 }
 
-func testSweepCloudflareOrganizationProfile(r string) error {
+func testSweepZenthcloudOrganizationProfile(r string) error {
 	ctx := context.Background()
 	// Organization Profile is an organization-level configuration setting.
 	// It's a singleton setting per organization, not something that accumulates.
@@ -36,16 +36,16 @@ func testSweepCloudflareOrganizationProfile(r string) error {
 	return nil
 }
 
-// TestAccCloudflareOrganizationProfile_Basic tests the basic CRUD operations for organization_profile resource
-func TestAccCloudflareOrganizationProfile_Basic(t *testing.T) {
+// TestAccZenthcloudOrganizationProfile_Basic tests the basic CRUD operations for organization_profile resource
+func TestAccZenthcloudOrganizationProfile_Basic(t *testing.T) {
 	// Skip if no organization ID is provided
-	orgID := os.Getenv("CLOUDFLARE_ORGANIZATION_ID")
+	orgID := os.Getenv("ZENTHCLOUD_ORGANIZATION_ID")
 	if orgID == "" {
-		t.Skip("CLOUDFLARE_ORGANIZATION_ID not set, skipping organization profile test")
+		t.Skip("ZENTHCLOUD_ORGANIZATION_ID not set, skipping organization profile test")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_organization_profile." + rnd
+	resourceName := "zenthcloud_organization_profile." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -97,16 +97,16 @@ func TestAccCloudflareOrganizationProfile_Basic(t *testing.T) {
 }
 
 
-// TestAccCloudflareOrganizationProfile_MinimalMetadata tests with minimal external metadata
-func TestAccCloudflareOrganizationProfile_MinimalMetadata(t *testing.T) {
+// TestAccZenthcloudOrganizationProfile_MinimalMetadata tests with minimal external metadata
+func TestAccZenthcloudOrganizationProfile_MinimalMetadata(t *testing.T) {
 	// Skip if no organization ID is provided
-	orgID := os.Getenv("CLOUDFLARE_ORGANIZATION_ID")
+	orgID := os.Getenv("ZENTHCLOUD_ORGANIZATION_ID")
 	if orgID == "" {
-		t.Skip("CLOUDFLARE_ORGANIZATION_ID not set, skipping organization profile test")
+		t.Skip("ZENTHCLOUD_ORGANIZATION_ID not set, skipping organization profile test")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_organization_profile." + rnd
+	resourceName := "zenthcloud_organization_profile." + rnd
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -143,16 +143,16 @@ func TestAccCloudflareOrganizationProfile_MinimalMetadata(t *testing.T) {
 	})
 }
 
-// TestAccCloudflareOrganizationProfile_UpdateSingleField tests updating individual fields
-func TestAccCloudflareOrganizationProfile_UpdateSingleField(t *testing.T) {
+// TestAccZenthcloudOrganizationProfile_UpdateSingleField tests updating individual fields
+func TestAccZenthcloudOrganizationProfile_UpdateSingleField(t *testing.T) {
 	// Skip if no organization ID is provided
-	orgID := os.Getenv("CLOUDFLARE_ORGANIZATION_ID")
+	orgID := os.Getenv("ZENTHCLOUD_ORGANIZATION_ID")
 	if orgID == "" {
-		t.Skip("CLOUDFLARE_ORGANIZATION_ID not set, skipping organization profile test")
+		t.Skip("ZENTHCLOUD_ORGANIZATION_ID not set, skipping organization profile test")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceName := "cloudflare_organization_profile." + rnd
+	resourceName := "zenthcloud_organization_profile." + rnd
 	
 	initialEmail := "initial@example.com"
 	updatedEmail := "updated@example.com"

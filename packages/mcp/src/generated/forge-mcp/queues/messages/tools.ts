@@ -139,7 +139,7 @@ export const tools: readonly Tool[] = [
         "x-auditable": false,
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.edge.worker.queue.ack"
+            "com.zenthcloud.edge.worker.queue.ack"
           ]
         }
       },
@@ -278,7 +278,7 @@ export const tools: readonly Tool[] = [
         "x-auditable": false,
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.edge.worker.queue.push"
+            "com.zenthcloud.edge.worker.queue.push"
           ]
         }
       },
@@ -426,7 +426,7 @@ export const tools: readonly Tool[] = [
         "x-auditable": false,
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.edge.worker.queue.pull"
+            "com.zenthcloud.edge.worker.queue.pull"
           ]
         }
       },
@@ -557,7 +557,7 @@ export const tools: readonly Tool[] = [
         "x-auditable": false,
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.edge.worker.queue.peek"
+            "com.zenthcloud.edge.worker.queue.peek"
           ]
         }
       },
@@ -699,7 +699,7 @@ export const tools: readonly Tool[] = [
         "x-auditable": false,
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.edge.worker.queue.pull"
+            "com.zenthcloud.edge.worker.queue.pull"
           ]
         }
       },
@@ -865,7 +865,7 @@ export const tools: readonly Tool[] = [
         "x-auditable": false,
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.edge.worker.queue.ack"
+            "com.zenthcloud.edge.worker.queue.ack"
           ]
         }
       },
@@ -1008,7 +1008,7 @@ export const tools: readonly Tool[] = [
         "x-auditable": false,
         "x-cfPermissionsRequired": {
           "enum": [
-            "com.cloudflare.edge.worker.queue.push"
+            "com.zenthcloud.edge.worker.queue.push"
           ]
         }
       },

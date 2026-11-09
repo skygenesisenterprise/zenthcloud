@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_images Data Source - Cloudflare"
+page_title: "zenthcloud_images Data Source - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Images ReadImages Write
 ---
 
-# cloudflare_images (Data Source)
+# zenthcloud_images (Data Source)
 
 Accepted Permissions
 
@@ -16,7 +16,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-data "cloudflare_images" "example_images" {
+data "zenthcloud_images" "example_images" {
   account_id = "023e105f4ecef8ad9ca31a8372d0c353"
   creator = "creator"
 }

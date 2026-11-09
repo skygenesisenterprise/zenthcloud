@@ -5,9 +5,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -17,13 +17,13 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_api_shield_schema_validation_settings", &resource.Sweeper{
-		Name: "cloudflare_api_shield_schema_validation_settings",
-		F:    testSweepCloudflareAPIShieldSchemaValidationSettings,
+	resource.AddTestSweepers("zenthcloud_api_shield_schema_validation_settings", &resource.Sweeper{
+		Name: "zenthcloud_api_shield_schema_validation_settings",
+		F:    testSweepZenthcloudAPIShieldSchemaValidationSettings,
 	})
 }
 
-func testSweepCloudflareAPIShieldSchemaValidationSettings(r string) error {
+func testSweepZenthcloudAPIShieldSchemaValidationSettings(r string) error {
 	ctx := context.Background()
 	// This resource configures zone-level default schema validation settings for API Shield.
 	// It's a singleton configuration resource per zone, not something that accumulates.
@@ -32,16 +32,16 @@ func testSweepCloudflareAPIShieldSchemaValidationSettings(r string) error {
 	return nil
 }
 
-func TestAccCloudflareAPIShieldSchemaValidationSettings_Create(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the API token
+func TestAccZenthcloudAPIShieldSchemaValidationSettings_Create(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the API token
 	// endpoint does not yet support the API tokens without an explicit scope.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	resourceID := "cloudflare_api_shield_schema_validation_settings." + rnd
-	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	resourceID := "zenthcloud_api_shield_schema_validation_settings." + rnd
+	zoneID := os.Getenv("ZENTHCLOUD_ZONE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { acctest.TestAccPreCheck(t) },
@@ -49,7 +49,7 @@ func TestAccCloudflareAPIShieldSchemaValidationSettings_Create(t *testing.T) {
 		// CheckDestroy:             testAccCheckAPIShieldSchemaValidationSettingsDelete,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareAPIShieldSchemaValidationSettingsDefaultMitigationSet(rnd, zoneID),
+				Config: testAccZenthcloudAPIShieldSchemaValidationSettingsDefaultMitigationSet(rnd, zoneID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceID, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(resourceID, "validation_default_mitigation_action", "log"),
@@ -58,7 +58,7 @@ func TestAccCloudflareAPIShieldSchemaValidationSettings_Create(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCloudflareAPIShieldSchemaValidationSettingsAllMitigationsSet(rnd, zoneID),
+				Config: testAccZenthcloudAPIShieldSchemaValidationSettingsAllMitigationsSet(rnd, zoneID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceID, consts.ZoneIDSchemaKey, zoneID),
 					resource.TestCheckResourceAttr(resourceID, "validation_default_mitigation_action", "block"),
@@ -72,23 +72,23 @@ func TestAccCloudflareAPIShieldSchemaValidationSettings_Create(t *testing.T) {
 // func testAccCheckAPIShieldSchemaValidationSettingsDelete(s *terraform.State) error {
 // 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 // 	if clientErr != nil {
-// 		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+// 		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 // 	}
 
 // 	for _, rs := range s.RootModule().Resources {
-// 		if rs.Type != "cloudflare_api_shield_schema_validation_settings" {
+// 		if rs.Type != "zenthcloud_api_shield_schema_validation_settings" {
 // 			continue
 // 		}
 
 // 		result, err := client.GetAPIShieldSchemaValidationSettings(
 // 			context.Background(),
-// 			cloudflare.ZoneIdentifier(rs.Primary.Attributes[consts.ZoneIDSchemaKey]),
+// 			zenthcloud.ZoneIdentifier(rs.Primary.Attributes[consts.ZoneIDSchemaKey]),
 // 		)
 // 		if err != nil {
 // 			return fmt.Errorf("encountered error getting schema validation settings: %w", err)
 // 		}
 
-// 		if result.DefaultMitigationAction != cloudflareAPIShieldSchemaValidationSettingsDefault().DefaultMitigationAction {
+// 		if result.DefaultMitigationAction != zenthcloudAPIShieldSchemaValidationSettingsDefault().DefaultMitigationAction {
 // 			return fmt.Errorf("expected validation_default_mitigation_action to be 'none' but got: %s", result.DefaultMitigationAction)
 // 		}
 
@@ -100,10 +100,10 @@ func TestAccCloudflareAPIShieldSchemaValidationSettings_Create(t *testing.T) {
 // 	return nil
 // }
 
-func testAccCloudflareAPIShieldSchemaValidationSettingsDefaultMitigationSet(resourceName, zone string) string {
+func testAccZenthcloudAPIShieldSchemaValidationSettingsDefaultMitigationSet(resourceName, zone string) string {
 	return acctest.LoadTestCase("apishieldschemavalidationsettingsdefaultmitigationset.tf", resourceName, zone)
 }
 
-func testAccCloudflareAPIShieldSchemaValidationSettingsAllMitigationsSet(resourceName, zone string) string {
+func testAccZenthcloudAPIShieldSchemaValidationSettingsAllMitigationsSet(resourceName, zone string) string {
 	return acctest.LoadTestCase("apishieldschemavalidationsettingsallmitigationsset.tf", resourceName, zone)
 }

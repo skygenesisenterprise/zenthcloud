@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
-	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/acctest"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/consts"
+	"github.com/zenthcloud/terraform-provider-zenthcloud/internal/utils"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -23,20 +23,20 @@ func TestMain(m *testing.M) {
 }
 
 func init() {
-	resource.AddTestSweepers("cloudflare_zero_trust_device_posture_integration", &resource.Sweeper{
-		Name: "cloudflare_zero_trust_device_posture_integration",
-		F:    testSweepCloudflareZeroTrustDevicePostureIntegration,
+	resource.AddTestSweepers("zenthcloud_zero_trust_device_posture_integration", &resource.Sweeper{
+		Name: "zenthcloud_zero_trust_device_posture_integration",
+		F:    testSweepZenthcloudZeroTrustDevicePostureIntegration,
 	})
 }
 
-func testSweepCloudflareZeroTrustDevicePostureIntegration(r string) error {
+func testSweepZenthcloudZeroTrustDevicePostureIntegration(r string) error {
 	ctx := context.Background()
 	client, clientErr := acctest.SharedV1Client()
 	if clientErr != nil {
-		tflog.Error(ctx, fmt.Sprintf("Failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(ctx, fmt.Sprintf("Failed to create Zenthcloud client: %s", clientErr))
 		return clientErr
 	}
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
 	integrations, _, err := client.DevicePostureIntegrations(ctx, accountID)
 	if err != nil {
@@ -59,22 +59,22 @@ func testSweepCloudflareZeroTrustDevicePostureIntegration(r string) error {
 	return nil
 }
 
-func TestAccCloudflareDevicePostureIntegrationCreate(t *testing.T) {
-	// Temporarily unset CLOUDFLARE_API_TOKEN if it is set as the Access
+func TestAccZenthcloudDevicePostureIntegrationCreate(t *testing.T) {
+	// Temporarily unset ZENTHCLOUD_API_TOKEN if it is set as the Access
 	// service does not yet support the API tokens and it results in
 	// misleading state error messages.
-	if os.Getenv("CLOUDFLARE_API_TOKEN") != "" {
-		t.Setenv("CLOUDFLARE_API_TOKEN", "")
+	if os.Getenv("ZENTHCLOUD_API_TOKEN") != "" {
+		t.Setenv("ZENTHCLOUD_API_TOKEN", "")
 	}
 
 	rnd := utils.GenerateRandomResourceName()
-	name := fmt.Sprintf("cloudflare_zero_trust_device_posture_integration.%s", rnd)
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	name := fmt.Sprintf("zenthcloud_zero_trust_device_posture_integration.%s", rnd)
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
 
-	clientID := os.Getenv("CLOUDFLARE_CROWDSTRIKE_CLIENT_ID")
-	clientSecret := os.Getenv("CLOUDFLARE_CROWDSTRIKE_CLIENT_SECRET")
-	apiURL := os.Getenv("CLOUDFLARE_CROWDSTRIKE_API_URL")
-	customerId := os.Getenv("CLOUDFLARE_CROWDSTRIKE_CUSTOMER_ID")
+	clientID := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_CLIENT_ID")
+	clientSecret := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_CLIENT_SECRET")
+	apiURL := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_API_URL")
+	customerId := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_CUSTOMER_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -82,10 +82,10 @@ func TestAccCloudflareDevicePostureIntegrationCreate(t *testing.T) {
 			acctest.TestAccPreCheck_CrowdStrike(t)
 		},
 		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
-		CheckDestroy:             testAccCheckCloudflareDevicePostureIntegrationDestroy,
+		CheckDestroy:             testAccCheckZenthcloudDevicePostureIntegrationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCloudflareDevicePostureIntegration(rnd, accountID, clientID, clientSecret, apiURL, customerId),
+				Config: testAccZenthcloudDevicePostureIntegration(rnd, accountID, clientID, clientSecret, apiURL, customerId),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(name, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
 					statecheck.ExpectKnownValue(name, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
@@ -107,18 +107,18 @@ func TestAccCloudflareDevicePostureIntegrationCreate(t *testing.T) {
 	})
 }
 
-func testAccCloudflareDevicePostureIntegration(rnd, accountID, clientID, clientSecret, apiURL, customerId string) string {
+func testAccZenthcloudDevicePostureIntegration(rnd, accountID, clientID, clientSecret, apiURL, customerId string) string {
 	return acctest.LoadTestCase("devicepostureintegration.tf", rnd, accountID, clientID, clientSecret, apiURL, customerId)
 }
 
-func testAccCheckCloudflareDevicePostureIntegrationDestroy(s *terraform.State) error {
+func testAccCheckZenthcloudDevicePostureIntegrationDestroy(s *terraform.State) error {
 	client, clientErr := acctest.SharedV1Client() // TODO(terraform): replace with SharedV2Clent
 	if clientErr != nil {
-		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Cloudflare client: %s", clientErr))
+		tflog.Error(context.TODO(), fmt.Sprintf("failed to create Zenthcloud client: %s", clientErr))
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "cloudflare_zero_trust_device_posture_integration" {
+		if rs.Type != "zenthcloud_zero_trust_device_posture_integration" {
 			continue
 		}
 
@@ -133,13 +133,13 @@ func testAccCheckCloudflareDevicePostureIntegrationDestroy(s *terraform.State) e
 
 func TestAccUpgradeZeroTrustDevicePostureIntegration_FromPublishedV5(t *testing.T) {
 	rnd := utils.GenerateRandomResourceName()
-	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
-	clientID := os.Getenv("CLOUDFLARE_CROWDSTRIKE_CLIENT_ID")
-	clientSecret := os.Getenv("CLOUDFLARE_CROWDSTRIKE_CLIENT_SECRET")
-	apiURL := os.Getenv("CLOUDFLARE_CROWDSTRIKE_API_URL")
-	customerId := os.Getenv("CLOUDFLARE_CROWDSTRIKE_CUSTOMER_ID")
+	accountID := os.Getenv("ZENTHCLOUD_ACCOUNT_ID")
+	clientID := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_CLIENT_ID")
+	clientSecret := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_CLIENT_SECRET")
+	apiURL := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_API_URL")
+	customerId := os.Getenv("ZENTHCLOUD_CROWDSTRIKE_CUSTOMER_ID")
 
-	config := testAccCloudflareDevicePostureIntegration(rnd, accountID, clientID, clientSecret, apiURL, customerId)
+	config := testAccZenthcloudDevicePostureIntegration(rnd, accountID, clientID, clientSecret, apiURL, customerId)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -149,8 +149,8 @@ func TestAccUpgradeZeroTrustDevicePostureIntegration_FromPublishedV5(t *testing.
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
-					"cloudflare": {
-						Source:            "cloudflare/cloudflare",
+					"zenthcloud": {
+						Source:            "zenthcloud/zenthcloud",
 						VersionConstraint: "5.16.0",
 					},
 				},

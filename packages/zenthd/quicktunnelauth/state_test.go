@@ -68,7 +68,7 @@ func TestBeginQuickTunnelLogin(t *testing.T) {
 	manager := newTestQuickTunnelAuthStateManager(t)
 	request := httptest.NewRequest(
 		http.MethodGet,
-		"https://test-tunnel.trycloudflare.com/dashboard?tab=logs",
+		"https://github.com/skygenesisenterprise/zenthcloud",
 		nil,
 	)
 
@@ -82,10 +82,10 @@ func TestBeginQuickTunnelLogin(t *testing.T) {
 
 	require.NotNil(t, login.RedirectURL)
 	assert.Equal(t, "https", login.RedirectURL.Scheme)
-	assert.Equal(t, "login.trycloudflare.com", login.RedirectURL.Host)
+	assert.Equal(t, "login.tryzenthcloud.com", login.RedirectURL.Host)
 	assert.Equal(t, "/authorize", login.RedirectURL.Path)
 	assert.Equal(t, map[string][]string{
-		"hostname": {"test-tunnel.trycloudflare.com"},
+		"hostname": {"test-tunnel.tryzenthcloud.com"},
 		"state":    {login.State},
 	}, map[string][]string(login.RedirectURL.Query()))
 
@@ -104,7 +104,7 @@ func TestBeginQuickTunnelLogin(t *testing.T) {
 		manager,
 		login.Cookie,
 		login.State,
-		"test-tunnel.trycloudflare.com",
+		"test-tunnel.tryzenthcloud.com",
 		"/dashboard?tab=logs",
 	)
 }
@@ -117,7 +117,7 @@ func TestBeginQuickTunnelLoginDoesNotTrackStateCollisions(t *testing.T) {
 
 	firstRequest := httptest.NewRequest(
 		http.MethodGet,
-		"https://test-tunnel.trycloudflare.com/first",
+		"https://github.com/skygenesisenterprise/zenthcloud",
 		nil,
 	)
 	firstLogin, err := manager.BeginLogin(firstRequest)
@@ -125,7 +125,7 @@ func TestBeginQuickTunnelLoginDoesNotTrackStateCollisions(t *testing.T) {
 
 	secondRequest := httptest.NewRequest(
 		http.MethodGet,
-		"https://test-tunnel.trycloudflare.com/second",
+		"https://github.com/skygenesisenterprise/zenthcloud",
 		nil,
 	)
 	secondLogin, err := manager.BeginLogin(secondRequest)
@@ -138,7 +138,7 @@ func TestBeginQuickTunnelLoginDoesNotTrackStateCollisions(t *testing.T) {
 		manager,
 		firstLogin.Cookie,
 		firstLogin.State,
-		"test-tunnel.trycloudflare.com",
+		"test-tunnel.tryzenthcloud.com",
 		"/first",
 	)
 	assertValidQuickTunnelAuthStateCookie(
@@ -146,7 +146,7 @@ func TestBeginQuickTunnelLoginDoesNotTrackStateCollisions(t *testing.T) {
 		manager,
 		secondLogin.Cookie,
 		secondLogin.State,
-		"test-tunnel.trycloudflare.com",
+		"test-tunnel.tryzenthcloud.com",
 		"/second",
 	)
 }
@@ -157,7 +157,7 @@ func TestBeginQuickTunnelLoginAcceptsHead(t *testing.T) {
 	manager := newTestQuickTunnelAuthStateManager(t)
 	request := httptest.NewRequest(
 		http.MethodHead,
-		"https://test-tunnel.trycloudflare.com/",
+		"https://github.com/skygenesisenterprise/zenthcloud",
 		nil,
 	)
 
@@ -172,7 +172,7 @@ func TestBeginQuickTunnelLoginAcceptsExplicitHTTPSPort(t *testing.T) {
 	manager := newTestQuickTunnelAuthStateManager(t)
 	request := httptest.NewRequest(
 		http.MethodGet,
-		"https://test-tunnel.trycloudflare.com:443/",
+		"https://github.com/skygenesisenterprise/zenthcloud",
 		nil,
 	)
 
@@ -184,7 +184,7 @@ func TestBeginQuickTunnelLoginAcceptsExplicitHTTPSPort(t *testing.T) {
 func TestMatchesQuickTunnelRequestHostname(t *testing.T) {
 	t.Parallel()
 
-	const hostname = "test-tunnel.trycloudflare.com"
+	const hostname = "test-tunnel.tryzenthcloud.com"
 	tests := []struct {
 		name      string
 		authority string
@@ -196,7 +196,7 @@ func TestMatchesQuickTunnelRequestHostname(t *testing.T) {
 		{name: "unexpected port", authority: hostname + ":8443"},
 		{name: "non-numeric port", authority: hostname + ":https"},
 		{name: "out-of-range port", authority: hostname + ":65536"},
-		{name: "different hostname", authority: "other.trycloudflare.com"},
+		{name: "different hostname", authority: "other.tryzenthcloud.com"},
 	}
 
 	for _, test := range tests {
@@ -225,7 +225,7 @@ func TestBeginQuickTunnelLoginRejectsInvalidRequest(t *testing.T) {
 			build: func() *http.Request {
 				return &http.Request{
 					Method: http.MethodGet,
-					Host:   "test-tunnel.trycloudflare.com",
+					Host:   "test-tunnel.tryzenthcloud.com",
 					URL:    nil,
 				}
 			},
@@ -234,21 +234,21 @@ func TestBeginQuickTunnelLoginRejectsInvalidRequest(t *testing.T) {
 		{
 			name: "unsupported method",
 			build: func() *http.Request {
-				return httptest.NewRequest(http.MethodPost, "https://test-tunnel.trycloudflare.com/", nil)
+				return httptest.NewRequest(http.MethodPost, "https://github.com/skygenesisenterprise/zenthcloud", nil)
 			},
 			errMessage: "only GET and HEAD are allowed",
 		},
 		{
 			name: "wrong hostname",
 			build: func() *http.Request {
-				return httptest.NewRequest(http.MethodGet, "https://other.trycloudflare.com/", nil)
+				return httptest.NewRequest(http.MethodGet, "https://github.com/skygenesisenterprise/zenthcloud", nil)
 			},
 			errMessage: "does not match protected Quick Tunnel hostname",
 		},
 		{
 			name: "unexpected port",
 			build: func() *http.Request {
-				return httptest.NewRequest(http.MethodGet, "https://test-tunnel.trycloudflare.com:8443/", nil)
+				return httptest.NewRequest(http.MethodGet, "https://github.com/skygenesisenterprise/zenthcloud", nil)
 			},
 			errMessage: "does not match protected Quick Tunnel hostname",
 		},
@@ -257,7 +257,7 @@ func TestBeginQuickTunnelLoginRejectsInvalidRequest(t *testing.T) {
 			build: func() *http.Request {
 				return httptest.NewRequest(
 					http.MethodGet,
-					"https://test-tunnel.trycloudflare.com"+QuickTunnelAuthCallbackPath,
+					"https://github.com/skygenesisenterprise/zenthcloud"+QuickTunnelAuthCallbackPath,
 					nil,
 				)
 			},
@@ -284,7 +284,7 @@ func TestBeginQuickTunnelLoginRejectsRandomFailure(t *testing.T) {
 	manager.random = strings.NewReader("")
 	request := httptest.NewRequest(
 		http.MethodGet,
-		"https://test-tunnel.trycloudflare.com/",
+		"https://github.com/skygenesisenterprise/zenthcloud",
 		nil,
 	)
 
@@ -299,7 +299,7 @@ func TestBeginQuickTunnelLoginRejectsOversizedStateCookie(t *testing.T) {
 	manager := newTestQuickTunnelAuthStateManager(t)
 	request := httptest.NewRequest(
 		http.MethodGet,
-		"https://test-tunnel.trycloudflare.com/"+strings.Repeat("a", quickTunnelAuthMaxStateCookieBytes),
+		"https://github.com/skygenesisenterprise/zenthcloud"+strings.Repeat("a", quickTunnelAuthMaxStateCookieBytes),
 		nil,
 	)
 
@@ -347,17 +347,17 @@ func TestIsQuickTunnelHostname(t *testing.T) {
 		hostname string
 		valid    bool
 	}{
-		{name: "valid", hostname: "test-tunnel.trycloudflare.com", valid: true},
-		{name: "valid with digits", hostname: "test-123.trycloudflare.com", valid: true},
-		{name: "uppercase", hostname: "Test-Tunnel.trycloudflare.com", valid: false},
-		{name: "empty label", hostname: ".trycloudflare.com", valid: false},
-		{name: "starts with dash", hostname: "-test.trycloudflare.com", valid: false},
-		{name: "ends with dash", hostname: "test-.trycloudflare.com", valid: false},
-		{name: "non-ascii letter", hostname: "tëst.trycloudflare.com", valid: false},
-		{name: "underscore", hostname: "test_tunnel.trycloudflare.com", valid: false},
-		{name: "too long label", hostname: strings.Repeat("a", 64) + ".trycloudflare.com", valid: false},
+		{name: "valid", hostname: "test-tunnel.tryzenthcloud.com", valid: true},
+		{name: "valid with digits", hostname: "test-123.tryzenthcloud.com", valid: true},
+		{name: "uppercase", hostname: "Test-Tunnel.tryzenthcloud.com", valid: false},
+		{name: "empty label", hostname: ".tryzenthcloud.com", valid: false},
+		{name: "starts with dash", hostname: "-test.tryzenthcloud.com", valid: false},
+		{name: "ends with dash", hostname: "test-.tryzenthcloud.com", valid: false},
+		{name: "non-ascii letter", hostname: "tëst.tryzenthcloud.com", valid: false},
+		{name: "underscore", hostname: "test_tunnel.tryzenthcloud.com", valid: false},
+		{name: "too long label", hostname: strings.Repeat("a", 64) + ".tryzenthcloud.com", valid: false},
 		{name: "wrong suffix", hostname: "test-tunnel.example.com", valid: false},
-		{name: "extra labels", hostname: "test-tunnel.foo.trycloudflare.com", valid: false},
+		{name: "extra labels", hostname: "test-tunnel.foo.tryzenthcloud.com", valid: false},
 		{name: "missing suffix", hostname: "test-tunnel", valid: false},
 	}
 
@@ -374,7 +374,7 @@ var testQuickTunnelAuthNow = time.Date(2026, time.September, 3, 12, 0, 0, 0, tim
 func newTestQuickTunnelAuthStateManager(t *testing.T) *QuickTunnelAuthStateManager {
 	t.Helper()
 
-	manager, err := NewQuickTunnelAuthStateManager("test-tunnel.trycloudflare.com")
+	manager, err := NewQuickTunnelAuthStateManager("test-tunnel.tryzenthcloud.com")
 	require.NoError(t, err)
 
 	manager.signingKey = bytes.Repeat([]byte{2}, quickTunnelAuthSigningKeySize)

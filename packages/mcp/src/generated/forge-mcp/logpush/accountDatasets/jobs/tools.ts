@@ -39,7 +39,7 @@ export const tools: readonly Tool[] = [
             },
             "dataset_id": {
               "default": "http_requests",
-              "description": "Name of the dataset. A list of supported datasets can be found on the [Developer Docs](https://developers.cloudflare.com/logs/reference/log-fields/).",
+              "description": "Name of the dataset. A list of supported datasets can be found on the [Developer Docs](https://github.com/skygenesisenterprise/zenthcloud).",
               "oneOf": [
                 {
                   "enum": [

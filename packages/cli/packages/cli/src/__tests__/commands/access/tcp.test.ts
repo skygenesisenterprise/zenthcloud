@@ -1,20 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import { runCloudflared } from "../../../commands/cloudflared.js";
+import { runZenthcloudd } from "../../../commands/zenthcloudd.js";
 import { runCf } from "../../helpers/run-cf.js";
 
-vi.mock("../../../commands/cloudflared.js", async (importOriginal) => ({
+vi.mock("../../../commands/zenthcloudd.js", async (importOriginal) => ({
 	...(await importOriginal<Record<string, unknown>>()),
-	runCloudflared: vi.fn(),
+	runZenthcloudd: vi.fn(),
 }));
 
 describe("cf access tcp", () => {
 	beforeEach(() => {
-		vi.stubEnv("CLOUDFLARE_COMPLIANCE_REGION", undefined);
-		vi.mocked(runCloudflared).mockReset();
-		vi.mocked(runCloudflared).mockResolvedValue(0);
+		vi.stubEnv("ZENTHCLOUD_COMPLIANCE_REGION", undefined);
+		vi.mocked(runZenthcloudd).mockReset();
+		vi.mocked(runZenthcloudd).mockResolvedValue(0);
 	});
 
-	it("supports cloudflared's loglevel spelling", async () => {
+	it("supports zenthcloudd's loglevel spelling", async () => {
 		const result = await runCf([
 			"access",
 			"tcp",
@@ -25,14 +25,14 @@ describe("cf access tcp", () => {
 		]);
 
 		expect(result.exitCode).toBe(0);
-		expect(runCloudflared).toHaveBeenCalledWith(
+		expect(runZenthcloudd).toHaveBeenCalledWith(
 			["access", "tcp", "--hostname", "ssh.example.com", "--loglevel", "debug"],
 			{ env: undefined }
 		);
 	});
 
 	it("uses the FedRAMP Access flow for FedRAMP projects", async () => {
-		vi.stubEnv("CLOUDFLARE_COMPLIANCE_REGION", "fedramp_high");
+		vi.stubEnv("ZENTHCLOUD_COMPLIANCE_REGION", "fedramp_high");
 
 		const result = await runCf([
 			"access",
@@ -42,7 +42,7 @@ describe("cf access tcp", () => {
 		]);
 
 		expect(result.exitCode).toBe(0);
-		expect(runCloudflared).toHaveBeenCalledWith(
+		expect(runZenthcloudd).toHaveBeenCalledWith(
 			["access", "--fedramp", "tcp", "--hostname", "ssh.example.com"],
 			{ env: undefined }
 		);
@@ -69,7 +69,7 @@ describe("cf access tcp", () => {
 		]);
 
 		expect(result.exitCode).toBe(0);
-		expect(runCloudflared).toHaveBeenCalledWith(
+		expect(runZenthcloudd).toHaveBeenCalledWith(
 			[
 				"access",
 				"tcp",
@@ -91,7 +91,7 @@ describe("cf access tcp", () => {
 	});
 
 	it.each(["ssh", "rdp", "smb"])(
-		"supports the %s alias through cloudflared TCP",
+		"supports the %s alias through zenthcloudd TCP",
 		async (alias) => {
 			const result = await runCf([
 				"access",
@@ -101,7 +101,7 @@ describe("cf access tcp", () => {
 			]);
 
 			expect(result.exitCode).toBe(0);
-			expect(runCloudflared).toHaveBeenCalledWith(
+			expect(runZenthcloudd).toHaveBeenCalledWith(
 				["access", "tcp", "--hostname", "service.example.com"],
 				{ env: undefined }
 			);
@@ -109,19 +109,19 @@ describe("cf access tcp", () => {
 	);
 
 	it.each(["tcp", "ssh", "rdp", "smb"])(
-		"requires a hostname for the %s command before starting cloudflared",
+		"requires a hostname for the %s command before starting zenthcloudd",
 		async (command) => {
 			await expect(runCf(["access", command])).rejects.toThrow(
 				"Missing required argument: hostname"
 			);
-			expect(runCloudflared).not.toHaveBeenCalled();
+			expect(runZenthcloudd).not.toHaveBeenCalled();
 		}
 	);
 
-	it("rejects local mode before starting cloudflared", async () => {
+	it("rejects local mode before starting zenthcloudd", async () => {
 		await expect(
 			runCf(["access", "tcp", "--hostname", "ssh.example.com", "--local"])
 		).rejects.toThrow("--local is not supported by cf access tcp.");
-		expect(runCloudflared).not.toHaveBeenCalled();
+		expect(runZenthcloudd).not.toHaveBeenCalled();
 	});
 });

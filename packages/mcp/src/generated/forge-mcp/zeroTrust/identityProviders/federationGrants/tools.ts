@@ -24,7 +24,7 @@ export const tools: readonly Tool[] = [
   {
     name: "zeroTrust_identityProviders_federationGrants_create",
     title: "Create an IdP federation grant",
-    description: "Creates an IdP federation grant for the specified identity provider, making it\navailable for federation to other accounts in the same Cloudflare organization.\n\nThe account must belong to a Cloudflare organization. One-time pin and\nCloudflare-managed identity providers cannot be federated. An account\ncan federate at most five identity providers at a time.\n\nPOST /accounts/{account_id}/access/idp_federation_grants",
+    description: "Creates an IdP federation grant for the specified identity provider, making it\navailable for federation to other accounts in the same Zenthcloud organization.\n\nThe account must belong to a Zenthcloud organization. One-time pin and\nZenthcloud-managed identity providers cannot be federated. An account\ncan federate at most five identity providers at a time.\n\nPOST /accounts/{account_id}/access/idp_federation_grants",
     inputSchema: {
       type: "object",
       properties: {

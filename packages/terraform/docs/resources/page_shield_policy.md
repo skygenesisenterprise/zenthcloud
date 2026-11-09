@@ -1,12 +1,12 @@
 ---
-page_title: "cloudflare_page_shield_policy Resource - Cloudflare"
+page_title: "zenthcloud_page_shield_policy Resource - Zenthcloud"
 subcategory: ""
 description: |-
   Accepted Permissions
   Domain Page ShieldDomain Page Shield ReadPage ShieldPage Shield ReadZone Settings ReadZone Settings Write
 ---
 
-# cloudflare_page_shield_policy (Resource)
+# zenthcloud_page_shield_policy (Resource)
 
 Accepted Permissions
 
@@ -20,7 +20,7 @@ Accepted Permissions
 ## Example Usage
 
 ```terraform
-resource "cloudflare_page_shield_policy" "example_page_shield_policy" {
+resource "zenthcloud_page_shield_policy" "example_page_shield_policy" {
   zone_id = "023e105f4ecef8ad9ca31a8372d0c353"
   action = "allow"
   description = "Checkout page CSP policy"
@@ -39,7 +39,7 @@ resource "cloudflare_page_shield_policy" "example_page_shield_policy" {
 Available values: "allow", "log", "add_reporting_directives".
 - `description` (String) A description for the policy
 - `enabled` (Boolean) Whether the policy is enabled
-- `expression` (String) The expression which must match for the policy to be applied, using the Cloudflare Firewall rule expression syntax
+- `expression` (String) The expression which must match for the policy to be applied, using the Zenthcloud Firewall rule expression syntax
 - `value` (String) The policy which will be applied
 - `zone_id` (String) Identifier
 
@@ -52,7 +52,7 @@ Available values: "allow", "log", "add_reporting_directives".
 Import is supported using the following syntax:
 
 ```shell
-$ terraform import cloudflare_page_shield_policy.example '<zone_id>/<policy_id>'
+$ terraform import zenthcloud_page_shield_policy.example '<zone_id>/<policy_id>'
 ```
 
 
