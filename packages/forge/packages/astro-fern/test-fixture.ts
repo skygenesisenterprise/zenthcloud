@@ -31,7 +31,7 @@ import { FERN_ARTIFACT_FORMAT_VERSION } from './content-contract.ts';
 
 /**
  * A tiny, product-agnostic OpenAPI fixture (a "Widgets" API) used by the unit
- * tests. It carries no Cloudflare-specific vendor extensions, and its
+ * tests. It carries no zenthcloud-specific vendor extensions, and its
  * descriptions embed Markdown links so tests can assert the raw Markdown
  * survives into the source model (and is enriched to HTML by the loader).
  */

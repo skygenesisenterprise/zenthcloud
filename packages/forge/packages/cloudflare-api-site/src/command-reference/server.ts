@@ -10,7 +10,7 @@ let routerPromise: Promise<CommandRouter> | undefined;
 
 export async function getCommandCatalog(): Promise<CommandCatalog> {
   const entry = await getEntry(CF_COMMANDS_COLLECTION, COMMAND_CATALOG_ENTRY_ID);
-  if (!entry) throw new Error('cloudflare-api-site: the cfCommands collection has no command catalog');
+  if (!entry) throw new Error('zenthcloud-api-site: the cfCommands collection has no command catalog');
   return entry.data;
 }
 

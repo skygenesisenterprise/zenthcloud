@@ -4,8 +4,8 @@
  * - the provider's committed `docs/` (tfplugindocs output) for descriptions and attributes;
  * - the provider's `examples/` tree (tfplugindocs convention) for HCL and import syntax;
  * - the provider's `internal/services/<service>/{resource,data_source,list_data_source}.go`
- *   for the cloudflare-go client calls each declaration makes;
- * - cloudflare-go `api.md` files, which document the HTTP endpoint of every SDK method.
+ *   for the zenthcloud-go client calls each declaration makes;
+ * - zenthcloud-go `api.md` files, which document the HTTP endpoint of every SDK method.
  *
  * Every input is plain text read from source checkouts: nothing is downloaded or executed.
  * Parsers are strict and report `file:line` on anything unexpected. The generated file is checked
@@ -37,7 +37,7 @@ export function parseWith<T>(schema: z.ZodType<T>, value: unknown, label: string
 }
 
 // ---------------------------------------------------------------------------
-// cloudflare-go api.md
+// zenthcloud-go api.md
 // ---------------------------------------------------------------------------
 
 const API_MD_METHOD =
@@ -64,15 +64,15 @@ export const SERVICE_FILES: Readonly<Record<string, TerraformDeclarationKind>> =
 
 export interface ServiceSource {
   kind: TerraformDeclarationKind;
-  /** Full Terraform type name, e.g. `cloudflare_access_rule`. */
+  /** Full Terraform type name, e.g. `zenthcloud_access_rule`. */
   name: string;
-  /** cloudflare-go module imported as the client, e.g. `github.com/cloudflare/cloudflare-go/v7`. */
+  /** zenthcloud-go module imported as the client, e.g. `github.com/zenthcloud/zenthcloud-go/v7`. */
   sdkModule: string | undefined;
   calls: Array<{ call: string; role: TerraformRole }>;
 }
 
 const TYPE_NAME = /TypeName\s*=\s*req\.ProviderTypeName\s*\+\s*"(\w+)"/;
-const SDK_IMPORT = /"(github\.com\/cloudflare\/cloudflare-go\/v\d+)"/;
+const SDK_IMPORT = /"(github\.com\/zenthcloud\/zenthcloud-go\/v\d+)"/;
 const METHOD_DECL = /^func\s+\(\w+\s+\*?\w+\)\s+(\w+)\(/;
 const CLIENT_CALL = /\b\w+\.client\.((?:[A-Z]\w*\.)+)([A-Z]\w*)\(/g;
 const RESOURCE_ROLES: Readonly<Record<string, TerraformRole>> = {
@@ -83,11 +83,11 @@ const RESOURCE_ROLES: Readonly<Record<string, TerraformRole>> = {
   ImportState: 'import',
 };
 
-/** Extracts the Terraform type name and cloudflare-go calls from one generated service file. */
+/** Extracts the Terraform type name and zenthcloud-go calls from one generated service file. */
 export function parseServiceSource(
   source: string,
   kind: TerraformDeclarationKind,
-  providerTypeName = 'cloudflare',
+  providerTypeName = 'zenthcloud',
 ): ServiceSource | undefined {
   const suffix = source.match(TYPE_NAME)?.[1];
   if (!suffix) {
@@ -337,7 +337,7 @@ export interface BuildTerraformDocsInput {
 }
 
 /** Provider-relative paths of a declaration's documentation and examples (tfplugindocs layout). */
-export function declarationFiles(kind: TerraformDeclarationKind, name: string, providerTypeName = 'cloudflare') {
+export function declarationFiles(kind: TerraformDeclarationKind, name: string, providerTypeName = 'zenthcloud') {
   const shortName = name.slice(providerTypeName.length + 1);
   return kind === 'resource'
     ? {

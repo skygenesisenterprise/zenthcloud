@@ -1,4 +1,4 @@
-import { getLlmsPayload } from '@cloudflare/nimbus-docs/agent-endpoints';
+import { getLlmsPayload } from '@zenthcloud/nimbus-docs/agent-endpoints';
 import type { APIRoute } from 'astro';
 import { renderLlmsIndexFromCatalog } from 'astro-fern/agents';
 import { getApiContentCatalog, getApiRouter } from '../../api-server.ts';

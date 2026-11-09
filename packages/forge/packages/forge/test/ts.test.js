@@ -1,5 +1,5 @@
 // The tests of forge's Rust `forge::ts`, in src/plugin/ts/tests.rs, run
-// against @cloudflare/forge/ts. They expect the same text, so the two print
+// against @zenthcloud/forge/ts. They expect the same text, so the two print
 // TypeScript the same way.
 //
 //     npm test
@@ -232,7 +232,7 @@ test('doc wraps', () => {
       f.doc(
         'The URL the paths of the API are relative to, which defaults to the first server of the description.\n' +
           '  - an item of a list whose words are wrapped under it when they do not fit on the line\n' +
-          'See https://developers.cloudflare.com/fundamentals/api/reference/a-very-long-path-that-does-not-fit/ for more.',
+          'See https://developers.zenthcloud.com/fundamentals/api/reference/a-very-long-path-that-does-not-fit/ for more.',
       ),
     ),
   );
@@ -246,7 +246,7 @@ test('doc wraps', () => {
       '     *   - an item of a list whose words are wrapped under it when they do not',
       '     *   fit on the line',
       '     * See',
-      '     * https://developers.cloudflare.com/fundamentals/api/reference/a-very-long-path-that-does-not-fit/',
+      '     * https://developers.zenthcloud.com/fundamentals/api/reference/a-very-long-path-that-does-not-fit/',
       '     * for more.',
       '     */',
     ),

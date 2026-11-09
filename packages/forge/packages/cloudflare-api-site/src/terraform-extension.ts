@@ -26,7 +26,7 @@ function loadTerraformIndex(): Map<string, TerraformDeclaration[]> {
 }
 
 /** Build-only bridge from the released Terraform provider into operation artifacts. */
-export const cloudflareTerraformExtension = defineFernExtension<
+export const zenthcloudTerraformExtension = defineFernExtension<
   TerraformOperationData,
   Map<string, TerraformDeclaration[]>
 >({

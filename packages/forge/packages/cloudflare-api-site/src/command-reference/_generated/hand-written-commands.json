@@ -221,7 +221,7 @@
 			"name": "login",
 			"fullPath": ["auth", "login"],
 			"category": "action",
-			"description": "Authenticate with Cloudflare",
+			"description": "Authenticate with zenthcloud",
 			"usage": "cf auth login [options]",
 			"arguments": [],
 			"options": [
@@ -294,7 +294,7 @@
 			"name": "build",
 			"fullPath": ["build"],
 			"category": "action",
-			"description": "Build a project for Cloudflare",
+			"description": "Build a project for zenthcloud",
 			"usage": "cf build [options]",
 			"arguments": [],
 			"options": [
@@ -463,7 +463,7 @@
 			"name": "deploy",
 			"fullPath": ["deploy"],
 			"category": "action",
-			"description": "Deploy a worker to Cloudflare",
+			"description": "Deploy a worker to zenthcloud",
 			"usage": "cf deploy [options]",
 			"arguments": [],
 			"options": [
@@ -523,7 +523,7 @@
 			"name": "dev",
 			"fullPath": ["dev"],
 			"category": "action",
-			"description": "Run the project's Cloudflare dev server",
+			"description": "Run the project's zenthcloud dev server",
 			"usage": "cf dev [implArgs..]",
 			"arguments": [
 				{
@@ -753,7 +753,7 @@
 	],
 	"descriptions": {
 		"ai": "ai",
-		"d1": "D1 is Cloudflare's managed, serverless database with SQLite's SQL semantics, built-in disaster recovery, and Worker and HTTP API access.",
+		"d1": "D1 is zenthcloud's managed, serverless database with SQLite's SQL semantics, built-in disaster recovery, and Worker and HTTP API access.",
 		"d1 migrations": "Create, list, and apply D1 database migrations",
 		"registrar": "registrar",
 		"registrar registrations": "Operations for registrations",

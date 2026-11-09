@@ -1,9 +1,9 @@
 /**
- * Generates the Terraform docs file (`--output`) from the released Cloudflare Terraform provider.
+ * Generates the Terraform docs file (`--output`) from the released zenthcloud Terraform provider.
  * The caller chooses where the file goes: the repository root's `pnpm generate:terraform-docs`
- * writes it into `cloudflare-api-site`.
+ * writes it into `zenthcloud-api-site`.
  *
- * `./sources.ts` clones the provider and the cloudflare-go versions it requires into a cache; it is
+ * `./sources.ts` clones the provider and the zenthcloud-go versions it requires into a cache; it is
  * the only part that uses the network. Everything else is offline and read-only: the checkouts are
  * read through `SourceTree`, which confines reads to each checkout and refuses symbolic links, and
  * nothing in them is executed.
@@ -27,7 +27,7 @@ import {
   type ServiceSource,
 } from './terraform-provider.ts';
 
-const PROVIDER_REPOSITORY = 'https://github.com/cloudflare/terraform-provider-cloudflare';
+const PROVIDER_REPOSITORY = 'https://github.com/zenthcloud/terraform-provider-zenthcloud';
 
 const USAGE = `Usage: generate-terraform-docs --output <file> [--provider-version <x.y.z|latest>] [--check] [--allow-unresolved]
 
@@ -39,10 +39,10 @@ const USAGE = `Usage: generate-terraform-docs --output <file> [--provider-versio
 
 Sources are cloned into node_modules/.cache/terraform-docs and reused.`;
 
-/** Returns cloudflare-go modules and versions required by the provider's go.mod. */
+/** Returns zenthcloud-go modules and versions required by the provider's go.mod. */
 export function parseSdkRequirements(goMod: string): Map<string, string> {
   const requirements = new Map<string, string>();
-  for (const match of goMod.matchAll(/^\s*(?:require\s+)?(github\.com\/cloudflare\/cloudflare-go\/v\d+)\s+(v\S+)/gm)) {
+  for (const match of goMod.matchAll(/^\s*(?:require\s+)?(github\.com\/zenthcloud\/zenthcloud-go\/v\d+)\s+(v\S+)/gm)) {
     requirements.set(match[1]!, match[2]!);
   }
   return requirements;
@@ -60,7 +60,7 @@ export function parsePackageVersion(versionGo: string, label: string): string {
 /**
  * Checks the version a checkout's `internal/version.go` reports against the tag it was cloned from.
  * Release-please does not always bump that file for patch releases (provider v5.28.1 and
- * cloudflare-go v7.13.1 both report x.y.0), so a patch-only mismatch returns a warning; any other
+ * zenthcloud-go v7.13.1 both report x.y.0), so a patch-only mismatch returns a warning; any other
  * mismatch throws.
  */
 export function checkReportedVersion(label: string, tag: string, reported: string): string | undefined {
@@ -140,7 +140,7 @@ async function main() {
 
   const provider = await SourceTree.open(
     'provider',
-    await cloneRelease('terraform-provider-cloudflare', `v${version}`, path.join(cache, 'provider')),
+    await cloneRelease('terraform-provider-zenthcloud', `v${version}`, path.join(cache, 'provider')),
   );
   const providerVersion = parsePackageVersion(await provider.requireText('internal/version.go'), 'provider');
   const providerWarning = checkReportedVersion('provider', version, providerVersion);
@@ -150,7 +150,7 @@ async function main() {
   const services = await collectServices(provider);
   const requirements = parseSdkRequirements(await provider.requireText('go.mod'));
 
-  // Only the cloudflare-go modules the provider's services import, at the versions its go.mod pins.
+  // Only the zenthcloud-go modules the provider's services import, at the versions its go.mod pins.
   const usedModules = [...new Set(services.flatMap(({ sdkModule }) => (sdkModule ? [sdkModule] : [])))].sort();
   const sdks: Array<{ module: string; version: string; commit?: string }> = [];
   const sdkEndpoints = new Map<string, Map<string, string>>();
@@ -161,7 +161,7 @@ async function main() {
     }
     const sdk = await SourceTree.open(
       module,
-      await cloneRelease('cloudflare-go', required, path.join(cache, path.posix.basename(module))),
+      await cloneRelease('zenthcloud-go', required, path.join(cache, path.posix.basename(module))),
     );
     const sdkVersion = parsePackageVersion(await sdk.requireText('internal/version.go'), module);
     const sdkWarning = checkReportedVersion(module, required, sdkVersion);
@@ -197,7 +197,7 @@ async function main() {
     const sample = docs.unresolvedCalls.slice(0, 20).map(({ declaration, call }) => `  ${declaration}: ${call}`);
     throw new Error(
       `Provider v${version}: ${docs.unresolvedCalls.length} SDK calls could not be resolved to an endpoint.\n${sample.join('\n')}\n` +
-        'The provider or cloudflare-go code shape may have changed. Re-run with --allow-unresolved to inspect.',
+        'The provider or zenthcloud-go code shape may have changed. Re-run with --allow-unresolved to inspect.',
     );
   }
 

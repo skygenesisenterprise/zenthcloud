@@ -1,6 +1,6 @@
 /** Sidebar runtime: filter, persistence, "/" shortcut. */
 
-import { mount } from '@cloudflare/nimbus-docs/client';
+import { mount } from '@zenthcloud/nimbus-docs/client';
 import {
   BROAD_FILTER_DEBOUNCE_MS,
   computeSidebarFilter,

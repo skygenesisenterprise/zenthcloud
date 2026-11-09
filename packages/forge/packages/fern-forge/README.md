@@ -10,7 +10,7 @@ promotes confirmation metadata into shared `astro-fern` fields.
 
 | Package or application | Responsibility                                                                                                      |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `@cloudflare/forge`    | Forge overlay generation and the Forge code generation model                                                        |
+| `@zenthcloud/forge`    | Forge overlay generation and the Forge code generation model                                                        |
 | `astro-fern`           | OpenAPI loading, manifests, snapshots, snippets, catalogs, operation artifacts, route planning, and agent documents |
 | `fern-forge`           | Validation and adaptation for Forge metadata through the `astro-fern` extension API                                 |
 | Your Astro application | HTML, navigation, theme, snippet implementations, visibility policy, commands, and optional custom URLs             |
@@ -377,7 +377,7 @@ through `groups` or name a dotted path directly:
 ```yaml
 x-forge-commands:
   accounts:
-    description: Manage Cloudflare accounts.
+    description: Manage zenthcloud accounts.
     groups:
       tokens:
         description: Manage account tokens.

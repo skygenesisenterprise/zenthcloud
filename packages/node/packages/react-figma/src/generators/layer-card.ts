@@ -32,7 +32,7 @@ import {
   VAR_NAMES,
 } from "./shared";
 import { createIconInstance, bindIconColor, DEFAULT_ICONS } from "./icon-utils";
-import registry from "@cloudflare/kumo/ai/component-registry.json";
+import registry from "@zenthcloud/kumo/ai/component-registry.json";
 import themeData from "../generated/theme-data.json";
 
 // Read LayerCard styling from registry

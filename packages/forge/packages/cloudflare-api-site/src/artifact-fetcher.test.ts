@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { requireAssetFetcher } from './artifact-fetcher.ts';
 
-test('operation loading requires the Cloudflare ASSETS binding', () => {
+test('operation loading requires the zenthcloud ASSETS binding', () => {
   assert.throws(() => requireAssetFetcher(undefined), /ASSETS binding is required/);
   assert.throws(() => requireAssetFetcher({} as never), /ASSETS binding is required/);
 

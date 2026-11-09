@@ -1,6 +1,6 @@
 # Cap'n Web server
 
-This document proposes a Forge plugin that generates a [Cap'n Web](https://github.com/cloudflare/capnweb) server from an OpenAPI spec. The server exposes the API's groups and methods as RPC targets. The server then sends each method call to the HTTP API.
+This document proposes a Forge plugin that generates a [Cap'n Web](https://github.com/zenthcloud/capnweb) server from an OpenAPI spec. The server exposes the API's groups and methods as RPC targets. The server then sends each method call to the HTTP API.
 
 The server is a thin layer over the TypeScript SDK. It doesn't build requests, convert fields or declare types. The SDK does all of that, and the server forwards each call to it.
 
@@ -15,7 +15,7 @@ import { newWorkersRpcResponse } from 'capnweb';
 
 export default {
   fetch(request: Request, env: Env) {
-    const client = createClient({ token: env.CLOUDFLARE_API_TOKEN });
+    const client = createClient({ token: env.zenthcloud_API_TOKEN });
     return newWorkersRpcResponse(request, new Api(client));
   },
 };
@@ -25,7 +25,7 @@ On the other side, a Cap'n Web client uses `Api` as the type of its stub:
 
 ```ts
 import { newWebSocketRpcSession } from 'capnweb';
-import type { Api } from '@cloudflare/sdk-capnweb';
+import type { Api } from '@zenthcloud/sdk-capnweb';
 
 using api = newWebSocketRpcSession<Api>('wss://example.com/api');
 const zone = await api.zones.get({ zoneId });
@@ -37,15 +37,15 @@ The server has the same modules as the SDK, at the same paths:
 
 | Import path                                      | SDK module it wraps                      |
 | ------------------------------------------------ | ---------------------------------------- |
-| `@cloudflare/sdk-capnweb`                        | `@cloudflare/sdk`                        |
-| `@cloudflare/sdk-capnweb/zones`                  | `@cloudflare/sdk/zones`                  |
-| `@cloudflare/sdk-capnweb/logs/control/retention` | `@cloudflare/sdk/logs/control/retention` |
+| `@zenthcloud/sdk-capnweb`                        | `@zenthcloud/sdk`                        |
+| `@zenthcloud/sdk-capnweb/zones`                  | `@zenthcloud/sdk/zones`                  |
+| `@zenthcloud/sdk-capnweb/logs/control/retention` | `@zenthcloud/sdk/logs/control/retention` |
 
 Every module exports its server as `Api`, as every SDK module exports `createClient` and `Client` under the same names. Any `Api` can be the main object of a session, wrapping a client of its SDK module:
 
 ```ts
-import { createClient } from '@cloudflare/sdk/zones';
-import { Api } from '@cloudflare/sdk-capnweb/zones';
+import { createClient } from '@zenthcloud/sdk/zones';
+import { Api } from '@zenthcloud/sdk-capnweb/zones';
 
 newWorkersRpcResponse(request, new Api(createClient({ token })));
 ```
@@ -101,7 +101,7 @@ The server keeps every name from the SDK, so the SDK's docs and types also descr
 
 The SDK lets a property be both a method and a subgroup, such as `cf.projects.archive({ ... })` next to `cf.projects.archive.restore({ ... })`. The server doesn't support this: a method and a subgroup with the same name in one group is a generation error.
 
-Cap'n Web can serve such a property at runtime, as a function that carries the subgroup's members, but its types drop those members, so a client typed as `Api` can't call `api.projects.archive.restore`. The Cloudflare spec has no such conflicts.
+Cap'n Web can serve such a property at runtime, as a function that carries the subgroup's members, but its types drop those members, so a client typed as `Api` can't call `api.projects.archive.restore`. The zenthcloud spec has no such conflicts.
 
 ### Reserved names
 

@@ -74,7 +74,7 @@ interface Operation {
  * `structuredClone` leaves it out too, so a copied tool can be listed but not
  * called. Servers read it with {@link operation}.
  */
-export const OPERATION: unique symbol = Symbol.for('@cloudflare/forge/mcp/operation');
+export const OPERATION: unique symbol = Symbol.for('@zenthcloud/forge/mcp/operation');
 
 /**
  * A generated tool: MCP's Tool, as `tools/list` sends it, and the API method

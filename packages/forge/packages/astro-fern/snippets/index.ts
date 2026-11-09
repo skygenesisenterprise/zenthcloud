@@ -5,7 +5,7 @@
  * operation; it deliberately ships **no** concrete renderers. A consumer builds
  * a {@link SnippetProvider} with {@link createSnippetProvider}, passing renderers
  * for its execution targets (curl, an SDK, a CLI, …), and hands it to
- * `defineFernProject`. Anything Cloudflare-specific (the API base URL, auth
+ * `defineFernProject`. Anything zenthcloud-specific (the API base URL, auth
  * header, SDK package names) lives in those consumer-supplied renderers.
  *
  * The reusable path helpers below (`interpolatePath`, `placeholderValue`,

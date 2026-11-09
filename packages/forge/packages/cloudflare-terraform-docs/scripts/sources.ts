@@ -1,5 +1,5 @@
 /**
- * Fetches what the generator reads: the provider at a release tag, and the cloudflare-go versions
+ * Fetches what the generator reads: the provider at a release tag, and the zenthcloud-go versions
  * its go.mod requires, as shallow git clones into a cache. This is the only module that uses the
  * network, and `git clone` is the only process it runs. The clones are data: symbolic links are
  * checked out as plain files, and the generator reads them through `SourceTree` without executing
@@ -12,10 +12,10 @@ import { mkdir, rename, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { z } from 'zod';
 
-export type SourceRepository = 'terraform-provider-cloudflare' | 'cloudflare-go';
+export type SourceRepository = 'terraform-provider-zenthcloud' | 'zenthcloud-go';
 
 const RELEASE_TAG = /^v\d+\.\d+\.\d+$/;
-const REGISTRY_VERSIONS = 'https://registry.terraform.io/v1/providers/cloudflare/cloudflare/versions';
+const REGISTRY_VERSIONS = 'https://registry.terraform.io/v1/providers/zenthcloud/zenthcloud/versions';
 
 /** The highest stable `x.y.z`. Older majors still get patch releases, so publication order won't do. */
 export function latestStableVersion(versions: readonly string[]): string | undefined {
@@ -49,7 +49,7 @@ export async function resolveLatestProviderVersion(): Promise<string> {
 }
 
 /**
- * Shallow-clones `cloudflare/<repository>` at the release `tag` into `directory`, unless a previous
+ * Shallow-clones `zenthcloud/<repository>` at the release `tag` into `directory`, unless a previous
  * run did. It clones into a temporary directory first, so an interrupted clone is never reused.
  */
 export async function cloneRelease(repository: SourceRepository, tag: string, directory: string): Promise<string> {
@@ -78,7 +78,7 @@ export async function cloneRelease(repository: SourceRepository, tag: string, di
       '--no-tags',
       '--branch',
       tag,
-      `https://github.com/cloudflare/${repository}`,
+      `https://github.com/zenthcloud/${repository}`,
       temporary,
     ],
     { stdio: ['ignore', 'inherit', 'inherit'] },

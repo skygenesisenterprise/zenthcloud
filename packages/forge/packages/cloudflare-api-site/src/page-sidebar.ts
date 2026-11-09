@@ -1,5 +1,5 @@
-import { stripBase } from '@cloudflare/nimbus-docs/runtime';
-import type { SidebarItem } from '@cloudflare/nimbus-docs/types';
+import { stripBase } from '@zenthcloud/nimbus-docs/runtime';
+import type { SidebarItem } from '@zenthcloud/nimbus-docs/types';
 import { getApiRouter } from './api-server.ts';
 import { getCommandRouter } from './command-reference/server.ts';
 import { forgeRouteSidebar } from './sidebar.ts';

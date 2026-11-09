@@ -2,17 +2,17 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { fetchForgeOpenApi, forgeOpenApiUrl, loadForgeOpenApi } from './openapi-source.ts';
 
-test('uses the latest cloudflare/api-schemas main spec by default', () => {
+test('uses the latest zenthcloud/api-schemas main spec by default', () => {
   assert.equal(
     forgeOpenApiUrl(undefined).href,
-    'https://raw.githubusercontent.com/cloudflare/api-schemas/main/openapi.json',
+    'https://raw.githubusercontent.com/zenthcloud/api-schemas/main/openapi.json',
   );
 });
 
-test('uses an exact cloudflare/api-schemas revision when pinned', () => {
+test('uses an exact zenthcloud/api-schemas revision when pinned', () => {
   assert.equal(
     forgeOpenApiUrl('openapi@8c827d1b18fec9aa686debf894580f0b302f6f94').href,
-    'https://raw.githubusercontent.com/cloudflare/api-schemas/8c827d1b18fec9aa686debf894580f0b302f6f94/openapi.json',
+    'https://raw.githubusercontent.com/zenthcloud/api-schemas/8c827d1b18fec9aa686debf894580f0b302f6f94/openapi.json',
   );
 });
 
@@ -25,7 +25,7 @@ test('fetches and parses the Forge OpenAPI asset', async () => {
 
   const document = await fetchForgeOpenApi('openapi@test', fetcher);
 
-  assert.equal(requestedUrl, 'https://raw.githubusercontent.com/cloudflare/api-schemas/test/openapi.json');
+  assert.equal(requestedUrl, 'https://raw.githubusercontent.com/zenthcloud/api-schemas/test/openapi.json');
   assert.deepEqual(document, { openapi: '3.0.3' });
 });
 

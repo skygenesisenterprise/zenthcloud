@@ -940,8 +940,8 @@ importers:
         specifier: ^3.2.7
         version: 3.2.7(msw@2.15.0(@types/node@24.19.2)(typescript@5.9.3))(playwright@1.56.1)(vite@7.3.7(@types/node@24.19.2)(jiti@2.7.0)(lightningcss@1.33.0)(tsx@4.23.15)(yaml@2.9.1))(vitest@3.2.7)
       '@zenthcloud/vitest-pool-workers':
-        specifier: npm:@cloudflare/vitest-pool-workers@^0.12.10
-        version: '@cloudflare/vitest-pool-workers@0.12.21(@vitest/runner@3.2.7)(@vitest/snapshot@3.2.7)(vitest@3.2.7)'
+        specifier: npm:@zenthcloud/vitest-pool-workers@^0.12.10
+        version: '@zenthcloud/vitest-pool-workers@0.12.21(@vitest/runner@3.2.7)(@vitest/snapshot@3.2.7)(vitest@3.2.7)'
       '@zenthcloud/workers-types':
         specifier: workspace:*
         version: link:../workerd/npm/workers-types
@@ -1004,8 +1004,8 @@ importers:
         specifier: ^1.2.0
         version: 1.2.2
       '@zenthcloud/nimbus-docs':
-        specifier: npm:@cloudflare/nimbus-docs@^0.14.1
-        version: '@cloudflare/nimbus-docs@0.14.2(@astrojs/markdown-remark@7.3.6(supports-color@8.1.1))(@scalar/openapi-parser@0.23.3)(@types/node@24.19.2)(astro@7.4.7(@astrojs/markdown-remark@7.3.6(supports-color@8.1.1))(@types/node@24.19.2)(esbuild@0.20.2)(ioredis@5.9.2(supports-color@8.1.1))(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.1))(esbuild@0.20.2)(jiti@2.7.0)(openapi-sampler@1.7.10)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(supports-color@8.1.1)(tsx@4.22.4)'
+        specifier: npm:@zenthcloud/nimbus-docs@^0.14.1
+        version: '@zenthcloud/nimbus-docs@0.14.2(@astrojs/markdown-remark@7.3.6(supports-color@8.1.1))(@scalar/openapi-parser@0.23.3)(@types/node@24.19.2)(astro@7.4.7(@astrojs/markdown-remark@7.3.6(supports-color@8.1.1))(@types/node@24.19.2)(esbuild@0.20.2)(ioredis@5.9.2(supports-color@8.1.1))(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.1))(esbuild@0.20.2)(jiti@2.7.0)(openapi-sampler@1.7.10)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(supports-color@8.1.1)(tsx@4.22.4)'
       astro:
         specifier: ^7.2.1
         version: 7.4.7(@astrojs/markdown-remark@7.3.6(supports-color@8.1.1))(@types/node@24.19.2)(esbuild@0.20.2)(ioredis@5.9.2(supports-color@8.1.1))(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.1)
@@ -1068,14 +1068,14 @@ importers:
   packages/cli/packages/cli:
     dependencies:
       '@zenthcloud/build-output-utils':
-        specifier: npm:@cloudflare/build-output-utils@0.9.10
-        version: '@cloudflare/build-output-utils@0.9.10'
+        specifier: npm:@zenthcloud/build-output-utils@0.9.10
+        version: '@zenthcloud/build-output-utils@0.9.10'
       '@zenthcloud/config':
-        specifier: npm:@cloudflare/config@0.30.2
-        version: '@cloudflare/config@0.30.2'
+        specifier: npm:@zenthcloud/config@0.30.2
+        version: '@zenthcloud/config@0.30.2'
       '@zenthcloud/runtime-types':
-        specifier: npm:@cloudflare/runtime-types@0.1.23
-        version: '@cloudflare/runtime-types@0.1.23(@types/node@26.6.6)'
+        specifier: npm:@zenthcloud/runtime-types@0.1.23
+        version: '@zenthcloud/runtime-types@0.1.23(@types/node@26.6.6)'
       blake3-wasm:
         specifier: 2.1.5
         version: 2.1.5
@@ -1108,29 +1108,29 @@ importers:
         specifier: 17.0.35
         version: 17.0.35
       '@zenthcloud/autoconfig':
-        specifier: npm:@cloudflare/autoconfig@0.9.3
-        version: '@cloudflare/autoconfig@0.9.3(vitest@4.1.12)'
+        specifier: npm:@zenthcloud/autoconfig@0.9.3
+        version: '@zenthcloud/autoconfig@0.9.3(vitest@4.1.12)'
       '@zenthcloud/cli-shared-helpers':
-        specifier: npm:@cloudflare/cli-shared-helpers@0.3.4
-        version: '@cloudflare/cli-shared-helpers@0.3.4(vitest@4.1.12)'
+        specifier: npm:@zenthcloud/cli-shared-helpers@0.3.4
+        version: '@zenthcloud/cli-shared-helpers@0.3.4(vitest@4.1.12)'
       '@zenthcloud/codemods':
-        specifier: npm:@cloudflare/codemods@0.7.4
-        version: '@cloudflare/codemods@0.7.4'
+        specifier: npm:@zenthcloud/codemods@0.7.4
+        version: '@zenthcloud/codemods@0.7.4'
       '@zenthcloud/containers-shared':
-        specifier: npm:@cloudflare/containers-shared@0.23.9
-        version: '@cloudflare/containers-shared@0.23.9(vitest@4.1.12)'
+        specifier: npm:@zenthcloud/containers-shared@0.23.9
+        version: '@zenthcloud/containers-shared@0.23.9(vitest@4.1.12)'
       '@zenthcloud/deploy-helpers':
-        specifier: npm:@cloudflare/deploy-helpers@0.26.0
-        version: '@cloudflare/deploy-helpers@0.26.0(@types/node@26.6.6)(vitest@4.1.12)'
+        specifier: npm:@zenthcloud/deploy-helpers@0.26.0
+        version: '@zenthcloud/deploy-helpers@0.26.0(@types/node@26.6.6)(vitest@4.1.12)'
       '@zenthcloud/forge':
-        specifier: https://pkg.pr.new/cloudflare/forge/@cloudflare/forge@0d1877431691b07cbe3b042a4b64cb0bd8e81c03
-        version: '@cloudflare/forge@https://pkg.pr.new/cloudflare/forge/@cloudflare/forge@0d1877431691b07cbe3b042a4b64cb0bd8e81c03(@bytecodealliance/jco@1.41.0)'
+        specifier: https://pkg.pr.new/zenthcloud/forge/@zenthcloud/forge@0d1877431691b07cbe3b042a4b64cb0bd8e81c03
+        version: '@zenthcloud/forge@https://pkg.pr.new/zenthcloud/forge/@zenthcloud/forge@0d1877431691b07cbe3b042a4b64cb0bd8e81c03(@bytecodealliance/jco@1.41.0)'
       '@zenthcloud/workers-auth':
-        specifier: npm:@cloudflare/workers-auth@0.16.0
-        version: '@cloudflare/workers-auth@0.16.0(msw@3.0.4(@types/node@26.6.6)(graphql@16.15.0)(supports-color@8.1.1)(typescript@7.0.2)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.20.2)(jiti@2.7.0)(tsx@4.21.0)(yaml@2.9.1)))(vitest@4.1.12)'
+        specifier: npm:@zenthcloud/workers-auth@0.16.0
+        version: '@zenthcloud/workers-auth@0.16.0(msw@3.0.4(@types/node@26.6.6)(graphql@16.15.0)(supports-color@8.1.1)(typescript@7.0.2)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.20.2)(jiti@2.7.0)(tsx@4.21.0)(yaml@2.9.1)))(vitest@4.1.12)'
       '@zenthcloud/workers-utils':
-        specifier: npm:@cloudflare/workers-utils@0.52.0
-        version: '@cloudflare/workers-utils@0.52.0(vitest@4.1.12)'
+        specifier: npm:@zenthcloud/workers-utils@0.52.0
+        version: '@zenthcloud/workers-utils@0.52.0(vitest@4.1.12)'
       chalk:
         specifier: 6.0.1
         version: 6.0.1
@@ -1189,8 +1189,8 @@ importers:
         specifier: ^17.0.35
         version: 17.0.35
       '@zenthcloud/workers-utils':
-        specifier: npm:@cloudflare/workers-utils@0.52.0
-        version: '@cloudflare/workers-utils@0.52.0(vitest@4.1.12)'
+        specifier: npm:@zenthcloud/workers-utils@0.52.0
+        version: '@zenthcloud/workers-utils@0.52.0(vitest@4.1.12)'
       cf:
         specifier: workspace:*
         version: link:../cli
@@ -1255,8 +1255,8 @@ importers:
         specifier: 2.3.1
         version: 2.3.1
       '@zenthcloud/workers-oauth-provider':
-        specifier: npm:@cloudflare/workers-oauth-provider@^1.2.3
-        version: '@cloudflare/workers-oauth-provider@1.2.4'
+        specifier: npm:@zenthcloud/workers-oauth-provider@^1.2.3
+        version: '@zenthcloud/workers-oauth-provider@1.2.4'
       hono:
         specifier: ^4.13.11
         version: 4.13.17
@@ -1274,11 +1274,11 @@ importers:
         specifier: ^25.0.6
         version: 25.9.9
       '@zenthcloud/forge':
-        specifier: https://pkg.pr.new/cloudflare/forge/@cloudflare/forge@0d1877431691b07cbe3b042a4b64cb0bd8e81c03
-        version: '@cloudflare/forge@https://pkg.pr.new/cloudflare/forge/@cloudflare/forge@0d1877431691b07cbe3b042a4b64cb0bd8e81c03(@bytecodealliance/jco@1.41.0)'
+        specifier: https://pkg.pr.new/zenthcloud/forge/@zenthcloud/forge@0d1877431691b07cbe3b042a4b64cb0bd8e81c03
+        version: '@zenthcloud/forge@https://pkg.pr.new/zenthcloud/forge/@zenthcloud/forge@0d1877431691b07cbe3b042a4b64cb0bd8e81c03(@bytecodealliance/jco@1.41.0)'
       '@zenthcloud/vitest-plugin':
-        specifier: npm:@cloudflare/vitest-plugin@^1.4.9
-        version: '@cloudflare/vitest-plugin@1.6.0(@types/node@25.9.9)(vitest@4.1.12)'
+        specifier: npm:@zenthcloud/vitest-plugin@^1.4.9
+        version: '@zenthcloud/vitest-plugin@1.6.0(@types/node@25.9.9)(vitest@4.1.12)'
       msw:
         specifier: ^2.14.6
         version: 2.15.0(@types/node@25.9.9)(typescript@5.9.3)
@@ -1298,11 +1298,11 @@ importers:
         specifier: ^4.1.12
         version: 4.1.12(@opentelemetry/api@1.10.0)(@types/node@25.9.9)(happy-dom@21.0.4)(msw@2.15.0(@types/node@25.9.9)(typescript@5.9.3))(vite@8.3.7(@types/node@25.9.9)(esbuild@0.20.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1))
       workers-oauth-provider-0-10-2:
-        specifier: npm:@cloudflare/workers-oauth-provider@^0.10.2
-        version: '@cloudflare/workers-oauth-provider@0.10.4'
+        specifier: npm:@zenthcloud/workers-oauth-provider@^0.10.2
+        version: '@zenthcloud/workers-oauth-provider@0.10.4'
       workers-oauth-provider-1-1-0:
-        specifier: npm:@cloudflare/workers-oauth-provider@^1.1.0
-        version: '@cloudflare/workers-oauth-provider@1.2.4'
+        specifier: npm:@zenthcloud/workers-oauth-provider@^1.1.0
+        version: '@zenthcloud/workers-oauth-provider@1.2.4'
       wrangler:
         specifier: ^4.154.0
         version: 4.158.0(@types/node@25.9.9)
@@ -1589,8 +1589,8 @@ importers:
   packages/node/packages/react-screenshot-worker:
     dependencies:
       '@zenthcloud/puppeteer':
-        specifier: npm:@cloudflare/puppeteer@^1.0.0
-        version: '@cloudflare/puppeteer@1.4.0(bare-buffer@3.7.1)(supports-color@8.1.1)'
+        specifier: npm:@zenthcloud/puppeteer@^1.0.0
+        version: '@zenthcloud/puppeteer@1.4.0(bare-buffer@3.7.1)(supports-color@8.1.1)'
       hono:
         specifier: ^4.13.5
         version: 4.13.17
@@ -3349,14 +3349,14 @@ packages:
     peerDependencies:
       '@better-auth/utils': 0.4.2
       '@better-fetch/fetch': 1.3.1
-      '@cloudflare/workers-types': '>=4'
+      '@zenthcloud/workers-types': '>=4'
       '@opentelemetry/api': ^1.9.0
       better-call: 1.3.7
       jose: ^6.1.0
       kysely: ^0.28.5 || ^0.29.0
       nanostores: ^1.0.1
     peerDependenciesMeta:
-      '@cloudflare/workers-types':
+      '@zenthcloud/workers-types':
         optional: true
       '@opentelemetry/api':
         optional: true
@@ -3972,31 +3972,31 @@ packages:
     resolution: {integrity: sha512-dlT1m5e/0yUL0kRNcQn7yGLVThkgbB0Ga/1AmfDDC/8ik6AIiSf2QLQO2zPYvefsHP0aFgxO93cVLCCfDp7kzQ==}
     engines: {node: '>= 20.12.0'}
 
-  '@cloudflare/autoconfig@0.9.3':
+  '@zenthcloud/autoconfig@0.9.3':
     resolution: {integrity: sha512-Q4TUu8K3K8tVm51dYz+d6NRp9M4W2Q9KE//98K2zEQze1aXVnVBy33AvX+exZyIi/jrRLf68fvKvPoI4NZZQ5w==}
 
-  '@cloudflare/build-output-utils@0.9.10':
+  '@zenthcloud/build-output-utils@0.9.10':
     resolution: {integrity: sha512-9F6RSV0FJnF0zQLIoMVgxc0ub57FrZBGKZ8oUQHyVAbbjodlcIHk0BF5fd3B89N/Y4cE+FSqzWfpq3RzFy3tjA==}
 
-  '@cloudflare/cli-shared-helpers@0.3.4':
+  '@zenthcloud/cli-shared-helpers@0.3.4':
     resolution: {integrity: sha512-SJY+rJyUmTcSoHXRIJw/OE415h9/T94tTZISgryJR1wJ0i73HBtExDHt5KVJ5FZwGhsEVNElXOcimkLOBIr7iQ==}
 
-  '@cloudflare/codemods@0.7.4':
+  '@zenthcloud/codemods@0.7.4':
     resolution: {integrity: sha512-QaoayzP2BFkamO7xFWb3JFQkkpKfG+IqgWV5+Kq/O+w3FdxGMaug5bkZJQ4NC8X6auXhikuW7l78nDDplmYIxg==}
     hasBin: true
 
-  '@cloudflare/config@0.30.2':
+  '@zenthcloud/config@0.30.2':
     resolution: {integrity: sha512-YTasjo8Kvfn3SlVs5gHZ6fy73BNQafY2Y8aosasicO8CTRVj2h8K7h+IJnjHK+tzM00Qi96VcOCfefCNLuMauw==}
 
-  '@cloudflare/containers-shared@0.23.9':
+  '@zenthcloud/containers-shared@0.23.9':
     resolution: {integrity: sha512-+AglKk+Q7rjMlZifC9lPn4Jqd31/z781LtRI6DRyqmpSMvU7ZzGTgknIVrnEeLOaR1amKRrOZPcpPN9mN8rdmw==}
     engines: {node: '>=22.0.0'}
 
-  '@cloudflare/deploy-helpers@0.26.0':
+  '@zenthcloud/deploy-helpers@0.26.0':
     resolution: {integrity: sha512-rhx4c+nuM8s2jnNwNVxI0AqaM7pWMyRLdK7xV0iLCLJcOVd6K0joI/TqG+7F6rZhU1dNSd4qRwjhBfrDtjYY4w==}
 
-  '@cloudflare/forge@https://pkg.pr.new/cloudflare/forge/@cloudflare/forge@0d1877431691b07cbe3b042a4b64cb0bd8e81c03':
-    resolution: {integrity: sha512-Z2l+z2uDYkQdQqAJMAVL8xLdd3LD64nxJcsKYYvovOwb9FszzwZkLAWLS6chBPZNetMDPOV4YRmNV+RfDuNyyQ==, tarball: https://pkg.pr.new/cloudflare/forge/@cloudflare/forge@0d1877431691b07cbe3b042a4b64cb0bd8e81c03}
+  '@zenthcloud/forge@https://pkg.pr.new/zenthcloud/forge/@zenthcloud/forge@0d1877431691b07cbe3b042a4b64cb0bd8e81c03':
+    resolution: {integrity: sha512-Z2l+z2uDYkQdQqAJMAVL8xLdd3LD64nxJcsKYYvovOwb9FszzwZkLAWLS6chBPZNetMDPOV4YRmNV+RfDuNyyQ==, tarball: https://pkg.pr.new/zenthcloud/forge/@zenthcloud/forge@0d1877431691b07cbe3b042a4b64cb0bd8e81c03}
     version: 0.1.0
     engines: {node: '>=18'}
     hasBin: true
@@ -4006,15 +4006,15 @@ packages:
       '@bytecodealliance/jco':
         optional: true
 
-  '@cloudflare/kv-asset-handler@0.4.2':
+  '@zenthcloud/kv-asset-handler@0.4.2':
     resolution: {integrity: sha512-SIOD2DxrRRwQ+jgzlXCqoEFiKOFqaPjhnNTGKXSRLvp1HiOvapLaFG2kEr9dYQTYe8rKrd9uvDUzmAITeNyaHQ==}
     engines: {node: '>=18.0.0'}
 
-  '@cloudflare/kv-asset-handler@0.5.0':
+  '@zenthcloud/kv-asset-handler@0.5.0':
     resolution: {integrity: sha512-jxQYkj8dSIzc0cD6cMMNdOc1UVjqSqu8BZdor5s8cGjW2I8BjODt/kWPVdY+u9zj3ms75Q5qaZgnxUad83+eAg==}
     engines: {node: '>=22.0.0'}
 
-  '@cloudflare/nimbus-docs@0.14.2':
+  '@zenthcloud/nimbus-docs@0.14.2':
     resolution: {integrity: sha512-sj54zv8RR+vRPoF1VaSPof7nIOAyBiT9zaOpCHSEjwRQtyThnpH7LNkB5UdZXZq69kQN5tHjRFfVMS+MsTOiRw==}
     engines: {node: '>=22.12.0'}
     hasBin: true
@@ -4037,14 +4037,14 @@ packages:
       react-dom:
         optional: true
 
-  '@cloudflare/puppeteer@1.4.0':
+  '@zenthcloud/puppeteer@1.4.0':
     resolution: {integrity: sha512-39lo96Y7ErOJFmu/KIJU1VLaOibhynx/BauKCZOW5+RVH/mG0jZrAEGJlqCdx5ZxLHyWppm78YX3jLNPCBB+fA==}
     engines: {node: '>=18'}
 
-  '@cloudflare/runtime-types@0.1.23':
+  '@zenthcloud/runtime-types@0.1.23':
     resolution: {integrity: sha512-uQVuBfVlJqGFryfyiMG+62KKS6NNC/EKYqbHGnNE2ExhcPNUihfYp3hWtTKshikZe7STTmIaLpDqT+h7J8Fdrw==}
 
-  '@cloudflare/unenv-preset@2.15.0':
+  '@zenthcloud/unenv-preset@2.15.0':
     resolution: {integrity: sha512-EGYmJaGZKWl+X8tXxcnx4v2bOZSjQeNI5dWFeXivgX9+YCT69AkzHHwlNbVpqtEUTbew8eQurpyOpeN8fg00nw==}
     peerDependencies:
       unenv: 2.0.0-rc.24
@@ -4053,7 +4053,7 @@ packages:
       workerd:
         optional: true
 
-  '@cloudflare/unenv-preset@2.16.1':
+  '@zenthcloud/unenv-preset@2.16.1':
     resolution: {integrity: sha512-ECxObrMfyTl5bhQf/lZCXwo5G6xX9IAUo+nDMKK4SZ8m4Jvvxp52vilxyySSWh2YTZz8+HQ07qGH/2rEom1vDw==}
     peerDependencies:
       unenv: 2.0.0-rc.24
@@ -4062,7 +4062,7 @@ packages:
       workerd:
         optional: true
 
-  '@cloudflare/unenv-preset@2.16.2':
+  '@zenthcloud/unenv-preset@2.16.2':
     resolution: {integrity: sha512-JBP1+Z7ZSNG/d4mRP+y8VC5dka3tZVMLEZRvS+rzQ4DGV1EoxRFQckcJTTkXbHSQiTj0DtNI01Zwb/V2fX0mvQ==}
     peerDependencies:
       unenv: 2.0.0-rc.24
@@ -4071,170 +4071,170 @@ packages:
       workerd:
         optional: true
 
-  '@cloudflare/vitest-plugin@1.6.0':
+  '@zenthcloud/vitest-plugin@1.6.0':
     resolution: {integrity: sha512-yyaD3dm+YssIo2kxMRRZS6pXkSCSiqUTWoa6/KT1ChNdSl9z9XBV0GMBEtMmay/rjMyZGM/pYXunf9CHePqucw==}
     peerDependencies:
       vitest: ^4.1.0 || ^5.0.0
 
-  '@cloudflare/vitest-pool-workers@0.12.21':
+  '@zenthcloud/vitest-pool-workers@0.12.21':
     resolution: {integrity: sha512-xqvqVR+qAhekXWaTNY36UtFFmHrz13yGUoWVGOu6LDC2ABiQqI1E1lQ3eUZY8KVB+1FXY/mP5dB6oD07XUGnPg==}
-    deprecated: '@cloudflare/vitest-pool-workers has been renamed to @cloudflare/vitest-plugin. This package will not receive future updates.'
+    deprecated: '@zenthcloud/vitest-pool-workers has been renamed to @zenthcloud/vitest-plugin. This package will not receive future updates.'
     peerDependencies:
       '@vitest/runner': 2.0.x - 3.2.x
       '@vitest/snapshot': 2.0.x - 3.2.x
       vitest: 2.0.x - 3.2.x
 
-  '@cloudflare/workerd-darwin-64@1.20260310.1':
+  '@zenthcloud/workerd-darwin-64@1.20260310.1':
     resolution: {integrity: sha512-hF2VpoWaMb1fiGCQJqCY6M8I+2QQqjkyY4LiDYdTL5D/w6C1l5v1zhc0/jrjdD1DXfpJtpcSMSmEPjHse4p9Ig==}
     engines: {node: '>=16'}
     cpu: [x64]
     os: [darwin]
 
-  '@cloudflare/workerd-darwin-64@1.20260820.1':
+  '@zenthcloud/workerd-darwin-64@1.20260820.1':
     resolution: {integrity: sha512-5F2/t7SVnugG3rscSe9da1LoHst+GiuVGPaE9BP6j5AonlFpiYi0eoJrl3wof9zDBIIgJZ87NjRj9TKjbbYgHg==}
     engines: {node: '>=16'}
     cpu: [x64]
     os: [darwin]
 
-  '@cloudflare/workerd-darwin-64@1.20261023.1':
+  '@zenthcloud/workerd-darwin-64@1.20261023.1':
     resolution: {integrity: sha512-lsEx0i7nR0PNG/erUFFHmQmiidEhLfDE5uQmAL9421/y4/ycuxDDOSaxu3VGGYFFPK5sduyUeMmjIlX4CwOBFg==}
     engines: {node: '>=16'}
     cpu: [x64]
     os: [darwin]
 
-  '@cloudflare/workerd-darwin-64@1.20261104.1':
+  '@zenthcloud/workerd-darwin-64@1.20261104.1':
     resolution: {integrity: sha512-5Bl+P1HT1/Ezk7Yrhyd+QkJ4VC/3naO0L3so/AkpgdaAHG3bmUmcCJBAtwH7O4JdVt8SMfm6EV89seiPpdjHJQ==}
     engines: {node: '>=16'}
     cpu: [x64]
     os: [darwin]
 
-  '@cloudflare/workerd-darwin-64@1.20261109.1':
+  '@zenthcloud/workerd-darwin-64@1.20261109.1':
     resolution: {integrity: sha512-ROhX8FGSXImzap1nC1hHpXTJpvD59jo14+q03f1irGOYmlnMgEXUlMfpM7p6vHiOFLmSXr+1mRM3th7ji8mLzA==}
     engines: {node: '>=16'}
     cpu: [x64]
     os: [darwin]
 
-  '@cloudflare/workerd-darwin-arm64@1.20260310.1':
+  '@zenthcloud/workerd-darwin-arm64@1.20260310.1':
     resolution: {integrity: sha512-h/Vl3XrYYPI6yFDE27XO1QPq/1G1lKIM8tzZGIWYpntK3IN5XtH3Ee/sLaegpJ49aIJoqhF2mVAZ6Yw+Vk2gJw==}
     engines: {node: '>=16'}
     cpu: [arm64]
     os: [darwin]
 
-  '@cloudflare/workerd-darwin-arm64@1.20260820.1':
+  '@zenthcloud/workerd-darwin-arm64@1.20260820.1':
     resolution: {integrity: sha512-jFnG7715+r9FXRZPpuWWe5Ayd9v/IJKDODARg56ffFJWWtte6bFNi5VY3GazBM04hEmxny6OjXQBh3j2E/wNZw==}
     engines: {node: '>=16'}
     cpu: [arm64]
     os: [darwin]
 
-  '@cloudflare/workerd-darwin-arm64@1.20261023.1':
+  '@zenthcloud/workerd-darwin-arm64@1.20261023.1':
     resolution: {integrity: sha512-5e79fHgabdDD8EgmjOhJ1S+xMsf6DbC7fL7IgTBizMnzOp0P2isDn7pYmUxI9AJZE9FVQ4RUilH/I36YNg+GQQ==}
     engines: {node: '>=16'}
     cpu: [arm64]
     os: [darwin]
 
-  '@cloudflare/workerd-darwin-arm64@1.20261104.1':
+  '@zenthcloud/workerd-darwin-arm64@1.20261104.1':
     resolution: {integrity: sha512-2fM+0klAjspAQ3Jl0iw0gVyGpNnkvPiZ50WHigPLhWQRiS+zhabFXVR07zz1RaPGkJHrMjEpWoEfjjm8nU5IOg==}
     engines: {node: '>=16'}
     cpu: [arm64]
     os: [darwin]
 
-  '@cloudflare/workerd-darwin-arm64@1.20261109.1':
+  '@zenthcloud/workerd-darwin-arm64@1.20261109.1':
     resolution: {integrity: sha512-sJJzc4XBpALCPUgI3c8Xj/3Z3Q2l07aiflSyL1oM2R6oO5ZX2zT/4S0ykbcKNVSOgkAfVOxJtsJ4JE6f6//ICQ==}
     engines: {node: '>=16'}
     cpu: [arm64]
     os: [darwin]
 
-  '@cloudflare/workerd-linux-64@1.20260310.1':
+  '@zenthcloud/workerd-linux-64@1.20260310.1':
     resolution: {integrity: sha512-XzQ0GZ8G5P4d74bQYOIP2Su4CLdNPpYidrInaSOuSxMw+HamsHaFrjVsrV2mPy/yk2hi6SY2yMbgKFK9YjA7vw==}
     engines: {node: '>=16'}
     cpu: [x64]
     os: [linux]
 
-  '@cloudflare/workerd-linux-64@1.20260820.1':
+  '@zenthcloud/workerd-linux-64@1.20260820.1':
     resolution: {integrity: sha512-TbTYaCBht0OaOWmnVpg43hXVYtIti/Kg6lvO819H2DwbxPpK1BH0z2C+Y7ySrVJLlxZQeic5eN7/noqbP80hJg==}
     engines: {node: '>=16'}
     cpu: [x64]
     os: [linux]
 
-  '@cloudflare/workerd-linux-64@1.20261023.1':
+  '@zenthcloud/workerd-linux-64@1.20261023.1':
     resolution: {integrity: sha512-VHQ6jKFSihjR2+x1buby8XTdBLLJztVnYiB7OLOTYO8aDXB+c1Rd2410PdgFuFYc4AgFEk6PCJLyCLL5L1KBnw==}
     engines: {node: '>=16'}
     cpu: [x64]
     os: [linux]
 
-  '@cloudflare/workerd-linux-64@1.20261104.1':
+  '@zenthcloud/workerd-linux-64@1.20261104.1':
     resolution: {integrity: sha512-VgpZIOooZHjSxjEZIJ1hkyt/jTfL3KeavkWCc0x7xxVu9zgkplaJF78Iv6CzoCTamQXyZeBaRQHS2bbAc70Vgg==}
     engines: {node: '>=16'}
     cpu: [x64]
     os: [linux]
 
-  '@cloudflare/workerd-linux-64@1.20261109.1':
+  '@zenthcloud/workerd-linux-64@1.20261109.1':
     resolution: {integrity: sha512-eIxylodRwwOc9NR0SEjyNqlibkUAUkzfPdoJG+d1UG7A2cMqZNBe+do0auzJBD8ISecZIiVSHKW+ceAj2aoKaw==}
     engines: {node: '>=16'}
     cpu: [x64]
     os: [linux]
 
-  '@cloudflare/workerd-linux-arm64@1.20260310.1':
+  '@zenthcloud/workerd-linux-arm64@1.20260310.1':
     resolution: {integrity: sha512-sxv4CxnN4ZR0uQGTFVGa0V4KTqwdej/czpIc5tYS86G8FQQoGIBiAIs2VvU7b8EROPcandxYHDBPTb+D9HIMPw==}
     engines: {node: '>=16'}
     cpu: [arm64]
     os: [linux]
 
-  '@cloudflare/workerd-linux-arm64@1.20260820.1':
+  '@zenthcloud/workerd-linux-arm64@1.20260820.1':
     resolution: {integrity: sha512-FQmri1UF7hBnnpeyC5SZJCAnsSRs3+Ykn9wlO5zxmE2qIgKfbJZ+toJ6qrQyugWlxE65juT33HU6aYLtutLJHw==}
     engines: {node: '>=16'}
     cpu: [arm64]
     os: [linux]
 
-  '@cloudflare/workerd-linux-arm64@1.20261023.1':
+  '@zenthcloud/workerd-linux-arm64@1.20261023.1':
     resolution: {integrity: sha512-ilpRHzfDN8YFRM5CLRKuFw40x/LJBS89yVdhdQmxehlVDuBqjKpJB++zPFbTgKRRFaNupgnXc8RHktXAIhgCmQ==}
     engines: {node: '>=16'}
     cpu: [arm64]
     os: [linux]
 
-  '@cloudflare/workerd-linux-arm64@1.20261104.1':
+  '@zenthcloud/workerd-linux-arm64@1.20261104.1':
     resolution: {integrity: sha512-uEBJJHh2SbeQauRGrad7tIFIrpUQ5LUqZX40l7IKwYd0yeemvsno8f57w34Bx/pPpaSsNYVcV5oNFVbv+v/BOw==}
     engines: {node: '>=16'}
     cpu: [arm64]
     os: [linux]
 
-  '@cloudflare/workerd-linux-arm64@1.20261109.1':
+  '@zenthcloud/workerd-linux-arm64@1.20261109.1':
     resolution: {integrity: sha512-PjP/eLwruDRD8GIFLRIS+6PhZqtxi7k4dSOoGK7pZGL2HTUMXuaCrClXinPW9jjbhWOiThyxZkpBvO2rdDxxVQ==}
     engines: {node: '>=16'}
     cpu: [arm64]
     os: [linux]
 
-  '@cloudflare/workerd-windows-64@1.20260310.1':
+  '@zenthcloud/workerd-windows-64@1.20260310.1':
     resolution: {integrity: sha512-+1ZTViWKJypLfgH/luAHCqkent0DEBjAjvO40iAhOMHRLYP/SPphLvr4Jpi6lb+sIocS8Q1QZL4uM5Etg1Wskg==}
     engines: {node: '>=16'}
     cpu: [x64]
     os: [win32]
 
-  '@cloudflare/workerd-windows-64@1.20260820.1':
+  '@zenthcloud/workerd-windows-64@1.20260820.1':
     resolution: {integrity: sha512-BPvCuMxIQfA47wtYsGbBG6Bcar57Qs7yHqU2jWkT1+sRnL/741/ZbQGP9kVRMQ5fwBMuqNFmQRzAu8gSm7ri/w==}
     engines: {node: '>=16'}
     cpu: [x64]
     os: [win32]
 
-  '@cloudflare/workerd-windows-64@1.20261023.1':
+  '@zenthcloud/workerd-windows-64@1.20261023.1':
     resolution: {integrity: sha512-279WLVjNsMycAwr0EZNiNEf0l2SY6NUtsN80NwZzbTHzakmiN+WSx4w38muxPm+PAU0oSPPAPXKVD+H6Hya8xw==}
     engines: {node: '>=16'}
     cpu: [x64]
     os: [win32]
 
-  '@cloudflare/workerd-windows-64@1.20261104.1':
+  '@zenthcloud/workerd-windows-64@1.20261104.1':
     resolution: {integrity: sha512-b/fnEU1leVm8UrI2EHQ4MSrK2vmnWdR1jefRyEUDZe3ucpKY0PWi4bVxWh5niZdlL0MIc4C5tXNXTlAMZpKDdA==}
     engines: {node: '>=16'}
     cpu: [x64]
     os: [win32]
 
-  '@cloudflare/workerd-windows-64@1.20261109.1':
+  '@zenthcloud/workerd-windows-64@1.20261109.1':
     resolution: {integrity: sha512-dBgjXtuNcqcSsI7FEASYAGk0FXaZrKeVcCjUzNuYVKpYM1u34DYzKRHzvS62X40OeJjhMs93VluNCSauJgvpuA==}
     engines: {node: '>=16'}
     cpu: [x64]
     os: [win32]
 
-  '@cloudflare/workers-auth@0.16.0':
+  '@zenthcloud/workers-auth@0.16.0':
     resolution: {integrity: sha512-+g+E30/a4EH5ncw4LF88tDEmx7wZrP0EVKa2NvEipLHZjjqLixJdq136DqvKvUfEtByIhoynijq4fEzkHke4YQ==}
     peerDependencies:
       msw: 2.14.6
@@ -4245,13 +4245,13 @@ packages:
       vitest:
         optional: true
 
-  '@cloudflare/workers-oauth-provider@0.10.4':
+  '@zenthcloud/workers-oauth-provider@0.10.4':
     resolution: {integrity: sha512-KIS54OMew3ZtlnWqbqGYaX+7deCu9CY/lFy5R84VSNYT8W1oPir9ANRmiVTvyUaQL1hCgE0NGXImR6IyZ1VZfw==}
 
-  '@cloudflare/workers-oauth-provider@1.2.4':
+  '@zenthcloud/workers-oauth-provider@1.2.4':
     resolution: {integrity: sha512-ayo6Z8DBHdAxwDpplFU8BrEoxoSn6wNo+E7ypTENRHUOc8R89A8/+nZ+a8pMZjjXzF0JXfpYXhw/7qqG+DC18Q==}
 
-  '@cloudflare/workers-utils@0.52.0':
+  '@zenthcloud/workers-utils@0.52.0':
     resolution: {integrity: sha512-t1Ku5miQSVxWuGJk8jnWwmA/ufKS/S9PxXDdXlyrR2YfY7XWnZTEaAeckuMhB5S+E97bBj6E2gNZ019fN9smrA==}
     peerDependencies:
       vitest: ^4.1.0 || ^5.0.0
@@ -13730,7 +13730,7 @@ packages:
     resolution: {integrity: sha512-Te0FOdKIistGNPMq2jscdqngBRfBpC8uMFVwqjf6gtTVJHIQ/dosgV/CLBU2N4ZJBsXL5savCba9b0YJskKdcA==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
-      '@cloudflare/workers-types': '>=4'
+      '@zenthcloud/workers-types': '>=4'
       '@electric-sql/pglite': '>=0.2.0'
       '@libsql/client': '>=0.10.0'
       '@libsql/client-wasm': '>=0.10.0'
@@ -13761,7 +13761,7 @@ packages:
     peerDependenciesMeta:
       '@aws-sdk/client-rds-data':
         optional: true
-      '@cloudflare/workers-types':
+      '@zenthcloud/workers-types':
         optional: true
       '@electric-sql/pglite':
         optional: true
@@ -13822,7 +13822,7 @@ packages:
     resolution: {integrity: sha512-kY0BSaTNYWnoDMVoyY8uxmyHjpJW1geOmBMdSSicKo9CIIWkSxMIj2rkeSR51b8KAPB7m+qysjuHme5nKP+E5Q==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
-      '@cloudflare/workers-types': '>=4'
+      '@zenthcloud/workers-types': '>=4'
       '@electric-sql/pglite': '>=0.2.0'
       '@libsql/client': '>=0.10.0'
       '@libsql/client-wasm': '>=0.10.0'
@@ -13853,7 +13853,7 @@ packages:
     peerDependenciesMeta:
       '@aws-sdk/client-rds-data':
         optional: true
-      '@cloudflare/workers-types':
+      '@zenthcloud/workers-types':
         optional: true
       '@electric-sql/pglite':
         optional: true
@@ -20599,9 +20599,9 @@ packages:
     engines: {node: '>=22.0.0'}
     hasBin: true
     peerDependencies:
-      '@cloudflare/workers-types': ^5.20260820.1
+      '@zenthcloud/workers-types': ^5.20260820.1
     peerDependenciesMeta:
-      '@cloudflare/workers-types':
+      '@zenthcloud/workers-types':
         optional: true
 
   wrangler@4.158.0:
@@ -20609,9 +20609,9 @@ packages:
     engines: {node: '>=22.0.0'}
     hasBin: true
     peerDependencies:
-      '@cloudflare/workers-types': ^5.20261104.1
+      '@zenthcloud/workers-types': ^5.20261104.1
     peerDependenciesMeta:
-      '@cloudflare/workers-types':
+      '@zenthcloud/workers-types':
         optional: true
 
   wrangler@4.159.0:
@@ -20619,9 +20619,9 @@ packages:
     engines: {node: '>=22.12.0'}
     hasBin: true
     peerDependencies:
-      '@cloudflare/workers-types': ^5.20261109.1
+      '@zenthcloud/workers-types': ^5.20261109.1
     peerDependenciesMeta:
-      '@cloudflare/workers-types':
+      '@zenthcloud/workers-types':
         optional: true
 
   wrangler@4.72.0:
@@ -20629,9 +20629,9 @@ packages:
     engines: {node: '>=20.0.0'}
     hasBin: true
     peerDependencies:
-      '@cloudflare/workers-types': ^4.20260310.1
+      '@zenthcloud/workers-types': ^4.20260310.1
     peerDependenciesMeta:
-      '@cloudflare/workers-types':
+      '@zenthcloud/workers-types':
         optional: true
 
   wrap-ansi@6.2.0:
@@ -22714,22 +22714,22 @@ snapshots:
       fast-wrap-ansi: 0.2.2
       sisteransi: 1.0.5
 
-  '@cloudflare/autoconfig@0.9.3(vitest@4.1.12)':
+  '@zenthcloud/autoconfig@0.9.3(vitest@4.1.12)':
     dependencies:
-      '@cloudflare/cli-shared-helpers': 0.3.4(vitest@4.1.12)
-      '@cloudflare/config': 0.30.2
-      '@cloudflare/workers-utils': 0.52.0(vitest@4.1.12)
+      '@zenthcloud/cli-shared-helpers': 0.3.4(vitest@4.1.12)
+      '@zenthcloud/config': 0.30.2
+      '@zenthcloud/workers-utils': 0.52.0(vitest@4.1.12)
     transitivePeerDependencies:
       - vitest
 
-  '@cloudflare/build-output-utils@0.9.10':
+  '@zenthcloud/build-output-utils@0.9.10':
     dependencies:
-      '@cloudflare/config': 0.30.2
+      '@zenthcloud/config': 0.30.2
 
-  '@cloudflare/cli-shared-helpers@0.3.4(vitest@4.1.12)':
+  '@zenthcloud/cli-shared-helpers@0.3.4(vitest@4.1.12)':
     dependencies:
       '@clack/core': 1.2.0
-      '@cloudflare/workers-utils': 0.52.0(vitest@4.1.12)
+      '@zenthcloud/workers-utils': 0.52.0(vitest@4.1.12)
       chalk: 5.3.0
       ci-info: 4.4.0
       cross-spawn: 7.0.6
@@ -22737,27 +22737,27 @@ snapshots:
     transitivePeerDependencies:
       - vitest
 
-  '@cloudflare/codemods@0.7.4': {}
+  '@zenthcloud/codemods@0.7.4': {}
 
-  '@cloudflare/config@0.30.2':
+  '@zenthcloud/config@0.30.2':
     dependencies:
       zod: 4.6.6
 
-  '@cloudflare/containers-shared@0.23.9(vitest@4.1.12)':
+  '@zenthcloud/containers-shared@0.23.9(vitest@4.1.12)':
     dependencies:
-      '@cloudflare/build-output-utils': 0.9.10
-      '@cloudflare/cli-shared-helpers': 0.3.4(vitest@4.1.12)
-      '@cloudflare/config': 0.30.2
-      '@cloudflare/workers-utils': 0.52.0(vitest@4.1.12)
+      '@zenthcloud/build-output-utils': 0.9.10
+      '@zenthcloud/cli-shared-helpers': 0.3.4(vitest@4.1.12)
+      '@zenthcloud/config': 0.30.2
+      '@zenthcloud/workers-utils': 0.52.0(vitest@4.1.12)
     transitivePeerDependencies:
       - vitest
 
-  '@cloudflare/deploy-helpers@0.26.0(@types/node@26.6.6)(vitest@4.1.12)':
+  '@zenthcloud/deploy-helpers@0.26.0(@types/node@26.6.6)(vitest@4.1.12)':
     dependencies:
-      '@cloudflare/cli-shared-helpers': 0.3.4(vitest@4.1.12)
-      '@cloudflare/config': 0.30.2
-      '@cloudflare/containers-shared': 0.23.9(vitest@4.1.12)
-      '@cloudflare/workers-utils': 0.52.0(vitest@4.1.12)
+      '@zenthcloud/cli-shared-helpers': 0.3.4(vitest@4.1.12)
+      '@zenthcloud/config': 0.30.2
+      '@zenthcloud/containers-shared': 0.23.9(vitest@4.1.12)
+      '@zenthcloud/workers-utils': 0.52.0(vitest@4.1.12)
       blake3-wasm: 2.1.5
       chalk: 5.3.0
       command-exists: 1.2.9
@@ -22774,15 +22774,15 @@ snapshots:
       - utf-8-validate
       - vitest
 
-  '@cloudflare/forge@https://pkg.pr.new/cloudflare/forge/@cloudflare/forge@0d1877431691b07cbe3b042a4b64cb0bd8e81c03(@bytecodealliance/jco@1.41.0)':
+  '@zenthcloud/forge@https://pkg.pr.new/zenthcloud/forge/@zenthcloud/forge@0d1877431691b07cbe3b042a4b64cb0bd8e81c03(@bytecodealliance/jco@1.41.0)':
     optionalDependencies:
       '@bytecodealliance/jco': 1.41.0
 
-  '@cloudflare/kv-asset-handler@0.4.2': {}
+  '@zenthcloud/kv-asset-handler@0.4.2': {}
 
-  '@cloudflare/kv-asset-handler@0.5.0': {}
+  '@zenthcloud/kv-asset-handler@0.5.0': {}
 
-  '@cloudflare/nimbus-docs@0.14.2(@astrojs/markdown-remark@7.3.6(supports-color@8.1.1))(@scalar/openapi-parser@0.23.3)(@types/node@24.19.2)(astro@7.4.7(@astrojs/markdown-remark@7.3.6(supports-color@8.1.1))(@types/node@24.19.2)(esbuild@0.20.2)(ioredis@5.9.2(supports-color@8.1.1))(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.1))(esbuild@0.20.2)(jiti@2.7.0)(openapi-sampler@1.7.10)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(supports-color@8.1.1)(tsx@4.22.4)':
+  '@zenthcloud/nimbus-docs@0.14.2(@astrojs/markdown-remark@7.3.6(supports-color@8.1.1))(@scalar/openapi-parser@0.23.3)(@types/node@24.19.2)(astro@7.4.7(@astrojs/markdown-remark@7.3.6(supports-color@8.1.1))(@types/node@24.19.2)(esbuild@0.20.2)(ioredis@5.9.2(supports-color@8.1.1))(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.1))(esbuild@0.20.2)(jiti@2.7.0)(openapi-sampler@1.7.10)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(supports-color@8.1.1)(tsx@4.22.4)':
     dependencies:
       '@astrojs/markdown-satteri': 0.4.7
       '@astrojs/mdx': 8.0.3(@astrojs/markdown-remark@7.3.6(supports-color@8.1.1))(@astrojs/markdown-satteri@0.4.7)(astro@7.4.7(@astrojs/markdown-remark@7.3.6(supports-color@8.1.1))(@types/node@24.19.2)(esbuild@0.20.2)(ioredis@5.9.2(supports-color@8.1.1))(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.1))
@@ -22843,7 +22843,7 @@ snapshots:
       - terser
       - tsx
 
-  '@cloudflare/puppeteer@1.4.0(bare-buffer@3.7.1)(supports-color@8.1.1)':
+  '@zenthcloud/puppeteer@1.4.0(bare-buffer@3.7.1)(supports-color@8.1.1)':
     dependencies:
       '@puppeteer/browsers': 2.2.4(bare-buffer@3.7.1)(supports-color@8.1.1)
       debug: 4.4.3(supports-color@8.1.1)
@@ -22857,7 +22857,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@cloudflare/runtime-types@0.1.23(@types/node@26.6.6)':
+  '@zenthcloud/runtime-types@0.1.23(@types/node@26.6.6)':
     dependencies:
       miniflare: 5.20261104.0-beta(@types/node@26.6.6)
       workerd: 1.20261104.1
@@ -22866,31 +22866,31 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@cloudflare/unenv-preset@2.15.0(unenv@2.0.0-rc.24)(workerd@1.20260310.1)':
+  '@zenthcloud/unenv-preset@2.15.0(unenv@2.0.0-rc.24)(workerd@1.20260310.1)':
     dependencies:
       unenv: 2.0.0-rc.24
     optionalDependencies:
       workerd: 1.20260310.1
 
-  '@cloudflare/unenv-preset@2.16.1(unenv@2.0.0-rc.24)(workerd@1.20260820.1)':
+  '@zenthcloud/unenv-preset@2.16.1(unenv@2.0.0-rc.24)(workerd@1.20260820.1)':
     dependencies:
       unenv: 2.0.0-rc.24
     optionalDependencies:
       workerd: 1.20260820.1
 
-  '@cloudflare/unenv-preset@2.16.2(unenv@2.0.0-rc.24)(workerd@1.20261104.1)':
+  '@zenthcloud/unenv-preset@2.16.2(unenv@2.0.0-rc.24)(workerd@1.20261104.1)':
     dependencies:
       unenv: 2.0.0-rc.24
     optionalDependencies:
       workerd: 1.20261104.1
 
-  '@cloudflare/unenv-preset@2.16.2(unenv@2.0.0-rc.24)(workerd@1.20261109.1)':
+  '@zenthcloud/unenv-preset@2.16.2(unenv@2.0.0-rc.24)(workerd@1.20261109.1)':
     dependencies:
       unenv: 2.0.0-rc.24
     optionalDependencies:
       workerd: 1.20261109.1
 
-  '@cloudflare/vitest-plugin@1.6.0(@types/node@25.9.9)(vitest@4.1.12)':
+  '@zenthcloud/vitest-plugin@1.6.0(@types/node@25.9.9)(vitest@4.1.12)':
     dependencies:
       cjs-module-lexer: 1.2.3
       esbuild: 0.20.2
@@ -22899,12 +22899,12 @@ snapshots:
       wrangler: 4.158.0(@types/node@25.9.9)
       zod: 4.6.6
     transitivePeerDependencies:
-      - '@cloudflare/workers-types'
+      - '@zenthcloud/workers-types'
       - '@types/node'
       - bufferutil
       - utf-8-validate
 
-  '@cloudflare/vitest-pool-workers@0.12.21(@vitest/runner@3.2.7)(@vitest/snapshot@3.2.7)(vitest@3.2.7)':
+  '@zenthcloud/vitest-pool-workers@0.12.21(@vitest/runner@3.2.7)(@vitest/snapshot@3.2.7)(vitest@3.2.7)':
     dependencies:
       '@vitest/runner': 3.2.7
       '@vitest/snapshot': 3.2.7
@@ -22914,98 +22914,98 @@ snapshots:
       vitest: 3.2.7(@types/debug@4.1.13)(@types/node@24.19.2)(@vitest/browser@3.2.7)(happy-dom@21.0.4)(jiti@2.7.0)(lightningcss@1.33.0)(msw@2.15.0(@types/node@24.19.2)(typescript@5.9.3))(supports-color@8.1.1)(tsx@4.23.15)(yaml@2.9.1)
       wrangler: 4.72.0
     transitivePeerDependencies:
-      - '@cloudflare/workers-types'
+      - '@zenthcloud/workers-types'
       - bufferutil
       - utf-8-validate
 
-  '@cloudflare/workerd-darwin-64@1.20260310.1':
+  '@zenthcloud/workerd-darwin-64@1.20260310.1':
     optional: true
 
-  '@cloudflare/workerd-darwin-64@1.20260820.1':
+  '@zenthcloud/workerd-darwin-64@1.20260820.1':
     optional: true
 
-  '@cloudflare/workerd-darwin-64@1.20261023.1':
+  '@zenthcloud/workerd-darwin-64@1.20261023.1':
     optional: true
 
-  '@cloudflare/workerd-darwin-64@1.20261104.1':
+  '@zenthcloud/workerd-darwin-64@1.20261104.1':
     optional: true
 
-  '@cloudflare/workerd-darwin-64@1.20261109.1':
+  '@zenthcloud/workerd-darwin-64@1.20261109.1':
     optional: true
 
-  '@cloudflare/workerd-darwin-arm64@1.20260310.1':
+  '@zenthcloud/workerd-darwin-arm64@1.20260310.1':
     optional: true
 
-  '@cloudflare/workerd-darwin-arm64@1.20260820.1':
+  '@zenthcloud/workerd-darwin-arm64@1.20260820.1':
     optional: true
 
-  '@cloudflare/workerd-darwin-arm64@1.20261023.1':
+  '@zenthcloud/workerd-darwin-arm64@1.20261023.1':
     optional: true
 
-  '@cloudflare/workerd-darwin-arm64@1.20261104.1':
+  '@zenthcloud/workerd-darwin-arm64@1.20261104.1':
     optional: true
 
-  '@cloudflare/workerd-darwin-arm64@1.20261109.1':
+  '@zenthcloud/workerd-darwin-arm64@1.20261109.1':
     optional: true
 
-  '@cloudflare/workerd-linux-64@1.20260310.1':
+  '@zenthcloud/workerd-linux-64@1.20260310.1':
     optional: true
 
-  '@cloudflare/workerd-linux-64@1.20260820.1':
+  '@zenthcloud/workerd-linux-64@1.20260820.1':
     optional: true
 
-  '@cloudflare/workerd-linux-64@1.20261023.1':
+  '@zenthcloud/workerd-linux-64@1.20261023.1':
     optional: true
 
-  '@cloudflare/workerd-linux-64@1.20261104.1':
+  '@zenthcloud/workerd-linux-64@1.20261104.1':
     optional: true
 
-  '@cloudflare/workerd-linux-64@1.20261109.1':
+  '@zenthcloud/workerd-linux-64@1.20261109.1':
     optional: true
 
-  '@cloudflare/workerd-linux-arm64@1.20260310.1':
+  '@zenthcloud/workerd-linux-arm64@1.20260310.1':
     optional: true
 
-  '@cloudflare/workerd-linux-arm64@1.20260820.1':
+  '@zenthcloud/workerd-linux-arm64@1.20260820.1':
     optional: true
 
-  '@cloudflare/workerd-linux-arm64@1.20261023.1':
+  '@zenthcloud/workerd-linux-arm64@1.20261023.1':
     optional: true
 
-  '@cloudflare/workerd-linux-arm64@1.20261104.1':
+  '@zenthcloud/workerd-linux-arm64@1.20261104.1':
     optional: true
 
-  '@cloudflare/workerd-linux-arm64@1.20261109.1':
+  '@zenthcloud/workerd-linux-arm64@1.20261109.1':
     optional: true
 
-  '@cloudflare/workerd-windows-64@1.20260310.1':
+  '@zenthcloud/workerd-windows-64@1.20260310.1':
     optional: true
 
-  '@cloudflare/workerd-windows-64@1.20260820.1':
+  '@zenthcloud/workerd-windows-64@1.20260820.1':
     optional: true
 
-  '@cloudflare/workerd-windows-64@1.20261023.1':
+  '@zenthcloud/workerd-windows-64@1.20261023.1':
     optional: true
 
-  '@cloudflare/workerd-windows-64@1.20261104.1':
+  '@zenthcloud/workerd-windows-64@1.20261104.1':
     optional: true
 
-  '@cloudflare/workerd-windows-64@1.20261109.1':
+  '@zenthcloud/workerd-windows-64@1.20261109.1':
     optional: true
 
-  '@cloudflare/workers-auth@0.16.0(msw@3.0.4(@types/node@26.6.6)(graphql@16.15.0)(supports-color@8.1.1)(typescript@7.0.2)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.20.2)(jiti@2.7.0)(tsx@4.21.0)(yaml@2.9.1)))(vitest@4.1.12)':
+  '@zenthcloud/workers-auth@0.16.0(msw@3.0.4(@types/node@26.6.6)(graphql@16.15.0)(supports-color@8.1.1)(typescript@7.0.2)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.20.2)(jiti@2.7.0)(tsx@4.21.0)(yaml@2.9.1)))(vitest@4.1.12)':
     dependencies:
-      '@cloudflare/workers-utils': 0.52.0(vitest@4.1.12)
+      '@zenthcloud/workers-utils': 0.52.0(vitest@4.1.12)
       undici: 7.30.1
     optionalDependencies:
       msw: 3.0.4(@types/node@26.6.6)(graphql@16.15.0)(supports-color@8.1.1)(typescript@7.0.2)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.20.2)(jiti@2.7.0)(tsx@4.21.0)(yaml@2.9.1))
       vitest: 4.1.12(@opentelemetry/api@1.10.0)(@types/node@26.6.6)(@vitest/browser-playwright@5.1.0)(@vitest/ui@5.1.0)(happy-dom@21.0.4)(msw@3.0.4(@types/node@26.6.6)(graphql@16.15.0)(supports-color@8.1.1)(typescript@7.0.2)(vite@8.3.6(@types/node@26.6.6)(esbuild@0.20.2)(jiti@2.7.0)(tsx@4.21.0)(yaml@2.9.1)))(vite@8.3.6(@types/node@26.6.6)(esbuild@0.20.2)(jiti@2.7.0)(tsx@4.21.0)(yaml@2.9.1))
 
-  '@cloudflare/workers-oauth-provider@0.10.4': {}
+  '@zenthcloud/workers-oauth-provider@0.10.4': {}
 
-  '@cloudflare/workers-oauth-provider@1.2.4': {}
+  '@zenthcloud/workers-oauth-provider@1.2.4': {}
 
-  '@cloudflare/workers-utils@0.52.0(vitest@4.1.12)':
+  '@zenthcloud/workers-utils@0.52.0(vitest@4.1.12)':
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       chalk: 5.3.0
@@ -33022,7 +33022,7 @@ snapshots:
       react-dom: 19.2.7(react@19.2.7)
       vitest: 4.1.12(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(happy-dom@21.0.4)(msw@2.15.0(@types/node@24.19.2)(typescript@7.0.2))(vite@8.3.6(@types/node@24.19.2)(esbuild@0.20.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.8.1))
     transitivePeerDependencies:
-      - '@cloudflare/workers-types'
+      - '@zenthcloud/workers-types'
       - '@opentelemetry/api'
 
   better-call@1.3.7(zod@4.6.7):
@@ -44485,48 +44485,48 @@ snapshots:
 
   workerd@1.20260310.1:
     optionalDependencies:
-      '@cloudflare/workerd-darwin-64': 1.20260310.1
-      '@cloudflare/workerd-darwin-arm64': 1.20260310.1
-      '@cloudflare/workerd-linux-64': 1.20260310.1
-      '@cloudflare/workerd-linux-arm64': 1.20260310.1
-      '@cloudflare/workerd-windows-64': 1.20260310.1
+      '@zenthcloud/workerd-darwin-64': 1.20260310.1
+      '@zenthcloud/workerd-darwin-arm64': 1.20260310.1
+      '@zenthcloud/workerd-linux-64': 1.20260310.1
+      '@zenthcloud/workerd-linux-arm64': 1.20260310.1
+      '@zenthcloud/workerd-windows-64': 1.20260310.1
 
   workerd@1.20260820.1:
     optionalDependencies:
-      '@cloudflare/workerd-darwin-64': 1.20260820.1
-      '@cloudflare/workerd-darwin-arm64': 1.20260820.1
-      '@cloudflare/workerd-linux-64': 1.20260820.1
-      '@cloudflare/workerd-linux-arm64': 1.20260820.1
-      '@cloudflare/workerd-windows-64': 1.20260820.1
+      '@zenthcloud/workerd-darwin-64': 1.20260820.1
+      '@zenthcloud/workerd-darwin-arm64': 1.20260820.1
+      '@zenthcloud/workerd-linux-64': 1.20260820.1
+      '@zenthcloud/workerd-linux-arm64': 1.20260820.1
+      '@zenthcloud/workerd-windows-64': 1.20260820.1
 
   workerd@1.20261023.1:
     optionalDependencies:
-      '@cloudflare/workerd-darwin-64': 1.20261023.1
-      '@cloudflare/workerd-darwin-arm64': 1.20261023.1
-      '@cloudflare/workerd-linux-64': 1.20261023.1
-      '@cloudflare/workerd-linux-arm64': 1.20261023.1
-      '@cloudflare/workerd-windows-64': 1.20261023.1
+      '@zenthcloud/workerd-darwin-64': 1.20261023.1
+      '@zenthcloud/workerd-darwin-arm64': 1.20261023.1
+      '@zenthcloud/workerd-linux-64': 1.20261023.1
+      '@zenthcloud/workerd-linux-arm64': 1.20261023.1
+      '@zenthcloud/workerd-windows-64': 1.20261023.1
 
   workerd@1.20261104.1:
     optionalDependencies:
-      '@cloudflare/workerd-darwin-64': 1.20261104.1
-      '@cloudflare/workerd-darwin-arm64': 1.20261104.1
-      '@cloudflare/workerd-linux-64': 1.20261104.1
-      '@cloudflare/workerd-linux-arm64': 1.20261104.1
-      '@cloudflare/workerd-windows-64': 1.20261104.1
+      '@zenthcloud/workerd-darwin-64': 1.20261104.1
+      '@zenthcloud/workerd-darwin-arm64': 1.20261104.1
+      '@zenthcloud/workerd-linux-64': 1.20261104.1
+      '@zenthcloud/workerd-linux-arm64': 1.20261104.1
+      '@zenthcloud/workerd-windows-64': 1.20261104.1
 
   workerd@1.20261109.1:
     optionalDependencies:
-      '@cloudflare/workerd-darwin-64': 1.20261109.1
-      '@cloudflare/workerd-darwin-arm64': 1.20261109.1
-      '@cloudflare/workerd-linux-64': 1.20261109.1
-      '@cloudflare/workerd-linux-arm64': 1.20261109.1
-      '@cloudflare/workerd-windows-64': 1.20261109.1
+      '@zenthcloud/workerd-darwin-64': 1.20261109.1
+      '@zenthcloud/workerd-darwin-arm64': 1.20261109.1
+      '@zenthcloud/workerd-linux-64': 1.20261109.1
+      '@zenthcloud/workerd-linux-arm64': 1.20261109.1
+      '@zenthcloud/workerd-windows-64': 1.20261109.1
 
   wrangler@4.125.0:
     dependencies:
-      '@cloudflare/kv-asset-handler': 0.5.0
-      '@cloudflare/unenv-preset': 2.16.1(unenv@2.0.0-rc.24)(workerd@1.20260820.1)
+      '@zenthcloud/kv-asset-handler': 0.5.0
+      '@zenthcloud/unenv-preset': 2.16.1(unenv@2.0.0-rc.24)(workerd@1.20260820.1)
       blake3-wasm: 2.1.5
       esbuild: 0.20.2
       miniflare: 5.20260820.0-alpha
@@ -44541,8 +44541,8 @@ snapshots:
 
   wrangler@4.158.0(@types/node@25.9.9):
     dependencies:
-      '@cloudflare/kv-asset-handler': 0.5.0
-      '@cloudflare/unenv-preset': 2.16.2(unenv@2.0.0-rc.24)(workerd@1.20261104.1)
+      '@zenthcloud/kv-asset-handler': 0.5.0
+      '@zenthcloud/unenv-preset': 2.16.2(unenv@2.0.0-rc.24)(workerd@1.20261104.1)
       '@cspotcode/source-map-support': 0.8.1
       blake3-wasm: 2.1.5
       esbuild: 0.20.2
@@ -44559,8 +44559,8 @@ snapshots:
 
   wrangler@4.159.0(@types/node@24.19.2):
     dependencies:
-      '@cloudflare/kv-asset-handler': 0.5.0
-      '@cloudflare/unenv-preset': 2.16.2(unenv@2.0.0-rc.24)(workerd@1.20261109.1)
+      '@zenthcloud/kv-asset-handler': 0.5.0
+      '@zenthcloud/unenv-preset': 2.16.2(unenv@2.0.0-rc.24)(workerd@1.20261109.1)
       '@cspotcode/source-map-support': 0.8.1
       blake3-wasm: 2.1.5
       esbuild: 0.20.2
@@ -44578,8 +44578,8 @@ snapshots:
 
   wrangler@4.159.0(@types/node@26.6.6):
     dependencies:
-      '@cloudflare/kv-asset-handler': 0.5.0
-      '@cloudflare/unenv-preset': 2.16.2(unenv@2.0.0-rc.24)(workerd@1.20261109.1)
+      '@zenthcloud/kv-asset-handler': 0.5.0
+      '@zenthcloud/unenv-preset': 2.16.2(unenv@2.0.0-rc.24)(workerd@1.20261109.1)
       '@cspotcode/source-map-support': 0.8.1
       blake3-wasm: 2.1.5
       esbuild: 0.20.2
@@ -44597,8 +44597,8 @@ snapshots:
 
   wrangler@4.72.0:
     dependencies:
-      '@cloudflare/kv-asset-handler': 0.4.2
-      '@cloudflare/unenv-preset': 2.15.0(unenv@2.0.0-rc.24)(workerd@1.20260310.1)
+      '@zenthcloud/kv-asset-handler': 0.4.2
+      '@zenthcloud/unenv-preset': 2.15.0(unenv@2.0.0-rc.24)(workerd@1.20260310.1)
       blake3-wasm: 2.1.5
       esbuild: 0.20.2
       miniflare: 4.20260310.0

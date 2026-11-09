@@ -1,4 +1,4 @@
-import type { SidebarItem } from '@cloudflare/nimbus-docs/types';
+import type { SidebarItem } from '@zenthcloud/nimbus-docs/types';
 import type { ApiCatalogResource, ApiRouter } from './api-routing.ts';
 import { type CommandProductRoute, type CommandRouter, commandTitle } from './command-reference/routing.ts';
 import type { CommandMetadata } from './command-reference/schema.ts';

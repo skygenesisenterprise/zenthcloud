@@ -11,7 +11,7 @@
     "resolveJsonModule": true,
     "types": ["@figma/plugin-typings", "node"],
     "paths": {
-      "@cloudflare/kumo/*": ["../kumo/*"]
+      "@zenthcloud/kumo/*": ["../kumo/*"]
     }
   },
   "include": ["src/**/*.ts"],

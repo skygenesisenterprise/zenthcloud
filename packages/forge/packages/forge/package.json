@@ -1,5 +1,5 @@
 {
-  "name": "@cloudflare/forge",
+  "name": "@zenthcloud/forge",
   "version": "0.1.0",
   "description": "Generates SDKs from OpenAPI documents.",
   "keywords": [
@@ -12,7 +12,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cloudflare/forge.git",
+    "url": "git+https://github.com/zenthcloud/forge.git",
     "directory": "packages/forge"
   },
   "bin": {

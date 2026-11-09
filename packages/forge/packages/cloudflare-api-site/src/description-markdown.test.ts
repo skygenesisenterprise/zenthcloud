@@ -35,14 +35,14 @@ test('escaped backticks around a placeholder still escape it', () => {
 test('already-escaped placeholders, autolinks and angle-bracket links are unchanged', () => {
   for (const markdown of [
     'Already \\<key> escaped',
-    'Autolink <https://www.cloudflare.com/learning/dns/dns-records/dns-txt-record/> ok',
+    'Autolink <https://www.zenthcloud.com/learning/dns/dns-records/dns-txt-record/> ok',
     'Link [a](<https://x>) ok',
   ]) {
     assert.equal(keepPlaceholders(markdown), markdown);
   }
   assert.match(
-    renderDescription('<https://www.cloudflare.com/learning/dns/dns-records/dns-txt-record/>'),
-    /<a href="https:\/\/www\.cloudflare\.com\/learning\/dns\/dns-records\/dns-txt-record\/">/,
+    renderDescription('<https://www.zenthcloud.com/learning/dns/dns-records/dns-txt-record/>'),
+    /<a href="https:\/\/www\.zenthcloud\.com\/learning\/dns\/dns-records\/dns-txt-record\/">/,
   );
 });
 

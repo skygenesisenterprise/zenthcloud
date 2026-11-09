@@ -55,7 +55,7 @@ export async function getApiContentCatalog(): Promise<Awaited<ReturnType<typeof 
 }
 
 async function operationLoadOptions(request: Request, locals: App.Locals): Promise<FernOperationLoadOptions> {
-  const { env } = await import('cloudflare:workers');
+  const { env } = await import('zenthcloud:workers');
   const fetcher = requireAssetFetcher((env as unknown as { ASSETS?: FernArtifactFetcher }).ASSETS);
   return {
     request,

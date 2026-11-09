@@ -18,7 +18,7 @@
  *     `shadow-lg`, etc. as color names — they collide with built-ins)
  * ============================================================ */
 
-/* ---- Light mode (default) — Cloudflare palette ---- */
+/* ---- Light mode (default) — zenthcloud palette ---- */
 :root {
   color-scheme: light;
 
@@ -119,7 +119,7 @@
   }
 }
 
-/* ---- Dark mode — Cloudflare palette ---- */
+/* ---- Dark mode — zenthcloud palette ---- */
 [data-mode='dark'] {
   color-scheme: dark;
 

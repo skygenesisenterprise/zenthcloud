@@ -1,4 +1,4 @@
-import { renderMarkdown } from '@cloudflare/nimbus-docs/markdown';
+import { renderMarkdown } from '@zenthcloud/nimbus-docs/markdown';
 import { defaultSchema } from 'hast-util-sanitize';
 import { markdownToMdast } from 'satteri';
 

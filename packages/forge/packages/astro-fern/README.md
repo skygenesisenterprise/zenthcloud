@@ -814,7 +814,7 @@ installs the plugin. Content loading therefore renders a probe through the
 renderer in use and fails the build if raw HTML or a `javascript:` link
 survives. When an integration owns the processor, pass a sanitizing
 `renderMarkdown` to `defineFernCollections()`, such as `renderMarkdown` from
-`@cloudflare/nimbus-docs/markdown`.
+`@zenthcloud/nimbus-docs/markdown`.
 
 The plugin covers source nodes present when it runs. Markdown plugins that add
 HTML or links later in the pipeline must enforce the same URL and HTML policy.

@@ -1,4 +1,4 @@
-// Checks the types of @cloudflare/forge/ts against how it behaves. npm test
+// Checks the types of @zenthcloud/forge/ts against how it behaves. npm test
 // compiles it, and fails on any error. Each expected error marks something
 // the types must reject, and fails the test if they accept it.
 

@@ -5,12 +5,12 @@ import type { SnippetInput, SnippetOperation } from 'astro-fern';
 import { buildDocsModel, type OpenApiDocumentSchema } from 'astro-fern/content';
 import { forgeExtension } from 'fern-forge';
 import {
-  CLOUDFLARE_TARGETS,
-  cloudflareFormatIdentifier,
-  cloudflareOperationRoutingPreference,
-  cloudflareSnippets,
-  cloudflareSnippetsByTarget,
-} from './cloudflare.ts';
+  zenthcloud_TARGETS,
+  zenthcloudFormatIdentifier,
+  zenthcloudOperationRoutingPreference,
+  zenthcloudSnippets,
+  zenthcloudSnippetsByTarget,
+} from './zenthcloud.ts';
 
 function op(partial: Partial<SnippetOperation> = {}): SnippetOperation {
   return {
@@ -103,7 +103,7 @@ const nestedCreateInput: SnippetInput = {
   }),
 };
 
-test('Cloudflare routing temporarily prefers approved account operations over zone operations', () => {
+test('zenthcloud routing temporarily prefers approved account operations over zone operations', () => {
   const source = (accountHidden: boolean): OpenApiDocumentSchema => ({
     paths: {
       '/accounts/{account_id}/media/usage': {
@@ -130,7 +130,7 @@ test('Cloudflare routing temporarily prefers approved account operations over zo
       source: source(accountHidden),
       products: [{ id: 'media', sdkGroup: 'media', sections: [{ id: 'usage', tag: 'Usage Analytics' }] }],
       extensions: [forgeExtension()],
-      operationRoutingPreference: cloudflareOperationRoutingPreference,
+      operationRoutingPreference: zenthcloudOperationRoutingPreference,
       onWarning: () => {},
     });
 
@@ -200,16 +200,16 @@ const rootUnionCreateInput: SnippetInput = {
 };
 
 test('curl: GET interpolates path params as $ENV and adds the bearer header', () => {
-  const curl = cloudflareSnippetsByTarget(listInput).get('curl');
+  const curl = zenthcloudSnippetsByTarget(listInput).get('curl');
   assert.ok(curl);
-  assert.match(curl, /^curl https:\/\/api\.cloudflare\.com\/client\/v4\/zones\/\$ZONE_ID\/dns_records \\/);
-  assert.match(curl, /-H "Authorization: Bearer \$CLOUDFLARE_API_TOKEN"/);
+  assert.match(curl, /^curl https:\/\/api\.zenthcloud\.com\/client\/v4\/zones\/\$ZONE_ID\/dns_records \\/);
+  assert.match(curl, /-H "Authorization: Bearer \$zenthcloud_API_TOKEN"/);
   assert.doesNotMatch(curl, /-X GET/);
   assert.doesNotMatch(curl, /Content-Type/);
 });
 
 test('curl: POST adds verb, content-type and a body built from required leaves', () => {
-  const curl = cloudflareSnippetsByTarget(createInput).get('curl');
+  const curl = zenthcloudSnippetsByTarget(createInput).get('curl');
   assert.ok(curl);
   assert.match(curl, /curl -X POST/);
   assert.match(curl, /-H 'Content-Type: application\/json'/);
@@ -227,7 +227,7 @@ test('optional request bodies remain present in examples when the endpoint decla
       requestBody: createInput.op.requestBody ? { ...createInput.op.requestBody, required: false } : undefined,
     },
   };
-  const snippets = cloudflareSnippetsByTarget(optionalInput);
+  const snippets = zenthcloudSnippetsByTarget(optionalInput);
   const curl = snippets.get('curl');
   assert.ok(curl);
   assert.match(curl, /Content-Type: application\/json/);
@@ -257,7 +257,7 @@ test('curl shell-quotes apostrophes in request media types and JSON bodies', () 
     }),
   };
 
-  const curl = cloudflareSnippetsByTarget(input).get('curl');
+  const curl = zenthcloudSnippetsByTarget(input).get('curl');
   assert.ok(curl);
   assert.ok(curl.includes(`-H 'Content-Type: application/json; profile=owner'"'"'s'`));
   assert.ok(curl.includes(`"name":"owner'"'"'s widget"`));
@@ -287,21 +287,21 @@ test('curl uses file input for raw bodies and does not fabricate required multip
     }),
   };
 
-  const rawSnippets = cloudflareSnippetsByTarget(raw);
+  const rawSnippets = zenthcloudSnippetsByTarget(raw);
   assert.match(rawSnippets.get('curl') ?? '', /Content-Type: application\/octet-stream/);
   assert.match(rawSnippets.get('curl') ?? '', /--data-binary @request-body/);
-  assert.equal(cloudflareSnippetsByTarget(multipart).get('curl'), null);
+  assert.equal(zenthcloudSnippetsByTarget(multipart).get('curl'), null);
 });
 
 test('curl: includes required query params and omits optional query params', () => {
-  const curl = cloudflareSnippetsByTarget(queryInput).get('curl');
+  const curl = zenthcloudSnippetsByTarget(queryInput).get('curl');
   assert.ok(curl);
   assert.match(curl, /--url-query "type=\$TYPE"/);
   assert.doesNotMatch(curl, /page=/);
 });
 
 test('dated versions intentionally retain version-neutral snippets while upstream does not enforce versions', () => {
-  const snippets = cloudflareSnippetsByTarget({ ...listInput, snapshotId: '2027-01-01.air' });
+  const snippets = zenthcloudSnippetsByTarget({ ...listInput, snapshotId: '2027-01-01.air' });
   for (const target of ['curl', 'cf']) {
     assert.equal(typeof snippets.get(target), 'string');
     assert.doesNotMatch(snippets.get(target) ?? '', /api-version/);
@@ -309,7 +309,7 @@ test('dated versions intentionally retain version-neutral snippets while upstrea
 });
 
 test('nested body values remain structured in curl samples', () => {
-  const curl = cloudflareSnippetsByTarget(nestedCreateInput).get('curl');
+  const curl = zenthcloudSnippetsByTarget(nestedCreateInput).get('curl');
   assert.ok(curl);
   const payload = curl.match(/-d '(.+)'/)?.[1];
   assert.ok(payload);
@@ -363,7 +363,7 @@ test('SDK property aliases do not change HTTP wire fields', () => {
       },
     },
   };
-  const curlPayload = cloudflareSnippetsByTarget(input)
+  const curlPayload = zenthcloudSnippetsByTarget(input)
     .get('curl')
     ?.match(/-d '(.+)'/)?.[1];
   assert.ok(curlPayload);
@@ -371,8 +371,8 @@ test('SDK property aliases do not change HTTP wire fields', () => {
 });
 
 test('root array and union bodies render structurally in curl', () => {
-  const arraySnippets = cloudflareSnippetsByTarget(rootArrayCreateInput);
-  const unionSnippets = cloudflareSnippetsByTarget(rootUnionCreateInput);
+  const arraySnippets = zenthcloudSnippetsByTarget(rootArrayCreateInput);
+  const unionSnippets = zenthcloudSnippetsByTarget(rootUnionCreateInput);
   const arrayPayload = arraySnippets.get('curl')?.match(/-d '(.+)'/)?.[1];
   const unionPayload = unionSnippets.get('curl')?.match(/-d '(.+)'/)?.[1];
   assert.ok(arrayPayload && unionPayload);
@@ -392,11 +392,11 @@ test('cf: renders the command with the positionals and options it requires', () 
     methodName: 'recall',
   };
   assert.equal(
-    cloudflareSnippetsByTarget(recall).get('cf'),
+    zenthcloudSnippetsByTarget(recall).get('cf'),
     ['cf agent-memory recall <profile-name>', '--namespace-name <namespace-name>', '--query <query>'].join(' \\\n    '),
   );
   // The zone is passed with the global --zone option, which samples leave out.
-  assert.equal(cloudflareSnippetsByTarget(listInput).get('cf'), 'cf dns records list');
+  assert.equal(zenthcloudSnippetsByTarget(listInput).get('cf'), 'cf dns records list');
 });
 
 test('cf: renders required boolean options without a value', () => {
@@ -405,19 +405,19 @@ test('cf: renders required boolean options without a value', () => {
     accessorPath: ['acm', 'total-tls'],
     methodName: 'edit',
   };
-  assert.equal(cloudflareSnippetsByTarget(edit).get('cf'), 'cf acm total-tls edit \\\n    --enabled');
+  assert.equal(zenthcloudSnippetsByTarget(edit).get('cf'), 'cf acm total-tls edit \\\n    --enabled');
 });
 
 test('cf: renders nothing for operations without a generated cf command', () => {
   const unknown: SnippetInput = { ...listInput, op: op({ path: '/zones/{zone_id}/unknown' }) };
-  assert.equal(cloudflareSnippetsByTarget(unknown).get('cf'), null);
+  assert.equal(zenthcloudSnippetsByTarget(unknown).get('cf'), null);
   // `cf ai run` is hand-written: the site documents hand-written commands separately.
   const aiRun: SnippetInput = {
     op: op({ path: '/accounts/{account_id}/ai/run', method: 'post' }),
     accessorPath: ['ai'],
     methodName: 'run',
   };
-  assert.equal(cloudflareSnippetsByTarget(aiRun).get('cf'), null);
+  assert.equal(zenthcloudSnippetsByTarget(aiRun).get('cf'), null);
 });
 
 test('cf: renders the command named like the operation when several send it', () => {
@@ -429,18 +429,18 @@ test('cf: renders the command named like the operation when several send it', ()
     accessorPath: ['workflows', 'instances'],
     methodName,
   });
-  assert.match(cloudflareSnippetsByTarget(status('terminate')).get('cf') ?? '', /^cf workflows instances terminate /);
-  assert.match(cloudflareSnippetsByTarget(status('pause')).get('cf') ?? '', /^cf workflows instances pause /);
+  assert.match(zenthcloudSnippetsByTarget(status('terminate')).get('cf') ?? '', /^cf workflows instances terminate /);
+  assert.match(zenthcloudSnippetsByTarget(status('pause')).get('cf') ?? '', /^cf workflows instances pause /);
 });
 
 test('provider renders every target in tab order with cf CLI first; terraform is coming-soon', () => {
-  const snippets = cloudflareSnippets(listInput);
+  const snippets = zenthcloudSnippets(listInput);
   assert.deepEqual(
     snippets.map((snippet) => snippet.targetId),
-    CLOUDFLARE_TARGETS.map((target) => target.id),
+    zenthcloud_TARGETS.map((target) => target.id),
   );
   assert.deepEqual(
-    CLOUDFLARE_TARGETS.map((target) => target.id),
+    zenthcloud_TARGETS.map((target) => target.id),
     ['cf', 'curl', 'terraform'],
   );
   for (const target of ['cf', 'curl']) {
@@ -450,9 +450,9 @@ test('provider renders every target in tab order with cf CLI first; terraform is
 });
 
 test('formatIdentifier is acronym-aware and title-cases the rest', () => {
-  assert.equal(cloudflareFormatIdentifier('dns'), 'DNS');
-  assert.equal(cloudflareFormatIdentifier('dns_records'), 'DNS Records');
-  assert.equal(cloudflareFormatIdentifier('zone-transfers'), 'Zone Transfers');
-  assert.equal(cloudflareFormatIdentifier('acls'), 'ACLs');
-  assert.equal(cloudflareFormatIdentifier('widgets'), 'Widgets');
+  assert.equal(zenthcloudFormatIdentifier('dns'), 'DNS');
+  assert.equal(zenthcloudFormatIdentifier('dns_records'), 'DNS Records');
+  assert.equal(zenthcloudFormatIdentifier('zone-transfers'), 'Zone Transfers');
+  assert.equal(zenthcloudFormatIdentifier('acls'), 'ACLs');
+  assert.equal(zenthcloudFormatIdentifier('widgets'), 'Widgets');
 });

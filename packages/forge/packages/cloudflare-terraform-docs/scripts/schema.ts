@@ -1,7 +1,7 @@
 /**
  * Format of the file `generate-terraform-docs` writes, which it validates its output against before
  * writing. Internal to the generator: the consumer reads the file with its own schema (the site's is
- * in `cloudflare-api-site/src/terraform.ts`), and `format` versions the contract between them.
+ * in `zenthcloud-api-site/src/terraform.ts`), and `format` versions the contract between them.
  */
 
 import { z } from 'zod';
@@ -81,10 +81,10 @@ export const generatedTerraformDocsSchema = z
     unlinked: z.array(z.string()),
     /** Service code without a tfplugindocs page, i.e. not registered by the released provider. */
     undocumented: z.array(z.string()),
-    /** SDK calls for which no endpoint was found in cloudflare-go `api.md`. */
+    /** SDK calls for which no endpoint was found in zenthcloud-go `api.md`. */
     unresolvedCalls: z.array(z.object({ declaration: z.string(), call: z.string() })),
     declarations: z.record(z.string(), generatedTerraformDeclarationSchema),
-    /** Keyed by the SDK endpoint exactly as cloudflare-go documents it, e.g. `post /zones/{zone_id}/dns_records`. */
+    /** Keyed by the SDK endpoint exactly as zenthcloud-go documents it, e.g. `post /zones/{zone_id}/dns_records`. */
     endpoints: z.record(z.string(), z.array(terraformEndpointLinkSchema)),
   })
   .superRefine((docs, context) => {

@@ -3,7 +3,7 @@
  * {@link File}, and it works out their imports when it renders.
  *
  * ```ts
- * import { file, module } from "@cloudflare/forge/ts";
+ * import { file, module } from "@zenthcloud/forge/ts";
  *
  * const models = module("pets/models.ts");
  * const f = file("pets/client.ts");

@@ -1,16 +1,16 @@
-# @cloudflare/forge
+# @zenthcloud/forge
 
 Generates SDKs from OpenAPI documents.
 
 ```sh
-npm install --save-dev @cloudflare/forge
+npm install --save-dev @zenthcloud/forge
 npx forge openapi.json --target ts --out sdk
 ```
 
 Or run it once without installing:
 
 ```sh
-npx @cloudflare/forge openapi.json --target ts --out sdk
+npx @zenthcloud/forge openapi.json --target ts --out sdk
 ```
 
 Pass `-` instead of a path to read the document from standard input. Run
@@ -48,10 +48,10 @@ rewrite is left as it is, a link is followed and stays a link, and a read-only
 file is left as it is, with an error. `-v` says how many times each key was
 rewritten. Documents have to be JSON: YAML is not supported yet.
 
-By default every compatibility source is normalized. Use `--from cloudflare`,
+By default every compatibility source is normalized. Use `--from zenthcloud`,
 `--from fern`, or `--from stainless` to select only that source; repeat `--from`
 to select more than one. For example,
-`--from fern --from cloudflare` leaves Stainless extensions untouched.
+`--from fern --from zenthcloud` leaves Stainless extensions untouched.
 
 What is rewritten:
 
@@ -99,13 +99,13 @@ npx forge openapi.json --target wasm://plugin.wasm --out sdk
 ### Writing one in TypeScript
 
 ```sh
-npm install --save-dev @cloudflare/forge @bytecodealliance/jco
+npm install --save-dev @zenthcloud/forge @bytecodealliance/jco
 ```
 
 `plugin.ts`:
 
 ```ts
-import { definePlugin, type Type } from '@cloudflare/forge/plugin';
+import { definePlugin, type Type } from '@zenthcloud/forge/plugin';
 
 function ts(type: Type): string {
   switch (type.kind) {
@@ -142,7 +142,7 @@ npx forge-plugin build plugin.ts -o plugin.wasm
 npx forge openapi.json --target wasm://plugin.wasm --out sdk
 ```
 
-`@cloudflare/forge/plugin` is typed throughout. A type is a union you narrow
+`@zenthcloud/forge/plugin` is typed throughout. A type is a union you narrow
 by `kind`, so a `never` check in a `switch` turns a kind you missed into a
 compile error. The same group, method or model is always the same object,
 so you can compare them with `===` and keep them in a `Map`.
@@ -177,7 +177,7 @@ Things to know:
 
 ### Generating TypeScript
 
-`@cloudflare/forge/ts` writes TypeScript files and works out their imports.
+`@zenthcloud/forge/ts` writes TypeScript files and works out their imports.
 Print a line by calling the file, `` f`…` ``, with identifiers in it: it imports
 each one from its module when it renders, with `import type` for types, and
 gives clashing names aliases.
@@ -187,7 +187,7 @@ the output, or a package. An `Ident` is a name and the module that declares
 it. Print them in a `File`, and it writes the imports:
 
 ```ts
-import { file, ident, join, module } from '@cloudflare/forge/ts';
+import { file, ident, join, module } from '@zenthcloud/forge/ts';
 
 // Modules: a generated file, by its path in the output, and a package.
 const models = module('pets/models.ts');
@@ -253,8 +253,8 @@ A plugin puts these together. This one writes a `models.ts` for each group,
 importing the models it refers to from the groups they're in:
 
 ```ts
-import { definePlugin, type Model, type Type } from '@cloudflare/forge/plugin';
-import { type File, type Module, type Part, file, frag, ident, join, module } from '@cloudflare/forge/ts';
+import { definePlugin, type Model, type Type } from '@zenthcloud/forge/plugin';
+import { type File, type Module, type Part, file, frag, ident, join, module } from '@zenthcloud/forge/ts';
 
 function ts(type: Type): Part {
   switch (type.kind) {
@@ -317,7 +317,7 @@ same text.
 
 A plugin is a component of the `plugin` world in the WIT that
 `npx forge-plugin wit` prints, which is also at
-`@cloudflare/forge/plugin/forge.wit`. Any language with component tooling
+`@zenthcloud/forge/plugin/forge.wit`. Any language with component tooling
 works: in Rust, `wit_bindgen::generate!` and
 `cargo build --target wasm32-wasip2`.
 
@@ -343,14 +343,14 @@ The package is a single tarball, so you can install it without the
 registry. Install it by path:
 
 ```sh
-npm install --save-dev /path/to/cloudflare-forge-0.1.0.tgz
+npm install --save-dev /path/to/zenthcloud-forge-0.1.0.tgz
 ```
 
 or list it in `package.json`. A path or URL to the tarball both work:
 
 ```json
 "devDependencies": {
-  "@cloudflare/forge": "file:../cloudflare-forge-0.1.0.tgz"
+  "@zenthcloud/forge": "file:../zenthcloud-forge-0.1.0.tgz"
 }
 ```
 
@@ -363,7 +363,7 @@ pnpm install                            # the dev dependencies, which build the 
 node packages/forge/scripts/version.mjs # after bumping the version in Cargo.toml
 node packages/forge/scripts/wit.mjs     # after changing the WIT in src/plugin/wasm.rs
 just build-all                          # builds all six binaries into target/binaries/ (or: just fetch <run-id>)
-just pack                               # packs them into packages/forge/dist/cloudflare-forge-<version>.tgz
+just pack                               # packs them into packages/forge/dist/zenthcloud-forge-<version>.tgz
 ```
 
 To vendor the package in another repository, copy the tarball from
@@ -379,7 +379,7 @@ package carries forge's copy of the WIT in `plugin/forge.wit`, and
 `archive.mjs` refuses to pack it if it isn't the WIT in
 `src/plugin/wasm.rs`.
 
-The library plugins are written with, `@cloudflare/forge/plugin`, is
+The library plugins are written with, `@zenthcloud/forge/plugin`, is
 `src/index.ts`. `archive.mjs` builds it into the package, and
 `node scripts/build.mjs` builds it into `plugin/` to try it out: jco
 generates the TypeScript bindings of `plugin/forge.wit` into `src/wit`, and
@@ -390,7 +390,7 @@ library fails to compile, and the package can't be packed. Its exports are
 interfaces and the classes behind them are private, so the bindings never
 appear in `index.d.ts`.
 
-`@cloudflare/forge/ts` is `src/ts.ts`, built the same way. It reads the
+`@zenthcloud/forge/ts` is `src/ts.ts`, built the same way. It reads the
 forge only through the library's types, so it needs no host, and `npm test`
 runs its tests in Node: the tests of `forge::ts` in
 `src/plugin/ts/tests.rs`, expecting the same text.
@@ -431,4 +431,4 @@ just pack --platform darwin-arm64
 ```
 
 A tarball that leaves platforms out lists the ones it has in its name, as in
-`cloudflare-forge-0.1.0-darwin-arm64.tgz`, so it can't pass for the full package.
+`zenthcloud-forge-0.1.0-darwin-arm64.tgz`, so it can't pass for the full package.

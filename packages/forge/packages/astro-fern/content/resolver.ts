@@ -3,7 +3,7 @@
  *
  * It reads the fields the docs need (path/verb, parameters, bounded recursive
  * request/response schemas, schema titles, and oneOf/anyOf variants) straight from the
- * overlaid spec, so the docs build stays pure Node with no @cloudflare/forge
+ * overlaid spec, so the docs build stays pure Node with no @zenthcloud/forge
  * runtime dependency. Local component references are followed defensively;
  * cycles and unusually deep schema graphs stop expanding rather than failing
  * the build.

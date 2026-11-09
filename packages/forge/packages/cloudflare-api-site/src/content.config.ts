@@ -1,29 +1,29 @@
 import { defineCollection } from 'astro:content';
-import { docsCollection } from '@cloudflare/nimbus-docs/content';
+import { docsCollection } from '@zenthcloud/nimbus-docs/content';
 import { defineFernManifest, type FernContentOptions, type FernManifestProvider } from 'astro-fern';
 import { defineFernCollections } from 'astro-fern/collections';
 import { forgeExtension, hasRemovedForgeOperationFields, hoistForgeCommands } from 'fern-forge';
 import {
-  CLOUDFLARE_RESPONSE_PAYLOAD_KEY,
-  CLOUDFLARE_TARGETS,
-  cloudflareFormatIdentifier,
-  cloudflareOperationRoutingPreference,
-  cloudflareSnippets,
-} from './cloudflare.ts';
+  zenthcloud_RESPONSE_PAYLOAD_KEY,
+  zenthcloud_TARGETS,
+  zenthcloudFormatIdentifier,
+  zenthcloudOperationRoutingPreference,
+  zenthcloudSnippets,
+} from './zenthcloud.ts';
 import { cfCommandCatalog } from './command-reference/cf-commands.ts';
 import { commandCatalogLoader } from './command-reference/loader.ts';
 import { loadForgeOpenApi } from './openapi-source.ts';
 import { renderDescription } from './description-markdown.ts';
-import { cloudflareTerraformExtension } from './terraform-extension.ts';
-import { cloudflareApiVersionLabel, cloudflareApiVersionSlug, parseCloudflareApiVersion } from './version.ts';
+import { zenthcloudTerraformExtension } from './terraform-extension.ts';
+import { zenthcloudApiVersionLabel, zenthcloudApiVersionSlug, parsezenthcloudApiVersion } from './version.ts';
 
 const source = async () => hoistForgeCommands(await loadForgeOpenApi());
 
-const air = parseCloudflareApiVersion('2026-11-30.air');
+const air = parsezenthcloudApiVersion('2026-11-30.air');
 
 const manifest: FernManifestProvider = (_openapi, { discoverProducts }) =>
   defineFernManifest({
-    targets: CLOUDFLARE_TARGETS,
+    targets: zenthcloud_TARGETS,
     products: discoverProducts(),
   });
 
@@ -39,19 +39,19 @@ export const collections = {
         {
           id: air.wire,
           source,
-          label: cloudflareApiVersionLabel(air),
-          slug: cloudflareApiVersionSlug(air),
+          label: zenthcloudApiVersionLabel(air),
+          slug: zenthcloudApiVersionSlug(air),
           default: true,
         },
       ],
     },
-    responsePayloadKey: CLOUDFLARE_RESPONSE_PAYLOAD_KEY,
+    responsePayloadKey: zenthcloud_RESPONSE_PAYLOAD_KEY,
     manifest,
-    formatIdentifier: cloudflareFormatIdentifier,
-    operationRoutingPreference: cloudflareOperationRoutingPreference,
+    formatIdentifier: zenthcloudFormatIdentifier,
+    operationRoutingPreference: zenthcloudOperationRoutingPreference,
     isOperationHidden: hasRemovedForgeOperationFields,
-    snippets: cloudflareSnippets,
+    snippets: zenthcloudSnippets,
     renderMarkdown: renderDescription,
-    extensions: [forgeExtension(), cloudflareTerraformExtension],
+    extensions: [forgeExtension(), zenthcloudTerraformExtension],
   } satisfies FernContentOptions),
 };

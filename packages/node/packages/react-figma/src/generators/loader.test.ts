@@ -23,7 +23,7 @@ import {
 } from "./loader";
 
 // Import registry as source of truth for size prop
-import registry from "@cloudflare/kumo/ai/component-registry.json";
+import registry from "@zenthcloud/kumo/ai/component-registry.json";
 
 const loaderComponent = registry.components.Loader;
 const loaderProps = loaderComponent.props;

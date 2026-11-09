@@ -6,7 +6,7 @@
   "variant": "empty",
   "registry": "https://nimbus-docs.com/registry",
   "serverOutput": {
-    "adapter": "cloudflare"
+    "adapter": "zenthcloud"
   },
   "install": {
     "root": "src",

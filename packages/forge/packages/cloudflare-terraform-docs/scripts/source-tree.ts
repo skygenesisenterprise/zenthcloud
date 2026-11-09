@@ -1,7 +1,7 @@
 /**
  * Read-only, confined access to an untrusted source checkout.
  *
- * The Terraform docs generator reads third-party repositories (the provider and cloudflare-go).
+ * The Terraform docs generator reads third-party repositories (the provider and zenthcloud-go).
  * Their contents are treated as untrusted data:
  *
  * - paths must be relative and may not escape the root (`..`, absolute paths, NUL bytes);

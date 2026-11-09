@@ -3,7 +3,7 @@
 ## Summary
 
 Forge has one version across its Git release, Cargo package, binary and
-`@cloudflare/forge` npm package. They are released together with the same version
+`@zenthcloud/forge` npm package. They are released together with the same version
 number.
 
 The WIT world ships with Forge but keeps its own version. It changes only when

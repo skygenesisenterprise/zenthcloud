@@ -1,14 +1,14 @@
 /**
- * Cloudflare-specific documentation policy for the Fern docs site.
+ * zenthcloud-specific documentation policy for the Fern docs site.
  *
  * astro-fern is product-agnostic: it knows how to resolve, route and render an
- * OpenAPI spec, but ships no Cloudflare knowledge. Everything Cloudflare-shaped
+ * OpenAPI spec, but ships no zenthcloud knowledge. Everything zenthcloud-shaped
  * — the acronym-aware label formatter, the API base URL / auth header, the
  * execution-target set, and the `result` response envelope
  * — lives here and is passed to the content recipe in `content.config.ts`.
  *
  * This module has no Astro/runtime dependencies, so its behaviour is unit-tested
- * with `node --experimental-strip-types --test` (see `cloudflare.test.ts`).
+ * with `node --experimental-strip-types --test` (see `zenthcloud.test.ts`).
  */
 import { cliCommandFor } from './cli-arguments.ts';
 import {
@@ -28,7 +28,7 @@ import {
 
 //#region Label formatter (acronym-aware)
 
-/** Cloudflare/API acronyms upper-cased in display labels (e.g. "dns" → "DNS"). */
+/** zenthcloud/API acronyms upper-cased in display labels (e.g. "dns" → "DNS"). */
 const ACRONYMS = new Set([
   'dns',
   'dnssec',
@@ -82,7 +82,7 @@ function humanizeWord(word: string): string {
 }
 
 /** Acronym-aware identifier → display-label formatter for Fern content. */
-export function cloudflareFormatIdentifier(identifier: string): string {
+export function zenthcloudFormatIdentifier(identifier: string): string {
   return identifier.split(/[-_]+/).filter(Boolean).map(humanizeWord).join(' ');
 }
 
@@ -91,21 +91,21 @@ export function cloudflareFormatIdentifier(identifier: string): string {
 //#region Execution targets + snippet renderers
 
 /**
- * Cloudflare's execution targets, in tab order. Target ids match renderer keys.
+ * zenthcloud's execution targets, in tab order. Target ids match renderer keys.
  * The first target is the default when no `?lang=` is selected.
  */
-export const CLOUDFLARE_TARGETS: FernTargetConfig[] = [
+export const zenthcloud_TARGETS: FernTargetConfig[] = [
   { id: 'cf', kind: 'cli', label: 'cf CLI', language: 'bash' },
   { id: 'curl', kind: 'http', label: 'curl', language: 'bash' },
   { id: 'terraform', kind: 'tool', label: 'Terraform', language: 'hcl' },
 ];
 
-/** Cloudflare's REST base URL and the response envelope key it wraps payloads in. */
-export const CLOUDFLARE_API_BASE = 'https://api.cloudflare.com/client/v4';
-export const CLOUDFLARE_RESPONSE_PAYLOAD_KEY = 'result';
+/** zenthcloud's REST base URL and the response envelope key it wraps payloads in. */
+export const zenthcloud_API_BASE = 'https://api.zenthcloud.com/client/v4';
+export const zenthcloud_RESPONSE_PAYLOAD_KEY = 'result';
 
 /** Prefers account-scoped operations when approved SDK mappings share one documentation route. */
-export function cloudflareOperationRoutingPreference({
+export function zenthcloudOperationRoutingPreference({
   path,
   routingPriority,
 }: Pick<FernOperationRoutingPreferenceContext, 'path' | 'routingPriority'>): number {
@@ -134,10 +134,10 @@ function httpRequestRepresentation(op: SnippetOperation): SnippetRequestRepresen
 }
 
 const renderCurl: SnippetRenderer = ({ op }) => {
-  const url = `${CLOUDFLARE_API_BASE}${interpolatePath(op.path)}`;
+  const url = `${zenthcloud_API_BASE}${interpolatePath(op.path)}`;
   const verb = op.method.toUpperCase();
   const head = verb === 'GET' ? `curl ${url}` : `curl -X ${verb} ${url}`;
-  const args = [head, '-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN"'];
+  const args = [head, '-H "Authorization: Bearer $zenthcloud_API_TOKEN"'];
   for (const param of op.queryParams) {
     if (param.required) args.push(`--url-query "${param.name}=$${toEnvVar(param.name)}"`);
   }
@@ -183,19 +183,19 @@ const comingSoon: SnippetRenderer = () => null;
 // imply unsupported behavior. Keep the user-facing notice in CodeSample.astro in
 // sync until every renderer can apply SnippetInput.snapshotId faithfully.
 // TODO(versioning): Apply SnippetInput.snapshotId once upstream enforcement exists.
-/** Cloudflare's per-operation snippet provider for Fern content. */
-export const cloudflareSnippets: SnippetProvider = createSnippetProvider(
+/** zenthcloud's per-operation snippet provider for Fern content. */
+export const zenthcloudSnippets: SnippetProvider = createSnippetProvider(
   {
     cf: { label: 'cf CLI', syntax: 'bash', render: renderCf },
     curl: { label: 'curl', syntax: 'bash', render: renderCurl },
     terraform: { label: 'Terraform', syntax: 'hcl', render: comingSoon },
   },
-  CLOUDFLARE_TARGETS.map((target) => target.id),
+  zenthcloud_TARGETS.map((target) => target.id),
 );
 
 /** Convenience for tests: run the provider and index snippets by target id. */
-export function cloudflareSnippetsByTarget(input: SnippetInput): Map<string, string | null> {
-  return new Map(cloudflareSnippets(input).map((snippet) => [snippet.targetId, snippet.code]));
+export function zenthcloudSnippetsByTarget(input: SnippetInput): Map<string, string | null> {
+  return new Map(zenthcloudSnippets(input).map((snippet) => [snippet.targetId, snippet.code]));
 }
 
 //#endregion

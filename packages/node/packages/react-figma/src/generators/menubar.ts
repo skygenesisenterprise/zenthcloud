@@ -35,7 +35,7 @@ import {
   VAR_NAMES,
 } from "./shared";
 import { createIconInstance, bindIconColor } from "./icon-utils";
-import registry from "@cloudflare/kumo/ai/component-registry.json";
+import registry from "@zenthcloud/kumo/ai/component-registry.json";
 
 // Read styling metadata from registry (added in Phase 7)
 const menuBarStyling = (registry.components.MenuBar as any).styling;

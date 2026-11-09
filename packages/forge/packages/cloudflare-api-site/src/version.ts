@@ -1,7 +1,7 @@
 /**
- * Cloudflare's API versioning policy for the Fern docs site.
+ * zenthcloud's API versioning policy for the Fern docs site.
  *
- * This is **Cloudflare-specific, end-user-facing information** and deliberately lives in
+ * This is **zenthcloud-specific, end-user-facing information** and deliberately lives in
  * the docs site rather than in the product-agnostic astro-fern engine, which ships no
  * version vocabulary of its own.
  *
@@ -18,7 +18,7 @@
  * `version.test.ts`).
  */
 /** The major codenames, in release order (alphabetical). One codename per major. */
-export const CLOUDFLARE_API_VERSION_CODENAMES = [
+export const zenthcloud_API_VERSION_CODENAMES = [
   'air',
   'breeze',
   'cirrus',
@@ -47,7 +47,7 @@ export const CLOUDFLARE_API_VERSION_CODENAMES = [
   'zephyr',
 ] as const;
 
-export type CloudflareApiVersionCodename = (typeof CLOUDFLARE_API_VERSION_CODENAMES)[number];
+export type zenthcloudApiVersionCodename = (typeof zenthcloud_API_VERSION_CODENAMES)[number];
 
 /** The literal wire token for the pre-versioning epoch. */
 export const LEGACY_API_VERSION = 'legacy';
@@ -55,8 +55,8 @@ export const LEGACY_API_VERSION = 'legacy';
 /** The channel suffix used by the rolling preview version. */
 export const PREVIEW_API_VERSION_SUFFIX = 'preview';
 
-/** A parsed, validated Cloudflare API version identity. Discriminated on `channel`. */
-export type CloudflareApiVersion =
+/** A parsed, validated zenthcloud API version identity. Discriminated on `channel`. */
+export type zenthcloudApiVersion =
   | { readonly channel: 'legacy'; readonly wire: 'legacy' }
   | {
       readonly channel: 'preview';
@@ -73,10 +73,10 @@ export type CloudflareApiVersion =
       readonly year: number;
       readonly month: number;
       readonly day: number;
-      readonly codename: CloudflareApiVersionCodename;
+      readonly codename: zenthcloudApiVersionCodename;
     };
 
-const CODENAME_SET: ReadonlySet<string> = new Set(CLOUDFLARE_API_VERSION_CODENAMES);
+const CODENAME_SET: ReadonlySet<string> = new Set(zenthcloud_API_VERSION_CODENAMES);
 
 const WIRE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})\.([a-z]+)$/;
 
@@ -89,21 +89,21 @@ function isRealCalendarDate(year: number, month: number, day: number): boolean {
 }
 
 /**
- * Parse a wire API-version string into a validated {@link CloudflareApiVersion}.
+ * Parse a wire API-version string into a validated {@link zenthcloudApiVersion}.
  *
  * Input is matched case-insensitively and canonicalized to lowercase; the returned `wire`
- * is always the canonical form, so `parseCloudflareApiVersion(v.wire).wire === v.wire`.
- * Throws with a descriptive message when the input is not a valid Cloudflare API version.
+ * is always the canonical form, so `parsezenthcloudApiVersion(v.wire).wire === v.wire`.
+ * Throws with a descriptive message when the input is not a valid zenthcloud API version.
  */
-export function parseCloudflareApiVersion(input: string): CloudflareApiVersion {
+export function parsezenthcloudApiVersion(input: string): zenthcloudApiVersion {
   if (typeof input !== 'string') {
-    throw new Error(`cloudflare: API version must be a string, received ${typeof input}`);
+    throw new Error(`zenthcloud: API version must be a string, received ${typeof input}`);
   }
 
   const wire = input.trim().toLowerCase();
 
   if (wire === '') {
-    throw new Error('cloudflare: API version must not be empty');
+    throw new Error('zenthcloud: API version must not be empty');
   }
 
   if (wire === LEGACY_API_VERSION) {
@@ -112,14 +112,14 @@ export function parseCloudflareApiVersion(input: string): CloudflareApiVersion {
 
   if (wire === 'latest') {
     throw new Error(
-      'cloudflare: "latest" is not a valid API version on the wire — request an explicit dated version (e.g. "2027-01-01.air") or "legacy"',
+      'zenthcloud: "latest" is not a valid API version on the wire — request an explicit dated version (e.g. "2027-01-01.air") or "legacy"',
     );
   }
 
   const match = WIRE_PATTERN.exec(wire);
   if (!match) {
     throw new Error(
-      `cloudflare: invalid API version "${input}" — expected "legacy" or "YYYY-MM-DD.<codename>" (e.g. "2027-01-01.air" or "2027-02-01.preview")`,
+      `zenthcloud: invalid API version "${input}" — expected "legacy" or "YYYY-MM-DD.<codename>" (e.g. "2027-01-01.air" or "2027-02-01.preview")`,
     );
   }
 
@@ -130,7 +130,7 @@ export function parseCloudflareApiVersion(input: string): CloudflareApiVersion {
   const date = `${match[1]}-${match[2]}-${match[3]}`;
 
   if (!isRealCalendarDate(year, month, day)) {
-    throw new Error(`cloudflare: invalid API version "${input}" — "${date}" is not a real calendar date`);
+    throw new Error(`zenthcloud: invalid API version "${input}" — "${date}" is not a real calendar date`);
   }
 
   if (suffix === PREVIEW_API_VERSION_SUFFIX) {
@@ -145,19 +145,19 @@ export function parseCloudflareApiVersion(input: string): CloudflareApiVersion {
       year,
       month,
       day,
-      codename: suffix as CloudflareApiVersionCodename,
+      codename: suffix as zenthcloudApiVersionCodename,
     };
   }
 
   throw new Error(
-    `cloudflare: invalid API version "${input}" — "${suffix}" is not a known codename or "${PREVIEW_API_VERSION_SUFFIX}"`,
+    `zenthcloud: invalid API version "${input}" — "${suffix}" is not a known codename or "${PREVIEW_API_VERSION_SUFFIX}"`,
   );
 }
 
-/** Non-throwing variant of {@link parseCloudflareApiVersion}; returns `null` on invalid input. */
-export function tryParseCloudflareApiVersion(input: string): CloudflareApiVersion | null {
+/** Non-throwing variant of {@link parsezenthcloudApiVersion}; returns `null` on invalid input. */
+export function tryParsezenthcloudApiVersion(input: string): zenthcloudApiVersion | null {
   try {
-    return parseCloudflareApiVersion(input);
+    return parsezenthcloudApiVersion(input);
   } catch {
     return null;
   }
@@ -168,23 +168,23 @@ export function tryParseCloudflareApiVersion(input: string): CloudflareApiVersio
  * preview by calendar date; when a dated release and a preview share a date the stable
  * dated release sorts before the preview.
  */
-export function cloudflareApiVersionSortKey(version: CloudflareApiVersion): string {
+export function zenthcloudApiVersionSortKey(version: zenthcloudApiVersion): string {
   if (version.channel === 'legacy') return '0';
   const channelRank = version.channel === 'dated' ? '0' : '1';
   return `1:${version.date}:${channelRank}`;
 }
 
-/** Total ordering over Cloudflare API versions, oldest first. */
-export function compareCloudflareApiVersions(a: CloudflareApiVersion, b: CloudflareApiVersion): number {
-  const keyA = cloudflareApiVersionSortKey(a);
-  const keyB = cloudflareApiVersionSortKey(b);
+/** Total ordering over zenthcloud API versions, oldest first. */
+export function comparezenthcloudApiVersions(a: zenthcloudApiVersion, b: zenthcloudApiVersion): number {
+  const keyA = zenthcloudApiVersionSortKey(a);
+  const keyB = zenthcloudApiVersionSortKey(b);
   if (keyA < keyB) return -1;
   if (keyA > keyB) return 1;
   return 0;
 }
 
 /** Human-facing display label, e.g. "Legacy", "2027-01-01 (Air)", "2027-02-01 (Preview)". */
-export function cloudflareApiVersionLabel(version: CloudflareApiVersion): string {
+export function zenthcloudApiVersionLabel(version: zenthcloudApiVersion): string {
   if (version.channel === 'legacy') return 'Legacy';
   const suffix = version.channel === 'preview' ? 'Preview' : capitalize(version.codename);
   return `${version.date} (${suffix})`;
@@ -204,27 +204,27 @@ function capitalize(value: string): string {
  * the same slug; the engine rejects that at build time (duplicate slug), so a promoted
  * release and its retired preview must not be configured simultaneously.
  */
-export function cloudflareApiVersionSlug(version: CloudflareApiVersion): string {
+export function zenthcloudApiVersionSlug(version: zenthcloudApiVersion): string {
   return version.channel === 'legacy' ? version.wire : version.date;
 }
 
 export function isLegacy(
-  version: CloudflareApiVersion,
-): version is Extract<CloudflareApiVersion, { channel: 'legacy' }> {
+  version: zenthcloudApiVersion,
+): version is Extract<zenthcloudApiVersion, { channel: 'legacy' }> {
   return version.channel === 'legacy';
 }
 
 export function isPreview(
-  version: CloudflareApiVersion,
-): version is Extract<CloudflareApiVersion, { channel: 'preview' }> {
+  version: zenthcloudApiVersion,
+): version is Extract<zenthcloudApiVersion, { channel: 'preview' }> {
   return version.channel === 'preview';
 }
 
-export function isDated(version: CloudflareApiVersion): version is Extract<CloudflareApiVersion, { channel: 'dated' }> {
+export function isDated(version: zenthcloudApiVersion): version is Extract<zenthcloudApiVersion, { channel: 'dated' }> {
   return version.channel === 'dated';
 }
 
 /** True for versions that are not prereleases (i.e. `legacy` and dated releases, not `preview`). */
-export function isStable(version: CloudflareApiVersion): boolean {
+export function isStable(version: zenthcloudApiVersion): boolean {
   return version.channel !== 'preview';
 }

@@ -208,7 +208,7 @@ export async function assertSanitizedMarkdownRenderer(renderMarkdown: HtmlRender
   const html = await renderMarkdown(SANITIZER_PROBE);
   if (/<i\b[^>]*data-astro-fern-probe/i.test(html) || /href\s*=\s*["']?\s*javascript:/i.test(html)) {
     throw new Error(
-      'astro-fern: the active Markdown renderer renders raw HTML or unsafe URLs from OpenAPI descriptions. Pass a sanitizing `renderMarkdown` to `defineFernCollections()`, such as `renderMarkdown` from `@cloudflare/nimbus-docs/markdown`.',
+      'astro-fern: the active Markdown renderer renders raw HTML or unsafe URLs from OpenAPI descriptions. Pass a sanitizing `renderMarkdown` to `defineFernCollections()`, such as `renderMarkdown` from `@zenthcloud/nimbus-docs/markdown`.',
     );
   }
 }

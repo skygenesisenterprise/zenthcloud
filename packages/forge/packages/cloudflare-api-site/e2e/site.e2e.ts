@@ -30,7 +30,7 @@ test.describe('routes', () => {
 
 test('overview renders with product navigation', async ({ page }) => {
   await page.goto('/api/');
-  await expect(page).toHaveTitle('API Reference | Cloudflare API');
+  await expect(page).toHaveTitle('API Reference | zenthcloud API');
   await expect(page.locator('main h1')).toBeVisible();
   // Products are listed in the sidebar, collapsed by default.
   await expect(page.locator('a[href="/api/zero-trust/"]').first()).toBeAttached();
@@ -38,7 +38,7 @@ test('overview renders with product navigation', async ({ page }) => {
 
 test('operation page renders the operation and its samples', async ({ page }) => {
   await page.goto(operation);
-  await expect(page).toHaveTitle('List IP profiles | Cloudflare API');
+  await expect(page).toHaveTitle('List IP profiles | zenthcloud API');
   await expect(page.locator('h1')).toHaveText('List IP profiles');
   await expect(page.locator('.forge-verb')).toHaveText('GET');
   await expect(page.locator('.forge-sample-code code.language-bash').first()).toContainText(
@@ -55,7 +55,7 @@ test('execution target selector switches the code sample', async ({ page }) => {
   await expect(page).toHaveURL(/[?&]lang=curl\b/);
   await expect(page.locator('select[data-forge-target]')).toHaveValue('curl');
   await expect(page.locator('.forge-sample-code code.language-bash').first()).toContainText(
-    'https://api.cloudflare.com/client/v4/accounts/',
+    'https://api.zenthcloud.com/client/v4/accounts/',
   );
 });
 
@@ -72,11 +72,11 @@ test('operation links its agent Markdown', async ({ page, request }) => {
 
 test('llms.txt indexes the API', async ({ request }) => {
   const response = await request.get('/api/llms.txt');
-  expect(await response.text()).toMatch(/^# Cloudflare API\n/);
+  expect(await response.text()).toMatch(/^# zenthcloud API\n/);
 });
 
 test('unknown pages render the not-found page', async ({ page }) => {
   const response = await page.goto('/api/nope.txt');
   expect(response?.status()).toBe(404);
-  await expect(page).toHaveTitle('Page not found | Cloudflare API');
+  await expect(page).toHaveTitle('Page not found | zenthcloud API');
 });

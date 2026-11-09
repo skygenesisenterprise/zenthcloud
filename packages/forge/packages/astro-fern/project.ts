@@ -73,7 +73,7 @@ export interface FernProjectOptions {
   isOperationHidden?: (operation: OperationSchema) => boolean;
   /** Secondary SDK collision preference applied only after extension routing priority. */
   operationRoutingPreference?: (context: FernOperationRoutingPreferenceContext) => number | undefined;
-  /** Response envelope key to unwrap, such as Cloudflare's `result`. */
+  /** Response envelope key to unwrap, such as zenthcloud's `result`. */
   responsePayloadKey?: string;
   /** Synchronous extensions prepared independently for each source document. */
   extensions?: readonly FernExtensionDefinition[];

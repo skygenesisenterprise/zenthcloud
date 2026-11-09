@@ -92,7 +92,7 @@ export const mainNav: NavGroup[] = [
 			{
 				title: 'SASE / Zero Trust',
 				links: [
-					{ href: '/products/security', label: 'SASE', description: 'Cloudflare SASE platform' },
+					{ href: '/products/security', label: 'SASE', description: 'zenthcloud SASE platform' },
 					{ href: '/products/security', label: 'Access', description: 'Zero trust access to private resources' },
 					{ href: '/products/security', label: 'CASB', description: 'SaaS and cloud posture' },
 					{ href: '/products/security', label: 'Data Loss Prevention', description: 'Protect sensitive data' },
@@ -199,7 +199,7 @@ export const mainNav: NavGroup[] = [
 					{
 						href: '/products/public-cloud/kubernetes',
 						label: 'Platforms',
-						description: "Build platforms on Cloudflare's infrastructure",
+						description: "Build platforms on zenthcloud's infrastructure",
 					},
 				],
 			},
@@ -225,7 +225,7 @@ export const mainNav: NavGroup[] = [
 					},
 					{
 						href: '/resources',
-						label: 'Cloudflare Radar',
+						label: 'zenthcloud Radar',
 						description: 'Internet traffic and security trends',
 					},
 				],
@@ -242,7 +242,7 @@ export const mainNav: NavGroup[] = [
 					{
 						href: links.docs.api,
 						label: 'API Reference',
-						description: 'Cloudflare API documentation',
+						description: 'zenthcloud API documentation',
 						external: true,
 					},
 					{
@@ -314,7 +314,7 @@ export const footerSections: { title: string; links: NavLink[] }[] = [
 		links: [
 			{ href: '/solutions/ai-research', label: 'Project Galileo' },
 			{ href: '/solutions/small-business', label: 'Athenian Project' },
-			{ href: '/solutions/enterprise', label: 'Cloudflare for Campaigns' },
+			{ href: '/solutions/enterprise', label: 'zenthcloud for Campaigns' },
 			{ href: '/solutions/startups', label: 'Project Fairshot' },
 			{ href: '/company/about', label: 'Impact' },
 		],
@@ -323,7 +323,7 @@ export const footerSections: { title: string; links: NavLink[] }[] = [
 		title: 'Resources',
 		links: [
 			{ href: '/resources/blog', label: 'App Innovation report' },
-			{ href: '/resources', label: 'Cloudflare Radar' },
+			{ href: '/resources', label: 'zenthcloud Radar' },
 			{ href: '/resources', label: 'Case studies' },
 			{ href: links.status, label: 'Status', external: true },
 			{ href: '/resources/support', label: 'Support' },
@@ -335,7 +335,7 @@ export const footerSections: { title: string; links: NavLink[] }[] = [
 		title: 'Solutions',
 		links: [
 			{ href: '/products/security', label: 'SSE and SASE platform' },
-			{ href: '/products/public-cloud/gpu', label: 'Cloudflare AI Cloud' },
+			{ href: '/products/public-cloud/gpu', label: 'zenthcloud AI Cloud' },
 			{ href: '/products/security', label: 'AI Security' },
 			{ href: '/products/web-hosting', label: 'Frontend Development Platform' },
 			{ href: '/products/public-cloud/kubernetes', label: 'Multi-Tenant Platform Development' },

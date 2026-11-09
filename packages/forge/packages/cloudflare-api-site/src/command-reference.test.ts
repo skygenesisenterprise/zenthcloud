@@ -8,7 +8,7 @@ const deploy = {
   command: 'cf deploy',
   name: 'deploy',
   fullPath: ['deploy'],
-  description: 'Deploy an application to Cloudflare.',
+  description: 'Deploy an application to zenthcloud.',
   usage: 'cf deploy [options]',
   arguments: [],
   options: [

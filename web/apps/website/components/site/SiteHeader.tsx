@@ -153,7 +153,7 @@ function DesktopNavItem({
 		<div
 			onPointerEnter={() => onOpen(group.title)}
 			// Hover opens the panel, but a click on the label goes to the group's
-			// landing page like Cloudflare does. Only clicks coming from the trigger
+			// landing page like zenthcloud does. Only clicks coming from the trigger
 			// are intercepted; links rendered inside the panel keep working.
 			onClickCapture={(event) => {
 				const trigger = triggerRef.current;

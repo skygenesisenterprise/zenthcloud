@@ -19,9 +19,9 @@ import {
 
 const resource: TerraformDeclaration = {
   kind: 'resource',
-  name: 'cloudflare_widget',
+  name: 'zenthcloud_widget',
   roles: ['create'],
-  example: 'resource "cloudflare_widget" "example" {}\n',
+  example: 'resource "zenthcloud_widget" "example" {}\n',
   required: [],
   optional: [],
   computed: [],
@@ -30,9 +30,9 @@ const resource: TerraformDeclaration = {
 const dataSource: TerraformDeclaration = {
   ...resource,
   kind: 'data-source',
-  name: 'cloudflare_widget_data',
+  name: 'zenthcloud_widget_data',
   roles: ['read'],
-  example: 'data "cloudflare_widget" "example" {}\n',
+  example: 'data "zenthcloud_widget" "example" {}\n',
 };
 
 function pageWith(declarations?: TerraformDeclaration[]): FernPageSchema {
@@ -72,16 +72,16 @@ test('indexTerraformDocs merges roles across endpoint variants and orders declar
   const docs: TerraformDocs = {
     format: 2,
     declarations: {
-      'resource:cloudflare_widget': { kind: 'resource', name: 'cloudflare_widget', ...base },
-      'data-source:cloudflare_widget': { kind: 'data-source', name: 'cloudflare_widget', ...base },
+      'resource:zenthcloud_widget': { kind: 'resource', name: 'zenthcloud_widget', ...base },
+      'data-source:zenthcloud_widget': { kind: 'data-source', name: 'zenthcloud_widget', ...base },
     },
     endpoints: {
       'get /accounts/{account_id}/widgets/{id}': [
-        { declaration: 'data-source:cloudflare_widget', roles: ['read'] },
-        { declaration: 'resource:cloudflare_widget', roles: ['read', 'import'] },
+        { declaration: 'data-source:zenthcloud_widget', roles: ['read'] },
+        { declaration: 'resource:zenthcloud_widget', roles: ['read', 'import'] },
       ],
       'get /{accounts_or_zones}/{account_or_zone_id}/widgets/{id}': [
-        { declaration: 'resource:cloudflare_widget', roles: ['read'] },
+        { declaration: 'resource:zenthcloud_widget', roles: ['read'] },
       ],
     },
   };
@@ -101,13 +101,13 @@ test('indexTerraformDocs merges roles across endpoint variants and orders declar
 });
 
 test('renderTerraformDescriptions renders every description once and keeps the Markdown', () => {
-  const field = { name: 'account_id', type: 'String', description: 'Cloudflare account ID' };
+  const field = { name: 'account_id', type: 'String', description: 'zenthcloud account ID' };
   const docs: TerraformDocs = {
     format: 2,
     declarations: {
-      'resource:cloudflare_widget': {
+      'resource:zenthcloud_widget': {
         kind: 'resource',
-        name: 'cloudflare_widget',
+        name: 'zenthcloud_widget',
         description: 'Accepted Permissions\n\n- `Widget Write`',
         required: [field],
         optional: [{ name: 'settings', type: 'Attributes', children: [{ ...field, name: 'owner' }] }],
@@ -121,21 +121,21 @@ test('renderTerraformDescriptions renders every description once and keeps the M
     rendered.push(markdown);
     return `<p>${markdown}</p>`;
   });
-  const widget = result.declarations['resource:cloudflare_widget']!;
+  const widget = result.declarations['resource:zenthcloud_widget']!;
   assert.equal(widget.descriptionHtml, '<p>Accepted Permissions\n\n- `Widget Write`</p>');
   assert.equal(widget.description, 'Accepted Permissions\n\n- `Widget Write`');
-  assert.equal(widget.required[0]?.descriptionHtml, '<p>Cloudflare account ID</p>');
-  assert.equal(widget.optional[0]?.children?.[0]?.descriptionHtml, '<p>Cloudflare account ID</p>');
+  assert.equal(widget.required[0]?.descriptionHtml, '<p>zenthcloud account ID</p>');
+  assert.equal(widget.optional[0]?.children?.[0]?.descriptionHtml, '<p>zenthcloud account ID</p>');
   assert.equal(widget.computed[0]?.descriptionHtml, undefined);
-  assert.deepEqual(rendered, ['Accepted Permissions\n\n- `Widget Write`', 'Cloudflare account ID']);
+  assert.deepEqual(rendered, ['Accepted Permissions\n\n- `Widget Write`', 'zenthcloud account ID']);
   // The input is left as it was: rendering adds HTML to a copy.
-  assert.ok(!('descriptionHtml' in (docs.declarations['resource:cloudflare_widget']?.required[0] ?? {})));
+  assert.ok(!('descriptionHtml' in (docs.declarations['resource:zenthcloud_widget']?.required[0] ?? {})));
 });
 
 test('Terraform operation data remains namespaced on the operation', () => {
   assert.deepEqual(getTerraformOperationData(pageWith([resource]).operation)?.declarations, [resource]);
-  assert.equal(terraformDeclarationLabel(resource), 'resource cloudflare_widget');
-  assert.equal(terraformDeclarationLabel(dataSource), 'data cloudflare_widget_data');
+  assert.equal(terraformDeclarationLabel(resource), 'resource zenthcloud_widget');
+  assert.equal(terraformDeclarationLabel(dataSource), 'data zenthcloud_widget_data');
   assert.equal(
     terraformRolesSummary({ ...resource, roles: ['read', 'import'] }),
     'Called by this resource to read and import.',
@@ -147,8 +147,8 @@ test('withTerraformTarget preserves all declaration examples for agent Markdown'
   const page = pageWith([resource, dataSource]);
   const decorated = withTerraformTarget(page);
   const code = decorated.targets.find((target) => target.id === 'terraform')?.code;
-  assert.match(code ?? '', /# resource cloudflare_widget/);
-  assert.match(code ?? '', /# data cloudflare_widget_data/);
+  assert.match(code ?? '', /# resource zenthcloud_widget/);
+  assert.match(code ?? '', /# data zenthcloud_widget_data/);
   assert.equal(page.targets.find((target) => target.id === 'terraform')?.code, null);
 });
 
@@ -156,13 +156,13 @@ test('the generated index links every CRUD operation of a resource', async () =>
   const source = await readFile(new URL('./generated/terraform-docs.json', import.meta.url), 'utf8');
   const index = indexTerraformDocs(terraformDocsSchema.parse(JSON.parse(source)));
   const roles = (key: string) =>
-    index.get(key)?.find(({ kind, name }) => kind === 'resource' && name === 'cloudflare_dns_record')?.roles;
+    index.get(key)?.find(({ kind, name }) => kind === 'resource' && name === 'zenthcloud_dns_record')?.roles;
   assert.deepEqual(roles('post /zones/{}/dns_records'), ['create']);
   assert.deepEqual(roles('get /zones/{}/dns_records/{}'), ['read', 'import']);
   assert.deepEqual(roles('put /zones/{}/dns_records/{}'), ['update']);
   assert.deepEqual(roles('delete /zones/{}/dns_records/{}'), ['delete']);
   // Scope-polymorphic SDK paths resolve to Forge's merged `/{account_or_zone}/…` path.
   assert.ok(
-    index.get('post /{}/{}/firewall/access_rules/rules')?.some(({ name }) => name === 'cloudflare_access_rule'),
+    index.get('post /{}/{}/firewall/access_rules/rules')?.some(({ name }) => name === 'zenthcloud_access_rule'),
   );
 });

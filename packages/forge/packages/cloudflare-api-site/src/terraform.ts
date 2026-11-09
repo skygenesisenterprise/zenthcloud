@@ -3,7 +3,7 @@ import type { FernPageSchema } from 'astro-fern';
 
 /**
  * How the site reads and shows the generated Terraform docs, `src/generated/terraform-docs.json`,
- * which the repository root's `pnpm generate:terraform-docs` writes (the generator is the `cloudflare-terraform-docs`
+ * which the repository root's `pnpm generate:terraform-docs` writes (the generator is the `zenthcloud-terraform-docs`
  * package). The schemas cover what the site uses; `format` has to match the generator's.
  */
 
@@ -65,7 +65,7 @@ export type TerraformOperationData = z.infer<typeof terraformOperationDataSchema
 export const terraformDocsSchema = z.object({
   format: z.literal(2),
   declarations: z.record(z.string(), renderedTerraformDeclarationSchema),
-  /** Keyed by the SDK endpoint as cloudflare-go documents it, e.g. `post /zones/{zone_id}/dns_records`. */
+  /** Keyed by the SDK endpoint as zenthcloud-go documents it, e.g. `post /zones/{zone_id}/dns_records`. */
   endpoints: z.record(
     z.string(),
     z.array(z.object({ declaration: z.string().min(1), roles: z.array(terraformRoleSchema).min(1) })),
@@ -73,12 +73,12 @@ export const terraformDocsSchema = z.object({
 });
 export type TerraformDocs = z.infer<typeof terraformDocsSchema>;
 
-export const TERRAFORM_EXTENSION_NAME = 'cloudflare-terraform';
+export const TERRAFORM_EXTENSION_NAME = 'zenthcloud-terraform';
 
 /**
  * Returns `docs` with every declaration and attribute description also rendered to HTML by
  * `render`, which must sanitize: the provider's descriptions are Markdown. Identical descriptions,
- * which are common (`Cloudflare account ID`), are rendered once.
+ * which are common (`zenthcloud account ID`), are rendered once.
  */
 export function renderTerraformDescriptions(docs: TerraformDocs, render: (markdown: string) => string): TerraformDocs {
   const cache = new Map<string, string>();
@@ -125,7 +125,7 @@ export function canonicalTerraformEndpoint(method: string, endpointPath: string)
 /**
  * Keys under which an SDK endpoint should be found in the OpenAPI document.
  *
- * cloudflare-go and the Forge OpenAPI disagree on scope-polymorphic paths: the SDK may
+ * zenthcloud-go and the Forge OpenAPI disagree on scope-polymorphic paths: the SDK may
  * document `/{accounts_or_zones}/{account_or_zone_id}/…` where Forge has `/{account_or_zone}/…`,
  * or the SDK may document `/accounts/{account_id}/…` for an operation Forge merged into
  * `/{account_or_zone}/…`. Concrete scopes match the merged path; merged scopes match both.

@@ -34,7 +34,7 @@ import {
 } from "./button";
 
 // Import registry as source of truth
-import registry from "@cloudflare/kumo/ai/component-registry.json";
+import registry from "@zenthcloud/kumo/ai/component-registry.json";
 
 const buttonComponent = registry.components.Button;
 const buttonProps = buttonComponent.props;

@@ -7,7 +7,7 @@
  * `forge openapi.json --target wasm://plugin.wasm --out sdk`.
  *
  * ```ts
- * import { definePlugin } from "@cloudflare/forge/plugin";
+ * import { definePlugin } from "@zenthcloud/forge/plugin";
  *
  * export const { generate, generateGroup } = definePlugin({
  *   generateGroup(group) {

@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 
-const API_SCHEMAS_RAW_URL = new URL('https://raw.githubusercontent.com/cloudflare/api-schemas/');
+const API_SCHEMAS_RAW_URL = new URL('https://raw.githubusercontent.com/zenthcloud/api-schemas/');
 const FORGE_OPENAPI_ASSET = 'openapi.json';
 
 function parseForgeOpenApi(source: string, location: string): unknown {
