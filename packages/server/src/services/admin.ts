@@ -106,7 +106,7 @@ export const removeUserById = async (userId: string) => {
 
 export const getZenthcloudUrl = async () => {
 	if (IS_CLOUD) {
-		return "https://app.zenthcloud.com";
+		return "https://dash.zenthcloud.com";
 	}
 	const settings = await getWebServerSettings();
 

@@ -17,10 +17,12 @@ export const links = {
 		support: 'https://docs.zenthcloud.com/support',
 	},
 	status: 'https://status.zenthcloud.com',
-	console: 'https://app.zenthcloud.com',
+	console: 'https://dash.zenthcloud.com',
 	blog: 'https://blog.zenthcloud.com',
 	github: 'https://github.com/skygenesisenterprise/zenthcloud',
 	trust: '/company/about',
+	skyGenesis: 'https://skygenesisenterprise.com/',
+	l0ck7: 'https://l0ck7.com/',
 } as const
 
 export type NavLink = {
@@ -151,25 +153,54 @@ export const mainNav: NavGroup[] = [
 		href: '/solutions',
 		columns: [
 			{
-				title: 'By team',
+				title: 'AI and security',
 				links: [
-					{ href: '/solutions/developers', label: 'Developers' },
-					{ href: '/solutions/startups', label: 'Startups' },
-					{ href: '/solutions/small-business', label: 'Small business' },
-					{ href: '/solutions/enterprise', label: 'Enterprise' },
-					{ href: '/solutions/hosting-providers', label: 'Hosting providers' },
-					{ href: '/solutions/ai-research', label: 'AI & research' },
+					{
+						href: '/solutions/ai-research',
+						label: 'AI',
+						description: 'Build intelligent applications with AI at the edge',
+					},
+					{
+						href: '/products/security',
+						label: 'AI Security',
+						description:
+							'Secure and control AI adoption without slowing innovation.',
+					},
+					{
+						href: '/products/security',
+						label: 'Security',
+						description: 'Protect your applications from threats',
+					},
 				],
 			},
 			{
-				title: 'By infrastructure',
+				title: 'Network and delivery',
 				links: [
-					{ href: '/infrastructure', label: 'Infrastructure model' },
-					{ href: '/infrastructure/architecture', label: 'Architecture' },
-					{ href: '/infrastructure/global-network', label: 'Global network' },
-					{ href: '/infrastructure/partners', label: 'Infrastructure partners' },
-					{ href: '/infrastructure/data-centers', label: 'Facilities' },
-					{ href: '/infrastructure/locations', label: 'Locations' },
+					{
+						href: '/products/networking',
+						label: 'Network',
+						description: 'Global network services for performance and reliability',
+					},
+					{
+						href: '/products/web-hosting',
+						label: 'Frontends',
+						description: 'Deploy frontend applications globally in seconds',
+					},
+				],
+			},
+			{
+				title: 'Platform and automation',
+				links: [
+					{
+						href: '/products/managed-services',
+						label: 'Workflows',
+						description: 'Orchestrate complex multi-step processes',
+					},
+					{
+						href: '/products/public-cloud/kubernetes',
+						label: 'Platforms',
+						description: "Build platforms on Cloudflare's infrastructure",
+					},
 				],
 			},
 		],
@@ -179,58 +210,66 @@ export const mainNav: NavGroup[] = [
 		href: '/resources',
 		columns: [
 			{
-				title: 'Technical',
+				title: '',
+				links: [
+					{
+						href: '/resources/blog',
+						label: 'Blog',
+						description: 'News, product updates, and announcements',
+					},
+					{
+						href: links.github,
+						label: 'Community',
+						description: 'Connect with other developers and experts',
+						external: true,
+					},
+					{
+						href: '/resources',
+						label: 'Cloudflare Radar',
+						description: 'Internet traffic and security trends',
+					},
+				],
+			},
+			{
+				title: '',
 				links: [
 					{
 						href: links.docs.home,
-						label: 'Documentation',
-						description: 'Guides and operational limits',
+						label: 'Developer Docs',
+						description: 'Guides, references, and tutorials',
 						external: true,
 					},
 					{
 						href: links.docs.api,
-						label: 'API reference',
-						description: 'Authentication, resources and errors',
+						label: 'API Reference',
+						description: 'Cloudflare API documentation',
 						external: true,
 					},
+					{
+						href: '/resources',
+						label: 'Case Studies',
+						description: 'Customer success stories and results',
+					},
+				],
+			},
+			{
+				title: '',
+				links: [
 					{
 						href: links.docs.tutorials,
-						label: 'Tutorials',
-						description: 'Step-by-step deployment guides',
-						external: true,
-					},
-					{ href: '/resources/blog', label: 'Blog' },
-				],
-			},
-			{
-				title: 'Operations',
-				links: [
-					{ href: '/resources/support', label: 'Support routes' },
-					{ href: '/resources/status', label: 'Service status' },
-					{ href: '/infrastructure', label: 'Infrastructure' },
-					{ href: '/pricing', label: 'Pricing' },
-				],
-			},
-			{
-				title: 'Project',
-				links: [
-					{
-						href: links.github,
-						label: 'GitHub',
-						description: 'Source, issues and releases',
+						label: 'Learning Center',
+						description: 'Learn about web technology concepts',
 						external: true,
 					},
 					{
-						href: links.console,
-						label: 'Console',
-						description: 'Sign in to manage resources',
-						external: true,
+						href: '/infrastructure/architecture',
+						label: 'Reference Architectures',
+						description: 'Architecture patterns and best practices',
 					},
 					{
-						href: links.status,
-						label: 'Service status',
-						description: 'Incidents and maintenance',
-						external: true,
+						href: '/company/newsroom',
+						label: 'Press',
+						description: 'Latest news, media resources, and coverage',
 					},
 				],
 			},
@@ -259,51 +298,48 @@ export const cta = {
 
 export const footerSections: { title: string; links: NavLink[] }[] = [
 	{
-		title: 'Products',
+		title: 'Getting started',
 		links: [
-			{ href: '/products', label: 'All products' },
-			{ href: '/products/public-cloud', label: 'Public Cloud' },
-			{ href: '/products/private-cloud', label: 'Private Cloud' },
-			{ href: '/products/bare-metal', label: 'Bare Metal' },
-			{ href: '/products/public-cloud/kubernetes', label: 'Kubernetes' },
-			{ href: '/products/managed-services', label: 'Managed services' },
-			{ href: '/products/networking', label: 'Networking' },
-			{ href: '/products/security', label: 'Security' },
-			{ href: '/products/web-hosting', label: 'Web hosting' },
-			{ href: '/products/domain-services', label: 'Domains' },
-		],
-	},
-	{
-		title: 'Solutions',
-		links: [
-			{ href: '/solutions/developers', label: 'Developers' },
+			{ href: '/pricing', label: 'Plans' },
+			{ href: '/contact-sales', label: 'Contact sales' },
+			{ href: '/company/partners', label: 'Partners' },
+			{ href: '/company/partners', label: 'Find a partner' },
 			{ href: '/solutions/startups', label: 'Startups' },
-			{ href: '/solutions/small-business', label: 'Small business' },
-			{ href: '/solutions/enterprise', label: 'Enterprise' },
-			{ href: '/solutions/hosting-providers', label: 'Hosting providers' },
-			{ href: '/solutions/ai-research', label: 'AI & research' },
+			{ href: '/products/security', label: 'Under attack?' },
+			{ href: '/products/domain-services', label: 'Domain name search' },
 		],
 	},
 	{
-		title: 'Developers',
+		title: 'Public Interest',
 		links: [
-			{ href: links.docs.home, label: 'Documentation', external: true },
-			{ href: links.docs.api, label: 'API reference', external: true },
-			{ href: '/resources/tutorials', label: 'Tutorials' },
-			{ href: links.github, label: 'GitHub', external: true },
-			{ href: links.console, label: 'Console', external: true },
-			{ href: links.status, label: 'Service status', external: true },
+			{ href: '/solutions/ai-research', label: 'Project Galileo' },
+			{ href: '/solutions/small-business', label: 'Athenian Project' },
+			{ href: '/solutions/enterprise', label: 'Cloudflare for Campaigns' },
+			{ href: '/solutions/startups', label: 'Project Fairshot' },
+			{ href: '/company/about', label: 'Impact' },
 		],
 	},
 	{
 		title: 'Resources',
 		links: [
-			{ href: '/resources', label: 'Resource hub' },
-			{ href: '/resources/blog', label: 'Blog' },
+			{ href: '/resources/blog', label: 'App Innovation report' },
+			{ href: '/resources', label: 'Cloudflare Radar' },
+			{ href: '/resources', label: 'Case studies' },
+			{ href: links.status, label: 'Status', external: true },
 			{ href: '/resources/support', label: 'Support' },
-			{ href: '/infrastructure', label: 'Infrastructure' },
-			{ href: '/infrastructure/locations', label: 'Locations' },
-			{ href: '/pricing', label: 'Pricing' },
+			{ href: '/resources', label: 'Events' },
+			{ href: '/resources/blog', label: 'Blog' },
+		],
+	},
+	{
+		title: 'Solutions',
+		links: [
+			{ href: '/products/security', label: 'SSE and SASE platform' },
+			{ href: '/products/public-cloud/gpu', label: 'Cloudflare AI Cloud' },
+			{ href: '/products/security', label: 'AI Security' },
+			{ href: '/products/web-hosting', label: 'Frontend Development Platform' },
+			{ href: '/products/public-cloud/kubernetes', label: 'Multi-Tenant Platform Development' },
+			{ href: '/products/security', label: 'Web Security Platform' },
 		],
 	},
 	{
@@ -311,19 +347,29 @@ export const footerSections: { title: string; links: NavLink[] }[] = [
 		links: [
 			{ href: '/company/about', label: 'About' },
 			{ href: '/company/careers', label: 'Careers' },
-			{ href: '/company/partners', label: 'Partners' },
-			{ href: '/company/newsroom', label: 'Newsroom' },
-			{ href: '/company/contact', label: 'Contact' },
-			{ href: '/contact-sales', label: 'Contact sales' },
+			{ href: '/company/about', label: 'Investors' },
+			{ href: '/company/newsroom', label: 'Press' },
+			{ href: '/company/newsroom', label: 'Press kit' },
+			{ href: '/infrastructure/global-network', label: 'Global network' },
 		],
 	},
 	{
-		title: 'Legal',
+		title: 'Compliance',
 		links: [
-			{ href: '/legal/terms', label: 'Terms of service' },
-			{ href: '/legal/privacy', label: 'Privacy policy' },
-			{ href: '/legal/cookies', label: 'Cookie policy' },
-			{ href: '/legal/acceptable-use', label: 'Acceptable use' },
+			{ href: '/legal/privacy', label: 'Compliance resources' },
+			{ href: '/company/about', label: 'Trust Hub' },
+			{ href: '/legal/privacy', label: 'Data Protection' },
+			{ href: '/legal/acceptable-use', label: 'Responsible AI' },
+			{ href: '/legal/terms', label: 'Transparency report' },
+			{ href: '/resources/support', label: 'Report abuse' },
+		],
+	},
+	{
+		title: 'Developers',
+		links: [
+			{ href: links.docs.home, label: 'Documentation', external: true },
+			{ href: links.docs.tutorials, label: 'Learning center', external: true },
+			{ href: links.github, label: 'Community', external: true },
 		],
 	},
 ]

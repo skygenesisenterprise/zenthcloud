@@ -49,15 +49,17 @@ export function Faq({
 							aria-hidden="true"
 						/>
 					</summary>
-					<p
-						id={`${id}-${items.indexOf(item)}`}
-						className={[
-							"pb-4 pr-8 text-sm leading-relaxed",
-							dark ? "text-ink-foreground/65" : "text-muted-foreground",
-						].join(" ")}
-					>
-						{item.answer}
-					</p>
+					<div className="faq-answer">
+						<p
+							id={`${id}-${items.indexOf(item)}`}
+							className={[
+								"pb-4 pr-8 text-sm leading-relaxed",
+								dark ? "text-ink-foreground/65" : "text-muted-foreground",
+							].join(" ")}
+						>
+							{item.answer}
+						</p>
+					</div>
 				</details>
 			))}
 		</div>

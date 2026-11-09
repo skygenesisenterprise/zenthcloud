@@ -329,7 +329,7 @@ Yes. The core platform is open source and licensed under Apache 2.0, and the sel
 
 ### Do I have to host it myself?
 
-No. You can self-host with `make install` or Docker Compose, or use the hosted [ZenthCloud Cloud](https://app.zenthcloud.com) if you'd rather not manage the control plane.
+No. You can self-host with `make install` or Docker Compose, or use the hosted [ZenthCloud Cloud](https://dash.zenthcloud.com) if you'd rather not manage the control plane.
 
 ### What do I need to run it?
 
@@ -354,7 +354,7 @@ Open a [GitHub issue](https://github.com/skygenesisenterprise/zenthcloud/issues)
 - Product docs: [docs.zenthcloud.com](https://docs.zenthcloud.com)
 - Website: [zenthcloud.com](https://zenthcloud.com)
 - Status: [status.zenthcloud.com](https://status.zenthcloud.com)
-- Console: [app.zenthcloud.com](https://app.zenthcloud.com)
+- Console: [dash.zenthcloud.com](https://dash.zenthcloud.com)
 - Blog: [blog.zenthcloud.com](https://blog.zenthcloud.com)
 - Support: [zenthcloud.com/resources/support](https://zenthcloud.com/resources/support)
 - CLI: See [`packages/cli`](packages/cli)

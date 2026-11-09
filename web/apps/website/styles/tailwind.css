@@ -211,7 +211,7 @@
 	html {
 		scrollbar-gutter: stable;
 		-webkit-text-size-adjust: 100%;
-		scroll-padding-top: 7rem;
+		scroll-padding-top: 2rem;
 	}
 
 	* {
@@ -301,6 +301,29 @@
 
 	.prose-site p + p {
 		@apply mt-4;
+	}
+
+	/* FAQ: the native <details> keeps its keyboard and screen-reader semantics;
+	 * the wrapper only animates the answer when the question opens. */
+	.faq-answer {
+		overflow: hidden;
+	}
+
+	details[open] .faq-answer {
+		animation: faq-answer-open 260ms var(--ease-smooth-out);
+	}
+
+	@keyframes faq-answer-open {
+		from {
+			opacity: 0;
+			transform: translateY(-4px);
+			max-height: 0;
+		}
+		to {
+			opacity: 1;
+			transform: none;
+			max-height: 40rem;
+		}
 	}
 }
 

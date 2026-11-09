@@ -30,7 +30,7 @@ export const TrialExpiringEmail = ({
 	planName = "Hobby",
 	daysRemaining = 3,
 	endsOn = "2024-01-01",
-	billingUrl = "https://app.zenthcloud.com/dashboard/settings/billing",
+	billingUrl = "https://dash.zenthcloud.com/dashboard/settings/billing",
 }: TemplateProps) => {
 	const dayLabel = daysRemaining === 1 ? "day" : "days";
 	const previewText =

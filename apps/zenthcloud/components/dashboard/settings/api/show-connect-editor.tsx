@@ -51,7 +51,7 @@ const STEPS = [
  * Everything here is derived from `document.location.origin`, so the page is
  * served by the very instance the user is looking at. That is what makes the
  * instructions correct for both deployments without branching: zenthcloud Cloud
- * hands out `https://app.zenthcloud.com`, a self-hosted instance hands out its
+ * hands out `https://dash.zenthcloud.com`, a self-hosted instance hands out its
  * own origin, and the extension is identical either way because it only ever
  * talks to the origin it is given.
  */

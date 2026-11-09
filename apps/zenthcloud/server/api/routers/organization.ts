@@ -379,7 +379,7 @@ export const organizationRouter = createTRPCRouter({
 				const host =
 					process.env.NODE_ENV === "development"
 						? "http://localhost:3000"
-						: "https://app.zenthcloud.com";
+						: "https://dash.zenthcloud.com";
 				const inviteLink = `${host}/invitation?token=${created.id}`;
 
 				const org = await db.query.organization.findFirst({

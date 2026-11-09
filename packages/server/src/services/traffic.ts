@@ -482,7 +482,7 @@ export const upsertTrafficSource = async (
 export const RECOMMENDED_SGE_PROPERTIES = [
 	{ platform: "website", domain: "zenthcloud.com", name: "Zenthcloud Website" },
 	{ platform: "docs", domain: "docs.zenthcloud.com", name: "Zenthcloud Docs" },
-	{ platform: "app", domain: "app.zenthcloud.com", name: "Zenthcloud Cloud" },
+	{ platform: "app", domain: "dash.zenthcloud.com", name: "Zenthcloud Cloud" },
 	{ platform: "api", domain: "api.zenthcloud.com", name: "Zenthcloud API" },
 ] as const;
 

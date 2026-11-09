@@ -21,7 +21,7 @@ export type TemplateProps = {
 
 export const VerifyEmailTemplate = ({
 	userName = "User",
-	verificationUrl = "https://app.zenthcloud.com/verify",
+	verificationUrl = "https://dash.zenthcloud.com/verify",
 }: TemplateProps) => {
 	const previewText = "Verify your email address to get started with Zenthcloud";
 	return (

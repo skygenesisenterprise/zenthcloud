@@ -20,12 +20,12 @@ export function NavLinks() {
 	const links = [
 		{
 			text: "Login",
-			url: "https://app.zenthcloud.com/",
+			url: "https://dash.zenthcloud.com/",
 			icon: LogIn,
 		},
 		{
 			text: "Sign Up",
-			url: "https://app.zenthcloud.com/register",
+			url: "https://dash.zenthcloud.com/register",
 			icon: UserPlus,
 		},
 		{

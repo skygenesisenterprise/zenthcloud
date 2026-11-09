@@ -1,8 +1,14 @@
 "use client";
 
 import { Button, DropdownMenu, Link, LinkButton } from "@zenthcloud/react";
-import { ArrowRight, CaretDown, CaretUpDown, List, X } from "@phosphor-icons/react";
-import { usePathname } from "next/navigation";
+import {
+	ArrowRight,
+	CaretDown,
+	CaretUpDown,
+	List,
+	X,
+} from "@phosphor-icons/react";
+import { usePathname, useRouter } from "next/navigation";
 import * as React from "react";
 import { searchIndex } from "@/lib/content/search-index";
 import { cta, mainNav, utilityNav, type NavGroup } from "@/lib/content/site";
@@ -33,6 +39,25 @@ function columnGridClass(count: number) {
 	return COLUMN_GRID_CLASS[Math.min(Math.max(count, 1), 8)] ?? "lg:grid-cols-4";
 }
 
+/** A panel only takes the width its columns need, capped by the viewport. */
+const COLUMN_WIDTH_CLASS: Record<number, string> = {
+	1: "w-[min(380px,calc(100vw-2rem))]",
+	2: "w-[min(560px,calc(100vw-2rem))]",
+	3: "w-[min(780px,calc(100vw-2rem))]",
+	4: "w-[min(960px,calc(100vw-2rem))]",
+	5: "w-[min(1120px,calc(100vw-2rem))]",
+	6: "w-[min(1240px,calc(100vw-2rem))]",
+	7: "w-[min(1360px,calc(100vw-2rem))]",
+	8: "w-[min(1360px,calc(100vw-2rem))]",
+};
+
+function columnWidthClass(count: number) {
+	return (
+		COLUMN_WIDTH_CLASS[Math.min(Math.max(count, 1), 8)] ??
+		"w-[min(780px,calc(100vw-2rem))]"
+	);
+}
+
 /** Utility action rendered as one of the outlined pills in the right cluster. */
 function HeaderPill({
 	href,
@@ -49,7 +74,7 @@ function HeaderPill({
 			variant="outline"
 			size="sm"
 			external={external}
-			className="h-8 rounded-full border-border bg-transparent px-3.5 text-[13px] font-medium text-foreground ring-0 hover:border-foreground/30 hover:bg-muted hover:text-foreground"
+			className="h-8 rounded-full border-border bg-transparent px-3.5 text-sm font-medium text-foreground ring-0 hover:border-foreground/30 hover:bg-muted hover:text-foreground"
 		>
 			{label}
 		</LinkButton>
@@ -64,53 +89,46 @@ function HeaderPill({
 function DesktopNavItem({
 	group,
 	pathname,
+	open,
+	onOpen,
+	onClose,
+	onScheduleClose,
 }: {
 	group: NavGroup;
 	pathname: string;
+	open: boolean;
+	onOpen: (title: string) => void;
+	onClose: () => void;
+	onScheduleClose: () => void;
 }) {
 	const active = isActive(pathname, group.href ?? "/");
 	// The "More" section is rendered as the panel footer, like the reference:
 	// one row of shortcuts beside "See all products".
 	const moreColumn = group.columns.find((column) => column.title === "More");
 	const columns = group.columns.filter((column) => column.title !== "More");
-	const [open, setOpen] = React.useState(false);
+	const triggerRef = React.useRef<HTMLSpanElement>(null);
+	const router = useRouter();
 	// The panel is anchored to the page centre, not to its trigger, so every
-	// mega menu opens in the same place. The offset is measured on open.
+	// mega menu opens in the same place. Measured on open and on resize, from the
+	// DOM node rather than from an event that Base UI's render prop can drop.
 	const [alignOffset, setAlignOffset] = React.useState(0);
-	const closeTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
-	const cancelClose = React.useCallback(() => {
-		if (closeTimer.current) {
-			clearTimeout(closeTimer.current);
-			closeTimer.current = null;
-		}
-	}, []);
+	React.useEffect(() => {
+		if (!open) return;
+		const element = triggerRef.current;
+		if (!element) return;
 
-	// Pointer entry opens the panel; leaving schedules a short close so moving
-	// from the trigger into the panel does not dismiss it.
-	const openMenu = React.useCallback(() => {
-		cancelClose();
-		setOpen(true);
-	}, [cancelClose]);
-
-	const scheduleClose = React.useCallback(() => {
-		cancelClose();
-		closeTimer.current = setTimeout(() => setOpen(false), 160);
-	}, [cancelClose]);
-
-	const handleTriggerOpen = React.useCallback(
-		(event: React.SyntheticEvent<HTMLElement>) => {
-			const rect = event.currentTarget.getBoundingClientRect();
+		const update = () => {
+			const rect = element.getBoundingClientRect();
 			setAlignOffset(
 				Math.round(window.innerWidth / 2 - (rect.left + rect.width / 2)),
 			);
-			openMenu();
-		},
-		[openMenu],
-	);
+		};
 
-	React.useEffect(() => cancelClose, [cancelClose]);
-	React.useEffect(() => setOpen(false), [pathname]);
+		update();
+		window.addEventListener("resize", update);
+		return () => window.removeEventListener("resize", update);
+	}, [open]);
 
 	if (group.columns.length === 0) {
 		return (
@@ -118,6 +136,7 @@ function DesktopNavItem({
 				href={group.href ?? "/"}
 				variant="plain"
 				aria-current={active ? "page" : undefined}
+				onPointerEnter={onClose}
 				className={cn(
 					"inline-flex h-8 items-center text-sm font-medium no-underline! transition-colors",
 					active
@@ -131,105 +150,132 @@ function DesktopNavItem({
 	}
 
 	return (
-		<div onMouseEnter={openMenu} onMouseLeave={scheduleClose}>
-			<DropdownMenu open={open} onOpenChange={setOpen}>
-				<DropdownMenu.Trigger>
-				<Button
-					variant="ghost"
-					size="sm"
-					onMouseEnter={handleTriggerOpen}
-					onFocus={handleTriggerOpen}
-					className={cn(
-						"group h-8 gap-1.5 bg-transparent px-0 text-[13px] font-medium shadow-none hover:bg-transparent",
-						active
-							? "text-foreground"
-							: "text-foreground/75 hover:text-foreground",
-					)}
+		<div
+			onPointerEnter={() => onOpen(group.title)}
+			// Hover opens the panel, but a click on the label goes to the group's
+			// landing page like Cloudflare does. Only clicks coming from the trigger
+			// are intercepted; links rendered inside the panel keep working.
+			onClickCapture={(event) => {
+				const trigger = triggerRef.current;
+				if (!trigger || !(event.target instanceof Node)) return;
+				if (!trigger.contains(event.target)) return;
+				event.stopPropagation();
+				onClose();
+				router.push(group.href ?? "/");
+			}}
+		>
+			<DropdownMenu
+				open={open}
+				onOpenChange={(next) =>
+					next ? onOpen(group.title) : onScheduleClose()
+				}
+			>
+				<span
+					ref={triggerRef}
+					className="inline-flex"
+					onPointerEnter={() => onOpen(group.title)}
 				>
-					{group.title}
-					<span className="flex size-[18px] items-center justify-center rounded-[5px] bg-muted text-foreground/60">
-						<CaretUpDown
-							className="size-2.5"
-							weight="bold"
-							aria-hidden="true"
-						/>
-					</span>
-				</Button>
-			</DropdownMenu.Trigger>
+					<DropdownMenu.Trigger>
+						<Button
+							variant="ghost"
+							size="sm"
+							className={cn(
+								"group h-8 gap-1.5 bg-transparent px-0 text-sm font-medium shadow-none hover:bg-transparent",
+								active
+									? "text-foreground"
+									: "text-foreground/75 hover:text-foreground",
+							)}
+						>
+							{group.title}
+							<CaretUpDown
+								className="size-3 text-foreground/60"
+								aria-hidden="true"
+							/>
+						</Button>
+					</DropdownMenu.Trigger>
+				</span>
 				<DropdownMenu.Content
-					onMouseEnter={openMenu}
-					onMouseLeave={scheduleClose}
+					onPointerEnter={() => onOpen(group.title)}
+					onPointerLeave={onScheduleClose}
 					align="center"
 					alignOffset={alignOffset}
 					sideOffset={14}
-				collisionPadding={16}
-				className="w-[min(1360px,calc(100vw-2rem))] border border-border bg-popover p-2 text-popover-foreground shadow-lg"
-			>
-				<nav aria-label={`${group.title} menu`}>
-					<div
-						className={cn(
-							"grid divide-y divide-border overflow-hidden rounded-md border border-border lg:divide-x lg:divide-y-0",
-							columnGridClass(columns.length),
-						)}
-					>
-						{columns.map((column) => (
-							<DropdownMenu.Group key={column.title} className="min-w-0 p-3 xl:p-4">
-								<DropdownMenu.Label className="mb-3 px-0 text-[13px] font-medium text-muted-foreground">
-									{column.title}
-								</DropdownMenu.Label>
-								{column.links.map((item) => (
-									<DropdownMenu.LinkItem
-										key={`${column.title}-${item.label}-${item.href}`}
-										href={item.href}
-										target={item.external ? "_blank" : undefined}
-										rel={item.external ? "noreferrer" : undefined}
-										className="flex-col items-start gap-0.5 rounded-md px-2 py-2 text-foreground"
-									>
-										<span className="text-sm font-medium leading-snug">
-											{item.label}
-										</span>
-										{item.description && (
-											<span className="text-xs leading-snug text-muted-foreground">
-												{item.description}
-											</span>
-										)}
-									</DropdownMenu.LinkItem>
-								))}
-							</DropdownMenu.Group>
-						))}
-					</div>
-				</nav>
-
-				<div className="mt-2 flex flex-col gap-3 border-t border-border px-3 py-4 sm:flex-row sm:items-center sm:justify-between">
-					<div className="flex flex-wrap items-center gap-2">
-						{group.href && (
-							<LinkButton
-								href={group.href}
-								variant="ghost"
-								size="sm"
-								className="text-primary"
-							>
-								See all {group.title.toLowerCase()}
-								<ArrowRight className="size-3.5" aria-hidden="true" />
-							</LinkButton>
-						)}
-					</div>
-					<ul className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground">
-						{(moreColumn?.links ?? utilityNav).map((item) => (
-							<li key={item.label}>
-								<Link
-									href={item.href}
-									variant="plain"
-									target={"external" in item && item.external ? "_blank" : undefined}
-									rel={"external" in item && item.external ? "noreferrer" : undefined}
-									className="text-muted-foreground no-underline! transition-colors hover:text-foreground"
+					collisionPadding={16}
+					className={cn(
+						"border border-border bg-popover p-2 text-popover-foreground shadow-lg",
+						columnWidthClass(columns.length),
+					)}
+				>
+					<nav aria-label={`${group.title} menu`}>
+						<div
+							className={cn(
+								"grid divide-y divide-border overflow-hidden rounded-md border border-border lg:divide-x lg:divide-y-0",
+								columnGridClass(columns.length),
+							)}
+						>
+							{columns.map((column, index) => (
+								<DropdownMenu.Group
+									key={column.title || `column-${index}`}
+									className="min-w-0 p-3 xl:p-4"
 								>
-									{item.label}
-								</Link>
-							</li>
-						))}
-					</ul>
-				</div>
+									{column.title ? (
+										<DropdownMenu.Label className="mb-3 px-0 text-[13px] font-medium text-muted-foreground">
+											{column.title}
+										</DropdownMenu.Label>
+									) : null}
+									{column.links.map((item) => (
+										<DropdownMenu.LinkItem
+											key={`${column.title}-${item.label}-${item.href}`}
+											href={item.href}
+											target={item.external ? "_blank" : undefined}
+											rel={item.external ? "noreferrer" : undefined}
+											className="flex-col items-start gap-0.5 rounded-md px-2 py-2 text-foreground"
+										>
+											<span className="text-sm font-medium leading-snug">
+												{item.label}
+											</span>
+											{item.description && (
+												<span className="text-xs leading-snug text-muted-foreground">
+													{item.description}
+												</span>
+											)}
+										</DropdownMenu.LinkItem>
+									))}
+								</DropdownMenu.Group>
+							))}
+						</div>
+					</nav>
+
+					<div className="mt-2 flex flex-col gap-3 border-t border-border px-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+						<div className="flex flex-wrap items-center gap-2">
+							{group.href && (
+								<LinkButton
+									href={group.href}
+									variant="ghost"
+									size="sm"
+									className="text-primary"
+								>
+									See all {group.title.toLowerCase()}
+									<ArrowRight className="size-3.5" aria-hidden="true" />
+								</LinkButton>
+							)}
+						</div>
+						<ul className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground">
+							{(moreColumn?.links ?? utilityNav).map((item) => (
+								<li key={item.label}>
+									<Link
+										href={item.href}
+										variant="plain"
+										target={"external" in item && item.external ? "_blank" : undefined}
+										rel={"external" in item && item.external ? "noreferrer" : undefined}
+										className="text-muted-foreground no-underline! transition-colors hover:text-foreground"
+									>
+										{item.label}
+									</Link>
+								</li>
+							))}
+						</ul>
+					</div>
 				</DropdownMenu.Content>
 			</DropdownMenu>
 		</div>
@@ -284,19 +330,28 @@ function MobileMenu({
 									</Link>
 								) : (
 									<details className="group rounded-md">
-										<summary className="flex cursor-pointer list-none items-center justify-between rounded-md px-2 py-3 text-base font-medium hover:bg-foreground/[0.06] [&::-webkit-details-marker]:hidden">
-											{group.title}
+										<summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-md px-2 py-3 text-base font-medium hover:bg-foreground/[0.06] [&::-webkit-details-marker]:hidden">
+											<Link
+												href={group.href ?? "/"}
+												variant="plain"
+												onClick={onClose}
+												className="flex-1 text-base font-medium text-foreground no-underline!"
+											>
+												{group.title}
+											</Link>
 											<CaretDown
 												className="size-4 text-muted-foreground transition-transform group-open:rotate-180"
 												aria-hidden="true"
 											/>
 										</summary>
 										<div className="pb-2 pl-2">
-											{group.columns.map((column) => (
-												<div key={column.title} className="mb-2">
-													<p className="px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-														{column.title}
-													</p>
+											{group.columns.map((column, index) => (
+												<div key={column.title || `column-${index}`} className="mb-2">
+													{column.title ? (
+														<p className="px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+															{column.title}
+														</p>
+													) : null}
 													<ul>
 														{column.links.map((item) => (
 															<li key={`${column.title}-${item.label}-${item.href}`}>
@@ -379,20 +434,52 @@ function MobileMenu({
 export function SiteHeader() {
 	const pathname = usePathname();
 	const [mobileOpen, setMobileOpen] = React.useState(false);
+	// One shared menu state: hovering any item switches the open panel, so no
+	// item can be left in a stale "open" state that never re-opens.
+	const [openGroup, setOpenGroup] = React.useState<string | null>(null);
+	const closeTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+	const cancelClose = React.useCallback(() => {
+		if (closeTimer.current) {
+			clearTimeout(closeTimer.current);
+			closeTimer.current = null;
+		}
+	}, []);
+
+	const openMenu = React.useCallback(
+		(title: string) => {
+			cancelClose();
+			setOpenGroup(title);
+		},
+		[cancelClose],
+	);
+
+	const scheduleClose = React.useCallback(() => {
+		cancelClose();
+		closeTimer.current = setTimeout(() => setOpenGroup(null), 300);
+	}, [cancelClose]);
+
+	const closeMenu = React.useCallback(() => {
+		cancelClose();
+		setOpenGroup(null);
+	}, [cancelClose]);
+
+	React.useEffect(() => cancelClose, [cancelClose]);
 
 	React.useEffect(() => {
 		setMobileOpen(false);
+		setOpenGroup(null);
 	}, [pathname]);
 
 	return (
-		<header className="sticky top-0 z-50 border-b border-border bg-background text-foreground">
+		<header className="relative border-b border-border bg-background text-foreground">
 			<Container>
-				<div className="grid h-16 grid-cols-[auto_1fr_auto] items-center gap-6">
+				<div className="grid h-16 grid-cols-[1fr_auto_1fr] items-center gap-6">
 					<Link
 						href="/"
 						variant="plain"
 						aria-label="ZenthCloud home"
-						className="flex shrink-0 items-center no-underline!"
+						className="flex shrink-0 items-center justify-self-start no-underline!"
 					>
 						<span className="font-display text-sm font-semibold uppercase tracking-[0.24em] text-foreground">
 							ZenthCloud
@@ -400,18 +487,29 @@ export function SiteHeader() {
 					</Link>
 
 					<div className="hidden justify-center lg:flex">
-						<nav aria-label="Main">
+						<nav
+							aria-label="Main"
+							onPointerEnter={cancelClose}
+							onPointerLeave={scheduleClose}
+						>
 							<ul className="flex items-center gap-8">
 								{mainNav.map((group) => (
 									<li key={group.title}>
-										<DesktopNavItem group={group} pathname={pathname} />
+										<DesktopNavItem
+											group={group}
+											pathname={pathname}
+											open={openGroup === group.title}
+											onOpen={openMenu}
+											onClose={closeMenu}
+											onScheduleClose={scheduleClose}
+										/>
 									</li>
 								))}
 							</ul>
 						</nav>
 					</div>
 
-					<div className="ml-auto flex items-center gap-4 justify-self-end">
+					<div className="flex items-center gap-4 justify-self-end">
 						<nav aria-label="Utility" className="hidden items-center gap-2.5 md:flex">
 							<HeaderPill
 								href={cta.signIn.href}
