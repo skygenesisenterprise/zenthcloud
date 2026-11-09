@@ -18,11 +18,11 @@ export const KUMO_CHECKBOX_VARIANTS = {
   variant: {
     default: {
       classes:
-        "[&:focus-within>span]:ring-kumo-focus [&:hover>span]:ring-kumo-hairline",
+        "[&:focus-within>span]:ring-zenth-focus [&:hover>span]:ring-zenth-hairline",
       description: "Default checkbox appearance",
     },
     error: {
-      classes: "[&>span]:ring-kumo-danger",
+      classes: "[&>span]:ring-zenth-danger",
       description: "Error state for validation failures",
     },
   },
@@ -33,7 +33,7 @@ export const KUMO_CHECKBOX_VARIANTS = {
     },
     card: {
       classes:
-        "rounded-lg border border-kumo-hairline bg-kumo-base p-3 hover:not-has-[[data-checked]]:bg-kumo-elevated has-[[data-checked]]:border-kumo-interact has-[[data-checked]]:bg-kumo-tint",
+        "rounded-lg border border-zenth-hairline bg-zenth-base p-3 hover:not-has-[[data-checked]]:bg-zenth-elevated has-[[data-checked]]:border-zenth-interact has-[[data-checked]]:bg-zenth-tint",
       description:
         "Choice card appearance with border, padding, and highlighted selection state",
     },
@@ -320,19 +320,19 @@ const CheckboxBase = forwardRef<HTMLButtonElement, CheckboxProps>(
     const checkboxControl = (
       <BaseCheckbox.Root
         ref={ref}
-        data-kumo-component="Checkbox"
+        data-zenth-component="Checkbox"
         name={name}
         checked={checked}
         indeterminate={indeterminate}
         disabled={disabled}
         onCheckedChange={onCheckedChange}
         className={cn(
-          "relative flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border-0 bg-kumo-base ring after:absolute after:-inset-x-3 after:-inset-y-2 focus:outline-hidden",
+          "relative flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border-0 bg-zenth-base ring after:absolute after:-inset-x-3 after:-inset-y-2 focus:outline-hidden",
           label && "mt-0.5",
-          variant === "error" ? "ring-kumo-danger" : "ring-kumo-hairline",
+          variant === "error" ? "ring-zenth-danger" : "ring-zenth-hairline",
           !disabled &&
-            "hover:ring-kumo-hairline focus:ring-2 focus:ring-kumo-focus focus-visible:ring-2 focus-visible:ring-kumo-brand",
-          "data-[checked]:bg-kumo-contrast data-[checked]:ring-kumo-contrast data-[indeterminate]:bg-kumo-contrast data-[indeterminate]:ring-kumo-contrast",
+            "hover:ring-zenth-hairline focus:ring-2 focus:ring-zenth-focus focus-visible:ring-2 focus-visible:ring-zenth-brand",
+          "data-[checked]:bg-zenth-contrast data-[checked]:ring-zenth-contrast data-[indeterminate]:bg-zenth-contrast data-[indeterminate]:ring-zenth-contrast",
           disabled && "cursor-not-allowed opacity-50",
           className,
         )}
@@ -340,7 +340,7 @@ const CheckboxBase = forwardRef<HTMLButtonElement, CheckboxProps>(
       >
         <BaseCheckbox.Indicator
           keepMounted
-          className="flex items-center justify-center text-kumo-inverse data-[unchecked]:invisible"
+          className="flex items-center justify-center text-zenth-inverse data-[unchecked]:invisible"
           render={(renderProps, state) => (
             <span {...renderProps}>
               {state.indeterminate ? (
@@ -422,7 +422,7 @@ const CheckboxItem = forwardRef<HTMLButtonElement, CheckboxItemProps>(
     const indicator = (
       <BaseCheckbox.Indicator
         keepMounted
-        className="flex items-center justify-center text-kumo-inverse data-[unchecked]:invisible"
+        className="flex items-center justify-center text-zenth-inverse data-[unchecked]:invisible"
         render={(renderProps, state) => (
           <span {...renderProps}>
             {state.indeterminate ? (
@@ -438,28 +438,28 @@ const CheckboxItem = forwardRef<HTMLButtonElement, CheckboxItemProps>(
     if (isCard) {
       return (
         <label
-          data-kumo-component="Checkbox"
-          data-kumo-part="item-label"
+          data-zenth-component="Checkbox"
+          data-zenth-part="item-label"
           className={cn(
-            "group relative m-0 flex items-start gap-3 bg-kumo-base p-3 has-[[data-checked]]:bg-kumo-tint",
+            "group relative m-0 flex items-start gap-3 bg-zenth-base p-3 has-[[data-checked]]:bg-zenth-tint",
             isJoined
               ? cn(
                   // bg-clip-padding keeps the checked tint from darkening the
                   // translucent dividers.
-                  "border-b border-kumo-line bg-clip-padding last:border-b-0",
+                  "border-b border-zenth-line bg-clip-padding last:border-b-0",
                   // Two-column grid: the left column draws the column divider
                   // (unless it's a lone last item), and the last row drops its
                   // bottom divider.
                   orientation === "horizontal" &&
                     "odd:border-r [&:last-child:nth-child(odd)]:border-r-0 [&:nth-last-child(2):nth-child(odd)]:border-b-0",
                 )
-              : "rounded-lg border border-kumo-hairline has-[[data-checked]]:border-kumo-interact",
+              : "rounded-lg border border-zenth-hairline has-[[data-checked]]:border-zenth-interact",
             controlFirst && "flex-row-reverse",
             variant === "error" &&
               cn(
-                "has-[[data-checked]]:bg-kumo-base",
+                "has-[[data-checked]]:bg-zenth-base",
                 !isJoined &&
-                  "border-kumo-danger has-[[data-checked]]:border-kumo-danger",
+                  "border-zenth-danger has-[[data-checked]]:border-zenth-danger",
               ),
             disabled
               ? "cursor-not-allowed opacity-50"
@@ -467,25 +467,25 @@ const CheckboxItem = forwardRef<HTMLButtonElement, CheckboxItemProps>(
                   "cursor-pointer has-[[data-disabled]]:cursor-not-allowed has-[[data-disabled]]:opacity-50",
                   // The checked row keeps its tint while hovered.
                   variant !== "error" &&
-                    "hover:not-has-[[data-disabled]]:not-has-[[data-checked]]:bg-kumo-elevated",
+                    "hover:not-has-[[data-disabled]]:not-has-[[data-checked]]:bg-zenth-elevated",
                 ),
             className,
           )}
         >
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-            <span className="text-base font-medium text-kumo-default">
+            <span className="text-base font-medium text-zenth-default">
               {label}
             </span>
             {description && (
-              <span className="text-sm leading-snug text-pretty text-kumo-subtle">
+              <span className="text-sm leading-snug text-pretty text-zenth-subtle">
                 {description}
               </span>
             )}
           </div>
           <BaseCheckbox.Root
             ref={ref}
-            data-kumo-component="Checkbox"
-            data-kumo-part="item"
+            data-zenth-component="Checkbox"
+            data-zenth-part="item"
             value={value}
             name={name}
             checked={checked}
@@ -493,12 +493,12 @@ const CheckboxItem = forwardRef<HTMLButtonElement, CheckboxItemProps>(
             disabled={disabled}
             onCheckedChange={onCheckedChange}
             className={cn(
-              "relative mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border-0 bg-kumo-base ring focus:ring-kumo-focus focus:outline-hidden focus-visible:ring-2 focus-visible:ring-kumo-brand",
-              variant === "error" ? "ring-kumo-danger" : "ring-kumo-line",
+              "relative mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border-0 bg-zenth-base ring focus:ring-zenth-focus focus:outline-hidden focus-visible:ring-2 focus-visible:ring-zenth-brand",
+              variant === "error" ? "ring-zenth-danger" : "ring-zenth-line",
               !disabled &&
                 variant !== "error" &&
-                "group-hover:ring-kumo-hairline",
-              "data-[checked]:bg-kumo-contrast data-[checked]:ring-kumo-contrast data-[indeterminate]:bg-kumo-contrast data-[indeterminate]:ring-kumo-contrast",
+                "group-hover:ring-zenth-hairline",
+              "data-[checked]:bg-zenth-contrast data-[checked]:ring-zenth-contrast data-[indeterminate]:bg-zenth-contrast data-[indeterminate]:ring-zenth-contrast",
             )}
           >
             {indicator}
@@ -509,8 +509,8 @@ const CheckboxItem = forwardRef<HTMLButtonElement, CheckboxItemProps>(
 
     return (
       <label
-        data-kumo-component="Checkbox"
-        data-kumo-part="item-label"
+        data-zenth-component="Checkbox"
+        data-zenth-part="item-label"
         className={cn(
           "relative m-0 inline-flex items-start gap-2",
           // Control first (default): checkbox before label
@@ -522,8 +522,8 @@ const CheckboxItem = forwardRef<HTMLButtonElement, CheckboxItemProps>(
       >
         <BaseCheckbox.Root
           ref={ref}
-          data-kumo-component="Checkbox"
-          data-kumo-part="item"
+          data-zenth-component="Checkbox"
+          data-zenth-part="item"
           value={value}
           name={name}
           checked={checked}
@@ -531,16 +531,16 @@ const CheckboxItem = forwardRef<HTMLButtonElement, CheckboxItemProps>(
           disabled={disabled}
           onCheckedChange={onCheckedChange}
           className={cn(
-            "peer relative mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border-0 bg-kumo-base ring after:absolute after:-inset-x-3 after:-inset-y-2",
-            variant === "error" ? "ring-kumo-danger" : "ring-kumo-hairline",
+            "peer relative mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border-0 bg-zenth-base ring after:absolute after:-inset-x-3 after:-inset-y-2",
+            variant === "error" ? "ring-zenth-danger" : "ring-zenth-hairline",
             !disabled &&
-              "group-hover:ring-kumo-hairline hover:ring-kumo-hairline focus:ring-2 focus:ring-kumo-focus focus-visible:ring-2 focus-visible:ring-kumo-brand",
-            "data-[checked]:bg-kumo-contrast data-[checked]:ring-kumo-contrast data-[indeterminate]:bg-kumo-contrast data-[indeterminate]:ring-kumo-contrast",
+              "group-hover:ring-zenth-hairline hover:ring-zenth-hairline focus:ring-2 focus:ring-zenth-focus focus-visible:ring-2 focus-visible:ring-zenth-brand",
+            "data-[checked]:bg-zenth-contrast data-[checked]:ring-zenth-contrast data-[indeterminate]:bg-zenth-contrast data-[indeterminate]:ring-zenth-contrast",
           )}
         >
           {indicator}
         </BaseCheckbox.Root>
-        <span className="text-base text-kumo-default">{label}</span>
+        <span className="text-base text-zenth-default">{label}</span>
       </label>
     );
   },
@@ -552,7 +552,7 @@ CheckboxItem.displayName = "Checkbox.Item";
 function CheckboxLegend({ children, className }: CheckboxLegendProps) {
   return (
     <Fieldset.Legend
-      className={cn("text-base font-medium text-kumo-default", className)}
+      className={cn("text-base font-medium text-zenth-default", className)}
     >
       {children}
     </Fieldset.Legend>
@@ -597,7 +597,7 @@ function CheckboxGroup({
           )}
         >
           {legend && (
-            <Fieldset.Legend className="text-base font-medium text-kumo-default">
+            <Fieldset.Legend className="text-base font-medium text-zenth-default">
               {legend}
             </Fieldset.Legend>
           )}
@@ -605,18 +605,18 @@ function CheckboxGroup({
             className={cn(
               orientation === "vertical"
                 ? appearance === "card"
-                  ? "flex flex-col overflow-hidden rounded-lg ring ring-kumo-line"
+                  ? "flex flex-col overflow-hidden rounded-lg ring ring-zenth-line"
                   : "flex flex-col gap-2"
                 : appearance === "card"
-                  ? "grid grid-cols-2 overflow-hidden rounded-lg bg-kumo-base ring ring-kumo-line"
+                  ? "grid grid-cols-2 overflow-hidden rounded-lg bg-zenth-base ring ring-zenth-line"
                   : "flex flex-row flex-wrap gap-2",
             )}
           >
             {children}
           </div>
-          {error && <p className="text-sm text-kumo-danger">{error}</p>}
+          {error && <p className="text-sm text-zenth-danger">{error}</p>}
           {description && (
-            <p className="text-sm leading-snug text-pretty text-kumo-subtle">
+            <p className="text-sm leading-snug text-pretty text-zenth-subtle">
               {description}
             </p>
           )}

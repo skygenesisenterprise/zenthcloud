@@ -50,32 +50,32 @@ export const KUMO_BUTTON_VARIANTS = {
   variant: {
     primary: {
       classes:
-        "relative overflow-hidden bg-(--kumo-button-emphasis-bg) !text-white ring ring-(--kumo-button-emphasis-ring) focus:ring-(--kumo-button-emphasis-ring) focus-visible:ring-(--kumo-button-emphasis-ring) active:ring-(--kumo-button-emphasis-ring) disabled:opacity-50",
+        "relative overflow-hidden bg-(--zenth-button-emphasis-bg) !text-white ring ring-(--zenth-button-emphasis-ring) focus:ring-(--zenth-button-emphasis-ring) focus-visible:ring-(--zenth-button-emphasis-ring) active:ring-(--zenth-button-emphasis-ring) disabled:opacity-50",
       description: "High-emphasis button for primary actions",
     },
     secondary: {
       classes:
-        "bg-kumo-base !text-kumo-default ring not-disabled:hover:bg-kumo-tint disabled:bg-kumo-base/50 disabled:!text-kumo-default/70 ring-kumo-line data-[state=open]:bg-kumo-base",
+        "bg-zenth-base !text-zenth-default ring not-disabled:hover:bg-zenth-tint disabled:bg-zenth-base/50 disabled:!text-zenth-default/70 ring-zenth-line data-[state=open]:bg-zenth-base",
       description: "Default button style for most actions",
     },
     ghost: {
-      classes: "text-kumo-default hover:bg-kumo-tint shadow-none bg-inherit",
+      classes: "text-zenth-default hover:bg-zenth-tint shadow-none bg-inherit",
       description: "Minimal button with no background",
     },
     destructive: {
       classes:
-        "relative overflow-hidden bg-(--kumo-button-emphasis-bg) !text-white ring ring-(--kumo-button-emphasis-ring) focus:ring-(--kumo-button-emphasis-ring) focus-visible:ring-(--kumo-button-emphasis-ring) active:ring-(--kumo-button-emphasis-ring) disabled:opacity-50",
+        "relative overflow-hidden bg-(--zenth-button-emphasis-bg) !text-white ring ring-(--zenth-button-emphasis-ring) focus:ring-(--zenth-button-emphasis-ring) focus-visible:ring-(--zenth-button-emphasis-ring) active:ring-(--zenth-button-emphasis-ring) disabled:opacity-50",
       description: "Danger button for destructive actions like delete",
     },
     "secondary-destructive": {
       classes:
-        "bg-kumo-base !text-kumo-danger ring not-disabled:hover:!text-kumo-danger not-disabled:hover:ring-kumo-danger/30 disabled:bg-kumo-base/50 disabled:!text-kumo-danger/70 ring-kumo-line data-[state=open]:bg-kumo-base",
+        "bg-zenth-base !text-zenth-danger ring not-disabled:hover:!text-zenth-danger not-disabled:hover:ring-zenth-danger/30 disabled:bg-zenth-base/50 disabled:!text-zenth-danger/70 ring-zenth-line data-[state=open]:bg-zenth-base",
       description:
         "Secondary button with destructive text for less prominent dangerous actions",
     },
     outline: {
       classes:
-        "bg-transparent text-kumo-default ring ring-kumo-line transition-colors not-disabled:hover:text-kumo-strong not-disabled:hover:ring-kumo-focus/25",
+        "bg-transparent text-zenth-default ring ring-zenth-line transition-colors not-disabled:hover:text-zenth-strong not-disabled:hover:ring-zenth-focus/25",
       description: "Bordered button with transparent background",
     },
   },
@@ -134,10 +134,10 @@ export function buttonVariants({
     // Base styles
     "group flex w-max shrink-0 items-center font-medium select-none",
     "border-0 shadow-xs",
-    "focus:ring-kumo-focus/50 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-kumo-brand",
+    "focus:ring-zenth-focus/50 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-zenth-brand",
     "cursor-pointer",
     // Disabled state
-    "disabled:cursor-not-allowed disabled:text-kumo-subtle",
+    "disabled:cursor-not-allowed disabled:text-zenth-subtle",
     resolveVariant(
       KUMO_BUTTON_VARIANTS.size,
       size,
@@ -165,10 +165,10 @@ export function buttonVariants({
 // Lowercase text sits below its line box's center, so lift the content row
 // with bottom padding to optically center the text in the button.
 const TEXT_LIFT_CLASSES: Record<KumoButtonSize, string> = {
-  xs: "pb-px [--kumo-button-text-lift:0.5px]",
-  sm: "pb-px [--kumo-button-text-lift:0.5px]",
-  base: "pb-0.5 [--kumo-button-text-lift:1px]",
-  lg: "pb-0.5 [--kumo-button-text-lift:1px]",
+  xs: "pb-px [--zenth-button-text-lift:0.5px]",
+  sm: "pb-px [--zenth-button-text-lift:0.5px]",
+  base: "pb-0.5 [--zenth-button-text-lift:1px]",
+  lg: "pb-0.5 [--zenth-button-text-lift:1px]",
 };
 
 // Icons carry built-in whitespace inside their viewBox, so trim the leading
@@ -184,7 +184,7 @@ const ICON_LEADING_PADDING: Record<KumoButtonSize, string> = {
 // of the flex row: the button itself, or the inner `span.relative` for
 // emphasis variants.
 const ICON_CENTER_CLASSES =
-  "[&>svg:first-child]:translate-y-(--kumo-button-text-lift) [&>span.relative>svg:first-child]:translate-y-(--kumo-button-text-lift)";
+  "[&>svg:first-child]:translate-y-(--zenth-button-text-lift) [&>span.relative>svg:first-child]:translate-y-(--zenth-button-text-lift)";
 
 const getTextClasses = (
   shape: KumoButtonShape,
@@ -212,8 +212,8 @@ const renderIconNode = (iconProp?: Icon | React.ReactNode) => {
 };
 
 const getEmphasisToken = (variant: KumoButtonVariant) => {
-  if (variant === "primary") return "var(--color-kumo-brand)";
-  if (variant === "destructive") return "var(--color-kumo-danger)";
+  if (variant === "primary") return "var(--color-zenth-brand)";
+  if (variant === "destructive") return "var(--color-zenth-danger)";
   return undefined;
 };
 
@@ -222,10 +222,10 @@ const getEmphasisStyle = (variant: KumoButtonVariant) => {
   if (!token) return undefined;
 
   return {
-    "--kumo-button-emphasis-ring": `color-mix(in oklch, ${token}, black 10%)`,
-    "--kumo-button-emphasis-bg": `color-mix(in oklch, ${token}, white 30%)`,
-    "--kumo-button-emphasis-gradient-start": `color-mix(in oklch, ${token}, white 15%)`,
-    "--kumo-button-emphasis-gradient-end": token,
+    "--zenth-button-emphasis-ring": `color-mix(in oklch, ${token}, black 10%)`,
+    "--zenth-button-emphasis-bg": `color-mix(in oklch, ${token}, white 30%)`,
+    "--zenth-button-emphasis-gradient-start": `color-mix(in oklch, ${token}, white 15%)`,
+    "--zenth-button-emphasis-gradient-end": token,
   } satisfies React.CSSProperties & Record<`--${string}`, string>;
 };
 
@@ -277,7 +277,7 @@ const renderButtonContent = (
     <>
       <span
         aria-hidden="true"
-        className="absolute inset-0 rounded-[inherit] bg-linear-to-b from-(--kumo-button-emphasis-gradient-start) to-(--kumo-button-emphasis-gradient-end) shadow-[inset_0_1px_0_0_var(--kumo-button-emphasis-bg)] group-hover:from-(--kumo-button-emphasis-bg)"
+        className="absolute inset-0 rounded-[inherit] bg-linear-to-b from-(--zenth-button-emphasis-gradient-start) to-(--zenth-button-emphasis-gradient-end) shadow-[inset_0_1px_0_0_var(--zenth-button-emphasis-bg)] group-hover:from-(--zenth-button-emphasis-bg)"
       />
       <span className="relative flex items-center gap-1.5">
         {iconNode}
@@ -426,7 +426,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const button = (
       <button
         ref={ref}
-        data-kumo-component="Button"
+        data-zenth-component="Button"
         className={cn(
           buttonVariants({ variant, size, shape }),
           getTextClasses(shape, size, iconNode, children),
@@ -476,7 +476,7 @@ export const RefreshButton = ({
   <Button shape="square" aria-label={ariaLabel} {...props}>
     <ArrowsClockwise
       className={cn({
-        "animate-refresh": loading,
+        "zenth-animate-refresh": loading,
         "size-4.5": props.size === "base" || !props.size,
         "size-4": props.size === "sm",
         "size-5": props.size === "lg",
@@ -524,7 +524,7 @@ export const LinkButton = React.forwardRef<HTMLAnchorElement, LinkButtonProps>(
         <Button
           {...toDisabledButtonProps(props)}
           className={cn("select-text", className)}
-          data-kumo-component="LinkButton"
+          data-zenth-component="LinkButton"
           disabled
           icon={IconComponent}
           shape={shape as "base"}
@@ -542,7 +542,7 @@ export const LinkButton = React.forwardRef<HTMLAnchorElement, LinkButtonProps>(
     const link = (
       <LinkComponent
         ref={ref}
-        data-kumo-component="LinkButton"
+        data-zenth-component="LinkButton"
         className={cn(
           buttonVariants({ variant, size, shape }),
           getTextClasses(shape, size, iconNode, children),

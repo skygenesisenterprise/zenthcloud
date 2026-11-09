@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { Inter, Lexend } from "next/font/google";
 import type { ReactNode } from "react";
+import "@zenthcloud/react/styles.css";
 import "@/styles/tailwind.css";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
-import { ThemeProvider, themeInitScript } from "@/components/site/ThemeProvider";
+import { ThemeProvider } from "@/components/site/ThemeProvider";
+import { ZenthProvider } from "@/components/site/ZenthProvider";
 import { SITE_URL } from "@/lib/domain/queries";
 
 const inter = Inter({
@@ -51,35 +53,40 @@ export const metadata: Metadata = {
 	},
 };
 
+/**
+ * The public site is light-only. Declaring the mode here — `data-mode`,
+ * `data-zenth-mode`, `color-scheme: light` through the light token block — makes
+ * every page resolve the light values of the library's `light-dark()` tokens,
+ * regardless of the visitor's OS preference or a legacy theme cookie. The dark
+ * theme remains in the design system, unused by the public site.
+ */
 export default function RootLayout({ children }: { children: ReactNode }) {
 	return (
 		<html
 			lang="en"
+			data-zenth-mode="light"
+			data-mode="light"
 			className={`${inter.variable} ${lexend.variable}`}
 			suppressHydrationWarning
 		>
-			<head>
-				<script
-					// Applies the stored theme before first paint.
-					dangerouslySetInnerHTML={{ __html: themeInitScript }}
-				/>
-			</head>
-			<body>
-				<ThemeProvider>
-					<a
-						href="#main-content"
-						className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground"
-					>
-						Skip to content
-					</a>
-					<div className="flex min-h-svh flex-col">
-						<SiteHeader />
-						<main id="main-content" tabIndex={-1} className="flex-1">
-							{children}
-						</main>
-						<SiteFooter />
-					</div>
-				</ThemeProvider>
+			<body className="bg-background text-foreground">
+				<ZenthProvider>
+					<ThemeProvider initialTheme="light">
+						<a
+							href="#main-content"
+							className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground"
+						>
+							Skip to content
+						</a>
+						<div className="flex min-h-svh flex-col bg-background">
+							<SiteHeader />
+							<main id="main-content" tabIndex={-1} className="flex-1">
+								{children}
+							</main>
+							<SiteFooter />
+						</div>
+					</ThemeProvider>
+				</ZenthProvider>
 			</body>
 		</html>
 	);

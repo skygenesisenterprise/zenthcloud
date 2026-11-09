@@ -10,9 +10,11 @@ import type { SearchEntry } from "@/lib/content/search-index";
 export function SiteSearch({
 	entries,
 	variant = "default",
+	className,
 }: {
 	entries: SearchEntry[];
 	variant?: "default" | "icon";
+	className?: string;
 }) {
 	const iconOnly = variant === "icon";
 	const [open, setOpen] = React.useState(false);
@@ -57,11 +59,14 @@ export function SiteSearch({
 			<Dialog.Trigger asChild>
 				<button
 					type="button"
-					className={
+					className={[
 						iconOnly
-							? "inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-foreground/65 transition-colors hover:bg-ink-foreground/10 hover:text-ink-foreground"
-							: "inline-flex h-9 items-center gap-2 rounded-md border border-border px-2.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:min-w-52 md:justify-start"
-					}
+							? "inline-flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground/65 transition-colors hover:bg-accent/10 hover:text-muted-foreground"
+							: "inline-flex h-9 items-center gap-2 rounded-md border border-border px-2.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:min-w-52 md:justify-start",
+						className,
+					]
+						.filter(Boolean)
+						.join(" ")}
 					aria-label="Search the site"
 				>
 					<Search className="h-4 w-4" aria-hidden="true" />

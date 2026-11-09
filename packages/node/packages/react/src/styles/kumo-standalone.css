@@ -1,8 +1,8 @@
-@import "tailwindcss";
-@import "./kumo-binding.css";
-
-/* 
- * Kumo Standalone CSS
- * This file will be compiled to standard CSS for non-Tailwind applications.
- * It includes all Tailwind utilities and Kumo component styles.
+/**
+ * @deprecated Use `@zenthcloud/react/styles.css` instead.
+ *
+ * Legacy standalone entry kept for applications upgrading from
+ * `@zenthcloud/kumo/styles/standalone`. It now maps to the same compiled
+ * stylesheet as `styles.css`.
  */
+@import "./index.css";

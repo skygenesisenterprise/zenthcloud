@@ -36,7 +36,7 @@ export function sliderVariants({
   size = KUMO_SLIDER_DEFAULT_VARIANTS.size,
 }: KumoSliderVariantsProps = {}) {
   return cn(
-    "bg-kumo-recessed p-[3px] ring ring-kumo-line",
+    "bg-zenth-recessed p-[3px] ring ring-zenth-line",
     KUMO_SLIDER_VARIANTS.size[size].classes,
   );
 }
@@ -120,7 +120,7 @@ export function Slider<Value extends SliderValue = SliderValue>({
     >
       {label ? (
         <BaseSlider.Label
-          className={cn("font-medium text-kumo-default", textSize)}
+          className={cn("font-medium text-zenth-default", textSize)}
         >
           {label}
         </BaseSlider.Label>
@@ -137,7 +137,7 @@ export function Slider<Value extends SliderValue = SliderValue>({
                 // stretches it over the whole thumb, so it fills the track at
                 // either end of the range. `box-content` is forced because global
                 // `* { box-sizing: border-box }` resets would otherwise win.
-                "box-content! bg-kumo-overlay pr-2 shadow-sm ring ring-kumo-line",
+                "box-content! bg-zenth-overlay pr-2 shadow-sm ring ring-zenth-line",
                 isRange && "-ml-2 pl-2",
                 innerRadius,
               )}
@@ -148,20 +148,20 @@ export function Slider<Value extends SliderValue = SliderValue>({
                 index={isRange ? index : undefined}
                 getAriaLabel={getAriaLabel}
                 className={cn(
-                  "group h-full w-4 cursor-grab outline-none has-focus-visible:ring-2 has-focus-visible:ring-kumo-focus has-focus-visible:outline-hidden data-disabled:cursor-not-allowed data-dragging:cursor-grabbing",
+                  "group h-full w-4 cursor-grab outline-none has-focus-visible:ring-2 has-focus-visible:ring-zenth-focus has-focus-visible:outline-hidden data-disabled:cursor-not-allowed data-dragging:cursor-grabbing",
                   innerRadius,
                 )}
               >
                 <span
                   aria-hidden
-                  className="absolute top-1/2 left-1/2 h-1/2 w-0.5 -translate-1/2 rounded-full bg-kumo-contrast/25"
+                  className="absolute top-1/2 left-1/2 h-1/2 w-0.5 -translate-1/2 rounded-full bg-zenth-contrast/25"
                 />
                 <span
                   aria-hidden
                   className={cn(
                     // The 8px gap plus the control's 3px padding, so the badge lines up
                     // with the min and max labels below the control.
-                    "absolute top-full left-1/2 mt-[11px] -translate-x-1/2 rounded bg-kumo-contrast px-1.5 font-medium whitespace-nowrap text-kumo-inverse tabular-nums group-data-disabled:bg-kumo-fill group-data-disabled:text-kumo-default",
+                    "absolute top-full left-1/2 mt-[11px] -translate-x-1/2 rounded bg-zenth-contrast px-1.5 font-medium whitespace-nowrap text-zenth-inverse tabular-nums group-data-disabled:bg-zenth-fill group-data-disabled:text-zenth-default",
                     textSize,
                   )}
                 >
@@ -177,7 +177,7 @@ export function Slider<Value extends SliderValue = SliderValue>({
       <div
         aria-hidden
         className={cn(
-          "flex justify-between text-kumo-subtle tabular-nums",
+          "flex justify-between text-zenth-subtle tabular-nums",
           textSize,
         )}
       >

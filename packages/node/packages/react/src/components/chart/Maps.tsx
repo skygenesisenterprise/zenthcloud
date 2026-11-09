@@ -142,7 +142,7 @@ function getMapName(geoJson: MapGeoJson, mapName?: string) {
   const existing = geoJsonMapNames.get(geoJson);
   if (existing) return existing;
 
-  const generated = `kumo-map-${hashString(JSON.stringify(geoJson))}`;
+  const generated = `zenth-map-${hashString(JSON.stringify(geoJson))}`;
   geoJsonMapNames.set(geoJson, generated);
   return generated;
 }
@@ -447,12 +447,12 @@ function BubbleMapRoot<T>(
         ? {
             trigger: "item",
             triggerOn: "mousemove",
-            backgroundColor: "var(--color-kumo-base)",
-            borderColor: "var(--color-kumo-line)",
+            backgroundColor: "var(--color-zenth-base)",
+            borderColor: "var(--color-zenth-line)",
             borderWidth: 1,
             padding: 8,
             textStyle: {
-              color: "var(--text-color-kumo-default)",
+              color: "var(--text-color-zenth-default)",
               fontSize: 13,
             },
             extraCssText: "border-radius: 0.5rem;",
@@ -474,7 +474,7 @@ function BubbleMapRoot<T>(
                 : "";
               const valueStr =
                 v !== undefined
-                  ? `<span style="color:var(--text-color-kumo-subtle)">${escapeHtml(valueFormat(v))}</span>`
+                  ? `<span style="color:var(--text-color-zenth-subtle)">${escapeHtml(valueFormat(v))}</span>`
                   : "";
               return `<div style="display:flex;flex-direction:column;gap:2px;">${nameStr}${valueStr}</div>`;
             },
@@ -852,12 +852,12 @@ function ChoroplethMapRoot<T>(
         ? {
             trigger: "item",
             triggerOn: "mousemove",
-            backgroundColor: "var(--color-kumo-base)",
-            borderColor: "var(--color-kumo-line)",
+            backgroundColor: "var(--color-zenth-base)",
+            borderColor: "var(--color-zenth-line)",
             borderWidth: 1,
             padding: 8,
             textStyle: {
-              color: "var(--text-color-kumo-default)",
+              color: "var(--text-color-zenth-default)",
               fontSize: 13,
             },
             extraCssText: "border-radius: 0.5rem;",
@@ -880,7 +880,7 @@ function ChoroplethMapRoot<T>(
                 : "";
               const valueStr =
                 v !== undefined
-                  ? `<span style="color:var(--text-color-kumo-subtle)">${escapeHtml(valueFormat(v))}</span>`
+                  ? `<span style="color:var(--text-color-zenth-subtle)">${escapeHtml(valueFormat(v))}</span>`
                   : "";
               return `<div style="display:flex;flex-direction:column;gap:2px;">${nameStr}${valueStr}</div>`;
             },

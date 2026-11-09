@@ -21,112 +21,114 @@ export const THEME_CONFIG: ThemeConfig = {
    * CSS variable: --text-color-{token}
    */
   text: {
-    "kumo-default": {
+    "zenth-default": {
       newName: "",
       theme: {
-        kumo: {
-          light: "var(--color-neutral-900, oklch(21% 0.006 285.885))",
-          dark: "var(--color-neutral-100, oklch(97% 0 0))",
+        zenth: {
+          light: "var(--color-zenth-neutral-900, oklch(21% 0.006 285.885))",
+          dark: "var(--color-zenth-neutral-100, oklch(97% 0 0))",
         },
       },
     },
-    "kumo-inverse": {
+    "zenth-inverse": {
       newName: "",
       theme: {
-        kumo: {
-          light: "var(--color-neutral-100, oklch(97% 0 0))",
-          dark: "var(--color-neutral-900, oklch(20.5% 0 0))",
+        zenth: {
+          light: "var(--color-zenth-neutral-100, oklch(97% 0 0))",
+          dark: "var(--color-zenth-neutral-900, oklch(20.5% 0 0))",
         },
       },
     },
-    "kumo-strong": {
+    "zenth-strong": {
       newName: "",
       theme: {
-        kumo: {
-          light: "var(--color-neutral-950, oklch(14.5% 0 0))", // darker than default
-          dark: "var(--color-neutral-50, oklch(98.5% 0 0))", // lighter than default
+        zenth: {
+          light: "var(--color-zenth-neutral-950, oklch(14.5% 0 0))", // darker than default
+          dark: "var(--color-zenth-neutral-50, oklch(98.5% 0 0))", // lighter than default
         },
       },
     },
-    "kumo-subtle": {
+    "zenth-subtle": {
       newName: "",
       theme: {
-        kumo: {
-          light: "var(--color-neutral-500, oklch(55.6% 0 0))", // lighter than default
-          dark: "var(--color-neutral-400, oklch(70.8% 0 0))", // darker than default
+        zenth: {
+          light: "var(--color-zenth-neutral-600, #5a616d)", // AA on the light canvas
+          dark: "var(--color-zenth-neutral-400, #9aa1ac)", // darker than default
         },
       },
     },
-    "kumo-inactive": {
+    "zenth-inactive": {
       newName: "",
       theme: {
-        kumo: {
-          light: "var(--color-neutral-300, oklch(87% 0 0))", // lighter than subtle
-          dark: "var(--color-neutral-600, oklch(43.9% 0 0))", // darker than subtle
+        zenth: {
+          light: "var(--color-zenth-neutral-300, oklch(87% 0 0))", // lighter than subtle
+          dark: "var(--color-zenth-neutral-600, oklch(43.9% 0 0))", // darker than subtle
         },
       },
     },
-    "kumo-placeholder": {
+    "zenth-placeholder": {
       // in between subtle and inactive
       newName: "",
       theme: {
-        kumo: {
-          light: "var(--color-neutral-400, oklch(70.8% 0 0))",
-          dark: "var(--color-neutral-500, oklch(55.6% 0 0))",
+        zenth: {
+          light: "var(--color-zenth-neutral-400, oklch(70.8% 0 0))",
+          dark: "var(--color-zenth-neutral-500, oklch(55.6% 0 0))",
         },
       },
     },
-    "kumo-brand": {
+    "zenth-brand": {
       newName: "",
+      description:
+        "ZenthCloud brand text color (blue #1769E0, lightened in dark mode)",
       theme: {
-        kumo: {
-          light: "#f6821f",
-          dark: "#f6821f",
+        zenth: {
+          light: "var(--color-zenth-blue-500, #1769e0)",
+          dark: "var(--color-zenth-blue-400, #4b91f0)",
         },
       },
     },
-    "kumo-link": {
+    "zenth-link": {
       newName: "",
       theme: {
-        kumo: {
-          light: "var(--color-blue-800, oklch(42.4% 0.199 265.638))",
-          dark: "var(--color-blue-400, oklch(70.7% 0.165 254.624))",
+        zenth: {
+          light: "var(--color-zenth-blue-800, #0b3d91)",
+          dark: "var(--color-zenth-blue-400, #4b91f0)",
         },
       },
     },
-    "kumo-info": {
+    "zenth-info": {
       newName: "",
       theme: {
-        kumo: {
-          light: "var(--color-blue-800, oklch(42.4% 0.199 265.638))",
-          dark: "var(--color-blue-400, oklch(70.7% 0.165 254.624))",
+        zenth: {
+          light: "var(--color-zenth-blue-800, #0b3d91)",
+          dark: "var(--color-zenth-blue-400, #4b91f0)",
         },
       },
     },
-    "kumo-success": {
+    "zenth-success": {
       newName: "",
       theme: {
-        kumo: {
-          light: "var(--color-emerald-800, oklch(43.2% 0.095 166.913))",
-          dark: "var(--color-emerald-200, oklch(90.5% 0.093 164.15))",
+        zenth: {
+          light: "var(--color-zenth-emerald-800, oklch(43.2% 0.095 166.913))",
+          dark: "var(--color-zenth-emerald-200, oklch(90.5% 0.093 164.15))",
         },
       },
     },
-    "kumo-danger": {
+    "zenth-danger": {
       newName: "",
       theme: {
-        kumo: {
-          light: "var(--color-red-700, oklch(50.5% 0.213 27.518))",
-          dark: "var(--color-red-400, oklch(70.4% 0.191 22.216))",
+        zenth: {
+          light: "var(--color-zenth-red-700, oklch(50.5% 0.213 27.518))",
+          dark: "var(--color-zenth-red-400, oklch(70.4% 0.191 22.216))",
         },
       },
     },
-    "kumo-warning": {
+    "zenth-warning": {
       newName: "",
       theme: {
-        kumo: {
+        zenth: {
           light: "oklch(59.7% 0.144 57.5)",
-          dark: "var(--color-orange-400, oklch(75% 0.183 55.934))",
+          dark: "var(--color-zenth-orange-400, oklch(75% 0.183 55.934))",
         },
       },
     },
@@ -135,42 +137,42 @@ export const THEME_CONFIG: ThemeConfig = {
      * Badge text color tokens
      * Subtle variants need colored text; inverted needs flipping text
      */
-    "kumo-badge-orange-subtle": {
+    "zenth-badge-orange-subtle": {
       newName: "",
       description: "Text color for subtle orange badge",
       theme: {
-        kumo: {
-          light: "var(--color-orange-800, oklch(47% 0.157 37.304))",
-          dark: "var(--color-orange-200, oklch(90.1% 0.076 70.697))",
+        zenth: {
+          light: "var(--color-zenth-orange-800, oklch(47% 0.157 37.304))",
+          dark: "var(--color-zenth-orange-200, oklch(90.1% 0.076 70.697))",
         },
       },
     },
-    "kumo-badge-teal-subtle": {
+    "zenth-badge-teal-subtle": {
       newName: "",
       description: "Text color for subtle teal badge",
       theme: {
-        kumo: {
-          light: "var(--color-teal-800, oklch(43.7% 0.078 188.216))",
-          dark: "var(--color-teal-200, oklch(91% 0.096 180.426))",
+        zenth: {
+          light: "var(--color-zenth-teal-800, oklch(43.7% 0.078 188.216))",
+          dark: "var(--color-zenth-teal-200, oklch(91% 0.096 180.426))",
         },
       },
     },
-    "kumo-badge-neutral-subtle": {
+    "zenth-badge-neutral-subtle": {
       newName: "",
       description: "Text color for subtle neutral badge",
       theme: {
-        kumo: {
-          light: "var(--color-neutral-800, oklch(26.9% 0 0))",
-          dark: "var(--color-neutral-200, oklch(92.2% 0 0))",
+        zenth: {
+          light: "var(--color-zenth-neutral-800, oklch(26.9% 0 0))",
+          dark: "var(--color-zenth-neutral-200, oklch(92.2% 0 0))",
         },
       },
     },
-    "kumo-badge-inverted": {
+    "zenth-badge-inverted": {
       newName: "",
       description:
         "Text color for inverted badge (white in light, black in dark)",
       theme: {
-        kumo: {
+        zenth: {
           light: "var(--color-white, #fff)",
           dark: "var(--color-black, #000)",
         },
@@ -184,12 +186,12 @@ export const THEME_CONFIG: ThemeConfig = {
    * CSS variable: --color-{token}
    */
   color: {
-    "kumo-canvas": {
+    "zenth-canvas": {
       newName: "",
       theme: {
-        kumo: {
-          light: "var(--color-kumo-neutral-25, oklch(98.75% 0 0))",
-          dark: "var(--color-kumo-neutral-1000, oklch(10% 0 0))",
+        zenth: {
+          light: "var(--color-zenth-neutral-25, #f7f8fa)",
+          dark: "var(--color-zenth-neutral-1000, #0b0d10)",
         },
         fedramp: {
           light: "#5b697c",
@@ -197,30 +199,30 @@ export const THEME_CONFIG: ThemeConfig = {
         },
       },
     },
-    "kumo-elevated": {
+    "zenth-elevated": {
       newName: "",
       theme: {
-        kumo: {
-          light: "var(--color-kumo-neutral-75, oklch(98% 0 0))",
-          dark: "var(--color-kumo-neutral-975, oklch(12% 0 0))",
+        zenth: {
+          light: "var(--color-white, #ffffff)",
+          dark: "var(--color-zenth-graphite-900, #1b1e25)",
         },
       },
     },
-    "kumo-recessed": {
+    "zenth-recessed": {
       newName: "",
       theme: {
-        kumo: {
-          light: "var(--color-kumo-neutral-125, oklch(96% 0 0))",
-          dark: "var(--color-kumo-neutral-950, oklch(15% 0 0))",
+        zenth: {
+          light: "var(--color-zenth-neutral-125, #f2f4f7)",
+          dark: "var(--color-zenth-graphite-950, #111318)",
         },
       },
     },
-    "kumo-base": {
+    "zenth-base": {
       newName: "",
       theme: {
-        kumo: {
-          light: "var(--color-white, #fff)",
-          dark: "var(--color-kumo-neutral-925, oklch(17% 0 0))",
+        zenth: {
+          light: "var(--color-white, #ffffff)",
+          dark: "var(--color-zenth-graphite-950, #111318)",
         },
         fedramp: {
           light: "#5b697c",
@@ -228,102 +230,104 @@ export const THEME_CONFIG: ThemeConfig = {
         },
       },
     },
-    "kumo-tint": {
+    "zenth-tint": {
       newName: "",
       theme: {
-        kumo: {
-          light: "var(--color-neutral-100, oklch(97% 0 0))",
-          dark: "var(--color-kumo-neutral-800, oklch(26.9% 0 0))",
+        zenth: {
+          light: "var(--color-zenth-neutral-25, #f7f8fa)",
+          dark: "var(--color-zenth-graphite-900, #1b1e25)",
         },
       },
     },
-    "kumo-contrast": {
+    "zenth-contrast": {
       newName: "",
       theme: {
-        kumo: {
-          light: "var(--color-kumo-neutral-975, oklch(8.5% 0 0))",
-          dark: "var(--color-kumo-neutral-25, oklch(98.5% 0 0))",
+        zenth: {
+          light: "var(--color-zenth-graphite-950, #111318)",
+          dark: "var(--color-zenth-neutral-25, #f7f8fa)",
         },
       },
     },
-    "kumo-overlay": {
+    "zenth-overlay": {
       newName: "",
       theme: {
-        kumo: {
-          light: "var(--color-kumo-neutral-50, oklch(97.5% 0 0))",
-          dark: "var(--color-neutral-800, oklch(26.9% 0 0))",
+        zenth: {
+          light: "var(--color-zenth-neutral-25, #f7f8fa)",
+          dark: "var(--color-zenth-graphite-900, #1b1e25)",
         },
       },
     },
-    "kumo-control": {
+    "zenth-control": {
       newName: "",
       theme: {
-        kumo: {
-          light: "var(--color-white, #fff)",
-          dark: "var(--color-neutral-900, oklch(21% 0.006 285.885))",
+        zenth: {
+          light: "var(--color-white, #ffffff)",
+          dark: "var(--color-zenth-graphite-900, #1b1e25)",
         },
       },
     },
-    "kumo-interact": {
+    "zenth-interact": {
       newName: "",
       theme: {
-        kumo: {
-          light: "var(--color-neutral-300, oklch(87% 0 0))",
-          dark: "var(--color-neutral-700, oklch(37.1% 0 0))",
+        zenth: {
+          light: "var(--color-zenth-neutral-150, #e9ebef)",
+          dark: "var(--color-zenth-graphite-700, #343a46)",
         },
       },
     },
-    "kumo-fill": {
+    "zenth-fill": {
       newName: "",
       theme: {
-        kumo: {
-          light: "var(--color-neutral-200, oklch(92.2% 0 0))",
-          dark: "var(--color-neutral-800, oklch(26.9% 0 0))",
+        zenth: {
+          light: "var(--color-zenth-neutral-150, #e9ebef)",
+          dark: "var(--color-zenth-graphite-900, #1b1e25)",
         },
       },
     },
-    "kumo-fill-hover": {
+    "zenth-fill-hover": {
       newName: "",
       theme: {
-        kumo: {
-          light: "var(--color-kumo-neutral-125, oklch(96.5% 0 0))",
-          dark: "var(--color-neutral-800, oklch(37.1% 0 0))",
+        zenth: {
+          light: "var(--color-zenth-neutral-25, #f7f8fa)",
+          dark: "var(--color-zenth-graphite-700, #343a46)",
         },
       },
     },
-    "kumo-brand": {
+    "zenth-brand": {
       newName: "",
+      description: "ZenthCloud brand surface (blue #1769E0)",
       theme: {
-        kumo: {
-          light: "oklch(0.5772 0.2324 260)",
-          dark: "color-mix(in oklch, oklch(0.5772 0.2324 260), black 10%)",
+        zenth: {
+          light: "var(--color-zenth-blue-500, #1769e0)",
+          dark: "var(--color-zenth-blue-500, #1769e0)",
         },
       },
     },
-    "kumo-brand-hover": {
+    "zenth-brand-hover": {
       newName: "",
+      description: "Brand hover state (deep blue #0B3D91)",
       theme: {
-        kumo: {
-          light: "var(--color-blue-700, oklch(48.8% 0.243 264.376))",
-          dark: "var(--color-blue-700, oklch(48.8% 0.243 264.376))",
+        zenth: {
+          light: "var(--color-zenth-blue-800, #0b3d91)",
+          dark: "var(--color-zenth-blue-800, #0b3d91)",
         },
       },
     },
-    "kumo-line": {
+    "zenth-line": {
       newName: "",
       theme: {
-        kumo: {
-          light: "oklch(14.5% 0 0 / 0.1)",
-          dark: "var(--color-kumo-neutral-750, oklch(32% 0 0))",
+        zenth: {
+          light: "#e1e4ea",
+          dark: "var(--color-zenth-neutral-750, #2a2f39)",
         },
       },
     },
-    "kumo-hairline": {
+    "zenth-hairline": {
       newName: "",
       theme: {
-        kumo: {
-          light: "var(--color-kumo-neutral-150, oklch(93.5% 0 0))",
-          dark: "var(--color-neutral-800, oklch(26.9% 0 0))",
+        zenth: {
+          light: "var(--color-zenth-neutral-150, #e9ebef)",
+          dark: "var(--color-zenth-graphite-900, #1b1e25)",
         },
         fedramp: {
           light: "#c8d4e5",
@@ -331,128 +335,128 @@ export const THEME_CONFIG: ThemeConfig = {
         },
       },
     },
-    "kumo-focus": {
+    "zenth-focus": {
       newName: "",
-      description: "Primary focus ring/border color",
+      description: "Primary focus ring/border color (brand blue)",
       theme: {
-        kumo: {
-          light: "var(--color-kumo-neutral-950, oklch(15% 0 0))",
-          dark: "var(--color-kumo-neutral-150, oklch(93.5% 0 0))",
+        zenth: {
+          light: "var(--color-zenth-blue-500, #1769e0)",
+          dark: "var(--color-zenth-blue-400, #4b91f0)",
         },
       },
     },
-    "kumo-shadow-edge": {
+    "zenth-shadow-edge": {
       newName: "",
       description: "Tight spread shadow color for control thumbs/knobs",
       theme: {
-        kumo: {
+        zenth: {
           light: "oklch(0% 0 0 / 0.12)",
           dark: "oklch(100% 0 0 / 0.1)",
         },
       },
     },
-    "kumo-shadow-drop": {
+    "zenth-shadow-drop": {
       newName: "",
       description: "Drop shadow color for control thumbs/knobs",
       theme: {
-        kumo: {
+        zenth: {
           light: "oklch(0% 0 0 / 0.08)",
           dark: "oklch(0% 0 0 / 0.3)",
         },
       },
     },
-    "kumo-arrow-edge": {
+    "zenth-arrow-edge": {
       newName: "",
       description:
         "Arrow border edge fill for popover/tooltip arrows (visible in light mode). Matches kumo-line so the arrow border aligns with the popup outline.",
       theme: {
-        kumo: {
+        zenth: {
           light: "oklch(14.5% 0 0 / 0.1)",
           dark: "transparent",
         },
       },
     },
-    "kumo-arrow-stroke": {
+    "zenth-arrow-stroke": {
       newName: "",
       description:
         "Arrow border stroke fill for popover/tooltip arrows (visible in dark mode). Matches kumo-line so the arrow border aligns with the popup outline.",
       theme: {
-        kumo: {
+        zenth: {
           light: "transparent",
-          dark: "var(--color-kumo-neutral-750, oklch(32% 0 0))",
+          dark: "var(--color-zenth-neutral-750, oklch(32% 0 0))",
         },
       },
     },
-    "kumo-info-tint": {
+    "zenth-info-tint": {
       newName: "",
       theme: {
-        kumo: {
-          light: "oklch(93.2% 0.032 255.6 / 0.45)",
-          dark: "oklch(38.0% 0.145 265.5 / 0.22)",
+        zenth: {
+          light: "#1769e01f",
+          dark: "#4b91f02e",
         },
       },
     },
-    "kumo-info": {
+    "zenth-info": {
       newName: "",
       theme: {
-        kumo: {
-          light: "var(--color-blue-500, oklch(68.5% 0.169 237.323))",
-          dark: "var(--color-blue-500, oklch(68.5% 0.169 237.323))",
+        zenth: {
+          light: "var(--color-zenth-blue-500, #1769e0)",
+          dark: "var(--color-zenth-blue-400, #4b91f0)",
         },
       },
     },
-    "kumo-warning-tint": {
+    "zenth-warning-tint": {
       newName: "",
       theme: {
-        kumo: {
+        zenth: {
           light: "oklch(93.1% 0.107 94.6 / 0.20)",
           dark: "oklch(35.3% 0.079 65.0 / 0.37)",
         },
       },
     },
-    "kumo-warning": {
+    "zenth-warning": {
       newName: "",
       theme: {
-        kumo: {
+        zenth: {
           light: "oklch(73.9% 0.177 58.2)",
           dark: "oklch(64.5% 0.168 50.0)",
         },
       },
     },
-    "kumo-danger-tint": {
+    "zenth-danger-tint": {
       newName: "",
       theme: {
-        kumo: {
+        zenth: {
           light: "oklch(93.6% 0.032 17.7 / 0.42)",
           dark: "oklch(42.9% 0.176 28.7 / 0.17)",
         },
       },
     },
-    "kumo-danger": {
+    "zenth-danger": {
       newName: "",
       // Aligned with fill.kumo-danger so `bg-kumo-danger` matches `fill-kumo-danger`.
       theme: {
-        kumo: {
-          light: "var(--color-red-500, oklch(63.7% 0.237 25.331))",
-          dark: "var(--color-red-600, oklch(57.7% 0.245 27.325))",
+        zenth: {
+          light: "var(--color-zenth-red-500, oklch(63.7% 0.237 25.331))",
+          dark: "var(--color-zenth-red-600, oklch(57.7% 0.245 27.325))",
         },
       },
     },
-    "kumo-success-tint": {
+    "zenth-success-tint": {
       newName: "",
       theme: {
-        kumo: {
+        zenth: {
           light: "oklch(96.2% 0.043 156.7 / 0.57)",
           dark: "oklch(39.3% 0.096 152.3 / 0.20)",
         },
       },
     },
-    "kumo-success": {
+    "zenth-success": {
       newName: "",
       theme: {
-        kumo: {
-          light: "var(--color-emerald-600, oklch(59.6% 0.145 163.225))",
-          dark: "var(--color-emerald-400, oklch(76.5% 0.177 163.223))",
+        zenth: {
+          light: "var(--color-zenth-emerald-600, oklch(59.6% 0.145 163.225))",
+          dark: "var(--color-zenth-emerald-400, oklch(76.5% 0.177 163.223))",
         },
       },
     },
@@ -462,22 +466,22 @@ export const THEME_CONFIG: ThemeConfig = {
      * Pre-baked opacity per mode so banners don't need dark: overrides.
      * Mirrors the *-tint hues but tuned for the Banner component's surface contrast.
      */
-    "kumo-banner-info": {
+    "zenth-banner-info": {
       newName: "",
       description: "Info banner background (informational/default variant)",
       theme: {
-        kumo: {
+        zenth: {
           light: "oklch(93.2% 0.032 255.585 / 0.7)",
           dark: "oklch(37.9% 0.146 265.522 / 0.5)",
         },
       },
     },
-    "kumo-banner-warning": {
+    "zenth-banner-warning": {
       newName: "",
       description: "Warning banner background (alert variant)",
       theme: {
-        kumo: {
-          light: "var(--color-yellow-100, oklch(97.3% 0.071 103.193))",
+        zenth: {
+          light: "var(--color-zenth-yellow-100, oklch(97.3% 0.071 103.193))",
           dark: "oklch(55.4% 0.135 66.442 / 0.5)",
         },
       },
@@ -490,85 +494,85 @@ export const THEME_CONFIG: ThemeConfig = {
      */
 
     // Red
-    "kumo-badge-red": {
+    "zenth-badge-red": {
       newName: "",
       description: "Red badge background",
       theme: {
-        kumo: {
-          light: "var(--color-red-600, oklch(57.7% 0.245 27.325))",
-          dark: "var(--color-red-700, oklch(50.5% 0.213 27.518))",
+        zenth: {
+          light: "var(--color-zenth-red-600, oklch(57.7% 0.245 27.325))",
+          dark: "var(--color-zenth-red-700, oklch(50.5% 0.213 27.518))",
         },
       },
     },
 
     // Green
-    "kumo-badge-green": {
+    "zenth-badge-green": {
       newName: "",
       description: "Green badge background",
       theme: {
-        kumo: {
-          light: "var(--color-emerald-600, oklch(59.6% 0.145 163.225))",
-          dark: "var(--color-emerald-700, oklch(50.8% 0.118 165.612))",
+        zenth: {
+          light: "var(--color-zenth-emerald-600, oklch(59.6% 0.145 163.225))",
+          dark: "var(--color-zenth-emerald-700, oklch(50.8% 0.118 165.612))",
         },
       },
     },
 
     // Orange
-    "kumo-badge-orange": {
+    "zenth-badge-orange": {
       newName: "",
       description: "Orange badge background",
       theme: {
-        kumo: {
-          light: "var(--color-orange-650, oklch(81.5% 0.197 76))",
-          dark: "var(--color-orange-650, oklch(81.5% 0.197 76))",
+        zenth: {
+          light: "var(--color-zenth-orange-650, oklch(81.5% 0.197 76))",
+          dark: "var(--color-zenth-orange-650, oklch(81.5% 0.197 76))",
         },
       },
     },
 
     // Purple
-    "kumo-badge-purple": {
+    "zenth-badge-purple": {
       newName: "",
       description: "Purple badge background",
       theme: {
-        kumo: {
-          light: "var(--color-purple-600, oklch(55.8% 0.288 302.321))",
-          dark: "var(--color-purple-700, oklch(49.6% 0.265 301.924))",
+        zenth: {
+          light: "var(--color-zenth-purple-600, oklch(55.8% 0.288 302.321))",
+          dark: "var(--color-zenth-purple-700, oklch(49.6% 0.265 301.924))",
         },
       },
     },
 
     // Teal
-    "kumo-badge-teal": {
+    "zenth-badge-teal": {
       newName: "",
       description: "Teal badge background",
       theme: {
-        kumo: {
-          light: "var(--color-teal-650, oklch(54.9% 0.096 184.565))",
-          dark: "var(--color-teal-700, oklch(51.1% 0.096 186.391))",
+        zenth: {
+          light: "var(--color-zenth-teal-650, oklch(54.9% 0.096 184.565))",
+          dark: "var(--color-zenth-teal-700, oklch(51.1% 0.096 186.391))",
         },
       },
     },
 
     // Blue
-    "kumo-badge-blue": {
+    "zenth-badge-blue": {
       newName: "",
       description: "Blue badge background",
       theme: {
-        kumo: {
-          light: "var(--color-blue-600, oklch(54.6% 0.245 262.881))",
-          dark: "var(--color-blue-700, oklch(48.8% 0.243 264.376))",
+        zenth: {
+          light: "var(--color-zenth-blue-500, #1769e0)",
+          dark: "var(--color-zenth-blue-500, #1769e0)",
         },
       },
     },
 
     // Neutral
-    "kumo-badge-neutral": {
+    "zenth-badge-neutral": {
       newName: "",
       description: "Neutral badge background",
       theme: {
-        kumo: {
-          light: "var(--color-neutral-500, oklch(55.6% 0 0))",
-          dark: "var(--color-neutral-600, oklch(43.9% 0 0))",
+        zenth: {
+          light: "var(--color-zenth-neutral-500, #747b87)",
+          dark: "var(--color-zenth-neutral-600, #5a616d)",
         },
       },
     },
@@ -576,13 +580,13 @@ export const THEME_CONFIG: ThemeConfig = {
     // Badge uses bg-kumo-fill instead.
 
     // Inverted
-    "kumo-badge-inverted": {
+    "zenth-badge-inverted": {
       newName: "",
       description:
         "Inverted badge background (near-black in light, white in dark)",
       theme: {
-        kumo: {
-          light: "var(--color-neutral-950, oklch(14.5% 0 0))",
+        zenth: {
+          light: "var(--color-zenth-neutral-950, oklch(14.5% 0 0))",
           dark: "var(--color-white, #fff)",
         },
       },
@@ -601,54 +605,54 @@ export const THEME_CONFIG: ThemeConfig = {
     xs: {
       newName: "",
       theme: {
-        kumo: "12px",
+        zenth: "12px",
       },
     },
     "xs--line-height": {
       newName: "",
       theme: {
-        kumo: "calc(1 / 0.75)",
+        zenth: "calc(1 / 0.75)",
       },
     },
     sm: {
       newName: "",
       theme: {
-        kumo: "13px",
+        zenth: "13px",
       },
     },
     "sm--line-height": {
       newName: "",
       theme: {
-        kumo: "calc(1 / 0.85)",
+        zenth: "calc(1 / 0.85)",
       },
     },
     base: {
       newName: "",
       theme: {
-        kumo: "14px",
+        zenth: "14px",
       },
     },
     "base--line-height": {
       newName: "",
       theme: {
-        kumo: "1.5",
+        zenth: "1.5",
       },
     },
     lg: {
       newName: "",
       theme: {
-        kumo: "16px",
+        zenth: "16px",
       },
     },
     "lg--line-height": {
       newName: "",
       theme: {
-        kumo: "1.5",
+        zenth: "1.5",
       },
     },
   },
 };
 
 /** List of all available themes */
-export const AVAILABLE_THEMES = ["kumo", "fedramp"] as const;
+export const AVAILABLE_THEMES = ["zenth", "fedramp"] as const;
 export type AvailableTheme = (typeof AVAILABLE_THEMES)[number];

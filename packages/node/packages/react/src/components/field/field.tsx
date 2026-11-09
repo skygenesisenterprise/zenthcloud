@@ -156,7 +156,7 @@ export function Field({
   return (
     <FieldBase.Root className={fieldVariants({ controlFirst })}>
       {!hideLabel && hasLabelContent && (
-        <FieldBase.Label className="m-0 text-base font-medium text-kumo-default select-none">
+        <FieldBase.Label className="m-0 text-base font-medium text-zenth-default select-none">
           <Label showOptional={showOptional} tooltip={labelTooltip} asContent>
             {label}
           </Label>
@@ -166,7 +166,7 @@ export function Field({
       {error ? (
         <FieldBase.Error
           className={cn(
-            "text-sm leading-snug text-kumo-danger",
+            "text-sm leading-snug text-zenth-danger",
             // Span full width in horizontal layout
             "col-span-full",
           )}
@@ -178,7 +178,7 @@ export function Field({
         description && (
           <FieldBase.Description
             className={cn(
-              "text-sm leading-snug text-kumo-subtle",
+              "text-sm leading-snug text-zenth-subtle",
               // Span full width in horizontal layout
               "col-span-full",
             )}

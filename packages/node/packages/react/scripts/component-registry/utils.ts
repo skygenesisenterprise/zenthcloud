@@ -72,7 +72,7 @@ export function extractBalancedBraces(
 let _semanticColorNames: string[] | null = null;
 
 /**
- * Parse theme-kumo.css to extract semantic color names from --color-* and --text-color-* variables.
+ * Parse theme-zenth.css to extract semantic color names from --color-* and --text-color-* variables.
  * Excludes raw palette colors (e.g., --color-red-650, --color-neutral-50) which have numeric suffixes.
  * Results are cached for performance.
  */
@@ -81,7 +81,7 @@ export function parseSemanticColorNames(): string[] {
     return _semanticColorNames;
   }
 
-  const themePath = join(__dirname, "../../src/styles/theme-kumo.css");
+  const themePath = join(__dirname, "../../src/styles/theme-zenth.css");
   const content = readFileSync(themePath, "utf-8");
 
   const colorNames = new Set<string>();

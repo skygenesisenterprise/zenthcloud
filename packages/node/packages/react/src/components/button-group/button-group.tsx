@@ -89,7 +89,7 @@ export const ButtonGroup = forwardRef<HTMLDivElement, ButtonGroupProps>(
         {...props}
         ref={ref}
         role="group"
-        data-kumo-component="ButtonGroup"
+        data-zenth-component="ButtonGroup"
         className={cn(KUMO_BUTTON_GROUP_STYLING.baseClasses, className)}
       >
         {children}

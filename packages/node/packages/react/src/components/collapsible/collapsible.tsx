@@ -84,8 +84,8 @@ const CollapsibleTrigger = forwardRef<
   return (
     <CollapsibleBase.Trigger
       ref={ref}
-      data-kumo-component="Collapsible"
-      data-kumo-part="trigger"
+      data-zenth-component="Collapsible"
+      data-zenth-part="trigger"
       className={cn("cursor-pointer", className)}
       {...props}
     />
@@ -155,13 +155,13 @@ const CollapsibleDefaultTrigger = forwardRef<
   return (
     <CollapsibleBase.Trigger
       ref={ref}
-      data-kumo-component="Collapsible"
-      data-kumo-part="default-trigger"
+      data-zenth-component="Collapsible"
+      data-zenth-part="default-trigger"
       className={cn(
         // Defensive resets to prevent global button styles from polluting the trigger
         "m-0 border-none bg-transparent p-0 shadow-none",
         // Base styles for the trigger
-        "flex cursor-pointer items-center gap-1 text-base font-medium text-kumo-default select-none",
+        "flex cursor-pointer items-center gap-1 text-base font-medium text-zenth-default select-none",
         className,
       )}
     >
@@ -218,7 +218,7 @@ const CollapsibleDefaultPanel = forwardRef<
       )}
       {...props}
     >
-      <div className="my-2 space-y-4 border-l-2 border-kumo-fill py-1 pr-1 pl-4">
+      <div className="my-2 space-y-4 border-l-2 border-zenth-fill py-1 pr-1 pl-4">
         {children}
       </div>
     </CollapsibleBase.Panel>

@@ -12,13 +12,13 @@ import { useRender } from "@base-ui/react/use-render";
 import { cn } from "../../utils/cn";
 
 const LAYER_CARD_SURFACE_CLASSES =
-  "overflow-hidden rounded-lg bg-kumo-base shadow-xs ring ring-kumo-line";
+  "overflow-hidden rounded-lg bg-zenth-base shadow-xs ring ring-zenth-line";
 const LAYER_CARD_LAYERED_ROOT_CLASSES =
-  "flex w-full flex-col overflow-hidden rounded-lg bg-kumo-elevated text-base ring ring-kumo-hairline";
+  "flex w-full flex-col overflow-hidden rounded-lg bg-zenth-elevated text-base ring ring-zenth-hairline";
 const LAYER_CARD_SECONDARY_CLASSES =
-  "-my-2 flex items-center gap-2 bg-kumo-elevated p-4 text-base font-medium text-kumo-subtle";
+  "-my-2 flex items-center gap-2 bg-zenth-elevated p-4 text-base font-medium text-zenth-subtle";
 const LAYER_CARD_PRIMARY_CLASSES =
-  "relative flex flex-col gap-2 overflow-hidden rounded-lg bg-kumo-base p-4 pr-3 text-inherit no-underline ring ring-kumo-fill";
+  "relative flex flex-col gap-2 overflow-hidden rounded-lg bg-zenth-base p-4 pr-3 text-inherit no-underline ring ring-zenth-fill";
 
 /** LayerCard variant definitions (currently empty, reserved for future additions). */
 export const KUMO_LAYER_CARD_VARIANTS = {

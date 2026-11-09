@@ -1,19 +1,17 @@
 /**
- * CSS Generator for Kumo Themes
+ * CSS Generator for ZenthCloud themes
  *
- * Generates theme CSS files from the centralized config.
- * Outputs:
- * - theme-kumo.css: Base theme with all tokens
- * - theme-fedramp.css: Override layer for fedramp theme
- * - (future themes as needed)
+ * Generates theme CSS files from the centralized token config:
+ * - theme-zenth.css   Base theme (@theme tokens + runtime light/dark vars)
+ * - theme-fedramp.css Override layer for the fedramp theme
+ * - themes/light.css  Explicit light-mode token values
+ * - themes/dark.css   Explicit dark-mode token values
+ * - theme-kumo.css    Legacy alias layer (deprecated, temporary)
  */
 
 import { THEME_CONFIG, AVAILABLE_THEMES } from "./config.js";
 import type { ThemeConfig, GeneratorOptions, TokenRenameMap } from "./types.js";
 
-/**
- * Header comment for generated CSS files
- */
 const GENERATED_FILE_HEADER = `/**
  * AUTO-GENERATED FILE - DO NOT EDIT DIRECTLY
  *
@@ -24,210 +22,192 @@ const GENERATED_FILE_HEADER = `/**
 
 `;
 
-/**
- * Generate a light-dark() CSS function call
- */
+const LIGHT_SELECTOR =
+  ':root, [data-zenth-theme="zenth"], [data-theme="zenth"], [data-theme="kumo"]';
+
+const DARK_SELECTOR =
+  '[data-zenth-mode="dark"], [data-mode="dark"], [data-zenth-theme="zenth"][data-zenth-mode="dark"], [data-theme="zenth"][data-mode="dark"], [data-theme="kumo"][data-mode="dark"]';
+
+const FEDRAMP_LIGHT_SELECTOR =
+  '[data-zenth-theme="fedramp"], [data-theme="fedramp"]';
+
+const FEDRAMP_DARK_SELECTOR =
+  '[data-zenth-mode="dark"] [data-zenth-theme="fedramp"], [data-zenth-theme="fedramp"][data-zenth-mode="dark"], [data-mode="dark"] [data-theme="fedramp"], [data-theme="fedramp"][data-mode="dark"]';
+
+/** Generate a light-dark() CSS function call. */
 function lightDark(light: string, dark: string): string {
   return `light-dark(\n    ${light},\n    ${dark}\n  )`;
 }
 
-function pushModeScopedBaseVariables(
-  lines: string[],
+type TokenEntry = { name: string; light: string; dark: string };
+
+function collectEntries(
   config: ThemeConfig,
   themeName: string,
-  useNewNames: boolean,
-  options: {
-    wrapInBaseLayer?: boolean;
-  } = {},
-): void {
-  const textEntries: Array<{ name: string; light: string; dark: string }> = [];
-  const colorEntries: Array<{ name: string; light: string; dark: string }> = [];
+): { text: TokenEntry[]; color: TokenEntry[] } {
+  const text: TokenEntry[] = [];
+  const color: TokenEntry[] = [];
 
   for (const [tokenName, def] of Object.entries(config.text)) {
-    const themeColors = def.theme[themeName];
-    if (!themeColors) continue;
-    const name = useNewNames ? def.newName : tokenName;
-    textEntries.push({
-      name,
-      light: themeColors.light,
-      dark: themeColors.dark,
-    });
+    const values = def.theme[themeName];
+    if (!values) continue;
+    text.push({ name: tokenName, light: values.light, dark: values.dark });
   }
 
   for (const [tokenName, def] of Object.entries(config.color)) {
-    const themeColors = def.theme[themeName];
-    if (!themeColors) continue;
-    const name = useNewNames ? def.newName : tokenName;
-    colorEntries.push({
-      name,
-      light: themeColors.light,
-      dark: themeColors.dark,
-    });
+    const values = def.theme[themeName];
+    if (!values) continue;
+    color.push({ name: tokenName, light: values.light, dark: values.dark });
   }
 
-  if (textEntries.length === 0 && colorEntries.length === 0) {
-    return;
+  return { text, color };
+}
+
+function renderModeBlock(
+  selector: string,
+  entries: { text: TokenEntry[]; color: TokenEntry[] },
+  mode: "light" | "dark",
+  indent = "  ",
+): string[] {
+  const lines: string[] = [`${indent}${selector} {`];
+  const pad = `${indent}  `;
+
+  for (const entry of entries.text) {
+    lines.push(`${pad}--text-color-${entry.name}: ${entry[mode]};`);
   }
 
-  const themeSelector = `[data-theme="${themeName}"]`;
-  const lightSelector =
-    themeName === "kumo" ? `:root, ${themeSelector}` : `${themeSelector}`;
-  const darkSelector =
-    themeName === "kumo"
-      ? `:root[data-mode="dark"], [data-mode="dark"]:not([data-theme]), [data-mode="dark"] ${themeSelector}, ${themeSelector}[data-mode="dark"], ${themeSelector} [data-mode="dark"]`
-      : `[data-mode="dark"] ${themeSelector}, ${themeSelector}[data-mode="dark"], ${themeSelector} [data-mode="dark"]`;
-
-  const ruleLines: string[] = [];
-  ruleLines.push(`${lightSelector} {`);
-
-  for (const entry of textEntries) {
-    ruleLines.push(`  --text-color-${entry.name}: ${entry.light};`);
+  for (const entry of entries.color) {
+    lines.push(`${pad}--color-${entry.name}: ${entry[mode]};`);
   }
 
-  for (const entry of colorEntries) {
-    ruleLines.push(`  --color-${entry.name}: ${entry.light};`);
+  lines.push(`${indent}}`);
+  return lines;
+}
+
+function renderThemeSelectors(themeName: string): {
+  light: string;
+  dark: string;
+} {
+  if (themeName === "zenth") {
+    return { light: LIGHT_SELECTOR, dark: DARK_SELECTOR };
   }
 
-  ruleLines.push("}");
-  ruleLines.push("");
-  ruleLines.push(`${darkSelector} {`);
-
-  for (const entry of textEntries) {
-    ruleLines.push(`  --text-color-${entry.name}: ${entry.dark};`);
-  }
-
-  for (const entry of colorEntries) {
-    ruleLines.push(`  --color-${entry.name}: ${entry.dark};`);
-  }
-
-  ruleLines.push("}");
-
-  lines.push("");
-  if (options.wrapInBaseLayer) {
-    lines.push("@layer base {");
-    for (const line of ruleLines) {
-      lines.push(`  ${line}`);
-    }
-    lines.push("}");
-    return;
-  }
-
-  lines.push(...ruleLines);
+  return {
+    light: FEDRAMP_LIGHT_SELECTOR,
+    dark: FEDRAMP_DARK_SELECTOR,
+  };
 }
 
 /**
- * Generate the base kumo theme CSS
- * This contains all tokens with their kumo theme values
+ * Generate the base ZenthCloud theme CSS.
+ * This contains @theme tokens (for Tailwind utility generation) plus
+ * explicit mode-scoped variables (avoids transient unresolved light-dark()
+ * values during class/DOM mutations).
  */
-export function generateKumoThemeCSS(
-  config: ThemeConfig,
-  useNewNames = false,
-): string {
+export function generateZenthThemeCSS(config: ThemeConfig): string {
   const lines: string[] = [GENERATED_FILE_HEADER];
+  const entries = collectEntries(config, "zenth");
 
-  // Text color tokens
   lines.push("@theme {");
-
-  for (const [tokenName, def] of Object.entries(config.text)) {
-    const name = useNewNames ? def.newName : tokenName;
-    const kumoColors = def.theme.kumo;
-
+  for (const entry of entries.text) {
     lines.push(
-      `  --text-color-${name}: ${lightDark(kumoColors.light, kumoColors.dark)};`,
+      `  --text-color-${entry.name}: ${lightDark(entry.light, entry.dark)};`,
     );
     lines.push("");
   }
-
   lines.push("}");
   lines.push("");
 
-  // Color tokens (bg, border, ring, fill, stroke, etc.)
-  // Tailwind v4 resolves every color-aware utility family against this
-  // single `--color-*` palette — including SVG `fill-*` and `stroke-*` —
-  // so one declaration here covers backgrounds, borders, and icon glyphs.
   lines.push("@theme {");
-
-  for (const [tokenName, def] of Object.entries(config.color)) {
-    const name = useNewNames ? def.newName : tokenName;
-    const kumoColors = def.theme.kumo;
-
+  for (const entry of entries.color) {
     lines.push(
-      `  --color-${name}: ${lightDark(kumoColors.light, kumoColors.dark)};`,
+      `  --color-${entry.name}: ${lightDark(entry.light, entry.dark)};`,
     );
     lines.push("");
   }
-
   lines.push("}");
 
-  // Typography tokens (font sizes and line heights)
   if (config.typography && Object.keys(config.typography).length > 0) {
     lines.push("");
     lines.push("@theme {");
     lines.push("  /* Typography - text sizes and line heights */");
-
     for (const [tokenName, def] of Object.entries(config.typography)) {
-      const name = useNewNames && def.newName ? def.newName : tokenName;
-      const value = def.theme.kumo;
-
-      lines.push(`  --text-${name}: ${value};`);
+      const value = def.theme.zenth;
+      if (value === undefined) continue;
+      lines.push(`  --text-${tokenName}: ${value};`);
     }
-
     lines.push("}");
   }
 
-  // Explicit runtime vars avoid transient unresolved light-dark() values
-  // during class/DOM mutations in some browser style recalculation paths.
-  pushModeScopedBaseVariables(lines, config, "kumo", useNewNames, {
-    wrapInBaseLayer: true,
-  });
+  lines.push("");
+  lines.push("@layer base {");
+  lines.push(...renderModeBlock(LIGHT_SELECTOR, entries, "light"));
+  lines.push("");
+  lines.push(...renderModeBlock(DARK_SELECTOR, entries, "dark"));
+  lines.push("}");
 
-  return lines.join("\n");
+  return `${lines.join("\n")}\n`;
 }
 
 /**
- * Generate a theme override CSS file
- * Only includes tokens that differ from the base kumo theme
+ * Generate a standalone light or dark theme file. These files contain only
+ * custom properties and can be imported after `tokens.css`.
+ */
+export function generateModeThemeCSS(
+  config: ThemeConfig,
+  mode: "light" | "dark",
+  themeName = "zenth",
+): string {
+  const entries = collectEntries(config, themeName);
+  const selector = renderThemeSelectors(themeName)[mode];
+
+  const lines = [
+    GENERATED_FILE_HEADER,
+    `@layer base {`,
+    ...renderModeBlock(selector, entries, mode),
+    "}",
+  ];
+
+  return `${lines.join("\n")}\n`;
+}
+
+/**
+ * Generate a theme override CSS file.
+ * Only includes tokens that differ from the base zenth theme.
  */
 export function generateThemeOverrideCSS(
   config: ThemeConfig,
   themeName: string,
-  useNewNames = false,
 ): string {
-  if (themeName === "kumo") {
-    throw new Error("Use generateKumoThemeCSS for the base kumo theme");
+  if (themeName === "zenth") {
+    throw new Error("Use generateZenthThemeCSS for the base zenth theme");
   }
 
   const overrides: string[] = [];
 
-  // Collect text token overrides
   for (const [tokenName, def] of Object.entries(config.text)) {
-    const themeColors = def.theme[themeName];
-    if (themeColors) {
-      const name = useNewNames ? def.newName : tokenName;
+    const values = def.theme[themeName];
+    if (values) {
       overrides.push(
-        `    --text-color-${name}: ${lightDark(themeColors.light, themeColors.dark)};`,
+        `    --text-color-${tokenName}: ${lightDark(values.light, values.dark)};`,
       );
     }
   }
 
-  // Collect color token overrides
   for (const [tokenName, def] of Object.entries(config.color)) {
-    const themeColors = def.theme[themeName];
-    if (themeColors) {
-      const name = useNewNames ? def.newName : tokenName;
+    const values = def.theme[themeName];
+    if (values) {
       overrides.push(
-        `    --color-${name}: ${lightDark(themeColors.light, themeColors.dark)};`,
+        `    --color-${tokenName}: ${lightDark(values.light, values.dark)};`,
       );
     }
   }
 
-  // Collect typography token overrides
   if (config.typography) {
     for (const [tokenName, def] of Object.entries(config.typography)) {
-      const themeValue = def.theme[themeName];
-      if (themeValue) {
-        const name = useNewNames && def.newName ? def.newName : tokenName;
-        overrides.push(`    --text-${name}: ${themeValue};`);
+      const value = def.theme[themeName];
+      if (value !== undefined) {
+        overrides.push(`    --text-${tokenName}: ${value};`);
       }
     }
   }
@@ -236,25 +216,60 @@ export function generateThemeOverrideCSS(
     return `${GENERATED_FILE_HEADER}/* No overrides for ${themeName} theme */\n`;
   }
 
+  const entries = collectEntries(config, themeName);
+  const selectors = renderThemeSelectors(themeName);
   const lines = [
     GENERATED_FILE_HEADER,
     "@layer base {",
-    `  [data-theme="${themeName}"] {`,
+    `  ${selectors.light} {`,
     ...overrides,
     "  }",
+    "",
+    ...renderModeBlock(selectors.light, entries, "light", "  "),
+    "",
+    ...renderModeBlock(selectors.dark, entries, "dark", "  "),
     "}",
   ];
-
-  pushModeScopedBaseVariables(lines, config, themeName, useNewNames, {
-    wrapInBaseLayer: true,
-  });
 
   return `${lines.join("\n")}\n`;
 }
 
 /**
- * Get a mapping of old token names to new names
- * Useful for running codemods during migration
+ * Generate the legacy `kumo-*` alias layer. Every alias resolves to the new
+ * `zenth-*` token, so applications migrating from `@zenthcloud/kumo` keep
+ * their variables working. Deprecated: remove in the next major release.
+ */
+export function generateKumoCompatCSS(config: ThemeConfig): string {
+  const entries = collectEntries(config, "zenth");
+  const lines: string[] = [
+    GENERATED_FILE_HEADER,
+    "/* @deprecated Legacy kumo-* aliases. Use the zenth-* tokens instead. */",
+    "@layer base {",
+    `  ${LIGHT_SELECTOR} {`,
+  ];
+
+  for (const entry of entries.text) {
+    lines.push(
+      `    --text-color-kumo-${entry.name.replace(/^zenth-/, "")}: var(--text-color-${entry.name});`,
+    );
+  }
+
+  for (const entry of entries.color) {
+    lines.push(
+      `    --color-kumo-${entry.name.replace(/^zenth-/, "")}: var(--color-${entry.name});`,
+    );
+  }
+
+  lines.push("  }");
+  lines.push("}");
+  lines.push("");
+
+  return lines.join("\n");
+}
+
+/**
+ * Get a mapping of old token names to new names.
+ * Useful for running codemods during migration.
  */
 export function getTokenRenameMap(config: ThemeConfig): TokenRenameMap {
   const textMap: Record<string, string> = {};
@@ -272,28 +287,29 @@ export function getTokenRenameMap(config: ThemeConfig): TokenRenameMap {
 }
 
 /**
- * Generate all theme CSS files
+ * Generate all theme CSS files, keyed by their path relative to src/styles.
  */
 export function generateAllThemes(
   options: GeneratorOptions,
 ): Map<string, string> {
-  const { useNewNames = false, themes = [...AVAILABLE_THEMES] } = options;
+  const { themes = [...AVAILABLE_THEMES] } = options;
   const files = new Map<string, string>();
 
-  // Always generate base kumo theme
-  if (themes.includes("kumo")) {
+  if (themes.includes("zenth")) {
+    files.set("theme-zenth.css", generateZenthThemeCSS(THEME_CONFIG));
     files.set(
-      "theme-kumo.css",
-      generateKumoThemeCSS(THEME_CONFIG, useNewNames),
+      "themes/light.css",
+      generateModeThemeCSS(THEME_CONFIG, "light"),
     );
+    files.set("themes/dark.css", generateModeThemeCSS(THEME_CONFIG, "dark"));
+    files.set("theme-kumo.css", generateKumoCompatCSS(THEME_CONFIG));
   }
 
-  // Generate override themes
   for (const themeName of themes) {
-    if (themeName !== "kumo") {
+    if (themeName !== "zenth") {
       files.set(
         `theme-${themeName}.css`,
-        generateThemeOverrideCSS(THEME_CONFIG, themeName, useNewNames),
+        generateThemeOverrideCSS(THEME_CONFIG, themeName),
       );
     }
   }
@@ -302,8 +318,7 @@ export function generateAllThemes(
 }
 
 /**
- * List all tokens with their current and new names
- * Useful for documentation and migration planning
+ * List all tokens with their current names.
  */
 export function listAllTokens(config: ThemeConfig): Array<{
   type: "text" | "color" | "typography";

@@ -1,0 +1,4 @@
+/**
+ * @deprecated Use "@zenthcloud/react/styles/tailwind".
+ */
+@import "./tailwind.css";

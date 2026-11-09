@@ -19,7 +19,7 @@ export function labelVariants(_props: KumoLabelVariantsProps = {}) {
   return cn(
     // Base styles - when used standalone, apply text styling
     // When used inside Field, the parent FieldBase.Label provides these styles
-    "m-0 text-base font-medium text-kumo-default",
+    "m-0 text-base font-medium text-zenth-default",
   );
 }
 
@@ -108,7 +108,7 @@ export function Label({
     <>
       {children}
       {showOptional && (
-        <span className="font-normal text-kumo-subtle">
+        <span className="font-normal text-zenth-subtle">
           {resolvedOptionalLabel}
         </span>
       )}

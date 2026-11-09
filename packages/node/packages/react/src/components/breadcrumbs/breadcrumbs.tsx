@@ -71,13 +71,13 @@ const Link = ({
 
   return (
     <LinkComponent
-      data-kumo-component="Breadcrumbs"
-      data-kumo-part="link"
+      data-zenth-component="Breadcrumbs"
+      data-zenth-part="link"
       to={href}
       // Ancestors do not shrink. Letting every crumb truncate proportionally
       // turns the whole trail into unreadable stubs ("Com… › Anal… › Acco…");
       // the current page is the only crumb allowed to give up width.
-      className="flex shrink-0 items-center gap-1 whitespace-nowrap text-kumo-subtle no-underline"
+      className="flex shrink-0 items-center gap-1 whitespace-nowrap text-zenth-subtle no-underline"
     >
       {!!icon && <span className="flex shrink-0 items-center">{icon}</span>}
       <span>{children}</span>
@@ -118,7 +118,7 @@ function Current({
 function Separator() {
   return (
     <span
-      className="flex shrink-0 items-center text-kumo-inactive"
+      className="flex shrink-0 items-center text-zenth-inactive"
       aria-hidden="true"
     >
       <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
@@ -136,7 +136,7 @@ function Separator() {
 
 function MobileEllipsis() {
   return (
-    <span className="flex shrink-0 items-center text-kumo-subtle" aria-hidden>
+    <span className="flex shrink-0 items-center text-zenth-subtle" aria-hidden>
       ...
     </span>
   );
@@ -165,7 +165,7 @@ function Clipboard({ text }: { text: string }) {
       aria-label="Copy"
     >
       {isCopied ? (
-        <CheckIcon weight="bold" className="text-kumo-success" />
+        <CheckIcon weight="bold" className="text-zenth-success" />
       ) : (
         <CopyIcon weight="regular" />
       )}
@@ -244,11 +244,11 @@ function getMobileBreadcrumbChildren(children: ReactNode[]): ReactNode[] {
 
   const [parentItem, currentItem] = breadcrumbItems.slice(-2);
   const trailingItems: ReactNode[] = [
-    <MobileEllipsis key="kumo-breadcrumb-mobile-ellipsis" />,
-    <Separator key="kumo-breadcrumb-mobile-separator-leading" />,
-    cloneElement(parentItem, { key: "kumo-breadcrumb-mobile-parent" }),
-    <Separator key="kumo-breadcrumb-mobile-separator-trailing" />,
-    cloneElement(currentItem, { key: "kumo-breadcrumb-mobile-current" }),
+    <MobileEllipsis key="zenth-breadcrumb-mobile-ellipsis" />,
+    <Separator key="zenth-breadcrumb-mobile-separator-leading" />,
+    cloneElement(parentItem, { key: "zenth-breadcrumb-mobile-parent" }),
+    <Separator key="zenth-breadcrumb-mobile-separator-trailing" />,
+    cloneElement(currentItem, { key: "zenth-breadcrumb-mobile-current" }),
   ];
 
   const extras = children.filter(

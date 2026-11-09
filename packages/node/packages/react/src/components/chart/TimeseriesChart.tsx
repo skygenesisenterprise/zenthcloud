@@ -798,7 +798,7 @@ export const TimeseriesChart = forwardRef<
           >
             <TooltipPrimitive.Popup
               data-mode={isDarkMode ? "dark" : "light"}
-              className="max-w-xs min-w-[150px] rounded-lg bg-kumo-base p-2 shadow-md outline-1 outline-kumo-line"
+              className="max-w-xs min-w-[150px] rounded-lg bg-zenth-base p-2 shadow-md outline-1 outline-zenth-line"
             >
               <TooltipContent
                 state={tooltipState}
@@ -969,7 +969,7 @@ function ChartSkeletonLoader({
   isDarkMode?: boolean;
   type?: "line" | "bar";
 }) {
-  const id = `kumo-chart-loader-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
+  const id = `zenth-chart-loader-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const fillId = `${id}-fill`;
   const shineId = `${id}-shine`;
   const clipId = `${id}-clip`;
@@ -1072,7 +1072,7 @@ function ChartSkeletonLoader({
 
         <g clipPath={`url(#${clipId})`}>
           <rect
-            className="kumo-chart-shimmer"
+            className="zenth-chart-shimmer"
             x="0"
             y="0"
             width={CHART_LOADER_WIDTH}

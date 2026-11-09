@@ -28,7 +28,7 @@ export function ResourceListPage({
 }: ResourceListPageProps) {
   return (
     <div
-      className={cn("h-full min-h-screen w-full bg-kumo-overlay", className)}
+      className={cn("h-full min-h-screen w-full bg-zenth-overlay", className)}
     >
       <div className="mx-auto flex max-w-[1400px] flex-col p-6 md:gap-4 md:p-8 lg:px-10 lg:py-9 xl:gap-6">
         <div className="flex flex-col">
@@ -38,7 +38,7 @@ export function ResourceListPage({
               {title}
             </h1>
           </div>
-          <p className="hidden p-0 text-lg leading-normal text-pretty text-kumo-subtle md:block">
+          <p className="hidden p-0 text-lg leading-normal text-pretty text-zenth-subtle md:block">
             {description}
           </p>
         </div>

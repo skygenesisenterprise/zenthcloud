@@ -17,7 +17,7 @@ export interface KumoMenuBarVariantsProps {}
 export function menuBarVariants(_props: KumoMenuBarVariantsProps = {}) {
   return cn(
     // Base styles
-    "flex rounded-lg border border-kumo-recessed bg-kumo-recessed pl-px shadow-xs transition-colors",
+    "flex rounded-lg border border-zenth-recessed bg-zenth-recessed pl-px shadow-xs transition-colors",
   );
 }
 
@@ -44,13 +44,13 @@ const MenuOption = ({
 }: MenuOptionProps) => {
   const button = (
     <button
-      data-kumo-component="MenuBar"
-      data-kumo-part="option"
+      data-zenth-component="MenuBar"
+      data-zenth-part="option"
       aria-label={tooltip}
       className={cn(
-        "relative -ml-px flex h-full w-11 cursor-pointer items-center justify-center rounded-md border-none bg-kumo-recessed transition-colors first:rounded-l-lg last:rounded-r-lg focus:z-3 focus:ring-kumo-focus/50 focus:outline-hidden focus-visible:z-3 focus-visible:ring-2 focus-visible:ring-kumo-brand",
+        "relative -ml-px flex h-full w-11 cursor-pointer items-center justify-center rounded-md border-none bg-zenth-recessed transition-colors first:rounded-l-lg last:rounded-r-lg focus:z-3 focus:ring-zenth-focus/50 focus:outline-hidden focus-visible:z-3 focus-visible:ring-2 focus-visible:ring-zenth-brand",
         {
-          "z-2 bg-kumo-base shadow-xs transition-colors": isActive === id,
+          "z-2 bg-zenth-base shadow-xs transition-colors": isActive === id,
         },
       )}
       onClick={onClick}
@@ -125,7 +125,7 @@ export const MenuBar = ({
   return (
     <nav
       className={cn(
-        "isolate flex rounded-lg bg-kumo-recessed pl-px shadow-xs ring ring-kumo-line transition-colors",
+        "isolate flex rounded-lg bg-zenth-recessed pl-px shadow-xs ring ring-zenth-line transition-colors",
         className,
       )}
       ref={menuRef}

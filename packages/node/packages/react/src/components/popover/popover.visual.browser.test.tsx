@@ -7,7 +7,7 @@ describe("Popover", () => {
     const { getByRole } = await render(
       <>
         <style>{`
-          .kumo-popover-popup {
+          .zenth-popover-popup {
             transition-duration: 10s !important;
           }
         `}</style>
@@ -32,7 +32,7 @@ describe("Popover", () => {
       .poll(() => Number.parseFloat(getComputedStyle(popup).opacity))
       .toBeGreaterThan(0);
 
-    const arrow = popup.querySelector<HTMLElement>("[data-kumo-part='arrow']");
+    const arrow = popup.querySelector<HTMLElement>("[data-zenth-part='arrow']");
     expect(arrow).not.toBeNull();
     expect(arrow?.parentElement).toBe(popup);
     expect(popup).toHaveClass("popup-state-class");
@@ -46,11 +46,11 @@ describe("Popover", () => {
     const { getByRole } = await render(
       <>
         <style>{`
-          .kumo-popover-popup {
+          .zenth-popover-popup {
             transition-duration: 10s !important;
           }
 
-          .kumo-popover-popup[data-ending-style] {
+          .zenth-popover-popup[data-ending-style] {
             transition-duration: 0s !important;
           }
         `}</style>

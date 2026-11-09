@@ -13,75 +13,75 @@ export const KUMO_BADGE_VARIANTS = {
   variant: {
     /** Semantic token badges */
     primary: {
-      classes: "bg-kumo-badge-inverted text-kumo-badge-inverted",
+      classes: "bg-zenth-badge-inverted text-zenth-badge-inverted",
       description: "Primary badge",
     },
     secondary: {
-      classes: "bg-kumo-fill text-kumo-badge-neutral-subtle",
+      classes: "bg-zenth-fill text-zenth-badge-neutral-subtle",
       description: "Secondary badge",
     },
     error: {
-      classes: "bg-kumo-danger-tint text-kumo-danger",
+      classes: "bg-zenth-danger-tint text-zenth-danger",
       description: "Error badge",
     },
     warning: {
-      classes: "bg-kumo-warning-tint text-kumo-warning",
+      classes: "bg-zenth-warning-tint text-zenth-warning",
       description: "Warning badge",
     },
     success: {
-      classes: "bg-kumo-success-tint text-kumo-success",
+      classes: "bg-zenth-success-tint text-zenth-success",
       description: "Success badge",
     },
     destructive: {
-      classes: "bg-kumo-badge-red text-white",
+      classes: "bg-zenth-badge-red text-white",
       description: "Deprecated. Use red instead.",
     },
     info: {
-      classes: "bg-kumo-info-tint text-kumo-info",
+      classes: "bg-zenth-info-tint text-zenth-info",
       description: "Info badge",
     },
     beta: {
       classes:
-        "border border-dashed border-kumo-brand bg-transparent text-kumo-link",
+        "border border-dashed border-zenth-brand bg-transparent text-zenth-link",
       description: "Indicates beta or experimental features",
     },
     outline: {
-      classes: "border border-kumo-fill bg-kumo-base text-kumo-default",
+      classes: "border border-zenth-fill bg-zenth-base text-zenth-default",
       description: "Bordered badge with base background",
     },
 
     /** Other color token variants */
 
     red: {
-      classes: "bg-kumo-badge-red text-white",
+      classes: "bg-zenth-badge-red text-white",
       description: "Red badge",
     },
     green: {
-      classes: "bg-kumo-badge-green text-white",
+      classes: "bg-zenth-badge-green text-white",
       description: "Green badge",
     },
     neutral: {
-      classes: "bg-kumo-badge-neutral text-white",
+      classes: "bg-zenth-badge-neutral text-white",
       description: "Neutral badge",
     },
     orange: {
-      classes: "bg-kumo-badge-orange text-black",
+      classes: "bg-zenth-badge-orange text-black",
       description: "Orange badge",
     },
     purple: {
-      classes: "bg-kumo-badge-purple text-white",
+      classes: "bg-zenth-badge-purple text-white",
       description: "Purple badge",
     },
     teal: {
-      classes: "bg-kumo-badge-teal text-white",
+      classes: "bg-zenth-badge-teal text-white",
       description: "Teal badge",
     },
     "teal-subtle": {
-      classes: "bg-kumo-badge-teal-subtle text-kumo-badge-teal-subtle",
+      classes: "bg-zenth-badge-teal-subtle text-zenth-badge-teal-subtle",
       description: "Subtle teal badge",
     },
     blue: {
-      classes: "bg-kumo-badge-blue text-white",
+      classes: "bg-zenth-badge-blue text-white",
       description: "Blue badge",
     },
   },
@@ -92,7 +92,7 @@ export const KUMO_BADGE_VARIANTS = {
     },
     dot: {
       classes:
-        "gap-1.5 bg-transparent text-kumo-default ring ring-kumo-hairline",
+        "gap-1.5 bg-transparent text-zenth-default ring ring-zenth-hairline",
       description: "Outlined badge with a colored circle dot indicating status",
     },
   },
@@ -103,19 +103,19 @@ export const KUMO_BADGE_VARIANTS = {
         "No dot indicator (used when appearance is not dot, or variant has no dot color)",
     },
     success: {
-      classes: "bg-kumo-success",
+      classes: "bg-zenth-success",
       description: "Green dot for success status",
     },
     warning: {
-      classes: "bg-kumo-badge-orange",
+      classes: "bg-zenth-badge-orange",
       description: "Orange dot for warning status",
     },
     error: {
-      classes: "bg-kumo-badge-red",
+      classes: "bg-zenth-badge-red",
       description: "Red dot for error status",
     },
     neutral: {
-      classes: "bg-kumo-badge-neutral",
+      classes: "bg-zenth-badge-neutral",
       description: "Neutral dot for informational status",
     },
   },
@@ -278,7 +278,7 @@ export function Badge({
       : "";
   return (
     <span
-      data-kumo-component="Badge"
+      data-zenth-component="Badge"
       className={cn(
         badgeVariants({ variant, appearance }),
         icon && "pl-1.5",

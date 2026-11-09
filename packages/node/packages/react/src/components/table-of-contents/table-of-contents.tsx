@@ -6,11 +6,11 @@ export const KUMO_TABLE_OF_CONTENTS_VARIANTS = {
   state: {
     default: {
       classes:
-        "text-kumo-subtle hover:border-kumo-line hover:text-kumo-default hover:font-medium",
+        "text-zenth-subtle hover:border-zenth-line hover:text-zenth-default hover:font-medium",
       description: "Inactive section link",
     },
     active: {
-      classes: "border-kumo-brand font-medium text-kumo-default",
+      classes: "border-zenth-brand font-medium text-zenth-default",
       description: "Currently visible / active section",
     },
   },
@@ -47,7 +47,7 @@ const TableOfContentsTitle = forwardRef<
   <p
     ref={ref}
     className={cn(
-      "mb-3 text-xs font-semibold tracking-wide text-kumo-subtle uppercase",
+      "mb-3 text-xs font-semibold tracking-wide text-zenth-subtle uppercase",
       className,
     )}
     {...props}
@@ -63,7 +63,7 @@ const TableOfContentsList = forwardRef<
   <ul
     ref={ref}
     className={cn(
-      "flex flex-col gap-2 border-l-2 border-kumo-hairline",
+      "flex flex-col gap-2 border-l-2 border-zenth-hairline",
       className,
     )}
     {...props}
@@ -104,8 +104,8 @@ const TableOfContentsItem = forwardRef<
   const sharedProps = {
     ref,
     "aria-current": active ? ("true" as const) : undefined,
-    "data-kumo-component": "TableOfContents",
-    "data-kumo-part": "item",
+    "data-zenth-component": "TableOfContents",
+    "data-zenth-part": "item",
     className: combinedClassName,
     children: innerContent,
     ...props,
@@ -138,7 +138,7 @@ export interface TableOfContentsGroupProps extends Omit<
 }
 
 const NESTED_UL_CLASSES =
-  "flex flex-col gap-2 border-l-2 border-kumo-hairline [&>li>a]:pl-7 [&>li>button]:pl-7";
+  "flex flex-col gap-2 border-l-2 border-zenth-hairline [&>li>a]:pl-7 [&>li>button]:pl-7";
 
 const TableOfContentsGroup = forwardRef<
   HTMLLIElement,
@@ -166,8 +166,8 @@ const TableOfContentsGroup = forwardRef<
             href={href}
             onClick={onClick as React.MouseEventHandler | undefined}
             aria-current={active ? ("true" as const) : undefined}
-            data-kumo-component="TableOfContents"
-            data-kumo-part="group-link"
+            data-zenth-component="TableOfContents"
+            data-zenth-part="group-link"
             className={cn(ITEM_BASE, stateClasses)}
           >
             <span className="block min-w-0 leading-5">{label}</span>
@@ -186,7 +186,7 @@ const TableOfContentsGroup = forwardRef<
         className={cn("-ml-0.5 flex flex-col gap-2", className)}
         {...props}
       >
-        <p className="py-0.5 pl-4 text-sm leading-5 font-medium text-kumo-subtle">
+        <p className="py-0.5 pl-4 text-sm leading-5 font-medium text-zenth-subtle">
           {label}
         </p>
         <ul className={cn(NESTED_UL_CLASSES)}>{children}</ul>

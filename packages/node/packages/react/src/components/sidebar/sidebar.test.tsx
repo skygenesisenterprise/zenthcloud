@@ -1046,7 +1046,7 @@ describe("Sidebar.MenuButton", () => {
     const link = screen.getByText("Tenants").closest("a");
     expect(link!.getAttribute("aria-current")).toBe("true");
     expect(link!.getAttribute("data-active")).toBe("true");
-    expect(link!.getAttribute("data-kumo-part")).toBe("menu-button-link");
+    expect(link!.getAttribute("data-zenth-part")).toBe("menu-button-link");
   });
 
   // React Flight (RSC) can deliver an element prop as a lazy reference whose
@@ -1160,7 +1160,7 @@ describe("Sidebar.MenuSubButton", () => {
     const link = screen.getByText("Observability").closest("a");
     expect(link!.getAttribute("aria-current")).toBe("page");
     expect(link!.getAttribute("data-active")).toBe("true");
-    expect(link!.getAttribute("data-kumo-part")).toBe("menu-sub-button-link");
+    expect(link!.getAttribute("data-zenth-part")).toBe("menu-sub-button-link");
   });
 });
 
@@ -1199,7 +1199,7 @@ describe("Sidebar.Content scrollbar", () => {
     );
     // Base UI's own rule lives in a <style> that head-swapping client
     // routers can remove, so the viewport must carry Kumo's.
-    expect(getViewport().className).toMatch(/(^|\s)no-scrollbar(\s|$)/);
+    expect(getViewport().className).toMatch(/(^|\s)zenth-no-scrollbar(\s|$)/);
   });
 });
 
@@ -1338,7 +1338,7 @@ describe("Sidebar.Loading", () => {
     );
     const status = screen.getByRole("status");
     // 2 groups × (1 group-label + 3 rows × [icon + label]) = 2 + 12 = 14 blocks
-    expect(status.querySelectorAll(".skeleton-line")).toHaveLength(14);
+    expect(status.querySelectorAll(".zenth-skeleton-line")).toHaveLength(14);
   });
 
   it("should forward ref and className", () => {

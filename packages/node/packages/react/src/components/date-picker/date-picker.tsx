@@ -71,18 +71,18 @@ const navButtonClassName = cn(
 // The button can sit anywhere inside the cell, so a custom DayButton that
 // wraps it keeps the styles.
 const dayButtonClassName = cn(
-  "flex size-(--cell-size) items-center justify-center rounded-md text-base text-kumo-default tabular-nums transition-colors outline-none focus-visible:outline-hidden",
-  "cursor-pointer hover:bg-kumo-tint",
-  "focus-visible:relative focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-kumo-brand",
-  "[td[data-day][data-disabled]_&]:cursor-not-allowed [td[data-day][data-disabled]_&]:text-kumo-inactive [td[data-day][data-disabled]_&]:hover:bg-transparent",
+  "flex size-(--cell-size) items-center justify-center rounded-md text-base text-zenth-default tabular-nums transition-colors outline-none focus-visible:outline-hidden",
+  "cursor-pointer hover:bg-zenth-tint",
+  "focus-visible:relative focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-zenth-brand",
+  "[td[data-day][data-disabled]_&]:cursor-not-allowed [td[data-day][data-disabled]_&]:text-zenth-inactive [td[data-day][data-disabled]_&]:hover:bg-transparent",
   // Days from other months are as quiet as disabled ones.
-  "[td[data-day][data-outside]:not([data-selected])_&]:text-kumo-inactive",
+  "[td[data-day][data-outside]:not([data-selected])_&]:text-zenth-inactive",
   // Today keeps its weight when disabled, so it can still be found.
-  "[td[data-day][data-today]:not([data-selected],[data-outside])_&]:font-semibold [td[data-day][data-today]:not([data-selected],[data-outside],[data-disabled])_&]:text-kumo-link",
+  "[td[data-day][data-today]:not([data-selected],[data-outside])_&]:font-semibold [td[data-day][data-today]:not([data-selected],[data-outside],[data-disabled])_&]:text-zenth-link",
   // Selected days are filled, except the days inside a range, which show the
   // band painted on their cells.
-  "[td[data-day][data-selected]:not([data-range-middle])_&]:bg-kumo-contrast [td[data-day][data-selected]:not([data-range-middle])_&]:text-kumo-inverse [td[data-day][data-selected]:not([data-range-middle])_&]:hover:bg-kumo-contrast",
-  "[td[data-day][data-range-middle]:not([data-disabled])_&]:hover:bg-kumo-interact",
+  "[td[data-day][data-selected]:not([data-range-middle])_&]:bg-zenth-contrast [td[data-day][data-selected]:not([data-range-middle])_&]:text-zenth-inverse [td[data-day][data-selected]:not([data-range-middle])_&]:hover:bg-zenth-contrast",
+  "[td[data-day][data-range-middle]:not([data-disabled])_&]:hover:bg-zenth-interact",
   // Range ends are square on the side that meets the band. A one-day range,
   // or an end at the edge of a week, has no band beside it, so it stays round.
   "[td[data-day][data-range-start]:not([data-range-end],:last-of-type)_&]:rounded-e-none",
@@ -237,14 +237,14 @@ export function DatePicker({
         ),
         caption_label: cn(
           defaults.caption_label,
-          "text-base font-medium text-kumo-default",
+          "text-base font-medium text-zenth-default",
           hasDropdowns &&
-            "flex h-7 items-center gap-1 rounded-md ps-2 pe-1 [&>svg]:text-kumo-subtle",
+            "flex h-7 items-center gap-1 rounded-md ps-2 pe-1 [&>svg]:text-zenth-subtle",
         ),
         dropdowns: cn(defaults.dropdowns, "flex items-center gap-1.5"),
         dropdown_root: cn(
           defaults.dropdown_root,
-          "relative rounded-md ring ring-kumo-line has-focus-visible:ring-2 has-focus-visible:ring-kumo-brand",
+          "relative rounded-md ring ring-zenth-line has-focus-visible:ring-2 has-focus-visible:ring-zenth-brand",
         ),
         dropdown: cn(
           defaults.dropdown,
@@ -254,13 +254,13 @@ export function DatePicker({
         weekdays: cn(defaults.weekdays, "flex"),
         weekday: cn(
           defaults.weekday,
-          "flex h-5 w-(--cell-width) items-center justify-center text-xs font-normal text-kumo-subtle",
+          "flex h-5 w-(--cell-width) items-center justify-center text-xs font-normal text-zenth-subtle",
         ),
         week: cn(defaults.week, "mt-2 flex"),
         week_number_header: cn(defaults.week_number_header, "w-(--cell-width)"),
         week_number: cn(
           defaults.week_number,
-          "flex h-(--cell-size) w-(--cell-width) items-center justify-center text-xs text-kumo-subtle",
+          "flex h-(--cell-size) w-(--cell-width) items-center justify-center text-xs text-zenth-subtle",
         ),
         // The range band is painted on the cells: full width in the middle,
         // the inner half at each end so it meets the end squares, and
@@ -276,19 +276,19 @@ export function DatePicker({
         day_button: cn(defaults.day_button, dayButtonClassName),
         range_start: cn(
           defaults.range_start,
-          "bg-linear-to-r from-transparent from-50% to-kumo-fill to-50% last-of-type:bg-none rtl:bg-linear-to-l",
+          "bg-linear-to-r from-transparent from-50% to-zenth-fill to-50% last-of-type:bg-none rtl:bg-linear-to-l",
         ),
-        range_middle: cn(defaults.range_middle, "bg-kumo-fill"),
+        range_middle: cn(defaults.range_middle, "bg-zenth-fill"),
         range_end: cn(
           defaults.range_end,
-          "bg-linear-to-l from-transparent from-50% to-kumo-fill to-50% first-of-type:bg-none rtl:bg-linear-to-r",
+          "bg-linear-to-l from-transparent from-50% to-zenth-fill to-50% first-of-type:bg-none rtl:bg-linear-to-r",
         ),
         hidden: cn(defaults.hidden, "invisible"),
         footer: cn(defaults.footer, "w-0 min-w-full pt-3"),
         ...classNames,
         root: cn(
           defaults.root,
-          "w-fit rounded-xl bg-kumo-base text-sm select-none [--cell-size:--spacing(8)] [--cell-width:--spacing(9)]",
+          "w-fit rounded-xl bg-zenth-base text-sm select-none [--cell-size:--spacing(8)] [--cell-width:--spacing(9)]",
           classNames?.root,
           className,
         ),

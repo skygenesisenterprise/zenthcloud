@@ -71,7 +71,7 @@ export function clipboardTextVariants({
 }: KumoClipboardTextVariantsProps = {}) {
   return cn(
     // Base styles
-    "flex items-center gap-0 overflow-hidden bg-kumo-base px-0 font-mono",
+    "flex items-center gap-0 overflow-hidden bg-zenth-base px-0 font-mono",
     // Apply size styles from KUMO_CLIPBOARD_TEXT_VARIANTS
     resolveVariant(
       KUMO_CLIPBOARD_TEXT_VARIANTS.size,
@@ -149,9 +149,9 @@ function AnchoredToasts() {
               key={updateKey}
               toast={toast}
               className={cn(
-                "flex origin-[var(--transform-origin)] flex-col rounded-md bg-kumo-base px-3 py-1.5 font-sans text-xs text-kumo-default",
-                "shadow-lg outline outline-kumo-line",
-                updateKey > 0 && "animate-clipboard-toast-bump",
+                "flex origin-[var(--transform-origin)] flex-col rounded-md bg-zenth-base px-3 py-1.5 font-sans text-xs text-zenth-default",
+                "shadow-lg outline outline-zenth-line",
+                updateKey > 0 && "zenth-animate-clipboard-toast-bump",
               )}
             >
               <Toast.Description />
@@ -314,9 +314,9 @@ export const ClipboardText = forwardRef<HTMLDivElement, ClipboardTextProps>(
         size={sizeConfig.buttonSize}
         variant="ghost"
         className={cn(
-          "relative isolate overflow-hidden rounded-l-none rounded-r-[inherit] border-l! border-kumo-line! px-3 transition-all duration-200",
-          "focus:ring-kumo-focus/50 focus:ring-inset",
-          "focus-visible:ring-2 focus-visible:ring-kumo-brand focus-visible:ring-inset",
+          "relative isolate overflow-hidden rounded-l-none rounded-r-[inherit] border-l! border-zenth-line! px-3 transition-all duration-200",
+          "focus:ring-zenth-focus/50 focus:ring-inset",
+          "focus-visible:ring-2 focus-visible:ring-zenth-brand focus-visible:ring-inset",
         )}
         onClick={copyToClipboard}
         aria-label={copyAction}
@@ -349,9 +349,9 @@ export const ClipboardText = forwardRef<HTMLDivElement, ClipboardTextProps>(
         size={sizeConfig.buttonSize}
         variant="ghost"
         className={cn(
-          "rounded-none border-l! border-kumo-line! px-3",
-          "focus:ring-kumo-focus/50 focus:ring-inset",
-          "focus-visible:ring-2 focus-visible:ring-kumo-brand focus-visible:ring-inset",
+          "rounded-none border-l! border-zenth-line! px-3",
+          "focus:ring-zenth-focus/50 focus:ring-inset",
+          "focus-visible:ring-2 focus-visible:ring-zenth-brand focus-visible:ring-inset",
         )}
         onClick={() => setRevealed((value) => !value)}
         aria-label={revealed ? hideAction : revealAction}
@@ -390,8 +390,8 @@ export const ClipboardText = forwardRef<HTMLDivElement, ClipboardTextProps>(
                 <Tooltip.Positioner side={tooltipSide} sideOffset={8}>
                   <Tooltip.Popup
                     className={cn(
-                      "flex origin-[var(--transform-origin)] flex-col rounded-md bg-kumo-base px-3 py-1.5 text-xs text-kumo-default",
-                      "shadow-md outline outline-kumo-line",
+                      "flex origin-[var(--transform-origin)] flex-col rounded-md bg-zenth-base px-3 py-1.5 text-xs text-zenth-default",
+                      "shadow-md outline outline-zenth-line",
                     )}
                   >
                     {tooltipText}

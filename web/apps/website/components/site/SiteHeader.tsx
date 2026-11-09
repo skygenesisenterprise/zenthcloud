@@ -1,195 +1,239 @@
-'use client'
+"use client";
 
-import { ChevronDown, Menu, X } from 'lucide-react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import * as React from 'react'
-import { searchIndex } from '@/lib/content/search-index'
-import { cta, mainNav, utilityNav } from '@/lib/content/site'
-import { cn } from '@/lib/utils'
-import { Container } from '../Container'
-import { Button } from '../ui/button'
-import { LanguageSelector } from './LanguageSelector'
-import { Logo } from '../shared/Logo'
-import { SiteSearch } from './SiteSearch'
-import { ThemeToggle } from './ThemeToggle'
-
-type NavGroup = (typeof mainNav)[number]
-
-const PANEL_ID = 'mega-panel'
-
-const navTrigger =
-	'inline-flex h-9 items-center gap-1.5 rounded-md border px-3 text-sm font-medium transition-colors'
-
-const panelUtilities = [
-	{ href: '/solutions/enterprise', label: 'Enterprise' },
-	{ href: '/infrastructure/locations', label: 'Global network' },
-	{ href: '/products/domain-services', label: 'Domains' },
-] as const
+import { Button, DropdownMenu, Link, LinkButton } from "@zenthcloud/react";
+import { ArrowRight, CaretDown, CaretUpDown, List, X } from "@phosphor-icons/react";
+import { usePathname } from "next/navigation";
+import * as React from "react";
+import { searchIndex } from "@/lib/content/search-index";
+import { cta, mainNav, utilityNav, type NavGroup } from "@/lib/content/site";
+import { cn } from "@/lib/utils";
+import { Container } from "../Container";
+import { LanguageSelector } from "./LanguageSelector";
+import { SiteSearch } from "./SiteSearch";
 
 function isActive(pathname: string, href: string) {
-	if (href === '/') return pathname === '/'
-	return pathname === href || pathname.startsWith(`${href}/`)
+	if (href === "/") return pathname === "/";
+	return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-function DesktopMenu({
+/** Every section must sit on one row, so the grid is sized to the section
+ * count. Static strings keep Tailwind's scanner able to see each class. */
+const COLUMN_GRID_CLASS: Record<number, string> = {
+	1: "lg:grid-cols-1",
+	2: "lg:grid-cols-2",
+	3: "lg:grid-cols-3",
+	4: "lg:grid-cols-4",
+	5: "lg:grid-cols-5",
+	6: "lg:grid-cols-6",
+	7: "lg:grid-cols-7",
+	8: "lg:grid-cols-8",
+};
+
+function columnGridClass(count: number) {
+	return COLUMN_GRID_CLASS[Math.min(Math.max(count, 1), 8)] ?? "lg:grid-cols-4";
+}
+
+/** Utility action rendered as one of the outlined pills in the right cluster. */
+function HeaderPill({
+	href,
+	label,
+	external,
+}: {
+	href: string;
+	label: string;
+	external?: boolean;
+}) {
+	return (
+		<LinkButton
+			href={href}
+			variant="outline"
+			size="sm"
+			external={external}
+			className="h-8 rounded-full border-border bg-transparent px-3.5 text-[13px] font-medium text-foreground ring-0 hover:border-foreground/30 hover:bg-muted hover:text-foreground"
+		>
+			{label}
+		</LinkButton>
+	);
+}
+
+/**
+ * Desktop navigation, built on the official `DropdownMenu` compound component:
+ * one root per group, the trigger renders the library `Button`, and the panel
+ * is the library popup (portal, positioner and surface handled for us).
+ */
+function DesktopNavItem({
 	group,
-	open,
-	onOpen,
-	onClose,
 	pathname,
 }: {
-	group: NavGroup
-	open: boolean
-	onOpen: () => void
-	onClose: () => void
-	pathname: string
+	group: NavGroup;
+	pathname: string;
 }) {
-	const active = isActive(pathname, group.href ?? '/')
+	const active = isActive(pathname, group.href ?? "/");
+	// The "More" section is rendered as the panel footer, like the reference:
+	// one row of shortcuts beside "See all products".
+	const moreColumn = group.columns.find((column) => column.title === "More");
+	const columns = group.columns.filter((column) => column.title !== "More");
+	const [open, setOpen] = React.useState(false);
+	// The panel is anchored to the page centre, not to its trigger, so every
+	// mega menu opens in the same place. The offset is measured on open.
+	const [alignOffset, setAlignOffset] = React.useState(0);
+	const closeTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+	const cancelClose = React.useCallback(() => {
+		if (closeTimer.current) {
+			clearTimeout(closeTimer.current);
+			closeTimer.current = null;
+		}
+	}, []);
+
+	// Pointer entry opens the panel; leaving schedules a short close so moving
+	// from the trigger into the panel does not dismiss it.
+	const openMenu = React.useCallback(() => {
+		cancelClose();
+		setOpen(true);
+	}, [cancelClose]);
+
+	const scheduleClose = React.useCallback(() => {
+		cancelClose();
+		closeTimer.current = setTimeout(() => setOpen(false), 160);
+	}, [cancelClose]);
+
+	const handleTriggerOpen = React.useCallback(
+		(event: React.SyntheticEvent<HTMLElement>) => {
+			const rect = event.currentTarget.getBoundingClientRect();
+			setAlignOffset(
+				Math.round(window.innerWidth / 2 - (rect.left + rect.width / 2)),
+			);
+			openMenu();
+		},
+		[openMenu],
+	);
+
+	React.useEffect(() => cancelClose, [cancelClose]);
+	React.useEffect(() => setOpen(false), [pathname]);
 
 	if (group.columns.length === 0) {
 		return (
 			<Link
-				href={group.href ?? '/'}
-				aria-current={active ? 'page' : undefined}
+				href={group.href ?? "/"}
+				variant="plain"
+				aria-current={active ? "page" : undefined}
 				className={cn(
-					navTrigger,
-					'border-transparent',
+					"inline-flex h-8 items-center text-sm font-medium no-underline! transition-colors",
 					active
-						? 'text-ink-foreground'
-						: 'text-ink-foreground/70 hover:text-ink-foreground',
+						? "text-foreground"
+						: "text-foreground/75 hover:text-foreground",
 				)}
 			>
 				{group.title}
 			</Link>
-		)
+		);
 	}
 
 	return (
-		<button
-			type="button"
-			aria-expanded={open}
-			aria-controls={PANEL_ID}
-			onMouseEnter={onOpen}
-			onClick={() => (open ? onClose() : onOpen())}
-			onKeyDown={(event) => {
-				if (event.key === 'Escape') onClose()
-			}}
-			className={cn(
-				navTrigger,
-				open
-					? 'border-ink-foreground/30 bg-ink-foreground/[0.04] text-ink-foreground'
-					: cn(
-							'border-transparent',
-							active
-								? 'text-ink-foreground'
-								: 'text-ink-foreground/70 hover:text-ink-foreground',
-						),
-			)}
-		>
-			{group.title}
-			<ChevronDown
-				className={cn('h-3 w-3 transition-transform duration-150', open && 'rotate-180')}
-				aria-hidden="true"
-			/>
-		</button>
-	)
-}
-
-function MegaPanel({
-	group,
-	onClose,
-	panelRef,
-}: {
-	group: NavGroup
-	onClose: () => void
-	panelRef: React.Ref<HTMLDivElement>
-}) {
-	const count = group.columns.length
-	const columns =
-		count >= 6
-			? 'lg:grid-cols-3 xl:grid-cols-6'
-			: count === 5
-				? 'lg:grid-cols-3 xl:grid-cols-5'
-				: count === 4
-					? 'lg:grid-cols-4'
-					: count === 3
-						? 'lg:grid-cols-3'
-						: 'lg:grid-cols-2'
-
-	return (
-		<div
-			ref={panelRef}
-			id={PANEL_ID}
-			className="motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-top-1 absolute left-1/2 top-full z-50 w-[calc(100vw-2rem)] max-w-[1352px] -translate-x-1/2 motion-safe:duration-150"
-		>
-			<div className="border-ink-foreground/15 bg-ink text-ink-foreground rounded-xl border p-2">
+		<div onMouseEnter={openMenu} onMouseLeave={scheduleClose}>
+			<DropdownMenu open={open} onOpenChange={setOpen}>
+				<DropdownMenu.Trigger>
+				<Button
+					variant="ghost"
+					size="sm"
+					onMouseEnter={handleTriggerOpen}
+					onFocus={handleTriggerOpen}
+					className={cn(
+						"group h-8 gap-1.5 bg-transparent px-0 text-[13px] font-medium shadow-none hover:bg-transparent",
+						active
+							? "text-foreground"
+							: "text-foreground/75 hover:text-foreground",
+					)}
+				>
+					{group.title}
+					<span className="flex size-[18px] items-center justify-center rounded-[5px] bg-muted text-foreground/60">
+						<CaretUpDown
+							className="size-2.5"
+							weight="bold"
+							aria-hidden="true"
+						/>
+					</span>
+				</Button>
+			</DropdownMenu.Trigger>
+				<DropdownMenu.Content
+					onMouseEnter={openMenu}
+					onMouseLeave={scheduleClose}
+					align="center"
+					alignOffset={alignOffset}
+					sideOffset={14}
+				collisionPadding={16}
+				className="w-[min(1360px,calc(100vw-2rem))] border border-border bg-popover p-2 text-popover-foreground shadow-lg"
+			>
 				<nav aria-label={`${group.title} menu`}>
 					<div
 						className={cn(
-							'border-ink-foreground/10 divide-ink-foreground/[0.08] grid divide-y overflow-hidden rounded-md border lg:divide-x lg:divide-y-0',
-							columns,
+							"grid divide-y divide-border overflow-hidden rounded-md border border-border lg:divide-x lg:divide-y-0",
+							columnGridClass(columns.length),
 						)}
 					>
-						{group.columns.map((column) => (
-							<div key={column.title} className="p-5 xl:p-6">
-								<p className="text-ink-foreground/55 mb-5 text-[13px] font-medium">
+						{columns.map((column) => (
+							<DropdownMenu.Group key={column.title} className="min-w-0 p-3 xl:p-4">
+								<DropdownMenu.Label className="mb-3 px-0 text-[13px] font-medium text-muted-foreground">
 									{column.title}
-								</p>
-								<ul className="space-y-6">
-									{column.links.map((link) => (
-										<li key={`${column.title}-${link.label}-${link.href}`}>
-											<Link
-												href={link.href}
-												target={link.external ? '_blank' : undefined}
-												rel={link.external ? 'noreferrer' : undefined}
-												onClick={onClose}
-												className="focus-visible:outline-signal group block rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4"
-											>
-												<span className="text-ink-foreground group-hover:text-signal block text-sm font-medium leading-snug transition-colors">
-													{link.label}
-												</span>
-												{link.description && (
-													<span className="text-ink-foreground/60 mt-1 block text-sm leading-snug">
-														{link.description}
-													</span>
-												)}
-											</Link>
-										</li>
-									))}
-								</ul>
-							</div>
+								</DropdownMenu.Label>
+								{column.links.map((item) => (
+									<DropdownMenu.LinkItem
+										key={`${column.title}-${item.label}-${item.href}`}
+										href={item.href}
+										target={item.external ? "_blank" : undefined}
+										rel={item.external ? "noreferrer" : undefined}
+										className="flex-col items-start gap-0.5 rounded-md px-2 py-2 text-foreground"
+									>
+										<span className="text-sm font-medium leading-snug">
+											{item.label}
+										</span>
+										{item.description && (
+											<span className="text-xs leading-snug text-muted-foreground">
+												{item.description}
+											</span>
+										)}
+									</DropdownMenu.LinkItem>
+								))}
+							</DropdownMenu.Group>
 						))}
 					</div>
 				</nav>
 
-				<div className="border-ink-foreground/10 mt-2 flex flex-col gap-3 border-t px-3 py-4 sm:flex-row sm:items-center sm:justify-between">
-					{group.href && (
-						<Link
-							href={group.href}
-							onClick={onClose}
-							className="text-signal text-xs font-medium underline-offset-4 hover:underline"
-						>
-							See all {group.title.toLowerCase()} <span aria-hidden="true">→</span>
-						</Link>
-					)}
-					<ul className="text-ink-foreground/55 flex flex-wrap gap-x-8 gap-y-2 text-xs">
-						{panelUtilities.map((link) => (
-							<li key={link.href}>
+				<div className="mt-2 flex flex-col gap-3 border-t border-border px-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+					<div className="flex flex-wrap items-center gap-2">
+						{group.href && (
+							<LinkButton
+								href={group.href}
+								variant="ghost"
+								size="sm"
+								className="text-primary"
+							>
+								See all {group.title.toLowerCase()}
+								<ArrowRight className="size-3.5" aria-hidden="true" />
+							</LinkButton>
+						)}
+					</div>
+					<ul className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground">
+						{(moreColumn?.links ?? utilityNav).map((item) => (
+							<li key={item.label}>
 								<Link
-									href={link.href}
-									onClick={onClose}
-									className="hover:text-ink-foreground transition-colors"
+									href={item.href}
+									variant="plain"
+									target={"external" in item && item.external ? "_blank" : undefined}
+									rel={"external" in item && item.external ? "noreferrer" : undefined}
+									className="text-muted-foreground no-underline! transition-colors hover:text-foreground"
 								>
-									{link.label}
+									{item.label}
 								</Link>
 							</li>
 						))}
 					</ul>
 				</div>
-			</div>
+				</DropdownMenu.Content>
+			</DropdownMenu>
 		</div>
-	)
+	);
 }
 
 function MobileMenu({
@@ -197,28 +241,28 @@ function MobileMenu({
 	onClose,
 	pathname,
 }: {
-	open: boolean
-	onClose: () => void
-	pathname: string
+	open: boolean;
+	onClose: () => void;
+	pathname: string;
 }) {
 	React.useEffect(() => {
-		if (!open) return
-		const previous = document.body.style.overflow
-		document.body.style.overflow = 'hidden'
+		if (!open) return;
+		const previous = document.body.style.overflow;
+		document.body.style.overflow = "hidden";
 		const onKeyDown = (event: KeyboardEvent) => {
-			if (event.key === 'Escape') onClose()
-		}
-		window.addEventListener('keydown', onKeyDown)
+			if (event.key === "Escape") onClose();
+		};
+		window.addEventListener("keydown", onKeyDown);
 		return () => {
-			document.body.style.overflow = previous
-			window.removeEventListener('keydown', onKeyDown)
-		}
-	}, [open, onClose])
+			document.body.style.overflow = previous;
+			window.removeEventListener("keydown", onKeyDown);
+		};
+	}, [open, onClose]);
 
-	if (!open) return null
+	if (!open) return null;
 
 	return (
-		<div className="border-ink-foreground/10 bg-ink text-ink-foreground motion-safe:animate-in motion-safe:fade-in-0 fixed inset-x-0 bottom-0 top-16 z-40 overflow-y-auto border-t motion-safe:duration-150 lg:hidden">
+		<div className="fixed inset-x-0 bottom-0 top-16 z-40 overflow-y-auto border-t border-border bg-popover text-popover-foreground lg:hidden">
 			<Container className="py-6">
 				<nav aria-label="Mobile">
 					<ul className="space-y-1">
@@ -226,56 +270,62 @@ function MobileMenu({
 							<li key={group.title}>
 								{group.columns.length === 0 ? (
 									<Link
-										href={group.href ?? '/'}
+										href={group.href ?? "/"}
+										variant="current"
 										onClick={onClose}
 										aria-current={
-											isActive(pathname, group.href ?? '/')
-												? 'page'
+											isActive(pathname, group.href ?? "/")
+												? "page"
 												: undefined
 										}
-										className="text-ink-foreground hover:bg-ink-foreground/[0.06] block rounded-md px-2 py-3 text-base font-medium"
+										className="block rounded-md px-2 py-3 text-base font-medium no-underline hover:bg-foreground/[0.06]"
 									>
 										{group.title}
 									</Link>
 								) : (
 									<details className="group rounded-md">
-										<summary className="text-ink-foreground hover:bg-ink-foreground/[0.06] flex cursor-pointer list-none items-center justify-between rounded-md px-2 py-3 text-base font-medium [&::-webkit-details-marker]:hidden">
+										<summary className="flex cursor-pointer list-none items-center justify-between rounded-md px-2 py-3 text-base font-medium hover:bg-foreground/[0.06] [&::-webkit-details-marker]:hidden">
 											{group.title}
-											<ChevronDown
-												className="text-ink-foreground/50 h-4 w-4 transition-transform group-open:rotate-180"
+											<CaretDown
+												className="size-4 text-muted-foreground transition-transform group-open:rotate-180"
 												aria-hidden="true"
 											/>
 										</summary>
 										<div className="pb-2 pl-2">
 											{group.columns.map((column) => (
 												<div key={column.title} className="mb-2">
-													<p className="text-ink-foreground/45 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.16em]">
+													<p className="px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
 														{column.title}
 													</p>
 													<ul>
-														{column.links.map((link) => (
-															<li key={`${column.title}-${link.label}-${link.href}`}>
+														{column.links.map((item) => (
+															<li key={`${column.title}-${item.label}-${item.href}`}>
 																<Link
-																	href={link.href}
-																	target={link.external ? '_blank' : undefined}
-																	rel={link.external ? 'noreferrer' : undefined}
+																	href={item.href}
+																	variant="current"
+																	target={item.external ? "_blank" : undefined}
+																	rel={
+																		item.external ? "noreferrer" : undefined
+																	}
 																	onClick={onClose}
-																	className="text-ink-foreground/70 hover:bg-ink-foreground/[0.06] hover:text-ink-foreground block rounded-md px-2 py-2 text-sm"
+																	className="block rounded-md px-2 py-2 text-sm text-muted-foreground no-underline hover:bg-foreground/[0.06] hover:text-foreground"
 																>
-																	{link.label}
+																	{item.label}
 																</Link>
 															</li>
 														))}
 													</ul>
 												</div>
 											))}
-											<Link
-												href={group.href ?? '/'}
+											<LinkButton
+												href={group.href ?? "/"}
+												variant="ghost"
+												size="sm"
 												onClick={onClose}
-												className="text-signal block px-2 py-2 text-sm font-medium"
+												className="px-2 text-primary"
 											>
 												View all {group.title.toLowerCase()}
-											</Link>
+											</LinkButton>
 										</div>
 									</details>
 								)}
@@ -284,175 +334,115 @@ function MobileMenu({
 					</ul>
 				</nav>
 
-				<div className="border-ink-foreground/10 mt-4 flex flex-wrap items-center gap-2 border-t pt-4">
-					{utilityNav.map((link) => (
-						<a
-							key={link.href}
-							href={link.href}
-							target={link.external ? '_blank' : undefined}
-							rel={link.external ? 'noreferrer' : undefined}
-							className="border-ink-foreground/20 text-ink-foreground/70 hover:border-ink-foreground/40 hover:text-ink-foreground rounded-full border px-3 py-1.5 text-xs"
+				<div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-4">
+					{utilityNav.map((item) => (
+						<Link
+							key={item.href}
+							href={item.href}
+							variant="current"
+							target={item.external ? "_blank" : undefined}
+							rel={item.external ? "noreferrer" : undefined}
+							className="rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground no-underline hover:border-foreground/30 hover:text-foreground"
 						>
-							{link.label} {link.external && <span aria-hidden="true">↗</span>}
-						</a>
+							{item.label}
+						</Link>
 					))}
 					<div className="ml-auto flex items-center gap-1">
-						<ThemeToggle variant="ghost" />
 						<LanguageSelector variant="ghost" />
 					</div>
 				</div>
 
-				<div className="border-ink-foreground/10 mt-4 grid gap-2 border-t pt-4">
-					<Button
-						className="bg-brand text-brand-foreground hover:bg-brand/90 rounded-full"
-						asChild
+				<div className="mt-4 grid gap-2 border-t border-border pt-4">
+					<LinkButton
+						href={cta.primary.href}
+						variant="primary"
+						onClick={onClose}
+						className="w-full justify-center"
 					>
-						<Link href={cta.primary.href} onClick={onClose}>
-							{cta.primary.label}
-						</Link>
-					</Button>
-					<Button
-						variant="outline"
-						className="border-ink-foreground/25 text-ink-foreground hover:bg-ink-foreground/10 hover:text-ink-foreground rounded-full bg-transparent"
-						asChild
+						{cta.primary.label}
+					</LinkButton>
+					<LinkButton
+						href={cta.signIn.href}
+						variant="secondary"
+						external
+						onClick={onClose}
+						className="w-full justify-center"
 					>
-						<Link href={cta.secondary.href} onClick={onClose}>
-							{cta.secondary.label}
-						</Link>
-					</Button>
-					<Button
-						variant="ghost"
-						className="text-ink-foreground/70 hover:bg-ink-foreground/10 hover:text-ink-foreground rounded-full"
-						asChild
-					>
-						<Link href={cta.signIn.href} onClick={onClose}>
-							{cta.signIn.label}
-						</Link>
-					</Button>
+						{cta.signIn.label}
+					</LinkButton>
 				</div>
 			</Container>
 		</div>
-	)
+	);
 }
 
 export function SiteHeader() {
-	const pathname = usePathname()
-	const [openMenu, setOpenMenu] = React.useState<string | null>(null)
-	const [mobileOpen, setMobileOpen] = React.useState(false)
-	const navRef = React.useRef<HTMLDivElement>(null)
-	const panelRef = React.useRef<HTMLDivElement>(null)
+	const pathname = usePathname();
+	const [mobileOpen, setMobileOpen] = React.useState(false);
 
 	React.useEffect(() => {
-		setOpenMenu(null)
-		setMobileOpen(false)
-	}, [pathname])
-
-	React.useEffect(() => {
-		function onClick(event: MouseEvent) {
-			if (
-				openMenu &&
-				navRef.current &&
-				panelRef.current &&
-				!navRef.current.contains(event.target as Node) &&
-				!panelRef.current.contains(event.target as Node)
-			) {
-				setOpenMenu(null)
-			}
-		}
-		function onKeyDown(event: KeyboardEvent) {
-			if (event.key === 'Escape') setOpenMenu(null)
-		}
-		document.addEventListener('mousedown', onClick)
-		document.addEventListener('keydown', onKeyDown)
-		return () => {
-			document.removeEventListener('mousedown', onClick)
-			document.removeEventListener('keydown', onKeyDown)
-		}
-	}, [openMenu])
-
-	const openGroup = mainNav.find((group) => group.title === openMenu && group.columns.length > 0)
+		setMobileOpen(false);
+	}, [pathname]);
 
 	return (
-		<header
-			onMouseLeave={() => setOpenMenu(null)}
-			className="border-ink-foreground/10 bg-ink text-ink-foreground dark sticky top-0 z-50 border-b"
-		>
+		<header className="sticky top-0 z-50 border-b border-border bg-background text-foreground">
 			<Container>
-				{/* Three distinct zones: identity, navigation, actions. */}
-				<div className="grid h-[76px] grid-cols-[auto_1fr_auto] items-center gap-4 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-6">
-					{/* Zone 1 — identity */}
+				<div className="grid h-16 grid-cols-[auto_1fr_auto] items-center gap-6">
 					<Link
 						href="/"
+						variant="plain"
 						aria-label="ZenthCloud home"
-						className="flex shrink-0 items-center gap-2.5"
+						className="flex shrink-0 items-center no-underline!"
 					>
-						<Logo className="h-6 w-6" />
-						<span className="font-display text-[15px] font-semibold uppercase tracking-[0.18em]">
+						<span className="font-display text-sm font-semibold uppercase tracking-[0.24em] text-foreground">
 							ZenthCloud
 						</span>
 					</Link>
 
-					{/* Zone 2 — navigation */}
-					<div ref={navRef} className="hidden justify-center lg:flex">
+					<div className="hidden justify-center lg:flex">
 						<nav aria-label="Main">
-							<ul className="flex items-center gap-0.5">
+							<ul className="flex items-center gap-8">
 								{mainNav.map((group) => (
 									<li key={group.title}>
-										<DesktopMenu
-											group={group}
-											open={openMenu === group.title}
-											onOpen={() => setOpenMenu(group.title)}
-											onClose={() => setOpenMenu(null)}
-											pathname={pathname}
-										/>
+										<DesktopNavItem group={group} pathname={pathname} />
 									</li>
 								))}
 							</ul>
 						</nav>
 					</div>
 
-					{/* Zone 3 — actions */}
-					<div className="ml-auto flex items-center gap-1 justify-self-end">
-						<ThemeToggle variant="ghost" className="hidden md:inline-flex" />
-						<LanguageSelector variant="ghost" className="hidden sm:block" />
-						<Link
-							href={cta.signIn.href}
-							className="border-ink-foreground/25 text-ink-foreground/85 hover:border-ink-foreground/50 hover:text-ink-foreground ml-2 hidden h-8 items-center whitespace-nowrap rounded-full border px-4 text-[13px] font-medium transition-colors md:inline-flex"
-						>
-							{cta.signIn.label}
-						</Link>
-						<Link
-							href={cta.secondary.href}
-							className="border-ink-foreground/25 text-ink-foreground/85 hover:border-ink-foreground/50 hover:text-ink-foreground hidden h-8 items-center whitespace-nowrap rounded-full border px-4 text-[13px] font-medium transition-colors sm:inline-flex"
-						>
-							Contact sales
-						</Link>
-						<SiteSearch entries={searchIndex} variant="icon" />
-						<button
-							type="button"
+					<div className="ml-auto flex items-center gap-4 justify-self-end">
+						<nav aria-label="Utility" className="hidden items-center gap-2.5 md:flex">
+							<HeaderPill
+								href={cta.signIn.href}
+								label={cta.signIn.label}
+								external
+							/>
+							<HeaderPill href={cta.secondary.href} label={cta.secondary.label} />
+						</nav>
+						<SiteSearch
+							entries={searchIndex}
+							variant="icon"
+							className="text-muted-foreground hover:bg-muted hover:text-foreground"
+						/>
+						<Button
+							variant="ghost"
+							shape="square"
+							size="sm"
 							onClick={() => setMobileOpen((value) => !value)}
 							aria-expanded={mobileOpen}
-							aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'}
-							className="text-ink-foreground/70 hover:bg-ink-foreground/10 hover:text-ink-foreground inline-flex h-9 w-9 items-center justify-center rounded-full transition-colors lg:hidden"
+							aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
+							className="text-muted-foreground hover:bg-muted hover:text-foreground lg:hidden"
 						>
 							{mobileOpen ? (
-								<X className="h-5 w-5" aria-hidden="true" />
+								<X className="size-5" aria-hidden="true" />
 							) : (
-								<Menu className="h-5 w-5" aria-hidden="true" />
+								<List className="size-5" aria-hidden="true" />
 							)}
-						</button>
+						</Button>
 					</div>
 				</div>
 			</Container>
-
-			{openGroup && (
-				<MegaPanel
-					key={openGroup.title}
-					group={openGroup}
-					onClose={() => setOpenMenu(null)}
-					panelRef={panelRef}
-				/>
-			)}
 
 			<MobileMenu
 				open={mobileOpen}
@@ -460,5 +450,5 @@ export function SiteHeader() {
 				pathname={pathname}
 			/>
 		</header>
-	)
+	);
 }

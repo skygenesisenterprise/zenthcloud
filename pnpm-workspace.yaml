@@ -39,6 +39,7 @@ catalog:
   wrangler: '4.159.0'
 
 allowBuilds:
+  '@parcel/watcher': set this to true or false
   '@scarf/scarf': true
   '@tree-sitter-grammars/tree-sitter-yaml': true
   '@vscode/vsce-sign': true
@@ -50,12 +51,14 @@ allowBuilds:
   esbuild: true
   free-email-domains: true
   msgpackr-extract: true
+  msw: set this to true or false
   node-pty: true
   protobufjs: true
   sharp: true
   ssh2: true
   tree-sitter: true
   tree-sitter-json: true
+  workerd: set this to true or false
 
 onlyBuiltDependencies:
   - '@scarf/scarf'

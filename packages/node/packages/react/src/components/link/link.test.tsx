@@ -20,10 +20,10 @@ describe("Link", () => {
 
   it("should apply inline variant classes", () => {
     expect(KUMO_LINK_VARIANTS.variant.inline.classes).toContain(
-      "text-kumo-link",
+      "text-zenth-link",
     );
     expect(KUMO_LINK_VARIANTS.variant.inline.classes).toContain("underline");
-    expect(KUMO_LINK_VARIANTS.variant.inline.classes).toContain("link-current");
+    expect(KUMO_LINK_VARIANTS.variant.inline.classes).toContain("zenth-link-current");
   });
 
   it("should apply current variant classes", () => {
@@ -32,13 +32,13 @@ describe("Link", () => {
     );
     expect(KUMO_LINK_VARIANTS.variant.current.classes).toContain("underline");
     expect(KUMO_LINK_VARIANTS.variant.current.classes).toContain(
-      "link-current",
+      "zenth-link-current",
     );
   });
 
   it("should apply plain variant classes", () => {
     expect(KUMO_LINK_VARIANTS.variant.plain.classes).toContain(
-      "text-kumo-link",
+      "text-zenth-link",
     );
     expect(KUMO_LINK_VARIANTS.variant.plain.classes).not.toContain("underline");
   });
@@ -87,18 +87,18 @@ describe("Link", () => {
     );
 
     expect(screen.getByRole("link").classList).toContain(
-      "has-[>[data-kumo-component=Badge]]:rounded-full",
+      "has-[>[data-zenth-component=Badge]]:rounded-full",
     );
   });
 
   it("should generate variant classes via linkVariants helper", () => {
-    expect(linkVariants({ variant: "inline" })).toContain("text-kumo-link");
+    expect(linkVariants({ variant: "inline" })).toContain("text-zenth-link");
     expect(linkVariants({ variant: "current" })).toContain("text-current");
-    expect(linkVariants({ variant: "plain" })).toContain("text-kumo-link");
+    expect(linkVariants({ variant: "plain" })).toContain("text-zenth-link");
   });
 
   it("should default to inline variant", () => {
-    expect(linkVariants()).toContain("text-kumo-link");
+    expect(linkVariants()).toContain("text-zenth-link");
     expect(linkVariants()).toContain("underline");
   });
 

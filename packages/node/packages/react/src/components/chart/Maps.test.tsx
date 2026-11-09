@@ -74,7 +74,7 @@ describe("GlobeMap", () => {
     ).toBe(`url(#${sphereClip?.id})`);
     expect(globe.querySelectorAll("circle")).toHaveLength(1);
     expect(globe.querySelector("pattern")).toBeNull();
-    expect(globe.querySelector(".stroke-kumo-base")).not.toBeNull();
+    expect(globe.querySelector(".stroke-zenth-base")).not.toBeNull();
 
     fireEvent.keyDown(
       getByRole("button", { name: "London: Availability location" }),

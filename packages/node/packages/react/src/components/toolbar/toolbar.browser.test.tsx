@@ -95,7 +95,7 @@ describe("Toolbar.Link interactions", () => {
 
     await expect
       .element(link)
-      .toHaveAttribute("data-kumo-component", "Toolbar.Link");
+      .toHaveAttribute("data-zenth-component", "Toolbar.Link");
     await expect.element(link).toHaveAttribute("href", "#docs");
     await expect.element(link).toHaveAttribute("target", "_blank");
     await expect.element(link).toHaveAttribute("rel", "noopener noreferrer");

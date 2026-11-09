@@ -10,9 +10,11 @@ export type ColorMode = {
   dark: string;
 };
 
-/** Theme-specific color overrides (kumo is required, others are optional) */
+/** Theme-specific color overrides (zenth is required, others are optional) */
 export type ThemeColors = {
-  kumo: ColorMode;
+  zenth: ColorMode;
+  /** @deprecated Legacy theme key kept for migration tooling. */
+  kumo?: ColorMode;
   fedramp?: ColorMode;
   [themeName: string]: ColorMode | undefined;
 };
@@ -43,9 +45,11 @@ export type ColorTokens = {
   [tokenName: string]: TokenDefinition;
 };
 
-/** Theme-specific typography values (kumo is required, others are optional) */
+/** Theme-specific typography values (zenth is required, others are optional) */
 export type ThemeTypography = {
-  kumo: string;
+  zenth: string;
+  /** @deprecated Legacy theme key kept for migration tooling. */
+  kumo?: string;
   fedramp?: string;
   [themeName: string]: string | undefined;
 };

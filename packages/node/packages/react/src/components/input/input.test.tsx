@@ -81,13 +81,13 @@ describe("Input", () => {
   it("renders with default variant 'default'", () => {
     render(<Input aria-label="Test" />);
     expect(screen.getByRole("textbox").className).toContain(
-      "focus:ring-kumo-focus/50",
+      "focus:ring-zenth-focus/50",
     );
   });
 
   it("renders with variant 'error'", () => {
     render(<Input aria-label="Test" variant="error" />);
-    expect(screen.getByRole("textbox").className).toContain("ring-kumo-danger");
+    expect(screen.getByRole("textbox").className).toContain("ring-zenth-danger");
   });
 
   // Field wrapping
@@ -145,7 +145,7 @@ describe("Input", () => {
 
   it("applies error variant styling without label", () => {
     render(<Input aria-label="Email" error="Bad value" />);
-    expect(screen.getByRole("textbox").className).toContain("ring-kumo-danger");
+    expect(screen.getByRole("textbox").className).toContain("ring-zenth-danger");
   });
 
   it("renders description without label", () => {
@@ -187,8 +187,8 @@ describe("Input", () => {
   // inputVariants function
   it("returns base classes with default arguments", () => {
     const classes = inputVariants();
-    expect(classes).toContain("bg-kumo-control");
-    expect(classes).toContain("text-kumo-default");
+    expect(classes).toContain("bg-zenth-control");
+    expect(classes).toContain("text-zenth-default");
   });
 
   it("applies size classes from KUMO_INPUT_VARIANTS", () => {
@@ -199,7 +199,7 @@ describe("Input", () => {
 
   it("applies variant classes from KUMO_INPUT_VARIANTS", () => {
     const classes = inputVariants({ variant: "error" });
-    expect(classes).toContain("ring-kumo-danger");
+    expect(classes).toContain("ring-zenth-danger");
   });
 
   it("applies parentFocusIndicator class when true", () => {
@@ -209,7 +209,7 @@ describe("Input", () => {
 
   it("applies focusIndicator class when true", () => {
     const classes = inputVariants({ focusIndicator: true });
-    expect(classes).toContain("focus:ring-kumo-focus/50");
+    expect(classes).toContain("focus:ring-zenth-focus/50");
   });
 
   // Variants export

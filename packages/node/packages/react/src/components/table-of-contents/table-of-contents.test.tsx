@@ -58,7 +58,7 @@ describe("TableOfContents", () => {
 
   it("should have active state variant classes", () => {
     expect(KUMO_TABLE_OF_CONTENTS_VARIANTS.state.active.classes).toContain(
-      "text-kumo-default",
+      "text-zenth-default",
     );
     expect(KUMO_TABLE_OF_CONTENTS_VARIANTS.state.active.classes).toContain(
       "font-medium",
@@ -67,7 +67,7 @@ describe("TableOfContents", () => {
 
   it("should have default state variant classes", () => {
     expect(KUMO_TABLE_OF_CONTENTS_VARIANTS.state.default.classes).toContain(
-      "text-kumo-subtle",
+      "text-zenth-subtle",
     );
   });
 

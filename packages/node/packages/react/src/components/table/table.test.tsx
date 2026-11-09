@@ -18,10 +18,10 @@ describe("Table styling", () => {
     );
 
     expect(screen.getByTestId("default-row").className).toContain(
-      "even:bg-kumo-elevated",
+      "even:bg-zenth-elevated",
     );
     expect(screen.getByTestId("selected-row").className).not.toContain(
-      "even:bg-kumo-elevated",
+      "even:bg-zenth-elevated",
     );
     expect(container.querySelector("table")?.className).not.toContain(
       "[&_td]:border",

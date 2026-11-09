@@ -109,12 +109,12 @@ const Root = React.forwardRef<HTMLDivElement, ToolbarProps>(
     return (
       <ToolbarBase.Root
         ref={ref}
-        data-kumo-component="Toolbar"
+        data-zenth-component="Toolbar"
         className={cn(
-          "inline-flex w-fit items-stretch rounded-lg bg-kumo-control shadow-xs ring ring-kumo-line",
+          "inline-flex w-fit items-stretch rounded-lg bg-zenth-control shadow-xs ring ring-zenth-line",
           "[&>*:first-child]:rounded-l-lg [&>*:not([aria-hidden='true']):not([type='hidden']):not(:has(~_:not([aria-hidden='true']):not([type='hidden'])))]:rounded-r-lg",
-          "[&>*_[data-kumo-toolbar-input]:focus]:rounded-[inherit]",
-          "[&>*:not([aria-hidden='true']):not(:first-child)]:border-l [&>*:not([aria-hidden='true']):not(:first-child)]:border-kumo-line",
+          "[&>*_[data-zenth-toolbar-input]:focus]:rounded-[inherit]",
+          "[&>*:not([aria-hidden='true']):not(:first-child)]:border-l [&>*:not([aria-hidden='true']):not(:first-child)]:border-zenth-line",
           KUMO_TOOLBAR_VARIANTS.size[size].classes,
           className,
         )}
@@ -172,7 +172,7 @@ const Button = React.forwardRef<HTMLButtonElement, ToolbarButtonProps>(
     return (
       <ToolbarBase.Button
         ref={ref}
-        data-kumo-component="Toolbar.Button"
+        data-zenth-component="Toolbar.Button"
         disabled={loading || disabled}
         className={cn(className, TOOLBAR_CONTROL_STYLES)}
         render={button}
@@ -195,7 +195,7 @@ const Link = React.forwardRef<HTMLAnchorElement, ToolbarLinkProps>(
     return (
       <ToolbarBase.Link
         ref={ref}
-        data-kumo-component="Toolbar.Link"
+        data-zenth-component="Toolbar.Link"
         className={cn(className, TOOLBAR_CONTROL_STYLES)}
         render={
           <KumoLinkButton
@@ -225,7 +225,7 @@ const Input = React.forwardRef<HTMLInputElement, ToolbarInputProps>(
     return (
       <ToolbarBase.Input
         ref={ref}
-        data-kumo-component="Toolbar.Input"
+        data-zenth-component="Toolbar.Input"
         render={
           <KumoInput
             className={inputClassName}
@@ -234,7 +234,7 @@ const Input = React.forwardRef<HTMLInputElement, ToolbarInputProps>(
           />
         }
         {...props}
-        data-kumo-toolbar-input=""
+        data-zenth-toolbar-input=""
       />
     );
   },

@@ -131,7 +131,7 @@ describe("ClipboardText", () => {
 
     // Live region + toast description both surface "Copied!"
     expect(screen.getAllByText("Copied!").length).toBeGreaterThanOrEqual(1);
-    expect(document.querySelector(".animate-clipboard-toast-bump")).toBeNull();
+    expect(document.querySelector(".zenth-animate-clipboard-toast-bump")).toBeNull();
 
     await act(async () => {
       vi.advanceTimersByTime(1000);
@@ -139,20 +139,20 @@ describe("ClipboardText", () => {
 
     await clickCopyButton(button);
 
-    const secondToast = document.querySelector(".animate-clipboard-toast-bump");
+    const secondToast = document.querySelector(".zenth-animate-clipboard-toast-bump");
     expect(secondToast).toBeTruthy();
     expect(
-      document.querySelectorAll(".animate-clipboard-toast-bump"),
+      document.querySelectorAll(".zenth-animate-clipboard-toast-bump"),
     ).toHaveLength(1);
     expect(liveRegion?.textContent).toBe("Copied!");
 
     await clickCopyButton(button);
 
-    const thirdToast = document.querySelector(".animate-clipboard-toast-bump");
+    const thirdToast = document.querySelector(".zenth-animate-clipboard-toast-bump");
     expect(thirdToast).toBeTruthy();
     expect(thirdToast).not.toBe(secondToast);
     expect(
-      document.querySelectorAll(".animate-clipboard-toast-bump"),
+      document.querySelectorAll(".zenth-animate-clipboard-toast-bump"),
     ).toHaveLength(1);
 
     await act(async () => {

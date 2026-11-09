@@ -144,7 +144,7 @@ export function dialogVariants({
   return cn(
     // Bound the panel to the dynamic viewport and scroll tall content.
     // LayerCard sections must retain their height instead of shrinking and clipping.
-    "shadow-m ring ring-kumo-line fixed top-8 left-1/2 sm:top-16 w-full max-w-[calc(100vw-2rem)] max-h-[calc(100dvh-4rem)] sm:max-h-[calc(100dvh-6rem)] -translate-x-1/2 overflow-x-hidden overflow-y-auto overscroll-contain *:shrink-0 rounded-xl bg-kumo-base text-kumo-default duration-150 data-ending-style:scale-90 data-ending-style:opacity-0 data-starting-style:scale-90 data-starting-style:opacity-0",
+    "shadow-m ring ring-zenth-line fixed top-8 left-1/2 sm:top-16 w-full max-w-[calc(100vw-2rem)] max-h-[calc(100dvh-4rem)] sm:max-h-[calc(100dvh-6rem)] -translate-x-1/2 overflow-x-hidden overflow-y-auto overscroll-contain *:shrink-0 rounded-xl bg-zenth-base text-zenth-default duration-150 data-ending-style:scale-90 data-ending-style:opacity-0 data-starting-style:scale-90 data-starting-style:opacity-0",
     // Apply size from KUMO_DIALOG_VARIANTS
     resolveVariant(
       KUMO_DIALOG_VARIANTS.size,
@@ -233,7 +233,7 @@ function DialogContent({
 
   return (
     <BasePortal container={container}>
-      <BaseBackdrop className="fixed inset-0 bg-kumo-recessed opacity-80 transition-all duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0" />
+      <BaseBackdrop className="fixed inset-0 bg-zenth-recessed opacity-80 transition-all duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0" />
       <LayerCard
         render={<BasePopup />}
         className={cn(dialogVariants({ size }), className)}
@@ -331,8 +331,8 @@ function DialogTrigger({ children, ...props }: DialogTriggerProps) {
   if (role === "alertdialog") {
     return (
       <AlertDialogBase.Trigger
-        data-kumo-component="Dialog"
-        data-kumo-part="trigger"
+        data-zenth-component="Dialog"
+        data-zenth-part="trigger"
         {...(props as BaseAlertDialogTriggerProps)}
       >
         {children}
@@ -342,8 +342,8 @@ function DialogTrigger({ children, ...props }: DialogTriggerProps) {
 
   return (
     <DialogBase.Trigger
-      data-kumo-component="Dialog"
-      data-kumo-part="trigger"
+      data-zenth-component="Dialog"
+      data-zenth-part="trigger"
       {...props}
     >
       {children}
@@ -404,7 +404,7 @@ function DialogClose({ children, ...props }: DialogCloseProps) {
   const BaseClose =
     role === "alertdialog" ? AlertDialogBase.Close : DialogBase.Close;
   return (
-    <BaseClose data-kumo-component="Dialog" data-kumo-part="close" {...props}>
+    <BaseClose data-zenth-component="Dialog" data-zenth-part="close" {...props}>
       {children}
     </BaseClose>
   );

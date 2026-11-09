@@ -31,7 +31,7 @@ export const KUMO_SELECT_STYLING = {
     height: 36, // h-9
     paddingX: 12, // px-3
     borderRadius: 8, // rounded-lg
-    background: "bg-kumo-control",
+    background: "bg-zenth-control",
     text: "text-color-surface",
     ring: "color-border",
     fontSize: 16, // text-base
@@ -46,8 +46,8 @@ export const KUMO_SELECT_STYLING = {
     check: { name: "ph-check", size: 20 },
   },
   popup: {
-    background: "bg-kumo-base",
-    ring: "border-kumo-line",
+    background: "bg-zenth-base",
+    ring: "border-zenth-line",
     borderRadius: 8, // rounded-lg
     padding: 6, // p-1.5
   },
@@ -98,9 +98,9 @@ export function selectVariants({
 }: KumoSelectVariantsProps = {}) {
   return cn(
     buttonVariants({ size }),
-    "bg-kumo-control disabled:bg-kumo-control/50 data-[state=open]:bg-kumo-control",
+    "bg-zenth-control disabled:bg-zenth-control/50 data-[state=open]:bg-zenth-control",
     "justify-between font-normal",
-    "focus:opacity-100 focus:ring-kumo-focus/50 focus-visible:ring-inset *:in-focus:opacity-100",
+    "focus:opacity-100 focus:ring-zenth-focus/50 focus-visible:ring-inset *:in-focus:opacity-100",
   );
 }
 
@@ -108,10 +108,10 @@ const triggerIconStyles: Record<
   KumoInputSize,
   { iconSize: number; className: string }
 > = {
-  xs: { iconSize: 12, className: "text-kumo-subtle" },
-  sm: { iconSize: 14, className: "text-kumo-subtle" },
-  base: { iconSize: 16, className: "text-kumo-subtle" },
-  lg: { iconSize: 18, className: "text-kumo-subtle" },
+  xs: { iconSize: 12, className: "text-zenth-subtle" },
+  sm: { iconSize: 14, className: "text-zenth-subtle" },
+  base: { iconSize: 16, className: "text-zenth-subtle" },
+  lg: { iconSize: 18, className: "text-zenth-subtle" },
 };
 
 /**
@@ -443,7 +443,7 @@ export function Select<T, Multiple extends boolean | undefined = false>({
     ? (value: unknown) => {
         const placeholderNode =
           placeholder != null ? (
-            <span className="text-kumo-placeholder">{placeholder}</span>
+            <span className="text-zenth-placeholder">{placeholder}</span>
           ) : null;
 
         if (value == null || value === "") {
@@ -469,7 +469,7 @@ export function Select<T, Multiple extends boolean | undefined = false>({
   // hover/focus coupling that a native <label> (from Field) would cause.
   const showOptional = required === false;
   const selectLabelNode = label ? (
-    <SelectBase.Label className="m-0 text-base font-medium text-kumo-default select-none">
+    <SelectBase.Label className="m-0 text-base font-medium text-zenth-default select-none">
       <Label
         showOptional={showOptional}
         tooltip={hideLabel ? undefined : labelTooltip}
@@ -482,14 +482,14 @@ export function Select<T, Multiple extends boolean | undefined = false>({
 
   const selectTrigger = (
     <SelectBase.Trigger
-      data-kumo-component="Select"
-      data-kumo-part="trigger"
+      data-zenth-component="Select"
+      data-zenth-part="trigger"
       render={render}
       className={cn(
         selectVariants({ size }),
         props.disabled && "cursor-not-allowed opacity-50",
         error &&
-          "!ring-kumo-danger focus:ring-[1.5px] focus:ring-kumo-danger/50",
+          "!ring-zenth-danger focus:ring-[1.5px] focus:ring-zenth-danger/50",
         className,
       )}
       aria-label={triggerAriaLabel}
@@ -500,7 +500,7 @@ export function Select<T, Multiple extends boolean | undefined = false>({
       ) : (
         <SelectBase.Value
           placeholder={placeholder}
-          className="min-w-0 truncate data-[placeholder]:text-kumo-placeholder"
+          className="min-w-0 truncate data-[placeholder]:text-zenth-placeholder"
         >
           {valueChildrenFn}
         </SelectBase.Value>
@@ -555,8 +555,8 @@ export function Select<T, Multiple extends boolean | undefined = false>({
           <SelectBase.Popup
             className={cn(
               "flex flex-col",
-              "max-h-[var(--available-height)] bg-kumo-base text-kumo-default",
-              "rounded-lg shadow-lg ring ring-kumo-line",
+              "max-h-[var(--available-height)] bg-zenth-base text-zenth-default",
+              "rounded-lg shadow-lg ring ring-zenth-line",
               "max-w-(--available-width) min-w-(--anchor-width) py-1.5",
             )}
           >
@@ -612,12 +612,12 @@ export function Select<T, Multiple extends boolean | undefined = false>({
       )}
       {selectControl}
       {normalizedError ? (
-        <span className="text-sm text-kumo-danger">
+        <span className="text-sm text-zenth-danger">
           {normalizedError.message}
         </span>
       ) : (
         description && (
-          <span className="text-sm leading-snug text-kumo-subtle">
+          <span className="text-sm leading-snug text-zenth-subtle">
             {description}
           </span>
         )
@@ -638,14 +638,14 @@ type OptionProps<T> = {
 function Option<T>({ children, value, disabled, className }: OptionProps<T>) {
   return (
     <SelectBase.Item
-      data-kumo-component="Select"
-      data-kumo-part="option"
+      data-zenth-component="Select"
+      data-zenth-part="option"
       value={value}
       disabled={disabled}
       className={cn(
         "group mx-1.5 flex cursor-pointer items-center justify-between gap-2 rounded px-2 py-1.5 text-base outline-none focus-visible:outline-hidden",
-        "focus-visible:z-50 focus-visible:ring-2 focus-visible:ring-kumo-brand focus-visible:ring-inset",
-        "data-highlighted:bg-kumo-tint",
+        "focus-visible:z-50 focus-visible:ring-2 focus-visible:ring-zenth-brand focus-visible:ring-inset",
+        "data-highlighted:bg-zenth-tint",
         "data-[disabled]:pointer-events-none data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
         className,
       )}
@@ -712,7 +712,7 @@ const GroupLabel = forwardRef<HTMLDivElement, GroupLabelProps>(
     <SelectBase.GroupLabel
       ref={ref}
       className={cn(
-        "px-3.5 py-1.5 text-sm font-semibold text-kumo-subtle",
+        "px-3.5 py-1.5 text-sm font-semibold text-zenth-subtle",
         className,
       )}
     >
@@ -743,7 +743,7 @@ const Separator = forwardRef<HTMLDivElement, SeparatorProps>(
   ({ className }, ref) => (
     <SelectBase.Separator
       ref={ref}
-      className={cn("my-1 h-px bg-kumo-hairline", className)}
+      className={cn("my-1 h-px bg-zenth-hairline", className)}
     />
   ),
 );

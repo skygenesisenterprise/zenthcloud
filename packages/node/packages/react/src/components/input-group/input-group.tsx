@@ -121,7 +121,7 @@ const Root = forwardRef<
     const containerClassName = cn(
       // Establish positioning context and make the whole area a click target
       "relative w-full cursor-text",
-      // inputVariants provides base ring-kumo-line; must come before state overrides
+      // inputVariants provides base ring-zenth-line; must come before state overrides
       inputVariants({ size }),
       // Disabled state: prevent interaction and dim the entire group
       "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
@@ -130,13 +130,13 @@ const Root = forwardRef<
       focusMode === "container"
         ? [
             "overflow-hidden",
-            // Focus state must come AFTER inputVariants to override ring-kumo-line
-            "focus-within:ring-[1.5px] focus-within:ring-kumo-focus/50 has-focus-visible:outline-hidden",
+            // Focus state must come AFTER inputVariants to override ring-zenth-line
+            "focus-within:ring-[1.5px] focus-within:ring-zenth-focus/50 has-focus-visible:outline-hidden",
           ]
         : // isolate creates a new stacking context so z-index in children doesn't leak out
           "isolate overflow-visible shadow-none ring-0",
       // Error state must also come after inputVariants
-      "has-[input[aria-invalid=true]]:ring-kumo-danger",
+      "has-[input[aria-invalid=true]]:ring-zenth-danger",
       // Reset horizontal padding — children handle their own spacing
       "px-0",
       // Horizontal layout with no gap — children control their own internal spacing
@@ -154,7 +154,7 @@ const Root = forwardRef<
       className,
     );
 
-    // Data attributes drive CSS selectors in kumo-binding.css (focus outline)
+    // Data attributes drive CSS selectors in src/styles/core/accessibility.css (focus outline)
     // and enable child components to query their parent's state.
     const dataProps = {
       "data-slot": "input-group" as const,
@@ -189,7 +189,7 @@ const Root = forwardRef<
                 // Clip children to rounded corners within the zone
                 "overflow-hidden",
                 // Show red ring on validation error
-                "has-[input[aria-invalid=true]]:ring-kumo-danger",
+                "has-[input[aria-invalid=true]]:ring-zenth-danger",
                 // Reset horizontal padding — children handle their own spacing
                 "px-0",
                 // Fill available width but allow shrinking when sibling buttons are present
@@ -197,8 +197,8 @@ const Root = forwardRef<
                 // Use a clean 1px CSS border instead of ring+shadow from inputVariants
                 // so the zone matches adjacent individual-mode buttons exactly.
                 "shadow-none ring-0",
-                "border border-kumo-line",
-                "focus-within:border-kumo-focus/50 has-focus-visible:outline-hidden",
+                "border border-zenth-line",
+                "focus-within:border-zenth-focus/50 has-focus-visible:outline-hidden",
                 // z-[2] lifts above adjacent button's -ml-px overlap so focus border shows
                 "focus-within:z-2",
                 // Negative margin (not border-l-0) so the border is still paintable on focus

@@ -257,8 +257,8 @@ function Content({
           className={cn(
             "flex flex-col", // flexbox layout for sticky input + scrollable list
             "max-h-[min(var(--available-height),24rem)] max-w-(--available-width) min-w-(--anchor-width) py-1.5",
-            "bg-kumo-base text-kumo-default", // background
-            "rounded-lg shadow-lg ring ring-kumo-line", // border part
+            "bg-zenth-base text-zenth-default", // background
+            "rounded-lg shadow-lg ring ring-zenth-line", // border part
             className,
           )}
         >
@@ -312,14 +312,14 @@ function TriggerValue({
 
   return (
     <ComboboxBase.Trigger
-      data-kumo-component="Combobox"
-      data-kumo-part="trigger"
+      data-zenth-component="Combobox"
+      data-zenth-part="trigger"
       {...omitUndefined(triggerProps)}
       className={cn(
         inputVariants({ size, variant: hasError ? "error" : "default" }),
         "relative flex items-center",
         "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
-        "data-[placeholder]:text-kumo-placeholder",
+        "data-[placeholder]:text-zenth-placeholder",
         iconStyles.padding,
         className,
       )}
@@ -329,7 +329,7 @@ function TriggerValue({
       </ComboboxBase.Value>
       <ComboboxBase.Icon
         className={cn(
-          "absolute top-1/2 flex -translate-y-1/2 items-center text-kumo-subtle",
+          "absolute top-1/2 flex -translate-y-1/2 items-center text-zenth-subtle",
           iconStyles.iconRight,
         )}
       >
@@ -406,8 +406,8 @@ function TriggerInput({
       />
 
       <ComboboxBase.Clear
-        data-kumo-component="Combobox"
-        data-kumo-part="clear"
+        data-zenth-component="Combobox"
+        data-zenth-part="clear"
         aria-label={clearLabel}
         className={cn(
           "absolute top-1/2 flex -translate-y-1/2 cursor-pointer bg-transparent p-0",
@@ -419,11 +419,11 @@ function TriggerInput({
       </ComboboxBase.Clear>
 
       <ComboboxBase.Trigger
-        data-kumo-component="Combobox"
-        data-kumo-part="trigger"
+        data-zenth-component="Combobox"
+        data-zenth-part="trigger"
         aria-label={showOptionsLabel}
         className={cn(
-          "absolute top-1/2 flex -translate-y-1/2 cursor-pointer items-center justify-center text-kumo-subtle",
+          "absolute top-1/2 flex -translate-y-1/2 cursor-pointer items-center justify-center text-zenth-subtle",
           "m-0 bg-transparent p-0", // Reset Stratus global button styles
           iconStyles.caretRight,
         )}
@@ -446,16 +446,16 @@ function Item({
 }: ComboboxBase.Item.Props & { className?: string }) {
   return (
     <ComboboxBase.Item
-      data-kumo-component="Combobox"
-      data-kumo-part="item"
+      data-zenth-component="Combobox"
+      data-zenth-part="item"
       {...props}
       className={cn(
         "group mx-1.5 grid grid-cols-[1fr_16px] gap-2 rounded px-2 py-1.5 text-base",
-        "cursor-pointer data-highlighted:bg-kumo-tint",
+        "cursor-pointer data-highlighted:bg-zenth-tint",
         // Disabled rows: muted text, no pointer, suppress highlight bg even
         // when keyboard nav lands on them. Base UI sets `data-disabled` on
         // the element when the `disabled` prop is true.
-        "data-[disabled]:cursor-not-allowed data-[disabled]:text-kumo-subtle data-[disabled]:opacity-60 data-[disabled]:data-highlighted:bg-transparent",
+        "data-[disabled]:cursor-not-allowed data-[disabled]:text-zenth-subtle data-[disabled]:opacity-60 data-[disabled]:data-highlighted:bg-transparent",
         className,
       )}
     >
@@ -472,7 +472,7 @@ function Empty(props: ComboboxBase.Empty.Props) {
     <ComboboxBase.Empty
       {...props}
       className={cn(
-        "mx-1.5 shrink-0 px-4 py-2 text-[0.925rem] leading-4 text-kumo-subtle empty:m-0 empty:p-0",
+        "mx-1.5 shrink-0 px-4 py-2 text-[0.925rem] leading-4 text-zenth-subtle empty:m-0 empty:p-0",
       )}
       children={props.children ?? "No labels found."}
     />
@@ -512,7 +512,7 @@ function GroupLabel(props: ComboboxBase.GroupLabel.Props) {
     <ComboboxBase.GroupLabel
       {...props}
       className={cn(
-        "mx-1.5 px-2 py-1.5 text-sm text-kumo-subtle",
+        "mx-1.5 px-2 py-1.5 text-sm text-zenth-subtle",
         props.className,
       )}
     />
@@ -523,7 +523,7 @@ function Group(props: ComboboxBase.Group.Props) {
   return (
     <ComboboxBase.Group
       {...props}
-      className="mt-2 border-t border-kumo-hairline pt-2 first:mt-0 first:border-t-0 first:pt-0"
+      className="mt-2 border-t border-zenth-hairline pt-2 first:mt-0 first:border-t-0 first:pt-0"
     />
   );
 }
@@ -543,18 +543,18 @@ function Chip({
       className={cn(
         "flex items-center gap-2.5", // Layout
         "h-6 pr-[3px] pl-2", // Dimensions
-        "rounded-sm ring-1 ring-kumo-hairline", // Border
-        "bg-kumo-overlay", // Background
+        "rounded-sm ring-1 ring-zenth-hairline", // Border
+        "bg-zenth-overlay", // Background
         "text-sm", // Typography
       )}
     >
       {props.children}
       <ComboboxBase.ChipRemove
-        data-kumo-component="Combobox"
-        data-kumo-part="chip-remove"
+        data-zenth-component="Combobox"
+        data-zenth-part="chip-remove"
         aria-label={removeLabel}
         className={cn(
-          "cursor-pointer rounded-md p-1 hover:bg-kumo-fill-hover",
+          "cursor-pointer rounded-md p-1 hover:bg-zenth-fill-hover",
           "flex bg-transparent",
         )}
       >

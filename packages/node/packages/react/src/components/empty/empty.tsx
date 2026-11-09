@@ -45,7 +45,7 @@ export function emptyVariants({
   size = KUMO_EMPTY_DEFAULT_VARIANTS.size,
 }: KumoEmptyVariantsProps = {}) {
   return cn(
-    "flex w-full flex-col items-center rounded-xl border border-kumo-fill bg-kumo-control text-kumo-default",
+    "flex w-full flex-col items-center rounded-xl border border-zenth-fill bg-zenth-control text-zenth-default",
     resolveVariant(
       KUMO_EMPTY_VARIANTS.size,
       size,
@@ -138,17 +138,17 @@ export function Empty({
       {commandLine && (
         <div
           className={cn(
-            "relative inline-flex h-10 max-w-8/10 transform-gpu items-center gap-2 rounded-lg border border-white bg-kumo-overlay pr-2 pl-3 font-mono shadow-xs ring ring-kumo-line",
+            "relative inline-flex h-10 max-w-8/10 transform-gpu items-center gap-2 rounded-lg border border-white bg-zenth-overlay pr-2 pl-3 font-mono shadow-xs ring ring-zenth-line",
           )}
         >
           <span className="inline-flex min-w-0 items-baseline gap-2">
-            <span className="text-kumo-subtle select-none">$</span>
-            <span className="no-scrollbar overflow-scroll text-base whitespace-nowrap">
+            <span className="text-zenth-subtle select-none">$</span>
+            <span className="zenth-no-scrollbar overflow-scroll text-base whitespace-nowrap">
               {commandLine}
             </span>
           </span>
           <Button
-            className="text-kumo-subtle"
+            className="text-zenth-subtle"
             size="sm"
             variant="ghost"
             shape="square"
@@ -158,7 +158,7 @@ export function Empty({
             {emptyStateCopied ? (
               <CheckIcon
                 size={16}
-                className="animate-bounce-in text-kumo-success"
+                className="zenth-animate-bounce-in text-zenth-success"
               />
             ) : (
               <CopyIcon size={16} />

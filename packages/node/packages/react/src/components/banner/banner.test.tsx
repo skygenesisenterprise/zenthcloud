@@ -12,8 +12,8 @@ describe("Banner", () => {
   it("supports secondary variant", () => {
     const className = bannerVariants({ variant: "secondary" });
 
-    expect(className).toContain("bg-kumo-contrast/5");
-    expect(className).toContain("text-kumo-default/70");
+    expect(className).toContain("bg-zenth-contrast/5");
+    expect(className).toContain("text-zenth-default/70");
   });
 
   it("forwards root div props", () => {
@@ -43,14 +43,14 @@ describe("Banner", () => {
 
     const cta = screen.getByTestId("cta");
     expect(cta.tagName).toBe("BUTTON");
-    expect(cta.getAttribute("data-kumo-component")).toBe("Button");
+    expect(cta.getAttribute("data-zenth-component")).toBe("Button");
     expect(cta.className).toContain("text-white");
-    expect(cta.className).toContain("bg-(--kumo-button-emphasis-bg)");
+    expect(cta.className).toContain("bg-(--zenth-button-emphasis-bg)");
     expect(
-      cta.style.getPropertyValue("--kumo-button-emphasis-gradient-end"),
-    ).toBe("var(--color-kumo-danger)");
-    expect(cta.style.getPropertyValue("--kumo-button-emphasis-bg")).toBe(
-      "color-mix(in oklch, var(--color-kumo-danger), white 30%)",
+      cta.style.getPropertyValue("--zenth-button-emphasis-gradient-end"),
+    ).toBe("var(--color-zenth-danger)");
+    expect(cta.style.getPropertyValue("--zenth-button-emphasis-bg")).toBe(
+      "color-mix(in oklch, var(--color-zenth-danger), white 30%)",
     );
     expect(cta.parentElement?.className).toContain("gap-2");
   });
@@ -69,8 +69,8 @@ describe("Banner", () => {
     );
 
     const cta = screen.getByTestId("cta");
-    expect(cta.className).toContain("fill-kumo-warning");
-    expect(cta.className).toContain("hover:bg-kumo-warning/10");
+    expect(cta.className).toContain("fill-zenth-warning");
+    expect(cta.className).toContain("hover:bg-zenth-warning/10");
   });
 
   it("renders a link Banner.Action with banner styling when href is set", () => {
@@ -89,12 +89,12 @@ describe("Banner", () => {
 
     const link = screen.getByRole("link", { name: "Manage payments" });
     expect(link.getAttribute("href")).toBe("/billing");
-    expect(link.getAttribute("data-kumo-component")).toBe("LinkButton");
+    expect(link.getAttribute("data-zenth-component")).toBe("LinkButton");
     expect(link.className).toContain("extra");
     expect(link.className).toContain("h-6.5");
     expect(
-      link.style.getPropertyValue("--kumo-button-emphasis-gradient-end"),
-    ).toBe("var(--color-kumo-warning)");
+      link.style.getPropertyValue("--zenth-button-emphasis-gradient-end"),
+    ).toBe("var(--color-zenth-warning)");
     expect(ref.current).toBe(link);
     expect(screen.queryByRole("button")).toBeNull();
   });
@@ -120,7 +120,7 @@ describe("Banner", () => {
     const link = screen.getByRole("link", { name: "View docs" });
     expect(link.getAttribute("target")).toBe("_blank");
     expect(link.getAttribute("rel")).toBe("noopener noreferrer");
-    expect(link.className).toContain("ring-kumo-danger/50");
+    expect(link.className).toContain("ring-zenth-danger/50");
     expect(link.className).toContain("h-5");
   });
 
@@ -167,15 +167,15 @@ describe("Banner", () => {
 
     const cta = screen.getByTestId("cta");
     // Transparent bg + accent-hued ring in the same hue as the error banner accent.
-    expect(cta.className).toContain("ring-kumo-danger/50");
-    expect(cta.className).toContain("hover:bg-kumo-danger/10");
-    expect(cta.className).toContain("hover:!ring-kumo-danger/50");
+    expect(cta.className).toContain("ring-zenth-danger/50");
+    expect(cta.className).toContain("hover:bg-zenth-danger/10");
+    expect(cta.className).toContain("hover:!ring-zenth-danger/50");
     expect(cta.className).toContain("hover:!text-inherit");
     // Not the filled primary CTA.
     expect(cta.className).toContain("bg-transparent");
     expect(cta.className).not.toContain("text-white");
     expect(
-      cta.style.getPropertyValue("--kumo-button-emphasis-gradient-end"),
+      cta.style.getPropertyValue("--zenth-button-emphasis-gradient-end"),
     ).toBe("");
   });
 

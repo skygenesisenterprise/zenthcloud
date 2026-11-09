@@ -17,7 +17,7 @@ describe("init command integration", () => {
 
   beforeEach(() => {
     // Create a temporary test directory
-    testDir = join(tmpdir(), `kumo-init-test-${Date.now()}`);
+    testDir = join(tmpdir(), `zenth-init-test-${Date.now()}`);
     mkdirSync(testDir, { recursive: true });
   });
 
@@ -124,7 +124,7 @@ describe("init command integration", () => {
     });
 
     it("handles missing config directory gracefully", () => {
-      const nonExistentDir = join(tmpdir(), "does-not-exist-kumo-test");
+      const nonExistentDir = join(tmpdir(), "does-not-exist-zenth-test");
 
       // Should return false for non-existent directory
       expect(configExists(nonExistentDir)).toBe(false);

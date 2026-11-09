@@ -33,7 +33,7 @@ describe("add command - integration tests", () => {
 
   beforeEach(() => {
     // Create a temporary directory for testing
-    tempDir = mkdtempSync(join(tmpdir(), "kumo-add-test-"));
+    tempDir = mkdtempSync(join(tmpdir(), "zenth-add-test-"));
   });
 
   afterEach(() => {

@@ -1,16 +1,16 @@
-# @zenthcloud/kumo
+# @zenthcloud/react
 
-Zenthcloud's component library for building modern web applications.
+ZenthCloud's React component library and design system for building modern web applications.
 
 ## Installation
 
 ```bash
-pnpm add @zenthcloud/kumo
+pnpm add @zenthcloud/react
 ```
 
 ### Peer Dependencies
 
-Kumo requires the following peer dependencies:
+ZenthCloud React requires the following peer dependencies:
 
 ```bash
 pnpm add react react-dom @phosphor-icons/react
@@ -18,12 +18,12 @@ pnpm add react react-dom @phosphor-icons/react
 
 ## Component Documentation
 
-Kumo includes a built-in CLI for quick component reference:
+ZenthCloud React includes a built-in CLI for quick component reference:
 
 ```bash
-npx @zenthcloud/kumo ls         # List all components
-npx @zenthcloud/kumo doc Button # Get component documentation
-npx @zenthcloud/kumo docs       # Get all component docs
+npx @zenthcloud/react ls         # List all components
+npx @zenthcloud/react doc Button # Get component documentation
+npx @zenthcloud/react docs       # Get all component docs
 ```
 
 The CLI reads from `ai/component-registry.json` (generated from TypeScript types + demo examples).
@@ -34,69 +34,85 @@ The CLI reads from `ai/component-registry.json` (generated from TypeScript types
 
 ```tsx
 // Main package import
-import { Button, Input, Surface } from "@zenthcloud/kumo";
+import { Button, Input, Surface } from "@zenthcloud/react";
 
 // Granular imports (recommended for tree-shaking)
-import { Button } from "@zenthcloud/kumo/components/button";
+import { Button } from "@zenthcloud/react/components/button";
 ```
 
 ### Import Styles
 
-#### For Tailwind CSS Users
+Import the precompiled stylesheet once, in your application entry point:
 
-**Important:** Tailwind CSS v4 does not scan `node_modules/` by default. You must add a `@source` directive so Tailwind can discover the utility classes used by Kumo components. Without this, components may render with missing styles (e.g. Dialogs not centered).
+```tsx
+import "@zenthcloud/react/styles.css";
+```
 
-In your main CSS file (e.g. `app.css`):
+That is all that is required. **Tailwind is not required in the consuming application**: no Tailwind install, config file, `@source` directive, or rebuild of the library styles.
+
+The stylesheet includes the ZenthCloud design tokens, light/dark themes, accessibility rules, animations, and every utility class used by the compiled components.
+
+See **[docs/css.md](./docs/css.md)** for the full design system documentation: tokens, theming, customization, Next.js/Vite setup, exports and migration.
+
+#### Applying the theme surface
+
+The library never resets `html` or `body`. Set the color mode on the document and opt into the ZenthCloud surface when you want its canvas, foreground color and typography:
+
+```html
+<html data-zenth-mode="dark">
+  <body class="zenth-root">
+    <!-- application -->
+  </body>
+</html>
+```
+
+`data-mode="dark"` is still supported for backward compatibility.
+
+#### Tokens only
+
+```tsx
+import "@zenthcloud/react/tokens.css";
+import "@zenthcloud/react/themes/light.css";
+import "@zenthcloud/react/themes/dark.css";
+```
+
+#### For Tailwind CSS Users (optional)
+
+If your application already runs Tailwind CSS v4 and wants the `@theme` tokens to use `bg-zenth-*` utilities in its own code, import the raw entry before `tailwindcss`:
 
 ```css
-@source "../node_modules/@zenthcloud/kumo/dist/**/*.{js,jsx,ts,tsx}";
-@import "@zenthcloud/kumo/styles/tailwind";
+@source "../node_modules/@zenthcloud/react/dist/**/*.{js,jsx,ts,tsx}";
+@import "@zenthcloud/react/styles/tailwind";
 @import "tailwindcss";
 ```
 
-> **Import order matters** — `@zenthcloud/kumo/styles` must come **before** `@import "tailwindcss"` so Kumo's `@theme` tokens are registered first.
+> **Import order matters** — import the ZenthCloud entry **before** `@import "tailwindcss"` so its `@theme` tokens are registered first.
 
-> **Note:** The `@source` path is relative to your CSS file. Adjust it based on your project structure — e.g. if your CSS is in `src/styles/`, you may need `../../node_modules/@zenthcloud/kumo/dist/**/*.{js,jsx,ts,tsx}`.
+> **Note:** The `@source` path is relative to your CSS file. Adjust it to your project layout — e.g. from `src/styles/` use `../../node_modules/@zenthcloud/react/dist/**/*.{js,jsx,ts,tsx}`.
 
-Alternatively, you can use the default style export (`@zenthcloud/kumo/styles`) which is equivalent to `styles/tailwind`.
+This pipeline is optional. `styles.css` already covers every component.
 
-If you are **not** using Tailwind CSS, use the standalone build instead (see below) — no `@source` directive is needed.
+#### Legacy entry points (deprecated)
 
-#### For Non-Tailwind Users (Standalone)
-
-```js
-import "@zenthcloud/kumo/styles/standalone";
-```
-
-This imports a fully compiled CSS file with all Tailwind utilities and Kumo styles pre-compiled. No Tailwind configuration needed!
-
-**What's included in standalone:**
-
-- All Tailwind utility classes used by Kumo components
-- Kumo component styles
-- Dark mode support (via `data-mode="dark"` attribute)
-- All animations and keyframes
-- Responsive utilities
-
-**Note:** The standalone CSS is minified and optimized, but will be larger than the Tailwind version since it includes all utilities.
+`@zenthcloud/react/styles`, `@zenthcloud/react/styles/tailwind` and `@zenthcloud/react/styles/standalone` still resolve. New code should use `styles.css`, or `styles/tailwind` when it needs the raw Tailwind source.
 
 ### Base UI Primitives
 
-Kumo bundles [Base UI](https://base-ui.com) and re-exports all primitives for advanced use cases:
+ZenthCloud React bundles [Base UI](https://base-ui.com) and re-exports all primitives for advanced use cases:
 
 ```tsx
 // Barrel import - imports all primitives (convenient but larger bundle)
-import { Popover, Slider, Accordion } from "@zenthcloud/kumo/primitives";
+import { Popover, Slider, Accordion } from "@zenthcloud/react/primitives";
 
 // Granular imports - tree-shakeable, smaller bundles (recommended)
-import { Popover } from "@zenthcloud/kumo/primitives/popover";
-import { Slider } from "@zenthcloud/kumo/primitives/slider";
-import { Accordion } from "@zenthcloud/kumo/primitives/accordion";
+import { Popover } from "@zenthcloud/react/primitives/popover";
+import { Slider } from "@zenthcloud/react/primitives/slider";
+import { Accordion } from "@zenthcloud/react/primitives/accordion";
 ```
 
-> **Note:** Prefer styled Kumo components when available. Primitives are for custom components not yet in Kumo or cases requiring fine-grained control.
+> **Note:** Prefer styled ZenthCloud React components when available. Primitives are for custom components not yet in ZenthCloud React or cases requiring fine-grained control.
 >
-> **Performance tip:** Use granular imports (`@zenthcloud/kumo/primitives/{name}`) for better tree-shaking and smaller bundle sizes.
+> **Performance tip:** Use granular imports (`@zenthcloud/react/primitives/{name}`) for better tree-shaking and smaller bundle sizes.
 
 #### Updating Primitives
 
@@ -241,7 +257,7 @@ pnpm dev
 
 When you edit a component:
 
-1. Kumo rebuilds automatically (~400ms)
+1. ZenthCloud React rebuilds automatically (~400ms)
 2. Refresh browser to see changes in docs site
 3. Changes are validated against the actual build output
 
@@ -272,10 +288,10 @@ pnpm test:coverage
 
 **What's tested:**
 
-- All components importable from main entry: `import { Component } from "@zenthcloud/kumo"`
-- All components importable via deep imports: `import { Component } from "@zenthcloud/kumo/components/component-name"`
-- All blocks importable from main entry: `import { Block } from "@zenthcloud/kumo"`
-- All blocks importable via deep imports: `import { Block } from "@zenthcloud/kumo/blocks/block-name"`
+- All components importable from main entry: `import { Component } from "@zenthcloud/react"`
+- All components importable via deep imports: `import { Component } from "@zenthcloud/react/components/component-name"`
+- All blocks importable from main entry: `import { Block } from "@zenthcloud/react"`
+- All blocks importable via deep imports: `import { Block } from "@zenthcloud/react/blocks/block-name"`
 - Package.json exports sync with actual components and blocks
 - Export paths and formats are correct
 - Build configuration consistency
@@ -293,16 +309,16 @@ Beta releases are automatically triggered for pull requests through GitHub Actio
 **Workflow Configuration:**
 
 - **Workflow**: `package-preview-pr.yml`
-- **Triggers**: Pull requests with changes to `packages/kumo/**` or `.changeset/**`
-- **Dependencies**: Requires changeset to exist for `@zenthcloud/kumo`
+- **Triggers**: Pull requests with changes to `packages/react/**` or `.changeset/**`
+- **Dependencies**: Requires changeset to exist for `@zenthcloud/react`
 
 **Process Flow:**
 
-1. **Validate**: Ensures changeset exists for `@zenthcloud/kumo`
+1. **Validate**: Ensures changeset exists for `@zenthcloud/react`
 2. **Version**: Runs `pnpm run version:beta`
    - Consumes pending changesets
    - Appends `-beta.{commit-hash}` to version number
-3. **Build**: Runs `pnpm --filter @zenthcloud/kumo build`
+3. **Build**: Runs `pnpm --filter @zenthcloud/react build`
 4. **Publish**: Publishes to npm with `beta` tag
 5. **Notify**: Posts PR comment with installation instructions
 
@@ -327,10 +343,10 @@ When a beta is published, the PR will include a comment with installation instru
 
 ```bash
 # Install the specific beta version
-npm install @zenthcloud/kumo@0.1.0-beta.a1b2c3d
+npm install @zenthcloud/react@0.1.0-beta.a1b2c3d
 
 # Or with pnpm
-pnpm add @zenthcloud/kumo@0.1.0-beta.a1b2c3d
+pnpm add @zenthcloud/react@0.1.0-beta.a1b2c3d
 ```
 
 ### Testing Beta Releases
@@ -343,14 +359,14 @@ pnpm add @zenthcloud/kumo@0.1.0-beta.a1b2c3d
 
 ### Changeset Validation
 
-All pull requests with changes to `packages/kumo/` must include a changeset:
+All pull requests with changes to `packages/react/` must include a changeset:
 
 ```bash
 # Create a changeset
 pnpm changeset
 ```
 
-- Select `@zenthcloud/kumo` when prompted
+- Select `@zenthcloud/react` when prompted
 - Choose the type of change: `patch`, `minor`, or `major`
 - Write a clear description of what changed
 
@@ -375,7 +391,7 @@ This package uses [Changesets](https://github.com/changesets/changesets) for ver
    pnpm changeset
    ```
 
-   - Select `@zenthcloud/kumo` from the list
+   - Select `@zenthcloud/react` from the list
    - Select the type of change: `patch`, `minor`, or `major`
    - Write a clear description of what changed
    - This creates a `.changeset/*.md` file describing the change
@@ -424,7 +440,7 @@ After publishing:
 
    ```bash
    git add .
-   git commit -m "chore: release @zenthcloud/kumo@{version}"
+   git commit -m "chore: release @zenthcloud/react@{version}"
    git push
    ```
 
@@ -436,7 +452,7 @@ After publishing:
 
 3. **Verify publication**:
    ```bash
-   npm view @zenthcloud/kumo versions
+   npm view @zenthcloud/react versions
    ```
 
 ### Semantic Versioning
@@ -466,8 +482,8 @@ The changelog includes all changeset descriptions, providing clear documentation
 If the CI fails with a changeset validation error:
 
 1. **Check if changeset exists**: Run `ls .changeset/*.md` to see pending changesets
-2. **Create changeset**: Run `pnpm changeset` and select `@zenthcloud/kumo`
-3. **Verify changeset targets correct package**: Open the changeset file and ensure it includes `@zenthcloud/kumo`
+2. **Create changeset**: Run `pnpm changeset` and select `@zenthcloud/react`
+3. **Verify changeset targets correct package**: Open the changeset file and ensure it includes `@zenthcloud/react`
 4. **Commit changeset**: Add and commit the changeset file to your branch
 
 **Beta Publication Failed**

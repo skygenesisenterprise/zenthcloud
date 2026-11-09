@@ -197,7 +197,7 @@ describe("Flow", () => {
             render={
               <li
                 data-testid="custom-circle"
-                className="size-4 rounded-full bg-kumo-hairline"
+                className="size-4 rounded-full bg-zenth-hairline"
               />
             }
           />
@@ -205,7 +205,7 @@ describe("Flow", () => {
             render={
               <li
                 data-testid="custom-label"
-                className="rounded-lg bg-kumo-contrast px-3 py-2 font-medium text-kumo-inverse"
+                className="rounded-lg bg-zenth-contrast px-3 py-2 font-medium text-zenth-inverse"
               >
                 my-worker
               </li>

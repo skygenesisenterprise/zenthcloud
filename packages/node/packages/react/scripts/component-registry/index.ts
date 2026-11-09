@@ -95,7 +95,7 @@ interface DemoMetadata {
 function loadDemoExamples(): Map<string, { aiExamples: string[] }> {
   const demoMetadataPath = join(
     __dirname,
-    "../../../kumo-docs-astro/dist/demo-metadata.json",
+    "../../react-docs-astro/dist/demo-metadata.json",
   );
 
   if (!existsSync(demoMetadataPath)) {

@@ -9,9 +9,9 @@
 stroke="none">
 <style>
   :root { color-scheme: light dark; }
-  path { fill: #000000; }
+  path { fill: #1769E0; }
   @media (prefers-color-scheme: dark) {
-    path { fill: #ffffff; }
+    path { fill: #4B91F0; }
   }
 </style>
 <path d="M6240 12109 c-162 -10 -376 -37 -420 -54 -159 -57 -290 -109 -286

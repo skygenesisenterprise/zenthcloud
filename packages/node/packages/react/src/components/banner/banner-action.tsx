@@ -64,37 +64,37 @@ const BANNER_ACTION_ACCENTS: Record<
   { accent: string; secondary: string; ghost: string }
 > = {
   default: {
-    accent: "var(--color-kumo-info)",
+    accent: "var(--color-zenth-info)",
     secondary:
-      "text-inherit ring-kumo-info/50 fill-kumo-info hover:!text-inherit hover:!ring-kumo-info/50 hover:bg-kumo-info/10",
-    ghost: "text-inherit fill-kumo-info hover:bg-kumo-info/10",
+      "text-inherit ring-zenth-info/50 fill-zenth-info hover:!text-inherit hover:!ring-zenth-info/50 hover:bg-zenth-info/10",
+    ghost: "text-inherit fill-zenth-info hover:bg-zenth-info/10",
   },
   alert: {
-    accent: "var(--color-kumo-warning)",
+    accent: "var(--color-zenth-warning)",
     secondary:
-      "text-inherit ring-kumo-warning/50 fill-kumo-warning hover:!text-inherit hover:!ring-kumo-warning/50 hover:bg-kumo-warning/10",
-    ghost: "text-inherit fill-kumo-warning hover:bg-kumo-warning/10",
+      "text-inherit ring-zenth-warning/50 fill-zenth-warning hover:!text-inherit hover:!ring-zenth-warning/50 hover:bg-zenth-warning/10",
+    ghost: "text-inherit fill-zenth-warning hover:bg-zenth-warning/10",
   },
   error: {
-    accent: "var(--color-kumo-danger)",
+    accent: "var(--color-zenth-danger)",
     secondary:
-      "text-inherit ring-kumo-danger/50 fill-kumo-danger hover:!text-inherit hover:!ring-kumo-danger/50 hover:bg-kumo-danger/10",
-    ghost: "text-inherit fill-kumo-danger hover:bg-kumo-danger/10",
+      "text-inherit ring-zenth-danger/50 fill-zenth-danger hover:!text-inherit hover:!ring-zenth-danger/50 hover:bg-zenth-danger/10",
+    ghost: "text-inherit fill-zenth-danger hover:bg-zenth-danger/10",
   },
   secondary: {
     accent: "var(--color-neutral-700, oklch(37.1% 0 0))",
     secondary:
-      "text-inherit ring-kumo-focus/20 fill-kumo-subtle hover:!text-inherit hover:!ring-kumo-focus/20 hover:bg-kumo-contrast/10",
-    ghost: "text-inherit fill-kumo-subtle hover:bg-kumo-contrast/10",
+      "text-inherit ring-zenth-focus/20 fill-zenth-subtle hover:!text-inherit hover:!ring-zenth-focus/20 hover:bg-zenth-contrast/10",
+    ghost: "text-inherit fill-zenth-subtle hover:bg-zenth-contrast/10",
   },
 };
 
 function bannerActionAccentVars(accent: string) {
   return {
-    "--kumo-button-emphasis-ring": `color-mix(in oklch, ${accent}, black 10%)`,
-    "--kumo-button-emphasis-bg": `color-mix(in oklch, ${accent}, white 30%)`,
-    "--kumo-button-emphasis-gradient-start": `color-mix(in oklch, ${accent}, white 15%)`,
-    "--kumo-button-emphasis-gradient-end": accent,
+    "--zenth-button-emphasis-ring": `color-mix(in oklch, ${accent}, black 10%)`,
+    "--zenth-button-emphasis-bg": `color-mix(in oklch, ${accent}, white 30%)`,
+    "--zenth-button-emphasis-gradient-start": `color-mix(in oklch, ${accent}, white 15%)`,
+    "--zenth-button-emphasis-gradient-end": accent,
   } satisfies CSSProperties & Record<`--${string}`, string>;
 }
 

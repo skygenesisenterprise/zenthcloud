@@ -19,7 +19,7 @@ describe("config utilities", () => {
 
   beforeEach(() => {
     // Create a temporary test directory
-    testDir = join(tmpdir(), `kumo-test-${Date.now()}`);
+    testDir = join(tmpdir(), `zenth-test-${Date.now()}`);
     mkdirSync(testDir, { recursive: true });
   });
 

@@ -5,18 +5,18 @@ import { cn } from "../../utils/cn";
 // Brand Colors (internal)
 // =============================================================================
 
-const ZENTHCLOUD_ORANGE = "#FF5E1F";
-const ZENTHCLOUD_YELLOW = "#FF9911";
-const ZENTHCLOUD_TEXT_GRAY = "#404041";
+const ZENTHCLOUD_BLUE = "#1769E0";
+const ZENTHCLOUD_BLUE_LIGHT = "#4B91F0";
+const ZENTHCLOUD_TEXT_GRAPHITE = "#111318";
 
 // =============================================================================
 // SVG Path Data (internal)
 // =============================================================================
 
-const ZENTHCLOUD_GLYPH_ORANGE_PATH =
+const ZENTHCLOUD_GLYPH_PRIMARY_PATH =
   "M33.204 20.4C33.3649 19.9741 33.4217 19.5159 33.3695 19.0636C33.3173 18.6113 33.1577 18.1781 32.904 17.8C32.6435 17.4876 32.3239 17.2297 31.9636 17.0409C31.6032 16.8522 31.2092 16.7363 30.804 16.7L13.404 16.5C13.304 16.5 13.204 16.4 13.104 16.4C13.0808 16.3825 13.0618 16.3599 13.0488 16.3339C13.0358 16.3078 13.029 16.2791 13.029 16.25C13.029 16.2209 13.0358 16.1922 13.0488 16.1662C13.0618 16.1401 13.0808 16.1175 13.104 16.1C13.204 15.9 13.304 15.8 13.504 15.8L31.004 15.6C32.115 15.4767 33.1731 15.0597 34.0695 14.3918C34.9659 13.7239 35.6681 12.8293 36.104 11.8L37.104 9.20002C37.104 9.10002 37.204 9.00001 37.104 8.90001C36.5604 6.47843 35.2411 4.30052 33.3466 2.69721C31.4521 1.09391 29.086 0.152865 26.6079 0.0170769C24.1298 -0.118712 21.675 0.558179 19.6167 1.94489C17.5584 3.33161 16.009 5.35233 15.204 7.70002C14.159 6.95365 12.8843 6.59957 11.604 6.70002C10.4291 6.83102 9.33369 7.35777 8.49774 8.19372C7.66179 9.02966 7.13505 10.1251 7.00404 11.3C6.93745 11.9014 6.97125 12.5097 7.10404 13.1C5.20298 13.1526 3.39743 13.9448 2.07147 15.3081C0.745511 16.6714 0.00377461 18.4982 0.00403983 20.4C-0.0123708 20.7695 0.0212659 21.1395 0.104038 21.5C0.10863 21.5781 0.141713 21.6517 0.19701 21.707C0.252307 21.7623 0.325975 21.7954 0.404041 21.8H32.504C32.704 21.8 32.904 21.7 32.904 21.5L33.204 20.4Z";
 
-const ZENTHCLOUD_GLYPH_YELLOW_PATH =
+const ZENTHCLOUD_GLYPH_ACCENT_PATH =
   "M38.704 9.20002H38.204C38.104 9.20002 38.004 9.30001 37.904 9.40001L37.204 11.8C37.0431 12.2259 36.9864 12.6841 37.0386 13.1364C37.0908 13.5887 37.2504 14.0219 37.504 14.4C37.7646 14.7124 38.0842 14.9704 38.4445 15.1591C38.8049 15.3479 39.1989 15.4637 39.604 15.5L43.304 15.7C43.404 15.7 43.504 15.8 43.604 15.8C43.6273 15.8175 43.6462 15.8401 43.6592 15.8662C43.6723 15.8922 43.679 15.9209 43.679 15.95C43.679 15.9791 43.6723 16.0078 43.6592 16.0339C43.6462 16.0599 43.6273 16.0826 43.604 16.1C43.504 16.3 43.404 16.4 43.204 16.4L39.404 16.6C38.293 16.7233 37.2349 17.1403 36.3386 17.8082C35.4422 18.4761 34.74 19.3707 34.304 20.4L34.104 21.3C34.004 21.4 34.104 21.6 34.304 21.6H47.504C47.5448 21.6058 47.5863 21.6021 47.6254 21.5891C47.6644 21.5761 47.6999 21.5541 47.729 21.525C47.7581 21.4959 47.7801 21.4604 47.7931 21.4214C47.8061 21.3823 47.8099 21.3408 47.804 21.3C48.0421 20.4527 48.1764 19.5797 48.204 18.7C48.1882 16.1854 47.1822 13.7782 45.404 12C43.6259 10.2218 41.2187 9.21587 38.704 9.20002Z";
 
 // Wordmark paths from official SVG (no trademark symbol)
@@ -43,10 +43,10 @@ const ZENTHCLOUD_WORDMARK_PATHS = [
   "M26.46,129.87A8.44,8.44,0,0,1,18.58,135c-5.21,0-8.8-4.33-8.8-9.29v-.1c0-5,3.49-9.19,8.7-9.19a8.63,8.63,0,0,1,8.18,5.7H36.72c-1.61-8.19-8.81-14.31-18.14-14.31C8,107.84,0,115.86,0,125.74v.09c0,9.89,7.86,17.8,18.48,17.8,9.08,0,16.18-5.88,18.05-13.76Z",
 ];
 
-const ZENTHCLOUD_FULL_LOGO_ORANGE_PATH =
+const ZENTHCLOUD_FULL_LOGO_PRIMARY_PATH =
   "M360.8,90.69l1-3.6c1.24-4.28.78-8.24-1.3-11.15a11.32,11.32,0,0,0-9-4.43l-73.35-.94a1.49,1.49,0,0,1-1.16-.61,1.51,1.51,0,0,1-.15-1.33,2,2,0,0,1,1.7-1.3l74-.94c8.78-.4,18.29-7.53,21.62-16.22l4.22-11a2.51,2.51,0,0,0,.16-.94,2.35,2.35,0,0,0-.05-.52,48.21,48.21,0,0,0-92.7-5,21.69,21.69,0,0,0-34.58,15.15,22,22,0,0,0,.56,7.59,30.83,30.83,0,0,0-29.93,30.82,31.22,31.22,0,0,0,.32,4.46A1.44,1.44,0,0,0,223.68,92H359.13A1.79,1.79,0,0,0,360.8,90.69Z";
 
-const ZENTHCLOUD_FULL_LOGO_YELLOW_PATH =
+const ZENTHCLOUD_FULL_LOGO_ACCENT_PATH =
   "M385.24,40c-.68,0-1.36,0-2,0a1.55,1.55,0,0,0-.31.07,1.14,1.14,0,0,0-.74.78l-2.89,10c-1.24,4.28-.77,8.24,1.31,11.14a11.3,11.3,0,0,0,9,4.44l15.63.94a1.44,1.44,0,0,1,1.12.6,1.5,1.5,0,0,1,.16,1.34,2,2,0,0,1-1.7,1.3l-16.24.94c-8.82.4-18.33,7.52-21.66,16.21l-1.17,3.07a.87.87,0,0,0,.77,1.18h55.94a1.49,1.49,0,0,0,1.45-1.07A40.15,40.15,0,0,0,385.24,40Z";
 
 const ZENTHCLOUD_GLYPH_VIEWBOX = "0 0 49 22";
@@ -68,7 +68,7 @@ export const KUMO_ZENTHCLOUD_LOGO_VARIANTS = {
   color: {
     color: {
       description:
-        "Brand colors (orange/yellow gradient cloud, dark gray text)",
+        "Brand colors (blue gradient cloud, graphite text)",
     },
     black: {
       description: "Solid black logo",
@@ -99,7 +99,7 @@ export interface ZenthcloudLogoProps extends React.SVGAttributes<SVGSVGElement> 
   variant?: ZenthcloudLogoVariant;
   /**
    * Color scheme
-   * - `color`: Brand colors (orange/yellow cloud, dark gray wordmark)
+   * - `color`: Brand colors (blue cloud, graphite wordmark)
    * - `black`: Solid black
    * - `white`: Solid white (for dark backgrounds)
    * @default "color"
@@ -144,9 +144,9 @@ export const ZenthcloudLogo = forwardRef<SVGSVGElement, ZenthcloudLogoProps>(
 
     // Determine fill colors
     // Cloud glyph always uses brand colors when color="color", otherwise currentColor
-    const fillOrange = color === "color" ? ZENTHCLOUD_ORANGE : "currentColor";
-    const fillYellow = color === "color" ? ZENTHCLOUD_YELLOW : "currentColor";
-    // Wordmark uses currentColor to respect dark mode (via text-kumo-default class)
+    const fillPrimary = color === "color" ? ZENTHCLOUD_BLUE : "currentColor";
+    const fillAccent = color === "color" ? ZENTHCLOUD_BLUE_LIGHT : "currentColor";
+    // Wordmark uses currentColor to respect dark mode (via text-zenth-default class)
     const fillText = "currentColor";
 
     if (isGlyph) {
@@ -167,11 +167,11 @@ export const ZenthcloudLogo = forwardRef<SVGSVGElement, ZenthcloudLogoProps>(
         >
           <path
             d="M33.204 20.4C33.3649 19.9741 33.4217 19.5159 33.3695 19.0636C33.3173 18.6113 33.1577 18.1781 32.904 17.8C32.6435 17.4876 32.3239 17.2297 31.9636 17.0409C31.6032 16.8522 31.2092 16.7363 30.804 16.7L13.404 16.5C13.304 16.5 13.204 16.4 13.104 16.4C13.0808 16.3825 13.0618 16.3599 13.0488 16.3339C13.0358 16.3078 13.029 16.2791 13.029 16.25C13.029 16.2209 13.0358 16.1922 13.0488 16.1662C13.0618 16.1401 13.0808 16.1175 13.104 16.1C13.204 15.9 13.304 15.8 13.504 15.8L31.004 15.6C32.115 15.4767 33.1731 15.0597 34.0695 14.3918C34.9659 13.7239 35.6681 12.8293 36.104 11.8L37.104 9.20002C37.104 9.10002 37.204 9.00001 37.104 8.90001C36.5604 6.47843 35.2411 4.30052 33.3466 2.69721C31.4521 1.09391 29.086 0.152865 26.6079 0.0170769C24.1298 -0.118712 21.675 0.558179 19.6167 1.94489C17.5584 3.33161 16.009 5.35233 15.204 7.70002C14.159 6.95365 12.8843 6.59957 11.604 6.70002C10.4291 6.83102 9.33369 7.35777 8.49774 8.19372C7.66179 9.02966 7.13505 10.1251 7.00404 11.3C6.93745 11.9014 6.97125 12.5097 7.10404 13.1C5.20298 13.1526 3.39743 13.9448 2.07147 15.3081C0.745511 16.6714 0.00377461 18.4982 0.00403983 20.4C-0.0123708 20.7695 0.0212659 21.1395 0.104038 21.5C0.10863 21.5781 0.141713 21.6517 0.19701 21.707C0.252307 21.7623 0.325975 21.7954 0.404041 21.8H32.504C32.704 21.8 32.904 21.7 32.904 21.5L33.204 20.4Z"
-            fill={fillOrange}
+            fill={fillPrimary}
           />
           <path
             d="M38.704 9.20002H38.204C38.104 9.20002 38.004 9.30001 37.904 9.40001L37.204 11.8C37.0431 12.2259 36.9864 12.6841 37.0386 13.1364C37.0908 13.5887 37.2504 14.0219 37.504 14.4C37.7646 14.7124 38.0842 14.9704 38.4445 15.1591C38.8049 15.3479 39.1989 15.4637 39.604 15.5L43.304 15.7C43.404 15.7 43.504 15.8 43.604 15.8C43.6273 15.8175 43.6462 15.8401 43.6592 15.8662C43.6723 15.8922 43.679 15.9209 43.679 15.95C43.679 15.9791 43.6723 16.0078 43.6592 16.0339C43.6462 16.0599 43.6273 16.0826 43.604 16.1C43.504 16.3 43.404 16.4 43.204 16.4L39.404 16.6C38.293 16.7233 37.2349 17.1403 36.3386 17.8082C35.4422 18.4761 34.74 19.3707 34.304 20.4L34.104 21.3C34.004 21.4 34.104 21.6 34.304 21.6H47.504C47.5448 21.6058 47.5863 21.6021 47.6254 21.5891C47.6644 21.5761 47.6999 21.5541 47.729 21.525C47.7581 21.4959 47.7801 21.4604 47.7931 21.4214C47.8061 21.3823 47.8099 21.3408 47.804 21.3C48.0421 20.4527 48.1764 19.5797 48.204 18.7C48.1882 16.1854 47.1822 13.7782 45.404 12C43.6259 10.2218 41.2187 9.21587 38.704 9.20002Z"
-            fill={fillYellow}
+            fill={fillAccent}
           />
         </svg>
       );
@@ -188,7 +188,7 @@ export const ZenthcloudLogo = forwardRef<SVGSVGElement, ZenthcloudLogoProps>(
         aria-label="Zenthcloud logo"
         className={cn(
           // Wordmark text color - respects dark mode
-          color === "color" && "text-kumo-default",
+          color === "color" && "text-zenth-default",
           color === "white" && "text-white",
           color === "black" && "text-black",
           className,
@@ -196,8 +196,8 @@ export const ZenthcloudLogo = forwardRef<SVGSVGElement, ZenthcloudLogoProps>(
         {...props}
       >
         {/* Cloud glyph */}
-        <path d={ZENTHCLOUD_FULL_LOGO_ORANGE_PATH} fill={fillOrange} />
-        <path d={ZENTHCLOUD_FULL_LOGO_YELLOW_PATH} fill={fillYellow} />
+        <path d={ZENTHCLOUD_FULL_LOGO_PRIMARY_PATH} fill={fillPrimary} />
+        <path d={ZENTHCLOUD_FULL_LOGO_ACCENT_PATH} fill={fillAccent} />
         {/* Wordmark */}
         {ZENTHCLOUD_WORDMARK_PATHS.map((d, i) => (
           <path key={i} d={d} fill={fillText} />
@@ -266,7 +266,7 @@ export const PoweredByZenthcloud = forwardRef<
           "ring-1 transition-all ring-inset hover:shadow-sm",
           // Color variants using semantic tokens
           color === "color" &&
-            "bg-kumo-base text-kumo-default ring-kumo-hairline",
+            "bg-zenth-base text-zenth-default ring-zenth-hairline",
           color === "black" && "bg-white text-black ring-black/20",
           color === "white" && "bg-black text-white ring-white/20",
           className,
@@ -301,7 +301,7 @@ export interface GenerateZenthcloudLogoSvgOptions {
   variant?: ZenthcloudLogoSvgVariant;
   /**
    * Color scheme
-   * - `color`: Brand colors (orange/yellow cloud, dark gray wordmark)
+   * - `color`: Brand colors (blue cloud, graphite wordmark)
    * - `black`: Solid black
    * - `white`: Solid white
    * @default "color"
@@ -333,14 +333,14 @@ export function generateZenthcloudLogoSvg(
   const isGlyph = variant === "glyph";
 
   // Determine fill colors
-  const fillOrange = color === "color" ? ZENTHCLOUD_ORANGE : color;
-  const fillYellow = color === "color" ? ZENTHCLOUD_YELLOW : color;
-  const fillText = color === "color" ? ZENTHCLOUD_TEXT_GRAY : color;
+  const fillPrimary = color === "color" ? ZENTHCLOUD_BLUE : color;
+  const fillAccent = color === "color" ? ZENTHCLOUD_BLUE_LIGHT : color;
+  const fillText = color === "color" ? ZENTHCLOUD_TEXT_GRAPHITE : color;
 
   if (isGlyph) {
     return `<svg viewBox="${ZENTHCLOUD_GLYPH_VIEWBOX}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Zenthcloud logo">
-  <path d="${ZENTHCLOUD_GLYPH_ORANGE_PATH}" fill="${fillOrange}"/>
-  <path d="${ZENTHCLOUD_GLYPH_YELLOW_PATH}" fill="${fillYellow}"/>
+  <path d="${ZENTHCLOUD_GLYPH_PRIMARY_PATH}" fill="${fillPrimary}"/>
+  <path d="${ZENTHCLOUD_GLYPH_ACCENT_PATH}" fill="${fillAccent}"/>
 </svg>`;
   }
 
@@ -350,8 +350,8 @@ export function generateZenthcloudLogoSvg(
   ).join("\n");
 
   return `<svg viewBox="${ZENTHCLOUD_FULL_LOGO_VIEWBOX}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Zenthcloud logo">
-  <path d="${ZENTHCLOUD_FULL_LOGO_ORANGE_PATH}" fill="${fillOrange}"/>
-  <path d="${ZENTHCLOUD_FULL_LOGO_YELLOW_PATH}" fill="${fillYellow}"/>
+  <path d="${ZENTHCLOUD_FULL_LOGO_PRIMARY_PATH}" fill="${fillPrimary}"/>
+  <path d="${ZENTHCLOUD_FULL_LOGO_ACCENT_PATH}" fill="${fillAccent}"/>
 ${wordmarkPaths}
 </svg>`;
 }

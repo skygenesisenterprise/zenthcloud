@@ -1,6 +1,7 @@
 "use client";
 
-import { Moon, Sun } from "lucide-react";
+import { Button } from "@zenthcloud/react";
+import { Moon, Sun } from "@phosphor-icons/react";
 import { useTheme } from "./ThemeProvider";
 
 export function ThemeToggle({
@@ -14,22 +15,19 @@ export function ThemeToggle({
 	const nextLabel = theme === "dark" ? "light" : "dark";
 
 	return (
-		<button
-			type="button"
+		<Button
+			variant={variant === "ghost" ? "ghost" : "outline"}
+			shape="square"
+			size="sm"
 			onClick={toggle}
 			aria-label={`Switch to ${nextLabel} theme`}
-			title={`Switch to ${nextLabel} theme`}
-			className={`inline-flex h-9 w-9 items-center justify-center transition-colors ${
-				variant === "ghost"
-					? "rounded-full text-ink-foreground/65 hover:bg-ink-foreground/10 hover:text-ink-foreground"
-					: "rounded-md border border-border text-muted-foreground hover:bg-accent hover:text-foreground"
-			} ${className ?? ""}`}
+			className={className}
 		>
 			{theme === "dark" ? (
-				<Sun className="h-4 w-4" aria-hidden="true" />
+				<Sun className="size-4" weight="regular" aria-hidden="true" />
 			) : (
-				<Moon className="h-4 w-4" aria-hidden="true" />
+				<Moon className="size-4" weight="regular" aria-hidden="true" />
 			)}
-		</button>
+		</Button>
 	);
 }

@@ -194,7 +194,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(
       normalizeFieldError(error) ?? normalizeFieldError(message);
     const inputVariant = variant ?? (fieldError ? "error" : "default");
     const chipClassName = cn(
-      "flex w-fit max-w-full shrink-0 items-center gap-2.5 rounded-sm bg-kumo-overlay ring-1 ring-kumo-hairline",
+      "flex w-fit max-w-full shrink-0 items-center gap-2.5 rounded-sm bg-zenth-overlay ring-1 ring-zenth-hairline",
       "h-6 py-0 pr-[3px] pl-2 text-sm",
     );
     const input = (controlProps?: ComponentPropsWithoutRef<"input">) => (
@@ -247,7 +247,7 @@ export const TagInput = forwardRef<HTMLInputElement, TagInputProps>(
         )}
       >
         {values.map((item) => (
-          <span key={item} className={cn(chipClassName, "text-kumo-default")}>
+          <span key={item} className={cn(chipClassName, "text-zenth-default")}>
             <span className="truncate">{item}</span>
             <Button
               aria-label={(labels?.removeValue ?? DEFAULT_LABELS.removeValue)(

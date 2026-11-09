@@ -10,7 +10,7 @@ describe("Input disabled styling", () => {
         <div data-mode={mode}>
           <Input aria-label="Enabled" defaultValue="Example" />
           <Input aria-label="Disabled" defaultValue="Example" disabled />
-          <span data-testid="inactive" className="text-kumo-inactive">
+          <span data-testid="inactive" className="text-zenth-inactive">
             Reference
           </span>
         </div>,

@@ -7,10 +7,10 @@ const surfaceOf = (text: string) =>
   screen
     .getByText(text)
     .closest('[role="dialog"]')
-    ?.querySelector('[data-kumo-part="surface"]');
+    ?.querySelector('[data-zenth-part="surface"]');
 
 const isBumping = (text: string) =>
-  /animate-toast-bump/.test(surfaceOf(text)?.className ?? "");
+  /zenth-animate-toast-bump/.test(surfaceOf(text)?.className ?? "");
 
 describe("Toasty", () => {
   // Regression guard: existing callers that don't pass `toastManager`
@@ -130,7 +130,7 @@ describe("Toasty", () => {
     expect(screen.getByText("Repeated toast").closest('[role="dialog"]')).toBe(
       root,
     );
-    expect(root?.className).not.toMatch(/animate-toast-bump/);
+    expect(root?.className).not.toMatch(/zenth-animate-toast-bump/);
     expect(isBumping("Repeated toast")).toBe(true);
     expect(surfaceOf("Repeated toast")?.className).not.toBe(firstBump);
   });

@@ -199,8 +199,8 @@ function Content({
             cn(
               "flex flex-col",
               "max-h-[min(var(--available-height),24rem)] max-w-(--available-width) min-w-(--anchor-width) py-1.5",
-              "bg-kumo-control text-kumo-default",
-              "rounded-lg shadow-lg ring ring-kumo-line",
+              "bg-zenth-control text-zenth-default",
+              "rounded-lg shadow-lg ring ring-zenth-line",
               state.empty && "hidden",
               className,
             )
@@ -235,12 +235,12 @@ function Item({
 }: AutocompleteBase.Item.Props & { className?: string }) {
   return (
     <AutocompleteBase.Item
-      data-kumo-component="Autocomplete"
-      data-kumo-part="item"
+      data-zenth-component="Autocomplete"
+      data-zenth-part="item"
       {...props}
       className={cn(
         "group mx-1.5 grid cursor-pointer grid-cols-[1fr_16px] gap-2 rounded px-2 py-1.5 text-base",
-        "data-highlighted:bg-kumo-tint data-selected:font-medium",
+        "data-highlighted:bg-zenth-tint data-selected:font-medium",
         className,
       )}
     >
@@ -257,7 +257,7 @@ function GroupLabel(props: AutocompleteBase.GroupLabel.Props) {
     <AutocompleteBase.GroupLabel
       {...props}
       className={cn(
-        "mx-1.5 px-2 py-1.5 text-sm text-kumo-strong",
+        "mx-1.5 px-2 py-1.5 text-sm text-zenth-strong",
         props.className,
       )}
     />
@@ -268,7 +268,7 @@ function Group(props: AutocompleteBase.Group.Props) {
   return (
     <AutocompleteBase.Group
       {...props}
-      className="mt-2 border-t border-kumo-line pt-2 first:mt-0 first:border-t-0 first:pt-0"
+      className="mt-2 border-t border-zenth-line pt-2 first:mt-0 first:border-t-0 first:pt-0"
     />
   );
 }
@@ -277,7 +277,7 @@ function Separator(props: AutocompleteBase.Separator.Props) {
   return (
     <AutocompleteBase.Separator
       {...props}
-      className={cn("mx-0 my-1 h-px bg-kumo-line", props.className)}
+      className={cn("mx-0 my-1 h-px bg-zenth-line", props.className)}
     />
   );
 }

@@ -250,14 +250,14 @@ describe("Button", () => {
     for (const variant of ["primary", "destructive"] as const) {
       const className = buttonVariants({ variant });
 
-      expect(className).toContain("ring-(--kumo-button-emphasis-ring)");
-      expect(className).toContain("focus:ring-(--kumo-button-emphasis-ring)");
+      expect(className).toContain("ring-(--zenth-button-emphasis-ring)");
+      expect(className).toContain("focus:ring-(--zenth-button-emphasis-ring)");
       expect(className).toContain(
-        "focus-visible:ring-(--kumo-button-emphasis-ring)",
+        "focus-visible:ring-(--zenth-button-emphasis-ring)",
       );
-      expect(className).toContain("active:ring-(--kumo-button-emphasis-ring)");
-      expect(className).not.toContain("focus:ring-kumo-focus/50");
-      expect(className).not.toContain("focus-visible:ring-kumo-brand");
+      expect(className).toContain("active:ring-(--zenth-button-emphasis-ring)");
+      expect(className).not.toContain("focus:ring-zenth-focus/50");
+      expect(className).not.toContain("focus-visible:ring-zenth-brand");
     }
   });
 });
@@ -362,7 +362,7 @@ describe("LinkButton", () => {
         </LinkButton>,
       );
       const button = screen.getByRole("button", { name: "Home" });
-      expect(button.getAttribute("data-kumo-component")).toBe("LinkButton");
+      expect(button.getAttribute("data-zenth-component")).toBe("LinkButton");
     });
 
     it("allows text selection", () => {

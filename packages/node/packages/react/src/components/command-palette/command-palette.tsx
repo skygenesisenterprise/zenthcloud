@@ -161,7 +161,7 @@ function Dialog({
     <DialogBase.Root open={open} onOpenChange={onOpenChange} modal>
       <DialogBase.Portal container={container}>
         <DialogBase.Backdrop
-          className="fixed inset-0 bg-kumo-overlay opacity-80 transition-all duration-150 data-[ending-style]:opacity-0 data-[starting-style]:opacity-0"
+          className="fixed inset-0 bg-zenth-overlay opacity-80 transition-all duration-150 data-[ending-style]:opacity-0 data-[starting-style]:opacity-0"
           onClick={handleBackdropClick}
         />
         <LayerCard
@@ -252,10 +252,10 @@ function InputHeader({
   trailing?: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center gap-3 bg-kumo-base px-4 py-3 focus-within:ring-2 focus-within:ring-kumo-brand">
+    <div className="flex items-center gap-3 bg-zenth-base px-4 py-3 focus-within:ring-2 focus-within:ring-zenth-brand">
       {leading ?? (
         <MagnifyingGlassIcon
-          className="h-4 w-4 text-kumo-subtle"
+          className="h-4 w-4 text-zenth-subtle"
           weight="bold"
         />
       )}
@@ -279,7 +279,7 @@ const List = forwardRef<
     <div
       ref={ref}
       className={cn(
-        "relative min-h-0 flex-1 scroll-py-2 overflow-y-auto rounded-b-lg bg-kumo-base px-2 py-2 ring-1 ring-kumo-hairline",
+        "relative min-h-0 flex-1 scroll-py-2 overflow-y-auto rounded-b-lg bg-zenth-base px-2 py-2 ring-1 ring-zenth-hairline",
         className,
       )}
     >
@@ -322,7 +322,7 @@ function GroupLabel({
   return (
     <Autocomplete.GroupLabel
       className={cn(
-        "mb-2 px-2 pt-1 text-xs font-semibold text-kumo-subtle",
+        "mb-2 px-2 pt-1 text-xs font-semibold text-zenth-subtle",
         className,
       )}
     >
@@ -353,7 +353,7 @@ function Item<T>({
       onClick={onClick}
       className={cn(
         "group flex w-full items-center gap-3 px-2 py-1.5 text-left text-base transition-colors",
-        "cursor-pointer data-[highlighted]:bg-kumo-overlay",
+        "cursor-pointer data-[highlighted]:bg-zenth-overlay",
         "rounded-lg",
         disabled && "cursor-default opacity-50",
         className,
@@ -373,7 +373,7 @@ function Empty({ children }: CommandPaletteEmptyProps) {
   return (
     <Autocomplete.Empty>
       <div className="p-8 text-center">
-        <p className="text-kumo-subtle">{children ?? "No results found"}</p>
+        <p className="text-zenth-subtle">{children ?? "No results found"}</p>
       </div>
     </Autocomplete.Empty>
   );
@@ -400,7 +400,7 @@ function Loading({ children }: CommandPaletteLoadingProps) {
  */
 function Footer({ children }: CommandPaletteFooterProps) {
   return (
-    <div className="flex items-center justify-between rounded-b-lg bg-kumo-elevated px-4 py-3 text-xs text-kumo-subtle">
+    <div className="flex items-center justify-between rounded-b-lg bg-zenth-elevated px-4 py-3 text-xs text-zenth-subtle">
       {children}
     </div>
   );
@@ -452,7 +452,7 @@ function HighlightedText({
     parts.push(
       <mark
         key={`highlight-${i}`}
-        className="rounded-sm bg-kumo-warning/50 text-kumo-default"
+        className="rounded-sm bg-zenth-warning/50 text-zenth-default"
       >
         {text.slice(start, end + 1)}
       </mark>,
@@ -496,11 +496,11 @@ function ResultItem<T>({
         "group flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors",
         nonInteractive
           ? "cursor-default"
-          : "cursor-pointer data-[highlighted]:bg-kumo-overlay",
+          : "cursor-pointer data-[highlighted]:bg-zenth-overlay",
       )}
     >
       {icon && (
-        <div className="flex flex-shrink-0 items-center text-kumo-subtle">
+        <div className="flex flex-shrink-0 items-center text-zenth-subtle">
           {icon}
         </div>
       )}
@@ -511,10 +511,10 @@ function ResultItem<T>({
               <HighlightedText
                 text={crumb}
                 highlights={breadcrumbHighlights?.[index]}
-                className="text-base text-kumo-default"
+                className="text-base text-zenth-default"
               />
               <CaretRightIcon
-                className="h-3 w-3 flex-shrink-0 text-kumo-subtle"
+                className="h-3 w-3 flex-shrink-0 text-zenth-subtle"
                 weight="bold"
               />
             </span>
@@ -522,15 +522,15 @@ function ResultItem<T>({
           <HighlightedText
             text={title}
             highlights={titleHighlights}
-            className="text-base text-kumo-default"
+            className="text-base text-zenth-default"
           />
           {external && (
-            <ArrowSquareOutIcon className="h-3.5 w-3.5 flex-shrink-0 text-kumo-subtle" />
+            <ArrowSquareOutIcon className="h-3.5 w-3.5 flex-shrink-0 text-zenth-subtle" />
           )}
           {description && (
             <>
-              <span className="text-kumo-subtle">—</span>
-              <span className="truncate text-sm text-kumo-subtle">
+              <span className="text-zenth-subtle">—</span>
+              <span className="truncate text-sm text-zenth-subtle">
                 {description}
               </span>
             </>
@@ -538,7 +538,7 @@ function ResultItem<T>({
         </div>
       </div>
       {showArrow && !external && !nonInteractive && (
-        <ArrowRightIcon className="h-4 w-4 flex-shrink-0 text-kumo-subtle opacity-0 transition-opacity group-data-[highlighted]:opacity-100" />
+        <ArrowRightIcon className="h-4 w-4 flex-shrink-0 text-zenth-subtle opacity-0 transition-opacity group-data-[highlighted]:opacity-100" />
       )}
     </Autocomplete.Item>
   );
@@ -557,7 +557,7 @@ function Container({
   return (
     <div
       className={cn(
-        "flex max-h-[60vh] flex-col overflow-hidden rounded-lg bg-kumo-elevated",
+        "flex max-h-[60vh] flex-col overflow-hidden rounded-lg bg-zenth-elevated",
         className,
       )}
     >
@@ -758,7 +758,7 @@ function PanelInput({
       <Autocomplete.Input
         placeholder={placeholder}
         className={cn(
-          "kumo-input-placeholder flex-1 border-none bg-transparent text-base",
+          "zenth-input-placeholder flex-1 border-none bg-transparent text-base",
           "outline-none",
           className,
         )}

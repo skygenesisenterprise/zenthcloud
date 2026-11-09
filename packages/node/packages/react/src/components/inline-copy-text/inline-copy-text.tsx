@@ -38,7 +38,7 @@ export const KUMO_INLINE_COPY_TEXT_DEFAULT_VARIANTS = {} as const;
 /** Base classes shared by every InlineCopyText. */
 export const KUMO_INLINE_COPY_TEXT_STYLING = {
   baseClasses:
-    "group/inline-copy flex min-w-0 max-w-full cursor-pointer items-center gap-1 rounded-xs border-0 bg-transparent p-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-kumo-brand",
+    "group/inline-copy flex min-w-0 max-w-full cursor-pointer items-center gap-1 rounded-xs border-0 bg-transparent p-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-zenth-brand",
 } as const;
 
 export interface InlineCopyTextLabels {
@@ -184,7 +184,7 @@ export const InlineCopyText = forwardRef<
 
     const textHoverClasses =
       variant === "mono-secondary"
-        ? "group-hover/inline-copy:text-kumo-default group-focus-visible/inline-copy:text-kumo-default"
+        ? "group-hover/inline-copy:text-zenth-default group-focus-visible/inline-copy:text-zenth-default"
         : undefined;
     const renderedText =
       variant === "mono" || variant === "mono-secondary" ? (
@@ -215,7 +215,7 @@ export const InlineCopyText = forwardRef<
         {...props}
         ref={ref}
         type="button"
-        data-kumo-component="InlineCopyText"
+        data-zenth-component="InlineCopyText"
         className={cn(KUMO_INLINE_COPY_TEXT_STYLING.baseClasses, className)}
         onClick={(event) => {
           onClick?.(event);

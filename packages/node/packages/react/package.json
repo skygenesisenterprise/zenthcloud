@@ -1,6 +1,6 @@
 {
   "name": "@zenthcloud/react",
-  "version": "2.17.0",
+  "version": "1.0.0",
   "private": false,
   "description": "React - Zenthcloud's component library for building modern web applications",
   "keywords": [
@@ -23,6 +23,7 @@
     "dist",
     "bin",
     "ai",
+    "docs",
     "templates",
     "scripts",
     "README.md",
@@ -32,7 +33,7 @@
   "type": "module",
   "sideEffects": [
     "*.css",
-    "dist/styles/*.css"
+    "dist/styles/**/*.css"
   ],
   "types": "./dist/index.d.ts",
   "exports": {
@@ -438,10 +439,18 @@
     },
     "./registry/component-registry.json": "./ai/component-registry.json",
     "./registry/component-registry.md": "./ai/component-registry.md",
-    "./styles/tailwind": "./dist/styles/kumo.css",
-    "./styles/standalone": "./dist/styles/kumo-standalone.css",
-    "./styles": "./dist/styles/kumo.css",
-    "./styles/*": "./dist/styles/*.css"
+    "./styles.css": "./dist/styles/styles.css",
+    "./tokens.css": "./dist/styles/tokens.css",
+    "./themes/light.css": "./dist/styles/themes/light.css",
+    "./themes/dark.css": "./dist/styles/themes/dark.css",
+    "./styles/tailwind": "./dist/styles/tailwind.css",
+    "./styles/standalone": "./dist/styles/styles.css",
+    "./styles": "./dist/styles/styles.css",
+    "./styles/kumo.css": "./dist/styles/kumo.css",
+    "./styles/kumo-binding.css": "./dist/styles/kumo-binding.css",
+    "./styles/kumo-standalone.css": "./dist/styles/kumo-standalone.css",
+    "./styles/theme-kumo.css": "./dist/styles/theme-kumo.css",
+    "./styles/*": "./dist/styles/*"
   },
   "publishConfig": {
     "access": "public",
@@ -457,7 +466,7 @@
     "codegen:themes": "tsx scripts/theme-generator/index.ts",
     "migrate:tokens": "tsx scripts/theme-generator/migrate.ts",
     "codegen:primitives": "tsx scripts/generate-primitives.ts",
-    "codegen:registry": "pnpm --filter @zenthcloud/kumo-docs-astro codegen:demos && tsx scripts/component-registry/index.ts",
+    "codegen:registry": "pnpm --filter @zenthcloud/react-docs-astro codegen:demos && tsx scripts/component-registry/index.ts",
     "lint": "pnpm run lint:oxlint",
     "lint:oxlint": "vp lint src/",
     "test": "CI=true vp test run --project=unit",

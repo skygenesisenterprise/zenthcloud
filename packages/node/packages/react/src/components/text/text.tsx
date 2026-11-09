@@ -35,19 +35,19 @@ export const KUMO_TEXT_VARIANTS = {
         "Deprecated small heading for subsections; use heading instead",
     },
     body: {
-      classes: "text-kumo-default",
+      classes: "text-zenth-default",
       description: "Default body text",
     },
     secondary: {
-      classes: "text-kumo-subtle",
+      classes: "text-zenth-subtle",
       description: "Muted text for secondary information",
     },
     success: {
-      classes: "text-kumo-link",
+      classes: "text-zenth-link",
       description: "Success state text",
     },
     error: {
-      classes: "text-kumo-danger",
+      classes: "text-zenth-danger",
       description: "Error state text",
     },
     mono: {
@@ -55,7 +55,7 @@ export const KUMO_TEXT_VARIANTS = {
       description: "Monospace text for code",
     },
     "mono-secondary": {
-      classes: "font-mono text-kumo-subtle",
+      classes: "font-mono text-zenth-subtle",
       description: "Muted monospace text",
     },
   },
@@ -109,14 +109,14 @@ export const KUMO_TEXT_STYLING = {
     medium: 500,
     semibold: 600,
   },
-  baseColor: "text-kumo-default",
+  baseColor: "text-zenth-default",
   variantColors: {
-    body: "text-kumo-default",
-    secondary: "text-kumo-subtle",
-    success: "text-kumo-link",
-    error: "text-kumo-danger",
-    mono: "text-kumo-default",
-    "mono-secondary": "text-kumo-subtle",
+    body: "text-zenth-default",
+    secondary: "text-zenth-subtle",
+    success: "text-zenth-link",
+    error: "text-zenth-danger",
+    mono: "text-zenth-default",
+    "mono-secondary": "text-zenth-subtle",
   },
   fontFamilies: {
     default: "sans-serif",
@@ -376,7 +376,7 @@ function _Text<Variant extends TextVariant = "body">(
       // (HTMLElement) which is safe — all text elements extend HTMLElement.
       ref={ref as React.RefCallback<HTMLElement>}
       className={cn(
-        "text-kumo-default",
+        "text-zenth-default",
         resolveVariant(
           KUMO_TEXT_VARIANTS.variant,
           variant,

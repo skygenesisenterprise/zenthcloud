@@ -195,7 +195,7 @@ export function Tabs({
       className={cn(
         "relative isolate min-w-0 font-medium",
         isSegmented &&
-          (isSm ? "rounded-md" : "rounded-lg") + " ring ring-kumo-hairline/70",
+          (isSm ? "rounded-md" : "rounded-lg") + " ring ring-zenth-hairline/70",
         className,
       )}
       onValueChange={(nextValue) => {
@@ -207,7 +207,7 @@ export function Tabs({
       {isSegmented && (
         <div
           className={cn(
-            "absolute inset-x-0 top-1/2 z-0 -translate-y-1/2 rounded-lg bg-kumo-recessed",
+            "absolute inset-x-0 top-1/2 z-0 -translate-y-1/2 rounded-lg bg-zenth-recessed",
             isSm ? "h-6.5" : "h-9",
           )}
         />
@@ -220,11 +220,11 @@ export function Tabs({
         data-overflow-end={canScrollEnd ? "" : undefined}
         {...bindDrag()}
         className={cn(
-          "kumo-tabs-list relative flex min-w-0 shrink scroll-px-(--scroll-fade-width) items-stretch overflow-x-auto overflow-y-hidden [--scroll-fade-width:3rem]",
-          isSegmented && "rounded-lg bg-kumo-recessed px-0.5",
+          "zenth-tabs-list relative flex min-w-0 shrink scroll-px-(--scroll-fade-width) items-stretch overflow-x-auto overflow-y-hidden [--scroll-fade-width:3rem]",
+          isSegmented && "rounded-lg bg-zenth-recessed px-0.5",
           isSegmented && (isSm ? "h-6.5 rounded-md" : "h-9"),
           isOverflowing && "cursor-grab active:cursor-grabbing",
-          isUnderline && "gap-4 border-b border-kumo-hairline pb-2",
+          isUnderline && "gap-4 border-b border-zenth-hairline pb-2",
           isUnderline && (isSm ? "h-6.5" : "h-7.5"),
           listClassName,
         )}
@@ -232,8 +232,8 @@ export function Tabs({
         {items.map((tab) => (
           <TabsPrimitive.Tab
             key={tab.value}
-            data-kumo-component="Tabs"
-            data-kumo-part="tab"
+            data-zenth-component="Tabs"
+            data-zenth-part="tab"
             value={tab.value}
             render={tab.render}
             nativeButton={tab.nativeButton}
@@ -245,7 +245,7 @@ export function Tabs({
               });
             }}
             className={cn(
-              "relative z-2 flex items-center rounded bg-transparent whitespace-nowrap focus:ring-kumo-focus/50 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-kumo-brand",
+              "relative z-2 flex items-center rounded bg-transparent whitespace-nowrap focus:ring-zenth-focus/50 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-zenth-brand",
               // The scrolling list clips external outlines; keep the forced-colors
               // fallback inside the tab, like the segmented variant's focus ring.
               "forced-colors:focus-visible:-outline-offset-2",
@@ -254,10 +254,10 @@ export function Tabs({
                 : "cursor-pointer",
               isSm ? "text-xs" : "text-base",
               isSegmented &&
-                "my-0.5 text-kumo-subtle hover:text-kumo-default focus-visible:ring-inset aria-selected:text-kumo-default",
+                "my-0.5 text-zenth-subtle hover:text-zenth-default focus-visible:ring-inset aria-selected:text-zenth-default",
               isSegmented && (isSm ? "rounded-sm px-2" : "rounded-md px-2.5"),
               isUnderline &&
-                "text-kumo-subtle hover:bg-kumo-tint hover:text-kumo-default aria-selected:font-medium aria-selected:text-kumo-default aria-selected:hover:bg-kumo-tint",
+                "text-zenth-subtle hover:bg-zenth-tint hover:text-zenth-default aria-selected:font-medium aria-selected:text-zenth-default aria-selected:hover:bg-zenth-tint",
               isUnderline && (isSm ? "px-1.5 py-2.5" : "px-2 py-3"),
               tab.className,
             )}
@@ -274,10 +274,10 @@ export function Tabs({
                 "w-(--active-tab-width) translate-x-(--active-tab-left) transition-all duration-200",
                 isSegmented &&
                   cn(
-                    "top-(--active-tab-top) h-(--active-tab-height) bg-kumo-base shadow-sm ring ring-kumo-line",
+                    "top-(--active-tab-top) h-(--active-tab-height) bg-zenth-base shadow-sm ring ring-zenth-line",
                     isSm ? "rounded" : "rounded-md",
                   ),
-                isUnderline && "bottom-0 h-0.5 bg-kumo-brand",
+                isUnderline && "bottom-0 h-0.5 bg-zenth-brand",
                 indicatorClassName,
               )}
             />
@@ -329,15 +329,15 @@ function TabsOverflowControl({
   return (
     <button
       type="button"
-      data-kumo-component="Tabs"
-      data-kumo-part="overflow-control"
+      data-zenth-component="Tabs"
+      data-zenth-part="overflow-control"
       data-side={side}
       aria-label={label}
       aria-hidden={!visible}
       tabIndex={visible ? 0 : -1}
       onClick={onClick}
       className={cn(
-        "absolute inset-y-0 z-3 flex items-center border-0 bg-transparent p-0 transition-opacity duration-150 focus:outline-hidden focus-visible:[&>span]:ring-2 focus-visible:[&>span]:ring-kumo-brand",
+        "absolute inset-y-0 z-3 flex items-center border-0 bg-transparent p-0 transition-opacity duration-150 focus:outline-hidden focus-visible:[&>span]:ring-2 focus-visible:[&>span]:ring-zenth-brand",
         isStart
           ? "left-0 justify-start bg-linear-to-r"
           : "right-0 justify-end bg-linear-to-l",
@@ -345,15 +345,15 @@ function TabsOverflowControl({
           ? "pointer-events-auto opacity-100"
           : "pointer-events-none opacity-0",
         isSegmented
-          ? "from-kumo-recessed via-kumo-recessed/95 to-transparent"
-          : "from-kumo-base via-kumo-base/95 to-transparent",
+          ? "from-zenth-recessed via-zenth-recessed/95 to-transparent"
+          : "from-zenth-base via-zenth-base/95 to-transparent",
         isSegmented && (size === "sm" ? "w-8 rounded-md" : "w-10 rounded-lg"),
         !isSegmented && "w-8",
       )}
     >
       <span
         className={cn(
-          "flex items-center justify-center text-kumo-subtle transition-colors hover:text-kumo-default",
+          "flex items-center justify-center text-zenth-subtle transition-colors hover:text-zenth-default",
           size === "sm" ? "size-5" : "size-6",
           isSegmented
             ? size === "sm"
@@ -394,7 +394,7 @@ function scrollTabs(
   if (!el) return;
 
   const tabEls = Array.from(
-    el.querySelectorAll<HTMLElement>('[data-kumo-part="tab"]'),
+    el.querySelectorAll<HTMLElement>('[data-zenth-part="tab"]'),
   );
   const distance = getTabsScrollSize(el.clientWidth, tabEls);
 

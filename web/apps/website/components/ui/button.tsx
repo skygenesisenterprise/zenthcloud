@@ -1,59 +1,101 @@
 "use client";
 
-import { Slot } from "@radix-ui/react-slot";
-import { type VariantProps, cva } from "class-variance-authority";
+import { Button as ZenthButton, LinkButton } from "@zenthcloud/react";
 import * as React from "react";
+import { cn } from "@/lib/utils";
 
-import { cn } from "../../lib/utils";
+type ButtonVariant =
+	| "default"
+	| "destructive"
+	| "outline"
+	| "secondary"
+	| "ghost"
+	| "link";
 
-const buttonVariants = cva(
-	"inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm will-change-transform transition-all  active:hover:scale-[0.98] font-medium ring-offset-background  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-	{
-		variants: {
-			variant: {
-				default: "bg-primary text-primary-foreground hover:bg-primary/90",
-				destructive:
-					"bg-destructive text-destructive-foreground hover:bg-destructive/90",
-				outline:
-					"border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-				secondary:
-					"bg-secondary text-secondary-foreground hover:bg-secondary/80",
-				ghost: "hover:bg-accent hover:text-accent-foreground",
-				link: "text-primary underline-offset-4 hover:underline",
-			},
-			size: {
-				default: "h-10 px-4 py-2",
-				sm: "h-9 rounded-md px-3",
-				lg: "h-11 rounded-md px-8",
-				icon: "h-10 w-10",
-			},
-		},
-		defaultVariants: {
-			variant: "default",
-			size: "default",
-		},
-	},
-);
+type ButtonSize = "default" | "sm" | "lg" | "icon";
+
+const VARIANT_MAP = {
+	default: "primary",
+	destructive: "destructive",
+	outline: "outline",
+	secondary: "secondary",
+	ghost: "ghost",
+	link: "ghost",
+} as const;
+
+const SIZE_MAP = {
+	default: "lg",
+	sm: "base",
+	lg: "lg",
+	icon: "lg",
+} as const;
 
 export interface ButtonProps
-	extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-		VariantProps<typeof buttonVariants> {
+	extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+	variant?: ButtonVariant;
+	size?: ButtonSize;
 	asChild?: boolean;
 	children?: React.ReactNode;
 }
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-	({ className, variant, size, asChild = false, ...props }, ref) => {
-		const Comp = asChild ? Slot : "button";
+/**
+ * Site-facing adapter over the design-system Button.
+ *
+ * The public API used by the site (`variant`, `size`, `asChild`) is preserved,
+ * but the rendering, tokens and interaction states come from
+ * `@zenthcloud/react`. `asChild` with a link renders the library's LinkButton
+ * so routing still goes through the shared LinkProvider.
+ */
+export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+	function Button(
+		{
+			className,
+			variant = "default",
+			size = "default",
+			asChild = false,
+			children,
+			...props
+		},
+		ref,
+	) {
+		const mappedVariant = VARIANT_MAP[variant];
+		const mappedSize = SIZE_MAP[size];
+		const sizing = size === "lg" ? "h-11 px-5" : size === "sm" ? "h-9 px-3" : undefined;
+
+		if (asChild && React.isValidElement(children)) {
+			const child = children as React.ReactElement<{
+				href?: string;
+				children?: React.ReactNode;
+			}>;
+			return (
+				<LinkButton
+					href={child.props.href}
+					variant={mappedVariant}
+					size={mappedSize}
+					className={cn(sizing, className)}
+				>
+					{child.props.children}
+				</LinkButton>
+			);
+		}
+
 		return (
-			<Comp
-				className={cn(buttonVariants({ variant, size, className }))}
+			<ZenthButton
 				ref={ref}
+				variant={mappedVariant}
+				size={mappedSize}
+				className={cn(
+					sizing,
+					variant === "link" &&
+						"h-auto bg-transparent p-0 text-zenth-link underline-offset-4 hover:underline",
+					className,
+				)}
 				{...props}
-			/>
+			>
+				{children}
+			</ZenthButton>
 		);
 	},
 );
-Button.displayName = "Button";
 
-export { Button, buttonVariants };
+Button.displayName = "Button";

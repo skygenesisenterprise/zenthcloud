@@ -115,7 +115,7 @@ export function DeleteResource({
   return (
     <DialogRoot open={open} onOpenChange={onOpenChange}>
       <Dialog size={size} className={cn("p-0", className)}>
-        <div className="flex items-center justify-between border-b border-kumo-line px-6 py-4">
+        <div className="flex items-center justify-between border-b border-zenth-line px-6 py-4">
           <DialogTitle className="text-lg font-semibold">
             Delete {resourceName}
           </DialogTitle>
@@ -142,9 +142,9 @@ export function DeleteResource({
                 {errorMessage}
               </Banner>
             )}
-            <p className="max-w-prose text-base text-pretty text-kumo-subtle">
+            <p className="max-w-prose text-base text-pretty text-zenth-subtle">
               This action cannot be undone. This will permanently delete the{" "}
-              <span className="font-medium text-kumo-default">
+              <span className="font-medium text-zenth-default">
                 {resourceName}
               </span>{" "}
               {resourceType.toLowerCase()}.
@@ -156,7 +156,7 @@ export function DeleteResource({
               <span>
                 Type{" "}
                 <button
-                  className="group inline rounded-md bg-kumo-tint px-2 py-1 font-mono text-sm font-semibold hover:cursor-pointer hover:bg-kumo-fill"
+                  className="group inline rounded-md bg-zenth-tint px-2 py-1 font-mono text-sm font-semibold hover:cursor-pointer hover:bg-zenth-fill"
                   onClick={handleCopy}
                   aria-label={`Copy ${resourceName} to clipboard`}
                 >
@@ -172,7 +172,7 @@ export function DeleteResource({
                     <CopyIcon
                       size={12}
                       weight="bold"
-                      className="ml-1.5 inline text-kumo-subtle group-hover:text-kumo-default"
+                      className="ml-1.5 inline text-zenth-subtle group-hover:text-zenth-default"
                     />
                   )}
                 </button>{" "}
@@ -194,7 +194,7 @@ export function DeleteResource({
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 border-t border-kumo-line px-6 py-4">
+        <div className="flex justify-end gap-3 border-t border-zenth-line px-6 py-4">
           <DialogClose
             render={(props) => (
               <Button {...props} variant="secondary" disabled={isDeleting}>

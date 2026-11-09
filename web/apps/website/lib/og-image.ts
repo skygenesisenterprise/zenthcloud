@@ -10,11 +10,11 @@ interface GenerateOGImageOptions {
 
 /** Official palette for generated visual assets (sRGB hex, exported). */
 export const OG_PALETTE = {
-	ink: "#0B1526",
-	surface: "#101E36",
-	white: "#F7F9FC",
-	muted: "#93A4BD",
-	signal: "#6E9BFF",
+	ink: "#111318",
+	surface: "#1B1E25",
+	white: "#F7F8FA",
+	muted: "#9AA1AC",
+	signal: "#4B91F0",
 } as const;
 
 const LINE = `${OG_PALETTE.white}22`;

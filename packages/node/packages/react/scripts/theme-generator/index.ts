@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Kumo Theme Generator CLI
+ * ZenthCloud Theme Generator CLI
  *
  * Generates theme CSS files from the centralized configuration.
  *
@@ -11,6 +11,7 @@
  */
 
 import * as path from "node:path";
+import { mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { writeFormattedFile } from "../format-generated.js";
 import {
@@ -27,7 +28,6 @@ function parseArgs(args: string[]) {
   return {
     list: args.includes("--list"),
     dryRun: args.includes("--dry-run"),
-    useNewNames: args.includes("--use-new-names"),
     renameMap: args.includes("--rename-map"),
     help: args.includes("--help") || args.includes("-h"),
   };
@@ -35,64 +35,37 @@ function parseArgs(args: string[]) {
 
 function printHelp() {
   console.log(`
-Kumo Theme Generator
+ZenthCloud Theme Generator
 
 Usage:
-  tsx scripts/kumo-theme-generator/index.ts [options]
+  tsx scripts/theme-generator/index.ts [options]
 
 Options:
-  --list          List all tokens with their current and new names
+  --list          List all tokens
   --dry-run       Preview generated CSS without writing files
-  --use-new-names Generate CSS using new token names (for migration)
-  --rename-map    Output JSON mapping of old names to new names
+  --rename-map    Output JSON mapping of token rename plans
   --help, -h      Show this help message
 
 Output:
   Generates theme CSS files in src/styles/:
-  - theme-kumo.css     Base theme with all tokens
-  - theme-fedramp.css  FedRAMP theme overrides
+  - theme-zenth.css     Base theme with all tokens
+  - theme-fedramp.css   FedRAMP theme overrides
+  - themes/light.css    Light-mode token values
+  - themes/dark.css     Dark-mode token values
+  - theme-kumo.css      Deprecated legacy aliases
 `);
 }
 
 function printTokenList() {
   const tokens = listAllTokens(THEME_CONFIG);
 
-  console.log("\n=== Text Tokens ===\n");
-  console.log("Current Name".padEnd(25) + "New Name".padEnd(20) + "Themes");
-  console.log("-".repeat(60));
+  for (const type of ["text", "color", "typography"] as const) {
+    const group = tokens.filter((token) => token.type === type);
+    if (group.length === 0) continue;
 
-  for (const token of tokens.filter((t) => t.type === "text")) {
-    console.log(
-      token.currentName.padEnd(25) +
-        token.newName.padEnd(20) +
-        token.themes.join(", "),
-    );
-  }
-
-  console.log("\n=== Color Tokens ===\n");
-  console.log("Current Name".padEnd(25) + "New Name".padEnd(20) + "Themes");
-  console.log("-".repeat(60));
-
-  for (const token of tokens.filter((t) => t.type === "color")) {
-    console.log(
-      token.currentName.padEnd(25) +
-        token.newName.padEnd(20) +
-        token.themes.join(", "),
-    );
-  }
-
-  const typographyTokens = tokens.filter((t) => t.type === "typography");
-  if (typographyTokens.length > 0) {
-    console.log("\n=== Typography Tokens ===\n");
-    console.log("Current Name".padEnd(25) + "New Name".padEnd(20) + "Themes");
-    console.log("-".repeat(60));
-
-    for (const token of typographyTokens) {
-      console.log(
-        token.currentName.padEnd(25) +
-          token.newName.padEnd(20) +
-          token.themes.join(", "),
-      );
+    console.log(`\n=== ${type[0].toUpperCase()}${type.slice(1)} Tokens ===\n`);
+    for (const token of group) {
+      console.log(`${token.currentName} (${token.themes.join(", ")})`);
     }
   }
 
@@ -101,8 +74,7 @@ function printTokenList() {
 }
 
 function printRenameMap() {
-  const map = getTokenRenameMap(THEME_CONFIG);
-  console.log(JSON.stringify(map, null, 2));
+  console.log(JSON.stringify(getTokenRenameMap(THEME_CONFIG), null, 2));
 }
 
 async function main() {
@@ -123,15 +95,11 @@ async function main() {
     process.exit(0);
   }
 
-  console.log("Kumo Theme Generator\n");
+  console.log("ZenthCloud Theme Generator\n");
   console.log(`Output directory: ${STYLES_DIR}`);
-  console.log(`Using new names: ${args.useNewNames}`);
   console.log("");
 
-  const files = generateAllThemes({
-    outputDir: STYLES_DIR,
-    useNewNames: args.useNewNames,
-  });
+  const files = generateAllThemes({ outputDir: STYLES_DIR });
 
   for (const [filename, content] of files) {
     const filepath = path.join(STYLES_DIR, filename);
@@ -140,6 +108,7 @@ async function main() {
       console.log(`\n=== ${filename} ===\n`);
       console.log(content);
     } else {
+      mkdirSync(path.dirname(filepath), { recursive: true });
       await writeFormattedFile(filepath, content);
       console.log(`  Wrote ${filename}`);
     }
@@ -147,9 +116,6 @@ async function main() {
 
   if (!args.dryRun) {
     console.log("\nTheme generation complete!");
-    console.log(
-      "\nTip: Run with --dry-run to preview changes without writing files",
-    );
   }
 }
 

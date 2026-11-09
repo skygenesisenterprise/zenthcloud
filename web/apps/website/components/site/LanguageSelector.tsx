@@ -21,7 +21,7 @@ export function LanguageSelector({
 			<summary
 				className={`flex h-9 cursor-pointer list-none items-center gap-1.5 rounded-full px-2.5 text-sm transition-colors [&::-webkit-details-marker]:hidden ${
 					ghost
-						? "text-ink-foreground/65 hover:bg-ink-foreground/10 hover:text-ink-foreground"
+						? "text-muted-foreground/65 hover:bg-accent/10 hover:text-muted-foreground"
 						: "border border-border text-muted-foreground hover:bg-accent hover:text-foreground"
 				}`}
 			>

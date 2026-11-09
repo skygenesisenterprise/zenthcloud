@@ -418,8 +418,8 @@ describe("ShikiProvider", () => {
     expect(classList?.contains("border-0")).toBe(true);
     expect(classList?.contains("bg-transparent")).toBe(true);
     expect(classList?.contains("rounded-md")).toBe(false);
-    expect(classList?.contains("border-kumo-fill")).toBe(false);
-    expect(classList?.contains("bg-kumo-base")).toBe(false);
+    expect(classList?.contains("border-zenth-fill")).toBe(false);
+    expect(classList?.contains("bg-zenth-base")).toBe(false);
     expect(container.querySelector("pre")?.classList.contains("!p-0")).toBe(
       true,
     );
@@ -450,15 +450,15 @@ describe("ShikiProvider", () => {
     );
 
     await waitFor(() => {
-      expect(container.querySelector(".kumo-shiki")).not.toBeNull();
+      expect(container.querySelector(".zenth-shiki")).not.toBeNull();
     });
 
-    const classList = container.querySelector(".kumo-shiki")?.classList;
+    const classList = container.querySelector(".zenth-shiki")?.classList;
     expect(classList?.contains("[&>pre]:!p-0")).toBe(true);
     expect(classList?.contains("[&>pre]:!p-4")).toBe(false);
 
     const lineNumberClasses =
-      container.querySelector(".kumo-line-numbers")?.classList;
+      container.querySelector(".zenth-line-numbers")?.classList;
     expect(lineNumberClasses?.contains("py-0")).toBe(true);
     expect(lineNumberClasses?.contains("py-4")).toBe(false);
   });
@@ -483,7 +483,7 @@ describe("ShikiProvider", () => {
       expect(container.querySelector(".line-highlighted")).not.toBeNull();
     });
 
-    const classList = container.querySelector(".kumo-shiki")?.classList;
+    const classList = container.querySelector(".zenth-shiki")?.classList;
     expect(classList?.contains("[&_.line-highlighted]:!m-0")).toBe(true);
     expect(classList?.contains("[&_.line-highlighted]:!w-full")).toBe(true);
     expect(classList?.contains("[&_.line-highlighted]:!px-0")).toBe(true);

@@ -1,5 +1,4 @@
-import { ArrowRight } from "lucide-react";
-import Link from "next/link";
+import { Link, LinkButton } from "@zenthcloud/react";
 import type * as React from "react";
 import { cn } from "@/lib/utils";
 import { Container } from "../Container";
@@ -32,7 +31,7 @@ export function Section({
 		<section
 			id={id}
 			aria-labelledby={title ? headingId : undefined}
-			className={cn("border-b border-border py-14 sm:py-20", className)}
+			className={cn("border-b border-border py-16 sm:py-24", className)}
 		>
 			<Container>
 				{(title || description) &&
@@ -47,7 +46,7 @@ export function Section({
 								{title && (
 									<h2
 										id={headingId}
-										className="mt-3 font-display text-4xl leading-[1.03] tracking-tight sm:text-5xl lg:text-6xl"
+										className="mt-3 font-display text-4xl leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl"
 									>
 										{title}
 									</h2>
@@ -123,12 +122,15 @@ export function LinkList({
 				<li key={link.href}>
 					<Link
 						href={link.href}
+						variant="current"
 						target={link.external ? "_blank" : undefined}
 						rel={link.external ? "noreferrer" : undefined}
-						className="flex items-center justify-between gap-4 py-3 text-sm font-medium text-foreground hover:text-primary"
+						className="flex w-full items-center justify-between gap-4 py-3 text-sm font-medium text-foreground no-underline hover:text-primary"
 					>
 						{link.label}
-						<ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
+						<span className="shrink-0" aria-hidden="true">
+							→
+						</span>
 					</Link>
 				</li>
 			))}
@@ -160,24 +162,24 @@ export function CtaBand({
 						</p>
 					</div>
 					<div className="flex flex-col gap-3 sm:flex-row">
-						<Link
+						<LinkButton
 							href={primary.href}
-							target={primary.external ? "_blank" : undefined}
-							rel={primary.external ? "noreferrer" : undefined}
-							className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+							variant="primary"
+							external={primary.external}
+							className="h-11 px-5"
 						>
 							{primary.label}
-							<ArrowRight className="h-4 w-4" aria-hidden="true" />
-						</Link>
+							<span aria-hidden="true">→</span>
+						</LinkButton>
 						{secondary && (
-							<Link
+							<LinkButton
 								href={secondary.href}
-								target={secondary.external ? "_blank" : undefined}
-								rel={secondary.external ? "noreferrer" : undefined}
-								className="inline-flex h-11 items-center justify-center rounded-md border border-border bg-background px-5 text-sm font-medium text-foreground hover:bg-accent"
+								variant="outline"
+								external={secondary.external}
+								className="h-11 px-5"
 							>
 								{secondary.label}
-							</Link>
+							</LinkButton>
 						)}
 					</div>
 				</div>

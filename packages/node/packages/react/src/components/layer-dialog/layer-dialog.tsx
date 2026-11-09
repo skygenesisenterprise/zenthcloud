@@ -291,7 +291,7 @@ function LayerDialogContent({
         <DrawerBase.Backdrop
           forceRender
           data-layer-dialog-backdrop
-          className="fixed inset-0 bg-kumo-recessed opacity-80 transition-opacity duration-[450ms] ease-[cubic-bezier(0.32,0.72,0,1)] data-[ending-style]:opacity-0 data-[ending-style]:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-[starting-style]:opacity-0 data-[swiping]:duration-0 motion-reduce:transition-none sm:duration-200 sm:data-[ending-style]:duration-200"
+          className="fixed inset-0 bg-zenth-recessed opacity-80 transition-opacity duration-[450ms] ease-[cubic-bezier(0.32,0.72,0,1)] data-[ending-style]:opacity-0 data-[ending-style]:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-[starting-style]:opacity-0 data-[swiping]:duration-0 motion-reduce:transition-none sm:duration-200 sm:data-[ending-style]:duration-200"
         />
         {/*
         Desktop sizing contract: the viewport owns the vertical breathing room
@@ -315,10 +315,10 @@ function LayerDialogContent({
               sizeConfig.classes,
             )}
           >
-            <LayerCard className="flex max-h-[85dvh] min-h-0 w-full flex-col overflow-hidden rounded-none bg-kumo-elevated p-1.5 shadow-[0_20px_25px_-5px_rgb(0_0_0/0.03),0_8px_10px_-6px_rgb(0_0_0/0.03)] max-sm:border-t max-sm:border-kumo-hairline max-sm:shadow-xs max-sm:ring-0 sm:max-h-full sm:rounded-xl">
+            <LayerCard className="flex max-h-[85dvh] min-h-0 w-full flex-col overflow-hidden rounded-none bg-zenth-elevated p-1.5 shadow-[0_20px_25px_-5px_rgb(0_0_0/0.03),0_8px_10px_-6px_rgb(0_0_0/0.03)] max-sm:border-t max-sm:border-zenth-hairline max-sm:shadow-xs max-sm:ring-0 sm:max-h-full sm:rounded-xl">
               {!isDesktop && !isAlert && (
                 <div aria-hidden className="flex justify-center pt-1.5 pb-3">
-                  <div className="h-1 w-10 rounded-full bg-kumo-fill" />
+                  <div className="h-1 w-10 rounded-full bg-zenth-fill" />
                 </div>
               )}
               <DrawerBase.Content className="flex min-h-0 flex-col overflow-visible">
@@ -426,7 +426,7 @@ function LayerDialogBody({ children }: LayerDialogBodyProps) {
 
   return (
     <LayerCard.Primary className="min-h-0 flex-1 gap-0 p-0">
-      <div className="z-10 flex shrink-0 items-start justify-between gap-4 rounded-t-lg bg-kumo-base px-4 py-4 sm:px-4.5">
+      <div className="z-10 flex shrink-0 items-start justify-between gap-4 rounded-t-lg bg-zenth-base px-4 py-4 sm:px-4.5">
         <div className="flex min-w-0 flex-col">
           {title}
           {description && (
@@ -457,12 +457,12 @@ function LayerDialogBody({ children }: LayerDialogBodyProps) {
             the top, and Safari skips Base UI's registered 0px initial value,
             so a non-zero fallback fades out the first row until measured.
 
-            no-scrollbar keeps the native scrollbars of Base UI's
+            zenth-no-scrollbar keeps the native scrollbars of Base UI's
             `overflow: scroll` viewport hidden. Base UI hides them only with a
             <style> it adds to <head> once per document, which head-swapping
             client routers and strict CSPs can drop. */}
         <ScrollAreaBase.Viewport
-          className="no-scrollbar min-h-0 flex-1 overscroll-none [mask-image:linear-gradient(to_bottom,transparent_0,black_min(24px,var(--scroll-area-overflow-y-start,0px)),black_calc(100%-min(24px,var(--scroll-area-overflow-y-end,24px))),transparent_100%)]"
+          className="zenth-no-scrollbar min-h-0 flex-1 overscroll-none [mask-image:linear-gradient(to_bottom,transparent_0,black_min(24px,var(--scroll-area-overflow-y-start,0px)),black_calc(100%-min(24px,var(--scroll-area-overflow-y-end,24px))),transparent_100%)]"
           onScroll={handleScroll}
         >
           {/* pt-0.5 keeps a first-child control's ring-drawn border and
@@ -482,11 +482,11 @@ function LayerDialogBody({ children }: LayerDialogBodyProps) {
           orientation="vertical"
           className="my-1.5 mr-0.5 hidden w-2 p-px opacity-0 transition-opacity data-[has-overflow-y]:block data-[hovering]:opacity-100 data-[scrolling]:opacity-100"
         >
-          <ScrollAreaBase.Thumb className="w-full rounded-full bg-kumo-contrast opacity-10 transition-opacity hover:opacity-20 active:opacity-30" />
+          <ScrollAreaBase.Thumb className="w-full rounded-full bg-zenth-contrast opacity-10 transition-opacity hover:opacity-20 active:opacity-30" />
         </ScrollAreaBase.Scrollbar>
       </ScrollAreaBase.Root>
       {!isDesktop && actions && (
-        <div className="shrink-0 border-t border-kumo-hairline p-4">
+        <div className="shrink-0 border-t border-zenth-hairline p-4">
           {actions}
         </div>
       )}
@@ -506,7 +506,7 @@ const LayerDialogSeparator = forwardRef<
   <hr
     ref={ref}
     className={cn(
-      "-mx-4 my-4 h-px border-0 bg-kumo-hairline sm:-mx-4.5",
+      "-mx-4 my-4 h-px border-0 bg-zenth-hairline sm:-mx-4.5",
       className,
     )}
     {...props}
@@ -677,7 +677,7 @@ function LayerDialogDismiss({
   const close = (closeProps: ComponentPropsWithoutRef<"button">) => (
     <Button
       {...closeProps}
-      className="hover:bg-kumo-fill/50"
+      className="hover:bg-zenth-fill/50"
       disabled={disabled}
       variant={isDesktop ? "ghost" : "secondary"}
     >

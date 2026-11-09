@@ -136,7 +136,7 @@ export const GlobeMap = forwardRef<HTMLDivElement, GlobeMapProps>(
     {
       landColor,
       landHatchSpacing = 10,
-      oceanColor = "var(--color-kumo-base)",
+      oceanColor = "var(--color-zenth-base)",
       markers = [],
       markerColor,
       markerRadius = 7,
@@ -451,14 +451,14 @@ export const GlobeMap = forwardRef<HTMLDivElement, GlobeMapProps>(
           <path
             d={spherePath}
             fill={oceanColor}
-            className="stroke-kumo-line"
+            className="stroke-zenth-line"
             strokeWidth={1.5}
           />
           {showGraticule ? (
             <path
               d={graticulePath}
               fill="none"
-              className="stroke-kumo-line"
+              className="stroke-zenth-line"
               strokeWidth={0.75}
             />
           ) : null}
@@ -477,7 +477,7 @@ export const GlobeMap = forwardRef<HTMLDivElement, GlobeMapProps>(
             data-globe-outline=""
             d={spherePath}
             fill="none"
-            className="pointer-events-none stroke-kumo-line"
+            className="pointer-events-none stroke-zenth-line"
             strokeWidth={2}
           />
           {markers.map((marker, index) => {
@@ -519,7 +519,7 @@ export const GlobeMap = forwardRef<HTMLDivElement, GlobeMapProps>(
                 )}
                 fill={marker.color ?? resolvedMarkerColor}
                 opacity={edgeOpacity}
-                className="stroke-kumo-base transition-opacity outline-none"
+                className="stroke-zenth-base transition-opacity outline-none"
                 strokeWidth={2}
                 data-globe-marker=""
                 data-globe-marker-interactive={isInteractive}
@@ -580,11 +580,11 @@ export const GlobeMap = forwardRef<HTMLDivElement, GlobeMapProps>(
         {tooltip ? (
           <div
             role="tooltip"
-            className="pointer-events-none absolute z-10 flex -translate-x-1/2 -translate-y-full flex-col gap-0.5 rounded-lg border border-kumo-line bg-kumo-base px-2 py-1.5 text-xs text-kumo-default shadow-lg"
+            className="pointer-events-none absolute z-10 flex -translate-x-1/2 -translate-y-full flex-col gap-0.5 rounded-lg border border-zenth-line bg-zenth-base px-2 py-1.5 text-xs text-zenth-default shadow-lg"
             style={{ left: tooltip.x, top: tooltip.y - 8 }}
           >
             <strong>{tooltip.name}</strong>
-            <span className="text-kumo-subtle">{tooltip.detail}</span>
+            <span className="text-zenth-subtle">{tooltip.detail}</span>
           </div>
         ) : null}
       </div>

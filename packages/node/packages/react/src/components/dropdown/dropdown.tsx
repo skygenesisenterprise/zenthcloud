@@ -24,7 +24,7 @@ export const KUMO_DROPDOWN_VARIANTS = {
     },
     danger: {
       classes:
-        "text-kumo-danger data-highlighted:bg-kumo-danger/5 data-highlighted:text-kumo-danger",
+        "text-zenth-danger data-highlighted:bg-zenth-danger/5 data-highlighted:text-zenth-danger",
       description: "Destructive action item",
     },
   },
@@ -78,7 +78,7 @@ const renderIconNode = (iconProp?: Icon | React.ReactNode) => {
     icon = <Comp className="h-4 w-4" />;
   }
   return (
-    <span data-kumo-part="icon" className="inline-flex shrink-0 items-center">
+    <span data-zenth-part="icon" className="inline-flex shrink-0 items-center">
       {icon}
     </span>
   );
@@ -89,7 +89,7 @@ const renderIconNode = (iconProp?: Icon | React.ReactNode) => {
  * so the text of every row lines up. Same result as the `inset` prop.
  */
 const autoInsetClasses =
-  "group-has-[[data-kumo-part=icon]]/menu:not-has-[[data-kumo-part=icon]]:pl-8";
+  "group-has-[[data-zenth-part=icon]]/menu:not-has-[[data-zenth-part=icon]]:pl-8";
 
 /**
  * Shared layout and interaction styles for every selectable menu row
@@ -98,8 +98,8 @@ const autoInsetClasses =
  */
 const menuRowClasses = cn(
   "relative flex cursor-default items-center gap-2 rounded-md px-2 py-1.5 text-base outline-hidden select-none", // base styles
-  "focus:text-kumo-default focus-visible:ring-2 focus-visible:ring-kumo-brand", // focus state
-  "data-highlighted:bg-kumo-tint", // highlight state
+  "focus:text-zenth-default focus-visible:ring-2 focus-visible:ring-zenth-brand", // focus state
+  "data-highlighted:bg-zenth-tint", // highlight state
   "data-disabled:pointer-events-none data-disabled:opacity-50", // disabled state
   autoInsetClasses,
 );
@@ -136,11 +136,11 @@ const DropdownMenuSubTrigger = React.forwardRef<
 >(({ className, inset, children, icon: IconComponent, ...props }, ref) => (
   <DropdownMenuPrimitive.SubmenuTrigger
     ref={ref}
-    data-kumo-component="DropdownMenu"
-    data-kumo-part="submenu-trigger"
+    data-zenth-component="DropdownMenu"
+    data-zenth-part="submenu-trigger"
     className={cn(
       menuRowClasses,
-      "data-popup-open:bg-kumo-tint", // keep highlighted while the submenu is open
+      "data-popup-open:bg-zenth-tint", // keep highlighted while the submenu is open
       inset && "pl-8", // conditional inset
       className,
     )}
@@ -196,8 +196,8 @@ const DropdownMenuPositioner = React.forwardRef<
 >(({ className, sideOffset = 8, ...props }, ref) => (
   <DropdownMenuPrimitive.Positioner
     ref={ref}
-    data-kumo-component="DropdownMenu"
-    data-kumo-part="positioner"
+    data-zenth-component="DropdownMenu"
+    data-zenth-part="positioner"
     className={(state) =>
       cn(
         "outline-hidden",
@@ -225,12 +225,12 @@ const DropdownMenuPopup = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DropdownMenuPrimitive.Popup
     ref={ref}
-    data-kumo-component="DropdownMenu"
-    data-kumo-part="popup"
+    data-zenth-component="DropdownMenu"
+    data-zenth-part="popup"
     className={cn(
-      "group/menu overflow-hidden bg-kumo-control text-kumo-default outline-hidden", // background; Base UI focuses the popup when the pointer leaves the items
+      "group/menu overflow-hidden bg-zenth-control text-zenth-default outline-hidden", // background; Base UI focuses the popup when the pointer leaves the items
       "max-h-[var(--available-height)] overflow-y-auto", // limit height when list is too long and might go off screen
-      "rounded-lg shadow-lg ring ring-kumo-line", // border part
+      "rounded-lg shadow-lg ring ring-zenth-line", // border part
       "min-w-36 p-1.5", // spacing
       "origin-(--transform-origin) transition-[transform,scale,opacity] duration-150 motion-reduce:transition-none", // animation
       "data-starting-style:scale-95 data-starting-style:opacity-0", // enter
@@ -372,7 +372,7 @@ const DropdownMenuItem = React.forwardRef<
       const styles = cn(
         "flex items-center gap-2",
         variant === "danger" &&
-          "text-kumo-danger data-highlighted:bg-kumo-danger/5 data-highlighted:text-kumo-danger",
+          "text-zenth-danger data-highlighted:bg-zenth-danger/5 data-highlighted:text-zenth-danger",
       );
       if (isExternal) {
         return (
@@ -406,8 +406,8 @@ const DropdownMenuItem = React.forwardRef<
     return (
       <DropdownMenuPrimitive.Item
         ref={ref}
-        data-kumo-component="DropdownMenu"
-        data-kumo-part="item"
+        data-zenth-component="DropdownMenu"
+        data-zenth-part="item"
         className={cn(
           menuRowClasses,
           inset && "pl-8",
@@ -471,8 +471,8 @@ const DropdownMenuLinkItem = React.forwardRef<
     return (
       <DropdownMenuPrimitive.LinkItem
         ref={ref}
-        data-kumo-component="DropdownMenu"
-        data-kumo-part="link-item"
+        data-zenth-component="DropdownMenu"
+        data-zenth-part="link-item"
         className={cn(
           menuRowClasses,
           "text-inherit no-underline",
@@ -497,8 +497,8 @@ const DropdownMenuCheckboxItem = React.forwardRef<
 >(({ className, children, checked, ...props }, ref) => (
   <DropdownMenuPrimitive.CheckboxItem
     ref={ref}
-    data-kumo-component="DropdownMenu"
-    data-kumo-part="checkbox-item"
+    data-zenth-component="DropdownMenu"
+    data-zenth-part="checkbox-item"
     className={cn(menuRowClasses, "pl-8 transition-colors", className)}
     checked={checked}
     {...props}
@@ -537,7 +537,7 @@ const DropdownMenuSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DropdownMenuPrimitive.Separator
     ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-kumo-hairline", className)}
+    className={cn("-mx-1 my-1 h-px bg-zenth-hairline", className)}
     {...props}
   />
 ));
@@ -565,8 +565,8 @@ const DropdownMenuRadioItem = React.forwardRef<
 >(({ className, children, inset, icon: IconComponent, ...props }, ref) => (
   <DropdownMenuPrimitive.RadioItem
     ref={ref}
-    data-kumo-component="DropdownMenu"
-    data-kumo-part="radio-item"
+    data-zenth-component="DropdownMenu"
+    data-zenth-part="radio-item"
     className={cn(menuRowClasses, inset && "pl-8", className)}
     {...props}
   >

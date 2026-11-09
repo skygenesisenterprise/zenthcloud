@@ -86,7 +86,7 @@ describe("ButtonGroup", () => {
     expect(className).toContain("rounded-s-none");
     expect(className).toContain("rounded-e-none");
     expect(className).toContain("-ms-px");
-    expect(className).not.toContain("!ring-kumo-line");
+    expect(className).not.toContain("!ring-zenth-line");
   });
 
   it("merges a custom className", () => {

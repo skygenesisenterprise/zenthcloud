@@ -163,7 +163,7 @@ function PaginationInfo({ children, className }: PaginationInfoProps) {
   return (
     <div
       data-slot="pagination-info"
-      className={cn("text-sm text-kumo-subtle", className)}
+      className={cn("text-sm text-zenth-subtle", className)}
     >
       {content}
     </div>
@@ -206,7 +206,7 @@ function PaginationPageSize({
       data-slot="pagination-page-size"
       className={cn("flex items-center gap-2", className)}
     >
-      {label && <span className="text-sm text-kumo-subtle">{label}</span>}
+      {label && <span className="text-sm text-zenth-subtle">{label}</span>}
       <Select
         aria-label={labels.pageSize}
         value={value}
@@ -310,7 +310,7 @@ function PaginationControls({
             (pageSelector === "dropdown" ? (
               <Select
                 aria-label={labels.pageNumber}
-                className="rounded-none ring-kumo-hairline"
+                className="rounded-none ring-zenth-hairline"
                 value={page}
                 onValueChange={(value) => {
                   const num = value as number;
@@ -394,7 +394,7 @@ function PaginationSeparator({ className }: PaginationSeparatorProps) {
   return (
     <div
       data-slot="pagination-separator"
-      className={cn("mx-2 h-6 border-l border-kumo-hairline", className)}
+      className={cn("mx-2 h-6 border-l border-zenth-hairline", className)}
     />
   );
 }
@@ -635,7 +635,7 @@ function PaginationRoot(props: PaginationProps) {
           aria-live="polite"
           aria-atomic="true"
           data-slot="pagination-info"
-          className="grow text-sm text-kumo-subtle"
+          className="grow text-sm text-zenth-subtle"
         >
           {getPaginationText()}
         </div>

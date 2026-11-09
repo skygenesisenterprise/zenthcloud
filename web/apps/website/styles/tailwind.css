@@ -7,15 +7,18 @@
  * radii and tracking, a `@theme` block for elevation and the typographic scale,
  * and design tokens declared in `:root` / `.dark`.
  *
- * Themes: `:root` is the light theme; `.dark` is the dark theme. The accent is
- * a single restrained blue; status colours are reserved for availability and
- * never used decoratively.
+ * Themes: colour, surface and elevation tokens come from
+ * `@zenthcloud/react`; the bridge at the end maps the site aliases onto them.
+ * Status colours are reserved for availability and never used decoratively.
  */
+
+/* Establish the layer order before the library stylesheet is evaluated. */
+@layer theme, base, components, utilities;
 
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *, [data-zenth-mode="dark"], [data-zenth-mode="dark"] *));
 
 @source "../app";
 @source "../components";
@@ -48,6 +51,7 @@
 	--color-signal: var(--signal);
 	--color-brand: var(--brand);
 	--color-brand-foreground: var(--brand-foreground);
+	--color-brand-subtle: var(--brand-subtle);
 	--color-secondary: var(--secondary);
 	--color-secondary-foreground: var(--secondary-foreground);
 	--color-muted: var(--muted);
@@ -196,122 +200,8 @@
  * Design tokens
  * ------------------------------------------------------------------------- */
 
-:root {
-	color-scheme: light;
-
-	--background: oklch(0.985 0.002 255);
-	--foreground: oklch(0.195 0.022 260);
-
-	/* Deep ink surfaces: brand band, hero panel, footer. */
-	--ink: oklch(0.185 0.028 260);
-	--ink-foreground: oklch(0.975 0.006 255);
-
-	--card: oklch(1 0 0);
-	--card-foreground: oklch(0.195 0.022 260);
-
-	--popover: oklch(1 0 0);
-	--popover-foreground: oklch(0.195 0.022 260);
-
-	--primary: oklch(0.53 0.19 262);
-	--primary-foreground: oklch(0.99 0 0);
-	/* Lighter blue reserved for text and marks on ink surfaces. */
-	--signal: oklch(0.73 0.15 256);
-	/* Signal panel: the one saturated surface of the identity. */
-	--brand: oklch(0.475 0.178 263);
-	--brand-foreground: oklch(0.99 0 0);
-
-	--secondary: oklch(0.958 0.006 258);
-	--secondary-foreground: oklch(0.285 0.022 260);
-
-	--muted: oklch(0.962 0.006 258);
-	--muted-foreground: oklch(0.48 0.016 258);
-
-	--accent: oklch(0.94 0.014 258);
-	--accent-foreground: oklch(0.28 0.04 260);
-
-	--destructive: oklch(0.55 0.2 27);
-	--destructive-foreground: oklch(0.99 0 0);
-
-	--success: oklch(0.5 0.12 156);
-	--success-foreground: oklch(0.99 0 0);
-	--warning: oklch(0.58 0.12 74);
-	--warning-foreground: oklch(0.18 0.02 74);
-	--info: oklch(0.5 0.12 238);
-	--info-foreground: oklch(0.99 0 0);
-
-	--border: oklch(0.898 0.007 260);
-	--input: oklch(0.898 0.007 260);
-	--ring: oklch(0.53 0.19 262);
-
-	--overlay: rgba(15, 23, 42, 0.45);
-
-	--radius: 0.5rem;
-	--tracking-normal: 0;
-
-	/* Motion tokens. */
-	--duration-quick: 120ms;
-	--duration-fast: 180ms;
-	--duration-medium: 260ms;
-	--duration-slow: 360ms;
-	--ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.dark {
-	color-scheme: dark;
-
-	--background: oklch(0.17 0.018 260);
-	--foreground: oklch(0.955 0.006 255);
-
-	--ink: oklch(0.145 0.022 260);
-	--ink-foreground: oklch(0.975 0.006 255);
-
-	--card: oklch(0.208 0.02 260);
-	--card-foreground: oklch(0.955 0.006 255);
-
-	--popover: oklch(0.208 0.02 260);
-	--popover-foreground: oklch(0.955 0.006 255);
-
-	--primary: oklch(0.735 0.14 258);
-	--primary-foreground: oklch(0.16 0.02 258);
-	--signal: oklch(0.8 0.12 252);
-	--brand: oklch(0.5 0.165 262);
-	--brand-foreground: oklch(0.99 0 0);
-
-	--secondary: oklch(0.255 0.016 260);
-	--secondary-foreground: oklch(0.93 0.006 255);
-
-	--muted: oklch(0.255 0.016 260);
-	--muted-foreground: oklch(0.72 0.014 258);
-
-	--accent: oklch(0.3 0.02 260);
-	--accent-foreground: oklch(0.96 0.004 255);
-
-	--destructive: oklch(0.62 0.19 25);
-	--destructive-foreground: oklch(0.99 0 0);
-
-	--success: oklch(0.72 0.13 156);
-	--success-foreground: oklch(0.16 0.02 156);
-	--warning: oklch(0.78 0.13 80);
-	--warning-foreground: oklch(0.2 0.03 80);
-	--info: oklch(0.74 0.11 238);
-	--info-foreground: oklch(0.16 0.02 238);
-
-	--border: oklch(0.31 0.018 260);
-	--input: oklch(0.31 0.018 260);
-	--ring: oklch(0.735 0.14 258);
-
-	--overlay: rgba(0, 0, 0, 0.6);
-
-	/* Elevation — dark theme. */
-	--shadow-2xs: 0px 6px 15px 0px hsl(0 0% 0% / 0.15);
-	--shadow-xs: 0px 6px 15px 0px hsl(0 0% 0% / 0.15);
-	--shadow-sm: 0px 6px 15px 0px hsl(0 0% 0% / 0.3), 0px 1px 2px -1px hsl(0 0% 0% / 0.3);
-	--shadow: 0px 6px 15px 0px hsl(0 0% 0% / 0.3), 0px 1px 2px -1px hsl(0 0% 0% / 0.3);
-	--shadow-md: 0px 6px 15px 0px hsl(0 0% 0% / 0.3), 0px 2px 4px -1px hsl(0 0% 0% / 0.3);
-	--shadow-lg: 0px 6px 15px 0px hsl(0 0% 0% / 0.3), 0px 4px 6px -1px hsl(0 0% 0% / 0.3);
-	--shadow-xl: 0px 6px 15px 0px hsl(0 0% 0% / 0.3), 0px 8px 10px -1px hsl(0 0% 0% / 0.3);
-	--shadow-2xl: 0px 6px 15px 0px hsl(0 0% 0% / 0.75);
-}
+/* Colour, surface and overlay tokens come from @zenthcloud/react.
+ * The bridge at the end of this file maps the site aliases onto library tokens. */
 
 /* ---------------------------------------------------------------------------
  * Base styles
@@ -388,12 +278,12 @@
 	/* Official hero texture: a fine dot field that fades before the edges. */
 	.signal-dots {
 		background-image: radial-gradient(
-			color-mix(in oklch, var(--brand-foreground) 16%, transparent) 1px,
+			color-mix(in oklab, #ffffff 26%, transparent) 1px,
 			transparent 1px
 		);
-		background-size: 20px 20px;
-		-webkit-mask-image: radial-gradient(ellipse at center, black 15%, transparent 72%);
-		mask-image: radial-gradient(ellipse at center, black 15%, transparent 72%);
+		background-size: 14px 14px;
+		-webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 82%);
+		mask-image: radial-gradient(ellipse at center, black 30%, transparent 82%);
 	}
 
 	/* Editorial hairline grid used by catalogue and spec tables. */
@@ -424,3 +314,75 @@
 		scroll-behavior: auto !important;
 	}
 }
+
+/* ---------------------------------------------------------------------------
+ * Design-system bridge
+ *
+ * `@zenthcloud/react` is the source of truth for colour, elevation, radius and
+ * motion. The site keeps its semantic variable names so existing pages do not
+ * need rewriting, but every value now resolves to a library token. Because the
+ * library uses light-dark(), the same aliases switch with color-scheme.
+ * ------------------------------------------------------------------------- */
+
+:root,
+[data-zenth-mode='light'] {
+	color-scheme: light;
+
+	--background: var(--color-zenth-canvas);
+	--foreground: var(--text-color-zenth-default);
+
+	--ink: var(--color-zenth-graphite-950);
+	--ink-foreground: var(--color-zenth-neutral-25);
+
+	--card: var(--color-zenth-elevated);
+	--card-foreground: var(--text-color-zenth-default);
+	--popover: var(--color-zenth-elevated);
+	--popover-foreground: var(--text-color-zenth-default);
+
+	--primary: var(--color-zenth-brand);
+	--primary-foreground: #ffffff;
+	--signal: var(--color-zenth-blue-400);
+	--brand: var(--color-zenth-brand);
+	--brand-foreground: #ffffff;
+	--brand-subtle: var(--color-zenth-brand-subtle);
+
+	--secondary: var(--color-zenth-fill);
+	--secondary-foreground: var(--text-color-zenth-strong);
+	--muted: var(--color-zenth-recessed);
+	--muted-foreground: var(--text-color-zenth-subtle);
+	--accent: var(--color-zenth-tint);
+	--accent-foreground: var(--text-color-zenth-strong);
+
+	--destructive: var(--color-zenth-danger);
+	--destructive-foreground: #ffffff;
+	--success: var(--color-zenth-success);
+	--success-foreground: #ffffff;
+	--warning: var(--color-zenth-warning);
+	--warning-foreground: #1c1917;
+	--info: var(--color-zenth-info);
+	--info-foreground: #ffffff;
+
+	--border: var(--color-zenth-line);
+	--input: var(--color-zenth-control);
+	--ring: var(--color-zenth-focus);
+	--overlay: var(--color-zenth-overlay);
+
+	--radius: 0.5rem;
+	--tracking-normal: 0;
+
+	/* Motion primitives used by site transitions. */
+	--duration-quick: 120ms;
+	--duration-fast: 180ms;
+	--duration-medium: 260ms;
+	--duration-slow: 360ms;
+	--ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-zenth-mode='dark'],
+.dark {
+	color-scheme: dark;
+}
+
+/* The server resolves the persisted choice from the cookie before the first
+ * paint. No system-preference override: the public site defaults to light and
+ * the explicit toggle is the only way to switch modes. */

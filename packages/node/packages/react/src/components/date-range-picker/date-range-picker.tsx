@@ -39,11 +39,11 @@ export const KUMO_DATE_RANGE_PICKER_VARIANTS = {
   },
   variant: {
     default: {
-      classes: "bg-kumo-overlay",
+      classes: "bg-zenth-overlay",
       description: "Default calendar appearance",
     },
     subtle: {
-      classes: "bg-kumo-base",
+      classes: "bg-zenth-base",
       description: "Subtle calendar with minimal background",
     },
   },
@@ -274,7 +274,7 @@ export function DateRangePicker({
           <button
             type="button"
             aria-label="Previous month"
-            className="absolute top-0 left-0 cursor-pointer rounded bg-kumo-interact/85 p-1.5 hover:bg-kumo-interact"
+            className="absolute top-0 left-0 cursor-pointer rounded bg-zenth-interact/85 p-1.5 hover:bg-zenth-interact"
             onClick={() => adjustMonth(-1)}
           >
             <CaretLeftIcon size={sizeConfig.iconSize} />
@@ -375,7 +375,7 @@ export function DateRangePicker({
           <button
             type="button"
             aria-label="Next month"
-            className="absolute top-0 right-0 cursor-pointer rounded bg-kumo-interact/85 p-1.5 hover:bg-kumo-interact"
+            className="absolute top-0 right-0 cursor-pointer rounded bg-zenth-interact/85 p-1.5 hover:bg-zenth-interact"
             onClick={() => adjustMonth(1)}
           >
             <CaretRightIcon size={sizeConfig.iconSize} />
@@ -514,13 +514,13 @@ function DateRangeDayCell({
       case DateRangeCellMode.ENABLED:
         return "bg-transparent";
       case DateRangeCellMode.SELECTED_START_NODE:
-        return "!bg-kumo-contrast rounded-tl-[5px] rounded-bl-[5px]";
+        return "!bg-zenth-contrast rounded-tl-[5px] rounded-bl-[5px]";
       case DateRangeCellMode.SELECTED_END_NODE:
-        return "!bg-kumo-contrast rounded-tr-[5px] rounded-br-[5px]";
+        return "!bg-zenth-contrast rounded-tr-[5px] rounded-br-[5px]";
       case DateRangeCellMode.SELECTED:
-        return "bg-kumo-interact";
+        return "bg-zenth-interact";
       case DateRangeCellMode.SELECTED_OUT_OF_RANGE:
-        return "bg-kumo-fill";
+        return "bg-zenth-fill";
     }
   }, [mode]);
 
@@ -528,12 +528,12 @@ function DateRangeDayCell({
     switch (mode) {
       case DateRangeCellMode.OUT_OF_RANGE:
       case DateRangeCellMode.SELECTED_OUT_OF_RANGE:
-        return "!text-kumo-subtle";
+        return "!text-zenth-subtle";
       case DateRangeCellMode.SELECTED_START_NODE:
       case DateRangeCellMode.SELECTED_END_NODE:
-        return "!text-kumo-inverse";
+        return "!text-zenth-inverse";
       default:
-        return "text-kumo-default";
+        return "text-zenth-default";
     }
   }, [mode]);
 
@@ -565,11 +565,11 @@ function DateRangeDayCell({
         sizeConfig.cellHeight,
         sizeConfig.cellWidth,
         sizeConfig.textSize,
-        "cursor-pointer text-center text-kumo-default transition-all duration-[50]",
+        "cursor-pointer text-center text-zenth-default transition-all duration-[50]",
         `leading-[${sizeConfig.cellHeight.replace("h-[", "").replace("]", "")}]`,
         mode !== DateRangeCellMode.OUT_OF_RANGE &&
           mode !== DateRangeCellMode.SELECTED_OUT_OF_RANGE
-          ? "hover:bg-kumo-interact"
+          ? "hover:bg-zenth-interact"
           : "",
         getBackgroundColor(),
         getTextColor(),
@@ -604,7 +604,7 @@ function DateRangeMonthHeader({
           aria-label="Edit month and year"
           defaultValue={`${month} ${year}`}
           className={cn(
-            "w-full rounded-md border-none bg-transparent py-1.5 text-center font-semibold text-kumo-default transition-all duration-200 focus:ring-[1.5px] focus:ring-kumo-focus/50 focus:outline-hidden",
+            "w-full rounded-md border-none bg-transparent py-1.5 text-center font-semibold text-zenth-default transition-all duration-200 focus:ring-[1.5px] focus:ring-zenth-focus/50 focus:outline-hidden",
             sizeConfig.textSize,
           )}
           onBlur={(e) => {
@@ -619,7 +619,7 @@ function DateRangeMonthHeader({
           <div
             key={day}
             className={cn(
-              "h-[22px] text-center text-kumo-subtle",
+              "h-[22px] text-center text-zenth-subtle",
               sizeConfig.cellWidth,
               sizeConfig.textSize,
             )}
@@ -646,7 +646,7 @@ function DateRangeFooter({
   return (
     <div
       className={cn(
-        "flex items-center gap-2 text-kumo-subtle",
+        "flex items-center gap-2 text-zenth-subtle",
         sizeConfig.textSize,
       )}
     >
@@ -655,7 +655,7 @@ function DateRangeFooter({
       <button
         type="button"
         onClick={reset}
-        className="cursor-pointer font-semibold text-kumo-default underline underline-offset-2"
+        className="cursor-pointer font-semibold text-zenth-default underline underline-offset-2"
       >
         Reset Dates
       </button>

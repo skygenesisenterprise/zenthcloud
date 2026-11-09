@@ -270,7 +270,7 @@ describe("CommandPalette", () => {
 
       const highlight = screen.getByText("Auto");
       expect(highlight.tagName).toBe("MARK");
-      expect(highlight.className).toContain("bg-kumo-warning/50");
+      expect(highlight.className).toContain("bg-zenth-warning/50");
     });
   });
 

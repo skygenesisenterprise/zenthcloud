@@ -68,7 +68,7 @@ describe("Tabs", () => {
     fireEvent.scroll(list);
 
     const endControl = container.querySelector(
-      '[data-kumo-part="overflow-control"][data-side="end"]',
+      '[data-zenth-part="overflow-control"][data-side="end"]',
     );
 
     await waitFor(() =>

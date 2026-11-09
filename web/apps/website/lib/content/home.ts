@@ -1,3 +1,5 @@
+import type { ProductFamily } from "@/lib/domain/schema";
+
 export type FaqEntry = { question: string; answer: string };
 
 export const homeHero = {
@@ -7,10 +9,60 @@ export const homeHero = {
 	description:
 		"Compute, storage, networking and managed services on owned and partner infrastructure. One catalogue, one commercial model, and availability published per product and region.",
 	primaryCta: { href: "/products", label: "Explore the catalogue" },
-	secondaryCta: { href: "/contact-sales", label: "Talk to sales" },
+	secondaryCta: { href: "/pricing", label: "See pricing" },
 } as const;
 
-export const valueProps = [
+/**
+ * The three things the catalogue is organised around. Each pillar is expressed
+ * in verbs, so the homepage reads as a platform rather than a product list,
+ * and resolves to real product families from the catalogue.
+ */
+export const platformPillars: readonly {
+	verb: string;
+	title: string;
+	description: string;
+	href: string;
+	linkLabel: string;
+	families: readonly ProductFamily[];
+}[] = [
+	{
+		verb: "Run",
+		title: "Workloads that state where they run",
+		description:
+			"Instances, volumes, backups, clusters and managed databases, each published with its commercial state and the regions where it applies.",
+		href: "/products",
+		linkLabel: "Browse compute, storage and platform",
+		families: ["compute", "storage", "platform"],
+	},
+	{
+		verb: "Connect",
+		title: "Networks, addresses and delivery",
+		description:
+			"Private networks, public addressing, load balancing, domains and hosting, connected to the same availability model as everything else.",
+		href: "/products/networking",
+		linkLabel: "Explore networking",
+		families: ["networking", "web"],
+	},
+	{
+		verb: "Protect",
+		title: "Protection and recovery, with limits",
+		description:
+			"Certificates, protection and recovery capabilities described with their scope — a capability is never presented as a guarantee.",
+		href: "/products/security",
+		linkLabel: "Explore security",
+		families: ["security"],
+	},
+];
+
+/** Labels for the catalogue figures shown on the homepage. */
+export const catalogueStats = [
+	{ id: "families", label: "Product families", detail: "Compute to security" },
+	{ id: "products", label: "Products in the catalogue", detail: "Each with a commercial state" },
+	{ id: "regions", label: "Regions modelled", detail: "Owned and partner capacity" },
+	{ id: "providers", label: "Infrastructure providers", detail: "Named before purchase" },
+] as const;
+
+export const whyPoints = [
 	{
 		title: "Infrastructure flexibility",
 		description:
@@ -27,6 +79,21 @@ export const valueProps = [
 			"Six product families share one navigation, one availability model and one commercial vocabulary — from a first instance to a private estate.",
 	},
 ] as const;
+
+export const platformModel = {
+	eyebrow: "The catalogue model",
+	title: "One catalogue. Every layer.",
+	description:
+		"Run, connect and protect on infrastructure that belongs to ZenthCloud or to a named partner. The interface keeps the operating provider, the commercial state and the region separate, so a product can be read before it is bought.",
+} as const;
+
+export const catalogueSection = {
+	eyebrow: "Products",
+	title: "Six product families, one taxonomy",
+	description:
+		"A complete catalogue, with the commercial state of every product published per region. Products are introduced progressively; the catalogue makes that explicit rather than implying a launch date.",
+	note: "A family lists what exists. Each product page states its limits, its regions and its commercial state.",
+} as const;
 
 export const hybridPoints = [
 	{
@@ -69,6 +136,30 @@ export const developerPoints = [
 		linkLabel: "For developers",
 	},
 ] as const;
+
+export const availabilitySection = {
+	eyebrow: "Availability",
+	title: "Coverage stated honestly",
+	description:
+		"A region is published with a verification state. Products can be commercially available in one region and not in another, and the homepage does not round that difference away.",
+} as const;
+
+export const resourcesSection = {
+	eyebrow: "Resources",
+	title: "Documentation, API and support",
+	description:
+		"The technical ecosystem lives outside the marketing site so it can be versioned with the platform.",
+} as const;
+
+export const homeFinalCta = {
+	eyebrow: "Start here",
+	title: "Start from the catalogue, not a sales call.",
+	description:
+		"Browse products, availability and pricing state first. When you need a scoped proposal, the sales team takes it from there.",
+	primary: { href: "/products", label: "Explore the catalogue" },
+	secondary: { href: "/contact-sales", label: "Talk to sales" },
+	note: "Prices are published per plan, or explicitly marked as not published.",
+} as const;
 
 export const homeFaqs: FaqEntry[] = [
 	{

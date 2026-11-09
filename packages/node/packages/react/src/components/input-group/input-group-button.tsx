@@ -160,19 +160,19 @@ export const Button = forwardRef<
           // Container-zone buttons: use a subtle ring as focus indicator
           // The base Button also retains a forced-colors outline.
           !isIndividual &&
-            "focus-visible:ring-[1.5px] focus-visible:ring-kumo-focus/50",
+            "focus-visible:ring-[1.5px] focus-visible:ring-zenth-focus/50",
           // Individual mode: each button owns its own border and focus indicator
           isIndividual && [
             // Own border replaces the container's shared ring; force full height
-            "relative h-full! rounded-none border border-kumo-line ring-0 focus-visible:ring-0",
+            "relative h-full! rounded-none border border-zenth-line ring-0 focus-visible:ring-0",
             "first:rounded-l-[inherit] last:rounded-r-[inherit]",
             // Negative margin (not border-l-0) so the border is still paintable on focus
             "not-first:-ml-px",
             "hover:z-1",
             // z-2 lifts above hovered siblings so focus border isn't clipped
             "focus:z-2",
-            "focus-visible:border-kumo-focus/50",
-            "disabled:bg-kumo-overlay disabled:text-kumo-inactive!",
+            "focus-visible:border-zenth-focus/50",
+            "disabled:bg-zenth-overlay disabled:text-zenth-inactive!",
           ],
           className,
         )}

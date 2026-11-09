@@ -244,14 +244,14 @@ export interface CodeBlockProps {
  */
 export function CodeBlock({ html, className }: CodeBlockProps): ReactNode {
   const containerClass = className
-    ? `group relative w-full min-w-0 rounded-md border border-kumo-fill bg-kumo-base ${className}`
-    : "group relative w-full min-w-0 rounded-md border border-kumo-fill bg-kumo-base";
+    ? `group relative w-full min-w-0 rounded-md border border-zenth-fill bg-zenth-base ${className}`
+    : "group relative w-full min-w-0 rounded-md border border-zenth-fill bg-zenth-base";
 
   return (
     <div className={containerClass}>
       <div className="overflow-x-auto">
         <div
-          className="kumo-shiki [&>pre]:p-4 [&>pre]:font-mono [&>pre]:text-sm [&>pre]:leading-relaxed"
+          className="zenth-shiki [&>pre]:p-4 [&>pre]:font-mono [&>pre]:text-sm [&>pre]:leading-relaxed"
           dangerouslySetInnerHTML={{ __html: html }}
         />
       </div>

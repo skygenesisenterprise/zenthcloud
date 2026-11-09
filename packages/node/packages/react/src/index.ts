@@ -1,13 +1,14 @@
 /**
- * @module @zenthcloud/kumo
+ * @module @zenthcloud/react
  *
- * Zenthcloud's React component library built on Base UI and Tailwind CSS v4.
+ * ZenthCloud's React component library built on Base UI and Tailwind CSS v4.
  *
  * **Key rules:**
- * - Use **semantic tokens only** (`bg-kumo-base`, `text-kumo-default`, etc.) — never raw Tailwind colors.
+ * - Use **semantic tokens only** (`bg-zenth-base`, `text-zenth-default`, etc.) — never raw Tailwind colors.
  * - **No `dark:` variant** — light/dark mode is handled automatically via CSS `light-dark()`.
  * - Merge custom classes with the `cn()` utility exported from this package.
- * - Wrap your app with the kumo CSS import: `import "@zenthcloud/kumo/styles"`.
+ * - Import the precompiled stylesheet once: `import "@zenthcloud/react/styles.css"`.
+ *   Tailwind is not required in the consuming application.
  *
  * **Component categories:**
  * - **Action:** Button, ClipboardText, InlineCopyText
@@ -20,12 +21,12 @@
  * - **Other:** Label, Link
  *
  * **Blocks** (composite page-level components) are NOT exported here.
- * Install them via the CLI: `npx @zenthcloud/kumo add <block-name>`.
+ * Install them via the CLI: `npx @zenthcloud/react add <block-name>`.
  *
- * **AI resources:** See `@zenthcloud/kumo/ai/component-registry.json` for full
+ * **AI resources:** See `@zenthcloud/react/ai/component-registry.json` for full
  * component metadata including prop descriptions, variant values, and examples.
  *
- * @see {@link https://kumo-ui.com} — Documentation site
+ * @see {@link https://github.com/skygenesisenterprise/zenthcloud} — Documentation
  */
 
 // Components

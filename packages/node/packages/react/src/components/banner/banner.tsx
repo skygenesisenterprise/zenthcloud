@@ -20,23 +20,23 @@ export const KUMO_BANNER_BASE_STYLES = "flex w-full";
 export const KUMO_BANNER_VARIANTS = {
   variant: {
     default: {
-      classes: "bg-kumo-info-tint text-kumo-info",
-      iconClasses: "fill-kumo-info",
+      classes: "bg-zenth-info-tint text-zenth-info",
+      iconClasses: "fill-zenth-info",
       description: "Informational banner for general messages",
     },
     alert: {
-      classes: "bg-kumo-warning-tint text-kumo-warning",
-      iconClasses: "fill-kumo-warning",
+      classes: "bg-zenth-warning-tint text-zenth-warning",
+      iconClasses: "fill-zenth-warning",
       description: "Warning banner for cautionary messages",
     },
     error: {
-      classes: "bg-kumo-danger-tint text-kumo-danger",
-      iconClasses: "fill-kumo-danger",
+      classes: "bg-zenth-danger-tint text-zenth-danger",
+      iconClasses: "fill-zenth-danger",
       description: "Error banner for critical issues",
     },
     secondary: {
-      classes: "bg-kumo-contrast/5 text-kumo-default/70",
-      iconClasses: "fill-kumo-interact",
+      classes: "bg-zenth-contrast/5 text-zenth-default/70",
+      iconClasses: "fill-zenth-interact",
       description: "Neutral banner for secondary messages",
     },
   },
@@ -277,7 +277,7 @@ const BannerRoot = forwardRef<HTMLDivElement, BannerProps>(function BannerRoot(
                   <span className="leading-snug font-medium">
                     {title}
                     {!description && hasInlineLinkAction && (
-                      <span className="ml-1.5 [&_[data-kumo-component=Link]]:inline">
+                      <span className="ml-1.5 [&_[data-zenth-component=Link]]:inline">
                         {action}
                       </span>
                     )}
@@ -287,7 +287,7 @@ const BannerRoot = forwardRef<HTMLDivElement, BannerProps>(function BannerRoot(
                   <span className={cn(sizeParts.description, "leading-snug")}>
                     {description}
                     {hasInlineLinkAction && (
-                      <span className="ml-1.5 [&_[data-kumo-component=Link]]:inline">
+                      <span className="ml-1.5 [&_[data-zenth-component=Link]]:inline">
                         {action}
                       </span>
                     )}

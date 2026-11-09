@@ -18,7 +18,7 @@ describe("Empty", () => {
     expect(title.className).toContain("text-xl");
     expect(title.className).toContain("font-semibold");
     expect(description.className).toContain("text-base/[inherit]");
-    expect(description.className).toContain("text-kumo-subtle");
+    expect(description.className).toContain("text-zenth-subtle");
     expect(description.className).toContain("text-balance");
     expect(description.className).toContain("leading-normal");
     expect(title.parentElement).toBe(description.parentElement);
@@ -32,7 +32,7 @@ describe("Empty", () => {
 
     expect(title.tagName).toBe("H2");
     expect(title.className).toContain("text-base/[inherit]");
-    expect(title.className).toContain("text-kumo-subtle");
+    expect(title.className).toContain("text-zenth-subtle");
     expect(title.className).not.toContain("font-semibold");
   });
 
@@ -43,12 +43,12 @@ describe("Empty", () => {
     const commandTextGroup = command.parentElement;
     const commandContainer = commandTextGroup?.parentElement;
 
-    expect(command.className).not.toContain("text-kumo-brand");
-    expect(commandContainer?.className).toContain("bg-kumo-overlay");
+    expect(command.className).not.toContain("text-zenth-brand");
+    expect(commandContainer?.className).toContain("bg-zenth-overlay");
     expect(commandContainer?.className.split(" ")).toContain("border");
     expect(commandContainer?.className).toContain("border-white");
     expect(commandContainer?.className.split(" ")).toContain("ring");
-    expect(commandContainer?.className).toContain("ring-kumo-line");
+    expect(commandContainer?.className).toContain("ring-zenth-line");
     expect(commandContainer?.className).toContain("items-center");
     expect(commandTextGroup?.className).toContain("items-baseline");
     expect(commandContainer?.className).toContain("shadow-xs");
@@ -56,11 +56,11 @@ describe("Empty", () => {
     expect(commandContainer?.className).not.toContain("hover:");
 
     const prompt = screen.getByText("$");
-    expect(prompt.className).toContain("text-kumo-subtle");
+    expect(prompt.className).toContain("text-zenth-subtle");
     expect(prompt.className).not.toContain("text-xs");
 
     const copyButton = screen.getByRole("button", { name: "Copy command" });
-    expect(copyButton.className).toContain("text-kumo-subtle");
+    expect(copyButton.className).toContain("text-zenth-subtle");
 
     const copyIcon = copyButton.querySelector("svg");
     expect(copyIcon?.getAttribute("class") ?? "").not.toContain("group-hover:");

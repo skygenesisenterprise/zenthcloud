@@ -49,7 +49,7 @@ export const TooltipContent = memo(function TooltipContent({
         />
       ) : (
         <>
-          <div className="mb-1 text-xs font-semibold text-kumo-default">
+          <div className="mb-1 text-xs font-semibold text-zenth-default">
             {formatTimestamp(state.ts)}
           </div>
           <SeriesTooltipRows
@@ -82,14 +82,14 @@ function MarkerTooltipContent({
   return (
     <>
       {state.markers.length === 1 && (
-        <div className="mb-1 text-xs font-semibold text-kumo-default">
+        <div className="mb-1 text-xs font-semibold text-zenth-default">
           {formatTimestamp(state.markers[0].timestamp)}
         </div>
       )}
       <div className="space-y-1">
         {state.markers.map((marker, index) => (
           <div key={`${marker.timestamp}-${marker.label}-${index}`}>
-            <div className="flex items-center gap-2 text-xs text-kumo-default">
+            <div className="flex items-center gap-2 text-xs text-zenth-default">
               <span
                 className="h-3 w-3 shrink-0 rounded-full"
                 style={{ backgroundColor: marker.color ?? state.color }}
@@ -98,13 +98,13 @@ function MarkerTooltipContent({
                 {marker.label ?? "Reference marker"}
               </span>
               {state.markers.length > 1 && (
-                <span className="text-kumo-subtle">
+                <span className="text-zenth-subtle">
                   {formatTimestamp(marker.timestamp)}
                 </span>
               )}
             </div>
             {marker.description && (
-              <div className="mt-0.5 ml-5 text-xs text-kumo-default">
+              <div className="mt-0.5 ml-5 text-xs text-zenth-default">
                 {marker.description}
               </div>
             )}
@@ -112,7 +112,7 @@ function MarkerTooltipContent({
         ))}
       </div>
       {state.rows.length > 0 && (
-        <div className="mt-2 border-t border-kumo-line pt-2">
+        <div className="mt-2 border-t border-zenth-line pt-2">
           <SeriesTooltipRows
             rows={state.rows}
             hiddenCount={state.hiddenCount}
@@ -146,13 +146,13 @@ function SeriesTooltipRows({
               style={{ backgroundColor: row.color }}
             />
             <span
-              className="truncate text-xs font-medium text-kumo-default"
+              className="truncate text-xs font-medium text-zenth-default"
               title={row.name}
             >
               {row.name}
             </span>
           </div>
-          <span className="shrink-0 text-xs font-semibold text-kumo-default">
+          <span className="shrink-0 text-xs font-semibold text-zenth-default">
             {formatValue
               ? formatValue(row.value)
               : formatDefaultValue(row.value)}
@@ -160,7 +160,7 @@ function SeriesTooltipRows({
         </div>
       ))}
       {hiddenCount > 0 && (
-        <div className="mt-1 text-xs text-kumo-subtle">+{hiddenCount} more</div>
+        <div className="mt-1 text-xs text-zenth-subtle">+{hiddenCount} more</div>
       )}
     </>
   );

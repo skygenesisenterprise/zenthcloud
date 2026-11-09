@@ -36,10 +36,10 @@ describe("Select", () => {
       const inputClasses = screen.getByRole("textbox").className.split(" ");
       const selectClasses = screen.getByRole("combobox").className.split(" ");
       const inputSurface = inputClasses.find((className) =>
-        className.startsWith("bg-kumo-"),
+        className.startsWith("bg-zenth-"),
       );
       const selectSurface = selectClasses.find((className) =>
-        className.startsWith("bg-kumo-"),
+        className.startsWith("bg-zenth-"),
       );
 
       expect(selectSurface).toBe(inputSurface);
@@ -53,23 +53,23 @@ describe("Select", () => {
       );
 
       const trigger = screen.getByRole("combobox");
-      expect(trigger.className).toContain("data-[state=open]:bg-kumo-control");
-      expect(trigger.className).toContain("disabled:bg-kumo-control/50");
-      expect(trigger.className).not.toContain("data-[state=open]:bg-kumo-base");
-      expect(trigger.className).not.toContain("disabled:bg-kumo-base/50");
+      expect(trigger.className).toContain("data-[state=open]:bg-zenth-control");
+      expect(trigger.className).toContain("disabled:bg-zenth-control/50");
+      expect(trigger.className).not.toContain("data-[state=open]:bg-zenth-base");
+      expect(trigger.className).not.toContain("disabled:bg-zenth-base/50");
     });
 
     it("allows className to override the default surface without important", () => {
       render(
-        <Select aria-label="Pick one" className="bg-kumo-elevated">
+        <Select aria-label="Pick one" className="bg-zenth-elevated">
           <Select.Option value="a">Option A</Select.Option>
         </Select>,
       );
 
       const trigger = screen.getByRole("combobox");
       const classes = trigger.className.split(" ");
-      expect(classes).toContain("bg-kumo-elevated");
-      expect(classes).not.toContain("bg-kumo-control");
+      expect(classes).toContain("bg-zenth-elevated");
+      expect(classes).not.toContain("bg-zenth-control");
     });
   });
 
@@ -561,7 +561,7 @@ describe("Select", () => {
       });
 
       expect(separatorRef.current).toBeTruthy();
-      expect(separatorRef.current?.className).toContain("bg-kumo-hairline");
+      expect(separatorRef.current?.className).toContain("bg-zenth-hairline");
     });
 
     it("renders multiple groups with separators", async () => {
@@ -603,7 +603,7 @@ describe("Select", () => {
       );
 
       const trigger = screen.getByRole("combobox");
-      expect(trigger.className).toContain("ring-kumo-danger");
+      expect(trigger.className).toContain("ring-zenth-danger");
     });
   });
 
@@ -671,8 +671,8 @@ describe("Select", () => {
       const popup = listbox.parentElement;
       expect(popup?.getAttribute("role")).toBe("presentation");
       expect(popup?.className).toContain("max-h-[var(--available-height)]");
-      expect(popup?.className).toContain("bg-kumo-base");
-      expect(popup?.className).not.toContain("bg-kumo-control");
+      expect(popup?.className).toContain("bg-zenth-base");
+      expect(popup?.className).not.toContain("bg-zenth-control");
       expect(popup?.className).not.toContain("overscroll");
     });
 

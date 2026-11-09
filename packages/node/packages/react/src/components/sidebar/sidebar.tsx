@@ -620,9 +620,9 @@ function SidebarProvider({
           } as CSSProperties
         }
         className={cn(
-          "group/sidebar-wrapper relative isolate flex w-full [--sidebar-active-bg:var(--color-kumo-tint)] [--sidebar-bg:var(--color-kumo-base)]",
+          "group/sidebar-wrapper relative isolate flex w-full [--sidebar-active-bg:var(--color-zenth-tint)] [--sidebar-bg:var(--color-zenth-base)]",
           !contained && !isMobile && "min-h-svh",
-          "has-data-[variant=inset]:bg-kumo-recessed",
+          "has-data-[variant=inset]:bg-zenth-recessed",
           isResizing && "select-none",
           className,
         )}
@@ -811,13 +811,13 @@ const SidebarRoot = forwardRef<HTMLElement, SidebarRootProps>(
             maxWidth: "var(--sidebar-width)",
           }}
           className={cn(
-            "relative flex h-full shrink-0 grow-0 flex-col overflow-hidden bg-(--sidebar-bg) text-kumo-default",
+            "relative flex h-full shrink-0 grow-0 flex-col overflow-hidden bg-(--sidebar-bg) text-zenth-default",
             variant === "sidebar" &&
               (side === "left"
-                ? "border-r border-kumo-line"
-                : "border-l border-kumo-line"),
+                ? "border-r border-zenth-line"
+                : "border-l border-zenth-line"),
             variant === "floating" &&
-              "m-2 rounded-lg border border-kumo-line shadow-lg",
+              "m-2 rounded-lg border border-zenth-line shadow-lg",
             className,
           )}
           {...props}
@@ -835,8 +835,8 @@ const SidebarRoot = forwardRef<HTMLElement, SidebarRootProps>(
             data-sidebar-backdrop=""
             className={cn(
               contained
-                ? "absolute inset-0 z-40 bg-kumo-recessed"
-                : "fixed inset-0 z-40 bg-kumo-recessed",
+                ? "absolute inset-0 z-40 bg-zenth-recessed"
+                : "fixed inset-0 z-40 bg-zenth-recessed",
               "transition-opacity duration-(--sidebar-animation-duration) ease-(--sidebar-easing)",
               "motion-reduce:transition-none",
               openMobile && !fullScreenOnMobile
@@ -869,9 +869,9 @@ const SidebarRoot = forwardRef<HTMLElement, SidebarRootProps>(
               "group/sidebar inset-y-0 z-50 flex flex-col overflow-hidden",
               contained ? "absolute" : "fixed",
               fullScreenOnMobile ? "w-full" : "w-(--sidebar-width)",
-              "bg-(--sidebar-bg) text-kumo-default",
+              "bg-(--sidebar-bg) text-zenth-default",
               // No border when full-screen — there is no adjacent content to divide.
-              !fullScreenOnMobile && "border-r border-kumo-line",
+              !fullScreenOnMobile && "border-r border-zenth-line",
               "transition-transform duration-(--sidebar-animation-duration) ease-(--sidebar-easing)",
               "motion-reduce:transition-none",
               side === "left" && "left-0",
@@ -907,10 +907,10 @@ const SidebarRoot = forwardRef<HTMLElement, SidebarRootProps>(
     const borderClasses =
       variant === "sidebar"
         ? side === "left"
-          ? "border-r border-kumo-line"
-          : "border-l border-kumo-line"
+          ? "border-r border-zenth-line"
+          : "border-l border-zenth-line"
         : variant === "floating"
-          ? "border border-kumo-line"
+          ? "border border-zenth-line"
           : "";
 
     return (
@@ -958,7 +958,7 @@ const SidebarRoot = forwardRef<HTMLElement, SidebarRootProps>(
                 className={cn(
                   "flex h-full flex-col",
                   "min-w-0 overflow-hidden whitespace-nowrap",
-                  "bg-(--sidebar-bg) text-kumo-default",
+                  "bg-(--sidebar-bg) text-zenth-default",
                   borderClasses,
                   "transition-[width] duration-(--sidebar-animation-duration) ease-(--sidebar-easing)",
                   "motion-reduce:transition-none",
@@ -1022,7 +1022,7 @@ const SidebarHeader = forwardRef<
     ref={ref}
     data-sidebar="header"
     className={cn(
-      "flex h-[58px] shrink-0 items-center gap-1 border-b border-kumo-line",
+      "flex h-[58px] shrink-0 items-center gap-1 border-b border-zenth-line",
       "overflow-hidden px-3",
       className,
     )}
@@ -1067,7 +1067,7 @@ const SidebarContent = forwardRef<
           // Hide the native scrollbar with Kumo's CSS rather than relying on
           // the <style> Base UI adds to <head>, which head-swapping client
           // routers and strict CSPs can drop.
-          "no-scrollbar",
+          "zenth-no-scrollbar",
           // Scroll fade via CSS mask driven by Base UI overflow CSS variables
           "[mask-image:linear-gradient(to_bottom,transparent_0,black_min(24px,var(--scroll-area-overflow-y-start,24px)),black_calc(100%-min(24px,var(--scroll-area-overflow-y-end,24px))),transparent_100%)]",
         )}
@@ -1085,7 +1085,7 @@ const SidebarContent = forwardRef<
           "group-data-[state=collapsed]/sidebar:hidden",
         )}
       >
-        <ScrollAreaBase.Thumb className="flex-1 rounded-full bg-kumo-line" />
+        <ScrollAreaBase.Thumb className="flex-1 rounded-full bg-zenth-line" />
       </ScrollAreaBase.Scrollbar>
     </ScrollAreaBase.Root>
   );
@@ -1117,7 +1117,7 @@ const SidebarFooter = forwardRef<
     ref={ref}
     data-sidebar="footer"
     className={cn(
-      "flex h-12 shrink-0 items-center gap-4 overflow-hidden border-t border-kumo-line whitespace-nowrap",
+      "flex h-12 shrink-0 items-center gap-4 overflow-hidden border-t border-zenth-line whitespace-nowrap",
       "px-[11px] group-not-data-[state=collapsed]/sidebar:px-4",
       "bg-(--sidebar-bg)",
       "w-(--sidebar-width)",
@@ -1125,7 +1125,7 @@ const SidebarFooter = forwardRef<
       "motion-reduce:transition-none",
       "sticky bottom-0",
       "bg-clip-padding group-data-[state=collapsed]/sidebar:w-(--sidebar-width-icon)",
-      "group-data-[state=collapsed]/sidebar:border-r group-data-[state=collapsed]/sidebar:border-kumo-line",
+      "group-data-[state=collapsed]/sidebar:border-r group-data-[state=collapsed]/sidebar:border-zenth-line",
       className,
     )}
     {...props}
@@ -1261,7 +1261,7 @@ const SidebarGroupLabel = forwardRef<
       // Mobile: no collapse animation — sidebar is always expanded
       "group-data-[mobile=true]/sidebar:transition-none",
       // Collapsed: spacer with divider line between icon groups
-      "my-3 grid-rows-[0fr] border-b border-kumo-line",
+      "my-3 grid-rows-[0fr] border-b border-zenth-line",
       // First group: no spacer or divider needed
       "[[data-sidebar=group]:first-child_&]:my-0 [[data-sidebar=group]:first-child_&]:border-transparent",
       // Expanded: reveal the label text
@@ -1275,7 +1275,7 @@ const SidebarGroupLabel = forwardRef<
     <div className="min-h-0 min-w-0">
       <div
         className={cn(
-          "mt-4 mb-2 truncate px-3 text-sm font-medium text-kumo-subtle",
+          "mt-4 mb-2 truncate px-3 text-sm font-medium text-zenth-subtle",
           // First group: less top margin
           "[[data-sidebar=group]:first-child_&]:mt-2",
         )}
@@ -1547,7 +1547,7 @@ const SidebarMenuButton = forwardRef<HTMLButtonElement, SidebarMenuButtonProps>(
       // Sizing
       size === "base" && "min-h-8.5 px-3 py-0 text-sm font-medium",
       size === "sm" && "min-h-7 px-2 py-0 text-sm",
-      "text-kumo-default",
+      "text-zenth-default",
       "transition-[color,box-shadow,outline] duration-(--sidebar-animation-duration)",
       !active && "hover:bg-(--sidebar-active-bg)",
       // Active state
@@ -1555,7 +1555,7 @@ const SidebarMenuButton = forwardRef<HTMLButtonElement, SidebarMenuButtonProps>(
       // When a child sub-button is active, don't show active styling on the parent trigger
       "has-[[data-active]]:bg-transparent has-[[data-active]]:hover:bg-(--sidebar-active-bg)",
       // Focus
-      "focus:outline-hidden focus-visible:bg-(--sidebar-active-bg) focus-visible:text-kumo-strong",
+      "focus:outline-hidden focus-visible:bg-(--sidebar-active-bg) focus-visible:text-zenth-strong",
       className,
     );
 
@@ -1578,8 +1578,8 @@ const SidebarMenuButton = forwardRef<HTMLButtonElement, SidebarMenuButtonProps>(
           data-active={active || undefined}
           data-sidebar="menu-button"
           data-sidebar-item-id={itemIdOnButton}
-          data-kumo-component="Sidebar"
-          data-kumo-part="menu-button-link"
+          data-zenth-component="Sidebar"
+          data-zenth-part="menu-button-link"
           data-size={size}
         >
           {content}
@@ -1594,8 +1594,8 @@ const SidebarMenuButton = forwardRef<HTMLButtonElement, SidebarMenuButtonProps>(
           data-active={active || undefined}
           data-sidebar="menu-button"
           data-sidebar-item-id={itemIdOnButton}
-          data-kumo-component="Sidebar"
-          data-kumo-part="menu-button"
+          data-zenth-component="Sidebar"
+          data-zenth-part="menu-button"
           data-size={size}
           {...props}
         >
@@ -1665,8 +1665,8 @@ const SidebarMenuBadge = forwardRef<
     ref={ref}
     data-sidebar="menu-badge"
     className={cn(
-      "inline-flex shrink-0 items-center rounded-full border border-dashed border-kumo-line",
-      "px-1.5 py-0.5 text-[11px]/none font-medium text-kumo-strong select-none",
+      "inline-flex shrink-0 items-center rounded-full border border-dashed border-zenth-line",
+      "px-1.5 py-0.5 text-[11px]/none font-medium text-zenth-strong select-none",
       // Hidden when collapsed
       "group-data-[state=collapsed]/sidebar:hidden",
       className,
@@ -1710,7 +1710,7 @@ const SidebarMenuSub = forwardRef<
   >
     <li
       aria-hidden="true"
-      className="pointer-events-none absolute inset-y-px left-[19px] z-10 block w-px bg-kumo-line"
+      className="pointer-events-none absolute inset-y-px left-[19px] z-10 block w-px bg-zenth-line"
     />
     {children}
   </ul>
@@ -1783,10 +1783,10 @@ const SidebarMenuSubButton = forwardRef<
   const buttonClasses = cn(
     "group/menu-button relative flex min-h-8.5 w-full min-w-0 cursor-pointer items-center gap-2 rounded-lg px-3 py-0 text-sm font-medium outline-none",
     "before:absolute before:inset-x-0 before:-inset-y-px",
-    "text-kumo-default transition-[color] duration-150",
+    "text-zenth-default transition-[color] duration-150",
     !active && "hover:bg-(--sidebar-active-bg)",
     active && "bg-(--sidebar-active-bg)",
-    "focus:outline-hidden focus-visible:bg-(--sidebar-active-bg) focus-visible:text-kumo-strong",
+    "focus:outline-hidden focus-visible:bg-(--sidebar-active-bg) focus-visible:text-zenth-strong",
     className,
   );
 
@@ -1815,8 +1815,8 @@ const SidebarMenuSubButton = forwardRef<
         target={target}
         data-active={active || undefined}
         data-sidebar="menu-sub-button"
-        data-kumo-component="Sidebar"
-        data-kumo-part="menu-sub-button-link"
+        data-zenth-component="Sidebar"
+        data-zenth-part="menu-sub-button-link"
       >
         {content}
       </LinkComponent>
@@ -1829,8 +1829,8 @@ const SidebarMenuSubButton = forwardRef<
         className={buttonClasses}
         data-active={active || undefined}
         data-sidebar="menu-sub-button"
-        data-kumo-component="Sidebar"
-        data-kumo-part="menu-sub-button"
+        data-zenth-component="Sidebar"
+        data-zenth-part="menu-sub-button"
         {...props}
       >
         {content}
@@ -1869,7 +1869,7 @@ const SidebarSeparator = forwardRef<
     className={cn("my-3 px-2", className)}
     {...props}
   >
-    <div className="border-b border-kumo-line" />
+    <div className="border-b border-zenth-line" />
   </div>
 ));
 
@@ -1937,14 +1937,14 @@ const SidebarTrigger = forwardRef<
       ref={ref}
       type="button"
       data-sidebar="trigger"
-      data-kumo-component="Sidebar"
-      data-kumo-part="trigger"
+      data-zenth-component="Sidebar"
+      data-zenth-part="trigger"
       aria-expanded={open}
       aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
       className={cn(
         "flex size-8.5 shrink-0 cursor-pointer items-center justify-center rounded-lg",
-        "text-kumo-subtle hover:bg-(--sidebar-active-bg) hover:text-kumo-default",
-        "focus:outline-hidden focus-visible:ring-2 focus-visible:ring-kumo-brand focus-visible:ring-inset",
+        "text-zenth-subtle hover:bg-(--sidebar-active-bg) hover:text-zenth-default",
+        "focus:outline-hidden focus-visible:ring-2 focus-visible:ring-zenth-brand focus-visible:ring-inset",
         className,
       )}
       onClick={(e) => {
@@ -1993,8 +1993,8 @@ const SidebarClose = forwardRef<
       shape="square"
       size="sm"
       data-sidebar="close"
-      data-kumo-component="Sidebar"
-      data-kumo-part="close"
+      data-zenth-component="Sidebar"
+      data-zenth-part="close"
       aria-label="Close navigation"
       className={cn("shrink-0", className)}
       onClick={(e) => {
@@ -2029,14 +2029,14 @@ const SidebarRail = forwardRef<
       ref={ref}
       type="button"
       data-sidebar="rail"
-      data-kumo-component="Sidebar"
-      data-kumo-part="rail"
+      data-zenth-component="Sidebar"
+      data-zenth-part="rail"
       aria-label="Toggle sidebar"
       tabIndex={-1}
       className={cn(
         "absolute inset-y-0 z-1 hidden w-4 -translate-x-1/2 cursor-pointer transition-all",
         "after:absolute after:inset-y-0 after:left-1/2 after:w-0.5",
-        "hover:after:bg-kumo-brand/20",
+        "hover:after:bg-zenth-brand/20",
         "group-data-[side=left]/sidebar-wrapper:right-0",
         "group-data-[side=right]/sidebar-wrapper:left-0",
         "sm:flex",
@@ -2180,7 +2180,7 @@ const SidebarResizeHandle = forwardRef<
         "absolute inset-y-0 z-2 hidden w-3 cursor-col-resize sm:block",
         "after:absolute after:inset-y-0 after:w-0.5",
         "after:bg-transparent after:transition-colors",
-        "hover:after:bg-kumo-hairline focus-visible:after:bg-kumo-hairline active:after:bg-kumo-hairline",
+        "hover:after:bg-zenth-hairline focus-visible:after:bg-zenth-hairline active:after:bg-zenth-hairline",
         "focus:outline-hidden",
         side === "left" && "right-0 after:right-0",
         side === "right" && "left-0 after:left-0",

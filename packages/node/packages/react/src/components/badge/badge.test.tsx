@@ -14,7 +14,7 @@ describe("Badge", () => {
     render(<Badge>Status</Badge>);
     const el = screen.getByText("Status");
     expect(el.tagName).toBe("SPAN");
-    expect(el.getAttribute("data-kumo-component")).toBe("Badge");
+    expect(el.getAttribute("data-zenth-component")).toBe("Badge");
   });
 
   it("merges custom className", () => {
@@ -59,7 +59,7 @@ describe("Badge", () => {
     it("applies variant classes for filled badges", () => {
       render(<Badge variant="error">Error</Badge>);
       const el = screen.getByText("Error");
-      expect(el.className).toContain("bg-kumo-danger-tint");
+      expect(el.className).toContain("bg-zenth-danger-tint");
     });
 
     it("does not render a dot indicator", () => {
@@ -79,7 +79,7 @@ describe("Badge", () => {
       const badge = screen.getByText("Healthy").closest("span")!;
       const dot = badge.querySelector("[aria-hidden='true']");
       expect(dot).toBeTruthy();
-      expect(dot!.className).toContain("bg-kumo-success");
+      expect(dot!.className).toContain("bg-zenth-success");
     });
 
     it("applies dot appearance classes instead of variant classes", () => {
@@ -91,17 +91,17 @@ describe("Badge", () => {
       const badge = screen.getByText("Down").closest("span")!;
       // Dot appearance overrides variant bg/text
       expect(badge.className).toContain("bg-transparent");
-      expect(badge.className).toContain("text-kumo-default");
+      expect(badge.className).toContain("text-zenth-default");
       // Should NOT contain the filled error classes
-      expect(badge.className).not.toContain("bg-kumo-danger-tint");
+      expect(badge.className).not.toContain("bg-zenth-danger-tint");
     });
 
     it("renders correct dot color per variant", () => {
       const cases = [
-        { variant: "success" as const, expected: "bg-kumo-success" },
-        { variant: "warning" as const, expected: "bg-kumo-badge-orange" },
-        { variant: "error" as const, expected: "bg-kumo-badge-red" },
-        { variant: "neutral" as const, expected: "bg-kumo-badge-neutral" },
+        { variant: "success" as const, expected: "bg-zenth-success" },
+        { variant: "warning" as const, expected: "bg-zenth-badge-orange" },
+        { variant: "error" as const, expected: "bg-zenth-badge-red" },
+        { variant: "neutral" as const, expected: "bg-zenth-badge-neutral" },
       ];
 
       for (const { variant, expected } of cases) {
@@ -159,12 +159,12 @@ describe("badgeVariants", () => {
 
   it("includes variant classes for filled appearance", () => {
     const result = badgeVariants({ variant: "success" });
-    expect(result).toContain("bg-kumo-success-tint");
+    expect(result).toContain("bg-zenth-success-tint");
   });
 
   it("omits variant classes for dot appearance", () => {
     const result = badgeVariants({ variant: "success", appearance: "dot" });
-    expect(result).not.toContain("bg-kumo-success-tint");
+    expect(result).not.toContain("bg-zenth-success-tint");
     expect(result).toContain("bg-transparent");
   });
 

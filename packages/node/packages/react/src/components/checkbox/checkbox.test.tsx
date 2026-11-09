@@ -25,12 +25,12 @@ describe("Checkbox.Group", () => {
 
     const labels = container.querySelectorAll("label");
     expect(labels[0].parentElement?.className).toContain("rounded-lg");
-    expect(labels[0].parentElement?.className).toContain("ring-kumo-line");
+    expect(labels[0].parentElement?.className).toContain("ring-zenth-line");
     for (const label of labels) {
       expect(label.className).toContain("border-b");
       expect(label.className).not.toContain("rounded-lg");
       // Card items place the checkbox after the label by default.
-      expect(label.firstElementChild?.getAttribute("data-kumo-part")).not.toBe(
+      expect(label.firstElementChild?.getAttribute("data-zenth-part")).not.toBe(
         "item",
       );
     }
@@ -78,7 +78,7 @@ describe("Checkbox.Group", () => {
     );
 
     const label = container.querySelector("label");
-    expect(label?.firstElementChild?.getAttribute("data-kumo-part")).toBe(
+    expect(label?.firstElementChild?.getAttribute("data-zenth-part")).toBe(
       "item",
     );
     expect(label?.className).not.toContain("flex-row-reverse");

@@ -8,7 +8,7 @@ import { resolveVariant } from "../../utils/resolve-variant";
 export const KUMO_SKELETON_LINE_VARIANTS = {
   variant: {
     default: {
-      classes: "skeleton-line",
+      classes: "zenth-skeleton-line",
       description: "Flat grey bar with a sliding shimmer",
     },
     sketch: {
@@ -27,7 +27,7 @@ export type KumoSkeletonLineVariant =
   keyof typeof KUMO_SKELETON_LINE_VARIANTS.variant;
 
 /** Edge strokes drawn under the sketch variant's outline. */
-const SKETCH_STROKE = "absolute bg-kumo-fill";
+const SKETCH_STROKE = "absolute bg-zenth-fill";
 
 const getRandomWidth = (min: number, max: number) =>
   Math.floor(Math.random() * (max - min + 1) + min);
@@ -93,8 +93,8 @@ export const SkeletonLine = ({
       >
         {/* Fill with the same sliding highlight as the default variant. The
             8px radius clamps to a pill on short lines. */}
-        <div className="absolute inset-0 overflow-hidden rounded-lg bg-kumo-recessed">
-          <div className="absolute inset-0 animate-[shimmer_var(--shimmer-duration,1.5s)_var(--shimmer-delay,0s)_infinite_ease-in-out] bg-linear-to-r from-transparent via-kumo-contrast/8 to-transparent motion-reduce:animate-none" />
+        <div className="absolute inset-0 overflow-hidden rounded-lg bg-zenth-recessed">
+          <div className="absolute inset-0 animate-[shimmer_var(--shimmer-duration,1.5s)_var(--shimmer-delay,0s)_infinite_ease-in-out] bg-linear-to-r from-transparent via-zenth-contrast/8 to-transparent motion-reduce:animate-none" />
         </div>
         {/* Construction strokes along each edge, 4px past every corner. */}
         <div className={cn(SKETCH_STROKE, "-inset-x-1 top-0 h-px")} />
@@ -102,7 +102,7 @@ export const SkeletonLine = ({
         <div className={cn(SKETCH_STROKE, "-inset-y-1 left-0 w-px")} />
         <div className={cn(SKETCH_STROKE, "-inset-y-1 right-0 w-px")} />
         {/* Rounded outline, last so it sits above the strokes. */}
-        <div className="absolute inset-0 rounded-lg border border-kumo-interact" />
+        <div className="absolute inset-0 rounded-lg border border-zenth-interact" />
       </div>
     ) : (
       <div className={cn(rootClasses, className)} style={lineStyle}></div>

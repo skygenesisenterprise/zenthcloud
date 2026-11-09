@@ -34,11 +34,11 @@ export const KUMO_INPUT_VARIANTS = {
   },
   variant: {
     default: {
-      classes: "focus:ring-kumo-focus/50 focus:ring-[1.5px]",
+      classes: "focus:ring-zenth-focus/50 focus:ring-[1.5px]",
       description: "Default input appearance",
     },
     error: {
-      classes: "!ring-kumo-danger focus:ring-kumo-danger/50 focus:ring-[1.5px]",
+      classes: "!ring-zenth-danger focus:ring-zenth-danger/50 focus:ring-[1.5px]",
       description: "Error state for validation failures",
     },
   },
@@ -111,9 +111,9 @@ export function inputVariants({
 }: KumoInputVariantsProps = {}) {
   return cn(
     // Base styles
-    "border-0 bg-kumo-control text-kumo-default ring ring-kumo-line outline-none focus:outline-hidden",
+    "border-0 bg-zenth-control text-zenth-default ring ring-zenth-line outline-none focus:outline-hidden",
     // Disabled state and placeholder styles (using vanilla CSS class for Chrome compatibility)
-    "kumo-input-placeholder disabled:text-kumo-inactive",
+    "zenth-input-placeholder disabled:text-zenth-inactive",
     // Apply size styles from KUMO_INPUT_VARIANTS
     resolveVariant(
       KUMO_INPUT_VARIANTS.size,
@@ -131,12 +131,12 @@ export function inputVariants({
     // Focus state handling
     parentFocusIndicator &&
       (variant === "error"
-        ? "focus-within:ring-[1.5px] focus-within:ring-kumo-danger/50"
-        : "focus-within:ring-[1.5px] focus-within:ring-kumo-focus/50"),
+        ? "focus-within:ring-[1.5px] focus-within:ring-zenth-danger/50"
+        : "focus-within:ring-[1.5px] focus-within:ring-zenth-focus/50"),
     focusIndicator &&
       (variant === "error"
-        ? "focus:ring-[1.5px] focus:ring-kumo-danger/50"
-        : "focus:ring-[1.5px] focus:ring-kumo-focus/50"),
+        ? "focus:ring-[1.5px] focus:ring-zenth-danger/50"
+        : "focus:ring-[1.5px] focus:ring-zenth-focus/50"),
   );
 }
 

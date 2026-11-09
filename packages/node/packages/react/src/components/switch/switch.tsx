@@ -275,8 +275,8 @@ const SwitchBase = forwardRef<HTMLButtonElement, SwitchProps>(
           // Track colors based on variant
           const trackColors = isNeutral
             ? state.checked
-              ? "bg-neutral-500 dark:bg-kumo-base ring-neutral-600 dark:ring-neutral-700"
-              : "bg-neutral-150 dark:bg-kumo-base ring-kumo-hairline"
+              ? "bg-neutral-500 dark:bg-zenth-base ring-neutral-600 dark:ring-neutral-700"
+              : "bg-neutral-150 dark:bg-zenth-base ring-zenth-hairline"
             : state.checked
               ? "bg-blue-500 dark:bg-blue-600 ring-blue-600 dark:ring-blue-500"
               : "bg-neutral-200 dark:bg-neutral-700 ring-neutral-300 dark:ring-neutral-600";
@@ -284,15 +284,15 @@ const SwitchBase = forwardRef<HTMLButtonElement, SwitchProps>(
           // Thumb colors based on variant
           const thumbColors = isNeutral
             ? state.checked
-              ? "bg-kumo-base dark:bg-neutral-400"
-              : "bg-kumo-base dark:bg-neutral-850"
+              ? "bg-zenth-base dark:bg-neutral-400"
+              : "bg-zenth-base dark:bg-neutral-850"
             : state.checked
-              ? "bg-kumo-base dark:bg-blue-300"
-              : "bg-kumo-base dark:bg-neutral-850";
+              ? "bg-zenth-base dark:bg-blue-300"
+              : "bg-zenth-base dark:bg-neutral-850";
 
           const trackClassName = cn(
             "relative inline-flex cursor-pointer items-center border-none p-0 ring",
-            "focus:outline-hidden focus-visible:ring-2 focus-visible:ring-kumo-brand",
+            "focus:outline-hidden focus-visible:ring-2 focus-visible:ring-zenth-brand",
             "transition-colors duration-150 ease-out motion-reduce:transition-none",
             "disabled:cursor-not-allowed disabled:opacity-50",
             s.track,
@@ -303,7 +303,7 @@ const SwitchBase = forwardRef<HTMLButtonElement, SwitchProps>(
           );
 
           const thumbClassName = cn(
-            "absolute top-0 bottom-0 shadow-[0_0_1px_0.5px_var(--color-kumo-shadow-edge),0_1px_2px_var(--color-kumo-shadow-drop)]",
+            "absolute top-0 bottom-0 shadow-[0_0_1px_0.5px_var(--color-zenth-shadow-edge),0_1px_2px_var(--color-zenth-shadow-drop)]",
             s.thumb,
             squircleRadius,
             thumbColors,
@@ -323,7 +323,7 @@ const SwitchBase = forwardRef<HTMLButtonElement, SwitchProps>(
               {...restRootProps}
               {...props}
               ref={rootRef}
-              data-kumo-component="Switch"
+              data-zenth-component="Switch"
               type="button"
               role={role}
               {...checkedA11yProps}
@@ -378,8 +378,8 @@ const SwitchItem = forwardRef<HTMLButtonElement, SwitchItemProps>(
 
     return (
       <label
-        data-kumo-component="Switch"
-        data-kumo-part="item-label"
+        data-zenth-component="Switch"
+        data-zenth-part="item-label"
         className={cn(
           "relative m-0 inline-flex items-center gap-2",
           // Control first (default): switch before label
@@ -428,8 +428,8 @@ const SwitchItem = forwardRef<HTMLButtonElement, SwitchItemProps>(
             // Track colors based on variant
             const trackColors = isNeutral
               ? state.checked
-                ? "bg-neutral-500 dark:bg-kumo-base ring-neutral-600 dark:ring-neutral-700"
-                : "bg-neutral-150 dark:bg-kumo-base ring-kumo-hairline"
+                ? "bg-neutral-500 dark:bg-zenth-base ring-neutral-600 dark:ring-neutral-700"
+                : "bg-neutral-150 dark:bg-zenth-base ring-zenth-hairline"
               : state.checked
                 ? "bg-blue-500 dark:bg-blue-600 ring-blue-600 dark:ring-blue-500"
                 : "bg-neutral-200 dark:bg-neutral-700 ring-neutral-300 dark:ring-neutral-600";
@@ -437,15 +437,15 @@ const SwitchItem = forwardRef<HTMLButtonElement, SwitchItemProps>(
             // Thumb colors based on variant
             const thumbColors = isNeutral
               ? state.checked
-                ? "bg-kumo-base dark:bg-neutral-400"
-                : "bg-kumo-base dark:bg-neutral-850"
+                ? "bg-zenth-base dark:bg-neutral-400"
+                : "bg-zenth-base dark:bg-neutral-850"
               : state.checked
-                ? "bg-kumo-base dark:bg-blue-300"
-                : "bg-kumo-base dark:bg-neutral-850";
+                ? "bg-zenth-base dark:bg-blue-300"
+                : "bg-zenth-base dark:bg-neutral-850";
 
             const trackClassName = cn(
               "relative inline-flex cursor-pointer items-center border-none p-0 ring",
-              "focus:ring-kumo-focus/50 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-kumo-brand",
+              "focus:ring-zenth-focus/50 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-zenth-brand",
               "transition-colors duration-150 ease-out motion-reduce:transition-none",
               "disabled:cursor-not-allowed disabled:opacity-50",
               s.track,
@@ -455,7 +455,7 @@ const SwitchItem = forwardRef<HTMLButtonElement, SwitchItemProps>(
             );
 
             const thumbClassName = cn(
-              "absolute top-0 bottom-0 shadow-[0_0_1px_0.5px_var(--color-kumo-shadow-edge),0_1px_2px_var(--color-kumo-shadow-drop)]",
+              "absolute top-0 bottom-0 shadow-[0_0_1px_0.5px_var(--color-zenth-shadow-edge),0_1px_2px_var(--color-zenth-shadow-drop)]",
               s.thumb,
               squircleRadius,
               thumbColors,
@@ -473,8 +473,8 @@ const SwitchItem = forwardRef<HTMLButtonElement, SwitchItemProps>(
               <button
                 {...restRootProps}
                 ref={rootRef}
-                data-kumo-component="Switch"
-                data-kumo-part="item"
+                data-zenth-component="Switch"
+                data-zenth-part="item"
                 type="button"
                 role={role}
                 {...checkedA11yProps}
@@ -486,7 +486,7 @@ const SwitchItem = forwardRef<HTMLButtonElement, SwitchItemProps>(
             );
           }}
         />
-        <span className="text-base font-medium text-kumo-default">{label}</span>
+        <span className="text-base font-medium text-zenth-default">{label}</span>
       </label>
     );
   },
@@ -498,7 +498,7 @@ SwitchItem.displayName = "Switch.Item";
 function SwitchLegend({ children, className }: SwitchLegendProps) {
   return (
     <Fieldset.Legend
-      className={cn("text-base font-medium text-kumo-default", className)}
+      className={cn("text-base font-medium text-zenth-default", className)}
     >
       {children}
     </Fieldset.Legend>
@@ -524,14 +524,14 @@ function SwitchGroup({
         disabled={disabled}
       >
         {legend && (
-          <Fieldset.Legend className="text-base font-medium text-kumo-default">
+          <Fieldset.Legend className="text-base font-medium text-zenth-default">
             {legend}
           </Fieldset.Legend>
         )}
         <div className="flex flex-col gap-2">{children}</div>
-        {error && <p className="text-sm text-kumo-danger">{error}</p>}
+        {error && <p className="text-sm text-zenth-danger">{error}</p>}
         {description && (
-          <p className="text-sm leading-snug text-pretty text-kumo-subtle">
+          <p className="text-sm leading-snug text-pretty text-zenth-subtle">
             {description}
           </p>
         )}

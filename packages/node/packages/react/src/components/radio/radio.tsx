@@ -28,11 +28,11 @@ export type RadioGroupChangeEventDetails =
 export const KUMO_RADIO_VARIANTS = {
   variant: {
     default: {
-      classes: "ring-kumo-hairline",
+      classes: "ring-zenth-hairline",
       description: "Default radio appearance",
     },
     error: {
-      classes: "ring-kumo-danger",
+      classes: "ring-zenth-danger",
       description: "Error state for validation failures",
     },
   },
@@ -43,13 +43,13 @@ export const KUMO_RADIO_VARIANTS = {
     },
     card: {
       classes:
-        "rounded-lg border border-kumo-hairline bg-kumo-base p-3 hover:not-has-data-checked:bg-kumo-elevated has-data-checked:border-kumo-interact has-data-checked:bg-kumo-tint",
+        "rounded-lg border border-zenth-hairline bg-zenth-base p-3 hover:not-has-data-checked:bg-zenth-elevated has-data-checked:border-zenth-interact has-data-checked:bg-zenth-tint",
       description:
         "Choice card appearance with border, padding, and highlighted selection state",
     },
     segmented: {
       classes:
-        "group relative z-0 my-0 mr-0 -ml-px first:ml-0 inline-flex h-8.5 shrink-0 cursor-pointer items-center border-r last:border-r-0 border-kumo-line/60 bg-transparent px-3 first:pl-2.75 last:pr-2.75 first:rounded-l-lg last:rounded-r-lg text-sm font-medium whitespace-nowrap text-kumo-default select-none has-data-checked:text-kumo-inverse has-data-disabled:cursor-not-allowed has-data-disabled:opacity-50 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-kumo-brand before:absolute before:-z-10 before:left-0 first:before:-left-px before:-right-px before:-inset-y-px first:before:rounded-l-[9px] last:before:rounded-r-[9px] hover:not-has-data-disabled:not-has-data-checked:before:bg-kumo-contrast/7 has-data-checked:before:bg-kumo-contrast",
+        "group relative z-0 my-0 mr-0 -ml-px first:ml-0 inline-flex h-8.5 shrink-0 cursor-pointer items-center border-r last:border-r-0 border-zenth-line/60 bg-transparent px-3 first:pl-2.75 last:pr-2.75 first:rounded-l-lg last:rounded-r-lg text-sm font-medium whitespace-nowrap text-zenth-default select-none has-data-checked:text-zenth-inverse has-data-disabled:cursor-not-allowed has-data-disabled:opacity-50 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-zenth-brand before:absolute before:-z-10 before:left-0 first:before:-left-px before:-right-px before:-inset-y-px first:before:rounded-l-[9px] last:before:rounded-r-[9px] hover:not-has-data-disabled:not-has-data-checked:before:bg-zenth-contrast/7 has-data-checked:before:bg-zenth-contrast",
       description:
         "Compact grouped-button appearance for short, mutually exclusive options",
     },
@@ -348,22 +348,22 @@ function _RadioItem<T = string>(
   if (appearance === "segmented") {
     return (
       <label
-        data-kumo-component="Radio"
-        data-kumo-part="item-label"
+        data-zenth-component="Radio"
+        data-zenth-part="item-label"
         className={cn(
-          "group relative z-0 my-0 mr-0 -ml-px inline-flex h-8.5 shrink-0 cursor-pointer items-center border-r border-kumo-line/60 bg-transparent first:ml-0 last:border-r-0",
-          "px-3 text-sm font-medium whitespace-nowrap text-kumo-default select-none first:rounded-l-lg first:pl-2.75 last:rounded-r-lg last:pr-2.75 has-data-checked:text-kumo-inverse has-data-disabled:cursor-not-allowed has-data-disabled:opacity-50",
-          "has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-kumo-brand",
-          "before:absolute before:-inset-y-px before:-right-px before:left-0 before:-z-10 first:before:-left-px first:before:rounded-l-[9px] last:before:rounded-r-[9px] hover:not-has-data-disabled:not-has-data-checked:before:bg-kumo-contrast/7 has-data-checked:before:bg-kumo-contrast",
+          "group relative z-0 my-0 mr-0 -ml-px inline-flex h-8.5 shrink-0 cursor-pointer items-center border-r border-zenth-line/60 bg-transparent first:ml-0 last:border-r-0",
+          "px-3 text-sm font-medium whitespace-nowrap text-zenth-default select-none first:rounded-l-lg first:pl-2.75 last:rounded-r-lg last:pr-2.75 has-data-checked:text-zenth-inverse has-data-disabled:cursor-not-allowed has-data-disabled:opacity-50",
+          "has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-zenth-brand",
+          "before:absolute before:-inset-y-px before:-right-px before:left-0 before:-z-10 first:before:-left-px first:before:rounded-l-[9px] last:before:rounded-r-[9px] hover:not-has-data-disabled:not-has-data-checked:before:bg-zenth-contrast/7 has-data-checked:before:bg-zenth-contrast",
           variant === "error" &&
-            "ring ring-kumo-danger hover:not-has-data-disabled:ring-kumo-danger has-data-checked:ring-kumo-danger",
+            "ring ring-zenth-danger hover:not-has-data-disabled:ring-zenth-danger has-data-checked:ring-zenth-danger",
           className,
         )}
       >
         <BaseRadio.Root
           ref={ref}
-          data-kumo-component="Radio"
-          data-kumo-part="item"
+          data-zenth-component="Radio"
+          data-zenth-part="item"
           value={value}
           disabled={disabled}
           className="sr-only"
@@ -377,28 +377,28 @@ function _RadioItem<T = string>(
     const controlAtStart = effectiveControlPosition === "start";
     return (
       <label
-        data-kumo-component="Radio"
-        data-kumo-part="item-label"
+        data-zenth-component="Radio"
+        data-zenth-part="item-label"
         className={cn(
-          "group relative m-0 flex items-start gap-3 bg-kumo-base p-3 has-data-checked:bg-kumo-tint",
+          "group relative m-0 flex items-start gap-3 bg-zenth-base p-3 has-data-checked:bg-zenth-tint",
           isJoined
             ? cn(
                 // bg-clip-padding keeps the checked tint from darkening the
                 // translucent dividers.
-                "border-b border-kumo-line bg-clip-padding last:border-b-0",
+                "border-b border-zenth-line bg-clip-padding last:border-b-0",
                 // Two-column grid: the left column draws the column divider
                 // (unless it's a lone last item), and the last row drops its
                 // bottom divider.
                 orientation === "horizontal" &&
                   "odd:border-r [&:last-child:nth-child(odd)]:border-r-0 [&:nth-last-child(2):nth-child(odd)]:border-b-0",
               )
-            : "rounded-lg border border-kumo-hairline has-data-checked:border-kumo-interact",
+            : "rounded-lg border border-zenth-hairline has-data-checked:border-zenth-interact",
           controlAtStart && "flex-row-reverse",
           variant === "error" &&
             cn(
-              "has-data-checked:bg-kumo-base",
+              "has-data-checked:bg-zenth-base",
               !isJoined &&
-                "border-kumo-danger has-data-checked:border-kumo-danger",
+                "border-zenth-danger has-data-checked:border-zenth-danger",
             ),
           disabled
             ? "cursor-not-allowed opacity-50"
@@ -406,44 +406,44 @@ function _RadioItem<T = string>(
                 "cursor-pointer has-data-disabled:cursor-not-allowed has-data-disabled:opacity-50",
                 // The checked row keeps its tint while hovered.
                 variant !== "error" &&
-                  "hover:not-has-data-disabled:not-has-data-checked:bg-kumo-elevated",
+                  "hover:not-has-data-disabled:not-has-data-checked:bg-zenth-elevated",
               ),
           className,
         )}
       >
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <span className="text-base font-medium text-kumo-default">
+          <span className="text-base font-medium text-zenth-default">
             {label}
           </span>
           {description && (
-            <span className="text-sm leading-snug text-pretty text-kumo-subtle">
+            <span className="text-sm leading-snug text-pretty text-zenth-subtle">
               {description}
             </span>
           )}
         </div>
         <BaseRadio.Root
           ref={ref}
-          data-kumo-component="Radio"
-          data-kumo-part="item"
+          data-zenth-component="Radio"
+          data-zenth-part="item"
           value={value}
           disabled={disabled}
           className={cn(
-            "relative mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-0 bg-kumo-base ring focus:ring-kumo-focus focus:outline-hidden focus-visible:ring-2 focus-visible:ring-kumo-brand",
-            variant === "error" ? "ring-kumo-danger" : "ring-kumo-line",
+            "relative mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-0 bg-zenth-base ring focus:ring-zenth-focus focus:outline-hidden focus-visible:ring-2 focus-visible:ring-zenth-brand",
+            variant === "error" ? "ring-zenth-danger" : "ring-zenth-line",
             !disabled &&
               variant !== "error" &&
-              "group-hover:ring-kumo-hairline focus-visible:outline-offset-3",
+              "group-hover:ring-zenth-hairline focus-visible:outline-offset-3",
             !disabled &&
               variant === "error" &&
               "focus-visible:outline-offset-3",
-            "data-checked:bg-kumo-contrast",
+            "data-checked:bg-zenth-contrast",
           )}
         >
           <BaseRadio.Indicator
             keepMounted
             className="flex items-center justify-center"
           >
-            <span className="h-2 w-2 rounded-full bg-kumo-base" />
+            <span className="h-2 w-2 rounded-full bg-zenth-base" />
           </BaseRadio.Indicator>
         </BaseRadio.Root>
       </label>
@@ -452,8 +452,8 @@ function _RadioItem<T = string>(
 
   return (
     <label
-      data-kumo-component="Radio"
-      data-kumo-part="item-label"
+      data-zenth-component="Radio"
+      data-zenth-part="item-label"
       className={cn(
         "group relative m-0 inline-flex items-start gap-2",
         // "start" (default): radio before label
@@ -465,30 +465,30 @@ function _RadioItem<T = string>(
     >
       <BaseRadio.Root
         ref={ref}
-        data-kumo-component="Radio"
-        data-kumo-part="item"
+        data-zenth-component="Radio"
+        data-zenth-part="item"
         value={value}
         disabled={disabled}
         className={cn(
-          "relative mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-0 bg-kumo-base ring after:absolute after:-inset-x-3 after:-inset-y-2 focus:outline-hidden",
-          variant === "error" ? "ring-kumo-danger" : "ring-kumo-line",
+          "relative mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-0 bg-zenth-base ring after:absolute after:-inset-x-3 after:-inset-y-2 focus:outline-hidden",
+          variant === "error" ? "ring-zenth-danger" : "ring-zenth-line",
           !disabled &&
             variant !== "error" &&
-            "group-hover:ring-kumo-hairline focus:ring-2 focus:ring-kumo-focus focus-visible:ring-2 focus-visible:ring-kumo-brand focus-visible:outline-offset-3",
+            "group-hover:ring-zenth-hairline focus:ring-2 focus:ring-zenth-focus focus-visible:ring-2 focus-visible:ring-zenth-brand focus-visible:outline-offset-3",
           !disabled &&
             variant === "error" &&
-            "focus:ring-2 focus:ring-kumo-focus focus-visible:ring-2 focus-visible:ring-kumo-brand focus-visible:outline-offset-3",
-          "data-checked:bg-kumo-contrast",
+            "focus:ring-2 focus:ring-zenth-focus focus-visible:ring-2 focus-visible:ring-zenth-brand focus-visible:outline-offset-3",
+          "data-checked:bg-zenth-contrast",
         )}
       >
         <BaseRadio.Indicator
           keepMounted
           className="flex items-center justify-center"
         >
-          <span className="h-2 w-2 rounded-full bg-kumo-base" />
+          <span className="h-2 w-2 rounded-full bg-zenth-base" />
         </BaseRadio.Indicator>
       </BaseRadio.Root>
-      <span className="text-base text-kumo-default">{label}</span>
+      <span className="text-base text-zenth-default">{label}</span>
     </label>
   );
 }
@@ -506,7 +506,7 @@ const RadioItem = forwardRef(_RadioItem) as <T = string>(
 function RadioLegend({ children, className }: RadioLegendProps) {
   return (
     <Fieldset.Legend
-      className={cn("text-base font-medium text-kumo-default", className)}
+      className={cn("text-base font-medium text-zenth-default", className)}
     >
       {children}
     </Fieldset.Legend>
@@ -567,31 +567,31 @@ function RadioGroup<Value = string>({
           )}
         >
           {legend && (
-            <Fieldset.Legend className="text-base font-medium text-kumo-default">
+            <Fieldset.Legend className="text-base font-medium text-zenth-default">
               {legend}
             </Fieldset.Legend>
           )}
           {composableLegends}
           <div
-            data-kumo-component="Radio"
-            data-kumo-part="items"
+            data-zenth-component="Radio"
+            data-zenth-part="items"
             className={cn(
               appearance === "segmented"
-                ? "inline-flex w-max flex-row flex-nowrap items-center self-start rounded-lg bg-kumo-control shadow-xs ring ring-kumo-line"
+                ? "inline-flex w-max flex-row flex-nowrap items-center self-start rounded-lg bg-zenth-control shadow-xs ring ring-zenth-line"
                 : orientation === "vertical"
                   ? appearance === "card"
-                    ? "flex flex-col overflow-hidden rounded-lg ring ring-kumo-line"
+                    ? "flex flex-col overflow-hidden rounded-lg ring ring-zenth-line"
                     : "flex flex-col gap-2"
                   : appearance === "card"
-                    ? "grid grid-cols-2 overflow-hidden rounded-lg bg-kumo-base ring ring-kumo-line"
+                    ? "grid grid-cols-2 overflow-hidden rounded-lg bg-zenth-base ring ring-zenth-line"
                     : "flex flex-row flex-wrap gap-2",
             )}
           >
             {itemChildren}
           </div>
-          {error && <p className="text-sm text-kumo-danger">{error}</p>}
+          {error && <p className="text-sm text-zenth-danger">{error}</p>}
           {description && (
-            <p className="text-sm leading-snug text-pretty text-kumo-subtle">
+            <p className="text-sm leading-snug text-pretty text-zenth-subtle">
               {description}
             </p>
           )}

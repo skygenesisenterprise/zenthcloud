@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Kumo Token Migration Tool
+ * ZenthCloud Token Migration Tool
  *
  * Complete migration workflow:
  * 1. Renames Tailwind classes in source files (bg-surface -> bg-kumo-base)
@@ -162,7 +162,7 @@ function rewriteConfig(renameMap: TokenRenameMap): string {
     ` *`,
     ` * Single source of truth for all semantic color tokens.`,
     ` * This config is used to generate:`,
-    ` * - theme-kumo.css (base theme)`,
+    ` * - theme-zenth.css (base theme)`,
     ` * - theme-fedramp.css (fedramp overrides)`,
     ` * - Any future theme files`,
     ` *`,
@@ -379,7 +379,7 @@ function parseArgs(
     "**/coverage/**",
     "**/.next/**",
     "**/.turbo/**",
-    "**/theme-kumo.css",
+    "**/theme-zenth.css",
     "**/theme-fedramp.css",
     "**/theme-generator/**",
     "**/component-registry.json",
@@ -400,7 +400,7 @@ function parseArgs(
 
 function printHelp(): void {
   console.log(`
-Kumo Token Migration Tool
+ZenthCloud Token Migration Tool
 
 Migrates Tailwind classes when token names change. This tool:
 1. Updates class names in source files (bg-surface -> bg-kumo-base)

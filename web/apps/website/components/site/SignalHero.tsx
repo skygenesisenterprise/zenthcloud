@@ -1,69 +1,47 @@
-import { ArrowRight } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@zenthcloud/react";
+import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
 import { Container } from "../Container";
 import { homeHero } from "@/lib/content/home";
 
 /**
- * Official hero visual — "Signal panel".
- *
- * Composition reference: a single saturated panel, a fine dot field, one
- * oversized centred headline and one pill action. The palette, wording and
- * artwork are ZenthCloud's; no reference logo, layout or asset is reproduced.
+ * Homepage hero: one saturated brand panel inset into the white stage, a fine
+ * dot field, an oversized centred headline and a single pill action. The panel
+ * edges line up with the column rules of the section directly below, which is
+ * what gives the page its single continuous stage.
  */
 export function SignalHero() {
 	return (
-		<section className="border-b border-border bg-ink">
-			<Container className="pb-6 pt-2 sm:pb-8">
-				<div className="relative overflow-hidden rounded-xl bg-brand text-brand-foreground">
-					<div className="signal-dots absolute inset-0" aria-hidden="true" />
+		<section className="bg-background">
+			<Container className="pt-1.5 sm:pt-2">
+				<div className="relative overflow-hidden rounded-2xl bg-brand text-brand-foreground">
 					<div
-						className="pointer-events-none absolute -bottom-40 left-1/2 h-72 w-[40rem] -translate-x-1/2 rounded-full bg-brand-foreground/15 blur-3xl"
+						className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_95%_85%_at_50%_45%,transparent_38%,rgba(0,0,0,0.32))]"
+						aria-hidden="true"
+					/>
+					<div className="signal-dots absolute inset-0 opacity-80" aria-hidden="true" />
+					<div
+						className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-[radial-gradient(ellipse_55%_100%_at_50%_100%,rgba(255,255,255,0.4),transparent_72%)]"
 						aria-hidden="true"
 					/>
 
-					<div className="relative mx-auto flex max-w-4xl flex-col items-center px-6 py-20 text-center sm:py-24 lg:py-28">
-						<p className="text-[11px] font-medium uppercase tracking-[0.2em] text-brand-foreground/70">
-							{homeHero.eyebrow}
-						</p>
-
-						<h1 className="mt-6 font-display text-4xl leading-[1.03] text-brand-foreground sm:text-5xl lg:text-6xl xl:text-7xl">
+					<div className="relative mx-auto flex min-h-[calc(75svh_-_5.25rem)] max-w-4xl flex-col items-center justify-center px-6 py-24 text-center sm:min-h-[calc(75svh_-_5.625rem)] lg:min-h-[calc(75svh_-_6rem)]">
+						<h1 className="max-w-4xl font-display text-4xl font-medium leading-[1.04] tracking-tight text-brand-foreground sm:text-5xl lg:text-6xl">
 							{homeHero.title}
 							<br className="hidden sm:block" />{" "}
 							<span className="text-balance">{homeHero.highlight}</span>
 						</h1>
 
-						<p className="mt-6 max-w-xl text-sm leading-relaxed text-brand-foreground/80 sm:text-base">
+						<p className="mt-6 max-w-lg text-sm leading-relaxed text-brand-foreground/85">
 							{homeHero.description}
 						</p>
 
-						<div className="mt-9 flex flex-col items-center gap-4">
-							<Link
-								href={homeHero.primaryCta.href}
-								className="inline-flex h-11 items-center gap-2 rounded-full bg-brand-foreground px-6 text-sm font-medium text-brand transition-colors hover:bg-brand-foreground/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-brand"
-							>
-								{homeHero.primaryCta.label}
-								<ArrowRight className="h-4 w-4" aria-hidden="true" />
-							</Link>
-							<p className="text-sm text-brand-foreground/70">
-								or{" "}
-								<Link
-									href={homeHero.secondaryCta.href}
-									className="text-brand-foreground underline decoration-brand-foreground/40 underline-offset-4 transition-colors hover:decoration-brand-foreground"
-								>
-									{homeHero.secondaryCta.label.toLowerCase()}
-								</Link>
-							</p>
-						</div>
-
-						<p className="mt-8 text-xs text-brand-foreground/55">
-							Already a customer?{" "}
-							<Link
-								href="/login"
-								className="text-brand-foreground/85 underline decoration-brand-foreground/30 underline-offset-4 hover:decoration-brand-foreground/70"
-							>
-								Sign in to the console
-							</Link>
-						</p>
+						<Link
+							href={homeHero.primaryCta.href}
+							className="mt-9 inline-flex h-11 items-center gap-2 rounded-full bg-brand-foreground px-6 text-sm font-medium text-ink no-underline shadow-sm transition-colors hover:bg-brand-foreground/90"
+						>
+							{homeHero.primaryCta.label}
+							<ArrowRight className="size-4" aria-hidden="true" />
+						</Link>
 					</div>
 				</div>
 			</Container>

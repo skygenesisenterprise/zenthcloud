@@ -5,6 +5,7 @@ import * as React from "react";
 type Theme = "light" | "dark";
 
 const STORAGE_KEY = "zenthcloud-theme";
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
 type ThemeContextValue = {
 	theme: Theme;
@@ -18,26 +19,32 @@ function applyTheme(theme: Theme) {
 	const root = document.documentElement;
 	root.classList.toggle("dark", theme === "dark");
 	root.dataset.theme = theme;
+	// The design system resolves its light-dark() tokens from these attributes
+	// and from the CSS color-scheme property. Setting all three keeps the
+	// library, Tailwind's dark variant and native controls in sync.
+	root.dataset.zenthTheme = "zenth";
+	root.dataset.zenthMode = theme;
+	root.dataset.mode = theme;
+	root.style.colorScheme = theme;
 }
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-	// The inline script in the root layout sets the class before paint.
-	const [theme, setThemeState] = React.useState<Theme>("light");
+/**
+ * The initial theme is resolved on the server from the `zenthcloud-theme`
+ * cookie, so the correct class is present in the first HTML response. No
+ * inline pre-paint script is needed.
+ */
+export function ThemeProvider({
+	children,
+	initialTheme = "light",
+}: {
+	children: React.ReactNode;
+	initialTheme?: Theme;
+}) {
+	const [theme, setThemeState] = React.useState<Theme>(initialTheme);
 
 	React.useEffect(() => {
-		const stored = window.localStorage.getItem(STORAGE_KEY);
-		const prefersDark = window.matchMedia(
-			"(prefers-color-scheme: dark)",
-		).matches;
-		const initial: Theme =
-			stored === "light" || stored === "dark"
-				? stored
-				: prefersDark
-					? "dark"
-					: "light";
-		setThemeState(initial);
-		applyTheme(initial);
-	}, []);
+		applyTheme(initialTheme);
+	}, [initialTheme]);
 
 	const setTheme = React.useCallback((next: Theme) => {
 		setThemeState(next);
@@ -47,6 +54,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 		} catch {
 			// Storage can be unavailable in private modes; the theme still applies.
 		}
+		document.cookie = `${STORAGE_KEY}=${next}; path=/; max-age=${COOKIE_MAX_AGE}; samesite=lax`;
 	}, []);
 
 	const toggle = React.useCallback(() => {
@@ -67,6 +75,3 @@ export function useTheme(): ThemeContextValue {
 	}
 	return context;
 }
-
-/** Runs before paint to avoid a flash of the wrong theme. */
-export const themeInitScript = `(function(){try{var t=localStorage.getItem("${STORAGE_KEY}");var d=t==="dark"||(t!=="light"&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.classList.toggle("dark",d);document.documentElement.dataset.theme=d?"dark":"light";}catch(e){}})();`;

@@ -14,7 +14,7 @@ function renderMenu(children: React.ReactNode) {
 }
 
 function part(name: string) {
-  const el = document.querySelector(`[data-kumo-part="${name}"]`);
+  const el = document.querySelector(`[data-zenth-part="${name}"]`);
   expect(el).toBeTruthy();
   return el as HTMLElement;
 }
@@ -44,13 +44,13 @@ describe("DropdownMenu", () => {
         "submenu-trigger",
       ]) {
         const classes = part(name).className.split(" ");
-        expect(classes, name).toContain("data-highlighted:bg-kumo-tint");
+        expect(classes, name).toContain("data-highlighted:bg-zenth-tint");
         expect(classes, name).toContain("rounded-md");
         expect(classes, name).toContain("gap-2");
         expect(
           classes.filter((c) => /^(focus:)?bg-|^data-highlighted:bg-/.test(c)),
           name,
-        ).toEqual(["data-highlighted:bg-kumo-tint"]);
+        ).toEqual(["data-highlighted:bg-zenth-tint"]);
       }
     });
 
@@ -59,8 +59,8 @@ describe("DropdownMenu", () => {
         <DropdownMenu.Item variant="danger">Delete</DropdownMenu.Item>,
       );
       const classes = part("item").className.split(" ");
-      expect(classes).toContain("data-highlighted:bg-kumo-danger/5");
-      expect(classes).not.toContain("data-highlighted:bg-kumo-tint");
+      expect(classes).toContain("data-highlighted:bg-zenth-danger/5");
+      expect(classes).not.toContain("data-highlighted:bg-zenth-tint");
     });
   });
 
@@ -82,7 +82,7 @@ describe("DropdownMenu", () => {
 
       const trigger = part("submenu-trigger");
       expect(trigger.hasAttribute("data-popup-open")).toBe(true);
-      expect(trigger.className).toContain("data-popup-open:bg-kumo-tint");
+      expect(trigger.className).toContain("data-popup-open:bg-zenth-tint");
       expect(trigger.className).not.toContain("data-[state=open]");
       expect(screen.getByText("Nested")).toBeTruthy();
     });
@@ -139,7 +139,7 @@ describe("DropdownMenu", () => {
           <DropdownMenu.LinkItem
             href="/x"
             icon={
-              <span data-testid="element-icon" className="text-kumo-danger" />
+              <span data-testid="element-icon" className="text-zenth-danger" />
             }
           >
             Element
@@ -161,7 +161,7 @@ describe("DropdownMenu", () => {
         expect(slot?.className).not.toContain("mr-2");
       }
       // Custom classes on element icons are preserved.
-      expect(elementIcon.className).toContain("text-kumo-danger");
+      expect(elementIcon.className).toContain("text-zenth-danger");
     });
   });
 
@@ -181,7 +181,7 @@ describe("DropdownMenu", () => {
       );
 
       const autoInset =
-        "group-has-[[data-kumo-part=icon]]/menu:not-has-[[data-kumo-part=icon]]:pl-8";
+        "group-has-[[data-zenth-part=icon]]/menu:not-has-[[data-zenth-part=icon]]:pl-8";
       expect(screen.getByRole("menu").className).toContain("group/menu");
       expect(screen.getByText("Actions").className).toContain(autoInset);
       for (const name of ["item", "submenu-trigger"]) {
@@ -189,12 +189,12 @@ describe("DropdownMenu", () => {
       }
 
       const copy = screen.getByRole("menuitem", { name: "Copy" });
-      const slot = copy.querySelector('[data-kumo-part="icon"]');
+      const slot = copy.querySelector('[data-zenth-part="icon"]');
       expect(slot?.querySelector("svg")).toBeTruthy();
       expect(
         screen
           .getByRole("menuitem", { name: "Move" })
-          .querySelector('[data-kumo-part="icon"]'),
+          .querySelector('[data-zenth-part="icon"]'),
       ).toBeNull();
     });
   });
@@ -234,7 +234,7 @@ describe("DropdownMenu", () => {
       const popup = screen.getByRole("menu");
       expect(popup.dataset.kumoPart).toBe("popup");
       expect(popup.className).toContain("custom-popup");
-      expect(popup.className).toContain("bg-kumo-control");
+      expect(popup.className).toContain("bg-zenth-control");
       expect(screen.getByRole("menuitem", { name: "Item" })).toBeTruthy();
     });
   });

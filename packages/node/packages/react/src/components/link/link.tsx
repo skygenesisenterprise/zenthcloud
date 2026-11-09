@@ -28,7 +28,7 @@ const ExternalIcon = (props: SVGProps<SVGSVGElement>) => (
     strokeLinecap="round"
     strokeLinejoin="round"
     aria-hidden="true"
-    className="link-external-icon"
+    className="zenth-link-external-icon"
     {...props}
   >
     <path d="M9 4H8.8C7.11984 4 6.27976 4 5.63803 4.32698C5.07354 4.6146 4.6146 5.07354 4.32698 5.63803C4 6.27976 4 7.11984 4 8.8V15.2C4 16.8802 4 17.7202 4.32698 18.362C4.6146 18.9265 5.07354 19.3854 5.63803 19.673C6.27976 20 7.11984 20 8.8 20H15.2C16.8802 20 17.7202 20 18.362 19.673C18.9265 19.3854 19.3854 18.9265 19.673 18.362C20 17.7202 20 16.8802 20 15.2V15" />
@@ -43,19 +43,19 @@ export const KUMO_LINK_VARIANTS = {
   variant: {
     inline: {
       classes:
-        // text-kumo-link provides defensive color that won't be overridden by global `a` styles
-        "text-kumo-link underline underline-offset-[0.15em] decoration-[0.0625em] link-current transition-colors",
+        // text-zenth-link provides defensive color that won't be overridden by global `a` styles
+        "text-zenth-link underline underline-offset-[0.15em] decoration-[0.0625em] zenth-link-current transition-colors",
       description: "Inline text link that flows with content",
     },
     current: {
       classes:
-        "text-current underline underline-offset-[0.15em] decoration-[0.0625em] link-current transition-colors",
+        "text-current underline underline-offset-[0.15em] decoration-[0.0625em] zenth-link-current transition-colors",
       description: "Link that inherits color from parent text",
     },
     plain: {
       classes:
-        // text-kumo-link provides defensive color that won't be overridden by global `a` styles
-        "text-kumo-link hover:text-kumo-link/70 transition-colors",
+        // text-zenth-link provides defensive color that won't be overridden by global `a` styles
+        "text-zenth-link hover:text-zenth-link/70 transition-colors",
       description: "Link without underline decoration",
     },
   },
@@ -182,10 +182,10 @@ const LinkBase = forwardRef<HTMLAnchorElement, LinkProps>(function Link(
   }
 
   const defaultProps = {
-    "data-kumo-component": "Link",
+    "data-zenth-component": "Link",
     className: cn(
       linkVariants({ variant }),
-      "group/link inline-flex items-center gap-[0.1875em] has-[>[data-kumo-component=Badge]]:rounded-full",
+      "group/link inline-flex items-center gap-[0.1875em] has-[>[data-zenth-component=Badge]]:rounded-full",
     ),
   } as useRender.ElementProps<"a">;
 

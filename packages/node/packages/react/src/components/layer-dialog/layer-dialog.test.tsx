@@ -51,7 +51,7 @@ describe("LayerDialog", () => {
     const separator = getByRole("separator");
     expect(separator.className).toContain("-mx-4");
     expect(separator.className).toContain("sm:-mx-4.5");
-    expect(separator.className).toContain("bg-kumo-hairline");
+    expect(separator.className).toContain("bg-zenth-hairline");
   });
 
   it("uses a larger constrained desktop width by default", () => {
@@ -171,14 +171,14 @@ describe("LayerDialog", () => {
     expect(getByRole("group", { name: "Save options" })).toBeDefined();
     const primary = getByRole("button", { name: "Save and deploy" });
     const menu = getByRole("button", { name: "Save options" });
-    expect(primary.className).toContain("bg-(--kumo-button-emphasis-bg)");
-    expect(menu.className).toContain("bg-(--kumo-button-emphasis-bg)");
+    expect(primary.className).toContain("bg-(--zenth-button-emphasis-bg)");
+    expect(menu.className).toContain("bg-(--zenth-button-emphasis-bg)");
     expect(
-      primary.style.getPropertyValue("--kumo-button-emphasis-gradient-end"),
-    ).toBe("var(--color-kumo-brand)");
+      primary.style.getPropertyValue("--zenth-button-emphasis-gradient-end"),
+    ).toBe("var(--color-zenth-brand)");
     expect(
-      menu.style.getPropertyValue("--kumo-button-emphasis-gradient-end"),
-    ).toBe("var(--color-kumo-brand)");
+      menu.style.getPropertyValue("--zenth-button-emphasis-gradient-end"),
+    ).toBe("var(--color-zenth-brand)");
   });
 
   it("uses Content's portal container for alternate action menus", async () => {
@@ -250,11 +250,11 @@ describe("LayerDialog", () => {
     const primary = getByRole("button", { name: "Delete deployment" });
     const menu = getByRole("button", { name: "More delete actions" });
     expect(
-      primary.style.getPropertyValue("--kumo-button-emphasis-gradient-end"),
-    ).toBe("var(--color-kumo-danger)");
+      primary.style.getPropertyValue("--zenth-button-emphasis-gradient-end"),
+    ).toBe("var(--color-zenth-danger)");
     expect(
-      menu.style.getPropertyValue("--kumo-button-emphasis-gradient-end"),
-    ).toBe("var(--color-kumo-danger)");
+      menu.style.getPropertyValue("--zenth-button-emphasis-gradient-end"),
+    ).toBe("var(--color-zenth-danger)");
   });
 
   it("uses the portal container from KumoPortalProvider", () => {
@@ -548,7 +548,7 @@ describe("LayerDialog.Body edge clipping", () => {
     const { viewport, cleanup } = renderBodyWithLeadingInput(true);
 
     expect(viewport.style.overflow).toBe("scroll");
-    expect(viewport.className).toMatch(/(^|\s)no-scrollbar(\s|$)/);
+    expect(viewport.className).toMatch(/(^|\s)zenth-no-scrollbar(\s|$)/);
 
     cleanup();
   });
@@ -750,7 +750,7 @@ describe("LayerDialog dismissal", () => {
   it("keeps the primary action neutral unless destructive is requested", () => {
     // Button variants share classes and differ by the inline emphasis token.
     const emphasisToken = (button: HTMLElement) =>
-      button.style.getPropertyValue("--kumo-button-emphasis-gradient-end");
+      button.style.getPropertyValue("--zenth-button-emphasis-gradient-end");
 
     const { getByRole, rerender } = render(
       <LayerDialog.Alert open>
@@ -764,7 +764,7 @@ describe("LayerDialog dismissal", () => {
       </LayerDialog.Alert>,
     );
     expect(emphasisToken(getByRole("button", { name: "Deploy" }))).toBe(
-      "var(--color-kumo-brand)",
+      "var(--color-zenth-brand)",
     );
 
     rerender(
@@ -781,7 +781,7 @@ describe("LayerDialog dismissal", () => {
       </LayerDialog.Alert>,
     );
     expect(emphasisToken(getByRole("button", { name: "Delete" }))).toBe(
-      "var(--color-kumo-danger)",
+      "var(--color-zenth-danger)",
     );
   });
 

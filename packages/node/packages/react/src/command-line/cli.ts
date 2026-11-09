@@ -33,7 +33,7 @@ COMPONENT REGISTRY:
 
 MIGRATION:
   kumo migrate         Export token rename map for codebase migration
-  kumo migrate --classes  Show class-level mappings (bg-kumo-base -> bg-kumo-base)
+  kumo migrate --classes  Show class-level mappings (bg-zenth-base -> bg-zenth-base)
   kumo migrate --help     Show migration help
 
 AI:

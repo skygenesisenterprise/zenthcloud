@@ -27,48 +27,48 @@ import {
 export const KUMO_TOAST_VARIANTS = {
   root: {
     classes:
-      "rounded-lg border border-kumo-fill bg-kumo-control p-4 shadow-lg text-kumo-default",
+      "rounded-lg border border-zenth-fill bg-zenth-control p-4 shadow-lg text-zenth-default",
     description: "Toast container with background, border, and shadow",
   },
   title: {
-    classes: "text-[0.975rem] leading-5 font-medium text-kumo-default",
+    classes: "text-[0.975rem] leading-5 font-medium text-zenth-default",
     description: "Toast title with primary text color",
   },
   description: {
-    classes: "text-[0.925rem] leading-5 text-kumo-subtle",
+    classes: "text-[0.925rem] leading-5 text-zenth-subtle",
     description: "Toast description with muted text color",
   },
   close: {
     classes:
-      "absolute top-2 right-2 size-5 rounded text-kumo-subtle hover:bg-current/15",
+      "absolute top-2 right-2 size-5 rounded text-zenth-subtle hover:bg-current/15",
     description: "Button-based close control with variant-aware hover tint",
   },
   variant: {
     default: {
-      classes: "border-kumo-fill bg-kumo-base",
+      classes: "border-zenth-fill bg-zenth-base",
       description: "Default toast style",
     },
     success: {
       classes:
-        "ring-[0.3px] ring-kumo-success bg-kumo-base [&_[data-toast-icon]]:text-kumo-success [&_[data-toast-title]]:text-kumo-success",
+        "ring-[0.3px] ring-zenth-success bg-zenth-base [&_[data-toast-icon]]:text-zenth-success [&_[data-toast-title]]:text-zenth-success",
       description: "Success toast for confirmations and positive outcomes",
       icon: CheckCircleIcon,
     },
     error: {
       classes:
-        "ring-[0.3px] ring-kumo-danger bg-kumo-base [&_[data-toast-icon]]:text-kumo-danger [&_[data-toast-title]]:text-kumo-danger",
+        "ring-[0.3px] ring-zenth-danger bg-zenth-base [&_[data-toast-icon]]:text-zenth-danger [&_[data-toast-title]]:text-zenth-danger",
       description: "Error toast for critical issues",
       icon: WarningOctagonIcon,
     },
     warning: {
       classes:
-        "ring-[0.3px] ring-kumo-warning bg-kumo-base [&_[data-toast-icon]]:text-kumo-warning [&_[data-toast-title]]:text-kumo-warning",
+        "ring-[0.3px] ring-zenth-warning bg-zenth-base [&_[data-toast-icon]]:text-zenth-warning [&_[data-toast-title]]:text-zenth-warning",
       description: "Warning toast for cautionary messages",
       icon: WarningIcon,
     },
     info: {
       classes:
-        "ring-[0.3px] ring-kumo-info bg-kumo-control [&_[data-toast-icon]]:text-kumo-info [&_[data-toast-title]]:text-kumo-info",
+        "ring-[0.3px] ring-zenth-info bg-zenth-control [&_[data-toast-icon]]:text-zenth-info [&_[data-toast-title]]:text-zenth-info",
       description: "Info toast for neutral informational messages",
       icon: InfoIcon,
     },
@@ -88,8 +88,8 @@ export const KUMO_TOAST_STYLING = {
     width: 300,
     padding: 16,
     borderRadius: 8,
-    background: "bg-kumo-base",
-    border: "ring-[0.3px] ring-kumo-hairline",
+    background: "bg-zenth-base",
+    border: "ring-[0.3px] ring-zenth-hairline",
     shadow: "shadow-lg",
     gap: 4,
   },
@@ -126,7 +126,7 @@ export function toastVariants({
 }: KumoToastVariantsProps = {}) {
   return cn(
     // Base styles for the toast surface
-    "rounded-xl ring ring-kumo-line bg-clip-padding p-4 shadow-lg",
+    "rounded-xl ring ring-zenth-line bg-clip-padding p-4 shadow-lg",
     // Apply variant styles from KUMO_TOAST_VARIANTS
     resolveVariant(
       KUMO_TOAST_VARIANTS.variant,
@@ -202,7 +202,7 @@ type KumoToastOptionsBase = {
 // Set by every `add()` and cleared by `update()` and promise results.
 // `ToastList` only bumps when this is set and `updateKey > 0`, because Base UI
 // increments `updateKey` for duplicate adds and explicit updates alike.
-const KUMO_TOAST_AUTO_BUMP = Symbol("kumo-toast-auto-bump");
+const KUMO_TOAST_AUTO_BUMP = Symbol("zenth-toast-auto-bump");
 
 type KumoToastInternalOptions = {
   [KUMO_TOAST_AUTO_BUMP]?: boolean;
@@ -380,7 +380,7 @@ function getBumpAnimation(toast: KumoToastOptions<any>) {
   // drop focus from a focused action or close button inside the toast.
   return (
     shouldBump &&
-    (updateKey % 2 === 0 ? "animate-toast-bump-alternate" : "animate-toast-bump")
+    (updateKey % 2 === 0 ? "zenth-animate-toast-bump-alternate" : "zenth-animate-toast-bump")
   );
 }
 
@@ -406,7 +406,7 @@ function ToastList() {
       )}
     >
       <div
-        data-kumo-part="surface"
+        data-zenth-part="surface"
         className={cn(
           "relative h-full w-full",
           toastVariants({ variant: toast.variant }),
@@ -422,9 +422,9 @@ function ToastList() {
                 <div className="flex flex-col gap-1 overflow-hidden">
                   <Toast.Title
                     data-toast-title
-                    className="text-[0.975rem] leading-5 font-medium text-kumo-default"
+                    className="text-[0.975rem] leading-5 font-medium text-zenth-default"
                   />
-                  <Toast.Description className="text-[0.925rem] leading-5 text-kumo-default/70" />
+                  <Toast.Description className="text-[0.925rem] leading-5 text-zenth-default/70" />
 
                   {!!toast.actions && (
                     <div className="mt-2 flex min-w-0 flex-nowrap gap-2 overflow-x-auto p-px">
@@ -438,7 +438,7 @@ function ToastList() {
             </>
           )}
           <Toast.Close
-            data-kumo-part="close"
+            data-zenth-part="close"
             aria-label="Close"
             render={
               <Button
@@ -447,7 +447,7 @@ function ToastList() {
                 shape="square"
                 aria-label="Close"
                 className={cn(
-                  "absolute top-2 right-2 size-5 rounded text-kumo-subtle hover:bg-current/15",
+                  "absolute top-2 right-2 size-5 rounded text-zenth-subtle hover:bg-current/15",
                   toast.variant && TOAST_CLOSE_CLASSES[toast.variant],
                 )}
                 icon={<XIcon className="h-3 w-3" />}
@@ -461,17 +461,17 @@ function ToastList() {
 }
 
 const TOAST_CLOSE_CLASSES: Record<string, string> = {
-  success: "text-kumo-success",
-  error: "text-kumo-danger",
-  warning: "text-kumo-warning",
-  info: "text-kumo-info",
+  success: "text-zenth-success",
+  error: "text-zenth-danger",
+  warning: "text-zenth-warning",
+  info: "text-zenth-info",
 };
 
 const TOAST_BACKGROUND_CLASSES: Record<string, string> = {
-  success: "bg-kumo-success-tint/20",
-  error: "bg-kumo-danger-tint/50",
-  warning: "bg-kumo-warning-tint/50",
-  info: "bg-kumo-info-tint/50",
+  success: "bg-zenth-success-tint/20",
+  error: "bg-zenth-danger-tint/50",
+  warning: "bg-zenth-warning-tint/50",
+  info: "bg-zenth-info-tint/50",
 };
 
 function ToastBackground({ variant }: { variant?: KumoToastVariant }) {
@@ -479,7 +479,7 @@ function ToastBackground({ variant }: { variant?: KumoToastVariant }) {
   return (
     <div
       className={cn(
-        "absolute inset-0 rounded-xl bg-kumo-base/90",
+        "absolute inset-0 rounded-xl bg-zenth-base/90",
         background,
       )}
     />

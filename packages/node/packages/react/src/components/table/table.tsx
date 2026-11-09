@@ -19,11 +19,11 @@ export const KUMO_TABLE_VARIANTS = {
   variant: {
     default: {
       classes:
-        "even:bg-kumo-elevated [--kumo-table-row-bg:var(--color-kumo-base)] even:[--kumo-table-row-bg:var(--color-kumo-elevated)]",
+        "even:bg-zenth-elevated [--zenth-table-row-bg:var(--color-zenth-base)] even:[--zenth-table-row-bg:var(--color-zenth-elevated)]",
       description: "Default row variant",
     },
     selected: {
-      classes: "bg-kumo-tint [--kumo-table-row-bg:var(--color-kumo-tint)]",
+      classes: "bg-zenth-tint [--zenth-table-row-bg:var(--color-zenth-tint)]",
       description: "Selected row variant",
     },
   },
@@ -52,7 +52,7 @@ export type KumoTableStickyColumn = keyof typeof KUMO_TABLE_VARIANTS.sticky;
  *   - `z-2` — sticky header cells (`<th>`) so they sit above sticky body cells
  *
  * Header cells use `:has()` to detect if they're in a compact header (which has
- * `bg-kumo-elevated`) and adjust both the background and gradient fade colors.
+ * `bg-zenth-elevated`) and adjust both the background and gradient fade colors.
  */
 const stickyColumnClasses = (
   side: KumoTableStickyColumn,
@@ -70,25 +70,25 @@ const stickyColumnClasses = (
     // Body cells match their row, including striped and selected backgrounds
     const fade =
       side === "right"
-        ? "before:bg-gradient-to-r before:from-transparent before:to-(--kumo-table-row-bg)"
-        : "before:bg-gradient-to-l before:from-transparent before:to-(--kumo-table-row-bg)";
+        ? "before:bg-gradient-to-r before:from-transparent before:to-(--zenth-table-row-bg)"
+        : "before:bg-gradient-to-l before:from-transparent before:to-(--zenth-table-row-bg)";
     return cn(
       base,
       z,
-      "bg-(--kumo-table-row-bg)",
+      "bg-(--zenth-table-row-bg)",
       fadeBase,
       fadePosition,
       fade,
     );
   }
 
-  // Header cells: use kumo-base by default, kumo-elevated when in compact header
+  // Header cells: use zenth-base by default, zenth-elevated when in compact header
   // The compact header applies a data attribute we can target with :has()
-  const bg = "bg-kumo-base group-data-[compact]/header:bg-kumo-elevated";
+  const bg = "bg-zenth-base group-data-[compact]/header:bg-zenth-elevated";
   const fade =
     side === "right"
-      ? "before:bg-gradient-to-r before:from-transparent before:to-kumo-base group-data-[compact]/header:before:to-kumo-elevated"
-      : "before:bg-gradient-to-l before:from-transparent before:to-kumo-base group-data-[compact]/header:before:to-kumo-elevated";
+      ? "before:bg-gradient-to-r before:from-transparent before:to-zenth-base group-data-[compact]/header:before:to-zenth-elevated"
+      : "before:bg-gradient-to-l before:from-transparent before:to-zenth-base group-data-[compact]/header:before:to-zenth-elevated";
 
   return cn(base, z, bg, fadeBase, fadePosition, fade);
 };
@@ -142,9 +142,9 @@ const TableRoot = forwardRef<
       KUMO_TABLE_DEFAULT_VARIANTS.layout,
     ).classes,
     "[&_td]:p-3", // Cell padding
-    "[&_th]:border-b [&_th]:border-kumo-fill [&_th]:p-3 [&_th]:text-base [&_th]:font-semibold", // Header styles
-    "[&_th]:bg-kumo-base", // Header background color
-    "text-left text-base text-kumo-default",
+    "[&_th]:border-b [&_th]:border-zenth-fill [&_th]:p-3 [&_th]:text-base [&_th]:font-semibold", // Header styles
+    "[&_th]:bg-zenth-base", // Header background color
+    "text-left text-base text-zenth-default",
     props.className,
   );
 
@@ -166,7 +166,7 @@ const TableHeader = forwardRef<
   const isCompact = variant === "compact";
   const className = cn(
     "group/header",
-    isCompact && "text-xs text-kumo-strong [&_th]:bg-kumo-elevated [&_th]:py-2",
+    isCompact && "text-xs text-zenth-strong [&_th]:bg-zenth-elevated [&_th]:py-2",
     sticky && "[&_th]:sticky [&_th]:top-0 [&_th]:z-1",
     props.className,
   );
@@ -267,11 +267,11 @@ const TableResizeHandle = forwardRef<
         "flex items-center justify-center", // Center the handle
         "cursor-col-resize touch-none select-none", // Prevent selection and touch events
         "absolute top-0 right-0", // Position the handle
-        "m-0 bg-kumo-base p-0", // Override the stratus button styles
-        "focus-visible:ring-2 focus-visible:ring-kumo-brand", // Consistent keyboard focus styling
+        "m-0 bg-zenth-base p-0", // Override the stratus button styles
+        "focus-visible:ring-2 focus-visible:ring-zenth-brand", // Consistent keyboard focus styling
       )}
     >
-      <span className="h-5 w-[2px] rounded bg-kumo-hairline" />
+      <span className="h-5 w-[2px] rounded bg-zenth-hairline" />
     </button>
   );
 });

@@ -231,7 +231,7 @@ describe("TimeseriesChart", () => {
       />,
     );
 
-    expect(container.querySelector(".text-kumo-subtle")).toBeNull();
+    expect(container.querySelector(".text-zenth-subtle")).toBeNull();
   });
 
   it("server-renders without browser globals", () => {
@@ -336,7 +336,7 @@ describe("TimeseriesChart", () => {
     expect(
       row.compareDocumentPosition(footer) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
-    expect(footer.className).toContain("text-kumo-subtle");
+    expect(footer.className).toContain("text-zenth-subtle");
 
     const mouseover = mockChart.on.mock.calls.find(
       (call) => call[0] === "mouseover",

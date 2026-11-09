@@ -25,7 +25,7 @@ export const Suffix = forwardRef<HTMLDivElement, InputGroupSuffixProps>(
         ref={ref}
         data-slot="input-group-suffix"
         className={cn(
-          "pointer-events-none flex min-w-0 grow items-center text-kumo-subtle select-none",
+          "pointer-events-none flex min-w-0 grow items-center text-zenth-subtle select-none",
           tokens.fontSize,
           tokens.suffixPad,
           className,

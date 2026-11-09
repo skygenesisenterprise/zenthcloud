@@ -878,7 +878,7 @@ describe("InputGroup", () => {
   describe("stratus backward compatibility", () => {
     it("supports legacy search bar pattern with Label", () => {
       render(
-        <InputGroup className="flex-1 bg-kumo-base">
+        <InputGroup className="flex-1 bg-zenth-base">
           <InputGroup.Label>
             <svg data-testid="search-icon" />
           </InputGroup.Label>
@@ -1266,7 +1266,7 @@ describe("InputGroup", () => {
       expect(group.className).toContain("overflow-visible");
       expect(group.className).toContain("ring-0");
       expect(group.className).not.toContain("overflow-hidden");
-      expect(group.className).not.toContain("focus-within:ring-kumo-focus/50");
+      expect(group.className).not.toContain("focus-within:ring-zenth-focus/50");
     });
 
     it("container mode gets shared focus ring classes", () => {
@@ -1280,7 +1280,7 @@ describe("InputGroup", () => {
         "[data-slot='input-group']",
       ) as HTMLElement;
       expect(group.className).toContain("overflow-hidden");
-      expect(group.className).toContain("focus-within:ring-kumo-focus/50");
+      expect(group.className).toContain("focus-within:ring-zenth-focus/50");
       expect(group.className).toContain("focus-within:ring-[1.5px]");
       expect(group.className).not.toContain("overflow-visible");
     });
@@ -1303,7 +1303,7 @@ describe("InputGroup", () => {
       expect(group.className).toContain("overflow-visible");
       expect(group.className).toContain("ring-0");
       expect(group.className).not.toContain("overflow-hidden");
-      expect(group.className).not.toContain("focus-within:ring-kumo-focus/50");
+      expect(group.className).not.toContain("focus-within:ring-zenth-focus/50");
     });
   });
 
@@ -1399,12 +1399,12 @@ describe("InputGroup", () => {
       expect(containerZone.className).toContain("overflow-hidden");
       // Clean 1px CSS border (no ring or shadow stacking)
       expect(containerZone.className).toContain("border");
-      expect(containerZone.className).toContain("border-kumo-line");
+      expect(containerZone.className).toContain("border-zenth-line");
       expect(containerZone.className).toContain("ring-0");
       expect(containerZone.className).toContain("shadow-none");
       // Focus swaps border color instead of adding a ring (no double-line effect)
       expect(containerZone.className).toContain(
-        "focus-within:border-kumo-focus/50",
+        "focus-within:border-zenth-focus/50",
       );
       expect(containerZone.className).not.toContain("focus-within:ring-1");
       // Double-border prevention with adjacent individual-mode buttons (negative margin preserves border for focus)

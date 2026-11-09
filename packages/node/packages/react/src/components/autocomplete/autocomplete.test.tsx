@@ -90,7 +90,7 @@ describe("Autocomplete", () => {
       renderAutocomplete({ error: "Country is required" });
 
       const input = screen.getByRole("combobox");
-      expect(input.className).toContain("ring-kumo-danger");
+      expect(input.className).toContain("ring-zenth-danger");
     });
 
     it("renders error message string with label", () => {

@@ -71,7 +71,7 @@ function LargeItem({
         className={cn("inline-flex min-w-42 flex-col gap-2 py-2", className)}
       >
         <div className="flex items-center gap-2">
-          <span className="inline-block size-2 rounded-full bg-kumo-fill" />
+          <span className="inline-block size-2 rounded-full bg-zenth-fill" />
           <SkeletonLine className="h-3 w-[8ch]" />
         </div>
         <SkeletonLine className="h-5 w-[5ch]" />
@@ -115,7 +115,7 @@ function LargeItem({
         </span>
         {unit && (
           <span
-            className={cn("text-xs leading-none text-kumo-subtle", {
+            className={cn("text-xs leading-none text-zenth-subtle", {
               "opacity-50": inactive,
             })}
           >
@@ -148,7 +148,7 @@ function SmallItem({
         aria-hidden="true"
         className={cn("inline-flex h-4 items-center gap-2", className)}
       >
-        <span className="inline-block size-2 rounded-full bg-kumo-fill" />
+        <span className="inline-block size-2 rounded-full bg-zenth-fill" />
         <SkeletonLine className="h-3 w-[5ch]" />
         <SkeletonLine className="h-3 w-[3ch]" />
       </div>

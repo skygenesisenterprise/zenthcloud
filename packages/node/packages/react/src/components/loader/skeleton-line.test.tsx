@@ -6,7 +6,7 @@ describe("SkeletonLine", () => {
   it("renders the default skeleton-line by default", () => {
     const { container } = render(<SkeletonLine />);
     const line = container.firstElementChild as HTMLElement;
-    expect(line.classList.contains("skeleton-line")).toBe(true);
+    expect(line.classList.contains("zenth-skeleton-line")).toBe(true);
     expect(line.children).toHaveLength(0);
   });
 
@@ -16,12 +16,12 @@ describe("SkeletonLine", () => {
     );
     const line = container.firstElementChild as HTMLElement;
     expect(line.dataset.variant).toBe("sketch");
-    expect(line.classList.contains("skeleton-line")).toBe(false);
+    expect(line.classList.contains("zenth-skeleton-line")).toBe(false);
     expect(line.style.getPropertyValue("--skeleton-width")).toBe("40%");
     // Fill (with shimmer), four edge strokes, outline.
     expect(line.children).toHaveLength(6);
-    expect(line.querySelector(".bg-kumo-recessed")).not.toBeNull();
-    expect(line.querySelector(".border-kumo-interact")).not.toBeNull();
+    expect(line.querySelector(".bg-zenth-recessed")).not.toBeNull();
+    expect(line.querySelector(".border-zenth-interact")).not.toBeNull();
   });
 
   it("lets className override the sketch line's height", () => {

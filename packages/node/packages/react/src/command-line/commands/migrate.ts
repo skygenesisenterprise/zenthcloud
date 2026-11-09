@@ -86,7 +86,7 @@ USAGE:
 
 OPTIONS:
   --json         Output machine-readable JSON (default)
-  --classes      Output as class-level mapping (bg-kumo-base -> bg-kumo-base)
+  --classes      Output as class-level mapping (bg-zenth-base -> bg-zenth-base)
   --to-old       Reverse mapping (new names -> old names)
   --help         Show this help message
 
