@@ -1,0 +1,3625 @@
+use std::panic::catch_unwind;
+use std::panic::AssertUnwindSafe;
+
+use assert_matches::assert_matches;
+use rstest::rstest;
+
+use crate::buf_factory::BufFactory;
+use crate::http3::driver::client::ClientHooks;
+use crate::http3::driver::server::ServerHooks;
+
+use super::test_utils::*;
+use super::*;
+
+#[rstest]
+#[case::data(Some(OutboundFrame::Body(Bytes::from_static(b"new"), false)))]
+#[case::closed(None)]
+fn downstream_readiness_does_not_overwrite_queued_frame(
+    #[case] data: Option<OutboundFrame>,
+) {
+    let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+    let (mut ctx, outbound, _inbound) =
+        StreamCtx::new(0, 1, helper.driver.ready_stream_sender.clone());
+    if let Some(data) = data {
+        outbound.get_ref().unwrap().try_send(data).unwrap();
+    } else {
+        drop(outbound);
+    }
+    ctx.queued_frame =
+        Some(OutboundFrame::Body(Bytes::from_static(b"queued"), false));
+    // Deliberately violate the invariant: receiving channel readiness must
+    // fail rather than replacing output already blocked on the transport.
+    ctx.wait_for_recv();
+    helper.driver.insert_stream(0, ctx);
+
+    let result = catch_unwind(AssertUnwindSafe(|| {
+        helper.driver.upstream_ready(&mut helper.pipe.server, 0)
+    }));
+    if cfg!(debug_assertions) {
+        let panic = result.expect_err("queued output must trigger the assertion");
+        let message = panic
+            .downcast_ref::<String>()
+            .map(String::as_str)
+            .or_else(|| panic.downcast_ref::<&str>().copied())
+            .expect("the assertion must have a string panic message");
+        assert!(message.contains("queued outbound frame"), "{message}");
+    } else {
+        assert_matches!(
+            result,
+            Ok(Err(H3ConnectionError::H3(h3::Error::InternalError)))
+        );
+    }
+    // Verify retained output after either the debug panic or the runtime error.
+    let ctx = helper.driver.stream_map.get(&0).unwrap();
+    assert_matches!(
+        &ctx.queued_frame,
+        Some(OutboundFrame::Body(data, false)) if data.as_ref() == b"queued"
+    );
+}
+
+#[test]
+fn fin_completion_requires_open_send_direction() {
+    let (ready_tx, _ready_rx) = ReadyStreams::new();
+    let (mut ctx, _outbound, _inbound) = StreamCtx::new(0, 1, ready_tx);
+    H3Driver::<ServerHooks>::on_fin_sent(&mut ctx).unwrap();
+    assert_eq!(ctx.send_state, SendState::Closed);
+    assert!(ctx.recv.is_none());
+    assert_eq!(
+        ctx.audit_stats.sent_stream_fin(),
+        StreamClosureKind::Explicit
+    );
+
+    // Only the repeated transition may panic; the first call must succeed.
+    let result = catch_unwind(AssertUnwindSafe(|| {
+        H3Driver::<ServerHooks>::on_fin_sent(&mut ctx)
+    }));
+    if cfg!(debug_assertions) {
+        let panic = result.expect_err("repeated FIN completion must assert");
+        let message = panic
+            .downcast_ref::<String>()
+            .map(String::as_str)
+            .or_else(|| panic.downcast_ref::<&str>().copied())
+            .expect("the assertion must have a string panic message");
+        assert!(
+            message.contains("requires an open send direction"),
+            "{message}"
+        );
+    } else {
+        assert_matches!(result, Ok(Err(h3::Error::InternalError)));
+    }
+}
+
+/// Tests for the body receive buffer sizing helper.
+mod body_recv_buf_size {
+    use super::*;
+
+    const MAX: usize = BufFactory::MAX_BUF_SIZE;
+
+    #[test]
+    fn zero_readable_uses_floor() {
+        // Never build a zero-capacity buffer.
+        assert_eq!(body_recv_buf_size(0, MAX), MIN_BODY_RECV_BUF_SIZE);
+    }
+
+    #[test]
+    fn small_readable_uses_floor() {
+        // A read below the floor is raised to the floor so a trickle of tiny
+        // reads reuses one allocation instead of reallocating each time.
+        assert_eq!(body_recv_buf_size(10, MAX), MIN_BODY_RECV_BUF_SIZE);
+        assert_eq!(
+            body_recv_buf_size(MIN_BODY_RECV_BUF_SIZE, MAX),
+            MIN_BODY_RECV_BUF_SIZE
+        );
+    }
+
+    #[test]
+    fn readable_above_floor_tracks_size() {
+        // Between the floor and the cap the buffer tracks the readable length.
+        let readable = MIN_BODY_RECV_BUF_SIZE + 500;
+        assert_eq!(body_recv_buf_size(readable, MAX), readable);
+    }
+
+    #[test]
+    fn large_readable_caps_at_max() {
+        assert_eq!(body_recv_buf_size(MAX, MAX), MAX);
+        // Readable beyond the configured max is capped.
+        assert_eq!(body_recv_buf_size(MAX + 1, MAX), MAX);
+        assert_eq!(body_recv_buf_size(10 * MAX, MAX), MAX);
+    }
+
+    #[test]
+    fn respects_configured_max() {
+        // A configured cap above the floor bounds the buffer below
+        // MAX_BUF_SIZE.
+        let cap = MIN_BODY_RECV_BUF_SIZE * 4;
+        assert_eq!(body_recv_buf_size(MAX, cap), cap);
+        assert_eq!(body_recv_buf_size(cap / 2, cap), cap / 2);
+        // A larger configured cap allows the buffer to grow past
+        // MAX_BUF_SIZE.
+        assert_eq!(body_recv_buf_size(2 * MAX, 4 * MAX), 2 * MAX);
+    }
+
+    #[test]
+    fn cap_below_floor_wins() {
+        // The cap is the hard upper bound: when it is smaller than the floor,
+        // the floor yields to it and `clamp` never sees an inverted range.
+        let cap = MIN_BODY_RECV_BUF_SIZE / 2;
+        assert_eq!(body_recv_buf_size(0, cap), cap);
+        assert_eq!(body_recv_buf_size(10, cap), cap);
+        assert_eq!(body_recv_buf_size(MAX, cap), cap);
+    }
+
+    #[test]
+    fn default_cap_is_16kib() {
+        assert_eq!(DEFAULT_MAX_BODY_RECV_BUF_SIZE, 16 * 1024);
+        // A body larger than the default is capped at 16 KiB.
+        assert_eq!(
+            body_recv_buf_size(MAX, DEFAULT_MAX_BODY_RECV_BUF_SIZE),
+            DEFAULT_MAX_BODY_RECV_BUF_SIZE
+        );
+    }
+}
+
+/// `Some(0)` is normalized to the default (it would make `recv_body_buf` a
+/// no-op); non-zero overrides are kept as-is.
+#[test]
+fn zero_configured_max_recv_body_buf_size_falls_back_to_default() {
+    let settings_max = |max: Option<usize>| {
+        let (driver, _controller) = H3Driver::<ClientHooks>::new(Http3Settings {
+            max_recv_body_buf_size: max,
+            ..Default::default()
+        });
+        driver.max_recv_body_buf_size
+    };
+
+    // `Some(0)` and unset both fall back to the default.
+    assert_eq!(settings_max(Some(0)), DEFAULT_MAX_BODY_RECV_BUF_SIZE);
+    assert_eq!(settings_max(None), DEFAULT_MAX_BODY_RECV_BUF_SIZE);
+    // A non-zero override is kept as-is, even below the sizing floor.
+    assert_eq!(
+        settings_max(Some(MIN_BODY_RECV_BUF_SIZE / 2)),
+        MIN_BODY_RECV_BUF_SIZE / 2
+    );
+    assert_eq!(
+        settings_max(Some(BufFactory::MAX_BUF_SIZE)),
+        BufFactory::MAX_BUF_SIZE
+    );
+}
+
+/// Tests for connection close error metrics recorded by
+/// [`H3Driver::on_conn_close`].
+mod conn_close_metrics {
+    use crate::ApplicationOverQuic as _;
+
+    use super::*;
+
+    /// Peer sends a QUIC-level CONNECTION_CLOSE and the work loop
+    /// completes with Ok. Verifies the peer QUIC error counter is
+    /// incremented.
+    #[test]
+    fn peer_quic_error_on_ok_result() {
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+
+        // Peer (client) closes with a QUIC-level error
+        helper
+            .pipe
+            .client
+            .close(false, 0x1, b"internal error")
+            .unwrap();
+        helper.pipe.advance().unwrap();
+
+        let metrics = TestMetrics::default();
+        helper
+            .driver
+            .on_conn_close(&mut helper.pipe.server, &metrics, &Ok(()));
+
+        assert_eq!(metrics.peer_quic.get(), 1);
+        assert_eq!(metrics.peer_h3.get(), 0);
+        assert_eq!(metrics.local_quic.get(), 0);
+        assert_eq!(metrics.local_h3.get(), 0);
+    }
+
+    /// Peer sends an APPLICATION_CLOSE (H3-level) and the work loop
+    /// completes with Ok. Verifies the peer H3 error counter is
+    /// incremented.
+    #[test]
+    fn peer_h3_error_on_ok_result() {
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+
+        // Peer (client) closes with an H3-level error (is_app = true)
+        helper.pipe.client.close(true, 0x100, b"no error").unwrap();
+        helper.pipe.advance().unwrap();
+
+        let metrics = TestMetrics::default();
+        helper
+            .driver
+            .on_conn_close(&mut helper.pipe.server, &metrics, &Ok(()));
+
+        assert_eq!(metrics.peer_h3.get(), 1);
+        assert_eq!(metrics.peer_quic.get(), 0);
+        assert_eq!(metrics.local_quic.get(), 0);
+        assert_eq!(metrics.local_h3.get(), 0);
+    }
+
+    /// Work loop returns an error and the local side has a QUIC-level
+    /// error set. Verifies the local QUIC error counter is incremented.
+    #[test]
+    fn local_quic_error_on_err_result() {
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+
+        // Local side (server) closes with a QUIC-level error
+        helper
+            .pipe
+            .server
+            .close(false, 0x1, b"internal error")
+            .unwrap();
+
+        let err: crate::QuicResult<()> =
+            Err(H3ConnectionError::PostAcceptTimeout.into());
+        let metrics = TestMetrics::default();
+        helper
+            .driver
+            .on_conn_close(&mut helper.pipe.server, &metrics, &err);
+
+        assert_eq!(metrics.local_quic.get(), 1);
+        assert_eq!(metrics.local_h3.get(), 0);
+        assert_eq!(metrics.peer_quic.get(), 0);
+        assert_eq!(metrics.peer_h3.get(), 0);
+    }
+}
+
+/// Tests that use an H3Driver for the client side. We mostly focus on testing
+/// the driver's handling of stream state, and data, rather than H3 semantics.
+/// Note that most of these tests could have just as easily been written for
+/// the server side.
+mod client_side_driver {
+    use super::*;
+
+    #[derive(Clone, Copy)]
+    enum PeerTermination {
+        Fin,
+        Reset,
+    }
+
+    #[rstest]
+    #[case::fin(PeerTermination::Fin)]
+    #[case::reset(PeerTermination::Reset)]
+    fn termination_before_response_with_open_body_removes_pending_request(
+        #[case] termination: PeerTermination,
+    ) {
+        let mut helper = DriverTestHelper::<ClientHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        let (body_writer_tx, mut body_writer_rx) =
+            tokio::sync::oneshot::channel();
+        helper.driver_enqueue_request(
+            1,
+            make_request_headers("GET"),
+            Some(body_writer_tx),
+        );
+        assert_eq!(helper.process_commands().unwrap(), 1);
+        let stream_id = assert_matches!(
+            helper.driver_recv_client_event().unwrap(),
+            ClientH3Event::NewOutboundRequest {
+                stream_id,
+                request_id: 1,
+            } => stream_id
+        );
+        let body_writer = body_writer_rx.try_recv().unwrap();
+        assert_eq!(helper.driver.hooks.pending_request_count(), 1);
+
+        helper.advance_and_run_loop().unwrap();
+        assert_matches!(
+            helper.peer_server_poll().unwrap(),
+            (id, h3::Event::Headers { .. }) if id == stream_id
+        );
+        match termination {
+            PeerTermination::Fin => {
+                helper
+                    .pipe
+                    .server
+                    .stream_send(stream_id, &[], true)
+                    .unwrap();
+                helper.advance_and_run_loop().unwrap();
+                assert_matches!(
+                    helper.driver_recv_core_event(),
+                    Ok(H3Event::BodyBytesReceived {
+                        stream_id: id,
+                        num_bytes: 0,
+                        fin: true,
+                    }) if id == stream_id
+                );
+            },
+            PeerTermination::Reset => {
+                helper
+                    .pipe
+                    .server
+                    .stream_shutdown(stream_id, quiche::Shutdown::Write, 4242)
+                    .unwrap();
+                helper.advance_and_run_loop().unwrap();
+                assert_matches!(
+                    helper.driver_recv_core_event(),
+                    Ok(H3Event::ResetStream { stream_id: id })
+                        if id == stream_id
+                );
+            },
+        }
+        assert_eq!(helper.driver.hooks.pending_request_count(), 0);
+        assert!(helper.driver.stream_map.contains_key(&stream_id));
+
+        drop(body_writer);
+        helper.advance_and_run_loop().unwrap();
+        assert!(!helper.driver.stream_map.contains_key(&stream_id));
+    }
+
+    #[test]
+    fn client_fin_before_server_body() {
+        let mut helper = DriverTestHelper::<ClientHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // client sends a request
+        let stream_id = helper
+            .driver_send_request(make_request_headers("GET"), false)
+            .unwrap();
+
+        // servers reads request and sends response headers
+        helper.advance_and_run_loop().unwrap();
+        assert_matches!(
+            helper.peer_server_poll().unwrap(),
+            (0, h3::Event::Headers { .. })
+        );
+        helper.peer_server_send_response(0, false).unwrap();
+
+        helper.advance_and_run_loop().unwrap();
+
+        // Client receives response headers
+        let resp = assert_matches!(
+            helper.driver_recv_core_event().unwrap(),
+            H3Event::IncomingHeaders(headers) => { headers }
+        );
+        assert_eq!(resp.stream_id, stream_id);
+        assert!(!resp.read_fin);
+        let to_server = resp.send.get_ref().unwrap().clone();
+        let mut from_server = resp.recv;
+        // client sends body
+        to_server
+            .try_send(OutboundFrame::Body(Bytes::copy_from_slice(&[1; 5]), false))
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // The server receives the client body.
+        assert_eq!(helper.peer_server_poll(), Ok((0, h3::Event::Data)));
+        assert_eq!(helper.peer_server_poll(), Err(h3::Error::Done));
+        assert_eq!(helper.peer_server_recv_body_vec(0, 1024), Ok(vec![1; 5]));
+
+        // The client sends FIN. The server sends a body and FIN.
+        to_server
+            .try_send(OutboundFrame::Body(Default::default(), true))
+            .unwrap();
+        helper.peer_server_send_body(0, &[2; 10], true).unwrap();
+
+        // The server reads FIN.
+        helper.advance_and_run_loop().unwrap();
+        // TODO: The server sees `h3::Event::Data`, but it contains an empty
+        // buffer. Ideally, it wouldn't do that.
+        assert_eq!(helper.peer_server_poll(), Ok((0, h3::Event::Data)));
+        // No data remains to be read.
+        assert_eq!(
+            helper.peer_server_recv_body_vec(0, 1024),
+            Err(h3::Error::Done)
+        );
+        assert_eq!(helper.peer_server_poll(), Ok((0, h3::Event::Finished)));
+        assert_eq!(helper.peer_server_poll(), Err(h3::Error::Done));
+        helper.advance_and_run_loop().unwrap();
+
+        // The client receives the server body.
+        assert_matches!(from_server.try_recv(), Ok(InboundFrame::Body(buf, fin)) => {
+            assert_eq!(buf.to_vec(), vec![2; 10]);
+            // TODO: It would be useful to receive FIN here, but `quiche::h3`
+            // requires another receive call on the channel.
+            assert!(!fin);
+        });
+        helper.work_loop_iter().unwrap();
+
+        // The peer FIN must be forwarded after capacity becomes available,
+        // even though our write direction has already finished.
+        assert_matches!(
+            from_server.try_recv(),
+            Ok(InboundFrame::Body(buf, true)) if buf.is_empty()
+        );
+        assert_matches!(from_server.try_recv(), Err(TryRecvError::Disconnected));
+        assert_eq!(helper.driver.stream_map.len(), 0);
+    }
+
+    #[test]
+    fn client_body_recv_buf() {
+        let mut helper = DriverTestHelper::<ClientHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // The client sends a request with FIN.
+        let stream_id = helper
+            .driver_send_request(make_request_headers("GET"), true)
+            .unwrap();
+
+        // The server reads the request and sends response headers.
+        helper.advance_and_run_loop().unwrap();
+        assert_matches!(
+            helper.peer_server_poll().unwrap(),
+            (0, h3::Event::Headers { .. })
+        );
+        helper.peer_server_send_response(0, false).unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // The client receives response headers.
+        let resp = assert_matches!(
+            helper.driver_recv_core_event().unwrap(),
+            H3Event::IncomingHeaders(headers) => { headers }
+        );
+        assert_eq!(resp.stream_id, stream_id);
+        assert!(!resp.read_fin);
+        let mut from_server = resp.recv;
+
+        // Set the buffer size.
+        helper.driver_set_body_buf_size(30);
+        // The server sends an initial 10-byte body.
+        helper.peer_server_send_body(0, &[2; 10], false).unwrap();
+        helper.advance_and_run_loop().unwrap();
+        // The client receives the server body.
+        assert_eq!(helper.driver_try_recv_body(&mut from_server).0, vec![2; 10]);
+        // Receive another ten bytes.
+        helper.peer_server_send_body(0, &[3; 10], false).unwrap();
+        helper.advance_and_run_loop().unwrap();
+        assert_eq!(helper.driver_try_recv_body(&mut from_server).0, vec![3; 10]);
+        // Receive another ten bytes using the initial buffer.
+        helper.peer_server_send_body(0, &[4; 10], false).unwrap();
+        helper.advance_and_run_loop().unwrap();
+        assert_eq!(helper.driver_try_recv_body(&mut from_server).0, vec![4; 10]);
+        // Receive another ten bytes using a new buffer transparently.
+        helper.peer_server_send_body(0, &[5; 10], true).unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        let (body, fin, _) = helper.driver_try_recv_body(&mut from_server);
+        assert_eq!(body, vec![5; 10]);
+        // The client receives the server FIN.
+        assert!(fin);
+        // The client should clean up the stream after both directions close.
+        assert_eq!(helper.driver.stream_map.len(), 0);
+    }
+
+    /// An idle connection (and a request/response that exchanges only
+    /// headers) must never allocate the body receive buffer.
+    #[test]
+    fn client_body_recv_buf_not_allocated_when_idle() {
+        let mut helper = DriverTestHelper::<ClientHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // Idle: never received body bytes, so the buffer is not allocated.
+        assert!(helper.driver.body_recv_buf.is_none());
+
+        // Client sends a headers-only request (fin, no request body).
+        let stream_id = helper
+            .driver_send_request(make_request_headers("GET"), true)
+            .unwrap();
+
+        // Server reads the request and sends a headers-only response: `fin =
+        // true` finishes the stream on its headers, so no body follows.
+        helper.advance_and_run_loop().unwrap();
+        assert_matches!(
+            helper.peer_server_poll().unwrap(),
+            (0, h3::Event::Headers { .. })
+        );
+        helper.peer_server_send_response(0, true).unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // Client receives the response headers; `read_fin` confirms the
+        // response carried no body.
+        let resp = assert_matches!(
+            helper.driver_recv_core_event().unwrap(),
+            H3Event::IncomingHeaders(headers) => { headers }
+        );
+        assert_eq!(resp.stream_id, stream_id);
+        assert!(resp.read_fin);
+
+        // Only headers were exchanged, so the body receive buffer is still
+        // not allocated.
+        assert!(helper.driver.body_recv_buf.is_none());
+    }
+
+    /// The body receive buffer is lazily allocated on the first body read
+    /// and released once the last stream is cleaned up.
+    #[test]
+    fn client_body_recv_buf_allocated_on_body_and_released_on_close() {
+        let mut helper = DriverTestHelper::<ClientHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        let stream_id = helper
+            .driver_send_request(make_request_headers("GET"), true)
+            .unwrap();
+
+        helper.advance_and_run_loop().unwrap();
+        assert_matches!(
+            helper.peer_server_poll().unwrap(),
+            (0, h3::Event::Headers { .. })
+        );
+        helper.peer_server_send_response(0, false).unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        let resp = assert_matches!(
+            helper.driver_recv_core_event().unwrap(),
+            H3Event::IncomingHeaders(headers) => { headers }
+        );
+        assert_eq!(resp.stream_id, stream_id);
+        let mut from_server = resp.recv;
+
+        // No body yet: the buffer is still unallocated.
+        assert!(helper.driver.body_recv_buf.is_none());
+
+        // Server sends a body chunk (not fin).
+        helper.peer_server_send_body(0, &[7; 10], false).unwrap();
+        helper.advance_and_run_loop().unwrap();
+        assert_eq!(helper.driver_try_recv_body(&mut from_server).0, vec![7; 10]);
+
+        // The body read lazily allocated the buffer at the floor
+        // (`MIN_BODY_RECV_BUF_SIZE`) rather than a fixed 64 KiB, because the
+        // readable length was below the floor. The buffer therefore tracks the
+        // floor -- far below the 64 KiB a fixed allocation would use.
+        assert!(helper.driver.body_recv_buf.is_some());
+        let cap = helper
+            .driver
+            .body_recv_buf
+            .as_ref()
+            .unwrap()
+            .get_ref()
+            .capacity();
+        assert!(
+            cap <= MIN_BODY_RECV_BUF_SIZE,
+            "body buffer should track the floor, not a fixed 64 KiB; cap = {cap}"
+        );
+
+        // Server finishes the stream.
+        helper.peer_server_send_body(0, &[8; 10], true).unwrap();
+        helper.advance_and_run_loop().unwrap();
+        let (body, fin, _) = helper.driver_try_recv_body(&mut from_server);
+        assert_eq!(body, vec![8; 10]);
+        assert!(fin);
+
+        // Stream cleaned up on both-directions-close, buffer released.
+        assert_eq!(helper.driver.stream_map.len(), 0);
+        assert!(helper.driver.body_recv_buf.is_none());
+    }
+
+    /// A body larger than the receive buffer exercises the reallocation
+    /// branch; the buffer stays allocated across reallocations and is
+    /// released once the stream closes.
+    #[test]
+    fn client_body_recv_buf_reallocates_and_releases() {
+        let mut helper = DriverTestHelper::<ClientHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        let stream_id = helper
+            .driver_send_request(make_request_headers("GET"), true)
+            .unwrap();
+
+        helper.advance_and_run_loop().unwrap();
+        assert_matches!(
+            helper.peer_server_poll().unwrap(),
+            (0, h3::Event::Headers { .. })
+        );
+        helper.peer_server_send_response(0, false).unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        let resp = assert_matches!(
+            helper.driver_recv_core_event().unwrap(),
+            H3Event::IncomingHeaders(headers) => { headers }
+        );
+        assert_eq!(resp.stream_id, stream_id);
+        let mut from_server = resp.recv;
+
+        // Force a small receive buffer so it is smaller than the size we want
+        // for each read, exercising the reallocation branch
+        // (`*body_recv_buf = ...`).
+        helper.driver_set_body_buf_size(20);
+
+        // Send 40 bytes across four chunks, reallocating on the way.
+        helper.peer_server_send_body(0, &[1; 10], false).unwrap();
+        helper.advance_and_run_loop().unwrap();
+        assert_eq!(helper.driver_try_recv_body(&mut from_server).0, vec![1; 10]);
+        helper.peer_server_send_body(0, &[2; 10], false).unwrap();
+        helper.advance_and_run_loop().unwrap();
+        assert_eq!(helper.driver_try_recv_body(&mut from_server).0, vec![2; 10]);
+        helper.peer_server_send_body(0, &[3; 10], false).unwrap();
+        helper.advance_and_run_loop().unwrap();
+        assert_eq!(helper.driver_try_recv_body(&mut from_server).0, vec![3; 10]);
+        // Buffer remains allocated across reallocation.
+        assert!(helper.driver.body_recv_buf.is_some());
+
+        // Final chunk with fin.
+        helper.peer_server_send_body(0, &[4; 10], true).unwrap();
+        helper.advance_and_run_loop().unwrap();
+        let (body, fin, _) = helper.driver_try_recv_body(&mut from_server);
+        assert_eq!(body, vec![4; 10]);
+        assert!(fin);
+
+        // Stream cleaned up, buffer released.
+        assert_eq!(helper.driver.stream_map.len(), 0);
+        assert!(helper.driver.body_recv_buf.is_none());
+    }
+
+    /// An exhausted receive buffer is released while its stream remains
+    /// active, then allocated again for subsequent body data.
+    #[test]
+    fn client_body_recv_buf_releases_when_exhausted() {
+        // Permit one full floor-sized body in a single H3 DATA frame.
+        let mut config = default_quiche_config();
+        let max_data = 2 * MIN_BODY_RECV_BUF_SIZE as u64;
+        config.set_initial_max_data(max_data);
+        config.set_initial_max_stream_data_bidi_local(max_data);
+        config.set_initial_max_stream_data_bidi_remote(max_data);
+        config.set_initial_max_stream_data_uni(max_data);
+        let mut helper = DriverTestHelper::<ClientHooks>::with_pipe(
+            quiche::test_utils::Pipe::with_config_and_buf(&mut config).unwrap(),
+        )
+        .unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        let stream_id = helper
+            .driver_send_request(make_request_headers("GET"), true)
+            .unwrap();
+
+        helper.advance_and_run_loop().unwrap();
+        assert_matches!(
+            helper.peer_server_poll().unwrap(),
+            (0, h3::Event::Headers { .. })
+        );
+        helper.peer_server_send_response(0, false).unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        let resp = assert_matches!(
+            helper.driver_recv_core_event().unwrap(),
+            H3Event::IncomingHeaders(headers) => { headers }
+        );
+        assert_eq!(resp.stream_id, stream_id);
+        let mut from_server = resp.recv;
+
+        let full_body = vec![1; MIN_BODY_RECV_BUF_SIZE];
+        assert_eq!(
+            helper.peer_server_send_body(0, &full_body, false),
+            Ok(full_body.len())
+        );
+        helper.advance_and_run_loop().unwrap();
+        assert_eq!(helper.driver_try_recv_body(&mut from_server).0, full_body);
+        assert_eq!(helper.driver.stream_map.len(), 1);
+        assert!(helper.driver.body_recv_buf.is_none());
+
+        // The next body chunk allocates a fresh buffer.
+        helper.peer_server_send_body(0, &[2; 10], false).unwrap();
+        helper.advance_and_run_loop().unwrap();
+        assert_eq!(helper.driver_try_recv_body(&mut from_server).0, vec![2; 10]);
+        assert!(helper.driver.body_recv_buf.is_some());
+
+        helper.peer_server_send_body(0, &[3; 10], true).unwrap();
+        helper.advance_and_run_loop().unwrap();
+        let (body, fin, _) = helper.driver_try_recv_body(&mut from_server);
+        assert_eq!(body, vec![3; 10]);
+        assert!(fin);
+        assert_eq!(helper.driver.stream_map.len(), 0);
+        assert!(helper.driver.body_recv_buf.is_none());
+    }
+
+    /// Test that dropping the OutboundFrame channel causes the driver to
+    /// send a RESET_STREAM frame to the peer.
+    #[test]
+    fn client_send_reset_stream_when_outbound_frame_channel_drops() {
+        let mut helper = DriverTestHelper::<ClientHooks>::new().unwrap();
+        const REQUEST_CANCELED_ERR: u64 =
+            h3::WireErrorCode::RequestCancelled as u64;
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // The client uses H3Driver
+        // client sends a request
+        let stream_id = helper
+            .driver_send_request(make_request_headers("GET"), false)
+            .unwrap();
+
+        // servers reads request and sends response headers
+        helper.advance_and_run_loop().unwrap();
+        assert_matches!(
+            helper.peer_server_poll().unwrap(),
+            (0, h3::Event::Headers { .. })
+        );
+        helper.peer_server_send_response(0, false).unwrap();
+
+        helper.advance_and_run_loop().unwrap();
+
+        // Client receives response headers
+        let resp = assert_matches!(
+            helper.driver_recv_core_event().unwrap(),
+            H3Event::IncomingHeaders(headers) => { headers }
+        );
+        assert_eq!(resp.stream_id, stream_id);
+        assert!(!resp.read_fin);
+        // the stream is waiting for the application to write data
+        let ctx = helper.driver.stream_map.get(&stream_id).unwrap();
+        assert!(!ctx.waiting_for_send());
+        assert!(ctx.waiting_for_recv());
+        // take the InboundFrame receiver and stats
+        let mut from_server = resp.recv;
+        let audit_stats = resp.h3_audit_stats.clone();
+        // ... and drop the outbound frame
+        drop(resp.send);
+
+        helper.advance_and_run_loop().unwrap();
+
+        // server receives the reset
+        assert_eq!(
+            helper.peer_server_poll(),
+            Ok((0, h3::Event::Reset(REQUEST_CANCELED_ERR)))
+        );
+        assert_eq!(helper.peer_server_poll(), Err(h3::Error::Done));
+
+        helper.peer_server_send_body(0, &[2; 10], true).unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // client receives the server body
+        assert_matches!(from_server.try_recv(), Ok(InboundFrame::Body(buf, fin)) => {
+            assert_eq!(buf.to_vec(), vec![2; 10]);
+            // TODO: it would be nice if we could receive the fin here, but that's not
+            // how quiche::h3 works. Instead we need another receive call on the channel
+            assert!(!fin);
+        });
+        helper.work_loop_iter().unwrap();
+        assert_eq!(helper.driver.stream_map.len(), 0);
+        assert_eq!(audit_stats.recvd_stop_sending_error_code(), -1);
+        assert_eq!(audit_stats.recvd_reset_stream_error_code(), -1);
+        assert_eq!(
+            audit_stats.sent_reset_stream_error_code(),
+            REQUEST_CANCELED_ERR as i64
+        );
+        assert_eq!(audit_stats.sent_stop_sending_error_code(), -1);
+        assert_eq!(audit_stats.recvd_stream_fin(), StreamClosureKind::Explicit);
+        assert_eq!(audit_stats.sent_stream_fin(), StreamClosureKind::None);
+        assert_eq!(audit_stats.downstream_bytes_recvd(), 10);
+        assert_eq!(audit_stats.downstream_bytes_sent(), 0);
+    }
+
+    /// Test that dropping the OutboundFrame channel causes the driver to
+    /// send a RESET_STREAM frame to the peer.
+    #[test]
+    fn client_send_reset_stream_when_outbound_frame_channel_drops_2() {
+        let mut helper = DriverTestHelper::<ClientHooks>::new().unwrap();
+        const REQUEST_CANCELED_ERR: u64 =
+            h3::WireErrorCode::RequestCancelled as u64;
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // The client uses H3Driver
+        // client sends a request
+        let stream_id = helper
+            .driver_send_request(make_request_headers("GET"), false)
+            .unwrap();
+
+        // servers reads request and sends response headers, body, and fin
+        helper.advance_and_run_loop().unwrap();
+        assert_matches!(
+            helper.peer_server_poll().unwrap(),
+            (0, h3::Event::Headers { .. })
+        );
+        helper.peer_server_send_response(0, false).unwrap();
+        helper.peer_server_send_body(0, &[2; 10], true).unwrap();
+
+        helper.advance_and_run_loop().unwrap();
+
+        // Client receives response headers
+        let mut resp = assert_matches!(
+            helper.driver_recv_core_event().unwrap(),
+            H3Event::IncomingHeaders(headers) => { headers }
+        );
+        assert_eq!(resp.stream_id, stream_id);
+        assert!(!resp.read_fin);
+        // take the InboundFrame receiver and stats
+        let mut from_server = resp.recv;
+        let audit_stats = resp.h3_audit_stats.clone();
+        let (body, fin, _) = helper.driver_try_recv_body(&mut from_server);
+        assert_eq!(body, vec![2; 10]);
+        assert!(fin);
+        helper.advance_and_run_loop().unwrap();
+
+        // clsoe the channel.
+        resp.send.close();
+
+        helper.advance_and_run_loop().unwrap();
+
+        // server receives the reset
+        assert_eq!(
+            helper.peer_server_poll(),
+            Ok((0, h3::Event::Reset(REQUEST_CANCELED_ERR)))
+        );
+        assert_eq!(helper.peer_server_poll(), Err(h3::Error::Done));
+
+        helper.advance_and_run_loop().unwrap();
+
+        assert_eq!(helper.driver.stream_map.len(), 0);
+        assert_eq!(audit_stats.recvd_stop_sending_error_code(), -1);
+        assert_eq!(audit_stats.recvd_reset_stream_error_code(), -1);
+        assert_eq!(
+            audit_stats.sent_reset_stream_error_code(),
+            REQUEST_CANCELED_ERR as i64
+        );
+        assert_eq!(audit_stats.sent_stop_sending_error_code(), -1);
+        assert_eq!(audit_stats.recvd_stream_fin(), StreamClosureKind::Explicit);
+        assert_eq!(audit_stats.sent_stream_fin(), StreamClosureKind::None);
+        assert_eq!(audit_stats.downstream_bytes_recvd(), 10);
+        assert_eq!(audit_stats.downstream_bytes_sent(), 0);
+    }
+
+    /// Send data until the stream is no longer writable, then drop the
+    /// OutboundFrame channel to trigger a RESET_STREAM
+    #[test]
+    fn client_send_reset_stream_with_full_stream() {
+        let mut config = default_quiche_config();
+        config.set_initial_max_stream_data_bidi_local(30);
+        config.set_initial_max_stream_data_bidi_remote(30);
+        let mut helper = DriverTestHelper::<ClientHooks>::with_pipe(
+            quiche::test_utils::Pipe::with_config_and_buf(&mut config).unwrap(),
+        )
+        .unwrap();
+        const REQUEST_CANCELED_ERR: u64 =
+            h3::WireErrorCode::RequestCancelled as u64;
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // The client uses H3Driver
+        // client sends a request
+        let stream_id = helper
+            .driver_send_request(make_request_headers("GET"), false)
+            .unwrap();
+
+        // servers reads request and sends response headers, and fin
+        helper.advance_and_run_loop().unwrap();
+        assert_matches!(
+            helper.peer_server_poll().unwrap(),
+            (0, h3::Event::Headers { .. })
+        );
+        helper.peer_server_send_response(0, true).unwrap();
+
+        helper.advance_and_run_loop().unwrap();
+
+        // Client receives response headers
+        let resp = assert_matches!(
+            helper.driver_recv_core_event().unwrap(),
+            H3Event::IncomingHeaders(headers) => { headers }
+        );
+        assert_eq!(resp.stream_id, stream_id);
+        assert!(resp.read_fin);
+        let audit_stats = resp.h3_audit_stats.clone();
+        // send a body the to server, but not enough flow control for the full
+        // body
+        resp.send
+            .get_ref()
+            .unwrap()
+            .try_send(OutboundFrame::Body(
+                Bytes::copy_from_slice(&[23; 50]),
+                false,
+            ))
+            .unwrap();
+        let ctx = helper.driver.stream_map.get(&stream_id).unwrap();
+        assert!(!ctx.waiting_for_send());
+        assert!(ctx.waiting_for_recv());
+        // run `work_loop_iter()` to write the body into quiche
+        helper.work_loop_iter().unwrap();
+        // make sure we couldn't write the full body
+        assert!(audit_stats.downstream_bytes_sent() < 50);
+        let written = audit_stats.downstream_bytes_sent();
+        // advance the pipe, the stream is writable again, but
+        // don't advance the work_loop yet.
+        helper.pipe.advance().unwrap();
+        while helper.peer_server_poll().is_ok() {}
+        assert_eq!(
+            helper.peer_server_recv_body_vec(0, 1024).unwrap().len(),
+            written as usize
+        );
+        helper.pipe.advance().unwrap();
+        let ctx = helper.driver.stream_map.get(&stream_id).unwrap();
+        assert!(!ctx.waiting_for_send());
+        assert!(!ctx.waiting_for_recv());
+        assert!(helper.driver.stream_map.get(&0).unwrap().recv.is_some());
+        assert!(helper
+            .driver
+            .stream_map
+            .get(&0)
+            .unwrap()
+            .queued_frame
+            .is_some());
+
+        // clsoe the channel.
+        drop(resp.send);
+
+        helper.work_loop_iter().unwrap();
+        assert_eq!(
+            audit_stats.sent_reset_stream_error_code(),
+            REQUEST_CANCELED_ERR as i64
+        );
+        helper.advance_and_run_loop().unwrap();
+
+        // server receives the reset
+        assert_eq!(
+            helper.peer_server_poll(),
+            Ok((0, h3::Event::Reset(REQUEST_CANCELED_ERR)))
+        );
+        assert_eq!(helper.peer_server_poll(), Err(h3::Error::Done));
+
+        helper.advance_and_run_loop().unwrap();
+
+        assert_eq!(helper.driver.stream_map.len(), 0);
+        assert_eq!(audit_stats.recvd_stop_sending_error_code(), -1);
+        assert_eq!(audit_stats.recvd_reset_stream_error_code(), -1);
+        assert_eq!(
+            audit_stats.sent_reset_stream_error_code(),
+            REQUEST_CANCELED_ERR as i64
+        );
+        assert_eq!(audit_stats.sent_stop_sending_error_code(), -1);
+        assert_eq!(audit_stats.recvd_stream_fin(), StreamClosureKind::Explicit);
+        assert_eq!(audit_stats.sent_stream_fin(), StreamClosureKind::None);
+    }
+
+    /// Test that dropping the OutboundFrame channel after we've send a fin
+    /// is a no-op.
+    #[test]
+    fn client_drop_outbound_frame_channel_after_fin_no_reset() {
+        let mut helper = DriverTestHelper::<ClientHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // The client uses H3Driver
+        // client sends a request
+        let stream_id = helper
+            .driver_send_request(make_request_headers("GET"), false)
+            .unwrap();
+
+        // servers reads request and sends response headers, body, and fin
+        helper.advance_and_run_loop().unwrap();
+        assert_matches!(
+            helper.peer_server_poll().unwrap(),
+            (0, h3::Event::Headers { .. })
+        );
+        helper.peer_server_send_response(0, false).unwrap();
+
+        helper.advance_and_run_loop().unwrap();
+
+        // Client receives response headers
+        let mut resp = assert_matches!(
+            helper.driver_recv_core_event().unwrap(),
+            H3Event::IncomingHeaders(headers) => { headers }
+        );
+        assert_eq!(resp.stream_id, stream_id);
+        assert!(!resp.read_fin);
+        // take the InboundFrame receiver and stats
+        let mut from_server = resp.recv;
+        let audit_stats = resp.h3_audit_stats.clone();
+        helper.advance_and_run_loop().unwrap();
+        resp.send
+            .get_ref()
+            .unwrap()
+            .try_send(OutboundFrame::Body(Default::default(), true))
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // clsoe the channel.
+        resp.send.close();
+
+        helper.advance_and_run_loop().unwrap();
+        assert_eq!(helper.peer_server_send_body(0, &[42], true), Ok(1));
+        helper.advance_and_run_loop().unwrap();
+
+        // server receives the fin
+        assert_eq!(helper.peer_server_poll(), Ok((0, h3::Event::Data)));
+        assert_eq!(
+            helper.peer_server_recv_body_vec(0, 1024),
+            Err(h3::Error::Done)
+        );
+        assert_eq!(helper.peer_server_poll(), Ok((0, h3::Event::Finished)));
+        assert_eq!(helper.peer_server_poll(), Err(h3::Error::Done));
+
+        helper.advance_and_run_loop().unwrap();
+
+        // client receives the body and fin
+        let (body, fin, _err) = helper.driver_try_recv_body(&mut from_server);
+        assert_eq!(body, &[42]);
+        assert!(fin);
+
+        assert_eq!(helper.driver.stream_map.len(), 0);
+        assert_eq!(audit_stats.recvd_stop_sending_error_code(), -1);
+        assert_eq!(audit_stats.recvd_reset_stream_error_code(), -1);
+        assert_eq!(audit_stats.sent_reset_stream_error_code(), -1);
+        assert_eq!(audit_stats.sent_stop_sending_error_code(), -1);
+        assert_eq!(audit_stats.recvd_stream_fin(), StreamClosureKind::Explicit);
+        assert_eq!(audit_stats.sent_stream_fin(), StreamClosureKind::Explicit);
+        assert_eq!(audit_stats.downstream_bytes_recvd(), 1);
+        assert_eq!(audit_stats.downstream_bytes_sent(), 0);
+    }
+
+    /// Verify that a GOAWAY received mid-stream does not kill in-flight
+    /// request streams. The server sends GOAWAY with an ID above the
+    /// active stream, indicating the stream was accepted. The client
+    /// should continue receiving the remaining response body and
+    /// complete the stream normally.
+    #[test]
+    fn client_receives_goaway_during_streaming_response() {
+        let mut helper = DriverTestHelper::<ClientHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // Client sends a request with fin (GET, no body).
+        let stream_id = helper
+            .driver_send_request(make_request_headers("GET"), true)
+            .unwrap();
+        assert_eq!(stream_id, 0);
+
+        // Server sees the request and starts a streaming response.
+        helper.advance_and_run_loop().unwrap();
+        assert_matches!(
+            helper.peer_server_poll().unwrap(),
+            (0, h3::Event::Headers { .. })
+        );
+        helper.peer_server_send_response(0, false).unwrap();
+        helper.peer_server_send_body(0, &[1; 10], false).unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // Client receives response headers.
+        let resp = assert_matches!(
+            helper.driver_recv_core_event().unwrap(),
+            H3Event::IncomingHeaders(headers) => { headers }
+        );
+        assert_eq!(resp.stream_id, stream_id);
+        assert!(!resp.read_fin);
+        let mut from_server = resp.recv;
+
+        // Client receives first body chunk.
+        assert_eq!(helper.driver_try_recv_body(&mut from_server).0, vec![1; 10]);
+
+        // Server sends GOAWAY with id = stream_id + 4 (our stream was
+        // accepted, but no future streams will be).
+        helper
+            .peer
+            .send_goaway(&mut helper.pipe.server, stream_id + 4)
+            .unwrap();
+        // Server continues sending body data on the existing stream.
+        helper.peer_server_send_body(0, &[2; 10], false).unwrap();
+
+        // Advance — the driver handles GOAWAY gracefully and keeps
+        // the connection alive.
+        helper.advance_and_run_loop().unwrap();
+
+        // Client should still receive the second body chunk.
+        assert_eq!(helper.driver_try_recv_body(&mut from_server).0, vec![2; 10]);
+
+        // Controller receives a GoAway event with the correct ID.
+        // Drain any BodyBytesReceived notifications first — the
+        // ordering between data and control stream events is not
+        // guaranteed.
+        loop {
+            match helper.driver_recv_core_event().unwrap() {
+                H3Event::GoAway { id } => {
+                    assert_eq!(id, stream_id + 4);
+                    break;
+                },
+                H3Event::BodyBytesReceived { .. } => continue,
+                other => panic!("unexpected event: {other:?}"),
+            }
+        }
+
+        // Server finishes the response.
+        helper.peer_server_send_body(0, &[3; 10], true).unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // Client receives the final chunk.
+        let (body, _fin, _err) = helper.driver_try_recv_body(&mut from_server);
+        assert_eq!(body, vec![3; 10]);
+    }
+}
+
+/// Tests that use an H3Driver for the server side. We mostly focus on testing
+/// the driver's handling of stream state, and data, rather than H3 semantics.
+/// Note that most of these tests could have just as easily been written for
+/// the client side.
+mod server_side_driver {
+
+    use crate::ApplicationOverQuic as _;
+
+    use super::*;
+
+    /// Server-side equivalent of
+    /// [`client_side_driver::client_body_recv_buf_not_allocated_when_idle`]:
+    /// `body_recv_buf` is `H3Driver` state shared by both `ClientHooks` and
+    /// `ServerHooks`, so a headers-only request/response must not allocate it
+    /// on the server either.
+    #[test]
+    fn server_body_recv_buf_not_allocated_when_idle() {
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // Idle: never received body bytes, so the buffer is not allocated.
+        assert!(helper.driver.body_recv_buf.is_none());
+
+        // Client sends a headers-only request (fin, no request body).
+        let stream_id = helper
+            .peer_client_send_request(make_request_headers("GET"), true)
+            .unwrap();
+
+        // Server reads the request; `read_fin` confirms it finished on its
+        // headers and carries no body.
+        helper.advance_and_run_loop().unwrap();
+        let req = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers { incoming_headers, .. } => { incoming_headers }
+        );
+        assert_eq!(req.stream_id, stream_id);
+        assert!(req.read_fin);
+
+        // The server read only headers (no body), so the buffer stays
+        // unallocated.
+        assert!(helper.driver.body_recv_buf.is_none());
+
+        // Server replies with a headers-only response: response headers
+        // followed by an empty body with fin to complete the exchange. The
+        // per-stream channel holds a single frame in debug builds
+        // (`STREAM_CAPACITY`), so drain the headers before sending the fin.
+        let to_client = req.send.get_ref().unwrap().clone();
+        to_client
+            .try_send(OutboundFrame::Headers(make_response_headers(), None))
+            .unwrap();
+        helper.work_loop_iter().unwrap();
+        to_client
+            .try_send(OutboundFrame::Body(Default::default(), true))
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // Client receives the headers-only response.
+        assert_matches!(
+            helper.peer_client_poll(),
+            Ok((0, h3::Event::Headers { .. }))
+        );
+
+        // Still only headers were exchanged and the stream is closed, so the
+        // body receive buffer was never allocated.
+        assert!(helper.driver.body_recv_buf.is_none());
+        assert_eq!(helper.driver.stream_map.len(), 0);
+    }
+
+    #[test]
+    fn client_fin_before_server_body() {
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // client sends a request
+        let stream_id = helper
+            .peer_client_send_request(make_request_headers("GET"), false)
+            .unwrap();
+
+        // servers reads request and sends response headers
+        helper.advance_and_run_loop().unwrap();
+        let req = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers{incoming_headers, ..} => { incoming_headers }
+        );
+        assert_eq!(req.stream_id, stream_id);
+        assert!(!req.read_fin);
+        let to_client = req.send.get_ref().unwrap().clone();
+        let mut from_client = req.recv;
+        to_client
+            .try_send(OutboundFrame::Headers(make_response_headers(), None))
+            .unwrap();
+
+        // client reads response and sends body and fin
+        helper.advance_and_run_loop().unwrap();
+        assert_matches!(
+            helper.peer_client_poll(),
+            Ok((0, h3::Event::Headers { .. }))
+        );
+        assert_eq!(helper.peer_client_poll(), Err(h3::Error::Done));
+        assert_eq!(helper.peer_client_send_body(0, &[1; 5], true), Ok(5));
+        helper.advance_and_run_loop().unwrap();
+
+        // server receives body
+        let (body, fin, _err) = helper.driver_try_recv_body(&mut from_client);
+        assert_eq!(body, vec![1; 5]);
+        assert!(fin);
+
+        // server sends body and fin
+        to_client
+            .try_send(OutboundFrame::Body(Bytes::copy_from_slice(&[42]), true))
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+        assert_eq!(helper.peer_client_poll(), Ok((0, h3::Event::Data)));
+        assert_eq!(helper.peer_client_poll(), Err(h3::Error::Done));
+        assert_eq!(helper.peer_client_recv_body_vec(0, 1024), Ok(vec![42]));
+        assert_eq!(
+            helper.peer_client_recv_body_vec(0, 1024),
+            Err(h3::Error::Done)
+        );
+        assert_eq!(helper.peer_client_poll(), Ok((0, h3::Event::Finished)));
+
+        assert_eq!(helper.driver.stream_map.len(), 0);
+    }
+
+    struct ParkedPeerFin {
+        helper: DriverTestHelper<ServerHooks>,
+        stream_id: u64,
+        to_client: mpsc::Sender<OutboundFrame>,
+        from_client: InboundFrameStream,
+        audit_stats: Arc<H3AuditStats>,
+    }
+
+    enum WriteClose {
+        Fin,
+        DropSender,
+        PeerStop,
+    }
+
+    fn parked_peer_fin_fixture() -> ParkedPeerFin {
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+        let stream_id = helper
+            .peer_client_send_request(make_request_headers("POST"), false)
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+        let req = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers { incoming_headers, .. } => incoming_headers
+        );
+        let to_client = req.send.get_ref().unwrap().clone();
+        drop(req.send);
+        let from_client = req.recv;
+        let audit_stats = req.h3_audit_stats;
+        to_client
+            .try_send(OutboundFrame::Headers(make_response_headers(), None))
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // Fill the app channel through real reads, including release capacity.
+        // Leave the response channel idle while peer FIN waits for capacity.
+        for _ in 0..STREAM_CAPACITY {
+            assert_eq!(
+                helper.peer_client_send_body(stream_id, &[1], false),
+                Ok(1)
+            );
+            helper.advance_and_run_loop().unwrap();
+        }
+        assert_eq!(from_client.len(), STREAM_CAPACITY);
+        assert_eq!(helper.peer_client_send_body(stream_id, &[], true), Ok(0));
+        helper.advance_and_run_loop().unwrap();
+        let ctx = helper.driver.stream_map.get(&stream_id).unwrap();
+        assert_matches!(&ctx.recv_state, RecvState::FinPending(_));
+        assert!(ctx.queued_frame.is_none());
+        assert!(ctx.waiting_for_send());
+        assert!(ctx.waiting_for_recv());
+        assert!(helper.driver.ready_streams.try_recv().is_err());
+
+        ParkedPeerFin {
+            helper,
+            stream_id,
+            to_client,
+            from_client,
+            audit_stats,
+        }
+    }
+
+    fn drain_parked_body(recv: &mut InboundFrameStream) {
+        for _ in 0..STREAM_CAPACITY {
+            assert_matches!(
+                recv.try_recv(),
+                Ok(InboundFrame::Body(data, false)) if data.as_ref() == [1]
+            );
+        }
+    }
+
+    fn assert_delivered_fin(
+        helper: &mut DriverTestHelper<ServerHooks>, stream_id: u64,
+        from_client: &mut InboundFrameStream,
+    ) {
+        // FIN is queued before cleanup; the app need not consume it first.
+        assert!(!helper.driver.stream_map.contains_key(&stream_id));
+        assert_matches!(from_client.try_recv(), Ok(InboundFrame::Body(data, true)) if data.is_empty());
+        assert_matches!(from_client.try_recv(), Err(TryRecvError::Disconnected));
+        assert!(helper.driver.ready_streams.try_recv().is_err());
+    }
+
+    fn assert_response_fin(
+        helper: &mut DriverTestHelper<ServerHooks>, stream_id: u64,
+    ) {
+        // Cleanup must follow the wire closure, not merely closing channels.
+        helper.advance_and_run_loop().unwrap();
+        assert_matches!(helper.peer_client_poll(), Ok((id, h3::Event::Headers { .. })) if id == stream_id);
+        assert_eq!(helper.peer_client_poll(), Ok((stream_id, h3::Event::Data)));
+        assert_eq!(
+            helper.peer_client_recv_body_vec(stream_id, 1024),
+            Err(h3::Error::Done)
+        );
+        assert_eq!(
+            helper.peer_client_poll(),
+            Ok((stream_id, h3::Event::Finished))
+        );
+        assert_eq!(helper.peer_client_poll(), Err(h3::Error::Done));
+    }
+
+    #[test]
+    fn coalesced_ready_delivers_fin_then_cleans_up() {
+        let ParkedPeerFin {
+            mut helper,
+            stream_id,
+            to_client,
+            mut from_client,
+            ..
+        } = parked_peer_fin_fixture();
+
+        // Both channel directions become ready before the driver runs.
+        drain_parked_body(&mut from_client);
+        to_client
+            .try_send(OutboundFrame::Body(Bytes::new(), true))
+            .unwrap();
+        assert_eq!(helper.driver.ready_streams.len(), 1);
+        helper.work_loop_iter().unwrap();
+
+        assert_delivered_fin(&mut helper, stream_id, &mut from_client);
+        assert!(to_client.is_closed());
+        assert_response_fin(&mut helper, stream_id);
+    }
+
+    #[rstest]
+    #[case::outbound_fin(WriteClose::Fin)]
+    #[case::sender_dropped(WriteClose::DropSender)]
+    #[case::peer_stop(WriteClose::PeerStop)]
+    fn write_closure_retains_pending_peer_fin(#[case] write_close: WriteClose) {
+        let ParkedPeerFin {
+            mut helper,
+            stream_id,
+            to_client,
+            mut from_client,
+            audit_stats,
+        } = parked_peer_fin_fixture();
+
+        let to_client = match write_close {
+            WriteClose::Fin => {
+                to_client
+                    .try_send(OutboundFrame::Body(Bytes::new(), true))
+                    .unwrap();
+                Some(to_client)
+            },
+            WriteClose::DropSender => {
+                drop(to_client);
+                None
+            },
+            WriteClose::PeerStop => {
+                helper
+                    .pipe
+                    .client
+                    .stream_shutdown(stream_id, quiche::Shutdown::Read, 4242)
+                    .unwrap();
+                helper.pipe.advance().unwrap();
+                Some(to_client)
+            },
+        };
+        helper.work_loop_iter().unwrap();
+
+        // Closing the write side must retain the pending peer FIN.
+        let ctx = helper.driver.stream_map.get(&stream_id).unwrap();
+        assert_matches!(&ctx.recv_state, RecvState::FinPending(_));
+        assert_eq!(ctx.send_state, SendState::Closed);
+        assert_eq!(from_client.len(), STREAM_CAPACITY);
+        assert!(ctx.waiting_for_send());
+        assert!(!ctx.waiting_for_recv());
+        assert!(helper.driver.ready_streams.try_recv().is_err());
+
+        drain_parked_body(&mut from_client);
+        assert_eq!(helper.driver.ready_streams.len(), 1);
+        helper.work_loop_iter().unwrap();
+        assert_delivered_fin(&mut helper, stream_id, &mut from_client);
+        if let Some(to_client) = to_client {
+            assert!(to_client.is_closed());
+        }
+
+        match write_close {
+            WriteClose::Fin => assert_response_fin(&mut helper, stream_id),
+            WriteClose::DropSender => {
+                helper.advance_and_run_loop().unwrap();
+                let err = h3::WireErrorCode::RequestCancelled;
+                assert_eq!(
+                    audit_stats.sent_reset_stream_error_code(),
+                    err as i64
+                );
+                assert_eq!(
+                    helper.peer_client_poll(),
+                    Ok((stream_id, h3::Event::Reset(err as u64)))
+                );
+                assert_eq!(helper.peer_client_poll(), Err(h3::Error::Done));
+            },
+            WriteClose::PeerStop => {
+                helper.advance_and_run_loop().unwrap();
+                assert_eq!(audit_stats.recvd_stop_sending_error_code(), 4242);
+                assert_eq!(helper.peer_client_poll(), Err(h3::Error::Done));
+            },
+        }
+    }
+
+    #[test]
+    fn receiver_drop_releases_pending_peer_fin() {
+        let ParkedPeerFin {
+            mut helper,
+            stream_id,
+            to_client,
+            from_client,
+            ..
+        } = parked_peer_fin_fixture();
+
+        to_client
+            .try_send(OutboundFrame::Body(Bytes::new(), true))
+            .unwrap();
+        helper.work_loop_iter().unwrap();
+        let ctx = helper.driver.stream_map.get(&stream_id).unwrap();
+        assert_matches!(&ctx.recv_state, RecvState::FinPending(_));
+        assert_eq!(ctx.send_state, SendState::Closed);
+        assert!(ctx.waiting_for_send());
+        assert_eq!(from_client.len(), STREAM_CAPACITY);
+        assert!(helper.driver.ready_streams.try_recv().is_err());
+
+        drop(from_client);
+        assert_eq!(helper.driver.ready_streams.len(), 1);
+        helper.work_loop_iter().unwrap();
+        assert!(!helper.driver.stream_map.contains_key(&stream_id));
+        assert!(helper.driver.ready_streams.try_recv().is_err());
+        assert!(to_client.is_closed());
+        assert_response_fin(&mut helper, stream_id);
+    }
+
+    #[test]
+    fn verify_pr_2162() {
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // client sends a request but NO FIN.
+        let stream_id = helper
+            .peer_client_send_request(make_request_headers("GET"), false)
+            .unwrap();
+
+        // servers reads request and sends response headers
+        helper.advance_and_run_loop().unwrap();
+        let req = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers{incoming_headers, ..} => { incoming_headers }
+        );
+        assert_eq!(req.stream_id, stream_id);
+        assert!(!req.read_fin);
+        let to_client = req.send.get_ref().unwrap().clone();
+        let mut from_client = req.recv;
+        to_client
+            .try_send(OutboundFrame::Headers(make_response_headers(), None))
+            .unwrap();
+        helper.work_loop_iter().unwrap();
+        // server sends body and fin. This caused an infinite loop before #2162
+        to_client
+            .try_send(OutboundFrame::Body(Bytes::copy_from_slice(&[42]), true))
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // client sends body and fin
+        helper.advance_and_run_loop().unwrap();
+        assert_eq!(helper.peer_client_send_body(0, &[1; 5], true), Ok(5));
+        helper.advance_and_run_loop().unwrap();
+
+        let (body, fin, _err) = helper.driver_try_recv_body(&mut from_client);
+        assert_eq!(body, &[1; 5]);
+        assert!(fin);
+
+        // Stream is done
+        assert_eq!(helper.driver.stream_map.len(), 0);
+    }
+
+    /// Test the case where the client sends a STOP_SENDING quiche frame.
+    #[test]
+    fn client_sends_stop_sending() {
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // client sends a request
+        let stream_id = helper
+            .peer_client_send_request(make_request_headers("GET"), false)
+            .unwrap();
+
+        // servers reads request and sends response headers
+        helper.advance_and_run_loop().unwrap();
+        let req = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers{incoming_headers, ..} => { incoming_headers }
+        );
+        assert_eq!(req.stream_id, stream_id);
+        assert!(!req.read_fin);
+        let to_client = req.send.get_ref().unwrap().clone();
+        let mut from_client = req.recv;
+        let audit_stats = req.h3_audit_stats;
+
+        to_client
+            .try_send(OutboundFrame::Headers(make_response_headers(), None))
+            .unwrap();
+
+        // client sends a STOP_SENDING
+        helper.advance_and_run_loop().unwrap();
+        assert_matches!(
+            helper.peer_client_poll(),
+            Ok((0, h3::Event::Headers { .. }))
+        );
+        assert_eq!(helper.peer_client_poll(), Err(h3::Error::Done));
+        assert_eq!(
+            helper
+                .pipe
+                .client
+                .stream_shutdown(0, quiche::Shutdown::Read, 4242),
+            Ok(())
+        );
+
+        let flight =
+            quiche::test_utils::emit_flight(&mut helper.pipe.client).unwrap();
+        quiche::test_utils::process_flight(&mut helper.pipe.server, flight)
+            .unwrap();
+
+        // No additional client data leaves the server's `try_recv()` empty.
+        assert_matches!(from_client.try_recv(), Err(TryRecvError::Empty));
+
+        // An empty non-FIN body must not hide a stop when no H3 send occurs.
+        let ctx = helper.driver.stream_map.get_mut(&stream_id).unwrap();
+        // Queue a real notification before STOP cancels outbound waiting.
+        // Blocked output waits on transport rather than on the app channel.
+        ctx.wait_for_recv();
+        ctx.cancel_recv_wait();
+        ctx.queued_frame = Some(OutboundFrame::Body(Bytes::new(), false));
+        assert_eq!(helper.driver.ready_streams.len(), 1);
+
+        helper
+            .driver
+            .process_writable_stream(&mut helper.pipe.server, stream_id)
+            .unwrap();
+
+        assert!(to_client.is_closed());
+        assert_eq!(audit_stats.recvd_stop_sending_error_code(), 4242);
+
+        let ctx = helper.driver.stream_map.get(&stream_id).unwrap();
+        assert!(ctx.queued_frame.is_none());
+        assert!(ctx.recv.is_none());
+        assert!(!ctx.waiting_for_recv());
+
+        // Drain the stale notification through the driver's ready queue.
+        // The retained half-closed context must not restore outbound output.
+        assert_eq!(helper.driver.ready_streams.len(), 1);
+        helper
+            .driver
+            .process_writes(&mut helper.pipe.server)
+            .unwrap();
+        assert!(helper.driver.ready_streams.try_recv().is_err());
+
+        let ctx = helper.driver.stream_map.get(&stream_id).unwrap();
+        assert!(ctx.queued_frame.is_none());
+        assert!(ctx.recv.is_none());
+        assert!(!ctx.waiting_for_recv());
+
+        // STOP_SENDING only closes one half of the stream. The client
+        // can still send data and it MUST send a `fin` to close the
+        // other half.
+        helper.peer_client_send_body(0, &[1, 2, 3], true).unwrap();
+        helper.advance_and_run_loop().unwrap();
+        let (body, fin, _err) = helper.driver_try_recv_body(&mut from_client);
+        assert_eq!(body, &[1, 2, 3]);
+        assert!(fin);
+
+        assert_eq!(helper.driver.stream_map.len(), 0);
+        assert_eq!(audit_stats.recvd_stop_sending_error_code(), 4242);
+        assert_eq!(audit_stats.recvd_reset_stream_error_code(), -1);
+        assert_eq!(audit_stats.sent_stop_sending_error_code(), -1);
+        // technically quiche will automatically respond to a STOP_SENDING
+        // frame with a STREAM_RESET echoing the error code, but the user
+        // didn't *actively* send a STREAM_RESET.
+        assert_eq!(audit_stats.sent_reset_stream_error_code(), -1);
+        assert_eq!(audit_stats.recvd_stream_fin(), StreamClosureKind::Explicit);
+        assert_eq!(audit_stats.sent_stream_fin(), StreamClosureKind::None);
+        assert_eq!(audit_stats.downstream_bytes_recvd(), 3);
+        assert_eq!(audit_stats.downstream_bytes_sent(), 0);
+    }
+
+    /// Buffered errors survive STOP's drain; already queued errors must close
+    /// both directions without probing STOP first.
+    #[rstest]
+    #[case::buffered_error_survives_stop(false)]
+    #[case::queued_error_skips_stop_probe(true)]
+    fn peer_stream_error_after_stop_closes_both_directions(
+        #[case] error_queued: bool,
+    ) {
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        let stream_id = helper
+            .peer_client_send_request(make_request_headers("POST"), false)
+            .unwrap();
+
+        helper.advance_and_run_loop().unwrap();
+
+        let req = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers { incoming_headers, .. } => incoming_headers
+        );
+
+        // A buffered error must survive discarding the queued body on STOP.
+        // An already queued error takes MessageError directly, skipping the
+        // STOP probe; cleanup drops the buffered body and records the stop.
+        let to_client = req.send.get_ref().unwrap();
+        let body = OutboundFrame::Body(Bytes::from_static(b"body"), false);
+        let (queued, buffered) = if error_queued {
+            (OutboundFrame::PeerStreamError, body)
+        } else {
+            (body, OutboundFrame::PeerStreamError)
+        };
+        let ctx = helper.driver.stream_map.get_mut(&stream_id).unwrap();
+        // Model output blocked on transport: receiving from the channel is
+        // no longer parked while a frame is queued.
+        ctx.cancel_recv_wait();
+        ctx.queued_frame = Some(queued);
+        to_client.try_send(buffered).unwrap();
+
+        helper
+            .pipe
+            .client
+            .stream_shutdown(stream_id, quiche::Shutdown::Read, 4242)
+            .unwrap();
+
+        let flight =
+            quiche::test_utils::emit_flight(&mut helper.pipe.client).unwrap();
+        quiche::test_utils::process_flight(&mut helper.pipe.server, flight)
+            .unwrap();
+
+        // Handle STOP_SENDING and the error without further peer data.
+        helper
+            .driver
+            .process_writes(&mut helper.pipe.server)
+            .unwrap();
+
+        assert!(!helper.driver.stream_map.contains_key(&stream_id));
+        assert!(to_client.is_closed());
+        assert_eq!(req.h3_audit_stats.recvd_stop_sending_error_code(), 4242);
+        assert_eq!(
+            req.h3_audit_stats.sent_stop_sending_error_code(),
+            h3::WireErrorCode::MessageError as i64,
+        );
+        assert_eq!(
+            req.h3_audit_stats.sent_reset_stream_error_code(),
+            h3::WireErrorCode::MessageError as i64,
+        );
+
+        helper.pipe.advance().unwrap();
+
+        assert_eq!(
+            helper.peer_client_send_body(stream_id, b"body", false),
+            Err(h3::Error::TransportError(quiche::Error::StreamStopped(
+                h3::WireErrorCode::MessageError as u64,
+            )))
+        );
+    }
+
+    #[derive(Clone, Copy, Debug)]
+    enum RequestState {
+        Open,
+        Fin,
+        Reset,
+    }
+
+    #[test]
+    fn queued_channel_notification_after_cleanup_is_ignored() {
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+        let stream_id = helper
+            .peer_client_send_request(make_request_headers("POST"), false)
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+        let req = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers { incoming_headers, .. } => incoming_headers
+        );
+
+        helper
+            .driver
+            .stream_map
+            .get_mut(&stream_id)
+            .unwrap()
+            .wait_for_recv();
+        // Register the channel waker and consume the initial notification.
+        helper
+            .driver
+            .process_writes(&mut helper.pipe.server)
+            .unwrap();
+        assert!(helper.driver.ready_streams.try_recv().is_err());
+        // Sending data invokes the waker registered by poll_recv, leaving a
+        // ready ID in the queue when cleanup drops the stream context.
+        req.send
+            .get_ref()
+            .unwrap()
+            .try_send(OutboundFrame::Body(Bytes::new(), false))
+            .unwrap();
+        helper
+            .driver
+            .cleanup_stream(&mut helper.pipe.server, stream_id)
+            .unwrap();
+        assert!(req.send.get_ref().unwrap().is_closed());
+        assert!(req.recv.is_closed());
+        assert_eq!(helper.driver.ready_streams.len(), 1);
+        helper
+            .driver
+            .process_writes(&mut helper.pipe.server)
+            .unwrap();
+        assert!(helper.driver.ready_streams.try_recv().is_err());
+        assert!(!helper.driver.stream_map.contains_key(&stream_id));
+        assert!(matches!(
+            helper.driver_recv_core_event().unwrap(),
+            H3Event::StreamClosed { stream_id: id } if id == stream_id
+        ));
+        assert!(helper.driver_recv_server_event().is_err());
+    }
+
+    #[derive(Clone, Copy, Debug)]
+    enum ResponseState {
+        NotStarted,
+        InformationalHeaders,
+        FinalHeaders,
+        BodyStalled,
+    }
+
+    #[rstest]
+    #[case::open(RequestState::Open)]
+    #[case::fin(RequestState::Fin)]
+    #[case::reset(RequestState::Reset)]
+    fn stop_sending_closes_idle_responses_for_all_request_states(
+        #[case] request_state: RequestState,
+        #[values(
+            ResponseState::NotStarted,
+            ResponseState::InformationalHeaders,
+            ResponseState::FinalHeaders,
+            ResponseState::BodyStalled
+        )]
+        response_state: ResponseState,
+    ) {
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        let stream_id = helper
+            .peer_client_send_request(
+                make_request_headers("POST"),
+                matches!(request_state, RequestState::Fin),
+            )
+            .unwrap();
+
+        helper.advance_and_run_loop().unwrap();
+
+        let req = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers { incoming_headers, .. } => {
+                incoming_headers
+            }
+        );
+
+        let to_client = req.send.get_ref().unwrap().clone();
+        let audit_stats = req.h3_audit_stats;
+
+        if matches!(request_state, RequestState::Reset) {
+            helper
+                .pipe
+                .client
+                .stream_shutdown(stream_id, quiche::Shutdown::Write, 1234)
+                .unwrap();
+
+            helper.advance_and_run_loop().unwrap();
+        }
+
+        let ctx = helper.driver.stream_map.get(&stream_id).unwrap();
+        match request_state {
+            RequestState::Open =>
+                assert_matches!(&ctx.recv_state, RecvState::Open(_)),
+            RequestState::Fin | RequestState::Reset =>
+                assert_matches!(&ctx.recv_state, RecvState::Closed),
+        }
+
+        let headers = match response_state {
+            ResponseState::NotStarted => None,
+            ResponseState::InformationalHeaders =>
+                Some(vec![h3::Header::new(b":status", b"103")]),
+            ResponseState::FinalHeaders | ResponseState::BodyStalled =>
+                Some(make_response_headers()),
+        };
+
+        if let Some(headers) = headers {
+            to_client
+                .try_send(OutboundFrame::Headers(headers, None))
+                .unwrap();
+
+            helper.advance_and_run_loop().unwrap();
+
+            let ctx = helper.driver.stream_map.get(&stream_id).unwrap();
+            assert!(ctx.initial_headers_sent);
+        }
+
+        if matches!(response_state, ResponseState::BodyStalled) {
+            to_client
+                .try_send(OutboundFrame::Body(
+                    Bytes::copy_from_slice(b"first chunk"),
+                    false,
+                ))
+                .unwrap();
+
+            helper.advance_and_run_loop().unwrap();
+
+            assert!(audit_stats.downstream_bytes_sent() > 0);
+        }
+
+        helper
+            .pipe
+            .client
+            .stream_shutdown(stream_id, quiche::Shutdown::Read, 4242)
+            .unwrap();
+
+        // Keep the automatic RESET_STREAM unacknowledged until the driver
+        // has observed STOP_SENDING.
+        let flight =
+            quiche::test_utils::emit_flight(&mut helper.pipe.client).unwrap();
+        quiche::test_utils::process_flight(&mut helper.pipe.server, flight)
+            .unwrap();
+
+        // Process the stopped stream without another application frame.
+        helper
+            .driver
+            .process_writes(&mut helper.pipe.server)
+            .unwrap();
+
+        assert!(to_client.is_closed());
+        assert_eq!(audit_stats.recvd_stop_sending_error_code(), 4242);
+    }
+
+    #[test]
+    fn stop_sending_before_headers_closes_new_context() {
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        let stream_id = helper
+            .peer_client_send_request(make_request_headers("GET"), true)
+            .unwrap();
+
+        // Hold HEADERS+FIN until STOP_SENDING has been processed without a
+        // stream context.
+        let headers_flight =
+            quiche::test_utils::emit_flight(&mut helper.pipe.client).unwrap();
+
+        helper
+            .pipe
+            .client
+            .stream_shutdown(stream_id, quiche::Shutdown::Read, 4242)
+            .unwrap();
+
+        let stop_flight =
+            quiche::test_utils::emit_flight(&mut helper.pipe.client).unwrap();
+        quiche::test_utils::process_flight(&mut helper.pipe.server, stop_flight)
+            .unwrap();
+
+        helper.work_loop_iter().unwrap();
+        assert!(!helper.driver.stream_map.contains_key(&stream_id));
+
+        quiche::test_utils::process_flight(
+            &mut helper.pipe.server,
+            headers_flight,
+        )
+        .unwrap();
+        helper.work_loop_iter().unwrap();
+
+        let req = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers { incoming_headers, .. } => incoming_headers
+        );
+
+        assert!(req.send.get_ref().unwrap().is_closed());
+        assert_eq!(req.h3_audit_stats.recvd_stop_sending_error_code(), 4242);
+
+        assert_matches!(
+            helper.driver_recv_core_event().unwrap(),
+            H3Event::BodyBytesReceived { fin: true, .. }
+        );
+        assert_matches!(
+            helper.driver_recv_core_event().unwrap(),
+            H3Event::StreamClosed { stream_id: id } if id == stream_id
+        );
+    }
+
+    /// Test the case where the server's outbound channel closes and
+    /// `audit_stats` records the STOP_SENDING error code from the client
+    /// sent before the server has written any response to a `fin=true` request
+    #[test]
+    fn client_sends_stop_sending_before_first_write() {
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // client sends a request
+        let stream_id = helper
+            .peer_client_send_request(make_request_headers("GET"), true)
+            .unwrap();
+
+        // server reads the request and creates the StreamCtx
+        helper.advance_and_run_loop().unwrap();
+        let req = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers{incoming_headers, ..} => { incoming_headers }
+        );
+        assert_eq!(req.stream_id, stream_id);
+        let to_client = req.send.get_ref().unwrap().clone();
+        let audit_stats = req.h3_audit_stats;
+
+        // client sends a STOP_SENDING before the server has written any
+        // response bytes
+        assert_eq!(
+            helper.pipe.client.stream_shutdown(
+                stream_id,
+                quiche::Shutdown::Read,
+                4242
+            ),
+            Ok(())
+        );
+        helper.advance_and_run_loop().unwrap();
+
+        assert!(to_client.is_closed());
+        assert_eq!(audit_stats.recvd_stop_sending_error_code(), 4242);
+    }
+
+    /// A request body and FIN delivered with STOP_SENDING must close the
+    /// response channel before the RESET_STREAM is acknowledged.
+    #[test]
+    fn client_sends_body_fin_and_stop_before_first_writable_poll() {
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // client sends a request
+        let stream_id = helper
+            .peer_client_send_request(make_request_headers("POST"), false)
+            .unwrap();
+
+        // server reads the request and creates the StreamCtx
+        helper.advance_and_run_loop().unwrap();
+        let req = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers{incoming_headers, ..} => { incoming_headers }
+        );
+        assert_eq!(req.stream_id, stream_id);
+        let to_client = req.send.get_ref().unwrap().clone();
+        let audit_stats = req.h3_audit_stats;
+
+        // Deliver body, FIN, and STOP_SENDING together before the server
+        // processes reads or writes. Keep the automatic RESET_STREAM
+        // unacknowledged until the driver handles the stop.
+        helper
+            .peer_client_send_body(stream_id, b"body", true)
+            .unwrap();
+
+        assert_eq!(
+            helper.pipe.client.stream_shutdown(
+                stream_id,
+                quiche::Shutdown::Read,
+                4242
+            ),
+            Ok(())
+        );
+        let flight =
+            quiche::test_utils::emit_flight(&mut helper.pipe.client).unwrap();
+        quiche::test_utils::process_flight(&mut helper.pipe.server, flight)
+            .unwrap();
+
+        // Run process_reads() and process_writes() back to back, exactly
+        // as RunningApplication::on_read() does. process_writes() calls
+        // stream_writable_next(), which pops the stream with nothing
+        // queued to write, before the RESET_STREAM we just queued has
+        // even reached the client.
+        helper
+            .driver
+            .process_reads(&mut helper.pipe.server)
+            .unwrap();
+        helper
+            .driver
+            .process_writes(&mut helper.pipe.server)
+            .unwrap();
+
+        assert!(to_client.is_closed());
+        assert_eq!(audit_stats.recvd_stop_sending_error_code(), 4242);
+
+        // Only now let the RESET_STREAM reach the client, and the
+        // client's ack come back to the server.
+        let flight =
+            quiche::test_utils::emit_flight(&mut helper.pipe.server).unwrap();
+        quiche::test_utils::process_flight(&mut helper.pipe.client, flight)
+            .unwrap();
+        let flight =
+            quiche::test_utils::emit_flight(&mut helper.pipe.client).unwrap();
+        quiche::test_utils::process_flight(&mut helper.pipe.server, flight)
+            .unwrap();
+
+        assert!(to_client.is_closed());
+        assert_eq!(audit_stats.recvd_stop_sending_error_code(), 4242);
+    }
+
+    #[test]
+    fn stop_after_response_fin_returns_stream_credit() {
+        let mut config = default_quiche_config();
+        config.set_initial_max_streams_bidi(1);
+
+        let pipe =
+            quiche::test_utils::Pipe::with_config_and_buf(&mut config).unwrap();
+        let mut helper =
+            DriverTestHelper::<ServerHooks>::with_pipe(pipe).unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        let stream_id = helper
+            .peer_client_send_request(make_request_headers("GET"), true)
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        let req = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers { incoming_headers, .. } => incoming_headers
+        );
+        let to_client = req.send.get_ref().unwrap().clone();
+
+        // Leave the response flight unacknowledged after the driver closes
+        // its stream context.
+        to_client
+            .try_send(OutboundFrame::Headers(make_response_headers(), None))
+            .unwrap();
+        helper.work_loop_iter().unwrap();
+
+        to_client
+            .try_send(OutboundFrame::Body(Bytes::new(), true))
+            .unwrap();
+        helper.work_loop_iter().unwrap();
+
+        assert!(!helper.driver.stream_map.contains_key(&stream_id));
+        assert!(helper.pipe.server.stream_capacity(stream_id).is_ok());
+        assert_eq!(helper.pipe.client.peer_streams_left_bidi(), 0);
+
+        helper
+            .pipe
+            .client
+            .stream_shutdown(stream_id, quiche::Shutdown::Read, 4242)
+            .unwrap();
+        let flight =
+            quiche::test_utils::emit_flight(&mut helper.pipe.client).unwrap();
+        quiche::test_utils::process_flight(&mut helper.pipe.server, flight)
+            .unwrap();
+
+        helper
+            .driver
+            .process_writes(&mut helper.pipe.server)
+            .unwrap();
+
+        let flight =
+            quiche::test_utils::emit_flight(&mut helper.pipe.server).unwrap();
+        quiche::test_utils::process_flight(&mut helper.pipe.client, flight)
+            .unwrap();
+
+        assert_eq!(helper.pipe.client.peer_streams_left_bidi(), 0);
+        helper.pipe.advance().unwrap();
+        assert_eq!(helper.pipe.client.peer_streams_left_bidi(), 1);
+    }
+
+    /// Test the case where the client sends a RESET_STREAM quiche frame.
+    /// The peer sends its reset before we send a fin
+    #[test]
+    fn client_sends_reset_stream_before_server_fin() {
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // client (peer) sends a request
+        let stream_id = helper
+            .peer_client_send_request(make_request_headers("GET"), false)
+            .unwrap();
+
+        // servers reads request and sends response headers
+        helper.advance_and_run_loop().unwrap();
+        let req = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers{incoming_headers, ..} => { incoming_headers }
+        );
+        assert_eq!(req.stream_id, stream_id);
+        assert!(!req.read_fin);
+        let to_client = req.send.get_ref().unwrap().clone();
+        let from_client = req.recv;
+        let audit_stats = req.h3_audit_stats;
+
+        to_client
+            .try_send(OutboundFrame::Headers(make_response_headers(), None))
+            .unwrap();
+
+        // client sends a RESET_STREAM frame
+        helper.advance_and_run_loop().unwrap();
+        assert!(helper
+            .driver
+            .stream_map
+            .get(&stream_id)
+            .unwrap()
+            .waiting_for_recv());
+        assert_matches!(
+            helper.peer_client_poll(),
+            Ok((0, h3::Event::Headers { .. }))
+        );
+        assert_eq!(helper.peer_client_poll(), Err(h3::Error::Done));
+        assert_eq!(
+            helper
+                .pipe
+                .client
+                .stream_shutdown(0, quiche::Shutdown::Write, 4242),
+            Ok(())
+        );
+        helper.advance_and_run_loop().unwrap();
+        assert!(helper
+            .driver
+            .stream_map
+            .get(&stream_id)
+            .unwrap()
+            .waiting_for_recv());
+
+        // The channel is closed because the peer send us the reset.
+        assert!(from_client.is_closed());
+        assert_eq!(audit_stats.recvd_reset_stream_error_code(), 4242);
+        assert_matches!(
+            helper.driver_recv_core_event(),
+            Ok(H3Event::ResetStream { stream_id: 0 })
+        );
+
+        // We can still write to the peer and in fact, we must eventually send a
+        // fin.
+        to_client
+            .try_send(OutboundFrame::Body(Bytes::copy_from_slice(&[5; 4]), false))
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+        to_client
+            .try_send(OutboundFrame::Body(Bytes::copy_from_slice(&[6; 4]), true))
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        assert_eq!(helper.peer_client_poll(), Ok((0, h3::Event::Data)));
+        assert_eq!(
+            helper.peer_client_recv_body_vec(0, 1024),
+            Ok(vec![5, 5, 5, 5, 6, 6, 6, 6])
+        );
+
+        assert_eq!(helper.driver.stream_map.len(), 0);
+        assert_eq!(audit_stats.recvd_stop_sending_error_code(), -1);
+        assert_eq!(audit_stats.recvd_reset_stream_error_code(), 4242);
+        assert_eq!(audit_stats.sent_reset_stream_error_code(), -1);
+        assert_eq!(audit_stats.sent_stop_sending_error_code(), -1);
+        assert_eq!(audit_stats.recvd_stream_fin(), StreamClosureKind::None);
+        assert_eq!(audit_stats.sent_stream_fin(), StreamClosureKind::Explicit);
+        assert_eq!(audit_stats.downstream_bytes_recvd(), 0);
+        assert_eq!(audit_stats.downstream_bytes_sent(), 8);
+    }
+
+    /// Test the case where the client sends a RESET_STREAM quiche frame.
+    /// We send a fin before the client sends reset
+    #[test]
+    fn client_sends_reset_stream_after_server_fin() {
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // client (peer) sends a request
+        let stream_id = helper
+            .peer_client_send_request(make_request_headers("GET"), false)
+            .unwrap();
+
+        // servers reads request and sends response headers
+        helper.advance_and_run_loop().unwrap();
+        let req = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers{incoming_headers, ..} => { incoming_headers }
+        );
+        assert_eq!(req.stream_id, stream_id);
+        assert!(!req.read_fin);
+        let to_client = req.send.get_ref().unwrap().clone();
+        let from_client = req.recv;
+        let audit_stats = req.h3_audit_stats;
+
+        // Send response, body, and fin to client
+        to_client
+            .try_send(OutboundFrame::Headers(make_response_headers(), None))
+            .unwrap();
+        helper.work_loop_iter().unwrap();
+        to_client
+            .try_send(OutboundFrame::Body(
+                Bytes::copy_from_slice(b"foobar 42"),
+                true,
+            ))
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // client sends a RESET_STREAM frame
+        assert_matches!(
+            helper.peer_client_poll(),
+            Ok((0, h3::Event::Headers { .. }))
+        );
+        assert_matches!(helper.peer_client_poll(), Ok((0, h3::Event::Data)));
+        helper.peer_client_recv_body_vec(0, 1024).unwrap();
+        assert_eq!(
+            helper
+                .pipe
+                .client
+                .stream_shutdown(0, quiche::Shutdown::Write, 4242),
+            Ok(())
+        );
+        helper.advance_and_run_loop().unwrap();
+
+        // The channel is closed because the peer send us the reset.
+        assert!(from_client.is_closed());
+        assert_matches!(
+            helper.driver_recv_core_event(),
+            Ok(H3Event::ResetStream { stream_id: 0 })
+        );
+
+        assert_eq!(helper.driver.stream_map.len(), 0);
+        assert_eq!(audit_stats.recvd_stop_sending_error_code(), -1);
+        assert_eq!(audit_stats.recvd_reset_stream_error_code(), 4242);
+        assert_eq!(audit_stats.sent_reset_stream_error_code(), -1);
+        assert_eq!(audit_stats.sent_stop_sending_error_code(), -1);
+        assert_eq!(audit_stats.recvd_stream_fin(), StreamClosureKind::None);
+        assert_eq!(audit_stats.sent_stream_fin(), StreamClosureKind::Explicit);
+        assert_eq!(audit_stats.downstream_bytes_recvd(), 0);
+        assert_eq!(
+            audit_stats.downstream_bytes_sent(),
+            b"foobar 42".len() as u64
+        );
+    }
+
+    /// A peer reset in the middle of a DATA frame must not fail the connection.
+    #[test]
+    fn client_sends_reset_stream_in_middle_of_data_frame() {
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // Announce 100 DATA bytes, withholding the payload so HTTP/3 polling
+        // and the body reader can both observe the subsequent reset.
+        let stream_id = helper
+            .peer_client_send_request(make_request_headers("POST"), false)
+            .unwrap();
+        helper
+            .pipe
+            .client
+            .stream_send(stream_id, &[0x00, 0x40, 0x64], false)
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // Keep both application channels alive until the reset is processed.
+        let req = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers{incoming_headers, ..} => { incoming_headers }
+        );
+        helper
+            .pipe
+            .client
+            .stream_shutdown(stream_id, quiche::Shutdown::Write, 4242)
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        assert_eq!(req.h3_audit_stats.recvd_reset_stream_error_code(), 4242);
+        assert!(req.recv.is_closed());
+        assert!(!req.send.get_ref().unwrap().is_closed());
+        assert!(!helper.pipe.server.is_closed());
+    }
+
+    /// Test the case where the client sends a RESET_STREAM quiche frame while
+    /// we're in the middle of reading data. We want to excercise the
+    /// code-path where `upstream_ready` is called before `process_reads`.
+    /// If `process_reads()` is called first, it will get the Reset event.
+    /// If `upstream_ready()` is called first, it will attempt to read from
+    /// the h3::Connection and will get a
+    /// `TransportError(StreamReset(code))`
+    #[test]
+    fn client_sends_reset_stream_while_reading_wait_for_data() {
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // client (peer) sends a request
+        let stream_id = helper
+            .peer_client_send_request(make_request_headers("GET"), false)
+            .unwrap();
+
+        // servers reads request and sends response headers and some body bytes
+        helper.advance_and_run_loop().unwrap();
+        let req = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers{incoming_headers, ..} => { incoming_headers }
+        );
+        assert_eq!(req.stream_id, stream_id);
+        assert!(!req.read_fin);
+        let to_client = req.send.get_ref().unwrap().clone();
+        let mut from_client = req.recv;
+        let audit_stats = req.h3_audit_stats;
+
+        to_client
+            .try_send(OutboundFrame::Headers(make_response_headers(), None))
+            .unwrap();
+        helper.work_loop_iter().unwrap();
+        to_client
+            .try_send(OutboundFrame::Body(
+                Bytes::copy_from_slice(&[1, 2, 3, 4]),
+                false,
+            ))
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // client sends data
+        assert_matches!(
+            helper.peer_client_poll(),
+            Ok((0, h3::Event::Headers { .. }))
+        );
+        assert_matches!(helper.peer_client_poll(), Ok((0, h3::Event::Data)));
+        assert_eq!(helper.peer_client_poll(), Err(h3::Error::Done));
+        // The client sends the first half of the body.
+        assert_eq!(helper.peer_client_send_body(0, &[1; 5], false), Ok(5));
+
+        // Advance the pipe and let the driver read the buffered body into the
+        // `from_client` channel, filling it (`STREAM_CAPACITY` is 1 in tests).
+        helper.pipe.advance().unwrap();
+        helper.work_loop_iter().unwrap();
+
+        // The client sends the second half. With the downstream channel full
+        // and the stream readable again, the driver blocks the stream waiting
+        // for capacity (registering its channel waker) without reading
+        // further.
+        assert_eq!(helper.peer_client_send_body(0, &[1; 5], false), Ok(5));
+        helper.pipe.advance().unwrap();
+        helper.work_loop_iter().unwrap();
+
+        // Drain the first body frame; this frees downstream capacity so the
+        // blocked stream can make progress on the next `wait_for_data`.
+        assert_matches!(from_client.try_recv(), Ok(InboundFrame::Body(buf, fin)) => {
+            assert_eq!(buf.to_vec(), &[1; 5]);
+            assert!(!fin);
+        });
+        assert_matches!(
+            helper.driver_recv_core_event(),
+            Ok(H3Event::BodyBytesReceived {
+                stream_id: 0,
+                num_bytes: 5,
+                fin: false
+            })
+        );
+        assert_matches!(
+            helper.controller.event_receiver_mut().try_recv(),
+            Err(TryRecvError::Empty)
+        );
+
+        // The client resets the stream; the buffered-but-unread second half is
+        // dropped when the reset is processed.
+        // TODO: This is a bit finnicky to test properly. We don't want to run a
+        // full `work_loop_iter()` because that would call `process_reads()`
+        // first; we exercise the path where `wait_for_data` / `upstream_ready`
+        // observes the reset while reading.
+        assert_eq!(
+            helper
+                .pipe
+                .client
+                .stream_shutdown(0, quiche::Shutdown::Write, 4242),
+            Ok(())
+        );
+        helper.pipe.advance().unwrap();
+        tokio::task::unconstrained(
+            helper.driver.wait_for_data(&mut helper.pipe.server),
+        )
+        .now_or_never()
+        .unwrap_or(Ok(()))
+        .unwrap();
+
+        // The channel is closed because the peer send us the reset.
+        assert!(from_client.is_closed());
+        assert_eq!(audit_stats.recvd_reset_stream_error_code(), 4242);
+        assert_matches!(
+            helper.driver_recv_core_event(),
+            Ok(H3Event::ResetStream { stream_id: 0 })
+        );
+
+        // We can still write to the peer and in fact, we must eventually send a
+        // fin.
+        to_client
+            .try_send(OutboundFrame::Body(Bytes::copy_from_slice(&[6; 4]), true))
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        assert_eq!(
+            helper.peer_client_recv_body_vec(0, 1024),
+            Ok(vec![1, 2, 3, 4, 6, 6, 6, 6])
+        );
+        assert_eq!(helper.peer_client_poll(), Ok((0, h3::Event::Finished)));
+
+        assert_eq!(helper.driver.stream_map.len(), 0);
+        assert_eq!(audit_stats.recvd_stop_sending_error_code(), -1);
+        assert_eq!(audit_stats.recvd_reset_stream_error_code(), 4242);
+        assert_eq!(audit_stats.sent_reset_stream_error_code(), -1);
+        assert_eq!(audit_stats.sent_stop_sending_error_code(), -1);
+        assert_eq!(audit_stats.recvd_stream_fin(), StreamClosureKind::None);
+        assert_eq!(audit_stats.sent_stream_fin(), StreamClosureKind::Explicit);
+        assert_eq!(audit_stats.downstream_bytes_recvd(), 5);
+        assert_eq!(audit_stats.downstream_bytes_sent(), 8);
+    }
+
+    /// Test the case where the client sends a RESET_STREAM quiche frame while
+    /// we're in the middle of reading data. We want to excercise the
+    /// code-path where where we call `process_reads` before
+    /// `upstream_ready()`.
+    #[test]
+    fn server_sends_reset_stream_while_reading_process_reads() {
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // client (peer) sends a request
+        let stream_id = helper
+            .peer_client_send_request(make_request_headers("GET"), false)
+            .unwrap();
+
+        // servers reads request and sends response headers
+        helper.advance_and_run_loop().unwrap();
+        let req = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers{incoming_headers, ..} => { incoming_headers }
+        );
+        assert_eq!(req.stream_id, stream_id);
+        assert!(!req.read_fin);
+        let to_client = req.send.get_ref().unwrap().clone();
+        let mut from_client = req.recv;
+        let audit_stats = req.h3_audit_stats;
+
+        to_client
+            .try_send(OutboundFrame::Headers(make_response_headers(), None))
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // client sends data
+        assert_matches!(
+            helper.peer_client_poll(),
+            Ok((0, h3::Event::Headers { .. }))
+        );
+        assert_eq!(helper.peer_client_poll(), Err(h3::Error::Done));
+        // The client sends the first half of the body.
+        assert_eq!(helper.peer_client_send_body(0, &[1; 5], false), Ok(5));
+
+        // Advance the pipe and let the driver read the buffered body and put
+        // it into the `from_client` channel.
+        helper.pipe.advance().unwrap();
+        helper.work_loop_iter().unwrap();
+        assert_matches!(from_client.try_recv(), Ok(InboundFrame::Body(buf, fin)) => {
+            assert_eq!(buf.to_vec(), &[1; 5]);
+            assert!(!fin);
+        });
+        assert_matches!(
+            helper.driver_recv_core_event(),
+            Ok(H3Event::BodyBytesReceived {
+                stream_id: 0,
+                num_bytes: 5,
+                fin: false
+            })
+        );
+
+        // The client sends the second half of the body (delivered to the
+        // server but not yet read by the driver), then resets the stream. The
+        // buffered-but-unread bytes are dropped when the reset is processed, so
+        // they are never counted.
+        assert_eq!(helper.peer_client_send_body(0, &[1; 5], false), Ok(5));
+        helper.pipe.advance().unwrap();
+        assert_eq!(
+            helper
+                .pipe
+                .client
+                .stream_shutdown(0, quiche::Shutdown::Write, 4242),
+            Ok(())
+        );
+        helper.advance_and_run_loop().unwrap();
+
+        // The channel is closed because the peer send us the reset.
+        assert!(from_client.is_closed());
+        assert_eq!(audit_stats.recvd_reset_stream_error_code(), 4242);
+        assert_matches!(
+            helper.driver_recv_core_event(),
+            Ok(H3Event::ResetStream { stream_id: 0 })
+        );
+
+        // send fin to client
+        to_client
+            .try_send(OutboundFrame::Body(Default::default(), true))
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        assert_eq!(
+            helper.peer_client_recv_body_vec(0, 1024),
+            Err(h3::Error::Done)
+        );
+        assert_eq!(helper.peer_client_poll(), Ok((0, h3::Event::Data)));
+        assert_eq!(
+            helper.peer_client_recv_body_vec(0, 1024),
+            Err(h3::Error::Done)
+        );
+        assert_eq!(helper.peer_client_poll(), Ok((0, h3::Event::Finished)));
+
+        assert_eq!(helper.driver.stream_map.len(), 0);
+        assert_eq!(audit_stats.recvd_stop_sending_error_code(), -1);
+        assert_eq!(audit_stats.recvd_reset_stream_error_code(), 4242);
+        assert_eq!(audit_stats.sent_reset_stream_error_code(), -1);
+        assert_eq!(audit_stats.sent_stop_sending_error_code(), -1);
+        assert_eq!(audit_stats.recvd_stream_fin(), StreamClosureKind::None);
+        assert_eq!(audit_stats.sent_stream_fin(), StreamClosureKind::Explicit);
+        assert_eq!(audit_stats.downstream_bytes_recvd(), 5);
+        assert_eq!(audit_stats.downstream_bytes_sent(), 0);
+    }
+
+    /// Test the case where the client resets the stream in the middle of a
+    /// DATA frame, after the driver has read all of the payload received so
+    /// far. The driver must report the reset and must not deliver a fin for
+    /// the truncated body.
+    #[test]
+    fn client_sends_reset_stream_mid_data_frame() {
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // client (peer) sends a request
+        let stream_id = helper
+            .peer_client_send_request(make_request_headers("GET"), false)
+            .unwrap();
+
+        // server reads the request
+        helper.advance_and_run_loop().unwrap();
+        let req = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers{incoming_headers, ..} => { incoming_headers }
+        );
+        assert_eq!(req.stream_id, stream_id);
+        assert!(!req.read_fin);
+        let mut from_client = req.recv;
+        let audit_stats = req.h3_audit_stats;
+
+        // The client sends a DATA frame header with a payload length of 10,
+        // followed by only 5 bytes of payload.
+        assert_eq!(
+            helper.pipe.client.stream_send(
+                stream_id,
+                &[0x00, 10, 1, 1, 1, 1, 1],
+                false
+            ),
+            Ok(7)
+        );
+
+        // The driver reads the received payload into the `from_client`
+        // channel.
+        helper.pipe.advance().unwrap();
+        helper.work_loop_iter().unwrap();
+        assert_matches!(from_client.try_recv(), Ok(InboundFrame::Body(buf, fin)) => {
+            assert_eq!(buf.to_vec(), &[1; 5]);
+            assert!(!fin);
+        });
+        assert_matches!(
+            helper.driver_recv_core_event(),
+            Ok(H3Event::BodyBytesReceived {
+                stream_id: 0,
+                num_bytes: 5,
+                fin: false
+            })
+        );
+
+        // The client resets the stream before sending the rest of the frame.
+        assert_eq!(
+            helper.pipe.client.stream_shutdown(
+                stream_id,
+                quiche::Shutdown::Write,
+                4242
+            ),
+            Ok(())
+        );
+        helper.advance_and_run_loop().unwrap();
+
+        // The driver reports the reset without delivering a fin for the
+        // truncated body.
+        assert_matches!(from_client.try_recv(), Err(TryRecvError::Disconnected));
+        assert_matches!(
+            helper.driver_recv_core_event(),
+            Ok(H3Event::ResetStream { stream_id: 0 })
+        );
+        assert_eq!(audit_stats.recvd_reset_stream_error_code(), 4242);
+        assert_eq!(audit_stats.recvd_stream_fin(), StreamClosureKind::None);
+    }
+
+    #[test]
+    fn server_driver_send_stop_sending_after_channel_drop() {
+        const REQUEST_CANCELED_ERR: u64 =
+            h3::WireErrorCode::RequestCancelled as u64;
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // client sends a request
+        let stream_id = helper
+            .peer_client_send_request(make_request_headers("GET"), false)
+            .unwrap();
+
+        // servers reads request and sends response headers
+        helper.advance_and_run_loop().unwrap();
+        let req = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers{incoming_headers, ..} => { incoming_headers }
+        );
+        let audit_stats = req.h3_audit_stats.clone();
+        assert_eq!(req.stream_id, stream_id);
+        assert!(!req.read_fin);
+        let to_client = req.send.get_ref().unwrap().clone();
+        let mut from_client = req.recv;
+        to_client
+            .try_send(OutboundFrame::Headers(make_response_headers(), None))
+            .unwrap();
+
+        // client reads response and sends body without fin
+        helper.advance_and_run_loop().unwrap();
+        assert_matches!(
+            helper.peer_client_poll(),
+            Ok((0, h3::Event::Headers { .. }))
+        );
+        assert_eq!(helper.peer_client_poll(), Err(h3::Error::Done));
+        assert_eq!(helper.peer_client_send_body(0, &[1; 5], false), Ok(5));
+        helper.advance_and_run_loop().unwrap();
+
+        // server receives body
+        let (body, fin, _err) = helper.driver_try_recv_body(&mut from_client);
+        assert_eq!(body, vec![1; 5]);
+        assert!(!fin);
+
+        // peer (client) sends more data
+        assert_eq!(helper.peer_client_send_body(0, &[1; 6], false), Ok(6));
+        // advance the pipe only
+        helper.pipe.advance().unwrap();
+        // we drop the channel.
+        drop(from_client);
+        helper.advance_and_run_loop().unwrap();
+
+        assert_matches!(
+            helper.driver_recv_core_event(),
+            Ok(H3Event::BodyBytesReceived {
+                stream_id: 0,
+                num_bytes: 5,
+                fin: false
+            })
+        );
+        assert_matches!(
+            helper.controller.event_receiver_mut().try_recv(),
+            Err(TryRecvError::Empty)
+        );
+
+        // Make sure the peer has received our STOP_SENDING frame
+        assert_eq!(
+            helper.peer_client_send_body(0, &[1; 7], false),
+            Err(h3::Error::TransportError(quiche::Error::StreamStopped(
+                REQUEST_CANCELED_ERR
+            )))
+        );
+        helper.advance_and_run_loop().unwrap();
+
+        // we still need to send a fin
+        to_client
+            .try_send(OutboundFrame::Body(Bytes::copy_from_slice(&[42]), true))
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+        assert_eq!(helper.peer_client_poll(), Ok((0, h3::Event::Data)));
+        assert_eq!(helper.peer_client_poll(), Err(h3::Error::Done));
+        assert_eq!(helper.peer_client_recv_body_vec(0, 1024), Ok(vec![42]));
+        assert_eq!(
+            helper.peer_client_recv_body_vec(0, 1024),
+            Err(h3::Error::Done)
+        );
+        assert_eq!(helper.peer_client_poll(), Ok((0, h3::Event::Finished)));
+
+        assert_eq!(audit_stats.recvd_stop_sending_error_code(), -1);
+        assert_eq!(audit_stats.recvd_reset_stream_error_code(), -1);
+        assert_eq!(audit_stats.sent_reset_stream_error_code(), -1);
+        assert_eq!(
+            audit_stats.sent_stop_sending_error_code(),
+            REQUEST_CANCELED_ERR as i64
+        );
+        assert_eq!(audit_stats.recvd_stream_fin(), StreamClosureKind::None);
+        assert_eq!(audit_stats.sent_stream_fin(), StreamClosureKind::Explicit);
+        assert_eq!(audit_stats.downstream_bytes_recvd(), 5);
+        assert_eq!(audit_stats.downstream_bytes_sent(), 1);
+        assert_eq!(helper.driver.stream_map.len(), 0);
+    }
+
+    // Verify we don't send a STOP_SENDING frame if we've already processed a
+    // fin
+    #[test]
+    fn server_driver_drop_channel_after_fin() {
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // client sends a request
+        let stream_id = helper
+            .peer_client_send_request(make_request_headers("GET"), false)
+            .unwrap();
+
+        // servers reads request and sends response headers
+        helper.advance_and_run_loop().unwrap();
+        let req = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers{incoming_headers, ..} => { incoming_headers }
+        );
+        let audit_stats = req.h3_audit_stats.clone();
+        assert_eq!(req.stream_id, stream_id);
+        assert!(!req.read_fin);
+        let to_client = req.send.get_ref().unwrap().clone();
+        let mut from_client = req.recv;
+        to_client
+            .try_send(OutboundFrame::Headers(make_response_headers(), None))
+            .unwrap();
+
+        // client reads response and sends body WITH fin
+        helper.advance_and_run_loop().unwrap();
+        assert_matches!(
+            helper.peer_client_poll(),
+            Ok((0, h3::Event::Headers { .. }))
+        );
+        assert_eq!(helper.peer_client_poll(), Err(h3::Error::Done));
+        assert_eq!(helper.peer_client_send_body(0, &[1; 5], true), Ok(5));
+        helper.advance_and_run_loop().unwrap();
+
+        // server receives body
+        let (body, fin, _err) = helper.driver_try_recv_body(&mut from_client);
+        assert_eq!(body, vec![1; 5]);
+        assert!(fin);
+
+        helper.advance_and_run_loop().unwrap();
+        // we drop the channel.
+        drop(from_client);
+        helper.advance_and_run_loop().unwrap();
+
+        // we still need to send a fin
+        to_client
+            .try_send(OutboundFrame::Body(Bytes::copy_from_slice(&[42]), true))
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+        assert_eq!(helper.peer_client_poll(), Ok((0, h3::Event::Data)));
+        assert_eq!(helper.peer_client_poll(), Err(h3::Error::Done));
+        assert_eq!(helper.peer_client_recv_body_vec(0, 1024), Ok(vec![42]));
+        assert_eq!(
+            helper.peer_client_recv_body_vec(0, 1024),
+            Err(h3::Error::Done)
+        );
+        assert_eq!(helper.peer_client_poll(), Ok((0, h3::Event::Finished)));
+
+        assert_eq!(audit_stats.recvd_stop_sending_error_code(), -1);
+        assert_eq!(audit_stats.recvd_reset_stream_error_code(), -1);
+        assert_eq!(audit_stats.sent_reset_stream_error_code(), -1);
+        assert_eq!(audit_stats.sent_stop_sending_error_code(), -1);
+        assert_eq!(audit_stats.recvd_stream_fin(), StreamClosureKind::Explicit);
+        assert_eq!(audit_stats.sent_stream_fin(), StreamClosureKind::Explicit);
+        assert_eq!(audit_stats.downstream_bytes_recvd(), 5);
+        assert_eq!(audit_stats.downstream_bytes_sent(), 1);
+        assert_eq!(helper.driver.stream_map.len(), 0);
+    }
+
+    // Test the edge case where the driver has read a fin from the stream but
+    // hasn't been able to deliver it before the channel is dropped.
+    #[test]
+    fn server_driver_drop_channel_after_fin_2() {
+        const REQUEST_CANCELED_ERR: u64 =
+            h3::WireErrorCode::RequestCancelled as u64;
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // client sends a request
+        let stream_id = helper
+            .peer_client_send_request(make_request_headers("GET"), false)
+            .unwrap();
+
+        // servers reads request and sends response headers
+        helper.advance_and_run_loop().unwrap();
+        let req = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers{incoming_headers, ..} => { incoming_headers }
+        );
+        let audit_stats = req.h3_audit_stats.clone();
+        assert_eq!(req.stream_id, stream_id);
+        assert!(!req.read_fin);
+        let to_client = req.send.get_ref().unwrap().clone();
+        to_client
+            .try_send(OutboundFrame::Headers(make_response_headers(), None))
+            .unwrap();
+
+        // client reads response and sends body without fin
+        helper.advance_and_run_loop().unwrap();
+        assert_matches!(
+            helper.peer_client_poll(),
+            Ok((0, h3::Event::Headers { .. }))
+        );
+        assert_eq!(helper.peer_client_poll(), Err(h3::Error::Done));
+        assert_eq!(helper.peer_client_send_body(0, &[1; 5], false), Ok(5));
+        helper.advance_and_run_loop().unwrap();
+
+        // peer (client) sends more data and fin
+        assert_eq!(helper.peer_client_send_body(0, &[1; 6], true), Ok(6));
+        helper.advance_and_run_loop().unwrap();
+        // we drop the channel.
+        drop(req.recv);
+        helper.advance_and_run_loop().unwrap();
+
+        assert_matches!(
+            helper.driver_recv_core_event(),
+            Ok(H3Event::BodyBytesReceived {
+                stream_id: 0,
+                num_bytes: 5,
+                fin: false
+            })
+        );
+        assert_matches!(
+            helper.controller.event_receiver_mut().try_recv(),
+            Err(TryRecvError::Empty)
+        );
+
+        // we still need to send a fin
+        to_client
+            .try_send(OutboundFrame::Body(Bytes::copy_from_slice(&[42]), true))
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+        assert_eq!(helper.peer_client_poll(), Ok((0, h3::Event::Data)));
+        assert_eq!(helper.peer_client_poll(), Err(h3::Error::Done));
+        assert_eq!(helper.peer_client_recv_body_vec(0, 1024), Ok(vec![42]));
+        assert_eq!(
+            helper.peer_client_recv_body_vec(0, 1024),
+            Err(h3::Error::Done)
+        );
+        assert_eq!(helper.peer_client_poll(), Ok((0, h3::Event::Finished)));
+
+        assert_eq!(audit_stats.recvd_stop_sending_error_code(), -1);
+        assert_eq!(audit_stats.recvd_reset_stream_error_code(), -1);
+        assert_eq!(audit_stats.sent_reset_stream_error_code(), -1);
+        assert_eq!(
+            audit_stats.sent_stop_sending_error_code(),
+            REQUEST_CANCELED_ERR as i64
+        );
+        assert_eq!(audit_stats.recvd_stream_fin(), StreamClosureKind::None);
+        assert_eq!(audit_stats.sent_stream_fin(), StreamClosureKind::Explicit);
+        assert_eq!(audit_stats.downstream_bytes_recvd(), 5);
+        assert_eq!(audit_stats.downstream_bytes_sent(), 1);
+        assert_eq!(helper.driver.stream_map.len(), 0);
+    }
+
+    #[test]
+    fn server_send_trailers() {
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // client sends a request
+        let stream_id = helper
+            .peer_client_send_request(make_request_headers("GET"), false)
+            .unwrap();
+
+        // servers reads request and sends response headers
+        helper.advance_and_run_loop().unwrap();
+        let req = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers{incoming_headers, ..} => { incoming_headers }
+        );
+        assert_eq!(req.stream_id, stream_id);
+        assert!(!req.read_fin);
+        let to_client = req.send.get_ref().unwrap().clone();
+        let mut from_client = req.recv;
+        to_client
+            .try_send(OutboundFrame::Headers(make_response_headers(), None))
+            .unwrap();
+
+        // client reads response and sends body and fin
+        helper.advance_and_run_loop().unwrap();
+        assert_matches!(
+            helper.peer_client_poll(),
+            Ok((0, h3::Event::Headers { .. }))
+        );
+        assert_eq!(helper.peer_client_poll(), Err(h3::Error::Done));
+        assert_eq!(helper.peer_client_send_body(0, &[1; 5], true), Ok(5));
+        helper.advance_and_run_loop().unwrap();
+
+        // server receives body
+        let (body, fin, _err) = helper.driver_try_recv_body(&mut from_client);
+        assert_eq!(body, vec![1; 5]);
+        assert!(fin);
+
+        // server sends body
+        to_client
+            .try_send(OutboundFrame::Body(Bytes::copy_from_slice(&[42]), false))
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+        assert_eq!(helper.peer_client_poll(), Ok((0, h3::Event::Data)));
+        assert_eq!(helper.peer_client_recv_body_vec(0, 1024), Ok(vec![42]));
+        assert_eq!(
+            helper.peer_client_recv_body_vec(0, 1024),
+            Err(h3::Error::Done)
+        );
+
+        // server sends trailers
+        to_client
+            .try_send(OutboundFrame::Trailers(make_response_trailers(), None))
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+        assert_matches!(
+            helper.peer_client_poll(),
+            Ok((0, h3::Event::Headers { .. }))
+        );
+
+        assert_eq!(helper.peer_client_poll(), Ok((0, h3::Event::Finished)));
+        assert_eq!(helper.peer_client_poll(), Err(h3::Error::Done));
+    }
+
+    /// Test that calling `H3Controller::shutdown_stream` with
+    /// `StreamShutdown::Write` sends a RESET_STREAM frame to the peer.
+    #[test]
+    fn server_shutdown_stream_write_direction() {
+        use crate::http3::driver::StreamShutdown;
+        const CUSTOM_ERROR_CODE: u64 = 0x1234;
+
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // client sends a request
+        let stream_id = helper
+            .peer_client_send_request(make_request_headers("GET"), false)
+            .unwrap();
+
+        // server reads request
+        helper.advance_and_run_loop().unwrap();
+        let req = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers{incoming_headers, ..} => { incoming_headers }
+        );
+        assert_eq!(req.stream_id, stream_id);
+        let audit_stats = req.h3_audit_stats.clone();
+
+        // Server calls shutdown_stream via the controller
+        helper
+            .controller
+            .shutdown_stream(stream_id, StreamShutdown::Write {
+                error_code: CUSTOM_ERROR_CODE,
+            });
+
+        helper.advance_and_run_loop().unwrap();
+
+        // Client should receive the RESET_STREAM
+        // Note: quiche::h3 reports RESET_STREAM via a TransportError when
+        // trying to read from the stream
+        assert_eq!(
+            helper.peer_client_poll(),
+            Ok((0, h3::Event::Reset(CUSTOM_ERROR_CODE)))
+        );
+
+        // Verify stats
+        assert_eq!(
+            audit_stats.sent_reset_stream_error_code(),
+            CUSTOM_ERROR_CODE as i64
+        );
+        assert_eq!(audit_stats.sent_stop_sending_error_code(), -1);
+    }
+
+    /// Test that calling `H3Controller::shutdown_stream` with
+    /// `StreamShutdown::Read` sends a STOP_SENDING frame to the peer.
+    #[test]
+    fn server_shutdown_stream_read_direction() {
+        use crate::http3::driver::StreamShutdown;
+        const CUSTOM_ERROR_CODE: u64 = 0x5678;
+
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // client sends a request without fin (expecting to send body)
+        let stream_id = helper
+            .peer_client_send_request(make_request_headers("POST"), false)
+            .unwrap();
+
+        // server reads request
+        helper.advance_and_run_loop().unwrap();
+        let req = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers{incoming_headers, ..} => { incoming_headers }
+        );
+        assert_eq!(req.stream_id, stream_id);
+        let audit_stats = req.h3_audit_stats.clone();
+
+        // Server calls shutdown_stream with Read direction (STOP_SENDING)
+        helper
+            .controller
+            .shutdown_stream(stream_id, StreamShutdown::Read {
+                error_code: CUSTOM_ERROR_CODE,
+            });
+
+        helper.advance_and_run_loop().unwrap();
+
+        // Client tries to send body - should get StreamStopped error
+        assert_eq!(
+            helper.peer_client_send_body(0, &[1, 2, 3], false),
+            Err(h3::Error::TransportError(quiche::Error::StreamStopped(
+                CUSTOM_ERROR_CODE
+            )))
+        );
+
+        // Verify stats
+        assert_eq!(audit_stats.sent_reset_stream_error_code(), -1);
+        assert_eq!(
+            audit_stats.sent_stop_sending_error_code(),
+            CUSTOM_ERROR_CODE as i64
+        );
+    }
+
+    /// Test that calling `H3Controller::shutdown_stream` with
+    /// `StreamShutdown::Both` sends both RESET_STREAM and STOP_SENDING
+    /// frames to the peer.
+    #[test]
+    fn server_shutdown_stream_both_directions() {
+        use crate::http3::driver::StreamShutdown;
+        const READ_ERROR_CODE: u64 = 0xAAAA;
+        const WRITE_ERROR_CODE: u64 = 0xBBBB;
+
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // client sends a request without fin
+        let stream_id = helper
+            .peer_client_send_request(make_request_headers("POST"), false)
+            .unwrap();
+
+        // server reads request
+        helper.advance_and_run_loop().unwrap();
+        let req = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers{incoming_headers, ..} => { incoming_headers }
+        );
+        assert_eq!(req.stream_id, stream_id);
+        let audit_stats = req.h3_audit_stats.clone();
+
+        // Server calls shutdown_stream with Both directions
+        helper
+            .controller
+            .shutdown_stream(stream_id, StreamShutdown::Both {
+                read_error_code: READ_ERROR_CODE,
+                write_error_code: WRITE_ERROR_CODE,
+            });
+
+        helper.advance_and_run_loop().unwrap();
+
+        // Client should see STOP_SENDING when trying to send
+        assert_eq!(
+            helper.peer_client_send_body(0, &[1, 2, 3], false),
+            Err(h3::Error::TransportError(quiche::Error::StreamStopped(
+                READ_ERROR_CODE
+            )))
+        );
+
+        // Client should see RESET_STREAM when trying to receive
+        assert_eq!(
+            helper.peer_client_poll(),
+            Ok((0, h3::Event::Reset(WRITE_ERROR_CODE)))
+        );
+
+        // Verify stats
+        assert_eq!(
+            audit_stats.sent_reset_stream_error_code(),
+            WRITE_ERROR_CODE as i64
+        );
+        assert_eq!(
+            audit_stats.sent_stop_sending_error_code(),
+            READ_ERROR_CODE as i64
+        );
+    }
+
+    /// Verify that a GOAWAY received from the client does not affect
+    /// in-flight response streams. The client sends GOAWAY with push
+    /// ID 0 (the only value currently supported, since server push is
+    /// not implemented). The server should surface the GoAway event
+    /// and continue sending response data normally.
+    ///
+    /// Per RFC 9114 Section 5.2, when a client sends GOAWAY, the ID
+    /// is a push ID indicating the range of pushes the client will
+    /// accept. Since server push is unimplemented, the client always
+    /// sends 0.
+    #[test]
+    fn server_receiving_goaway_keeps_connection_intact() {
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // Client sends a request.
+        let stream_id = helper
+            .peer_client_send_request(make_request_headers("GET"), true)
+            .unwrap();
+        assert_eq!(stream_id, 0);
+
+        // Server receives the request and starts a streaming response.
+        helper.advance_and_run_loop().unwrap();
+        let req = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers{incoming_headers, ..} => { incoming_headers }
+        );
+        assert_eq!(req.stream_id, stream_id);
+        let to_client = req.send.get_ref().unwrap().clone();
+        to_client
+            .try_send(OutboundFrame::Headers(make_response_headers(), None))
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // Client receives response headers.
+        assert_matches!(
+            helper.peer_client_poll(),
+            Ok((0, h3::Event::Headers { .. }))
+        );
+
+        // Server sends first body chunk.
+        to_client
+            .try_send(OutboundFrame::Body(
+                Bytes::copy_from_slice(&[1; 10]),
+                false,
+            ))
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // Client receives the first body chunk.
+        assert_eq!(helper.peer_client_poll(), Ok((0, h3::Event::Data)));
+        assert_eq!(helper.peer_client_recv_body_vec(0, 1024), Ok(vec![1; 10]));
+
+        // Client sends GOAWAY with push ID 0 (graceful shutdown).
+        helper.peer.send_goaway(&mut helper.pipe.client, 0).unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // Server driver surfaces the GoAway event.
+        loop {
+            match helper.driver_recv_core_event().unwrap() {
+                H3Event::GoAway { id } => {
+                    assert_eq!(id, 0);
+                    break;
+                },
+                H3Event::BodyBytesReceived { .. } => continue,
+                H3Event::StreamClosed { .. } => continue,
+                other => panic!("unexpected event: {other:?}"),
+            }
+        }
+
+        // Server continues sending response body — the connection is
+        // still alive.
+        to_client
+            .try_send(OutboundFrame::Body(
+                Bytes::copy_from_slice(&[2; 10]),
+                false,
+            ))
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // Client still receives the data.
+        assert_eq!(helper.peer_client_poll(), Ok((0, h3::Event::Data)));
+        assert_eq!(helper.peer_client_recv_body_vec(0, 1024), Ok(vec![2; 10]));
+
+        // Server finishes the response.
+        to_client
+            .try_send(OutboundFrame::Body(Bytes::copy_from_slice(&[3; 10]), true))
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // Client receives the final chunk and fin.
+        assert_eq!(helper.peer_client_poll(), Ok((0, h3::Event::Data)));
+        assert_eq!(helper.peer_client_recv_body_vec(0, 1024), Ok(vec![3; 10]));
+        assert_eq!(helper.peer_client_poll(), Ok((0, h3::Event::Finished)));
+    }
+
+    // Test that dropping the H3 event receiver when there are no active streams
+    // and datagram flows causes the connection to close immediately.
+    #[test]
+    fn h3_controller_drop_closes_connection_when_maps_empty() {
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+
+        assert!(helper.driver.stream_map.is_empty());
+        assert!(helper.driver.flow_map.is_empty());
+        assert!(helper.pipe.server.local_error().is_none());
+
+        // drop the controller to trigger receiver drop detection
+        drop(helper.controller);
+
+        // run wait_for_data to detect the receiver drop
+        tokio::task::unconstrained(
+            helper.driver.wait_for_data(&mut helper.pipe.server),
+        )
+        .now_or_never();
+
+        // connection closed with H3 NoError
+        let local_error = helper
+            .pipe
+            .server
+            .local_error()
+            .expect("connection should be closing");
+        assert!(local_error.is_app, "should be application-level close");
+        assert_eq!(
+            local_error.error_code,
+            h3::WireErrorCode::NoError as u64,
+            "should close with H3 NoError"
+        );
+    }
+
+    // Test that dropping the H3Controller when there are active streams/flows
+    // does NOT close the connection immediately (e.g. tunnel scenarios).
+    #[test]
+    fn h3_controller_drop_keeps_connection_alive_when_streams_exist() {
+        let mut helper =
+            DriverTestHelper::<ServerHooks>::with_pipe_and_http3_settings(
+                quiche::test_utils::Pipe::with_config_and_buf(
+                    &mut default_quiche_config(),
+                )
+                .unwrap(),
+                Http3Settings {
+                    enable_extended_connect: true,
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // CONNECT-UDP request creates both a stream and a datagram flow
+        let connect_headers = vec![
+            h3::Header::new(b":method", b"CONNECT-UDP"),
+            h3::Header::new(b":scheme", b"https"),
+            h3::Header::new(b":authority", b"quic.tech"),
+            h3::Header::new(b":path", b"/"),
+            h3::Header::new(b"datagram-flow-id", b"0"),
+        ];
+        helper
+            .peer_client_send_request(connect_headers, false)
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // Consume events to keep channels alive
+        assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Core(H3Event::NewFlow { .. })
+        );
+        assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers { .. }
+        );
+
+        assert_eq!(helper.driver.stream_map.len(), 1);
+        assert_eq!(helper.driver.flow_map.len(), 1);
+
+        drop(helper.controller);
+        tokio::task::unconstrained(
+            helper.driver.wait_for_data(&mut helper.pipe.server),
+        )
+        .now_or_never();
+
+        // Connection stays open (stream and flow still active)
+        assert!(helper.pipe.server.local_error().is_none());
+    }
+
+    /// Test that a CONNECT request with `:protocol` does NOT create a
+    /// datagram flow when extended CONNECT is disabled.
+    #[test]
+    fn protocol_without_extended_connect_closes_on_controller_drop() {
+        // Default settings have enable_extended_connect: false
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // CONNECT with :protocol, but extended CONNECT is disabled
+        let connect_headers = vec![
+            h3::Header::new(b":method", b"CONNECT"),
+            h3::Header::new(b":scheme", b"https"),
+            h3::Header::new(b":authority", b"quic.tech"),
+            h3::Header::new(b":path", b"/"),
+            h3::Header::new(b":protocol", b"webtransport"),
+        ];
+        helper
+            .peer_client_send_request(connect_headers, true)
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // No NewFlow event — flow was not created
+        assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers { .. }
+        );
+
+        assert_eq!(helper.driver.stream_map.len(), 1);
+        assert_eq!(helper.driver.flow_map.len(), 0);
+
+        // Drop controller, then run wait_for_data
+        drop(helper.controller);
+        tokio::task::unconstrained(
+            helper.driver.wait_for_data(&mut helper.pipe.server),
+        )
+        .now_or_never();
+        tokio::task::unconstrained(
+            helper.driver.wait_for_data(&mut helper.pipe.server),
+        )
+        .now_or_never();
+
+        // Connection closes because stream_map and flow_map are empty
+        let local_error = helper
+            .pipe
+            .server
+            .local_error()
+            .expect("connection should be closing");
+        assert!(local_error.is_app, "should be application-level close");
+        assert_eq!(
+            local_error.error_code,
+            h3::WireErrorCode::NoError as u64,
+            "should close with H3 NoError"
+        );
+    }
+
+    /// Drop the event receiver with an open stream, then close the
+    /// stream via client fin. Verify the connection closes.
+    #[test]
+    fn controller_drop_then_stream_close_triggers_connection_close() {
+        let mut helper = DriverTestHelper::<ServerHooks>::new().unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // Client sends a request the stream stays open
+        let stream_id = helper
+            .peer_client_send_request(make_request_headers("GET"), false)
+            .unwrap();
+
+        helper.advance_and_run_loop().unwrap();
+        let req = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Headers{incoming_headers, ..} => {
+                incoming_headers
+            }
+        );
+        assert_eq!(req.stream_id, stream_id);
+        let to_client = req.send.get_ref().unwrap().clone();
+
+        // Send response headers + body with fin
+        to_client
+            .try_send(OutboundFrame::Headers(make_response_headers(), None))
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+        to_client
+            .try_send(OutboundFrame::Body(Bytes::from_static(b"ok"), true))
+            .unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        assert_eq!(helper.driver.stream_map.len(), 1);
+
+        // Drop the stream channels so cleanup_stream can remove
+        // the stream from the map
+        drop(to_client);
+        drop(req);
+
+        // Client reads response and sends fin to close the stream
+        helper.advance_and_run_loop().unwrap();
+        assert_matches!(
+            helper.peer_client_poll(),
+            Ok((0, h3::Event::Headers { .. }))
+        );
+        assert_eq!(helper.peer_client_poll(), Ok((0, h3::Event::Data)));
+        assert_eq!(
+            helper.peer_client_recv_body_vec(0, 1024),
+            Ok(vec![111, 107])
+        );
+        assert_eq!(helper.peer_client_poll(), Ok((0, h3::Event::Finished)));
+
+        // Drop the controller
+        drop(helper.controller);
+        tokio::task::unconstrained(
+            helper.driver.wait_for_data(&mut helper.pipe.server),
+        )
+        .now_or_never();
+
+        // Connection should NOT close yet (stream still open)
+        assert!(helper.pipe.server.local_error().is_none());
+
+        // Client sends fin to close the stream
+        assert_eq!(
+            helper
+                .peer
+                .send_body(&mut helper.pipe.client, 0, b"done", true,),
+            Ok(4)
+        );
+        // One IO worker iteration: deliver client fin, process it,
+        // and close the connection.
+        helper.pipe.advance().unwrap();
+        helper
+            .driver
+            .process_reads(&mut helper.pipe.server)
+            .unwrap();
+        helper
+            .driver
+            .process_writes(&mut helper.pipe.server)
+            .unwrap();
+        tokio::task::unconstrained(
+            helper.driver.wait_for_data(&mut helper.pipe.server),
+        )
+        .now_or_never();
+
+        assert_eq!(helper.driver.stream_map.len(), 0);
+
+        // Now the connection should close with NoError
+        let local_error = helper
+            .pipe
+            .server
+            .local_error()
+            .expect("connection should be closing");
+        assert!(local_error.is_app, "should be application-level close");
+        assert_eq!(
+            local_error.error_code,
+            h3::WireErrorCode::NoError as u64,
+            "should close with H3 NoError"
+        );
+    }
+
+    /// Drop the event receiver with an autonomous flow open (a flow
+    /// with no associated stream), then shut down the flow. Verify
+    /// the connection closes.
+    #[test]
+    fn controller_drop_then_autonomous_flow_shutdown_triggers_connection_close() {
+        let mut config = default_quiche_config();
+        config.enable_dgram(true, 100, 100);
+
+        let mut helper =
+            DriverTestHelper::<ServerHooks>::with_pipe_and_http3_settings(
+                quiche::test_utils::Pipe::with_config_and_buf(&mut config)
+                    .unwrap(),
+                Http3Settings {
+                    enable_extended_connect: true,
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        // Peer sends an H3 datagram for a flow_id with no associated
+        // CONNECT-UDP stream. Wire format: varint(flow_id) || payload.
+        let flow_id: u64 = 8;
+        let payload: &[u8] = b"hi";
+        let prefix_len = octets::varint_len(flow_id);
+        let mut wire = vec![0u8; prefix_len + payload.len()];
+        {
+            let mut enc = octets::OctetsMut::with_slice(&mut wire);
+            enc.put_varint(flow_id).unwrap();
+            enc.put_bytes(payload).unwrap();
+        }
+        helper.pipe.client.dgram_send(&wire).unwrap();
+
+        // process_available_dgrams creates an autonomous flow and
+        // emits NewFlow.
+        helper.advance_and_run_loop().unwrap();
+
+        let flow_send = assert_matches!(
+            helper.driver_recv_server_event().unwrap(),
+            ServerH3Event::Core(H3Event::NewFlow { send, .. }) => send
+        );
+        let flow_sender = flow_send.get_ref().unwrap().clone();
+
+        assert!(helper.driver.stream_map.is_empty());
+        assert_eq!(helper.driver.flow_map.len(), 1);
+
+        // Drop the controller. closed() fires, sets the flag, but
+        // flow_map is non-empty so no close yet.
+        drop(helper.controller);
+        tokio::task::unconstrained(
+            helper.driver.wait_for_data(&mut helper.pipe.server),
+        )
+        .now_or_never();
+        assert!(helper.pipe.server.local_error().is_none());
+
+        // Send FlowShutdown via the per-flow channel.
+        flow_sender
+            .try_send(OutboundFrame::FlowShutdown {
+                flow_id,
+                stream_id: flow_id,
+            })
+            .unwrap();
+
+        // wait_for_data picks up the frame and calls dgram_ready.
+        // shutdown_stream returns early (no stream), so the close
+        // gate in cleanup_stream is never invoked.
+        tokio::task::unconstrained(
+            helper.driver.wait_for_data(&mut helper.pipe.server),
+        )
+        .now_or_never();
+        drop(flow_sender);
+        drop(flow_send);
+
+        assert!(helper.driver.stream_map.is_empty());
+        assert!(helper.driver.flow_map.is_empty());
+
+        // closed() is gated off; no other arm can drive a close.
+        tokio::task::unconstrained(
+            helper.driver.wait_for_data(&mut helper.pipe.server),
+        )
+        .now_or_never();
+
+        let local_error = helper
+            .pipe
+            .server
+            .local_error()
+            .expect("connection should be closing");
+        assert!(local_error.is_app, "should be application-level close");
+        assert_eq!(
+            local_error.error_code,
+            h3::WireErrorCode::NoError as u64,
+            "should close with H3 NoError"
+        );
+    }
+
+    /// Verify that datagrams are silently dropped and no flow is
+    /// created when extended connect is disabled.
+    #[test]
+    fn process_dgram_skips_flow_creation_when_extended_connect_disabled() {
+        let mut config = default_quiche_config();
+        config.enable_dgram(true, 100, 100);
+
+        // Default settings have enable_extended_connect: false
+        let mut helper =
+            DriverTestHelper::<ServerHooks>::with_pipe_and_http3_settings(
+                quiche::test_utils::Pipe::with_config_and_buf(&mut config)
+                    .unwrap(),
+                Http3Settings::default(),
+            )
+            .unwrap();
+        helper.complete_handshake().unwrap();
+        helper.advance_and_run_loop().unwrap();
+
+        let flow_id: u64 = 8;
+        let payload: &[u8] = b"hi";
+        let prefix_len = octets::varint_len(flow_id);
+        let mut wire = vec![0u8; prefix_len + payload.len()];
+        {
+            let mut enc = octets::OctetsMut::with_slice(&mut wire);
+            enc.put_varint(flow_id).unwrap();
+            enc.put_bytes(payload).unwrap();
+        }
+        helper.pipe.client.dgram_send(&wire).unwrap();
+
+        helper.advance_and_run_loop().unwrap();
+
+        // No flow should be created
+        assert!(
+            helper.driver.flow_map.is_empty(),
+            "flow_map should remain empty when extended connect is disabled"
+        );
+    }
+}
