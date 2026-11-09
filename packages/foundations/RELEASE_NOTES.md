@@ -1,0 +1,551 @@
+
+5.11.6
+- 2026-11-06 fix(telemetry): Don't hold listener socket open unnecessarily
+
+5.11.5
+- 2026-11-05 Fix tests to check for ToOwned metrics arguments
+- 2026-11-05 Update docs to reflect ToOwned for all metrics reference arguments
+- 2026-10-28 ToOwned everything
+- 2026-10-27 Accept `&str` in metrics arguments
+- 2026-11-05 fix(settings): keep doc comments on fields with raw identifiers
+- 2026-11-04 fix: minver violations in jemalloc_pprof dependencies
+- 2026-11-03 feat(telemetry): serve heap profiles in pprof format
+- 2026-11-03 refactor(telemetry): dump jemalloc heap profiles via jemalloc_pprof
+- 2026-11-03 telemetry: Elimiate false sharing of ScopeStacks between threads
+
+5.11.4
+- 2026-10-29 fix(telemetry): accept memory profiler settings on all platforms
+- 2026-10-30 chore: Clean up unused workspace dependency
+- 2025-10-25 feat(metrics): Add a thread_local-based counter
+- 2026-10-28 refactor(telemetry): use Routes::new in the built-in route collision check
+- 2026-10-22 feat(telemetry): expose a check for collisions with built-in server routes
+- 2026-10-21 fix(settings): keep doc comments on every list item in generated YAML
+
+5.11.3
+- 2026-10-28 feat(metrics): add clear_all to stop reporting unchanged series (#280)
+- 2026-10-24 Always apply memory profiler settings
+
+5.11.2
+- 2026-10-26 fix: Allow libc <0.2.190 again for compatibility with quiche
+
+5.11.1
+- 2026-10-19 deps: update libc to 0.2.191 and remove upper bound
+- 2026-10-15 foundations/derive: add derive to the platform-common-default feature set
+- 2026-10-14 metrics: add #[automatically_derived] to LowCardinalityLabel impls
+- 2026-10-13 foundations: add Display derive for trivial struct/enum Display
+
+5.11.0
+- 2026-10-09 feat(telemetry): skip RwLock for unsampled SharedSpanHandles
+- 2026-10-09 refactor(telemetry): share user span sampling state between handles
+- 2026-10-08 feat(telemetry): discard user spans
+- 2026-10-08 chore(deps): bump cf-rustracing to 1.4.1
+- 2026-10-08 feat(telemetry): set start and finish times on user spans
+- 2026-10-08 metrics: Add LowCardinalityFamily and associated #[metric] logic
+- 2026-10-08 fix: libc 0.2.190 breaks semver
+- 2026-10-08 fix: Rust 1.99 lints
+
+5.10.3
+- 2026-09-29 fix: clippy and rustc lints in span_with_probe example
+- 2026-09-29 feat(telemetry): drop duplicate args_len information from SpanProbe
+- 2026-09-18 feat(examples): showcase probe_args in the span_with_probe example
+- 2026-09-18 feat(telemetry): allow extra arguments with span end probes
+- 2026-09-24 Allow unsymbolicated sentry panics
+
+5.10.2
+- 2026-09-16 feat(telemetry): configure service name for user traces
+- 2026-09-03 Cache `SharedSpan::is_sampled` for deferred user tracing spans
+
+5.10.1
+- 2026-09-03 feat(telemetry): attach user spans to contexts
+- 2026-09-03 refactor(telemetry): distinguish deferred user spans
+- 2026-09-03 feat(telemetry): add deferred user span activation
+
+5.10.0
+- 2026-08-28 feat(examples): add span_with_probe demo workload
+- 2026-08-28 feat(telemetry): add span_with_probe! macro and span_fn's end_probe option
+
+5.9.2
+- 2026-08-26 Release 5.9.2 (#259)
+- 2026-08-26 fix(metrics): terminate classic histogram buckets with +Inf
+- 2026-08-25 fix(metrics): pin prometheus's protobuf feature for process metrics
+
+5.9.1
+- 2026-08-18 feat(metrics): expose max_zero_threshold on NativeHistogramBuilder
+- 2026-08-17 feat(metrics): let native histograms recover lost resolution
+
+5.9.0
+- 2026-08-13 fix: Make ScrapeFormat non-exhaustive to allow future expansion
+- 2026-08-13 refactor(metrics): finalize public API for publishing (#253)
+- 2026-08-13 docs(metrics): prepare the new metrics crates for publishing (#249)
+- 2026-08-12 Correct the UserSpan lifetime docs
+- 2026-08-11 Collapse duplicate span write-lock matches onto with_write
+- 2026-08-11 Add an owned UserSpan handle for user tracing
+- 2026-08-11 feat(metrics): Add NativeTimeHistogram, new_classic_and_native method, and third-party linux process metrics from prometheus crate (#244)
+- 2026-08-10 feat(foundations): negotiate metrics scrape formats (#248)
+- 2026-08-09 Fix typo in tracing settings
+- 2026-08-07 feat(foundations): migrate the metrics facade to foundations-metrics (#247)
+- 2026-08-07 feat(metrics): add info and custom metrics (#245)
+- 2026-08-05 feat(metrics): Implement exemplar metrics (#239)
+
+5.8.1
+- 2026-08-03 Add pause syscall to seccomp SERVICE_BASICS allowlist (#241)
+- 2026-07-31 feat(metrics): add metric validation + UTF-8 support (#238)
+- 2026-07-30 feat(metrics): add protobuf and OpenMetrics text encoders and collection (#237)
+- 2026-07-17 Remove seccomp probe results
+- 2026-07-28 feat(metrics): add support for classic, time, and native histograms. (#236)
+- 2026-07-21 feat(metrics): add support for metric families and label serialisation (#234)
+- 2026-07-16 Apply suggestions from code review
+- 2026-07-16 doc(metrics): apply doc suggestions from code review.
+- 2026-07-15 docs(metrics): improve comments & examples in gauge.rs
+- 2026-07-14 feat(metrics): re-export registry API
+- 2026-07-13 refactor(metrics): own scalar metric atomic storage
+- 2026-07-13 chore(metrics): cleanup comments
+- 2026-07-13 fix(metrics): add Counter inner accessor
+- 2026-07-13 feat(metrics): implement Gauge, RangeGauge and GaugeGuard
+- 2026-07-13 feat(metrics): add Counter implementation.
+
+5.8.0
+- 2026-06-17 Bump tikv-jemallocator to 0.7.0
+- 2026-07-16 Add user-facing tracing pipeline
+- 2026-07-14 Make log output I/O errors optionally fail-soft
+- 2026-07-10 Split tracing metrics to allow multiple pipelines
+- 2026-07-10 chore(metrics-registry): remove subsystem comment
+- 2026-07-10 refactor(metrics-registry): simplify snapshots with static metric references
+- 2026-07-10 Apply suggestions from code review
+- 2026-07-09 feat(metrics-registry): add core registration API
+- 2026-07-09 fix(cargo): fix fmt & clippy
+- 2026-07-08 feat(metrics-registry): vendor generated Prometheus protobuf model
+- 2026-07-08 feat(metrics-registry): add crate with Prometheus protobuf data model
+
+5.7.4
+- 2026-06-29 Fix potential double panic when logging inside panic hook
+- 2026-06-29 Add regression tests for panic hook logging
+- 2026-06-26 Fix double-panic in panic hook stderr
+- 2026-06-22 Use a dash instead of a dot in bonk model name
+- 2026-06-22 Fix bonk workflow by downgrading opencode
+- 2026-06-19 Setup bonk workflow
+
+5.7.3
+- 2026-06-10 Add cfg(foundations_jemalloc_disable) to opt out of global jemalloc allocator
+- 2026-06-10 Move cfg(foundations_generic_telemetry_wrapper) docs out of lib.rs
+- 2026-06-05 Add actions pipeline for trusted publishing to crates.io
+
+5.7.2
+- 2026-06-05 fix: strip plain release commits from RELEASE_NOTES.md
+- 2026-06-02 Gracefully degrade on metrics encoding failures
+- 2026-05-29 Add NoFlushPanicIntegration for sentry
+
+5.7.1
+- 2026-05-19 chore: Exclude prefixed tags from git-cliff
+- 2026-05-18 feedback: -D clippy::clone_on_ref_ptr
+- 2026-05-18 feedback: formatting
+- 2026-05-18 feedback: create_test_log
+- 2026-05-18 feedback: fqn macro
+- 2026-05-18 feedback: feature_use
+- 2026-05-14 feat: add LogOutput::Custom variant for user-provided slog drains
+- 2026-05-13 ci(semgrep): pin token to contents: read
+
+5.7.0
+- 2026-05-11 fix: rustix 0.36 breaks under nightly
+- 2026-05-07 Allow pattern-based routes in TelemetryServer
+- 2026-04-27 Configure cargo-release for separately-versioned crates
+- 2026-04-27 Extract sentry hook into separate foundations-sentry crate
+- 2026-04-24 Update dependencies.
+
+5.6.5
+- 2026-04-23 Release 5.6.5
+- 2026-04-23 fix: Revert initialization of metrics in telemetry testing
+- 2026-04-23 fix: Use `num_tasks` setting for Jaeger trace reporter tasks
+
+5.6.4
+- 2026-04-21 Release 5.6.4
+- 2026-04-09 fix: Initialize metrics first in telemetry testing
+- 2026-04-21 Regression test for uninitialized metrics in foundations' testing framework
+
+5.6.3
+- 2026-04-16 Release 5.6.3
+- 2026-04-16 fix: Default back to serde_yaml, with serde-saphyr opt-in
+- 2026-04-16 foundations: fix 'occured' -> 'occurred' in doc comment
+
+5.6.2
+- 2026-04-10 Release 5.6.2
+- 2026-04-09 Support slog's  feature in log field filters
+
+5.6.1
+- 2026-04-09 Release 5.6.1
+- 2026-04-09 fix: Initialize metrics first among telemetry subsystems
+
+5.6.0
+- 2026-04-09 Release 5.6.0
+- 2026-04-08 Allow multiple concurrent trace exporter tasks
+- 2026-04-07 Prepare foundations for multi-consumer tracing output
+- 2026-03-26 Add ratelimit feature to library docs
+- 2026-03-26 Use StaticQuantaClock in telemetry rate limiters
+- 2026-03-26 Replace governor's default clock with StaticQuantaClock
+- 2026-03-27 Add MaybeExternal helper to load config values from external sources
+- 2026-03-27 Add Settings/RawSettings wrappers to protect sensitive values
+- 2026-04-09 fix public docs for log::freeze
+- 2026-04-07 feat(logging): add logger freeze/unfreeze
+- 2026-04-02 Add test for public `current_span()` accessors
+- 2026-04-02 Expose `span_is_sampled` for cheap sampling checks
+- 2026-04-01 Implement /pprof/symbol
+- 2026-03-24 Add configurable rate limiting for sentry events
+- 2026-03-26 Replace serde-yaml with serde-saphyr (#181)
+- 2026-03-24 Add special `ratelimit=` syntax to logging macros
+- 2026-03-23 Add ratelimit! utility macro
+- 2026-03-23 Refactor slog::Drain setup code and fix rate limiting bug
+- 2026-03-11 Release 5.5.3
+- 2026-03-11 fix: don't initialize telemetry when constructing a TestTelemetryContext
+
+5.5.2
+- 2026-03-06 Release 5.5.2
+- 2026-03-06 Support `serde(default)` without explicit path
+
+5.5.1
+- 2026-03-06 Release 5.5.1
+- 2026-03-06 Fix regression in serde argument parsing
+
+5.5.0
+- 2026-03-05 Release 5.5.0
+- 2026-03-05 Update list of allowed licenses for dependencies
+- 2026-03-05 chore: Upgrade internal dependency to avoid dupes
+- 2026-03-05 Mention libclang-dev dependency for bindgen
+- 2026-03-04 Properly forward doc comments of flattened struct members
+- 2026-03-05 Add regression test for doc comments on flattened members
+- 2026-02-17 feat: allow manually shutting down logging from TelemetryDriver
+- 2026-02-12 ci: Use latest stable for cargo-deny checks
+- 2026-02-04 Support loading multiple YAML config files
+- 2026-01-28 Re-export http-body-util under telemetry reexports
+- 2026-01-09 Adds FromStr implementations for the std::net type wrappers
+- 2026-01-08 feat: panic and sentry hook for foundations (#160)
+- 2025-12-24 chore: cargo fmt for edition 2024
+- 2025-12-23 chore: upgrade to rust 2024
+- 2025-12-23 Implement Settings for Saturating<T> and NonZero<T>
+
+5.4.0
+- 2025-12-01 Release 5.4.0
+- 2025-12-01 Fix minimal-versions check
+- 2025-11-25 Add #[with_removal] attribute to #[metrics] macro
+- 2025-11-25 Reduce nesting in metrics proc-macro functions
+- 2025-11-24 Configure unexpected_cfgs rustc lint explicitly
+- 2025-11-27 Remove globally-shared INACTIVE_SPAN RwLock
+- 2025-11-26 Remove internal once_cell usages
+- 2025-11-26 Improve performance of log/tracing harness access
+
+5.3.0
+- 2025-11-07 Release 5.3.0
+- 2025-11-06 Add `unprefixed` flag to `#[metrics]` macro
+- 2025-11-07 Fix new instance of `clippy::derivable_impls`
+
+5.2.0
+- 2025-10-29 Release 5.2.0
+- 2025-10-28 Cleanup tags when OTLP sink is used
+- 2025-10-28 Don't use `[!Default; 0]: Default` impl (#150)
+
+5.1.1
+- 2025-10-15 Release 5.1.1
+- 2025-10-15 Use const initialization for INACTIVE_SPAN
+- 2025-10-15 Bump tonic to v0.14 and opentelemetry to v0.31
+
+5.1.0
+- 2025-10-01 Release 5.1.0
+- 2025-09-30 Add a new SharedSpanHandle::Inactive variant
+- 2025-09-18 Add set_span_finish_callback macro to telemetry::tracing
+- 2025-09-30 Work around broken --cfg docsrs in other crates
+- 2025-09-30 Remove doc_auto_cfg to clear errors on nightly
+- 2025-09-24 Fix rerun directive issuance for build inputs
+
+5.0.2
+- 2025-09-24 Release 5.0.2
+- 2025-09-23 Fix regression that causes unconditional rebuilds
+
+5.0.1
+- 2025-09-18 Release 5.0.1
+- 2025-09-18 Fix extended dead_code lint from Rust 1.90
+- 2025-09-18 Fix telemetry meta-features and telemetry-server build
+- 2025-09-04 telemetry: add apply_generic to telemetry context
+- 2025-09-16 RUST-131: ignore flakey unsampled_spans_are_not_captured test
+- 2025-09-11 Add dep:tokio to feature telemetry-server
+
+5.0.0
+- 2025-09-05 Release 5.0.0
+- 2025-08-27 Update deps with minimal changes
+- 2025-03-03 Re-export Hyper types used in public API
+- 2025-07-17 Add compile-time validation for histogram buckets in foundations-macros
+- 2024-11-19 Bump tonic dependency to v0.12
+- 2025-06-26 Fix units in HistogramBuilder docs example
+- 2025-08-13 Add unix domain socket for telemetry server
+- 2025-08-26 Ignore itertools in minimal-versions (#131)
+- 2025-08-20 Add tracing::w3c_traceparent() helper
+- 2025-08-20 Fix clippy complaints from Rust 1.89.0
+- 2024-11-21 Switch to Hyper 1
+
+4.5.0
+- 2025-05-22 Release 4.5.0
+- 2025-03-10 feat: Add tracing-rs-compat feature with tracing compat logging drain
+- 2025-05-08 ZTC-2169: Allow use of memory-profiling feature with no other features
+- 2025-05-16 Resolve Clippy lints from Rust 1.86 and 1.87
+
+4.4.2
+- 2025-03-05 Release 4.4.2
+- 2025-03-05 Fix build on Windows (#115)
+- 2025-02-26 Logging: Use File::create when opening output file
+
+4.4.1
+- 2025-02-26 Release 4.4.1
+- 2025-02-26 Report metrics format as openmetrics to allow exemplars
+
+4.4.0
+- 2025-02-21 Release 4.4.0
+- 2025-02-20 Re-export CounterWithExemplar and HistogramWithExemplars
+- 2025-02-17 OXY-1514: only track sampled spans and through a setting track all spans. (#107)
+- 2025-02-13 Rewrite docs noting blocking behavior and expectations when used with
+- 2025-01-30 Add tempfile dep to dev-dependencies
+- 2025-01-30 Fix clippy warnings
+- 2025-01-29 Remove unnecessary Box
+- 2025-01-24 Cleanup unit tests
+- 2025-01-08 Fix inconsistent naming
+- 2024-12-09 Add RetryFileWriter to handle BrokenPipe errors
+- 2024-11-11 More expressive error for EMSGSIZE from Jaeger reporter
+- 2024-11-21 ci: don't run semgrep so often
+- 2025-01-27 OXY-1516: support stderr as a log output target
+- 2024-12-05  Use BufWriter wrapped fd 1 instead of line buffered io::Stdout for Terminal+JSON. This helps avoid unnecessary flushing.
+- 2024-12-18 Release 4.3.0 (#104)
+- 2024-12-13 Expose active traces without telemetry server
+- 2024-12-09 Expose active traces through telemetry server (#87)
+
+4.2.0
+- 2024-11-18 Release 4.2.0 (#97)
+- 2024-11-18 Support configuring behaviour when excessive log nesting is reached (#96)
+
+4.1.1
+- 2024-11-14 Release 4.1.1
+- 2024-11-14 Upgrade minimum required tokio version to deal with deprecated unstable metric
+- 2024-11-14 Rename tokio unstable metric that was deprecated (#93)
+- 2024-11-13 ZTC-1819: If we're going to panic due to excessive nesting, release the lock first (#91)
+
+4.1.0
+- 2024-11-04 Release 4.1.0 (#86)
+- 2024-10-31 Allow opting out of settings deny_unknown_fields for foundations internal structs (#85)
+- 2024-09-21 Provide metrics::add_extra_producer() to enable external metrics
+- 2024-10-21 Remove `routerify` dependency
+
+4.0.0
+- 2024-10-14 Release 4.0.0
+- 2024-10-12 Adds guide for migrating to 4.0.0
+- 2024-09-25 Update semgrep.yml
+- 2024-09-22 Create semgrep.yml
+- 2024-10-04 Improve seccomp API by removing SeccompMode enum
+- 2024-10-03 OXY-1404: Revert most of #60 and expose get_current_thread_seccomp_mode (#74)
+- 2024-10-03 Let GitHub run CI actions for version branches (#73)
+- 2024-10-03 Fix libssecomp typo (#70)
+- 2024-10-03 Add readme for examples (#69)
+- 2024-10-01 Fix accidental 4.0 breaking changes and run example in CI (#68)
+- 2024-09-12 Release 4.0.0-rc.1
+- 2024-09-12 Update versions for 4.0.0
+- 2024-09-13 OXY-1404: Avoid crashes resulting from double seccomp initialization (#60)
+- 2024-08-20 chore: add passive sampling option to tracing
+- 2024-07-18 Remove old deserialize
+- 2024-02-03 telemetry: change LogVerbosity to an enum, use it throughout public API
+- 2024-08-12 Buffer JSON slog messages
+- 2024-07-24 Lock around the sender
+- 2024-07-22 Add blank line
+- 2024-07-22 Clippy
+- 2024-07-22 More code review improvements
+- 2024-07-22 Remove profiler sandboxing functionality
+- 2024-07-19 Code review improvements, fix builds
+- 2024-07-18 Remove now-unnecessary profiling lock
+- 2024-07-18 Cleanup and add docs about initialization order
+- 2024-07-17 Remove recv timeout
+- 2024-07-17 ZTC-1648: Avoid heap profiling crash by starting profiling thread before seccomp is configured
+- 2024-08-12 Fix seccomp violation in MemoryProfiler introduce by Rust 1.80.0 std
+- 2024-08-06 Make clippy happy
+- 2024-08-05 Expose TraceId, as it now can be used in serializable state ctor
+- 2024-07-24 Rename depricated tokio metric
+- 2024-07-22 Bump syn and darling (closes #50)
+- 2024-07-19 Telemetry API improvements
+- 2024-07-17 ZTC-1545: Error during settings deserialization if YAML contains unused keys (#49)
+- 2024-07-17 Don't halt gRPC reporting on errors (closes #44)
+- 2024-07-09 ZTC-1478: Rework logger nesting tracking
+- 2024-06-25 Fix CI by temporarily allowing lint violated by darling crate (#51)
+- 2024-06-13 ZTC-1478: track the number of times a logger has been replaced with a child logger (#47)
+- 2024-05-12 Implement gRPC export for traces
+- 2024-05-06 Re-introduce interior mutability for TestTelemetryContext::traces()
+- 2024-05-06 Shape new tracing output API.
+- 2024-03-29 Implement OTLP output settings. Make serde aware of defaults for settings
+- 2024-03-16 Implement conversion of span data to OTLP format
+- 2024-03-14 Use term "output" instead of "exporter" for tracing to be consistent with logging settings
+- 2024-03-11 Introduce TelemetryDriver
+- 2024-03-11 Make tracer exporters configurable
+- 2024-03-26 Improve metrics bind error message
+
+3.3.0
+- 2024-03-21 Release 3.3.0
+- 2024-03-21 Fix new lints
+- 2024-03-19 Construct metrics registry with default() when name_in_metrics is empty
+- 2024-03-10 Fix paths in gen-syscall-enum tool
+- 2024-01-17 OXY-1299: implement GaugeGuard
+- 2024-01-17 OXY-1299: Implement RangeGauge metric type
+
+3.2.2
+- 2024-02-15 Release 3.2.2
+- 2024-02-14 Fix dependencies issue then example is started from the /example dir (closes #23)
+- 2024-02-15 Fix potential deadlock in `link_new_trace_with_current`
+- 2024-02-12 ci: add docsrs and minver checks (#20)
+- 2024-02-09 docs: fix typo in service_info macro doc comments (#19)
+
+3.2.1
+- 2024-02-05 Release 3.2.1
+
+3.2.0
+- 2024-02-05 Release 3.2.0
+- 2024-02-05 telemetry: add tokio runtime metrics (#12)
+- 2024-02-02 telemetry: make logger verbosity public
+- 2024-02-01 ci: cleanup actions config
+- 2024-01-31 Enable feature `all` on socket2, should address #5
+- 2024-02-01 Disable `default-features` for dependency `prometheus`
+- 2024-01-31 ci: add macos to features check ci
+
+3.1.1
+- 2024-01-26 Release 3.1.1
+- 2024-01-26 Add check for missing seccomp sources to ensure that they are always published
+
+3.1.0
+- 2024-01-26 Release 3.1.0
+- 2024-01-26 Merge pull request #2 from cloudflare/android-ci
+- 2024-01-26 Introduce feature sets for clients
+- 2024-01-25 Merge pull request #1 from zegevlier/fix-windows
+- 2024-01-25 Only use `socket.set_reuse_port` on supported operating systems
+- 2024-01-23 Make crates.io happy about keywords
+
+3.0.1
+- 2024-01-23 Release 3.0.1
+- 2024-01-23 Add more metadata to Cargo.toml
+- 2024-01-23 Add readme to Cargo.toml
+- 2024-01-23 Fix license type in Cargo.toml
+- 2024-01-23 Add license field to Cargo.toml metadata
+
+3.0.0
+- 2024-01-23 Release 3.0.0
+- 2024-01-23 Fix macos target in CI
+- 2024-01-23 Add jemalloc flag to CI
+- 2024-01-23 Fix CI target
+- 2024-01-23 Update year in license
+- 2024-01-22 Revive feature combination check in CI
+- 2024-01-21 Remove Settings bound from settings::Map key
+- 2024-01-21 Remove Send + Sync bound for settings::Map keys
+- 2024-01-21 Fix doc comment typo
+- 2024-01-21 Capitilise the lib name in doc comments
+- 2024-01-20 Some minor renames in docs
+- 2024-01-20 Add examples to README
+- 2024-01-20 Add support for settings collections, add more basic impls
+- 2024-01-19 Add docs paragraph for setting standard types substitutes
+- 2024-01-19 Update README
+- 2024-01-19 Rename the library.
+- 2024-01-19 Update readme
+- 2024-01-19 Fix banner
+- 2024-01-19 Update README
+- 2024-01-19 Add license
+- 2024-01-19 Add Github CI
+- 2024-01-19 Clean up
+- 2024-01-19 Enable documentation of Settings within Vec and Option
+- 2024-01-18 Release 2.2.0
+- 2024-01-18 Release 2.2.0
+- 2023-12-28 EGRESS-939: Adds log volume metric counter feature
+- 2023-12-28 EGRESS-939: Update oer members in CODEOWNERS file
+- 2024-01-02 OXY-1298: Disable MacOS build due to errors
+- 2023-12-21 Add PID to root logger
+- 2023-12-12 Drop zero histogram bucket
+- 2023-11-30 TUN-8005: Document how to use jemalloc from bedrock
+- 2023-10-13 Release 2.1.0
+- 2023-10-13 Introduce Cli parsing from provided args.
+- 2023-10-09 Release 2.0.7
+- 2023-10-02 ZTC-1201: Fixes issue where log::set_verbosity broke the connection between the test logger and the log records
+- 2023-09-29 ZTC-886: Rate limit trace creation if configured and removes prior additions to with_test_telemetry macro
+- 2023-09-29 Release 2.0.6
+- 2023-09-29 OXY-1224: raise the log verbosity for the test logger
+- 2023-09-25 [OXY-1241] chore: stop specifying features in the workspace toml
+- 2023-09-25 Small doc improvement for Telemetry server
+- 2023-09-25 Release 2.0.5
+- 2023-09-25 ZTC-1189: Adjust `with_graceful_shutdown` to be sync and improve its docs
+- 2023-09-22 Set up default flavor for cfsetup
+- 2023-09-22 Release 2.0.4
+- 2023-09-22 ZTC-1189: Allow telemetry server to be gracefully shut down
+- 2023-09-21 ZTC-1187: Reuses a single root AsyncDrain object to avoid garbled log output
+- 2023-09-21 ZTC-885: Adds new options to the with_test_telemetry macro, allowing us to specify rate limit and redact_keys
+- 2023-09-20 ZTC-885: Rate limits logging events
+- 2023-09-21 chore: minify dep tree a little
+- 2023-09-19 Use cargo-nextest
+- 2023-09-19 Remove some useless cfsetup dependencies
+- 2023-09-19 Use debian-bullseye-rustlang Docker image
+- 2023-09-13 Release 2.0.3
+- 2023-09-13 Fix cross builds with feature security
+- 2023-09-12 Release 2.0.2
+- 2023-09-12 Release 2.0.1
+- 2023-09-11 ROCK-18: Don't panic if metrics system is not initialized
+- 2023-09-07 Release 2.0.0
+- 2023-09-07 Update example Cargo.toml
+- 2023-09-07 Make Map generic in its keys
+- 2023-09-07 Add example
+- 2023-09-06 ROCK-18: Don't panic on initializing metrics registries twice
+- 2023-09-05 Implement Cli
+- 2023-09-05 Introduce settings Map structure whose items are documentable via Settings trait
+- 2023-09-04 Add ability to add custom routes to telemetry server.
+- 2023-09-04 ROCK-18: Update docs and tweak naming for metrics service name
+- 2023-09-01 ROCK-18: Support a custom metrics service identifier value and format
+- 2023-09-04 Disable bindgen default feature `which-rustfmt`
+- 2023-09-01 ROCK-20 Implement memory profiler telemetry server endpoint
+- 2023-09-01 Some tweaks to metrics API and docs
+- 2023-08-29 Release 1.2.0
+- 2023-06-16 ROCK-4: Implement bedrock::telemetry::metrics
+- 2023-08-29 Remove unnecessary cast
+- 2023-06-19 Fix unused_variables lint
+- 2023-08-23 ZTC-885: Updates heap profiling code slightly to be usable by oxy
+- 2023-08-02 Document SpanScope and move it out of internal module
+- 2023-08-01 Do not drop heap profile temp file before reading completion
+- 2023-08-01 ROCK-5 Implement jemalloc-related functionality
+- 2023-07-26 Release 1.1.0
+- 2023-07-24 ROCK-16: Add 'jaeger_reporter_bind_addr' to TracingSettings
+- 2023-07-04 Adds cargo-release and git-cliff config
+- 2023-07-03 Version 1.0.3
+- 2023-06-28 Use workspace metadata for crates
+- 2023-06-27 Version 1.0.2
+- 2023-06-27 Removes cyclical dependency
+- 2023-06-27 Release 1.0.1
+- 2023-06-27 Updates cfsetup.yaml to support registry
+- 2023-06-27 Specifies registry in workspace toml
+- 2023-06-23 ETI-942: Fixes indentation of cfsetup publish builddeps
+- 2023-06-23 Release 1.0.0
+- 2023-06-23 ETI-942: Publish crate to internal registry
+- 2023-06-20 Rename `seccomp` module to `security`.
+- 2023-06-15 Add a few more common allow lists used by Cloudflare apps
+- 2023-06-14 ROCK-3 Implement seccomp filter initialization
+- 2023-06-09 ROCK-3  Seccomp: implement allow lists
+- 2023-06-13 chore: remove shih-chiang from CODEOWNERS
+- 2023-06-07 Fix syscall doc links
+- 2023-06-06 Remove lohith from code-owners
+- 2023-06-06 ROCK-3 Generate syscalls enums
+- 2023-06-05 Implement with_test_telemetry macro
+- 2023-06-03 Test API changes.
+- 2023-06-02 ROCK-13 Finish telemetry documentation
+- 2023-05-31 Set ipv6 reporter addr if agent is set to ipv6
+- 2023-05-25 Add links whenever we create a new trace and we have one ongoing
+- 2023-05-29 Add doctests for with_forked_trace and start_trace
+- 2023-05-30 Settings: add PartialEq impl between std::net types and wrappers
+- 2023-05-25 ZTC-881 Allow overriding sampling ratio for started trace
+- 2023-05-24 Expose SerializableTraceState
+- 2023-05-20 ROCK-9, ROCK-13 Part 1: Add the rest of the tracing API and document telemetry
+- 2023-05-12 Move settings macro into the settings module
+- 2023-05-12 ROCK-9, ROCK-10 Implement tracing internals and testing
+- 2023-05-11 GATE-4093: change bedrock package version to use the standard indexed field
+- 2023-05-04 ROCK-2 Implement logging
+- 2023-05-02 Get rid of owned keys feature in slog to not introduce breaking changes
+- 2023-05-02 ROCK-11 Add toggle to disable Debug impl in Settings macro
+- 2023-04-27 Add feature combination testing
+- 2023-04-26 ROCK-8 Implement test log and log drains
+- 2023-04-18 Remove println leftover in test
+- 2023-04-17 Implement settings
+- 2023-04-12 Set up repo
+- 2023-04-12 Initial commit
+
+

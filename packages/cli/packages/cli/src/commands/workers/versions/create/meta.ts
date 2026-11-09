@@ -1,0 +1,70 @@
+import { secretsFileDescription } from "../../../deploy/secrets-file-description.js";
+import type { LeafCommandMeta } from "../../../../lib/command-meta.js";
+
+export default {
+	command: "cf workers versions create",
+	name: "create",
+	fullPath: ["workers", "versions", "create"],
+	category: "create",
+	description: "Upload a new Worker Version without deploying it",
+	usage: "cf workers versions create [directory] [options]",
+	arguments: [
+		{
+			name: "directory",
+			position: 0,
+			type: "string",
+			required: false,
+			description:
+				"Directory containing prebuilt static assets. Use only for assets-only projects; projects with server-side code require a delegated build.",
+		},
+	],
+	options: [
+		{
+			name: "prebuilt",
+			type: "boolean",
+			required: false,
+			description:
+				"Deploy existing Build Output Specification files without building",
+			default: false,
+		},
+		{
+			name: "tag",
+			type: "string",
+			required: false,
+			description: "A tag to associate with this Worker Version",
+		},
+		{
+			name: "message",
+			type: "string",
+			required: false,
+			description: "A message to associate with this Worker Version",
+		},
+		{
+			name: "secrets-file",
+			type: "string",
+			required: false,
+			description: secretsFileDescription,
+		},
+		{
+			name: "dry-run",
+			type: "boolean",
+			required: false,
+			description:
+				"Build a project and run checks without actually uploading the Worker",
+			default: false,
+		},
+		{
+			name: "worker",
+			type: "string",
+			required: false,
+			description:
+				"Name of the Worker in the Build Output to use (defaults to the default Worker)",
+		},
+		{
+			name: "preview-alias",
+			type: "string",
+			required: false,
+			description: "Preview alias for this Worker Version",
+		},
+	],
+} satisfies LeafCommandMeta;

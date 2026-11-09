@@ -1,0 +1,460 @@
+import { getCloudflareApiBaseUrl } from "@cloudflare/workers-utils/compliance";
+import { API_TIMEOUT_MS } from "./api-constants.js";
+import { isUploadBody } from "./api-upload.js";
+import { getAuthToken } from "./auth-token.js";
+import { getComplianceRegion, resolveAccountIdSilent } from "./context.js";
+import { isTemporaryAccountRequested } from "./oauth/index.js";
+import { getDefaultHeaders } from "./request-headers.js";
+import { ApiError, Client, type ClientOptions, withResultInfo } from "#api";
+import listAccounts from "#operations/accounts/list.js";
+import listMemberships from "#operations/user/memberships/list.js";
+
+// Re-export context helpers used by generated commands and hand-written paths.
+export { getAccountId, getWorkerName, getZoneId } from "./context.js";
+export { getComplianceRegion, resolveAccountIdSilent };
+// Re-export OAuth functions for auth commands
+export {
+	fetchAuthorizedAccounts,
+	getActiveProfile,
+	getConfigPath,
+	getProfileStore,
+	getValidToken,
+	isOAuthLoggedIn,
+	login,
+	logout,
+	readAuthCredentials,
+	setProfile,
+} from "./oauth/index.js";
+
+export { API_TIMEOUT_MS, getAuthToken };
+const DEFAULT_BASE_URL = "https://api.cloudflare.com/client/v4";
+
+type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+
+interface PassthroughOptions {
+	body?: unknown;
+	query?: Record<string, unknown>;
+	headers?: Record<string, string>;
+	signal?: AbortSignal;
+	timeout?: number;
+	/** Return non-JSON response bodies as exact bytes instead of UTF-8 text. */
+	preserveNonJsonBytes?: boolean;
+}
+
+export type Cloudflare = Client;
+
+interface CloudflareClientOptions {
+	apiToken: string;
+	baseURL?: string;
+	timeout?: number;
+	fetch?: typeof globalThis.fetch;
+	defaultHeaders?: Record<string, string>;
+}
+
+/** A list response, unwrapped from its envelope. */
+interface ListResponse<T> {
+	result: T[];
+	result_info?: { total_count?: number };
+}
+
+interface CloudflareAPIResponse<T> {
+	result?: T;
+	result_info?: unknown;
+	success?: boolean;
+	errors?: Array<{ code?: number; message?: string }>;
+	messages?: Array<{ code?: number; message?: string }>;
+}
+
+function isRawBody(body: unknown): body is BodyInit {
+	return (
+		body instanceof FormData ||
+		body instanceof Blob ||
+		body instanceof ArrayBuffer ||
+		ArrayBuffer.isView(body) ||
+		body instanceof ReadableStream ||
+		body instanceof URLSearchParams
+	);
+}
+
+function hasContentType(headers: Record<string, string>): boolean {
+	return Object.keys(headers).some(
+		(key) => key.toLowerCase() === "content-type"
+	);
+}
+
+async function parseErrorResponse(response: Response): Promise<unknown> {
+	const contentType = response.headers.get("content-type") ?? "";
+	try {
+		return contentType.includes("application/json")
+			? await response.json()
+			: await response.text();
+	} catch {
+		return null;
+	}
+}
+
+function appendQueryValue(
+	params: URLSearchParams,
+	key: string,
+	value: unknown
+): void {
+	if (value === undefined || value === null || value === "") {
+		return;
+	}
+	if (Array.isArray(value)) {
+		for (const item of value) {
+			appendQueryValue(params, key, item);
+		}
+		return;
+	}
+	params.append(key, String(value as string | number | boolean));
+}
+
+export function queryParamsToString(
+	queryParams: Record<string, unknown>
+): string {
+	const params = new URLSearchParams();
+	for (const [key, value] of Object.entries(queryParams)) {
+		appendQueryValue(params, key, value);
+	}
+	return params.toString();
+}
+
+function passthroughUrl(
+	path: string,
+	baseURL: string,
+	query?: Record<string, unknown>
+): string {
+	const base = new URL(baseURL.endsWith("/") ? baseURL : `${baseURL}/`);
+	const url = new URL(path.startsWith("/") ? path.slice(1) : path, base);
+	if (url.origin !== base.origin) {
+		throw new Error(
+			`Refusing to send an authenticated request to ${url.origin} (expected ${base.origin})`
+		);
+	}
+	const search = queryParamsToString(query ?? {});
+	if (search) {
+		url.search = search;
+	}
+	return url.toString();
+}
+
+const clientTimeouts = new WeakMap<Client, number>();
+const uploadClients = new WeakMap<Client, Client>();
+
+export async function requestApi<T>(
+	client: Client,
+	method: HttpMethod,
+	path: string,
+	options: PassthroughOptions = {}
+): Promise<T> {
+	const baseURL = client.baseUrl;
+	const url = passthroughUrl(path, baseURL, options.query);
+	const headers: Record<string, string> = { ...options.headers };
+	let body: BodyInit | undefined;
+	if (options.body !== undefined) {
+		if (
+			isRawBody(options.body) ||
+			(typeof options.body === "string" && hasContentType(headers))
+		) {
+			body = options.body;
+		} else {
+			headers["Content-Type"] ??= "application/json";
+			body = JSON.stringify(options.body);
+		}
+	}
+
+	const uploadClient =
+		options.timeout === undefined && isUploadBody(body)
+			? uploadClients.get(client)
+			: undefined;
+	const timeout =
+		options.timeout ?? clientTimeouts.get(client) ?? API_TIMEOUT_MS;
+	let response: Response;
+	try {
+		response = await (uploadClient ?? client).fetch(
+			url,
+			{ method, headers, body, signal: options.signal },
+			{
+				timeoutInSeconds:
+					options.timeout === undefined ? undefined : options.timeout / 1000,
+				abortSignal: options.signal,
+			}
+		);
+	} catch (error) {
+		if (options.signal?.aborted) {
+			throw new Error("Request aborted");
+		}
+		if (
+			error === "timeout" ||
+			(error instanceof Error && error.name === "AbortError")
+		) {
+			throw new Error(
+				uploadClient
+					? "Request timed out"
+					: `Request timed out after ${timeout}ms`
+			);
+		}
+		if (error instanceof Error) {
+			// Network failures have no HTTP status, so keep them as plain errors.
+			throw new Error(`Request failed: ${error.message}`);
+		}
+		throw error;
+	}
+	if (!response.ok) {
+		throw new ApiError({
+			statusCode: response.status,
+			body: await parseErrorResponse(response),
+			rawResponse: {
+				status: response.status,
+				statusText: response.statusText,
+				url: response.url || url,
+				headers: response.headers,
+				redirected: response.redirected,
+				type: response.type,
+			},
+		});
+	}
+	if (response.status === 204) {
+		return null as T;
+	}
+	const contentType = response.headers.get("content-type") ?? "";
+	if (
+		!contentType.includes("application/json") &&
+		options.preserveNonJsonBytes
+	) {
+		return Buffer.from(await response.arrayBuffer()) as T;
+	}
+	const text = await response.text();
+	if (text === "") {
+		return null as T;
+	}
+	if (!contentType.includes("application/json")) {
+		return text as T;
+	}
+	const data = JSON.parse(text) as CloudflareAPIResponse<unknown>;
+	if (data.success === false) {
+		const message =
+			data.errors
+				?.map((entry) => entry.message)
+				.filter(Boolean)
+				.join(", ") || "unknown error";
+		throw new ApiError({
+			message: `API error: ${message}`,
+			statusCode: response.status,
+			body: data,
+		});
+	}
+	return (
+		"result" in data ? withResultInfo(data.result, data.result_info) : data
+	) as T;
+}
+
+export function createCloudflareClientWithToken(
+	options: CloudflareClientOptions
+): Cloudflare {
+	const clientOptions: ClientOptions = {
+		baseUrl: options.baseURL ?? DEFAULT_BASE_URL,
+		auth: async () => ({
+			headers: { Authorization: `Bearer ${options.apiToken}` },
+		}),
+		headers: options.defaultHeaders,
+		timeoutInSeconds: (options.timeout ?? API_TIMEOUT_MS) / 1000,
+		maxRetries: 0,
+		fetch: options.fetch ?? globalThis.fetch,
+	};
+
+	const client = new Client(clientOptions);
+	clientTimeouts.set(client, options.timeout ?? API_TIMEOUT_MS);
+	if (options.timeout === undefined) {
+		// Passthrough requests inherit the client's timeout. Use a separate
+		// client for uploads so typed API calls retain their standard deadline.
+		uploadClients.set(
+			client,
+			new Client({
+				...clientOptions,
+				timeoutInSeconds: undefined,
+			})
+		);
+	}
+	return client;
+}
+
+/**
+ * Resolve an account for schema-backed help without prompting or exceeding
+ * its deadline. workers-auth's account enumeration can start an OAuth login
+ * and follows every page; this path instead obtains an existing valid token
+ * and makes one bounded request to each account source.
+ */
+export async function resolveAccountIdForHelp(
+	deadline: number
+): Promise<string | undefined> {
+	if (isTemporaryAccountRequested()) {
+		return undefined;
+	}
+
+	const stored = await resolveAccountIdSilent();
+	if (stored) {
+		return stored;
+	}
+
+	try {
+		const token = await getAuthToken();
+		const baseURL = getCloudflareApiBaseUrl({
+			compliance_region: await getComplianceRegion(),
+		});
+		const timeout = deadline - Date.now();
+		if (timeout <= 0) {
+			return undefined;
+		}
+		const client = createCloudflareClientWithToken({
+			apiToken: token,
+			baseURL,
+			defaultHeaders: getDefaultHeaders(),
+		});
+		const requestOptions = {
+			timeoutInSeconds: timeout / 1000,
+			maxRetries: 0,
+		};
+		const [accountsResult, membershipsResult] = await Promise.allSettled([
+			client.send(listAccounts, { per_page: 50 }, requestOptions) as Promise<
+				ListResponse<{ id: string }>
+			>,
+			client.send(listMemberships, { per_page: 50 }, requestOptions) as Promise<
+				ListResponse<{ account?: { id?: string } }>
+			>,
+		]);
+		if (accountsResult.status === "rejected") {
+			return undefined;
+		}
+
+		const accountsResponse = accountsResult.value;
+		if (
+			(accountsResponse.result_info?.total_count ??
+				accountsResponse.result.length) > accountsResponse.result.length
+		) {
+			return undefined;
+		}
+		let accounts = accountsResponse.result;
+		if (membershipsResult.status === "fulfilled") {
+			const memberships = membershipsResult.value.result ?? [];
+			if (
+				(membershipsResult.value.result_info?.total_count ??
+					memberships.length) > memberships.length
+			) {
+				return undefined;
+			}
+			const membershipIds = new Set(
+				memberships
+					.map((membership) => membership.account?.id)
+					.filter((id): id is string => id !== undefined)
+			);
+			accounts = accounts.filter((account) => membershipIds.has(account.id));
+		}
+
+		return accounts.length === 1 ? accounts[0]?.id : undefined;
+	} catch {
+		return undefined;
+	}
+}
+
+/**
+ * Subset of yargs argv that command-client construction reads.
+ *
+ * Defined as a structural type with an index signature so any
+ * `ArgumentsCamelCase<X>` is assignable. Without the index signature,
+ * TypeScript's "no properties in common" check fires for per-command
+ * Args interfaces that don't happen to declare `local` /
+ * `persistTo` (because they're global yargs options, not
+ * per-command). Yargs merges global options into argv at runtime
+ * regardless; the index signature reflects that.
+ */
+export interface CommandClientArgs {
+	dryRun?: boolean;
+	/** When true, route through the local-explorer instead of the API. */
+	local?: boolean;
+	/** `--persist-to` value, if the user supplied one. */
+	persistTo?: string;
+	/** Allow any other yargs argv field through unread. */
+	[key: string]: unknown;
+}
+
+/**
+ * Placeholder API token passed to the client in local mode.
+ *
+ * The client stamps `apiToken` into the `Authorization: Bearer …`
+ * header on every outbound request. In local mode that header is
+ * stripped by `rewriteHeaders` (see `lib/local.ts`) before the request
+ * leaves the process, so the stamped value never reaches a server. We
+ * use a clearly-synthetic literal here so:
+ *
+ *   - Anyone debugging a request snapshot can see at a glance that
+ *     no real credential was attached.
+ *   - Users without a Cloudflare API token configured can still run
+ *     `--local` commands — `getAuthToken()` is bypassed entirely.
+ *
+ * Format note: tokens are typically 40 chars of `[A-Za-z0-9_-]`. This
+ * placeholder is intentionally outside that shape so a leak (i.e. a
+ * production call that somehow gets here unscrubbed) is obvious in
+ * logs rather than mistaken for a real credential.
+ */
+const LOCAL_MODE_PLACEHOLDER_TOKEN = "cf-local-mode-no-auth";
+
+/**
+ * Build the API client every generated command uses. Centralising it
+ * here lets us:
+ *
+ *   - Swap in a `--local` fetch wrapper without touching every
+ *     generated file.
+ *   - Pin the timeout / default headers in one place.
+ *   - Make future client options (retry policy, etc.) a single-site
+ *     change.
+ *
+ * Base URL is compliance-region-aware (FedRAMP → `api.fed.cloudflare.com`),
+ * overrideable via `CLOUDFLARE_API_BASE_URL`.
+ *
+ * In local mode, swaps the client's `fetch` for a wrapper from
+ * `lib/local.ts` that rewrites every outbound URL to point at the
+ * Miniflare local-explorer surface, drops the auth header, and adds
+ * the local-explorer-specific headers. `getAuthToken()` is skipped
+ * entirely — `--local` is documented as a way to develop against
+ * Miniflare without touching production, so forcing every local-mode
+ * user to have a real Cloudflare API token configured defeats the
+ * point. A clearly-synthetic placeholder is passed instead; the local
+ * fetch wrapper strips it before any bytes leave the process.
+ */
+export async function createCommandClient(
+	args: CommandClientArgs
+): Promise<Cloudflare> {
+	if (args.dryRun && isTemporaryAccountRequested()) {
+		throw new Error(
+			"This command's dry run cannot be used with --temporary-account. Remove --dry-run to run the command for real."
+		);
+	}
+
+	const baseURL = getCloudflareApiBaseUrl({
+		compliance_region: await getComplianceRegion(),
+	});
+
+	if (args.local) {
+		// Lazy import keeps the local-mode dependency tree (Headers,
+		// Request, fetch wrapper) out of the hot path for the much-
+		// more-common production case.
+		const { createLocalFetch } = await import("./local.js");
+		return createCloudflareClientWithToken({
+			apiToken: LOCAL_MODE_PLACEHOLDER_TOKEN,
+			baseURL,
+			defaultHeaders: getDefaultHeaders(),
+			fetch: createLocalFetch({
+				persistTo: args.persistTo,
+				apiBaseUrl: baseURL,
+			}),
+		});
+	}
+
+	return createCloudflareClientWithToken({
+		apiToken: await getAuthToken(),
+		baseURL,
+		defaultHeaders: getDefaultHeaders(),
+	});
+}

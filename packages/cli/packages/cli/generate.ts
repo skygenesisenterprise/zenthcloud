@@ -1,0 +1,279 @@
+import { execFileSync, spawn } from "node:child_process";
+import { once } from "node:events";
+import { existsSync, readFileSync, rmSync } from "node:fs";
+import { createRequire } from "node:module";
+import { dirname, join } from "node:path";
+import { Readable } from "node:stream";
+import { pipeline } from "node:stream/promises";
+import { fileURLToPath } from "node:url";
+import { filterForCliAudience } from "./generator/cli-audience.js";
+import { applyTemporaryFlagNames } from "./generator/flag-names-cli-compat.js";
+import { hasAccountOrZoneScope } from "./generator/util.js";
+import { preserveWorkersSecretUpdatePositional } from "./generator/workers-secret-cli-compat.js";
+import type { ForgeOpenApiDocument } from "./generator/openapi.js";
+
+const bundle = process.env.FORGE_OPENAPI_BUNDLE;
+// Bump this SHA to generate the commands from a new release.
+const FORGE_OPENAPI_VERSION = "8340c3b1a7398334c201a86a5bf679aae28b715e";
+const FORGE_OPENAPI_RELEASE = `openapi@${FORGE_OPENAPI_VERSION}`;
+const FORGE_OPENAPI_ASSET = "openapi.forge.json";
+const FORGE_OPENAPI_ASSET_URL = `https://github.com/cloudflare/forge/releases/download/${FORGE_OPENAPI_RELEASE}/${FORGE_OPENAPI_ASSET}`;
+const HTTP_METHODS = [
+	"get",
+	"put",
+	"post",
+	"delete",
+	"options",
+	"head",
+	"patch",
+	"trace",
+] as const;
+
+type OpenApiObject = Record<string, unknown>;
+
+function isRecord(value: unknown): value is OpenApiObject {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function resolveLocalParameter(
+	openapi: ForgeOpenApiDocument,
+	value: unknown
+): OpenApiObject | undefined {
+	if (!isRecord(value)) {
+		return undefined;
+	}
+	const ref = value["$ref"];
+	if (typeof ref !== "string") {
+		return value;
+	}
+	const prefix = "#/components/parameters/";
+	if (!ref.startsWith(prefix)) {
+		return undefined;
+	}
+	const name = ref
+		.slice(prefix.length)
+		.replaceAll("~1", "/")
+		.replaceAll("~0", "~");
+	const components = openapi.components?.parameters;
+	if (!components || !(name in components)) {
+		return undefined;
+	}
+	const resolved = components[name];
+	return isRecord(resolved) ? resolved : undefined;
+}
+
+async function fetchForgeOpenApi(): Promise<unknown> {
+	console.log(`[cf-generator] Using Forge OpenAPI ${FORGE_OPENAPI_RELEASE}`);
+	const assetResponse = await fetch(FORGE_OPENAPI_ASSET_URL);
+	if (!assetResponse.ok) {
+		throw new Error(
+			`Failed to fetch Forge OpenAPI asset from ${FORGE_OPENAPI_ASSET_URL} (${assetResponse.status} ${assetResponse.statusText})`
+		);
+	}
+	return assetResponse.json();
+}
+
+function ignoreInvalidHiddenOperations(openapi: ForgeOpenApiDocument): void {
+	for (const [path, pathItem] of Object.entries(openapi.paths ?? {})) {
+		if (!pathItem) {
+			continue;
+		}
+
+		for (const method of HTTP_METHODS) {
+			const operation = pathItem[method];
+			if (!operation || operation["x-forge-hidden"] !== true) {
+				continue;
+			}
+
+			const responseCodes = Object.keys(operation.responses ?? {});
+			const hasSuccessResponse = responseCodes.some(
+				(code) => code === "101" || code === "2XX" || /^2\d{2}$/.test(code)
+			);
+			if (hasSuccessResponse) {
+				continue;
+			}
+
+			operation["x-fern-ignore"] = true;
+			console.warn(
+				`[cf-generator] Ignoring hidden operation without a success response: ${method.toUpperCase()} ${path} (found: ${responseCodes.join(", ") || "none"})`
+			);
+		}
+	}
+}
+
+/**
+ * Prepare the API's combined account/zone routes for both SDK and CLI
+ * generation.
+ *
+ * These operations intentionally model two concrete routes with the adjacent
+ * `/{account_or_zone}/{account_or_zone_id}/` pair. They currently have no
+ * operationId, so Forge cannot add them to the command tree, and a small
+ * subset still references an account-id parameter under the second template
+ * slot. Fern already uses `generated:<verb>:<path>` for operations without an
+ * id; assigning that same stable id lets the CLI and committed SDK agree.
+ *
+ * Do not generalise this to arbitrary mismatched parameters: the paired
+ * placeholders have specific runtime semantics in the CLI (accounts by
+ * default, zones when --zone is explicitly supplied).
+ */
+function prepareAccountOrZoneOperations(openapi: ForgeOpenApiDocument): void {
+	let operationCount = 0;
+	let commandCount = 0;
+	let parameterCount = 0;
+	for (const [path, pathItem] of Object.entries(openapi.paths ?? {})) {
+		if (!pathItem || !hasAccountOrZoneScope(path)) {
+			continue;
+		}
+
+		const parameterOwners: OpenApiObject[] = [pathItem as OpenApiObject];
+		for (const method of HTTP_METHODS) {
+			const operation = pathItem[method];
+			if (operation) {
+				parameterOwners.push(operation as OpenApiObject);
+				operationCount++;
+
+				const group = operation["x-fern-sdk-group-name"];
+				const hasCommandGroup =
+					(typeof group === "string" && group.length > 0) ||
+					(Array.isArray(group) &&
+						group.some((item) => typeof item === "string"));
+				const generatesCommand =
+					hasCommandGroup &&
+					operation["x-fern-ignore"] !== true &&
+					operation["x-fern-availability"] !== "deprecated";
+				if (generatesCommand) {
+					operation.operationId ??= `generated:${method}:${path}`;
+					// These operations were hidden while Forge could not represent the
+					// combined scope. They are regular generated commands now that the
+					// CLI resolves the pair itself.
+					operation["x-forge-hidden"] = false;
+					commandCount++;
+				}
+			}
+		}
+
+		for (const owner of parameterOwners) {
+			const parameters = owner["parameters"];
+			if (!Array.isArray(parameters)) {
+				continue;
+			}
+			const resolved = parameters.map((parameter) =>
+				resolveLocalParameter(openapi, parameter)
+			);
+			if (
+				resolved.some(
+					(parameter) =>
+						parameter?.["in"] === "path" &&
+						parameter["name"] === "account_or_zone_id"
+				)
+			) {
+				continue;
+			}
+
+			const index = resolved.findIndex(
+				(parameter) =>
+					parameter?.["in"] === "path" &&
+					(parameter["name"] === "account_id" ||
+						parameter["name"] === "account_identifier" ||
+						parameter["name"] === "accountId")
+			);
+			const parameter = resolved[index];
+			if (index < 0 || !parameter) {
+				continue;
+			}
+			parameters[index] = { ...parameter, name: "account_or_zone_id" };
+			parameterCount++;
+		}
+	}
+
+	console.warn(
+		`[cf-generator] Prepared ${operationCount} account-or-zone operation(s), enabled ${commandCount} command(s), and repaired ${parameterCount} paired id parameter(s)`
+	);
+}
+
+// Built by the `task:generate:plugin` Vite+ task, which this one depends on.
+const pluginWasm = fileURLToPath(
+	new URL("./generator/cli.wasm", import.meta.url)
+);
+const forgeBin = join(
+	dirname(
+		createRequire(import.meta.url).resolve("@cloudflare/forge/package.json")
+	),
+	"bin",
+	"forge.cjs"
+);
+
+if (!existsSync(pluginWasm)) {
+	throw new Error(
+		`[cf-generator] ${pluginWasm} is missing; run \`pnpm generate\`, which builds the generator plugin first`
+	);
+}
+
+const source = (
+	bundle ? JSON.parse(readFileSync(bundle, "utf8")) : await fetchForgeOpenApi()
+) as ForgeOpenApiDocument;
+ignoreInvalidHiddenOperations(source);
+prepareAccountOrZoneOperations(source);
+preserveWorkersSecretUpdatePositional(source);
+applyTemporaryFlagNames(source);
+const audienceExcluded = filterForCliAudience(source);
+console.log(
+	`[cf-generator] Excluded ${audienceExcluded} operation(s) not targeting the cf-cli audience`
+);
+
+// The commands and their metadata are generated by the forge plugin in
+// generator/plugin, built with cf's hand-written commands to splice into the
+// generated tree.
+const generatedDir = fileURLToPath(
+	new URL("./src/commands/_generated", import.meta.url)
+);
+const openapi = JSON.stringify(source);
+rmSync(generatedDir, { recursive: true, force: true });
+const forge = spawn(
+	process.execPath,
+	[forgeBin, "-", "--target", `wasm://${pluginWasm}`, "--out", generatedDir],
+	{ stdio: ["pipe", "inherit", "inherit"] as const }
+);
+const normalize = spawn(
+	process.execPath,
+	[forgeBin, "normalize", "--leave-old-extensions", "-"],
+	{ stdio: ["pipe", "pipe", "inherit"] as const }
+);
+let pipelineError: Error | undefined;
+const transfer = Promise.all([
+	pipeline(Readable.from([openapi]), normalize.stdin),
+	pipeline(normalize.stdout, forge.stdin),
+]).catch((error: unknown) => {
+	pipelineError = error instanceof Error ? error : new Error(String(error));
+});
+const [[normalizeCode, normalizeSignal], [forgeCode, forgeSignal]] =
+	await Promise.all([once(normalize, "close"), once(forge, "close"), transfer]);
+if (normalizeCode !== 0) {
+	throw new Error(
+		`forge normalize exited with ${normalizeCode ?? normalizeSignal}`
+	);
+}
+if (forgeCode !== 0) {
+	throw new Error(`forge exited with ${forgeCode ?? forgeSignal}`);
+}
+if (pipelineError !== undefined) {
+	throw pipelineError;
+}
+console.log("CLI: generated commands");
+
+// Format generated TypeScript so diffs are reviewable.
+try {
+	const vitePlusDir = dirname(
+		fileURLToPath(import.meta.resolve("vite-plus/package.json"))
+	);
+	execFileSync(
+		process.execPath,
+		[join(vitePlusDir, "bin", "vp"), "fmt", generatedDir],
+		{
+			stdio: "inherit",
+		}
+	);
+	console.log("CLI: formatted generated files");
+} catch (err) {
+	console.warn("CLI: Vite+ post-format failed (continuing)", err);
+}

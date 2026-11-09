@@ -1,0 +1,195 @@
+import chalk from "chalk";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { appendApiSchemaHelp } from "../commands/api-schema-help.js";
+import { buildCli } from "../index.js";
+import { theme } from "../lib/ui/theme.js";
+import { captureOutput } from "./helpers/capture-output.js";
+import { runCf } from "./helpers/run-cf.js";
+
+const agentDetection = vi.hoisted(() => ({ isAgentic: false }));
+
+vi.mock("../lib/agent-context.js", () => ({
+	detectAgentContext: () => ({
+		isAgentic: agentDetection.isAgentic,
+		harness: null,
+		model: null,
+		sessionId: null,
+		invocationId: null,
+		matches: [],
+	}),
+}));
+
+describe("help formatting", () => {
+	const originalColumns = process.stdout.columns;
+
+	afterEach(() => {
+		process.stdout.columns = originalColumns;
+		agentDetection.isAgentic = false;
+		vi.restoreAllMocks();
+	});
+
+	it("uses the available terminal width for command descriptions", async () => {
+		process.stdout.columns = 160;
+
+		const help = await buildCli(["workers", "--help"]).cli.getHelp();
+		const triggersLine = help
+			.split("\n")
+			.find((line) => line.includes("Manage triggers"));
+
+		expect(triggersLine).toContain("cf workers triggers");
+		expect(triggersLine).toContain("Cron triggers etc.)");
+	});
+
+	it("falls back to 80 columns when the terminal reports zero", async () => {
+		process.stdout.columns = 0;
+
+		const help = await buildCli(["workers", "--help"]).cli.getHelp();
+		process.stdout.columns = 80;
+		expect(help).toBe(await buildCli(["workers", "--help"]).cli.getHelp());
+	});
+
+	it("sorts root commands alphabetically", async () => {
+		const help = await buildCli(["--help"]).cli.getHelp();
+
+		expect(help.indexOf("cf pipelines")).toBeLessThan(
+			help.indexOf("cf previews")
+		);
+		expect(help.indexOf("cf previews")).toBeLessThan(help.indexOf("cf r2"));
+	});
+
+	it.each([
+		["root", ["--help"]],
+		["group", ["zones", "--help"]],
+		["leaf", ["zones", "list", "--help"]],
+		["local command", ["cli", "search", "--help"]],
+		["documentation search", ["docs", "search", "--help"]],
+	])("puts agent discovery before %s help for agents", async (_name, args) => {
+		agentDetection.isAgentic = true;
+		const help = await buildCli(args).cli.getHelp();
+		expect(help).toMatch(/^=== STOP: AGENT COMMAND DISCOVERY ===\n/);
+		expect(help).toContain("cf cli search");
+		expect(help).toContain(
+			"Keep cf cli search and cf docs search queries anonymous; describe the action and resource type only."
+		);
+		expect(help).toContain(
+			"Never include names, email addresses, domains, account or resource IDs, tokens, or other identifying values."
+		);
+		expect(help).toContain(
+			"Run `<discovered command> --help` for detailed command help."
+		);
+		expect(help).toContain(
+			"For API request details, replace the result's leading `cf` with `cf schema`."
+		);
+		expect(help).toContain('cf docs search "<question>"');
+		expect(help).toContain("Accept: text/markdown");
+		expect(help).not.toContain("cf schema <discovered command>");
+	});
+
+	it.each([
+		["root", ["--help"]],
+		["group", ["zones", "--help"]],
+		["leaf", ["zones", "list", "--help"]],
+	])("omits agent discovery from %s help for people", async (_name, args) => {
+		const help = await buildCli(args).cli.getHelp();
+		expect(help).not.toContain("AGENT COMMAND DISCOVERY");
+	});
+
+	it("prints the notice when yargs renders --help for an agent", async () => {
+		agentDetection.isAgentic = true;
+		const output = captureOutput();
+		expect(await runCf(["zones", "list", "--help"])).toEqual({
+			exitCode: 0,
+		});
+		expect(output.stdout()).toMatch(/^=== STOP: AGENT COMMAND DISCOVERY ===\n/);
+	});
+
+	it("omits the notice when yargs renders --help for a person", async () => {
+		const output = captureOutput();
+		expect(await runCf(["zones", "list", "--help"])).toEqual({
+			exitCode: 0,
+		});
+		expect(output.stdout()).not.toContain("AGENT COMMAND DISCOVERY");
+	});
+
+	it.each([
+		["generated", ["zones", "list", "--help"], "zones list"],
+		[
+			"hidden",
+			["abuse-reports", "appeals", "eligibility", "--help"],
+			"abuse-reports appeals eligibility",
+		],
+		[
+			"spec-backed override",
+			["registrar", "registrations", "create", "--help"],
+			"registrar registrations create",
+		],
+	])("adds a schema suffix to %s API help", async (_name, args, command) => {
+		const help = await buildCli(args).cli.getHelp();
+		expect(help).toMatch(
+			new RegExp(`To inspect the exact API request, run cf schema ${command}$`)
+		);
+	});
+
+	it.each([
+		["root", ["--help"]],
+		["API group", ["zones", "--help"]],
+		["local command", ["cli", "search", "--help"]],
+		["hand-written workflow", ["deploy", "--help"]],
+	])("omits the schema suffix from %s help", async (_name, args) => {
+		const help = await buildCli(args).cli.getHelp();
+		expect(help).not.toContain("To inspect the exact API request");
+	});
+
+	it("prints the schema suffix in command --help", async () => {
+		const output = captureOutput();
+		expect(await runCf(["zones", "list", "--help"])).toEqual({
+			exitCode: 0,
+		});
+		expect(output.stdout().trimEnd()).toMatch(
+			/To inspect the exact API request, run cf schema zones list$/
+		);
+	});
+
+	it.each([
+		["get", 0],
+		["get", 3],
+		["delete", 0],
+		["delete", 3],
+	] as const)(
+		"%s keeps Worker selection in one options section (color level %i)",
+		async (name, level) => {
+			const previousLevel = chalk.level;
+			try {
+				chalk.level = level;
+				const help = await buildCli(["workers", name, "--help"]).cli.getHelp();
+				const sections = help.split(theme.brand("Options"));
+				expect(sections).toHaveLength(2);
+				const options = sections[1]?.split("\n\n")[0];
+				expect(options).toContain("--worker");
+				expect(options).toContain("--dry-run");
+				if (name === "delete") {
+					expect(options).toContain("--force");
+				}
+			} finally {
+				chalk.level = previousLevel;
+			}
+		}
+	);
+
+	it("italicizes the API hint and colors the schema command when enabled", () => {
+		const previousLevel = chalk.level;
+		try {
+			chalk.level = 1;
+			const colored = appendApiSchemaHelp("Help", "kv namespaces create");
+			expect(colored).toContain("\u001b[3m");
+			expect(colored).toContain(theme.code("cf schema kv namespaces create"));
+
+			chalk.level = 0;
+			expect(appendApiSchemaHelp("Help", "kv namespaces create")).toBe(
+				"Help\n\nTo inspect the exact API request, run cf schema kv namespaces create"
+			);
+		} finally {
+			chalk.level = previousLevel;
+		}
+	});
+});

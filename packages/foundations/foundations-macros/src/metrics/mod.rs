@@ -1,0 +1,1526 @@
+use darling::FromMeta;
+use darling::util::Flag;
+use proc_macro::TokenStream;
+use proc_macro2::Span;
+use quote::{ToTokens, format_ident, quote};
+use syn::punctuated::Punctuated;
+use syn::{
+    Attribute, ExprStruct, Ident, LitStr, Path, Token, Type, Visibility, parse_macro_input,
+    parse_quote,
+};
+
+mod parsing;
+mod validation;
+
+#[derive(FromMeta)]
+struct MacroArgs {
+    unprefixed: Flag,
+    #[darling(default = "Self::default_crate_path")]
+    crate_path: Path,
+}
+
+impl Default for MacroArgs {
+    fn default() -> Self {
+        Self {
+            unprefixed: Flag::default(),
+            crate_path: Self::default_crate_path(),
+        }
+    }
+}
+
+impl MacroArgs {
+    fn default_crate_path() -> Path {
+        parse_quote!(::foundations)
+    }
+}
+
+struct Mod {
+    attrs: Vec<Attribute>,
+    vis: Visibility,
+    mod_token: Token![mod],
+    ident: Ident,
+    fns: Vec<ItemFn>,
+}
+
+struct ItemFn {
+    attrs: FnAttrs,
+    vis: Visibility,
+    fn_token: Token![fn],
+    ident: Ident,
+    args: Punctuated<FnArg, Token![,]>,
+    arrow_token: Token![->],
+    ty: Type,
+}
+
+#[derive(Default)]
+struct FnAttrs {
+    cfg: Vec<Attribute>,
+    doc: String,
+    ctor: Option<ExprStruct>,
+    optional: bool,
+    with_removal: bool,
+    low_cardinality: Flag,
+}
+
+struct FnArg {
+    attrs: ArgAttrs,
+    ident: Ident,
+    colon_token: Token![:],
+    ty: Type,
+    mode: ArgMode,
+}
+
+#[derive(Default)]
+struct ArgAttrs {
+    serde: Option<Attribute>,
+    serde_as: Option<Attribute>,
+}
+
+enum ArgMode {
+    ByValue(Type),
+    ToOwned(Type),
+    Into(Type),
+}
+
+impl FnArg {
+    fn to_struct_member(&self) -> proc_macro2::TokenStream {
+        let Self {
+            attrs: ArgAttrs { serde, serde_as },
+            ident,
+            colon_token,
+            ..
+        } = self;
+
+        let ty = match &self.mode {
+            ArgMode::ByValue(ty) | ArgMode::Into(ty) => quote! { #ty },
+            ArgMode::ToOwned(ty) => quote! { <#ty as ::std::borrow::ToOwned>::Owned },
+        };
+
+        quote! { #serde_as #serde #ident #colon_token #ty }
+    }
+
+    fn to_arg(&self) -> proc_macro2::TokenStream {
+        let Self {
+            ident,
+            colon_token,
+            ty,
+            ..
+        } = self;
+
+        quote! { #ident #colon_token #ty }
+    }
+
+    fn to_initializer(&self) -> proc_macro2::TokenStream {
+        let Self {
+            ident, colon_token, ..
+        } = self;
+
+        match &self.mode {
+            ArgMode::ByValue(_) => quote! { #ident },
+            ArgMode::ToOwned(_) => quote! {
+                #ident #colon_token ::std::borrow::ToOwned::to_owned(#ident)
+            },
+            ArgMode::Into(_) => quote! {
+                #ident #colon_token ::std::convert::Into::into(#ident)
+            },
+        }
+    }
+}
+
+pub(crate) fn expand(args: TokenStream, item: TokenStream) -> TokenStream {
+    let args = parse_macro_input!(args as MacroArgs);
+    let mod_ = parse_macro_input!(item as Mod);
+
+    expand_from_parsed(args, mod_).into()
+}
+
+fn expand_from_parsed(args: MacroArgs, extern_: Mod) -> proc_macro2::TokenStream {
+    let MacroArgs {
+        unprefixed,
+        crate_path: foundations,
+    } = &args;
+    let with_service_prefix =
+        format_ident!("{}", !unprefixed.is_present(), span = unprefixed.span());
+
+    let Mod {
+        attrs: mod_attrs,
+        vis: mod_vis,
+        mod_token,
+        ident: mod_name,
+        fns,
+    } = extern_;
+
+    // This should be using `Span::def_site` but it is currently unstable.
+    let metrics_struct = Ident::new(&format!("__{mod_name}_Metrics"), Span::call_site());
+
+    let metric_fields = fns.iter().map(|fn_| metric_field(foundations, fn_));
+    let label_set_structs = fns
+        .iter()
+        .filter_map(|fn_| label_set_struct(foundations, fn_));
+
+    let metric_inits = fns
+        .iter()
+        .map(|fn_| metric_init(foundations, &mod_name, &with_service_prefix, fn_));
+
+    let metric_fns = fns
+        .iter()
+        .map(|fn_| metric_fn(foundations, &metrics_struct, fn_));
+
+    quote! {
+        #(#mod_attrs)* #mod_vis #mod_token #mod_name {
+            use super::*;
+
+            #[allow(non_camel_case_types)]
+            struct #metrics_struct {
+                #(#metric_fields,)*
+            }
+
+            #(#label_set_structs)*
+
+            #[allow(non_upper_case_globals)]
+            static #metrics_struct: ::std::sync::LazyLock<#metrics_struct> =
+                ::std::sync::LazyLock::new(|| {
+                    #metrics_struct {
+                        #(#metric_inits,)*
+                    }
+                });
+
+            #(#metric_fns)*
+        }
+    }
+}
+
+/// Gets the type of the metric for its field in metric struct.
+fn metric_field(foundations: &Path, fn_: &ItemFn) -> proc_macro2::TokenStream {
+    let ItemFn {
+        attrs:
+            FnAttrs {
+                cfg,
+                ctor,
+                low_cardinality,
+                ..
+            },
+        args,
+        ty: metric_ty,
+        ident: metric_name,
+        ..
+    } = fn_;
+
+    let family = if low_cardinality.is_present() {
+        quote! { #foundations::telemetry::metrics::LowCardinalityFamily }
+    } else {
+        quote! { #foundations::telemetry::metrics::Family }
+    };
+
+    let field_ty = if args.is_empty() {
+        metric_ty.to_token_stream()
+    } else if let Some(ExprStruct {
+        path: ctor_path, ..
+    }) = ctor
+    {
+        quote! {
+            #family<
+                #metric_name,
+                #metric_ty,
+                #ctor_path,
+            >
+        }
+    } else {
+        quote! {
+            #family<
+                #metric_name,
+                #metric_ty,
+            >
+        }
+    };
+
+    quote! { #(#cfg)* #metric_name: #field_ty }
+}
+
+/// Returns the definition for the label set struct, if this metric uses labels.
+fn label_set_struct(foundations: &Path, fn_: &ItemFn) -> Option<proc_macro2::TokenStream> {
+    let ItemFn {
+        attrs: FnAttrs {
+            cfg,
+            low_cardinality,
+            ..
+        },
+        args,
+        ident: label_set_name,
+        ..
+    } = fn_;
+
+    if args.is_empty() {
+        return None;
+    }
+
+    let serde_with = quote! { #foundations::reexports_for_macros::serde_with };
+    let serde_with_str = LitStr::new(&serde_with.to_string(), Span::call_site());
+
+    let serde_as_attr = args
+        .iter()
+        .any(|arg| arg.attrs.serde_as.is_some())
+        .then(|| quote! { #[#serde_with::serde_as(crate = #serde_with_str)] });
+
+    let serde = quote! { #foundations::reexports_for_macros::serde };
+    let serde_str = LitStr::new(&serde.to_string(), Span::call_site());
+
+    let labels = args.iter().map(|arg| arg.to_struct_member());
+
+    let derives = if low_cardinality.is_present() {
+        quote! {
+            ::std::clone::Clone,
+            ::std::cmp::PartialEq,
+            #serde::Serialize,
+        }
+    } else {
+        quote! {
+            ::std::clone::Clone,
+            ::std::cmp::Eq,
+            ::std::hash::Hash,
+            ::std::cmp::PartialEq,
+            #serde::Serialize,
+        }
+    };
+
+    let low_cardinality_impl = low_cardinality.is_present().then(|| {
+        let cardinality_factors = args.iter().map(|arg| {
+            let ty = match &arg.mode {
+                ArgMode::ByValue(ty) | ArgMode::ToOwned(ty) | ArgMode::Into(ty) => ty,
+            };
+
+            quote! {
+                __cardinality = match __cardinality.checked_mul(
+                    <#ty as #foundations::telemetry::metrics::LowCardinalityLabel>::CARDINALITY
+                        .get(),
+                ) {
+                    ::std::option::Option::Some(__cardinality) => __cardinality,
+                    ::std::option::Option::None => ::std::panic!(
+                        "low-cardinality metric label cardinality overflowed usize"
+                    ),
+                };
+            }
+        });
+        let index_steps = args.iter().map(|arg| {
+            let ident = &arg.ident;
+            let ty = match &arg.mode {
+                ArgMode::ByValue(ty) | ArgMode::ToOwned(ty) | ArgMode::Into(ty) => ty,
+            };
+
+            quote! {
+                __index = __index
+                    * <#ty as #foundations::telemetry::metrics::LowCardinalityLabel>::CARDINALITY
+                        .get()
+                    + <#ty as #foundations::telemetry::metrics::LowCardinalityLabel>::index(
+                        &self.#ident,
+                    );
+            }
+        });
+
+        quote! {
+            #(#cfg)*
+            impl #foundations::telemetry::metrics::LowCardinalityLabel for #label_set_name {
+                const CARDINALITY: ::std::num::NonZeroUsize = {
+                    let mut __cardinality = 1usize;
+                    #(#cardinality_factors)*
+                    ::std::num::NonZeroUsize::new(__cardinality).unwrap()
+                };
+
+                fn index(&self) -> usize {
+                    let mut __index = 0usize;
+                    #(#index_steps)*
+                    __index
+                }
+            }
+        }
+    });
+
+    Some(quote! {
+        #(#cfg)*
+        #[allow(non_camel_case_types)]
+        #serde_as_attr
+        #[derive(#derives)]
+        #[serde(crate = #serde_str)]
+        struct #label_set_name {
+            #(#labels,)*
+        }
+
+        #low_cardinality_impl
+    })
+}
+
+fn metric_init(
+    foundations: &Path,
+    mod_name: &Ident,
+    with_service_prefix: &Ident,
+    fn_: &ItemFn,
+) -> proc_macro2::TokenStream {
+    let ItemFn {
+        attrs:
+            FnAttrs {
+                cfg,
+                doc,
+                optional,
+                ctor,
+                low_cardinality,
+                ..
+            },
+        ident: field_name,
+        args,
+        ..
+    } = fn_;
+
+    let optional = format_ident!("{optional}");
+
+    // Validate classic buckets at compile time when the constructor exposes them.
+    if let Some(ctor) = ctor
+        && let Err(err) = validate_histogram_ctor(ctor)
+    {
+        return err.to_compile_error();
+    }
+
+    let metric_init = match ctor {
+        Some(ctor) if args.is_empty() => quote! {
+            #foundations::telemetry::metrics::MetricConstructor::new_metric(&(#ctor))
+        },
+        Some(ctor) if low_cardinality.is_present() => quote! {
+            #foundations::telemetry::metrics::LowCardinalityFamily::new_with_constructor(#ctor)
+        },
+        Some(ctor) => quote! {
+            #foundations::telemetry::metrics::Family::new_with_constructor(#ctor)
+        },
+        None => quote! { ::std::default::Default::default() },
+    };
+
+    quote! {
+        #(#cfg)*
+        #field_name: {
+            let metric = #metric_init;
+
+            #foundations::telemetry::metrics::internal::register_metric(
+                ::std::stringify!(#mod_name),
+                ::std::stringify!(#field_name),
+                ::std::concat!(
+                    ::std::stringify!(#mod_name),
+                    "_",
+                    ::std::stringify!(#field_name),
+                ),
+                str::trim(#doc),
+                ::std::clone::Clone::clone(&metric),
+                #optional,
+                #with_service_prefix,
+            );
+
+            metric
+        }
+    }
+}
+
+fn validate_histogram_ctor(ctor: &ExprStruct) -> syn::Result<()> {
+    let Some(name) = ctor.path.get_ident() else {
+        return Ok(());
+    };
+
+    if name == "HistogramBuilder" {
+        validation::validate_histogram_buckets(ctor)
+    } else if name == "NativeHistogramBuilder" {
+        validation::validate_native_histogram_buckets(ctor)
+    } else {
+        Ok(())
+    }
+}
+
+fn metric_fn(foundations: &Path, metrics_struct: &Ident, fn_: &ItemFn) -> proc_macro2::TokenStream {
+    let ItemFn {
+        attrs:
+            FnAttrs {
+                cfg,
+                doc,
+                with_removal,
+                low_cardinality,
+                ..
+            },
+        fn_token,
+        vis: fn_vis,
+        ident: metric_name,
+        args,
+        arrow_token,
+        ty: metric_type,
+    } = fn_;
+
+    let fn_args: Vec<_> = args.iter().map(|arg| arg.to_arg()).collect();
+
+    let (convert_args, access_metric) = if args.is_empty() {
+        let accessor = quote! {
+            ::std::clone::Clone::clone(&#metrics_struct.#metric_name)
+        };
+        (quote! {}, accessor)
+    } else {
+        let label_inits = args.iter().map(|arg| arg.to_initializer());
+        let convert = quote! {
+            let __args = #metric_name {
+                #(#label_inits,)*
+            };
+        };
+
+        let accessor = if low_cardinality.is_present() {
+            quote! {
+                #foundations::telemetry::metrics::LowCardinalityFamily::get_or_create(
+                    &#metrics_struct.#metric_name,
+                    &__args,
+                )
+            }
+        } else {
+            quote! {
+                ::std::clone::Clone::clone(
+                    &#foundations::telemetry::metrics::Family::get_or_create(
+                        &#metrics_struct.#metric_name,
+                        &__args,
+                    )
+                )
+            }
+        };
+        (convert, accessor)
+    };
+
+    let removal_fns = if cfg!(foundations_unstable) && *with_removal {
+        let remove_ident = format_ident!("{metric_name}_remove");
+        let remove_doc = LitStr::new(
+            &format!("Removes one label set from the `{metric_name}` family."),
+            Span::call_site(),
+        );
+
+        let clear_ident = format_ident!("{metric_name}_clear");
+        let clear_doc = LitStr::new(
+            &format!("Removes all label sets from the `{metric_name}` family."),
+            Span::call_site(),
+        );
+
+        quote! {
+            #[doc = #remove_doc]
+            #(#cfg)*
+            #fn_vis #fn_token #remove_ident(#(#fn_args,)*) #arrow_token bool {
+                #convert_args
+                #foundations::telemetry::metrics::Family::remove(
+                    &#metrics_struct.#metric_name,
+                    &__args,
+                )
+            }
+
+            #[doc = #clear_doc]
+            #(#cfg)*
+            #fn_vis #fn_token #clear_ident() {
+                #foundations::telemetry::metrics::Family::clear(
+                    &#metrics_struct.#metric_name,
+                )
+            }
+        }
+    } else {
+        quote! {}
+    };
+
+    let (return_type, low_cardinality_doc) = if low_cardinality.is_present() {
+        let doc = LitStr::new("Returns a static reference to a metric.", Span::call_site());
+        (quote! { &'static #metric_type }, quote! { #[doc = #doc] })
+    } else {
+        (quote! { #metric_type }, quote! {})
+    };
+
+    quote! {
+        #[doc = #doc]
+        #low_cardinality_doc
+        #(#cfg)*
+        #[must_use]
+        #fn_vis #fn_token #metric_name(#(#fn_args,)*) #arrow_token #return_type {
+            #convert_args
+            #access_metric
+        }
+        #removal_fns
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::common::test_utils::{code_str, parse_attr};
+    use crate::metrics::validation;
+    use syn::{ExprStruct, parse_quote};
+
+    #[test]
+    fn expand_empty() {
+        let attr = parse_attr! {
+            #[metrics]
+        };
+
+        let src = parse_quote! {
+            #[attr]
+            mod empty {}
+        };
+
+        let actual = expand_from_parsed(attr, src).to_string();
+
+        let expected = code_str! {
+            #[attr]
+            mod empty {
+                use super::*;
+
+                #[allow(non_camel_case_types)]
+                struct __empty_Metrics {}
+
+                #[allow(non_upper_case_globals)]
+                static __empty_Metrics: ::std::sync::LazyLock<__empty_Metrics> =
+                    ::std::sync::LazyLock::new(|| { __empty_Metrics {} });
+            }
+        };
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn expand_simple() {
+        let attr = parse_attr! {
+            #[metrics(crate_path = "tarmac")]
+        };
+
+        let src = parse_quote! {
+            /// oxy metrics.
+            pub mod oxy {
+                /// Total number of connections
+                pub fn connections_total() -> Counter;
+            }
+        };
+
+        let actual = expand_from_parsed(attr, src).to_string();
+
+        let expected = code_str! {
+            /// oxy metrics.
+            pub mod oxy {
+                use super::*;
+
+                #[allow(non_camel_case_types)]
+                struct __oxy_Metrics {
+                    connections_total: Counter,
+                }
+
+                #[allow(non_upper_case_globals)]
+                static __oxy_Metrics: ::std::sync::LazyLock<__oxy_Metrics> =
+                    ::std::sync::LazyLock::new(|| {
+                        __oxy_Metrics {
+                            connections_total: {
+                                let metric = ::std::default::Default::default();
+
+                                tarmac::telemetry::metrics::internal::register_metric(
+                                    ::std::stringify!(oxy),
+                                    ::std::stringify!(connections_total),
+                                    ::std::concat!(
+                                        ::std::stringify!(oxy),
+                                        "_",
+                                        ::std::stringify!(connections_total),
+                                    ),
+                                    str::trim(" Total number of connections"),
+                                    ::std::clone::Clone::clone(&metric),
+                                    false,
+                                    true,
+                                );
+
+                                metric
+                            },
+                        }
+                    });
+
+                #[doc = " Total number of connections"]
+                #[must_use]
+                pub fn connections_total() -> Counter {
+                    ::std::clone::Clone::clone(&__oxy_Metrics.connections_total)
+                }
+            }
+        };
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn expand_simple_optional_only() {
+        let attr = parse_attr! {
+            #[metrics]
+        };
+
+        let src = parse_quote! {
+            pub(crate) mod oxy {
+                /// Total number of connections
+                #[optional]
+                pub(crate) fn connections_total() -> Counter;
+            }
+        };
+
+        let actual = expand_from_parsed(attr, src).to_string();
+
+        let expected = code_str! {
+            pub(crate) mod oxy {
+                use super::*;
+
+                #[allow(non_camel_case_types)]
+                struct __oxy_Metrics {
+                    connections_total: Counter,
+                }
+
+                #[allow(non_upper_case_globals)]
+                static __oxy_Metrics: ::std::sync::LazyLock<__oxy_Metrics> =
+                    ::std::sync::LazyLock::new(|| {
+                        __oxy_Metrics {
+                            connections_total: {
+                                let metric = ::std::default::Default::default();
+
+                                ::foundations::telemetry::metrics::internal::register_metric(
+                                    ::std::stringify!(oxy),
+                                    ::std::stringify!(connections_total),
+                                    ::std::concat!(
+                                        ::std::stringify!(oxy),
+                                        "_",
+                                        ::std::stringify!(connections_total),
+                                    ),
+                                    str::trim(" Total number of connections"),
+                                    ::std::clone::Clone::clone(&metric),
+                                    true,
+                                    true,
+                                );
+
+                                metric
+                            },
+                        }
+                    });
+
+                #[doc = " Total number of connections"]
+                #[must_use]
+                pub(crate) fn connections_total() -> Counter {
+                    ::std::clone::Clone::clone(&__oxy_Metrics.connections_total)
+                }
+            }
+        };
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn expand_unprefixed_mixed() {
+        let attr = parse_attr! {
+            #[metrics(unprefixed)]
+        };
+
+        let src = parse_quote! {
+            pub(crate) mod oxy {
+                /// Total number of requests
+                pub(crate) fn requests_total() -> Counter;
+
+                /// Total number of connections
+                #[optional]
+                pub(crate) fn connections_total() -> Counter;
+            }
+        };
+
+        let actual = expand_from_parsed(attr, src).to_string();
+
+        let expected = code_str! {
+            pub(crate) mod oxy {
+                use super::*;
+
+                #[allow(non_camel_case_types)]
+                struct __oxy_Metrics {
+                    requests_total: Counter,
+                    connections_total: Counter,
+                }
+
+                #[allow(non_upper_case_globals)]
+                static __oxy_Metrics: ::std::sync::LazyLock<__oxy_Metrics> =
+                    ::std::sync::LazyLock::new(|| {
+                        __oxy_Metrics {
+                            requests_total: {
+                                let metric = ::std::default::Default::default();
+
+                                ::foundations::telemetry::metrics::internal::register_metric(
+                                    ::std::stringify!(oxy),
+                                    ::std::stringify!(requests_total),
+                                    ::std::concat!(
+                                        ::std::stringify!(oxy),
+                                        "_",
+                                        ::std::stringify!(requests_total),
+                                    ),
+                                    str::trim(" Total number of requests"),
+                                    ::std::clone::Clone::clone(&metric),
+                                    false,
+                                    false,
+                                );
+
+                                metric
+                            },
+                            connections_total: {
+                                let metric = ::std::default::Default::default();
+
+                                ::foundations::telemetry::metrics::internal::register_metric(
+                                    ::std::stringify!(oxy),
+                                    ::std::stringify!(connections_total),
+                                    ::std::concat!(
+                                        ::std::stringify!(oxy),
+                                        "_",
+                                        ::std::stringify!(connections_total),
+                                    ),
+                                    str::trim(" Total number of connections"),
+                                    ::std::clone::Clone::clone(&metric),
+                                    true,
+                                    false,
+                                );
+
+                                metric
+                            },
+                        }
+                    });
+
+                #[doc = " Total number of requests"]
+                #[must_use]
+                pub(crate) fn requests_total() -> Counter {
+                    ::std::clone::Clone::clone(&__oxy_Metrics.requests_total)
+                }
+
+                #[doc = " Total number of connections"]
+                #[must_use]
+                pub(crate) fn connections_total() -> Counter {
+                    ::std::clone::Clone::clone(&__oxy_Metrics.connections_total)
+                }
+            }
+        };
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn expand_label_set() {
+        let attr = parse_attr! {
+            #[metrics]
+        };
+
+        let src = parse_quote! {
+            pub mod oxy {
+                /// Total number of connection errors
+                pub fn connections_errors_total(
+                    #[serde(rename = "endpoint_name")]
+                    endpoint: &Arc<String>,
+                    #[serde_as(as = "DisplayFromStr")]
+                    kind: Kind,
+                    message: &'static str,
+                    error: impl Into<String>,
+                ) -> Counter;
+            }
+        };
+
+        let actual = expand_from_parsed(attr, src).to_string();
+
+        let expected = code_str! {
+            pub mod oxy {
+                use super::*;
+
+                #[allow(non_camel_case_types)]
+                struct __oxy_Metrics {
+                    connections_errors_total:
+                        ::foundations::telemetry::metrics::Family<
+                            connections_errors_total,
+                            Counter,
+                        >,
+                }
+
+                #[allow(non_camel_case_types)]
+                #[::foundations::reexports_for_macros::serde_with::serde_as(crate = ":: foundations :: reexports_for_macros :: serde_with")]
+                #[derive(
+                    ::std::clone::Clone,
+                    ::std::cmp::Eq,
+                    ::std::hash::Hash,
+                    ::std::cmp::PartialEq,
+                    ::foundations::reexports_for_macros::serde::Serialize,
+                )]
+                #[serde(crate = ":: foundations :: reexports_for_macros :: serde")]
+                struct connections_errors_total {
+                    #[serde(rename = "endpoint_name")]
+                    endpoint: <Arc<String> as ::std::borrow::ToOwned>::Owned,
+                    #[serde_as(as = "DisplayFromStr")]
+                    kind: Kind,
+                    message: &'static str,
+                    error: String,
+                }
+
+                #[allow(non_upper_case_globals)]
+                static __oxy_Metrics: ::std::sync::LazyLock<__oxy_Metrics> =
+                    ::std::sync::LazyLock::new(|| {
+                        __oxy_Metrics {
+                            connections_errors_total: {
+                                let metric = ::std::default::Default::default();
+
+                                ::foundations::telemetry::metrics::internal::register_metric(
+                                    ::std::stringify!(oxy),
+                                    ::std::stringify!(connections_errors_total),
+                                    ::std::concat!(
+                                        ::std::stringify!(oxy),
+                                        "_",
+                                        ::std::stringify!(connections_errors_total),
+                                    ),
+                                    str::trim(" Total number of connection errors"),
+                                    ::std::clone::Clone::clone(&metric),
+                                    false,
+                                    true,
+                                );
+
+                                metric
+                            },
+                        }
+                    });
+
+                #[doc = " Total number of connection errors"]
+                #[must_use]
+                pub fn connections_errors_total(
+                    endpoint: &Arc<String>,
+                    kind: Kind,
+                    message: &'static str,
+                    error: impl Into<String>,
+                ) -> Counter {
+                    let __args = connections_errors_total {
+                        endpoint: ::std::borrow::ToOwned::to_owned(endpoint),
+                        kind,
+                        message,
+                        error: ::std::convert::Into::into(error),
+                    };
+                    ::std::clone::Clone::clone(
+                        &::foundations::telemetry::metrics::Family::get_or_create(
+                            &__oxy_Metrics.connections_errors_total,
+                            &__args,
+                        )
+                    )
+                }
+            }
+        };
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn expand_str_label() {
+        let attr = parse_attr! {
+            #[metrics]
+        };
+
+        let src = parse_quote! {
+            pub mod oxy {
+                /// Total number of connection errors
+                pub fn connections_errors_total(endpoint: &str) -> Counter;
+            }
+        };
+
+        let actual = expand_from_parsed(attr, src).to_string();
+
+        let expected = code_str! {
+            pub mod oxy {
+                use super::*;
+
+                #[allow(non_camel_case_types)]
+                struct __oxy_Metrics {
+                    connections_errors_total:
+                        ::foundations::telemetry::metrics::Family<
+                            connections_errors_total,
+                            Counter,
+                        >,
+                }
+
+                #[allow(non_camel_case_types)]
+                #[derive(
+                    ::std::clone::Clone,
+                    ::std::cmp::Eq,
+                    ::std::hash::Hash,
+                    ::std::cmp::PartialEq,
+                    ::foundations::reexports_for_macros::serde::Serialize,
+                )]
+                #[serde(crate = ":: foundations :: reexports_for_macros :: serde")]
+                struct connections_errors_total {
+                    endpoint: <str as ::std::borrow::ToOwned>::Owned,
+                }
+
+                #[allow(non_upper_case_globals)]
+                static __oxy_Metrics: ::std::sync::LazyLock<__oxy_Metrics> =
+                    ::std::sync::LazyLock::new(|| {
+                        __oxy_Metrics {
+                            connections_errors_total: {
+                                let metric = ::std::default::Default::default();
+
+                                ::foundations::telemetry::metrics::internal::register_metric(
+                                    ::std::stringify!(oxy),
+                                    ::std::stringify!(connections_errors_total),
+                                    ::std::concat!(
+                                        ::std::stringify!(oxy),
+                                        "_",
+                                        ::std::stringify!(connections_errors_total),
+                                    ),
+                                    str::trim(" Total number of connection errors"),
+                                    ::std::clone::Clone::clone(&metric),
+                                    false,
+                                    true,
+                                );
+
+                                metric
+                            },
+                        }
+                    });
+
+                #[doc = " Total number of connection errors"]
+                #[must_use]
+                pub fn connections_errors_total(
+                    endpoint: &str,
+                ) -> Counter {
+                    let __args = connections_errors_total {
+                        endpoint: ::std::borrow::ToOwned::to_owned(endpoint),
+                    };
+                    ::std::clone::Clone::clone(
+                        &::foundations::telemetry::metrics::Family::get_or_create(
+                            &__oxy_Metrics.connections_errors_total,
+                            &__args,
+                        )
+                    )
+                }
+            }
+        };
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn expand_ctor() {
+        let attr = parse_attr! {
+            #[metrics]
+        };
+
+        let src = parse_quote! {
+            pub mod oxy {
+                /// Latency of connections
+                #[ctor = HistogramBuilder { buckets: &[0.5, 1.] }]
+                pub fn connections_latency() -> Histogram;
+
+                /// Number of requests per connection
+                #[ctor = HistogramBuilder { buckets: &[2., 3.] }]
+                pub fn requests_per_connection(endpoint: String) -> Histogram;
+            }
+        };
+
+        let actual = expand_from_parsed(attr, src).to_string();
+
+        let expected = code_str! {
+            pub mod oxy {
+                use super::*;
+
+                #[allow(non_camel_case_types)]
+                struct __oxy_Metrics {
+                    connections_latency: Histogram,
+                    requests_per_connection:
+                        ::foundations::telemetry::metrics::Family<
+                            requests_per_connection,
+                            Histogram,
+                            HistogramBuilder,
+                        >,
+                }
+
+                #[allow(non_camel_case_types)]
+                #[derive(
+                    ::std::clone::Clone,
+                    ::std::cmp::Eq,
+                    ::std::hash::Hash,
+                    ::std::cmp::PartialEq,
+                    ::foundations::reexports_for_macros::serde::Serialize,
+                )]
+                #[serde(crate = ":: foundations :: reexports_for_macros :: serde")]
+                struct requests_per_connection {
+                    endpoint: String,
+                }
+
+                #[allow(non_upper_case_globals)]
+                static __oxy_Metrics: ::std::sync::LazyLock<__oxy_Metrics> =
+                    ::std::sync::LazyLock::new(|| {
+                        __oxy_Metrics {
+                            connections_latency: {
+                                let metric = ::foundations::telemetry::metrics::MetricConstructor::new_metric(
+                                    &(HistogramBuilder { buckets: &[0.5, 1.] })
+                                );
+
+                                ::foundations::telemetry::metrics::internal::register_metric(
+                                    ::std::stringify!(oxy),
+                                    ::std::stringify!(connections_latency),
+                                    ::std::concat!(
+                                        ::std::stringify!(oxy),
+                                        "_",
+                                        ::std::stringify!(connections_latency),
+                                    ),
+                                    str::trim(" Latency of connections"),
+                                    ::std::clone::Clone::clone(&metric),
+                                    false,
+                                    true,
+                                );
+
+                                metric
+                            },
+                            requests_per_connection: {
+                                let metric = ::foundations::telemetry::metrics::Family::new_with_constructor(
+                                    HistogramBuilder { buckets: &[2., 3.] }
+                                );
+
+                                ::foundations::telemetry::metrics::internal::register_metric(
+                                    ::std::stringify!(oxy),
+                                    ::std::stringify!(requests_per_connection),
+                                    ::std::concat!(
+                                        ::std::stringify!(oxy),
+                                        "_",
+                                        ::std::stringify!(requests_per_connection),
+                                    ),
+                                    str::trim(" Number of requests per connection"),
+                                    ::std::clone::Clone::clone(&metric),
+                                    false,
+                                    true,
+                                );
+
+                                metric
+                            },
+                        }
+                    });
+
+                #[doc = " Latency of connections"]
+                #[must_use]
+                pub fn connections_latency() -> Histogram {
+                    ::std::clone::Clone::clone(&__oxy_Metrics.connections_latency)
+                }
+
+                #[doc = " Number of requests per connection"]
+                #[must_use]
+                pub fn requests_per_connection(
+                    endpoint: String,
+                ) -> Histogram {
+                    let __args = requests_per_connection { endpoint, };
+                    ::std::clone::Clone::clone(
+                        &::foundations::telemetry::metrics::Family::get_or_create(
+                            &__oxy_Metrics.requests_per_connection,
+                            &__args,
+                        )
+                    )
+                }
+            }
+        };
+
+        assert_eq!(actual, expected);
+    }
+
+    #[cfg(feature = "foundations-metrics-backend")]
+    #[test]
+    fn expand_low_cardinality() {
+        let foundations: Path = parse_quote!(tarmac);
+        let src: Mod = parse_quote! {
+            pub(crate) mod oxy {
+                /// Latency by finite label combination.
+                #[low_cardinality]
+                #[ctor = HistogramBuilder { buckets: &[0.5, 1.] }]
+                pub(crate) fn latency(
+                    kind: &Kind,
+                    outcome: impl Into<Outcome>,
+                ) -> Histogram;
+            }
+        };
+        let fn_ = &src.fns[0];
+
+        let field = metric_field(&foundations, fn_).to_string();
+        assert_eq!(
+            field,
+            code_str! {
+                latency: tarmac::telemetry::metrics::LowCardinalityFamily<
+                    latency,
+                    Histogram,
+                    HistogramBuilder,
+                >
+            }
+        );
+
+        let labels = label_set_struct(&foundations, fn_).unwrap().to_string();
+        assert!(labels.contains(&code_str! {
+            #[derive(
+                ::std::clone::Clone,
+                ::std::cmp::PartialEq,
+                tarmac::reexports_for_macros::serde::Serialize,
+            )]
+        }));
+        assert!(!labels.contains("std :: hash :: Hash"));
+        assert!(labels.contains(&code_str! {
+            struct latency {
+                kind: <Kind as ::std::borrow::ToOwned>::Owned,
+                outcome: Outcome,
+            }
+        }));
+        assert!(labels.contains(&code_str! {
+            impl tarmac::telemetry::metrics::LowCardinalityLabel for latency
+        }));
+        assert!(labels.contains("const CARDINALITY : :: std :: num :: NonZeroUsize"));
+        assert!(labels.contains(&code_str! {
+            ::std::num::NonZeroUsize::new(__cardinality).unwrap()
+        }));
+        assert!(labels.contains(&code_str! {
+            <Kind as tarmac::telemetry::metrics::LowCardinalityLabel>::CARDINALITY.get()
+        }));
+        assert!(labels.contains(&code_str! {
+            <Outcome as tarmac::telemetry::metrics::LowCardinalityLabel>::CARDINALITY.get()
+        }));
+        assert!(labels.contains(&code_str! {
+            <Kind as tarmac::telemetry::metrics::LowCardinalityLabel>::index(&self.kind,)
+        }));
+        assert!(labels.contains(&code_str! {
+            <Outcome as tarmac::telemetry::metrics::LowCardinalityLabel>::index(&self.outcome,)
+        }));
+        assert!(labels.contains("checked_mul"));
+
+        let init = metric_init(
+            &foundations,
+            &parse_quote!(oxy),
+            &format_ident!("true"),
+            fn_,
+        )
+        .to_string();
+        assert!(init.contains(&code_str! {
+            tarmac::telemetry::metrics::LowCardinalityFamily::new_with_constructor(
+                HistogramBuilder { buckets: &[0.5, 1.] }
+            )
+        }));
+
+        let accessor = metric_fn(&foundations, &parse_quote!(__oxy_Metrics), fn_).to_string();
+        assert!(accessor.contains(&code_str! {
+            pub(crate) fn latency(
+                kind: &Kind,
+                outcome: impl Into<Outcome>,
+            ) -> &'static Histogram
+        }));
+        assert!(accessor.contains(&code_str! {
+            tarmac::telemetry::metrics::LowCardinalityFamily::get_or_create(
+                &__oxy_Metrics.latency,
+                &__args,
+            )
+        }));
+        assert!(
+            !accessor.contains(
+                "Clone :: clone (& tarmac :: telemetry :: metrics :: LowCardinalityFamily"
+            )
+        );
+    }
+
+    #[test]
+    fn reject_duplicate_low_cardinality_attribute() {
+        let err = syn::parse2::<Mod>(quote! {
+            mod oxy {
+                #[low_cardinality]
+                #[low_cardinality]
+                fn requests(kind: Kind) -> Counter;
+            }
+        })
+        .err()
+        .expect("duplicate attribute must fail");
+
+        assert_eq!(err.to_string(), "Duplicate `#[low_cardinality]` attribute");
+    }
+
+    #[cfg(not(feature = "foundations-metrics-backend"))]
+    #[test]
+    fn low_cardinality_requires_backend_feature() {
+        let err = syn::parse2::<Mod>(quote! {
+            mod oxy {
+                #[low_cardinality]
+                fn requests(kind: Kind) -> Counter;
+            }
+        })
+        .err()
+        .expect("missing backend feature must fail");
+
+        assert_eq!(
+            err.to_string(),
+            "`#[low_cardinality]` requires the `foundations-metrics-backend` feature"
+        );
+    }
+
+    #[cfg(feature = "foundations-metrics-backend")]
+    #[test]
+    fn reject_low_cardinality_without_labels() {
+        let err = syn::parse2::<Mod>(quote! {
+            mod oxy {
+                #[low_cardinality]
+                fn requests() -> Counter;
+            }
+        })
+        .err()
+        .expect("unlabelled low-cardinality metric must fail");
+
+        assert_eq!(
+            err.to_string(),
+            "`#[low_cardinality]` can only be used on functions with label arguments"
+        );
+    }
+
+    #[cfg(feature = "foundations-metrics-backend")]
+    #[test]
+    fn reject_low_cardinality_with_removal() {
+        let err = syn::parse2::<Mod>(quote! {
+            mod oxy {
+                #[low_cardinality]
+                #[with_removal]
+                fn requests(kind: Kind) -> Counter;
+            }
+        })
+        .err()
+        .expect("low-cardinality removal must fail");
+
+        assert_eq!(
+            err.to_string(),
+            "`#[low_cardinality]` cannot be combined with `#[with_removal]`"
+        );
+    }
+
+    #[cfg(feature = "foundations-metrics-backend")]
+    #[test]
+    fn reject_low_cardinality_mutable_references() {
+        let mutable_err = syn::parse2::<Mod>(quote! {
+            mod oxy {
+                #[low_cardinality]
+                fn requests(kind: &mut Kind) -> Counter;
+            }
+        })
+        .err()
+        .expect("mutable reference must fail");
+        assert_eq!(
+            mutable_err.to_string(),
+            "mutable reference labels are not supported by `#[low_cardinality]`; use an owned value or a shared reference"
+        );
+    }
+
+    #[cfg(feature = "foundations-metrics-backend")]
+    #[test]
+    fn accept_low_cardinality_explicit_lifetime_references() {
+        let parsed = syn::parse2::<Mod>(quote! {
+            pub mod oxy {
+                #[low_cardinality]
+                pub fn requests(kind: &'static Kind) -> Counter;
+            }
+        })
+        .expect("explicit-lifetime shared reference must parse");
+
+        let arg = &parsed.fns[0].args[0];
+        assert!(matches!(&arg.mode, ArgMode::ToOwned(Type::Path(_))));
+        assert_eq!(arg.ty.to_token_stream().to_string(), "& 'static Kind");
+        assert_eq!(
+            arg.to_struct_member().to_string(),
+            "kind : < Kind as :: std :: borrow :: ToOwned > :: Owned"
+        );
+        assert_eq!(
+            arg.to_initializer().to_string(),
+            "kind : :: std :: borrow :: ToOwned :: to_owned (kind)"
+        );
+    }
+
+    #[cfg(foundations_unstable)]
+    #[test]
+    fn expand_with_removal() {
+        let attr = parse_attr! {
+            #[metrics]
+        };
+
+        let src = parse_quote! {
+            pub(crate) mod oxy {
+                /// Total number of requests
+                #[with_removal]
+                pub(crate) fn requests_total(status: u16) -> Counter;
+            }
+        };
+
+        let actual = expand_from_parsed(attr, src).to_string();
+
+        let expected = code_str! {
+            pub(crate) mod oxy {
+                use super::*;
+
+                #[allow(non_camel_case_types)]
+                struct __oxy_Metrics {
+                    requests_total:
+                        ::foundations::telemetry::metrics::Family<
+                            requests_total,
+                            Counter,
+                        >,
+                }
+
+                #[allow(non_camel_case_types)]
+                #[derive(
+                    ::std::clone::Clone,
+                    ::std::cmp::Eq,
+                    ::std::hash::Hash,
+                    ::std::cmp::PartialEq,
+                    ::foundations::reexports_for_macros::serde::Serialize,
+                )]
+                #[serde(crate = ":: foundations :: reexports_for_macros :: serde")]
+                struct requests_total {
+                    status: u16,
+                }
+
+                #[allow(non_upper_case_globals)]
+                static __oxy_Metrics: ::std::sync::LazyLock<__oxy_Metrics> =
+                    ::std::sync::LazyLock::new(|| {
+                        __oxy_Metrics {
+                            requests_total: {
+                                let metric = ::std::default::Default::default();
+
+                                ::foundations::telemetry::metrics::internal::register_metric(
+                                    ::std::stringify!(oxy),
+                                    ::std::stringify!(requests_total),
+                                    ::std::concat!(
+                                        ::std::stringify!(oxy),
+                                        "_",
+                                        ::std::stringify!(requests_total),
+                                    ),
+                                    str::trim(" Total number of requests"),
+                                    ::std::clone::Clone::clone(&metric),
+                                    false,
+                                    true,
+                                );
+
+                                metric
+                            },
+                        }
+                    });
+
+                #[doc = " Total number of requests"]
+                #[must_use]
+                pub(crate) fn requests_total(status: u16,) -> Counter {
+                    let __args = requests_total { status, };
+                    ::std::clone::Clone::clone(
+                        &::foundations::telemetry::metrics::Family::get_or_create(
+                            &__oxy_Metrics.requests_total,
+                            &__args,
+                        )
+                    )
+                }
+
+                #[doc = "Removes one label set from the `requests_total` family."]
+                pub(crate) fn requests_total_remove(status: u16,) -> bool {
+                    let __args = requests_total { status, };
+                    ::foundations::telemetry::metrics::Family::remove(
+                        &__oxy_Metrics.requests_total,
+                        &__args,
+                    )
+                }
+
+                #[doc = "Removes all label sets from the `requests_total` family."]
+                pub(crate) fn requests_total_clear() {
+                    ::foundations::telemetry::metrics::Family::clear(
+                        &__oxy_Metrics.requests_total,
+                    )
+                }
+            }
+        };
+
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn test_valid_histogram_buckets() {
+        // Valid strictly increasing buckets
+        let expr: ExprStruct = parse_quote! {
+            HistogramBuilder { buckets: &[0.1, 0.2, 0.3, 0.4] }
+        };
+
+        assert!(validation::validate_histogram_buckets(&expr).is_ok());
+    }
+
+    #[test]
+    fn test_empty_histogram_buckets() {
+        // Empty buckets are valid
+        let expr: ExprStruct = parse_quote! {
+            HistogramBuilder { buckets: &[] }
+        };
+
+        assert!(validation::validate_histogram_buckets(&expr).is_ok());
+    }
+
+    #[test]
+    fn test_invalid_histogram_buckets_equal_values() {
+        // Invalid buckets with equal values
+        let expr: ExprStruct = parse_quote! {
+            HistogramBuilder { buckets: &[0.1, 0.2, 0.2, 0.3] }
+        };
+
+        assert!(validation::validate_histogram_buckets(&expr).is_err());
+    }
+
+    #[test]
+    fn test_invalid_histogram_buckets_decreasing_values() {
+        // Invalid buckets with decreasing values
+        let expr: ExprStruct = parse_quote! {
+            HistogramBuilder { buckets: &[0.3, 0.2, 0.1] }
+        };
+
+        assert!(validation::validate_histogram_buckets(&expr).is_err());
+    }
+
+    #[test]
+    fn test_skip_validation_for_variable_buckets() {
+        // Variable buckets should skip validation
+        let expr: ExprStruct = parse_quote! {
+            HistogramBuilder { buckets: MY_BUCKETS }
+        };
+
+        assert!(validation::validate_histogram_buckets(&expr).is_ok());
+    }
+
+    #[test]
+    fn test_skip_validation_for_function_buckets() {
+        // Function call buckets should skip validation
+        let expr: ExprStruct = parse_quote! {
+            HistogramBuilder { buckets: get_buckets() }
+        };
+
+        assert!(validation::validate_histogram_buckets(&expr).is_ok());
+    }
+
+    #[test]
+    fn test_qualified_custom_histogram_builder_is_not_rejected() {
+        let custom: ExprStruct = parse_quote! {
+            metrics::HistogramBuilder { limits: &[0.2, 0.1] }
+        };
+        let native: ExprStruct = parse_quote! {
+            NativeHistogramBuilder {
+                classic_buckets: None,
+                bucket_factor: 1.1,
+                zero_threshold: 0.0,
+                max_buckets: 0,
+                min_reset_duration: ::std::time::Duration::from_secs(3600),
+                max_zero_threshold: 0.0,
+            }
+        };
+
+        assert!(validate_histogram_ctor(&custom).is_ok());
+        assert!(validate_histogram_ctor(&native).is_ok());
+    }
+
+    #[test]
+    fn test_invalid_classic_and_native_buckets_are_rejected() {
+        let expr: ExprStruct = parse_quote! {
+            NativeHistogramBuilder {
+                classic_buckets: Some(&[0.2, 0.1]),
+                ..NativeHistogramBuilder::new(1.1)
+            }
+        };
+
+        assert!(validate_histogram_ctor(&expr).is_err());
+    }
+
+    #[test]
+    fn test_decreasing_negative_native_buckets_are_rejected() {
+        let expr: ExprStruct = parse_quote! {
+            NativeHistogramBuilder {
+                classic_buckets: Some(&[-1.0, -2.0]),
+                ..NativeHistogramBuilder::new(1.1)
+            }
+        };
+
+        assert!(validate_histogram_ctor(&expr).is_err());
+    }
+}

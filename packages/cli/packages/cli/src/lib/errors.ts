@@ -1,0 +1,298 @@
+import { APIError as WorkersUtilsAPIError } from "@cloudflare/workers-utils";
+import { VERSION } from "../version.js";
+import { openSession } from "./session.js";
+import { errorBlock } from "./ui/blocks.js";
+import { hint } from "./ui/format.js";
+import { theme } from "./ui/theme.js";
+import { ApiError } from "#api";
+
+/** No API token, OAuth login, or temporary account is available. */
+export class MissingCredentialsError extends Error {}
+
+/**
+ * Only suggest a temporary account when credentials are missing. Stored OAuth
+ * credentials, even expired ones, prevent temporary-account creation.
+ */
+function isMissingCredentialsError(error: Error): boolean {
+	if (error instanceof MissingCredentialsError) {
+		return true;
+	}
+	// Structural matching also works when the shared package is bundled separately.
+	return (
+		"telemetryMessage" in error &&
+		error.telemetryMessage === "cfetch auth login required" &&
+		"reason" in error &&
+		error.reason === "no-credentials-non-interactive"
+	);
+}
+
+/**
+ * Drop the protocol+host (and the `/client/v4` API-version prefix)
+ * from a Cloudflare API URL so the path-only form fits inside the
+ * error box without wrapping.  cf always talks to one of a small set
+ * of hosts (api.cloudflare.com/client/v4 by default; other
+ * compliance-region variants under api.fed.cloudflare.com etc.) and
+ * always against the v4 surface — preserving these on every error
+ * line wastes box width without adding diagnostic value.  Falls back
+ * to the original string if it isn't a parseable URL.
+ */
+function shortenUrl(url: string): string {
+	try {
+		const u = new URL(url);
+		const path = u.pathname.replace(/^\/client\/v\d+/, "");
+		return `${path}${u.search}`;
+	} catch {
+		return url;
+	}
+}
+
+interface ApiMessage {
+	code?: number;
+	message?: string;
+}
+
+function apiMessages(value: unknown): ApiMessage[] {
+	if (!Array.isArray(value)) {
+		return [];
+	}
+	return value.flatMap<ApiMessage>((entry: unknown) => {
+		if (typeof entry === "string") {
+			return [{ message: entry }];
+		}
+		if (entry === null || typeof entry !== "object") {
+			return [];
+		}
+		const data = entry as Record<string, unknown>;
+		const code = typeof data.code === "number" ? data.code : undefined;
+		const message = typeof data.message === "string" ? data.message : undefined;
+		return code !== undefined || message !== undefined
+			? [{ code, message }]
+			: [];
+	});
+}
+
+/**
+ * Render an error to stderr and return the value the caller should
+ * throw.
+ *
+ * Called once, centrally, from `main()`
+ * after `cli.parse()` rejects.  There is no per-handler invocation —
+ * generated and hand-written command handlers let API errors
+ * propagate uncaught; yargs `.fail()` rethrows validation errors;
+ * everything funnels here.
+ *
+ * - Cloudflare `ApiError`s render as a boxed report with the failing
+ *   request's path (read off `error.rawResponse`, populated by the API
+ *   client on every thrown `ApiError`).
+ * - Plain `Error`s render with their message (and stack under `DEBUG=1`).
+ * - Unknown error shapes get a generic box.
+ *
+ * The return value is the error to rethrow.  Today this is the input
+ * unchanged so tests can catch it on the `runMain` rejection and
+ * assert against the original shape (status, code, message); future
+ * versions may normalise (wrap in a `CfError`, attach a `cause`,
+ * collapse non-`Error` shapes) without `main()` needing to change.
+ * `bin/cf` and `dev.ts` translate the rethrow into `process.exit(1)`
+ * without writing to stderr.
+ */
+export function handleError(error: unknown): unknown {
+	// Anchor the error in cf's visual language. Normally `main()`
+	// already opened the session above the command's output, but
+	// errors that short-circuit before `main()`'s session site (e.g.
+	// yargs validation errors during `buildCli()` setup) still want
+	// the visual anchor. `openSession` is idempotent, so calling it
+	// here is safe in all cases. `errorBlock` itself degrades
+	// gracefully to ASCII `+ | +` frames in non-color environments —
+	// chalk's no-op proxy strips the styling — so there's no need to
+	// branch on color support at the call sites below.
+	openSession(VERSION);
+
+	// Typed calls and cf's passthrough/raw paths share this error type.
+	if (error instanceof ApiError) {
+		const status = error.statusCode;
+		const errorBody = error.body;
+		const statusText =
+			status === undefined ? "Envelope Error" : getStatusText(status);
+
+		// Failed responses can put actionable details in the sibling messages
+		// array. Keep those after the errors, in the same stderr report.
+		const data =
+			errorBody !== null && typeof errorBody === "object"
+				? (errorBody as Record<string, unknown>)
+				: undefined;
+		const apiEntries = [
+			...apiMessages(data?.errors).map((entry) => ({
+				...entry,
+				isError: true,
+			})),
+			...apiMessages(data?.messages).map((entry) => ({
+				...entry,
+				isError: false,
+			})),
+		];
+
+		// Path-only form keeps the box narrow; cf only talks to a
+		// fixed set of Cloudflare API hosts so the host adds no info.
+		// `error.rawResponse` is populated by the client on thrown errors;
+		// absent only for hand-constructed errors (tests, retry shims).
+		// The raw response carries no HTTP method, so the line is
+		// prefixed with a generic `HTTP` rather than the verb.
+		const reqLine = error.rawResponse?.url
+			? `HTTP ${shortenUrl(error.rawResponse.url)}`
+			: undefined;
+
+		// Combined status + request line: "400 Bad Request · HTTP /path".
+		// Single dim line keeps the box compact while preserving both
+		// pieces of diagnostic info. Envelope errors have no status.
+		const statusBlurb =
+			status === undefined ? statusText : `${status} ${statusText}`;
+		const tailLine = reqLine ? `${statusBlurb} · ${reqLine}` : statusBlurb;
+
+		// Render each API entry as:
+		//   [CODE]  message                              ← bold + error color
+		//           HTTP 404 Not Found · HTTP /path      ← dim, subordinated
+		// When colors are off, chalk's no-op proxy strips the styling
+		// and `errorBlock` swaps in ASCII frame glyphs — same content,
+		// just plainer.
+		const tail = theme.muted(tailLine);
+		let content = "";
+		if (apiEntries.length > 0) {
+			content = apiEntries
+				.map((err, idx) => {
+					const code =
+						typeof err.code === "number"
+							? theme.error(theme.bold(`[${err.code}]`))
+							: err.isError
+								? theme.error(theme.bold("[error]"))
+								: undefined;
+					const msg = theme.bold(err.message ?? "");
+					const line = code ? `${code} ${msg}` : msg;
+					// Show the tail once, after the last entry.
+					return idx === apiEntries.length - 1 ? `${line}\n${tail}` : line;
+				})
+				.join("\n\n");
+		} else {
+			// No structured details — surface the client's own message, falling
+			// back to the tail line, then subordinate the tail beneath it.
+			content = theme.error(theme.bold(error.message || tailLine));
+			if (error.message && tailLine) {
+				content += `\n${tail}`;
+			}
+		}
+		console.error(
+			errorBlock(content, undefined, {
+				title: "APIError",
+				rawMessage: true,
+			})
+		);
+
+		// Add helpful hints for common errors
+		if (status === 401) {
+			console.error("\n" + hint("Try running: cf auth login"));
+		} else if (status === 403) {
+			console.error("\n" + hint("Check your API token permissions"));
+		}
+
+		return error;
+	}
+
+	// Handle Cloudflare API errors thrown by the deploy path. These come
+	// from @cloudflare/workers-utils (a *different* APIError class than the
+	// API client's), so they don't match the branch above. The real API
+	// error messages live in `.notes` ({text}[]) — the top-level `.message`
+	// is only the generic "A request to the Cloudflare API (…) failed."
+	// envelope. Surfacing the notes is what turns an opaque deploy failure
+	// into an actionable one.
+	if (error instanceof WorkersUtilsAPIError) {
+		const tailLine =
+			error.status !== undefined
+				? `${error.status} ${getStatusText(error.status)}`.trim()
+				: "";
+		const tail = tailLine ? theme.muted(tailLine) : "";
+
+		const notes = error.notes ?? [];
+		let content: string;
+		if (notes.length > 0) {
+			const codeLabel =
+				typeof error.code === "number"
+					? theme.error(theme.bold(`[${error.code}]`))
+					: theme.error(theme.bold("[error]"));
+			content = notes
+				.map((note, idx) => {
+					const msg = theme.bold(note.text);
+					const line = idx === 0 ? `${codeLabel} ${msg}` : msg;
+					return idx === notes.length - 1 && tail ? `${line}\n${tail}` : line;
+				})
+				.join("\n\n");
+		} else {
+			// No structured notes — fall back to the generic message + status.
+			const msg = theme.error(theme.bold(error.message));
+			content = tail ? `${msg}\n${tail}` : msg;
+		}
+
+		console.error(
+			errorBlock(content, undefined, {
+				title: "APIError",
+				rawMessage: true,
+			})
+		);
+
+		if (error.status === 401) {
+			console.error("\n" + hint("Try running: cf auth login"));
+		} else if (error.status === 403) {
+			console.error("\n" + hint("Check your API token permissions"));
+		}
+
+		return error;
+	}
+
+	// Handle standard Error objects
+	if (error instanceof Error) {
+		const details =
+			process.env.DEBUG && error.stack ? sanitize(error.stack) : undefined;
+		console.error(errorBlock(error.message, details));
+		if (isMissingCredentialsError(error)) {
+			console.error(
+				"\n" +
+					hint(
+						"To continue without logging in, rerun this command with `--temporary-account`. cf will use a temporary account and print a claim URL."
+					)
+			);
+		}
+		return error;
+	}
+
+	// Handle unknown error types
+	console.error(errorBlock("An unexpected error occurred", String(error)));
+	return error;
+}
+
+/**
+ * Sanitize potential tokens from error output.
+ * Redacts anything that looks like a token (40+ char alphanumeric strings).
+ */
+function sanitize(text: string): string {
+	return text.replace(/[A-Za-z0-9_-]{40,}/g, "[REDACTED]");
+}
+
+/**
+ * Get a human-readable status text for HTTP status codes.
+ */
+function getStatusText(status: number): string {
+	const statusTexts: Record<number, string> = {
+		400: "Bad Request",
+		401: "Unauthorized",
+		403: "Forbidden",
+		404: "Not Found",
+		405: "Method Not Allowed",
+		409: "Conflict",
+		422: "Unprocessable Entity",
+		429: "Too Many Requests",
+		500: "Internal Server Error",
+		502: "Bad Gateway",
+		503: "Service Unavailable",
+		504: "Gateway Timeout",
+	};
+
+	return statusTexts[status] ?? "";
+}

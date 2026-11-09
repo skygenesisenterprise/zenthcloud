@@ -1,0 +1,41 @@
+[package]
+name = "foundations-sentry"
+description = "Foundations companion crate with Sentry integrations"
+version = "1.2.0"
+edition = { workspace = true }
+repository = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+readme = "../README.md"
+categories = ["development-tools"]
+keywords = ["foundations", "sentry", "telemetry", "metrics"]
+
+# Generic for any separately-versioned crate at repo root
+[package.metadata.release]
+pre-release-hook = [
+    "git-cliff",
+    "-w",
+    "..",
+    "--include-path",
+    "{{crate_name}}/**",
+    "--tag-pattern",
+    "{{crate_name}}-v[0-9]*",
+    "-o",
+    "RELEASE_NOTES.md",
+    "--tag",
+    "{{version}}",
+]
+
+[lints]
+workspace = true
+
+[dependencies]
+backtrace = { workspace = true }
+foundations = { workspace = true, features = ["settings", "ratelimit", "metrics"] }
+governor = { workspace = true }
+sentry-backtrace = "0.47.0"
+sentry-core = "0.47.0"
+sentry-panic = "0.47.0"
+
+[dev-dependencies]
+sentry-core = { version = "0.47.0", features = ["test"] }

@@ -1,0 +1,338 @@
+use super::settings::MemoryProfilerSettings;
+use crate::{BootstrapError, BootstrapResult, Result};
+use anyhow::bail;
+use jemalloc_pprof::JemallocProfCtl;
+use once_cell::sync::OnceCell;
+use std::ffi::CStr;
+use std::io::Read;
+use std::sync::OnceLock;
+use std::sync::mpsc::{self};
+use tokio::sync::{Mutex as AsyncMutex, oneshot};
+
+// TODO(once_cell_try): replace with `std::sync::OnceLock`
+static PROFILER: OnceCell<Option<MemoryProfiler>> = OnceCell::new();
+static HEAP_PROFILE_REQUEST_SENDER: OnceLock<AsyncMutex<mpsc::Sender<HeapProfileRequest>>> =
+    OnceLock::new();
+
+#[derive(Copy, Clone)]
+enum HeapProfileFormat {
+    Jemalloc,
+    Pprof,
+}
+
+struct HeapProfileRequest {
+    format: HeapProfileFormat,
+    send_response: oneshot::Sender<Result<Vec<u8>>>,
+}
+
+mod control {
+    use super::*;
+
+    pub(super) const OPT_PROF: &CStr = cstr(b"opt.prof\0");
+    pub(super) const PROF_ACTIVE: &CStr = cstr(b"prof.active\0");
+    pub(super) const PROF_RESET: &CStr = cstr(b"prof.reset\0");
+
+    #[cfg(target_os = "linux")]
+    pub(super) const BACKGROUND_THREAD: &CStr = cstr(b"background_thread\0");
+
+    // NOTE: safe wrappers that also guarantee that control name is a null-terminated C string.
+    pub(super) fn write<T>(name: &CStr, value: T) -> tikv_jemalloc_ctl::Result<()> {
+        unsafe { tikv_jemalloc_ctl::raw::write(name.to_bytes_with_nul(), value) }
+    }
+
+    pub(super) fn profiling_enabled() -> bool {
+        unsafe { tikv_jemalloc_ctl::raw::read(OPT_PROF.to_bytes_with_nul()) }
+            .expect("jemalloc must be compiled with profiling enabled")
+    }
+
+    const fn cstr(bytes: &[u8]) -> &CStr {
+        match CStr::from_bytes_until_nul(bytes) {
+            Ok(s) => s,
+            Err(_) => panic!("control name should be null-terminated"),
+        }
+    }
+}
+
+// NOTE: prevent direct construction by the external code.
+#[derive(Copy, Clone)]
+struct Seal;
+
+/// A safe interface for [jemalloc]'s memory profiling functionality.
+///
+/// [jemalloc]: https://github.com/jemalloc/jemalloc
+#[derive(Copy, Clone)]
+pub struct MemoryProfiler {
+    _seal: Seal,
+}
+
+impl MemoryProfiler {
+    /// Creates a new profiler with the given settings or returns a previously initialized
+    /// profiler ignoring the settings.
+    ///
+    /// # Enabling profiling
+    ///
+    /// Note that profiling needs to be explicitly enabled by setting `_RJEM_MALLOC_CONF=prof:true`
+    /// environment variable for the binary. When profiling is available, this method applies the
+    /// configured sample interval and activation state. It returns `None` when profiling is
+    /// unavailable or [`MemoryProfilerSettings::enabled`] is `false`.
+    ///
+    /// If syscall sandboxing is being used (see [`crate::security`] for more details), telemetry
+    /// must be initialized prior to syscall sandboxing.
+    pub fn get_or_init_with(settings: &MemoryProfilerSettings) -> BootstrapResult<Option<Self>> {
+        const MAX_SAMPLE_INTERVAL: u8 = 64;
+
+        // NOTE: https://github.com/jemalloc/jemalloc/blob/3e82f357bb218194df5ba1acee39cd6a7d6fe6f6/src/jemalloc.c#L1589
+        if settings.sample_interval > MAX_SAMPLE_INTERVAL {
+            bail!("`sample_interval` value should be in the range [0, 64]");
+        }
+
+        PROFILER
+            .get_or_try_init(|| init_profiler(settings))
+            .copied()
+    }
+
+    /// Returns a heap profile.
+    ///
+    /// # Examples
+    /// ```
+    /// use foundations::telemetry::MemoryProfiler;
+    /// use foundations::telemetry::settings::MemoryProfilerSettings;
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let settings = MemoryProfilerSettings {
+    ///         enabled: true,
+    ///         ..Default::default()
+    ///     };
+    ///
+    ///     let profiler = MemoryProfiler::get_or_init_with(&settings)
+    ///         .unwrap()
+    ///         .expect("profiling should be enabled via `_RJEM_MALLOC_CONF=prof:true` env var");
+    ///
+    ///     let profile = profiler.heap_profile().await.unwrap();
+    ///
+    ///     assert!(profile.contains("MAPPED_LIBRARIES"));
+    /// }
+    /// ```
+    pub async fn heap_profile(&self) -> Result<String> {
+        let profile = request_heap_profile(HeapProfileFormat::Jemalloc).await?;
+
+        Ok(String::from_utf8(profile)?)
+    }
+
+    /// Returns a heap profile in [pprof] format (gzip-compressed protobuf).
+    ///
+    /// The profile is converted from the jemalloc heap profile by [jemalloc_pprof] and can be
+    /// consumed directly by `go tool pprof` and other pprof-compatible tools without
+    /// fetching symbols separately.
+    ///
+    /// # Examples
+    /// ```
+    /// use foundations::telemetry::MemoryProfiler;
+    /// use foundations::telemetry::settings::MemoryProfilerSettings;
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let settings = MemoryProfilerSettings {
+    ///         enabled: true,
+    ///         ..Default::default()
+    ///     };
+    ///
+    ///     let profiler = MemoryProfiler::get_or_init_with(&settings)
+    ///         .unwrap()
+    ///         .expect("profiling should be enabled via `_RJEM_MALLOC_CONF=prof:true` env var");
+    ///
+    ///     let profile = profiler.heap_profile_pprof().await.unwrap();
+    ///
+    ///     // gzip magic bytes
+    ///     assert_eq!(&profile[..2], &[0x1f, 0x8b]);
+    /// }
+    /// ```
+    ///
+    /// [pprof]: https://github.com/google/pprof
+    /// [jemalloc_pprof]: https://github.com/polarsignals/rust-jemalloc-pprof
+    pub async fn heap_profile_pprof(&self) -> Result<Vec<u8>> {
+        request_heap_profile(HeapProfileFormat::Pprof).await
+    }
+
+    /// Returns heap statistics.
+    ///
+    /// # Examples
+    /// ```
+    /// use foundations::telemetry::MemoryProfiler;
+    /// use foundations::telemetry::settings::MemoryProfilerSettings;
+    ///
+    /// let settings = MemoryProfilerSettings {
+    ///     enabled: true,
+    ///     ..Default::default()
+    /// };
+    ///
+    /// let profiler = MemoryProfiler::get_or_init_with(&settings)
+    ///     .unwrap()
+    ///     .expect("profiling should be enabled via `_RJEM_MALLOC_CONF=prof:true` env var");
+    ///
+    /// let stats = profiler.heap_stats().unwrap();
+    ///
+    /// assert!(stats.contains("Allocated"));
+    /// ```
+    pub fn heap_stats(&self) -> Result<String> {
+        let mut stats = Vec::new();
+
+        tikv_jemalloc_ctl::stats_print::stats_print(&mut stats, Default::default())?;
+
+        Ok(String::from_utf8(stats)?)
+    }
+}
+
+async fn request_heap_profile(format: HeapProfileFormat) -> Result<Vec<u8>> {
+    let Some(sender_mutex) = HEAP_PROFILE_REQUEST_SENDER.get() else {
+        return Err("Profile request sender is not initialized".into());
+    };
+
+    // NOTE: we use tokio mutex here, so we can hold the lock across `await` points.
+    let Ok(sender_guard) = sender_mutex.try_lock() else {
+        return Err("profiling is already in progress".into());
+    };
+
+    let (send_response, response_receiver) = oneshot::channel();
+    sender_guard
+        .send(HeapProfileRequest {
+            format,
+            send_response,
+        })
+        .map_err(|_| "heap profile thread is not running")?;
+
+    response_receiver.await?
+}
+
+fn init_profiler(settings: &MemoryProfilerSettings) -> BootstrapResult<Option<MemoryProfiler>> {
+    if !control::profiling_enabled() {
+        return Ok(None);
+    }
+
+    // Disable profiling before resetting it so no samples are collected using stale settings.
+    control::write(control::PROF_ACTIVE, false)
+        .map_err(|e| BootstrapError::new(e).context("failed to deactivate profiling"))?;
+
+    control::write(control::PROF_RESET, usize::from(settings.sample_interval))
+        .map_err(|e| BootstrapError::new(e).context("failed to set sample interval"))?;
+
+    if !settings.enabled {
+        return Ok(None);
+    }
+
+    control::write(control::BACKGROUND_THREAD, true).map_err(|e| {
+        BootstrapError::new(e).context("failed to activate background thread collection")
+    })?;
+
+    let (request_sender, request_receiver) = mpsc::channel();
+    HEAP_PROFILE_REQUEST_SENDER
+        .set(AsyncMutex::new(request_sender))
+        .map_err(|_| anyhow::anyhow!("request sender had already been initialized"))?;
+
+    std::thread::spawn(move || heap_profile_thread(request_receiver));
+
+    control::write(control::PROF_ACTIVE, true)
+        .map_err(|e| BootstrapError::new(e).context("failed to activate profiling"))?;
+
+    Ok(Some(MemoryProfiler { _seal: Seal }))
+}
+
+fn heap_profile_thread(receive_request: mpsc::Receiver<HeapProfileRequest>) {
+    while let Ok(HeapProfileRequest {
+        format,
+        send_response,
+    }) = receive_request.recv()
+    {
+        let profile = match format {
+            HeapProfileFormat::Jemalloc => collect_heap_profile(),
+            HeapProfileFormat::Pprof => collect_heap_profile_pprof(),
+        };
+
+        if send_response.send(profile).is_err() {
+            // A failure to send indicates the main thread's receiver is gone, so something else
+            // has already gone wrong there.
+            return;
+        }
+    }
+}
+
+fn collect_heap_profile() -> Result<Vec<u8>> {
+    let mut profile = Vec::new();
+
+    prof_ctl()?
+        .blocking_lock()
+        .dump()?
+        .read_to_end(&mut profile)?;
+
+    Ok(profile)
+}
+
+fn collect_heap_profile_pprof() -> Result<Vec<u8>> {
+    Ok(prof_ctl()?.blocking_lock().dump_pprof()?)
+}
+
+// NOTE: this is only called from the dedicated profiling thread, so the lock is never contended
+// by async code and blocking on it is fine.
+fn prof_ctl() -> Result<&'static AsyncMutex<JemallocProfCtl>> {
+    jemalloc_pprof::PROF_CTL
+        .as_deref()
+        .ok_or_else(|| "jemalloc must be compiled with profiling enabled".into())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::security::common_syscall_allow_lists::{ASYNC, SERVICE_BASICS};
+    use crate::security::{ViolationAction, allow_list, enable_syscall_sandboxing};
+    use crate::telemetry::settings::MemoryProfilerSettings;
+
+    #[test]
+    fn sample_interval_out_of_bounds() {
+        assert!(
+            MemoryProfiler::get_or_init_with(&MemoryProfilerSettings {
+                enabled: true,
+                sample_interval: 128,
+            })
+            .is_err()
+        );
+    }
+
+    #[tokio::test]
+    async fn profile_heap_after_seccomp_initialized() {
+        let profiler = MemoryProfiler::get_or_init_with(&MemoryProfilerSettings {
+            enabled: true,
+            ..Default::default()
+        })
+        .unwrap()
+        .unwrap_or_else(|| {
+            panic!("profiling should be enabled via `_RJEM_MALLOC_CONF=prof:true` env var");
+        });
+
+        allow_list! {
+           static ALLOW_PROFILING = [
+                ..SERVICE_BASICS,
+                ..ASYNC
+           ]
+        }
+        enable_syscall_sandboxing(ViolationAction::KillProcess, &ALLOW_PROFILING).unwrap();
+
+        let profile = profiler.heap_profile().await.unwrap();
+        assert!(!profile.is_empty());
+
+        let profile = profiler.heap_profile_pprof().await.unwrap();
+        assert_eq!(&profile[..2], &[0x1f, 0x8b]);
+    }
+
+    // NOTE: `heap_profile` uses raw pointers, the test ensures that it doesn't affect the returned future
+    fn _assert_heap_profile_fut_is_send() {
+        fn is_send<T: Send>(_t: T) {}
+
+        is_send(
+            MemoryProfiler::get_or_init_with(&Default::default())
+                .unwrap()
+                .unwrap()
+                .heap_profile(),
+        );
+    }
+}

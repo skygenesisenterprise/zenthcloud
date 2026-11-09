@@ -1,0 +1,251 @@
+import { randomUUID } from "node:crypto";
+import {
+	createCfProfileStore,
+	writeAuthConfigFile,
+} from "@cloudflare/workers-auth/cf";
+import { runInTempDir } from "@cloudflare/workers-utils/test-helpers";
+import { http, HttpResponse } from "msw/http";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { mockOutputStreams } from "../../helpers/capture-output.js";
+import { server, setupMsw, TEST_BASE_URL } from "../../helpers/msw.js";
+import { runCf } from "../../helpers/run-cf.js";
+
+function createProfile(name: string, token = `${name}-token`): void {
+	writeAuthConfigFile(
+		{ oauth_token: token, expiration_time: "2999-01-01T00:00:00.000Z" },
+		name
+	);
+}
+
+describe("cf auth profiles", () => {
+	runInTempDir();
+	setupMsw();
+	const std = mockOutputStreams();
+	const store = createCfProfileStore({
+		logger: {
+			debug: () => {},
+			info: () => {},
+			log: () => {},
+			warn: () => {},
+			error: () => {},
+		},
+	});
+
+	beforeEach(() => {
+		server.use(
+			http.post(
+				"https://dash.cloudflare.com/oauth2/revoke",
+				() => new HttpResponse("")
+			)
+		);
+	});
+
+	it("activates, lists, and deactivates a named profile", async () => {
+		const cwd = process.cwd();
+
+		createProfile("work");
+		std.setStderrTTY(true);
+
+		await runCf(["auth", "activate", "work"]);
+		expect(store.bindings.getProfileForDirectory(cwd)).toBe("work");
+		expect(std.getAndClearOut()).toBe("");
+		expect(std.getAndClearErr()).toContain(
+			'✓ Profile "work" activated for "<cwd>".'
+		);
+
+		await runCf(["auth", "list"]);
+		// Parse JSON before the shared console mock normalizes Windows separators.
+		expect(console.log).toHaveBeenCalledTimes(1);
+		expect(
+			JSON.parse(String(vi.mocked(console.log).mock.lastCall?.[0]))
+		).toEqual([{ name: "work", boundDirectories: [cwd] }]);
+		std.getAndClearOut();
+		std.getAndClearErr();
+
+		await runCf(["auth", "deactivate"]);
+		expect(store.bindings.getProfileForDirectory(cwd)).toBeUndefined();
+		expect(std.getAndClearOut()).toBe("");
+		expect(std.getAndClearErr()).toMatchInlineSnapshot(`
+			"✓ Profile "work" deactivated from "<cwd>".
+			●  Run cf auth login to set up the default profile, or cf auth create <name> to create a named profile."
+		`);
+	});
+
+	it("uses an explicitly selected profile for API commands", async () => {
+		const token = randomUUID();
+
+		server.use(
+			http.get(`${TEST_BASE_URL}/zones`, ({ request }) => {
+				if (request.headers.get("authorization") !== `Bearer ${token}`) {
+					throw new Error("Invalid token");
+				}
+
+				return HttpResponse.json({ success: true, result: [] });
+			})
+		);
+
+		createProfile("work", token);
+
+		await runCf(["zones", "list", "--profile", "work"], {
+			CLOUDFLARE_API_BASE_URL: TEST_BASE_URL,
+		});
+
+		expect(std.err).toBe("");
+	});
+
+	it("uses the nearest directory-bound profile for API commands", async () => {
+		const token = randomUUID();
+
+		createProfile("work", token);
+		store.bindings.activate("work", process.cwd());
+
+		server.use(
+			http.get(`${TEST_BASE_URL}/zones`, ({ request }) => {
+				if (request.headers.get("authorization") !== `Bearer ${token}`) {
+					throw new Error("Invalid token");
+				}
+
+				return HttpResponse.json({ success: true, result: [] });
+			})
+		);
+
+		await runCf(["zones", "list"], {
+			CLOUDFLARE_API_BASE_URL: TEST_BASE_URL,
+		});
+
+		expect(std.err).toBe("");
+	});
+
+	it("deletes credentials and every binding for a profile", async () => {
+		createProfile("work");
+		store.bindings.activate("work", process.cwd());
+
+		await runCf(["auth", "delete", "work"]);
+
+		expect(store.configs.exists("work")).toBe(false);
+		expect(store.bindings.getBindingsForProfile("work")).toEqual([]);
+		expect(std.out).toBe("");
+		expect(std.err).toMatchInlineSnapshot(`
+			"●  Removed directory bindings:
+			│    <cwd>
+			Successfully logged out.
+			●  No active profile for this directory. Run cf auth login to set up the default profile, or cf auth create <name> to create a named profile."
+		`);
+	});
+
+	it("keeps the directory's active profile when deleting another", async () => {
+		createProfile("work");
+		createProfile("other");
+		store.bindings.activate("work", process.cwd());
+
+		await runCf(["auth", "delete", "other"]);
+
+		expect(store.configs.exists("other")).toBe(false);
+		expect(std.out).toBe("");
+		expect(std.err).toMatchInlineSnapshot(`
+			"Successfully logged out.
+			●  Active profile for this directory: work."
+		`);
+	});
+
+	it("falls back to the default profile after deactivating", async () => {
+		createProfile("default");
+		createProfile("work");
+		store.bindings.activate("work", process.cwd());
+
+		await runCf(["auth", "deactivate"]);
+
+		expect(
+			store.bindings.getProfileForDirectory(process.cwd())
+		).toBeUndefined();
+		expect(std.out).toBe("");
+		expect(std.err).toMatchInlineSnapshot(
+			`"●  This directory now uses the default profile."`
+		);
+	});
+
+	it("does not duplicate the active profile in whoami output", async () => {
+		await runCf(["auth", "whoami", "--profile", "work"]);
+
+		expect(std.out).toMatchInlineSnapshot(`
+			"{
+			  "authenticated": false,
+			  "error": "Not logged in"
+			}"
+		`);
+	});
+
+	it("rejects reserved profile names before starting OAuth", async () => {
+		await expect(runCf(["auth", "create", "default"])).rejects.toThrow(
+			/"default" is a reserved profile name/
+		);
+	});
+
+	it("does not allow profile mutations while env credentials are set", async () => {
+		createProfile("work");
+
+		await expect(
+			runCf(["auth", "activate", "work"], {
+				CLOUDFLARE_API_TOKEN: "env-token",
+			})
+		).rejects.toThrow(/Cannot manage auth profiles/);
+		expect(
+			store.bindings.getProfileForDirectory(process.cwd())
+		).toBeUndefined();
+	});
+
+	it("keeps login and logout reserved for the default profile", async () => {
+		await expect(runCf(["auth", "login", "--profile", "work"])).rejects.toThrow(
+			/cf auth create <name>/
+		);
+		await expect(
+			runCf(["auth", "logout", "--profile", "work"])
+		).rejects.toThrow(/cf auth delete <name>/);
+	});
+
+	it("warns that login and logout target default in a bound directory", async () => {
+		// Keep login on its already-authenticated path so the test does not start an OAuth callback server or open a browser.
+		createProfile("default");
+
+		createProfile("work");
+		store.bindings.activate("work", process.cwd());
+
+		await runCf(["auth", "login"]);
+		expect(std.getAndClearOut()).toBe("");
+		expect(std.getAndClearErr()).toMatchInlineSnapshot(`
+			"▲  This directory has profile "work" active. cf auth login updates the default profile, not "work". To re-authenticate "work", run:
+
+			   cf auth create work
+
+			●  You are already logged in.
+			│  Config file: <cwd>/home/.config/cloudflare/config/default.json
+			│  Token expires: 1/1/2999, 12:00:00 AM
+			│  Run cf auth login --force to re-authenticate, or cf auth logout to log out."
+		`);
+
+		await runCf(["auth", "logout"]);
+		expect(std.getAndClearOut()).toBe("");
+		expect(std.getAndClearErr()).toMatchInlineSnapshot(`
+			"▲  This directory has profile "work" active. cf auth logout removes the default profile's token, not "work". To delete "work", run:
+
+			   cf auth delete work
+
+			Successfully logged out."
+		`);
+	});
+
+	it("keeps warnings and their fixes under --quiet but hides notices", async () => {
+		createProfile("default");
+		createProfile("work");
+		store.bindings.activate("work", process.cwd());
+
+		await runCf(["auth", "login", "--quiet"]);
+
+		expect(std.out).toBe("");
+		expect(std.err).toMatchInlineSnapshot(`
+			"▲  This directory has profile "work" active. cf auth login updates the default profile, not "work". To re-authenticate "work", run:
+
+			   cf auth create work"
+		`);
+	});
+});
