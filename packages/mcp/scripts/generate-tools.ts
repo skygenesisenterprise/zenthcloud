@@ -1,388 +1,227 @@
 /**
- * Generates the advanced API catalog and the tool reference from the canonical
- * Zenthcloud OpenAPI document.
+ * Regenerates `src/generated/forge-mcp`, the direct tools served at
+ * `/mcp?codemode=false`, with forge's MCP target:
  *
- * Usage:
- *   tsx scripts/generate-tools.ts            # write generated files
- *   tsx scripts/generate-tools.ts --check    # fail if any generated file is stale
+ *   npm run generate:tools [-- --spec openapi.forge.json --release <tag>] [-- --summary summary.md]
  *
- * The output is deterministic: operations are sorted by name, no timestamp is
- * embedded, and every metadata field comes from the checked-in spec or from the
- * business capability declarations.
+ * The forge that generates them is the `@cloudflare/forge` package in
+ * `package.json`, a pkg.pr.new build of a forge commit; bumping that pin picks
+ * up generator changes. `.github/workflows/forge-tools.yml` runs this every six
+ * hours and opens a pull request when the generated code changes. Without `--spec`, the latest `openapi.forge.json`
+ * Forge release is downloaded. `source.json` records the release, so a
+ * response that breaks a generated response schema names the spec it came
+ * from (`--release` gives it for a local `--spec`). `--summary` writes the
+ * tools added and removed as Markdown, for the pull request.
+ *
+ * The same release's spec artifacts go to `src/generated/spec` as text
+ * modules: `spec.json` for Code Mode's `search`, `products.json`, and
+ * `permissions.json`, each operation's accepted permissions, for explaining a
+ * refused `execute` request. The forge tools service serves
+ * them, so every deploy carries the spec it was reviewed with.
  */
-
-import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
-import { dirname, relative, resolve } from "node:path";
-import { type JsonSchema, jsonSchemaToZod } from "json-schema-to-zod";
+import { execFileSync } from 'node:child_process'
 import {
-  classifyOperation,
-  isAllowedByProfile,
-  type OperationLike,
-} from "../src/advanced-api/classification.js";
-import { businessCapabilities } from "../src/capabilities/index.js";
-import type { AdvancedProfile } from "../src/contracts/core.js";
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  renameSync,
+  rmSync,
+  writeFileSync
+} from 'node:fs'
+import { createRequire } from 'node:module'
+import { tmpdir } from 'node:os'
+import { dirname, join } from 'node:path'
+import { parseArgs } from 'node:util'
+import type { OperationInfo } from '../src/openapi'
+import { extractProducts, processSpec } from '../src/spec-processor'
+import type { SpecArtifactName } from '../src/spec-release'
 
-interface OpenAPISpec {
-  info?: { version?: string };
-  paths: Record<string, Record<string, OperationObject>>;
-}
-
-interface OperationObject {
-  operationId?: string;
-  tags?: string[];
-  summary?: string;
-  description?: string;
-  parameters?: ParameterObject[];
-  requestBody?: {
-    required?: boolean;
-    content: {
-      "application/json"?: {
-        schema: JsonSchema;
-      };
-    };
-  };
-}
-
-interface ParameterObject {
-  name: string;
-  in: string;
-  schema: JsonSchema;
-  required?: boolean;
-  description?: string;
-}
-
-interface NormalizedOperation {
-  name: string;
-  description: string;
-  tag: string;
-  method: "GET" | "POST";
-  path: string;
-  schema: string;
-  paramNames: string[];
-}
-
-const ROOT = resolve(import.meta.dirname, "..");
-const SPEC_PATH = resolve(ROOT, "openapi.json");
-const OPERATIONS_PATH = resolve(ROOT, "src/generated/operations.ts");
-const META_PATH = resolve(ROOT, "src/generated/meta.ts");
-const TOOLS_PATH = resolve(ROOT, "TOOLS.md");
-const LEGACY_SPEC_PATH = resolve(ROOT, "src/generated/openapi.json");
-const LEGACY_TOOLS_PATH = resolve(ROOT, "src/generated/tools.ts");
-
-const GENERATOR_VERSION = 1;
-
-function firstDifference(expected: string, actual: string): number | undefined {
-  const expectedLines = expected.split("\n");
-  const actualLines = actual.split("\n");
-  const max = Math.max(expectedLines.length, actualLines.length);
-  for (let index = 0; index < max; index += 1) {
-    if (expectedLines[index] !== actualLines[index]) return index + 1;
-  }
-  return undefined;
-}
-
-function writeFile(path: string, content: string): void {
-  mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, content, "utf8");
-}
-
-function checkFile(path: string, expected: string): boolean {
-  if (!existsSync(path)) {
-    console.error(`stale: ${relative(ROOT, path)} does not exist`);
-    return false;
-  }
-  const actual = readFileSync(path, "utf8");
-  if (actual === expected) return true;
-  const line = firstDifference(expected, actual);
-  console.error(`stale: ${relative(ROOT, path)} differs${line ? ` at line ${line}` : ""}`);
-  return false;
-}
-
-function formatTitle(operationId: string): string {
-  return operationId
-    .split("-")
-    .map((word) => (word ? word.charAt(0).toUpperCase() + word.slice(1) : word))
-    .join(" ");
-}
-
-function schemaProperties(schema: unknown): Record<string, JsonSchema> {
-  if (schema === null || typeof schema !== "object") return {};
-  const properties = (schema as { properties?: unknown }).properties;
-  if (properties === null || typeof properties !== "object" || Array.isArray(properties)) {
-    return {};
-  }
-  return properties as Record<string, JsonSchema>;
-}
-
-function schemaRequired(schema: unknown): string[] {
-  if (schema === null || typeof schema !== "object") return [];
-  const required = (schema as { required?: unknown }).required;
-  return Array.isArray(required)
-    ? required.filter((item): item is string => typeof item === "string")
-    : [];
-}
-
-function buildInputSchema(operation: OperationObject): string {
-  const parameters = operation.parameters ?? [];
-  const bodySchema = operation.requestBody?.content["application/json"]?.schema;
-
-  const properties: Record<string, JsonSchema> = {};
-  const required = new Set<string>();
-
-  if (bodySchema) {
-    Object.assign(properties, schemaProperties(bodySchema));
-    for (const name of schemaRequired(bodySchema)) required.add(name);
-  }
-
-  for (const parameter of parameters) {
-    const parameterSchema =
-      typeof parameter.schema === "object" && parameter.schema !== null
-        ? {
-            ...parameter.schema,
-            ...(parameter.description ? { description: parameter.description } : {}),
-          }
-        : parameter.schema;
-    properties[parameter.name] = parameterSchema as JsonSchema;
-    if (parameter.required) required.add(parameter.name);
-  }
-
-  if (Object.keys(properties).length === 0) return "z.object({})";
-
-  return jsonSchemaToZod(
-    {
-      type: "object",
-      properties,
-      ...(required.size > 0 ? { required: [...required].sort() } : {}),
-    },
-    { zodVersion: 3 },
-  );
-}
-
-function normalizeOperation(
-  path: string,
-  method: string,
-  operation: OperationObject,
-): NormalizedOperation | undefined {
-  const upperMethod = method.toUpperCase();
-  if (upperMethod !== "GET" && upperMethod !== "POST") {
-    console.warn(`Skipping ${upperMethod} ${path}: unsupported method`);
-    return undefined;
-  }
-  if (!operation.operationId) {
-    console.warn(`Skipping ${upperMethod} ${path}: no operationId`);
-    return undefined;
-  }
-
-  const description = (operation.summary || operation.description || `${upperMethod} ${path}`)
-    .replace(/`/g, "'")
-    .trim();
-  const parameters = operation.parameters ?? [];
-  const bodySchema = operation.requestBody?.content["application/json"]?.schema;
-
+/** Builds the spec artifacts the forge tools service serves from the raw OpenAPI document. */
+function buildSpecArtifacts(rawSpec: Record<string, unknown>): Record<SpecArtifactName, string> {
+  const processed = processSpec(rawSpec) as { paths: Record<string, Record<string, OperationInfo>> }
   return {
-    name: operation.operationId,
-    description,
-    tag: operation.tags?.[0] ?? "unknown",
-    method: upperMethod,
-    path,
-    schema: buildInputSchema(operation),
-    paramNames: [
-      ...Object.keys(schemaProperties(bodySchema)),
-      ...parameters.map((parameter) => parameter.name),
-    ].sort(),
-  };
+    'spec.json': JSON.stringify(processed),
+    'products.json': JSON.stringify(extractProducts(rawSpec)),
+    'permissions.json': JSON.stringify(permissionPaths(processed.paths))
+  }
 }
 
-function renderOperationsFile(operations: readonly NormalizedOperation[]): string {
-  const entries = operations.map((operation) => {
-    const classification = classifyOperation(operation);
-    return `  {
-    name: ${JSON.stringify(operation.name)},
-    description: ${JSON.stringify(operation.description)},
-    tag: ${JSON.stringify(operation.tag)},
-    method: ${JSON.stringify(operation.method)},
-    path: ${JSON.stringify(operation.path)},
-    schema: ${operation.schema},
-    annotations: {
-      title: ${JSON.stringify(formatTitle(operation.name))},
-      readOnlyHint: ${classification.effects.readOnly},
-      destructiveHint: ${classification.effects.destructive},
-      idempotentHint: ${classification.effects.idempotent},
-      openWorldHint: true,
-    },
-  }`;
-  });
-
-  return `// AUTO-GENERATED FILE — DO NOT EDIT MANUALLY
-// Generated from openapi.json. Run \`pnpm generate\` to regenerate.
-// Regeneration is checked in CI with \`pnpm generate:check\`.
-
-import { z } from "zod";
-import type { GeneratedApiOperation } from "../contracts/generated.js";
-
-export const generatedOperations: GeneratedApiOperation[] = [
-${entries.join(",\n")},
-];
-`;
+/** Each operation's `x-api-token-group`, by path template and method. */
+function permissionPaths(
+  paths: Record<string, Record<string, OperationInfo>>
+): Record<string, Record<string, Pick<OperationInfo, 'x-api-token-group'>>> {
+  return Object.fromEntries(
+    Object.entries(paths).map(([path, operations]) => [
+      path,
+      Object.fromEntries(
+        Object.entries(operations).map(([method, operation]) => [
+          method,
+          operation['x-api-token-group']
+            ? { 'x-api-token-group': operation['x-api-token-group'] }
+            : {}
+        ])
+      )
+    ])
+  )
 }
 
-function renderMetaFile(specVersion: string, specHash: string, operationCount: number): string {
-  return `// AUTO-GENERATED FILE — DO NOT EDIT MANUALLY
-// Generated from openapi.json. Run \`pnpm generate\` to regenerate.
+const LATEST_RELEASE = 'https://api.github.com/repos/cloudflare/forge/releases/latest'
+const SPEC_ASSET = 'openapi.forge.json'
+const OUT = 'src/generated/forge-mcp'
+const SPEC_OUT = 'src/generated/spec'
+/** A drop in tools with permissions below this share of before warns in the summary. */
+const PERMISSIONS_DROP_WARNING = 0.95
 
-export const generatedMetadata = {
-  generator: "zenthcloud-mcp/openapi",
-  generatorVersion: ${GENERATOR_VERSION},
-  specVersion: ${JSON.stringify(specVersion)},
-  specHash: ${JSON.stringify(specHash)},
-  operationCount: ${operationCount},
-} as const;
-`;
+const { values } = parseArgs({
+  options: {
+    spec: { type: 'string' },
+    release: { type: 'string' },
+    summary: { type: 'string' }
+  }
+})
+/** The `forge` command of the pinned `@cloudflare/forge` package. */
+const forgeBin = join(
+  dirname(createRequire(import.meta.url).resolve('@cloudflare/forge/package.json')),
+  'bin',
+  'forge.cjs'
+)
+const forge = (args: string[]) =>
+  execFileSync(process.execPath, [forgeBin, ...args], { stdio: 'inherit' })
+const tmp = mkdtempSync(join(tmpdir(), 'forge-mcp-'))
+
+try {
+  let spec = values.spec
+  let release = values.release ?? null
+  if (!spec) {
+    const latest = await latestRelease()
+    release = latest.tag
+    console.log(`Downloading ${latest.url}`)
+    const response = await fetch(latest.url)
+    if (!response.ok) throw new Error(`Failed to download the spec: HTTP ${response.status}`)
+    spec = join(tmp, SPEC_ASSET)
+    writeFileSync(spec, Buffer.from(await response.arrayBuffer()))
+  }
+
+  // Forge reads only its native x-forge-* extensions; the release has the Fern ones.
+  const normalized = join(tmp, 'openapi.normalized.json')
+  copyFileSync(spec, normalized)
+  forge(['normalize', '--write', normalized])
+
+  const out = join(tmp, 'out')
+  forge([normalized, '--target', 'mcp', '--out', out])
+
+  const before = toolNames(OUT)
+  const permissionsBefore = withPermissions(OUT)
+  rmSync(OUT, { recursive: true, force: true })
+  renameSync(out, OUT)
+  writeFileSync(join(OUT, 'source.json'), `${JSON.stringify({ release }, null, 2)}\n`)
+
+  mkdirSync(SPEC_OUT, { recursive: true })
+  const artifacts = buildSpecArtifacts(
+    JSON.parse(readFileSync(spec, 'utf8')) as Record<string, unknown>
+  )
+  for (const [name, text] of Object.entries(artifacts)) {
+    writeFileSync(join(SPEC_OUT, `${name}.txt`), asciiJson(text))
+  }
+  const after = toolNames(OUT)
+  const permissionsAfter = withPermissions(OUT)
+
+  const added = [...after].filter((name) => !before.has(name)).sort()
+  const removed = [...before].filter((name) => !after.has(name)).sort()
+  console.log(`${after.size} tools: ${added.length} added, ${removed.length} removed`)
+  console.log(`Tools with permissions: ${permissionsBefore} -> ${permissionsAfter}`)
+  if (values.summary) {
+    writeFileSync(
+      values.summary,
+      summary(after.size, added, removed, { before: permissionsBefore, after: permissionsAfter })
+    )
+  }
+} finally {
+  rmSync(tmp, { recursive: true, force: true })
 }
 
-function escapeCell(value: string): string {
-  return value.replace(/\|/g, "\\|").replace(/\n/g, " ");
+/**
+ * Returns `json` with every character above U+007F escaped as `\uXXXX`. It is
+ * the same JSON, but V8 keeps an all-ASCII string at one byte per character:
+ * the 710 non-Latin-1 characters in `spec.json` would otherwise make its 26.7M
+ * characters a 53 MB two-byte string in every isolate that holds it.
+ */
+function asciiJson(json: string): string {
+  return json.replace(
+    /[\u0080-\uffff]/g,
+    (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`
+  )
 }
 
-function renderToolsMarkdown(
-  operations: readonly NormalizedOperation[],
-  specVersion: string,
+/** The latest Forge release's tag and the download URL of its `openapi.forge.json`. */
+async function latestRelease(): Promise<{ tag: string; url: string }> {
+  const token = process.env.GITHUB_TOKEN
+  const response = await fetch(LATEST_RELEASE, {
+    headers: {
+      Accept: 'application/vnd.github+json',
+      ...(token && { Authorization: `Bearer ${token}` })
+    }
+  })
+  if (!response.ok) throw new Error(`Failed to read the latest release: HTTP ${response.status}`)
+  const { tag_name: tag, assets } = (await response.json()) as {
+    tag_name: string
+    assets: Array<{ name: string; browser_download_url: string }>
+  }
+  const asset = assets.find((item) => item.name === SPEC_ASSET)
+  if (!asset) throw new Error(`The release ${tag} has no ${SPEC_ASSET}`)
+  return { tag, url: asset.browser_download_url }
+}
+
+/** How many generated tools in `dir` list the permissions they accept. */
+function withPermissions(dir: string): number {
+  let count = 0
+  if (!existsSync(dir)) return count
+  for (const entry of readdirSync(dir, { recursive: true, withFileTypes: true })) {
+    if (entry.isFile() && entry.name === 'tools.ts') {
+      const source = readFileSync(join(entry.parentPath, entry.name), 'utf8')
+      count += source.match(/^ {8}"x-api-token-group": /gm)?.length ?? 0
+    }
+  }
+  return count
+}
+
+/** The names of the generated tools in `dir`, read from each `tools.ts`. */
+function toolNames(dir: string): Set<string> {
+  const names = new Set<string>()
+  if (!existsSync(dir)) return names
+  for (const entry of readdirSync(dir, { recursive: true, withFileTypes: true })) {
+    if (entry.isFile() && entry.name === 'tools.ts') {
+      const source = readFileSync(join(entry.parentPath, entry.name), 'utf8')
+      for (const match of source.matchAll(/^ {4}name: "([^"]+)",$/gm)) names.add(match[1]!)
+    }
+  }
+  return names
+}
+
+function summary(
+  count: number,
+  added: string[],
+  removed: string[],
+  permissions: { before: number; after: number }
 ): string {
-  const profiles: AdvancedProfile[] = ["read-only", "deploy", "full"];
-  const lines: string[] = [
-    "# Zenthcloud MCP catalog",
-    "",
-    "> Generated from [`openapi.json`](openapi.json) (version " +
-      `${specVersion}) and the business capability declarations. Run \`pnpm generate\` to update; CI runs \`pnpm generate:check\` and fails on drift. Do not edit this file manually.`,
-    "",
-    `- **Business capabilities (default mode)**: ${businessCapabilities.length}`,
-    `- **Generated API operations (advanced mode)**: ${operations.length}`,
-    "",
-    "## Modes",
-    "",
-    "- `business` (default): workflow-oriented capabilities listed below. Use it for discovery, diagnostics and controlled deployments.",
-    "- `advanced`: generated OpenAPI operations, filtered by `ZENTHCLOUD_MCP_ADVANCED_PROFILE` and optional tags. It is opt-in and never enabled by default.",
-    "- `all`: both catalogs.",
-    "",
-    "Catalog filters are a usability feature. Every call is re-authorized at execution time against the credential's effective permissions and the configured risk/approval policy.",
-    "",
-    "## Business capabilities",
-    "",
-    "| Tool | Category | Risk | Permissions | Long-running |",
-    "| --- | --- | --- | --- | --- |",
-  ];
-
-  for (const capability of businessCapabilities) {
-    const permissions =
-      capability.permissions.length > 0
-        ? capability.permissions
-            .map((requirement) => `${requirement.resource}:${requirement.actions.join("|")}`)
-            .join(", ")
-        : "API-enforced";
-    lines.push(
-      `| \`${capability.name}\` | ${capability.category} | ${capability.risk} | ${escapeCell(permissions)} | ${capability.effects.longRunning ? "yes" : "no"} |`,
-    );
-  }
-
-  lines.push("", "### Capability details", "");
-
-  for (const capability of businessCapabilities) {
-    lines.push(`#### \`${capability.name}\` — ${capability.title}`, "");
-    lines.push(capability.description, "");
-    lines.push(
-      `- Risk: **${capability.risk}** (${capability.effects.readOnly ? "read-only" : capability.effects.destructive ? "destructive" : "mutation"})`,
-      `- Environments: ${capability.environments.join(", ")}`,
-      `- Status: ${capability.status} (contract version ${capability.version})`,
-      `- Idempotent: ${capability.effects.idempotent ? "yes" : "no"}; idempotency key: ${capability.effects.supportsIdempotencyKey ? "supported" : "not supported"}; long-running: ${capability.effects.longRunning ? "yes" : "no"}`,
-    );
-    for (const precondition of capability.preconditions ?? []) {
-      lines.push(`- Precondition: ${precondition}`);
-    }
-    for (const limitation of capability.limitations ?? []) {
-      lines.push(`- Limitation: ${limitation}`);
-    }
-    lines.push("");
-  }
-
-  lines.push(
-    "## Advanced API operations",
-    "",
-    "The table lists every operation generated from the OpenAPI document, its risk classification and the profiles that expose it. Risk is metadata: the Zenthcloud API still enforces the credential's permissions, and high-risk operations require an approval token.",
-    "",
-    "| Tool | Method | Tag | Risk | Destructive | read-only | deploy | full |",
-    "| --- | --- | --- | --- | --- | --- | --- | --- |",
-  );
-
-  for (const operation of operations) {
-    const classification = classifyOperation(operation as OperationLike);
-    const allowed = profiles.map((profile) =>
-      isAllowedByProfile(profile, operation as OperationLike, classification) ? "yes" : "no",
-    );
-    lines.push(
-      `| \`${operation.name}\` | ${operation.method} | ${escapeCell(operation.tag)} | ${classification.risk} | ${classification.effects.destructive ? "yes" : "no"} | ${allowed[0] ?? "no"} | ${allowed[1] ?? "no"} | ${allowed[2] ?? "no"} |`,
-    );
-  }
-
-  lines.push("");
-  return lines.join("\n");
+  const list = (names: string[]) => names.map((name) => `- \`${name}\``).join('\n')
+  // Refusal explanations and scope step-up read each tool's permissions, so a
+  // release that drops them breaks both. openapi@67443a2 dropped 90%.
+  const dropped = permissions.after < permissions.before * PERMISSIONS_DROP_WARNING
+  return [
+    `${count} tools: ${added.length} added, ${removed.length} removed.`,
+    `Tools with permissions (\`x-api-token-group\`): ${permissions.before} → ${permissions.after}.`,
+    dropped
+      ? "\n**Warning:** this release drops the permissions of many tools. Refusal explanations and scope step-up need them, in Code Mode too. Don't merge it until the spec is fixed."
+      : '',
+    removed.length > 0
+      ? `\n**Removed** (clients calling these will get "not found"):\n\n${list(removed)}`
+      : '',
+    added.length > 0 ? `\n<details><summary>Added</summary>\n\n${list(added)}\n\n</details>` : ''
+  ]
+    .filter(Boolean)
+    .join('\n')
 }
-
-function main(): void {
-  if (!existsSync(SPEC_PATH)) {
-    console.error(`Missing OpenAPI document at ${SPEC_PATH}`);
-    process.exitCode = 1;
-    return;
-  }
-
-  const rawSpec = readFileSync(SPEC_PATH, "utf8");
-  const spec = JSON.parse(rawSpec) as OpenAPISpec;
-  const specHash = createHash("sha256").update(rawSpec).digest("hex");
-  const specVersion = spec.info?.version ?? "unknown";
-
-  const operations: NormalizedOperation[] = [];
-  for (const [path, methods] of Object.entries(spec.paths)) {
-    for (const [method, operation] of Object.entries(methods)) {
-      const normalized = normalizeOperation(path, method, operation);
-      if (normalized) operations.push(normalized);
-    }
-  }
-  operations.sort((a, b) => a.name.localeCompare(b.name));
-
-  const files = [
-    { path: OPERATIONS_PATH, content: renderOperationsFile(operations) },
-    { path: META_PATH, content: renderMetaFile(specVersion, specHash, operations.length) },
-    { path: TOOLS_PATH, content: renderToolsMarkdown(operations, specVersion) },
-  ];
-
-  const check = process.argv.includes("--check");
-  if (check) {
-    const results = files.map((file) => checkFile(file.path, file.content));
-    if (results.some((upToDate) => !upToDate)) {
-      console.error("Run 'pnpm run generate' and commit the result.");
-      process.exitCode = 1;
-      return;
-    }
-    console.log(
-      `Generated output is up to date (${operations.length} operations, ${businessCapabilities.length} business capabilities).`,
-    );
-    return;
-  }
-
-  for (const file of files) writeFile(file.path, file.content);
-
-  // Remove the pre-refactor duplicates so a single document and a single
-  // generated module remain authoritative.
-  for (const legacyPath of [LEGACY_SPEC_PATH, LEGACY_TOOLS_PATH]) {
-    if (existsSync(legacyPath)) unlinkSync(legacyPath);
-  }
-
-  console.log(
-    `Generated ${operations.length} API operations and ${businessCapabilities.length} business capabilities.`,
-  );
-  console.log(
-    `Wrote ${relative(ROOT, OPERATIONS_PATH)}, ${relative(ROOT, META_PATH)} and TOOLS.md.`,
-  );
-}
-
-main();

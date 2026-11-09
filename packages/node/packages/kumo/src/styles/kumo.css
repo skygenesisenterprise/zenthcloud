@@ -1,0 +1,153 @@
+@import "./kumo-binding.css";
+
+/* 
+ * Kumo Component Library Styles - Tailwind Version
+ * 
+ * Note: This file does NOT import Tailwind CSS.
+ * Consumer applications must import Tailwind separately in their own CSS:
+ * 
+ * @import "tailwindcss";
+ * @import "@cloudflare/kumo/styles/tailwind";
+ */
+
+/* Skeleton loading animation */
+@keyframes skeleton {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/*
+ * Base clickable affordances.
+ *
+ * Scoped to Kumo-rendered elements via the [data-kumo-component] and
+ * [data-kumo-part] data attributes. Components opt in by setting these
+ * attributes on their interactive roots/parts, which gives us a stable,
+ * library-owned scoping primitive that doesn't couple to class names.
+ */
+:where(
+    a[href],
+    button,
+    input[type="button"],
+    input[type="checkbox"],
+    input[type="radio"],
+    input[type="submit"],
+    input[type="reset"],
+    label[for],
+    select,
+    summary,
+    [role="button"],
+    [role="link"],
+    [role="menuitem"],
+    [role="menuitemcheckbox"],
+    [role="menuitemradio"],
+    [role="option"],
+    [role="tab"],
+    [role="checkbox"],
+    [role="radio"],
+    [role="switch"]
+  ):where([data-kumo-component], [data-kumo-part]):where(:not(:disabled)):where(
+    :not([disabled])
+  ):where(:not([aria-disabled="true"])):where(:not([data-disabled])) {
+  cursor: pointer;
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.05) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton 1.5s ease-in-out infinite;
+}
+
+[data-mode="dark"] .skeleton {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    transparent 100%
+  );
+}
+
+/* Refresh animation for RefreshButton */
+@keyframes refresh {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-refresh {
+  animation: refresh 1s linear infinite;
+}
+
+/* ============================================
+   Shiki syntax highlighting styles
+   ============================================ */
+
+/* 
+ * Shiki dual-theme support.
+ * Shiki outputs inline styles with light colors directly applied,
+ * and dark colors stored in --shiki-dark CSS variables.
+ * 
+ * The <pre> background is made transparent so the container's bg-kumo-base
+ * shows through and respects the border-radius.
+ *
+ * In dark mode: override text colors with --shiki-dark variables.
+ * !important is needed to override Shiki's inline styles.
+ */
+.kumo-shiki pre {
+  background-color: transparent !important;
+}
+
+[data-mode="dark"] .kumo-shiki span:not(.line-highlighted) {
+  color: var(--shiki-dark) !important;
+  background-color: transparent !important;
+}
+
+[data-mode="dark"] .kumo-shiki .line-highlighted {
+  color: var(--shiki-dark) !important;
+}
+
+/* 
+ * Line highlighting - based on VitePress pattern.
+ * The code element sizes to content (fit-content) but at least 100%,
+ * then highlighted lines extend into the padding with negative margins.
+ */
+.kumo-shiki code {
+  display: block;
+  width: fit-content;
+  min-width: 100%;
+  /* Ensure right padding is preserved when content overflows horizontally */
+  padding-right: 1rem;
+}
+
+.kumo-shiki {
+  --kumo-code-highlight-bg: rgba(0, 0, 0, 0.05);
+}
+
+[data-mode="dark"] .kumo-shiki {
+  --kumo-code-highlight-bg: rgba(255, 255, 255, 0.08);
+}
+
+.kumo-shiki .line.line-highlighted {
+  display: inline-block;
+  width: calc(100% + 2rem);
+  margin: 0 -1rem;
+  padding: 0 1rem;
+  background-color: var(--kumo-code-highlight-bg);
+}
+
+/* Line numbers - positioned alongside code with matching line-height */
+.kumo-line-numbers {
+  padding-left: 0.75rem;
+  line-height: 1.625; /* matches leading-relaxed */
+}
