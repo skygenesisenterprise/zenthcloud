@@ -62,7 +62,7 @@
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vitest": "^3.2.7",
-    "wrangler": "4.125.0",
+    "wrangler": "4.158.0",
     "ws": "^8.21.1"
   },
   "repository": {
