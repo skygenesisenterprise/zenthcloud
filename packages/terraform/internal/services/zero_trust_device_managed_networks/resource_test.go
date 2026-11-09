@@ -1,0 +1,178 @@
+package zero_trust_device_managed_networks_test
+
+import (
+	"context"
+	"fmt"
+	"os"
+	"testing"
+
+	"github.com/cloudflare/cloudflare-go/v7"
+	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/consts"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+)
+
+func TestMain(m *testing.M) {
+	resource.TestMain(m)
+}
+
+func init() {
+	resource.AddTestSweepers("cloudflare_zero_trust_device_managed_networks", &resource.Sweeper{
+		Name: "cloudflare_zero_trust_device_managed_networks",
+		F:    testSweepCloudflareZeroTrustDeviceManagedNetworks,
+	})
+}
+
+func testSweepCloudflareZeroTrustDeviceManagedNetworks(r string) error {
+	ctx := context.Background()
+	client := acctest.SharedClient()
+	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+
+	networksResp, err := client.ZeroTrust.Devices.Networks.List(
+		ctx,
+		zero_trust.DeviceNetworkListParams{
+			AccountID: cloudflare.F(accountID),
+		},
+	)
+	if err != nil {
+		tflog.Error(ctx, fmt.Sprintf("Failed to fetch Zero Trust Device Managed Networks: %s", err))
+		return err
+	}
+
+	for _, network := range networksResp.Result {
+		if !utils.ShouldSweepResource(network.Name) {
+			continue
+		}
+
+		tflog.Info(ctx, fmt.Sprintf("Deleting Zero Trust Device Managed Network: %s", network.NetworkID))
+		_, err := client.ZeroTrust.Devices.Networks.Delete(
+			ctx,
+			network.NetworkID,
+			zero_trust.DeviceNetworkDeleteParams{
+				AccountID: cloudflare.F(accountID),
+			},
+		)
+		if err != nil {
+			tflog.Error(ctx, fmt.Sprintf("Failed to delete Zero Trust Device Managed Network %s: %s", network.NetworkID, err))
+		}
+	}
+
+	return nil
+}
+
+func TestAccCloudflareDeviceManagedNetworks(t *testing.T) {
+	rnd := utils.GenerateRandomResourceName()
+	resourceName := fmt.Sprintf("cloudflare_zero_trust_device_managed_networks.%s", rnd)
+	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			acctest.TestAccPreCheck_AccountID(t)
+		},
+		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
+		CheckDestroy:             testAccCheckCloudflareDeviceManagedNetworksDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCloudflareDeviceManagedNetworks(accountID, rnd),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(consts.AccountIDSchemaKey), knownvalue.StringExact(accountID)),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(rnd)),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("type"), knownvalue.StringExact("tls")),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("config").AtMapKey("tls_sockaddr"), knownvalue.StringExact("foobar:1234")),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("config").AtMapKey("sha256"), knownvalue.StringExact("b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c")),
+				},
+			},
+			{
+				ResourceName:        resourceName,
+				ImportState:         true,
+				ImportStateVerify:   true,
+				ImportStateIdPrefix: fmt.Sprintf("%s/", accountID),
+			},
+		},
+	})
+}
+
+func testAccCloudflareDeviceManagedNetworks(accountID, rnd string) string {
+	return acctest.LoadTestCase("devicemanagednetworks.tf", rnd, accountID)
+}
+
+func testAccCheckCloudflareDeviceManagedNetworksDestroy(s *terraform.State) error {
+	client := acctest.SharedClient()
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "cloudflare_zero_trust_device_managed_networks" {
+			continue
+		}
+
+		accountID := rs.Primary.Attributes[consts.AccountIDSchemaKey]
+		networkID := rs.Primary.ID
+		_, err := client.ZeroTrust.Devices.Networks.Get(context.Background(), networkID, zero_trust.DeviceNetworkGetParams{
+			AccountID: cloudflare.F(accountID),
+		})
+		if err == nil {
+			return fmt.Errorf("device managed network still exists: %s", networkID)
+		}
+	}
+
+	return nil
+}
+
+func TestAccUpgradeZeroTrustDeviceManagedNetworks_FromPublishedV5(t *testing.T) {
+	rnd := utils.GenerateRandomResourceName()
+	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+
+	config := testAccCloudflareDeviceManagedNetworks(accountID, rnd)
+
+	// Stepping-stone upgrade: 5.16.0 → 5.17.0 → latest.
+	//
+	// v5.16.0 stored state at schema_version=0 with config as a SingleNestedAttribute
+	// (object). v5.17.0 introduced a no-op UpgradeState[0] that bumps the version to 1
+	// using the current v5 schema, making the state compatible with the latest provider's
+	// UpgradeState[1] handler. Jumping directly from 5.16.0 to latest would fail because
+	// the latest UpgradeState[0] handler expects the legacy v4 list-block format.
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			acctest.TestAccPreCheck_AccountID(t)
+		},
+		Steps: []resource.TestStep{
+			// Step 1: create with v5.16.0 (schema_version=0, config as object)
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"cloudflare": {
+						Source:            "cloudflare/cloudflare",
+						VersionConstraint: "5.16.0",
+					},
+				},
+				Config: config,
+			},
+			// Step 2: upgrade to v5.17.0 (bumps schema_version 0→1, no-op transform)
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"cloudflare": {
+						Source:            "cloudflare/cloudflare",
+						VersionConstraint: "5.17.0",
+					},
+				},
+				Config: config,
+			},
+			// Step 3: upgrade to latest (schema_version 1→500, no-op transform)
+			{
+				ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
+				Config:                   config,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+		},
+	})
+}

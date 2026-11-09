@@ -1,0 +1,37 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package managed_transforms
+
+import (
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+type ManagedTransformsResultEnvelope struct {
+	Result ManagedTransformsModel `json:"result"`
+}
+
+type ManagedTransformsModel struct {
+	ID                     types.String                                     `tfsdk:"id" json:"-,computed"`
+	ZoneID                 types.String                                     `tfsdk:"zone_id" path:"zone_id,required"`
+	ManagedRequestHeaders  *[]*ManagedTransformsManagedRequestHeadersModel  `tfsdk:"managed_request_headers" json:"managed_request_headers,optional"`
+	ManagedResponseHeaders *[]*ManagedTransformsManagedResponseHeadersModel `tfsdk:"managed_response_headers" json:"managed_response_headers,optional"`
+}
+
+func (m ManagedTransformsModel) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(m)
+}
+
+func (m ManagedTransformsModel) MarshalJSONForUpdate(state ManagedTransformsModel) (data []byte, err error) {
+	return apijson.MarshalForPatch(m, state)
+}
+
+type ManagedTransformsManagedRequestHeadersModel struct {
+	ID      types.String `tfsdk:"id" json:"id,required"`
+	Enabled types.Bool   `tfsdk:"enabled" json:"enabled,required"`
+}
+
+type ManagedTransformsManagedResponseHeadersModel struct {
+	ID      types.String `tfsdk:"id" json:"id,required"`
+	Enabled types.Bool   `tfsdk:"enabled" json:"enabled,required"`
+}

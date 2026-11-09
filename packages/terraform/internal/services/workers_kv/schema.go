@@ -1,0 +1,80 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package workers_kv
+
+import (
+	"context"
+
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+)
+
+var _ resource.ResourceWithConfigValidators = (*WorkersKVResource)(nil)
+
+func ResourceSchema(ctx context.Context) schema.Schema {
+	return schema.Schema{
+		MarkdownDescription: schemata.Description{
+			Scopes: []string{
+				"Workers KV Storage Read",
+				"Workers KV Storage Write",
+			},
+		}.String(),
+		Version: 500,
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Description:   "A key's name. The name may be at most 512 bytes. All printable, non-whitespace characters are valid. Use percent-encoding to define key names as part of a URL.",
+				Computed:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown(), stringplanmodifier.RequiresReplace()},
+			},
+			"key_name": schema.StringAttribute{
+				Description:   "A key's name. The name may be at most 512 bytes. All printable, non-whitespace characters are valid. Use percent-encoding to define key names as part of a URL.",
+				Required:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown(), stringplanmodifier.RequiresReplace()},
+			},
+			"account_id": schema.StringAttribute{
+				Description:   "ID of the Cloudflare account that owns the Workers KV namespaces.",
+				Required:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			},
+			"namespace_id": schema.StringAttribute{
+				Description:   "ID of the Workers KV namespace.",
+				Required:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			},
+			"expiration": schema.Float64Attribute{
+				Description: "Expires the key at a certain time, measured in number of seconds since the UNIX epoch.",
+				Optional:    true,
+			},
+			"expiration_ttl": schema.Float64Attribute{
+				Description: "Number of seconds until the key expires. Must be at least 60. Takes precedence over `expiration` when both are specified.",
+				Optional:    true,
+				Validators: []validator.Float64{
+					float64validator.AtLeast(60),
+				},
+			},
+			"value": schema.StringAttribute{
+				Description: "A byte sequence to be stored, up to 25 MiB in length.",
+				Required:    true,
+			},
+			"metadata": schema.StringAttribute{
+				Description: "Associates arbitrary JSON data with a key/value pair.",
+				Optional:    true,
+				CustomType:  jsontypes.NormalizedType{},
+			},
+		},
+	}
+}
+
+func (r *WorkersKVResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = ResourceSchema(ctx)
+}
+
+func (r *WorkersKVResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
+	return []resource.ConfigValidator{}
+}

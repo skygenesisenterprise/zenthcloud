@@ -1,0 +1,284 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package zero_trust_organization
+
+import (
+	"context"
+
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+var _ datasource.DataSourceWithConfigValidators = (*ZeroTrustOrganizationDataSource)(nil)
+
+func DataSourceSchema(ctx context.Context) schema.Schema {
+	return schema.Schema{
+		MarkdownDescription: schemata.Description{
+			Scopes: []string{
+				"Access: Organizations, Identity Providers, and Groups Read",
+				"Access: Organizations, Identity Providers, and Groups Revoke",
+				"Access: Organizations, Identity Providers, and Groups Write",
+			},
+		}.String(),
+		Attributes: map[string]schema.Attribute{
+			"account_id": schema.StringAttribute{
+				Description: "The Account ID to use for this endpoint. Mutually exclusive with the Zone ID.",
+				Optional:    true,
+			},
+			"zone_id": schema.StringAttribute{
+				Description: "The Zone ID to use for this endpoint. Mutually exclusive with the Account ID.",
+				Optional:    true,
+			},
+			"allow_authenticate_via_warp": schema.BoolAttribute{
+				Description: "When set to true, users can authenticate via WARP for any application in your organization. Application settings will take precedence over this value.",
+				Computed:    true,
+			},
+			"auth_domain": schema.StringAttribute{
+				Description: "The unique subdomain assigned to your Zero Trust organization. If omitted on creation, a unique subdomain is auto-generated in the format `adjective-noun-hex4` (e.g. `frosty-moon-7a3b.cloudflareaccess.com`).",
+				Computed:    true,
+			},
+			"auto_redirect_to_identity": schema.BoolAttribute{
+				Description: "When set to `true`, users skip the identity provider selection step during login.",
+				Computed:    true,
+			},
+			"deny_unmatched_requests": schema.BoolAttribute{
+				Description: "Determines whether to deny all requests to Cloudflare-protected resources that lack an associated Access application. If enabled, you must explicitly configure an Access application and policy to allow traffic to your Cloudflare-protected resources. For domains you want to be public across all subdomains, add the domain to the `deny_unmatched_requests_exempted_zone_names` array.",
+				Computed:    true,
+			},
+			"is_ui_read_only": schema.BoolAttribute{
+				Description: "Lock all settings as Read-Only in the Dashboard, regardless of user permission. Updates may only be made via the API or Terraform for this account when enabled.",
+				Computed:    true,
+			},
+			"mfa_required_for_all_apps": schema.BoolAttribute{
+				Description: "Determines whether global MFA settings apply to applications by default. The organization must have MFA enabled with at least one authentication method and a session duration configured. Note: 'allowed_authenticators' cannot contain only the infrastructure SSH authenticators ('piv_key' and 'ssh_fido2_key') if the organization has any non-infrastructure applications.",
+				Computed:    true,
+			},
+			"name": schema.StringAttribute{
+				Description: "The name of your Zero Trust organization. When omitted on creation, defaults to the provided auth_domain; when both are omitted, defaults to the auto-generated subdomain slug (e.g. frosty-moon-7a3b).",
+				Computed:    true,
+			},
+			"session_duration": schema.StringAttribute{
+				Description: "The amount of time that tokens issued for applications will be valid. Must be in the format `300ms` or `2h45m`. Valid time units are: ns, us (or µs), ms, s, m, h.",
+				Computed:    true,
+			},
+			"strict_service_token_auth": schema.BoolAttribute{
+				Description: "Enables new behaviors for requests made with Access service tokens. Unauthorized requests emit audit logs, and return a 401 or 403 status code in the response instead of redirecting to the login page. Successful requests no longer receive a CF_Authorization cookie in the response. Zero Trust organizations created on or after October 5, 2026 will have this setting enabled by default, and cannot disable it.",
+				Computed:    true,
+			},
+			"ui_read_only_toggle_reason": schema.StringAttribute{
+				Description: "A description of the reason why the UI read only field is being toggled.",
+				Computed:    true,
+			},
+			"user_seat_expiration_inactive_time": schema.StringAttribute{
+				Description: "The amount of time a user seat is inactive before it expires. When the user seat exceeds the set time of inactivity, the user is removed as an active seat and no longer counts against your Teams seat count.  Minimum value for this setting is 1 month (730h). Must be in the format `300ms` or `2h45m`. Valid time units are: `ns`, `us` (or `µs`), `ms`, `s`, `m`, `h`.",
+				Computed:    true,
+			},
+			"warp_auth_non_browser_401": schema.BoolAttribute{
+				Description: "When enabled, unsuccessful WARP authentication requests with a non-HTML Accept header return a 401 response instead of redirecting to the login page.",
+				Computed:    true,
+			},
+			"warp_auth_session_duration": schema.StringAttribute{
+				Description: "The amount of time that tokens issued for applications will be valid. Must be in the format `30m` or `2h45m`. Valid time units are: m, h.",
+				Computed:    true,
+			},
+			"deny_unmatched_requests_exempted_zone_names": schema.ListAttribute{
+				Description: "Contains zone names to exempt from the `deny_unmatched_requests` feature. Requests to a subdomain in an exempted zone will block unauthenticated traffic by default if there is a configured Access application and policy that matches the request.",
+				Computed:    true,
+				CustomType:  customfield.NewListType[types.String](ctx),
+				ElementType: types.StringType,
+			},
+			"trusted_accounts": schema.ListAttribute{
+				Description: "The account tags of organizations trusted by this organization for policy and device posture sharing.",
+				Computed:    true,
+				CustomType:  customfield.NewListType[types.String](ctx),
+				ElementType: types.StringType,
+			},
+			"custom_pages": schema.SingleNestedAttribute{
+				Computed:   true,
+				CustomType: customfield.NewNestedObjectType[ZeroTrustOrganizationCustomPagesDataSourceModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"forbidden": schema.StringAttribute{
+						Description: "The uid of the custom page to use when a user is denied access after failing a non-identity rule.",
+						Computed:    true,
+					},
+					"identity_denied": schema.StringAttribute{
+						Description: "The uid of the custom page to use when a user is denied access.",
+						Computed:    true,
+					},
+				},
+			},
+			"login_design": schema.SingleNestedAttribute{
+				Computed:   true,
+				CustomType: customfield.NewNestedObjectType[ZeroTrustOrganizationLoginDesignDataSourceModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"background_color": schema.StringAttribute{
+						Description: "The background color on your login page.",
+						Computed:    true,
+					},
+					"footer_text": schema.StringAttribute{
+						Description: "The text at the bottom of your login page.",
+						Computed:    true,
+					},
+					"header_text": schema.StringAttribute{
+						Description: "The text at the top of your login page.",
+						Computed:    true,
+					},
+					"logo_path": schema.StringAttribute{
+						Description: "The URL of the logo on your login page.",
+						Computed:    true,
+					},
+					"text_color": schema.StringAttribute{
+						Description: "The text color on your login page.",
+						Computed:    true,
+					},
+				},
+			},
+			"mfa_config": schema.SingleNestedAttribute{
+				Description: "Configures multi-factor authentication (MFA) settings for an organization.",
+				Computed:    true,
+				CustomType:  customfield.NewNestedObjectType[ZeroTrustOrganizationMfaConfigDataSourceModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"allowed_authenticators": schema.ListAttribute{
+						Description: "Lists the MFA methods that users can authenticate with. The `piv_key` and `ssh_fido2_key` values are supported only for infrastructure applications.",
+						Computed:    true,
+						Validators: []validator.List{
+							listvalidator.ValueStringsAre(
+								stringvalidator.OneOfCaseInsensitive(
+									"totp",
+									"biometrics",
+									"security_key",
+									"piv_key",
+									"ssh_fido2_key",
+								),
+							),
+						},
+						CustomType:  customfield.NewListType[types.String](ctx),
+						ElementType: types.StringType,
+					},
+					"amr_matching_session_duration": schema.StringAttribute{
+						Description: `Allows a user to skip MFA via Authentication Method Reference (AMR) matching when the AMR claim provided by the IdP the user used to authenticate contains "mfa". Must be in minutes (m) or hours (h). Minimum: 0m. Maximum: 720h (30 days).`,
+						Computed:    true,
+					},
+					"required_aaguids": schema.StringAttribute{
+						Description: "Specifies a Cloudflare List of required FIDO2 authenticator device AAGUIDs.",
+						Computed:    true,
+					},
+					"session_duration": schema.StringAttribute{
+						Description: "Defines the duration of an MFA session. Must be in minutes (m) or hours (h). Minimum: 0m. Maximum: 720h (30 days). Examples:`5m` or `24h`.",
+						Computed:    true,
+					},
+				},
+			},
+			"mfa_piv_key_requirements": schema.SingleNestedAttribute{
+				Description: "Configures PIV key requirements for MFA using hardware security keys.",
+				Computed:    true,
+				CustomType:  customfield.NewNestedObjectType[ZeroTrustOrganizationMfaPivKeyRequirementsDataSourceModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"pin_policy": schema.StringAttribute{
+						Description: "Defines when a PIN is required to use the SSH key. Valid values: `never` (no PIN required), `once` (PIN required once per session), `always` (PIN required for each use).\nAvailable values: \"never\", \"once\", \"always\".",
+						Computed:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOfCaseInsensitive(
+								"never",
+								"once",
+								"always",
+							),
+						},
+					},
+					"require_fips_device": schema.BoolAttribute{
+						Description: "Requires the PIV key to be stored on a FIPS 140-2 Level 1 or higher validated device.",
+						Computed:    true,
+					},
+					"ssh_key_size": schema.ListAttribute{
+						Description: "Specifies the allowed SSH key sizes in bits. Valid sizes depend on key type. Ed25519 has a fixed key size and does not accept this parameter.",
+						Computed:    true,
+						Validators: []validator.List{
+							listvalidator.ValueInt64sAre(
+								int64validator.OneOf(
+									256,
+									384,
+									521,
+									2048,
+									3072,
+									4096,
+								),
+							),
+						},
+						CustomType:  customfield.NewListType[types.Int64](ctx),
+						ElementType: types.Int64Type,
+					},
+					"ssh_key_type": schema.ListAttribute{
+						Description: "Specifies the allowed SSH key types. Valid values are `ecdsa`, `ed25519`, and `rsa`.",
+						Computed:    true,
+						Validators: []validator.List{
+							listvalidator.ValueStringsAre(
+								stringvalidator.OneOfCaseInsensitive(
+									"ecdsa",
+									"ed25519",
+									"rsa",
+								),
+							),
+						},
+						CustomType:  customfield.NewListType[types.String](ctx),
+						ElementType: types.StringType,
+					},
+					"touch_policy": schema.StringAttribute{
+						Description: "Defines when physical touch is required to use the SSH key. Valid values: `never` (no touch required), `always` (touch required for each use), `cached` (touch cached for 15 seconds).\nAvailable values: \"never\", \"always\", \"cached\".",
+						Computed:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOfCaseInsensitive(
+								"never",
+								"always",
+								"cached",
+							),
+						},
+					},
+				},
+			},
+			"service_token_inactivity": schema.SingleNestedAttribute{
+				Description: "Configures automatic enforcement for inactive service tokens. A service token is inactive if no policy references it, and it has not successfully authenticated with an Access application during the selected inactivity period. This setting applies to every service token in your Zero Trust account.",
+				Computed:    true,
+				CustomType:  customfield.NewNestedObjectType[ZeroTrustOrganizationServiceTokenInactivityDataSourceModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"action": schema.StringAttribute{
+						Description: "The action applied to an inactive service token.\nAvailable values: \"disable\", \"delete\".",
+						Computed:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOfCaseInsensitive("disable", "delete"),
+						},
+					},
+					"enabled": schema.BoolAttribute{
+						Description: "Whether automatic enforcement for inactive service tokens is enabled.",
+						Computed:    true,
+					},
+					"inactivity_threshold_days": schema.Int64Attribute{
+						Description: "The number of days a service token must be inactive before the configured action is applied.",
+						Computed:    true,
+						Validators: []validator.Int64{
+							int64validator.Between(30, 365),
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func (d *ZeroTrustOrganizationDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = DataSourceSchema(ctx)
+}
+
+func (d *ZeroTrustOrganizationDataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
+	return []datasource.ConfigValidator{
+		datasourcevalidator.Conflicting(path.MatchRoot("account_id"), path.MatchRoot("zone_id")),
+	}
+}

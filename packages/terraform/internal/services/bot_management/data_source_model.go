@@ -1,0 +1,63 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package bot_management
+
+import (
+	"context"
+
+	"github.com/cloudflare/cloudflare-go/v7"
+	"github.com/cloudflare/cloudflare-go/v7/bot_management"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+type BotManagementResultDataSourceEnvelope struct {
+	Result BotManagementDataSourceModel `json:"result,computed"`
+}
+
+type BotManagementDataSourceModel struct {
+	ID                           types.String                                                                 `tfsdk:"id" path:"zone_id,computed"`
+	ZoneID                       types.String                                                                 `tfsdk:"zone_id" path:"zone_id,optional"`
+	AIBotsMigrationOptOut        types.Bool                                                                   `tfsdk:"ai_bots_migration_opt_out" json:"ai_bots_migration_opt_out,computed"`
+	AIBotsProtection             types.String                                                                 `tfsdk:"ai_bots_protection" json:"ai_bots_protection,computed"`
+	AITraining                   types.String                                                                 `tfsdk:"ai_training" json:"ai_training,computed"`
+	AIUser                       types.String                                                                 `tfsdk:"ai_user" json:"ai_user,computed"`
+	AISearch                     types.String                                                                 `tfsdk:"aisearch" json:"ai_search,computed"`
+	AutoUpdateModel              types.Bool                                                                   `tfsdk:"auto_update_model" json:"auto_update_model,computed"`
+	BmCookieEnabled              types.Bool                                                                   `tfsdk:"bm_cookie_enabled" json:"bm_cookie_enabled,computed"`
+	BotPreferenceSyncEnabled     types.Bool                                                                   `tfsdk:"bot_preference_sync_enabled" json:"bot_preference_sync_enabled,computed"`
+	CfRobotsVariant              types.String                                                                 `tfsdk:"cf_robots_variant" json:"cf_robots_variant,computed"`
+	ContentBotsProtection        types.String                                                                 `tfsdk:"content_bots_protection" json:"content_bots_protection,computed"`
+	CrawlerProtection            types.String                                                                 `tfsdk:"crawler_protection" json:"crawler_protection,computed"`
+	EnableJS                     types.Bool                                                                   `tfsdk:"enable_js" json:"enable_js,computed"`
+	FightMode                    types.Bool                                                                   `tfsdk:"fight_mode" json:"fight_mode,computed"`
+	IsRobotsTXTManaged           types.Bool                                                                   `tfsdk:"is_robots_txt_managed" json:"is_robots_txt_managed,computed"`
+	JsdAPIResultsEnabled         types.Bool                                                                   `tfsdk:"jsd_api_results_enabled" json:"jsd_api_results_enabled,computed"`
+	OptimizeWordpress            types.Bool                                                                   `tfsdk:"optimize_wordpress" json:"optimize_wordpress,computed"`
+	SBFMDefinitelyAutomated      types.String                                                                 `tfsdk:"sbfm_definitely_automated" json:"sbfm_definitely_automated,computed"`
+	SBFMLikelyAutomated          types.String                                                                 `tfsdk:"sbfm_likely_automated" json:"sbfm_likely_automated,computed"`
+	SBFMStaticResourceProtection types.Bool                                                                   `tfsdk:"sbfm_static_resource_protection" json:"sbfm_static_resource_protection,computed"`
+	SBFMVerifiedBots             types.String                                                                 `tfsdk:"sbfm_verified_bots" json:"sbfm_verified_bots,computed"`
+	SuppressSessionScore         types.Bool                                                                   `tfsdk:"suppress_session_score" json:"suppress_session_score,computed"`
+	UsingLatestModel             types.Bool                                                                   `tfsdk:"using_latest_model" json:"using_latest_model,computed"`
+	StaleZoneConfiguration       customfield.NestedObject[BotManagementStaleZoneConfigurationDataSourceModel] `tfsdk:"stale_zone_configuration" json:"stale_zone_configuration,computed"`
+}
+
+func (m *BotManagementDataSourceModel) toReadParams(_ context.Context) (params bot_management.BotManagementGetParams, diags diag.Diagnostics) {
+	params = bot_management.BotManagementGetParams{
+		ZoneID: cloudflare.F(m.ZoneID.ValueString()),
+	}
+
+	return
+}
+
+type BotManagementStaleZoneConfigurationDataSourceModel struct {
+	OptimizeWordpress            types.Bool   `tfsdk:"optimize_wordpress" json:"optimize_wordpress,computed"`
+	SBFMDefinitelyAutomated      types.String `tfsdk:"sbfm_definitely_automated" json:"sbfm_definitely_automated,computed"`
+	SBFMLikelyAutomated          types.String `tfsdk:"sbfm_likely_automated" json:"sbfm_likely_automated,computed"`
+	SBFMStaticResourceProtection types.String `tfsdk:"sbfm_static_resource_protection" json:"sbfm_static_resource_protection,computed"`
+	SBFMVerifiedBots             types.String `tfsdk:"sbfm_verified_bots" json:"sbfm_verified_bots,computed"`
+	SuppressSessionScore         types.Bool   `tfsdk:"suppress_session_score" json:"suppress_session_score,computed"`
+	FightMode                    types.Bool   `tfsdk:"fight_mode" json:"fight_mode,computed"`
+}

@@ -1,0 +1,63 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package tiered_cache
+
+import (
+	"context"
+
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+)
+
+var _ datasource.DataSourceWithConfigValidators = (*TieredCacheDataSource)(nil)
+
+func DataSourceSchema(ctx context.Context) schema.Schema {
+	return schema.Schema{
+		MarkdownDescription: schemata.Description{
+			Scopes: []string{
+				"Zone Read",
+				"Zone Settings Read",
+				"Zone Settings Write",
+				"Zone Write",
+			},
+		}.String(),
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Description: "Identifier.",
+				Computed:    true,
+			},
+			"zone_id": schema.StringAttribute{
+				Description: "Identifier.",
+				Optional:    true,
+			},
+			"editable": schema.BoolAttribute{
+				Description: "Whether the setting is editable.",
+				Computed:    true,
+			},
+			"modified_on": schema.StringAttribute{
+				Description: "Last time this setting was modified.",
+				Computed:    true,
+				CustomType:  timetypes.RFC3339Type{},
+			},
+			"value": schema.StringAttribute{
+				Description: "Value of the Smart Tiered Cache zone setting.\nAvailable values: \"on\", \"off\".",
+				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOfCaseInsensitive("on", "off"),
+				},
+			},
+		},
+	}
+}
+
+func (d *TieredCacheDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = DataSourceSchema(ctx)
+}
+
+func (d *TieredCacheDataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
+	return []datasource.ConfigValidator{}
+}

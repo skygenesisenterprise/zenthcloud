@@ -1,0 +1,161 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package account
+
+import (
+	"context"
+
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+)
+
+var _ resource.ResourceWithConfigValidators = (*AccountResource)(nil)
+
+func ResourceSchema(ctx context.Context) schema.Schema {
+	return schema.Schema{
+		MarkdownDescription: schemata.Description{
+			Scopes: []string{
+				"Account Firewall Access Rules Read",
+				"Account Firewall Access Rules Write",
+				"Account Settings Read",
+				"Account Settings Write",
+				"Billing Read",
+				"Billing Write",
+				"DDoS Botnet Feed Read",
+				"DDoS Botnet Feed Write",
+				"DDoS Protection Read",
+				"DDoS Protection Write",
+				"DNS Firewall Read",
+				"DNS Firewall Write",
+				"DNS View Read",
+				"DNS View Write",
+				"Load Balancers Account Read",
+				"Load Balancers Account Write",
+				"Load Balancing: Monitors and Pools Read",
+				"Load Balancing: Monitors and Pools Write",
+				"SCIM Provisioning",
+				"Trust and Safety Read",
+				"Trust and Safety Write",
+				"Workers KV Storage Read",
+				"Workers KV Storage Write",
+				"Workers R2 Storage Read",
+				"Workers R2 Storage Write",
+				"Workers Scripts Read",
+				"Workers Scripts Write",
+				"Workers Tail Read",
+				"Zero Trust: PII Read",
+			},
+		}.String(),
+		Version: 500,
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Description:   "Identifier",
+				Computed:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()},
+			},
+			"standalone": schema.BoolAttribute{
+				Description:   "Set to `true` and omit `unit` to create a standalone Free Account. If provided, this field must be `true`.",
+				Computed:      true,
+				Optional:      true,
+				PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseNonNullStateForUnknown(), boolplanmodifier.RequiresReplaceIfConfigured()},
+			},
+		"unit": schema.SingleNestedAttribute{
+			Description: "Information related to the tenant unit. Provide its ID and omit `standalone` to create the Account within an Organization. See https://developers.cloudflare.com/tenant/how-to/manage-accounts/.",
+			Computed:    true,
+			Optional:    true,
+			CustomType:  customfield.NewNestedObjectType[AccountUnitModel](ctx),
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+					objectplanmodifier.RequiresReplaceIfConfigured(),
+				},
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						Description: "Tenant unit ID",
+						Computed:    true,
+						Optional:    true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+							stringplanmodifier.RequiresReplace(),
+						},
+					},
+				},
+			},
+			"name": schema.StringAttribute{
+				Description: "Account name",
+				Required:    true,
+			},
+			"type": schema.StringAttribute{
+				Description:        `Available values: "standard", "enterprise".`,
+				Optional:           true,
+				Computed:           true,
+				DeprecationMessage: "The 'type' field should no longer be set through the API.",
+				Validators: []validator.String{
+					stringvalidator.OneOfCaseInsensitive("standard", "enterprise"),
+				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"managed_by": schema.SingleNestedAttribute{
+				Description: "Parent container details",
+				Computed:    true,
+				Optional:    true,
+				CustomType:  customfield.NewNestedObjectType[AccountManagedByModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"parent_org_id": schema.StringAttribute{
+						Description: "ID of the parent Organization, if one exists",
+						Computed:    true,
+					},
+					"parent_org_name": schema.StringAttribute{
+						Description: "Name of the parent Organization, if one exists",
+						Computed:    true,
+					},
+				},
+				PlanModifiers: []planmodifier.Object{objectplanmodifier.UseNonNullStateForUnknown()},
+			},
+			"settings": schema.SingleNestedAttribute{
+				Description: "Account settings",
+				Computed:    true,
+				Optional:    true,
+				CustomType:  customfield.NewNestedObjectType[AccountSettingsModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"abuse_contact_email": schema.StringAttribute{
+						Description: "Sets an abuse contact email to notify for abuse reports.",
+						Optional:    true,
+					},
+					"enforce_twofactor": schema.BoolAttribute{
+						Description: "Indicates whether membership in this account requires that\nTwo-Factor Authentication is enabled",
+						Computed:    true,
+						Optional:    true,
+						Default:     booldefault.StaticBool(false),
+					},
+				},
+				PlanModifiers: []planmodifier.Object{objectplanmodifier.UseNonNullStateForUnknown()},
+			},
+			"created_on": schema.StringAttribute{
+				Description:   "Timestamp for the creation of the account",
+				Computed:      true,
+				CustomType:    timetypes.RFC3339Type{},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()},
+			},
+		},
+	}
+}
+
+func (r *AccountResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = ResourceSchema(ctx)
+}
+
+func (r *AccountResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
+	return []resource.ConfigValidator{}
+}

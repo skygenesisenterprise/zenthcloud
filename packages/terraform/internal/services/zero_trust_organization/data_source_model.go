@@ -1,0 +1,88 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package zero_trust_organization
+
+import (
+	"context"
+
+	"github.com/cloudflare/cloudflare-go/v7"
+	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+type ZeroTrustOrganizationResultDataSourceEnvelope struct {
+	Result ZeroTrustOrganizationDataSourceModel `json:"result,computed"`
+}
+
+type ZeroTrustOrganizationDataSourceModel struct {
+	AccountID                              types.String                                                                         `tfsdk:"account_id" path:"account_id,optional"`
+	ZoneID                                 types.String                                                                         `tfsdk:"zone_id" path:"zone_id,optional"`
+	AllowAuthenticateViaWARP               types.Bool                                                                           `tfsdk:"allow_authenticate_via_warp" json:"allow_authenticate_via_warp,computed"`
+	AuthDomain                             types.String                                                                         `tfsdk:"auth_domain" json:"auth_domain,computed"`
+	AutoRedirectToIdentity                 types.Bool                                                                           `tfsdk:"auto_redirect_to_identity" json:"auto_redirect_to_identity,computed"`
+	DenyUnmatchedRequests                  types.Bool                                                                           `tfsdk:"deny_unmatched_requests" json:"deny_unmatched_requests,computed"`
+	IsUIReadOnly                           types.Bool                                                                           `tfsdk:"is_ui_read_only" json:"is_ui_read_only,computed"`
+	MfaRequiredForAllApps                  types.Bool                                                                           `tfsdk:"mfa_required_for_all_apps" json:"mfa_required_for_all_apps,computed"`
+	Name                                   types.String                                                                         `tfsdk:"name" json:"name,computed"`
+	SessionDuration                        types.String                                                                         `tfsdk:"session_duration" json:"session_duration,computed"`
+	StrictServiceTokenAuth                 types.Bool                                                                           `tfsdk:"strict_service_token_auth" json:"strict_service_token_auth,computed"`
+	UIReadOnlyToggleReason                 types.String                                                                         `tfsdk:"ui_read_only_toggle_reason" json:"ui_read_only_toggle_reason,computed"`
+	UserSeatExpirationInactiveTime         types.String                                                                         `tfsdk:"user_seat_expiration_inactive_time" json:"user_seat_expiration_inactive_time,computed"`
+	WARPAuthSessionDuration                types.String                                                                         `tfsdk:"warp_auth_session_duration" json:"warp_auth_session_duration,computed"`
+	DenyUnmatchedRequestsExemptedZoneNames customfield.List[types.String]                                                       `tfsdk:"deny_unmatched_requests_exempted_zone_names" json:"deny_unmatched_requests_exempted_zone_names,computed"`
+	TrustedAccounts                        customfield.List[types.String]                                                       `tfsdk:"trusted_accounts" json:"trusted_accounts,computed"`
+	CustomPages                            customfield.NestedObject[ZeroTrustOrganizationCustomPagesDataSourceModel]            `tfsdk:"custom_pages" json:"custom_pages,computed"`
+	LoginDesign                            customfield.NestedObject[ZeroTrustOrganizationLoginDesignDataSourceModel]            `tfsdk:"login_design" json:"login_design,computed"`
+	MfaConfig                              customfield.NestedObject[ZeroTrustOrganizationMfaConfigDataSourceModel]              `tfsdk:"mfa_config" json:"mfa_config,computed"`
+	MfaPivKeyRequirements                  customfield.NestedObject[ZeroTrustOrganizationMfaPivKeyRequirementsDataSourceModel]  `tfsdk:"mfa_piv_key_requirements" json:"mfa_piv_key_requirements,computed"`
+	WarpAuthNonBrowser401                  types.Bool                                                                           `tfsdk:"warp_auth_non_browser_401" json:"warp_auth_non_browser_401,computed"`
+	ServiceTokenInactivity                 customfield.NestedObject[ZeroTrustOrganizationServiceTokenInactivityDataSourceModel] `tfsdk:"service_token_inactivity" json:"service_token_inactivity,computed"`
+}
+
+func (m *ZeroTrustOrganizationDataSourceModel) toReadParams(_ context.Context) (params zero_trust.OrganizationListParams, diags diag.Diagnostics) {
+	params = zero_trust.OrganizationListParams{}
+
+	if !m.AccountID.IsNull() {
+		params.AccountID = cloudflare.F(m.AccountID.ValueString())
+	} else {
+		params.ZoneID = cloudflare.F(m.ZoneID.ValueString())
+	}
+
+	return
+}
+
+type ZeroTrustOrganizationCustomPagesDataSourceModel struct {
+	Forbidden      types.String `tfsdk:"forbidden" json:"forbidden,computed"`
+	IdentityDenied types.String `tfsdk:"identity_denied" json:"identity_denied,computed"`
+}
+
+type ZeroTrustOrganizationLoginDesignDataSourceModel struct {
+	BackgroundColor types.String `tfsdk:"background_color" json:"background_color,computed"`
+	FooterText      types.String `tfsdk:"footer_text" json:"footer_text,computed"`
+	HeaderText      types.String `tfsdk:"header_text" json:"header_text,computed"`
+	LogoPath        types.String `tfsdk:"logo_path" json:"logo_path,computed"`
+	TextColor       types.String `tfsdk:"text_color" json:"text_color,computed"`
+}
+
+type ZeroTrustOrganizationMfaConfigDataSourceModel struct {
+	AllowedAuthenticators      customfield.List[types.String] `tfsdk:"allowed_authenticators" json:"allowed_authenticators,computed"`
+	AmrMatchingSessionDuration types.String                   `tfsdk:"amr_matching_session_duration" json:"amr_matching_session_duration,computed"`
+	RequiredAaguids            types.String                   `tfsdk:"required_aaguids" json:"required_aaguids,computed"`
+	SessionDuration            types.String                   `tfsdk:"session_duration" json:"session_duration,computed"`
+}
+
+type ZeroTrustOrganizationMfaPivKeyRequirementsDataSourceModel struct {
+	PinPolicy         types.String                   `tfsdk:"pin_policy" json:"pin_policy,computed"`
+	RequireFipsDevice types.Bool                     `tfsdk:"require_fips_device" json:"require_fips_device,computed"`
+	SSHKeySize        customfield.List[types.Int64]  `tfsdk:"ssh_key_size" json:"ssh_key_size,computed"`
+	SSHKeyType        customfield.List[types.String] `tfsdk:"ssh_key_type" json:"ssh_key_type,computed"`
+	TouchPolicy       types.String                   `tfsdk:"touch_policy" json:"touch_policy,computed"`
+}
+
+type ZeroTrustOrganizationServiceTokenInactivityDataSourceModel struct {
+	Action                  types.String `tfsdk:"action" json:"action,computed"`
+	Enabled                 types.Bool   `tfsdk:"enabled" json:"enabled,computed"`
+	InactivityThresholdDays types.Int64  `tfsdk:"inactivity_threshold_days" json:"inactivity_threshold_days,computed"`
+}

@@ -1,0 +1,107 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package zero_trust_access_custom_page
+
+import (
+	"context"
+
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+)
+
+var _ datasource.DataSourceWithConfigValidators = (*ZeroTrustAccessCustomPagesDataSource)(nil)
+
+func ListDataSourceSchema(ctx context.Context) schema.Schema {
+	return schema.Schema{
+		MarkdownDescription: schemata.Description{
+			Scopes: []string{
+				"Access: Custom Pages Read",
+				"Access: Custom Pages Write",
+			},
+		}.String(),
+		Attributes: map[string]schema.Attribute{
+			"account_id": schema.StringAttribute{
+				Description: "Identifier.",
+				Optional:    true,
+			},
+			"max_items": schema.Int64Attribute{
+				Description: "Max items to fetch, default: 1000",
+				Optional:    true,
+				Validators: []validator.Int64{
+					int64validator.AtLeast(0),
+				},
+			},
+			"result": schema.ListNestedAttribute{
+				Description: "The items returned by the data source",
+				Computed:    true,
+				CustomType:  customfield.NewNestedObjectListType[ZeroTrustAccessCustomPagesResultDataSourceModel](ctx),
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"id": schema.StringAttribute{
+							Description: "UUID.",
+							Computed:    true,
+						},
+						"name": schema.StringAttribute{
+							Description: "Custom page name.",
+							Computed:    true,
+						},
+						"type": schema.StringAttribute{
+							Description: "Custom page type.\nAvailable values: \"identity_denied\", \"forbidden\", \"login\", \"interstitial\".",
+							Computed:    true,
+							Validators: []validator.String{
+								stringvalidator.OneOfCaseInsensitive(
+									"identity_denied",
+									"forbidden",
+									"login",
+									"interstitial",
+								),
+							},
+						},
+						"contract_version": schema.Int64Attribute{
+							Description: "Contract version of the page's Liquid template. Present (>= 1) marks a sanitized template; absent or 0 marks a legacy page served verbatim.",
+							Computed:    true,
+						},
+						"uid": schema.StringAttribute{
+							Description: "UUID.",
+							Computed:    true,
+						},
+						"warnings": schema.ListNestedAttribute{
+							Description: "Advisory validation findings returned when creating or updating a template. Omitted when empty.",
+							Computed:    true,
+							CustomType:  customfield.NewNestedObjectListType[ZeroTrustAccessCustomPagesWarningsDataSourceModel](ctx),
+							NestedObject: schema.NestedAttributeObject{
+								Attributes: map[string]schema.Attribute{
+									"message": schema.StringAttribute{
+										Description: "Human-readable description of the finding.",
+										Computed:    true,
+									},
+									"tier": schema.StringAttribute{
+										Description: "The validation tier that produced the finding (e.g. html, liquid).",
+										Computed:    true,
+									},
+									"ref": schema.StringAttribute{
+										Description: "Optional pointer to the part of the template the finding refers to.",
+										Computed:    true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func (d *ZeroTrustAccessCustomPagesDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = ListDataSourceSchema(ctx)
+}
+
+func (d *ZeroTrustAccessCustomPagesDataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
+	return []datasource.ConfigValidator{}
+}

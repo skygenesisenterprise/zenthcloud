@@ -1,0 +1,193 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package zero_trust_dlp_predefined_entry
+
+import (
+	"context"
+
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+var _ resource.ResourceWithConfigValidators = (*ZeroTrustDLPPredefinedEntryResource)(nil)
+
+func ResourceSchema(ctx context.Context) schema.Schema {
+	return schema.Schema{
+		MarkdownDescription: schemata.Description{
+			Scopes: []string{
+				"Zero Trust Read",
+				"Zero Trust Write",
+			},
+		}.String(),
+		Version: 500,
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()},
+			},
+			"account_id": schema.StringAttribute{
+				Required:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			},
+			"entry_id": schema.StringAttribute{
+				Required:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			},
+			"profile_id": schema.StringAttribute{
+				Description:   "This field is not used as the owning profile.\nFor predefined entries it is already set to a predefined profile.",
+				Optional:      true,
+				Computed:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			},
+			"enabled": schema.BoolAttribute{
+				Required: true,
+			},
+			"case_sensitive": schema.BoolAttribute{
+				Description: "Only applies to custom word lists.\nDetermines if the words should be matched in a case-sensitive manner\nCannot be set to false if secret is true",
+				Computed:    true,
+			},
+			"created_at": schema.StringAttribute{
+				Computed:      true,
+				CustomType:    timetypes.RFC3339Type{},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()},
+			},
+			"deprecated": schema.BoolAttribute{
+				Description: "Whether this entry is deprecated for new use. This is computed from the static catalog and\nemitted only when true.",
+				Computed:    true,
+			},
+			"description": schema.StringAttribute{
+				Computed: true,
+			},
+			"name": schema.StringAttribute{
+				Computed: true,
+			},
+			"secret": schema.BoolAttribute{
+				Computed: true,
+			},
+			"type": schema.StringAttribute{
+				Description: `Available values: "custom", "custom_prompt_topic", "predefined", "integration", "exact_data", "document_fingerprint", "word_list".`,
+				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOfCaseInsensitive(
+						"custom",
+						"custom_prompt_topic",
+						"predefined",
+						"integration",
+						"exact_data",
+						"document_fingerprint",
+						"word_list",
+					),
+				},
+			},
+			"updated_at": schema.StringAttribute{
+				Computed:   true,
+				CustomType: timetypes.RFC3339Type{},
+			},
+			"upload_status": schema.StringAttribute{
+				Description: `Available values: "empty", "uploading", "pending", "processing", "failed", "complete".`,
+				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOfCaseInsensitive(
+						"empty",
+						"uploading",
+						"pending",
+						"processing",
+						"failed",
+						"complete",
+					),
+				},
+			},
+			"word_list": schema.ListAttribute{
+				Computed:    true,
+				CustomType:  customfield.NewListType[types.String](ctx),
+				ElementType: types.StringType,
+			},
+			"confidence": schema.SingleNestedAttribute{
+				Computed:   true,
+				CustomType: customfield.NewNestedObjectType[ZeroTrustDLPPredefinedEntryConfidenceModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"ai_context_available": schema.BoolAttribute{
+						Description: "Indicates whether this entry has AI remote service validation.",
+						Computed:    true,
+					},
+					"available": schema.BoolAttribute{
+						Description: "Indicates whether this entry has any form of validation that is not an AI remote service.",
+						Computed:    true,
+					},
+				},
+			},
+			"pattern": schema.SingleNestedAttribute{
+				Computed:   true,
+				CustomType: customfield.NewNestedObjectType[ZeroTrustDLPPredefinedEntryPatternModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"regex": schema.StringAttribute{
+						Computed: true,
+					},
+					"validation": schema.StringAttribute{
+						Description:        `Available values: "luhn".`,
+						Computed:           true,
+						DeprecationMessage: "This attribute is deprecated.",
+						Validators: []validator.String{
+							stringvalidator.OneOfCaseInsensitive("luhn"),
+						},
+					},
+				},
+			},
+			"profiles": schema.ListNestedAttribute{
+				Computed:   true,
+				CustomType: customfield.NewNestedObjectListType[ZeroTrustDLPPredefinedEntryProfilesModel](ctx),
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"id": schema.StringAttribute{
+							Computed: true,
+						},
+						"name": schema.StringAttribute{
+							Computed: true,
+						},
+					},
+				},
+			},
+			"variant": schema.SingleNestedAttribute{
+				Description: "A Predefined AI prompt classification topic entry.",
+				Computed:    true,
+				CustomType:  customfield.NewNestedObjectType[ZeroTrustDLPPredefinedEntryVariantModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"topic_type": schema.StringAttribute{
+						Description: `Available values: "Intent", "Content".`,
+						Computed:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOfCaseInsensitive("Intent", "Content"),
+						},
+					},
+					"type": schema.StringAttribute{
+						Description: `Available values: "PromptTopic", "General".`,
+						Computed:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOfCaseInsensitive("PromptTopic", "General"),
+						},
+					},
+					"description": schema.StringAttribute{
+						Description: "A customer-facing explanation of what this predefined AI prompt topic represents.",
+						Computed:    true,
+					},
+				},
+			},
+		},
+	}
+}
+
+func (r *ZeroTrustDLPPredefinedEntryResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = ResourceSchema(ctx)
+}
+
+func (r *ZeroTrustDLPPredefinedEntryResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
+	return []resource.ConfigValidator{}
+}

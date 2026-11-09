@@ -1,0 +1,57 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package stream_webhook
+
+import (
+	"context"
+
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+)
+
+var _ resource.ResourceWithConfigValidators = (*StreamWebhookResource)(nil)
+
+func ResourceSchema(ctx context.Context) schema.Schema {
+	return schema.Schema{
+		MarkdownDescription: schemata.Description{
+			Scopes: []string{
+				"Stream Read",
+				"Stream Write",
+			},
+		}.String(),
+		Version: 500,
+		Attributes: map[string]schema.Attribute{
+			"account_id": schema.StringAttribute{
+				Description:   "The account identifier tag.",
+				Required:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			},
+			"notification_url": schema.StringAttribute{
+				Description: "The URL where webhooks will be sent.",
+				Optional:    true,
+			},
+			"modified": schema.StringAttribute{
+				Description: "The date and time the webhook was last modified.",
+				Computed:    true,
+				CustomType:  timetypes.RFC3339Type{},
+			},
+			"secret": schema.StringAttribute{
+				Description: "The secret used to verify webhook signatures.",
+				Computed:    true,
+				Sensitive:   true,
+			},
+		},
+	}
+}
+
+func (r *StreamWebhookResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = ResourceSchema(ctx)
+}
+
+func (r *StreamWebhookResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
+	return []resource.ConfigValidator{}
+}

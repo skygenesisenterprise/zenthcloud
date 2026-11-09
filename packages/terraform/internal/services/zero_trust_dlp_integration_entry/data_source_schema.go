@@ -1,0 +1,183 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package zero_trust_dlp_integration_entry
+
+import (
+	"context"
+
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+var _ datasource.DataSourceWithConfigValidators = (*ZeroTrustDLPIntegrationEntryDataSource)(nil)
+
+func DataSourceSchema(ctx context.Context) schema.Schema {
+	return schema.Schema{
+		MarkdownDescription: schemata.Description{
+			Scopes: []string{
+				"Zero Trust Read",
+				"Zero Trust Write",
+			},
+		}.String(),
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed: true,
+			},
+			"entry_id": schema.StringAttribute{
+				Required: true,
+			},
+			"account_id": schema.StringAttribute{
+				Optional:    true,
+			},
+			"case_sensitive": schema.BoolAttribute{
+				Description: "Only applies to custom word lists.\nDetermines if the words should be matched in a case-sensitive manner\nCannot be set to false if secret is true",
+				Computed:    true,
+			},
+			"created_at": schema.StringAttribute{
+				Computed:   true,
+				CustomType: timetypes.RFC3339Type{},
+			},
+			"deprecated": schema.BoolAttribute{
+				Description: "Whether this entry is deprecated for new use. This is computed from the static catalog and\nemitted only when true.",
+				Computed:    true,
+			},
+			"description": schema.StringAttribute{
+				Computed: true,
+			},
+			"enabled": schema.BoolAttribute{
+				Computed: true,
+			},
+			"name": schema.StringAttribute{
+				Computed: true,
+			},
+			"profile_id": schema.StringAttribute{
+				Computed: true,
+			},
+			"secret": schema.BoolAttribute{
+				Computed: true,
+			},
+			"type": schema.StringAttribute{
+				Description: `Available values: "custom", "custom_prompt_topic", "predefined", "integration", "exact_data", "document_fingerprint", "word_list".`,
+				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOfCaseInsensitive(
+						"custom",
+						"custom_prompt_topic",
+						"predefined",
+						"integration",
+						"exact_data",
+						"document_fingerprint",
+						"word_list",
+					),
+				},
+			},
+			"updated_at": schema.StringAttribute{
+				Computed:   true,
+				CustomType: timetypes.RFC3339Type{},
+			},
+			"upload_status": schema.StringAttribute{
+				Description: `Available values: "empty", "uploading", "pending", "processing", "failed", "complete".`,
+				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOfCaseInsensitive(
+						"empty",
+						"uploading",
+						"pending",
+						"processing",
+						"failed",
+						"complete",
+					),
+				},
+			},
+			"word_list": schema.ListAttribute{
+				Computed:    true,
+				CustomType:  customfield.NewListType[types.String](ctx),
+				ElementType: types.StringType,
+			},
+			"confidence": schema.SingleNestedAttribute{
+				Computed:   true,
+				CustomType: customfield.NewNestedObjectType[ZeroTrustDLPIntegrationEntryConfidenceDataSourceModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"ai_context_available": schema.BoolAttribute{
+						Description: "Indicates whether this entry has AI remote service validation.",
+						Computed:    true,
+					},
+					"available": schema.BoolAttribute{
+						Description: "Indicates whether this entry has any form of validation that is not an AI remote service.",
+						Computed:    true,
+					},
+				},
+			},
+			"pattern": schema.SingleNestedAttribute{
+				Computed:   true,
+				CustomType: customfield.NewNestedObjectType[ZeroTrustDLPIntegrationEntryPatternDataSourceModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"regex": schema.StringAttribute{
+						Computed: true,
+					},
+					"validation": schema.StringAttribute{
+						Description:        `Available values: "luhn".`,
+						Computed:           true,
+						DeprecationMessage: "This attribute is deprecated.",
+						Validators: []validator.String{
+							stringvalidator.OneOfCaseInsensitive("luhn"),
+						},
+					},
+				},
+			},
+			"profiles": schema.ListNestedAttribute{
+				Computed:   true,
+				CustomType: customfield.NewNestedObjectListType[ZeroTrustDLPIntegrationEntryProfilesDataSourceModel](ctx),
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"id": schema.StringAttribute{
+							Computed: true,
+						},
+						"name": schema.StringAttribute{
+							Computed: true,
+						},
+					},
+				},
+			},
+			"variant": schema.SingleNestedAttribute{
+				Description: "A Predefined AI prompt classification topic entry.",
+				Computed:    true,
+				CustomType:  customfield.NewNestedObjectType[ZeroTrustDLPIntegrationEntryVariantDataSourceModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"topic_type": schema.StringAttribute{
+						Description: `Available values: "Intent", "Content".`,
+						Computed:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOfCaseInsensitive("Intent", "Content"),
+						},
+					},
+					"type": schema.StringAttribute{
+						Description: `Available values: "PromptTopic", "General".`,
+						Computed:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOfCaseInsensitive("PromptTopic", "General"),
+						},
+					},
+					"description": schema.StringAttribute{
+						Description: "A customer-facing explanation of what this predefined AI prompt topic represents.",
+						Computed:    true,
+					},
+				},
+			},
+		},
+	}
+}
+
+func (d *ZeroTrustDLPIntegrationEntryDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = DataSourceSchema(ctx)
+}
+
+func (d *ZeroTrustDLPIntegrationEntryDataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
+	return []datasource.ConfigValidator{}
+}

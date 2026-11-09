@@ -1,0 +1,83 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package magic_wan_gre_tunnel
+
+import (
+	"context"
+
+	"github.com/cloudflare/cloudflare-go/v7"
+	"github.com/cloudflare/cloudflare-go/v7/magic_transit"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+type MagicWANGRETunnelResultDataSourceEnvelope struct {
+	Result MagicWANGRETunnelDataSourceModel `json:"result,computed"`
+}
+
+type MagicWANGRETunnelDataSourceModel struct {
+	ID          types.String                                                        `tfsdk:"id" path:"gre_tunnel_id,computed"`
+	GRETunnelID types.String                                                        `tfsdk:"gre_tunnel_id" path:"gre_tunnel_id,required"`
+	AccountID   types.String                                                        `tfsdk:"account_id" path:"account_id,optional"`
+	GRETunnel   customfield.NestedObject[MagicWANGRETunnelGRETunnelDataSourceModel] `tfsdk:"gre_tunnel" json:"gre_tunnel,computed"`
+}
+
+func (m *MagicWANGRETunnelDataSourceModel) toReadParams(_ context.Context) (params magic_transit.GRETunnelGetParams, diags diag.Diagnostics) {
+	params = magic_transit.GRETunnelGetParams{
+		AccountID: cloudflare.F(m.AccountID.ValueString()),
+	}
+
+	return
+}
+
+type MagicWANGRETunnelGRETunnelDataSourceModel struct {
+	ID                     types.String                                                                   `tfsdk:"id" json:"id,computed"`
+	CloudflareGREEndpoint  types.String                                                                   `tfsdk:"cloudflare_gre_endpoint" json:"cloudflare_gre_endpoint,computed"`
+	CustomerGREEndpoint    types.String                                                                   `tfsdk:"customer_gre_endpoint" json:"customer_gre_endpoint,computed"`
+	InterfaceAddress       types.String                                                                   `tfsdk:"interface_address" json:"interface_address,computed"`
+	Name                   types.String                                                                   `tfsdk:"name" json:"name,computed"`
+	AutomaticReturnRouting types.Bool                                                                     `tfsdk:"automatic_return_routing" json:"automatic_return_routing,computed"`
+	BGP                    customfield.NestedObject[MagicWANGRETunnelGRETunnelBGPDataSourceModel]         `tfsdk:"bgp" json:"bgp,computed"`
+	BGPStatus              customfield.NestedObject[MagicWANGRETunnelGRETunnelBGPStatusDataSourceModel]   `tfsdk:"bgp_status" json:"bgp_status,computed"`
+	CreatedOn              timetypes.RFC3339                                                              `tfsdk:"created_on" json:"created_on,computed" format:"date-time"`
+	Description            types.String                                                                   `tfsdk:"description" json:"description,computed"`
+	HealthCheck            customfield.NestedObject[MagicWANGRETunnelGRETunnelHealthCheckDataSourceModel] `tfsdk:"health_check" json:"health_check,computed"`
+	InterfaceAddress6      types.String                                                                   `tfsdk:"interface_address6" json:"interface_address6,computed"`
+	ModifiedOn             timetypes.RFC3339                                                              `tfsdk:"modified_on" json:"modified_on,computed" format:"date-time"`
+	Mtu                    types.Int64                                                                    `tfsdk:"mtu" json:"mtu,computed"`
+	TTL                    types.Int64                                                                    `tfsdk:"ttl" json:"ttl,computed"`
+}
+
+type MagicWANGRETunnelGRETunnelBGPDataSourceModel struct {
+	CustomerASN    types.Int64                    `tfsdk:"customer_asn" json:"customer_asn,computed"`
+	ExportFilterID types.String                   `tfsdk:"export_filter_id" json:"export_filter_id,computed"`
+	ExtraPrefixes  customfield.List[types.String] `tfsdk:"extra_prefixes" json:"extra_prefixes,computed"`
+	ImportFilterID types.String                   `tfsdk:"import_filter_id" json:"import_filter_id,computed"`
+	Md5Key         types.String                   `tfsdk:"md5_key" json:"md5_key,computed"`
+}
+
+type MagicWANGRETunnelGRETunnelBGPStatusDataSourceModel struct {
+	State               types.String      `tfsdk:"state" json:"state,computed"`
+	TCPEstablished      types.Bool        `tfsdk:"tcp_established" json:"tcp_established,computed"`
+	UpdatedAt           timetypes.RFC3339 `tfsdk:"updated_at" json:"updated_at,computed" format:"date-time"`
+	BGPState            types.String      `tfsdk:"bgp_state" json:"bgp_state,computed"`
+	CfSpeakerIP         types.String      `tfsdk:"cf_speaker_ip" json:"cf_speaker_ip,computed"`
+	CfSpeakerPort       types.Int64       `tfsdk:"cf_speaker_port" json:"cf_speaker_port,computed"`
+	CustomerSpeakerIP   types.String      `tfsdk:"customer_speaker_ip" json:"customer_speaker_ip,computed"`
+	CustomerSpeakerPort types.Int64       `tfsdk:"customer_speaker_port" json:"customer_speaker_port,computed"`
+}
+
+type MagicWANGRETunnelGRETunnelHealthCheckDataSourceModel struct {
+	Direction types.String                                                                         `tfsdk:"direction" json:"direction,computed"`
+	Enabled   types.Bool                                                                           `tfsdk:"enabled" json:"enabled,computed"`
+	Rate      types.String                                                                         `tfsdk:"rate" json:"rate,computed"`
+	Target    customfield.NestedObject[MagicWANGRETunnelGRETunnelHealthCheckTargetDataSourceModel] `tfsdk:"target" json:"target,computed"`
+	Type      types.String                                                                         `tfsdk:"type" json:"type,computed"`
+}
+
+type MagicWANGRETunnelGRETunnelHealthCheckTargetDataSourceModel struct {
+	Effective types.String `tfsdk:"effective" json:"effective,computed"`
+	Saved     types.String `tfsdk:"saved" json:"saved,computed"`
+}

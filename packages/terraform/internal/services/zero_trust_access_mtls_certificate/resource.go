@@ -1,0 +1,399 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package zero_trust_access_mtls_certificate
+
+import (
+	"context"
+	"fmt"
+	"io"
+	"net/http"
+	"time"
+
+	"github.com/cloudflare/cloudflare-go/v7"
+	"github.com/cloudflare/cloudflare-go/v7/option"
+	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+// Ensure provider defined types fully satisfy framework interfaces.
+var _ resource.ResourceWithConfigure = (*ZeroTrustAccessMTLSCertificateResource)(nil)
+var _ resource.ResourceWithModifyPlan = (*ZeroTrustAccessMTLSCertificateResource)(nil)
+var _ resource.ResourceWithImportState = (*ZeroTrustAccessMTLSCertificateResource)(nil)
+
+func NewResource() resource.Resource {
+	return &ZeroTrustAccessMTLSCertificateResource{}
+}
+
+// ZeroTrustAccessMTLSCertificateResource defines the resource implementation.
+type ZeroTrustAccessMTLSCertificateResource struct {
+	client *cloudflare.Client
+}
+
+func (r *ZeroTrustAccessMTLSCertificateResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_zero_trust_access_mtls_certificate"
+}
+
+func (r *ZeroTrustAccessMTLSCertificateResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+
+	client, ok := req.ProviderData.(*cloudflare.Client)
+
+	if !ok {
+		resp.Diagnostics.AddError(
+			"unexpected resource configure type",
+			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
+		return
+	}
+
+	r.client = client
+}
+
+func (r *ZeroTrustAccessMTLSCertificateResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data *ZeroTrustAccessMTLSCertificateModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	dataBytes, err := data.MarshalJSON()
+	if err != nil {
+		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
+		return
+	}
+	res := new(http.Response)
+	env := ZeroTrustAccessMTLSCertificateResultEnvelope{*data}
+	params := zero_trust.AccessCertificateNewParams{}
+
+	if !data.AccountID.IsNull() {
+		params.AccountID = cloudflare.F(data.AccountID.ValueString())
+	} else {
+		params.ZoneID = cloudflare.F(data.ZoneID.ValueString())
+	}
+
+	_, err = r.client.ZeroTrust.Access.Certificates.New(
+		ctx,
+		params,
+		option.WithRequestBody("application/json", dataBytes),
+		option.WithResponseBodyInto(&res),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	bytes, _ := io.ReadAll(res.Body)
+	err = apijson.UnmarshalComputed(bytes, &env)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+	data = &env.Result
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *ZeroTrustAccessMTLSCertificateResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data *ZeroTrustAccessMTLSCertificateModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var state *ZeroTrustAccessMTLSCertificateModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	dataBytes, err := data.MarshalJSONForUpdate(*state)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
+		return
+	}
+	res := new(http.Response)
+	env := ZeroTrustAccessMTLSCertificateResultEnvelope{*data}
+	params := zero_trust.AccessCertificateUpdateParams{}
+
+	if !data.AccountID.IsNull() {
+		params.AccountID = cloudflare.F(data.AccountID.ValueString())
+	} else {
+		params.ZoneID = cloudflare.F(data.ZoneID.ValueString())
+	}
+
+	_, err = r.client.ZeroTrust.Access.Certificates.Update(
+		ctx,
+		data.ID.ValueString(),
+		params,
+		option.WithRequestBody("application/json", dataBytes),
+		option.WithResponseBodyInto(&res),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	bytes, _ := io.ReadAll(res.Body)
+	err = apijson.UnmarshalComputed(bytes, &env)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+	data = &env.Result
+
+	var planData *ZeroTrustAccessMTLSCertificateModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &planData)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.Diagnostics.Append(normalizeReadZeroTrustAccessMtlsCertificateAPIData(ctx, data, planData)...)
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *ZeroTrustAccessMTLSCertificateResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data *ZeroTrustAccessMTLSCertificateModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	res := new(http.Response)
+	env := ZeroTrustAccessMTLSCertificateResultEnvelope{*data}
+	params := zero_trust.AccessCertificateGetParams{}
+
+	if !data.AccountID.IsNull() {
+		params.AccountID = cloudflare.F(data.AccountID.ValueString())
+	} else {
+		params.ZoneID = cloudflare.F(data.ZoneID.ValueString())
+	}
+
+	_, err := r.client.ZeroTrust.Access.Certificates.Get(
+		ctx,
+		data.ID.ValueString(),
+		params,
+		option.WithResponseBodyInto(&res),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if res != nil && res.StatusCode == 404 {
+		resp.Diagnostics.AddWarning("Resource not found", "The resource was not found on the server and will be removed from state.")
+		resp.State.RemoveResource(ctx)
+		return
+	}
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	bytes, _ := io.ReadAll(res.Body)
+	err = apijson.Unmarshal(bytes, &env)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+	data = &env.Result
+
+	var stateData *ZeroTrustAccessMTLSCertificateModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &stateData)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(normalizeReadZeroTrustAccessMtlsCertificateAPIData(ctx, data, stateData)...)
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *ZeroTrustAccessMTLSCertificateResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data *ZeroTrustAccessMTLSCertificateModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	params := zero_trust.AccessCertificateDeleteParams{}
+	updateParams := zero_trust.AccessCertificateUpdateParams{}
+
+	if !data.AccountID.IsNull() {
+		params.AccountID = cloudflare.F(data.AccountID.ValueString())
+		updateParams.AccountID = cloudflare.F(data.AccountID.ValueString())
+	} else {
+		params.ZoneID = cloudflare.F(data.ZoneID.ValueString())
+		updateParams.ZoneID = cloudflare.F(data.ZoneID.ValueString())
+	}
+
+	cert, err := r.client.ZeroTrust.Access.Certificates.Get(
+		ctx,
+		data.ID.ValueString(),
+		zero_trust.AccessCertificateGetParams(params),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+
+	if cert != nil && len(cert.AssociatedHostnames) > 0 {
+		// We need to make an update to remove associated hostnames before we can delete
+		_, err = r.client.ZeroTrust.Access.Certificates.Update(
+			ctx,
+			data.ID.ValueString(),
+			updateParams,
+			option.WithMiddleware(logging.Middleware(ctx)),
+		)
+		if err != nil {
+			resp.Diagnostics.AddError("failed to make http request", err.Error())
+			return
+		}
+
+		// Wait for the update to propagate with exponential backoff
+		maxRetries := 5
+		backoff := time.Second * 2
+		for range maxRetries {
+			time.Sleep(backoff)
+			updatedCert, checkErr := r.client.ZeroTrust.Access.Certificates.Get(
+				ctx,
+				data.ID.ValueString(),
+				zero_trust.AccessCertificateGetParams(params),
+				option.WithMiddleware(logging.Middleware(ctx)),
+			)
+			if checkErr == nil && updatedCert != nil && len(updatedCert.AssociatedHostnames) == 0 {
+				break
+			}
+			backoff *= 2
+		}
+	}
+
+	if cert != nil {
+		// Retry deletion with exponential backoff to handle race conditions
+		maxRetries := 5
+		backoff := time.Second * 2
+		var lastErr error
+
+		for range maxRetries {
+			_, err = r.client.ZeroTrust.Access.Certificates.Delete(
+				ctx,
+				data.ID.ValueString(),
+				params,
+				option.WithMiddleware(logging.Middleware(ctx)),
+			)
+			if err == nil {
+				lastErr = nil
+				break
+			}
+			lastErr = err
+			time.Sleep(backoff)
+			backoff *= 2
+		}
+
+		if lastErr != nil {
+			resp.Diagnostics.AddError("failed to delete certificate after retries", lastErr.Error())
+			return
+		}
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *ZeroTrustAccessMTLSCertificateResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	var data = new(ZeroTrustAccessMTLSCertificateModel)
+	params := zero_trust.AccessCertificateGetParams{}
+
+	path_accounts_or_zones, path_account_id_or_zone_id := "", ""
+	path_certificate_id := ""
+	diags := importpath.ParseImportID(
+		req.ID,
+		"<{accounts|zones}/{account_id|zone_id}>/<certificate_id>",
+		&path_accounts_or_zones,
+		&path_account_id_or_zone_id,
+		&path_certificate_id,
+	)
+	resp.Diagnostics.Append(diags...)
+	switch path_accounts_or_zones {
+	case "accounts":
+		params.AccountID = cloudflare.F(path_account_id_or_zone_id)
+		data.AccountID = types.StringValue(path_account_id_or_zone_id)
+	case "zones":
+		params.ZoneID = cloudflare.F(path_account_id_or_zone_id)
+		data.ZoneID = types.StringValue(path_account_id_or_zone_id)
+	default:
+		resp.Diagnostics.AddError("invalid discriminator segment - <{accounts|zones}/{account_id|zone_id}>", "expected discriminator to be one of {accounts|zones}")
+	}
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	data.ID = types.StringValue(path_certificate_id)
+
+	res := new(http.Response)
+	env := ZeroTrustAccessMTLSCertificateResultEnvelope{*data}
+	_, err := r.client.ZeroTrust.Access.Certificates.Get(
+		ctx,
+		path_certificate_id,
+		params,
+		option.WithResponseBodyInto(&res),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	bytes, _ := io.ReadAll(res.Body)
+	err = apijson.Unmarshal(bytes, &env)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+	data = &env.Result
+
+	resp.Diagnostics.AddWarning("MTLS certificate not imported", "The \"certificate\" field cannot be imported by this module and must be manually added to state.")
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *ZeroTrustAccessMTLSCertificateResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	// Handle migration from v5.x where associated_hostnames might be nil in state
+	// but the schema default wants to set it to empty list
+	if req.State.Raw.IsNull() {
+		// This is a create operation, let the default apply
+		return
+	}
+
+	var state, plan *ZeroTrustAccessMTLSCertificateModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// If state has nil associated_hostnames and plan wants to set it to empty list,
+	// and it's not explicitly set in config, keep it as nil to avoid drift
+	if state != nil && plan != nil {
+		if state.AssociatedHostnames == nil && plan.AssociatedHostnames != nil && len(*plan.AssociatedHostnames) == 0 {
+			// Check if associated_hostnames is in the config
+			var configData *ZeroTrustAccessMTLSCertificateModel
+			resp.Diagnostics.Append(req.Config.Get(ctx, &configData)...)
+			if !resp.Diagnostics.HasError() && configData != nil && configData.AssociatedHostnames == nil {
+				// Not in config, so keep it as nil to avoid drift
+				plan.AssociatedHostnames = nil
+				resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
+			}
+		}
+	}
+}

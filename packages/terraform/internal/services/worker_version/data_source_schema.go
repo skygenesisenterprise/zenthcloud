@@ -1,0 +1,847 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package worker_version
+
+import (
+	"context"
+
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+var _ datasource.DataSourceWithConfigValidators = (*WorkerVersionDataSource)(nil)
+
+func DataSourceSchema(ctx context.Context) schema.Schema {
+	return schema.Schema{
+		MarkdownDescription: schemata.Description{
+			Scopes: []string{
+				"Workers Scripts Read",
+				"Workers Scripts Write",
+				"Workers Tail Read",
+			},
+		}.String(),
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Description: `Identifier for the version, which can be a UUID, a UUID prefix (minimum length 8), or the literal "latest" to operate on the most recently created version.`,
+				Computed:    true,
+			},
+			"version_id": schema.StringAttribute{
+				Description: `Identifier for the version, which can be a UUID, a UUID prefix (minimum length 8), or the literal "latest" to operate on the most recently created version.`,
+				Required:    true,
+			},
+			"account_id": schema.StringAttribute{
+				Description: "Identifier.",
+				Required:    true,
+			},
+			"worker_id": schema.StringAttribute{
+				Description: "Identifier for the Worker, which can be ID or name.",
+				Required:    true,
+			},
+			"include": schema.StringAttribute{
+				Description: "Whether to include the `modules` property of the version in the response, which contains code and sourcemap content and may add several megabytes to the response size.\nAvailable values: \"modules\".",
+				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOfCaseInsensitive("modules"),
+				},
+			},
+			"author_email": schema.StringAttribute{
+				Description: "Email of the user who created the version.",
+				Computed:    true,
+			},
+			"author_id": schema.StringAttribute{
+				Description: "Identifier of the user who created the version.",
+				Computed:    true,
+			},
+			"compatibility_date": schema.StringAttribute{
+				Description: "Date indicating targeted support in the Workers runtime. Backwards incompatible fixes to the runtime following this date will not affect this Worker.",
+				Computed:    true,
+			},
+			"created_on": schema.StringAttribute{
+				Description: "When the version was created.",
+				Computed:    true,
+				CustomType:  timetypes.RFC3339Type{},
+			},
+			"main_module": schema.StringAttribute{
+				Description: "The name of the main module in the `modules` array (e.g. the name of the module that exports a `fetch` handler).",
+				Computed:    true,
+			},
+			"main_script_base64": schema.StringAttribute{
+				Description: "The base64-encoded main script content. This is only returned for service worker syntax workers (not ES modules).",
+				Computed:    true,
+			},
+			"migration_tag": schema.StringAttribute{
+				Description: "Durable Object migration tag. Set when the version is deployed. Omitted if the version has not been deployed or the Worker does not use Durable Objects.",
+				Computed:    true,
+			},
+			"number": schema.Int64Attribute{
+				Description: "The integer version number, starting from one.",
+				Computed:    true,
+			},
+			"source": schema.StringAttribute{
+				Description: "The client used to create the version.",
+				Computed:    true,
+			},
+			"startup_time_ms": schema.Int64Attribute{
+				Description: "Time in milliseconds spent on [Worker startup](https://developers.cloudflare.com/workers/platform/limits/#worker-startup-time).",
+				Computed:    true,
+			},
+			"usage_model": schema.StringAttribute{
+				Description:        "Usage model for the version.\nAvailable values: \"standard\", \"bundled\", \"unbound\".",
+				Computed:           true,
+				DeprecationMessage: "This attribute is deprecated.",
+				Validators: []validator.String{
+					stringvalidator.OneOfCaseInsensitive(
+						"standard",
+						"bundled",
+						"unbound",
+					),
+				},
+			},
+			"compatibility_flags": schema.SetAttribute{
+				Description: "Flags that enable or disable certain features in the Workers runtime. Used to enable upcoming features or opt in or out of specific changes not included in a `compatibility_date`.",
+				Computed:    true,
+				CustomType:  customfield.NewSetType[types.String](ctx),
+				ElementType: types.StringType,
+			},
+			"urls": schema.ListAttribute{
+				Description: "All routable URLs that always point to this version. Does not include alias URLs, since aliases can be updated to point to a different version.",
+				Computed:    true,
+				CustomType:  customfield.NewListType[types.String](ctx),
+				ElementType: types.StringType,
+			},
+			"annotations": schema.SingleNestedAttribute{
+				Description: "Metadata about the version.",
+				Computed:    true,
+				CustomType:  customfield.NewNestedObjectType[WorkerVersionAnnotationsDataSourceModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"workers_message": schema.StringAttribute{
+						Description: "Human-readable message about the version. Truncated to 1000 bytes if longer.",
+						Computed:    true,
+					},
+					"workers_tag": schema.StringAttribute{
+						Description: "User-provided identifier for the version. Maximum 100 bytes.",
+						Computed:    true,
+					},
+					"workers_triggered_by": schema.StringAttribute{
+						Description: "Operation that triggered the creation of the version.",
+						Computed:    true,
+					},
+				},
+			},
+			"assets": schema.SingleNestedAttribute{
+				Description: "Configuration for assets within a Worker.\n\n[`_headers`](https://developers.cloudflare.com/workers/static-assets/headers/#custom-headers) and\n[`_redirects`](https://developers.cloudflare.com/workers/static-assets/redirects/) files should be\nincluded as modules named `_headers` and `_redirects` with content type `text/plain`.",
+				Computed:    true,
+				CustomType:  customfield.NewNestedObjectType[WorkerVersionAssetsDataSourceModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"config": schema.SingleNestedAttribute{
+						Description: "Configuration for assets within a Worker.",
+						Computed:    true,
+						CustomType:  customfield.NewNestedObjectType[WorkerVersionAssetsConfigDataSourceModel](ctx),
+						Attributes: map[string]schema.Attribute{
+							"base_path": schema.StringAttribute{
+								Description: "The public URL path prefix under which assets are served. A null request value resets it to `/`; responses represent the root as `/`. All versions in a gradual deployment must use the same canonical value. To change it, first deploy the version containing the change at 100%.",
+								Computed:    true,
+							},
+							"html_handling": schema.StringAttribute{
+								Description: "Determines the redirects and rewrites of requests for HTML content.\nAvailable values: \"auto-trailing-slash\", \"force-trailing-slash\", \"drop-trailing-slash\", \"none\".",
+								Computed:    true,
+								Validators: []validator.String{
+									stringvalidator.OneOfCaseInsensitive(
+										"auto-trailing-slash",
+										"force-trailing-slash",
+										"drop-trailing-slash",
+										"none",
+									),
+								},
+							},
+							"not_found_handling": schema.StringAttribute{
+								Description: "Determines the response when a request does not match a static asset, and there is no Worker script.\nAvailable values: \"none\", \"404-page\", \"single-page-application\".",
+								Computed:    true,
+								Validators: []validator.String{
+									stringvalidator.OneOfCaseInsensitive(
+										"none",
+										"404-page",
+										"single-page-application",
+									),
+								},
+							},
+							"run_worker_first": schema.ListAttribute{
+								Description: "Contains a list path rules to control routing to either the Worker or assets. Glob (*) and negative (!) rules are supported. Rules must start with either '/' or '!/'. At least one non-negative rule must be provided, and negative rules have higher precedence than non-negative rules.",
+								Computed:    true,
+								CustomType:  customfield.NewListType[types.String](ctx),
+								ElementType: types.StringType,
+							},
+						},
+					},
+					"jwt": schema.StringAttribute{
+						Description: "Token provided upon successful upload of all files from a registered manifest.",
+						Computed:    true,
+						Sensitive:   true,
+					},
+				},
+			},
+			"bindings": schema.ListNestedAttribute{
+				Description: "List of bindings attached to a Worker. You can find more about bindings on our docs: https://developers.cloudflare.com/workers/configuration/multipart-upload-metadata/#bindings.",
+				Computed:    true,
+				CustomType:  customfield.NewNestedObjectListType[WorkerVersionBindingsDataSourceModel](ctx),
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"name": schema.StringAttribute{
+							Description: "A JavaScript variable name for the binding.",
+							Computed:    true,
+						},
+						"type": schema.StringAttribute{
+							Description: "The kind of resource that the binding provides.\nAvailable values: \"ai\", \"ai_search\", \"ai_search_namespace\", \"messaging\", \"analytics_engine\", \"artifacts\", \"assets\", \"browser\", \"d1\", \"data_blob\", \"dispatch_namespace\", \"durable_object_namespace\", \"hyperdrive\", \"inherit\", \"images\", \"json\", \"kv_namespace\", \"media\", \"mtls_certificate\", \"plain_text\", \"pipelines\", \"k2\", \"queue\", \"ratelimit\", \"r2_bucket\", \"secret_text\", \"send_email\", \"service\", \"text_blob\", \"vectorize\", \"version_metadata\", \"secrets_store_secret\", \"flagship\", \"secret_key\", \"workflow\", \"wasm_module\", \"vpc_service\", \"vpc_network\".",
+							Computed:    true,
+							Validators: []validator.String{
+								stringvalidator.OneOfCaseInsensitive(
+									"ai",
+									"ai_search",
+									"ai_search_namespace",
+									"messaging",
+									"analytics_engine",
+									"artifacts",
+									"assets",
+									"browser",
+									"d1",
+									"data_blob",
+									"dispatch_namespace",
+									"durable_object_namespace",
+									"hyperdrive",
+									"inherit",
+									"images",
+									"json",
+									"kv_namespace",
+									"media",
+									"mtls_certificate",
+									"plain_text",
+									"pipelines",
+									"k2",
+									"queue",
+									"ratelimit",
+									"r2_bucket",
+									"secret_text",
+									"send_email",
+									"service",
+									"text_blob",
+									"vectorize",
+									"version_metadata",
+									"secrets_store_secret",
+									"flagship",
+									"secret_key",
+									"workflow",
+									"wasm_module",
+									"vpc_service",
+									"vpc_network",
+								),
+							},
+						},
+						"instance_name": schema.StringAttribute{
+							Description: "The user-chosen instance name. Must exist at deploy time. The worker can search, chat, update, and manage items/jobs on this instance.",
+							Computed:    true,
+						},
+						"namespace": schema.StringAttribute{
+							Description: `The namespace the instance belongs to. Defaults to "default" if omitted. Customers who don't use namespaces can simply omit this field.`,
+							Computed:    true,
+						},
+						"dataset": schema.StringAttribute{
+							Description: "The name of the dataset to bind to.",
+							Computed:    true,
+						},
+						"database_id": schema.StringAttribute{
+							Description: "Identifier of the D1 database to bind to.",
+							Computed:    true,
+						},
+						"id": schema.StringAttribute{
+							Description: "Identifier of the D1 database to bind to.",
+							Computed:    true,
+						},
+						"part": schema.StringAttribute{
+							Description: "The name of the file containing the data content. Only accepted for `service worker syntax` Workers.",
+							Computed:    true,
+						},
+						"outbound": schema.SingleNestedAttribute{
+							Description: "Outbound worker.",
+							Computed:    true,
+							CustomType:  customfield.NewNestedObjectType[WorkerVersionBindingsOutboundDataSourceModel](ctx),
+							Attributes: map[string]schema.Attribute{
+								"params": schema.ListNestedAttribute{
+									Description: "Pass information from the Dispatch Worker to the Outbound Worker through the parameters.",
+									Computed:    true,
+									CustomType:  customfield.NewNestedObjectListType[WorkerVersionBindingsOutboundParamsDataSourceModel](ctx),
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"name": schema.StringAttribute{
+												Description: "Name of the parameter.",
+												Computed:    true,
+											},
+										},
+									},
+								},
+								"worker": schema.SingleNestedAttribute{
+									Description: "Outbound worker.",
+									Computed:    true,
+									CustomType:  customfield.NewNestedObjectType[WorkerVersionBindingsOutboundWorkerDataSourceModel](ctx),
+									Attributes: map[string]schema.Attribute{
+										"entrypoint": schema.StringAttribute{
+											Description: "Entrypoint to invoke on the outbound worker.",
+											Computed:    true,
+										},
+										"environment": schema.StringAttribute{
+											Description: "Environment of the outbound worker.",
+											Computed:    true,
+										},
+										"service": schema.StringAttribute{
+											Description: "Name of the outbound worker.",
+											Computed:    true,
+										},
+									},
+								},
+							},
+						},
+						"class_name": schema.StringAttribute{
+							Description: "The exported class name of the Durable Object.",
+							Computed:    true,
+						},
+						"dispatch_namespace": schema.StringAttribute{
+							Description: "The dispatch namespace the Durable Object script belongs to.",
+							Computed:    true,
+						},
+						"environment": schema.StringAttribute{
+							Description: "The environment of the script_name to bind to.",
+							Computed:    true,
+						},
+						"namespace_id": schema.StringAttribute{
+							Description: "Namespace identifier tag.",
+							Computed:    true,
+						},
+						"retry": schema.SingleNestedAttribute{
+							Description: "Retry policy for calls made to the Durable Object through this binding. Omitted or null properties use the runtime defaults. These limits are upper bounds and do not enable retries for otherwise ineligible calls.",
+							Computed:    true,
+							CustomType:  customfield.NewNestedObjectType[WorkerVersionBindingsRetryDataSourceModel](ctx),
+							Attributes: map[string]schema.Attribute{
+								"max_attempts": schema.Int64Attribute{
+									Description: "Maximum number of retries after the initial request, not the total number of attempts. Defaults to 4. Zero disables retries.",
+									Computed:    true,
+									Validators: []validator.Int64{
+										int64validator.Between(0, 10),
+									},
+								},
+								"timeout_ms": schema.Int64Attribute{
+									Description: "Retry timeout in milliseconds, measured from the start of the call. No retry starts after it expires, and a retry still running when it expires is cancelled. This is not a request timeout; it does not limit the initial request, which is still subject to any timeouts set by your Worker. Defaults to 10000.",
+									Computed:    true,
+									Validators: []validator.Int64{
+										int64validator.Between(500, 60000),
+									},
+								},
+							},
+						},
+						"script_name": schema.StringAttribute{
+							Description: "The script where the Durable Object is defined, if it is external to this Worker.",
+							Computed:    true,
+						},
+						"old_name": schema.StringAttribute{
+							Description: "The old name of the inherited binding. If set, the binding will be renamed from `old_name` to `name` in the new version. If not set, the binding will keep the same name between versions.",
+							Computed:    true,
+						},
+						"version_id": schema.StringAttribute{
+							Description: `Identifier for the version to inherit the binding from, which can be the version ID or the literal "latest" to inherit from the latest version. Defaults to inheriting the binding from the latest version.`,
+							Computed:    true,
+						},
+						"json": schema.StringAttribute{
+							Description: "JSON data to use.",
+							Computed:    true,
+							CustomType:  jsontypes.NormalizedType{},
+						},
+						"certificate_id": schema.StringAttribute{
+							Description: "Identifier of the certificate to bind to.",
+							Computed:    true,
+						},
+						"text": schema.StringAttribute{
+							Description: "The text value to use.",
+							Computed:    true,
+							Sensitive:   true,
+						},
+						"pipeline": schema.StringAttribute{
+							Description: "Name of the Pipeline to bind to.",
+							Computed:    true,
+						},
+						"stream": schema.StringAttribute{
+							Description: "ID of a K2 stream owned by the account deploying the Worker.",
+							Computed:    true,
+						},
+						"queue_name": schema.StringAttribute{
+							Description: "Name of the Queue to bind to.",
+							Computed:    true,
+						},
+						"simple": schema.SingleNestedAttribute{
+							Description: "The rate limit configuration.",
+							Computed:    true,
+							CustomType:  customfield.NewNestedObjectType[WorkerVersionBindingsSimpleDataSourceModel](ctx),
+							Attributes: map[string]schema.Attribute{
+								"limit": schema.Float64Attribute{
+									Description: "The limit (requests per period).",
+									Computed:    true,
+								},
+								"period": schema.Int64Attribute{
+									Description: "The period in seconds.",
+									Computed:    true,
+								},
+								"mitigation_timeout": schema.Int64Attribute{
+									Description: "Duration in seconds to apply the mitigation action after the rate limit is exceeded. Valid values are 0 (disabled), 10, or multiples of 60 up to 86400. Must be greater than or equal to the period when non-zero.",
+									Computed:    true,
+								},
+							},
+						},
+						"bucket_name": schema.StringAttribute{
+							Description: "R2 bucket to bind to.",
+							Computed:    true,
+						},
+						"jurisdiction": schema.StringAttribute{
+							Description: "The [jurisdiction](https://developers.cloudflare.com/r2/reference/data-location/#jurisdictional-restrictions) of the R2 bucket.\nAvailable values: \"eu\", \"fedramp\", \"fedramp-high\", \"us\".",
+							Computed:    true,
+							Validators: []validator.String{
+								stringvalidator.OneOfCaseInsensitive(
+									"eu",
+									"fedramp",
+									"fedramp-high",
+									"us",
+								),
+							},
+						},
+						"allowed_destination_addresses": schema.ListAttribute{
+							Description: "List of allowed destination addresses.",
+							Computed:    true,
+							CustomType:  customfield.NewListType[types.String](ctx),
+							ElementType: types.StringType,
+						},
+						"allowed_sender_addresses": schema.ListAttribute{
+							Description: "List of allowed sender addresses.",
+							Computed:    true,
+							CustomType:  customfield.NewListType[types.String](ctx),
+							ElementType: types.StringType,
+						},
+						"destination_address": schema.StringAttribute{
+							Description: "Destination address for the email.",
+							Computed:    true,
+						},
+						"service": schema.StringAttribute{
+							Description: "Name of Worker to bind to.",
+							Computed:    true,
+						},
+						"entrypoint": schema.StringAttribute{
+							Description: "Entrypoint to invoke on the target Worker.",
+							Computed:    true,
+						},
+						"index_name": schema.StringAttribute{
+							Description: "Name of the Vectorize index to bind to.",
+							Computed:    true,
+						},
+						"secret_name": schema.StringAttribute{
+							Description: "Name of the secret in the store.",
+							Computed:    true,
+						},
+						"store_id": schema.StringAttribute{
+							Description: "ID of the store containing the secret.",
+							Computed:    true,
+						},
+						"app_id": schema.StringAttribute{
+							Description: "ID of the Flagship app to bind to for feature flag evaluation.",
+							Computed:    true,
+						},
+						"algorithm": schema.StringAttribute{
+							Description: "Algorithm-specific key parameters. [Learn more](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#algorithm).",
+							Computed:    true,
+							CustomType:  jsontypes.NormalizedType{},
+						},
+						"format": schema.StringAttribute{
+							Description: "Data format of the key. [Learn more](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#format).\nAvailable values: \"raw\", \"pkcs8\", \"spki\", \"jwk\".",
+							Computed:    true,
+							Validators: []validator.String{
+								stringvalidator.OneOfCaseInsensitive(
+									"raw",
+									"pkcs8",
+									"spki",
+									"jwk",
+								),
+							},
+						},
+						"usages": schema.SetAttribute{
+							Description: "Allowed operations with the key. [Learn more](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#keyUsages).",
+							Computed:    true,
+							CustomType:  customfield.NewSetType[types.String](ctx),
+							ElementType: types.StringType,
+						},
+						"key_base64": schema.StringAttribute{
+							Description: "Base64-encoded key data. Required if `format` is \"raw\", \"pkcs8\", or \"spki\".",
+							Computed:    true,
+							Sensitive:   true,
+						},
+						"key_jwk": schema.StringAttribute{
+							Description: "Key data in [JSON Web Key](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#json_web_key) format. Required if `format` is \"jwk\".",
+							Computed:    true,
+							Sensitive:   true,
+							CustomType:  jsontypes.NormalizedType{},
+						},
+						"workflow_name": schema.StringAttribute{
+							Description: "Name of the Workflow to bind to.",
+							Computed:    true,
+						},
+						"service_id": schema.StringAttribute{
+							Description: "Identifier of the VPC service to bind to.",
+							Computed:    true,
+						},
+						"identity": schema.StringAttribute{
+							Description: "Enables Gateway identity for the binding. Requires network_id to be \"cf1:network\" and cannot be combined with tunnel_id.\nAvailable values: \"runtime-email-alpha\".",
+							Computed:    true,
+							Validators: []validator.String{
+								stringvalidator.OneOfCaseInsensitive("runtime-email-alpha"),
+							},
+						},
+						"network_id": schema.StringAttribute{
+							Description: `Identifier of the network to bind to. Only "cf1:network" is currently supported. Mutually exclusive with tunnel_id.`,
+							Computed:    true,
+						},
+						"tunnel_id": schema.StringAttribute{
+							Description: "UUID of the Cloudflare Tunnel to bind to. Mutually exclusive with network_id.",
+							Computed:    true,
+						},
+					},
+				},
+			},
+			"cache_options": schema.SingleNestedAttribute{
+				Description: "Global CacheW configuration for the Worker. When caching is on,\nthe platform provisions a `cloudflare.app` zone for the Worker.\nA `type: worker` entry in the `exports` map can override this\nvalue for a single entrypoint.",
+				Computed:    true,
+				CustomType:  customfield.NewNestedObjectType[WorkerVersionCacheOptionsDataSourceModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"enabled": schema.BoolAttribute{
+						Description: "Whether caching is enabled for this Worker.",
+						Computed:    true,
+					},
+					"cross_version_cache": schema.BoolAttribute{
+						Description: "Whether cached responses are shared across Worker version\nuploads. This is independent of `enabled`. It can stay true\nwhile caching is off, so the preference survives turning\ncaching off and back on.",
+						Computed:    true,
+					},
+				},
+			},
+			"containers": schema.SetNestedAttribute{
+				Description: "List of containers attached to a Worker. Containers can only be attached to Durable Object classes of this Worker script.",
+				Computed:    true,
+				CustomType:  customfield.NewNestedObjectSetType[WorkerVersionContainersDataSourceModel](ctx),
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"class_name": schema.StringAttribute{
+							Description: "Select which Durable Object class should get this container attached.",
+							Computed:    true,
+						},
+					},
+				},
+			},
+			"exports": schema.MapNestedAttribute{
+				Description: "Declarative exports for the version, including Durable Object\nclasses (with their `storage` backend) and named Worker\nentrypoints. On reads, tombstoned lifecycle entries are\nomitted, so only live exports (`created` and\n`expecting-transfer`) are returned. `exports` and `migrations`\nare mutually exclusive on upload.",
+				Computed:    true,
+				CustomType:  customfield.NewNestedObjectMapType[WorkerVersionExportsDataSourceModel](ctx),
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"type": schema.StringAttribute{
+							Description: "The kind of export.\nAvailable values: \"worker\", \"durable-object\".",
+							Computed:    true,
+							Validators: []validator.String{
+								stringvalidator.OneOfCaseInsensitive("worker", "durable-object"),
+							},
+						},
+						"cache": schema.SingleNestedAttribute{
+							Description: "Cache override for this entrypoint. It applies only to\n`type: worker` entries and overrides the Worker's global\n`cache_options.enabled` for that entrypoint.",
+							Computed:    true,
+							CustomType:  customfield.NewNestedObjectType[WorkerVersionExportsCacheDataSourceModel](ctx),
+							Attributes: map[string]schema.Attribute{
+								"enabled": schema.BoolAttribute{
+									Description: "Whether caching is enabled for this entrypoint.",
+									Computed:    true,
+								},
+							},
+						},
+						"renamed_to": schema.StringAttribute{
+							Description: "Destination class name for a `state: renamed` tombstone. The\ntarget must appear as a live (`created`) entry in the same\n`exports` map. Write-only: never present in GET responses.",
+							Computed:    true,
+						},
+						"state": schema.StringAttribute{
+							Description: "Lifecycle state of the export entry. Defaults to `created`\n(a normal, live export) when omitted.\n\n`deleted`, `renamed`, and `transferred` are tombstones:\nwrite-only lifecycle operations that retire, rename, or hand\noff a provisioned Durable Object namespace. They are applied\nat upload and are filtered out of GET responses, so a read\nonly ever returns `created` or `expecting-transfer`.\n\n`expecting-transfer` is a live export whose data is being\nreceived from another script via the two-phase transfer flow;\nit carries `storage` and `transfer_from`.\nAvailable values: \"created\", \"deleted\", \"renamed\", \"transferred\", \"expecting-transfer\".",
+							Computed:    true,
+							Validators: []validator.String{
+								stringvalidator.OneOfCaseInsensitive(
+									"created",
+									"deleted",
+									"renamed",
+									"transferred",
+									"expecting-transfer",
+								),
+							},
+						},
+						"storage": schema.StringAttribute{
+							Description: "Storage backend for a `type: durable-object` export. Required\nfor live Durable Object entries (`created` and\n`expecting-transfer`). `sqlite` selects SQLite-backed storage;\n`legacy-kv` selects the legacy key-value storage.\nAvailable values: \"sqlite\", \"legacy-kv\".",
+							Computed:    true,
+							Validators: []validator.String{
+								stringvalidator.OneOfCaseInsensitive("sqlite", "legacy-kv"),
+							},
+						},
+						"transfer_from": schema.StringAttribute{
+							Description: "Source script for a `state: expecting-transfer` entry. The\nnamespace on this script is materialised from the source\nscript's data via the pending-transfer flow. Present on reads\nfor `expecting-transfer` entries.",
+							Computed:    true,
+						},
+						"transferred_to": schema.StringAttribute{
+							Description: "Destination script for a `state: transferred` tombstone. Must\nreference a script in the same account; cross-dispatch-namespace\ntransfers are rejected. Write-only: never present in GET\nresponses.",
+							Computed:    true,
+						},
+					},
+				},
+			},
+			"limits": schema.SingleNestedAttribute{
+				Description: "Resource limits enforced at runtime.",
+				Computed:    true,
+				CustomType:  customfield.NewNestedObjectType[WorkerVersionLimitsDataSourceModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"cpu_ms": schema.Int64Attribute{
+						Description: "CPU time limit in milliseconds.",
+						Computed:    true,
+					},
+					"subrequests": schema.Int64Attribute{
+						Description: "Subrequest limit per request.",
+						Computed:    true,
+					},
+				},
+			},
+			"migrations": schema.SingleNestedAttribute{
+				Description: "Migrations for Durable Objects associated with the version. Migrations are applied when the version is deployed.",
+				Computed:    true,
+				CustomType:  customfield.NewNestedObjectType[WorkerVersionMigrationsDataSourceModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"deleted_classes": schema.ListAttribute{
+						Description: "A list of classes to delete Durable Object namespaces from.",
+						Computed:    true,
+						CustomType:  customfield.NewListType[types.String](ctx),
+						ElementType: types.StringType,
+					},
+					"new_classes": schema.ListAttribute{
+						Description: "A list of classes to create Durable Object namespaces from.",
+						Computed:    true,
+						CustomType:  customfield.NewListType[types.String](ctx),
+						ElementType: types.StringType,
+					},
+					"new_sqlite_classes": schema.ListAttribute{
+						Description: "A list of classes to create Durable Object namespaces with SQLite from.",
+						Computed:    true,
+						CustomType:  customfield.NewListType[types.String](ctx),
+						ElementType: types.StringType,
+					},
+					"new_tag": schema.StringAttribute{
+						Description: "Tag to set as the latest migration tag.",
+						Computed:    true,
+					},
+					"old_tag": schema.StringAttribute{
+						Description: "Tag used to verify against the latest migration tag for this Worker. If they don't match, the upload is rejected.",
+						Computed:    true,
+					},
+					"renamed_classes": schema.ListNestedAttribute{
+						Description: "A list of classes with Durable Object namespaces that were renamed.",
+						Computed:    true,
+						CustomType:  customfield.NewNestedObjectListType[WorkerVersionMigrationsRenamedClassesDataSourceModel](ctx),
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"from": schema.StringAttribute{
+									Computed: true,
+								},
+								"to": schema.StringAttribute{
+									Computed: true,
+								},
+							},
+						},
+					},
+					"transferred_classes": schema.ListNestedAttribute{
+						Description: "A list of transfers for Durable Object namespaces from a different Worker and class to a class defined in this Worker.",
+						Computed:    true,
+						CustomType:  customfield.NewNestedObjectListType[WorkerVersionMigrationsTransferredClassesDataSourceModel](ctx),
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"from": schema.StringAttribute{
+									Computed: true,
+								},
+								"from_script": schema.StringAttribute{
+									Computed: true,
+								},
+								"to": schema.StringAttribute{
+									Computed: true,
+								},
+							},
+						},
+					},
+					"steps": schema.ListNestedAttribute{
+						Description: "Migrations to apply in order.",
+						Computed:    true,
+						CustomType:  customfield.NewNestedObjectListType[WorkerVersionMigrationsStepsDataSourceModel](ctx),
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"deleted_classes": schema.ListAttribute{
+									Description: "A list of classes to delete Durable Object namespaces from.",
+									Computed:    true,
+									CustomType:  customfield.NewListType[types.String](ctx),
+									ElementType: types.StringType,
+								},
+								"new_classes": schema.ListAttribute{
+									Description: "A list of classes to create Durable Object namespaces from.",
+									Computed:    true,
+									CustomType:  customfield.NewListType[types.String](ctx),
+									ElementType: types.StringType,
+								},
+								"new_sqlite_classes": schema.ListAttribute{
+									Description: "A list of classes to create Durable Object namespaces with SQLite from.",
+									Computed:    true,
+									CustomType:  customfield.NewListType[types.String](ctx),
+									ElementType: types.StringType,
+								},
+								"renamed_classes": schema.ListNestedAttribute{
+									Description: "A list of classes with Durable Object namespaces that were renamed.",
+									Computed:    true,
+									CustomType:  customfield.NewNestedObjectListType[WorkerVersionMigrationsStepsRenamedClassesDataSourceModel](ctx),
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"from": schema.StringAttribute{
+												Computed: true,
+											},
+											"to": schema.StringAttribute{
+												Computed: true,
+											},
+										},
+									},
+								},
+								"transferred_classes": schema.ListNestedAttribute{
+									Description: "A list of transfers for Durable Object namespaces from a different Worker and class to a class defined in this Worker.",
+									Computed:    true,
+									CustomType:  customfield.NewNestedObjectListType[WorkerVersionMigrationsStepsTransferredClassesDataSourceModel](ctx),
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"from": schema.StringAttribute{
+												Computed: true,
+											},
+											"from_script": schema.StringAttribute{
+												Computed: true,
+											},
+											"to": schema.StringAttribute{
+												Computed: true,
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			"modules": schema.SetNestedAttribute{
+				Description: "Code, sourcemaps, and other content used at runtime.\n\nThis includes [`_headers`](https://developers.cloudflare.com/workers/static-assets/headers/#custom-headers) and\n[`_redirects`](https://developers.cloudflare.com/workers/static-assets/redirects/) files used to configure\n[Static Assets](https://developers.cloudflare.com/workers/static-assets/). `_headers` and `_redirects` files should be\nincluded as modules named `_headers` and `_redirects` with content type `text/plain`.",
+				Computed:    true,
+				CustomType:  customfield.NewNestedObjectSetType[WorkerVersionModulesDataSourceModel](ctx),
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"content_base64": schema.StringAttribute{
+							Description: "The base64-encoded module content.",
+							Computed:    true,
+						},
+						"content_type": schema.StringAttribute{
+							Description: "The content type of the module.",
+							Computed:    true,
+						},
+						"name": schema.StringAttribute{
+							Description: "The name of the module.",
+							Computed:    true,
+						},
+					},
+				},
+			},
+			"package_dependencies": schema.ListNestedAttribute{
+				Description: "The list of npm packages that were installed and used when this Worker\nversion was built.",
+				Computed:    true,
+				CustomType:  customfield.NewNestedObjectListType[WorkerVersionPackageDependenciesDataSourceModel](ctx),
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"installed_version": schema.StringAttribute{
+							Description: "The exact version that was resolved and installed by the package manager.",
+							Computed:    true,
+						},
+						"name": schema.StringAttribute{
+							Description: "The npm package name.",
+							Computed:    true,
+						},
+						"package_json_version": schema.StringAttribute{
+							Description: "The version constraint as written in package.json.",
+							Computed:    true,
+						},
+					},
+				},
+			},
+			"placement": schema.SingleNestedAttribute{
+				Description: "Configuration for [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement). Specify mode='smart' for Smart Placement, or one of region/hostname/host.",
+				Computed:    true,
+				CustomType:  customfield.NewNestedObjectType[WorkerVersionPlacementDataSourceModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"mode": schema.StringAttribute{
+						Description: "Enables [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement).\nAvailable values: \"smart\", \"targeted\".",
+						Computed:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOfCaseInsensitive("smart", "targeted"),
+						},
+					},
+					"region": schema.StringAttribute{
+						Description: "Cloud region for targeted placement in format 'provider:region'.",
+						Computed:    true,
+					},
+					"hostname": schema.StringAttribute{
+						Description: "HTTP hostname for targeted placement.",
+						Computed:    true,
+					},
+					"host": schema.StringAttribute{
+						Description: "TCP host and port for targeted placement.",
+						Computed:    true,
+					},
+					"target": schema.ListNestedAttribute{
+						Description: "Array of placement targets (currently limited to single target).",
+						Computed:    true,
+						CustomType:  customfield.NewNestedObjectListType[WorkerVersionPlacementTargetDataSourceModel](ctx),
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"region": schema.StringAttribute{
+									Description: "Cloud region in format 'provider:region'.",
+									Computed:    true,
+								},
+								"hostname": schema.StringAttribute{
+									Description: "HTTP hostname for targeted placement.",
+									Computed:    true,
+								},
+								"host": schema.StringAttribute{
+									Description: "TCP host:port for targeted placement.",
+									Computed:    true,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func (d *WorkerVersionDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = DataSourceSchema(ctx)
+}
+
+func (d *WorkerVersionDataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
+	return []datasource.ConfigValidator{}
+}

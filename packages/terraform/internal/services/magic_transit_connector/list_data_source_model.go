@@ -1,0 +1,60 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package magic_transit_connector
+
+import (
+	"context"
+
+	"github.com/cloudflare/cloudflare-go/v7"
+	"github.com/cloudflare/cloudflare-go/v7/magic_transit"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+type MagicTransitConnectorsResultListDataSourceEnvelope struct {
+	Result customfield.NestedObjectList[MagicTransitConnectorsResultDataSourceModel] `json:"result,computed"`
+}
+
+type MagicTransitConnectorsDataSourceModel struct {
+	AccountID  types.String                                                              `tfsdk:"account_id" path:"account_id,required"`
+	DeviceType types.String                                                              `tfsdk:"device_type" query:"device_type,optional"`
+	MaxItems   types.Int64                                                               `tfsdk:"max_items"`
+	Result     customfield.NestedObjectList[MagicTransitConnectorsResultDataSourceModel] `tfsdk:"result"`
+}
+
+func (m *MagicTransitConnectorsDataSourceModel) toListParams(_ context.Context) (params magic_transit.ConnectorListParams, diags diag.Diagnostics) {
+	params = magic_transit.ConnectorListParams{
+		AccountID: cloudflare.F(m.AccountID.ValueString()),
+	}
+
+	if !m.DeviceType.IsNull() {
+		params.DeviceType = cloudflare.F(magic_transit.ConnectorListParamsDeviceType(m.DeviceType.ValueString()))
+	}
+
+	return
+}
+
+type MagicTransitConnectorsResultDataSourceModel struct {
+	ID                           types.String                                                          `tfsdk:"id" json:"id,computed"`
+	Activated                    types.Bool                                                            `tfsdk:"activated" json:"activated,computed"`
+	InterruptWindowDaysOfWeek    customfield.List[types.String]                                        `tfsdk:"interrupt_window_days_of_week" json:"interrupt_window_days_of_week,computed"`
+	InterruptWindowDurationHours types.Float64                                                         `tfsdk:"interrupt_window_duration_hours" json:"interrupt_window_duration_hours,computed"`
+	InterruptWindowEmbargoDates  customfield.List[types.String]                                        `tfsdk:"interrupt_window_embargo_dates" json:"interrupt_window_embargo_dates,computed"`
+	InterruptWindowHourOfDay     types.Float64                                                         `tfsdk:"interrupt_window_hour_of_day" json:"interrupt_window_hour_of_day,computed"`
+	LastUpdated                  types.String                                                          `tfsdk:"last_updated" json:"last_updated,computed"`
+	Notes                        types.String                                                          `tfsdk:"notes" json:"notes,computed"`
+	Primary                      types.Bool                                                            `tfsdk:"primary" json:"primary,computed"`
+	SiteID                       types.String                                                          `tfsdk:"site_id" json:"site_id,computed"`
+	Timezone                     types.String                                                          `tfsdk:"timezone" json:"timezone,computed"`
+	Device                       customfield.NestedObject[MagicTransitConnectorsDeviceDataSourceModel] `tfsdk:"device" json:"device,computed"`
+	LastHeartbeat                types.String                                                          `tfsdk:"last_heartbeat" json:"last_heartbeat,computed"`
+	LastSeenVersion              types.String                                                          `tfsdk:"last_seen_version" json:"last_seen_version,computed"`
+	LicenseKey                   types.String                                                          `tfsdk:"license_key" json:"license_key,computed"`
+}
+
+type MagicTransitConnectorsDeviceDataSourceModel struct {
+	ID           types.String `tfsdk:"id" json:"id,computed"`
+	SerialNumber types.String `tfsdk:"serial_number" json:"serial_number,computed"`
+	Type         types.String `tfsdk:"type" json:"type,computed"`
+}

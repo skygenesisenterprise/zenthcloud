@@ -1,0 +1,638 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package ai_search_instance
+
+import (
+	"context"
+
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/float64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+var _ resource.ResourceWithConfigValidators = (*AISearchInstanceResource)(nil)
+
+func ResourceSchema(ctx context.Context) schema.Schema {
+	return schema.Schema{
+		Version: 500,
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Description:   "AI Search instance ID. Lowercase alphanumeric, hyphens, and underscores.",
+				Required:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown(), stringplanmodifier.RequiresReplace()},
+			},
+			"account_id": schema.StringAttribute{
+				Required:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			},
+			"type": schema.StringAttribute{
+				Description: "Source type. When omitted or null with a non-blank source, HTTP(S) URLs infer web-crawler and existing R2 bucket names infer r2. A missing or blank source without a type uses managed upload-only storage.\nAvailable values: \"r2\", \"web-crawler\".",
+				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOfCaseInsensitive("r2", "web-crawler"),
+				},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			},
+			"hybrid_search_enabled": schema.BoolAttribute{
+				Description:        "Deprecated — use index_method instead. Defaults to true for new instances; set false to create a vector-only instance.",
+				Computed:           true,
+				Optional:           true,
+				DeprecationMessage: "This attribute is deprecated.",
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.RequiresReplaceIfConfigured(),
+					// Preserve the value already in state. The API applies the
+					// "true" default for new instances, so a provider-side static
+					// default would otherwise plan false->true on upgrade for
+					// instances created before that default existed.
+					boolplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"ai_gateway_id": schema.StringAttribute{
+				Computed: true,
+				Optional: true,
+			},
+			"aisearch_model": schema.StringAttribute{
+				Description: "A Workers AI model ID or an AI Gateway model ID compatible with the OpenAI Chat Completions API. An empty string uses the configured or default model.",
+				Computed:    true,
+				Optional:    true,
+			},
+			"chunk_size": schema.Int64Attribute{
+				Computed: true,
+				Optional: true,
+				Validators: []validator.Int64{
+					int64validator.AtLeast(64),
+				},
+			},
+			"embedding_model": schema.StringAttribute{
+				Computed: true,
+				Optional: true,
+			},
+			"reranking_model": schema.StringAttribute{
+				Computed: true,
+				Optional: true,
+			},
+			"rewrite_model": schema.StringAttribute{
+				Description: "A Workers AI model ID or an AI Gateway model ID compatible with the OpenAI Chat Completions API. An empty string uses the configured or default model.",
+				Computed:    true,
+				Optional:    true,
+			},
+			"source": schema.StringAttribute{
+				Optional: true,
+			},
+			"summarization_model": schema.StringAttribute{
+				Optional: true,
+			},
+			"system_prompt_aisearch": schema.StringAttribute{
+				Optional: true,
+			},
+			"system_prompt_index_summarization": schema.StringAttribute{
+				Optional: true,
+			},
+			"system_prompt_rewrite_query": schema.StringAttribute{
+				Optional: true,
+			},
+			"token_id": schema.StringAttribute{
+				Optional: true,
+			},
+			"custom_metadata": schema.ListNestedAttribute{
+				Optional: true,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"data_type": schema.StringAttribute{
+							Description: `Available values: "text", "number", "boolean", "datetime".`,
+							Required:    true,
+							Validators: []validator.String{
+								stringvalidator.OneOfCaseInsensitive(
+									"text",
+									"number",
+									"boolean",
+									"datetime",
+								),
+							},
+						},
+						"field_name": schema.StringAttribute{
+							Required: true,
+						},
+					},
+				},
+			},
+			"metadata": schema.SingleNestedAttribute{
+				Optional: true,
+				Attributes: map[string]schema.Attribute{
+					"created_from_aisearch_wizard": schema.BoolAttribute{
+						Optional: true,
+					},
+					"created_from_emdash_plugin": schema.SingleNestedAttribute{
+						Optional: true,
+						Attributes: map[string]schema.Attribute{
+							"type": schema.StringAttribute{
+								Description: `Available values: "native", "rest".`,
+								Required:    true,
+								Validators: []validator.String{
+									stringvalidator.OneOfCaseInsensitive("native", "rest"),
+								},
+							},
+							"version": schema.StringAttribute{
+								Required: true,
+							},
+						},
+					},
+					"worker_domain": schema.StringAttribute{
+						Optional: true,
+					},
+				},
+			},
+			"retrieval_options": schema.SingleNestedAttribute{
+				Optional: true,
+				Attributes: map[string]schema.Attribute{
+					"boost_by": schema.ListNestedAttribute{
+						Description: "Metadata fields to boost search results by. Each entry specifies a metadata field and an optional direction. Direction defaults to 'asc' for numeric/datetime fields and 'exists' for text/boolean fields. Fields must match 'timestamp' or a defined custom_metadata field.",
+						Optional:    true,
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"field": schema.StringAttribute{
+									Description: "Metadata field name to boost by. Use 'timestamp' for document freshness, or any custom_metadata field. Numeric and datetime fields support all four directions (asc, desc, exists, not_exists); text/boolean fields only support exists/not_exists.",
+									Required:    true,
+								},
+								"direction": schema.StringAttribute{
+									Description: "Boost direction. 'desc' = higher values rank higher (e.g. newer timestamps). 'asc' = lower values rank higher. 'exists' = boost chunks that have the field. 'not_exists' = boost chunks that lack the field. Optional — defaults to 'asc' for numeric/datetime fields, 'exists' for text/boolean fields.\nAvailable values: \"asc\", \"desc\", \"exists\", \"not_exists\".",
+									Optional:    true,
+									Validators: []validator.String{
+										stringvalidator.OneOfCaseInsensitive(
+											"asc",
+											"desc",
+											"exists",
+											"not_exists",
+										),
+									},
+								},
+							},
+						},
+					},
+					"keyword_match_mode": schema.StringAttribute{
+						Description: "Controls which documents are candidates for BM25 scoring. 'and' restricts candidates to documents containing all query terms; 'or' includes any document containing at least one term, ranked by BM25 relevance. When omitted on an update, the existing stored value is preserved; when never set, search falls back to 'and'.\nAvailable values: \"and\", \"or\".",
+						Optional:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOfCaseInsensitive("and", "or"),
+						},
+					},
+				},
+			},
+			"cache": schema.BoolAttribute{
+				Computed: true,
+				Optional: true,
+				Default:  booldefault.StaticBool(true),
+			},
+			"cache_threshold": schema.StringAttribute{
+				Description: `Available values: "super_strict_match", "close_enough", "flexible_friend", "anything_goes".`,
+				Computed:    true,
+				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOfCaseInsensitive(
+						"super_strict_match",
+						"close_enough",
+						"flexible_friend",
+						"anything_goes",
+					),
+				},
+				Default: stringdefault.StaticString("close_enough"),
+			},
+			"cache_ttl": schema.Float64Attribute{
+				Description: "Cache entry TTL in seconds. Allowed values: 600 (10min), 1800 (30min), 3600 (1h), 7200 (2h), 21600 (6h), 43200 (12h), 86400 (24h), 172800 (48h), 259200 (72h), 518400 (6d).\nAvailable values: 600, 1800, 3600, 7200, 21600, 43200, 86400, 172800, 259200, 518400.",
+				Computed:    true,
+				Optional:    true,
+				Validators: []validator.Float64{
+					float64validator.OneOf(
+						600,
+						1800,
+						3600,
+						7200,
+						21600,
+						43200,
+						86400,
+						172800,
+						259200,
+						518400,
+					),
+				},
+				Default: float64default.StaticFloat64(172800),
+			},
+			"chunk": schema.BoolAttribute{
+				Computed: true,
+				Optional: true,
+				Default:  booldefault.StaticBool(true),
+			},
+			"chunk_overlap": schema.Int64Attribute{
+				Computed: true,
+				Optional: true,
+				Validators: []validator.Int64{
+					int64validator.Between(0, 30),
+				},
+				Default: int64default.StaticInt64(10),
+			},
+			"fusion_method": schema.StringAttribute{
+				Description: `Available values: "max", "rrf".`,
+				Computed:    true,
+				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOfCaseInsensitive("max", "rrf"),
+				},
+				Default: stringdefault.StaticString("rrf"),
+			},
+			"max_num_results": schema.Int64Attribute{
+				Computed: true,
+				Optional: true,
+				Validators: []validator.Int64{
+					int64validator.Between(1, 50),
+				},
+				Default: int64default.StaticInt64(10),
+			},
+			"paused": schema.BoolAttribute{
+				Computed: true,
+				Optional: true,
+				Default:  booldefault.StaticBool(false),
+			},
+			"reranking": schema.BoolAttribute{
+				Computed: true,
+				Optional: true,
+				Default:  booldefault.StaticBool(false),
+			},
+			"rewrite_query": schema.BoolAttribute{
+				Computed: true,
+				Optional: true,
+				Default:  booldefault.StaticBool(false),
+			},
+			"score_threshold": schema.Float64Attribute{
+				Computed: true,
+				Optional: true,
+				Validators: []validator.Float64{
+					float64validator.Between(0, 1),
+				},
+				Default: float64default.StaticFloat64(0.4),
+			},
+			"summarization": schema.BoolAttribute{
+				Computed: true,
+				Optional: true,
+				Default:  booldefault.StaticBool(false),
+			},
+			"sync_interval": schema.Float64Attribute{
+				Description: "Interval between automatic syncs, in seconds. Allowed values: 900 (15min), 1800 (30min), 3600 (1h), 7200 (2h), 14400 (4h), 21600 (6h), 43200 (12h), 86400 (24h).\nAvailable values: 900, 1800, 3600, 7200, 14400, 21600, 43200, 86400.",
+				Computed:    true,
+				Optional:    true,
+				Validators: []validator.Float64{
+					float64validator.OneOf(
+						900,
+						1800,
+						3600,
+						7200,
+						14400,
+						21600,
+						43200,
+						86400,
+					),
+				},
+				Default: float64default.StaticFloat64(21600),
+			},
+			"index_method": schema.SingleNestedAttribute{
+				Description: "Controls which storage backends are used during indexing. Defaults to vector and keyword indexing for new instances.",
+				Computed:    true,
+				Optional:    true,
+				CustomType:  customfield.NewNestedObjectType[AISearchInstanceIndexMethodModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"keyword": schema.BoolAttribute{
+						Description: "Enable keyword (BM25) storage backend.",
+						Required:    true,
+					},
+					"vector": schema.BoolAttribute{
+						Description: "Enable vector (embedding) storage backend.",
+						Required:    true,
+					},
+				},
+				PlanModifiers: []planmodifier.Object{objectplanmodifier.UseNonNullStateForUnknown()},
+			},
+			"indexing_options": schema.SingleNestedAttribute{
+				Computed:   true,
+				Optional:   true,
+				CustomType: customfield.NewNestedObjectType[AISearchInstanceIndexingOptionsModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"keyword_tokenizer": schema.StringAttribute{
+						Description: "Tokenizer used for keyword search indexing. porter provides word-level tokenization with Porter stemming (good for natural language queries). trigram enables character-level substring matching (good for partial matches, code, identifiers). Changing this triggers a full re-index. Defaults to porter.\nAvailable values: \"porter\", \"trigram\".",
+						Computed:    true,
+						Optional:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOfCaseInsensitive("porter", "trigram"),
+						},
+						Default: stringdefault.StaticString("porter"),
+					},
+					"use_ocr": schema.BoolAttribute{
+						Description: "Enables OCR ingestion for PDFs and images. Changing this triggers a full re-index. Defaults to false.",
+						Computed:    true,
+						Optional:    true,
+						Default:     booldefault.StaticBool(false),
+					},
+				},
+				PlanModifiers: []planmodifier.Object{objectplanmodifier.UseNonNullStateForUnknown()},
+			},
+			"public_endpoint_params": schema.SingleNestedAttribute{
+				Computed:   true,
+				Optional:   true,
+				CustomType: customfield.NewNestedObjectType[AISearchInstancePublicEndpointParamsModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"authorized_hosts": schema.ListAttribute{
+						Optional:    true,
+						ElementType: types.StringType,
+					},
+					"chat_completions_endpoint": schema.SingleNestedAttribute{
+						Computed:   true,
+						Optional:   true,
+						CustomType: customfield.NewNestedObjectType[AISearchInstancePublicEndpointParamsChatCompletionsEndpointModel](ctx),
+						Attributes: map[string]schema.Attribute{
+							"disabled": schema.BoolAttribute{
+								Description: "Disable chat completions endpoint for this public endpoint",
+								Computed:    true,
+								Optional:    true,
+								Default:     booldefault.StaticBool(false),
+							},
+						},
+						PlanModifiers: []planmodifier.Object{objectplanmodifier.UseNonNullStateForUnknown()},
+					},
+					"custom_domains": schema.ListAttribute{
+						Description: "Custom domain hostnames that alias this public endpoint. GET and create responses return the current set; on update (PUT) this field is only echoed back when supplied in the request body, otherwise it is null (omit it to leave domains unchanged).",
+						Optional:    true,
+						ElementType: types.StringType,
+					},
+					"default_domain_enabled": schema.BoolAttribute{
+						Description: "When false, the instance is reachable only via a registered custom domain and the default <public_endpoint_id>.search.ai.cloudflare.com host returns 404. Requires at least one custom domain. Defaults to true. public_endpoint_params is replaced wholesale on update, so resend default_domain_enabled on every update to keep the default host off — omitting it resets to true.",
+						Computed:    true,
+						Optional:    true,
+						Default:     booldefault.StaticBool(true),
+					},
+					"enabled": schema.BoolAttribute{
+						Computed: true,
+						Optional: true,
+						Default:  booldefault.StaticBool(false),
+					},
+					"mcp": schema.SingleNestedAttribute{
+						Computed:   true,
+						Optional:   true,
+						CustomType: customfield.NewNestedObjectType[AISearchInstancePublicEndpointParamsMcpModel](ctx),
+						Attributes: map[string]schema.Attribute{
+							"description": schema.StringAttribute{
+								Computed: true,
+								Optional: true,
+								Default:  stringdefault.StaticString("Finds exactly what you're looking for"),
+							},
+							"disabled": schema.BoolAttribute{
+								Description: "Disable MCP endpoint for this public endpoint",
+								Computed:    true,
+								Optional:    true,
+								Default:     booldefault.StaticBool(false),
+							},
+						},
+						PlanModifiers: []planmodifier.Object{objectplanmodifier.UseNonNullStateForUnknown()},
+					},
+					"rate_limit": schema.SingleNestedAttribute{
+						Optional: true,
+						Attributes: map[string]schema.Attribute{
+							"period_ms": schema.Int64Attribute{
+								Optional: true,
+								Validators: []validator.Int64{
+									int64validator.Between(60000, 3600000),
+								},
+							},
+							"requests": schema.Int64Attribute{
+								Optional: true,
+								Validators: []validator.Int64{
+									int64validator.AtLeast(1),
+								},
+							},
+							"technique": schema.StringAttribute{
+								Description: `Available values: "fixed", "sliding".`,
+								Optional:    true,
+								Validators: []validator.String{
+									stringvalidator.OneOfCaseInsensitive("fixed", "sliding"),
+								},
+							},
+						},
+					},
+					"search_endpoint": schema.SingleNestedAttribute{
+						Computed:   true,
+						Optional:   true,
+						CustomType: customfield.NewNestedObjectType[AISearchInstancePublicEndpointParamsSearchEndpointModel](ctx),
+						Attributes: map[string]schema.Attribute{
+							"disabled": schema.BoolAttribute{
+								Description: "Disable search endpoint for this public endpoint",
+								Computed:    true,
+								Optional:    true,
+								Default:     booldefault.StaticBool(false),
+							},
+						},
+						PlanModifiers: []planmodifier.Object{objectplanmodifier.UseNonNullStateForUnknown()},
+					},
+				},
+				PlanModifiers: []planmodifier.Object{objectplanmodifier.UseNonNullStateForUnknown()},
+			},
+			"source_params": schema.SingleNestedAttribute{
+				Computed:   true,
+				Optional:   true,
+				CustomType: customfield.NewNestedObjectType[AISearchInstanceSourceParamsModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"exclude_items": schema.ListAttribute{
+						Description: "List of path patterns to exclude. Uses micromatch glob syntax: * matches within a path segment, ** matches across path segments (e.g., /admin/** matches /admin/users and /admin/settings/advanced). Most accounts are limited to 10 rules; contact support to raise it.",
+						Optional:    true,
+						ElementType: types.StringType,
+					},
+					"include_items": schema.ListAttribute{
+						Description: "List of path patterns to include. Uses micromatch glob syntax: * matches within a path segment, ** matches across path segments (e.g., /blog/** matches /blog/post and /blog/2024/post). Most accounts are limited to 10 rules; contact support to raise it.",
+						Optional:    true,
+						ElementType: types.StringType,
+					},
+					"prefix": schema.StringAttribute{
+						Optional: true,
+					},
+					"r2_jurisdiction": schema.StringAttribute{
+						Computed: true,
+						Optional: true,
+						Default:  stringdefault.StaticString("default"),
+					},
+					"web_crawler": schema.SingleNestedAttribute{
+						Computed:   true,
+						Optional:   true,
+						CustomType: customfield.NewNestedObjectType[AISearchInstanceSourceParamsWebCrawlerModel](ctx),
+						Attributes: map[string]schema.Attribute{
+							"discover_options": schema.SingleNestedAttribute{
+								Description: "Options for parse_type 'discover', where Browser Run discovers URLs by link following and sitemaps. Ignored for 'sitemap'.",
+								Optional:    true,
+								Attributes: map[string]schema.Attribute{
+									"depth": schema.Float64Attribute{
+										Description: "Maximum link-follow depth from the seed URL.",
+										Computed:    true,
+										Optional:    true,
+										Validators: []validator.Float64{
+											float64validator.Between(1, 100000),
+										},
+										Default: float64default.StaticFloat64(5),
+									},
+									"include_external_links": schema.BoolAttribute{
+										Description: "Follow links that point outside the source domain. Must stay `false` — discover crawls are restricted to the zone you own.",
+										Computed:    true,
+										Optional:    true,
+										Default:     booldefault.StaticBool(false),
+									},
+									"include_subdomains": schema.BoolAttribute{
+										Description: "Follow links to subdomains of the source host.",
+										Computed:    true,
+										Optional:    true,
+										Default:     booldefault.StaticBool(false),
+									},
+									"limit": schema.Float64Attribute{
+										Description: "Maximum number of pages to crawl (1-100000).",
+										Computed:    true,
+										Optional:    true,
+										Validators: []validator.Float64{
+											float64validator.Between(1, 100000),
+										},
+										Default: float64default.StaticFloat64(100000),
+									},
+									"max_age": schema.Float64Attribute{
+										Description: "Maximum content age in seconds to accept (0–604800).",
+										Computed:    true,
+										Optional:    true,
+										Validators: []validator.Float64{
+											float64validator.Between(0, 604800),
+										},
+										Default: float64default.StaticFloat64(86400),
+									},
+									"source": schema.StringAttribute{
+										Description: "Where the crawler looks for URLs: 'sitemaps' reads sitemap XML only, 'links' follows page links only, 'all' does both.\nAvailable values: \"all\", \"sitemaps\", \"links\".",
+										Computed:    true,
+										Optional:    true,
+										Validators: []validator.String{
+											stringvalidator.OneOfCaseInsensitive(
+												"all",
+												"sitemaps",
+												"links",
+											),
+										},
+										Default: stringdefault.StaticString("all"),
+									},
+								},
+							},
+							"parse_options": schema.SingleNestedAttribute{
+								Optional: true,
+								Attributes: map[string]schema.Attribute{
+									"content_selector": schema.ListNestedAttribute{
+										Description: "List of path-to-selector mappings for extracting specific content from crawled pages. Each entry pairs a URL glob pattern with a CSS selector. The first matching path wins. Only the matched HTML fragment is stored and indexed. Omit the field to disable content selection — empty arrays are rejected.",
+										Optional:    true,
+										NestedObject: schema.NestedAttributeObject{
+											Attributes: map[string]schema.Attribute{
+												"path": schema.StringAttribute{
+													Description: "Glob pattern to match against the page URL path. Uses standard glob syntax: * matches within a segment, ** crosses directories.",
+													Required:    true,
+												},
+												"selector": schema.StringAttribute{
+													Description: "CSS selector to extract content from pages matching the path pattern. Must not contain disallowed characters (;, `, $, {, }, \\). Must target a single element; if multiple elements match, the selector is ignored and the full page is used.",
+													Required:    true,
+												},
+											},
+										},
+									},
+									"include_headers": schema.MapAttribute{
+										Description: "Up to 5 custom HTTP headers sent with each crawl request. Names must be RFC-7230 token characters (no spaces, colons, or control characters); values must be HTAB + printable ASCII (no CR/LF).",
+										Optional:    true,
+										ElementType: types.StringType,
+									},
+									"include_images": schema.BoolAttribute{
+										Computed: true,
+										Optional: true,
+										Default:  booldefault.StaticBool(false),
+									},
+									"specific_sitemaps": schema.ListAttribute{
+										Description: "List of specific sitemap URLs to use for crawling. Only valid when parse_type is 'sitemap'.",
+										Optional:    true,
+										ElementType: types.StringType,
+									},
+									"use_browser_rendering": schema.BoolAttribute{
+										Computed: true,
+										Optional: true,
+										Default:  booldefault.StaticBool(true),
+									},
+								},
+							},
+							"parse_type": schema.StringAttribute{
+								Description: "How URLs are discovered. 'sitemap' reads XML sitemaps; 'discover' follows links recursively and requires the source to be a Verified zone on this account.\nAvailable values: \"sitemap\", \"discover\".",
+								Computed:    true,
+								Optional:    true,
+								Validators: []validator.String{
+									stringvalidator.OneOfCaseInsensitive("sitemap", "discover"),
+								},
+								Default: stringdefault.StaticString("sitemap"),
+							},
+						},
+						PlanModifiers: []planmodifier.Object{objectplanmodifier.UseNonNullStateForUnknown()},
+					},
+				},
+				PlanModifiers: []planmodifier.Object{objectplanmodifier.UseNonNullStateForUnknown()},
+			},
+			"created_at": schema.StringAttribute{
+				Computed:      true,
+				CustomType:    timetypes.RFC3339Type{},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()},
+			},
+			"created_by": schema.StringAttribute{
+				Computed: true,
+			},
+			"enable": schema.BoolAttribute{
+				Computed: true,
+				Default:  booldefault.StaticBool(true),
+			},
+			"engine_version": schema.Float64Attribute{
+				Computed: true,
+				Default:  float64default.StaticFloat64(3),
+			},
+			"last_activity": schema.StringAttribute{
+				Computed:   true,
+				CustomType: timetypes.RFC3339Type{},
+			},
+			"modified_at": schema.StringAttribute{
+				Computed:   true,
+				CustomType: timetypes.RFC3339Type{},
+			},
+			"modified_by": schema.StringAttribute{
+				Computed: true,
+			},
+			"namespace": schema.StringAttribute{
+				Computed: true,
+			},
+			"public_endpoint_id": schema.StringAttribute{
+				Computed: true,
+			},
+			"status": schema.StringAttribute{
+				Computed: true,
+				Default:  stringdefault.StaticString("waiting"),
+			},
+		},
+	}
+}
+
+func (r *AISearchInstanceResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = ResourceSchema(ctx)
+}
+
+func (r *AISearchInstanceResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
+	return []resource.ConfigValidator{}
+}

@@ -1,0 +1,190 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package zone_dns_settings
+
+import (
+	"context"
+
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+)
+
+var _ resource.ResourceWithConfigValidators = (*ZoneDNSSettingsResource)(nil)
+
+func ResourceSchema(ctx context.Context) schema.Schema {
+	return schema.Schema{
+		MarkdownDescription: schemata.Description{
+			Scopes: []string{
+				"DNS Read",
+				"DNS Write",
+				"Zone DNS Settings Read",
+				"Zone DNS Settings Write",
+			},
+		}.String(),
+		Version: 500,
+		Attributes: map[string]schema.Attribute{
+			"zone_id": schema.StringAttribute{
+				Description:   "Identifier.",
+				Required:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			},
+			"flatten_all_cnames": schema.BoolAttribute{
+				Description: "Whether to flatten all CNAME records in the zone. Note that, due to DNS limitations, a CNAME record at the zone apex will always be flattened.",
+				Optional:    true,
+			},
+			"foundation_dns": schema.BoolAttribute{
+				Description:        "Deprecated. Use nameservers.type to configure Advanced Nameservers.",
+				Optional:           true,
+				DeprecationMessage: "foundation_dns is deprecated. Use nameservers.type: cloudflare.advanced to turn on Advanced Nameservers and cloudflare.standard to turn it off. This field will be removed in a future API version.\n",
+			},
+			"multi_provider": schema.BoolAttribute{
+				Description: "Whether to enable multi-provider DNS, which causes Cloudflare to activate the zone even when non-Cloudflare NS records exist, and to respect NS records at the zone apex during outbound zone transfers.",
+				Optional:    true,
+			},
+			"ns_ttl": schema.Float64Attribute{
+				Description: "The time to live (TTL) of the zone's nameserver (NS) records.",
+				Optional:    true,
+				Validators: []validator.Float64{
+					float64validator.Between(30, 86400),
+				},
+			},
+			"secondary_overrides": schema.BoolAttribute{
+				Description: "Allows a Secondary DNS zone to use (proxied) override records and CNAME flattening at the zone apex.",
+				Optional:    true,
+			},
+			"zone_mode": schema.StringAttribute{
+				Description: "Whether the zone mode is a regular or CDN/DNS only zone.\nAvailable values: \"standard\", \"cdn_only\", \"dns_only\".",
+				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOfCaseInsensitive(
+						"standard",
+						"cdn_only",
+						"dns_only",
+					),
+				},
+			},
+			"internal_dns": schema.SingleNestedAttribute{
+				Description: "Settings for this internal zone.",
+				Computed:    true,
+				Optional:    true,
+				CustomType:  customfield.NewNestedObjectType[ZoneDNSSettingsInternalDNSModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"reference_zone_id": schema.StringAttribute{
+						Description: "The ID of the zone to fallback to.",
+						Optional:    true,
+					},
+				},
+				PlanModifiers: []planmodifier.Object{objectplanmodifier.UseNonNullStateForUnknown()},
+			},
+			"nameservers": schema.SingleNestedAttribute{
+				Description: "Controls the nameservers through which the zone is available.",
+				Computed:    true,
+				Optional:    true,
+				CustomType:  customfield.NewNestedObjectType[ZoneDNSSettingsNameserversModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"type": schema.StringAttribute{
+						Description: "Nameserver type.\nAvailable values: \"cloudflare.standard\", \"cloudflare.advanced\", \"custom.account\", \"custom.tenant\", \"custom.zone\", \"custom\".",
+						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOfCaseInsensitive(
+								"cloudflare.standard",
+								"cloudflare.advanced",
+								"custom.account",
+								"custom.tenant",
+								"custom.zone",
+								"custom",
+							),
+						},
+					},
+					"ns_set": schema.Int64Attribute{
+						Description: "Configured nameserver set number to use for this zone.",
+						Computed:    true,
+						Optional:    true,
+						Validators: []validator.Int64{
+							int64validator.Between(1, 5),
+						},
+						// ns_set only applies to custom nameserver types and is
+						// absent from the zone DNS settings response, so a static
+						// default would be re-proposed on every plan.
+						PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()},
+					},
+					"nameserver_set_id": schema.StringAttribute{
+						Description: "Identifier of the account-owned Custom Nameserver Set to use for this zone.",
+						Optional:    true,
+					},
+				},
+				PlanModifiers: []planmodifier.Object{objectplanmodifier.UseNonNullStateForUnknown()},
+			},
+			"soa": schema.SingleNestedAttribute{
+				Description: "Components of the zone's SOA record.",
+				Computed:    true,
+				Optional:    true,
+				CustomType:  customfield.NewNestedObjectType[ZoneDNSSettingsSOAModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"expire": schema.Float64Attribute{
+						Description: "Time in seconds of being unable to query the primary server after which secondary servers should stop serving the zone.",
+						Optional:    true,
+						Validators: []validator.Float64{
+							float64validator.Between(86400, 2419200),
+						},
+					},
+					"min_ttl": schema.Float64Attribute{
+						Description: "The time to live (TTL) for negative caching of records within the zone.",
+						Optional:    true,
+						Validators: []validator.Float64{
+							float64validator.Between(60, 86400),
+						},
+					},
+					"mname": schema.StringAttribute{
+						Description: "The primary nameserver, which may be used for outbound zone transfers. If null, a Cloudflare-assigned value will be used.",
+						Optional:    true,
+					},
+					"refresh": schema.Float64Attribute{
+						Description: "Time in seconds after which secondary servers should re-check the SOA record to see if the zone has been updated.",
+						Optional:    true,
+						Validators: []validator.Float64{
+							float64validator.Between(600, 86400),
+						},
+					},
+					"retry": schema.Float64Attribute{
+						Description: "Time in seconds after which secondary servers should retry queries after the primary server was unresponsive.",
+						Optional:    true,
+						Validators: []validator.Float64{
+							float64validator.Between(600, 86400),
+						},
+					},
+					"rname": schema.StringAttribute{
+						Description: "The email address of the zone administrator, with the first label representing the local part of the email address.",
+						Optional:    true,
+					},
+					"ttl": schema.Float64Attribute{
+						Description: "The time to live (TTL) of the SOA record itself.",
+						Optional:    true,
+						Validators: []validator.Float64{
+							float64validator.Between(300, 86400),
+						},
+					},
+				},
+				PlanModifiers: []planmodifier.Object{objectplanmodifier.UseNonNullStateForUnknown()},
+			},
+		},
+	}
+}
+
+func (r *ZoneDNSSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = ResourceSchema(ctx)
+}
+
+func (r *ZoneDNSSettingsResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
+	return []resource.ConfigValidator{}
+}

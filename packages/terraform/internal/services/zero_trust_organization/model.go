@@ -1,0 +1,81 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package zero_trust_organization
+
+import (
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+type ZeroTrustOrganizationResultEnvelope struct {
+	Result ZeroTrustOrganizationModel `json:"result"`
+}
+
+type ZeroTrustOrganizationModel struct {
+	AccountID                              types.String                                      `tfsdk:"account_id" path:"account_id,optional"`
+	ZoneID                                 types.String                                      `tfsdk:"zone_id" path:"zone_id,optional"`
+	AuthDomain                             types.String                                      `tfsdk:"auth_domain" json:"auth_domain,optional"`
+	DenyUnmatchedRequests                  types.Bool                                        `tfsdk:"deny_unmatched_requests" json:"deny_unmatched_requests,optional"`
+	Name                                   types.String                                      `tfsdk:"name" json:"name,optional"`
+	SessionDuration                        types.String                                      `tfsdk:"session_duration" json:"session_duration,optional"`
+	StrictServiceTokenAuth                 types.Bool                                        `tfsdk:"strict_service_token_auth" json:"strict_service_token_auth,computed_optional"`
+	UserSeatExpirationInactiveTime         types.String                                      `tfsdk:"user_seat_expiration_inactive_time" json:"user_seat_expiration_inactive_time,optional"`
+	WARPAuthSessionDuration                types.String                                      `tfsdk:"warp_auth_session_duration" json:"warp_auth_session_duration,optional"`
+	DenyUnmatchedRequestsExemptedZoneNames *[]types.String                                   `tfsdk:"deny_unmatched_requests_exempted_zone_names" json:"deny_unmatched_requests_exempted_zone_names,optional"`
+	CustomPages                            *ZeroTrustOrganizationCustomPagesModel            `tfsdk:"custom_pages" json:"custom_pages,optional"`
+	LoginDesign                            *ZeroTrustOrganizationLoginDesignModel            `tfsdk:"login_design" json:"login_design,optional"`
+	MfaConfig                              *ZeroTrustOrganizationMfaConfigModel              `tfsdk:"mfa_config" json:"mfa_config,optional"`
+	MfaPivKeyRequirements                  *ZeroTrustOrganizationMfaPivKeyRequirementsModel  `tfsdk:"mfa_piv_key_requirements" json:"mfa_piv_key_requirements,optional"`
+	ServiceTokenInactivity                 *ZeroTrustOrganizationServiceTokenInactivityModel `tfsdk:"service_token_inactivity" json:"service_token_inactivity,optional"`
+	AllowAuthenticateViaWARP               types.Bool                                        `tfsdk:"allow_authenticate_via_warp" json:"allow_authenticate_via_warp,computed_optional"`
+	AutoRedirectToIdentity                 types.Bool                                        `tfsdk:"auto_redirect_to_identity" json:"auto_redirect_to_identity,computed_optional"`
+	IsUIReadOnly                           types.Bool                                        `tfsdk:"is_ui_read_only" json:"is_ui_read_only,computed_optional"`
+	MfaConfigurationAllowed                types.Bool                                        `tfsdk:"mfa_configuration_allowed" json:"mfa_configuration_allowed,computed_optional"`
+	MfaRequiredForAllApps                  types.Bool                                        `tfsdk:"mfa_required_for_all_apps" json:"mfa_required_for_all_apps,computed_optional"`
+	UIReadOnlyToggleReason                 types.String                                      `tfsdk:"ui_read_only_toggle_reason" json:"ui_read_only_toggle_reason,computed_optional"`
+	WarpAuthNonBrowser401                  types.Bool                                        `tfsdk:"warp_auth_non_browser_401" json:"warp_auth_non_browser_401,computed_optional"`
+	TrustedAccounts                        customfield.List[types.String]                    `tfsdk:"trusted_accounts" json:"trusted_accounts,computed"`
+}
+
+func (m ZeroTrustOrganizationModel) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(m)
+}
+
+func (m ZeroTrustOrganizationModel) MarshalJSONForUpdate(state ZeroTrustOrganizationModel) (data []byte, err error) {
+	return apijson.MarshalForUpdate(m, state)
+}
+
+type ZeroTrustOrganizationCustomPagesModel struct {
+	Forbidden      types.String `tfsdk:"forbidden" json:"forbidden,optional"`
+	IdentityDenied types.String `tfsdk:"identity_denied" json:"identity_denied,optional"`
+}
+
+type ZeroTrustOrganizationLoginDesignModel struct {
+	BackgroundColor types.String `tfsdk:"background_color" json:"background_color,optional"`
+	FooterText      types.String `tfsdk:"footer_text" json:"footer_text,optional"`
+	HeaderText      types.String `tfsdk:"header_text" json:"header_text,optional"`
+	LogoPath        types.String `tfsdk:"logo_path" json:"logo_path,optional"`
+	TextColor       types.String `tfsdk:"text_color" json:"text_color,optional"`
+}
+
+type ZeroTrustOrganizationMfaConfigModel struct {
+	AllowedAuthenticators      *[]types.String `tfsdk:"allowed_authenticators" json:"allowed_authenticators,optional"`
+	AmrMatchingSessionDuration types.String    `tfsdk:"amr_matching_session_duration" json:"amr_matching_session_duration,optional"`
+	RequiredAaguids            types.String    `tfsdk:"required_aaguids" json:"required_aaguids,optional"`
+	SessionDuration            types.String    `tfsdk:"session_duration" json:"session_duration,optional"`
+}
+
+type ZeroTrustOrganizationMfaPivKeyRequirementsModel struct {
+	PinPolicy         types.String    `tfsdk:"pin_policy" json:"pin_policy,optional"`
+	RequireFipsDevice types.Bool      `tfsdk:"require_fips_device" json:"require_fips_device,optional"`
+	SSHKeySize        *[]types.Int64  `tfsdk:"ssh_key_size" json:"ssh_key_size,optional"`
+	SSHKeyType        *[]types.String `tfsdk:"ssh_key_type" json:"ssh_key_type,optional"`
+	TouchPolicy       types.String    `tfsdk:"touch_policy" json:"touch_policy,optional"`
+}
+
+type ZeroTrustOrganizationServiceTokenInactivityModel struct {
+	Action                  types.String `tfsdk:"action" json:"action,required"`
+	Enabled                 types.Bool   `tfsdk:"enabled" json:"enabled,required"`
+	InactivityThresholdDays types.Int64  `tfsdk:"inactivity_threshold_days" json:"inactivity_threshold_days,required"`
+}

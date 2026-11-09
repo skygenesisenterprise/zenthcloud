@@ -1,0 +1,228 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package hyperdrive_config
+
+import (
+	"context"
+
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+)
+
+var _ datasource.DataSourceWithConfigValidators = (*HyperdriveConfigsDataSource)(nil)
+
+func ListDataSourceSchema(ctx context.Context) schema.Schema {
+	return schema.Schema{
+		MarkdownDescription: schemata.Description{
+			Scopes: []string{
+				"Hyperdrive Read",
+				"Hyperdrive Write",
+			},
+		}.String(),
+		Attributes: map[string]schema.Attribute{
+			"account_id": schema.StringAttribute{
+				Description: "Define configurations using a unique string identifier.",
+				Optional:    true,
+			},
+			"max_items": schema.Int64Attribute{
+				Description: "Max items to fetch, default: 1000",
+				Optional:    true,
+				Validators: []validator.Int64{
+					int64validator.AtLeast(0),
+				},
+			},
+			"result": schema.ListNestedAttribute{
+				Description: "The items returned by the data source",
+				Computed:    true,
+				CustomType:  customfield.NewNestedObjectListType[HyperdriveConfigsResultDataSourceModel](ctx),
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"id": schema.StringAttribute{
+							Description: "Define configurations using a unique string identifier.",
+							Computed:    true,
+						},
+						"caching": schema.SingleNestedAttribute{
+							Computed:   true,
+							CustomType: customfield.NewNestedObjectType[HyperdriveConfigsCachingDataSourceModel](ctx),
+							Attributes: map[string]schema.Attribute{
+								"disabled": schema.BoolAttribute{
+									Description: "Defines whether caching is disabled.",
+									Computed:    true,
+								},
+								"max_age": schema.Int64Attribute{
+									Description: "Defines the maximum duration (in seconds) items persist in the cache.",
+									Computed:    true,
+									Validators: []validator.Int64{
+										int64validator.Between(1, 3600),
+									},
+								},
+								"stale_while_revalidate": schema.Int64Attribute{
+									Description: "Defines the number of seconds the cache may serve a stale response.",
+									Computed:    true,
+									Validators: []validator.Int64{
+										int64validator.AtLeast(0),
+									},
+								},
+							},
+						},
+						"name": schema.StringAttribute{
+							Description: "The name of the Hyperdrive configuration. Used to identify the configuration in the Cloudflare dashboard and API.",
+							Computed:    true,
+						},
+						"origin": schema.SingleNestedAttribute{
+							Description: "Combines database connection fields with exactly one supported network location.",
+							Computed:    true,
+							CustomType:  customfield.NewNestedObjectType[HyperdriveConfigsOriginDataSourceModel](ctx),
+							Attributes: map[string]schema.Attribute{
+								"database": schema.StringAttribute{
+									Description: "Set the name of your origin database.",
+									Computed:    true,
+								},
+								"host": schema.StringAttribute{
+									Description: "Defines the publicly reachable hostname or IP of your origin database. Private, loopback, and link-local IP addresses are not allowed.",
+									Computed:    true,
+								},
+								"password": schema.StringAttribute{
+									Description: "Set the password needed to access your origin database. The API never returns this write-only value.",
+									Computed:    true,
+									Sensitive:   true,
+								},
+								"port": schema.Int64Attribute{
+									Description: "Defines the port of your origin database. Defaults to 5432 for PostgreSQL or 3306 for MySQL if not specified.",
+									Computed:    true,
+									Validators: []validator.Int64{
+										int64validator.Between(1, 65535),
+									},
+								},
+								"scheme": schema.StringAttribute{
+									Description: "Specifies the URL scheme used to connect to your origin database.\nAvailable values: \"postgres\", \"postgresql\", \"mysql\".",
+									Computed:    true,
+									Validators: []validator.String{
+										stringvalidator.OneOfCaseInsensitive(
+											"postgres",
+											"postgresql",
+											"mysql",
+										),
+									},
+								},
+								"user": schema.StringAttribute{
+									Description: "Set the user of your origin database.",
+									Computed:    true,
+								},
+								"access_client_id": schema.StringAttribute{
+									Description: "Defines the Client ID of the Access token to use when connecting to the origin database.",
+									Computed:    true,
+								},
+								"access_client_secret": schema.StringAttribute{
+									Description: "Defines the Client Secret of the Access Token to use when connecting to the origin database. The API never returns this write-only value.",
+									Computed:    true,
+									Sensitive:   true,
+								},
+								"service_id": schema.StringAttribute{
+									Description: "The identifier of the Workers VPC Service to connect through. Hyperdrive will egress through the specified VPC Service to reach the origin database.",
+									Computed:    true,
+								},
+							},
+						},
+						"created_on": schema.StringAttribute{
+							Description: "Defines the creation time of the Hyperdrive configuration.",
+							Computed:    true,
+							CustomType:  timetypes.RFC3339Type{},
+						},
+						"integration": schema.SingleNestedAttribute{
+							Description: "Selects a PlanetScale database and provisions credentials managed by Cloudflare when creating a Hyperdrive configuration. The Cloudflare account must already be linked to PlanetScale in the Hyperdrive dashboard. The selection is returned as read-only metadata and cannot be changed with replace or update operations.",
+							Computed:    true,
+							CustomType:  customfield.NewNestedObjectType[HyperdriveConfigsIntegrationDataSourceModel](ctx),
+							Attributes: map[string]schema.Attribute{
+								"database_branch_name": schema.StringAttribute{
+									Description: "The name of the PlanetScale database branch.",
+									Computed:    true,
+								},
+								"database_name": schema.StringAttribute{
+									Description: "The name of the PlanetScale database.",
+									Computed:    true,
+								},
+								"organization_name": schema.StringAttribute{
+									Description: "The name of the PlanetScale organization.",
+									Computed:    true,
+								},
+								"hyperdrive_config_provider": schema.StringAttribute{
+									Description: "The database integration provider used by this operation.\nAvailable values: \"planetscale\".",
+									Computed:    true,
+									Validators: []validator.String{
+										stringvalidator.OneOfCaseInsensitive("planetscale"),
+									},
+								},
+								"scheme": schema.StringAttribute{
+									Description: "Specifies the URL scheme used to connect to your origin database.\nAvailable values: \"postgres\", \"postgresql\", \"mysql\".",
+									Computed:    true,
+									Validators: []validator.String{
+										stringvalidator.OneOfCaseInsensitive(
+											"postgres",
+											"postgresql",
+											"mysql",
+										),
+									},
+								},
+								"custom_database_name": schema.StringAttribute{
+									Description: "The database name to use when connecting. Defaults to `postgres` for PostgreSQL and `mysql` for MySQL.",
+									Computed:    true,
+								},
+							},
+						},
+						"modified_on": schema.StringAttribute{
+							Description: "Defines the last modified time of the Hyperdrive configuration.",
+							Computed:    true,
+							CustomType:  timetypes.RFC3339Type{},
+						},
+						"mtls": schema.SingleNestedAttribute{
+							Description: "mTLS configuration for the origin connection. Cannot be used with VPC Service origins; TLS must be managed on the VPC Service.",
+							Computed:    true,
+							CustomType:  customfield.NewNestedObjectType[HyperdriveConfigsMTLSDataSourceModel](ctx),
+							Attributes: map[string]schema.Attribute{
+								"ca_certificate_id": schema.StringAttribute{
+									Description: "Define CA certificate ID obtained after uploading CA cert.",
+									Computed:    true,
+								},
+								"mtls_certificate_id": schema.StringAttribute{
+									Description: "Define mTLS certificate ID obtained after uploading client cert.",
+									Computed:    true,
+								},
+								"sslmode": schema.StringAttribute{
+									Description: "PostgreSQL accepts `require`, `verify-ca`, and `verify-full`. MySQL accepts `REQUIRED`, `VERIFY_CA`, and `VERIFY_IDENTITY`. The verify modes require a CA certificate; the require modes cannot be used with a CA certificate.",
+									Computed:    true,
+								},
+							},
+						},
+						"origin_connection_limit": schema.Int64Attribute{
+							Description: "The (soft) maximum number of connections the Hyperdrive is allowed to make to the origin database.\n\nMaximum allowed: 20 for free tier accounts, 100 for paid tier accounts.\nIf not specified, defaults to 20 for free tier and 60 for paid tier.\nCertain Cloudflare-managed origins may be permitted a higher limit.\nContact Cloudflare if you need a higher limit.",
+							Computed:    true,
+							Validators: []validator.Int64{
+								int64validator.AtLeast(5),
+							},
+						},
+						"restarted_on": schema.StringAttribute{
+							Description: "Defines the last time the Hyperdrive connection pool was explicitly restarted via the restart endpoint. Omitted if the pool has never been explicitly restarted.",
+							Computed:    true,
+							CustomType:  timetypes.RFC3339Type{},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func (d *HyperdriveConfigsDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = ListDataSourceSchema(ctx)
+}
+
+func (d *HyperdriveConfigsDataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
+	return []datasource.ConfigValidator{}
+}

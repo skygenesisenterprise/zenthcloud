@@ -1,0 +1,169 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package hyperdrive_config
+
+import (
+	"context"
+
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+)
+
+var _ resource.ResourceWithConfigValidators = (*HyperdriveConfigResource)(nil)
+
+func ResourceSchema(ctx context.Context) schema.Schema {
+	return schema.Schema{
+		MarkdownDescription: schemata.Description{
+			Scopes: []string{
+				"Hyperdrive Read",
+				"Hyperdrive Write",
+			},
+		}.String(),
+		Version: 500,
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Description:   "Define configurations using a unique string identifier.",
+				Computed:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()},
+			},
+			"account_id": schema.StringAttribute{
+				Description:   "Define configurations using a unique string identifier.",
+				Required:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			},
+			"integration": schema.StringAttribute{
+				Optional:   true,
+				CustomType: jsontypes.NormalizedType{},
+			},
+			"name": schema.StringAttribute{
+				Description: "The name of the Hyperdrive configuration. Used to identify the configuration in the Cloudflare dashboard and API.",
+				Required:    true,
+			},
+			"origin_connection_limit": schema.Int64Attribute{
+				Description: "The (soft) maximum number of connections the Hyperdrive is allowed to make to the origin database.\n\nMaximum allowed: 20 for free tier accounts, 100 for paid tier accounts.\nIf not specified, defaults to 20 for free tier and 60 for paid tier.\nCertain Cloudflare-managed origins may be permitted a higher limit.\nContact Cloudflare if you need a higher limit.",
+				Optional:    true,
+				Validators: []validator.Int64{
+					int64validator.AtLeast(5),
+				},
+			},
+			"caching": schema.SingleNestedAttribute{
+				Optional: true,
+				Attributes: map[string]schema.Attribute{
+					"disabled": schema.BoolAttribute{
+						Optional: true,
+					},
+					"max_age": schema.Int64Attribute{
+						Optional: true,
+					},
+					"stale_while_revalidate": schema.Int64Attribute{
+						Optional: true,
+					},
+				},
+			},
+			"mtls": schema.SingleNestedAttribute{
+				Description: "mTLS configuration for the origin connection. Cannot be used with VPC Service origins; TLS must be managed on the VPC Service.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"ca_certificate_id": schema.StringAttribute{
+						Description: "Define CA certificate ID obtained after uploading CA cert.",
+						Optional:    true,
+					},
+					"mtls_certificate_id": schema.StringAttribute{
+						Description: "Define mTLS certificate ID obtained after uploading client cert.",
+						Optional:    true,
+					},
+					"sslmode": schema.StringAttribute{
+						Description: "PostgreSQL accepts `require`, `verify-ca`, and `verify-full`. MySQL accepts `REQUIRED`, `VERIFY_CA`, and `VERIFY_IDENTITY`. The verify modes require a CA certificate; the require modes cannot be used with a CA certificate.",
+						Optional:    true,
+					},
+				},
+			},
+			"origin": schema.SingleNestedAttribute{
+				Description: "Combines database connection fields with exactly one supported network location.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"database": schema.StringAttribute{
+						Description: "Set the name of your origin database.",
+						Required:    true,
+					},
+					"host": schema.StringAttribute{
+						Description: "Defines the publicly reachable hostname or IP of your origin database. Private, loopback, and link-local IP addresses are not allowed.",
+						Optional:    true,
+					},
+					"password": schema.StringAttribute{
+						Description: "Set the password needed to access your origin database. The API never returns this write-only value.",
+						Required:    true,
+						Sensitive:   true,
+					},
+					"port": schema.Int64Attribute{
+						Description: "Defines the port of your origin database. Defaults to 5432 for PostgreSQL or 3306 for MySQL if not specified.",
+						Optional:    true,
+						Validators: []validator.Int64{
+							int64validator.Between(1, 65535),
+						},
+					},
+					"scheme": schema.StringAttribute{
+						Description: "Specifies the URL scheme used to connect to your origin database.\nAvailable values: \"postgres\", \"postgresql\", \"mysql\".",
+						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOfCaseInsensitive(
+								"postgres",
+								"postgresql",
+								"mysql",
+							),
+						},
+					},
+					"user": schema.StringAttribute{
+						Description: "Set the user of your origin database.",
+						Required:    true,
+					},
+					"access_client_id": schema.StringAttribute{
+						Description: "Defines the Client ID of the Access token to use when connecting to the origin database.",
+						Optional:    true,
+					},
+					"access_client_secret": schema.StringAttribute{
+						Description: "Defines the Client Secret of the Access Token to use when connecting to the origin database. The API never returns this write-only value.",
+						Optional:    true,
+						Sensitive:   true,
+					},
+					"service_id": schema.StringAttribute{
+						Description: "The identifier of the Workers VPC Service to connect through. Hyperdrive will egress through the specified VPC Service to reach the origin database.",
+						Optional:    true,
+					},
+				},
+			},
+			"created_on": schema.StringAttribute{
+				Description:   "Defines the creation time of the Hyperdrive configuration.",
+				Computed:      true,
+				CustomType:    timetypes.RFC3339Type{},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()},
+			},
+			"modified_on": schema.StringAttribute{
+				Description: "Defines the last modified time of the Hyperdrive configuration.",
+				Computed:    true,
+				CustomType:  timetypes.RFC3339Type{},
+			},
+			"restarted_on": schema.StringAttribute{
+				Description: "Defines the last time the Hyperdrive connection pool was explicitly restarted via the restart endpoint. Omitted if the pool has never been explicitly restarted.",
+				Computed:    true,
+				CustomType:  timetypes.RFC3339Type{},
+			},
+		},
+	}
+}
+
+func (r *HyperdriveConfigResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = ResourceSchema(ctx)
+}
+
+func (r *HyperdriveConfigResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
+	return []resource.ConfigValidator{}
+}

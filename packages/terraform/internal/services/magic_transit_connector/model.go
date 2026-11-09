@@ -1,0 +1,47 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package magic_transit_connector
+
+import (
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+type MagicTransitConnectorResultEnvelope struct {
+	Result MagicTransitConnectorModel `json:"result"`
+}
+
+type MagicTransitConnectorModel struct {
+	ID                           types.String                      `tfsdk:"id" json:"id,computed"`
+	AccountID                    types.String                      `tfsdk:"account_id" path:"account_id,required"`
+	Device                       *MagicTransitConnectorDeviceModel `tfsdk:"device" json:"device,required"`
+	ProvisionLicense             types.Bool                        `tfsdk:"provision_license" json:"provision_license,optional,no_refresh"`
+	Activated                    types.Bool                        `tfsdk:"activated" json:"activated,computed_optional"`
+	InterruptWindowDurationHours types.Float64                     `tfsdk:"interrupt_window_duration_hours" json:"interrupt_window_duration_hours,computed_optional"`
+	InterruptWindowHourOfDay     types.Float64                     `tfsdk:"interrupt_window_hour_of_day" json:"interrupt_window_hour_of_day,computed_optional"`
+	Notes                        types.String                      `tfsdk:"notes" json:"notes,computed_optional"`
+	Primary                      types.Bool                        `tfsdk:"primary" json:"primary,computed_optional"`
+	SiteID                       types.String                      `tfsdk:"site_id" json:"site_id,computed_optional"`
+	Timezone                     types.String                      `tfsdk:"timezone" json:"timezone,computed_optional"`
+	InterruptWindowDaysOfWeek    customfield.List[types.String]    `tfsdk:"interrupt_window_days_of_week" json:"interrupt_window_days_of_week,computed_optional"`
+	InterruptWindowEmbargoDates  customfield.List[types.String]    `tfsdk:"interrupt_window_embargo_dates" json:"interrupt_window_embargo_dates,computed_optional"`
+	LastHeartbeat                types.String                      `tfsdk:"last_heartbeat" json:"last_heartbeat,computed"`
+	LastSeenVersion              types.String                      `tfsdk:"last_seen_version" json:"last_seen_version,computed"`
+	LastUpdated                  types.String                      `tfsdk:"last_updated" json:"last_updated,computed"`
+	LicenseKey                   types.String                      `tfsdk:"license_key" json:"license_key,computed"`
+}
+
+func (m MagicTransitConnectorModel) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(m)
+}
+
+func (m MagicTransitConnectorModel) MarshalJSONForUpdate(state MagicTransitConnectorModel) (data []byte, err error) {
+	return apijson.MarshalForPatch(m, state)
+}
+
+type MagicTransitConnectorDeviceModel struct {
+	ID               types.String `tfsdk:"id" json:"id,computed_optional"`
+	ProvisionLicense types.Bool   `tfsdk:"provision_license" json:"provision_license,optional,no_refresh"`
+	SerialNumber     types.String `tfsdk:"serial_number" json:"serial_number,computed_optional"`
+}

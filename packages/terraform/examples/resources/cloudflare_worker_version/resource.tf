@@ -1,0 +1,93 @@
+resource "cloudflare_worker_version" "example_worker_version" {
+  account_id = "023e105f4ecef8ad9ca31a8372d0c353"
+  worker_id = "worker_id"
+  annotations = {
+    workers_message = "Fixed bug."
+    workers_tag = "v1.0.1"
+  }
+  assets = {
+    config = {
+      base_path = "/docs/"
+      html_handling = "auto-trailing-slash"
+      not_found_handling = "404-page"
+      run_worker_first = []
+    }
+    jwt = "jwt"
+  }
+  bindings = [{
+    name = "MY_ENV_VAR"
+    text = "my_data"
+    type = "plain_text"
+  }]
+  cache_options = {
+    enabled = true
+    cross_version_cache = true
+  }
+  compatibility_date = "2021-01-01T00:00:00Z"
+  compatibility_flags = ["nodejs_compat"]
+  containers = [{
+    class_name = "MyDurableObject"
+  }]
+  exports = {
+    Admin = {
+      type = "worker"
+      cache = {
+        enabled = true
+      }
+      state = "created"
+    }
+    Counter = {
+      storage = "sqlite"
+      type = "durable-object"
+      container = "my-container"
+      state = "created"
+    }
+    OldCounter = {
+      renamed_to = "Counter"
+      state = "renamed"
+      type = "durable-object"
+    }
+    default = {
+      type = "worker"
+      cache = {
+        enabled = false
+      }
+      state = "created"
+    }
+  }
+  limits = {
+    cpu_ms = 50
+    subrequests = 1000
+  }
+  main_module = "index.js"
+  migrations = {
+    deleted_classes = ["string"]
+    new_classes = ["string"]
+    new_sqlite_classes = ["string"]
+    new_tag = "v2"
+    old_tag = "v1"
+    renamed_classes = [{
+      from = "from"
+      to = "to"
+    }]
+    transferred_classes = [{
+      from = "from"
+      from_script = "from_script"
+      to = "to"
+    }]
+  }
+  modules = [{
+    content_base64 = "ZXhwb3J0IGRlZmF1bHQgewogIGFzeW5jIGZldGNoKHJlcXVlc3QsIGVudiwgY3R4KSB7CiAgICByZXR1cm4gbmV3IFJlc3BvbnNlKCdIZWxsbyBXb3JsZCEnKQogIH0KfQ=="
+    content_type = "application/javascript+module"
+    name = "index.js"
+  }]
+  package_dependencies = [{
+    installed_version = "4.17.22"
+    name = "lodash"
+    package_json_version = "^4.17.21"
+  }]
+  placement = {
+    mode = "smart"
+  }
+  usage_model = "standard"
+}

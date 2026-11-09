@@ -1,0 +1,108 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package zero_trust_access_ai_controls_mcp_server
+
+import (
+	"context"
+
+	"github.com/cloudflare/cloudflare-go/v7"
+	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+type ZeroTrustAccessAIControlsMcpServersResultListDataSourceEnvelope struct {
+	Result customfield.NestedObjectList[ZeroTrustAccessAIControlsMcpServersResultDataSourceModel] `json:"result,computed"`
+}
+
+type ZeroTrustAccessAIControlsMcpServersDataSourceModel struct {
+	AccountID types.String                                                                           `tfsdk:"account_id" path:"account_id,optional"`
+	Search    types.String                                                                           `tfsdk:"search" query:"search,optional"`
+	MaxItems  types.Int64                                                                            `tfsdk:"max_items"`
+	Result    customfield.NestedObjectList[ZeroTrustAccessAIControlsMcpServersResultDataSourceModel] `tfsdk:"result"`
+}
+
+func (m *ZeroTrustAccessAIControlsMcpServersDataSourceModel) toListParams(_ context.Context) (params zero_trust.AccessAIControlMcpServerListParams, diags diag.Diagnostics) {
+	params = zero_trust.AccessAIControlMcpServerListParams{
+		AccountID: cloudflare.F(m.AccountID.ValueString()),
+	}
+
+	if !m.Search.IsNull() {
+		params.Search = cloudflare.F(m.Search.ValueString())
+	}
+
+	return
+}
+
+type ZeroTrustAccessAIControlsMcpServersResultDataSourceModel struct {
+	ID                           types.String                                                                                   `tfsdk:"id" json:"id,computed"`
+	AuthType                     types.String                                                                                   `tfsdk:"auth_type" json:"auth_type,computed"`
+	Hostname                     types.String                                                                                   `tfsdk:"hostname" json:"hostname,computed"`
+	Name                         types.String                                                                                   `tfsdk:"name" json:"name,computed"`
+	Prompts                      customfield.List[customfield.Map[jsontypes.Normalized]]                                        `tfsdk:"prompts" json:"prompts,computed"`
+	Tools                        customfield.List[customfield.Map[jsontypes.Normalized]]                                        `tfsdk:"tools" json:"tools,computed"`
+	AuthConfigSummary            customfield.NestedObject[ZeroTrustAccessAIControlsMcpServersAuthConfigSummaryDataSourceModel]  `tfsdk:"auth_config_summary" json:"auth_config_summary,computed"`
+	AuthenticationStatus         types.String                                                                                   `tfsdk:"authentication_status" json:"authentication_status,computed"`
+	CreatedAt                    timetypes.RFC3339                                                                              `tfsdk:"created_at" json:"created_at,computed" format:"date-time"`
+	CreatedBy                    types.String                                                                                   `tfsdk:"created_by" json:"created_by,computed"`
+	Description                  types.String                                                                                   `tfsdk:"description" json:"description,computed"`
+	Error                        types.String                                                                                   `tfsdk:"error" json:"error,computed"`
+	ErrorDetails                 customfield.NestedObject[ZeroTrustAccessAIControlsMcpServersErrorDetailsDataSourceModel]       `tfsdk:"error_details" json:"error_details,computed"`
+	IsSharedOAuthCallbackEnabled types.Bool                                                                                     `tfsdk:"is_shared_oauth_callback_enabled" json:"is_shared_oauth_callback_enabled,computed"`
+	LastSuccessfulSync           timetypes.RFC3339                                                                              `tfsdk:"last_successful_sync" json:"last_successful_sync,computed" format:"date-time"`
+	LastSynced                   timetypes.RFC3339                                                                              `tfsdk:"last_synced" json:"last_synced,computed" format:"date-time"`
+	ModifiedAt                   timetypes.RFC3339                                                                              `tfsdk:"modified_at" json:"modified_at,computed" format:"date-time"`
+	ModifiedBy                   types.String                                                                                   `tfsdk:"modified_by" json:"modified_by,computed"`
+	SecureWebGateway             types.Bool                                                                                     `tfsdk:"secure_web_gateway" json:"secure_web_gateway,computed"`
+	Status                       types.String                                                                                   `tfsdk:"status" json:"status,computed"`
+	UpdatedPrompts               customfield.NestedObjectList[ZeroTrustAccessAIControlsMcpServersUpdatedPromptsDataSourceModel] `tfsdk:"updated_prompts" json:"updated_prompts,computed"`
+	UpdatedTools                 customfield.NestedObjectList[ZeroTrustAccessAIControlsMcpServersUpdatedToolsDataSourceModel]   `tfsdk:"updated_tools" json:"updated_tools,computed"`
+}
+
+type ZeroTrustAccessAIControlsMcpServersAuthConfigSummaryDataSourceModel struct {
+	AuthMode            types.String                                                                                                  `tfsdk:"auth_mode" json:"auth_mode,computed"`
+	ClientSecretVersion types.Float64                                                                                                 `tfsdk:"client_secret_version" json:"client_secret_version,computed"`
+	Config              customfield.NestedObject[ZeroTrustAccessAIControlsMcpServersAuthConfigSummaryConfigDataSourceModel]           `tfsdk:"config" json:"config,computed"`
+	HasClientSecret     types.Bool                                                                                                    `tfsdk:"has_client_secret" json:"has_client_secret,computed"`
+	RegistrationInfo    customfield.NestedObject[ZeroTrustAccessAIControlsMcpServersAuthConfigSummaryRegistrationInfoDataSourceModel] `tfsdk:"registration_info" json:"registration_info,computed"`
+}
+
+type ZeroTrustAccessAIControlsMcpServersAuthConfigSummaryConfigDataSourceModel struct {
+	AuthorizationEndpoint types.String `tfsdk:"authorization_endpoint" json:"authorization_endpoint,computed"`
+	Issuer                types.String `tfsdk:"issuer" json:"issuer,computed"`
+	Resource              types.String `tfsdk:"resource" json:"resource,computed"`
+	RevocationEndpoint    types.String `tfsdk:"revocation_endpoint" json:"revocation_endpoint,computed"`
+	TokenEndpoint         types.String `tfsdk:"token_endpoint" json:"token_endpoint,computed"`
+}
+
+type ZeroTrustAccessAIControlsMcpServersAuthConfigSummaryRegistrationInfoDataSourceModel struct {
+	ClientID                types.String                   `tfsdk:"client_id" json:"client_id,computed"`
+	RedirectURIs            customfield.List[types.String] `tfsdk:"redirect_uris" json:"redirect_uris,computed"`
+	Scope                   types.String                   `tfsdk:"scope" json:"scope,computed"`
+	TokenEndpointAuthMethod types.String                   `tfsdk:"token_endpoint_auth_method" json:"token_endpoint_auth_method,computed"`
+}
+
+type ZeroTrustAccessAIControlsMcpServersErrorDetailsDataSourceModel struct {
+	Cause      types.String  `tfsdk:"cause" json:"cause,computed"`
+	IsUpstream types.Bool    `tfsdk:"is_upstream" json:"is_upstream,computed"`
+	McpCode    types.Float64 `tfsdk:"mcp_code" json:"mcp_code,computed"`
+	Retryable  types.Bool    `tfsdk:"retryable" json:"retryable,computed"`
+	StatusCode types.Float64 `tfsdk:"status_code" json:"status_code,computed"`
+}
+
+type ZeroTrustAccessAIControlsMcpServersUpdatedPromptsDataSourceModel struct {
+	Name        types.String `tfsdk:"name" json:"name,computed"`
+	Alias       types.String `tfsdk:"alias" json:"alias,computed"`
+	Description types.String `tfsdk:"description" json:"description,computed"`
+	Enabled     types.Bool   `tfsdk:"enabled" json:"enabled,computed"`
+}
+
+type ZeroTrustAccessAIControlsMcpServersUpdatedToolsDataSourceModel struct {
+	Name        types.String `tfsdk:"name" json:"name,computed"`
+	Alias       types.String `tfsdk:"alias" json:"alias,computed"`
+	Description types.String `tfsdk:"description" json:"description,computed"`
+	Enabled     types.Bool   `tfsdk:"enabled" json:"enabled,computed"`
+}

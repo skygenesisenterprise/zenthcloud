@@ -1,0 +1,83 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package zero_trust_resource_library_application
+
+import (
+	"context"
+
+	"github.com/cloudflare/cloudflare-go/v7"
+	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+type ZeroTrustResourceLibraryApplicationsResultListDataSourceEnvelope struct {
+	Result customfield.NestedObjectList[ZeroTrustResourceLibraryApplicationsResultDataSourceModel] `json:"result,computed"`
+}
+
+type ZeroTrustResourceLibraryApplicationsDataSourceModel struct {
+	AccountID types.String                                                                            `tfsdk:"account_id" path:"account_id,required"`
+	Fields    types.String                                                                            `tfsdk:"fields" query:"fields,optional"`
+	Filter    types.String                                                                            `tfsdk:"filter" query:"filter,optional"`
+	Lookup    types.String                                                                            `tfsdk:"lookup" query:"lookup,optional"`
+	OrderBy   types.String                                                                            `tfsdk:"order_by" query:"order_by,optional"`
+	Search    types.String                                                                            `tfsdk:"search" query:"search,optional"`
+	Limit     types.Int64                                                                             `tfsdk:"limit" query:"limit,computed_optional"`
+	Offset    types.Int64                                                                             `tfsdk:"offset" query:"offset,computed_optional"`
+	MaxItems  types.Int64                                                                             `tfsdk:"max_items"`
+	Result    customfield.NestedObjectList[ZeroTrustResourceLibraryApplicationsResultDataSourceModel] `tfsdk:"result"`
+}
+
+func (m *ZeroTrustResourceLibraryApplicationsDataSourceModel) toListParams(_ context.Context) (params zero_trust.ResourceLibraryApplicationListParams, diags diag.Diagnostics) {
+	params = zero_trust.ResourceLibraryApplicationListParams{
+		AccountID: cloudflare.F(m.AccountID.ValueString()),
+	}
+
+	if !m.Fields.IsNull() {
+		params.Fields = cloudflare.F(m.Fields.ValueString())
+	}
+	if !m.Filter.IsNull() {
+		params.Filter = cloudflare.F(m.Filter.ValueString())
+	}
+	if !m.Limit.IsNull() {
+		params.Limit = cloudflare.F(m.Limit.ValueInt64())
+	}
+	if !m.Lookup.IsNull() {
+		params.Lookup = cloudflare.F(m.Lookup.ValueString())
+	}
+	if !m.Offset.IsNull() {
+		params.Offset = cloudflare.F(m.Offset.ValueInt64())
+	}
+	if !m.OrderBy.IsNull() {
+		params.OrderBy = cloudflare.F(m.OrderBy.ValueString())
+	}
+	if !m.Search.IsNull() {
+		params.Search = cloudflare.F(m.Search.ValueString())
+	}
+
+	return
+}
+
+type ZeroTrustResourceLibraryApplicationsResultDataSourceModel struct {
+	ID                          types.Int64                   `tfsdk:"id" json:"id,computed"`
+	ApplicationConfidenceScore  types.Float64                 `tfsdk:"application_confidence_score" json:"application_confidence_score,computed"`
+	ApplicationScoreComposition jsontypes.Normalized          `tfsdk:"application_score_composition" json:"application_score_composition,computed"`
+	ApplicationSource           types.String                  `tfsdk:"application_source" json:"application_source,computed"`
+	ApplicationType             types.String                  `tfsdk:"application_type" json:"application_type,computed"`
+	ApplicationTypeDescription  types.String                  `tfsdk:"application_type_description" json:"application_type_description,computed"`
+	CategoryID                  types.Int64                   `tfsdk:"category_id" json:"category_id,computed"`
+	CreatedAt                   types.String                  `tfsdk:"created_at" json:"created_at,computed"`
+	GenAIScore                  types.Float64                 `tfsdk:"gen_ai_score" json:"gen_ai_score,computed"`
+	Hostnames                   customfield.Set[types.String] `tfsdk:"hostnames" json:"hostnames,computed"`
+	HumanID                     types.String                  `tfsdk:"human_id" json:"human_id,computed"`
+	IPSubnets                   customfield.Set[types.String] `tfsdk:"ip_subnets" json:"ip_subnets,computed"`
+	Name                        types.String                  `tfsdk:"name" json:"name,computed"`
+	PortProtocols               customfield.Set[types.String] `tfsdk:"port_protocols" json:"port_protocols,computed"`
+	ReviewStatus                types.String                  `tfsdk:"review_status" json:"review_status,computed"`
+	SupportDomains              customfield.Set[types.String] `tfsdk:"support_domains" json:"support_domains,computed"`
+	Supported                   customfield.Set[types.String] `tfsdk:"supported" json:"supported,computed"`
+	UpdatedAt                   types.String                  `tfsdk:"updated_at" json:"updated_at,computed"`
+	Version                     types.String                  `tfsdk:"version" json:"version,computed"`
+}

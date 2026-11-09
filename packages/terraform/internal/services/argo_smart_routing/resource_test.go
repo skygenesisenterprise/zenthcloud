@@ -1,0 +1,200 @@
+package argo_smart_routing_test
+
+import (
+	"context"
+	"fmt"
+	"os"
+	"regexp"
+	"testing"
+
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/acctest"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/utils"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+)
+
+func TestMain(m *testing.M) {
+	resource.TestMain(m)
+}
+
+func init() {
+	resource.AddTestSweepers("cloudflare_argo_smart_routing", &resource.Sweeper{
+		Name: "cloudflare_argo_smart_routing",
+		F:    testSweepCloudflareArgoSmartRouting,
+	})
+}
+
+func testSweepCloudflareArgoSmartRouting(r string) error {
+	ctx := context.Background()
+	// Argo Smart Routing is a zone-level feature toggle (on/off).
+	// It's a singleton setting per zone, not something that accumulates.
+	// No sweeping required.
+	tflog.Info(ctx, "Argo Smart Routing doesn't require sweeping (zone setting)")
+	return nil
+}
+
+func TestAccCloudflareArgoSmartRouting_Basic(t *testing.T) {
+	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	rnd := utils.GenerateRandomResourceName()
+	name := fmt.Sprintf("cloudflare_argo_smart_routing.%s", rnd)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			acctest.TestAccPreCheck_ZoneID(t)
+			acctest.TestAccPreCheck_Credentials(t)
+		},
+		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckCloudflareArgoSmartRoutingEnable(zoneID, rnd),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(name, "id", zoneID),
+					resource.TestCheckResourceAttr(name, "zone_id", zoneID),
+					resource.TestCheckResourceAttr(name, "value", "on"),
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(name, tfjsonpath.New("editable"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(name, tfjsonpath.New("modified_on"), knownvalue.NotNull()),
+				},
+			},
+			{
+				Config: testAccCheckCloudflareArgoSmartRoutingEnable(zoneID, rnd),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(name, "id", zoneID),
+					resource.TestCheckResourceAttr(name, "zone_id", zoneID),
+					resource.TestCheckResourceAttr(name, "value", "on"),
+				),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+			{
+				Config: testAccCheckCloudflareArgoSmartRoutingDisable(zoneID, rnd),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(name, "id", zoneID),
+					resource.TestCheckResourceAttr(name, "zone_id", zoneID),
+					resource.TestCheckResourceAttr(name, "value", "off"),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(name, plancheck.ResourceActionUpdate),
+						plancheck.ExpectKnownValue(
+							name,
+							tfjsonpath.New("value"),
+							knownvalue.StringExact("off"),
+						),
+					},
+				},
+			},
+			{
+				ResourceName:      name,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccCloudflareArgoSmartRouting_InvalidValue(t *testing.T) {
+	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	rnd := utils.GenerateRandomResourceName()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			acctest.TestAccPreCheck_ZoneID(t)
+			acctest.TestAccPreCheck_Credentials(t)
+		},
+		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckCloudflareArgoSmartRoutingInvalidValue(zoneID, rnd),
+				ExpectError: regexp.MustCompile(regexp.QuoteMeta("Invalid Attribute Value Match")),
+			},
+		},
+	})
+}
+
+func testAccCheckCloudflareArgoSmartRoutingEnable(zoneID, name string) string {
+	return acctest.LoadTestCase("enable.tf", zoneID, name)
+}
+
+func testAccCheckCloudflareArgoSmartRoutingDisable(zoneID, name string) string {
+	return acctest.LoadTestCase("disable.tf", zoneID, name)
+}
+
+func testAccCheckCloudflareArgoSmartRoutingInvalidValue(zoneID, name string) string {
+	return acctest.LoadTestCase("invalid_value.tf", zoneID, name)
+}
+
+func TestAccCloudflareArgoSmartRoutingDataSource_Basic(t *testing.T) {
+	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	rnd := utils.GenerateRandomResourceName()
+	resourceName := fmt.Sprintf("cloudflare_argo_smart_routing.%s", rnd)
+	dataSourceName := fmt.Sprintf("data.cloudflare_argo_smart_routing.%s", rnd)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			acctest.TestAccPreCheck_ZoneID(t)
+			acctest.TestAccPreCheck_Credentials(t)
+		},
+		ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckCloudflareArgoSmartRoutingDataSourceBasic(zoneID, rnd),
+				ConfigStateChecks: []statecheck.StateCheck{
+					// Check the resource attributes
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("value"), knownvalue.StringExact("on")),
+
+					// Check the data source attributes
+					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("zone_id"), knownvalue.StringExact(zoneID)),
+					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("value"), knownvalue.StringExact("on")),
+					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("id"), knownvalue.StringExact(zoneID)),
+					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("editable"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(dataSourceName, tfjsonpath.New("modified_on"), knownvalue.NotNull()),
+				},
+			},
+		},
+	})
+}
+
+func testAccCheckCloudflareArgoSmartRoutingDataSourceBasic(zoneID, name string) string {
+	return acctest.LoadTestCase("datasource_basic.tf", zoneID, name)
+}
+
+func TestAccUpgradeArgoSmartRouting_FromPublishedV5(t *testing.T) {
+	zoneID := os.Getenv("CLOUDFLARE_ZONE_ID")
+	rnd := utils.GenerateRandomResourceName()
+
+	config := testAccCheckCloudflareArgoSmartRoutingEnable(zoneID, rnd)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			acctest.TestAccPreCheck_ZoneID(t)
+			acctest.TestAccPreCheck_Credentials(t)
+		},
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"cloudflare": {
+						Source:            "cloudflare/cloudflare",
+						VersionConstraint: "5.16.0",
+					},
+				},
+				Config: config,
+			},
+			{
+				ProtoV6ProviderFactories: acctest.TestAccProtoV6ProviderFactories,
+				Config:                   config,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+		},
+	})
+}

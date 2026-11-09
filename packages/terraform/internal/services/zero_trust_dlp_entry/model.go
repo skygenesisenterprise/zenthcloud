@@ -1,0 +1,64 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package zero_trust_dlp_entry
+
+import (
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+type ZeroTrustDLPEntryResultEnvelope struct {
+	Result ZeroTrustDLPEntryModel `json:"result"`
+}
+
+type ZeroTrustDLPEntryModel struct {
+	ID            types.String                                                 `tfsdk:"id" json:"id,computed"`
+	AccountID     types.String                                                 `tfsdk:"account_id" path:"account_id,required"`
+	ProfileID     types.String                                                 `tfsdk:"profile_id" json:"profile_id,optional"`
+	Enabled       types.Bool                                                   `tfsdk:"enabled" json:"enabled,required"`
+	Name          types.String                                                 `tfsdk:"name" json:"name,required"`
+	Pattern       *ZeroTrustDLPEntryPatternModel                               `tfsdk:"pattern" json:"pattern,required"`
+	Description   types.String                                                 `tfsdk:"description" json:"description,optional"`
+	Type          types.String                                                 `tfsdk:"type" json:"type,optional"`
+	CaseSensitive types.Bool                                                   `tfsdk:"case_sensitive" json:"case_sensitive,computed"`
+	CreatedAt     timetypes.RFC3339                                            `tfsdk:"created_at" json:"created_at,computed" format:"date-time"`
+	Deprecated    types.Bool                                                   `tfsdk:"deprecated" json:"deprecated,computed"`
+	Secret        types.Bool                                                   `tfsdk:"secret" json:"secret,computed"`
+	UpdatedAt     timetypes.RFC3339                                            `tfsdk:"updated_at" json:"updated_at,computed" format:"date-time"`
+	UploadStatus  types.String                                                 `tfsdk:"upload_status" json:"upload_status,computed"`
+	WordList      customfield.List[types.String]                               `tfsdk:"word_list" json:"word_list,computed"`
+	Confidence    customfield.NestedObject[ZeroTrustDLPEntryConfidenceModel]   `tfsdk:"confidence" json:"confidence,computed"`
+	Profiles      customfield.NestedObjectList[ZeroTrustDLPEntryProfilesModel] `tfsdk:"profiles" json:"profiles,computed"`
+	Variant       customfield.NestedObject[ZeroTrustDLPEntryVariantModel]      `tfsdk:"variant" json:"variant,computed"`
+}
+
+func (m ZeroTrustDLPEntryModel) MarshalJSON() (data []byte, err error) {
+	return apijson.MarshalRoot(m)
+}
+
+func (m ZeroTrustDLPEntryModel) MarshalJSONForUpdate(state ZeroTrustDLPEntryModel) (data []byte, err error) {
+	return apijson.MarshalForUpdate(m, state)
+}
+
+type ZeroTrustDLPEntryPatternModel struct {
+	Regex      types.String `tfsdk:"regex" json:"regex,required"`
+	Validation types.String `tfsdk:"validation" json:"validation,optional"`
+}
+
+type ZeroTrustDLPEntryConfidenceModel struct {
+	AIContextAvailable types.Bool `tfsdk:"ai_context_available" json:"ai_context_available,computed"`
+	Available          types.Bool `tfsdk:"available" json:"available,computed"`
+}
+
+type ZeroTrustDLPEntryProfilesModel struct {
+	ID   types.String `tfsdk:"id" json:"id,computed"`
+	Name types.String `tfsdk:"name" json:"name,computed"`
+}
+
+type ZeroTrustDLPEntryVariantModel struct {
+	TopicType   types.String `tfsdk:"topic_type" json:"topic_type,computed"`
+	Type        types.String `tfsdk:"type" json:"type,computed"`
+	Description types.String `tfsdk:"description" json:"description,computed"`
+}

@@ -1,0 +1,139 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package account
+
+import (
+	"context"
+
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+)
+
+var _ datasource.DataSourceWithConfigValidators = (*AccountDataSource)(nil)
+
+func DataSourceSchema(ctx context.Context) schema.Schema {
+	return schema.Schema{
+		MarkdownDescription: schemata.Description{
+			Scopes: []string{
+				"Account Firewall Access Rules Read",
+				"Account Firewall Access Rules Write",
+				"Account Settings Read",
+				"Account Settings Write",
+				"Billing Read",
+				"Billing Write",
+				"DDoS Botnet Feed Read",
+				"DDoS Botnet Feed Write",
+				"DDoS Protection Read",
+				"DDoS Protection Write",
+				"DNS Firewall Read",
+				"DNS Firewall Write",
+				"DNS View Read",
+				"DNS View Write",
+				"Load Balancers Account Read",
+				"Load Balancers Account Write",
+				"Load Balancing: Monitors and Pools Read",
+				"Load Balancing: Monitors and Pools Write",
+				"SCIM Provisioning",
+				"Trust and Safety Read",
+				"Trust and Safety Write",
+				"Workers KV Storage Read",
+				"Workers KV Storage Write",
+				"Workers R2 Storage Read",
+				"Workers R2 Storage Write",
+				"Workers Scripts Read",
+				"Workers Scripts Write",
+				"Workers Tail Read",
+				"Zero Trust: PII Read",
+			},
+		}.String(),
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Description: "Account identifier tag.",
+				Computed:    true,
+			},
+			"account_id": schema.StringAttribute{
+				Description: "Account identifier tag.",
+				Optional:    true,
+			},
+			"created_on": schema.StringAttribute{
+				Description: "Timestamp for the creation of the account",
+				Computed:    true,
+				CustomType:  timetypes.RFC3339Type{},
+			},
+			"name": schema.StringAttribute{
+				Description: "Account name",
+				Computed:    true,
+			},
+			"type": schema.StringAttribute{
+				Description: `Available values: "standard", "enterprise".`,
+				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOfCaseInsensitive("standard", "enterprise"),
+				},
+			},
+			"managed_by": schema.SingleNestedAttribute{
+				Description: "Parent container details",
+				Computed:    true,
+				CustomType:  customfield.NewNestedObjectType[AccountManagedByDataSourceModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"parent_org_id": schema.StringAttribute{
+						Description: "ID of the parent Organization, if one exists",
+						Computed:    true,
+					},
+					"parent_org_name": schema.StringAttribute{
+						Description: "Name of the parent Organization, if one exists",
+						Computed:    true,
+					},
+				},
+			},
+			"settings": schema.SingleNestedAttribute{
+				Description: "Account settings",
+				Computed:    true,
+				CustomType:  customfield.NewNestedObjectType[AccountSettingsDataSourceModel](ctx),
+				Attributes: map[string]schema.Attribute{
+					"abuse_contact_email": schema.StringAttribute{
+						Description: "Sets an abuse contact email to notify for abuse reports.",
+						Computed:    true,
+					},
+					"enforce_twofactor": schema.BoolAttribute{
+						Description: "Indicates whether membership in this account requires that\nTwo-Factor Authentication is enabled",
+						Computed:    true,
+					},
+				},
+			},
+			"filter": schema.SingleNestedAttribute{
+				Optional: true,
+				Attributes: map[string]schema.Attribute{
+					"direction": schema.StringAttribute{
+						Description: "Direction to order results.\nAvailable values: \"asc\", \"desc\".",
+						Optional:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOfCaseInsensitive("asc", "desc"),
+						},
+					},
+					"name": schema.StringAttribute{
+						Description: "Name of the account.",
+						Optional:    true,
+					},
+				},
+			},
+		},
+	}
+}
+
+func (d *AccountDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = DataSourceSchema(ctx)
+}
+
+func (d *AccountDataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
+	return []datasource.ConfigValidator{
+		datasourcevalidator.ExactlyOneOf(path.MatchRoot("account_id"), path.MatchRoot("filter")),
+	}
+}

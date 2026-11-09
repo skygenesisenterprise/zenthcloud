@@ -1,0 +1,237 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package custom_ssl
+
+import (
+	"context"
+
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+var _ datasource.DataSourceWithConfigValidators = (*CustomSSLsDataSource)(nil)
+
+func ListDataSourceSchema(ctx context.Context) schema.Schema {
+	return schema.Schema{
+		MarkdownDescription: schemata.Description{
+			Scopes: []string{
+				"Access: Mutual TLS Certificates Read",
+				"Access: Mutual TLS Certificates Write",
+				"SSL and Certificates Read",
+				"SSL and Certificates Write",
+			},
+		}.String(),
+		Attributes: map[string]schema.Attribute{
+			"zone_id": schema.StringAttribute{
+				Description: "Identifier.",
+				Optional:    true,
+			},
+			"status": schema.StringAttribute{
+				Description: "Status of the zone's custom SSL.\nAvailable values: \"active\", \"expired\", \"deleted\", \"pending\", \"initializing\".",
+				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOfCaseInsensitive(
+						"active",
+						"expired",
+						"deleted",
+						"pending",
+						"initializing",
+					),
+				},
+			},
+			"match": schema.StringAttribute{
+				Description: "Whether to match all search requirements or at least one (any).\nAvailable values: \"any\", \"all\".",
+				Computed:    true,
+				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOfCaseInsensitive("any", "all"),
+				},
+			},
+			"max_items": schema.Int64Attribute{
+				Description: "Max items to fetch, default: 1000",
+				Optional:    true,
+				Validators: []validator.Int64{
+					int64validator.AtLeast(0),
+				},
+			},
+			"result": schema.ListNestedAttribute{
+				Description: "The items returned by the data source",
+				Computed:    true,
+				CustomType:  customfield.NewNestedObjectListType[CustomSSLsResultDataSourceModel](ctx),
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"id": schema.StringAttribute{
+							Description: "Custom certificate identifier tag.",
+							Computed:    true,
+						},
+						"zone_id": schema.StringAttribute{
+							Description: "Identifier.",
+							Computed:    true,
+						},
+						"bundle_method": schema.StringAttribute{
+							Description: "A ubiquitous bundle has the highest probability of being verified everywhere, even by clients using outdated or unusual trust stores. An optimal bundle uses the shortest chain and newest intermediates. And the force bundle verifies the chain, but does not otherwise modify it.\nAvailable values: \"ubiquitous\", \"optimal\", \"force\".",
+							Computed:    true,
+							Validators: []validator.String{
+								stringvalidator.OneOfCaseInsensitive(
+									"ubiquitous",
+									"optimal",
+									"force",
+								),
+							},
+						},
+						"custom_csr_id": schema.StringAttribute{
+							Description: "The identifier for the Custom CSR that was used.",
+							Computed:    true,
+						},
+						"expires_on": schema.StringAttribute{
+							Description: "When the certificate from the authority expires.",
+							Computed:    true,
+							CustomType:  timetypes.RFC3339Type{},
+						},
+						"geo_restrictions": schema.SingleNestedAttribute{
+							Description: "Specify the region where your private key can be held locally for optimal TLS performance. HTTPS connections to any excluded data center will still be fully encrypted, but will incur some latency while Keyless SSL is used to complete the handshake with the nearest allowed data center. Options allow distribution to only to U.S. data centers, only to E.U. data centers, or only to highest security data centers. Default distribution is to all Cloudflare datacenters, for optimal performance.",
+							Computed:    true,
+							CustomType:  customfield.NewNestedObjectType[CustomSSLsGeoRestrictionsDataSourceModel](ctx),
+							Attributes: map[string]schema.Attribute{
+								"label": schema.StringAttribute{
+									Description: `Available values: "us", "eu", "highest_security".`,
+									Computed:    true,
+									Validators: []validator.String{
+										stringvalidator.OneOfCaseInsensitive(
+											"us",
+											"eu",
+											"highest_security",
+										),
+									},
+								},
+							},
+						},
+						"hosts": schema.ListAttribute{
+							Computed:    true,
+							CustomType:  customfield.NewListType[types.String](ctx),
+							ElementType: types.StringType,
+						},
+						"issuer": schema.StringAttribute{
+							Description: "The certificate authority that issued the certificate.",
+							Computed:    true,
+						},
+						"keyless_server": schema.SingleNestedAttribute{
+							Computed:   true,
+							CustomType: customfield.NewNestedObjectType[CustomSSLsKeylessServerDataSourceModel](ctx),
+							Attributes: map[string]schema.Attribute{
+								"id": schema.StringAttribute{
+									Description: "Keyless certificate identifier tag.",
+									Computed:    true,
+								},
+								"created_on": schema.StringAttribute{
+									Description: "When the Keyless SSL was created.",
+									Computed:    true,
+									CustomType:  timetypes.RFC3339Type{},
+								},
+								"enabled": schema.BoolAttribute{
+									Description: "Whether or not the Keyless SSL is on or off.",
+									Computed:    true,
+								},
+								"host": schema.StringAttribute{
+									Description: "The keyless SSL name.",
+									Computed:    true,
+								},
+								"modified_on": schema.StringAttribute{
+									Description: "When the Keyless SSL was last modified.",
+									Computed:    true,
+									CustomType:  timetypes.RFC3339Type{},
+								},
+								"name": schema.StringAttribute{
+									Description: "The keyless SSL name.",
+									Computed:    true,
+								},
+								"permissions": schema.ListAttribute{
+									Description: "Available permissions for the Keyless SSL for the current user requesting the item.",
+									Computed:    true,
+									CustomType:  customfield.NewListType[types.String](ctx),
+									ElementType: types.StringType,
+								},
+								"port": schema.Float64Attribute{
+									Description: "The keyless SSL port used to communicate between Cloudflare and the client's Keyless SSL server.",
+									Computed:    true,
+								},
+								"status": schema.StringAttribute{
+									Description: "Status of the Keyless SSL.\nAvailable values: \"active\", \"deleted\".",
+									Computed:    true,
+									Validators: []validator.String{
+										stringvalidator.OneOfCaseInsensitive("active", "deleted"),
+									},
+								},
+								"tunnel": schema.SingleNestedAttribute{
+									Description: "Configuration for using Keyless SSL through a Cloudflare Tunnel.",
+									Computed:    true,
+									CustomType:  customfield.NewNestedObjectType[CustomSSLsKeylessServerTunnelDataSourceModel](ctx),
+									Attributes: map[string]schema.Attribute{
+										"private_ip": schema.StringAttribute{
+											Description: "Private IP of the Key Server Host.",
+											Computed:    true,
+										},
+										"vnet_id": schema.StringAttribute{
+											Description: "Cloudflare Tunnel Virtual Network ID.",
+											Computed:    true,
+										},
+									},
+								},
+							},
+						},
+						"modified_on": schema.StringAttribute{
+							Description: "When the certificate was last modified.",
+							Computed:    true,
+							CustomType:  timetypes.RFC3339Type{},
+						},
+						"policy_restrictions": schema.StringAttribute{
+							Description: "The policy restrictions returned by the API. This field is returned in responses\nwhen a policy has been set. The API accepts the \"policy\" field in requests but\nreturns this field as \"policy_restrictions\" in responses.\n\nSpecifies the region(s) where your private key can be held locally for optimal\nTLS performance. Format is a boolean expression, for example:\n\"(country: US) or (region: EU)\"",
+							Computed:    true,
+						},
+						"priority": schema.Float64Attribute{
+							Description: "The order/priority in which the certificate will be used in a request. The higher priority will break ties across overlapping 'legacy_custom' certificates, but 'legacy_custom' certificates will always supercede 'sni_custom' certificates.",
+							Computed:    true,
+						},
+						"signature": schema.StringAttribute{
+							Description: "The type of hash used for the certificate.",
+							Computed:    true,
+						},
+						"status": schema.StringAttribute{
+							Description: "Status of the zone's custom SSL.\nAvailable values: \"active\", \"expired\", \"deleted\", \"pending\", \"initializing\".",
+							Computed:    true,
+							Validators: []validator.String{
+								stringvalidator.OneOfCaseInsensitive(
+									"active",
+									"expired",
+									"deleted",
+									"pending",
+									"initializing",
+								),
+							},
+						},
+						"uploaded_on": schema.StringAttribute{
+							Description: "When the certificate was uploaded to Cloudflare.",
+							Computed:    true,
+							CustomType:  timetypes.RFC3339Type{},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func (d *CustomSSLsDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = ListDataSourceSchema(ctx)
+}
+
+func (d *CustomSSLsDataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
+	return []datasource.ConfigValidator{}
+}

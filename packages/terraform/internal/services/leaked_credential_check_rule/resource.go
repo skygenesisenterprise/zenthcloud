@@ -1,0 +1,272 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package leaked_credential_check_rule
+
+import (
+	"context"
+	"fmt"
+	"io"
+	"net/http"
+
+	"github.com/cloudflare/cloudflare-go/v7"
+	"github.com/cloudflare/cloudflare-go/v7/leaked_credential_checks"
+	"github.com/cloudflare/cloudflare-go/v7/option"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+// Ensure provider defined types fully satisfy framework interfaces.
+var _ resource.ResourceWithConfigure = (*LeakedCredentialCheckRuleResource)(nil)
+var _ resource.ResourceWithModifyPlan = (*LeakedCredentialCheckRuleResource)(nil)
+var _ resource.ResourceWithImportState = (*LeakedCredentialCheckRuleResource)(nil)
+
+func NewResource() resource.Resource {
+	return &LeakedCredentialCheckRuleResource{}
+}
+
+// LeakedCredentialCheckRuleResource defines the resource implementation.
+type LeakedCredentialCheckRuleResource struct {
+	client *cloudflare.Client
+}
+
+func (r *LeakedCredentialCheckRuleResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_leaked_credential_check_rule"
+}
+
+func (r *LeakedCredentialCheckRuleResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+
+	client, ok := req.ProviderData.(*cloudflare.Client)
+
+	if !ok {
+		resp.Diagnostics.AddError(
+			"unexpected resource configure type",
+			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
+		return
+	}
+
+	r.client = client
+}
+
+func (r *LeakedCredentialCheckRuleResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data *LeakedCredentialCheckRuleModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	dataBytes, err := data.MarshalJSON()
+	if err != nil {
+		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
+		return
+	}
+	res := new(http.Response)
+	env := LeakedCredentialCheckRuleResultEnvelope{*data}
+	_, err = r.client.LeakedCredentialChecks.Detections.New(
+		ctx,
+		leaked_credential_checks.DetectionNewParams{
+			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+		},
+		option.WithRequestBody("application/json", dataBytes),
+		option.WithResponseBodyInto(&res),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	bytes, _ := io.ReadAll(res.Body)
+	err = apijson.UnmarshalComputed(bytes, &env)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+	data = &env.Result
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *LeakedCredentialCheckRuleResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data *LeakedCredentialCheckRuleModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var state *LeakedCredentialCheckRuleModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	dataBytes, err := data.MarshalJSONForUpdate(*state)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
+		return
+	}
+	res := new(http.Response)
+	env := LeakedCredentialCheckRuleResultEnvelope{*data}
+	_, err = r.client.LeakedCredentialChecks.Detections.Update(
+		ctx,
+		data.ID.ValueString(),
+		leaked_credential_checks.DetectionUpdateParams{
+			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+		},
+		option.WithRequestBody("application/json", dataBytes),
+		option.WithResponseBodyInto(&res),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	bytes, _ := io.ReadAll(res.Body)
+	err = apijson.UnmarshalComputed(bytes, &env)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+	data = &env.Result
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *LeakedCredentialCheckRuleResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data *LeakedCredentialCheckRuleModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// If the ID is empty the v4 provider failed to store the detection_id in
+	// state. Remove the resource so Terraform plans to recreate it with a
+	// proper ID rather than erroring with "missing required detection_id".
+	if data.ID.ValueString() == "" {
+		resp.Diagnostics.AddWarning(
+			"Leaked credential check rule has no ID in state",
+			"The resource has an empty ID, likely due to a v4 provider bug. "+
+				"It will be removed from state and recreated on the next apply.",
+		)
+		resp.State.RemoveResource(ctx)
+		return
+	}
+
+	res := new(http.Response)
+	env := LeakedCredentialCheckRuleResultEnvelope{*data}
+	_, err := r.client.LeakedCredentialChecks.Detections.Get(
+		ctx,
+		data.ID.ValueString(),
+		leaked_credential_checks.DetectionGetParams{
+			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+		},
+		option.WithResponseBodyInto(&res),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if res != nil && res.StatusCode == 404 {
+		resp.Diagnostics.AddWarning("Resource not found", "The resource was not found on the server and will be removed from state.")
+		resp.State.RemoveResource(ctx)
+		return
+	}
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	bytes, _ := io.ReadAll(res.Body)
+	err = apijson.Unmarshal(bytes, &env)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+	data = &env.Result
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *LeakedCredentialCheckRuleResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data *LeakedCredentialCheckRuleModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	_, err := r.client.LeakedCredentialChecks.Detections.Delete(
+		ctx,
+		data.ID.ValueString(),
+		leaked_credential_checks.DetectionDeleteParams{
+			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+		},
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *LeakedCredentialCheckRuleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	var data = new(LeakedCredentialCheckRuleModel)
+
+	path_zone_id := ""
+	path_detection_id := ""
+	diags := importpath.ParseImportID(
+		req.ID,
+		"<zone_id>/<detection_id>",
+		&path_zone_id,
+		&path_detection_id,
+	)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	data.ZoneID = types.StringValue(path_zone_id)
+	data.ID = types.StringValue(path_detection_id)
+
+	res := new(http.Response)
+	env := LeakedCredentialCheckRuleResultEnvelope{*data}
+	_, err := r.client.LeakedCredentialChecks.Detections.Get(
+		ctx,
+		path_detection_id,
+		leaked_credential_checks.DetectionGetParams{
+			ZoneID: cloudflare.F(path_zone_id),
+		},
+		option.WithResponseBodyInto(&res),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	bytes, _ := io.ReadAll(res.Body)
+	err = apijson.Unmarshal(bytes, &env)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+	data = &env.Result
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *LeakedCredentialCheckRuleResource) ModifyPlan(_ context.Context, _ resource.ModifyPlanRequest, _ *resource.ModifyPlanResponse) {
+
+}

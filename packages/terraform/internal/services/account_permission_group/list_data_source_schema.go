@@ -1,0 +1,145 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package account_permission_group
+
+import (
+	"context"
+
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+)
+
+var _ datasource.DataSourceWithConfigValidators = (*AccountPermissionGroupsDataSource)(nil)
+
+func ListDataSourceSchema(ctx context.Context) schema.Schema {
+	return schema.Schema{
+		MarkdownDescription: schemata.Description{
+			Scopes: []string{
+				"Account Firewall Access Rules Read",
+				"Account Firewall Access Rules Write",
+				"Account Settings Read",
+				"Account Settings Write",
+				"Billing Read",
+				"Billing Write",
+				"DDoS Botnet Feed Read",
+				"DDoS Botnet Feed Write",
+				"DDoS Protection Read",
+				"DDoS Protection Write",
+				"DNS Firewall Read",
+				"DNS Firewall Write",
+				"DNS View Read",
+				"DNS View Write",
+				"Load Balancers Account Read",
+				"Load Balancers Account Write",
+				"Load Balancing: Monitors and Pools Read",
+				"Load Balancing: Monitors and Pools Write",
+				"SCIM Provisioning",
+				"Trust and Safety Read",
+				"Trust and Safety Write",
+				"Workers KV Storage Read",
+				"Workers KV Storage Write",
+				"Workers R2 Storage Read",
+				"Workers R2 Storage Write",
+				"Workers Scripts Read",
+				"Workers Scripts Write",
+				"Workers Tail Read",
+				"Zero Trust: PII Read",
+			},
+		}.String(),
+		Attributes: map[string]schema.Attribute{
+			"account_id": schema.StringAttribute{
+				Description: "Account identifier tag.",
+				Optional:    true,
+			},
+			"id": schema.StringAttribute{
+				Description: "ID of the permission group to be fetched.",
+				Optional:    true,
+			},
+			"label": schema.StringAttribute{
+				Description: "Label of the permission group to be fetched.",
+				Optional:    true,
+			},
+			"name": schema.StringAttribute{
+				Description: "Name of the permission group to be fetched.",
+				Optional:    true,
+			},
+			"max_items": schema.Int64Attribute{
+				Description: "Max items to fetch, default: 1000",
+				Optional:    true,
+				Validators: []validator.Int64{
+					int64validator.AtLeast(0),
+				},
+			},
+			"result": schema.ListNestedAttribute{
+				Description: "The items returned by the data source",
+				Computed:    true,
+				CustomType:  customfield.NewNestedObjectListType[AccountPermissionGroupsResultDataSourceModel](ctx),
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"id": schema.StringAttribute{
+							Description: "Identifier of the permission group.",
+							Computed:    true,
+						},
+						"meta": schema.SingleNestedAttribute{
+							Description: "Attributes associated to the permission group.",
+							Computed:    true,
+							CustomType:  customfield.NewNestedObjectType[AccountPermissionGroupsMetaDataSourceModel](ctx),
+							Attributes: map[string]schema.Attribute{
+								"category": schema.StringAttribute{
+									Description: "A category used to group permission groups.",
+									Computed:    true,
+								},
+								"deprecated": schema.StringAttribute{
+									Description: "Indicates whether the permission group is deprecated.",
+									Computed:    true,
+								},
+								"description": schema.StringAttribute{
+									Description: "Additional information about the permission group.",
+									Computed:    true,
+								},
+								"editable": schema.StringAttribute{
+									Description: "Indicates whether the permission group can be edited.",
+									Computed:    true,
+								},
+								"eol_at": schema.StringAttribute{
+									Description: "The planned end-of-life date and time, when provided.",
+									Computed:    true,
+									CustomType:  timetypes.RFC3339Type{},
+								},
+								"label": schema.StringAttribute{
+									Description: "A label identifying the permission group.",
+									Computed:    true,
+								},
+								"scopes": schema.StringAttribute{
+									Description: "The scope associated with the permission group.",
+									Computed:    true,
+								},
+								"visibility": schema.StringAttribute{
+									Description: "Indicates the permission group's availability or visibility.",
+									Computed:    true,
+								},
+							},
+						},
+						"name": schema.StringAttribute{
+							Description: "Name of the permission group.",
+							Computed:    true,
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func (d *AccountPermissionGroupsDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = ListDataSourceSchema(ctx)
+}
+
+func (d *AccountPermissionGroupsDataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
+	return []datasource.ConfigValidator{}
+}

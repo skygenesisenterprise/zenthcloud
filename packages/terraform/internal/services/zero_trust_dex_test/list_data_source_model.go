@@ -1,0 +1,67 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package zero_trust_dex_test
+
+import (
+	"context"
+
+	"github.com/cloudflare/cloudflare-go/v7"
+	"github.com/cloudflare/cloudflare-go/v7/zero_trust"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+type ZeroTrustDEXTestsResultListDataSourceEnvelope struct {
+	Result customfield.NestedObjectList[ZeroTrustDEXTestsResultDataSourceModel] `json:"result,computed"`
+}
+
+type ZeroTrustDEXTestsDataSourceModel struct {
+	AccountID types.String                                                         `tfsdk:"account_id" path:"account_id,optional"`
+	Kind      types.String                                                         `tfsdk:"kind" query:"kind,optional"`
+	TestName  types.String                                                         `tfsdk:"test_name" query:"testName,optional"`
+	MaxItems  types.Int64                                                          `tfsdk:"max_items"`
+	Result    customfield.NestedObjectList[ZeroTrustDEXTestsResultDataSourceModel] `tfsdk:"result"`
+}
+
+func (m *ZeroTrustDEXTestsDataSourceModel) toListParams(_ context.Context) (params zero_trust.DeviceDEXTestListParams, diags diag.Diagnostics) {
+	params = zero_trust.DeviceDEXTestListParams{
+		AccountID: cloudflare.F(m.AccountID.ValueString()),
+	}
+
+	if !m.Kind.IsNull() {
+		params.Kind = cloudflare.F(zero_trust.DeviceDEXTestListParamsKind(m.Kind.ValueString()))
+	}
+	if !m.TestName.IsNull() {
+		params.TestName = cloudflare.F(m.TestName.ValueString())
+	}
+
+	return
+}
+
+type ZeroTrustDEXTestsResultDataSourceModel struct {
+	ID             types.String                                                                 `tfsdk:"id" json:"test_id,computed"`
+	Data           customfield.NestedObject[ZeroTrustDEXTestsDataDataSourceModel]               `tfsdk:"data" json:"data,computed"`
+	Enabled        types.Bool                                                                   `tfsdk:"enabled" json:"enabled,computed"`
+	Interval       types.String                                                                 `tfsdk:"interval" json:"interval,computed"`
+	Name           types.String                                                                 `tfsdk:"name" json:"name,computed"`
+	Created        timetypes.RFC3339                                                            `tfsdk:"created" json:"created,computed" format:"date-time"`
+	Description    types.String                                                                 `tfsdk:"description" json:"description,computed"`
+	TargetPolicies customfield.NestedObjectList[ZeroTrustDEXTestsTargetPoliciesDataSourceModel] `tfsdk:"target_policies" json:"target_policies,computed_optional"`
+	Targeted       types.Bool                                                                   `tfsdk:"targeted" json:"targeted,computed"`
+	TestID         types.String                                                                 `tfsdk:"test_id" json:"test_id,computed"`
+	Updated        timetypes.RFC3339                                                            `tfsdk:"updated" json:"updated,computed" format:"date-time"`
+}
+
+type ZeroTrustDEXTestsDataDataSourceModel struct {
+	Host   types.String `tfsdk:"host" json:"host,computed"`
+	Kind   types.String `tfsdk:"kind" json:"kind,computed"`
+	Method types.String `tfsdk:"method" json:"method,computed"`
+}
+
+type ZeroTrustDEXTestsTargetPoliciesDataSourceModel struct {
+	ID      types.String `tfsdk:"id" json:"id,computed"`
+	Default types.Bool   `tfsdk:"default" json:"default,computed"`
+	Name    types.String `tfsdk:"name" json:"name,computed"`
+}

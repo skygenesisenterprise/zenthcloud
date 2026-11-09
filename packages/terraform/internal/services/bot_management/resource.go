@@ -1,0 +1,277 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package bot_management
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+
+	"github.com/cloudflare/cloudflare-go/v7"
+	"github.com/cloudflare/cloudflare-go/v7/bot_management"
+	"github.com/cloudflare/cloudflare-go/v7/option"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+// Ensure provider defined types fully satisfy framework interfaces.
+var _ resource.ResourceWithConfigure = (*BotManagementResource)(nil)
+var _ resource.ResourceWithModifyPlan = (*BotManagementResource)(nil)
+var _ resource.ResourceWithImportState = (*BotManagementResource)(nil)
+
+func NewResource() resource.Resource {
+	return &BotManagementResource{}
+}
+
+// BotManagementResource defines the resource implementation.
+type BotManagementResource struct {
+	client *cloudflare.Client
+}
+
+func (r *BotManagementResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_bot_management"
+}
+
+func (r *BotManagementResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+
+	client, ok := req.ProviderData.(*cloudflare.Client)
+
+	if !ok {
+		resp.Diagnostics.AddError(
+			"unexpected resource configure type",
+			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
+		return
+	}
+
+	r.client = client
+}
+
+func (r *BotManagementResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data *BotManagementModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Convert Terraform model to API model
+	apiModel := data.ToAPIModel()
+	dataBytes, err := json.Marshal(apiModel)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
+		return
+	}
+	
+	res := new(http.Response)
+	_, err = r.client.BotManagement.Update(
+		ctx,
+		bot_management.BotManagementUpdateParams{
+			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+		},
+		option.WithRequestBody("application/json", dataBytes),
+		option.WithResponseBodyInto(&res),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	
+	bytes, _ := io.ReadAll(res.Body)
+	var env BotManagementResultEnvelope
+	err = json.Unmarshal(bytes, &env)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+	
+	// Update the state from API response
+	data.UpdateFromAPIModel(env.Result)
+	data.ID = data.ZoneID
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *BotManagementResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data *BotManagementModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var state *BotManagementModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Convert Terraform model to API model
+	apiModel := data.ToAPIModel()
+	dataBytes, err := json.Marshal(apiModel)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
+		return
+	}
+	
+	res := new(http.Response)
+	_, err = r.client.BotManagement.Update(
+		ctx,
+		bot_management.BotManagementUpdateParams{
+			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+		},
+		option.WithRequestBody("application/json", dataBytes),
+		option.WithResponseBodyInto(&res),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	
+	bytes, _ := io.ReadAll(res.Body)
+	var env BotManagementResultEnvelope
+	err = json.Unmarshal(bytes, &env)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+	
+	// Start with current state, then update from API response (preserves values for missing fields)
+	*data = *state
+	data.UpdateFromAPIModel(env.Result)
+	data.ID = data.ZoneID
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *BotManagementResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data *BotManagementModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	res := new(http.Response)
+	_, err := r.client.BotManagement.Get(
+		ctx,
+		bot_management.BotManagementGetParams{
+			ZoneID: cloudflare.F(data.ZoneID.ValueString()),
+		},
+		option.WithResponseBodyInto(&res),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if res != nil && res.StatusCode == 404 {
+		resp.Diagnostics.AddWarning("Resource not found", "The resource was not found on the server and will be removed from state.")
+		resp.State.RemoveResource(ctx)
+		return
+	}
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	
+	bytes, _ := io.ReadAll(res.Body)
+	var env BotManagementResultEnvelope
+	err = json.Unmarshal(bytes, &env)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+	
+	// Update the state from API response (preserves existing values for missing fields)
+	data.UpdateFromAPIModel(env.Result)
+	data.ID = data.ZoneID
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *BotManagementResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+
+}
+
+func (r *BotManagementResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	var data = new(BotManagementModel)
+
+	path := ""
+	diags := importpath.ParseImportID(
+		req.ID,
+		"<zone_id>",
+		&path,
+	)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	data.ZoneID = types.StringValue(path)
+
+	res := new(http.Response)
+	_, err := r.client.BotManagement.Get(
+		ctx,
+		bot_management.BotManagementGetParams{
+			ZoneID: cloudflare.F(path),
+		},
+		option.WithResponseBodyInto(&res),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	
+	bytes, _ := io.ReadAll(res.Body)
+	var env BotManagementResultEnvelope
+	err = json.Unmarshal(bytes, &env)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+	
+	// Update the state from API response
+	data.UpdateFromAPIModel(env.Result)
+	data.ID = data.ZoneID
+
+	// ai_bots_migration_opt_out is not part of the hand-maintained
+	// BotManagementAPIModel plumbing, so UpdateFromAPIModel never populates it.
+	// ImportState builds its model from a zero value with no plan phase, so
+	// without this it stays null instead of the schema's documented default.
+	if data.AIBotsMigrationOptOut.IsNull() {
+		data.AIBotsMigrationOptOut = types.BoolValue(false)
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *BotManagementResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.State.Raw.IsNull() {
+		resp.Diagnostics.AddWarning(
+			"Resource Destruction Considerations",
+			"This resource cannot be destroyed from Terraform. If you create this resource, it will be "+
+				"present in the API until manually deleted.",
+		)
+	}
+	if req.Plan.Raw.IsNull() {
+		resp.Diagnostics.AddWarning(
+			"Resource Destruction Considerations",
+			"Applying this resource destruction will remove the resource from the Terraform state "+
+				"but will not change it in the API. If you would like to destroy or reset this resource "+
+				"in the API, refer to the documentation for how to do it manually.",
+		)
+	}
+}

@@ -1,0 +1,703 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package workers_script
+
+import (
+	"context"
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
+	"io"
+	"mime"
+	"mime/multipart"
+	"net/http"
+	"strings"
+
+	"github.com/cloudflare/cloudflare-go/v7"
+	"github.com/cloudflare/cloudflare-go/v7/option"
+	"github.com/cloudflare/cloudflare-go/v7/workers"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/jinzhu/copier"
+)
+
+// Ensure provider defined types fully satisfy framework interfaces.
+var _ resource.ResourceWithConfigure = (*WorkersScriptResource)(nil)
+var _ resource.ResourceWithModifyPlan = (*WorkersScriptResource)(nil)
+var _ resource.ResourceWithImportState = (*WorkersScriptResource)(nil)
+
+func NewResource() resource.Resource {
+	return &WorkersScriptResource{}
+}
+
+// WorkersScriptResource defines the resource implementation.
+type WorkersScriptResource struct {
+	client *cloudflare.Client
+}
+
+func (r *WorkersScriptResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_workers_script"
+}
+
+func (r *WorkersScriptResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+
+	client, ok := req.ProviderData.(*cloudflare.Client)
+
+	if !ok {
+		resp.Diagnostics.AddError(
+			"unexpected resource configure type",
+			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
+		return
+	}
+
+	r.client = client
+}
+
+func (r *WorkersScriptResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data *WorkersScriptModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("migrations"), &data.Migrations)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	planMigrations := data.Migrations
+
+	var assets *WorkersScriptMetadataAssetsModel
+	if data.Assets != nil {
+		assets = &WorkersScriptMetadataAssetsModel{
+			Config:              data.Assets.Config,
+			JWT:                 data.Assets.JWT,
+			Directory:           data.Assets.Directory,
+			AssetManifestSHA256: data.Assets.AssetManifestSHA256,
+		}
+	}
+	err := handleAssets(ctx, r.client, data)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to upload assets", err.Error())
+		return
+	}
+
+	contentSHA256 := data.ContentSHA256
+	contentType := data.ContentType
+
+	if !data.ContentFile.IsNull() {
+		content, err := readFile((data.ContentFile.ValueString()))
+		if err != nil {
+			resp.Diagnostics.AddError("failed to read file", err.Error())
+			return
+		}
+		data.Content = types.StringValue(content)
+	}
+	planFiles, err := prepareFileUploads(data)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to prepare file upload", err.Error())
+		return
+	}
+
+	dataBytes, formDataContentType, err := data.MarshalMultipart()
+	if err != nil {
+		resp.Diagnostics.AddError("failed to serialize multipart http request", err.Error())
+		return
+	}
+	params := workers.ScriptUpdateParams{
+		AccountID: cloudflare.F(data.AccountID.ValueString()),
+	}
+
+	if !data.BindingsInherit.IsNull() && !data.BindingsInherit.IsUnknown() {
+		params.BindingsInherit = cloudflare.F(
+			workers.ScriptUpdateParamsBindingsInherit(data.BindingsInherit.ValueString()),
+		)
+	}
+	res := new(http.Response)
+	env := WorkersScriptResultEnvelope{*data}
+	_, err = r.client.Workers.Scripts.Update(
+		ctx,
+		data.ScriptName.ValueString(),
+		params,
+		option.WithRequestBody(formDataContentType, dataBytes),
+		option.WithResponseBodyInto(&res),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	bytes, _ := io.ReadAll(res.Body)
+	err = apijson.UnmarshalComputed(bytes, &env)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+	data = &env.Result
+	data.ID = data.ScriptName
+	data.ContentSHA256 = contentSHA256
+	data.ContentType = contentType
+	data.Assets = assets
+	data.Migrations = planMigrations
+	data.Files = planFiles
+
+	// MarshalMultipart uses a value receiver so its assignment to r.BodyPart has no
+	// effect on the caller. Explicitly set body_part here for service workers so it
+	// is persisted in state and survives subsequent refreshes.
+	if data.MainModule.IsNull() && (!data.Content.IsNull() || !data.ContentFile.IsNull()) {
+		data.BodyPart = types.StringValue("script")
+	}
+
+	// avoid storing `content` in state if `content_file` is configured
+	if !data.ContentFile.IsNull() {
+		data.Content = types.StringNull()
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *WorkersScriptResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data *WorkersScriptModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("migrations"), &data.Migrations)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	planMigrations := data.Migrations
+
+	var assets *WorkersScriptMetadataAssetsModel
+	if data.Assets != nil {
+		assets = &WorkersScriptMetadataAssetsModel{
+			Config:              data.Assets.Config,
+			JWT:                 data.Assets.JWT,
+			Directory:           data.Assets.Directory,
+			AssetManifestSHA256: data.Assets.AssetManifestSHA256,
+		}
+	}
+	err := handleAssets(ctx, r.client, data)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to upload assets", err.Error())
+		return
+	}
+
+	var state *WorkersScriptModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	contentSHA256 := data.ContentSHA256
+	contentType := data.ContentType
+
+	if !data.ContentFile.IsNull() {
+		content, err := readFile((data.ContentFile.ValueString()))
+		if err != nil {
+			resp.Diagnostics.AddError("failed to read file", err.Error())
+			return
+		}
+		data.Content = types.StringValue(content)
+	}
+	planFiles, err := prepareFileUploads(data)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to prepare file upload", err.Error())
+		return
+	}
+
+	dataBytes, formDataContentType, err := data.MarshalMultipart()
+	if err != nil {
+		resp.Diagnostics.AddError("failed to serialize multipart http request", err.Error())
+		return
+	}
+	params := workers.ScriptUpdateParams{
+		AccountID: cloudflare.F(data.AccountID.ValueString()),
+	}
+
+	if !data.BindingsInherit.IsNull() && !data.BindingsInherit.IsUnknown() {
+		params.BindingsInherit = cloudflare.F(
+			workers.ScriptUpdateParamsBindingsInherit(data.BindingsInherit.ValueString()),
+		)
+	}
+	res := new(http.Response)
+	env := WorkersScriptResultEnvelope{*data}
+	_, err = r.client.Workers.Scripts.Update(
+		ctx,
+		data.ScriptName.ValueString(),
+		params,
+		option.WithRequestBody(formDataContentType, dataBytes),
+		option.WithResponseBodyInto(&res),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	bytes, _ := io.ReadAll(res.Body)
+	err = apijson.UnmarshalComputed(bytes, &env)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+	data = &env.Result
+	data.ID = data.ScriptName
+	data.ContentSHA256 = contentSHA256
+	data.ContentType = contentType
+	data.Assets = assets
+	data.Migrations = planMigrations
+	data.Files = planFiles
+
+	// Same fix as Create: explicitly set body_part for service workers.
+	if data.MainModule.IsNull() && (!data.Content.IsNull() || !data.ContentFile.IsNull()) {
+		data.BodyPart = types.StringValue("script")
+	}
+
+	// avoid storing `content` in state if `content_file` is configured
+	if !data.ContentFile.IsNull() {
+		data.Content = types.StringNull()
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *WorkersScriptResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data *WorkersScriptModel
+	var state *WorkersScriptModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	accountId := data.AccountID.ValueString()
+	scriptName := data.ScriptName.ValueString()
+
+	// fetch the script resource
+	res := new(http.Response)
+	path := fmt.Sprintf("accounts/%s/workers/services/%s", accountId, scriptName)
+	err := r.client.Get(
+		ctx,
+		path,
+		nil,
+		&res,
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if res != nil && res.StatusCode == 404 {
+		resp.Diagnostics.AddWarning("Resource not found", "The resource was not found on the server and will be removed from state.")
+		resp.State.RemoveResource(ctx)
+		return
+	}
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+
+	bytes, _ := io.ReadAll(res.Body)
+	var service WorkersServiceResultEnvelope
+	err = apijson.Unmarshal(bytes, &service)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+	copier.CopyWithOption(&data, &service.Result.DefaultEnvironment.Script, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+
+	// fetch the script metadata and version settings
+	res = new(http.Response)
+	path = fmt.Sprintf("accounts/%s/workers/scripts/%s/settings", accountId, scriptName)
+	err = r.client.Get(
+		ctx,
+		path,
+		nil,
+		&res,
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	if res != nil && res.StatusCode == 404 {
+		resp.Diagnostics.AddWarning("Resource not found", "The resource was not found on the server and will be removed from state.")
+		resp.State.RemoveResource(ctx)
+		return
+	}
+	bytes, _ = io.ReadAll(res.Body)
+	var metadata WorkersScriptMetadataResultEnvelope
+	err = apijson.Unmarshal(bytes, &metadata)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+
+	copier.CopyWithOption(&data.WorkersScriptMetadataModel, &metadata.Result, copier.Option{IgnoreEmpty: true, DeepCopy: true})
+
+	// restore any secret_text `text` values from state since they aren't returned by the API
+	var diags diag.Diagnostics
+	data.Bindings, diags = UpdateSecretTextsFromState(
+		ctx,
+		data.Bindings,
+		state.Bindings,
+	)
+	resp.Diagnostics.Append(diags...)
+
+	if !state.Migrations.IsNull() {
+		data.Migrations = state.Migrations
+	}
+
+	// The copier cannot properly map annotations from the API response because
+	// the API uses slash-separated keys (e.g. "workers/triggered_by") that don't
+	// match Go struct field names. Preserve annotations from prior state to avoid
+	// drift. For the initial Read after Create, the Create response already set
+	// annotations correctly via apijson deserialization.
+	data.Annotations = state.Annotations
+
+	// fetch the script content
+	scriptContentRes, err := r.client.Workers.Scripts.Content.Get(
+		ctx,
+		data.ScriptName.ValueString(),
+		workers.ScriptContentGetParams{
+			AccountID: cloudflare.F(accountId),
+		},
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	switch scriptContentRes.StatusCode {
+	case http.StatusOK:
+		var content string
+		stateFiles := state.Files
+		if stateFiles != nil {
+			emptyFiles := make(map[string]WorkersScriptFileModel)
+			data.Files = &emptyFiles
+		} else {
+			data.Files = nil
+		}
+		mediaType, mediaTypeParams, err := mime.ParseMediaType(scriptContentRes.Header.Get("Content-Type"))
+		if err != nil {
+			resp.Diagnostics.AddError("failed parsing content-type", err.Error())
+			return
+		}
+		if strings.HasPrefix(mediaType, "multipart/") {
+			mr := multipart.NewReader(scriptContentRes.Body, mediaTypeParams["boundary"])
+			type multipartFile struct {
+				content     []byte
+				contentType string
+			}
+			parts := make(map[string]multipartFile)
+			partOrder := make([]string, 0)
+			for {
+				p, err := mr.NextPart()
+				if err == io.EOF {
+					break
+				}
+				if err != nil {
+					resp.Diagnostics.AddError("failed to read response body", err.Error())
+					return
+				}
+				partContent, err := io.ReadAll(p)
+				if err != nil {
+					resp.Diagnostics.AddError("failed to read response body", err.Error())
+					return
+				}
+				name := p.FormName()
+				if name == "" {
+					name = p.FileName()
+				}
+				if name != "" {
+					if _, exists := parts[name]; exists {
+						resp.Diagnostics.AddError("failed to read response body", fmt.Sprintf("duplicate multipart part %q", name))
+						return
+					}
+					parts[name] = multipartFile{content: partContent, contentType: p.Header.Get("Content-Type")}
+					partOrder = append(partOrder, name)
+				}
+			}
+
+			// Prefer the deployed entrypoint reported by the API so a stale
+			// main_module or body_part in state surfaces as drift rather than
+			// an error. The header names the part but not the script format,
+			// so a service worker (body_part in state) stays a service worker.
+			var mainPart string
+			var isMainModule bool
+			if entrypoint := scriptContentRes.Header.Get("CF-Entrypoint"); entrypoint != "" {
+				if _, ok := parts[entrypoint]; ok {
+					mainPart = entrypoint
+					isMainModule = data.MainModule.ValueString() != "" || data.BodyPart.ValueString() == ""
+				}
+			}
+			if mainPart == "" {
+				if name := data.MainModule.ValueString(); name != "" {
+					if _, ok := parts[name]; ok {
+						mainPart = name
+						isMainModule = true
+					}
+				}
+			}
+			if mainPart == "" {
+				if name := data.BodyPart.ValueString(); name != "" {
+					if _, ok := parts[name]; ok {
+						mainPart = name
+					}
+				}
+			}
+			if mainPart == "" {
+				if metadataPart, ok := parts["metadata"]; ok {
+					var metadata struct {
+						MainModule string `json:"main_module"`
+						BodyPart   string `json:"body_part"`
+					}
+					if err := json.Unmarshal(metadataPart.content, &metadata); err != nil {
+						resp.Diagnostics.AddError("failed to read response body", fmt.Sprintf("failed to parse multipart metadata: %s", err))
+						return
+					}
+					mainPart = metadata.MainModule
+					isMainModule = mainPart != ""
+					if mainPart == "" {
+						mainPart = metadata.BodyPart
+					}
+				}
+			}
+			if mainPart == "" {
+				for _, name := range partOrder {
+					if name == "metadata" {
+						continue
+					}
+					if mainPart != "" {
+						resp.Diagnostics.AddError("failed to read response body", "unable to determine the main script from multipart response metadata")
+						return
+					}
+					mainPart = name
+				}
+			}
+			mainFile, ok := parts[mainPart]
+			if !ok {
+				resp.Diagnostics.AddError("failed to read response body", fmt.Sprintf("main script part %q is missing from multipart response", mainPart))
+				return
+			}
+			if isMainModule {
+				data.MainModule = types.StringValue(mainPart)
+			} else if mainPart != "" {
+				// Persist body_part so it survives refreshes for service workers.
+				data.BodyPart = types.StringValue(mainPart)
+			}
+			content = string(mainFile.content)
+
+			refreshedFiles := make(map[string]WorkersScriptFileModel)
+			for _, name := range partOrder {
+				if name == "metadata" || name == mainPart {
+					continue
+				}
+				part := parts[name]
+				file := WorkersScriptFileModel{
+					ContentBase64: types.StringValue(base64.StdEncoding.EncodeToString(part.content)),
+					ContentFile:   types.StringNull(),
+					ContentType:   types.StringValue(part.contentType),
+				}
+				hash, err := calculateStringHash(string(part.content))
+				if err != nil {
+					resp.Diagnostics.AddError("failed to hash multipart file", err.Error())
+					return
+				}
+				file.ContentSHA256 = types.StringValue(hash)
+				if stateFiles != nil {
+					if stateFile, exists := (*stateFiles)[name]; exists && !stateFile.ContentFile.IsNull() {
+						file.ContentBase64 = types.StringNull()
+						file.ContentFile = stateFile.ContentFile
+					}
+				}
+				refreshedFiles[name] = file
+			}
+			if len(refreshedFiles) > 0 || stateFiles != nil {
+				data.Files = &refreshedFiles
+			}
+		} else {
+			bytes, err = io.ReadAll(scriptContentRes.Body)
+			if err != nil {
+				resp.Diagnostics.AddError("failed to read response body", err.Error())
+				return
+			}
+			content = string(bytes)
+		}
+
+		// only update `content` if `content_file` isn't being used instead
+		if data.ContentFile.IsNull() {
+			data.Content = types.StringValue(content)
+		}
+
+		// refresh the content hash in case the remote state has drifted
+		if !data.ContentSHA256.IsNull() {
+			hash, err := calculateStringHash(content)
+			if err != nil {
+				resp.Diagnostics.AddError("failed to hash script content", err.Error())
+				return
+			}
+			data.ContentSHA256 = types.StringValue(hash)
+		}
+	case http.StatusNoContent:
+		data.Content = types.StringNull()
+	default:
+		resp.Diagnostics.AddError("failed to fetch script content", fmt.Sprintf("%v %s", scriptContentRes.StatusCode, scriptContentRes.Status))
+		return
+	}
+
+	// If the API returned an empty object for `placement`, treat it as null
+	if data.Placement.Attributes()["mode"].IsNull() {
+		data.Placement = data.Placement.NullValue(ctx).(customfield.NestedObject[WorkersScriptMetadataPlacementModel])
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func prepareFileUploads(data *WorkersScriptModel) (*map[string]WorkersScriptFileModel, error) {
+	if data.Files == nil {
+		return nil, nil
+	}
+
+	planFiles := *data.Files
+	uploadFiles := make(map[string]WorkersScriptFileModel, len(planFiles))
+	mainPart := data.MainModule.ValueString()
+	if mainPart == "" {
+		mainPart = "script"
+	}
+	for name, file := range planFiles {
+		if name == "" || strings.ContainsAny(name, "\r\n") {
+			return nil, fmt.Errorf("file name %q is not a valid multipart part name", name)
+		}
+		if name == "metadata" || name == mainPart {
+			return nil, fmt.Errorf("file name %q conflicts with a reserved multipart part", name)
+		}
+		fileCopy := file
+		if !file.ContentFile.IsNull() {
+			content, err := readFile(file.ContentFile.ValueString())
+			if err != nil {
+				return nil, err
+			}
+			fileCopy.ContentBase64 = types.StringValue(base64.StdEncoding.EncodeToString([]byte(content)))
+		}
+		uploadFiles[name] = fileCopy
+	}
+	data.Files = &uploadFiles
+	return &planFiles, nil
+}
+
+func (r *WorkersScriptResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data *WorkersScriptModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	params := workers.ScriptDeleteParams{
+		AccountID: cloudflare.F(data.AccountID.ValueString()),
+	}
+
+	if !data.Force.IsNull() && !data.Force.IsUnknown() {
+		params.Force = cloudflare.F(data.Force.ValueBool())
+	}
+
+	_, err := r.client.Workers.Scripts.Delete(
+		ctx,
+		data.ScriptName.ValueString(),
+		params,
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	data.ID = data.ScriptName
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *WorkersScriptResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	var data = new(WorkersScriptModel)
+
+	path_account_id := ""
+	path_script_name := ""
+	diags := importpath.ParseImportID(
+		req.ID,
+		"<account_id>/<script_name>",
+		&path_account_id,
+		&path_script_name,
+	)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	data.AccountID = types.StringValue(path_account_id)
+	data.ScriptName = types.StringValue(path_script_name)
+
+	res := new(http.Response)
+	_, err := r.client.Workers.Scripts.Get(
+		ctx,
+		path_script_name,
+		workers.ScriptGetParams{
+			AccountID: cloudflare.F(path_account_id),
+		},
+		option.WithResponseBodyInto(&res),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	bytes, _ := io.ReadAll(res.Body)
+	err = apijson.Unmarshal(bytes, &data)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+	data.ID = data.ScriptName
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *WorkersScriptResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	if req.Plan.Raw.IsNull() || req.State.Raw.IsNull() {
+		return
+	}
+
+	// After running all the provider plan modification, if there are no differences/updates, return.
+	if req.Plan.Raw.Equal(req.State.Raw) {
+		return
+	}
+
+	// Terraform Framework checks if there are planned changes and if so, marks computed attribute values as unknown.
+	// This occurs before any plan modifiers are run, so if a change doesn't get planned until running a plan modifier (such as recomputing `asset_manifest_sha256`),
+	// any computed attribute values from the previous state are carried over without being marked as unknown.
+	// Since these are now considered "known values", they MUST match after apply, or else Terraform will throw
+	// "Error: Provider produced inconsistent result after apply".
+	// To prevent this, we must explicitly mark any computed attributes we know can change as unknown.
+	resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("modified_on"), timetypes.NewRFC3339Unknown())...)
+	resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("has_assets"), types.BoolUnknown())...)
+}

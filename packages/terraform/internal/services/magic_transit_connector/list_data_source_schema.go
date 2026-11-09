@@ -1,0 +1,144 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package magic_transit_connector
+
+import (
+	"context"
+
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/hashicorp/terraform-plugin-framework-validators/float64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+var _ datasource.DataSourceWithConfigValidators = (*MagicTransitConnectorsDataSource)(nil)
+
+func ListDataSourceSchema(ctx context.Context) schema.Schema {
+	return schema.Schema{
+		MarkdownDescription: schemata.Description{
+			Scopes: []string{
+				"Magic WAN Read",
+				"Magic WAN Write",
+			},
+		}.String(),
+		Attributes: map[string]schema.Attribute{
+			"account_id": schema.StringAttribute{
+				Required: true,
+			},
+			"device_type": schema.StringAttribute{
+				Description: "Filter connectors by device type.\nAvailable values: \"MANAGED\", \"LICENSED\".",
+				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOfCaseInsensitive("MANAGED", "LICENSED"),
+				},
+			},
+			"max_items": schema.Int64Attribute{
+				Description: "Max items to fetch, default: 1000",
+				Optional:    true,
+				Validators: []validator.Int64{
+					int64validator.AtLeast(0),
+				},
+			},
+			"result": schema.ListNestedAttribute{
+				Description: "The items returned by the data source",
+				Computed:    true,
+				CustomType:  customfield.NewNestedObjectListType[MagicTransitConnectorsResultDataSourceModel](ctx),
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"id": schema.StringAttribute{
+							Computed: true,
+						},
+						"activated": schema.BoolAttribute{
+							Computed: true,
+						},
+						"interrupt_window_days_of_week": schema.ListAttribute{
+							Description: "Allowed days of the week for upgrades. Default is all days.",
+							Computed:    true,
+							Validators: []validator.List{
+								listvalidator.ValueStringsAre(
+									stringvalidator.OneOfCaseInsensitive(
+										"Sunday",
+										"Monday",
+										"Tuesday",
+										"Wednesday",
+										"Thursday",
+										"Friday",
+										"Saturday",
+									),
+								),
+							},
+							CustomType:  customfield.NewListType[types.String](ctx),
+							ElementType: types.StringType,
+						},
+						"interrupt_window_duration_hours": schema.Float64Attribute{
+							Computed: true,
+							Validators: []validator.Float64{
+								float64validator.Between(1, 24),
+							},
+						},
+						"interrupt_window_embargo_dates": schema.ListAttribute{
+							Description: "List of dates (YYYY-MM-DD) when upgrades are blocked.",
+							Computed:    true,
+							CustomType:  customfield.NewListType[types.String](ctx),
+							ElementType: types.StringType,
+						},
+						"interrupt_window_hour_of_day": schema.Float64Attribute{
+							Computed: true,
+						},
+						"last_updated": schema.StringAttribute{
+							Computed: true,
+						},
+						"notes": schema.StringAttribute{
+							Computed: true,
+						},
+						"timezone": schema.StringAttribute{
+							Computed: true,
+						},
+						"device": schema.SingleNestedAttribute{
+							Computed:   true,
+							CustomType: customfield.NewNestedObjectType[MagicTransitConnectorsDeviceDataSourceModel](ctx),
+							Attributes: map[string]schema.Attribute{
+								"id": schema.StringAttribute{
+									Computed: true,
+								},
+								"serial_number": schema.StringAttribute{
+									Computed: true,
+								},
+								"type": schema.StringAttribute{
+									Description: `Available values: "MANAGED", "LICENSED".`,
+									Computed:    true,
+									Validators: []validator.String{
+										stringvalidator.OneOfCaseInsensitive("MANAGED", "LICENSED"),
+									},
+								},
+							},
+						},
+						"last_heartbeat": schema.StringAttribute{
+							Computed: true,
+						},
+						"last_seen_version": schema.StringAttribute{
+							Computed: true,
+						},
+						"license_key": schema.StringAttribute{
+							Computed: true,
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func (d *MagicTransitConnectorsDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = ListDataSourceSchema(ctx)
+}
+
+func (d *MagicTransitConnectorsDataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
+	return []datasource.ConfigValidator{}
+}

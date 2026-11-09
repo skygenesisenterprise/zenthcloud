@@ -1,0 +1,364 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package worker
+
+import (
+	"context"
+	"fmt"
+	"io"
+	"net/http"
+
+	"github.com/cloudflare/cloudflare-go/v7"
+	"github.com/cloudflare/cloudflare-go/v7/option"
+	"github.com/cloudflare/cloudflare-go/v7/workers"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/apijson"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/customfield"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/importpath"
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/logging"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+// Ensure provider defined types fully satisfy framework interfaces.
+var _ resource.ResourceWithConfigure = (*WorkerResource)(nil)
+var _ resource.ResourceWithModifyPlan = (*WorkerResource)(nil)
+var _ resource.ResourceWithImportState = (*WorkerResource)(nil)
+
+func NewResource() resource.Resource {
+	return &WorkerResource{}
+}
+
+// WorkerResource defines the resource implementation.
+type WorkerResource struct {
+	client *cloudflare.Client
+}
+
+func (r *WorkerResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_worker"
+}
+
+func (r *WorkerResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+
+	client, ok := req.ProviderData.(*cloudflare.Client)
+
+	if !ok {
+		resp.Diagnostics.AddError(
+			"unexpected resource configure type",
+			fmt.Sprintf("Expected *cloudflare.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
+		return
+	}
+
+	r.client = client
+}
+
+func (r *WorkerResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data *WorkerModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	dataBytes, err := data.MarshalJSON()
+	if err != nil {
+		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
+		return
+	}
+	res := new(http.Response)
+	env := WorkerResultEnvelope{*data}
+	_, err = r.client.Workers.Beta.Workers.New(
+		ctx,
+		workers.BetaWorkerNewParams{
+			AccountID: cloudflare.F(data.AccountID.ValueString()),
+		},
+		option.WithRequestBody("application/json", dataBytes),
+		option.WithResponseBodyInto(&res),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	bytes, _ := io.ReadAll(res.Body)
+	err = apijson.UnmarshalComputed(bytes, &env)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+	data = &env.Result
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *WorkerResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data *WorkerModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var state *WorkerModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	dataBytes, err := data.MarshalJSONForUpdate(*state)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to serialize http request", err.Error())
+		return
+	}
+	res := new(http.Response)
+	env := WorkerResultEnvelope{*data}
+	_, err = r.client.Workers.Beta.Workers.Update(
+		ctx,
+		data.ID.ValueString(),
+		workers.BetaWorkerUpdateParams{
+			AccountID: cloudflare.F(data.AccountID.ValueString()),
+		},
+		option.WithRequestBody("application/json", dataBytes),
+		option.WithResponseBodyInto(&res),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	bytes, _ := io.ReadAll(res.Body)
+	err = apijson.UnmarshalComputed(bytes, &env)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+	data = &env.Result
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *WorkerResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data *WorkerModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	prior := *data
+
+	res := new(http.Response)
+	env := WorkerResultEnvelope{*data}
+	_, err := r.client.Workers.Beta.Workers.Get(
+		ctx,
+		data.ID.ValueString(),
+		workers.BetaWorkerGetParams{
+			AccountID: cloudflare.F(data.AccountID.ValueString()),
+		},
+		option.WithResponseBodyInto(&res),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if res != nil && res.StatusCode == 404 {
+		resp.Diagnostics.AddWarning("Resource not found", "The resource was not found on the server and will be removed from state.")
+		resp.State.RemoveResource(ctx)
+		return
+	}
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	bytes, _ := io.ReadAll(res.Body)
+	err = apijson.Unmarshal(bytes, &env)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+	data = &env.Result
+
+	// The Cloudflare API does not consistently echo observability.traces.propagation_policy.
+	// Preserve the prior state value when the API omits it to avoid spurious refresh plans.
+	resp.Diagnostics.Append(preservePropagationPolicy(ctx, data, &prior)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *WorkerResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data *WorkerModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	params := workers.BetaWorkerDeleteParams{
+		AccountID: cloudflare.F(data.AccountID.ValueString()),
+	}
+
+	if !data.Force.IsNull() && !data.Force.IsUnknown() {
+		params.Force = cloudflare.F(data.Force.ValueBool())
+	}
+
+	_, err := r.client.Workers.Beta.Workers.Delete(
+		ctx,
+		data.ID.ValueString(),
+		params,
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *WorkerResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	var data = new(WorkerModel)
+
+	path_account_id := ""
+	path_worker_id := ""
+	diags := importpath.ParseImportID(
+		req.ID,
+		"<account_id>/<worker_id>",
+		&path_account_id,
+		&path_worker_id,
+	)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	data.AccountID = types.StringValue(path_account_id)
+	data.ID = types.StringValue(path_worker_id)
+
+	res := new(http.Response)
+	env := WorkerResultEnvelope{*data}
+	_, err := r.client.Workers.Beta.Workers.Get(
+		ctx,
+		path_worker_id,
+		workers.BetaWorkerGetParams{
+			AccountID: cloudflare.F(path_account_id),
+		},
+		option.WithResponseBodyInto(&res),
+		option.WithMiddleware(logging.Middleware(ctx)),
+	)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to make http request", err.Error())
+		return
+	}
+	bytes, _ := io.ReadAll(res.Body)
+	err = apijson.Unmarshal(bytes, &env)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to deserialize http request", err.Error())
+		return
+	}
+	data = &env.Result
+
+	// On import we have no prior state, so synthesize one with the documented
+	// default for propagation_policy ("authenticated") so the field is not
+	// left null when the API omits it.
+	synthetic := importStateWithPropagationPolicyDefault(ctx)
+	resp.Diagnostics.Append(preservePropagationPolicy(ctx, data, synthetic)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *WorkerResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	var plan, state *WorkerModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() || plan == nil || state == nil {
+		return
+	}
+
+	// Compare only the user-configurable subdomain attributes (enabled,
+	// previews_enabled). The subdomain block also contains computed-only fields
+	// (preview_url_suffix, url) that are unknown in the plan whenever the
+	// framework re-evaluates them, which would make a full plan.Subdomain.Equal
+	// check return false even when the user changed nothing.
+	var planSubdomainEnabled, stateSubdomainEnabled types.Bool
+	var planSubdomainPreviewsEnabled, stateSubdomainPreviewsEnabled types.Bool
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("subdomain").AtName("enabled"), &planSubdomainEnabled)...)
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("subdomain").AtName("enabled"), &stateSubdomainEnabled)...)
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("subdomain").AtName("previews_enabled"), &planSubdomainPreviewsEnabled)...)
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("subdomain").AtName("previews_enabled"), &stateSubdomainPreviewsEnabled)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	subdomainChanged := (!planSubdomainEnabled.IsUnknown() && !planSubdomainEnabled.Equal(stateSubdomainEnabled)) ||
+		(!planSubdomainPreviewsEnabled.IsUnknown() && !planSubdomainPreviewsEnabled.Equal(stateSubdomainPreviewsEnabled))
+
+	// Compare only the user-configurable observability attributes (enabled,
+	// head_sampling_rate, logs, traces). observability.issues is a
+	// computed-only field the API does not reliably echo, so a full
+	// plan.Observability.Equal check would return false even when the user
+	// changed nothing - which previously also broke the references/subdomain
+	// stabilization below via this same guard.
+	var planObsEnabled, stateObsEnabled types.Bool
+	var planObsHeadSamplingRate, stateObsHeadSamplingRate types.Float64
+	var planObsLogs, stateObsLogs customfield.NestedObject[WorkerObservabilityLogsModel]
+	var planObsTraces, stateObsTraces customfield.NestedObject[WorkerObservabilityTracesModel]
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("observability").AtName("enabled"), &planObsEnabled)...)
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("observability").AtName("enabled"), &stateObsEnabled)...)
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("observability").AtName("head_sampling_rate"), &planObsHeadSamplingRate)...)
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("observability").AtName("head_sampling_rate"), &stateObsHeadSamplingRate)...)
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("observability").AtName("logs"), &planObsLogs)...)
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("observability").AtName("logs"), &stateObsLogs)...)
+	resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("observability").AtName("traces"), &planObsTraces)...)
+	resp.Diagnostics.Append(req.State.GetAttribute(ctx, path.Root("observability").AtName("traces"), &stateObsTraces)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	observabilityChanged := (!planObsEnabled.IsUnknown() && !planObsEnabled.Equal(stateObsEnabled)) ||
+		(!planObsHeadSamplingRate.IsUnknown() && !planObsHeadSamplingRate.Equal(stateObsHeadSamplingRate)) ||
+		(!planObsLogs.IsUnknown() && !planObsLogs.Equal(stateObsLogs)) ||
+		(!planObsTraces.IsUnknown() && !planObsTraces.Equal(stateObsTraces))
+
+	var configuredPreviews customfield.NestedObject[WorkerPreviewsBaseConfigModel]
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("previews_base_config"), &configuredPreviews)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	previewsChanged, err := previewsBaseConfigChanged(ctx, plan.PreviewsBaseConfig, state.PreviewsBaseConfig, configuredPreviews)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to compare preview configuration", err.Error())
+		return
+	}
+
+	// If there are any meaningful changes to user-configurable attributes, do
+	// nothing so that updated_on can legitimately change on update.
+	if (!plan.Name.IsUnknown() && !plan.Name.Equal(state.Name)) ||
+		(!plan.Logpush.IsUnknown() && !plan.Logpush.Equal(state.Logpush)) ||
+		(!plan.Tags.IsUnknown() && !plan.Tags.Equal(state.Tags)) ||
+		observabilityChanged ||
+		subdomainChanged ||
+		previewsChanged ||
+		(!plan.TailConsumers.IsUnknown() && !plan.TailConsumers.Equal(state.TailConsumers)) {
+		return
+	}
+
+	// No changes to user-configurable attributes: stabilize computed fields by
+	// copying them from state so they don't appear as (known after apply).
+	resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("updated_on"), state.UpdatedOn)...)
+	resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("references"), state.References)...)
+	resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("subdomain"), state.Subdomain)...)
+	resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("observability"), state.Observability)...)
+	resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("previews_base_config"), state.PreviewsBaseConfig)...)
+}

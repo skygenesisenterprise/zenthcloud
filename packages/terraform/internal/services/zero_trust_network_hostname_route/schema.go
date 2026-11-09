@@ -1,0 +1,94 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package zero_trust_network_hostname_route
+
+import (
+	"context"
+
+	"github.com/cloudflare/terraform-provider-cloudflare/internal/schemata"
+	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+)
+
+var _ resource.ResourceWithConfigValidators = (*ZeroTrustNetworkHostnameRouteResource)(nil)
+
+func ResourceSchema(ctx context.Context) schema.Schema {
+	return schema.Schema{
+		MarkdownDescription: schemata.Description{
+			Scopes: []string{
+				"Cloudflare One Networks Read",
+				"Cloudflare One Networks Write",
+				"Cloudflare Tunnel Read",
+				"Cloudflare Tunnel Write",
+			},
+		}.String(),
+		Version: 500,
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Description:   "The hostname route ID.",
+				Computed:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()},
+			},
+			"account_id": schema.StringAttribute{
+				Description:   "Cloudflare account ID",
+				Required:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			},
+			"comment": schema.StringAttribute{
+				Description: "An optional description of the hostname route.",
+				Optional:    true,
+			},
+			"hostname": schema.StringAttribute{
+				Description: "The hostname of the route.",
+				Optional:    true,
+			},
+			"tunnel_id": schema.StringAttribute{
+				Description: "UUID of the tunnel.",
+				Optional:    true,
+			},
+			"created_at": schema.StringAttribute{
+				Description:   "Timestamp of when the resource was created.",
+				Computed:      true,
+				CustomType:    timetypes.RFC3339Type{},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseNonNullStateForUnknown()},
+			},
+			"deleted_at": schema.StringAttribute{
+				Description: "Timestamp of when the resource was deleted. If `null`, the resource has not been deleted.",
+				Computed:    true,
+				CustomType:  timetypes.RFC3339Type{},
+			},
+			"tun_type": schema.StringAttribute{
+				Description: "The type of tunnel.\nAvailable values: \"cfd_tunnel\", \"warp_connector\", \"warp\", \"magic\", \"ip_sec\", \"gre\", \"cni\".",
+				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOfCaseInsensitive(
+						"cfd_tunnel",
+						"warp_connector",
+						"warp",
+						"magic",
+						"ip_sec",
+						"gre",
+						"cni",
+					),
+				},
+			},
+			"tunnel_name": schema.StringAttribute{
+				Description: "A user-friendly name for a tunnel.",
+				Computed:    true,
+			},
+		},
+	}
+}
+
+func (r *ZeroTrustNetworkHostnameRouteResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = ResourceSchema(ctx)
+}
+
+func (r *ZeroTrustNetworkHostnameRouteResource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
+	return []resource.ConfigValidator{}
+}

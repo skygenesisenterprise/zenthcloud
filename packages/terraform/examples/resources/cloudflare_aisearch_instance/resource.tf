@@ -1,0 +1,105 @@
+resource "cloudflare_ai_search_instance" "example_ai_search_instance" {
+  account_id = "c3dc5f0b34a14ff8e1b3ec04895e1b22"
+  id = "my-ai-search"
+  ai_gateway_id = "ai_gateway_id"
+  aisearch_model = "ai_search_model"
+  cache = true
+  cache_threshold = "super_strict_match"
+  cache_ttl = 600
+  chunk = true
+  chunk_overlap = 0
+  chunk_size = 64
+  custom_metadata = [{
+    data_type = "text"
+    field_name = "x"
+  }]
+  embedding_model = "embedding_model"
+  fusion_method = "max"
+  hybrid_search_enabled = true
+  index_method = {
+    keyword = true
+    vector = true
+  }
+  indexing_options = {
+    keyword_tokenizer = "porter"
+    use_ocr = true
+  }
+  max_num_results = 1
+  metadata = {
+    created_from_aisearch_wizard = true
+    created_from_emdash_plugin = {
+      type = "native"
+      version = "version"
+    }
+    worker_domain = "worker_domain"
+  }
+  public_endpoint_params = {
+    authorized_hosts = ["string"]
+    chat_completions_endpoint = {
+      disabled = true
+    }
+    custom_domains = ["search.example.com"]
+    default_domain_enabled = true
+    enabled = true
+    mcp = {
+      description = "description"
+      disabled = true
+    }
+    rate_limit = {
+      period_ms = 60000
+      requests = 1
+      technique = "fixed"
+    }
+    search_endpoint = {
+      disabled = true
+    }
+  }
+  reranking = true
+  reranking_model = "reranking_model"
+  retrieval_options = {
+    boost_by = [{
+      field = "timestamp"
+      direction = "desc"
+    }]
+    keyword_match_mode = "and"
+  }
+  rewrite_model = "rewrite_model"
+  rewrite_query = true
+  score_threshold = 0
+  source = "source"
+  source_params = {
+    exclude_items = ["/admin/**", "/private/**", "**\\temp\\**"]
+    include_items = ["/blog/**", "/docs/**/*.html", "**\\blog\\**.html"]
+    prefix = "prefix"
+    r2_jurisdiction = "r2_jurisdiction"
+    web_crawler = {
+      discover_options = {
+        depth = 5
+        include_external_links = false
+        include_subdomains = false
+        limit = 10000
+        max_age = 86400
+        source = "all"
+      }
+      parse_options = {
+        content_selector = [{
+          path = "**/blog/**"
+          selector = "article div.post-body"
+        }, {
+          path = "**/docs/**"
+          selector = "main"
+        }]
+        include_headers = {
+          cache-control = "no-cache, no-store"
+        }
+        include_images = true
+        specific_sitemaps = ["https://example.com/sitemap.xml", "https://example.com/blog-sitemap.xml"]
+        use_browser_rendering = true
+      }
+      parse_type = "sitemap"
+    }
+  }
+  sync_interval = 900
+  token_id = "182bd5e5-6e1a-4fe4-a799-aa6d9a6ab26e"
+  type = "r2"
+}
