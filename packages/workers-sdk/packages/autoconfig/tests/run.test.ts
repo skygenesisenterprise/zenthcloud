@@ -1,0 +1,670 @@
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import * as cliPackages from "@cloudflare/cli-shared-helpers/packages";
+import {
+	NpmPackageManager,
+	PnpmPackageManager,
+} from "@cloudflare/workers-utils";
+import {
+	mockConsoleMethods,
+	runInTempDir,
+	seed,
+} from "@cloudflare/workers-utils/test-helpers";
+import { describe, it, vi } from "vitest";
+import { getDetailsForAutoConfig } from "../src/details";
+import { getFrameworkClassInstance } from "../src/frameworks";
+import { Framework } from "../src/frameworks/framework-class";
+import { Static } from "../src/frameworks/static";
+import { runAutoConfig } from "../src/run";
+import { createMockContext } from "./helpers/mock-context";
+import type {
+	ConfigurationOptions,
+	ConfigurationResults,
+} from "../src/frameworks/framework-class";
+
+class ExternalWorkerConfigFramework extends Framework {
+	configure(): ConfigurationResults {
+		return {
+			buildTool: "wrangler",
+			workerConfig: null,
+			buildConfig: { assetsDirectory: "dist" },
+		};
+	}
+}
+
+class ViteBuildToolFramework extends Framework {
+	configure(): ConfigurationResults {
+		return {
+			buildTool: "vite",
+			workerConfig: { entrypoint: "src/index.ts" },
+		};
+	}
+}
+
+class OwnAssetsDirectoryFramework extends Framework {
+	configure(): ConfigurationResults {
+		return {
+			buildTool: "wrangler",
+			workerConfig: { entrypoint: "./.output/server/index.mjs" },
+			buildConfig: { assetsDirectory: "./.output/public/" },
+		};
+	}
+}
+
+class BuildCommandOverrideFramework extends Static {
+	configure(options: ConfigurationOptions): ConfigurationResults {
+		return {
+			...super.configure(options),
+			buildCommandOverride: "npx framework build",
+		};
+	}
+}
+
+describe("runAutoConfig()", () => {
+	runInTempDir();
+	const std = mockConsoleMethods();
+
+	it("updates the application manifest, not its enclosing workspace", async ({
+		expect,
+	}) => {
+		vi.spyOn(cliPackages, "installWrangler").mockResolvedValue();
+		const rootManifest = JSON.stringify({
+			name: "workspace-root",
+			packageManager: "pnpm@10.0.0",
+		});
+		await seed({
+			"package.json": rootManifest,
+			"pnpm-workspace.yaml": "packages: ['packages/*']\n",
+			"pnpm-lock.yaml": "",
+			"packages/app/package.json": JSON.stringify({ name: "static-app" }),
+			"packages/app/public/index.html": "<h1>Application</h1>",
+		});
+		const context = createMockContext();
+		const projectPath = join(process.cwd(), "packages/app");
+		const details = await getDetailsForAutoConfig({ projectPath, context });
+		expect(details.packageManager.type).toBe("pnpm");
+
+		await runAutoConfig(details, {
+			context,
+			skipConfirmations: true,
+			enableTargetCliInstallation: false,
+			runBuild: false,
+		});
+
+		expect(readFileSync("package.json", "utf8")).toBe(rootManifest);
+		expect(
+			JSON.parse(readFileSync(join(projectPath, "package.json"), "utf8"))
+		).toMatchObject({ name: "static-app", scripts: { deploy: "cf deploy" } });
+		expect(existsSync("cloudflare.config.ts")).toBe(false);
+		expect(existsSync(join(projectPath, "cloudflare.config.ts"))).toBe(true);
+	});
+
+	it.for([
+		{ vitePlus: false, override: false },
+		{ vitePlus: true, override: false },
+		{ vitePlus: false, override: true },
+		{ vitePlus: true, override: true },
+	])(
+		"preserves custom build commands with Vite+=$vitePlus and override=$override",
+		async ({ vitePlus, override }, { expect }) => {
+			const buildCommand = "echo 'built' > build.txt";
+			const packageJson = {
+				name: "static-app",
+				devDependencies: vitePlus ? { "vite-plus": "1.4.0" } : {},
+			};
+			await seed({ "package.json": JSON.stringify(packageJson) });
+			const framework = getFrameworkClassInstance("static");
+			vi.spyOn(framework, "configure").mockReturnValue({
+				buildTool: "wrangler",
+				workerConfig: {},
+				buildConfig: { assetsDirectory: "public" },
+				...(override && { buildCommandOverride: buildCommand }),
+			});
+			const summary = await runAutoConfig(
+				{
+					configured: false,
+					projectPath: process.cwd(),
+					workerName: "static-app",
+					framework,
+					outputDir: "public",
+					buildCommand: override ? "npm run build" : buildCommand,
+					packageManager: NpmPackageManager,
+					packageJson,
+				},
+				{ context: createMockContext(), dryRun: true }
+			);
+			expect(summary.buildCommand).toBe(buildCommand);
+		}
+	);
+
+	it.for([
+		{ packageManager: NpmPackageManager, vitePlus: true },
+		{ packageManager: PnpmPackageManager, vitePlus: true },
+		{ packageManager: NpmPackageManager, vitePlus: false },
+	])(
+		"uses the vinext build override with $packageManager.type and Vite+=$vitePlus",
+		async ({ packageManager, vitePlus }, { expect }) => {
+			const packageJson = {
+				name: "next-app",
+				dependencies: { next: "16.1.0" },
+				devDependencies: vitePlus ? { "vite-plus": "1.4.0" } : {},
+			};
+			await seed({
+				"package.json": JSON.stringify(packageJson),
+				"node_modules/next/package.json": JSON.stringify({
+					name: "next",
+					version: "16.1.0",
+				}),
+			});
+			const summary = await runAutoConfig(
+				{
+					configured: false,
+					projectPath: process.cwd(),
+					workerName: "next-app",
+					framework: getFrameworkClassInstance("next"),
+					outputDir: ".next",
+					buildCommand: `${packageManager.npx} next build`,
+					packageManager,
+					packageJson,
+				},
+				{ context: createMockContext(), dryRun: true }
+			);
+			expect(summary.buildCommand).toBe(
+				vitePlus ? "vp build" : `${packageManager.npx} vite build`
+			);
+		}
+	);
+
+	it("rejects autoconfiguration for an unsupported framework", async ({
+		expect,
+	}) => {
+		await expect(
+			runAutoConfig(
+				{
+					configured: false,
+					projectPath: process.cwd(),
+					workerName: "hono-app",
+					framework: getFrameworkClassInstance("hono", "cf"),
+					outputDir: "dist",
+					packageManager: NpmPackageManager,
+				},
+				{
+					context: createMockContext(),
+					skipConfirmations: true,
+					runBuild: false,
+				}
+			)
+		).rejects.toThrow(
+			'The detected framework ("Hono") cannot be automatically configured.'
+		);
+	});
+
+	it("rejects a Wrangler-only framework when passed preconstructed cf details", async ({
+		expect,
+	}) => {
+		await expect(
+			runAutoConfig(
+				{
+					configured: false,
+					projectPath: process.cwd(),
+					workerName: "qwik-app",
+					framework: getFrameworkClassInstance("qwik", "cf"),
+					outputDir: "dist",
+					packageManager: NpmPackageManager,
+				},
+				{
+					target: "cf",
+					context: createMockContext(),
+					skipConfirmations: true,
+					runBuild: false,
+				}
+			)
+		).rejects.toThrow(
+			"cf does not support Qwik projects yet. You can still use Wrangler to develop and deploy this project."
+		);
+	});
+
+	it("allows selecting a cf-supported framework during confirmation", async ({
+		expect,
+	}) => {
+		vi.spyOn(cliPackages, "installWrangler").mockResolvedValue();
+		const context = createMockContext({
+			dialogs: {
+				confirm: vi.fn().mockResolvedValue(true),
+				prompt: vi
+					.fn()
+					.mockResolvedValueOnce("static-app")
+					.mockResolvedValueOnce("dist"),
+				select: vi.fn().mockResolvedValue("static"),
+			},
+		});
+
+		const summary = await runAutoConfig(
+			{
+				configured: false,
+				projectPath: process.cwd(),
+				workerName: "qwik-app",
+				framework: getFrameworkClassInstance("qwik", "cf"),
+				outputDir: "dist",
+				packageManager: NpmPackageManager,
+			},
+			{
+				target: "cf",
+				context,
+				runBuild: false,
+				enableTargetCliInstallation: false,
+			}
+		);
+
+		expect(summary.frameworkId).toBe("static");
+	});
+
+	it("creates new configuration and cf scripts by default", async ({
+		expect,
+	}) => {
+		const installWrangler = vi
+			.spyOn(cliPackages, "installWrangler")
+			.mockResolvedValue();
+		const packageJson = {
+			name: "my-static-app",
+			scripts: {
+				build: "generate && vite build",
+				preview: "vite preview",
+			},
+		};
+		await seed({
+			"package.json": JSON.stringify(packageJson),
+			"public/index.html": "<h1>Hello World</h1>",
+		});
+		const context = createMockContext();
+
+		const summary = await runAutoConfig(
+			{
+				configured: false,
+				projectPath: process.cwd(),
+				workerName: "my-static-app",
+				framework: new BuildCommandOverrideFramework({
+					id: "static",
+					name: "Static",
+				}),
+				buildCommand: "npm run build",
+				outputDir: "public",
+				packageJson,
+				packageManager: NpmPackageManager,
+			},
+			{
+				context,
+				skipConfirmations: true,
+				enableTargetCliInstallation: false,
+			}
+		);
+
+		expect(summary.workerConfig).toMatchObject({
+			name: "my-static-app",
+			observability: { enabled: true },
+		});
+		expect(summary.buildConfig).toEqual({ assetsDirectory: "public" });
+		expect(summary.buildCommand).toBe("npx framework build");
+		expect(summary.deployCommand).toBe("npx cf deploy");
+		expect(summary.versionCommand).toBe("npx cf versions upload");
+		expect(readFileSync("cloudflare.config.ts", "utf8")).toContain(
+			'import { defineConfig } from "cf/config";\n\nexport default defineConfig({\n  worker: {\n    "name": "my-static-app"'
+		);
+		expect(readFileSync("wrangler.config.ts", "utf8")).toContain(
+			'import { defineWranglerConfig } from "wrangler/experimental-config";\n\nexport default defineWranglerConfig({\n  "assetsDirectory": "public"'
+		);
+		expect(existsSync("wrangler.jsonc")).toBe(false);
+		expect(installWrangler).toHaveBeenCalledWith("npm", false);
+		expect(context.runCommand).toHaveBeenCalledWith(
+			"npx framework build",
+			process.cwd(),
+			"[build]"
+		);
+		expect(JSON.parse(readFileSync("package.json", "utf8"))).toMatchObject({
+			scripts: {
+				build: "generate && vite build",
+				deploy: "cf deploy",
+				preview: "vite preview",
+			},
+		});
+	});
+
+	it("installs cf and Wrangler for cf projects", async ({ expect }) => {
+		const installPackages = vi
+			.spyOn(cliPackages, "installPackages")
+			.mockResolvedValue();
+		const installWrangler = vi
+			.spyOn(cliPackages, "installWrangler")
+			.mockResolvedValue();
+		const packageJson = { name: "my-static-app" };
+		await seed({
+			"package.json": JSON.stringify(packageJson),
+			"public/index.html": "<h1>Hello World</h1>",
+		});
+
+		await runAutoConfig(
+			{
+				configured: false,
+				projectPath: process.cwd(),
+				workerName: "my-static-app",
+				framework: new Static({ id: "static", name: "Static" }),
+				outputDir: "public",
+				packageJson,
+				packageManager: NpmPackageManager,
+			},
+			{
+				context: createMockContext(),
+				skipConfirmations: true,
+				runBuild: false,
+			}
+		);
+
+		expect(installPackages).toHaveBeenCalledWith("npm", ["cf@latest"], {
+			dev: true,
+			isWorkspaceRoot: false,
+		});
+		expect(installWrangler).toHaveBeenCalledWith("npm", false);
+	});
+
+	it("does not reinstall an existing cf dependency", async ({ expect }) => {
+		const installPackages = vi
+			.spyOn(cliPackages, "installPackages")
+			.mockResolvedValue();
+		vi.spyOn(cliPackages, "installWrangler").mockResolvedValue();
+		const packageJson = {
+			name: "my-static-app",
+			devDependencies: { cf: "^0.8.0" },
+		};
+		await seed({
+			"package.json": JSON.stringify(packageJson),
+			"public/index.html": "<h1>Hello World</h1>",
+		});
+
+		await runAutoConfig(
+			{
+				configured: false,
+				projectPath: process.cwd(),
+				workerName: "my-static-app",
+				framework: new Static({ id: "static", name: "Static" }),
+				outputDir: "public",
+				packageJson,
+				packageManager: NpmPackageManager,
+			},
+			{
+				context: createMockContext(),
+				skipConfirmations: true,
+				runBuild: false,
+			}
+		);
+
+		expect(installPackages).not.toHaveBeenCalled();
+	});
+
+	it("does not install Wrangler when cf delegates to Vite", async ({
+		expect,
+	}) => {
+		const installPackages = vi
+			.spyOn(cliPackages, "installPackages")
+			.mockResolvedValue();
+		const installWrangler = vi
+			.spyOn(cliPackages, "installWrangler")
+			.mockResolvedValue();
+		const packageJson = { name: "my-vite-app" };
+		await seed({
+			"package.json": JSON.stringify(packageJson),
+			"dist/index.html": "<h1>Hello World</h1>",
+			"tsconfig.json": "{}",
+		});
+
+		await runAutoConfig(
+			{
+				configured: false,
+				projectPath: process.cwd(),
+				workerName: "my-vite-app",
+				framework: new ViteBuildToolFramework({
+					id: "static",
+					name: "Static",
+				}),
+				outputDir: "dist",
+				packageJson,
+				packageManager: NpmPackageManager,
+			},
+			{
+				context: createMockContext(),
+				skipConfirmations: true,
+				runBuild: false,
+			}
+		);
+
+		expect(installPackages).toHaveBeenCalledWith("npm", ["cf@latest"], {
+			dev: true,
+			isWorkspaceRoot: false,
+		});
+		expect(installWrangler).not.toHaveBeenCalled();
+		expect(JSON.parse(readFileSync("package.json", "utf8"))).toMatchObject({
+			scripts: {
+				"cf-typegen": "cf workers types",
+			},
+		});
+	});
+
+	it("adds the cf-generated types to tsconfig.json", async ({ expect }) => {
+		const packageJson = { name: "my-vite-app" };
+		await seed({
+			"package.json": JSON.stringify(packageJson),
+			"tsconfig.json": JSON.stringify({ include: ["src"] }),
+		});
+
+		await runAutoConfig(
+			{
+				configured: false,
+				projectPath: process.cwd(),
+				workerName: "my-vite-app",
+				framework: new ViteBuildToolFramework({
+					id: "static",
+					name: "Static",
+				}),
+				outputDir: "dist",
+				packageJson,
+				packageManager: NpmPackageManager,
+			},
+			{
+				context: createMockContext(),
+				skipConfirmations: true,
+				runBuild: false,
+				enableTargetCliInstallation: false,
+			}
+		);
+
+		expect(JSON.parse(readFileSync("tsconfig.json", "utf8"))).toEqual({
+			include: ["src", ".cloudflare/types"],
+		});
+	});
+
+	it("lists the tsconfig.json change without writing it in a dry run", async ({
+		expect,
+	}) => {
+		const packageJson = { name: "my-vite-app" };
+		const tsconfig = JSON.stringify({ include: ["src"] });
+		await seed({
+			"package.json": JSON.stringify(packageJson),
+			"tsconfig.json": tsconfig,
+		});
+
+		await runAutoConfig(
+			{
+				configured: false,
+				projectPath: process.cwd(),
+				workerName: "my-vite-app",
+				framework: new ViteBuildToolFramework({
+					id: "static",
+					name: "Static",
+				}),
+				outputDir: "dist",
+				packageJson,
+				packageManager: NpmPackageManager,
+			},
+			{ context: createMockContext(), dryRun: true }
+		);
+
+		expect(std.out).toContain(
+			'📝 Update tsconfig.json:\n - Add ".cloudflare/types" to "include"'
+		);
+		expect(readFileSync("tsconfig.json", "utf8")).toBe(tsconfig);
+	});
+
+	it("keeps the Wrangler typegen command for Wrangler projects", async ({
+		expect,
+	}) => {
+		const packageJson = { name: "my-vite-app" };
+		await seed({
+			"package.json": JSON.stringify(packageJson),
+			"tsconfig.json": "{}",
+		});
+
+		await runAutoConfig(
+			{
+				configured: false,
+				projectPath: process.cwd(),
+				workerName: "my-vite-app",
+				framework: new ViteBuildToolFramework({
+					id: "static",
+					name: "Static",
+				}),
+				outputDir: "dist",
+				packageJson,
+				packageManager: NpmPackageManager,
+			},
+			{
+				target: "wrangler",
+				context: createMockContext(),
+				skipConfirmations: true,
+				runBuild: false,
+				enableTargetCliInstallation: false,
+			}
+		);
+
+		expect(JSON.parse(readFileSync("package.json", "utf8"))).toMatchObject({
+			scripts: {
+				"cf-typegen": "wrangler types",
+			},
+		});
+	});
+
+	it("writes build configuration when an external tool owns the Worker configuration", async ({
+		expect,
+	}) => {
+		await runAutoConfig(
+			{
+				configured: false,
+				projectPath: process.cwd(),
+				workerName: "external-config-app",
+				framework: new ExternalWorkerConfigFramework({
+					id: "static",
+					name: "Static",
+				}),
+				outputDir: "dist",
+				packageManager: NpmPackageManager,
+			},
+			{
+				context: createMockContext(),
+				skipConfirmations: true,
+				runBuild: false,
+			}
+		);
+
+		expect(existsSync("cloudflare.config.ts")).toBe(false);
+		expect(readFileSync("wrangler.config.ts", "utf8")).toContain(
+			'"assetsDirectory": "dist"'
+		);
+	});
+
+	it("fails rather than overwriting existing Wrangler build configuration", async ({
+		expect,
+	}) => {
+		const existingBuildConfig = "export default { minify: true };\n";
+		await seed({
+			"wrangler.config.ts": existingBuildConfig,
+		});
+
+		await expect(
+			runAutoConfig(
+				{
+					configured: false,
+					projectPath: process.cwd(),
+					workerName: "external-config-app",
+					framework: new ExternalWorkerConfigFramework({
+						id: "static",
+						name: "Static",
+					}),
+					outputDir: "dist",
+					packageManager: NpmPackageManager,
+				},
+				{
+					context: createMockContext(),
+					skipConfirmations: true,
+					runBuild: false,
+				}
+			)
+		).rejects.toThrow(
+			"Cannot generate wrangler.config.ts because the file already exists"
+		);
+		expect(readFileSync("wrangler.config.ts", "utf8")).toBe(
+			existingBuildConfig
+		);
+	});
+
+	it("writes a root .assetsignore when the project root is the assets directory", async ({
+		expect,
+	}) => {
+		await seed({ "index.html": "<h1>Hello World</h1>", ".env": "KEY=1" });
+
+		await runAutoConfig(
+			{
+				configured: false,
+				projectPath: process.cwd(),
+				workerName: "root-static-app",
+				framework: new Static({ id: "static", name: "Static" }),
+				outputDir: ".",
+				packageManager: NpmPackageManager,
+			},
+			{
+				context: createMockContext(),
+				skipConfirmations: true,
+				runBuild: false,
+			}
+		);
+
+		const assetsIgnore = readFileSync(".assetsignore", "utf8");
+		for (const entry of [".env*", ".dev.vars*", "/functions", "node_modules"]) {
+			expect(assetsIgnore.split("\n")).toContain(entry);
+		}
+	});
+
+	it("does not write a root .assetsignore when the framework configures a different assets directory", async ({
+		expect,
+	}) => {
+		await seed({ "index.html": "<h1>Hello World</h1>" });
+
+		await runAutoConfig(
+			{
+				configured: false,
+				projectPath: process.cwd(),
+				workerName: "own-assets-app",
+				framework: new OwnAssetsDirectoryFramework({
+					id: "static",
+					name: "Static",
+				}),
+				outputDir: ".",
+				packageManager: NpmPackageManager,
+			},
+			{
+				context: createMockContext(),
+				skipConfirmations: true,
+				runBuild: false,
+			}
+		);
+
+		expect(existsSync(".assetsignore")).toBe(false);
+	});
+});

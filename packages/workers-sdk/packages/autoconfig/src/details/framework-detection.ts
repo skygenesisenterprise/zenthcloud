@@ -1,0 +1,446 @@
+import { existsSync, statSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import {
+	BunPackageManager,
+	FatalError,
+	NpmPackageManager,
+	NubPackageManager,
+	PnpmPackageManager,
+	UserError,
+	YarnPackageManager,
+} from "@cloudflare/workers-utils";
+import { Project } from "@netlify/build-info";
+import { NodeFS } from "@netlify/build-info/node";
+import chalk from "chalk";
+import * as find from "empathic/find";
+import * as walk from "empathic/walk";
+import dedent from "ts-dedent";
+import { isFrameworkSupported, isKnownFramework } from "../frameworks";
+import { staticFramework } from "../frameworks/all-frameworks";
+import type { AutoConfigContext, AutoConfigTarget } from "../context";
+import type { PackageManager } from "@cloudflare/workers-utils";
+import type { Config, TelemetryMessage } from "@cloudflare/workers-utils";
+import type { Settings } from "@netlify/build-info";
+
+/**
+ * Detects the framework used by the project at the given path.
+ *
+ * Uses `@netlify/build-info` to analyze build settings and identify the
+ * framework, then maps the detected package manager to wrangler's own type.
+ *
+ * If the project is identified as a Cloudflare Pages project the function
+ * returns early with a synthetic "Cloudflare Pages" framework entry.
+ *
+ * @param projectPath Path to the project root
+ * @param context Autoconfig context used for logging and user interaction
+ * @param options Detection options
+ * @returns An object containing:
+ *   - `detectedFramework`: The matched framework, its build and development
+ *     commands, and its output directory.
+ *   - `packageManager`: The package manager detected in the project.
+ *   - `isWorkspaceRoot`: `true` when the project path is the root of a
+ *     monorepo workspace (only present when relevant).
+ * @throws {UserError} When called from a workspace root that does not itself
+ *   contain the targeted project path.
+ * @throws {MultipleFrameworksCIError} (via `findDetectedFramework`) in CI /
+ *   non-interactive environments when multiple known frameworks are detected
+ *   and no clear winner can be determined.
+ */
+export async function detectFramework(
+	projectPath: string,
+	context: AutoConfigContext,
+	{
+		wranglerConfig,
+		target = "cf",
+	}: {
+		wranglerConfig?: Config;
+		target?: AutoConfigTarget;
+	} = {}
+): Promise<{
+	detectedFramework: DetectedFramework;
+	packageManager: PackageManager;
+	isWorkspaceRoot?: boolean;
+}> {
+	const fs = new NodeFS();
+
+	fs.logger = context.logger;
+
+	const project = new Project(fs, projectPath, projectPath)
+		.setEnvironment(process.env)
+		.setNodeVersion(process.version);
+	const workspaceProject =
+		target === "cf"
+			? await detectEnclosingWorkspace(projectPath, context)
+			: undefined;
+	if (workspaceProject) {
+		project.packageManager = workspaceProject.packageManager;
+	}
+
+	const buildSettings = await project.getBuildSettings();
+
+	const isWorkspaceRoot = !!project.workspace?.isRoot;
+
+	if (isWorkspaceRoot) {
+		const resolvedProjectPath = resolve(projectPath);
+
+		const workspaceRootIncludesProject = project.workspace?.packages.some(
+			(pkg) => resolve(pkg.path) === resolvedProjectPath
+		);
+
+		if (!workspaceRootIncludesProject) {
+			throw new UserError(
+				"The Cloudflare application detection logic has been run in the root of a workspace instead of targeting a specific project. Change your working directory to one of the applications in the workspace and try again.",
+				{
+					telemetryMessage: "autoconfig detection workspace root unsupported",
+				}
+			);
+		}
+	}
+
+	// Convert the package manager detected by @netlify/build-info to our PackageManager type.
+	// This is populated after getBuildSettings() runs, which triggers the full detection chain.
+	const packageManager = convertDetectedPackageManager(
+		project.packageManager,
+		projectPath,
+		workspaceProject?.workspace?.rootDir
+	);
+
+	const workspaceRoot = workspaceProject?.workspace?.rootDir;
+	const lockFileExists =
+		packageManager.lockFiles.some((lockFile) =>
+			existsSync(join(projectPath, lockFile))
+		) ||
+		(workspaceRoot !== undefined &&
+			packageManager.lockFiles.some((lockFile) =>
+				existsSync(join(workspaceRoot, lockFile))
+			));
+
+	const maybeDetectedFramework = maybeFindDetectedFramework(
+		buildSettings,
+		context,
+		target
+	);
+	if (maybeDetectedFramework && target === "cf") {
+		const frameworkId = maybeDetectedFramework.framework.id;
+		const frameworkIsSupported =
+			isKnownFramework(frameworkId, target) &&
+			isFrameworkSupported(frameworkId, target);
+
+		// @netlify/build-info prefers package.json scripts over the framework's
+		// built-in commands. cf needs direct commands for supported frameworks, but
+		// delegates unsupported frameworks to an installed Cloudflare dev server and
+		// must not execute their generic package scripts.
+		const detectedFrameworkSettings = frameworkIsSupported
+			? project.frameworks
+					.get(maybeDetectedFramework.baseDirectory ?? "")
+					?.find(({ id }) => id === frameworkId)
+			: undefined;
+		maybeDetectedFramework.devCommand = detectedFrameworkSettings?.dev?.command;
+		maybeDetectedFramework.buildCommand =
+			detectedFrameworkSettings?.build?.command;
+	}
+
+	if (
+		await isPagesProject(
+			projectPath,
+			context,
+			wranglerConfig,
+			maybeDetectedFramework
+		)
+	) {
+		return {
+			detectedFramework: {
+				framework: {
+					name: "Cloudflare Pages",
+					id: "cloudflare-pages",
+				},
+				dist: wranglerConfig?.pages_build_output_dir,
+			},
+			packageManager,
+		};
+	}
+
+	const detectedFramework = maybeDetectedFramework ?? {
+		framework: {
+			id: staticFramework.id,
+			name: staticFramework.name,
+		},
+	};
+
+	if (
+		!lockFileExists &&
+		detectedFramework.framework.id !== staticFramework.id
+	) {
+		context.logger.warn(
+			"No lock file has been detected in the current working directory." +
+				" This might indicate that the project is part of a workspace. Auto-configuration of " +
+				`projects inside workspaces is limited. See ${chalk.hex("#3B818D")(
+					"https://developers.cloudflare.com/workers/framework-guides/automatic-configuration/#workspaces"
+				)}`
+		);
+	}
+
+	return {
+		detectedFramework,
+		packageManager,
+		isWorkspaceRoot,
+	};
+}
+
+/**
+ * Finds workspace metadata without applying workspace-root-relative framework
+ * commands or output directories to an application. Stops at a repository
+ * boundary and only accepts workspaces that include the application.
+ *
+ * @param projectPath Path to the application
+ * @param context Autoconfig logging context
+ * @returns The enclosing workspace project, if one includes the application
+ */
+async function detectEnclosingWorkspace(
+	projectPath: string,
+	context: AutoConfigContext
+): Promise<Project | undefined> {
+	const fs = new NodeFS();
+	fs.logger = context.logger;
+	const repositoryPath = find.up(".git", { cwd: projectPath });
+	const last = repositoryPath ? dirname(repositoryPath) : undefined;
+	// walk.up() starts with the application directory, we skip it (via `slice(1)`)
+	// so that we only consider workspace roots that contain the application
+	const ancestorDirectories = walk.up(projectPath, { last }).slice(1);
+	for (const directory of ancestorDirectories) {
+		const packageJsonPath = join(directory, "package.json");
+		const packageJson = existsSync(packageJsonPath)
+			? await fs.readJSON<{ workspaces?: unknown }>(packageJsonPath)
+			: undefined;
+		if (
+			!packageJson?.workspaces &&
+			!existsSync(join(directory, "pnpm-workspace.yaml"))
+		) {
+			continue;
+		}
+		const project = new Project(fs, projectPath, directory)
+			.setEnvironment(process.env)
+			.setNodeVersion(process.version);
+		const workspace = await project.detectWorkspaces();
+		if (workspace && !workspace.isRoot) {
+			return project;
+		}
+	}
+	return undefined;
+}
+
+/**
+ * Converts the package manager detected by @netlify/build-info to our PackageManager type.
+ * Falls back to npm if no package manager was detected.
+ *
+ * @param pkgManager The package manager detected by @netlify/build-info (from project.packageManager)
+ * @param projectPath Path to the project root, used to detect nub via its lock file
+ * @param workspaceRoot Path to the enclosing workspace, if detected
+ * @returns A PackageManager object compatible with wrangler's package manager utilities
+ */
+function convertDetectedPackageManager(
+	pkgManager: { name: string } | null,
+	projectPath: string,
+	workspaceRoot?: string
+): PackageManager {
+	// TODO: Remove this nub.lock check once netlify/build#7124 is merged and
+	// released, after which @netlify/build-info recognises nub directly.
+	// https://github.com/netlify/build/pull/7124
+	if (
+		existsSync(join(projectPath, "nub.lock")) ||
+		(workspaceRoot && existsSync(join(workspaceRoot, "nub.lock")))
+	) {
+		return NubPackageManager;
+	}
+
+	if (!pkgManager) {
+		return NpmPackageManager;
+	}
+
+	switch (pkgManager?.name) {
+		case "pnpm":
+			return PnpmPackageManager;
+		case "yarn":
+			return YarnPackageManager;
+		case "bun":
+			return BunPackageManager;
+		case "npm":
+		default:
+			return NpmPackageManager;
+	}
+}
+
+class MultipleFrameworksCIError extends FatalError {
+	constructor(
+		frameworks: string[],
+		telemetryOptions: TelemetryMessage = {
+			telemetryMessage: "autoconfig detection multiple frameworks",
+		}
+	) {
+		super(
+			dedent`Cloudflare's tooling was unable to automatically configure your project, since multiple frameworks were found: ${frameworks.join(
+				", "
+			)}.
+
+				To fix this issue either:
+				  - check your project's configuration to make sure that the target framework
+				    is the only configured one and try again
+				  - run \`wrangler setup\` locally to get an interactive user experience where
+				    you can specify what framework you want to target
+
+			`,
+			{ ...telemetryOptions, code: 1 }
+		);
+	}
+}
+
+function throwMultipleFrameworksNonInteractiveError(
+	settings: Settings[]
+): never {
+	throw new MultipleFrameworksCIError(
+		settings.map((b) => b.name),
+		{
+			telemetryMessage: "autoconfig detection multiple frameworks",
+		}
+	);
+}
+
+type DetectedFramework = {
+	baseDirectory?: string;
+	framework: {
+		name: string;
+		id: string;
+	};
+	devCommand?: string | undefined;
+	buildCommand?: string | undefined;
+	dist?: string;
+};
+
+async function isPagesProject(
+	projectPath: string,
+	context: AutoConfigContext,
+	wranglerConfig: Config | undefined,
+	detectedFramework?: DetectedFramework | undefined
+): Promise<boolean> {
+	if (wranglerConfig?.pages_build_output_dir) {
+		// The `pages_build_output_dir` is set only for Pages projects
+		return true;
+	}
+
+	const cacheFolder = context.getCacheFolder?.();
+	if (cacheFolder) {
+		const pagesConfigCache = join(cacheFolder, "pages.json");
+		if (existsSync(pagesConfigCache)) {
+			// If there is a cached pages.json we can safely assume that the project
+			// is a Pages one
+			return true;
+		}
+	}
+
+	if (detectedFramework === undefined) {
+		const functionsPath = join(projectPath, "functions");
+		if (existsSync(functionsPath)) {
+			const functionsStat = statSync(functionsPath);
+			if (functionsStat.isDirectory()) {
+				const pagesConfirmed = await context.dialogs.confirm(
+					"We have identified a `functions` directory in this project, which might indicate you have an active Cloudflare Pages deployment. Is this correct?",
+					{
+						defaultValue: true,
+						// In CI we do want to fallback to `false` so that we can proceed with the autoconfig flow
+						fallbackValue: false,
+					}
+				);
+				return pagesConfirmed;
+			}
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Selects the most appropriate framework from a list of detected framework settings.
+ *
+ * When there is a good level of confidence that the selected framework is correct or
+ * the process is running locally (where the user can choose a different framework or
+ * abort the process) the framework is returned. If there is no such confidence and the
+ * process is running in non interactive mode (where the user doesn't have the option to
+ * change the detected framework) an error is instead thrown.
+ *
+ * @param settings The array of framework settings
+ * @param context The autoconfig context
+ * @param target The configuration target
+ * @returns The selected framework settings, or `undefined` if none provided
+ * @throws {MultipleFrameworksCIError} In CI environments when multiple known frameworks
+ *         are detected and no clear winner can be determined
+ */
+function maybeFindDetectedFramework(
+	settings: Settings[],
+	context: AutoConfigContext,
+	target: AutoConfigTarget
+): DetectedFramework | undefined {
+	if (settings.length === 0) {
+		return undefined;
+	}
+
+	if (settings.length === 1) {
+		return settings[0];
+	}
+
+	const settingsForOnlyKnownFrameworks = settings.filter(({ framework }) =>
+		isKnownFramework(framework.id, target)
+	);
+
+	if (settingsForOnlyKnownFrameworks.length === 0) {
+		if (context.isNonInteractiveOrCI?.() ?? false) {
+			// If we're in a non interactive session (e.g. CI) let's throw to be on the safe side
+			throwMultipleFrameworksNonInteractiveError(settings);
+		}
+		// Locally we can just return the first one since the user can anyways choose a different
+		// framework or abort the process anyways
+		return settings[0];
+	}
+
+	if (settingsForOnlyKnownFrameworks.length === 1) {
+		// If there is a single known framework it's quite safe to assume that that's the
+		// one we care about
+		return settingsForOnlyKnownFrameworks[0];
+	}
+
+	if (settingsForOnlyKnownFrameworks.length === 2) {
+		const settingsForOnlyKnownFrameworksIds = new Set<string>(
+			settingsForOnlyKnownFrameworks.map(({ framework }) => framework.id)
+		);
+
+		// Some frameworks (e.g. Vite, Hono) can serve as auxiliary tooling for a primary
+		// framework (e.g. Vite with React, Hono with Waku). When exactly two frameworks
+		// are detected and one is auxiliary, we discard it and return the primary one.
+		const idsOfAuxiliaryFrameworks = ["vite", "hono"];
+
+		for (const auxiliaryFrameworkId of idsOfAuxiliaryFrameworks) {
+			if (settingsForOnlyKnownFrameworksIds.has(auxiliaryFrameworkId)) {
+				const nonAuxiliaryFrameworkSettings =
+					settingsForOnlyKnownFrameworks.find(
+						({ framework }) => framework.id !== auxiliaryFrameworkId
+					);
+
+				// Note: here nonAuxiliaryFrameworkSettings should always be defined, it could be undefined only if the
+				//       same framework is actually detected twice (which shouldn't be possible).
+				if (nonAuxiliaryFrameworkSettings) {
+					return nonAuxiliaryFrameworkSettings;
+				}
+			}
+		}
+	}
+
+	// If we've detected multiple frameworks, and we're in a non interactive session (e.g. CI) let's stay on the safe side and error
+	// (otherwise we just pick the first one as the user is always able to choose a different framework or terminate the process anyways)
+	if (context.isNonInteractiveOrCI?.() ?? false) {
+		throw new MultipleFrameworksCIError(
+			settingsForOnlyKnownFrameworks.map((b) => b.name),
+			{ telemetryMessage: "autoconfig detection multiple frameworks" }
+		);
+	}
+
+	return settingsForOnlyKnownFrameworks[0];
+}

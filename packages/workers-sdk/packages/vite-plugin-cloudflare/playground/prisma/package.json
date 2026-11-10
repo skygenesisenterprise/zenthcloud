@@ -1,0 +1,28 @@
+{
+	"name": "@playground/prisma",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build:default": "vite build --app",
+		"check:type": "tsc --build",
+		"dev": "vite dev",
+		"generate": "pnpm prisma generate",
+		"postinstall": "pnpm generate",
+		"migrate-db": "pnpm wrangler d1 migrations apply prisma-demo-db --local --persist-to .cloudflare/state",
+		"preview": "vite preview",
+		"seed-db": "pnpm wrangler d1 execute prisma-demo-db --command \"INSERT INTO  \"User\" (\"email\", \"name\") VALUES ('jane@prisma.io', 'Jane Doe (Local)');\" --local --persist-to .cloudflare/state"
+	},
+	"devDependencies": {
+		"@cloudflare/vite-plugin": "workspace:*",
+		"@cloudflare/workers-tsconfig": "workspace:*",
+		"@cloudflare/workers-types": "catalog:default",
+		"@cloudflare/workers-utils": "workspace:*",
+		"@prisma/adapter-d1": "^7.6.0",
+		"@prisma/client": "^7.6.0",
+		"cf": "catalog:default",
+		"prisma": "^7.6.0",
+		"typescript": "catalog:default",
+		"vite": "catalog:default",
+		"wrangler": "4.135.0"
+	}
+}

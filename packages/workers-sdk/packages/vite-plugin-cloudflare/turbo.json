@@ -1,0 +1,18 @@
+{
+	"$schema": "http://turbo.build/schema.json",
+	"extends": ["//"],
+	"tasks": {
+		"build": {
+			"env": ["NODE_ENV", "SOURCEMAPS"],
+			"outputs": ["dist/**"]
+		},
+		"test:ci": {
+			"env": ["SOURCEMAPS"]
+		},
+		"test:e2e": {
+			"env": ["$TURBO_EXTENDS$", "CLOUDFLARE_VITE_E2E_KEEP_TEMP_DIRS"],
+			"dependsOn": ["build"],
+			"inputs": ["e2e/**"]
+		}
+	}
+}

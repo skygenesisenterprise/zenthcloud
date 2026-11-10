@@ -1,0 +1,28 @@
+import { resolve } from "node:path";
+import { cloudflare } from "@cloudflare/vite-plugin";
+// @ts-expect-error Missing types
+import testDepPlugin from "@playground/module-resolution-excludes/plugin";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+	resolve: {
+		alias: {
+			"@alias/test": resolve(import.meta.dirname, "./src/aliasing.ts"),
+		},
+	},
+	environments: {
+		ssr: {
+			optimizeDeps: {
+				exclude: ["@playground/module-resolution-excludes"],
+			},
+		},
+	},
+	plugins: [
+		cloudflare({
+			types: { includeRuntime: false },
+			inspectorPort: false,
+			persistState: false,
+		}),
+		testDepPlugin(),
+	],
+});

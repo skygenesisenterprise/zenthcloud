@@ -1,0 +1,5 @@
+{
+	"extends": ["@cloudflare/workers-tsconfig/base.json"],
+	"compilerOptions": { "allowJs": true },
+	"include": ["vite.config.ts", "eslintrc.cjs", "generate-default-hashes.ts"]
+}

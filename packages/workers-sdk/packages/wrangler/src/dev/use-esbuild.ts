@@ -1,0 +1,351 @@
+import assert from "node:assert";
+import { readFileSync, realpathSync } from "node:fs";
+import path from "node:path";
+import { watch as watchPaths } from "chokidar";
+import { shouldApplyMiddlewareLoaderFacade } from "../deployment-bundle/apply-middleware";
+import { isBuildFailure } from "../deployment-bundle/build-failures";
+import { bundleWorker } from "../deployment-bundle/bundle";
+import { getBundleType } from "../deployment-bundle/bundle-type";
+import { dedupeModulesByName } from "../deployment-bundle/dedupe-modules";
+import { logBuildOutput } from "../deployment-bundle/esbuild-plugins/log-build-output";
+import { findAdditionalModules as doFindAdditionalModules } from "../deployment-bundle/find-additional-modules";
+import { guessWorkerFormat } from "../deployment-bundle/guess-worker-format";
+import {
+	createModuleCollector,
+	getWrangler1xLegacyModuleReferences,
+	noopModuleCollector,
+} from "../deployment-bundle/module-collection";
+import { logger } from "../logger";
+import type { SourceMapMetadata } from "../deployment-bundle/bundle";
+import type {
+	CfModule,
+	CfModuleType,
+	Config,
+	Entry,
+} from "@cloudflare/workers-utils";
+import type { NodeJSCompatMode } from "@cloudflare/workers-utils/node-compat";
+import type { Metafile, Message, Plugin } from "esbuild";
+
+export type EsbuildBundle = {
+	id: number;
+	path: string;
+	entrypointSource: string;
+	entry: Entry;
+	type: CfModuleType;
+	modules: CfModule[];
+	dependencies: Metafile["outputs"][string]["inputs"];
+	sourceMapPath: string | undefined;
+	sourceMapMetadata: SourceMapMetadata | undefined;
+};
+
+export function runBuild(
+	{
+		entry,
+		destination,
+		jsxFactory,
+		jsxFragment,
+		processEntrypoint,
+		additionalModules,
+		rules,
+		tsconfig,
+		minify,
+		keepNames,
+		nodejsCompatMode,
+		compatibilityDate,
+		compatibilityFlags,
+		define,
+		alias,
+		noBundle,
+		findAdditionalModules,
+		durableObjects,
+		workflows,
+		local,
+		targetConsumer,
+		testScheduled,
+		watch,
+		projectRoot,
+		onStart,
+		onRebuildError,
+		onExportShapeChange,
+		defineNavigatorUserAgent,
+		checkFetch,
+		pythonModulesExcludes,
+	}: {
+		entry: Entry;
+		destination: string | undefined;
+		jsxFactory: string | undefined;
+		jsxFragment: string | undefined;
+		processEntrypoint: boolean;
+		additionalModules: CfModule[];
+		rules: Config["rules"];
+		define: Config["define"];
+		alias: Config["alias"];
+		tsconfig: string | undefined;
+		minify: boolean | undefined;
+		keepNames: boolean;
+		nodejsCompatMode: NodeJSCompatMode | undefined;
+		compatibilityDate: string | undefined;
+		compatibilityFlags: string[] | undefined;
+		noBundle: boolean;
+		findAdditionalModules: boolean | undefined;
+		durableObjects: Config["durable_objects"];
+		workflows: Config["workflows"];
+		local: boolean;
+		targetConsumer: "dev" | "deploy";
+		testScheduled: boolean;
+		watch: boolean;
+		projectRoot: string | undefined;
+		onStart: () => void;
+		onRebuildError?: (errors: Message[], warnings: Message[]) => void;
+		onExportShapeChange?: (exports: string[]) => void;
+		defineNavigatorUserAgent: boolean;
+		checkFetch: boolean;
+		pythonModulesExcludes?: string[];
+	},
+	setBundle: (
+		cb: (previous: EsbuildBundle | undefined) => EsbuildBundle
+	) => void,
+	onErr: (err: Error) => void
+) {
+	let stopWatching: (() => Promise<void>) | undefined = undefined;
+
+	const entryDirectory = path.dirname(entry.file);
+	// The runtime uses the entry's exports as its entrypoint names, so rebuilds
+	// must publish the exports of the current source rather than those found
+	// when the build started.
+	let currentExports = entry.exports;
+
+	/**
+	 * Re-discovers the entry's exports after a source change.
+	 *
+	 * @returns the current exports, or `undefined` if they couldn't be determined
+	 * because the entry doesn't currently build
+	 */
+	async function refreshExports(): Promise<string[] | undefined> {
+		if (!watch || entry.format !== "modules") {
+			return undefined;
+		}
+		try {
+			currentExports = (
+				await guessWorkerFormat(entry.file, entry.projectRoot, tsconfig)
+			).exports;
+			return currentExports;
+		} catch (error) {
+			if (!isBuildFailure(error)) {
+				throw error;
+			}
+			// Let the primary build report syntax and resolution errors. A later
+			// successful rebuild will inspect the exports again.
+			return undefined;
+		}
+	}
+
+	const exportShapePlugin: Plugin = {
+		name: "watch-entry-export-shape",
+		setup(pluginBuild) {
+			let exportShapeChanged = false;
+
+			pluginBuild.onStart(async () => {
+				exportShapeChanged = false;
+				const exports = await refreshExports();
+				// The middleware facade is generated once per watch context, so only a
+				// change in whether it applies requires a new context. Other export
+				// changes are published with the rebuilt bundle.
+				exportShapeChanged =
+					exports !== undefined &&
+					shouldApplyMiddlewareLoaderFacade(entry) !==
+						shouldApplyMiddlewareLoaderFacade({
+							format: entry.format,
+							exports,
+						});
+			});
+
+			pluginBuild.onEnd(() => {
+				if (exportShapeChanged) {
+					onExportShapeChange?.(currentExports);
+				}
+			});
+		},
+	};
+	const moduleCollector = noBundle
+		? noopModuleCollector
+		: createModuleCollector({
+				wrangler1xLegacyModuleReferences: getWrangler1xLegacyModuleReferences(
+					entryDirectory,
+					entry.file
+				),
+				entry,
+				findAdditionalModules: findAdditionalModules ?? false,
+				rules: rules,
+			});
+
+	async function getAdditionalModules() {
+		return noBundle
+			? dedupeModulesByName([
+					...(findAdditionalModules !== false
+						? ((await doFindAdditionalModules(
+								entry,
+								rules,
+								false,
+								pythonModulesExcludes ?? []
+							)) ?? [])
+						: []),
+					...additionalModules,
+				])
+			: additionalModules;
+	}
+
+	async function updateBundle() {
+		const newAdditionalModules = await getAdditionalModules();
+		// nothing really changes here, so let's increment the id
+		// to change the return object's identity
+		setBundle((previousBundle) => {
+			assert(
+				previousBundle,
+				"Rebuild triggered with no previous build available"
+			);
+			let entrypointSource: string;
+			try {
+				entrypointSource = readFileSync(previousBundle.path, "utf8");
+			} catch (e) {
+				// Entry point was deleted or moved between builds — skip this update.
+				logger.once.warn(
+					`Could not read entrypoint "${previousBundle.path}": ${(e as NodeJS.ErrnoException).message}`
+				);
+				return previousBundle;
+			}
+			return {
+				...previousBundle,
+				entry: { ...previousBundle.entry, exports: currentExports },
+				modules: dedupeModulesByName([
+					...(moduleCollector?.modules ?? []),
+					...newAdditionalModules,
+				]),
+				entrypointSource,
+				id: previousBundle.id + 1,
+			};
+		});
+	}
+
+	async function build() {
+		if (!destination) {
+			return;
+		}
+
+		const newAdditionalModules = await getAdditionalModules();
+		const bundleResult =
+			processEntrypoint || !noBundle
+				? await bundleWorker(entry, destination, {
+						bundle: !noBundle,
+						moduleCollector,
+						additionalModules: newAdditionalModules,
+						jsxFactory,
+						jsxFragment,
+						watch,
+						tsconfig,
+						minify,
+						keepNames,
+						nodejsCompatMode,
+						compatibilityDate,
+						compatibilityFlags,
+						doBindings: durableObjects.bindings,
+						workflowBindings: workflows,
+						alias,
+						define,
+						targetConsumer,
+						testScheduled,
+						plugins: [
+							exportShapePlugin,
+							logBuildOutput(
+								nodejsCompatMode,
+								onStart,
+								updateBundle,
+								onRebuildError
+							),
+						],
+						local,
+						projectRoot,
+						defineNavigatorUserAgent,
+
+						// Pages specific options used by wrangler pages commands
+						entryName: undefined,
+						inject: undefined,
+						isOutfile: undefined,
+						external: undefined,
+
+						// sourcemap defaults to true in dev
+						sourcemap: undefined,
+						checkFetch,
+
+						metafile: undefined,
+					})
+				: undefined;
+
+		// Capture the `stop()` method to use as the `useEffect()` destructor.
+		stopWatching = bundleResult?.stop;
+
+		// if "noBundle" is true, then we need to manually watch all modules and
+		// trigger "builds" when any change
+		if (noBundle && watch) {
+			let pendingRebuild = Promise.resolve();
+			const watching = [path.resolve(entry.moduleRoot)];
+			const watcher = watchPaths(watching, {
+				persistent: true,
+				// Ignore VCS dirs, dependencies, and the .wrangler dir (which
+				// contains miniflare state/cache files written by workerd at
+				// runtime — watching them causes an infinite reload loop).
+				// chokidar v4 normalises paths to forward slashes before
+				// matching, so a regex on path segments works cross-platform.
+				ignored: /[/\\](\.git|node_modules|\.wrangler)([/\\]|$)/,
+			}).on("change", () => {
+				pendingRebuild = pendingRebuild
+					.then(async () => {
+						await refreshExports();
+						await updateBundle();
+					})
+					.catch(onErr);
+			});
+
+			stopWatching = async () => {
+				await watcher.close();
+				// Closing chokidar doesn't wait for asynchronous change handlers.
+				// Drain them before callers remove the source and build directories.
+				await pendingRebuild;
+				await bundleResult?.stop?.();
+			};
+		}
+		const entrypointPath = realpathSync(
+			bundleResult?.resolvedEntryPointPath ?? entry.file
+		);
+		setBundle(() => ({
+			id: 0,
+			entry,
+			path: entrypointPath,
+			type: bundleResult?.bundleType ?? getBundleType(entry.format, entry.file),
+			modules: bundleResult ? bundleResult.modules : newAdditionalModules,
+			dependencies: bundleResult?.dependencies ?? {},
+			sourceMapPath: bundleResult?.sourceMapPath,
+			sourceMapMetadata: bundleResult?.sourceMapMetadata,
+			entrypointSource: readFileSync(entrypointPath, "utf8"),
+		}));
+	}
+
+	const buildPromise = build().catch((err) => {
+		// If esbuild fails on first run, we want to quit the process
+		// since we can't recover from here
+		// related: https://github.com/evanw/esbuild/issues/1037
+		onErr(err);
+	});
+
+	return async () => {
+		// Wait for the initial build to settle so that `stopWatching` is
+		// assigned (on success) or the esbuild context has been disposed
+		// by `bundle.ts`'s catch block (on failure). Without this await,
+		// teardown can return before `ctx.dispose()` has run, leaving the
+		// esbuild child process alive and preventing Node from exiting.
+		// Errors from `build()` are already routed to `onErr` above, so we
+		// don't need to handle rejections here.
+		await buildPromise;
+		await stopWatching?.();
+	};
+}

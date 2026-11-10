@@ -1,0 +1,41 @@
+import assert from "node:assert";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { cloudflare } from "@cloudflare/vite-plugin";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+	builder: {
+		async buildApp(builder) {
+			const workerEnvironment = builder.environments.ssr;
+			const clientEnvironment = builder.environments.client;
+
+			assert(workerEnvironment, `No "ssr" environment`);
+			assert(clientEnvironment, `No "client" environment`);
+
+			builder.config.logger.info("__before-build__");
+			await builder.build(workerEnvironment);
+			// Some plugins build the Worker environment twice so we do that here to test this scenario
+			await builder.build(workerEnvironment);
+			builder.config.logger.info("__after-build__");
+
+			await builder.build(clientEnvironment);
+
+			// Some frameworks delete the Vite manifests they enable so we do that here to test this scenario
+			fs.rmSync(
+				path.resolve(
+					builder.config.root,
+					workerEnvironment.config.build.outDir,
+					".vite/manifest.json"
+				)
+			);
+		},
+	},
+	plugins: [
+		cloudflare({
+			types: { includeRuntime: false },
+			inspectorPort: false,
+			persistState: false,
+		}),
+	],
+});

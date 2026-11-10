@@ -1,0 +1,22 @@
+{
+	"name": "@playground/static-mpa",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build:cf-build-output": "vite build --app -c vite.config.cf-build-output.ts",
+		"build:default": "vite build --app",
+		"check:type": "tsc --build",
+		"dev": "vite dev",
+		"dev:cf-build-output": "vite dev -c vite.config.cf-build-output.ts",
+		"preview": "vite preview",
+		"preview:cf-build-output": "vite preview -c vite.config.cf-build-output.ts"
+	},
+	"devDependencies": {
+		"@cloudflare/vite-plugin": "workspace:*",
+		"@cloudflare/workers-tsconfig": "workspace:*",
+		"@cloudflare/workers-types": "catalog:default",
+		"cf": "catalog:default",
+		"typescript": "catalog:default",
+		"vite": "catalog:default"
+	}
+}
