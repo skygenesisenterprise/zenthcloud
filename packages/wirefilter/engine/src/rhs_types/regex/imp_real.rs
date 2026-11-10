@@ -1,0 +1,107 @@
+use super::Error;
+use crate::{ParserSettings, RegexFormat};
+use arcstr::ArcStr;
+use regex_automata::MatchKind;
+use regex_automata::nfa::thompson::WhichCaptures;
+
+/// Wrapper around [`regex_automata::meta::Regex`]
+#[derive(Clone)]
+pub struct Regex {
+    pattern: ArcStr,
+    regex: regex_automata::meta::Regex,
+    format: RegexFormat,
+}
+
+impl Regex {
+    /// Retrieves the syntax configuration that will be used to build the regex.
+    #[inline]
+    pub fn syntax_config() -> regex_automata::util::syntax::Config {
+        regex_automata::util::syntax::Config::new()
+            .unicode(false)
+            .utf8(false)
+    }
+
+    /// Retrieves the meta configuration that will be used to build the regex.
+    #[inline]
+    pub fn meta_config(settings: &ParserSettings) -> regex_automata::meta::Config {
+        regex_automata::meta::Config::new()
+            .match_kind(MatchKind::LeftmostFirst)
+            .utf8_empty(false)
+            .dfa(false)
+            .onepass(false)
+            .nfa_size_limit(Some(settings.regex_compiled_size_limit))
+            .hybrid_cache_capacity(settings.regex_dfa_size_limit)
+            .pool_capacity(settings.regex_pool_capacity)
+            .which_captures(WhichCaptures::None)
+    }
+
+    /// Compiles a regular expression.
+    pub fn new(
+        pattern: impl Into<ArcStr>,
+        format: RegexFormat,
+        settings: &ParserSettings,
+    ) -> Result<Self, Error> {
+        let pattern = pattern.into();
+        ::regex_automata::meta::Builder::new()
+            .configure(Self::meta_config(settings))
+            .syntax(Self::syntax_config())
+            .build(&pattern)
+            .map(|regex| Regex {
+                pattern,
+                regex,
+                format,
+            })
+            .map_err(|err| {
+                if let Some(limit) = err.size_limit() {
+                    Error::CompiledTooBig(limit)
+                } else if let Some(syntax) = err.syntax_error() {
+                    Error::Syntax(syntax.to_string().into_boxed_str())
+                } else {
+                    Error::Other(err.to_string().into_boxed_str())
+                }
+            })
+    }
+
+    /// Returns the pattern of this regex.
+    #[inline]
+    pub fn as_str(&self) -> &str {
+        &self.pattern
+    }
+
+    /// Returns the shared pattern of this regex.
+    #[inline]
+    pub fn pattern(&self) -> &ArcStr {
+        &self.pattern
+    }
+
+    /// Returns the format used by the pattern.
+    #[inline]
+    pub fn format(&self) -> RegexFormat {
+        self.format
+    }
+
+    /// Returns whether this regex matches the input.
+    #[inline]
+    pub fn config(&self) -> &regex_automata::meta::Config {
+        self.regex.get_config()
+    }
+
+    /// Returns whether this regex matches the input.
+    #[inline]
+    pub fn is_match(&self, input: &[u8]) -> bool {
+        self.regex.is_match(input)
+    }
+}
+
+#[test]
+fn test_compiled_size_limit() {
+    const COMPILED_SIZE_LIMIT: usize = 1024 * 1024;
+    let settings = ParserSettings {
+        regex_compiled_size_limit: COMPILED_SIZE_LIMIT,
+        ..Default::default()
+    };
+    assert_eq!(
+        Regex::new(".{4079,65535}", RegexFormat::Literal, &settings),
+        Err(Error::CompiledTooBig(COMPILED_SIZE_LIMIT))
+    );
+}

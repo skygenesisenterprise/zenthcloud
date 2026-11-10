@@ -1,0 +1,51 @@
+[workspace]
+resolver = "2"
+members = [
+  "engine",
+  "ffi",
+  "fuzz/bytes",
+  "fuzz/map-keys",
+  "fuzz/raw-string",
+  "wasm",
+]
+
+[workspace.package]
+version = "0.7.0"
+authors = ["Ingvar Stepanyan <me@rreverser.com>"]
+edition = "2024"
+publish = true
+
+[workspace.dependencies]
+arcstr = "1.2.0"
+backtrace = "0.3.76"
+cbindgen = "0.29.4"
+cfg-if = "1.0.4"
+cidr = { version = "0.2.3", features = ["serde"] }
+criterion = "0.8.2"
+dyn-clone = "1.0.20"
+erased-serde = "0.4.10"
+fnv = "1.0.7"
+get-size2 = "0.11.0"
+getrandom = "0.4.3"
+indoc = "2.0.7"
+js-sys = "0.3.104"
+libc = "0.2.189"
+memchr = "2.8.3"
+num_enum = "0.7.6"
+rand = "0.10.2"
+regex-automata = "0.4.18"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+serde-wasm-bindgen = "0.6.5"
+sliceslice = "0.4.3"
+thiserror = "2.0.20"
+wasm-bindgen = { version = "0.2.127", features = ["serde-serialize"] }
+wildcard = "0.3.0"
+wirefilter = { package = "wirefilter-engine", path = "engine" }
+
+[profile.dev]
+panic = "unwind"
+
+[profile.release]
+lto = true
+panic = "unwind"
