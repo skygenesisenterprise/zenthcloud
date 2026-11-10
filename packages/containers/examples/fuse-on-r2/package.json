@@ -1,0 +1,23 @@
+{
+  "name": "containers-fuse-on-r2-example",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "cf-typegen": "wrangler types",
+    "predev": "pnpm --workspace-root run build && pnpm run cf-typegen",
+    "dev": "wrangler dev",
+    "start": "wrangler dev",
+    "predeploy": "pnpm --workspace-root run build && pnpm run cf-typegen",
+    "deploy": "wrangler deploy",
+    "pretypecheck": "pnpm --workspace-root run build && pnpm run cf-typegen",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "wrangler": "catalog:"
+  },
+  "dependencies": {
+    "@cloudflare/containers": "workspace:*"
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "name": "@zenthcloud/containers",
+  "version": "0.3.7",
+  "description": "Helper class for ZenthCloud container-enabled Durable Objects",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skygenesisenterprise/zenthcloud.git"
+  },
+  "scripts": {
+    "build": "tsc -p .",
+    "typecheck": "tsc --noEmit",
+    "typecheck:examples": "pnpm --recursive --sequential --filter \"./examples/*\" run typecheck",
+    "typecheck:all": "pnpm run typecheck && pnpm run typecheck:examples",
+    "lint": "eslint src",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "pnpm test:unit && pnpm --recursive --sequential --filter \"./examples/*\" run test",
+    "test:unit": "vitest run src/tests"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./dist/index.d.ts"
+      ]
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "containers",
+    "durable objects",
+    "durable-objects",
+    "cloudflare"
+  ],
+  "license": "MIT OR Apache-2.0",
+  "packageManager": "pnpm@11.22.0",
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "^24.0.0",
+      "onFail": "download"
+    }
+  },
+  "devDependencies": {
+    "@changesets/cli": "^3.0.1",
+    "@cloudflare/workers-types": "4.20260402.1",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "catalog:",
+    "@typescript/native": "npm:typescript@^7.0.2",
+    "eslint": "^10.8.1",
+    "pkg-pr-new": "^0.0.88",
+    "prettier": "^3.9.6",
+    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "typescript-eslint": "^8.67.0",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "@cloudflare/workers-types": ">=4.20260402.1"
+  },
+  "peerDependenciesMeta": {
+    "@cloudflare/workers-types": {
+      "optional": true
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "name": "containers-multiple-ports-example",
+  "version": "1.0.0",
+  "description": "Integration test fixture for @cloudflare/containers (multiple ports)",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "cf-typegen": "wrangler types",
+    "predev": "pnpm --workspace-root run build && pnpm run cf-typegen",
+    "dev": "wrangler dev",
+    "predeploy": "pnpm --workspace-root run build && pnpm run cf-typegen",
+    "deploy": "wrangler deploy",
+    "pretypecheck": "pnpm --workspace-root run build && pnpm run cf-typegen",
+    "typecheck": "tsc --noEmit",
+    "pretest": "pnpm --workspace-root run build && pnpm run cf-typegen",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "wrangler": "catalog:"
+  },
+  "dependencies": {
+    "@cloudflare/containers": "workspace:*"
+  }
+}
