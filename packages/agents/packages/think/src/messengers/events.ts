@@ -1,0 +1,299 @@
+import type { UIMessage } from "ai";
+
+export type MessengerEventKind =
+  | "direct-message"
+  | "mention"
+  | "subscribed-message"
+  | "action"
+  | "delivery-event";
+
+export interface MessengerAuthor {
+  fullName?: string;
+  isBot?: boolean | "unknown";
+  isMe?: boolean;
+  userId: string;
+  userName?: string;
+}
+
+export interface MessengerAttachment {
+  data?: ArrayBuffer;
+  fetch?: () => Promise<ArrayBuffer>;
+  /**
+   * Platform-specific metadata needed to re-fetch the attachment after the
+   * event has been serialized (e.g. across a sub-agent Durable Object hop).
+   * Adapters store identifiers here — Telegram `fileId`, WhatsApp `mediaId`,
+   * etc. — that survive serialization even when `fetch`, `data`, and `raw`
+   * cannot, so a downstream agent can reconstruct the download closure.
+   */
+  fetchMetadata?: Record<string, string>;
+  id?: string;
+  mediaType?: string;
+  name?: string;
+  raw?: unknown;
+  size?: number;
+  text?: string;
+  url?: string;
+}
+
+export interface MessengerThread {
+  channelId?: string;
+  channelName?: string;
+  id: string;
+  isDirectMessage: boolean;
+  providerThreadId: string;
+  title?: string;
+}
+
+export interface MessengerMessage {
+  attachments: MessengerAttachment[];
+  author: MessengerAuthor;
+  createdAt?: Date;
+  id: string;
+  isMention?: boolean;
+  providerMessageId: string;
+  raw?: unknown;
+  text: string;
+}
+
+export interface MessengerAction {
+  actionId: string;
+  messageId?: string;
+  raw?: unknown;
+  user?: MessengerAuthor;
+  value?: string;
+}
+
+export interface MessengerCapabilities {
+  canEditMessages?: boolean;
+  canStream?: boolean;
+  maxMessageLength?: number;
+  supportsActions?: boolean;
+  supportsAttachments?: boolean;
+  supportsEphemeral?: boolean;
+}
+
+export interface MessengerContext {
+  action?: MessengerAction;
+  author?: MessengerAuthor;
+  capabilities: MessengerCapabilities;
+  kind: MessengerEventKind;
+  message?: MessengerMessage;
+  messengerId: string;
+  provider: string;
+  /**
+   * Earlier messages folded into this event, oldest first. A quick run of
+   * messages in one thread is answered once, for its newest message (the Chat
+   * SDK `burst` concurrency strategy); the rest arrive here. They are part of
+   * this turn's input: the model-facing user message renders them before
+   * `message`, and their attachments are listed with its own.
+   */
+  skipped?: MessengerMessage[];
+  thread: MessengerThread;
+}
+
+export interface MessengerEvent extends MessengerContext {
+  raw?: unknown;
+}
+
+/**
+ * The context persisted on a messenger turn's user message. Built from the
+ * serializable form of the event, so raw platform payloads and attachment
+ * bytes are never stored and a live turn matches its recovered replay.
+ */
+export function messengerContextFromEvent(
+  event: MessengerEvent
+): MessengerContext {
+  const serializable = serializableMessengerEvent(event);
+  return {
+    action: serializable.action,
+    author: serializable.message?.author ?? serializable.action?.user,
+    capabilities: serializable.capabilities,
+    kind: serializable.kind,
+    message: serializable.message,
+    messengerId: serializable.messengerId,
+    provider: serializable.provider,
+    skipped: serializable.skipped,
+    thread: serializable.thread
+  };
+}
+
+export function serializableMessengerEvent(
+  event: MessengerEvent
+): MessengerEvent {
+  return {
+    capabilities: { ...event.capabilities },
+    kind: event.kind,
+    messengerId: event.messengerId,
+    provider: event.provider,
+    thread: { ...event.thread },
+    action: event.action
+      ? {
+          actionId: event.action.actionId,
+          messageId: event.action.messageId,
+          user: event.action.user ? { ...event.action.user } : undefined,
+          value: event.action.value
+        }
+      : undefined,
+    message: event.message
+      ? serializableMessengerMessage(event.message)
+      : undefined,
+    skipped: event.skipped?.map(serializableMessengerMessage)
+  };
+}
+
+function serializableMessengerMessage(
+  message: MessengerMessage
+): MessengerMessage {
+  return {
+    attachments: message.attachments.map((attachment) => ({
+      fetchMetadata: attachment.fetchMetadata
+        ? { ...attachment.fetchMetadata }
+        : undefined,
+      id: attachment.id,
+      mediaType: attachment.mediaType,
+      name: attachment.name,
+      size: attachment.size,
+      text: attachment.text,
+      url: attachment.url
+    })),
+    author: { ...message.author },
+    createdAt: message.createdAt,
+    id: message.id,
+    isMention: message.isMention,
+    providerMessageId: message.providerMessageId,
+    text: message.text
+  };
+}
+
+/**
+ * Customizes how channel (non-DM) speaker names are prefixed onto model-facing
+ * text. By default, speaker labels use `fullName || userName || userId`.
+ * Direct messages never get a speaker prefix, regardless of this setting.
+ * Return `null`/empty to suppress the prefix for that author.
+ */
+export type ChannelSpeakerLabel = (
+  author: MessengerAuthor
+) => string | null | undefined;
+
+export function resolveChannelSpeakerLabel(
+  author: MessengerAuthor | undefined,
+  channelSpeakerLabel?: ChannelSpeakerLabel
+): string | undefined {
+  if (!author) {
+    return undefined;
+  }
+
+  if (channelSpeakerLabel) {
+    const label = channelSpeakerLabel(author);
+    return label ? label : undefined;
+  }
+
+  return author.fullName || author.userName || author.userId || undefined;
+}
+
+export function toMessengerUserMessage(
+  event: MessengerEvent,
+  channelSpeakerLabel?: ChannelSpeakerLabel
+): UIMessage {
+  const message = event.message;
+  if (event.action) {
+    const user = event.action.user;
+    const displayName = event.thread.isDirectMessage
+      ? undefined
+      : resolveChannelSpeakerLabel(user, channelSpeakerLabel);
+    const details = [
+      `Action selected: ${event.action.actionId}`,
+      event.action.value ? `Value: ${event.action.value}` : undefined,
+      event.action.messageId
+        ? `Source message: ${event.action.messageId}`
+        : undefined
+    ].filter(Boolean);
+    const text = displayName
+      ? `${displayName}: ${details.join("\n")}`
+      : details.join("\n");
+
+    return {
+      id: [
+        event.messengerId,
+        "action",
+        event.thread.id,
+        event.action.messageId,
+        event.action.actionId
+      ]
+        .filter(Boolean)
+        .join(":"),
+      role: "user",
+      parts: [{ type: "text", text }],
+      metadata: {
+        messenger: messengerContextFromEvent(event)
+      }
+    } as UIMessage;
+  }
+
+  if (!message) {
+    throw new Error(`Messenger event ${event.kind} does not contain a message`);
+  }
+
+  const messages = [...(event.skipped ?? []), message];
+  const runs = speakerRuns(messages).map((run) => ({
+    author: run[0].author,
+    text: run
+      .map((entry) => entry.text.trim())
+      .filter(Boolean)
+      .join("\n")
+  }));
+  const content = runs
+    .filter((run) => runs.length === 1 || run.text)
+    .map((run) => {
+      const displayName = event.thread.isDirectMessage
+        ? undefined
+        : resolveChannelSpeakerLabel(run.author, channelSpeakerLabel);
+      return displayName ? `${displayName}: ${run.text}` : run.text;
+    })
+    .join("\n");
+  const attachmentText = describeAttachments(
+    messages.flatMap((entry) => entry.attachments)
+  );
+  const fullText = [content, attachmentText].filter(Boolean).join("\n\n");
+
+  return {
+    id: `${event.messengerId}:${message.id}`,
+    role: "user",
+    parts: [{ type: "text", text: fullText }],
+    metadata: {
+      messenger: messengerContextFromEvent(event)
+    }
+  } as UIMessage;
+}
+
+/** Consecutive messages from the same author, in order. */
+function speakerRuns(messages: MessengerMessage[]): MessengerMessage[][] {
+  const runs: MessengerMessage[][] = [];
+  for (const message of messages) {
+    const run = runs.at(-1);
+    if (run && run[0].author.userId === message.author.userId) {
+      run.push(message);
+    } else {
+      runs.push([message]);
+    }
+  }
+  return runs;
+}
+
+function describeAttachments(attachments: MessengerAttachment[]): string {
+  if (attachments.length === 0) {
+    return "";
+  }
+
+  const lines = attachments.map((attachment, index) => {
+    const label = attachment.name || attachment.id || `attachment ${index + 1}`;
+    const details = [
+      attachment.mediaType,
+      attachment.size === undefined ? undefined : `${attachment.size} bytes`,
+      attachment.url
+    ].filter(Boolean);
+    return `- ${label}${details.length ? ` (${details.join(", ")})` : ""}`;
+  });
+
+  return ["Attachments:", ...lines].join("\n");
+}

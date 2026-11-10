@@ -1,0 +1,1290 @@
+import { env, exports } from "cloudflare:workers";
+import {
+  AGENT_TOOL_MILESTONE_PART,
+  AGENT_TOOL_PROGRESS_PART,
+  getAgentByName
+} from "agents";
+import { describe, expect, it, vi } from "vitest";
+import type { ThinkAgentToolParent, ThinkTestAgent } from "./agents";
+import type {
+  AgentToolEventMessage,
+  AgentToolLifecycleResult,
+  AgentToolRunInfo,
+  RunAgentToolResult
+} from "agents";
+
+type AgentToolInspection = Awaited<
+  ReturnType<ThinkTestAgent["inspectAgentToolRun"]>
+>;
+
+type ThinkAgentToolTestStub = {
+  inspectAgentToolRun(runId: string): Promise<AgentToolInspection>;
+  broadcastRecoveredAgentToolChunkForTest(
+    eventDelivery: "full" | "terminal"
+  ): Promise<void>;
+  seedAgentToolLastErrorForTest(runId: string, error: string): Promise<void>;
+  setAgentToolOutputForTest(runId: string, output: unknown): Promise<void>;
+  clearAgentToolOutputForTest(runId: string): Promise<void>;
+  setStripTextResponseForTest(strip: boolean): Promise<void>;
+  holdBeforeStepForTest(): Promise<void>;
+  hasEnteredBeforeStepForTest(): Promise<boolean>;
+  releaseBeforeStepForTest(): Promise<void>;
+  resetTurnStateForTest(): Promise<void>;
+  startAgentToolRun(
+    input: unknown,
+    options: { runId: string; eventDelivery?: "full" | "terminal" }
+  ): ReturnType<ThinkTestAgent["startAgentToolRun"]>;
+  cancelAgentToolRun(
+    runId: string,
+    reason?: unknown
+  ): ReturnType<ThinkTestAgent["cancelAgentToolRun"]>;
+  getAgentToolCleanupMapSizesForTest(): Promise<{
+    lastErrors: number;
+    preTurnAssistantIds: number;
+  }>;
+  reconcileStaleChildRunViaRecoveryForTest(
+    path: "continue" | "retry",
+    withAssistantTurn: boolean
+  ): Promise<{ before: string | null; after: string | null }>;
+  resolveAgentToolRunAfterRestartForTest(
+    runId: string,
+    requestId: string
+  ): Promise<{ running: string | null; unknown: string | null }>;
+  inspectStaleRunReadOnlyForTest(): Promise<{
+    reported: string | undefined;
+    stored: string | undefined;
+  }>;
+  reconcileEvictedErroredRunForTest(): Promise<{
+    before: string | null;
+    assistantText: string;
+    inspection: AgentToolInspection;
+  }>;
+  coldCounterReattachForTest(afterSequence: number): Promise<{
+    liveSequenceAfterDrain: number | undefined;
+    postRestart: { sequence: number; body: string } | null;
+  }>;
+  progressDuringDrainForTest(): Promise<string[]>;
+  skippedChunkReattachForTest(): Promise<
+    Array<{ sequence: number; delta: string; unstored: boolean }>
+  >;
+  broadcastDuringDrainForTest(): Promise<{
+    drained: number[];
+    postRestart: { sequence: number; body: string } | null;
+  }>;
+  getDefaultReattachBudgetsForTest(): Promise<{
+    noProgressTimeoutMs: number;
+    maxWindowIsFinite: boolean;
+  }>;
+  cancelAgentToolRunAbortsRecoveryForTest(): Promise<{
+    abortedBefore: boolean;
+    abortedAfter: boolean;
+    childStatus: string | null;
+  }>;
+};
+
+type ThinkAgentToolParentStub = DurableObjectStub & {
+  runThinkChild(input: string, runId?: string): Promise<RunAgentToolResult>;
+  runThinkChildWithInjectedUnrelatedError(
+    input: string,
+    injectAfterMs: number,
+    runId?: string
+  ): Promise<RunAgentToolResult>;
+  runThinkChildWithInBandError(
+    input: string,
+    errorText: string,
+    runId?: string
+  ): Promise<RunAgentToolResult>;
+  runThinkChildWithAttachRaceForTest(
+    input: string,
+    raceBody: string,
+    chunkDelayMs: number,
+    runId?: string
+  ): Promise<{ result: RunAgentToolResult; events: AgentToolEventMessage[] }>;
+  runThinkChildWithProgressInjectionForTest(
+    input: string,
+    progressBody: string,
+    milestoneBody: string,
+    chunkDelayMs: number,
+    runId?: string,
+    eventDelivery?: "full" | "terminal"
+  ): Promise<{ result: RunAgentToolResult; events: AgentToolEventMessage[] }>;
+  replayAgentToolEventsForTest(): Promise<AgentToolEventMessage[]>;
+  persistChildMilestoneForTest(
+    runId: string,
+    name: string,
+    data: unknown
+  ): Promise<number>;
+  failNextChildChunkReadForTest(runId: string): Promise<void>;
+  runThinkChildDetachedTerminalForTest(): Promise<string | null>;
+  startThinkChildWithoutTailForTest(
+    input: string,
+    errorText: string,
+    runId?: string
+  ): Promise<NonNullable<AgentToolInspection>>;
+  readCompletedChildChunksForTest(
+    input: string,
+    runId?: string
+  ): Promise<{ status: string; chunks: number }>;
+  reconcileCompletedThinkChildForTest(
+    input: string,
+    runId?: string
+  ): Promise<{
+    events: AgentToolEventMessage[];
+    finishes: { run: AgentToolRunInfo; result: AgentToolLifecycleResult }[];
+    inspection: NonNullable<AgentToolInspection>;
+    status: string | null;
+  }>;
+  reconcileRunningThinkChildForTest(
+    input: string,
+    runId?: string
+  ): Promise<{
+    events: AgentToolEventMessage[];
+    finishes: { run: AgentToolRunInfo; result: AgentToolLifecycleResult }[];
+    status: string | null;
+  }>;
+  reattachStuckTailableThinkChildForTest(runId?: string): Promise<{
+    events: AgentToolEventMessage[];
+    finishes: { run: AgentToolRunInfo; result: AgentToolLifecycleResult }[];
+    elapsedMs: number;
+    status: string | null;
+  }>;
+  reattachMaxWindowExhaustedThinkChildForTest(runId?: string): Promise<{
+    finishes: { run: AgentToolRunInfo; result: AgentToolLifecycleResult }[];
+    elapsedMs: number;
+    status: string | null;
+    childStatus: string | null;
+  }>;
+  getResolvedReattachBudgetsForTest(): Promise<{
+    noProgressTimeoutMs: number;
+    maxWindowMs: number;
+  }>;
+  reattachNotTailableAdapterForTest(): Promise<{
+    reason?: string;
+    result: boolean;
+  }>;
+  reattachScriptedAdapterForTest(
+    scenario:
+      | "rearm-then-complete"
+      | "idle-after-progress"
+      | "infinite-no-progress-ceiling"
+  ): Promise<{ status?: string; reason?: string; tailAttempts: number }>;
+  reconcileParallelThinkChildrenForTest(): Promise<{
+    stuckStatus: string | null;
+    fastStatus: string | null;
+  }>;
+  reissueInterruptedThinkChildForTest(
+    input: string,
+    runId?: string
+  ): Promise<{ status: string | null; reissueStatus: string }>;
+  reconcileStuckThinkChildWithTimeoutForTest(runId?: string): Promise<{
+    events: AgentToolEventMessage[];
+    finishes: { run: AgentToolRunInfo; result: AgentToolLifecycleResult }[];
+    elapsedMs: number;
+    status: string | null;
+  }>;
+  scheduleStuckThinkChildRecoveryForTest(runId?: string): Promise<{
+    events: AgentToolEventMessage[];
+    finishes: { run: AgentToolRunInfo; result: AgentToolLifecycleResult }[];
+    status: string | null;
+  }>;
+  scheduleStuckThinkChildRecoveryTwiceForTest(runId?: string): Promise<{
+    events: AgentToolEventMessage[];
+    finishes: { run: AgentToolRunInfo; result: AgentToolLifecycleResult }[];
+    status: string | null;
+  }>;
+  startupDefersStaleThinkRecoveryForTest(runId?: string): Promise<{
+    statusesDuringStartup: string[];
+    statusAfterStartup: string | null;
+    finalStatus: string | null;
+    startupElapsedMs: number;
+    finishes: { run: AgentToolRunInfo; result: AgentToolLifecycleResult }[];
+    events: AgentToolEventMessage[];
+  }>;
+  startupRecoveryIgnoresRunsCreatedDuringOnStartForTest(): Promise<{
+    staleStatus: string | null;
+    onStartRunStatus: string | null;
+    finishes: { run: AgentToolRunInfo; result: AgentToolLifecycleResult }[];
+    events: AgentToolEventMessage[];
+  }>;
+};
+
+async function freshAgent(
+  name = crypto.randomUUID()
+): Promise<ThinkAgentToolTestStub> {
+  return getAgentByName(
+    env.ThinkTestAgent as unknown as DurableObjectNamespace<ThinkTestAgent>,
+    name
+  ) as unknown as Promise<ThinkAgentToolTestStub>;
+}
+
+async function freshParent(
+  name = crypto.randomUUID()
+): Promise<ThinkAgentToolParentStub> {
+  return getAgentByName(
+    env.ThinkAgentToolParent as unknown as DurableObjectNamespace<ThinkAgentToolParent>,
+    name
+  ) as unknown as Promise<ThinkAgentToolParentStub>;
+}
+
+async function waitForAgentToolRun(
+  agent: ThinkAgentToolTestStub,
+  runId: string
+): Promise<AgentToolInspection> {
+  // The child turn runs detached (`startAgentToolRun` returns immediately),
+  // so terminal status is only observable by polling. Use a long deadline —
+  // it costs nothing when the run is fast, and fails with a clear timeout
+  // instead of handing callers a misleading non-terminal snapshot.
+  return vi.waitFor(
+    async () => {
+      const inspection = await agent.inspectAgentToolRun(runId);
+      expect(["completed", "error", "aborted"]).toContain(inspection?.status);
+      return inspection;
+    },
+    { timeout: 8000, interval: 25 }
+  );
+}
+
+describe("Think agent tools", () => {
+  it("uses assistant text as the default agent-tool summary", async () => {
+    const agent = await freshAgent();
+    const runId = crypto.randomUUID();
+
+    await agent.startAgentToolRun("chat-like probe", { runId });
+    const inspection = await waitForAgentToolRun(agent, runId);
+
+    expect(inspection).toMatchObject({
+      runId,
+      status: "completed",
+      summary: "Hello from the assistant!"
+    });
+    expect(inspection?.error).toBeUndefined();
+  });
+
+  it("completes when a non-chat agent-tool run emits no assistant text", async () => {
+    const agent = await freshAgent();
+    const runId = crypto.randomUUID();
+
+    await agent.setStripTextResponseForTest(true);
+    await agent.startAgentToolRun("non-chat probe", { runId });
+    const inspection = await waitForAgentToolRun(agent, runId);
+
+    expect(inspection).toMatchObject({
+      runId,
+      status: "completed",
+      summary: ""
+    });
+    expect(inspection?.error).toBeUndefined();
+  });
+
+  it("returns structured output for a non-chat agent-tool run", async () => {
+    const agent = await freshAgent();
+    const runId = crypto.randomUUID();
+
+    await agent.setStripTextResponseForTest(true);
+    await agent.setAgentToolOutputForTest(runId, {
+      ok: true,
+      value: "workflow-result"
+    });
+    await agent.startAgentToolRun("structured non-chat probe", { runId });
+    const inspection = await waitForAgentToolRun(agent, runId);
+
+    expect(inspection).toMatchObject({
+      runId,
+      status: "completed",
+      output: { ok: true, value: "workflow-result" },
+      summary: '{"ok":true,"value":"workflow-result"}'
+    });
+
+    await agent.clearAgentToolOutputForTest(runId);
+    await expect(agent.inspectAgentToolRun(runId)).resolves.toMatchObject({
+      runId,
+      status: "completed",
+      output: { ok: true, value: "workflow-result" },
+      summary: '{"ok":true,"value":"workflow-result"}'
+    });
+  });
+
+  it("marks skipped agent-tool turns as errors", async () => {
+    const agent = await freshAgent();
+    const runId = crypto.randomUUID();
+
+    // Park the child turn inside `beforeStep` on a promise gate so the reset
+    // deterministically lands while the turn is in flight (a wall-clock sleep
+    // here could lose the race and observe a completed turn instead).
+    await agent.holdBeforeStepForTest();
+    await agent.startAgentToolRun("skipped probe", { runId });
+    await vi.waitFor(
+      async () => {
+        expect(await agent.hasEnteredBeforeStepForTest()).toBe(true);
+      },
+      { timeout: 8000, interval: 25 }
+    );
+    await agent.resetTurnStateForTest();
+    // Release AFTER the reset so the resumed turn observes the generation
+    // bump and seals the child run promptly.
+    await agent.releaseBeforeStepForTest();
+
+    const inspection = await waitForAgentToolRun(agent, runId);
+
+    expect(inspection).toMatchObject({
+      runId,
+      status: "error",
+      error: "Agent tool run was skipped before the child could finish."
+    });
+  });
+
+  it("preserves explicit agent-tool cancellation as aborted", async () => {
+    const agent = await freshAgent();
+    const runId = crypto.randomUUID();
+
+    // Park the child turn inside `beforeStep` so the cancel deterministically
+    // lands while the run is still cancellable (a wall-clock sleep here could
+    // lose the race and observe a completed turn instead).
+    await agent.holdBeforeStepForTest();
+    await agent.startAgentToolRun("cancelled probe", { runId });
+    await vi.waitFor(
+      async () => {
+        expect(await agent.hasEnteredBeforeStepForTest()).toBe(true);
+      },
+      { timeout: 8000, interval: 25 }
+    );
+    await agent.cancelAgentToolRun(runId, "stop");
+
+    const inspection = await waitForAgentToolRun(agent, runId);
+    expect(inspection).toMatchObject({
+      runId,
+      status: "aborted",
+      error: "stop"
+    });
+
+    // Let the parked turn resume and run its finish path to the end (the
+    // cleanup maps empty only when it has), then re-assert: the finalizer's
+    // guarded UPDATE must NOT clobber the aborted seal.
+    await agent.releaseBeforeStepForTest();
+    await vi.waitFor(
+      async () => {
+        expect(await agent.getAgentToolCleanupMapSizesForTest()).toEqual({
+          lastErrors: 0,
+          preTurnAssistantIds: 0
+        });
+      },
+      { timeout: 8000, interval: 25 }
+    );
+    await expect(agent.inspectAgentToolRun(runId)).resolves.toMatchObject({
+      runId,
+      status: "aborted",
+      error: "stop"
+    });
+  });
+
+  it("cleans in-memory agent-tool bookkeeping after a run completes", async () => {
+    const agent = await freshAgent();
+    const runId = crypto.randomUUID();
+
+    await agent.seedAgentToolLastErrorForTest(runId, "seeded stream error");
+    await agent.startAgentToolRun("cleanup probe", { runId });
+    const inspection = await waitForAgentToolRun(agent, runId);
+
+    expect(inspection?.status).toBe("error");
+    expect(await agent.getAgentToolCleanupMapSizesForTest()).toEqual({
+      lastErrors: 0,
+      preTurnAssistantIds: 0
+    });
+  });
+
+  it("runs a Think child through the parent agent-tool API", async () => {
+    const parent = await freshParent();
+    const runId = crypto.randomUUID();
+
+    const result = await parent.runThinkChild("parent Think probe", runId);
+
+    expect(result).toMatchObject({
+      runId,
+      agentType: "ThinkTestAgent",
+      status: "completed",
+      summary: "Hello from the assistant!"
+    });
+  });
+
+  it("forwards a chunk that lands in the tail attach window (#1589)", async () => {
+    const parent = await freshParent();
+    const runId = crypto.randomUUID();
+    const raceBody = JSON.stringify({
+      type: "tool-output-available",
+      toolCallId: "race-1589",
+      output: "race-output-1589"
+    });
+
+    // The injected chunk is broadcast from inside the child's
+    // `getAgentToolChunks` — after the stored backlog snapshot, in the window
+    // the buggy ordering left without a live forwarder. Pre-fix this chunk is
+    // silently dropped (tool part stuck at `input-available`); post-fix the
+    // forwarder is already attached and the chunk is replayed in order.
+    const { result, events } = await parent.runThinkChildWithAttachRaceForTest(
+      "proxy remote tool output",
+      raceBody,
+      30,
+      runId
+    );
+
+    expect(result.status).toBe("completed");
+    const chunkBodies = events
+      .filter((event) => event.event.kind === "chunk")
+      .map((event) => (event.event as { kind: "chunk"; body: string }).body);
+    expect(chunkBodies).toContain(raceBody);
+  });
+
+  it("forwards non-stored progress + milestone frames through the replay→live handoff", async () => {
+    // `reportProgress()` progress + milestone frames ride the chat-response
+    // wire and are forwarded to a tailing parent, but are NOT durably stored —
+    // they carry no `chunk_index`. They therefore rely on the in-memory live
+    // sequence counter to be forwarded: that counter is intentionally separate
+    // from the resumable store's chunk_index. If forwards were sequenced off the
+    // stored chunk count instead, these non-stored frames would collide with the
+    // last stored chunk's sequence and the tail's high-water dedupe would
+    // silently drop them — live progress/milestones would never reach the
+    // parent. Lands both frames in the same drain↔register attach window the
+    // #1589 fix addresses and asserts they arrive verbatim.
+    const parent = await freshParent();
+    const runId = crypto.randomUUID();
+    const progressBody = JSON.stringify({
+      type: AGENT_TOOL_PROGRESS_PART,
+      transient: true,
+      data: { message: "halfway", fraction: 0.5 }
+    });
+    const milestoneBody = JSON.stringify({
+      type: AGENT_TOOL_MILESTONE_PART,
+      data: { name: "phase-1", sequence: 0, at: 1, data: { sources: 2 } }
+    });
+
+    const { result, events } =
+      await parent.runThinkChildWithProgressInjectionForTest(
+        "report progress while proxied",
+        progressBody,
+        milestoneBody,
+        30,
+        runId
+      );
+
+    expect(result.status).toBe("completed");
+    const chunkBodies = events
+      .filter((event) => event.event.kind === "chunk")
+      .map((event) => (event.event as { kind: "chunk"; body: string }).body);
+    expect(chunkBodies).toContain(progressBody);
+    expect(chunkBodies).toContain(milestoneBody);
+  });
+
+  describe('eventDelivery: "terminal" (#2298)', () => {
+    const progressBody = JSON.stringify({
+      type: AGENT_TOOL_PROGRESS_PART,
+      transient: true,
+      data: { message: "halfway", fraction: 0.5 }
+    });
+    const milestoneBody = JSON.stringify({
+      type: AGENT_TOOL_MILESTONE_PART,
+      data: { name: "phase-1", sequence: 0, at: 1, data: { sources: 2 } }
+    });
+
+    it("forwards only lifecycle events to the parent's clients, live and on replay", async () => {
+      const parent = await freshParent();
+      const runId = crypto.randomUUID();
+
+      const { result, events } =
+        await parent.runThinkChildWithProgressInjectionForTest(
+          "headless parent",
+          progressBody,
+          milestoneBody,
+          10,
+          runId,
+          "terminal"
+        );
+
+      expect(result).toMatchObject({
+        status: "completed",
+        summary: "Hello from the assistant!"
+      });
+      const kinds = events.map((event) => event.event.kind);
+      expect(kinds[0]).toBe("started");
+      expect(kinds.at(-1)).toBe("finished");
+      const chunkBodies = events
+        .filter((event) => event.event.kind === "chunk")
+        .map((event) => (event.event as { body: string }).body);
+      expect(chunkBodies.sort()).toEqual([milestoneBody, progressBody].sort());
+
+      const replayed = await parent.replayAgentToolEventsForTest();
+      const replayedBodies = replayed
+        .filter((event) => event.event.kind === "chunk")
+        .map((event) => (event.event as { body: string }).body);
+      expect(replayed[0]?.event.kind).toBe("started");
+      expect(
+        replayedBodies.filter(
+          (body) => body !== progressBody && body !== milestoneBody
+        )
+      ).toEqual([]);
+      expect(replayed.at(-1)?.event.kind).toBe("finished");
+    });
+
+    it("replays the child's persisted milestones to a fresh connection", async () => {
+      const parent = await freshParent();
+      const runId = crypto.randomUUID();
+      await parent.runThinkChildWithProgressInjectionForTest(
+        "headless parent",
+        progressBody,
+        milestoneBody,
+        10,
+        runId,
+        "terminal"
+      );
+      const sequence = await parent.persistChildMilestoneForTest(
+        runId,
+        "sources-gathered",
+        { sources: 3 }
+      );
+
+      const replayed = await parent.replayAgentToolEventsForTest();
+      const milestones = replayed.flatMap((event) => {
+        if (event.event.kind !== "chunk") return [];
+        const body = JSON.parse((event.event as { body: string }).body) as {
+          type: string;
+          data?: { name: string; sequence: number; data?: unknown };
+        };
+        return body.type === AGENT_TOOL_MILESTONE_PART && body.data
+          ? [body.data]
+          : [];
+      });
+      expect(milestones).toContainEqual(
+        expect.objectContaining({
+          name: "sources-gathered",
+          sequence,
+          data: { sources: 3 }
+        })
+      );
+      // Milestone and progress frames reuse the current sequence; clients
+      // dedupe milestones by their own sequence instead.
+      const sequences = replayed
+        .filter((event) => {
+          if (event.event.kind !== "chunk") return true;
+          const body = event.event.body;
+          return (
+            !body.includes(AGENT_TOOL_MILESTONE_PART) &&
+            !body.includes(AGENT_TOOL_PROGRESS_PART)
+          );
+        })
+        .map((event) => event.sequence);
+      expect(new Set(sequences).size).toBe(sequences.length);
+      const milestoneSequences = milestones.map((m) => m.sequence);
+      expect(new Set(milestoneSequences).size).toBe(milestoneSequences.length);
+      expect(replayed.at(-1)?.event.kind).toBe("finished");
+    });
+
+    it("replays persisted milestones when the child's chunk read fails", async () => {
+      const parent = await freshParent();
+      const runId = crypto.randomUUID();
+      await parent.runThinkChildWithProgressInjectionForTest(
+        "headless parent",
+        progressBody,
+        milestoneBody,
+        10,
+        runId,
+        "terminal"
+      );
+      await parent.persistChildMilestoneForTest(runId, "sources-gathered", {
+        sources: 3
+      });
+      await parent.failNextChildChunkReadForTest(runId);
+
+      const replayed = await parent.replayAgentToolEventsForTest();
+      expect(
+        replayed.some((event) => {
+          if (event.event.kind !== "chunk") return false;
+          const body = JSON.parse((event.event as { body: string }).body) as {
+            type: string;
+            data?: { name?: string };
+          };
+          return (
+            body.type === AGENT_TOOL_MILESTONE_PART &&
+            body.data?.name === "sources-gathered"
+          );
+        })
+      ).toBe(true);
+      expect(replayed.at(-1)?.event.kind).toBe("finished");
+    });
+
+    it("still forwards every chunk by default", async () => {
+      const parent = await freshParent();
+      const { events } = await parent.runThinkChildWithProgressInjectionForTest(
+        "watched parent",
+        progressBody,
+        milestoneBody,
+        10
+      );
+      const chunkBodies = events
+        .filter((event) => event.event.kind === "chunk")
+        .map((event) => (event.event as { body: string }).body);
+      expect(
+        chunkBodies.some(
+          (body) => body !== progressBody && body !== milestoneBody
+        )
+      ).toBe(true);
+
+      const replayed = await parent.replayAgentToolEventsForTest();
+      expect(
+        replayed.some((event) => {
+          if (event.event.kind !== "chunk") return false;
+          const body = (event.event as { body: string }).body;
+          return body !== progressBody && body !== milestoneBody;
+        })
+      ).toBe(true);
+    });
+
+    it("rejects terminal delivery for a detached run", async () => {
+      const parent = await freshParent();
+      await expect(
+        parent.runThinkChildDetachedTerminalForTest()
+      ).resolves.toMatch(/not supported for detached runs/);
+    });
+
+    it("stops the child broadcasting its own chunks", async () => {
+      async function chatChunksBroadcast(
+        eventDelivery: "full" | "terminal"
+      ): Promise<number> {
+        const room = crypto.randomUUID();
+        const res = await exports.default.fetch(
+          `http://example.com/agents/think-test-agent/${room}`,
+          { headers: { Upgrade: "websocket" } }
+        );
+        const ws = res.webSocket as WebSocket;
+        ws.accept();
+        let chunks = 0;
+        ws.addEventListener("message", (e: MessageEvent) => {
+          try {
+            const frame = JSON.parse(e.data as string) as {
+              type?: string;
+              body?: string;
+            };
+            if (frame.type === "cf_agent_use_chat_response" && frame.body) {
+              chunks++;
+            }
+          } catch {
+            // Non-JSON frames are not chat chunks.
+          }
+        });
+        const agent = await freshAgent(room);
+        const runId = crypto.randomUUID();
+        await agent.startAgentToolRun("child probe", { runId, eventDelivery });
+        await waitForAgentToolRun(agent, runId);
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        ws.close();
+        return chunks;
+      }
+
+      expect(await chatChunksBroadcast("full")).toBeGreaterThan(0);
+      expect(await chatChunksBroadcast("terminal")).toBe(0);
+    });
+
+    it("keeps suppressing a recovered child's chunks after a restart", async () => {
+      async function recoveredChunksBroadcast(
+        eventDelivery: "full" | "terminal"
+      ): Promise<number> {
+        const room = crypto.randomUUID();
+        const res = await exports.default.fetch(
+          `http://example.com/agents/think-test-agent/${room}`,
+          { headers: { Upgrade: "websocket" } }
+        );
+        const ws = res.webSocket as WebSocket;
+        ws.accept();
+        let chunks = 0;
+        ws.addEventListener("message", (e: MessageEvent) => {
+          const frame = JSON.parse(e.data as string) as { id?: string };
+          if (frame.id === "recovered-request") chunks++;
+        });
+        const agent = await freshAgent(room);
+        await agent.broadcastRecoveredAgentToolChunkForTest(eventDelivery);
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        ws.close();
+        return chunks;
+      }
+
+      expect(await recoveredChunksBroadcast("full")).toBe(1);
+      expect(await recoveredChunksBroadcast("terminal")).toBe(0);
+    });
+  });
+
+  it("does not contaminate a run's terminal status with an unrelated turn's error frame (#1575)", async () => {
+    const parent = await freshParent();
+    const runId = crypto.randomUUID();
+
+    // While the tailed child run streams, an error frame from an UNRELATED
+    // turn (a request id that belongs to no run) is broadcast on the child.
+    // Before #1575 the error was stamped onto every active forwarder's run
+    // and this healthy run finalized as `error`.
+    const result = await parent.runThinkChildWithInjectedUnrelatedError(
+      "stay healthy probe",
+      20,
+      runId
+    );
+
+    expect(result).toMatchObject({
+      runId,
+      agentType: "ThinkTestAgent",
+      status: "completed"
+    });
+    expect(result.error).toBeUndefined();
+  });
+
+  it("marks an in-band stream error as error with no tailer attached (#1575)", async () => {
+    const parent = await freshParent();
+    const runId = crypto.randomUUID();
+
+    // The run is started directly and never tailed — terminal status must
+    // come from the child turn's own result, not forwarding side effects.
+    const inspection = await parent.startThinkChildWithoutTailForTest(
+      "fail untailed",
+      "untailed failure",
+      runId
+    );
+
+    expect(inspection.status).toBe("error");
+    expect(inspection.error).toContain("untailed failure");
+  });
+
+  it("keeps concurrent Think child runs' error state isolated (#1575)", async () => {
+    const parent = await freshParent();
+    const runA = crypto.randomUUID();
+    const runB = crypto.randomUUID();
+
+    const [a, b] = await Promise.all([
+      parent.runThinkChildWithInBandError("failing run", "run A failed", runA),
+      parent.runThinkChild("healthy run", runB)
+    ]);
+
+    expect(a).toMatchObject({ runId: runA, status: "error" });
+    expect(a.error).toContain("run A failed");
+    expect(b).toMatchObject({ runId: runB, status: "completed" });
+    expect(b.error).toBeUndefined();
+  });
+
+  it("attributes frames via the persisted request id after a DO restart (#1575)", async () => {
+    const agent = await freshAgent();
+    const runId = crypto.randomUUID();
+    const requestId = crypto.randomUUID();
+
+    // The child-run row persisted request_id at turn start; after a restart
+    // the in-memory map is empty, so attribution must fall back to SQL.
+    const resolved = await agent.resolveAgentToolRunAfterRestartForTest(
+      runId,
+      requestId
+    );
+
+    expect(resolved.running).toBe(runId);
+    expect(resolved.unknown).toBeNull();
+  });
+
+  it("inspects a stale run read-only when asked not to reconcile", async () => {
+    const agent = await freshAgent();
+    expect(await agent.inspectStaleRunReadOnlyForTest()).toEqual({
+      reported: "running",
+      stored: "running"
+    });
+  });
+
+  it("reconciles a child evicted after a stream error as error, not completed", async () => {
+    // The turn broadcast an error chunk and persisted an assistant reply, but
+    // the child was evicted before the finalizer sealed the row `error`.
+    const agent = await freshAgent();
+    const { before, assistantText, inspection } =
+      await agent.reconcileEvictedErroredRunForTest();
+
+    expect(before).toBe("running");
+    expect(assistantText).toContain("Sorry, something went wrong.");
+    expect(inspection).toMatchObject({
+      status: "error",
+      error: "model exploded"
+    });
+  });
+
+  it("realigns a cold live counter when re-attaching after the last stored chunk", async () => {
+    // Parent recovery re-attaches with `afterSequence` = the last stored index,
+    // so nothing drains; a new chunk must still forward past the backlog.
+    const agent = await freshAgent();
+    const { liveSequenceAfterDrain, postRestart } =
+      await agent.coldCounterReattachForTest(2);
+
+    expect(liveSequenceAfterDrain).toBe(3);
+    expect(postRestart).toMatchObject({ sequence: 3 });
+  });
+
+  it("forwards progress and stored chunks exactly once across a tail's drain", async () => {
+    // Progress frames aren't stored, so they must not shift the live numbering
+    // of later stored chunks or be deduped against a stored position.
+    const agent = await freshAgent();
+    const parsed = (await agent.progressDuringDrainForTest()).map(
+      (body) =>
+        JSON.parse(body) as {
+          type: string;
+          delta?: string;
+          data?: { message?: string };
+        }
+    );
+
+    expect(
+      parsed.filter((chunk) => chunk.type === "text-delta").map((c) => c.delta)
+    ).toEqual(["a", "b", "c"]);
+    expect(
+      parsed
+        .filter((chunk) => chunk.type === "data-agent-progress")
+        .map((chunk) => chunk.data?.message)
+    ).toEqual(["during-drain"]);
+  });
+
+  it("keeps stored numbering across a re-attach after a chunk too large to store", async () => {
+    const agent = await freshAgent();
+    expect(await agent.skippedChunkReattachForTest()).toEqual([
+      { sequence: 0, delta: "a", unstored: false },
+      { sequence: 1, delta: "b", unstored: false },
+      { sequence: 2, delta: "c", unstored: false },
+      { sequence: 3, delta: "<oversized>", unstored: true },
+      { sequence: 3, delta: "d", unstored: false }
+    ]);
+  });
+
+  it("forwards a chunk broadcast while a cold re-attach drains", async () => {
+    const agent = await freshAgent();
+    const { drained, postRestart } = await agent.broadcastDuringDrainForTest();
+
+    expect(drained).toEqual([0, 1, 2]);
+    expect(postRestart).toMatchObject({ sequence: 3 });
+  });
+
+  it("keeps a completed Think child's stored chunks for a parent attaching afterwards", async () => {
+    const parent = await freshParent();
+    const runId = crypto.randomUUID();
+
+    // The child's cutover used to discard its stream rows with its message,
+    // so a parent re-attaching after completion (recovery, a late tail)
+    // replayed nothing. The rows now outlive the cutover, as in ai-chat.
+    const result = await parent.readCompletedChildChunksForTest(
+      "late attach",
+      runId
+    );
+    expect(result.status).toBe("completed");
+    expect(result.chunks).toBeGreaterThan(0);
+  });
+
+  it("recovers completed Think child runs into terminal parent rows", async () => {
+    const parent = await freshParent();
+    const runId = crypto.randomUUID();
+
+    const { events, finishes, inspection, status } =
+      await parent.reconcileCompletedThinkChildForTest(
+        "recover completed Think child",
+        runId
+      );
+
+    expect(status).toBe("completed");
+    expect(inspection).toMatchObject({
+      runId,
+      status: "completed",
+      summary: "Hello from the assistant!"
+    });
+    expect(finishes).toEqual([
+      {
+        run: expect.objectContaining({
+          runId,
+          parentToolCallId: "think-tool-call",
+          agentType: "ThinkTestAgent",
+          status: "completed",
+          inputPreview: "recover completed Think child"
+        }),
+        result: expect.objectContaining({
+          status: "completed",
+          summary: "Hello from the assistant!"
+        })
+      }
+    ]);
+    expect(events.at(-1)).toMatchObject({
+      parentToolCallId: "think-tool-call",
+      event: {
+        kind: "finished",
+        runId,
+        summary: "Hello from the assistant!"
+      }
+    });
+  });
+
+  it("re-attaches a still-running Think child and finalizes it completed (#1630)", async () => {
+    const parent = await freshParent();
+    const runId = crypto.randomUUID();
+
+    const { events, finishes, status } =
+      await parent.reconcileRunningThinkChildForTest(
+        "child completes during reattach",
+        runId
+      );
+
+    expect(status).toBe("completed");
+    expect(finishes).toEqual([
+      {
+        run: expect.objectContaining({
+          runId,
+          parentToolCallId: "think-tool-call",
+          agentType: "ThinkTestAgent",
+          status: "completed",
+          inputPreview: "child completes during reattach"
+        }),
+        result: expect.objectContaining({
+          status: "completed"
+        })
+      }
+    ]);
+    expect(events.at(-1)).toMatchObject({
+      event: {
+        kind: "finished",
+        runId
+      }
+    });
+  });
+
+  it("bounds re-attach when a tail-able Think child never reaches terminal (#1630)", async () => {
+    const parent = await freshParent();
+    const runId = crypto.randomUUID();
+
+    const { finishes, elapsedMs, status } =
+      await parent.reattachStuckTailableThinkChildForTest(runId);
+
+    // Sealed after the (small) bounded re-attach budget, not immediately and
+    // not never: a genuinely hung child can't block recovery forever.
+    expect(elapsedMs).toBeLessThan(5000);
+    expect(status).toBe("interrupted");
+    expect(finishes).toEqual([
+      {
+        run: expect.objectContaining({
+          runId,
+          parentToolCallId: "think-tool-call",
+          agentType: "ThinkTestAgent",
+          status: "interrupted"
+        }),
+        result: expect.objectContaining({
+          status: "interrupted",
+          // Typed cause (#1630 follow-up) so callers don't parse the prose: the
+          // child made no forward progress within the no-progress budget. This
+          // seal is SOFT — the child is NOT torn down (`childStillRunning: true`)
+          // so a re-issue can still re-attach and repair it if it self-heals.
+          // Only the `window-exceeded` hard ceiling tears the child down.
+          reason: "no-progress",
+          childStillRunning: true,
+          error:
+            "Agent tool run was still running but made no forward progress within the re-attach no-progress budget; the parent gave up."
+        })
+      }
+    ]);
+  });
+
+  it("tears down a child given up at the window-exceeded ceiling (#1630)", async () => {
+    const parent = await freshParent();
+    const runId = crypto.randomUUID();
+
+    const { finishes, elapsedMs, status, childStatus } =
+      await parent.reattachMaxWindowExhaustedThinkChildForTest(runId);
+
+    // Ceiling (200ms) ends the wait well before the 5s no-progress budget.
+    expect(elapsedMs).toBeLessThan(5000);
+    expect(status).toBe("interrupted");
+    expect(finishes).toEqual([
+      {
+        run: expect.objectContaining({
+          runId,
+          agentType: "ThinkTestAgent",
+          status: "interrupted"
+        }),
+        result: expect.objectContaining({
+          status: "interrupted",
+          // The hard ceiling is the one give-up that TEARS THE CHILD DOWN — the
+          // child had its full window and is truly exhausted.
+          reason: "window-exceeded",
+          childStillRunning: false
+        })
+      }
+    ]);
+    // Teardown actually cancelled the child run (not just sealed the parent).
+    expect(childStatus).toBe("aborted");
+  });
+
+  it("re-arms across a clean mid-flight stream-close and follows an advancing child to completed (#1630)", async () => {
+    const parent = await freshParent();
+
+    const { status, reason, tailAttempts } =
+      await parent.reattachScriptedAdapterForTest("rearm-then-complete");
+
+    // The child's stream closed once (re-eviction) while still advancing, so
+    // re-attach re-armed (a second tail) and collected the real terminal result
+    // rather than sealing interrupted.
+    expect(status).toBe("completed");
+    expect(reason).toBeUndefined();
+    expect(tailAttempts).toBe(2);
+  });
+
+  it("does not re-arm after a full no-progress window even if the child progressed earlier (#1630)", async () => {
+    const parent = await freshParent();
+
+    const { status, reason, tailAttempts } =
+      await parent.reattachScriptedAdapterForTest("idle-after-progress");
+
+    // Progress then a full idle window is an honest stall: seal `no-progress`
+    // after a SINGLE tail (no bonus window, no per-cycle abandoned reader).
+    expect(status).toBeUndefined();
+    expect(reason).toBe("no-progress");
+    expect(tailAttempts).toBe(1);
+  });
+
+  it("an Infinity no-progress budget never seals on silence — only the hard ceiling ends the wait (#1630/#1672)", async () => {
+    const parent = await freshParent();
+
+    const { status, reason, tailAttempts } =
+      await parent.reattachScriptedAdapterForTest(
+        "infinite-no-progress-ceiling"
+      );
+
+    // Pre-fix, `Infinity` short-circuited to an immediate `no-progress` seal
+    // with ZERO tail attempts. Now it tails the silent child and, because the
+    // no-progress idle timer is disabled, only the finite hard ceiling ends the
+    // wait — sealing `window-exceeded`, never `no-progress`.
+    expect(status).toBeUndefined();
+    expect(reason).toBe("window-exceeded");
+    expect(reason).not.toBe("no-progress");
+    expect(tailAttempts).toBe(1);
+  });
+
+  it("re-attach returns not-tailable for an adapter without a live-tail (#1630)", async () => {
+    const parent = await freshParent();
+
+    // An adapter missing `tailAgentToolRun` cannot be re-attached: the re-attach
+    // returns no terminal result and the typed `not-tailable` cause. (Real RPC
+    // children always pass the `typeof` guard, so this defensive branch is
+    // exercised via a plain in-process adapter — see the seam doc.)
+    const reattach = await parent.reattachNotTailableAdapterForTest();
+
+    expect(reattach.reason).toBe("not-tailable");
+    expect(reattach.result).toBe(false);
+  });
+
+  it("honors the public AgentStaticOptions re-attach budgets (#1630)", async () => {
+    const parent = await freshParent();
+
+    // `ThinkAgentToolParent` sets distinctive static options; this proves they
+    // are resolved (and therefore used as the recovery defaults), not just
+    // type-checked.
+    const budgets = await parent.getResolvedReattachBudgetsForTest();
+
+    expect(budgets).toEqual({
+      noProgressTimeoutMs: 4242,
+      maxWindowMs: 54_321
+    });
+  });
+
+  it("re-attaches still-running children in parallel so a hung child can't starve a sibling (#1630)", async () => {
+    const parent = await freshParent();
+
+    const { stuckStatus, fastStatus } =
+      await parent.reconcileParallelThinkChildrenForTest();
+
+    // The fast child completes during its own re-attach budget even though the
+    // (earlier-started) stuck child is still burning its budget in parallel.
+    expect(fastStatus).toBe("completed");
+    expect(stuckStatus).toBe("interrupted");
+  });
+
+  it("repairs an interrupted run by re-attaching on re-issue (#1630)", async () => {
+    const parent = await freshParent();
+    const runId = crypto.randomUUID();
+
+    const { status, reissueStatus } =
+      await parent.reissueInterruptedThinkChildForTest(
+        "repair after interrupt",
+        runId
+      );
+
+    // `interrupted` is soft: a re-issue re-attaches and collects the child's
+    // real (completed) result, repairing the parent row instead of returning
+    // the stale interrupted.
+    expect(reissueStatus).toBe("completed");
+    expect(status).toBe("completed");
+  });
+
+  it("bounds Think recovery when child facet startup never completes", async () => {
+    const parent = await freshParent();
+    const runId = crypto.randomUUID();
+
+    const { events, finishes, elapsedMs, status } =
+      await parent.reconcileStuckThinkChildWithTimeoutForTest(runId);
+
+    expect(elapsedMs).toBeLessThan(1000);
+    expect(status).toBe("interrupted");
+    expect(finishes).toEqual([
+      {
+        run: expect.objectContaining({
+          runId,
+          parentToolCallId: "think-tool-call",
+          agentType: "StuckThinkAgentToolChild",
+          status: "interrupted",
+          inputPreview: "stuck Think child"
+        }),
+        result: expect.objectContaining({
+          status: "interrupted",
+          error: "Agent tool run inspection timed out during parent recovery."
+        })
+      }
+    ]);
+    expect(events.at(-1)).toMatchObject({
+      event: {
+        kind: "interrupted",
+        runId,
+        error: "Agent tool run inspection timed out during parent recovery."
+      }
+    });
+  });
+
+  it("runs scheduled Think startup recovery and finalizes stale rows", async () => {
+    const parent = await freshParent();
+    const runId = crypto.randomUUID();
+
+    const { events, finishes, status } =
+      await parent.scheduleStuckThinkChildRecoveryForTest(runId);
+
+    expect(status).toBe("interrupted");
+    expect(finishes).toHaveLength(1);
+    expect(finishes[0]).toMatchObject({
+      run: expect.objectContaining({
+        runId,
+        agentType: "StuckThinkAgentToolChild",
+        status: "interrupted"
+      }),
+      result: expect.objectContaining({
+        status: "interrupted",
+        error: "Agent tool run inspection timed out during parent recovery."
+      })
+    });
+    expect(events.at(-1)).toMatchObject({
+      event: { kind: "interrupted", runId }
+    });
+  });
+
+  it("keeps scheduled Think startup recovery single-flight", async () => {
+    const parent = await freshParent();
+    const runId = crypto.randomUUID();
+
+    const { events, finishes, status } =
+      await parent.scheduleStuckThinkChildRecoveryTwiceForTest(runId);
+
+    expect(status).toBe("interrupted");
+    expect(finishes).toHaveLength(1);
+    expect(
+      events.filter((event) => event.event.kind === "interrupted")
+    ).toHaveLength(1);
+  });
+
+  it("lets Think startup return before stale child recovery finalizes", async () => {
+    const parent = await freshParent();
+    const runId = crypto.randomUUID();
+
+    const {
+      statusesDuringStartup,
+      statusAfterStartup,
+      finalStatus,
+      startupElapsedMs,
+      finishes,
+      events
+    } = await parent.startupDefersStaleThinkRecoveryForTest(runId);
+
+    expect(startupElapsedMs).toBeLessThan(1000);
+    expect(statusesDuringStartup).toContain("running");
+    expect(statusAfterStartup).toBe("running");
+    expect(finalStatus).toBe("interrupted");
+    expect(finishes).toHaveLength(1);
+    expect(finishes[0]).toMatchObject({
+      run: expect.objectContaining({
+        runId,
+        agentType: "StuckThinkAgentToolChild",
+        status: "interrupted"
+      }),
+      result: expect.objectContaining({
+        status: "interrupted",
+        error: "Agent tool run inspection timed out during parent recovery."
+      })
+    });
+    expect(events.at(-1)).toMatchObject({
+      event: { kind: "interrupted", runId }
+    });
+  });
+
+  it("only recovers rows that were stale before Think startup began", async () => {
+    const parent = await freshParent();
+
+    const { staleStatus, onStartRunStatus, finishes, events } =
+      await parent.startupRecoveryIgnoresRunsCreatedDuringOnStartForTest();
+
+    expect(staleStatus).toBe("interrupted");
+    expect(onStartRunStatus).toBe("running");
+    expect(finishes).toHaveLength(1);
+    expect(finishes[0]?.run.inputPreview).toBe("startup snapshot stale child");
+    expect(
+      events.filter((event) => event.event.kind === "interrupted")
+    ).toHaveLength(1);
+  });
+
+  it("finalizes a stranded child run row when its own recovery CONTINUES (#1630)", async () => {
+    // A recovered assistant turn → the reconcile in `_chatRecoveryContinue`'s
+    // finally seals the stranded row `completed` so a re-attached parent
+    // collects immediately instead of waiting out a no-progress window.
+    const completed = await (
+      await freshAgent()
+    ).reconcileStaleChildRunViaRecoveryForTest("continue", true);
+    expect(completed.before).toBe("running");
+    expect(completed.after).toBe("completed");
+
+    // No recovered assistant turn → the same finally seals it `error`.
+    const errored = await (
+      await freshAgent()
+    ).reconcileStaleChildRunViaRecoveryForTest("continue", false);
+    expect(errored.before).toBe("running");
+    expect(errored.after).toBe("error");
+  });
+
+  it("finalizes a stranded child run row when its own recovery RETRIES a pre-stream turn (#1630)", async () => {
+    // The pre-stream-eviction path settles via `_chatRecoveryRetry`, which
+    // (like continue) never hits `startAgentToolRun`'s finalizer — so its
+    // finally must run the same reconcile. This is the path the earlier review
+    // flagged as missing.
+    const completed = await (
+      await freshAgent()
+    ).reconcileStaleChildRunViaRecoveryForTest("retry", true);
+    expect(completed.before).toBe("running");
+    expect(completed.after).toBe("completed");
+
+    const errored = await (
+      await freshAgent()
+    ).reconcileStaleChildRunViaRecoveryForTest("retry", false);
+    expect(errored.before).toBe("running");
+    expect(errored.after).toBe("error");
+  });
+
+  it("defaults the re-attach hard ceiling to uncapped (Infinity) when unset (#1630/#1672)", async () => {
+    // No re-attach override on `ThinkTestAgent` ⇒ SDK defaults. The ceiling must
+    // stay uncapped so a healthy long-running child is never cut off; a finite
+    // default would reintroduce the bug #1672 removed at the child layer.
+    const budgets = await (
+      await freshAgent()
+    ).getDefaultReattachBudgetsForTest();
+    expect(budgets.noProgressTimeoutMs).toBe(120_000);
+    expect(budgets.maxWindowIsFinite).toBe(false);
+  });
+
+  it("cancelAgentToolRun aborts an in-flight recovery turn and seals the child aborted (#1630)", async () => {
+    const result = await (
+      await freshAgent()
+    ).cancelAgentToolRunAbortsRecoveryForTest();
+    expect(result.abortedBefore).toBe(false);
+    expect(result.abortedAfter).toBe(true);
+    expect(result.childStatus).toBe("aborted");
+  });
+});

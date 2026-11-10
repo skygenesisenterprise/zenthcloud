@@ -1,0 +1,22 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "mcp-worker-authenticated",
+  "compatibility_date": "2026-06-11",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "src/server.ts",
+  // The URL MCP clients connect to. Set it to your deployed URL, for example
+  // https://mcp-worker-authenticated.<your-subdomain>.workers.dev/mcp
+  "vars": {
+    "MCP_RESOURCE": "http://localhost:5173/mcp"
+  },
+  "assets": {
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/mcp", "/authorize", "/oauth/*", "/.well-known/*"]
+  },
+  "kv_namespaces": [
+    {
+      "binding": "OAUTH_KV",
+      "id": "your-kv-namespace-id"
+    }
+  ]
+}

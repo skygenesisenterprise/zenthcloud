@@ -1,0 +1,373 @@
+/**
+ * Shared lifecycle/result types for chat agent base classes.
+ *
+ * `AIChatAgent` (in `@cloudflare/ai-chat`) and `Think` (in
+ * `@cloudflare/think`) both surface the same result/context shapes on
+ * their public hooks. Rather than duplicate the types in each package,
+ * they live here in `agents/chat` and are re-exported by both.
+ *
+ * These are intentionally narrow — protocol constants, primitive
+ * helpers, and stream machinery live in sibling modules. This file
+ * contains only the types that appear on a chat agent's public API
+ * surface.
+ */
+
+import type { UIMessage } from "ai";
+import type { ClientToolSchema } from "./client-tools";
+import type { MessagePart } from "./message-builder";
+
+/**
+ * An advisory, open-ended hint that an action records during a turn to
+ * influence how the final reply is delivered without changing the model-visible
+ * tool output. The base type is intentionally open; channels/voice surfaces
+ * narrow it to the shapes they understand and ignore the rest.
+ * `@cloudflare/think` exports a richer named union for `ctx.attachReply`'s
+ * parameter; this base is what rides on `ChatResponseResult`.
+ */
+export type ReplyAttachment = { type: string } & Record<string, unknown>;
+
+/**
+ * Result passed to the `onChatResponse` lifecycle hook after a chat
+ * turn completes.
+ */
+export type ChatResponseResult = {
+  /** The finalized assistant message from this turn. */
+  message: UIMessage;
+  /** The request ID associated with this turn. */
+  requestId: string;
+  /** Whether this turn was a continuation of a previous assistant turn. */
+  continuation: boolean;
+  /** How the turn ended. */
+  status: "completed" | "error" | "aborted";
+  /** Error message when `status` is `"error"`. */
+  error?: string;
+  /**
+   * `true` when the hook is delivered by recovery after a restart, because
+   * the turn's message was persisted but the hook had not run yet.
+   */
+  recovered?: boolean;
+  /**
+   * Advisory reply attachments recorded during the turn (best-effort,
+   * producing-attempt only — not re-applied on a ledger replay).
+   */
+  attachments?: ReplyAttachment[];
+};
+
+/**
+ * Options accepted by programmatic entry points that drive a chat turn
+ * (`saveMessages`, `continueLastTurn`).
+ */
+export type SaveMessagesOptions = {
+  /**
+   * External `AbortSignal` for cancelling the turn from outside.
+   *
+   * When the signal aborts, the in-flight turn is cancelled exactly the
+   * same way an internal `chat-request-cancel` WebSocket message would
+   * cancel it: the inference loop's signal aborts, partially streamed
+   * chunks are still persisted, and the resolved result reports
+   * `status: "aborted"`. If the signal is already aborted when the
+   * turn starts, no inference work is performed.
+   *
+   * Useful for bridging an external caller's abort intent into a turn
+   * whose request id is generated server-side and not surfaced until
+   * after completion — e.g. forwarding the AI SDK tool `execute`'s
+   * `abortSignal` into a sub-agent's `saveMessages` call. See
+   * [`cloudflare/agents#1406`](https://github.com/cloudflare/agents/issues/1406)
+   * for the motivating use case.
+   */
+  signal?: AbortSignal;
+};
+
+/**
+ * Result returned by programmatic entry points.
+ *
+ * - `"completed"` — the turn ran to completion.
+ * - `"skipped"` — the turn was invalidated mid-flight, typically by a
+ *   `CHAT_CLEAR` protocol message that bumped the turn-queue
+ *   generation.
+ * - `"aborted"` — the turn started but was cancelled before
+ *   completion, either by `MSG_CHAT_CANCEL` over the chat WebSocket or
+ *   by an external `AbortSignal` passed via {@link SaveMessagesOptions}.
+ *   Partial chunks streamed before the abort are still persisted.
+ * - `"error"` — the turn ran but ended with a stream error. Partial chunks
+ *   streamed before the error are still persisted.
+ */
+export type SaveMessagesResult = {
+  /** Server-generated request ID for the chat turn. */
+  requestId: string;
+  /** Whether the turn completed, errored, was skipped, or was aborted. */
+  status: "completed" | "error" | "skipped" | "aborted";
+  /** Error message when `status` is `"error"`. */
+  error?: string;
+};
+
+/**
+ * Context passed to the `onChatRecovery` hook when an interrupted chat
+ * stream is detected after DO restart.
+ */
+export type ChatRecoveryContext = {
+  /** Stable identifier for this recovery incident. */
+  incidentId: string;
+  /**
+   * Stable request ID for the whole continuation chain (the recovery "root").
+   * Unlike `requestId` — which changes on every chained continuation — this is
+   * constant for the lifetime of the incident, so it's the right key for
+   * per-incident budget tracking or fresh-incident detection without
+   * re-deriving identity from message IDs.
+   */
+  recoveryRootRequestId: string;
+  /** Attempt number for this recovery incident, starting at 1. */
+  attempt: number;
+  /** Maximum attempts before the framework terminalizes recovery. */
+  maxAttempts: number;
+  /** Whether this recovery is retrying an unanswered user turn or continuing a partial assistant turn. */
+  recoveryKind: "retry" | "continue";
+  /** Stream ID from the interrupted stream. */
+  streamId: string;
+  /** Request ID from the interrupted stream. */
+  requestId: string;
+  /** Partial text extracted from stored chunks. */
+  partialText: string;
+  /** Partial message parts reconstructed from chunks. */
+  partialParts: MessagePart[];
+  /** Checkpoint data from `this.stash()` during the interrupted stream. */
+  recoveryData: unknown | null;
+  /** Current persisted messages. */
+  messages: UIMessage[];
+  /** Custom body from the last chat request. */
+  lastBody?: Record<string, unknown>;
+  /** Client tool schemas from the last chat request. */
+  lastClientTools?: ClientToolSchema[];
+  /**
+   * Epoch milliseconds when the underlying fiber was started. Compare
+   * against `Date.now()` to suppress continuations for turns that have
+   * been orphaned too long to safely replay.
+   */
+  createdAt: number;
+};
+
+/**
+ * Options returned from `onChatRecovery` to control recovery behavior.
+ */
+export type ChatRecoveryOptions = {
+  /** Save the partial response from stored chunks. Default: true. */
+  persist?: boolean;
+  /** Schedule a continuation via `continueLastTurn()`. Default: true. */
+  continue?: boolean;
+};
+
+/**
+ * Context passed when framework-owned chat recovery exhausts its retry budget.
+ *
+ * Carries enough to render/persist a user-facing terminal banner without
+ * re-deriving anything: the `terminalMessage` that was shown, the
+ * `recoveryRootRequestId` (stable incident identity), and the partial the turn
+ * produced before it was given up on.
+ */
+export type ChatRecoveryExhaustedContext = Pick<
+  ChatRecoveryContext,
+  | "incidentId"
+  | "requestId"
+  | "recoveryRootRequestId"
+  | "attempt"
+  | "maxAttempts"
+  | "recoveryKind"
+  | "streamId"
+  | "createdAt"
+  | "partialText"
+  | "partialParts"
+> & {
+  /**
+   * Why recovery stopped. One of:
+   * - `max_attempts_exceeded` — the per-incident attempt budget was spent.
+   * - `no_progress_timeout` — no forward progress within the no-progress window.
+   * - `work_budget_exceeded` — the turn kept producing content but exceeded the
+   *   configured `maxRecoveryWork` runaway-loop budget.
+   * - `recovery_aborted` — the caller's `shouldKeepRecovering` hook returned `false`.
+   * - `interrupted_attempts_exceeded` — the turn's attempts kept dying before
+   *   they finished (an isolate reset such as a memory-limit reset or a
+   *   deploy) until `maxInterruptedAttempts` of them had been interrupted.
+   * - `out_of_memory` — the alarm memory-limit circuit breaker sealed the
+   *   recovery after repeated Durable Object memory-limit resets (#1825).
+   * - `stable_timeout` — a recovery attempt kept timing out waiting for the
+   *   isolate to reach stable state until the budget drained (extreme churn).
+   * - `max_recovery_window_exceeded` — DEPRECATED. The old absolute incident-age
+   *   ceiling. No longer emitted (a progressing turn is no longer bounded by
+   *   wall-clock); retained only for back-compat with persisted incidents.
+   *
+   * Treat this as an open string: new reasons may be added.
+   */
+  reason: string;
+  /** The terminal message shown to the user (from the `chatRecovery` config). */
+  terminalMessage: string;
+};
+
+/**
+ * Context passed to the `shouldKeepRecovering` recovery predicate on each
+ * attempt. Lets an integrator impose a runaway-loop guard expressed as their
+ * own budget (steps / tool-calls / tokens / cost) rather than wall-clock
+ * duration. `ctx.work` is the SDK's coarse progress signal; map it (or your own
+ * accounting) onto whatever budget you enforce.
+ */
+export type ChatRecoveryProgressContext = {
+  incidentId: string;
+  requestId: string;
+  recoveryRootRequestId: string;
+  attempt: number;
+  maxAttempts: number;
+  recoveryKind: "retry" | "continue";
+  /**
+   * Recovery work produced since this incident began — a durable, monotonic,
+   * reconnect-immune count of flushed stream segments (roughly ten packed
+   * streaming chunks, one settled tool result, or one forwarded sub-agent
+   * credit each; not tokens). The signal that distinguishes a healthy long turn
+   * from a runaway loop, in the same unit as `maxRecoveryWork`.
+   */
+  work: number;
+  /** Wall-clock ms since the incident's first interruption. */
+  ageMs: number;
+};
+
+/**
+ * Configuration for durable chat recovery, which is always enabled for chat
+ * turns. `true` uses these defaults: `maxAttempts: 10`,
+ * `stableTimeoutMs: 10_000`, `noProgressTimeoutMs: 300_000` (5 min),
+ * `maxRecoveryWork: 10000`, `maxInterruptedAttempts: 5`, and a generic
+ * terminal message. Assign an object to
+ * tune recovery without disabling its durable bookkeeping.
+ *
+ * **Apply this as a class field or in the constructor — never assign it in
+ * `onStart()`.** On every wake the SDK evaluates recovery budgets (and may seal
+ * an interrupted turn, firing `onExhausted`) BEFORE your `onStart()` body runs.
+ * A config produced inside `onStart()` is therefore read as the built-in
+ * defaults at the moment recovery decides, so your budgets / `shouldKeepRecovering`
+ * / `onExhausted` silently never apply to the recovery that matters. The SDK
+ * logs a one-time warning if it detects `chatRecovery` being assigned during
+ * `onStart()`.
+ */
+export type ChatRecoveryConfig =
+  | true
+  | {
+      maxAttempts?: number;
+      stableTimeoutMs?: number;
+      terminalMessage?: string;
+      /**
+       * How long an incident may go WITHOUT forward progress before it is
+       * sealed with `reason="no_progress_timeout"`. This is the primary
+       * stuck-turn bound. It **resets on every progress-bearing attempt**, so a
+       * turn that keeps producing content is never sealed by this bound, while
+       * a genuinely idle turn is sealed within the window. Repeated
+       * interruption is bounded separately by `maxInterruptedAttempts`.
+       * Defaults to 5 min.
+       */
+      noProgressTimeoutMs?: number;
+      /**
+       * Runaway-loop guard. Maximum recovery WORK since the incident began
+       * before a still-progressing turn is sealed with
+       * `reason="work_budget_exceeded"`. Defaults to `10000`: a generous
+       * backstop that bounds wasted re-run cost when a turn keeps emitting a
+       * little content but never converges (e.g. an isolate that OOMs mid-stream
+       * on every recovery — #1825 — which otherwise resets the attempt cap and
+       * no-progress window forever). Work only accrues from the first
+       * interruption until the turn completes, so a normal interrupted turn
+       * never approaches it. A very long agentic turn under heavy interruption
+       * that legitimately needs more can raise this (or set `Infinity` to
+       * disable the framework cap and bound the runaway via `shouldKeepRecovering`
+       * instead).
+       *
+       * The unit is one durably flushed stream segment: roughly ten packed
+       * streaming chunks, one settled tool result (flushed on its own), or one
+       * explicit credit for forwarded sub-agent output. It is not tokens,
+       * messages, or chunks. The unit changed from "credited chunk" in #2223
+       * (and the default moved from `1000` to `10000`); an explicit value
+       * carried over from an earlier release is not recalibrated, so measure
+       * `ctx.work` for a healthy interrupted turn before choosing a cap.
+       */
+      maxRecoveryWork?: number;
+      /**
+       * How many of one turn's attempts may be interrupted before recovery
+       * gives up with `reason="interrupted_attempts_exceeded"`. An attempt is
+       * interrupted when its isolate dies before the attempt finishes: a
+       * Durable Object memory-limit reset, a deploy, or any other reset. The
+       * original turn counts, so the default of `5` runs the model at most five
+       * times for a turn that dies every time.
+       *
+       * Each attempt records itself before it runs anything heavy, and the
+       * next attempt counts a record left by an isolate that died, because
+       * the isolate that died cannot record anything. Streamed output never
+       * resets the count: a turn that re-runs and dies again produces output
+       * too (#2613). A memory-limit reset and a
+       * deploy look the same from the next isolate, so a turn interrupted by
+       * this many deploys in a row is also sealed. Values below `1` are read
+       * as `1`; `Infinity` disables the bound.
+       */
+      maxInterruptedAttempts?: number;
+      /**
+       * @deprecated Use `maxInterruptedAttempts`. When that is unset, this is
+       * read as `maxInterruptedAttempts: maxOomRetries + 1`, which keeps the
+       * old number of retries. The budget now counts every interrupted
+       * attempt, not only the ones that ended in an observed memory-limit
+       * reset, because a reset isolate cannot record what killed it.
+       */
+      maxOomRetries?: number;
+      /**
+       * Caller policy consulted on each recovery attempt from the second
+       * onward — it is NOT called on the first detection (the attempt that
+       * opens the incident), and not at all once a hard bound (no-progress
+       * timeout, attempt cap, or `maxRecoveryWork`) has already sealed the
+       * incident. Return `false` to stop recovery with
+       * `reason="recovery_aborted"`; return `true` (or omit the hook) to keep
+       * recovering. A throwing hook is logged and treated as "keep recovering"
+       * so a buggy predicate cannot wedge a turn.
+       *
+       * This is the hook point for a token/cost/step budget, but note
+       * `ctx.work` is a coarse count of produced content/tool segments, not
+       * tokens — track real token/cost yourself (keyed by
+       * `ctx.recoveryRootRequestId`) and consult it here.
+       */
+      shouldKeepRecovering?(
+        ctx: ChatRecoveryProgressContext
+      ): boolean | Promise<boolean>;
+      onExhausted?(ctx: ChatRecoveryExhaustedContext): void | Promise<void>;
+    };
+
+/** Fully-defaulted configuration for always-on durable chat recovery. */
+export type ResolvedChatRecoveryConfig = {
+  maxAttempts: number;
+  stableTimeoutMs: number;
+  terminalMessage: string;
+  noProgressTimeoutMs: number;
+  maxRecoveryWork: number;
+  maxInterruptedAttempts: number;
+  shouldKeepRecovering?: (
+    ctx: ChatRecoveryProgressContext
+  ) => boolean | Promise<boolean>;
+  onExhausted?: (ctx: ChatRecoveryExhaustedContext) => void | Promise<void>;
+};
+
+/**
+ * Controls how overlapping user submit requests behave while another
+ * chat turn is already active or queued.
+ *
+ * - `"queue"` (default) — queue every submit and process them in order.
+ * - `"latest"` — keep only the latest overlapping submit; superseded
+ *   submits still persist their user messages, but do not start their
+ *   own model turn.
+ * - `"merge"` — coalesce overlapping submits into one model turn while
+ *   preserving the submitted user content. Exact persistence depends on
+ *   the chat package's message model.
+ * - `"drop"` — ignore overlapping submits entirely (messages not
+ *   persisted).
+ * - `{ strategy: "debounce", debounceMs? }` — trailing-edge latest with
+ *   a quiet window.
+ *
+ * Only applies to `submit-message` requests. Regenerations, tool
+ * continuations, approvals, clears, programmatic `saveMessages`, and
+ * `continueLastTurn` keep their existing serialized behavior.
+ */
+export type MessageConcurrency =
+  | "queue"
+  | "latest"
+  | "merge"
+  | "drop"
+  | { strategy: "debounce"; debounceMs?: number };

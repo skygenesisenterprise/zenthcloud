@@ -1,0 +1,469 @@
+import {
+  Agent,
+  type AgentMcpOAuthProvider,
+  type AgentNamespace,
+  DurableObjectOAuthClientProvider,
+  getAgentByName,
+  routeAgentRequest
+} from "../src/index.ts";
+import { MCPConnectionState } from "../src/mcp/client/connection.ts";
+import {
+  MCPAuthorizationRequiredError,
+  toErrorMessage
+} from "../src/mcp/client/errors.ts";
+import {
+  createLegacyMcpHandler,
+  createMcpHandler,
+  DurableObjectEventStore,
+  McpAgent,
+  type StatelessMcpHandler,
+  type TransportState,
+  WorkerTransport
+} from "../src/mcp/index.ts";
+import { createEverythingServer } from "./everything-server.ts";
+import { createEverythingServerV2 } from "./vendor/everything-server-v2.ts";
+
+/**
+ * Conformance worker — hosts everything the MCP conformance suite needs from
+ * this repo inside workerd, so the implementations are tested as they actually
+ * run in production (Durable Object storage, real routes, real transports).
+ *
+ * Client under test (`conformance client`):
+ *  - ConformanceHost: Agent + MCPClientManager. The conformance CLI spawns
+ *    driver.mjs once per scenario; the driver POSTs `{ scenario, serverUrl }`
+ *    to a fresh agent instance, which connects out to the conformance
+ *    harness's test server. When the connection needs OAuth, the worker
+ *    responds with the authorization URL; the driver plays the role of the
+ *    user's browser (follows the redirect into this worker's real callback
+ *    route) and then calls /run again to continue the scenario.
+ *
+ * Servers under test (`conformance server --url ...`):
+ *  - /mcp-handler: SDK v2 stateless createMcpHandler
+ *  - /mcp-handler-legacy: explicit createLegacyMcpHandler + WorkerTransport
+ *  - /mcp-agent: retained SDK v1 McpAgent
+ *  Each generation has its own everything-server fixture.
+ */
+
+type Env = {
+  ConformanceHost: DurableObjectNamespace;
+  EverythingMcpAgent: DurableObjectNamespace;
+  EverythingHandlerAgent: AgentNamespace<EverythingHandlerAgent>;
+};
+
+const SERVER_NAME = "conformance";
+
+// Fixed client_id the referee's auth/basic-cimd scenario expects.
+const CIMD_CLIENT_METADATA_URL =
+  "https://conformance-test.local/client-metadata.json";
+
+type RunRequest = { scenario: string; serverUrl: string; context?: string };
+
+type RunResult =
+  | { status: "done" }
+  | { status: "auth"; authUrl: string }
+  | { status: "error"; error: string };
+
+export class ConformanceHost extends Agent<Env> {
+  private _serverId: string | undefined;
+  private _scenario: string | undefined;
+  private _mrtrIsolationCallMade = false;
+
+  // Offer a Client ID Metadata Document URL. Authorization servers that
+  // advertise CIMD support receive it as the client_id; the rest still use
+  // dynamic client registration. The referee accepts this fixed URL without
+  // fetching it.
+  createMcpOAuthProvider(callbackUrl: string): AgentMcpOAuthProvider {
+    return new DurableObjectOAuthClientProvider(
+      this.ctx.storage,
+      this.name,
+      callbackUrl,
+      { clientMetadataUrl: CIMD_CLIENT_METADATA_URL }
+    );
+  }
+
+  onStart() {
+    // Accept elicitation requests. Form-mode defaults are applied by the SDK
+    // client because the connection advertises `form.applyDefaults` (SEP-1034).
+    this.mcp.configureElicitationHandlers({
+      form: async () => {
+        // The MRTR referee requires an unrelated request while another tool's
+        // input is pending. Issue it from the real application callback: this
+        // exercises SDK-owned continuation while proving requestState and
+        // inputResponses remain scoped to the originating call.
+        if (
+          this._scenario === "sep-2322-client-request-state" &&
+          this._serverId &&
+          !this._mrtrIsolationCallMade
+        ) {
+          this._mrtrIsolationCallMade = true;
+          await this.callTool(this._serverId, "test_mrtr_unrelated", {});
+        }
+        return { action: "accept", content: {} };
+      },
+      url: async () => ({
+        action: "accept",
+        content: {}
+      })
+    });
+
+    // Respond to OAuth callbacks with an explicit status the driver can
+    // assert on, instead of the default redirect-to-origin.
+    this.mcp.configureOAuthCallback({
+      customHandler: (result) =>
+        Response.json(result, { status: result.authSuccess ? 200 : 400 })
+    });
+  }
+
+  async onRequest(request: Request): Promise<Response> {
+    const url = new URL(request.url);
+    if (request.method === "POST" && url.pathname.endsWith("/run")) {
+      const { scenario, serverUrl, context } =
+        (await request.json()) as RunRequest;
+      try {
+        return Response.json(
+          await this.runScenario(scenario, serverUrl, context)
+        );
+      } catch (error) {
+        return Response.json({
+          status: "error",
+          error: toErrorMessage(error)
+        } satisfies RunResult);
+      }
+    }
+    if (request.method === "GET" && url.pathname.endsWith("/debug")) {
+      return Response.json({ servers: this.mcp.listServers() });
+    }
+    return new Response("Not found", { status: 404 });
+  }
+
+  private async runScenario(
+    scenario: string,
+    serverUrl: string,
+    context?: string
+  ): Promise<RunResult> {
+    this._scenario = scenario;
+    try {
+      if (!this._serverId) {
+        const result = await this.addMcpServer(SERVER_NAME, serverUrl, {
+          transport: { type: "streamable-http" },
+          client: {
+            capabilities: {
+              // Opt into SDK-side default application (SEP-1034) on top of
+              // the handler-driven default of `{ form: {}, url: {} }`.
+              elicitation: { form: { applyDefaults: true }, url: {} }
+            }
+          }
+        });
+        this._serverId = result.id;
+        if (result.state === MCPConnectionState.AUTHENTICATING) {
+          return { status: "auth", authUrl: result.authUrl };
+        }
+      }
+
+      const ready = await this.waitForReady(this._serverId);
+      if (ready.status === "auth") return ready;
+      await this.runScenarioSteps(scenario, this._serverId, context);
+      return { status: "done" };
+    } catch (error) {
+      // Authorization servers without dynamic client registration require
+      // pre-registered credentials, which the conformance harness provides
+      // via context. Seed them into the OAuth provider and retry once.
+      const seeded = await this.seedPreRegisteredClient(error, context);
+      if (seeded) {
+        return this.runScenario(scenario, serverUrl, undefined);
+      }
+
+      // A request that needs authorization again (scope step-up, or a 401
+      // whose refresh failed) leaves the server authenticating; surface the
+      // link so the driver can authorize in its fake browser and call /run
+      // again. Connect- and discovery-time authorization arrive through
+      // addMcpServer and waitForReady instead.
+      if (error instanceof MCPAuthorizationRequiredError) {
+        return { status: "auth", authUrl: error.authUrl };
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Seed pre-registered OAuth client credentials (auth/pre-registration
+   * scenario). The provider is created during addMcpServer, so the first
+   * connect attempt fails with "does not support dynamic client
+   * registration"; seed the credentials it should have used and signal the
+   * caller to retry.
+   */
+  private async seedPreRegisteredClient(
+    error: unknown,
+    context: string | undefined
+  ): Promise<boolean> {
+    if (
+      !context ||
+      !toErrorMessage(error).includes(
+        "does not support dynamic client registration"
+      )
+    ) {
+      return false;
+    }
+
+    const parsed = JSON.parse(context) as {
+      name?: string;
+      client_id?: string;
+      client_secret?: string;
+    };
+    if (!parsed.client_id) {
+      return false;
+    }
+
+    const serverId =
+      this._serverId ??
+      this.mcp.listServers().find((s) => s.name === SERVER_NAME)?.id;
+    const conn = serverId ? this.mcp.mcpConnections[serverId] : undefined;
+    const provider = conn?.options.transport.authProvider;
+    if (!serverId || !conn || !provider) {
+      return false;
+    }
+    this._serverId = serverId;
+
+    provider.serverId = serverId;
+    await provider.saveClientInformation?.({
+      client_id: parsed.client_id,
+      client_secret: parsed.client_secret,
+      redirect_uris: [String(provider.redirectUrl)]
+    });
+
+    // Retry from a clean connect with the seeded credentials.
+    conn.connectionState = MCPConnectionState.CONNECTING;
+    await this.mcp.establishConnection(serverId).catch(() => {
+      // 401 → AUTHENTICATING is surfaced by the retry in runScenario.
+    });
+    return true;
+  }
+
+  /**
+   * Wait for the connection to reach READY. After an OAuth callback the
+   * connection is re-established in the background (establishConnection), so
+   * the next /run call has to poll for the terminal state.
+   */
+  // Generous timeout: on cold CI runners, connection retries (exponential
+  // backoff) plus the SDK's SSE retry interval can stack well past 25s.
+  private async waitForReady(
+    serverId: string,
+    timeoutMs = 50_000
+  ): Promise<{ status: "ready" } | { status: "auth"; authUrl: string }> {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      const conn = this.mcp.mcpConnections[serverId];
+      if (conn) {
+        if (conn.connectionState === MCPConnectionState.READY) {
+          return { status: "ready" };
+        }
+        if (conn.connectionState === MCPConnectionState.AUTHENTICATING) {
+          // The reconnect after a callback needs another authorization (for
+          // example a discovery-time scope step-up); its link is persisted.
+          const authUrl = this.mcp
+            .listServers()
+            .find((server) => server.id === serverId)?.auth_url;
+          if (authUrl) return { status: "auth", authUrl };
+        }
+        if (conn.connectionState === MCPConnectionState.FAILED) {
+          throw new Error(
+            `Connection failed: ${conn.connectionError ?? "unknown error"}`
+          );
+        }
+      }
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    throw new Error(`Timed out waiting for connection to become ready`);
+  }
+
+  private async runScenarioSteps(
+    scenario: string,
+    serverId: string,
+    context?: string
+  ): Promise<void> {
+    switch (scenario) {
+      case "initialize":
+      case "request-metadata":
+      case "json-schema-ref-no-deref":
+        // Connecting runs version negotiation and the capability-directed
+        // catalog requests these scenarios observe.
+        return;
+      case "tools_call":
+        await this.callTool(serverId, "add_numbers", { a: 5, b: 3 });
+        return;
+      case "sse-retry":
+        await this.callTool(serverId, "test_reconnection", {});
+        return;
+      case "elicitation-sep1034-client-defaults":
+        await this.callTool(serverId, "test_client_elicitation_defaults", {});
+        return;
+      case "sep-2322-client-request-state":
+        // These calls exercise the SDK v2 automatic MRTR engine. The form
+        // handler above inserts the unrelated call during the first round.
+        await this.callTool(serverId, "test_mrtr_echo_state", {});
+        await this.callTool(serverId, "test_mrtr_no_state", {});
+        await this.callTool(serverId, "test_mrtr_no_result_type", {});
+        return;
+      case "http-standard-headers":
+        await this.callTool(serverId, "test_headers", {});
+        await this.mcp.readResource({
+          serverId,
+          uri: "file:///path/to/file%20name.txt"
+        });
+        await this.mcp.getPrompt({ serverId, name: "test_prompt" });
+        return;
+      case "http-custom-headers": {
+        const parsed = context ? (JSON.parse(context) as unknown) : undefined;
+        if (
+          typeof parsed !== "object" ||
+          parsed === null ||
+          !("toolCalls" in parsed) ||
+          !Array.isArray(parsed.toolCalls)
+        ) {
+          throw new Error("Missing HTTP custom-header conformance toolCalls");
+        }
+        for (const call of parsed.toolCalls as Array<{
+          name?: unknown;
+          arguments?: unknown;
+        }>) {
+          if (
+            typeof call.name !== "string" ||
+            typeof call.arguments !== "object" ||
+            call.arguments === null ||
+            Array.isArray(call.arguments)
+          ) {
+            throw new Error("Invalid HTTP custom-header conformance toolCall");
+          }
+          await this.callTool(
+            serverId,
+            call.name,
+            call.arguments as Record<string, unknown>
+          );
+        }
+        return;
+      }
+      case "json-schema-2020-12-preservation": {
+        // Echo the schema exactly as MCPClientManager exposes it to
+        // applications, so the referee sees whatever our catalog kept.
+        const focal = this.mcp
+          .listTools({ serverId })
+          .find((tool) => tool.name === "json_schema_2020_12_tool");
+        if (!focal) {
+          throw new Error("json_schema_2020_12_tool was not discovered");
+        }
+        await this.callTool(serverId, "json_schema_echo", {
+          schema: focal.inputSchema
+        });
+        return;
+      }
+      case "http-invalid-tool-headers":
+        await this.callTool(serverId, "valid_tool", { region: "us-east1" });
+        return;
+      default:
+        if (scenario.startsWith("auth/")) {
+          await this.callTool(serverId, "test-tool", {});
+          return;
+        }
+        throw new Error(`Unsupported scenario: ${scenario}`);
+    }
+  }
+
+  private async callTool(
+    serverId: string,
+    name: string,
+    args: Record<string, unknown>
+  ): Promise<void> {
+    const result = await this.mcp.callTool({
+      serverId,
+      name,
+      arguments: args
+    });
+    if (result.isError) {
+      throw new Error(
+        `Tool "${name}" returned an error: ${JSON.stringify(result.content)}`
+      );
+    }
+  }
+}
+
+/** Primary SDK v2 stateless server conformance target. */
+const everythingStatelessHandler: StatelessMcpHandler = createMcpHandler(
+  () =>
+    createEverythingServerV2({
+      notify: everythingStatelessHandler.notify
+    }),
+  { route: "/mcp-handler" }
+);
+
+/**
+ * Retained SDK v1 McpAgent conformance target.
+ */
+export class EverythingMcpAgent extends McpAgent<Env> {
+  server = createEverythingServer();
+
+  async init() {}
+}
+
+const everythingMcpAgentHandler = EverythingMcpAgent.serve("/mcp-agent", {
+  binding: "EverythingMcpAgent"
+});
+
+const TRANSPORT_STATE_KEY = "mcp_transport_state";
+
+/**
+ * Explicit SDK v1 createLegacyMcpHandler target inside an Agent (modeled on
+ * the mcp-elicitation example).
+ */
+export class EverythingHandlerAgent extends Agent<Env> {
+  server = createEverythingServer({
+    closeSSEStream: (requestId) => this.transport.closeSSEStream(requestId)
+  });
+
+  transport = new WorkerTransport({
+    sessionIdGenerator: () => this.name,
+    storage: {
+      get: () => {
+        return this.ctx.storage.kv.get<TransportState>(TRANSPORT_STATE_KEY);
+      },
+      set: (state: TransportState) => {
+        this.ctx.storage.kv.put<TransportState>(TRANSPORT_STATE_KEY, state);
+      }
+    },
+    // Persist SSE events so clients can reconnect with `Last-Event-ID` and
+    // replay missed messages (SEP-1699 resumability).
+    eventStore: new DurableObjectEventStore(this.ctx.storage)
+  });
+
+  async onMcpRequest(request: Request) {
+    return createLegacyMcpHandler(this.server, {
+      route: "/mcp-handler-legacy",
+      transport: this.transport
+    })(request, this.env, {} as ExecutionContext);
+  }
+}
+
+export default {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext) {
+    const url = new URL(request.url);
+
+    if (url.pathname === "/mcp-handler") {
+      return everythingStatelessHandler(request, env, ctx);
+    }
+
+    if (url.pathname === "/mcp-agent") {
+      return everythingMcpAgentHandler.fetch(request, env, ctx);
+    }
+
+    if (url.pathname === "/mcp-handler-legacy") {
+      const sessionId =
+        request.headers.get("mcp-session-id") ?? crypto.randomUUID();
+      const agent = await getAgentByName(env.EverythingHandlerAgent, sessionId);
+      return agent.onMcpRequest(request);
+    }
+
+    return (
+      (await routeAgentRequest(request, env)) ||
+      new Response("Not found", { status: 404 })
+    );
+  }
+};

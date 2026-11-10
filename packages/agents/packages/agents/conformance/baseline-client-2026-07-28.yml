@@ -1,0 +1,10 @@
+# SDK v2 client against the latest published conformance protocol revision.
+# Every entry is executed by alpha.12; run-suite.mjs rejects unseen entries.
+client:
+  # Referee bug (modelcontextprotocol/conformance#475): test_mrtr_no_result_type
+  # omits resultType after negotiating 2026-07-28. The released spec
+  # (basic/index, ResultType) requires 2026-07-28 servers to include it and
+  # limits absent-means-complete to earlier-revision servers, so the SDK v2
+  # client rejects the result. All five MRTR wire checks pass first.
+  # Impact if unchanged: none for conforming 2026-07-28 servers.
+  - sep-2322-client-request-state
