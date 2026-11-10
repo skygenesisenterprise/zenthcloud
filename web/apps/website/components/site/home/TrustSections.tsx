@@ -67,10 +67,10 @@ export function SecuritySection() {
 						</ul>
 						<div className="mt-6 border-t border-border pt-4">
 							<Link
-								href="/products/security"
+								href="/products/security-identity"
 								className="inline-flex items-center gap-1.5 text-sm font-medium text-primary no-underline hover:underline"
 							>
-								Security &amp; Reliability
+								Security &amp; Identity
 								<ArrowRight className="size-4" aria-hidden="true" />
 							</Link>
 						</div>

@@ -15,7 +15,7 @@ export const metadata: Metadata = pageMetadata({
 
 export default function PublicCloudPage() {
 	const products = getAllProducts().filter((product) =>
-		product.route.startsWith("/products/public-cloud/"),
+		product.route?.startsWith("/products/public-cloud/"),
 	);
 
 	return (

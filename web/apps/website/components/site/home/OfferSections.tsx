@@ -1,7 +1,7 @@
 import { Link, LinkButton } from "@zenthcloud/react";
 import { ArrowRight, Check } from "@phosphor-icons/react/dist/ssr";
 import { Container } from "@/components/Container";
-import { StatusBadge } from "@/components/site/StatusBadge";
+import { AvailabilityBadge } from "@/components/site/StatusBadge";
 import { SectionIntro } from "./SectionIntro";
 import { priceLabel, resolveProducts } from "./utils";
 import {
@@ -15,7 +15,6 @@ import {
 import {
 	FAMILIES,
 	FAMILY_ORDER,
-	getAggregateStatus,
 	getProductsByFamily,
 } from "@/lib/domain/queries";
 
@@ -46,7 +45,7 @@ export function FamiliesSection() {
 					{FAMILY_ORDER.map((family, index) => {
 						const meta = FAMILIES[family];
 						const products = getProductsByFamily(family);
-						const href = meta.route ?? "/products";
+						const href = meta.route;
 
 						return (
 							<li key={family} className="border-b border-border">
@@ -72,7 +71,7 @@ export function FamiliesSection() {
 										{products.map((product) => (
 											<li key={product.id}>
 												<Link
-													href={product.route}
+													href={product.route ?? href}
 													variant="plain"
 													className="inline-flex items-center rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-foreground no-underline transition-colors hover:border-primary/40 hover:text-primary"
 												>
@@ -122,7 +121,7 @@ export function FeaturedProductsSection() {
 							<p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
 								{FAMILIES[lead.family].name}
 							</p>
-							<StatusBadge status={getAggregateStatus(lead)} />
+							<AvailabilityBadge status={lead.availability} />
 						</div>
 
 						<h3 className="mt-5 font-display text-3xl tracking-tight text-foreground">
@@ -148,7 +147,10 @@ export function FeaturedProductsSection() {
 						</ul>
 
 						<div className="mt-7 flex flex-wrap items-center gap-4 border-t border-border pt-5">
-							<LinkButton href={lead.route} size="sm">
+							<LinkButton
+								href={lead.route ?? FAMILIES[lead.family].route}
+								size="sm"
+							>
 								View product
 								<ArrowRight className="size-4" aria-hidden="true" />
 							</LinkButton>
@@ -164,14 +166,14 @@ export function FeaturedProductsSection() {
 								<div className="flex flex-wrap items-start justify-between gap-3">
 									<h3 className="font-display text-lg tracking-tight text-foreground">
 										<Link
-											href={product.route}
+											href={product.route ?? FAMILIES[product.family].route}
 											variant="plain"
 											className="text-foreground no-underline hover:text-primary"
 										>
 											{product.name}
 										</Link>
 									</h3>
-									<StatusBadge status={getAggregateStatus(product)} />
+									<AvailabilityBadge status={product.availability} />
 								</div>
 								<p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
 									{product.summary}
@@ -224,7 +226,7 @@ export function WorkloadsSection() {
 									{products.map((product) => (
 										<li key={product.id}>
 											<Link
-												href={product.route}
+												href={product.route ?? FAMILIES[product.family].route}
 												variant="plain"
 												className="inline-flex items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground no-underline transition-colors hover:border-primary/40 hover:text-primary"
 											>

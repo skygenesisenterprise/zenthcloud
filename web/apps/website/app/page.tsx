@@ -20,6 +20,7 @@ import {
 } from "@/components/site/home/TrustSections";
 import { organisation } from "@/lib/content/site";
 import {
+	FAMILIES,
 	SITE_NAME,
 	SITE_URL,
 	getAllProducts,
@@ -65,7 +66,7 @@ const structuredData = {
 				"@type": "ListItem",
 				position: index + 1,
 				name: product.name,
-				url: `${SITE_URL}${product.route}`,
+				url: `${SITE_URL}${product.route ?? FAMILIES[product.family].route}`,
 			})),
 		},
 	],

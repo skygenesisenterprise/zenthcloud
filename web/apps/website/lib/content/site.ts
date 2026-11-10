@@ -5,9 +5,10 @@
  * - Internal links are paths; external destinations are marked `external`.
  * - No route is listed before it exists.
  * - Console/authentication lives on a separate service, never reimplemented here.
- * - Navigation is built from the commercial catalogue, not from another
- *   provider's product names.
+ * - Product navigation is derived from the commercial catalogue and its six
+ *   approved families, never from another provider's product names.
  */
+
 
 export const links = {
 	docs: {
@@ -20,7 +21,7 @@ export const links = {
 	console: 'https://dash.zenthcloud.com',
 	blog: 'https://blog.zenthcloud.com',
 	github: 'https://github.com/skygenesisenterprise/zenthcloud',
-	trust: '/company/about',
+	trust: '/company/trust',
 	skyGenesis: 'https://skygenesisenterprise.com/',
 	l0ck7: 'https://l0ck7.com/',
 } as const
@@ -34,6 +35,8 @@ export type NavLink = {
 
 export type NavColumn = {
 	title: string
+	/** Family or section overview destination, when one exists. */
+	href?: string
 	links: NavLink[]
 }
 
@@ -41,112 +44,114 @@ export type NavGroup = {
 	title: string
 	href?: string
 	columns: NavColumn[]
-	featured?: {
-		title: string
-		description: string
-		href: string
-		label: string
-	}
 }
+
+/**
+ * One column per approved family. The services listed here are the curated
+ * `featured` entries in the catalogue; the complete list lives on the family
+ * overview page, not in the menu.
+ */
+const productColumns: NavColumn[] = [
+	{
+		title: 'Network & Edge',
+		href: '/products/network-edge',
+		links: [
+			{ href: '/products/domain-services', label: 'DNS', description: 'Authoritative zones and records' },
+			{ href: '/products/network-edge', label: 'CDN', description: 'Content distribution and caching' },
+			{ href: '/products/network-edge', label: 'Load Balancing', description: 'Traffic distribution across services' },
+			{ href: '/products/networking', label: 'IP & Networking', description: 'Private networks and connectivity' },
+			{ href: '/products/networking', label: 'VPN & Tunnels', description: 'Site-to-site connectivity' },
+			{ href: '/products/network-edge', label: 'Edge Services', description: 'Edge-distributed processing' },
+		],
+	},
+	{
+		title: 'Compute & Infrastructure',
+		href: '/products/compute-infrastructure',
+		links: [
+			{ href: '/products/public-cloud/compute', label: 'Cloud Instances', description: 'Configurable virtual machines' },
+			{ href: '/products/compute-infrastructure', label: 'VPS', description: 'Fixed-size virtual servers' },
+			{ href: '/products/bare-metal', label: 'Bare Metal', description: 'Dedicated physical servers' },
+			{ href: '/products/public-cloud/gpu', label: 'GPU Computing', description: 'Accelerated compute for AI' },
+			{ href: '/products/private-cloud', label: 'Private Cloud', description: 'Reserved, isolated capacity' },
+			{ href: '/products/compute-infrastructure', label: 'Dedicated Infrastructure', description: 'Single-tenant infrastructure' },
+		],
+	},
+	{
+		title: 'Storage & Databases',
+		href: '/products/storage-databases',
+		links: [
+			{ href: '/products/public-cloud/object-storage', label: 'Object Storage', description: 'Buckets over an HTTP API' },
+			{ href: '/products/public-cloud/block-storage', label: 'Block Storage', description: 'Attachable volumes for instances' },
+			{ href: '/products/storage-databases', label: 'File Storage', description: 'Shared filesystems for workloads' },
+			{ href: '/products/public-cloud/databases', label: 'Managed Databases', description: 'PostgreSQL, MySQL, MariaDB, Redis' },
+			{ href: '/products/public-cloud/backup', label: 'Backup & Recovery', description: 'Scheduled backups and restore' },
+			{ href: '/products/public-cloud/backup', label: 'Snapshots', description: 'Point-in-time volume copies' },
+		],
+	},
+	{
+		title: 'Developer Platform',
+		href: '/products/developer-platform',
+		links: [
+			{ href: '/products/developer-platform', label: 'Application Platform', description: 'Deploy and operate applications' },
+			{ href: '/products/compute-infrastructure', label: 'Containers', description: 'Container execution environments' },
+			{ href: '/products/public-cloud/kubernetes', label: 'Kubernetes', description: 'Managed control plane' },
+			{ href: '/products/developer-platform', label: 'CI/CD', description: 'Build and release pipelines' },
+			{ href: '/products/developer-platform', label: 'Workflows', description: 'Multi-step process automation' },
+			{ href: links.docs.api, label: 'Developer API', description: 'Programmatic access to resources', external: true },
+		],
+	},
+	{
+		title: 'Security & Identity',
+		href: '/products/security-identity',
+		links: [
+			{ href: '/products/network-edge', label: 'DDoS Protection', description: 'Mitigation for network attacks' },
+			{ href: '/products/network-edge', label: 'Web Application Firewall', description: 'HTTP(S) request filtering' },
+			{ href: '/products/security-identity', label: 'Zero Trust', description: 'Policy-based access to resources' },
+			{ href: '/products/security-identity', label: 'Identity & Access', description: 'Users, roles and permissions' },
+			{ href: '/products/network-edge', label: 'SSL / TLS', description: 'Certificate lifecycle management' },
+			{ href: '/products/security-identity', label: 'Secrets Management', description: 'Store and distribute credentials' },
+		],
+	},
+	{
+		title: 'Cloud Management',
+		href: '/products/cloud-management',
+		links: [
+			{ href: links.console, label: 'Cloud Console', description: 'Manage resources and projects', external: true },
+			{ href: '/products/cloud-management', label: 'Monitoring', description: 'Resource state and alerts' },
+			{ href: '/products/developer-platform', label: 'Observability', description: 'Metrics, logs and traces' },
+			{ href: '/products/cloud-management', label: 'Resource Management', description: 'Inventory and lifecycle visibility' },
+			{ href: '/products/cloud-management', label: 'Cost Management', description: 'Billing and usage visibility' },
+			{ href: '/products/cloud-management', label: 'Automation', description: 'Provisioning and orchestration' },
+		],
+	},
+];
+
+const productsMoreColumn: NavColumn = {
+	title: 'More',
+	links: [
+		{
+			href: '/products',
+			label: 'Explore all products',
+			description: 'The complete catalogue, grouped by family',
+		},
+		{
+			href: '/pricing',
+			label: 'View pricing',
+			description: 'Billing models and publication state',
+		},
+		{
+			href: '/contact-sales',
+			label: 'Contact sales',
+			description: 'Scoped capacity and commercial terms',
+		},
+	],
+};
 
 export const mainNav: NavGroup[] = [
 	{
 		title: 'Products',
 		href: '/products',
-		columns: [
-			{
-				title: 'Compute',
-				links: [
-					{ href: '/products/public-cloud/compute', label: 'Browser Run', description: 'Automated browsers' },
-					{ href: '/products/public-cloud/kubernetes', label: 'Containers', description: 'Any language, anywhere' },
-					{ href: '/products/public-cloud/compute', label: 'Durable Objects', description: 'Stateful compute' },
-					{ href: '/products/public-cloud/compute', label: 'Sandboxes', description: 'Secure code execution' },
-					{ href: '/products/public-cloud/compute', label: 'Workers', description: 'Global serverless functions' },
-					{ href: '/products/public-cloud/kubernetes', label: 'Workers for Platforms', description: 'Programmable Platform Solutions' },
-					{ href: '/products/managed-services', label: 'Workflows', description: 'Process orchestration' },
-				],
-			},
-			{
-				title: 'Storage',
-				links: [
-					{ href: '/products/public-cloud/object-storage', label: 'Artifacts', description: 'Git-native versioned storage' },
-					{ href: '/products/public-cloud/databases', label: 'D1', description: 'Serverless SQL' },
-					{ href: '/products/public-cloud/databases', label: 'Basin', description: 'Ingest, catalog & query data' },
-					{ href: '/products/public-cloud/databases', label: 'Hyperdrive', description: 'Global databases' },
-					{ href: '/products/public-cloud/databases', label: 'K2', description: 'Publish and subscribe to durable, ordered event streams' },
-					{ href: '/products/managed-services', label: 'Queues', description: 'Message processing' },
-					{ href: '/products/public-cloud/object-storage', label: 'R2', description: 'Egress-free storage' },
-					{ href: '/products/public-cloud/object-storage', label: 'KV', description: 'Ultra-fast key-value storage' },
-				],
-			},
-			{
-				title: 'AI',
-				links: [
-					{ href: '/products/public-cloud/gpu', label: 'Agents', description: 'Build stateful AI agents' },
-					{ href: '/products/public-cloud/gpu', label: 'AI Gateway', description: 'AI observability' },
-					{ href: '/products/public-cloud/gpu', label: 'AI Search', description: 'Instant retrieval' },
-					{ href: '/products/public-cloud/databases', label: 'Vectorize', description: 'Vector database' },
-					{ href: '/products/public-cloud/gpu', label: 'Workers AI', description: 'Edge AI models' },
-				],
-			},
-			{
-				title: 'SASE / Zero Trust',
-				links: [
-					{ href: '/products/security', label: 'SASE', description: 'zenthcloud SASE platform' },
-					{ href: '/products/security', label: 'Access', description: 'Zero trust access to private resources' },
-					{ href: '/products/security', label: 'CASB', description: 'SaaS and cloud posture' },
-					{ href: '/products/security', label: 'Data Loss Prevention', description: 'Protect sensitive data' },
-					{ href: '/products/security', label: 'Gateway', description: 'Web filtering' },
-					{ href: '/products/security', label: 'Browser Isolation', description: 'Secure web browsing' },
-					{ href: '/products/networking', label: 'WAN', description: 'Cloud-delivered networking' },
-					{ href: '/products/email-hosting', label: 'Email Security', description: 'Phishing protection' },
-				],
-			},
-			{
-				title: 'Security',
-				links: [
-					{ href: '/products/security', label: 'DDoS Protection', description: 'Mitigation Solutions' },
-					{ href: '/products/security', label: 'Rate Limiting', description: 'Abuse prevention' },
-					{ href: '/products/security', label: 'SSL', description: 'Secure Your Site with SSL' },
-					{ href: '/products/security', label: 'Turnstile', description: 'A CAPTCHA Replacement Solution' },
-					{ href: '/products/security', label: 'WAF', description: 'Web Application Firewall' },
-					{ href: '/products/networking', label: 'Magic Transit', description: 'DDoS Protection for Networks' },
-					{ href: '/products/security', label: 'Client-Side Security', description: 'Prevent browser supply chain attacks' },
-					{ href: '/products/security', label: 'Bot Management', description: 'Block bad bots' },
-				],
-			},
-			{
-				title: 'Network & Content Delivery',
-				links: [
-					{ href: '/products/networking', label: 'CDN', description: 'Faster delivery & caching' },
-					{ href: '/products/domain-services', label: 'DNS', description: 'Fast DNS' },
-					{ href: '/products/networking', label: 'Load Balancing', description: 'Zero downtime' },
-					{ href: '/products/networking', label: 'TURN / SFU', description: 'Real-time infra' },
-				],
-			},
-			{
-				title: 'Analytics',
-				links: [
-					{ href: '/products/managed-services', label: 'Web Performance & Security', description: 'Observability and reporting' },
-				],
-			},
-			{
-				title: 'More',
-				links: [
-					{ href: '/products', label: 'Enterprise', description: 'The complete catalogue' },
-					{ href: '/infrastructure/global-network', label: 'Global Network', description: 'The connectivity model' },
-					{ href: '/products/domain-services', label: 'Domain Registration', description: 'Registration and authoritative DNS' },
-					{ href: '/products/domain-services', label: '1.1.1.1', description: 'Recursive DNS resolver' },
-				],
-			},
-		],
-		featured: {
-			title: 'The complete catalogue',
-			description:
-				'Every product states its commercial state and regional availability before you talk to sales.',
-			href: '/products',
-			label: 'See all products',
-		},
+		columns: [...productColumns, productsMoreColumn],
 	},
 	{
 		title: 'Solutions',
@@ -157,19 +162,18 @@ export const mainNav: NavGroup[] = [
 				links: [
 					{
 						href: '/solutions/ai-research',
-						label: 'AI',
-						description: 'Build intelligent applications with AI at the edge',
+						label: 'AI and research',
+						description: 'Accelerators, storage and repeatable environments',
 					},
 					{
-						href: '/products/security',
-						label: 'AI Security',
-						description:
-							'Secure and control AI adoption without slowing innovation.',
+						href: '/products/security-identity',
+						label: 'Security & Identity',
+						description: 'Protect applications, identities and access paths',
 					},
 					{
-						href: '/products/security',
-						label: 'Security',
-						description: 'Protect your applications from threats',
+						href: '/products/network-edge',
+						label: 'Network protection',
+						description: 'Web application and DDoS protection in the catalogue',
 					},
 				],
 			},
@@ -177,14 +181,14 @@ export const mainNav: NavGroup[] = [
 				title: 'Network and delivery',
 				links: [
 					{
-						href: '/products/networking',
-						label: 'Network',
-						description: 'Global network services for performance and reliability',
+						href: '/products/network-edge',
+						label: 'Network & Edge',
+						description: 'DNS, private networking and entry-point services',
 					},
 					{
 						href: '/products/web-hosting',
-						label: 'Frontends',
-						description: 'Deploy frontend applications globally in seconds',
+						label: 'Web hosting',
+						description: 'Managed runtime for sites and small applications',
 					},
 				],
 			},
@@ -193,14 +197,59 @@ export const mainNav: NavGroup[] = [
 				links: [
 					{
 						href: '/products/managed-services',
-						label: 'Workflows',
-						description: 'Orchestrate complex multi-step processes',
+						label: 'Managed operations',
+						description: 'Operations delegated under a written scope',
 					},
 					{
 						href: '/products/public-cloud/kubernetes',
-						label: 'Platforms',
-						description: "Build platforms on zenthcloud's infrastructure",
+						label: 'Kubernetes',
+						description: 'A managed control plane for containers',
 					},
+				],
+			},
+		],
+	},
+	{
+		title: 'Developers',
+		href: '/developers',
+		columns: [
+			{
+				title: 'Documentation',
+				links: [
+					{ href: '/developers/getting-started', label: 'Getting Started', description: 'Begin your journey with ZenthCloud' },
+					{ href: links.docs.home, label: 'Product Guides', description: 'Comprehensive product documentation', external: true },
+					{ href: '/developers/documentation', label: 'Architecture Guides', description: 'Best practices and patterns' },
+					{ href: links.docs.tutorials, label: 'Tutorials', description: 'Step-by-step walkthroughs', external: true },
+				],
+			},
+			{
+				title: 'Build with ZenthCloud',
+				links: [
+					{ href: links.docs.api, label: 'API Reference', description: 'Complete API documentation', external: true },
+					{ href: '/developers/sdks', label: 'SDKs', description: 'Language-specific libraries' },
+					{ href: '/developers/cli', label: 'CLI', description: 'Command-line interface' },
+					{ href: '/developers/integrations', label: 'Integrations', description: 'Third-party service integrations' },
+					{ href: '/developers/tools', label: 'Infrastructure as Code', description: 'Terraform and automation tools' },
+				],
+			},
+			{
+				title: 'Developer Tools',
+				links: [
+					{ href: links.docs.api, label: 'API Explorer', description: 'Interactive API testing', external: true },
+					{ href: links.github, label: 'Code Examples', description: 'Sample code and repositories', external: true },
+					{ href: '/developers/tools', label: 'Webhooks', description: 'Event-driven notifications' },
+					{ href: links.console, label: 'Developer Console', description: 'Manage your resources', external: true },
+					{ href: '/developers/tools', label: 'Local Development', description: 'Development environment setup' },
+				],
+			},
+			{
+				title: 'Community',
+				links: [
+					{ href: links.github, label: 'GitHub', description: 'Source code and contributions', external: true },
+					{ href: links.github, label: 'Community Discussions', description: 'Ask questions and share knowledge', external: true },
+					{ href: '/company/about', label: 'Open Source', description: 'Our open source initiatives' },
+					{ href: '/developers/changelog', label: 'Changelog', description: 'Latest updates and releases' },
+					{ href: links.github + '/issues', label: 'Report an Issue', description: 'Submit bugs and feature requests', external: true },
 				],
 			},
 		],
@@ -276,11 +325,55 @@ export const mainNav: NavGroup[] = [
 		],
 	},
 	{
+		title: 'Company',
+		href: '/company',
+		columns: [
+			{
+				title: 'About ZenthCloud',
+				links: [
+					{ href: '/company/about', label: 'About Us', description: 'Who we are and what we do' },
+					{ href: '/company/mission', label: 'Our Mission', description: 'Our purpose and values' },
+					{ href: '/company/about', label: 'Our Vision', description: 'Where we are headed' },
+					{ href: '/company/sky-genesis-enterprise', label: 'Sky Genesis Enterprise', description: 'Our parent organization' },
+				],
+			},
+			{
+				title: 'Infrastructure',
+				links: [
+					{ href: '/company/infrastructure', label: 'Infrastructure Overview', description: 'Our hybrid infrastructure model' },
+					{ href: '/company/infrastructure/architecture', label: 'Architecture', description: 'Technical building blocks' },
+					{ href: '/company/infrastructure/global-network', label: 'Global Network', description: 'Connectivity model' },
+					{ href: '/company/infrastructure/regions', label: 'Data Centers & Regions', description: 'Facility locations' },
+					{ href: '/company/infrastructure/partners', label: 'Infrastructure Partners', description: 'Our capacity providers' },
+				],
+			},
+			{
+				title: 'Trust & Responsibility',
+				links: [
+					{ href: '/company/trust', label: 'Trust Hub', description: 'Our commitments and principles' },
+					{ href: '/company/security', label: 'Security', description: 'Our security practices' },
+					{ href: '/company/privacy', label: 'Privacy', description: 'Data protection policies' },
+					{ href: '/company/compliance', label: 'Compliance', description: 'Regulatory compliance information' },
+					{ href: '/company/about', label: 'Sustainability', description: 'Environmental initiatives' },
+				],
+			},
+			{
+				title: 'Work with us',
+				links: [
+					{ href: '/company/partners', label: 'Partners', description: 'Partner with ZenthCloud' },
+					{ href: '/company/careers', label: 'Careers', description: 'Join our team' },
+					{ href: '/company/newsroom', label: 'Newsroom', description: 'Latest news and announcements' },
+					{ href: '/company/contact', label: 'Contact', description: 'Get in touch' },
+				],
+			},
+		],
+	},
+	{
 		title: 'Pricing',
 		href: '/pricing',
 		columns: [],
 	},
-]
+];
 
 export const utilityNav: NavLink[] = [
 	{ href: links.docs.home, label: 'Docs', external: true },
@@ -290,7 +383,7 @@ export const utilityNav: NavLink[] = [
 
 export const emergencyCta = {
 	label: "Under attack?",
-	href: "/resources/support",
+	href: "/products/network-edge",
 	external: false,
 } as const;
 
@@ -311,7 +404,7 @@ export const footerSections: { title: string; links: NavLink[] }[] = [
 			{ href: '/company/partners', label: 'Partners' },
 			{ href: '/company/partners', label: 'Find a partner' },
 			{ href: '/solutions/startups', label: 'Startups' },
-			{ href: '/products/security', label: 'Under attack?' },
+			{ href: '/products/security-identity', label: 'Under attack?' },
 			{ href: '/products/domain-services', label: 'Domain name search' },
 		],
 	},
@@ -340,12 +433,12 @@ export const footerSections: { title: string; links: NavLink[] }[] = [
 	{
 		title: 'Solutions',
 		links: [
-			{ href: '/products/security', label: 'SSE and SASE platform' },
-			{ href: '/products/public-cloud/gpu', label: 'zenthcloud AI Cloud' },
-			{ href: '/products/security', label: 'AI Security' },
-			{ href: '/products/web-hosting', label: 'Frontend Development Platform' },
-			{ href: '/products/public-cloud/kubernetes', label: 'Multi-Tenant Platform Development' },
-			{ href: '/products/security', label: 'Web Security Platform' },
+			{ href: '/products/security-identity', label: 'Security and identity' },
+			{ href: '/products/public-cloud/gpu', label: 'GPU and AI infrastructure' },
+			{ href: '/products/network-edge', label: 'Web application protection' },
+			{ href: '/products/web-hosting', label: 'Managed web hosting' },
+			{ href: '/products/public-cloud/kubernetes', label: 'Multi-tenant platform development' },
+			{ href: '/products/storage-databases', label: 'Storage and databases' },
 		],
 	},
 	{
@@ -356,14 +449,15 @@ export const footerSections: { title: string; links: NavLink[] }[] = [
 			{ href: '/company/about', label: 'Investors' },
 			{ href: '/company/newsroom', label: 'Press' },
 			{ href: '/company/newsroom', label: 'Press kit' },
-			{ href: '/infrastructure/global-network', label: 'Global network' },
+			{ href: '/company/infrastructure', label: 'Infrastructure' },
+			{ href: '/company/trust', label: 'Trust & Compliance' },
 		],
 	},
 	{
 		title: 'Compliance',
 		links: [
 			{ href: '/legal/privacy', label: 'Compliance resources' },
-			{ href: '/company/about', label: 'Trust Hub' },
+			{ href: '/company/trust', label: 'Trust Hub' },
 			{ href: '/legal/privacy', label: 'Data Protection' },
 			{ href: '/legal/acceptable-use', label: 'Responsible AI' },
 			{ href: '/legal/terms', label: 'Transparency report' },
@@ -373,18 +467,19 @@ export const footerSections: { title: string; links: NavLink[] }[] = [
 	{
 		title: 'Developers',
 		links: [
+			{ href: '/developers', label: 'Developers Hub' },
 			{ href: links.docs.home, label: 'Documentation', external: true },
-			{ href: links.docs.tutorials, label: 'Learning center', external: true },
 			{ href: links.github, label: 'Community', external: true },
+			{ href: '/developers/changelog', label: 'Changelog' },
 		],
 	},
-]
+];
 
 export const organisation = {
 	name: 'ZenthCloud',
 	legalName: 'Sky Genesis Enterprise',
-	positioning: 'Cloud infrastructure. Without boundaries.',
+	positioning: 'European Integrated Cloud Infrastructure',
 	supporting: 'European roots. Global ambitions.',
 	description:
-		'ZenthCloud is a hybrid cloud provider building compute, storage, networking and managed services on owned and partner infrastructure.',
+		'ZenthCloud is a European integrated cloud infrastructure provider building compute, storage, networking, developer and security services on owned and partner infrastructure.',
 } as const

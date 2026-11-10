@@ -1,38 +1,41 @@
 import {
 	AvailabilityTable,
+	DeliveryModels,
 	PricingTable,
 	RelatedProducts,
 	SpecGroups,
 } from "@/components/catalogue/CatalogueViews";
 import { CtaBand, Section } from "@/components/site/Sections";
 import { PageHeader } from "@/components/site/PageHeader";
-import { StatusBadge } from "@/components/site/StatusBadge";
+import { AvailabilityBadge } from "@/components/site/StatusBadge";
 import { Button } from "@/components/ui/button";
-import { getAggregateStatus } from "@/lib/domain/queries";
 import {
 	FAMILIES,
+	SITE_URL,
+	getDetailedProducts,
+	getPlansForProduct,
 	getProductByRoute,
-	getRelatedProducts,
-	getUniformStatus,
 	pageMetadata,
 } from "@/lib/domain/queries";
+import { hasProductDetail } from "@/lib/domain/schema";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getAllProducts, SITE_URL } from "@/lib/domain/queries";
 
 type PageProps = { params: Promise<{ slug: string[] }> };
 
 export function generateStaticParams() {
-	return getAllProducts().map((product) => ({
-		slug: product.route.replace("/products/", "").split("/"),
-	}));
+	return getDetailedProducts().flatMap((product) =>
+		product.route
+			? [{ slug: product.route.replace("/products/", "").split("/") }]
+			: [],
+	);
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
 	const { slug } = await params;
 	const product = getProductByRoute(`/products/${slug.join("/")}`);
-	if (!product) {
+	if (!product || !hasProductDetail(product)) {
 		return { title: "Product not found", robots: { index: false } };
 	}
 	return pageMetadata({
@@ -45,18 +48,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function ProductPage({ params }: PageProps) {
 	const { slug } = await params;
 	const product = getProductByRoute(`/products/${slug.join("/")}`);
-	if (!product) notFound();
+	if (!product || !hasProductDetail(product)) notFound();
 
-	const isPublicCloud = product.route.startsWith("/products/public-cloud/");
-	const aggregate = getAggregateStatus(product);
-	const uniform = getUniformStatus(product);
-	const related = getRelatedProducts(product);
+	const family = FAMILIES[product.family];
+	const plans = getPlansForProduct(product.id);
 
 	const breadcrumbs = [
 		{ name: "Products", path: "/products" },
-		...(isPublicCloud
-			? [{ name: "Public Cloud", path: "/products/public-cloud" }]
-			: []),
+		{ name: family.name, path: family.route },
 		{ name: product.name, path: product.route },
 	];
 
@@ -65,7 +64,7 @@ export default async function ProductPage({ params }: PageProps) {
 		"@type": "Service",
 		name: product.name,
 		description: product.summary,
-		serviceType: FAMILIES[product.family].name,
+		serviceType: family.name,
 		url: `${SITE_URL}${product.route}`,
 		provider: {
 			"@type": "Organization",
@@ -82,7 +81,7 @@ export default async function ProductPage({ params }: PageProps) {
 			/>
 
 			<PageHeader
-				eyebrow={FAMILIES[product.family].name}
+				eyebrow={family.name}
 				title={product.name}
 				description={product.summary}
 				breadcrumbs={breadcrumbs}
@@ -100,23 +99,57 @@ export default async function ProductPage({ params }: PageProps) {
 				}
 				aside={
 					<div className="border border-border p-5">
-						<StatusBadge status={aggregate} showDescription />
+						<AvailabilityBadge status={product.availability} showDescription />
 						<dl className="mt-4 space-y-2 border-t border-border pt-4 text-sm">
 							<div className="flex justify-between gap-3">
 								<dt className="text-muted-foreground">Family</dt>
-								<dd className="font-medium">{FAMILIES[product.family].name}</dd>
+								<dd className="font-medium">
+									<Link
+										href={family.route}
+										className="text-foreground underline-offset-4 hover:underline"
+									>
+										{family.name}
+									</Link>
+								</dd>
 							</div>
 							<div className="flex justify-between gap-3">
 								<dt className="text-muted-foreground">Regions modelled</dt>
-								<dd className="font-medium">{product.availability.length}</dd>
+								<dd className="font-medium">
+									{product.availabilityByRegion.length}
+								</dd>
 							</div>
-							{uniform && (
-								<div className="flex justify-between gap-3">
-									<dt className="text-muted-foreground">State</dt>
-									<dd className="font-medium">Uniform across regions</dd>
-								</div>
-							)}
+							<div className="flex justify-between gap-3">
+								<dt className="text-muted-foreground">Detail page</dt>
+								<dd className="font-medium">Published</dd>
+							</div>
 						</dl>
+						{product.deliveryModels.length > 0 && (
+							<div className="mt-4 border-t border-border pt-4">
+								<h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+									Delivery
+								</h2>
+								<div className="mt-2">
+									<DeliveryModels product={product} />
+								</div>
+							</div>
+						)}
+						{product.tags.length > 0 && (
+							<div className="mt-4 border-t border-border pt-4">
+								<h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+									Tags
+								</h2>
+								<ul className="mt-2 flex flex-wrap gap-1.5">
+									{product.tags.map((tag) => (
+										<li
+											key={tag}
+											className="rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground"
+										>
+											{tag}
+										</li>
+									))}
+								</ul>
+							</div>
+						)}
 					</div>
 				}
 			/>
@@ -131,7 +164,10 @@ export default async function ProductPage({ params }: PageProps) {
 						<ul className="mt-3 space-y-3">
 							{product.benefits.map((benefit) => (
 								<li key={benefit} className="flex gap-3 text-sm text-muted-foreground">
-									<span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-hidden="true" />
+									<span
+										className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
+										aria-hidden="true"
+									/>
 									{benefit}
 								</li>
 							))}
@@ -160,7 +196,7 @@ export default async function ProductPage({ params }: PageProps) {
 			<Section
 				id="availability"
 				title="Availability"
-				description="Commercial availability, operational state and region are separate fields. The note explains what is not yet published."
+				description="Product availability, regional commercial state and operational state are separate fields. The note explains what is not yet published."
 				actions={
 					<Button variant="outline" asChild>
 						<Link href="/infrastructure/locations">Location details</Link>
@@ -170,25 +206,64 @@ export default async function ProductPage({ params }: PageProps) {
 				<AvailabilityTable product={product} />
 			</Section>
 
-			<Section
-				id="pricing"
-				title="Pricing"
-				description="Plans below are modelled with their billing model and conditions. Prices are not published until approved."
-			>
-				<PricingTable product={product} />
-				<div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm">
-					<Link href="/pricing" className="text-primary underline-offset-4 hover:underline">
-						Pricing overview
-					</Link>
-					<Link href="/contact-sales" className="text-muted-foreground underline-offset-4 hover:underline hover:text-foreground">
-						Request a quote
-					</Link>
-				</div>
-			</Section>
+			{plans.length > 0 && (
+				<Section
+					id="pricing"
+					title="Pricing"
+					description="Plans below are modelled with their billing model and conditions. Prices are not published until approved."
+				>
+					<PricingTable product={product} />
+					<div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm">
+						<Link
+							href={product.pricingPath ?? "/pricing"}
+							className="text-primary underline-offset-4 hover:underline"
+						>
+							Pricing overview
+						</Link>
+						<Link
+							href="/contact-sales"
+							className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+						>
+							Request a quote
+						</Link>
+					</div>
+				</Section>
+			)}
 
-			{related.length > 0 && (
-				<Section title="Related services" description="Services commonly used with this product.">
+			{product.related.length > 0 && (
+				<Section
+					title="Related services"
+					description="Services commonly used with this product. Each keeps its own primary family."
+				>
 					<RelatedProducts product={product} />
+				</Section>
+			)}
+
+			{product.relatedFamilies.length > 0 && (
+				<Section
+					title="Related families"
+					description="Where else this service is relevant. These are cross-links, not duplicate product definitions."
+				>
+					<ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+						{product.relatedFamilies.map((relatedFamily) => {
+							const meta = FAMILIES[relatedFamily];
+							return (
+								<li key={relatedFamily}>
+									<Link
+										href={meta.route}
+										className="group flex h-full flex-col border border-border p-5 no-underline transition-colors hover:bg-muted/50"
+									>
+										<span className="text-sm font-semibold text-foreground group-hover:text-primary">
+											{meta.name}
+										</span>
+										<span className="mt-2 text-sm leading-relaxed text-muted-foreground">
+											{meta.valueProposition}
+										</span>
+									</Link>
+								</li>
+							);
+						})}
+					</ul>
 				</Section>
 			)}
 
@@ -196,7 +271,7 @@ export default async function ProductPage({ params }: PageProps) {
 				title={`Discuss ${product.name}`}
 				description="Sales can confirm capacity, the operating provider and any contractual terms. No capacity is reserved until a contract is signed."
 				primary={{ href: "/contact-sales", label: "Contact sales" }}
-				secondary={{ href: "/products", label: "Browse products" }}
+				secondary={{ href: family.route, label: `All ${family.name} services` }}
 			/>
 		</>
 	);

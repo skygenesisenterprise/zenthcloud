@@ -4,6 +4,8 @@ import type {
 	Availability,
 	CommercialStatus,
 	Product,
+	ProductAvailability,
+	ProductDeliveryModel,
 	ProductFamily,
 	Provider,
 	Region,
@@ -21,53 +23,65 @@ export const SITE_NAME = "ZenthCloud";
 
 export const FAMILIES: Record<
 	ProductFamily,
-	{ name: string; description: string; route: string | null }
+	{ name: string; valueProposition: string; description: string; route: string }
 > = {
-	compute: {
-		name: "Compute",
+	"network-edge": {
+		name: "Network & Edge",
+		valueProposition:
+			"Connect, route, distribute and protect the traffic that reaches your applications.",
 		description:
-			"Virtual machines, dedicated servers, GPU capacity and private estates.",
-		route: "/products/public-cloud/compute",
+			"DNS, private networking, reverse proxying, content delivery, load balancing and protection for the entry points to your services.",
+		route: "/products/network-edge",
 	},
-	storage: {
-		name: "Storage",
+	"compute-infrastructure": {
+		name: "Compute & Infrastructure",
+		valueProposition:
+			"Physical and virtual capacity for applications, workloads and private estates.",
 		description:
-			"Object, block and backup storage with explicit lifecycle and retention.",
-		route: "/products/public-cloud/object-storage",
+			"Virtual private servers, configurable instances, dedicated hardware, GPU capacity, containers, Kubernetes and managed hosting.",
+		route: "/products/compute-infrastructure",
 	},
-	networking: {
-		name: "Networking",
+	"storage-databases": {
+		name: "Storage & Databases",
+		valueProposition:
+			"Store, protect, retain and operate the data your applications depend on.",
 		description:
-			"Private networks, public addressing, load balancing and connectivity.",
-		route: "/products/networking",
+			"Object and block storage, backups, long-term retention and managed database engines beneath one catalogue.",
+		route: "/products/storage-databases",
 	},
-	platform: {
-		name: "Platform & managed services",
+	"developer-platform": {
+		name: "Developer Platform",
+		valueProposition:
+			"Build, deploy and operate applications on ZenthCloud without running the tooling yourself.",
 		description:
-			"Kubernetes, managed databases and operations delegated under contract.",
-		route: "/products/managed-services",
+			"Deployment, registries, pipelines, functions, jobs, secrets and observability for engineering teams.",
+		route: "/products/developer-platform",
 	},
-	web: {
-		name: "Web & hosting",
+	"security-identity": {
+		name: "Security & Identity",
+		valueProposition:
+			"Protect resources, applications, identities and every path into your estate.",
 		description:
-			"Hosting, domains and mailboxes for sites and small applications.",
-		route: "/products/web-hosting",
+			"Identity, access control, network firewalling, audit trails and secret management, with network protection cross-linked from Network & Edge.",
+		route: "/products/security-identity",
 	},
-	security: {
-		name: "Security & reliability",
+	"cloud-management": {
+		name: "Cloud Management",
+		valueProposition:
+			"Organise, control, provision and monitor your cloud environment from one place.",
 		description:
-			"Protection, certificates, monitoring and recovery capabilities.",
-		route: "/products/security",
+			"Projects and resources, orchestration, billing and support, plus the Control Plane capabilities they build on.",
+		route: "/products/cloud-management",
 	},
 };
 
 export const FAMILY_ORDER: ProductFamily[] = [
-	"compute",
-	"storage",
-	"networking",
-	"platform",
-	"web",
-	"security",
+	"network-edge",
+	"compute-infrastructure",
+	"storage-databases",
+	"developer-platform",
+	"security-identity",
+	"cloud-management",
 ];
 
 export const COMMERCIAL_STATUS_META: Record<
@@ -96,8 +110,72 @@ export const COMMERCIAL_STATUS_META: Record<
 	},
 };
 
+export const PRODUCT_AVAILABILITY_META: Record<
+	ProductAvailability,
+	{
+		label: string;
+		description: string;
+		tone: "positive" | "neutral" | "info" | "warning" | "muted";
+	}
+> = {
+	available: {
+		label: "Available",
+		description: "The service can be ordered and provisioned where the catalogue says so.",
+		tone: "positive",
+	},
+	limited: {
+		label: "Limited",
+		description:
+			"Available in a restricted scope: partner capacity or an agreement scoped with sales.",
+		tone: "info",
+	},
+	private_preview: {
+		label: "Private preview",
+		description: "Accessible to selected customers and not generally available.",
+		tone: "warning",
+	},
+	coming_soon: {
+		label: "Coming soon",
+		description: "Designed and announced, but not open for orders.",
+		tone: "neutral",
+	},
+	planned: {
+		label: "Planned",
+		description:
+			"In the catalogue for discovery. It cannot be purchased and no launch date is committed.",
+		tone: "muted",
+	},
+	unavailable: {
+		label: "Unavailable",
+		description: "Not offered at present.",
+		tone: "muted",
+	},
+};
+
+export const AVAILABILITY_ORDER: ProductAvailability[] = [
+	"available",
+	"limited",
+	"private_preview",
+	"coming_soon",
+	"planned",
+	"unavailable",
+];
+
+export const DELIVERY_MODEL_META: Record<ProductDeliveryModel, string> = {
+	zenthcloud_owned: "ZenthCloud-owned infrastructure",
+	zenthcloud_operated: "Operated by ZenthCloud",
+	partner_provided: "Partner-provided infrastructure",
+	managed_service: "Managed service",
+	software_service: "Software service",
+};
+
 export function getAllProducts(): readonly Product[] {
 	return catalogue.products;
+}
+
+/** Products that expose a public detail page. */
+export function getDetailedProducts(): Product[] {
+	return catalogue.products.filter((product) => product.route !== null);
 }
 
 export function getProductByRoute(route: string): Product | undefined {
@@ -108,8 +186,42 @@ export function getProductById(id: string): Product | undefined {
 	return catalogue.products.find((product) => product.id === id);
 }
 
+function availabilityRank(product: Product): number {
+	return AVAILABILITY_ORDER.indexOf(product.availability);
+}
+
+/** Products in a family, most available first, then alphabetically. */
 export function getProductsByFamily(family: ProductFamily): Product[] {
-	return catalogue.products.filter((product) => product.family === family);
+	return catalogue.products
+		.filter((product) => product.family === family)
+		.sort(
+			(a, b) =>
+				availabilityRank(a) - availabilityRank(b) ||
+				a.name.localeCompare(b.name),
+		);
+}
+
+/** Curated services for the Products mega menu. */
+export function getFeaturedProductsByFamily(family: ProductFamily): Product[] {
+	return getProductsByFamily(family).filter((product) => product.featured);
+}
+
+/**
+ * Products in other families that name this family as a secondary context.
+ * Used for cross-discovery without duplicating catalogue records.
+ */
+export function getCrossFamilyProducts(family: ProductFamily): Product[] {
+	return catalogue.products
+		.filter(
+			(product) =>
+				product.family !== family &&
+				product.relatedFamilies.includes(family),
+		)
+		.sort(
+			(a, b) =>
+				availabilityRank(a) - availabilityRank(b) ||
+				a.name.localeCompare(b.name),
+		);
 }
 
 export function getRelatedProducts(product: Product): Product[] {
@@ -135,18 +247,20 @@ export function getRegions(): readonly Region[] {
 }
 
 export function getAvailability(product: Product): Availability[] {
-	return product.availability;
+	return product.availabilityByRegion;
 }
 
 export function getProductsForProvider(providerId: string): Product[] {
 	return catalogue.products.filter((product) =>
-		product.availability.some((entry) => entry.providerId === providerId),
+		product.availabilityByRegion.some(
+			(entry) => entry.providerId === providerId,
+		),
 	);
 }
 
 export function getProductsForRegion(regionId: string): Product[] {
 	return catalogue.products.filter((product) =>
-		product.availability.some((entry) => entry.regionId === regionId),
+		product.availabilityByRegion.some((entry) => entry.regionId === regionId),
 	);
 }
 
@@ -165,27 +279,6 @@ export function getPlansForFamily(family: ProductFamily) {
 
 export function getPlans() {
 	return catalogue.plans;
-}
-
-/**
- * Aggregated commercial status for a product across regions.
- * Used for cards, where per-region detail does not fit.
- */
-export function getAggregateStatus(product: Product): CommercialStatus {
-	const statuses = product.availability.map((entry) => entry.commercialStatus);
-	if (statuses.includes("available")) return "available";
-	if (statuses.includes("partner_service")) return "partner_service";
-	if (statuses.includes("contact_sales")) return "contact_sales";
-	return "coming_soon";
-}
-
-/** Products share the same commercial state in every region only if all match. */
-export function getUniformStatus(product: Product): CommercialStatus | null {
-	const [first, ...rest] = product.availability;
-	if (!first) return null;
-	return rest.every((entry) => entry.commercialStatus === first.commercialStatus)
-		? first.commercialStatus
-		: null;
 }
 
 export function pageMetadata({

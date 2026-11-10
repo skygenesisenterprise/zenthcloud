@@ -8,11 +8,10 @@ import {
 	List,
 	X,
 } from "@phosphor-icons/react";
-import { ShieldWarning } from "@phosphor-icons/react/dist/ssr";
 import { usePathname, useRouter } from "next/navigation";
 import * as React from "react";
 import { searchIndex } from "@/lib/content/search-index";
-import { cta, emergencyCta, mainNav, utilityNav, type NavGroup } from "@/lib/content/site";
+import { cta, mainNav, utilityNav, type NavGroup } from "@/lib/content/site";
 import { cn } from "@/lib/utils";
 import { Container } from "../Container";
 import { LanguageSelector } from "./LanguageSelector";
@@ -220,17 +219,28 @@ function DesktopNavItem({
 									className="min-w-0 p-3 xl:p-4"
 								>
 									{column.title ? (
-										<DropdownMenu.Label className="mb-3 px-0 text-[13px] font-medium text-muted-foreground">
-											{column.title}
-										</DropdownMenu.Label>
+										<div className="mb-3">
+											{column.href ? (
+												<Link
+													href={column.href}
+													variant="plain"
+													className="text-[13px] font-medium text-foreground no-underline! hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+												>
+													{column.title}
+												</Link>
+											) : (
+												<p className="text-[13px] font-medium text-muted-foreground">
+													{column.title}
+												</p>
+											)}
+										</div>
 									) : null}
 									{column.links.map((item) => (
 										<DropdownMenu.LinkItem
 											key={`${column.title}-${item.label}-${item.href}`}
 											href={item.href}
 											target={item.external ? "_blank" : undefined}
-											rel={item.external ? "noreferrer" : undefined}
-											className="flex-col items-start gap-0.5 rounded-md px-2 py-2 text-foreground"
+											rel={item.external ? "noreferrer" : undefined}													className="flex-col items-start gap-0.5 rounded-md px-2 py-2 text-foreground focus-visible:ring-2 focus-visible:ring-ring"
 										>
 											<span className="text-sm font-medium leading-snug">
 												{item.label}
@@ -349,9 +359,22 @@ function MobileMenu({
 											{group.columns.map((column, index) => (
 												<div key={column.title || `column-${index}`} className="mb-2">
 													{column.title ? (
-														<p className="px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-															{column.title}
-														</p>
+														<div className="px-2 py-1">
+															{column.href ? (
+																<Link
+																	href={column.href}
+																	variant="plain"
+																	onClick={onClose}
+																	className="text-[11px] font-semibold uppercase tracking-[0.16em] text-foreground no-underline!"
+																>
+																	{column.title}
+																</Link>
+															) : (
+																<p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+																	{column.title}
+																</p>
+															)}
+														</div>
 													) : null}
 													<ul>
 														{column.links.map((item) => (
@@ -391,15 +414,6 @@ function MobileMenu({
 				</nav>
 
 				<div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-4">
-					<Link
-						href={emergencyCta.href}
-						variant="current"
-						onClick={onClose}
-						className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs text-red-600 no-underline hover:border-foreground/30 hover:text-red-700"
-					>
-						<ShieldWarning className="size-3.5" aria-hidden="true" />
-						{emergencyCta.label}
-					</Link>
 					{utilityNav.map((item) => (
 						<Link
 							key={item.href}
@@ -521,15 +535,6 @@ export function SiteHeader() {
 
 					<div className="flex items-center gap-4 justify-self-end">
 						<nav aria-label="Utility" className="hidden items-center gap-2.5 md:flex">
-							<Link
-								href={emergencyCta.href}
-								variant="plain"
-								aria-label="Signaler une attaque en cours"
-								className="hidden items-center gap-1.5 text-sm font-medium text-red-600 no-underline! transition-colors hover:text-red-700 md:flex"
-							>
-								<ShieldWarning className="size-4" aria-hidden="true" />
-								{emergencyCta.label}
-							</Link>
 							<HeaderPill
 								href={cta.signIn.href}
 								label={cta.signIn.label}

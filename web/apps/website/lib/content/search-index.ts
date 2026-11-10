@@ -1,6 +1,9 @@
-import { getAllProducts } from "@/lib/domain/queries";
+import {
+	FAMILIES,
+	FAMILY_ORDER,
+	getAllProducts,
+} from "@/lib/domain/queries";
 import { companyPages, infrastructurePages, resourcePages, solutions } from "./pages";
-import { FAMILIES, FAMILY_ORDER } from "@/lib/domain/queries";
 
 export type SearchEntry = {
 	title: string;
@@ -11,14 +14,14 @@ export type SearchEntry = {
 
 const products: SearchEntry[] = getAllProducts().map((product) => ({
 	title: product.name,
-	href: product.route,
+	href: product.route ?? FAMILIES[product.family].route,
 	description: product.tagline,
 	group: "Products",
 }));
 
 const familyEntries: SearchEntry[] = FAMILY_ORDER.map((family) => ({
 	title: FAMILIES[family].name,
-	href: "/products",
+	href: FAMILIES[family].route,
 	description: FAMILIES[family].description,
 	group: "Products",
 }));

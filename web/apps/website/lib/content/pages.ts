@@ -132,9 +132,9 @@ export const solutions: SolutionPage[] = [
 		eyebrow: "For small business",
 		title: "Websites, mail and infrastructure in one place",
 		description:
-			"Managed hosting, domains, mailboxes and the cloud resources behind them, with a clear scope for each.",
+			"Managed hosting, DNS and the cloud resources behind them, with a clear scope for each.",
 		intro:
-			"Not every organisation wants to administer a server. Web hosting, domain services and email hosting are presented alongside the compute catalogue so a business can choose the level of control it needs — and move up when it does.",
+			"Not every organisation wants to administer a server. Managed web hosting and DNS are presented alongside the compute catalogue so a business can choose the level of control it needs — and move up when it does.",
 		outcomes: [
 			{
 				title: "Managed by default",
@@ -142,9 +142,8 @@ export const solutions: SolutionPage[] = [
 					"Hosting plans include routine updates and TLS. The limits of each plan are published with its price.",
 			},
 			{
-				title: "One account, several services",
-				description:
-					"Domains, mailboxes and hosting are designed to be managed together rather than through separate portals.",
+				title: "One account, several services",					description:
+						"Domains and hosting are designed to be managed together rather than through separate portals.",
 			},
 			{
 				title: "An upgrade path",
@@ -152,11 +151,11 @@ export const solutions: SolutionPage[] = [
 					"When a managed plan is no longer enough, the same account can move to a compute instance with full control.",
 			},
 		],
-		productIds: ["web-hosting", "domain-services", "email-hosting", "security"],
+		productIds: ["web-hosting", "domain-services", "compute-instances"],
 		fit: [
 			"Professional sites and small shops",
 			"Organisations without dedicated IT staff",
-			"Businesses that need mail on their own domain",
+			"Businesses ready to move from hosting to cloud infrastructure",
 		],
 		sections: [
 			{
@@ -199,7 +198,7 @@ export const solutions: SolutionPage[] = [
 					"Owned and partner infrastructure is labelled as such, including the provider of record for each region.",
 			},
 		],
-		productIds: ["private-cloud", "bare-metal", "networking", "managed-services", "security"],
+		productIds: ["private-cloud", "bare-metal", "networking", "managed-services"],
 		fit: [
 			"Organisations with isolation or procurement requirements",
 			"Teams migrating an existing virtualisation estate",
@@ -310,7 +309,7 @@ export const solutions: SolutionPage[] = [
 			},
 		],
 		related: [
-			{ label: "GPU Instances", href: "/products/public-cloud/gpu" },
+			{ label: "ZenthGPU", href: "/products/public-cloud/gpu" },
 			{ label: "Contact sales", href: "/contact-sales" },
 		],
 	},
@@ -343,7 +342,7 @@ export const infrastructurePages: DetailPage[] = [
 			},
 		],
 		related: [
-			{ label: "Cloud Networking", href: "/products/networking" },
+			{ label: "ZenthNetwork", href: "/products/networking" },
 			{ label: "Locations", href: "/infrastructure/locations" },
 		],
 	},
@@ -456,7 +455,7 @@ export const infrastructurePages: DetailPage[] = [
 		],
 		related: [
 			{ label: "Locations", href: "/infrastructure/locations" },
-			{ label: "Managed Kubernetes", href: "/products/public-cloud/kubernetes" },
+			{ label: "ZenthKubernetes", href: "/products/public-cloud/kubernetes" },
 		],
 	},
 ];
@@ -612,6 +611,303 @@ export const resourceBySlug = new Map(
 	resourcePages.map((entry) => [entry.path.split("/").pop() ?? "", entry]),
 );
 
+export const developerPages: DetailPage[] = [
+	{
+		path: "/developers",
+		eyebrow: "Developers",
+		title: "Build on ZenthCloud",
+		description:
+			"The central technical entry point for building, integrating, deploying, and operating applications using ZenthCloud.",
+		intro:
+			"ZenthCloud provides a comprehensive developer ecosystem with documentation, APIs, SDKs, CLI tools, and integrations. Whether you're getting started, exploring our architecture, or automating your infrastructure, you'll find the resources you need here.",
+		sections: [
+			{
+				heading: "What we offer",
+				body: "Access to comprehensive documentation, interactive API references, code examples, SDKs for multiple languages, CLI tools, and integration guides. All designed to help you build faster and with confidence.",
+			},
+			{
+				heading: "European infrastructure",
+				body: "Build on infrastructure with European roots and global ambitions. Our hybrid model combines owned and partner infrastructure, with clear distinction between the two.",
+			},
+			{
+				heading: "Open by design",
+				body: "Our documentation is publicly available, our API reference is comprehensive, and our roadmap is transparent. We believe in building with the community, not just for it.",
+			},
+		],
+		related: [
+			{ label: "API Reference", href: links.docs.api, external: true },
+			{ label: "Documentation", href: links.docs.home, external: true },
+			{ label: "GitHub", href: links.github, external: true },
+		],
+	},
+	{
+		path: "/developers/getting-started",
+		eyebrow: "Developers",
+		title: "Getting Started with ZenthCloud",
+		description:
+			"Your first steps with ZenthCloud: from account setup to deploying your first application.",
+		intro:
+			"Getting started with ZenthCloud is straightforward. This guide walks you through the essential steps: creating an account, understanding the resource model, provisioning your first resources, and deploying a simple application. Each step links to the relevant documentation.",
+		sections: [
+			{
+				heading: "Step 1: Understand the platform",
+				body: "ZenthCloud provides compute, storage, networking, and managed services through a unified API and console. Resources are organized into projects, with clear availability and commercial state published per product and region.",
+			},
+			{
+				heading: "Step 2: Create your account",
+				body: "Sign up for a ZenthCloud account through the console. You'll need to provide basic information and verify your email address. Once registered, you can explore the catalogue and start provisioning resources.",
+			},
+			{
+				heading: "Step 3: Explore the documentation",
+				body: "Our documentation covers everything from basic concepts to advanced architectures. Start with the overview, then dive into the specific products you're interested in. Each product page includes examples and best practices.",
+			},
+			{
+				heading: "Step 4: Deploy your first application",
+				body: "Choose a simple application or service to deploy. Our quickstart guides provide step-by-step instructions for common scenarios. Whether you're deploying a static website, a containerized application, or a database, you'll find a guide to help.",
+			},
+		],
+		related: [
+			{ label: "Quickstart Guides", href: links.docs.tutorials, external: true },
+			{ label: "API Reference", href: links.docs.api, external: true },
+			{ label: "Console", href: links.console, external: true },
+		],
+	},
+	{
+		path: "/developers/documentation",
+		eyebrow: "Developers",
+		title: "Architecture Guides",
+		description:
+			"Best practices, patterns, and reference architectures for building on ZenthCloud.",
+		intro:
+			"Our architecture guides cover the patterns and best practices we've developed and observed. They provide proven approaches to common challenges like scaling, security, high availability, and cost optimization. Each guide includes practical examples and considerations.",
+		sections: [
+			{
+				heading: "Design principles",
+				body: "ZenthCloud is designed around infrastructure primitives rather than opinionated application platforms. This means you have the flexibility to build the architecture that works best for your use case, while benefiting from our reliable, well-documented primitives.",
+			},
+			{
+				heading: "Common patterns",
+				body: "We document the architectural patterns that work well on ZenthCloud: multi-tier applications, microservices, serverless architectures, and more. Each pattern includes a description, when to use it, and a reference implementation.",
+			},
+			{
+				heading: "Best practices",
+				body: "From security to performance to cost management, our best practices guides help you get the most out of ZenthCloud. These are living documents, updated as we learn from our customers and our own experiences.",
+			},
+		],
+		related: [
+			{ label: "Product Guides", href: links.docs.home, external: true },
+			{ label: "Reference Architectures", href: '/infrastructure/architecture' },
+			{ label: "Solutions", href: '/solutions' },
+		],
+	},
+	{
+		path: "/developers/sdks",
+		eyebrow: "Developers",
+		title: "SDKs and Libraries",
+		description:
+			"Language-specific libraries and SDKs for interacting with ZenthCloud APIs.",
+		intro:
+			"ZenthCloud provides SDKs and client libraries to make it easier to integrate with our APIs from your preferred programming language. While our APIs are RESTful and can be called directly, SDKs provide a more idiomatic and convenient interface.",
+		sections: [
+			{
+				heading: "Currently available",
+				body: "SDKs and libraries are generated from our API definitions and kept in sync with the latest API version. Check the documentation for the most current list of supported languages and their respective SDKs.",
+				bullets: [
+					"TypeScript/JavaScript SDK - Full API coverage with TypeScript types",
+					"Python SDK - Idiomatic Python interface with async support",
+					"Go SDK - Strongly typed with comprehensive examples",
+					"REST API - Direct HTTP access for any language",
+				],
+			},
+			{
+				heading: "SDK features",
+				body: "All our SDKs share common features: consistent error handling, automatic retries for transient failures, comprehensive documentation, and examples. They follow the idioms of their respective languages while maintaining a consistent API design across languages.",
+			},
+			{
+				heading: "Contributing",
+				body: "Our SDKs are open source. Contributions, bug reports, and feature requests are welcome through the official repositories. Each SDK repository includes contribution guidelines and a code of conduct.",
+			},
+		],
+		related: [
+			{ label: "API Reference", href: links.docs.api, external: true },
+			{ label: "GitHub", href: links.github, external: true },
+			{ label: "Documentation", href: links.docs.home, external: true },
+		],
+	},
+	{
+		path: "/developers/cli",
+		eyebrow: "Developers",
+		title: "Command-Line Interface",
+		description:
+			"Manage ZenthCloud resources from your terminal with our CLI.",
+		intro:
+			"The ZenthCloud CLI provides a powerful way to manage your infrastructure directly from your terminal. It offers the same capabilities as the API and console, with a command-line interface optimized for scripting and automation.",
+		sections: [
+			{
+				heading: "Installation",
+				body: "The CLI can be installed on macOS, Linux, and Windows. Installation methods include pre-built binaries, package managers, and container images. The installation guide includes verification steps to ensure everything is working correctly.",
+			},
+			{
+				heading: "Commands and workflow",
+				body: "The CLI is organized into commands that map to API endpoints. You can manage resources, configure projects, set up networking, and more. All commands support help flags, JSON output, and filtering capabilities.",
+			},
+			{
+				heading: "Authentication",
+				body: "The CLI uses the same authentication as the API. You can authenticate with API tokens or through your browser. Once authenticated, your credentials are securely stored and reused for subsequent commands.",
+			},
+			{
+				heading: "Scripting and automation",
+				body: "The CLI is designed for scripting and automation. Commands can output JSON for parsing, and the CLI can be used non-interactively. This makes it ideal for CI/CD pipelines, infrastructure as code, and other automated workflows.",
+			},
+		],
+		related: [
+			{ label: "API Reference", href: links.docs.api, external: true },
+			{ label: "Documentation", href: links.docs.home, external: true },
+			{ label: "Infrastructure as Code", href: '/developers/tools' },
+		],
+	},
+	{
+		path: "/developers/integrations",
+		eyebrow: "Developers",
+		title: "Integrations and Ecosystem",
+		description:
+			"Connect ZenthCloud with your existing tools and workflows.",
+		intro:
+			"ZenthCloud integrates with a growing ecosystem of third-party tools and services. These integrations allow you to use ZenthCloud alongside your existing workflows, monitoring systems, CI/CD pipelines, and more. We also provide guides for building custom integrations.",
+		sections: [
+			{
+				heading: "Monitoring and observability",
+				body: "Integrate ZenthCloud with popular monitoring tools to track your infrastructure's performance, availability, and health. Export metrics, logs, and traces to your existing observability stack.",
+			},
+			{
+				heading: "CI/CD and deployment",
+				body: "Connect ZenthCloud to your CI/CD pipeline for automated testing, building, and deployment. Use our CLI or API to provision resources, configure environments, and manage your infrastructure as part of your deployment workflow.",
+			},
+			{
+				heading: "Security and compliance",
+				body: "Integrate with security scanning tools, vulnerability management platforms, and compliance monitoring services. Automate security checks and maintain compliance across your ZenthCloud resources.",
+			},
+			{
+				heading: "Custom integrations",
+				body: "Build your own integrations using our REST API, webhooks, or SDKs. Our documentation includes guides and examples for common integration patterns, helping you connect ZenthCloud with any tool or service.",
+			},
+		],
+		related: [
+			{ label: "API Reference", href: links.docs.api, external: true },
+			{ label: "SDKs", href: '/developers/sdks' },
+			{ label: "CLI", href: '/developers/cli' },
+		],
+	},
+	{
+		path: "/developers/tools",
+		eyebrow: "Developers",
+		title: "Developer Tools and Utilities",
+		description:
+			"Tools to enhance your development experience with ZenthCloud.",
+		intro:
+			"Beyond our core APIs and SDKs, ZenthCloud provides additional tools and utilities to streamline your development workflow. These include interactive API explorers, webhook management, local development environments, and more.",
+		sections: [
+			{
+				heading: "API Explorer",
+				body: "An interactive tool for exploring and testing our APIs directly from your browser. The API Explorer provides a user-friendly interface for constructing API calls, viewing responses, and understanding the available endpoints and parameters.",
+			},
+			{
+				heading: "Webhooks",
+				body: "Configure webhooks to receive real-time notifications about events in your ZenthCloud account. Set up endpoints to be notified when resources are created, updated, or deleted, or when other events occur. Webhooks enable event-driven architectures and real-time integrations.",
+			},
+			{
+				heading: "Local development",
+				body: "Develop and test your applications locally before deploying to ZenthCloud. Our local development tools include emulators, mock services, and testing frameworks that simulate ZenthCloud services on your local machine, reducing the feedback loop during development.",
+			},
+			{
+				heading: "Infrastructure as Code",
+				body: "Define and manage your ZenthCloud infrastructure using code. We support Terraform and other IaC tools, allowing you to version control your infrastructure, automate deployments, and maintain consistency across environments.",
+			},
+			{
+				heading: "Developer Console",
+				body: "Our web-based console provides a visual interface for managing your ZenthCloud resources. It complements the API and CLI, offering an intuitive way to explore, configure, and monitor your infrastructure.",
+			},
+		],
+		related: [
+			{ label: "API Reference", href: links.docs.api, external: true },
+			{ label: "CLI", href: '/developers/cli' },
+			{ label: "Integrations", href: '/developers/integrations' },
+		],
+	},
+	{
+		path: "/developers/community",
+		eyebrow: "Developers",
+		title: "Join the Community",
+		description:
+			"Connect with other developers, share knowledge, and contribute to ZenthCloud.",
+		intro:
+			"The ZenthCloud community is a vibrant ecosystem of developers, operators, and enthusiasts. Whether you're looking for help, want to share your knowledge, or are interested in contributing to the platform itself, there are many ways to get involved.",
+		sections: [
+			{
+				heading: "GitHub",
+				body: "Our source code, SDKs, examples, and documentation are all available on GitHub. You can browse the repositories, submit issues, create pull requests, and contribute to the development of ZenthCloud.",
+			},
+			{
+				heading: "Community discussions",
+				body: "Join our community forums to ask questions, share experiences, and connect with other ZenthCloud users. It's a great place to learn from others, get help with challenges, and stay up-to-date with the latest developments.",
+			},
+			{
+				heading: "Open source",
+				body: "ZenthCloud is committed to open source. We contribute to various open source projects and maintain several of our own. Our open source initiatives include tools, libraries, and frameworks that benefit the broader developer community.",
+			},
+			{
+				heading: "Contributing",
+				body: "We welcome contributions from the community. Whether you want to report a bug, suggest a feature, improve documentation, or contribute code, we appreciate your help. Check out our contribution guidelines to get started.",
+			},
+			{
+				heading: "Stay informed",
+				body: "Stay up-to-date with the latest ZenthCloud news, product updates, and community announcements. Follow our blog, subscribe to our newsletter, or follow us on social media.",
+			},
+		],
+		related: [
+			{ label: "GitHub", href: links.github, external: true },
+			{ label: "Documentation", href: links.docs.home, external: true },
+			{ label: "Changelog", href: '/developers/changelog' },
+		],
+	},
+	{
+		path: "/developers/changelog",
+		eyebrow: "Developers",
+		title: "Changelog",
+		description:
+			"Stay up-to-date with the latest changes, improvements, and new features in ZenthCloud.",
+		intro:
+			"Our changelog provides a comprehensive record of all changes to the ZenthCloud platform, including new product launches, feature updates, bug fixes, and deprecated functionality. Each entry includes details about the change, its impact, and any action you may need to take.",
+		sections: [
+			{
+				heading: "Recent updates",
+				body: "The most recent updates are displayed first, with clear categorization by product and type. Each update includes a description, the date it was released, and any relevant documentation links.",
+			},
+			{
+				heading: "Release notes",
+				body: "Detailed release notes accompany each major release. These notes explain new features, breaking changes, and migration paths. They also highlight improvements and optimizations that may not be immediately visible.",
+			},
+			{
+				heading: "Breaking changes",
+				body: "Breaking changes are clearly marked and announced in advance when possible. We provide detailed information about the change, its impact, and the migration path to help you prepare and adapt your applications.",
+			},
+			{
+				heading: "Deprecations",
+				body: "When features or APIs are deprecated, we announce the deprecation in the changelog and provide information about the replacement and migration path. Deprecated features typically remain available for a period before being removed.",
+			},
+		],
+		related: [
+			{ label: "API Reference", href: links.docs.api, external: true },
+			{ label: "Documentation", href: links.docs.home, external: true },
+			{ label: "Blog", href: links.blog, external: true },
+		],
+	},
+];
+
+export const developerBySlug = new Map(
+	developerPages.map((entry) => [entry.path.split("/").pop() ?? "", entry]),
+);
+
 export const companyPages: DetailPage[] = [
 	{
 		path: "/company/about",
@@ -636,7 +932,7 @@ export const companyPages: DetailPage[] = [
 			},
 		],
 		related: [
-			{ label: "Infrastructure", href: "/infrastructure" },
+			{ label: "Infrastructure", href: "/company/infrastructure" },
 			{ label: "Contact", href: "/company/contact" },
 		],
 	},

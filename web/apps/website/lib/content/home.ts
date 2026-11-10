@@ -25,17 +25,18 @@ export const familiesSection = {
 } as const;
 
 export const familyNotes: Record<ProductFamily, string> = {
-	compute:
-		"Virtual machines, accelerated capacity, dedicated hardware and private estates.",
-	storage:
-		"Object, block and backup storage with explicit lifecycle and retention rules.",
-	networking:
-		"Private networks, public addressing, load balancing and edge connectivity.",
-	platform:
-		"Kubernetes, managed databases and operations delegated under contract.",
-	web: "Hosting, domains and mailboxes for sites, applications and teams.",
-	security:
-		"Protection, monitoring and recovery capabilities, each with its scope stated.",
+	"network-edge":
+		"DNS, private networking and protection for the traffic that reaches your services.",
+	"compute-infrastructure":
+		"Virtual machines, VPS, dedicated hardware, GPU capacity and private estates.",
+	"storage-databases":
+		"Object and block storage, backups, retention and managed database engines.",
+	"developer-platform":
+		"Deployment, registries, pipelines, functions and observability for teams.",
+	"security-identity":
+		"Identity, access, firewalling, audit trails and secret management.",
+	"cloud-management":
+		"Projects, resources, orchestration, billing and support across the estate.",
 };
 
 /* -------------------------------------------------------------------------- */
@@ -55,7 +56,7 @@ export const featuredProductIds = [
 	"kubernetes",
 	"networking",
 	"bare-metal",
-	"security",
+	"databases",
 ] as const;
 
 /* -------------------------------------------------------------------------- */
@@ -130,22 +131,22 @@ export const architectureLayers: readonly {
 	{
 		label: "Edge and connectivity",
 		note: "Names, addresses and entry points",
-		services: ["Domain Services", "Cloud Networking", "Load balancing", "Public IPv4 and IPv6"],
+		services: ["ZenthDNS", "ZenthNetwork", "ZenthLB", "ZenthIP"],
 	},
 	{
 		label: "Workloads",
 		note: "Where applications run",
-		services: ["Compute Instances", "Managed Kubernetes", "Managed Databases", "GPU Instances"],
+		services: ["ZenthCompute", "ZenthKubernetes", "ZenthDatabase", "ZenthGPU"],
 	},
 	{
 		label: "Data",
 		note: "Where state is kept",
-		services: ["Object Storage", "Block Storage", "Backup & Snapshots"],
+		services: ["ZenthObject", "ZenthBlock", "ZenthBackup"],
 	},
 	{
 		label: "Security and operations",
 		note: "How the estate is protected and run",
-		services: ["Security & Reliability", "Managed Services", "Private network segmentation"],
+		services: ["ZenthWAF", "ZenthFirewall", "Managed Services", "ZenthNetwork"],
 	},
 ];
 

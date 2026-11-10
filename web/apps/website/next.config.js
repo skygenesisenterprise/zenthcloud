@@ -21,6 +21,8 @@ const nextConfig = {
 					return [
 						{ source: "/self", destination: "/products", permanent: true },
 						{ source: "/cloud", destination: "/products/public-cloud", permanent: true },
+						{ source: "/products/security", destination: "/products/security-identity", permanent: true },
+						{ source: "/products/email-hosting", destination: "/products", permanent: true },
 						{ source: "/platform", destination: "/products", permanent: true },
 						{ source: "/capabilities", destination: "/products", permanent: true },
 						{ source: "/use-cases", destination: "/solutions", permanent: true },
