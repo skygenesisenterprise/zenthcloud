@@ -1,25 +1,80 @@
-# Zenthcloud MCP Server
+# ZenthCloud MCP Server
 
-> A token-efficient MCP server for the entire Zenthcloud API. 2500 endpoints in 1k tokens, powered by [Code Mode](https://github.com/skygenesisenterprise/zenthcloud).
+[![MCP](https://img.shields.io/badge/MCP-2026--07--28-6E56CF)](https://modelcontextprotocol.io)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Workers-3178C6?logo=typescript&logoColor=white)](https://typescriptlang.org)
+[![License](https://img.shields.io/badge/License-see%20repository-lightgrey)](https://github.com/skygenesisenterprise/zenthcloud)
 
-## Token Comparison
+> A token-efficient MCP server for the entire ZenthCloud API. 2500 endpoints in 1k tokens, powered by [Code Mode](https://github.com/skygenesisenterprise/zenthcloud).
 
-| Approach                                    | Tools | Token cost | Context used (200K) |
-| ------------------------------------------- | ----- | ---------- | ------------------- |
-| Raw OpenAPI spec in prompt                  | —     | ~2,000,000 | 977%                |
-| Native MCP (full schemas)                   | 2,594 | 1,170,523  | 585%                |
-| Native MCP (minimal — required params only) | 2,594 | 244,047    | 122%                |
-| Code mode                                   | 3     | ~1,100     | 0.5%                |
+**ZenthCloud MCP Server** exposes the whole ZenthCloud API to agents through the Model Context Protocol. Instead of registering thousands of tools, it keeps the OpenAPI specification on the server and lets agents write JavaScript to search it and execute API calls, so the full API fits in about 1,000 tokens of context.
 
-## Get Started
+**Perfect for:** coding agents that need to manage ZenthCloud resources, teams composing MCP servers, and automation that wants an API surface without loading a two-million-token specification into the model.
+
+## Contents
+
+- [ZenthCloud MCP Server](#zenthcloud-mcp-server)
+  - [Contents](#contents)
+  - [Why ZenthCloud MCP Server matters](#why-zenthcloud-mcp-server-matters)
+  - [What you can do](#what-you-can-do)
+  - [Quick start](#quick-start)
+    - [Option 1: OAuth (recommended)](#option-1-oauth-recommended)
+    - [Option 2: API token](#option-2-api-token)
+    - [Add to an agent](#add-to-an-agent)
+  - [How ZenthCloud MCP Server is built](#how-zenthcloud-mcp-server-is-built)
+    - [The problem](#the-problem)
+    - [Tools](#tools)
+    - [Code mode and direct tools](#code-mode-and-direct-tools)
+    - [Tool result truncation](#tool-result-truncation)
+    - [Missing permissions](#missing-permissions)
+    - [Skills](#skills)
+    - [Supported products](#supported-products)
+  - [Usage](#usage)
+    - [GraphQL Analytics API](#graphql-analytics-api)
+  - [Development](#development)
+  - [FAQ](#faq)
+  - [Related resources](#related-resources)
+  - [Contributing](#contributing)
+  - [Security](#security)
+  - [License](#license)
+  - [Note](#note)
+
+## Why ZenthCloud MCP Server matters
+
+🎯 **Whole API, tiny context** — Two code-mode tools replace thousands of native tool schemas.
+
+🚀 **Token-efficient** — The OpenAPI spec lives on the server; only search results and API responses reach the agent.
+
+📦 **Code Mode execution** — Generated code runs in isolated Workers with network access restricted to ZenthCloud API URLs.
+
+🔒 **OAuth and API tokens** — Connect with OAuth, a user token or an account token, with scope step-up when permissions are missing.
+
+🧩 **Skills included** — The server also serves ZenthCloud skills through the MCP Skills extension.
+
+## What you can do
+
+- Search the full OpenAPI specification from an agent.
+- Execute API calls without loading the specification into context.
+- Connect with OAuth or an API token.
+- Use direct tools instead of code mode when composing with another code-mode server.
+- Query ZenthCloud developer documentation.
+- Discover and read ZenthCloud skills over MCP.
+
+### Token comparison
+
+| Approach | Tools | Token cost | Context used (200K) |
+| --- | --- | --- | --- |
+| Raw OpenAPI spec in prompt | — | ~2,000,000 | 977% |
+| Native MCP (full schemas) | 2,594 | 1,170,523 | 585% |
+| Native MCP (minimal — required params only) | 2,594 | 244,047 | 122% |
+| Code mode | 3 | ~1,100 | 0.5% |
+
+## Quick start
 
 MCP URL: `https://github.com/skygenesisenterprise/zenthcloud`
 
-### Option 1: OAuth (Recommended)
+### Option 1: OAuth (recommended)
 
-Just connect to the MCP server URL - you'll be redirected to Zenthcloud to authorize and select permissions.
-
-#### Example JSON Configuration
+Connect to the MCP server URL. You are redirected to ZenthCloud to authorize and select permissions.
 
 ```json
 {
@@ -32,30 +87,24 @@ Just connect to the MCP server URL - you'll be redirected to Zenthcloud to autho
 }
 ```
 
-### Option 2: API Token
+### Option 2: API token
 
 For CI/CD, automation, or if you prefer managing tokens yourself.
 
-Create a [Zenthcloud API token](https://github.com/skygenesisenterprise/zenthcloud) with the permissions you need. Both **user tokens** and **account tokens** are supported. For account tokens, include the **Account Resources : Read** permission so the server can auto-detect your account ID.
+Create a [ZenthCloud API token](https://github.com/skygenesisenterprise/zenthcloud) with the permissions you need. Both **user tokens** and **account tokens** are supported. For account tokens, include the **Account Resources : Read** permission so the server can auto-detect your account ID.
 
 > **Note:** API tokens with **Client IP Address Filtering** enabled are not currently supported.
 
-### Add to Agent
+### Add to an agent
 
-| Setting      | Value                                                                       |
-| ------------ | --------------------------------------------------------------------------- |
-| MCP URL      | `https://github.com/skygenesisenterprise/zenthcloud`                                            |
-| Bearer Token | Your [Zenthcloud API Token](https://github.com/skygenesisenterprise/zenthcloud) |
+| Setting | Value |
+| --- | --- |
+| MCP URL | `https://github.com/skygenesisenterprise/zenthcloud` |
+| Bearer Token | Your [ZenthCloud API Token](https://github.com/skygenesisenterprise/zenthcloud) |
 
-### Disable Code Mode
+### Disable code mode
 
-If your MCP client already uses code mode, or you're composing this server with another server that uses code mode, you can disable it with the `?codemode=false` query parameter. This registers a tool for each Zenthcloud API method instead of the code mode API tools, about 3,000, generated by [forge](https://github.com/skygenesisenterprise/zenthcloud). Each takes its arguments grouped by where they go: `{ path, query, headers, body }`. The `docs` and `whoami` tools remain available in both modes.
-
-```
-https://github.com/skygenesisenterprise/zenthcloud
-```
-
-#### Example JSON Configuration
+If your MCP client already uses code mode, or you are composing this server with another server that uses code mode, disable it with the `?codemode=false` query parameter. This registers a tool for each ZenthCloud API method instead of the code-mode API tools — about 3,000, generated by [forge](https://github.com/skygenesisenterprise/zenthcloud). Each takes its arguments grouped by where they go: `{ path, query, headers, body }`. The `docs` and `whoami` tools remain available in both modes.
 
 ```json
 {
@@ -69,71 +118,80 @@ https://github.com/skygenesisenterprise/zenthcloud
 ```
 
 When code mode is disabled:
-- Each API endpoint is registered as its own tool (e.g., `get_workers_scripts`, `post_d1_database`)
-- Tool input schemas are derived from the endpoint's path parameters, query parameters, and request body
-- Tools make direct API calls — no code execution involved
-- Path parameters like `account_id` are auto-resolved when possible (single account)
+
+- Each API endpoint is registered as its own tool (for example, `get_workers_scripts`, `post_d1_database`).
+- Tool input schemas are derived from the endpoint's path parameters, query parameters and request body.
+- Tools make direct API calls — no code execution is involved.
+- Path parameters such as `account_id` are auto-resolved when possible (single account).
 
 > **Note:** Disabling code mode significantly increases the token cost (~244k tokens vs ~1k tokens). Only disable it when necessary for composition with other code mode systems.
 
-### Tool Result Truncation
+## How ZenthCloud MCP Server is built
 
-In code mode, the server caps each `search` and `execute` result at ~6,000 tokens, to avoid context overload. Oversized JSON stays valid JSON: long lists keep their first items whole, long strings are clipped, and every cut is marked with `--- TRUNCATED ---`. An agent that writes a result straight to a file or pipe, rather than reading it into the conversation, can pass `truncate: false` to that call to get the whole result.
+### The problem
 
-> **Note:** Without the cap, a broad query can return megabytes. Only turn it off when the result doesn't go to the model.
+The ZenthCloud OpenAPI spec is **2 million tokens**. Even with native MCP tools using minimal schemas, it is still **~244k tokens**. Traditional MCP servers that expose every endpoint as a tool leak this entire context to the main agent.
 
-With code mode disabled, the direct tools return whole results. The clients that disable it usually run code mode themselves: they call the direct tools from their own code and parse each result, so a capped result would lose data.
+This server solves the problem by using **code execution** in a [Code Mode](https://github.com/skygenesisenterprise/zenthcloud) pattern: the spec lives on the server, and only the result of the code execution is returned to the agent.
 
-### Missing Permissions
+### Tools
 
-When Zenthcloud refuses a call because the OAuth connection lacks a scope, the server asks the client to re-authorize with that scope added to the ones it already has. Claude and other clients that follow the [MCP authorization spec](https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization#scope-challenge-handling) get a `403 insufficient_scope` challenge. Codex and ChatGPT get it in the tool result, which is where they look for it. Either way, the tool error says which scope is missing. Some endpoints, such as `GET /zones`, don't refuse: they answer with an empty list when the scope is missing. An empty list from a read the connection holds no accepted scope for is refused the same way, so it isn't mistaken for an empty account.
+The agent writes code to search the spec and execute API calls. It can also search ZenthCloud's developer documentation directly.
 
-## The Problem
-
-The Zenthcloud OpenAPI spec is **2 million tokens**. Even with native MCP tools using minimal schemas, it's still **~244k tokens**. Traditional MCP servers that expose every endpoint as a tool leak this entire context to the main agent.
-
-This server solves the problem by using **code execution** in a [Code Mode](https://github.com/skygenesisenterprise/zenthcloud) pattern - the spec lives on the server, and only the result of the code execution is returned to the agent.
-
-## Tools
-
-Agent writes code to search the spec and execute API calls. It can also search Zenthcloud's developer documentation directly.
-
-| Tool      | Description                                                                   |
-| --------- | ----------------------------------------------------------------------------- |
-| `docs`    | Search Zenthcloud developer documentation                                     |
-| `search`  | Write JavaScript to query `spec.paths` and find endpoints                     |
+| Tool | Description |
+| --- | --- |
+| `docs` | Search ZenthCloud developer documentation |
+| `search` | Write JavaScript to query `spec.paths` and find endpoints |
 | `execute` | Write JavaScript to call `zenthcloud.request()` with the discovered endpoints |
-| `whoami`  | Return the Zenthcloud user or account this connection is authenticated as     |
+| `whoami` | Return the ZenthCloud user or account this connection is authenticated as |
 
-```
+```text
 Agent                         MCP Server
   │                               │
   ├──search({code: "..."})───────►│ Execute code against spec.json
   │◄──[matching endpoints]────────│
   │                               │
-  ├──execute({code: "..."})──────►│ Execute code against Zenthcloud API
+  ├──execute({code: "..."})──────►│ Execute code against ZenthCloud API
   │◄──[API response]──────────────│
 ```
 
 `whoami` takes no arguments and returns `{ id, email }` for a user credential or `{ id, name }` for an account token. The `id` is `user:<user id>` or `account:<account id>`, so it stays the same across token refresh, reconnection and permission changes. Clients can use it to tell connected accounts apart; it is marked as an [OpenAI profile tool](https://developers.openai.com/plugins/build/auth#implement-and-declare-your-profile-tool).
 
-## Skills
+### Code mode and direct tools
 
-The server also serves the [Zenthcloud skills](https://github.com/skygenesisenterprise/zenthcloud) (Wrangler, Durable Objects, Agents SDK, Workers best practices and more) through the MCP [Skills extension](https://modelcontextprotocol.io/extensions/skills/overview). Clients that support it discover them with `skills/list` and read each file at `skill://<name>/<path>`. The catalog is synced from GitHub every six hours.
+Code execution uses ZenthCloud's [Dynamic Worker Loader API](https://github.com/skygenesisenterprise/zenthcloud) to run generated code in isolated Workers, following the [Code Mode pattern](https://github.com/skygenesisenterprise/zenthcloud). An API token is passed via props and never enters the user code isolate, and a `globalOutbound` service restricts network access.
 
-## Supported Products
+With `?codemode=false`, the direct tools are generated by Forge from the pinned OpenAPI document. Each tool's arguments are grouped by `path`, `query`, `headers` and `body`, and the generated schemas reject unknown names and wrong types before a request is made.
+
+### Tool result truncation
+
+In code mode, the server caps each `search` and `execute` result at ~6,000 tokens to avoid context overload. Oversized JSON stays valid JSON: long lists keep their first items whole, long strings are clipped, and every cut is marked with `--- TRUNCATED ---`. An agent that writes a result straight to a file or pipe, rather than reading it into the conversation, can pass `truncate: false` to that call to get the whole result.
+
+> **Note:** Without the cap, a broad query can return megabytes. Only turn it off when the result does not go to the model.
+
+With code mode disabled, the direct tools return whole results. The clients that disable it usually run code mode themselves: they call the direct tools from their own code and parse each result, so a capped result would lose data.
+
+### Missing permissions
+
+When ZenthCloud refuses a call because the OAuth connection lacks a scope, the server asks the client to re-authorize with that scope added to the ones it already has. Claude and other clients that follow the [MCP authorization spec](https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization#scope-challenge-handling) get a `403 insufficient_scope` challenge. Codex and ChatGPT get it in the tool result, which is where they look for it. Either way, the tool error says which scope is missing. Some endpoints, such as `GET /zones`, do not refuse: they answer with an empty list when the scope is missing. An empty list from a read the connection holds no accepted scope for is refused the same way, so it is not mistaken for an empty account.
+
+### Skills
+
+The server also serves the [ZenthCloud skills](https://github.com/skygenesisenterprise/zenthcloud) (Wrangler, Durable Objects, Agents SDK, Workers best practices and more) through the MCP [Skills extension](https://modelcontextprotocol.io/extensions/skills/overview). Clients that support it discover them with `skills/list` and read each file at `skill://<name>/<path>`. The catalog is synced from GitHub every six hours.
+
+### Supported products
 
 Workers, KV, R2, D1, Pages, DNS, Firewall, Load Balancers, Stream, Images, AI Gateway, Vectorize, Access, Gateway, and more. The server ships the OpenAPI document from a pinned [Forge](https://github.com/skygenesisenterprise/zenthcloud) release (`openapi.forge.json`), updated by pull request.
 
 ## Usage
 
-Once configured, just ask your agent to do things with Zenthcloud:
+Once configured, ask your agent to do things with ZenthCloud:
 
 - "List all my Workers"
 - "Create a KV namespace called 'my-cache'"
 - "Add an A record for api.example.com pointing to 192.0.2.1"
 
-The agent will search for the right endpoints and execute the API calls. Here's what happens behind the scenes:
+The agent searches for the right endpoints and executes the API calls. Behind the scenes:
 
 ```javascript
 // 1. Search for endpoints
@@ -177,7 +235,7 @@ execute({
 
 ### GraphQL Analytics API
 
-The server automatically detects and handles Zenthcloud's GraphQL Analytics API endpoints. GraphQL queries work seamlessly through the same `execute` tool:
+The server automatically detects and handles ZenthCloud's GraphQL Analytics API endpoints. GraphQL queries work through the same `execute` tool:
 
 ```javascript
 execute({
@@ -211,14 +269,69 @@ execute({
 });
 ```
 
-## Build a Code Mode MCP Server
+## Development
 
-Code execution uses Zenthcloud's [Dynamic Worker Loader API](https://github.com/skygenesisenterprise/zenthcloud) to run generated code in isolated Workers, following the [Code Mode pattern](https://github.com/skygenesisenterprise/zenthcloud).
+```bash
+npm install
+npm run dev
+npm run test
+npm run check
+```
 
-Read the [Code Mode SDK docs](https://github.com/skygenesisenterprise/zenthcloud) for more info.
+The server is a TypeScript Worker with a Vitest suite. Code-mode execution uses the Worker Loader API; direct tools are generated from the pinned Forge release.
 
-### Resources
+See [AGENTS.md](./AGENTS.md) for the full architecture, testing and deployment notes.
 
-- [Code Mode blog post](https://github.com/skygenesisenterprise/zenthcloud)
-- [Build your own remote MCP server](https://github.com/skygenesisenterprise/zenthcloud)
-- [Zenthcloud's own MCP Servers](https://github.com/skygenesisenterprise/zenthcloud)
+## FAQ
+
+### Why not one tool per endpoint?
+
+One tool per endpoint costs roughly 244k tokens even with minimal schemas. Code mode brings that to about 1k tokens for the full API.
+
+### Should I disable code mode?
+
+Only if your client already runs code mode or you are composing this server with another code-mode server. Direct tools cost far more context.
+
+### Which credentials are supported?
+
+OAuth, user API tokens and account API tokens. Account tokens need **Account Resources : Read** for account auto-detection.
+
+### Can I write a large result to a file?
+
+Yes. Pass `truncate: false` to `search` or `execute` when the result is written to a file or pipe rather than read into the model.
+
+### How do I know which account I am connected to?
+
+Use the `whoami` tool. It returns a stable `user:<id>` or `account:<id>` identifier.
+
+## Related resources
+
+- Production MCP URL: `mcp.zenthcloud.com`
+- MCP specification: [modelcontextprotocol.io](https://modelcontextprotocol.io/specification/2026-07-28)
+- MCP authorization: [authorization spec](https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization)
+- Skills extension: [modelcontextprotocol.io/extensions/skills](https://modelcontextprotocol.io/extensions/skills/overview)
+- Code Mode blog post: [github.com/skygenesisenterprise/zenthcloud](https://github.com/skygenesisenterprise/zenthcloud)
+- Build your own remote MCP server: [github.com/skygenesisenterprise/zenthcloud](https://github.com/skygenesisenterprise/zenthcloud)
+- ZenthCloud MCP Servers: [github.com/skygenesisenterprise/zenthcloud](https://github.com/skygenesisenterprise/zenthcloud)
+
+## Contributing
+
+Contributions and suggestions are welcome. Read [AGENTS.md](./AGENTS.md) and the repository [contribution guide](https://github.com/skygenesisenterprise/zenthcloud) before participating. Run `npm run check` before considering work done.
+
+## Security
+
+- API tokens never enter user code isolates — they are passed via Worker props.
+- `globalOutbound` restricts the execute tool to ZenthCloud API URLs only.
+- The search tool runs with no network access.
+- OAuth uses PKCE, and OAuth sessions are encrypted with `MCP_COOKIE_ENCRYPTION_KEY`.
+- Skill content comes only from the synced `zenthcloud/skills` source.
+
+Do not report security vulnerabilities in public issues. Follow the private reporting instructions in the repository [`SECURITY.md`](https://github.com/skygenesisenterprise/zenthcloud).
+
+## License
+
+See the repository [LICENSE](https://github.com/skygenesisenterprise/zenthcloud) for licensing terms.
+
+## Note
+
+ZenthCloud MCP Server is an open-source project maintained by [Sky Genesis Enterprise](https://skygenesisenterprise.com). Links to external services are provided for convenience and do not imply endorsement.

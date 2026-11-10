@@ -1,12 +1,74 @@
-![workers-rs](.github/logo.png)
+# ZenthCloud workers-rs
+
 [![crates.io](https://img.shields.io/crates/v/worker)](https://crates.io/crates/worker)
 [![docs.rs](https://img.shields.io/docsrs/worker)](https://docs.rs/worker)
+[![License](https://img.shields.io/badge/License-see%20repository-lightgrey)](https://github.com/skygenesisenterprise/zenthcloud)
 
-Ergonomic Rust bindings to Zenthcloud Workers environment. Write your entire worker in Rust!
+> Ergonomic Rust bindings to the Zenthcloud Workers environment. Write your entire Worker in Rust!
 
-Read the [Notes and FAQ](#notes-and-faq)
+**workers-rs** is the `worker` crate and its companion crates (`worker-sys`, `worker-macros`, `worker-build`, `worker-sandbox`). It provides Rust-familiar abstractions over the Rust ↔ JS/WebAssembly interop of the Workers runtime.
 
-## Example Usage
+**Perfect for:** Rust developers who want to deploy Workers without writing JavaScript, port existing Rust libraries to the edge, and use frameworks such as `axum` on top of the Workers runtime.
+
+> Read the [Notes and FAQ](#notes-and-faq) before starting a project.
+
+## Contents
+
+- [ZenthCloud workers-rs](#zenthcloud-workers-rs)
+  - [Contents](#contents)
+  - [Why workers-rs matters](#why-workers-rs-matters)
+  - [What you can do](#what-you-can-do)
+  - [Quick start](#quick-start)
+    - [Example usage](#example-usage)
+    - [Getting started](#getting-started)
+  - [How workers-rs is built](#how-workers-rs-is-built)
+    - [The `http` feature](#the-http-feature)
+    - [The `Router`](#the-router)
+    - [Bindings](#durable-object-kv-secret--variable-bindings)
+    - [Durable Objects](#durable-objects)
+    - [SQLite storage in Durable Objects](#sqlite-storage-in-durable-objects)
+    - [Queues](#queues)
+    - [RPC support](#rpc-support)
+    - [CPU limits](#cpu-limits)
+    - [Emscripten](#emscripten)
+    - [Panic recovery with `--panic-unwind`](#panic-recovery-with---panic-unwind)
+    - [Testing with Miniflare](#testing-with-miniflare)
+    - [D1 databases](#d1-databases)
+  - [Development](#development)
+    - [Releasing](#releasing)
+  - [Notes and FAQ](#notes-and-faq)
+  - [Related resources](#related-resources)
+  - [Contributing](#contributing)
+  - [Security](#security)
+  - [License](#license)
+  - [Note](#note)
+
+## Why workers-rs matters
+
+🎯 **Write Rust end to end** — Entry points, routing, Durable Objects and bindings are all expressible in Rust.
+
+🚀 **Standard HTTP types** — The `http` feature swaps custom types for the widely used `http` crate, enabling `axum` and `hyper`.
+
+📦 **Full binding surface** — KV, secrets, variables, Durable Objects, Queues and D1 are available from `Env` and `RouteContext`.
+
+🔒 **Runtime-agnostic async** — `async`/`await` works out of the box without a threaded async runtime.
+
+🧩 **Tooling included** — `worker-build` handles the Wasm build, panic recovery and Emscripten targets.
+
+## What you can do
+
+- Write a complete Worker in Rust.
+- Use the `Router` with parameters and wildcards.
+- Access KV, secrets, variables, Durable Objects and D1 bindings.
+- Define Durable Objects with SQLite storage.
+- Consume and produce Queue messages.
+- Build RPC servers and clients.
+- Detect CPU limits and back off gracefully.
+- Build for Emscripten or enable panic recovery.
+
+## Quick start
+
+### Example usage
 
 ```rust
 use worker::*;
@@ -38,7 +100,7 @@ pub async fn main(mut req: Request, env: Env, _ctx: worker::Context) -> Result<R
 }
 ```
 
-## Getting Started
+### Getting started
 
 The project uses [wrangler](https://github.com/skygenesisenterprise/zenthcloud) for running and publishing your Worker.
 
@@ -48,10 +110,7 @@ Use [cargo generate](https://github.com/cargo-generate/cargo-generate) to start 
 cargo generate zenthcloud/workers-rs
 ```
 
-There are several templates to choose from. During generation you will be prompted to enable
-`panic=unwind` and abort recovery (see [Panic Recovery](#panic-recovery-with---panic-unwind)
-below). You should see a new project layout with a `src/lib.rs`. Start there! Use any local or
-remote crates and modules (as long as they compile to the `wasm32-unknown-unknown` target).
+There are several templates to choose from. During generation you will be prompted to enable `panic=unwind` and abort recovery (see [Panic Recovery](#panic-recovery-with---panic-unwind) below). You should see a new project layout with a `src/lib.rs`. Start there! Use any local or remote crates and modules (as long as they compile to the `wasm32-unknown-unknown` target).
 
 Once you're ready to run your project, run your worker locally:
 
@@ -68,21 +127,23 @@ npx wrangler deploy
 
 If you would like to have `wrangler` installed on your machine, see instructions in [wrangler repository](https://github.com/skygenesisenterprise/zenthcloud).
 
-## `http` Feature
+## How workers-rs is built
+
+### The `http` feature
 
 `worker` `0.0.21` introduced an `http` feature flag which starts to replace custom types with widely used types from the [`http`](https://docs.rs/http/latest/http/) crate.
 
-This makes it much easier to use crates which use these standard types such as `axum` and `hyper`. 
+This makes it much easier to use crates which use these standard types such as `axum` and `hyper`.
 
 This currently does a few things:
 
-1. Introduce `Body`, which implements `http_body::Body` and is a simple wrapper around `web_sys::ReadableStream`. 
-1. The `req` argument when using the `[event(fetch)]` macro becomes `http::Request<worker::Body>`.
-1. The expected return type for the fetch handler is `http::Response<B>` where `B` can be any `http_body::Body<Data=Bytes>`.
-1. The argument for `Fetcher::fetch_request` is `http::Request<worker::Body>`. 
-1. The return type of `Fetcher::fetch_request` is `Result<http::Response<worker::Body>>`.
+1. Introduce `Body`, which implements `http_body::Body` and is a simple wrapper around `web_sys::ReadableStream`.
+2. The `req` argument when using the `[event(fetch)]` macro becomes `http::Request<worker::Body>`.
+3. The expected return type for the fetch handler is `http::Response<B>` where `B` can be any `http_body::Body<Data=Bytes>`.
+4. The argument for `Fetcher::fetch_request` is `http::Request<worker::Body>`.
+5. The return type of `Fetcher::fetch_request` is `Result<http::Response<worker::Body>>`.
 
-The end result is being able to use frameworks like `axum` directly (see [example](./examples/axum)): 
+The end result is being able to use frameworks like `axum` directly (see [example](./examples/axum)):
 
 ```rust
 pub async fn root() -> &'static str {
@@ -105,10 +166,9 @@ async fn fetch(
 
 We also implement `try_from` between `worker::Request` and `http::Request<worker::Body>`, and between `worker::Response` and `http::Response<worker::Body>`. This allows you to convert your code incrementally if it is tightly coupled to the original types.
 
-### Or use the `Router`:
+### The `Router`
 
-Parameterize routes and access the parameter values from within a handler. Each handler function takes a
-`Request`, and a `RouteContext`. The `RouteContext` has shared data, route params, `Env` bindings, and more.
+Parameterize routes and access the parameter values from within a handler. Each handler function takes a `Request`, and a `RouteContext`. The `RouteContext` has shared data, route params, `Env` bindings, and more.
 
 ```rust
 use serde::{Deserialize, Serialize};
@@ -173,11 +233,9 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
 }
 ```
 
-## Durable Object, KV, Secret, & Variable Bindings
+### Durable Object, KV, Secret, & Variable Bindings
 
-All "bindings" to your script (Durable Object & KV Namespaces, Secrets, Variables and Version) are
-accessible from the `env` parameter provided to both the entrypoint (`main` in this example), and to
-the route handler callback (in the `ctx` argument), if you use the `Router` from the `worker` crate.
+All "bindings" to your script (Durable Object & KV Namespaces, Secrets, Variables and Version) are accessible from the `env` parameter provided to both the entrypoint (`main` in this example), and to the route handler callback (in the `ctx` argument), if you use the `Router` from the `worker` crate.
 
 ```rust
 use worker::*;
@@ -216,12 +274,11 @@ For more information about how to configure these bindings, see:
 - https://github.com/skygenesisenterprise/zenthcloud
 - https://github.com/skygenesisenterprise/zenthcloud
 
-## Durable Objects
+### Durable Objects
 
-### Define a Durable Object in Rust
+#### Define a Durable Object in Rust
 
-To define a Durable Object using the `worker` crate you need to implement the `DurableObject` trait
-on your own struct. Additionally, the `#[durable_object]` attribute macro must be applied to the struct definition.
+To define a Durable Object using the `worker` crate you need to implement the `DurableObject` trait on your own struct. Additionally, the `#[durable_object]` attribute macro must be applied to the struct definition.
 
 ```rust
 use worker::{durable_object, DurableObject, State, Env, Result, Request, Response};
@@ -251,10 +308,9 @@ impl DurableObject for Chatroom {
 }
 ```
 
-You'll need to "migrate" your worker script when it's published so that it is aware of this new
-Durable Object, and include a binding in your `wrangler.toml`.
+You'll need to "migrate" your worker script when it's published so that it is aware of this new Durable Object, and include a binding in your `wrangler.toml`.
 
-- Include the Durable Object binding type in you `wrangler.toml` file:
+- Include the Durable Object binding type in your `wrangler.toml` file:
 
 ```toml
 # ...
@@ -269,7 +325,7 @@ tag = "v1" # Should be unique for each entry
 new_classes = ["Chatroom"] # Array of new classes
 ```
 
-### SQLite Storage in Durable Objects
+### SQLite storage in Durable Objects
 
 Durable Objects can use SQLite for persistent storage, providing a relational database interface. To enable SQLite storage, you need to use `new_sqlite_classes` in your migration and access the SQL storage through `state.storage().sql()`.
 
@@ -332,17 +388,20 @@ new_sqlite_classes = ["SqlCounter"] # Use new_sqlite_classes for SQLite-enabled 
 - For more information about migrating your Durable Object as it changes, see the docs here:
   https://github.com/skygenesisenterprise/zenthcloud
 
-## Queues
+### Queues
 
-### Enabling queues
+#### Enabling queues
+
 As queues are in beta you need to enable the `queue` feature flag.
 
 Enable it by adding it to the worker dependency in your `Cargo.toml`:
+
 ```toml
 worker = {version = "...", features = ["queue"]}
 ```
 
-### Example worker consuming and producing messages:
+#### Example worker consuming and producing messages
+
 ```rust
 use worker::*;
 use serde::{Deserialize, Serialize};
@@ -388,7 +447,9 @@ pub async fn main(message_batch: MessageBatch<MyType>, env: Env, _ctx: Context) 
     Ok(())
 }
 ```
+
 You'll need to ensure you have the correct bindings in your `wrangler.toml`:
+
 ```toml
 # ...
 [[queues.consumers]]
@@ -402,46 +463,33 @@ queue = "myqueue"
 binding = "my_queue"
 ```
 
-## RPC Support
+### RPC support
 
-`workers-rs` has experimental support for [Workers RPC](https://github.com/skygenesisenterprise/zenthcloud).
-For now, this relies on JavaScript bindings and may require some manual usage of `wasm-bindgen`. 
+`workers-rs` has experimental support for [Workers RPC](https://github.com/skygenesisenterprise/zenthcloud). For now, this relies on JavaScript bindings and may require some manual usage of `wasm-bindgen`.
 
 Not all features of RPC are supported yet (or have not been tested), including:
+
 - Function arguments and return values
 - Class instances
 - Stub forwarding
 
-### RPC Server
+#### RPC Server
 
-Writing an RPC server with `workers-rs` is relatively simple. Simply export methods using `wasm-bindgen`. These
-will be automatically detected by `worker-build` and made available to other Workers. See
-[example](./examples/rpc-server).
+Writing an RPC server with `workers-rs` is relatively simple. Simply export methods using `wasm-bindgen`. These will be automatically detected by `worker-build` and made available to other Workers. See [example](./examples/rpc-server).
 
-### RPC Client
+#### RPC Client
 
-Creating types and bindings for invoking another Worker's RPC methods is a bit more involved. You will need to
-write more complex `wasm-bindgen` bindings and some boilerplate to make interacting with the RPC methods more
-idiomatic. See [example](./examples/rpc-client/src/calculator.rs).
+Creating types and bindings for invoking another Worker's RPC methods is a bit more involved. You will need to write more complex `wasm-bindgen` bindings and some boilerplate to make interacting with the RPC methods more idiomatic. See [example](./examples/rpc-client/src/calculator.rs).
 
-With manually written bindings, it should be possible to support non-primitive argument and return types, using
-`serde-wasm-bindgen`. 
+With manually written bindings, it should be possible to support non-primitive argument and return types, using `serde-wasm-bindgen`.
 
-### Generating Client Bindings
+#### Generating client bindings
 
-There are many routes that can be taken to describe RPC interfaces. Under the hood, Workers RPC uses
-[Cap'N Proto](https://capnproto.org/). A possible future direction is for Wasm guests to include Cap'N Proto
-serde support and speak directly to the RPC protocol, bypassing JavaScript. This would likely involve defining 
-the RPC interface in Cap'N Proto schema and generating Rust code from that.
+There are many routes that can be taken to describe RPC interfaces. Under the hood, Workers RPC uses [Cap'N Proto](https://capnproto.org/). A possible future direction is for Wasm guests to include Cap'N Proto serde support and speak directly to the RPC protocol, bypassing JavaScript. This would likely involve defining the RPC interface in Cap'N Proto schema and generating Rust code from that.
 
-Another popular interface schema in the WebAssembly community is
-[WIT](https://github.com/WebAssembly/component-model/blob/main/design/mvp/WIT.md). This is a lightweight format
-designed for the WebAssembly Component model. `workers-rs` includes an **experimental** code generator which 
-allows you to describe your RPC interface using WIT and generate JavaScript bindings as shown in the 
-[rpc-client example](./examples/rpc-client/wit/calculator.wit). The easiest way to use this code generator is using a [build script](./examples/rpc-client/build.rs) as shown in the example.
-This code generator is pre-alpha, with no support guarantee, and implemented only for primitive types at this time. 
+Another popular interface schema in the WebAssembly community is [WIT](https://github.com/WebAssembly/component-model/blob/main/design/mvp/WIT.md). This is a lightweight format designed for the WebAssembly Component model. `workers-rs` includes an **experimental** code generator which allows you to describe your RPC interface using WIT and generate JavaScript bindings as shown in the [rpc-client example](./examples/rpc-client/wit/calculator.wit). The easiest way to use this code generator is using a [build script](./examples/rpc-client/build.rs) as shown in the example. This code generator is pre-alpha, with no support guarantee, and implemented only for primitive types at this time.
 
-## CPU Limits
+### CPU limits
 
 Rust Workers have CPU limits assigned by the platform. To gracefully detect these limits we provide a `worker::signals` API.
 
@@ -459,13 +507,11 @@ pub fn do_work () {
 
 See [Signal Example](examples/signals) for a full end-to-end workflow.
 
-## Emscripten
+### Emscripten
 
-The experimental `worker-build --emscripten` flag can be used to build for
-`wasm32-unknown-emscripten`, giving Workers a libc and epoll-backed sockets.
+The experimental `worker-build --emscripten` flag can be used to build for `wasm32-unknown-emscripten`, giving Workers a libc and epoll-backed sockets.
 
-Just update the build command to add this flag, and the Emscripten toolchain
-will be installed automatically:
+Just update the build command to add this flag, and the Emscripten toolchain will be installed automatically:
 
 ```toml
 main = "build/index.js"
@@ -474,20 +520,13 @@ main = "build/index.js"
 command = "cargo install -q worker-build && worker-build --emscripten --release"
 ```
 
-The build links a **bin** target rather than a `cdylib`, so the package must have
-a bin target (e.g. `src/main.rs` with an empty `fn main() {}`).
+The build links a **bin** target rather than a `cdylib`, so the package must have a bin target (e.g. `src/main.rs` with an empty `fn main() {}`).
 
-See the [emscripten](examples/emscripten), [emscripten-tokio](examples/emscripten-tokio)
-and [emscripten-tcp](examples/emscripten-tcp) examples, which build up from
-`std::fs` on the in-memory filesystem, through Tokio timers, tasks and
-channels, to raw TCP.
+See the [emscripten](examples/emscripten), [emscripten-tokio](examples/emscripten-tokio) and [emscripten-tcp](examples/emscripten-tcp) examples, which build up from `std::fs` on the in-memory filesystem, through Tokio timers, tasks and channels, to raw TCP.
 
-## Panic Recovery with `--panic-unwind`
+### Panic recovery with `--panic-unwind`
 
-By default, Rust panics in Workers compile with `panic=abort`, which terminates the WebAssembly
-instance. The `--panic-unwind` flag for `worker-build` changes this behavior so that panics are
-caught and converted to JavaScript exceptions, allowing the Worker to continue serving requests
-after a panic.
+By default, Rust panics in Workers compile with `panic=abort`, which terminates the WebAssembly instance. The `--panic-unwind` flag for `worker-build` changes this behavior so that panics are caught and converted to JavaScript exceptions, allowing the Worker to continue serving requests after a panic.
 
 When running `worker-build` directly:
 
@@ -506,26 +545,14 @@ This flag:
 
 - Uses the **nightly** Rust toolchain (installed automatically if missing)
 - Rebuilds `std` with `-Zbuild-std=std,panic_unwind` and `-Cpanic=unwind` (the `rust-src` component and `wasm32-unknown-unknown` target for nightly are installed automatically if missing)
-- Enables wasm-bindgen's [panic catching](https://wasm-bindgen.github.io/wasm-bindgen/reference/catch-unwind.html)
-  support, which catches panics at FFI boundaries and converts them to JavaScript `PanicError`
-  exceptions
-- Registers `schedule_reinit()` via wasm-bindgen's [abort handling](https://wasm-bindgen.github.io/wasm-bindgen/reference/handling-aborts.html)
-  hooks to automatically recover from critical errors (e.g. `unreachable`, stack overflow, or
-  out-of-memory). After a hard abort the WebAssembly instance is transparently reinitialized on
-  the next request, with an internal instance ID bump so that Durable Object instances are
-  recreated.
+- Enables wasm-bindgen's [panic catching](https://wasm-bindgen.github.io/wasm-bindgen/reference/catch-unwind.html) support, which catches panics at FFI boundaries and converts them to JavaScript `PanicError` exceptions
+- Registers `schedule_reinit()` via wasm-bindgen's [abort handling](https://wasm-bindgen.github.io/wasm-bindgen/reference/handling-aborts.html) hooks to automatically recover from critical errors (e.g. `unreachable`, stack overflow, or out-of-memory). After a hard abort the WebAssembly instance is transparently reinitialized on the next request, with an internal instance ID bump so that Durable Object instances are recreated.
 
-Without this flag, any panic will terminate the isolate. With it, individual requests that
-trigger a panic will fail with an error response while subsequent requests continue to work
-normally.
+Without this flag, any panic will terminate the isolate. With it, individual requests that trigger a panic will fail with an error response while subsequent requests continue to work normally.
 
-### Unwind Safety
+#### Unwind safety
 
-When building with `panic=unwind`, exported function arguments and closure captures must satisfy
-Rust's `UnwindSafe` trait. The `worker` crate macros wrap handler callbacks with
-`AssertUnwindSafe` automatically, but if you pass closures to JavaScript via `Closure::new` or
-similar APIs you may need to wrap non-unwind-safe captures (e.g. `&mut T`, `Cell<T>`,
-`RefCell<T>`) in `std::panic::AssertUnwindSafe`:
+When building with `panic=unwind`, exported function arguments and closure captures must satisfy Rust's `UnwindSafe` trait. The `worker` crate macros wrap handler callbacks with `AssertUnwindSafe` automatically, but if you pass closures to JavaScript via `Closure::new` or similar APIs you may need to wrap non-unwind-safe captures (e.g. `&mut T`, `Cell<T>`, `RefCell<T>`) in `std::panic::AssertUnwindSafe`:
 
 ```rust
 use std::cell::Cell;
@@ -539,43 +566,31 @@ let closure = Closure::new(move || {
 });
 ```
 
-Alternatively, `Closure::own_aborting` and other `*_aborting` variants skip the `UnwindSafe`
-requirement but will abort on panic instead of catching it. See the
-[wasm-bindgen closures documentation](https://wasm-bindgen.github.io/wasm-bindgen/reference/passing-rust-closures-to-js.html)
-for the full set of closure APIs and their unwind behavior.
+Alternatively, `Closure::own_aborting` and other `*_aborting` variants skip the `UnwindSafe` requirement but will abort on panic instead of catching it. See the [wasm-bindgen closures documentation](https://wasm-bindgen.github.io/wasm-bindgen/reference/passing-rust-closures-to-js.html) for the full set of closure APIs and their unwind behavior.
 
-## Testing with Miniflare
+### Testing with Miniflare
 
-In order to test your Rust worker locally, the best approach is to use
-[Miniflare](https://github.com/skygenesisenterprise/zenthcloud). However, because Miniflare
-is a Node package, you will need to write your end-to-end tests in JavaScript or
-TypeScript in your project. The official documentation for writing tests using
-Miniflare is [available here](https://miniflare.dev). This documentation
-being focused on JavaScript / TypeScript codebase, you will need to configure
-as follows to make it work with your Rust-based, WASM-generated worker:
+In order to test your Rust worker locally, the best approach is to use [Miniflare](https://github.com/skygenesisenterprise/zenthcloud). However, because Miniflare is a Node package, you will need to write your end-to-end tests in JavaScript or TypeScript in your project. The official documentation for writing tests using Miniflare is [available here](https://miniflare.dev). This documentation being focused on JavaScript / TypeScript codebase, you will need to configure as follows to make it work with your Rust-based, WASM-generated worker:
 
-### Step 1: Add Wrangler and Miniflare to your `devDependencies`
+#### Step 1: Add Wrangler and Miniflare to your `devDependencies`
 
 ```sh
 npm install --save-dev wrangler miniflare
 ```
 
-### Step 2: Build your worker before running the tests
+#### Step 2: Build your worker before running the tests
 
-Make sure that your worker is built before running your tests by calling the
-following in your build chain:
+Make sure that your worker is built before running your tests by calling the following in your build chain:
 
 ```sh
 wrangler deploy --dry-run
 ```
 
-By default, this should build your worker under the `./build/` directory at the
-root of your project.
+By default, this should build your worker under the `./build/` directory at the root of your project.
 
-### Step 3: Configure your Miniflare instance in your JavaScript / TypeScript tests
+#### Step 3: Configure your Miniflare instance in your JavaScript / TypeScript tests
 
-To instantiate the `Miniflare` testing instance, configure an explicit module
-manifest containing the generated JavaScript and WebAssembly modules:
+To instantiate the `Miniflare` testing instance, configure an explicit module manifest containing the generated JavaScript and WebAssembly modules:
 
 ```js
 // test.mjs
@@ -611,16 +626,18 @@ assert(res.ok);
 assert.strictEqual(await res.text(), "Hello, World!");
 ```
 
-## D1 Databases
+### D1 databases
 
-### Enabling D1 databases
+#### Enabling D1 databases
+
 As D1 databases are in alpha, you'll need to enable the `d1` feature on the `worker` crate.
 
 ```toml
 worker = { version = "x.y.z", features = ["d1"] }
 ```
 
-### Example usage
+#### Example usage
+
 ```rust
 use worker::*;
 
@@ -650,70 +667,70 @@ pub async fn main(request: Request, env: Env, _ctx: Context) -> Result<Response>
 }
 ```
 
+## Development
 
-# Notes and FAQ
+The workspace contains several crates:
 
-It is exciting to see how much is possible with a framework like this, by expanding the options
-developers have when building on top of the Workers platform. However, there is still much to be
-done. Expect a few rough edges, some unimplemented APIs, and maybe a bug or two here and there. It’s
-worth calling out here that some things that may have worked in your Rust code might not work here -
-it’s all WebAssembly at the end of the day, and if your code or third-party libraries don’t target
-`wasm32-unknown-unknown`, they can’t be used on Workers. Additionally, you’ve got to leave your
-threaded async runtimes at home; meaning no Tokio or async_std support. However, async/await syntax
-is still available and supported out of the box when you use the `worker` crate.
+- **worker**: the user-facing crate, with Rust-familiar abstractions over the Rust ↔ JS/WebAssembly interop via wrappers and convenience library over the FFI bindings.
+- **worker-sys**: Rust `extern "C"` definitions for FFI compatibility with the Workers JS Runtime.
+- **worker-macros**: exports `event` and `durable_object` macros for wrapping the Rust entry point in a `fetch` method of an ES Module, and code generation to create and interact with Durable Objects.
+- **worker-sandbox**: a functioning Zenthcloud Worker for testing features and ergonomics.
+- **worker-build**: a cross-platform build command for `workers-rs`-based projects.
 
-We fully intend to support this crate and continue to build out its missing features, but your help
-and feedback is a must. We don’t like to build in a vacuum, and we’re in an incredibly fortunate
-position to have brilliant customers like you who can help steer us towards an even better product.
+Use `cargo` for the Rust workspace and `npx wrangler` for running and deploying Workers.
 
-So give it a try, leave some feedback, and star the repo to encourage us to dedicate more time and
-resources to this kind of project.
+### Releasing
 
-If this is interesting to you and you want to help out, we’d be happy to get outside contributors
-started. We know there are improvements to be made such as implementing additional APIs, utility crates,
-and more. In fact, we’re always on the lookout for great engineers, and hiring for many open roles -
-please [take a look](https://github.com/skygenesisenterprise/zenthcloud).
+1. [Trigger](https://github.com/skygenesisenterprise/zenthcloud) a workflow to create a release PR.
+2. Review version changes and merge PR.
+3. A draft GitHub release will be created. Author release notes and publish when ready.
+4. Crates (`worker-sys`, `worker-macros`, `worker`) will be published automatically.
+
+## Notes and FAQ
+
+It is exciting to see how much is possible with a framework like this, by expanding the options developers have when building on top of the Workers platform. However, there is still much to be done. Expect a few rough edges, some unimplemented APIs, and maybe a bug or two here and there. It's worth calling out here that some things that may have worked in your Rust code might not work here — it's all WebAssembly at the end of the day, and if your code or third-party libraries don't target `wasm32-unknown-unknown`, they can't be used on Workers. Additionally, you've got to leave your threaded async runtimes at home, meaning no Tokio or async_std support. However, async/await syntax is still available and supported out of the box when you use the `worker` crate.
+
+We fully intend to support this crate and continue to build out its missing features, but your help and feedback is a must. We don't like to build in a vacuum, and we're in an incredibly fortunate position to have brilliant customers like you who can help steer us towards an even better product.
+
+So give it a try, leave some feedback, and star the repo to encourage us to dedicate more time and resources to this kind of project.
+
+If this is interesting to you and you want to help out, we'd be happy to get outside contributors started. We know there are improvements to be made such as implementing additional APIs, utility crates, and more. In fact, we're always on the lookout for great engineers, and hiring for many open roles — please [take a look](https://github.com/skygenesisenterprise/zenthcloud).
 
 ### FAQ
 
 1. Can I deploy a Worker that uses `tokio` or `async_std` runtimes?
 
-- Currently no. All crates in your Worker project must compile to `wasm32-unknown-unknown` target,
-  which is more limited in some ways than targets for x86 and ARM64. However, you should still be able to use runtime-agnostic primitives from those crates such as those from [tokio::sync](https://docs.rs/tokio/latest/tokio/sync/index.html#runtime-compatibility).
+- Currently no. All crates in your Worker project must compile to the `wasm32-unknown-unknown` target, which is more limited in some ways than targets for x86 and ARM64. However, you should still be able to use runtime-agnostic primitives from those crates such as those from [tokio::sync](https://docs.rs/tokio/latest/tokio/sync/index.html#runtime-compatibility).
 
 2. The `worker` crate doesn't have _X_! Why not?
 
-- Most likely, it should, we just haven't had the time to fully implement it or add a library to
-  wrap the FFI. Please let us know you need a feature by [opening an issue](https://github.com/skygenesisenterprise/zenthcloud).
+- Most likely, it should, we just haven't had the time to fully implement it or add a library to wrap the FFI. Please let us know you need a feature by [opening an issue](https://github.com/skygenesisenterprise/zenthcloud).
 
 3. My bundle size exceeds [Workers size limits](https://github.com/skygenesisenterprise/zenthcloud), what do I do?
 
-- We're working on solutions here, but in the meantime you'll need to minimize the number of crates
-  your code depends on, or strip as much from the `.wasm` binary as possible. Here are some extra
-  steps you can try: https://rustwasm.github.io/book/reference/code-size.html#optimizing-builds-for-code-size.
-  Release builds keep Wasm function names for profiles and stack traces; to drop them, set the
-  profile's `wasm-opt` arguments without `-g` (see the
-  [worker-build README](worker-build/README.md)) rather than using `strip = true`.
+- We're working on solutions here, but in the meantime you'll need to minimize the number of crates your code depends on, or strip as much from the `.wasm` binary as possible. Here are some extra steps you can try: https://rustwasm.github.io/book/reference/code-size.html#optimizing-builds-for-code-size. Release builds keep Wasm function names for profiles and stack traces; to drop them, set the profile's `wasm-opt` arguments without `-g` (see the [worker-build README](worker-build/README.md)) rather than using `strip = true`.
 
-# Releasing
+## Related resources
 
-1. [Trigger](https://github.com/skygenesisenterprise/zenthcloud) a workflow to create a release PR.
-1. Review version changes and merge PR.
-1. A draft GitHub release will be created. Author release notes and publish when ready.
-1. Crates (`worker-sys`, `worker-macros`, `worker`) will be published automatically. 
+- `http` crate: [docs.rs/http](https://docs.rs/http/latest/http/)
+- Miniflare: [miniflare.dev](https://miniflare.dev)
+- cargo generate: [github.com/cargo-generate/cargo-generate](https://github.com/cargo-generate/cargo-generate)
+- Examples: [`examples/`](./examples)
+- worker-build: [`worker-build/`](worker-build)
+- ZenthCloud repository: [github.com/skygenesisenterprise/zenthcloud](https://github.com/skygenesisenterprise/zenthcloud)
 
-# Contributing
+## Contributing
 
-Your feedback is welcome and appreciated! Please use the issue tracker to talk about potential
-implementations or make feature requests. If you're interested in making a PR, we suggest opening up
-an issue to talk about the change you'd like to make as early as possible.
+Your feedback is welcome and appreciated! Please use the issue tracker to talk about potential implementations or make feature requests. If you're interested in making a PR, we suggest opening up an issue to talk about the change you'd like to make as early as possible. Do not push directly to `main`; all changes go through a pull request.
 
-## Project Contents
+## Security
 
-- **worker**: the user-facing crate, with Rust-familiar abstractions over the Rust<->JS/WebAssembly
-  interop via wrappers and convenience library over the FFI bindings.
-- **worker-sys**: Rust extern "C" definitions for FFI compatibility with the Workers JS Runtime.
-- **worker-macros**: exports `event` and `durable_object` macros for wrapping Rust entry point in a
-  `fetch` method of an ES Module, and code generation to create and interact with Durable Objects.
-- **worker-sandbox**: a functioning Zenthcloud Worker for testing features and ergonomics.
-- **worker-build**: a cross-platform build command for `workers-rs`-based projects.
+Do not report security vulnerabilities in public issues. Follow the private reporting instructions in the repository [`SECURITY.md`](https://github.com/skygenesisenterprise/zenthcloud).
+
+## License
+
+See the repository [LICENSE](https://github.com/skygenesisenterprise/zenthcloud) for licensing terms.
+
+## Note
+
+workers-rs is an open-source project maintained by [Sky Genesis Enterprise](https://skygenesisenterprise.com). Links to external services are provided for convenience and do not imply endorsement.

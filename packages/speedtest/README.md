@@ -1,25 +1,74 @@
-# Zenthcloud Speedtest
+# ZenthCloud Speedtest
 
-[![NPM package][npm-img]][npm-url]
-[![Build Size][build-size-img]][build-size-url]
-[![NPM Downloads][npm-downloads-img]][npm-downloads-url]
+[![npm](https://img.shields.io/npm/v/@zenthcloud/speedtest.svg)](https://www.npmjs.com/package/@zenthcloud/speedtest)
+[![License](https://img.shields.io/badge/License-see%20repository-lightgrey)](https://github.com/skygenesisenterprise/zenthcloud)
+[![TypeScript](https://img.shields.io/badge/TypeScript-browser--only-3178C6?logo=typescript&logoColor=white)](https://typescriptlang.org)
+[![Zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](package.json)
 
-`@zenthcloud/speedtest` is a JavaScript module to measure the quality of a client’s Internet connection. It's the measurement engine that powers the Zenthcloud speedtest measurement application available at [https://github.com/skygenesisenterprise/zenthcloud(https://github.com/skygenesisenterprise/zenthcloud).
+> A browser-side measurement engine for Internet connection quality.
 
-The module performs test requests against the [Zenthcloud](https://github.com/skygenesisenterprise/zenthcloud) edge network and relies on the [PerformanceResourceTiming browser api](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming) to extract timing results.
+**`@zenthcloud/speedtest`** is a JavaScript module that measures the quality of a client's Internet connection. It is the measurement engine that powers the ZenthCloud speedtest measurement application. The module performs test requests against the [ZenthCloud](https://github.com/skygenesisenterprise/zenthcloud) edge network and relies on the [PerformanceResourceTiming browser API](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming) to extract timing results.
+
 The network connection is characterized by items such as download/upload bandwidth, latency and packet loss.
 
-Please note that measurement results are collected by Zenthcloud on completion for the purpose of calculating aggregated insights regarding Internet connection quality.
+**Perfect for:** browser applications that need connection quality measurements, network diagnostics, and products that want to score a connection for streaming, gaming or real-time communication.
 
-## Installation
+> Please note that measurement results are collected by ZenthCloud on completion for the purpose of calculating aggregated insights regarding Internet connection quality.
 
-Add this package to your `package.json` by running this in the root of your project's directory:
+## Contents
 
-```sh
+- [ZenthCloud Speedtest](#zenthcloud-speedtest)
+  - [Contents](#contents)
+  - [Why ZenthCloud Speedtest matters](#why-zenthcloud-speedtest-matters)
+  - [What you can do](#what-you-can-do)
+  - [Quick start](#quick-start)
+  - [API reference](#api-reference)
+    - [Instantiation](#instantiation)
+    - [Attributes](#attributes)
+    - [Methods](#methods)
+    - [Notification events](#notification-events)
+    - [Measurement config](#measurement-config)
+      - [latency](#latency)
+      - [download / upload](#download--upload)
+      - [packetLoss](#packetloss)
+    - [Results object](#results-object)
+  - [How ZenthCloud Speedtest is built](#how-zenthcloud-speedtest-is-built)
+  - [Development](#development)
+  - [FAQ](#faq)
+  - [Related resources](#related-resources)
+  - [Contributing](#contributing)
+  - [Security](#security)
+  - [License](#license)
+  - [Note](#note)
+
+## Why ZenthCloud Speedtest matters
+
+🎯 **Real measurements** — Uses actual requests against the edge network and browser timing APIs rather than synthetic estimates.
+
+🚀 **Latency, bandwidth and loss** — Measures unloaded and loaded latency, download and upload bandwidth, and packet loss.
+
+📦 **Configurable** — Measurement targets, paths and the full measurement sequence can be customized.
+
+🔒 **Browser-only by construction** — The package avoids Node-only APIs and runs in modern browsers.
+
+🧩 **Composable results** — A results object exposes raw points and reduced values, plus AIM scores for common use cases.
+
+## What you can do
+
+- Measure latency, jitter, download bandwidth and upload bandwidth.
+- Measure loaded latency during download and upload.
+- Measure packet loss through a WebRTC TURN server.
+- Control the sequence and size of measurements.
+- Read summary values, raw data points and connection scores.
+- React to progress with event callbacks.
+
+## Quick start
+
+Add the package to your `package.json`:
+
+```bash
 npm install @zenthcloud/speedtest
 ```
-
-## Simple Usage
 
 ```js
 import SpeedTest from '@zenthcloud/speedtest';
@@ -29,7 +78,7 @@ new SpeedTest().onFinish = results => console.log(results.getSummary());
 
 ## API reference
 
-`SpeedTest` is a JavaScript Class and should be instantiated with the `new` keyword. It's not required to pass a config object, as all items have default values.
+`SpeedTest` is a JavaScript class and should be instantiated with the `new` keyword. It is not required to pass a config object, as all items have default values.
 
 ### Instantiation
 
@@ -37,9 +86,7 @@ new SpeedTest().onFinish = results => console.log(results.getSummary());
 new SpeedTest({ configOptions })
 ```
 
-Options marked 🧪 are **experimental and unstable**: they may change behaviour,
-be renamed, or be removed in any release, including a patch. Do not depend on
-them.
+Options marked 🧪 are **experimental and unstable**: they may change behaviour, be renamed, or be removed in any release, including a patch. Do not depend on them.
 
 | Config option | Description | Default |
 | --- | --- | :--: |
@@ -56,7 +103,7 @@ them.
 | **authorizationToken**: *string* | 🧪 *Experimental.* An opaque token attributing the test to a registered customer, sent as an `Authorization: Bearer` header on the measurement, TURN credential and results-logging requests. Obtain it from your own backend — the engine never requests one itself. Requires `authorizationEnabled`; on its own it is never sent. Not sent over plain HTTP unless `allowInsecureAuthorizationToken` is set. | `null` |
 | **authorizationEnabled**: *`'header'` \| boolean* | 🧪 *Experimental.* Opts in to sending `authorizationToken`, which is otherwise withheld even when set. `'header'` and `true` both send it as `Authorization: Bearer`; `true` is a permanent alias for `'header'`, so a future transport can be added without changing what an existing config does. | `undefined` |
 | **allowInsecureAuthorizationToken**: *boolean* | 🧪 *Experimental.* Sends `authorizationToken` even when the endpoint is not HTTPS, for local development against an `http://` server. Never enable this in production: the server treats a token seen over plaintext as compromised and revokes it. | `false` |
-| **measurements**: *array* | The sequence of measurements to perform by the speedtest engine. See [below](#measurement-config) for the specific syntax of this option. ||
+| **measurements**: *array* | The sequence of measurements to perform by the speedtest engine. See [below](#measurement-config) for the specific syntax of this option. | |
 | **measureDownloadLoadedLatency**: *boolean* | Whether to perform additional latency measurements simultaneously with download requests, to measure loaded latency (during download). | `true` |
 | **measureUploadLoadedLatency**: *boolean* | Whether to perform additional latency measurements simultaneously with upload requests, to measure loaded latency (during upload). | `true` |
 | **loadedLatencyThrottle**: *number* | Time interval to wait in between loaded latency requests (in milliseconds). | 400 |
@@ -74,7 +121,7 @@ them.
 
 | Attribute | Description |
 | --- | --- |
-| **results**: *[Results](#results-object)* | Getter of the current [test results](#results-object) object. May yield incomplete values if the test is still running. |
+| **results**: *[Results](#results-object)* | Getter of the current test results object. May yield incomplete values if the test is still running. |
 | **isRunning**: *boolean* | Getter of whether the test engine is currently running. |
 | **isFinished**: *boolean* | Getter of whether the test engine has finished all the measurements, and the results are considered final. |
 
@@ -86,20 +133,20 @@ them.
 | **pause()** | Pauses the measurements. Does nothing if the engine is already paused or is finished. |
 | **restart()** | Clears the current results and restarts the measurements from the beginning. |
 
-### Notification Events
+### Notification events
 
-| Event Method | Arguments | Description |
+| Event method | Arguments | Description |
 | --- | --- | --- |
 | **onRunningChange** | running: *boolean* | Invoked whenever the test engine starts or stops. The current state is included as a function argument. |
 | **onResultsChange** | { type: *string* } | Invoked whenever any item changes in the results, usually indicating the completion of a measurement. The type of measurement that changed is included as an info attribute in the function argument. |
-| **onFinish** | results: *[Results](#results-object)* | Invoked when the test ends, with the [results object](#results-object) collected so far as a function argument. |
+| **onFinish** | results: *[Results](#results-object)* | Invoked when the test ends, with the results object collected so far as a function argument. |
 | **onError** | error: *string*, status: *number \| undefined* | Invoked whenever an error occurs during one of the measurements, with the HTTP status when available. Most errors don't stop the test; call `pause()` from this callback to stop it. |
 
 ### Measurement config
 
-The specific measurements to be performed by the test engine (and their sequence) can be customized using the `measurements` config option. This should be an array of objects, each with a `type` field, plus additional fields specific to that measurement type.
+The specific measurements to be performed by the test engine, and their sequence, can be customized using the `measurements` config option. This should be an array of objects, each with a `type` field, plus additional fields specific to that measurement type.
 
-The default set of measurements that is performed by the engine is:
+The default set of measurements is:
 
 ```js
 [
@@ -130,7 +177,7 @@ Here are the fields available per measurement type:
 
 #### download / upload
 
-Each of these measurement sets are bound to a specific file size. The engine follows a ramp-up methodology per direction (download or upload). Whenever there are multiple measurement sets (with increasing file sizes) for a direction, the engine will keep on performing them until it reaches the condition specified by `bandwidthFinishRequestDuration`, at which point further sets in the same direction are ignored.
+Each of these measurement sets is bound to a specific file size. The engine follows a ramp-up methodology per direction (download or upload). Whenever there are multiple measurement sets (with increasing file sizes) for a direction, the engine keeps performing them until it reaches the condition specified by `bandwidthFinishRequestDuration`, at which point further sets in the same direction are ignored.
 
 | Field | Required | Description | Default |
 | --- | :--: | --- | :--: |
@@ -160,7 +207,7 @@ new SpeedTest({
 
 A `packetLoss` measurement without either option fails with an error, and the engine moves on to the next measurement.
 
-Example code to serve TURN credentials from a Zenthcloud Worker, using a [Zenthcloud Realtime TURN server](https://github.com/skygenesisenterprise/zenthcloud), is available at [example/turn-worker](example/turn-worker). Refer to the worker's [documentation](example/turn-worker/README.md) for setup and deployment instructions.
+Example code to serve TURN credentials from a ZenthCloud Worker, using a [ZenthCloud Realtime TURN server](https://github.com/skygenesisenterprise/zenthcloud), is available at [example/turn-worker](example/turn-worker). Refer to the worker's [documentation](example/turn-worker/README.md) for setup and deployment instructions.
 
 | Field | Required | Description | Default |
 | --- | :--: | --- | :--: |
@@ -172,7 +219,7 @@ Example code to serve TURN credentials from a Zenthcloud Worker, using a [Zenthc
 
 ### Results object
 
-An instance object used to access the results of the speedtest measurements. The following methods are available on this object:
+An instance object used to access the results of the speedtest measurements. The following methods are available:
 
 | Method | Description |
 | --- | --- |
@@ -187,17 +234,86 @@ An instance object used to access the results of the speedtest measurements. The
 | **getUpLoadedJitter()** | Returns the connection jitter while loaded in the upload direction. Requires `measureUploadLoadedLatency` to be enabled, and at least two loaded latency measurements. |
 | **getUpLoadedLatencyPoints()** | Returns an array with all the latencies measured while loaded in the upload direction. Includes one value per loaded measurement in sequence. Requires `measureUploadLoadedLatency` to be enabled. |
 | **getDownloadBandwidth()** | Returns the reduced value of the download bandwidth (in bps). Requires at least one `download` measurement, longer than the `bandwidthMinRequestDuration` threshold. |
-| **getDownloadBandwidthPoints()** | Returns an array with all the download measurement results. Each item will include the following fields: `{ bytes, bps, duration, ping, measTime, serverTime, transferSize }`. |
+| **getDownloadBandwidthPoints()** | Returns an array with all the download measurement results. Each item includes `{ bytes, bps, duration, ping, measTime, serverTime, transferSize }`. |
 | **getUploadBandwidth()** | Returns the reduced value of the upload bandwidth (in bps). Requires at least one `upload` measurement, longer than the `bandwidthMinRequestDuration` threshold. |
-| **getUploadBandwidthPoints()** | Returns an array with all the upload measurement results. Each item will include the following fields: `{ bytes, bps, duration, ping, measTime, serverTime, transferSize }`. |
+| **getUploadBandwidthPoints()** | Returns an array with all the upload measurement results. Each item includes `{ bytes, bps, duration, ping, measTime, serverTime, transferSize }`. |
 | **getPacketLoss()** | Returns the reduced value of the measured packet loss ratio (between 0 and 1). Requires a `packetLoss` measurement set. |
-| **getPacketLossDetails()** | Returns an object with the details of the packet loss measurement. Includes the following fields: `{ packetLoss, totalMessages, numMessagesSent, lostMessages }`. Requires a `packetLoss` measurement set. |
+| **getPacketLossDetails()** | Returns an object with the details of the packet loss measurement. Includes `{ packetLoss, totalMessages, numMessagesSent, lostMessages }`. Requires a `packetLoss` measurement set. |
 | **getTotalDurationMs()** | Returns the total time (in milliseconds) the engine spent running, excluding any time spent paused. Only available after the engine has finished. |
 | **getScores()** | Returns the computed [AIM scores](https://github.com/skygenesisenterprise/zenthcloud) that categorize the quality of the network connection according to use cases such as streaming, gaming or real-time communications. This score is only available after the engine has finished performing all of the measurements. Without a `packetLoss` measurement, packet loss is left out of the scores, so they come out lower than for a connection measured with under 5% loss. A failed `packetLoss` measurement counts as 0 points. |
 
-[npm-img]: https://github.com/skygenesisenterprise/zenthcloud
-[npm-url]: https://github.com/skygenesisenterprise/zenthcloud
-[build-size-img]: https://github.com/skygenesisenterprise/zenthcloud
-[build-size-url]: https://github.com/skygenesisenterprise/zenthcloud
-[npm-downloads-img]: https://github.com/skygenesisenterprise/zenthcloud
-[npm-downloads-url]: https://github.com/skygenesisenterprise/zenthcloud
+## How ZenthCloud Speedtest is built
+
+The package is a browser-only TypeScript library with zero runtime dependencies. It ships ESM output and auto-generated declarations.
+
+| Area | Location | Role |
+| --- | --- | --- |
+| Entry point | `src/index.ts` | Exports `LoggingMeasurementEngine`, which wraps `MeasurementEngine` |
+| Config | `src/config/` | Default config and AIM scoring thresholds |
+| Engines | `src/engines/` | Bandwidth, packet loss, load network and reachability engines |
+| Results | `src/Results/` | Aggregation, statistics and AIM scoring |
+| Utilities | `src/utils/` | Math, measurement targets and authorization helpers |
+
+The bandwidth engine uses `fetch` and `PerformanceResourceTiming`. The packet loss engine uses a WebRTC TURN relay. Source and tests are TypeScript, and the build uses `tsdown`.
+
+## Development
+
+```bash
+pnpm install
+pnpm build
+pnpm dev
+pnpm lint
+pnpm format
+pnpm test
+pnpm test:unit
+pnpm test:e2e
+pnpm test:watch
+```
+
+To run e2e tests locally, install the browsers first:
+
+```bash
+npx playwright install chromium webkit
+```
+
+## FAQ
+
+### Does it work in Node.js?
+
+No. The library is browser-only and relies on `fetch`, `PerformanceResourceTiming`, `RTCPeerConnection` and `performance.now()`. `lib` is `["ES2022", "DOM", "DOM.Iterable"]`, and `@types/node` is deliberately absent.
+
+### Are there runtime dependencies?
+
+No. The package has zero runtime dependencies and is ESM-only.
+
+### How do I measure packet loss?
+
+Add a `packetLoss` measurement and configure a TURN server either through `turnServerCredsApiUrl` or `turnServerUser`/`turnServerPass` with `turnServerUri`.
+
+### Why is a measurement missing from the results?
+
+A request with zero or negative duration, or no resource timing entry, has no measurable bandwidth. It counts toward `count` but is discarded with a console warning.
+
+## Related resources
+
+- Package: [`packages/speedtest`](packages/speedtest)
+- Measurement targets and configuration: [`src/config/`](src/config/)
+- TURN worker example: [example/turn-worker](example/turn-worker)
+- PerformanceResourceTiming: [MDN](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming)
+- ZenthCloud repository: [github.com/skygenesisenterprise/zenthcloud](https://github.com/skygenesisenterprise/zenthcloud)
+
+## Contributing
+
+Contributions and suggestions are welcome. Read the repository [contribution guide](https://github.com/skygenesisenterprise/zenthcloud) before participating. Do not push directly to `main`; all changes go through a pull request.
+
+## Security
+
+The authorization token is experimental. Never enable `allowInsecureAuthorizationToken` in production; a token seen over plaintext is treated as compromised and revoked. Do not report security vulnerabilities in public issues; follow the private reporting instructions in the repository [`SECURITY.md`](https://github.com/skygenesisenterprise/zenthcloud).
+
+## License
+
+See the repository [LICENSE](https://github.com/skygenesisenterprise/zenthcloud) for licensing terms.
+
+## Note
+
+ZenthCloud Speedtest is an open-source project maintained by [Sky Genesis Enterprise](https://skygenesisenterprise.com). Links to external services are provided for convenience and do not imply endorsement.

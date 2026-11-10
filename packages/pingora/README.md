@@ -1,84 +1,160 @@
-# Pingora
+# ZenthCloud Pingora
+
+[![crates.io](https://img.shields.io/crates/v/pingora.svg)](https://crates.io/crates/pingora)
+[![docs.rs](https://docs.rs/pingora/badge.svg)](https://docs.rs/pingora)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
+[![Rust](https://img.shields.io/badge/Rust-1.85%2B-000000?logo=rust&logoColor=white)](https://rust-lang.org)
 
 ![Pingora banner image](./docs/assets/pingora_banner.png)
 
-## What is Pingora
-Pingora is a Rust framework to [build fast, reliable and programmable networked systems](https://github.com/skygenesisenterprise/zenthcloud).
+> A Rust framework for building fast, reliable and programmable networked systems.
 
-Pingora is battle tested as it has been serving more than 40 million Internet requests per second for [more than a few years](https://github.com/skygenesisenterprise/zenthcloud).
+**Pingora** is a Rust framework to [build fast, reliable and programmable networked systems](https://github.com/skygenesisenterprise/zenthcloud). It is battle tested, having served more than 40 million Internet requests per second for [more than a few years](https://github.com/skygenesisenterprise/zenthcloud).
 
-## Feature highlights
-* Async Rust: fast and reliable
-* HTTP 1/2 end to end proxy
-* TLS over OpenSSL, BoringSSL, s2n-tls, or rustls(experimental).
-* gRPC and websocket proxying
-* Graceful reload
-* Customizable load balancing and failover strategies
-* Support for a variety of observability tools
+**Perfect for:** teams that need a memory-safe alternative to C/C++ proxy services, performance-sensitive gateways, and networked systems that require extensive customization.
 
-## Reasons to use Pingora
-* **Security** is your top priority: Pingora is a more memory safe alternative for services that are written in C/C++
-* Your service is **performance-sensitive**: Pingora is fast and efficient
-* Your service requires extensive **customization**: The APIs Pingora proxy framework provides are highly programmable
+## Contents
 
-# Getting started
+- [ZenthCloud Pingora](#zenthcloud-pingora)
+  - [Contents](#contents)
+  - [Why Pingora matters](#why-pingora-matters)
+  - [What you can do](#what-you-can-do)
+  - [Quick start](#quick-start)
+  - [How Pingora is built](#how-pingora-is-built)
+    - [Crates](#crates)
+  - [System requirements](#system-requirements)
+    - [Systems](#systems)
+    - [Rust version](#rust-version)
+    - [Build requirements](#build-requirements)
+  - [Development](#development)
+  - [FAQ](#faq)
+  - [Related resources](#related-resources)
+  - [Contributing](#contributing)
+  - [Security](#security)
+  - [License](#license)
+  - [Note](#note)
 
-See our [quick starting guide](./docs/quick_start.md) to see how easy it is to build a load balancer.
+## Why Pingora matters
 
-Our [user guide](./docs/user_guide/index.md) covers more topics such as how to configure and run Pingora servers, as well as how to build custom HTTP servers and proxy logic on top of Pingora's framework.
+🎯 **Security** — Pingora is a more memory-safe alternative for services written in C/C++.
 
-API docs are also available for all the crates.
+🚀 **Performance** — It is fast and efficient, and powers production traffic at very high scale.
 
-# Notable crates in this workspace
-* Pingora: the "public facing" crate to build networked systems and proxies
-* Pingora-core: this crate defines the protocols, functionalities and basic traits
-* Pingora-foundations: Foundations telemetry integration for Pingora services
-* Pingora-proxy: the logic and APIs to build HTTP proxies
-* Pingora-error: the common error type used across Pingora crates
-* Pingora-http: the HTTP header definitions and APIs
-* Pingora-openssl & pingora-boringssl: SSL related extensions and APIs
-* Pingora-ketama: the [Ketama](https://github.com/RJ/ketama) consistent algorithm
-* Pingora-limits: efficient counting algorithms
-* Pingora-load-balancing: load balancing algorithm extensions for pingora-proxy
-* Pingora-memory-cache: Async in-memory caching with cache lock to prevent cache stampede
-* Pingora-s2n: SSL extensions and APIs related to s2n-tls
-* Pingora-timeout: A more efficient async timer system
-* TinyUfo: The caching algorithm behind pingora-memory-cache
+📦 **Programmable** — The proxy framework APIs are highly customizable, so load balancing, routing and protocol behaviour can be tailored.
 
-Note that Pingora proxy integration with caching should be considered experimental, and as such APIs related to caching are currently highly volatile.
+🔒 **Protocol coverage** — HTTP/1 and HTTP/2 end-to-end proxying, gRPC and WebSocket, TLS over OpenSSL, BoringSSL, s2n-tls or rustls (experimental).
 
-# System requirements
+🧩 **Operational features** — Graceful reload, customizable load balancing and failover strategies, and support for a variety of observability tools.
 
-## Systems
-Linux is our tier 1 environment and main focus.
+## What you can do
 
-We will try our best for most code to compile for Unix environments. This is for developers and users to have an easier time developing with Pingora in Unix-like environments like macOS (though some features might be missing)
+- Build HTTP/1 and HTTP/2 proxies.
+- Proxy gRPC and WebSocket traffic.
+- Terminate TLS with OpenSSL, BoringSSL, s2n-tls or rustls (experimental).
+- Implement custom load balancing and failover strategies.
+- Reload gracefully and integrate with observability tooling.
+- Build custom HTTP servers and proxy logic on top of the framework.
 
-Windows support is preliminary by community's best effort only.
+## Quick start
 
-Both x86_64 and aarch64 architectures will be supported.
+See the [quick starting guide](./docs/quick_start.md) to see how easy it is to build a load balancer.
 
-## Rust version
+The [user guide](./docs/user_guide/index.md) covers how to configure and run Pingora servers, as well as how to build custom HTTP servers and proxy logic on top of Pingora's framework. API docs are also available for all the crates.
 
-Pingora keeps a rolling MSRV (minimum supported Rust version) policy of 6 months. This means we will accept PRs that upgrade the MSRV as long as the new Rust version used is at least 6 months old. However, we generally will not bump the highest MSRV across the workspace without a sufficiently compelling reason.
+```bash
+cargo build
+cargo test
+```
 
-Our current MSRV is 1.85.
+## How Pingora is built
 
-Currently not all crates enforce `rust-version` as it is possible to use some crates on lower versions.
+Pingora is a Cargo workspace of crates, with the public `pingora` crate as the entry point and smaller crates for protocol, proxy, TLS, load balancing and caching concerns.
 
-## Build Requirements
+### Crates
 
-Some of the crates in this repository have dependencies on additional tools and
-libraries that must be satisfied in order to build them:
+| Crate | Role |
+| --- | --- |
+| `pingora` | Public-facing crate for building networked systems and proxies |
+| `pingora-core` | Protocols, functionality and basic traits |
+| `pingora-foundations` | Foundations telemetry integration for Pingora services |
+| `pingora-proxy` | Logic and APIs for building HTTP proxies |
+| `pingora-error` | Common error type across Pingora crates |
+| `pingora-http` | HTTP header definitions and APIs |
+| `pingora-openssl` & `pingora-boringssl` | SSL-related extensions and APIs |
+| `pingora-ketama` | [Ketama](https://github.com/RJ/ketama) consistent hashing algorithm |
+| `pingora-limits` | Efficient counting algorithms |
+| `pingora-load-balancing` | Load balancing extensions for `pingora-proxy` |
+| `pingora-memory-cache` | Async in-memory caching with a cache lock to prevent stampede |
+| `pingora-s2n` | SSL extensions and APIs for s2n-tls |
+| `pingora-timeout` | A more efficient async timer system |
+| `tinyufo` | The caching algorithm behind `pingora-memory-cache` |
 
-* Make sure that [Clang] is installed on your system (for boringssl)
-* Make sure that [Perl 5] is installed on your system (for openssl)
+Pingora proxy integration with caching should be considered experimental, so caching-related APIs are currently highly volatile.
 
-[Clang]:https://clang.llvm.org/
-[Perl 5]:https://www.perl.org/
+## System requirements
 
-# Contributing
-Please see our [contribution guidelines](./.github/CONTRIBUTING.md).
+### Systems
 
-# License
-This project is Licensed under [Apache License, Version 2.0](./LICENSE).
+Linux is the tier 1 environment and main focus. Most code is intended to compile for Unix environments, so developing with Pingora on macOS and other Unix-like systems should work, though some features may be missing. Windows support is preliminary and community best-effort only. Both x86_64 and aarch64 architectures are supported.
+
+### Rust version
+
+Pingora keeps a rolling MSRV policy of 6 months. PRs that upgrade the MSRV are accepted as long as the new Rust version is at least 6 months old. The current MSRV is 1.85. Not all crates enforce `rust-version`, because some can be used on lower versions.
+
+### Build requirements
+
+Some crates depend on additional tools and libraries:
+
+- [Clang](https://clang.llvm.org/) (for BoringSSL).
+- [Perl 5](https://www.perl.org/) (for OpenSSL).
+
+## Development
+
+```bash
+cargo build
+cargo test
+```
+
+For formatting and contribution expectations, see the [contribution guidelines](./.github/CONTRIBUTING.md).
+
+## FAQ
+
+### Is Pingora a finished proxy?
+
+No. Pingora is a framework. You build your proxy or networked service on top of it, and some areas such as caching are still experimental.
+
+### Which TLS backends are supported?
+
+OpenSSL, BoringSSL, s2n-tls and rustls (experimental).
+
+### Does it support Windows?
+
+Only preliminarily, through community effort. Linux is the tier 1 environment.
+
+### What is the MSRV?
+
+Rust 1.85 at the time of writing, with a rolling 6-month policy.
+
+## Related resources
+
+- Quick start: [docs/quick_start.md](./docs/quick_start.md)
+- User guide: [docs/user_guide/index.md](./docs/user_guide/index.md)
+- TinyUfo: [`tinyufo/`](tinyufo/)
+- Ketama: [github.com/RJ/ketama](https://github.com/RJ/ketama)
+- ZenthCloud repository: [github.com/skygenesisenterprise/zenthcloud](https://github.com/skygenesisenterprise/zenthcloud)
+
+## Contributing
+
+Contributions and suggestions are welcome. Please see the [contribution guidelines](./.github/CONTRIBUTING.md).
+
+## Security
+
+Do not report security vulnerabilities in public issues. Follow the private reporting instructions in the repository [`SECURITY.md`](https://github.com/skygenesisenterprise/zenthcloud).
+
+## License
+
+This project is licensed under the [Apache License, Version 2.0](./LICENSE).
+
+## Note
+
+Pingora is an open-source project maintained by [Sky Genesis Enterprise](https://skygenesisenterprise.com). Links to external services are provided for convenience and do not imply endorsement.

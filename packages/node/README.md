@@ -1,95 +1,201 @@
-# Kumo
+# ZenthCloud React
 
-Zenthcloud's component library for building modern web applications.
+[![npm](https://img.shields.io/npm/v/@zenthcloud/kumo.svg)](https://www.npmjs.com/package/@zenthcloud/kumo)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://typescriptlang.org)
 
-Kumo provides accessible, design-system-compliant UI components built on [Base UI](https://base-ui.com/). It handles keyboard navigation, focus management, and ARIA attributes so you can build accessible applications without thinking through every detail.
+> Zenthcloud's accessible component library for building modern web applications.
 
-<img width="2560" height="1456" alt="image" src="https://github.com/user-attachments/assets/032f5a0e-b686-4440-b1ca-6182379479aa" />
+**React** provides accessible, design-system-compliant UI components built on [Documentation](https://docs.zenthcloud.com/). It handles keyboard navigation, focus management and ARIA attributes so you can build accessible applications without thinking through every detail.
 
-## Installation
+**Perfect for:** product teams building Zenthcloud surfaces, developers who want accessible React primitives with semantic theming, and anyone who needs a component library that works with an AI agent through a CLI.
+
+<img width="2560" height="1456" alt="Kumo component showcase" src="https://github.com/user-attachments/assets/032f5a0e-b686-4440-b1ca-6182379479aa" />
+
+## Contents
+
+- [ZenthCloud React](#zenthcloud-react)
+  - [Contents](#contents)
+  - [Why Kumo matters](#why-kumo-matters)
+  - [What you can do](#what-you-can-do)
+  - [Quick start](#quick-start)
+    - [Install](#install)
+    - [Peer dependencies](#peer-dependencies)
+    - [Usage](#usage)
+    - [Granular imports](#granular-imports)
+    - [Base UI primitives](#base-ui-primitives)
+  - [How Kumo is built](#how-kumo-is-built)
+    - [Workspace layout](#workspace-layout)
+    - [Styling model](#styling-model)
+  - [CLI](#cli)
+  - [Development](#development)
+    - [Quick start](#quick-start-1)
+    - [Figma plugin](#figma-plugin)
+    - [Creating components](#creating-components)
+  - [FAQ](#faq)
+    - [Does Kumo support dark mode?](#does-kumo-support-dark-mode)
+    - [Can I use raw Tailwind colors?](#can-i-use-raw-tailwind-colors)
+    - [Are Base UI primitives available?](#are-base-ui-primitives-available)
+    - [Where is the component API registry?](#where-is-the-component-api-registry)
+  - [Related resources](#related-resources)
+  - [Contributing](#contributing)
+  - [Security](#security)
+  - [License](#license)
+  - [Note](#note)
+
+## Why Kumo matters
+
+🎯 **Accessibility built in** — Keyboard navigation, focus management and ARIA attributes are handled by the components.
+
+🚀 **Semantic design system** — Components use semantic color tokens and automatic light/dark theming rather than raw utility colors.
+
+📦 **Base UI underneath** — Kumo re-exports Base UI primitives for advanced cases while providing a consistent component API.
+
+🔒 **Agent-friendly** — A CLI exposes component documentation so humans and agents can query the registry.
+
+🧩 **Monorepo tooling** — The component library, docs site, Figma plugin and screenshot worker live together with shared tooling.
+
+## What you can do
+
+- Install ready-made accessible React components.
+- Import the full library or individual components for tree-shaking.
+- Drop down to Base UI primitives when a component needs advanced behaviour.
+- Query component documentation from the command line.
+- Build custom themes with semantic tokens.
+- Scaffold new components with the project tooling.
+
+## Quick start
+
+### Install
 
 ```bash
-pnpm add @zenthcloud/kumo
+pnpm add @zenthcloud/react
 ```
 
-### Peer Dependencies
+### Peer dependencies
 
 ```bash
 pnpm add react react-dom @phosphor-icons/react
 ```
 
-## Usage
+### Usage
 
 ```tsx
-import { Button, Input, Dialog } from "@zenthcloud/kumo";
-import "@zenthcloud/kumo/styles";
+import { Button, Input, Dialog } from "@zenthcloud/react";
+import "@zenthcloud/react/styles";
 ```
 
-### Granular Imports (Tree-Shaking)
+### Granular imports
 
 ```tsx
-import { Button } from "@zenthcloud/kumo/components/button";
+import { Button } from "@zenthcloud/react";
 ```
 
-### Base UI Primitives
+### Base UI primitives
 
 Kumo re-exports all Base UI primitives for advanced use cases:
 
 ```tsx
-import { Popover } from "@zenthcloud/kumo/primitives/popover";
+import { Popover } from "@zenthcloud/react";
 ```
+
+## How Kumo is built
+
+Kumo is a pnpm monorepo with an ESM-only component library, an Astro documentation site, a Figma plugin and a screenshot worker.
+
+### Workspace layout
+
+| Path | Package | Role |
+| --- | --- | --- |
+| `packages/kumo/` | `@zenthcloud/kumo` | Component library built on Base UI and Tailwind v4 |
+| `packages/kumo-docs-astro/` | — | Astro documentation site |
+| `packages/kumo-figma/` | — | Figma plugin and generators |
+| `packages/kumo-screenshot-worker/` | — | Visual regression worker |
+| `lint/` | — | Custom Oxlint rules |
+| `ci/` | — | CI/CD scripts |
+
+### Styling model
+
+Components use semantic tokens such as `bg-kumo-base`, `text-kumo-default` and `border-kumo-line`. Dark mode adapts automatically through `light-dark()` CSS custom properties, so `dark:` variants are not used. Raw Tailwind colors fail lint.
 
 ## CLI
 
 Query component documentation from the command line:
 
 ```bash
-npx @zenthcloud/kumo ls          # List all components
-npx @zenthcloud/kumo doc Button  # Get component docs
-npx @zenthcloud/kumo docs        # Get all docs
+npx @zenthcloud/react ls          # List all components
+npx @zenthcloud/react doc Button  # Get component docs
+npx @zenthcloud/react docs        # Get all docs
 ```
 
 ## Development
 
-See [AGENTS.md](./AGENTS.md) for comprehensive development documentation including:
+See [AGENTS.md](./AGENTS.md) for comprehensive development documentation including component patterns, semantic color tokens, workflows, the CI/CD pipeline and the Figma plugin.
 
-- Component patterns and styling system
-- Semantic color tokens
-- Development workflows
-- CI/CD pipeline
-- Figma plugin
-
-### Quick Start
+### Quick start
 
 ```bash
 pnpm install
 pnpm dev                    # Start docs site at localhost:4321
-pnpm --filter @zenthcloud/kumo test
+pnpm --filter @zenthcloud/react test
 ```
 
-### Figma Plugin
+### Figma plugin
 
 ```bash
 # Optional: enable token sync during build
-# cp packages/kumo-figma/scripts/.env.example packages/kumo-figma/scripts/.env
-# $EDITOR packages/kumo-figma/scripts/.env  # set FIGMA_TOKEN (and optionally FIGMA_FILE_KEY)
+# cp packages/react-figma/scripts/.env.example packages/react-figma/scripts/.env
+# $EDITOR packages/react-figma/scripts/.env  # set FIGMA_TOKEN (and optionally FIGMA_FILE_KEY)
 
-pnpm --filter @zenthcloud/kumo-figma build
+pnpm --filter @zenthcloud/react-figma build
 # In Figma: Plugins > Development > Import plugin from manifest...
-# Select: packages/kumo-figma/src/manifest.json
+# Select: packages/react-figma/src/manifest.json
 ```
 
-### Creating Components
+### Creating components
 
 ```bash
-pnpm --filter @zenthcloud/kumo new-component
+pnpm --filter @zenthcloud/react new-component
 ```
 
-## Documentation
+## FAQ
 
-- **Live Docs**: [kumo-ui.com](https://kumo-ui.com)
-- **AI/Agent Guide**: [AGENTS.md](./AGENTS.md)
+### Does Kumo support dark mode?
+
+Yes. Dark mode is automatic through `light-dark()` tokens. Do not add `dark:` variants.
+
+### Can I use raw Tailwind colors?
+
+No. Use semantic `kumo-*` tokens. Raw colors such as `bg-blue-500` fail lint.
+
+### Are Base UI primitives available?
+
+Yes. react re-exports them under `@zenthcloud/react/*`.
+
+### Where is the component API registry?
+
+The registry lives at `packages/react/ai/component-registry.json` and is the source of truth for component APIs.
+
+## Related resources
+
+- Live docs: [docs.zenthcloud.com](https://docs.zenthcloud.com)
+- Agent guide: [AGENTS.md](./AGENTS.md)
+- Base UI: [docs.zenthcloud.com](https://docs.zenthcloud.com/)
+- ZenthCloud repository: [github.com/skygenesisenterprise/zenthcloud](https://github.com/skygenesisenterprise/zenthcloud)
+
+## Contributing
+
+Contributions and suggestions are welcome. Read the repository [contribution guide](https://github.com/skygenesisenterprise/zenthcloud) before participating, and add a changeset for every user-facing change to the published package.
+
+## Security
+
+Never commit Figma tokens, npm tokens or API keys. `.env` files are gitignored. Do not report security vulnerabilities in public issues; follow the private reporting instructions in the repository [`SECURITY.md`](https://github.com/skygenesisenterprise/zenthcloud).
 
 ## License
 
 MIT
+
+## Note
+
+React is an open-source project maintained by [Sky Genesis Enterprise](https://skygenesisenterprise.com). Links to external services are provided for convenience and do not imply endorsement.
